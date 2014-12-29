@@ -18,12 +18,13 @@ package org.andstatus.app.net;
 
 import org.andstatus.app.util.MyLog;
 
+import java.io.IOException;
 import java.net.URL;
 
 /**
  * @author yvolk@yurivolkov.com
  */
-public class ConnectionException extends Exception {
+public class ConnectionException extends IOException {
     private static final long serialVersionUID = 1L;
 
     public enum StatusCode {
@@ -62,86 +63,88 @@ public class ConnectionException extends Exception {
             }
         }
     }
-    private StatusCode statusCode = StatusCode.UNKNOWN;
-    private boolean isHardError = false;
-    private URL host = null;
+    private final StatusCode statusCode;
+    private final boolean isHardError;
+    private final URL host;
 
-    public static ConnectionException loggedJsonException(Object objTag, Exception e, Object obj, String detailMessage) throws ConnectionException {
+    public static ConnectionException loggedHardJsonException(Object objTag, String detailMessage, Exception e, Object jso) throws ConnectionException {
+        return loggedJsonException(objTag, detailMessage, e, jso, true);
+    }
+    
+    public static ConnectionException loggedJsonException(Object objTag, String detailMessage, Exception e, Object jso) throws ConnectionException {
+        return loggedJsonException(objTag, detailMessage, e, jso, false);
+    }
+
+    private static ConnectionException loggedJsonException(Object objTag, String detailMessage, Exception e, Object jso, 
+            boolean isHard) throws ConnectionException {
         MyLog.d(objTag, detailMessage + (e != null ? ": " + e.getMessage() : ""));
-        if (obj != null) {
+        if (jso != null) {
             if (e != null) {
                 String stackTrace = MyLog.getStackTrace(e);
                 MyLog.writeStringToFile(stackTrace, MyLog.uniqueDateTimeFormatted() + "_JsonException_stacktrace_log.txt");
                 MyLog.v(objTag, "stack trace: " + stackTrace);
             }
-            MyLog.logJson(objTag, obj, true);
+            MyLog.logJson(objTag, jso, true);
         }
-        return new ConnectionException(detailMessage);
-    }
-
-    public static ConnectionException fromStatusCodeHttp(int statusCodeHttp, String detailMessage, Throwable throwable) {
-        StatusCode statusCode = StatusCode.fromResponseCode(statusCodeHttp);
-        if (statusCode == StatusCode.UNKNOWN) {
-            return new ConnectionException(detailMessage, throwable);
-        } else {
-            return new ConnectionException(statusCode, detailMessage, throwable);
-        }
+        return new ConnectionException(StatusCode.OK, MyLog.objTagToString(objTag) + ": " + detailMessage, e, null, isHard);
     }
 
     public static ConnectionException fromStatusCodeHttp(int statusCodeHttp, final String detailMessage) {
-        StatusCode statusCode = StatusCode.fromResponseCode(statusCodeHttp);
-        if (statusCode == StatusCode.UNKNOWN) {
-            return new ConnectionException(detailMessage);
-        } else {
-            return new ConnectionException(statusCode, detailMessage);
-        }
-    }
-
-    public static ConnectionException fromStatusCodeAndHost(StatusCode statusCode, URL host2, final String detailMessage) {
-        ConnectionException e = new ConnectionException(statusCode, detailMessage);
-        e.host = host2;
-        return e;
+        return fromStatusCodeHttp(statusCodeHttp, detailMessage, null);
     }
     
-    public ConnectionException(String detailMessage) {
-        super(detailMessage);
+    public static ConnectionException fromStatusCodeHttp(int statusCodeHttp, String detailMessage, Throwable throwable) {
+        return new ConnectionException(StatusCode.fromResponseCode(statusCodeHttp), detailMessage, throwable, null, false);
     }
 
-    public ConnectionException(StatusCode statusCode, final String detailMessage) {
-        super(detailMessage);
-        processStatusCode(statusCode);
+    public static ConnectionException fromStatusCode(StatusCode statusCode, final String detailMessage) {
+        return fromStatusCodeAndThrowable(statusCode, detailMessage, null);
     }
 
-    public ConnectionException(StatusCode statusCode, String detailMessage, Throwable throwable) {
-        super(detailMessage, throwable);
-        processStatusCode(statusCode);
-    }
-
-    private void processStatusCode(StatusCode statusCode) {
-        this.statusCode = statusCode;
-        switch (statusCode) {
-            case UNKNOWN:
-                break;
-            default:
-                isHardError = true;
-                break;
-        }
+    public static ConnectionException fromStatusCodeAndThrowable(StatusCode statusCode, final String detailMessage, Throwable throwable) {
+        return new ConnectionException(statusCode, detailMessage, throwable, null, false);
     }
     
-    public ConnectionException(Throwable throwable) {
-        super(throwable);
+    public static ConnectionException fromStatusCodeAndHost(StatusCode statusCode, final String detailMessage, URL host2) {
+        return new ConnectionException(statusCode, detailMessage, host2);
     }
 
     public static ConnectionException hardConnectionException(String detailMessage, Throwable throwable) {
-        ConnectionException e = new ConnectionException(detailMessage, throwable);
-        e.setHardError(true);
-        return e;
+        return new ConnectionException(StatusCode.OK, detailMessage, throwable, null, true);
+    }
+    
+    public ConnectionException(Throwable throwable) {
+        this(null, throwable);
+    }
+
+    public ConnectionException(String detailMessage) {
+        this(detailMessage, null);
+    }
+
+    public ConnectionException(StatusCode statusCode, String detailMessage) {
+        this(statusCode, detailMessage, null);
     }
     
     public ConnectionException(String detailMessage, Throwable throwable) {
-        super(detailMessage, throwable);
+        this(StatusCode.OK, detailMessage, throwable, null, false);
     }
     
+    public ConnectionException(StatusCode statusCode2, String detailMessage, URL host2) {
+        this(statusCode2, detailMessage, null, host2, false);
+    }
+    
+    private ConnectionException(StatusCode statusCode, String detailMessage, 
+            Throwable throwable, URL host, boolean isHardIn) {
+        super(detailMessage, throwable);
+        this.statusCode = statusCode;
+        this.host = host; 
+        this.isHardError = isHardFromStatusCode(isHardIn, statusCode);
+    }
+
+    private static boolean isHardFromStatusCode(boolean isHardIn, StatusCode statusCode) {
+        return isHardIn || (statusCode != StatusCode.UNKNOWN && statusCode != StatusCode.OK);
+    }
+
     public StatusCode getStatusCode() {
         return this.statusCode;
     }
@@ -152,10 +155,6 @@ public class ConnectionException extends Exception {
 			+ (host == null ? "" : "; host=" + host) 
 			+ "; \n" + super.getMessage()
 		    + (super.getCause() != null ? "; \nCaused by " + super.getCause().toString() : "");
-    }
-
-    public void setHardError(boolean isHardError) {
-        this.isHardError = isHardError;
     }
 
     public boolean isHardError() {

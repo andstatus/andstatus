@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,6 +29,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
+import java.util.Arrays;
 
 public class FileUtils {
     private static final String TAG = FileUtils.class.getSimpleName();
@@ -39,7 +41,7 @@ public class FileUtils {
     
     public static JSONArray getJSONArray(File file) throws IOException {
         JSONArray jso = null;
-        String fileString = getString(file);
+        String fileString = utf8File2String(file);
         if (!TextUtils.isEmpty(fileString)) {
             try {
                 jso = new JSONArray(fileString);
@@ -56,7 +58,7 @@ public class FileUtils {
     
     public static JSONObject getJSONObject(File file) throws IOException {
         JSONObject jso = null;
-        String fileString = getString(file);
+        String fileString = utf8File2String(file);
         if (!TextUtils.isEmpty(fileString)) {
             try {
                 jso = new JSONObject(fileString);
@@ -71,10 +73,8 @@ public class FileUtils {
         return jso;
     }
 
-    public static String getString(File file) throws IOException {
-        // reads an UTF-8 string resource - API 9 required
-        //return new String(getResource(id, context), Charset.forName("UTF-8"));
-        return new String(getBytes(file));
+    private static String utf8File2String(File file) throws IOException {
+        return new String(getBytes(file), Charset.forName("UTF-8"));
     }
 
     /** Reads the whole file */
@@ -115,10 +115,7 @@ public class FileUtils {
                 if (bytesRead == readBuffer.length) {
                     return readBuffer;
                 } else if (bytesRead > 0) {
-                    // TODO: Since API 9: return Arrays.copyOf(readBuffer, read);
-                    ByteArrayOutputStream bout = new ByteArrayOutputStream(bytesRead);
-                    bout.write(readBuffer, 0, bytesRead);
-                    return bout.toByteArray();
+                    return Arrays.copyOf(readBuffer, bytesRead);
                 }
             } finally {
                 DbUtils.closeSilently(is);
@@ -149,13 +146,21 @@ public class FileUtils {
             if (file.isDirectory()) {
                 nDeleted += deleteFilesRecursively(file, level + 1);
                 if (level > 1) {
-                    file.delete();
-                    nDeleted++;
+                    nDeleted += deleteAndCountFile(file);
                 }
             } else {
-                file.delete();
-                nDeleted++;
+                nDeleted += deleteAndCountFile(file);
             }
+        }
+        return nDeleted;
+    }
+
+    private static long deleteAndCountFile(File file) {
+        long nDeleted = 0;
+        if (file.delete()) {
+            nDeleted++;
+        } else {
+            MyLog.w(TAG, "Couldn't delete " + file.getAbsolutePath());
         }
         return nDeleted;
     }

@@ -285,7 +285,7 @@ public class DataInserterTest extends InstrumentationTestCase {
 
         DownloadData dd = DownloadData.newForMessage(messageId,
                 message.attachments.get(0).contentType, null);
-        assertEquals("Image URL stored", message.attachments.get(0).url, dd.getUrl());
+        assertEquals("Image URL stored", message.attachments.get(0).getUrl(), dd.getUrl());
     }
 
     public void testUserNameChanged() {

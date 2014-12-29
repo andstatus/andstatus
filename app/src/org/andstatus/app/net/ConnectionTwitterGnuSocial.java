@@ -75,7 +75,7 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitter1p0 {
                 list.add(jArr.getString(index));
             }
         } catch (JSONException e) {
-            throw ConnectionException.loggedJsonException(this, e, null, "Parsing friendsIds");
+            throw ConnectionException.loggedJsonException(this, "Parsing friendsIds", e, null);
         }
         return list;
     }
@@ -147,9 +147,9 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitter1p0 {
                 JSONArray jArr = jso.getJSONArray(ATTACHMENTS_FIELD_NAME);
                 for (int ind = 0; ind < jArr.length(); ind++) {
                     JSONObject attachment = (JSONObject) jArr.get(ind);
-                    URL url = UrlUtils.json2Url(attachment, "url");
+                    URL url = UrlUtils.fromJson(attachment, "url");
                     if (url == null) {
-                        url = UrlUtils.json2Url(attachment, "thumb_url");
+                        url = UrlUtils.fromJson(attachment, "thumb_url");
                     }
                     MbAttachment mbAttachment =  MbAttachment.fromUrlAndContentType(url, MyContentType.fromUrl(url, attachment.optString("mimetype")));
                     if (mbAttachment.isValid()) {

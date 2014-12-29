@@ -31,7 +31,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class PersistentOrigins {
-    private Map<String,Origin> persistentOrigins = new ConcurrentHashMap<String, Origin>();
+    private Map<String,Origin> mOrigins = new ConcurrentHashMap<String, Origin>();
     
     private PersistentOrigins() {
     }
@@ -49,16 +49,16 @@ public class PersistentOrigins {
         Cursor cursor = null;
         try {
             cursor = db.rawQuery(sql, null);
-            persistentOrigins.clear();
+            mOrigins.clear();
             while (cursor.moveToNext()) {
                 Origin origin = new Origin.Builder(cursor).build();
-                persistentOrigins.put(origin.name, origin);
+                mOrigins.put(origin.name, origin);
             }
         } finally {
             DbUtils.closeSilently(cursor);
         }
         
-        MyLog.v(this, "Initialized " + persistentOrigins.size() + " origins");
+        MyLog.v(this, "Initialized " + mOrigins.size() + " origins");
         return this;
     }
     
@@ -70,7 +70,7 @@ public class PersistentOrigins {
      * @return Origin of UNKNOWN type if not found
      */
     public Origin fromId(long originId) {
-        for (Origin origin : persistentOrigins.values()) {
+        for (Origin origin : mOrigins.values()) {
             if (origin.id == originId) {
                 return origin;
             }
@@ -84,7 +84,7 @@ public class PersistentOrigins {
     public Origin fromName(String originName) {
         Origin origin = null;
         if (!TextUtils.isEmpty(originName)) {
-            origin = persistentOrigins.get(originName);
+            origin = mOrigins.get(originName);
         }
         if (origin == null) {
             origin = Origin.Builder.getUnknown();
@@ -96,7 +96,7 @@ public class PersistentOrigins {
      * @return Origin of this type or empty Origin of UNKNOWN type if not found
      */
     public Origin firstOfType(OriginType originType) {
-        for (Origin origin : persistentOrigins.values()) {
+        for (Origin origin : mOrigins.values()) {
             if (origin.originType == originType) {
                 return origin;
             }
@@ -105,7 +105,7 @@ public class PersistentOrigins {
     }
 
     public Collection<Origin> collection() {
-        return persistentOrigins.values();
+        return mOrigins.values();
     }
     
     public boolean isHtmlContentAllowed(long originId) {

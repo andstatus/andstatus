@@ -16,19 +16,22 @@
 
 package org.andstatus.app.net;
 
+import android.net.Uri;
+
 import org.andstatus.app.data.MyContentType;
+import org.andstatus.app.util.UriUtils;
+import org.andstatus.app.util.UrlUtils;
 
 import java.net.URL;
 
 public class MbAttachment {
     public String oid="";
-    public URL url = null;
-    public URL thumbUrl = null;
+    private Uri uri = null;
     public MyContentType contentType = MyContentType.UNKNOWN;
 
     public static MbAttachment fromUrlAndContentType(URL urlIn, MyContentType contentTypeIn) {
         MbAttachment attachment = new MbAttachment();
-        attachment.url = urlIn;
+        attachment.uri = UriUtils.fromUrl(urlIn);
         attachment.contentType = MyContentType.fromUrl(urlIn, contentTypeIn);
         return attachment;
     }
@@ -38,7 +41,7 @@ public class MbAttachment {
     }
     
     public boolean isValid() {
-        return url != null && contentType != MyContentType.UNKNOWN;
+        return uri != null && contentType != MyContentType.UNKNOWN;
     }
 
     @Override
@@ -47,8 +50,7 @@ public class MbAttachment {
         int result = 1;
         result = prime * result + ((contentType == null) ? 0 : contentType.hashCode());
         result = prime * result + ((oid == null) ? 0 : oid.hashCode());
-        result = prime * result + ((thumbUrl == null) ? 0 : thumbUrl.hashCode());
-        result = prime * result + ((url == null) ? 0 : url.hashCode());
+        result = prime * result + ((uri == null) ? 0 : uri.hashCode());
         return result;
     }
 
@@ -68,22 +70,25 @@ public class MbAttachment {
                 return false;
         } else if (!oid.equals(other.oid))
             return false;
-        if (thumbUrl == null) {
-            if (other.thumbUrl != null)
+        if (uri == null) {
+            if (other.uri != null)
                 return false;
-        } else if (!thumbUrl.equals(other.thumbUrl))
-            return false;
-        if (url == null) {
-            if (other.url != null)
-                return false;
-        } else if (!url.equals(other.url))
+        } else if (!uri.equals(other.uri))
             return false;
         return true;
     }
 
     @Override
     public String toString() {
-        return "MbAttachment [oid=" + oid + ", url=" + url + ", thumbUrl=" + thumbUrl
+        return "MbAttachment [oid=" + oid + ", url=" + uri 
                 + ", contentType=" + contentType + "]";
+    }
+
+    public void setUrl(URL url) {
+        this.uri = UriUtils.fromUrl(url);
+    }
+    
+    public URL getUrl() {
+        return UrlUtils.fromUri(uri);
     }
 }

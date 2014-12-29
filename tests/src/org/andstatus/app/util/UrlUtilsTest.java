@@ -35,14 +35,14 @@ public class UrlUtilsTest extends InstrumentationTestCase {
     private void assertHostOnly(String hostOrUrl, String host, boolean isUrl) {
         boolean isSsl = true;
         assertEquals(isUrl, !UrlUtils.hostIsValid(hostOrUrl));
-        URL url = UrlUtils.string2Url(hostOrUrl);
+        URL url = UrlUtils.fromString(hostOrUrl);
         assertEquals(url != null, isUrl);
         url = UrlUtils.buildUrl(hostOrUrl, isSsl);
         assertEquals(host, url.getHost());
         String strUrl = "https://" + host;
         assertEquals(strUrl, url.toExternalForm());
         String path = "somepath/somewhere.json";
-        assertEquals(strUrl + "/" + path, UrlUtils.pathToUrl(url, path));
+        assertEquals(strUrl + "/" + path, UrlUtils.pathToUrlString(url, path));
         assertTrue(UrlUtils.isHostOnly(url));
         isSsl = false;
         url = UrlUtils.buildUrl(hostOrUrl, isSsl);
@@ -103,7 +103,7 @@ public class UrlUtilsTest extends InstrumentationTestCase {
     private void assertPath2Url(String strUrl, String path, boolean addSlash) {
         boolean isSsl = true;
         URL url1 = UrlUtils.buildUrl(strUrl, isSsl);
-        String strUrl2 = UrlUtils.pathToUrl(url1, path);
+        String strUrl2 = UrlUtils.pathToUrlString(url1, path);
         assertEquals(strUrl + (addSlash ? "/" : "") + path, strUrl2);
     }
 }

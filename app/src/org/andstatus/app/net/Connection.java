@@ -78,8 +78,10 @@ public abstract class Connection {
         DESTROY_FAVORITE,
         FOLLOW_USER,
         GET_CONFIG,
-        GET_FRIENDS, // List of users
-        GET_FRIENDS_IDS, // List of Users' IDs
+        /** List of users */
+        GET_FRIENDS, 
+        /** List of Users' IDs */
+        GET_FRIENDS_IDS, 
         GET_USER,
         POST_MESSAGE,
         POST_WITH_MEDIA,
@@ -257,14 +259,14 @@ public abstract class Connection {
      * Returns a list of users the specified user is following.
      */
     public List<MbUser> getUsersFollowedBy(String userId) throws ConnectionException {
-        throw ConnectionException.fromStatusCodeAndHost(StatusCode.UNSUPPORTED_API, null, "getUsersFollowedBy for userOid=" + userId);
+        throw ConnectionException.fromStatusCode(StatusCode.UNSUPPORTED_API, "getUsersFollowedBy for userOid=" + userId);
     }
     
     /**
      * Returns a list of IDs for every user the specified user is following.
      */
     public List<String> getIdsOfUsersFollowedBy(String userId) throws ConnectionException {
-        throw ConnectionException.fromStatusCodeAndHost(StatusCode.UNSUPPORTED_API, null, "getIdsOfUsersFollowedBy for userOid=" + userId);
+        throw ConnectionException.fromStatusCode(StatusCode.UNSUPPORTED_API, "getIdsOfUsersFollowedBy for userOid=" + userId);
     }
     
     /**
@@ -441,7 +443,7 @@ public abstract class Connection {
             return 0;
         }
         long unixDate = 0;
-        String formats[] = {"", "E MMM d HH:mm:ss Z yyyy", "E, d MMM yyyy HH:mm:ss Z"};
+        String[] formats = {"", "E MMM d HH:mm:ss Z yyyy", "E, d MMM yyyy HH:mm:ss Z"};
         for (String format : formats) {
             if (TextUtils.isEmpty(format)) {
                 try {
@@ -483,7 +485,7 @@ public abstract class Connection {
             try {
                 jArr = jso.getJSONArray(arrayName);
             } catch (JSONException e) {
-                throw ConnectionException.loggedJsonException(this, e, jso, method + ", arrayName=" + arrayName);
+                throw ConnectionException.loggedJsonException(this, method + ", arrayName=" + arrayName, e, jso);
             }
         }
         return jArr;

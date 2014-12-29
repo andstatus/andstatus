@@ -53,8 +53,10 @@ public class MyHttpClientFactory {
     
     public static HttpClient getHttpClient() {
         PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager(SOCKET_FACTORY_REGISTRY);
-        connectionManager.setMaxTotal(3);               // max.  3 connections in total
-        connectionManager.setDefaultMaxPerRoute(2);     // max.  2 connections per host
+        // max.  3 connections in total
+        connectionManager.setMaxTotal(3);
+        // max.  2 connections per host
+        connectionManager.setDefaultMaxPerRoute(2);
         
         HttpClientBuilder builder = HttpClients.custom()
                 .useSystemProperties()

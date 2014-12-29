@@ -113,7 +113,7 @@ public class MessageInserter extends InstrumentationTestCase {
         assertTrue( "Message added " + message.oid, messageId != 0);
 
         String permalink = origin.messagePermalink(messageId);
-        URL urlPermalink = UrlUtils.string2Url(permalink); 
+        URL urlPermalink = UrlUtils.fromString(permalink); 
         assertTrue("Message permalink is a valid URL '" + permalink + "', " + message.toString(),  urlPermalink != null);
         if (origin.getUrl() != null && origin.getOriginType() != OriginType.TWITTER) {
             assertEquals("Message permalink has the same host as origin, " + message.toString(), origin.getUrl().getHost(), urlPermalink.getHost());

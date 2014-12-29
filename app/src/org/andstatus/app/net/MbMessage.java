@@ -35,7 +35,8 @@ public class MbMessage {
     public String oid="";
     public long sentDate = 0;
     public MbUser sender = null;
-    public MbUser recipient = null; //TODO: Multiple recipients needed?!
+    // TODO: Multiple recipients needed?!
+    public MbUser recipient = null; 
     private String body = "";
 
     public MbMessage rebloggedMessage = null;

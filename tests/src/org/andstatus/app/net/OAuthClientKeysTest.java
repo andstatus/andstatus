@@ -42,7 +42,7 @@ public class OAuthClientKeysTest extends InstrumentationTestCase {
        final String consumerKey = "testConsumerKey" + Long.toString(System.nanoTime());
        final String consumerSecret = "testConsumerSecret" + Long.toString(System.nanoTime());
 
-       connectionData.originUrl = UrlUtils.string2Url("https://example.com");
+       connectionData.originUrl = UrlUtils.fromString("https://example.com");
        OAuthClientKeys keys1 = OAuthClientKeys.fromConnectionData(connectionData);
        keys1.clear();
        assertEquals("Keys are cleared", false, keys1.areKeysPresent());
@@ -64,7 +64,7 @@ public class OAuthClientKeysTest extends InstrumentationTestCase {
         final String consumerKey = "testConsumerKey" + Long.toString(System.nanoTime());
         final String consumerSecret = "testConsumerSecret" + Long.toString(System.nanoTime());
         if (connectionData.originUrl == null) {
-            connectionData.originUrl = UrlUtils.string2Url("https://identi.ca");
+            connectionData.originUrl = UrlUtils.fromString("https://identi.ca");
         }
         OAuthClientKeys keys1 = OAuthClientKeys.fromConnectionData(connectionData);
         if (!keys1.areKeysPresent()) {

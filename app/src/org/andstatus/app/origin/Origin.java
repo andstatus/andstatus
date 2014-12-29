@@ -362,7 +362,7 @@ public class Origin {
                URL url1 = UrlUtils.buildUrl(hostOrUrl, origin.isSsl());
                if (url1 != null) {
                    if (!UrlUtils.isHostOnly(url1) && !url1.toExternalForm().endsWith("/")) {
-                       url1 = UrlUtils.string2Url(url1.toExternalForm() + "/");
+                       url1 = UrlUtils.fromString(url1.toExternalForm() + "/");
                    }
                    origin.url = url1;
                }

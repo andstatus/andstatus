@@ -16,6 +16,7 @@
 
 package org.andstatus.app.service;
 
+import android.media.tv.TvInputService.HardwareSession;
 import android.text.TextUtils;
 
 import org.andstatus.app.data.DataInserter;
@@ -89,8 +90,7 @@ class TimelineDownloaderOther extends TimelineDownloader {
                     throw e;
                 }
                 if (lastPosition.isEmpty()) {
-                    e.setHardError(true);
-                    throw e;
+                    throw ConnectionException.hardConnectionException("No last position", e);
                 }
                 MyLog.d(this, "The timeline was not found, last position='" + lastPosition +"'", e);
                 lastPosition = TimelinePosition.getEmpty();

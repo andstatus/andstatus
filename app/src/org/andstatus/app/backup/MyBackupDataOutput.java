@@ -85,7 +85,7 @@ public class MyBackupDataOutput {
             byte[] bytes = jso.toString(2).getBytes("UTF-8");
             appendBytesToFile(headerFile, bytes, bytes.length);
         } catch (JSONException e) {
-            throw new FileNotFoundException(e.getLocalizedMessage());
+            throw new IOException(e);
         }
     }
 

@@ -107,7 +107,7 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
         if (data.oauthClientKeys.areKeysPresent()) {
             MyLog.v(this, "Completed " + logmsg);
         } else {
-            throw ConnectionException.fromStatusCodeAndHost(StatusCode.NO_CREDENTIALS_FOR_HOST, data.originUrl, "No client keys for the host yet; " + logmsg);
+            throw ConnectionException.fromStatusCodeAndHost(StatusCode.NO_CREDENTIALS_FOR_HOST, "No client keys for the host yet; " + logmsg, data.originUrl);
         }
     }
 
@@ -156,7 +156,7 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
                     throw exceptionFromJsonErrorResponse(path, responseCode, responseString, StatusCode.UNKNOWN);
             }
         } catch (JSONException e) {
-            throw ConnectionException.loggedJsonException(this, e, result, logmsg);
+            throw ConnectionException.loggedJsonException(this, logmsg, e, result);
         } catch(Exception e) {
             throw new ConnectionException(logmsg, e);
         }
@@ -249,10 +249,11 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
                             result = new JSONObject(responseString);
                             done = true;
                         } catch (JSONException e) {
-                            throw ConnectionException.loggedJsonException(this, e, null,
+                            throw ConnectionException.loggedJsonException(this,
                                     "Error reading response: '"
                                             + responseCode + NON_JSON_RESPONSE + responseString
-                                            + "'; " + logmsg);
+                                            + "'; " + logmsg,
+                                            e, null);
                         }
                         break;
                     case 301:
@@ -299,7 +300,7 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
             }
             ce = new ConnectionException(statusCode, ERROR_GETTING + path + COMMA_STATUS + responseCode + ", error='" + error + "'");
         } catch (JSONException e) {
-            ce = new ConnectionException(statusCode, ERROR_GETTING + path + COMMA_STATUS + responseCode + NON_JSON_RESPONSE + responseString + "'", e);
+            ce = ConnectionException.fromStatusCodeAndThrowable(statusCode, ERROR_GETTING + path + COMMA_STATUS + responseCode + NON_JSON_RESPONSE + responseString + "'", e);
         }
         return ce;
     }
@@ -337,7 +338,7 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
             try {
                 jsa = jso.getJSONArray("items");
             } catch (JSONException e) {
-                throw ConnectionException.loggedJsonException(this, e, jso, "'items' is not an array?!");
+                throw ConnectionException.loggedJsonException(this, "'items' is not an array?!", e, jso);
             }
         } else {
             try {
@@ -345,7 +346,7 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
             } catch (JSONException e) {
                 MyLog.e(this, e);
             }
-            throw ConnectionException.loggedJsonException(this, null, jso, "No array was returned");
+            throw ConnectionException.loggedJsonException(this, "No array was returned", null, jso);
         }
         return jsa;
     }

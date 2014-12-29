@@ -58,6 +58,7 @@ class MyBackupManager {
             backupManager.prepareForBackup(backupFolder);
             backupManager.backup();
         } catch (IOException e) {
+            MyLog.ignored(backupManager, e);
             backupManager.progressLogger.logProgress(e.getMessage());
             backupManager.progressLogger.logFailure();
         }
@@ -122,6 +123,7 @@ class MyBackupManager {
             backupManager.prepareForRestore(backupFile);
             backupManager.restore();
         } catch (IOException e) {
+            MyLog.ignored(backupManager, e);
             backupManager.progressLogger.logProgress(e.getMessage());
             backupManager.progressLogger.logFailure();
         }

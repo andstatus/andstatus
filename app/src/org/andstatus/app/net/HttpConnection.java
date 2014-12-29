@@ -48,7 +48,7 @@ public abstract class HttpConnection {
     }  
     
     public String pathToUrl(String path) {
-        return UrlUtils.pathToUrl(data.originUrl, path);
+        return UrlUtils.pathToUrlString(data.originUrl, path);
     }
     
     protected abstract JSONObject postRequest(String path) throws ConnectionException;

@@ -183,7 +183,6 @@ public class ConversationViewAdapter extends BaseAdapter {
         String messageDetails = RelativeTime.getDifference(context, oMsg.mCreatedDate);
         if (!SharedPreferencesUtil.isEmpty(oMsg.mVia)) {
             messageDetails += " " + String.format(
-                    MyContextHolder.get().getLocale(),
                     context.getText(R.string.message_source_from).toString(),
                     oMsg.mVia);
         }
@@ -193,7 +192,7 @@ public class ConversationViewAdapter extends BaseAdapter {
                 inReplyToName = "...";
             }
             messageDetails += " "
-                    + String.format(MyContextHolder.get().getLocale(),
+                    + String.format(
                             context.getText(R.string.message_source_in_reply_to).toString(),
                             oMsg.mInReplyToName)
                     + " (" + msgIdToHistoryOrder(oMsg.mInReplyToMsgId) + ")";
@@ -204,13 +203,14 @@ public class ConversationViewAdapter extends BaseAdapter {
                 messageDetails += ";";
             }
             messageDetails += " "
-                    + String.format(MyContextHolder.get().getLocale(),
+                    + String.format(
                             context.getText(ma.alternativeTermForResourceId(R.string.reblogged_by))
                                     .toString(), oMsg.mRebloggersString);
         }
         if (!SharedPreferencesUtil.isEmpty(oMsg.mRecipientName)) {
             messageDetails += " "
-                    + String.format(MyContextHolder.get().getLocale(), context.getText(R.string.message_source_to)
+                    + String.format(
+                            context.getText(R.string.message_source_to)
                             .toString(), oMsg.mRecipientName);
         }
         if (MyPreferences.getBoolean(MyPreferences.KEY_DEBUGGING_INFO_IN_UI, false)) {

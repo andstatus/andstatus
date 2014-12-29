@@ -39,7 +39,7 @@ public class PersistentAccounts {
      */
     private volatile String currentAccountName = "";
     
-    private Map<String,MyAccount> persistentAccounts = new ConcurrentHashMap<String, MyAccount>();
+    private Map<String,MyAccount> mAccounts = new ConcurrentHashMap<String, MyAccount>();
     private int distinctOriginsCount = 0;
     
     private PersistentAccounts() {
@@ -53,15 +53,15 @@ public class PersistentAccounts {
      * @return not null 
      */
     public Collection<MyAccount> collection() {
-        return persistentAccounts.values();
+        return mAccounts.values();
     }
     
     public boolean isEmpty() {
-        return persistentAccounts.isEmpty();
+        return mAccounts.isEmpty();
     }
     
     public int size() {
-        return persistentAccounts.size();
+        return mAccounts.size();
     }
     
     public PersistentAccounts initialize() {
@@ -70,19 +70,19 @@ public class PersistentAccounts {
     
     public PersistentAccounts initialize(MyContext myContext) {
         defaultAccountName = getDefaultAccountName();
-        persistentAccounts.clear();
+        mAccounts.clear();
         android.accounts.AccountManager am = AccountManager.get(myContext.context());
         android.accounts.Account[] aa = am.getAccountsByType( AuthenticatorService.ANDROID_ACCOUNT_TYPE );
         for (android.accounts.Account account : aa) {
             MyAccount ma = Builder.fromAndroidAccount(myContext, account).getAccount();
             if (ma.isValid()) {
-                persistentAccounts.put(ma.getAccountName(), ma);
+                mAccounts.put(ma.getAccountName(), ma);
             } else {
                 MyLog.e(this, "The account is not valid: " + ma);
             }
         }
         calculateDistinctOriginsCount();
-        MyLog.v(this, "Account list initialized, " + persistentAccounts.size() + " accounts in " + distinctOriginsCount + " origins");
+        MyLog.v(this, "Account list initialized, " + mAccounts.size() + " accounts in " + distinctOriginsCount + " origins");
         return this;
     }
 
@@ -96,7 +96,7 @@ public class PersistentAccounts {
     
     private void calculateDistinctOriginsCount() {
         Set<Long> originIds = new HashSet<Long>();
-        for (MyAccount ma : persistentAccounts.values()) {
+        for (MyAccount ma : mAccounts.values()) {
             originIds.add(ma.getOriginId());
         }
         distinctOriginsCount = originIds.size();
@@ -116,7 +116,7 @@ public class PersistentAccounts {
 
         // Delete the User's object from the list
         boolean found = false;
-        for (MyAccount persistentAccount : persistentAccounts.values()) {
+        for (MyAccount persistentAccount : mAccounts.values()) {
             if (persistentAccount.equals(ma)) {
                 found = true;
                 break;
@@ -126,7 +126,7 @@ public class PersistentAccounts {
             MyAccount.Builder.fromMyAccount(MyContextHolder.get(), ma, "delete").deleteData();
 
             // And delete the object from the list
-            persistentAccounts.remove(ma.getAccountName());
+            mAccounts.remove(ma.getAccountName());
 
             isDeleted = true;
             MyPreferences.onPreferencesChanged();
@@ -147,7 +147,7 @@ public class PersistentAccounts {
             return myAccount;
         }
 
-        for (MyAccount persistentAccount : persistentAccounts.values()) {
+        for (MyAccount persistentAccount : mAccounts.values()) {
             if (persistentAccount.getAccountName().compareTo(accountName.toString()) == 0) {
                 myAccount = persistentAccount;
                 break;
@@ -163,7 +163,7 @@ public class PersistentAccounts {
                 if (accountName.compareToString(androidAccount.name) == 0) {
                     myAccount = Builder.fromAndroidAccount(MyContextHolder.get(), androidAccount)
                             .getAccount();
-                    persistentAccounts.put(myAccount.getAccountName(), myAccount);
+                    mAccounts.put(myAccount.getAccountName(), myAccount);
                     MyPreferences.onPreferencesChanged();
                     break;
                 }
@@ -188,8 +188,8 @@ public class PersistentAccounts {
         if (ma == null) {
             defaultAccountName = "";
         }
-        if (ma == null && !persistentAccounts.isEmpty()) {
-            ma = persistentAccounts.values().iterator().next();
+        if (ma == null && !mAccounts.isEmpty()) {
+            ma = mAccounts.values().iterator().next();
         }
         if (ma != null) {
             // Correct Current and Default Accounts if needed
@@ -241,7 +241,7 @@ public class PersistentAccounts {
     public MyAccount fromUserId(long userId) {
         MyAccount ma = null;
         if (userId != 0) {
-            for (MyAccount persistentAccount : persistentAccounts.values()) {
+            for (MyAccount persistentAccount : mAccounts.values()) {
                 if (persistentAccount.getUserId() == userId) {
                     ma = persistentAccount;
                     break;
@@ -259,7 +259,7 @@ public class PersistentAccounts {
      */
     public MyAccount findFirstMyAccountByOriginId(long originId) {
         MyAccount ma = null;
-        for (MyAccount persistentAccount : persistentAccounts.values()) {
+        for (MyAccount persistentAccount : mAccounts.values()) {
             if (persistentAccount.getOriginId() == originId) {
                 if ( persistentAccount.getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED) {
                     ma = persistentAccount;
@@ -307,8 +307,7 @@ public class PersistentAccounts {
      * Current account selection is not persistent
      */
     public void setCurrentAccount(MyAccount ma) {
-        if (ma != null && !currentAccountName.equals(ma.getAccountName()) ) 
-        {
+        if (ma != null && !currentAccountName.equals(ma.getAccountName()) ) {
             MyLog.v(this, "Changing current account from '" + currentAccountName + "' to '" + ma.getAccountName() + "'");
             currentAccountName = ma.getAccountName();
         }
@@ -328,7 +327,7 @@ public class PersistentAccounts {
     
     public void onMyPreferencesChanged(MyContext myContext) {
         long syncFrequencySeconds = MyPreferences.getSyncFrequencySeconds();
-        for (MyAccount ma : persistentAccounts.values()) {
+        for (MyAccount ma : mAccounts.values()) {
             Builder builder = Builder.fromMyAccount(myContext, ma, "onMyPreferencesChanged");
             builder.setSyncFrequency(syncFrequencySeconds);
             builder.save();
@@ -355,7 +354,7 @@ public class PersistentAccounts {
         long backedUpCount = 0;
         JSONArray jsa = new JSONArray();
         try {
-            for (MyAccount ma : persistentAccounts.values()) {
+            for (MyAccount ma : mAccounts.values()) {
                 jsa.put(ma.toJson());
                 backedUpCount++;
             }
@@ -363,7 +362,7 @@ public class PersistentAccounts {
             data.writeEntityHeader(KEY_ACCOUNT, bytes.length, ".json");
             data.writeEntityData(bytes, bytes.length);
         } catch (JSONException e) {
-            throw new FileNotFoundException(e.getLocalizedMessage());
+            throw new IOException(e);
         }
         newDescriptor.setAccountsCount(backedUpCount);
         return backedUpCount;
@@ -402,7 +401,7 @@ public class PersistentAccounts {
             }
             newDescriptor.getLogger().logProgress("Restored " + restoredCount + " accounts");
         } catch (JSONException e) {
-            throw new FileNotFoundException(method + "; " + e.getLocalizedMessage());
+            throw new IOException(method, e);
         }
         return restoredCount;
     }
@@ -412,7 +411,7 @@ public class PersistentAccounts {
         final int prime = 31;
         int result = 1;
         result = prime * result
-                + ((persistentAccounts == null) ? 0 : persistentAccounts.hashCode());
+                + ((mAccounts == null) ? 0 : mAccounts.hashCode());
         return result;
     }
 
@@ -428,11 +427,11 @@ public class PersistentAccounts {
             return false;
         }
         PersistentAccounts other = (PersistentAccounts) obj;
-        if (persistentAccounts == null) {
-            if (other.persistentAccounts != null) {
+        if (mAccounts == null) {
+            if (other.mAccounts != null) {
                 return false;
             }
-        } else if (!persistentAccounts.equals(other.persistentAccounts)) {
+        } else if (!mAccounts.equals(other.mAccounts)) {
             return false;
         }
         return true;

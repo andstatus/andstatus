@@ -19,7 +19,7 @@ package org.andstatus.app.data;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteException;
+import android.database.sqlite.SQLiteDatabaseLockedException;
 
 import org.andstatus.app.data.MyDatabase.FollowingUser;
 import org.andstatus.app.util.MyLog;
@@ -65,8 +65,6 @@ public class FollowingUserValues {
     public void update(SQLiteDatabase db) {
         boolean followed = false;
         if (userId != 0 && followingUserId != 0 && contentValues.containsKey(FollowingUser.USER_FOLLOWED)) {
-            // This works for API 17 but not for API 10:
-            // followed = contentValues.getAsBoolean(FollowingUser.USER_FOLLOWED);
             followed = SharedPreferencesUtil.isTrue(contentValues.get(FollowingUser.USER_FOLLOWED));
         } else {
             // Don't change anything as there is no information
@@ -76,9 +74,7 @@ public class FollowingUserValues {
             try {
                 tryToUpdate(db, followed);
                 break;
-       // This is since API 11, see http://developer.android.com/reference/android/database/sqlite/SQLiteDatabaseLockedException.html
-       //     } catch (SQLiteDatabaseLockedException e) {
-            } catch (SQLiteException e) {
+            } catch (SQLiteDatabaseLockedException e) {
                 MyLog.i(this, "update, Database is locked, pass=" + pass, e);
                 try {
                     Thread.sleep(Math.round((Math.random() + 1) * 200));

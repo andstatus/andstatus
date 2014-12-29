@@ -161,6 +161,12 @@ public class MyLog {
         return Log.w(tag, msg);
     }
 
+    public static int w(Object objTag, String msg, Throwable tr) {
+        String tag = objTagToString(objTag);
+        logToFile(WARN, tag, msg, tr);
+        return Log.w(tag, msg, tr);
+    }
+
     /**
      * Shortcut for debugging messages of the application
      */
@@ -562,7 +568,8 @@ public class MyLog {
             } else {
                 v(objTag, "jso: " + strJso);
             }
-        } catch (JSONException ignored) {
+        } catch (JSONException ignored1) {
+            ignored(objTag, ignored1);
             try {
                 if (toFile) {
                     writeStringToFile(obj.toString(), uniqueDateTimeFormatted() + "_" + objTagToString(objTag) + "_invalid_log.json");

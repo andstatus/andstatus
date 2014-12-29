@@ -336,17 +336,14 @@ class MessageEditor {
             mRecipientId = recipientId;
             mAccount = myAccount;
             String textInitial2 = textInitial;
-            if (recipientId == 0) {
-                if (replyToId != 0) {
-                    String replyToName = MyProvider.msgIdToUsername(MyDatabase.Msg.AUTHOR_ID, replyToId);
-                    if (!TextUtils.isEmpty(textInitial2)) {
-                        textInitial2 += " ";
-                    }
-                    textInitial2 = "@" + replyToName + " ";
+            if (recipientId == 0 && replyToId != 0) {
+                String replyToName = MyProvider.msgIdToUsername(MyDatabase.Msg.AUTHOR_ID, replyToId);
+                if (!TextUtils.isEmpty(textInitial2)) {
+                    textInitial2 += " ";
                 }
+                textInitial2 = "@" + replyToName + " ";
             }
             mEditText.setText(textInitial2);
-            // mEditText.append(textInitial, 0, textInitial.length());
             showMessageDetails();
         }
         
@@ -363,12 +360,16 @@ class MessageEditor {
         if (mRecipientId == 0) {
             if (mReplyToId != 0) {
                 String replyToName = MyProvider.msgIdToUsername(MyDatabase.Msg.AUTHOR_ID, mReplyToId);
-                messageDetails += " " + String.format(MyContextHolder.get().getLocale(), MyContextHolder.get().context().getText(R.string.message_source_in_reply_to).toString(), replyToName);
+                messageDetails += " " + String.format(
+                        MyContextHolder.get().context().getText(R.string.message_source_in_reply_to).toString(), 
+                        replyToName);
             }
         } else {
             String recipientName = MyProvider.userIdToName(mRecipientId);
             if (!TextUtils.isEmpty(recipientName)) {
-                messageDetails += " " + String.format(MyContextHolder.get().getLocale(), MyContextHolder.get().context().getText(R.string.message_source_to).toString(), recipientName);
+                messageDetails += " " + String.format(
+                        MyContextHolder.get().context().getText(R.string.message_source_to).toString(), 
+                        recipientName);
             }
         }
         if (!UriUtils.isEmpty(mMediaUri)) {

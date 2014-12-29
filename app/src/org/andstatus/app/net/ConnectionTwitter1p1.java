@@ -152,26 +152,24 @@ public class ConnectionTwitter1p1 extends ConnectionTwitter {
         MbMessage message = super.messageFromJson(jso);
         // See https://dev.twitter.com/docs/entities
         JSONObject entities = jso.optJSONObject("entities");
-        if (entities != null) {
-            if (entities.has(ATTACHMENTS_FIELD_NAME)) {
-                try {
-                    JSONArray jArr = entities.getJSONArray(ATTACHMENTS_FIELD_NAME);
-                    for (int ind = 0; ind < jArr.length(); ind++) {
-                        JSONObject attachment = (JSONObject) jArr.get(ind);
-                        URL url = UrlUtils.json2Url(attachment, "media_url_https");
-                        if (url == null) {
-                            url = UrlUtils.json2Url(attachment, "media_url_http");
-                        }
-                        MbAttachment mbAttachment =  MbAttachment.fromUrlAndContentType(url, MyContentType.IMAGE);
-                        if (mbAttachment.isValid()) {
-                            message.attachments.add(mbAttachment);
-                        } else {
-                            MyLog.d(this, method + "; invalid attachment #" + ind + "; " + jArr.toString());
-                        }
+        if (entities != null && entities.has(ATTACHMENTS_FIELD_NAME)) {
+            try {
+                JSONArray jArr = entities.getJSONArray(ATTACHMENTS_FIELD_NAME);
+                for (int ind = 0; ind < jArr.length(); ind++) {
+                    JSONObject attachment = (JSONObject) jArr.get(ind);
+                    URL url = UrlUtils.fromJson(attachment, "media_url_https");
+                    if (url == null) {
+                        url = UrlUtils.fromJson(attachment, "media_url_http");
                     }
-                } catch (JSONException e) {
-                    MyLog.d(this, method, e);
+                    MbAttachment mbAttachment =  MbAttachment.fromUrlAndContentType(url, MyContentType.IMAGE);
+                    if (mbAttachment.isValid()) {
+                        message.attachments.add(mbAttachment);
+                    } else {
+                        MyLog.d(this, method + "; invalid attachment #" + ind + "; " + jArr.toString());
+                    }
                 }
+            } catch (JSONException e) {
+                MyLog.d(this, method, e);
             }
         }
         return message;

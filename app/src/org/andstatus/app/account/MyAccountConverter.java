@@ -113,7 +113,7 @@ public class MyAccountConverter {
 
     private static void removeOldAccounts(android.accounts.AccountManager am,
             Collection<android.accounts.Account> accountsToRemove) {
-        if (accountsToRemove.size() > 0) {
+        if (!accountsToRemove.isEmpty()) {
             MyLog.i(TAG, "Removing " + accountsToRemove.size() + " old accounts");
             for (android.accounts.Account account : accountsToRemove) {
                 MyLog.i(TAG, "Removing old account: " + account.name);

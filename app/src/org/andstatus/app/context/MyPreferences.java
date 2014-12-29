@@ -43,7 +43,7 @@ import java.io.File;
 public class MyPreferences {
     private static final String TAG = MyPreferences.class.getSimpleName();
 
-    public static Class<? extends Activity> HOME_ACTIVITY = TimelineActivity.class; 
+    public static final Class<? extends Activity> HOME_ACTIVITY = TimelineActivity.class; 
     
     public static final String KEY_USER_IN_TIMELINE = "user_in_timeline";
     

@@ -423,7 +423,6 @@ public final class MyDatabase extends SQLiteOpenHelper  {
         public static final String ORIGIN_TYPE_ID = "origin_type_id";
         public static final String ORIGIN_NAME = "origin_name";
         public static final String ORIGIN_URL = "origin_url";
-        //public static final String HOST = "host";
         public static final String SSL = "ssl";
         public static final String ALLOW_HTML = "allow_html";
         public static final String TEXT_LIMIT = "text_limit";
@@ -470,7 +469,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
                 }
             }
         } catch (IllegalStateException e) {
-            MyLog.v(this, e.getMessage());
+            MyLog.v(this, e);
             if (onUpgradeTriggered.get()) {
                 state = MyContextState.UPGRADING;
             }

@@ -46,6 +46,7 @@ class MyDatabaseConverter {
         } catch (ApplicationUpgradeException e) {
             closeProgressDialog();
             showProgressDialog(e.getMessage());
+            MyLog.ignored(this, e);
             try {
                 Thread.sleep(5000);
             } catch (Exception e2) {
@@ -206,7 +207,9 @@ class MyDatabaseConverter {
             File avatarsDir = MyPreferences.getDataFilesDir("avatars", null);
             if (avatarsDir.exists()) {
                 FileUtils.deleteFilesRecursively(avatarsDir);
-                avatarsDir.delete();
+                if (!avatarsDir.delete()) {
+                    MyLog.e(this, "Couldn't delete " + avatarsDir.getAbsolutePath());
+                }
             }
             
             sql = "DROP TABLE avatar";

@@ -32,11 +32,11 @@ import org.apache.http.protocol.HttpContext;
 public class TlsSniSocketFactory implements LayeredConnectionSocketFactory {
     private static final String TAG = "davdroid.SNISocketFactory";
     
-    final static TlsSniSocketFactory INSTANCE = new TlsSniSocketFactory();
+    static final TlsSniSocketFactory INSTANCE = new TlsSniSocketFactory();
     
-    private final static SSLCertificateSocketFactory sslSocketFactory =
+    private static final SSLCertificateSocketFactory SSL_SOCKET_FACTORY =
             (SSLCertificateSocketFactory)SSLCertificateSocketFactory.getDefault(0);
-    private final static HostnameVerifier hostnameVerifier = new BrowserCompatHostnameVerifier();
+    private static final HostnameVerifier HOSTNAME_VERIFIER = new BrowserCompatHostnameVerifier();
 
     
     /*
@@ -60,7 +60,7 @@ public class TlsSniSocketFactory implements LayeredConnectionSocketFactory {
 
     @Override
     public Socket createSocket(HttpContext context) throws IOException {
-        return sslSocketFactory.createSocket();
+        return SSL_SOCKET_FACTORY.createSocket();
     }
 
     @Override
@@ -71,7 +71,7 @@ public class TlsSniSocketFactory implements LayeredConnectionSocketFactory {
         plain.close();
         
         // create a plain SSL socket, but don't do hostname/certificate verification yet
-        SSLSocket ssl = (SSLSocket)sslSocketFactory.createSocket(remoteAddr.getAddress(), host.getPort());
+        SSLSocket ssl = (SSLSocket)SSL_SOCKET_FACTORY.createSocket(remoteAddr.getAddress(), host.getPort());
         
         // connect, set SNI, shake hands, verify, print connection info
         connectWithSNI(ssl, host.getHostName());
@@ -84,7 +84,7 @@ public class TlsSniSocketFactory implements LayeredConnectionSocketFactory {
         Log.d(TAG, "Preparing layered SSL connection (over proxy) to " + host);
         
         // create a layered SSL socket, but don't do hostname/certificate verification yet
-        SSLSocket ssl = (SSLSocket)sslSocketFactory.createSocket(plain, host, port, true);
+        SSLSocket ssl = (SSLSocket)SSL_SOCKET_FACTORY.createSocket(plain, host, port, true);
 
         // already connected, but verify host name again and print some connection info
         Log.w(TAG, "Setting SNI/TLSv1.2 will silently fail because the handshake is already done");
@@ -103,7 +103,7 @@ public class TlsSniSocketFactory implements LayeredConnectionSocketFactory {
         // - set SNI host name
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
             MyLog.d(TAG, "Using documented SNI with host name " + host);
-            sslSocketFactory.setHostname(ssl, host);
+            SSL_SOCKET_FACTORY.setHostname(ssl, host);
         } else {
             MyLog.d(TAG, "No documented SNI support on Android <4.2, trying with reflection");
             try {
@@ -116,7 +116,7 @@ public class TlsSniSocketFactory implements LayeredConnectionSocketFactory {
         
         // verify hostname and certificate
         SSLSession session = ssl.getSession();
-        if (!hostnameVerifier.verify(host, session))
+        if (!HOSTNAME_VERIFIER.verify(host, session))
             throw new SSLPeerUnverifiedException("Cannot verify hostname: " + host);
 
         MyLog.i(TAG, "Established " + session.getProtocol() + " connection with " + session.getPeerHost() +

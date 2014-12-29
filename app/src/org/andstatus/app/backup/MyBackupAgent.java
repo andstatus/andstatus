@@ -101,7 +101,7 @@ public class MyBackupAgent extends BackupAgent {
                 throw new FileNotFoundException("No BackupDataOutput");
             } else if (!MyContextHolder.get().isReady()) {
                 throw new FileNotFoundException("Application context is not initialized");
-            } else if (MyContextHolder.get().persistentAccounts().size() == 0) {
+            } else if (MyContextHolder.get().persistentAccounts().isEmpty()) {
                 throw new FileNotFoundException("Nothing to backup - No accounts yet");
             } else {
                 boolean isServiceAvailableStored = checkAndSetServiceUnavailable();
@@ -246,7 +246,7 @@ public class MyBackupAgent extends BackupAgent {
         MyContextHolder.initialize(this, this);
         if (!MyContextHolder.get().isReady()) {
             throw new FileNotFoundException("Application context is not initialized");
-        } else if ( MyContextHolder.get().persistentAccounts().size() > 0) {
+        } else if (!MyContextHolder.get().persistentAccounts().isEmpty()) {
             throw new FileNotFoundException("Cannot restore: AndStatus accounts are present. Please reinstall application before restore");
         }
 

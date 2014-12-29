@@ -17,7 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class AppWidgets {
     private MyContext myContext;
-    private final Map<Integer, MyAppWidgetData> appWidgets = new ConcurrentHashMap<Integer, MyAppWidgetData>();
+    private final Map<Integer, MyAppWidgetData> mAppWidgets = new ConcurrentHashMap<Integer, MyAppWidgetData>();
 
     public static void clearAndUpdateWidgets(MyContext myContext) {
         AppWidgets appWidgets = AppWidgets.newInstance(myContext);
@@ -37,7 +37,7 @@ public class AppWidgets {
     private AppWidgets(MyContext myContext) {
         this.myContext = myContext;
         for (int id : getAppWidgetIds(myContext.context())) {
-           appWidgets.put(id, MyAppWidgetData.newInstance(myContext.context(), id));
+           mAppWidgets.put(id, MyAppWidgetData.newInstance(myContext.context(), id));
         }
     }
     
@@ -49,33 +49,33 @@ public class AppWidgets {
     }
     
     public void updateData(CommandResult result) {
-        for (MyAppWidgetData widgetData : appWidgets.values()) {
+        for (MyAppWidgetData widgetData : mAppWidgets.values()) {
             widgetData.update(result);
         }
     }
     
     public void clearCounters() {
-        for (MyAppWidgetData widgetData : appWidgets.values()) {
+        for (MyAppWidgetData widgetData : mAppWidgets.values()) {
             widgetData.clearCounters();
             widgetData.save();
         }
     }
 
     public Collection<MyAppWidgetData> collection() {
-        return appWidgets.values();
+        return mAppWidgets.values();
     }
 
     public boolean isEmpty() {
-        return appWidgets.isEmpty();
+        return mAppWidgets.isEmpty();
     }
     
     public int size() {
-        return appWidgets.size();
+        return mAppWidgets.size();
     }
     
     public void updateViews(){
         MyLog.v(this, "Sending update to " +  size() + " remote views");
-        for (MyAppWidgetData widgetData : appWidgets.values()) {
+        for (MyAppWidgetData widgetData : mAppWidgets.values()) {
             updateView(AppWidgetManager.getInstance(myContext.context()), widgetData);
         }
     }
@@ -83,7 +83,7 @@ public class AppWidgets {
     void updateView(AppWidgetManager appWidgetManager,
             int appWidgetId) {
         final String method = "updateView";
-        MyAppWidgetData widgetData = appWidgets.get(appWidgetId);
+        MyAppWidgetData widgetData = mAppWidgets.get(appWidgetId);
         if (widgetData == null) {
             if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
                 MyLog.d(this, method + "; Widget not found, id=" + appWidgetId);

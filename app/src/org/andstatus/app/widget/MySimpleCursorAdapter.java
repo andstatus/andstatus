@@ -57,10 +57,10 @@ public class MySimpleCursorAdapter extends SimpleCursorAdapter {
         try {
             return super.getItemId(position);
         } catch (IllegalStateException e) {
-            MyLog.w(this, MyLog.getStackTrace(new IllegalStateException("getItemId, pos=" + position + " Caused java.lang.IllegalStateException")));
+            MyLog.w(this, MyLog.getStackTrace(new IllegalStateException("getItemId, pos=" + position + " Caused java.lang.IllegalStateException")), e);
             return 0;
         } catch (StaleDataException e) {
-            MyLog.w(this, MyLog.getStackTrace(new IllegalStateException("getItemId, pos=" + position + " Caused StaleDataException")));
+            MyLog.w(this, MyLog.getStackTrace(new IllegalStateException("getItemId, pos=" + position + " Caused StaleDataException")), e);
             return 0;
         }
     }
@@ -71,14 +71,20 @@ public class MySimpleCursorAdapter extends SimpleCursorAdapter {
         if (mCursor == null) {
             // Do nothing
         } else if (mCursor.isClosed()) {
-            MyLog.w(this, MyLog.getStackTrace(new IllegalStateException("getView, pos=" + position + " Closed cursor")));
+            MyLog.w(this,
+                    MyLog.getStackTrace(new IllegalStateException("getView, pos=" + position
+                            + " Closed cursor")));
         } else {
             try {
                 view = super.getView(position, convertView, parent);
             } catch (IllegalStateException e) {
-                MyLog.w(this, MyLog.getStackTrace(new IllegalStateException("getView, pos=" + position + " Caused java.lang.IllegalStateException")));
+                MyLog.w(this,
+                        MyLog.getStackTrace(new IllegalStateException("getView, pos=" + position
+                                + " Caused java.lang.IllegalStateException")), e);
             } catch (StaleDataException e) {
-                MyLog.w(this, MyLog.getStackTrace(new IllegalStateException("getView, pos=" + position + " Caused StaleDataException")));
+                MyLog.w(this,
+                        MyLog.getStackTrace(new IllegalStateException("getView, pos=" + position
+                                + " Caused StaleDataException")), e);
             }
         }
         if (view == null) {

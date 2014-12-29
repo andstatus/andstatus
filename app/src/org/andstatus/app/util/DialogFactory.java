@@ -50,8 +50,7 @@ public class DialogFactory {
     public static void showOkDialog(Fragment activity, int titleId, int messageId, final int requestCode) {
         DialogFragment dialog = new DialogFragment() {
             @Override
-            public Dialog onCreateDialog(Bundle savedInstanceState)
-            {
+            public Dialog onCreateDialog(Bundle savedInstanceState) {
                 Bundle args = getArguments();
                 String title = args.getString(DIALOG_TITLE_KEY, "");
                 String message = args.getString(DIALOG_MESSAGE_KEY, "");
@@ -60,11 +59,9 @@ public class DialogFactory {
                     .setIcon(android.R.drawable.ic_dialog_alert)
                     .setTitle(title)
                     .setMessage(message)
-                    .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener()
-                    {
+                    .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                         @Override
-                        public void onClick(DialogInterface dialog, int which)
-                        {
+                        public void onClick(DialogInterface dialog, int which) {
                             getTargetFragment().onActivityResult(getTargetRequestCode(), Activity.RESULT_OK, null);
                         }
                     })
@@ -118,7 +115,6 @@ public class DialogFactory {
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
                         dialogFragment.getTargetFragment().onActivityResult(dialogFragment.getTargetRequestCode(), Activity.RESULT_CANCELED, null);                                
-                        //dialog.cancel();
                     }
                 });
         dlg = builder.create();

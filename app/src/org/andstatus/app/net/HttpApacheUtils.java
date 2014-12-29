@@ -76,10 +76,9 @@ public class HttpApacheUtils {
             }
             jsa = (JSONArray) obj;
         } catch (JSONException e) {
-            throw ConnectionException.loggedJsonException(this, e, jst, method);
+            throw ConnectionException.loggedJsonException(this, method, e, jst);
         } catch (ClassCastException e) {
-            ConnectionException connectionException = ConnectionException.loggedJsonException(this, e, jst, method);
-            connectionException.setHardError(true);
+            ConnectionException connectionException = ConnectionException.loggedHardJsonException(this, method, e, jst);
             throw connectionException;
         }
         return jsa;
@@ -92,10 +91,9 @@ public class HttpApacheUtils {
         try {
             jso = (JSONObject) jst.nextValue();
         } catch (JSONException e) {
-            throw ConnectionException.loggedJsonException(this, e, jst, method);
+            throw ConnectionException.loggedJsonException(this, method, e, jst);
         } catch (ClassCastException e) {
-            ConnectionException connectionException = ConnectionException.loggedJsonException(this, e, jst, method);
-            connectionException.setHardError(true);
+            ConnectionException connectionException = ConnectionException.loggedHardJsonException(this, method, e, jst);
             throw connectionException;
         }
         return jso;

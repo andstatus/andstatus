@@ -11,8 +11,8 @@ package org.andstatus.app.util;
  * Code and Executable Files provided as part of the Work in any application in any form.
  * 
  * The main points subject to the terms of the License are:
- *    Source Code and Executable Files can be used in commercial applications;
- *    Source Code and Executable Files can be redistributed; and
+ *    Source Code and Executable Files can be used in commercial applications.
+ *    Source Code and Executable Files can be redistributed, and
  *    Source Code can be modified to create derivative works.
  *    No claim of suitability, guarantee, or any warranty whatsoever is provided. The software is provided "as-is".
  *    The Article(s) accompanying the Work may not be distributed or republished without the Author's consent
@@ -92,7 +92,7 @@ public class SimpleFileDialog {
         try {
             mSdCardDirectory = new File(mSdCardDirectory).getCanonicalPath();
         } catch (IOException e) {
-            Log.i("getCanonicalPath", e.toString());
+            MyLog.i("getCanonicalPath", e);
         }
     }
 
@@ -206,7 +206,7 @@ public class SimpleFileDialog {
         try {
             dir = new File(dir).getCanonicalPath();
         } catch (IOException e) {
-            Log.i("getCanonicalPath", e.toString());
+            MyLog.i("getCanonicalPath", e);
             return "";
         }
         return dir;
@@ -253,7 +253,7 @@ public class SimpleFileDialog {
                 }
             }
         } catch (Exception e) {
-            Log.i("GetDirectories", e.toString());
+            MyLog.i("GetDirectories", e);
         }
 
         Collections.sort(dirs, new Comparator<String>() {
@@ -293,14 +293,10 @@ public class SimpleFileDialog {
     private AlertDialog.Builder createDirectoryChooserDialog(String title, List<String> listItems,
             DialogInterface.OnClickListener onClickListener) {
         AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(mContext);
-        // Create title text showing file select type //
+        // Create title text showing file select type
         mTitleView1 = new TextView(mContext);
         mTitleView1.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT,
                 LayoutParams.WRAP_CONTENT));
-        // m_titleView1.setTextAppearance(m_context,
-        // android.R.style.TextAppearance_Large);
-        // m_titleView1.setTextColor(
-        // m_context.getResources().getColor(android.R.color.black) );
 
         switch (typeOfSelection) {
             case FILE_OPEN:

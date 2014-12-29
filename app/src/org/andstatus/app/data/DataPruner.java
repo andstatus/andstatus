@@ -194,8 +194,7 @@ public class DataPruner {
         MyPreferences.putLong(MyPreferences.KEY_DATA_PRUNED_DATE, System.currentTimeMillis());
     }
 
-	private boolean isTimeToPrune()
-	{
+	private boolean isTimeToPrune()	{
 		return !mMyContext.isInForeground() && RelativeTime.moreSecondsAgoThan(
 		    MyPreferences.getLong(MyPreferences.KEY_DATA_PRUNED_DATE), 
 			PRUNE_MIN_PERIOD_DAYS * RelativeTime.SECONDS_IN_A_DAY);

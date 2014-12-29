@@ -158,7 +158,7 @@ public abstract class ConnectionTwitter extends Connection {
                 list.add(jArr.getString(index));
             }
         } catch (JSONException e) {
-            throw ConnectionException.loggedJsonException(this, e, jArr, method);
+            throw ConnectionException.loggedJsonException(this, method, e, jArr);
         }
         return list;
     }
@@ -300,7 +300,7 @@ public abstract class ConnectionTwitter extends Connection {
                 }
             }
         } catch (JSONException e) {
-            throw ConnectionException.loggedJsonException(this, e, jso, "Parsing message");
+            throw ConnectionException.loggedJsonException(this, "Parsing message", e, jso);
         } catch (Exception e) {
             MyLog.e(this, "messageFromJson", e);
             return MbMessage.getEmpty();
@@ -355,7 +355,7 @@ public abstract class ConnectionTwitter extends Connection {
                 // This message doesn't have a sender!
                 user.latestMessage = messageFromJson(latestMessage);
             } catch (JSONException e) {
-                throw ConnectionException.loggedJsonException(this, e, jso, "getting status from user");
+                throw ConnectionException.loggedJsonException(this, "getting status from user", e, jso);
             }
         }
         return user;
@@ -388,7 +388,7 @@ public abstract class ConnectionTwitter extends Connection {
                     MbTimelineItem item = timelineItemFromJson(jso);
                     timeline.add(item);
                 } catch (JSONException e) {
-                    throw ConnectionException.loggedJsonException(this, e, null, "Parsing " + apiRoutine);
+                    throw ConnectionException.loggedJsonException(this, "Parsing " + apiRoutine, e, null);
                 }
             }
         }
@@ -467,7 +467,7 @@ public abstract class ConnectionTwitter extends Connection {
                         status.remaining = limitObject.optInt("remaining");
                         status.limit = limitObject.optInt("limit");
                     } catch (JSONException e) {
-                        throw ConnectionException.loggedJsonException(this, e, resources, "getting rate limits");
+                        throw ConnectionException.loggedJsonException(this, "getting rate limits", e, resources);
                     }
                     break;
             }

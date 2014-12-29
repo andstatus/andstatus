@@ -173,7 +173,7 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
                  * that user)
                  */
                 SENDER_MESSAGES.addTo(menu, menuItemId++,
-                        String.format(MyContextHolder.get().getLocale(),
+                        String.format(
                                 getContext().getText(R.string.menu_item_user_messages).toString(),
                                 MyProvider.userIdToName(md.senderId)));
             }
@@ -184,7 +184,7 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
                  * that user)
                  */
                 AUTHOR_MESSAGES.addTo(menu, menuItemId++,
-                        String.format(MyContextHolder.get().getLocale(),
+                        String.format(
                                 getContext().getText(R.string.menu_item_user_messages).toString(),
                                 MyProvider.userIdToName(md.authorId)));
             }
@@ -205,12 +205,12 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
             if (!md.isSender) {
                 if (md.senderFollowed) {
                     STOP_FOLLOWING_SENDER.addTo(menu, menuItemId++,
-                            String.format(MyContextHolder.get().getLocale(),
+                            String.format(
                                     getContext().getText(R.string.menu_item_stop_following_user).toString(),
                                     MyProvider.userIdToName(md.senderId)));
                 } else {
                     FOLLOW_SENDER.addTo(menu, menuItemId++,
-                            String.format(MyContextHolder.get().getLocale(),
+                            String.format(
                                     getContext().getText(R.string.menu_item_follow_user).toString(),
                                     MyProvider.userIdToName(md.senderId)));
                 }
@@ -218,12 +218,12 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
             if (!md.isAuthor && (md.authorId != md.senderId)) {
                 if (md.authorFollowed) {
                     STOP_FOLLOWING_AUTHOR.addTo(menu, menuItemId++,
-                            String.format(MyContextHolder.get().getLocale(),
+                            String.format(
                                     getContext().getText(R.string.menu_item_stop_following_user).toString(),
                                     MyProvider.userIdToName(md.authorId)));
                 } else {
                     FOLLOW_AUTHOR.addTo(menu, menuItemId++,
-                            String.format(MyContextHolder.get().getLocale(),
+                            String.format(
                                     getContext().getText(R.string.menu_item_follow_user).toString(),
                                     MyProvider.userIdToName(md.authorId)));
                 }
@@ -233,7 +233,7 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
                     break;
                 case 2:
                     ACT_AS_USER.addTo(menu, menuItemId++,
-                            String.format(MyContextHolder.get().getLocale(),
+                            String.format(
                                     getContext().getText(R.string.menu_item_act_as_user).toString(),
                                     md.ma.firstOtherAccountOfThisOrigin().shortestUniqueAccountName()));
                     break;

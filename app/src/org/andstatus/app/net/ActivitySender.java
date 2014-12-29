@@ -102,7 +102,7 @@ class ActivitySender {
                 }
             }
         } catch (JSONException e) {
-            throw ConnectionException.loggedJsonException(this, e, jso, "Error '" + verb + "' object id='" + objectId + "'");
+            throw ConnectionException.loggedJsonException(this, "Error '" + verb + "' object id='" + objectId + "'", e, jso);
         }
         return jso;
     }
@@ -163,7 +163,7 @@ class ActivitySender {
                 obj1.put("content", content);
             }
         } catch (JSONException e) {
-            throw ConnectionException.loggedJsonException(this, e, obj1, "Error uploading '" + mMediaUri.toString() + "'");
+            throw ConnectionException.loggedJsonException(this, "Error uploading '" + mMediaUri.toString() + "'", e, obj1);
         }
         return obj1;
     }

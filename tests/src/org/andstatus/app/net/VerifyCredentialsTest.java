@@ -64,7 +64,7 @@ public class VerifyCredentialsTest extends InstrumentationTestCase {
         connection.setAccountData(connectionData);
         httpConnection = (HttpConnectionMock) connection.http;
 
-        httpConnection.data.originUrl = UrlUtils.string2Url("https://twitter.com");
+        httpConnection.data.originUrl = UrlUtils.fromString("https://twitter.com");
         httpConnection.data.oauthClientKeys = OAuthClientKeys.fromConnectionData(httpConnection.data);
         keyStored = httpConnection.data.oauthClientKeys.getConsumerKey();
         secretStored = httpConnection.data.oauthClientKeys.getConsumerSecret();

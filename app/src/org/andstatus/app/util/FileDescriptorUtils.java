@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,6 +27,7 @@ import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 
 public class FileDescriptorUtils {
     private static final String TAG = FileDescriptorUtils.class.getSimpleName();
@@ -37,7 +38,7 @@ public class FileDescriptorUtils {
     
     public static JSONObject getJSONObject(FileDescriptor fileDescriptor) {
         JSONObject jso = null;
-        String fileString = getString(fileDescriptor);
+        String fileString = utf8FileDescriptor2String(fileDescriptor);
         if (!TextUtils.isEmpty(fileString)) {
             try {
                 jso = new JSONObject(fileString);
@@ -52,10 +53,8 @@ public class FileDescriptorUtils {
         return jso;
     }
 
-    public static String getString(FileDescriptor fileDescriptor) {
-        // reads an UTF-8 string resource - API 9 required
-        //return new String(getResource(id, context), Charset.forName("UTF-8"));
-        return new String(getBytes(fileDescriptor));
+    public static String utf8FileDescriptor2String(FileDescriptor fileDescriptor) {
+        return new String(getBytes(fileDescriptor), Charset.forName("UTF-8"));
     }
 
     public static byte[] getBytes(FileDescriptor fileDescriptor) {

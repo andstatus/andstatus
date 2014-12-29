@@ -16,6 +16,7 @@
 
 package org.andstatus.app.util;
 
+import android.net.Uri;
 import android.text.TextUtils;
 
 import org.json.JSONException;
@@ -47,7 +48,7 @@ public final class UrlUtils {
                 && url.getHost().contentEquals(url.getAuthority());
     }
 
-    public static URL string2Url(String strUrl) {
+    public static URL fromString(String strUrl) {
         if (strUrl != null && !TextUtils.isEmpty(strUrl)) {
             try {
                 return new URL(strUrl);
@@ -58,7 +59,15 @@ public final class UrlUtils {
         return null;
     }
 
-    public static URL json2Url(JSONObject jso, String urlTag) throws JSONException {
+    public static URL fromUri(Uri uri) {
+        if (uri == null || uri == Uri.EMPTY) {
+            return null;
+        } else {
+            return fromString(uri.toString());
+        }
+    }
+    
+    public static URL fromJson(JSONObject jso, String urlTag) throws JSONException {
         if (jso != null && !TextUtils.isEmpty(urlTag) && jso.has(urlTag)) {
             String strUrl = jso.getString(urlTag);
             try {
@@ -75,16 +84,16 @@ public final class UrlUtils {
             return null;
         }
         if (hostIsValid(hostOrUrl)) {
-            return string2Url("http" + (isSsl ? "s" : "") + "://" + hostOrUrl);
+            return fromString("http" + (isSsl ? "s" : "") + "://" + hostOrUrl);
         }
-        URL urlIn = string2Url(hostOrUrl);
+        URL urlIn = fromString(hostOrUrl);
         if (urlIn == null || urlIn.getProtocol().equals(isSsl ? "https" : "http")) {
             return urlIn;
         }
-        return string2Url( (isSsl ? "https" : "http") + urlIn.toExternalForm().substring(urlIn.toExternalForm().indexOf(":")));
+        return fromString( (isSsl ? "https" : "http") + urlIn.toExternalForm().substring(urlIn.toExternalForm().indexOf(":")));
     }
     
-    public static String pathToUrl(URL originUrl, String path) {
+    public static String pathToUrlString(URL originUrl, String path) {
         if (path.contains("://")) {
             return path;
         } else {

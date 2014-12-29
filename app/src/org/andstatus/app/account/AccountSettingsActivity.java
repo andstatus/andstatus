@@ -770,9 +770,10 @@ public class AccountSettingsActivity extends Activity {
         protected void onPreExecute() {
             dlg = ProgressDialog.show(AccountSettingsActivity.this,
                     getText(R.string.dialog_title_acquiring_a_request_token),
-                    getText(R.string.dialog_summary_acquiring_a_request_token), true, // indeterminate
-                    // duration
-                    false); // not cancel-able
+                    getText(R.string.dialog_summary_acquiring_a_request_token), 
+                    true, // indeterminate duration
+                    false // not cancel-able
+                    );
         }
 
         @Override
@@ -891,9 +892,10 @@ public class AccountSettingsActivity extends Activity {
         protected void onPreExecute() {
             dlg = ProgressDialog.show(AccountSettingsActivity.this,
                     getText(R.string.dialog_title_acquiring_an_access_token),
-                    getText(R.string.dialog_summary_acquiring_an_access_token), true, // indeterminate
-                    // duration
-                    false); // not cancelable
+                    getText(R.string.dialog_summary_acquiring_an_access_token), 
+                    true, // indeterminate duration
+                    false // not cancelable
+                    ); 
         }
 
         @Override
@@ -1019,9 +1021,10 @@ public class AccountSettingsActivity extends Activity {
         protected void onPreExecute() {
             dlg = ProgressDialog.show(AccountSettingsActivity.this,
                     getText(R.string.dialog_title_checking_credentials),
-                    getText(R.string.dialog_summary_checking_credentials), true, // indeterminate
-                    // duration
-                    false); // not cancel-able
+                    getText(R.string.dialog_summary_checking_credentials), 
+                    true, // indeterminate duration
+                    false // not cancelable
+                    );
 
             synchronized (AccountSettingsActivity.this) {
                 if (somethingIsBeingProcessed) {

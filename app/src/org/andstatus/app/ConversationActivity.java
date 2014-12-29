@@ -200,10 +200,9 @@ public class ConversationActivity extends Activity implements MyServiceListener,
                 break;
             case ATTACH:
                 Uri uri = data != null ? UriUtils.notNull(data.getData()) : null;
-                if (resultCode == RESULT_OK && !UriUtils.isEmpty(uri)) {
-                    if (mMessageEditor.isVisible()) {
-                        mMessageEditor.setMedia(uri);
-                    }
+                if (resultCode == RESULT_OK && !UriUtils.isEmpty(uri) 
+                        && mMessageEditor.isVisible()) {
+                    mMessageEditor.setMedia(uri);
                 }
                 break;
             default:

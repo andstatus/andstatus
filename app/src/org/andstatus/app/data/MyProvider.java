@@ -326,17 +326,6 @@ public class MyProvider extends ContentProvider {
                     // Now delete messages themselves
                     sqlDesc = selection + descSuffix;
                     count = db.delete(Msg.TABLE_NAME, selection, selectionArgs);
-                    /*
-                    if (count > 0) {
-                        // Now delete all related records from MyDatabase.MsgOfUser which don't have their messages
-
-                        selectionG = "NOT EXISTS ("
-                                + "SELECT * FROM " + MyDatabase.MSG_TABLE_NAME + " WHERE "
-                                + MyDatabase.MSG_TABLE_NAME + "." + MyDatabase.Msg.MSG_ID + "=" + MyDatabase.MSGOFUSER_TABLE_NAME + "." + MyDatabase.MsgOfUser.MSG_ID
-                                + ")";
-                        db.delete(MyDatabase.MSG_TABLE_NAME, selectionG, null);
-                    }
-                    */
                     db.setTransactionSuccessful();
                 } catch(Exception e) {
                     MyLog.d(TAG, "; SQL='" + sqlDesc + "'", e);
@@ -464,7 +453,7 @@ public class MyProvider extends ContentProvider {
                     break;
             }
         } catch (Exception e) {
-          MyLog.e(this, "Insert", e);
+          MyLog.e(this, "Insert " + uri, e);
         }
         return newUri;
     }
@@ -560,24 +549,12 @@ public class MyProvider extends ContentProvider {
                 qb.setProjectionMap(MSG_PROJECTION_MAP);
                 String s1 = uri.getLastPathSegment();
                 if (s1 != null) {
-                    // These two lines don't work:
-                    // qb.appendWhere(Msg.SENDER_ID + " LIKE '%" + s1 +
-                    // "%' OR " + Msg.BODY + " LIKE '%" + s1 + "%'");
-                    // qb.appendWhere(Msg.SENDER_ID + " LIKE \"%" + s1 +
-                    // "%\" OR " + Msg.BODY + " LIKE \"%" + s1 + "%\"");
-                    // ...so we have to use selectionArgs
-
-                    // 1. This works:
-                    // qb.appendWhere(Msg.SENDER_ID + " LIKE ?  OR " +
-                    // Msg.BODY + " LIKE ?");
-
-                    // 2. This works also, but yvolk likes it more :-)
                     if (!TextUtils.isEmpty(selection)) {
                         selection = " AND (" + selection + ")";
                     } else {
                         selection = "";
                     }
-                    /// TODO: Search in MyDatabase.User.USERNAME also
+                    // TODO: Search in MyDatabase.User.USERNAME also
                     selection = "(" + User.AUTHOR_NAME + " LIKE ?  OR " + Msg.BODY
                             + " LIKE ?)" + selection;
 

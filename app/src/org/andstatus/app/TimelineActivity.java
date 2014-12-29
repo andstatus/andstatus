@@ -961,11 +961,9 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         final String method = "onLoadFinished"; 
         MyLog.v(this, method);
         boolean doChangeListContent = loader.isStarted() && cursor != null && !mFinishing;
-        if (doChangeListContent) {
-            if (!(loader instanceof TimelineCursorLoader1)) {
-                MyLog.e(this, method + "; Wrong type of loader: " + MyLog.objTagToString(loader));
-                doChangeListContent = false;
-            }
+        if (doChangeListContent && !(loader instanceof TimelineCursorLoader1)) {
+            MyLog.e(this, method + "; Wrong type of loader: " + MyLog.objTagToString(loader));
+            doChangeListContent = false;
         }
         TimelineCursorLoader1 myLoader = null;
         if (doChangeListContent) {

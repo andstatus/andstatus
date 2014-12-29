@@ -121,12 +121,10 @@ public class TimelineSql {
                     }
                 }
                 tables = "(SELECT *"
-                     //   + (columns.contains(MyDatabase.User.LINKED_USER_ID) ? ", 0 AS "
-                     //           + MyDatabase.User.LINKED_USER_ID : "")
                         + " FROM " + Msg.TABLE_NAME
                         + (isCombined ? "" : " WHERE (" + where + ")")
                         + ") AS " + MyProvider.MSG_TABLE_ALIAS;
-                // linkedUserDefined = columns.contains(MyDatabase.User.LINKED_USER_ID);
+                break;
             default:
                 break;
         }

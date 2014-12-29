@@ -197,7 +197,7 @@ public class ConnectionPumpio extends Connection {
                     MbUser item = userFromJson(jso);
                     followedUsers.add(item);
                 } catch (JSONException e) {
-                    throw ConnectionException.loggedJsonException(this, e, null, "Parsing list of users");
+                    throw ConnectionException.loggedJsonException(this, "Parsing list of users", e, null);
                 }
             }
         }
@@ -285,7 +285,7 @@ public class ConnectionPumpio extends Connection {
         if (!conu.httpConnection.data.areOAuthClientKeysPresent()) {
             conu.httpConnection.registerClient(getApiPath(ApiRoutineEnum.REGISTER_CLIENT));
             if (!conu.httpConnection.getCredentialsPresent()) {
-                throw ConnectionException.fromStatusCodeAndHost(StatusCode.NO_CREDENTIALS_FOR_HOST, conu.httpConnection.data.originUrl, "No credentials");
+                throw ConnectionException.fromStatusCodeAndHost(StatusCode.NO_CREDENTIALS_FOR_HOST, "No credentials", conu.httpConnection.data.originUrl);
             }
         }
         conu.url = conu.url.replace("%nickname%", nickname);
@@ -337,7 +337,7 @@ public class ConnectionPumpio extends Connection {
                     MbTimelineItem item = timelineItemFromJson(jso);
                     timeline.add(item);
                 } catch (JSONException e) {
-                    throw ConnectionException.loggedJsonException(this, e, null, "Parsing timeline");
+                    throw ConnectionException.loggedJsonException(this, "Parsing timeline", e, null);
                 }
             }
         }
@@ -368,7 +368,7 @@ public class ConnectionPumpio extends Connection {
                     item.mbMessage = messageFromJsonActivity(activity);
                 }
             } catch (JSONException e) {
-                throw ConnectionException.loggedJsonException(this, e, activity, "Parsing timeline item");
+                throw ConnectionException.loggedJsonException(this, "Parsing timeline item", e, activity);
             }
         } else {
             MyLog.e(this, "Not an Activity in the timeline:" + activity.toString() );
@@ -398,7 +398,7 @@ public class ConnectionPumpio extends Connection {
                 mbUser.followedByActor = TriState.FALSE;
             }
         } catch (JSONException e) {
-            throw ConnectionException.loggedJsonException(this, e, activity, "Parsing activity");
+            throw ConnectionException.loggedJsonException(this, "Parsing activity", e, activity);
         }
         return mbUser;
     }
@@ -408,7 +408,7 @@ public class ConnectionPumpio extends Connection {
             try {
                 MyLog.v(this, "messageFromJson: " + jso.toString(2));
             } catch (JSONException e) {
-                ConnectionException.loggedJsonException(this, e, jso, "messageFromJson");
+                ConnectionException.loggedJsonException(this, "messageFromJson", e, jso);
             }
         }
         if (PumpioObjectType.ACTIVITY.isMyType(jso)) {
@@ -484,7 +484,7 @@ public class ConnectionPumpio extends Connection {
                 }
             }
         } catch (JSONException e) {
-            throw ConnectionException.loggedJsonException(this, e, activity, "Parsing activity");
+            throw ConnectionException.loggedJsonException(this, "Parsing activity", e, activity);
         }
         return message;
     }
@@ -533,14 +533,14 @@ public class ConnectionPumpio extends Connection {
                 message.inReplyToMessage = messageFromJson(inReplyToObject);
             }
         } catch (JSONException e) {
-            throw ConnectionException.loggedJsonException(this, e, jso, "Parsing comment/note");
+            throw ConnectionException.loggedJsonException(this, "Parsing comment/note", e, jso);
         }
     }
 
     private URL getImageUrl(JSONObject jso, String imageTag) throws JSONException {
         if (jso.has(imageTag)) {
             JSONObject attachment = jso.getJSONObject(imageTag);
-            return UrlUtils.json2Url(attachment, "url");
+            return UrlUtils.fromJson(attachment, "url");
         } 
         return null;
     }
@@ -558,7 +558,7 @@ public class ConnectionPumpio extends Connection {
 
             parseComment(message, jso);
         } catch (JSONException e) {
-            throw ConnectionException.loggedJsonException(this, e, jso, "Parsing comment");
+            throw ConnectionException.loggedJsonException(this, "Parsing comment", e, jso);
         }
         return message;
     }

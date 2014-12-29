@@ -40,6 +40,7 @@ import org.json.JSONTokener;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 
 public class HttpConnectionBasic extends HttpConnection implements HttpApacheRequest  {
     protected String mPassword = "";
@@ -85,7 +86,7 @@ public class HttpConnectionBasic extends HttpConnection implements HttpApacheReq
                 }
             }
         } catch (JSONException e) {
-            throw ConnectionException.loggedJsonException(this, e, result, logmsg);
+            throw ConnectionException.loggedJsonException(this, logmsg, e, result);
         } catch (Exception e) {
         	e1 = e;
         } finally {
@@ -205,9 +206,8 @@ public class HttpConnectionBasic extends HttpConnection implements HttpApacheReq
      * @return String
      */
     private String getCredentials() {
-        // TODO: since API9 we will use getBytes(Charset.forName("US-ASCII"))
         return Base64.encodeToString(
-                (data.accountUsername + ":" + mPassword).getBytes(),
+                (data.accountUsername + ":" + mPassword).getBytes(Charset.forName("UTF-8")),
                 Base64.NO_WRAP + Base64.NO_PADDING);
     }
 
@@ -258,9 +258,9 @@ public class HttpConnectionBasic extends HttpConnection implements HttpApacheReq
         logmsg = appendResponse(logmsg, response);
         if (tr != null) {
             MyLog.i(this, statusCode.toString() + "; " + logmsg, tr);
-            throw new ConnectionException(statusCode, logmsg, tr);
+            throw ConnectionException.fromStatusCodeAndThrowable(statusCode, logmsg, tr);
         } else {
-            throw new ConnectionException(statusCode, logmsg);
+            throw ConnectionException.fromStatusCode(statusCode, logmsg);
         }
     }
 }

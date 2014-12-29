@@ -42,7 +42,7 @@ class CommandExecutorStrategy implements CommandExecutorParent {
 
     private static void logLaunch(CommandExecutorStrategy strategy) {
         if (strategy.execContext.getCommandData().getCommand() == CommandEnum.UPDATE_STATUS) {
-            MyLog.onSendingMessageStart();;
+            MyLog.onSendingMessageStart();
         }
         MyLog.d(strategy, "Launching " + strategy.execContext);
     }
@@ -164,7 +164,7 @@ class CommandExecutorStrategy implements CommandExecutorParent {
     }
 
     void logConnectionException(ConnectionException e, String detailedMessage) {
-        if (e.isHardError()) {
+        if (e != null && e.isHardError()) {
             execContext.getResult().incrementParseExceptions();
         } else {
             execContext.getResult().incrementNumIoExceptions();

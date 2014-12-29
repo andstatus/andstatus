@@ -231,8 +231,10 @@ public class MySettingsFragment extends PreferenceFragment implements
     public boolean onPreferenceTreeClick(PreferenceScreen preferenceScreen, Preference preference) {
         switch (preference.getKey()) {
             case MyPreferences.KEY_USE_EXTERNAL_STORAGE_NEW:
-                storageSwitch.showSwitchStorageDialog(ActivityRequestCode.MOVE_DATA_BETWEEN_STORAGES, 
-                        ((CheckBoxPreference) preference).isChecked());
+                if (CheckBoxPreference.class.isInstance(preference)) {
+                    storageSwitch.showSwitchStorageDialog(ActivityRequestCode.MOVE_DATA_BETWEEN_STORAGES, 
+                            ((CheckBoxPreference) preference).isChecked());
+                }
                 break;
             case KEY_ADD_NEW_ACCOUNT:
                 AccountSettingsActivity.startAddNewAccount(getActivity());

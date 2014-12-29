@@ -60,7 +60,7 @@ public class AttachmentDownloaderTest extends InstrumentationTestCase {
         long msgId = mi.addMessage(message);
         
         DownloadData dd = DownloadData.newForMessage(msgId, message.attachments.get(0).contentType, null);
-        assertEquals("Image URL stored", message.attachments.get(0).url , dd.getUrl());
+        assertEquals("Image URL stored", message.attachments.get(0).getUrl(), dd.getUrl());
         
         loadAndAssertStatusForRow(dd.getRowId(), DownloadStatus.ABSENT, true);
 

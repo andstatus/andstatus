@@ -95,7 +95,7 @@ public class MyBackupDescriptor {
         try {
             pi = pm.getPackageInfo(MyContextHolder.get().context().getPackageName(), 0);
         } catch (NameNotFoundException e) {
-            throw new FileNotFoundException(e.getLocalizedMessage());
+            throw new IOException(e);
         }
         myBackupDescriptor.applicationVersionCode = pi.versionCode;
         return myBackupDescriptor;
@@ -135,7 +135,7 @@ public class MyBackupDescriptor {
             writeStringToFileDescriptor(jso.toString(), fileDescriptor, true);
             createdDate = createdDateNew;
         } catch (JSONException e) {
-            throw new FileNotFoundException(e.getLocalizedMessage());
+            throw new IOException(e);
         }
     }
     

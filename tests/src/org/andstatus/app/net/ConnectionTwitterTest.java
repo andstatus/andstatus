@@ -136,7 +136,7 @@ public class ConnectionTwitterTest extends InstrumentationTestCase {
         MbAttachment attachment = MbAttachment.fromUrlAndContentType(new URL(
                 "https://pbs.twimg.com/media/Bv3a7EsCAAIgigY.jpg"), MyContentType.IMAGE);
         assertEquals("attachment", attachment, msg.attachments.get(0));
-        attachment.url = new URL("https://pbs.twimg.com/media/Bv4a7EsCAAIgigY.jpg");
+        attachment.setUrl(new URL("https://pbs.twimg.com/media/Bv4a7EsCAAIgigY.jpg"));
         assertNotSame("attachment", attachment, msg.attachments.get(0));
     }
     

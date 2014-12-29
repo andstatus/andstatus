@@ -42,7 +42,7 @@ import java.util.List;
 public class ConnectionPumpioTest extends InstrumentationTestCase {
     Context context;
     ConnectionPumpio connection;
-    URL originUrl = UrlUtils.string2Url("https://identi.ca");
+    URL originUrl = UrlUtils.fromString("https://identi.ca");
     HttpConnectionMock httpConnectionMock;
     OriginConnectionData connectionData;
 
