@@ -64,7 +64,7 @@ public class ConnectionEmpty extends Connection {
     }
 
     @Override
-    public MbMessage postDirectMessage(String message, String userId) throws ConnectionException {
+    public MbMessage postDirectMessage(String message, String userId, Uri mediaUri) throws ConnectionException {
         return MbMessage.getEmpty();
     }
 

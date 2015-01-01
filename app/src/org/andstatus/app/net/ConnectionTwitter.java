@@ -413,7 +413,7 @@ public abstract class ConnectionTwitter extends Connection {
     }
     
     @Override
-    public MbMessage postDirectMessage(String message, String userId) throws ConnectionException {
+    public MbMessage postDirectMessage(String message, String userId, Uri mediaUri) throws ConnectionException {
         JSONObject formParams = new JSONObject();
         try {
             formParams.put("text", message);

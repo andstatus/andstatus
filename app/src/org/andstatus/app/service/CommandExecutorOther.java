@@ -342,7 +342,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 String recipientOid = MyProvider.idToOid(OidEnum.USER_OID, recipientUserId, 0);
                 // Currently we don't use Screen Name, I guess id is enough.
                 message = execContext.getMyAccount().getConnection()
-                        .postDirectMessage(status.trim(), recipientOid);
+                        .postDirectMessage(status.trim(), recipientOid, mediaUri);
             }
             ok = (!message.isEmpty());
             logOk(ok);

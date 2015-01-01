@@ -298,12 +298,11 @@ public class ConnectionPumpio extends Connection {
     }
     
     @Override
-    public MbMessage postDirectMessage(String messageIn, String recipientId) throws ConnectionException {
+    public MbMessage postDirectMessage(String messageIn, String recipientId, Uri mediaUri) throws ConnectionException {
         String message = toHtmlIfAllowed(messageIn);
         ActivitySender sender = ActivitySender.fromContent(this, message);
-        if (!TextUtils.isEmpty(recipientId)) {
-            sender.setRecipient(recipientId);
-        }
+        sender.setRecipient(recipientId);
+        sender.setMediaUri(mediaUri);
         return messageFromJson(sender.sendMe("post"));
     }
 

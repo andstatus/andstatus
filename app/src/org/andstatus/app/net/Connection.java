@@ -309,10 +309,11 @@ public abstract class Connection {
      * 
      * @param message
      * @param userId {@link User#USER_OID} - The ID of the user who should receive the direct message
+     * @param mediaUri 
      * @return The sent message if successful (empty message if not)
      * @throws ConnectionException
      */
-    public abstract MbMessage postDirectMessage(String message, String userId)
+    public abstract MbMessage postDirectMessage(String message, String userId, Uri mediaUri)
             throws ConnectionException;
 
     /**
