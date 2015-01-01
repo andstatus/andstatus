@@ -24,12 +24,12 @@ public class AppWidgets {
         appWidgets.clearCounters();
         appWidgets.updateViews();
     }
-    
+
     public static void updateWidgets(MyContext myContext) {
         AppWidgets appWidgets = AppWidgets.newInstance(myContext);
         appWidgets.updateViews();
     }
-	
+
     public static AppWidgets newInstance(MyContext myContext) {
         return new AppWidgets(myContext);
     }
@@ -37,23 +37,23 @@ public class AppWidgets {
     private AppWidgets(MyContext myContext) {
         this.myContext = myContext;
         for (int id : getAppWidgetIds(myContext.context())) {
-           mAppWidgets.put(id, MyAppWidgetData.newInstance(myContext.context(), id));
+            mAppWidgets.put(id, MyAppWidgetData.newInstance(myContext.context(), id));
         }
     }
-    
+
     private int[] getAppWidgetIds(Context context) {
         return AppWidgetManager
-                        .getInstance(context)
-                        .getAppWidgetIds(
-                                new ComponentName(context, MyAppWidgetProvider.class));
+                .getInstance(context)
+                .getAppWidgetIds(
+                        new ComponentName(context, MyAppWidgetProvider.class));
     }
-    
+
     public void updateData(CommandResult result) {
         for (MyAppWidgetData widgetData : mAppWidgets.values()) {
             widgetData.update(result);
         }
     }
-    
+
     public void clearCounters() {
         for (MyAppWidgetData widgetData : mAppWidgets.values()) {
             widgetData.clearCounters();
@@ -68,11 +68,11 @@ public class AppWidgets {
     public boolean isEmpty() {
         return mAppWidgets.isEmpty();
     }
-    
+
     public int size() {
         return mAppWidgets.size();
     }
-    
+
     public void updateViews(){
         MyLog.v(this, "Sending update to " +  size() + " remote views");
         for (MyAppWidgetData widgetData : mAppWidgets.values()) {
@@ -92,7 +92,7 @@ public class AppWidgets {
         }
         updateView(appWidgetManager, widgetData);
     }
-    
+
     void updateView(AppWidgetManager appWidgetManager,
             MyAppWidgetData widgetData) {
         final String method = "updateView";
@@ -133,5 +133,5 @@ public class AppWidgets {
         views.setOnClickPendingIntent(R.id.widget, viewData.onClickIntent);
         return views;
     }
-    
+
 }

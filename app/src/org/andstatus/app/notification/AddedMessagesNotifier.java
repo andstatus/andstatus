@@ -54,14 +54,14 @@ public class AddedMessagesNotifier {
         notifyForOneType(TimelineTypeEnum.MENTIONS, result.getMentionsAdded());
         notifyForOneType(TimelineTypeEnum.DIRECT, result.getDirectedAdded());
     }
-    
+
     private void notifyForOneType(TimelineTypeEnum timelineType, int numMessages) {
         if (numMessages == 0 || !areNotificationsEnabled(timelineType)) {
             return;
         }
 
         MyLog.v(this, "n=" + numMessages + "; timelineType=" + timelineType);
-        
+
         int messageTitleResId;
         String messageText = "";
         switch (timelineType) {
@@ -107,32 +107,32 @@ public class AddedMessagesNotifier {
                 return true;
         }
     }
-    
-	private void notify(TimelineTypeEnum timelineType, int messageTitleResId,
-			String messageText) {
-		String ringtone = MyPreferences.getDefaultSharedPreferences()
-				.getString(MyPreferences.KEY_RINGTONE_PREFERENCE, null);
-		Uri sound = TextUtils.isEmpty(ringtone) ? null : Uri.parse(ringtone);
-        
+
+    private void notify(TimelineTypeEnum timelineType, int messageTitleResId,
+            String messageText) {
+        String ringtone = MyPreferences.getDefaultSharedPreferences()
+                .getString(MyPreferences.KEY_RINGTONE_PREFERENCE, null);
+        Uri sound = TextUtils.isEmpty(ringtone) ? null : Uri.parse(ringtone);
+
         Notification.Builder builder =
                 new Notification.Builder(myContext.context())
-                        .setSmallIcon(
-                                MyPreferences.getBoolean(
-                                        MyPreferences.KEY_NOTIFICATION_ICON_ALTERNATIVE, false) 
-                                        ? R.drawable.notification_icon_circle
-                                        : R.drawable.notification_icon)
-                        .setContentTitle(myContext.context().getText(messageTitleResId))
-                        .setContentText(messageText)
-                        .setSound(sound);
+        .setSmallIcon(
+                MyPreferences.getBoolean(
+                        MyPreferences.KEY_NOTIFICATION_ICON_ALTERNATIVE, false) 
+                        ? R.drawable.notification_icon_circle
+                                : R.drawable.notification_icon)
+                                .setContentTitle(myContext.context().getText(messageTitleResId))
+                                .setContentText(messageText)
+                                .setSound(sound);
 
         if (mNotificationsVibrate) {
-        	builder.setVibrate( new long[] {
+            builder.setVibrate( new long[] {
                     200, 300, 200, 300
             });
         }
         builder.setLights(Color.GREEN, 500, 1000);	
 
-		// Prepare "intent" to launch timeline activities exactly like in
+        // Prepare "intent" to launch timeline activities exactly like in
         // org.andstatus.app.TimelineActivity.onOptionsItemSelected
         Intent intent = new Intent(myContext.context(), TimelineActivity.class);
         intent.putExtra(IntentExtra.EXTRA_TIMELINE_TYPE.key, timelineType.save());
@@ -141,5 +141,5 @@ public class AddedMessagesNotifier {
                 intent, 0);
         builder.setContentIntent(pendingIntent);
         myContext.notify(timelineType, builder.build());
-	}
+    }
 }

@@ -172,13 +172,13 @@ public class QueueViewer extends ListActivity implements MyServiceListener {
         java.util.Collections.sort(data, new Comparator<QueueData>() {
                 @Override
                 public int compare(QueueData lhs, QueueData rhs) {
-                    return -Long_compare(lhs.commandData.getCreatedDate(), rhs.commandData.getCreatedDate());
+                    return -longCompare(lhs.commandData.getCreatedDate(), rhs.commandData.getCreatedDate());
                 }
             });
     }
 
     // TODO: Replace with Long.compare for API >= 19
-    public static int Long_compare(long lhs, long rhs) {
+    public static int longCompare(long lhs, long rhs) {
         return lhs < rhs ? -1 : (lhs == rhs ? 0 : 1);
     }
     
@@ -220,12 +220,11 @@ public class QueueViewer extends ListActivity implements MyServiceListener {
             list.add(map);
         }
         
-        ListAdapter adapter = new MySimpleAdapter(this, 
+        return new MySimpleAdapter(this, 
                 list, 
                 R.layout.queue_item, 
                 new String[] {KEY_QUEUE_TYPE, KEY_COMMAND_SUMMARY, KEY_RESULT_SUMMARY, BaseColumns._ID}, 
                 new int[] {R.id.queue_type, R.id.command_summary, R.id.result_summary, R.id.id});
-        return adapter;
     }
 
     @Override

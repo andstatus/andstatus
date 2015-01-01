@@ -80,7 +80,7 @@ public class TlsSniSocketFactory implements LayeredConnectionSocketFactory {
     }
 
     @Override
-    public Socket createLayeredSocket(Socket plain, String host, int port, HttpContext context) throws IOException, UnknownHostException {
+    public Socket createLayeredSocket(Socket plain, String host, int port, HttpContext context) throws IOException {
         Log.d(TAG, "Preparing layered SSL connection (over proxy) to " + host);
         
         // create a layered SSL socket, but don't do hostname/certificate verification yet
@@ -116,8 +116,9 @@ public class TlsSniSocketFactory implements LayeredConnectionSocketFactory {
         
         // verify hostname and certificate
         SSLSession session = ssl.getSession();
-        if (!HOSTNAME_VERIFIER.verify(host, session))
+        if (!HOSTNAME_VERIFIER.verify(host, session)) {
             throw new SSLPeerUnverifiedException("Cannot verify hostname: " + host);
+        }
 
         MyLog.i(TAG, "Established " + session.getProtocol() + " connection with " + session.getPeerHost() +
                 " using " + session.getCipherSuite());

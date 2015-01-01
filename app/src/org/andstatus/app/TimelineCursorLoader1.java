@@ -332,7 +332,7 @@ public class TimelineCursorLoader1 extends Loader<Cursor> implements MyServiceLi
                     }
                     text.append(", " + cursorInfo);
                 }
-                text.append(", " + Double.valueOf((System.nanoTime() - getParams().startTime)/1.0E6).longValue() + " ms");
+                text.append(", " + java.util.concurrent.TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - getParams().startTime) + " ms");
                 logV("stats", text.toString());
             }
         }

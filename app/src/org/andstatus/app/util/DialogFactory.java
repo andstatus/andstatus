@@ -79,8 +79,7 @@ public class DialogFactory {
     public static void showYesCancelDialog(Fragment activity, int titleId, int messageId, final ActivityRequestCode requestCode) {
         DialogFragment dialog = new DialogFragment() {
             @Override
-            public Dialog onCreateDialog(Bundle savedInstanceState)
-            {
+            public Dialog onCreateDialog(Bundle savedInstanceState) {
                 Bundle args = getArguments();
                 String title = args.getString(DialogFactory.DIALOG_TITLE_KEY, "");
                 String message = args.getString(DialogFactory.DIALOG_MESSAGE_KEY, "");

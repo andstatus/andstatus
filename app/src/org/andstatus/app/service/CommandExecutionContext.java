@@ -26,7 +26,7 @@ public class CommandExecutionContext {
     public CommandExecutionContext(CommandData commandData, MyAccount ma) {
         this(MyContextHolder.get(), commandData, ma);
     }
-    
+
     public CommandExecutionContext(MyContext myContext, CommandData commandData, MyAccount ma) {
         if (commandData == null) {
             throw new IllegalArgumentException( "CommandData is null");
@@ -47,7 +47,7 @@ public class CommandExecutionContext {
     public MyContext getMyContext() {
         return myContext;
     }
-    
+
     public Context getContext() {
         return myContext.context();
     }
@@ -68,33 +68,33 @@ public class CommandExecutionContext {
         this.timelineUserId = timelineUserId;
         return this;
     }
-    
+
     public CommandData getCommandData() {
         return commandData;
     }
-    
+
     void onOneExecStepLaunch() {
         stackOfCommandDataOfExecSteps.addFirst(commandData);
         commandData = CommandData.forOneExecStep(this);
     }
-    
+
     void onOneExecStepEnd() {
-		CommandData storedBeforeExecStep = stackOfCommandDataOfExecSteps.removeFirst();
-		storedBeforeExecStep.accumulateOneStep(commandData);
-		commandData = storedBeforeExecStep;
+        CommandData storedBeforeExecStep = stackOfCommandDataOfExecSteps.removeFirst();
+        storedBeforeExecStep.accumulateOneStep(commandData);
+        commandData = storedBeforeExecStep;
     }
-    
+
     public CommandResult getResult() {
         return commandData.getResult();
     }
-    
+
     @Override
     public String toString() {
         return MyLog.formatKeyValue(
                 "CommandExecutionContext",
                 (ma == null ? "" : ma.toString() + ",")
-                        + (TimelineTypeEnum.UNKNOWN.equals(timelineType) ? "" : timelineType
-                                .toString() + ",")
+                + (TimelineTypeEnum.UNKNOWN.equals(timelineType) ? "" : timelineType
+                        .toString() + ",")
                         + (timelineUserId == 0 ? "" : "userId:" + timelineUserId + ",")
                         + commandData.toString());
     }

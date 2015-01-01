@@ -123,7 +123,9 @@ public class MySettingsFragment extends PreferenceFragment implements
     }
 
     private void showConnectionTimeout() {
-        findPreference(MyPreferences.KEY_CONNNECTION_TIMEOUT_SECONDS).setSummary("" + MyPreferences.getConnectionTimeoutMs()/1000 + "s");
+        findPreference(MyPreferences.KEY_CONNNECTION_TIMEOUT_SECONDS).setSummary(
+                Long.toString(java.util.concurrent.TimeUnit.MILLISECONDS.toSeconds(MyPreferences
+                        .getConnectionTimeoutMs())) + "s");
     }
 
     protected void showHistorySize() {

@@ -49,13 +49,13 @@ public class MyBackupAgent extends BackupAgent {
 
     private String previousKey = "";
     
-    long accountsBackedUp = 0;
+    private long accountsBackedUp = 0;
     long accountsRestored = 0;
-    long databasesBackedUp = 0;
+    private long databasesBackedUp = 0;
     long databasesRestored = 0;
-    long suggestionsBackedUp = 0;
+    private long suggestionsBackedUp = 0;
     long suggestionsRestored = 0;
-    long sharedPreferencesBackedUp = 0;
+    private long sharedPreferencesBackedUp = 0;
     long sharedPreferencesRestored = 0;
 
     public MyBackupAgent() {
@@ -363,5 +363,21 @@ public class MyBackupAgent extends BackupAgent {
 
     MyBackupDescriptor getBackupDescriptor() {
         return backupDescriptor;
+    }
+
+    long getAccountsBackedUp() {
+        return accountsBackedUp;
+    }
+
+    long getDatabasesBackedUp() {
+        return databasesBackedUp;
+    }
+
+    long getSharedPreferencesBackedUp() {
+        return sharedPreferencesBackedUp;
+    }
+
+    long getSuggestionsBackedUp() {
+        return suggestionsBackedUp;
     }
 }

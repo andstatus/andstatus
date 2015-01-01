@@ -47,7 +47,7 @@ import java.util.List;
 
 public class HttpApacheUtils {
     private HttpApacheRequest request;
-    
+
     HttpApacheUtils(HttpApacheRequest request) {
         this.request = request;
     }
@@ -78,12 +78,11 @@ public class HttpApacheUtils {
         } catch (JSONException e) {
             throw ConnectionException.loggedJsonException(this, method, e, jst);
         } catch (ClassCastException e) {
-            ConnectionException connectionException = ConnectionException.loggedHardJsonException(this, method, e, jst);
-            throw connectionException;
+            throw ConnectionException.loggedHardJsonException(this, method, e, jst);
         }
         return jsa;
     }
-    
+
     final JSONObject getRequestAsObject(HttpGet get) throws ConnectionException {
         String method = "getRequestAsObject";
         JSONObject jso = null;
@@ -93,8 +92,7 @@ public class HttpApacheUtils {
         } catch (JSONException e) {
             throw ConnectionException.loggedJsonException(this, method, e, jst);
         } catch (ClassCastException e) {
-            ConnectionException connectionException = ConnectionException.loggedHardJsonException(this, method, e, jst);
-            throw connectionException;
+            throw ConnectionException.loggedHardJsonException(this, method, e, jst);
         }
         return jso;
     }
@@ -103,7 +101,7 @@ public class HttpApacheUtils {
         HttpPost post = new HttpPost(request.pathToUrl(path));
         return request.postRequest(post);
     }
-    
+
     /**
      * @return empty {@link JSONObject} in a case of error
      */
@@ -141,7 +139,7 @@ public class HttpApacheUtils {
             } else if (HttpConnection.KEY_MEDIA_PART_URI.equals(name)) {
                 mediaUri = UriUtils.fromString(value);
             } else {
-            	// see http://stackoverflow.com/questions/19292169/multipartentitybuilder-and-charset
+                // see http://stackoverflow.com/questions/19292169/multipartentitybuilder-and-charset
                 builder.addTextBody(name, value, contentType);
             }
         }
@@ -167,7 +165,7 @@ public class HttpApacheUtils {
             postMethod.setEntity(formEntity);
         }
     }
-    
+
     /**
      * @throws ConnectionException
      */
@@ -186,8 +184,8 @@ public class HttpApacheUtils {
 
     public static HttpClient getHttpClient() {
         return MyPreferences.getBoolean(MyPreferences.KEY_ALLOW_MISCONFIGURED_SSL, false) ?
-            MisconfiguredSslHttpClientFactory.getHttpClient() :
-            MyHttpClientFactory.getHttpClient() ;
+                MisconfiguredSslHttpClientFactory.getHttpClient() :
+                    MyHttpClientFactory.getHttpClient() ;
     }
-    
+
 }

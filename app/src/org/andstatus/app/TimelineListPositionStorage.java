@@ -61,7 +61,7 @@ class TimelineListPositionStorage {
         this.mListParameters = listParameters;
         
         queryString = listParameters.mSearchQuery; 
-        if ((listParameters.mTimelineType == TimelineTypeEnum.USER)) {
+        if (listParameters.mTimelineType == TimelineTypeEnum.USER) {
             mUserId = listParameters.mSelectedUserId;
         } else if (!listParameters.mTimelineCombined) {
             mUserId = listParameters.myAccountUserId;

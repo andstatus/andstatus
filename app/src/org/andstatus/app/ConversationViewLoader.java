@@ -55,7 +55,7 @@ public class ConversationViewLoader {
 
     List<Long> idsOfTheMessagesToFind = new ArrayList<Long>();
 
-    public ConversationViewLoader(Context context, MyAccount ma, long selectedMessageId, MessageContextMenu contextMenu) {
+    public ConversationViewLoader(Context context, MyAccount ma, long selectedMessageId) {
         this.context = context;
         this.ma = ma;
         this.selectedMessageId = selectedMessageId;

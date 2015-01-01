@@ -1,20 +1,20 @@
 /*
-* Copyright (C) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
-* Based on the sample: com.example.android.samplesync.syncadapter
-* Copyright (C) 2010 The Android Open Source Project
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright (C) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Based on the sample: com.example.android.samplesync.syncadapter
+ * Copyright (C) 2010 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package org.andstatus.app.syncadapter;
 
@@ -44,16 +44,16 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements MyServic
 
     private final Context mContext;
     private volatile CommandData mCommandData;
-	private final Object syncLock = new Object();
-	@GuardedBy("syncLock")
+    private final Object syncLock = new Object();
+    @GuardedBy("syncLock")
     private boolean mSyncCompleted = false;
-	@GuardedBy("syncLock")
-	private long mNumAuthExceptions = 0;
-	@GuardedBy("syncLock")
+    @GuardedBy("syncLock")
+    private long mNumAuthExceptions = 0;
+    @GuardedBy("syncLock")
     private long mNumIoExceptions = 0;
-	@GuardedBy("syncLock")
+    @GuardedBy("syncLock")
     private long mNumParseExceptions = 0;
-    
+
     public SyncAdapter(Context context, boolean autoInitialize) {
         super(context, autoInitialize);
         this.mContext = context;
@@ -77,61 +77,61 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements MyServic
         }
         MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(account.name);
         if (ma == null) {
-			syncResult.stats.numIoExceptions++;
-	        MyLog.d(this, method + "; The account was not loaded, account:" + account.name);
+            syncResult.stats.numIoExceptions++;
+            MyLog.d(this, method + "; The account was not loaded, account:" + account.name);
             return;      
         } else if (ma.getCredentialsVerified() != CredentialsVerificationStatus.SUCCEEDED) {
             syncResult.stats.numAuthExceptions++;
             MyLog.d(this, method + "; Credentials failed, skipping; account:" + account.name);
             return;
         }
-		
+
         synchronized(syncLock) {
             mSyncCompleted = false;
-			mNumAuthExceptions = 0;
-			mNumIoExceptions = 0;
-			mNumParseExceptions = 0;
-	    }
-		MyServiceReceiver intentReceiver = new MyServiceReceiver(this);
-     	boolean interrupted = true;
+            mNumAuthExceptions = 0;
+            mNumIoExceptions = 0;
+            mNumParseExceptions = 0;
+        }
+        MyServiceReceiver intentReceiver = new MyServiceReceiver(this);
+        boolean interrupted = true;
         try {
             MyLog.v(this, method + "; Started, account:" + account.name);
             mCommandData = new CommandData(CommandEnum.AUTOMATIC_UPDATE, account.name,
                     TimelineTypeEnum.ALL, 0);
-			intentReceiver.registerReceiver(mContext);	
+            intentReceiver.registerReceiver(mContext);	
             MyServiceManager.sendCommand(mCommandData);
-			final long numIterations = 10;
+            final long numIterations = 10;
             synchronized(syncLock) {
                 for (int iteration = 0; iteration < numIterations; iteration++) {
                     if (mSyncCompleted) {
                         break;
                     }
                     syncLock.wait(java.util.concurrent.TimeUnit.SECONDS.toMillis(
-					    MyService.MAX_COMMAND_EXECUTION_SECONDS / numIterations ));
+                            MyService.MAX_COMMAND_EXECUTION_SECONDS / numIterations ));
                 }
             }
-			interrupted = false;
+            interrupted = false;
         } catch (InterruptedException e) {
             MyLog.d(this, method + "; Interrupted", e);
         } finally {
-			synchronized(syncLock) {
-				if (interrupted || !mSyncCompleted) {
+            synchronized(syncLock) {
+                if (interrupted || !mSyncCompleted) {
                     syncResult.stats.numIoExceptions++;
-			    }
-				syncResult.stats.numAuthExceptions += mNumAuthExceptions;
-				syncResult.stats.numIoExceptions += mNumIoExceptions;
-				syncResult.stats.numParseExceptions += mNumParseExceptions;
-			}
+                }
+                syncResult.stats.numAuthExceptions += mNumAuthExceptions;
+                syncResult.stats.numIoExceptions += mNumIoExceptions;
+                syncResult.stats.numParseExceptions += mNumParseExceptions;
+            }
             intentReceiver.unregisterReceiver(mContext);            
         }
-		MyLog.v(this, method + "; Ended, " 
-		    + (syncResult.hasError() ? "has error" : "ok"));
+        MyLog.v(this, method + "; Ended, " 
+                + (syncResult.hasError() ? "has error" : "ok"));
     }
 
     @Override
     public void onReceive(CommandData commandData, MyServiceEvent event) {
         if (event != MyServiceEvent.AFTER_EXECUTING_COMMAND 
-			|| mCommandData == null || !mCommandData.equals(commandData) ) {
+                || mCommandData == null || !mCommandData.equals(commandData) ) {
             return;
         }
         MyLog.v(this, "onReceive; command:" + commandData.getCommand());

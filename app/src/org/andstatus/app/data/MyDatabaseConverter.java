@@ -47,34 +47,34 @@ class MyDatabaseConverter {
             closeProgressDialog();
             showProgressDialog(e.getMessage());
             MyLog.ignored(this, e);
-            try {
-                Thread.sleep(5000);
-            } catch (Exception e2) {
-                MyLog.d(this, "while sleeping", e2);
-            }
+            mySleepWithLogging(5000);
         } finally {
-            try {
-                Thread.sleep(1000);
-            } catch (Exception e) {
-                MyLog.d(this, "while sleeping", e);
-            }
+            mySleepWithLogging(1000);
             upgradeEnded();
             if (MyContextHolder.get().isTestRun()) {
                 activity.finish();
-                try {
-                    Thread.sleep(500);
-                } catch (Exception e) {
-                    MyLog.d(this, "while sleeping", e);
-                }
+                mySleepWithLogging(500);
             }
         }
         long endTime = java.lang.System.currentTimeMillis();
         if (success) {
-            MyLog.w(this, "Upgrade successfully completed in " + ((endTime - startTime)/1000) + " seconds");
+            MyLog.w(this, "Upgrade successfully completed in "
+                    + java.util.concurrent.TimeUnit.MILLISECONDS.toSeconds(endTime - startTime)
+                    + " seconds");
         } else {
-            MyLog.e(this, "Upgrade failed in " + ((endTime - startTime)/1000) + " seconds");
+            MyLog.e(this, "Upgrade failed in "
+                    + java.util.concurrent.TimeUnit.MILLISECONDS.toSeconds(endTime - startTime) 
+                    + " seconds");
         }
         return success;
+    }
+
+    private void mySleepWithLogging(long ms) {
+        try {
+            Thread.sleep(ms);
+        } catch (Exception e) {
+            MyLog.d(this, "while sleeping", e);
+        }
     }
 
     private void upgradeStarted() {
@@ -151,7 +151,7 @@ class MyDatabaseConverter {
         boolean ok = false;
         String sql = "";
         try {
-            MyLog.i(this, "Database upgrading step from version " + oldVersion + " to version " + versionTo );
+            logUpgradeStepStart(oldVersion, versionTo);
             
             sql = "ALTER TABLE msg ADD COLUMN public BOOLEAN DEFAULT 0 NOT NULL";
             MyDatabase.execSQL(db, sql);
@@ -162,14 +162,28 @@ class MyDatabaseConverter {
         } catch (Exception e) {
             MyLog.e(this, e);
         }
-        if (ok) {
-            MyLog.i(this, "Database upgrading step successfully upgraded database from " + oldVersion + " to version " + versionTo);
-        } else {
-            MyLog.e(this, "Database upgrading step failed to upgrade database from " + oldVersion 
-                    + " to version " + versionTo
-                    + " SQL='" + sql +"'");
-        }
+        return assessUpgradeStepResult(oldVersion, versionTo, ok, sql);
+    }
+
+    /** @return Database version after the step */
+    private int assessUpgradeStepResult(int oldVersion, final int versionTo, boolean ok, String sql) {
+        logUpgrageStepResult(oldVersion, versionTo, ok, sql);
         return ok ? versionTo : oldVersion;
+    }
+
+    private void logUpgrageStepResult(int oldVersion, final int versionTo, boolean ok, String sql) {
+        if (ok) {
+            MyLog.i(this, "Database upgrading step successfully upgraded database from "
+                    + oldVersion + " to version " + versionTo);
+        } else {
+            MyLog.e(this, "Database upgrading step failed to upgrade database from " + oldVersion
+                    + " to version " + versionTo
+                    + " SQL='" + sql + "'");
+        }
+    }
+
+    private void logUpgradeStepStart(int oldVersion, final int versionTo) {
+        MyLog.i(this, "Database upgrading step from version " + oldVersion + " to version " + versionTo );
     }
 
     private int convert15to16(SQLiteDatabase db, int oldVersion) {
@@ -177,7 +191,7 @@ class MyDatabaseConverter {
         boolean ok = false;
         String sql = "";
         try {
-            MyLog.i(this, "Database upgrading step from version " + oldVersion + " to version " + versionTo );
+            logUpgradeStepStart(oldVersion, versionTo);
 
             ok = MyAccountConverter.convert14to16(db, oldVersion) == versionTo;
             if (ok) {
@@ -187,14 +201,7 @@ class MyDatabaseConverter {
         } catch (Exception e) {
             MyLog.e(this, e);
         }
-        if (ok) {
-            MyLog.i(this, "Database upgrading step successfully upgraded database from " + oldVersion + " to version " + versionTo);
-        } else {
-            MyLog.e(this, "Database upgrading step failed to upgrade database from " + oldVersion 
-                    + " to version " + versionTo
-                    + " SQL='" + sql +"'");
-        }
-        return ok ? versionTo : oldVersion;
+        return assessUpgradeStepResult(oldVersion, versionTo, ok, sql);
     }
 
     private int convert16to17(SQLiteDatabase db, int oldVersion) {
@@ -202,7 +209,7 @@ class MyDatabaseConverter {
         boolean ok = false;
         String sql = "";
         try {
-            MyLog.i(this, "Database upgrading step from version " + oldVersion + " to version " + versionTo );
+            logUpgradeStepStart(oldVersion, versionTo);
 
             File avatarsDir = MyPreferences.getDataFilesDir("avatars", null);
             if (avatarsDir.exists()) {
@@ -241,14 +248,7 @@ class MyDatabaseConverter {
         } catch (Exception e) {
             MyLog.e(this, e);
         }
-        if (ok) {
-            MyLog.i(this, "Database upgrading step successfully upgraded database from " + oldVersion + " to version " + versionTo);
-        } else {
-            MyLog.e(this, "Database upgrading step failed to upgrade database from " + oldVersion 
-                    + " to version " + versionTo
-                    + " SQL='" + sql +"'");
-        }
-        return ok ? versionTo : oldVersion;
+        return assessUpgradeStepResult(oldVersion, versionTo, ok, sql);
     }
     
     private int convert17to18(SQLiteDatabase db, int oldVersion) {
@@ -256,7 +256,7 @@ class MyDatabaseConverter {
         boolean ok = false;
         String sql = "";
         try {
-            MyLog.i(this, "Database upgrading step from version " + oldVersion + " to version " + versionTo );
+            logUpgradeStepStart(oldVersion, versionTo);
 
             sql = "DROP INDEX IF EXISTS idx_username";
             MyDatabase.execSQL(db, sql);
@@ -273,14 +273,7 @@ class MyDatabaseConverter {
         } catch (Exception e) {
             MyLog.e(this, e);
         }
-        if (ok) {
-            MyLog.i(this, "Database upgrading step successfully upgraded database from " + oldVersion + " to version " + versionTo);
-        } else {
-            MyLog.e(this, "Database upgrading step failed to upgrade database from " + oldVersion 
-                    + " to version " + versionTo
-                    + " SQL='" + sql +"'");
-        }
-        return ok ? versionTo : oldVersion;
+        return assessUpgradeStepResult(oldVersion, versionTo, ok, sql);
     }
 
     private int convert18to19(SQLiteDatabase db, int oldVersion) {
@@ -288,7 +281,7 @@ class MyDatabaseConverter {
         boolean ok = false;
         String sql = "";
         try {
-            MyLog.i(this, "Database upgrading step from version " + oldVersion + " to version " + versionTo );
+            logUpgradeStepStart(oldVersion, versionTo);
 
             sql = "CREATE INDEX idx_msg_sent_date ON msg (msg_sent_date)";
             MyDatabase.execSQL(db, sql);
@@ -297,13 +290,6 @@ class MyDatabaseConverter {
         } catch (Exception e) {
             MyLog.e(this, e);
         }
-        if (ok) {
-            MyLog.i(this, "Database upgrading step successfully upgraded database from " + oldVersion + " to version " + versionTo);
-        } else {
-            MyLog.e(this, "Database upgrading step failed to upgrade database from " + oldVersion 
-                    + " to version " + versionTo
-                    + " SQL='" + sql +"'");
-        }
-        return ok ? versionTo : oldVersion;
+        return assessUpgradeStepResult(oldVersion, versionTo, ok, sql);
     }
 }

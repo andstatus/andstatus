@@ -73,7 +73,7 @@ public class MyService extends Service {
     /** No way back */
     @GuardedBy("serviceStateLock")
     private boolean mForcedToStop = false;
-    private static long START_TO_STOP_CHANGE_MIN_PERIOD_SECONDS = 10;
+    private final static long START_TO_STOP_CHANGE_MIN_PERIOD_SECONDS = 10;
     @GuardedBy("serviceStateLock")
     private long decidedToChangeIsStoppingAt = 0;
     /**
@@ -169,13 +169,13 @@ public class MyService extends Service {
                 MyLog.v(this, "Command " + commandData.getCommand() + " ignored");
                 break;
             default:
-                receiveOtherCommand(commandData, startId);
+                receiveOtherCommand(commandData);
                 break;
         }
         mLatestProcessedStartId = startId;
     }
 
-    private void receiveOtherCommand(CommandData commandData, int startId) {
+    private void receiveOtherCommand(CommandData commandData) {
         if (!isForcedToStop()) {
             initialize();
             addToMainQueue(commandData);
@@ -307,7 +307,7 @@ public class MyService extends Service {
     private TriState shouldStop() {
         boolean doStop = !MyContextHolder.get().isReady() || isForcedToStop()
                 || !isAnythingToExecuteNow();
-        if (!couldSetIsStopping(doStop, false)) {
+        if (!setIsStopping(doStop, false)) {
             return TriState.UNKNOWN;
         }
         if (doStop) {
@@ -317,40 +317,60 @@ public class MyService extends Service {
         }
     }
 
-    private boolean couldSetIsStopping(boolean doStop, boolean forceStopNow) {
-        boolean forced = false;
+    /** @return true if succeeded */
+    private boolean setIsStopping(boolean doStop, boolean forceStopNow) {
+        boolean decided = false;
+        boolean success = false;
+        StringBuilder logMsg = new StringBuilder("setIsStopping ");
         synchronized (serviceStateLock) {
             if (doStop == mIsStopping) {
-                MyLog.v(this, "Not changed: doStop=" + doStop);
-                return true;
+                logMsg.append("Continuing " + (doStop ? "stopping" : "starting"));
+                decided = true;
+                success = true;
             }
-            if (!mInitialized && !doStop) {
-                MyLog.v(this, "!mInitialized && !doStop");
-                return false;
+            if (!decided && !mInitialized && !doStop) {
+                logMsg.append("Cannot start when not initialized");
+                decided = true;
             }
-            if (!doStop && mForcedToStop) {
-                MyLog.v(this, "forcedToStop flag");
-                return false;
+            if (!decided && !doStop && mForcedToStop) {
+                logMsg.append("Cannot start due to forcedToStop flag");
+                decided = true;
             }
-            if (doStop && !RelativeTime.moreSecondsAgoThan(decidedToChangeIsStoppingAt, START_TO_STOP_CHANGE_MIN_PERIOD_SECONDS)) {
+            if (!decided
+                    && doStop
+                    && !RelativeTime.moreSecondsAgoThan(decidedToChangeIsStoppingAt,
+                            START_TO_STOP_CHANGE_MIN_PERIOD_SECONDS)) {
                 if (forceStopNow) {
-                    forced = true;
+                    logMsg.append("Forced to stop");
+                    success = true;
                 } else {
-                    MyLog.v(this, "Waiting: decided to start only " + RelativeTime.secondsAgo(decidedToChangeIsStoppingAt) + " second ago");
-                    return false;
+                    logMsg.append("Cannot stop now, decided to start only "
+                            + RelativeTime.secondsAgo(decidedToChangeIsStoppingAt) + " second ago");
+                }
+                decided = true;
+            }
+            if (!decided) {
+                success = true;
+                if (doStop) {
+                    logMsg.append("Stopping");
+                } else {
+                    logMsg.append("Starting");
                 }
             }
-            decidedToChangeIsStoppingAt = System.currentTimeMillis();
-            mIsStopping = doStop;
+            if (success && doStop != mIsStopping) {
+                decidedToChangeIsStoppingAt = System.currentTimeMillis();
+                mIsStopping = doStop;
+            }
         }
-        if (doStop) {
-            MyLog.v(this, (forced ? "Forced to stop" : "Stopping") + "; startId=" + mLatestProcessedStartId 
-                        + "; " + (totalQueuesSize() == 0 ? "queue is empty"  : "queueSize=" + totalQueuesSize())
-                        );
-        } else {
-            MyLog.v(this, "Reverted to Starting; startId=" + mLatestProcessedStartId);
+        if (success) {
+            logMsg.append("; startId=" + mLatestProcessedStartId);
         }
-        return true;
+        if (success && doStop) {
+            logMsg.append("; "
+                    + (totalQueuesSize() == 0 ? "queue is empty" : "queueSize=" + totalQueuesSize()));
+        }
+        MyLog.v(this, logMsg.toString());
+        return success;
     }
 
     private void startExecution() {
@@ -475,7 +495,7 @@ public class MyService extends Service {
      * @param boolean forceNow 
      */
     private void stopDelayed(boolean forceNow) {
-        if (!couldSetIsStopping(true, forceNow) && !forceNow) {
+        if (!setIsStopping(true, forceNow) && !forceNow) {
             return;
         }
         if (!couldStopExecutor(forceNow) && !forceNow) {

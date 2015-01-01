@@ -176,7 +176,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 ok = !user.isEmpty();
             } catch (ConnectionException e) {
                 errorLogged = true;
-                logConnectionException(e, (follow ? "Follow" : "Stop following " + oid));
+                logConnectionException(e, follow ? "Follow" : "Stop following " + oid);
             }
         } else {
             MyLog.e(this,

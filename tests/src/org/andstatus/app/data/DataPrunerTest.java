@@ -49,7 +49,7 @@ public class DataPrunerTest extends InstrumentationTestCase  {
         
         // See http://stackoverflow.com/questions/6633748/file-lastmodified-is-never-what-was-set-with-file-setlastmodified
         long lastModifiedNew = (System.currentTimeMillis()
-                - MyLog.daysToMillis(DataPruner.MAX_DAYS_LOGS_TO_KEEP + 1)) / 1000 * 1000;
+                - java.util.concurrent.TimeUnit.DAYS.toMillis(DataPruner.MAX_DAYS_LOGS_TO_KEEP + 1)) / 1000 * 1000;
         if (logFile1.setLastModified(lastModifiedNew)) {
             clearPrunedDate();
             File logFile2 = MyLog.getLogFile(filename, true);

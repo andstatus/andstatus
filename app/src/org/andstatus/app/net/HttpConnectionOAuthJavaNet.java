@@ -51,6 +51,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
+    public static final String UTF_8 = "UTF-8";
     private static final String NON_JSON_RESPONSE = ", non-JSON response: '";
     private static final String ERROR_GETTING = "Error getting '";
     private static final String COMMA_STATUS = "', status=";
@@ -80,16 +81,16 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
             conn.setDoOutput(true);
             conn.setDoInput(true);
             
-            writer = new OutputStreamWriter(conn.getOutputStream(), "UTF-8");
+            writer = new OutputStreamWriter(conn.getOutputStream(), UTF_8);
             writer.write(requestBody);
             writer.close();
             
             if(conn.getResponseCode() != 200) {
-                String msg = HttpJavaNetUtils.readAll(new InputStreamReader(conn.getErrorStream(), "UTF-8"));
+                String msg = HttpJavaNetUtils.readAll(new InputStreamReader(conn.getErrorStream(), UTF_8));
                 MyLog.i(this, "Server returned an error response: " + msg);
                 MyLog.i(this, "Server returned an error response: " + conn.getResponseMessage());
             } else {
-                String response = HttpJavaNetUtils.readAll(new InputStreamReader(conn.getInputStream(), "UTF-8"));
+                String response = HttpJavaNetUtils.readAll(new InputStreamReader(conn.getInputStream(), UTF_8));
                 JSONObject jso = new JSONObject(response);
                 if (jso != null) {
                     consumerKey = jso.getString("client_id");
@@ -152,7 +153,7 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
                     result = new JSONObject(HttpJavaNetUtils.readAll(conn.getInputStream()));
                     break;
                 default:
-                    String responseString = HttpJavaNetUtils.readAll(new InputStreamReader(conn.getErrorStream(), "UTF-8"));
+                    String responseString = HttpJavaNetUtils.readAll(new InputStreamReader(conn.getErrorStream(), UTF_8));
                     throw exceptionFromJsonErrorResponse(path, responseCode, responseString, StatusCode.UNKNOWN);
             }
         } catch (JSONException e) {
@@ -188,14 +189,14 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
     }
 
     private void writeJson(HttpURLConnection conn, JSONObject formParams) throws IOException,
-            UnsupportedEncodingException, OAuthMessageSignerException, OAuthExpectationFailedException, OAuthCommunicationException {
+            OAuthMessageSignerException, OAuthExpectationFailedException, OAuthCommunicationException {
         conn.setRequestProperty("Content-Type", "application/json");
         setAuthorization(conn, getConsumer(), false);
         
         OutputStreamWriter writer = null;
         try {
             OutputStream os = conn.getOutputStream();
-            writer = new OutputStreamWriter(os, "UTF-8");
+            writer = new OutputStreamWriter(os, UTF_8);
             String toWrite = formParams.toString(); 
             writer.write(toWrite);
             writer.close();
@@ -276,7 +277,7 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
                         }
                         break;                        
                     default:
-                        responseString = HttpJavaNetUtils.readAll(new InputStreamReader(conn.getErrorStream(), "UTF-8"));
+                        responseString = HttpJavaNetUtils.readAll(new InputStreamReader(conn.getErrorStream(), UTF_8));
                         throw exceptionFromJsonErrorResponse(logmsg, responseCode, responseString, statusCode);
                 }
             } while (!done);
@@ -289,18 +290,23 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
         return result;
     }
 
-    public ConnectionException exceptionFromJsonErrorResponse(String path, int responseCode, String responseString,
-            StatusCode statusCode) {
+    public ConnectionException exceptionFromJsonErrorResponse(String path, int responseCode,
+            String responseString,
+            StatusCode statusCodeIn) {
+        StatusCode statusCode = statusCodeIn;
         ConnectionException ce = null;
         try {
             JSONObject jsonError = new JSONObject(responseString);
             String error = jsonError.optString("error");
             if (statusCode == StatusCode.UNKNOWN) {
-                statusCode = (error.indexOf("not found") < 0 ? StatusCode.UNKNOWN : StatusCode.NOT_FOUND);
+                statusCode = (error.indexOf("not found") < 0 ? StatusCode.UNKNOWN
+                        : StatusCode.NOT_FOUND);
             }
-            ce = new ConnectionException(statusCode, ERROR_GETTING + path + COMMA_STATUS + responseCode + ", error='" + error + "'");
+            ce = new ConnectionException(statusCode, ERROR_GETTING + path + COMMA_STATUS
+                    + responseCode + ", error='" + error + "'");
         } catch (JSONException e) {
-            ce = ConnectionException.fromStatusCodeAndThrowable(statusCode, ERROR_GETTING + path + COMMA_STATUS + responseCode + NON_JSON_RESPONSE + responseString + "'", e);
+            ce = ConnectionException.fromStatusCodeAndThrowable(statusCode, ERROR_GETTING + path
+                    + COMMA_STATUS + responseCode + NON_JSON_RESPONSE + responseString + "'", e);
         }
         return ce;
     }

@@ -531,11 +531,6 @@ public class MyLog {
         return out;
     }
 
-    /** TODO: java.util.concurrent.TimeUnit.DAYS.toMillis(maxDays) since API 9  */
-    public static long daysToMillis(long days) {
-        return days * (1000L * 60 * 60 * 24); 
-    }
-
     public static void logNetworkLevelMessage(Object objTag, Object obj) {
         if (obj != null && isLoggable(objTag, VERBOSE) 
                 && MyPreferences.getBoolean(MyPreferences.KEY_LOG_NETWORK_LEVEL_MESSAGES, false)) {
@@ -598,10 +593,12 @@ public class MyLog {
         long now = System.currentTimeMillis();
         while (true) {
             long lastTime = LAST_TIME_MS.get();
-            if (lastTime >= now)
+            if (lastTime >= now) {
                 now = lastTime + 1;
-            if (LAST_TIME_MS.compareAndSet(lastTime, now))
+            }
+            if (LAST_TIME_MS.compareAndSet(lastTime, now)) {
                 return now;
+            }
         }
     }
 }

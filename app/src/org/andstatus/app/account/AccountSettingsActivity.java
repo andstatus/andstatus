@@ -770,9 +770,11 @@ public class AccountSettingsActivity extends Activity {
         protected void onPreExecute() {
             dlg = ProgressDialog.show(AccountSettingsActivity.this,
                     getText(R.string.dialog_title_acquiring_a_request_token),
-                    getText(R.string.dialog_summary_acquiring_a_request_token), 
-                    true, // indeterminate duration
-                    false // not cancel-able
+                    getText(R.string.dialog_summary_acquiring_a_request_token),
+                    // indeterminate duration
+                    true, 
+                    // not cancelable
+                    false 
                     );
         }
 
@@ -892,9 +894,11 @@ public class AccountSettingsActivity extends Activity {
         protected void onPreExecute() {
             dlg = ProgressDialog.show(AccountSettingsActivity.this,
                     getText(R.string.dialog_title_acquiring_an_access_token),
-                    getText(R.string.dialog_summary_acquiring_an_access_token), 
-                    true, // indeterminate duration
-                    false // not cancelable
+                    getText(R.string.dialog_summary_acquiring_an_access_token),
+                 // indeterminate duration
+                    true, 
+                 // not cancelable
+                    false 
                     ); 
         }
 
@@ -944,16 +948,8 @@ public class AccountSettingsActivity extends Activity {
                             secret = consumer.getTokenSecret();
                             authenticated = true;
                         }
-                    } catch (OAuthMessageSignerException e) {
-                        message = e.getMessage();
-                        MyLog.e(this, e);
-                    } catch (OAuthNotAuthorizedException e) {
-                        message = e.getMessage();
-                        MyLog.e(this, e);
-                    } catch (OAuthExpectationFailedException e) {
-                        message = e.getMessage();
-                        MyLog.e(this, e);
-                    } catch (OAuthCommunicationException e) {
+                    } catch (OAuthMessageSignerException | OAuthNotAuthorizedException
+                            | OAuthExpectationFailedException | OAuthCommunicationException e) {
                         message = e.getMessage();
                         MyLog.e(this, e);
                     } finally {
@@ -1021,9 +1017,11 @@ public class AccountSettingsActivity extends Activity {
         protected void onPreExecute() {
             dlg = ProgressDialog.show(AccountSettingsActivity.this,
                     getText(R.string.dialog_title_checking_credentials),
-                    getText(R.string.dialog_summary_checking_credentials), 
-                    true, // indeterminate duration
-                    false // not cancelable
+                    getText(R.string.dialog_summary_checking_credentials),
+                 // indeterminate duration
+                    true, 
+                 // not cancelable
+                    false 
                     );
 
             synchronized (AccountSettingsActivity.this) {

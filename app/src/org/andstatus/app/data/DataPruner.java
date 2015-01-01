@@ -44,14 +44,14 @@ import org.andstatus.app.util.*;
  * old Messages, log files...
  */
 public class DataPruner {
-	private MyContext mMyContext;
+    private MyContext mMyContext;
     private ContentResolver mContentResolver;
     private int mDeleted = 0;
     static final long MAX_DAYS_LOGS_TO_KEEP = 10;
     static final long PRUNE_MIN_PERIOD_DAYS = 1;	
-    
+
     public DataPruner(MyContext myContext) {
-		mMyContext = myContext;
+        mMyContext = myContext;
         mContentResolver = myContext.context().getContentResolver();
     }
 
@@ -61,11 +61,11 @@ public class DataPruner {
     public boolean prune() {
         final String method = "prune";
         boolean pruned = false;
-		if (!isTimeToPrune()) {
-		    MyLog.v(this, method + " skipped");
-			return pruned;
-		}
-       
+        if (!isTimeToPrune()) {
+            MyLog.v(this, method + " skipped");
+            return pruned;
+        }
+
         mDeleted = 0;
         int nDeletedTime = 0;
         // We're using global preferences here
@@ -86,7 +86,7 @@ public class DataPruner {
                 + " userf." + User._ID + "=" + FollowingUser.TABLE_NAME + "." + FollowingUser.FOLLOWING_USER_ID
                 + " AND " + FollowingUser.TABLE_NAME + "." + FollowingUser.USER_FOLLOWED + "=1"
                 + ")";
-        
+
         int maxDays = Integer.parseInt(sp.getString(MyPreferences.KEY_HISTORY_TIME, "3"));
         long latestTimestamp = 0;
 
@@ -98,10 +98,10 @@ public class DataPruner {
         Cursor cursor = null;
         try {
             if (maxDays > 0) {
-                latestTimestamp = System.currentTimeMillis() - MyLog.daysToMillis(maxDays);
+                latestTimestamp = System.currentTimeMillis() - java.util.concurrent.TimeUnit.DAYS.toMillis(maxDays);
                 SelectionAndArgs sa = new SelectionAndArgs();
                 sa.addSelection(Msg.TABLE_NAME + "." + MyDatabase.Msg.INS_DATE + " <  ?", new String[] {
-                    String.valueOf(latestTimestamp)
+                        String.valueOf(latestTimestamp)
                 });
                 sa.selection += " AND " + sqlNotFavoritedMessage;
                 sa.selection += " AND " + sqlNotLatestMessageByFollowedUser;
@@ -129,7 +129,7 @@ public class DataPruner {
                     if (latestTimestampSize > 0) {
                         SelectionAndArgs sa = new SelectionAndArgs();
                         sa.addSelection(Msg.TABLE_NAME + "." + MyDatabase.Msg.INS_DATE + " <=  ?", new String[] {
-                            String.valueOf(latestTimestampSize)
+                                String.valueOf(latestTimestampSize)
                         });
                         sa.selection += " AND " + sqlNotFavoritedMessage;
                         sa.selection += " AND " + sqlNotLatestMessageByFollowedUser;
@@ -138,7 +138,7 @@ public class DataPruner {
                     }
                 }
             }
-			pruned = true;
+            pruned = true;
         } catch (Exception e) {
             MyLog.i(this, method + " failed", e);
         } finally {
@@ -148,12 +148,12 @@ public class DataPruner {
         if (mDeleted > 0) {
             pruneAttachments();
         }
-		pruneLogs(MAX_DAYS_LOGS_TO_KEEP);
-		setDataPrunedNow();
+        pruneLogs(MAX_DAYS_LOGS_TO_KEEP);
+        setDataPrunedNow();
         if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
             MyLog.v(this,
                     method + " " + (pruned ? "succeded" : "failed") + "; History time=" + maxDays + " days; deleted " + nDeletedTime
-                            + " , before " + new Date(latestTimestamp).toString());
+                    + " , before " + new Date(latestTimestamp).toString());
             MyLog.v(this, method + "; History size=" + maxSize + " messages; deleted "
                     + nDeletedSize + " of " + nTweets + " messages, before " + new Date(latestTimestampSize).toString());
         }
@@ -194,16 +194,16 @@ public class DataPruner {
         MyPreferences.putLong(MyPreferences.KEY_DATA_PRUNED_DATE, System.currentTimeMillis());
     }
 
-	private boolean isTimeToPrune()	{
-		return !mMyContext.isInForeground() && RelativeTime.moreSecondsAgoThan(
-		    MyPreferences.getLong(MyPreferences.KEY_DATA_PRUNED_DATE), 
-			PRUNE_MIN_PERIOD_DAYS * RelativeTime.SECONDS_IN_A_DAY);
-	}
+    private boolean isTimeToPrune()	{
+        return !mMyContext.isInForeground() && RelativeTime.moreSecondsAgoThan(
+                MyPreferences.getLong(MyPreferences.KEY_DATA_PRUNED_DATE), 
+                PRUNE_MIN_PERIOD_DAYS * RelativeTime.SECONDS_IN_A_DAY);
+    }
 
     long pruneLogs(long maxDaysToKeep) {
         final String method = "pruneLogs";
         long latestTimestamp = System.currentTimeMillis() 
-                - MyLog.daysToMillis(maxDaysToKeep);
+                - java.util.concurrent.TimeUnit.DAYS.toMillis(maxDaysToKeep);
         long count = 0;
         File dir = MyLog.getLogDir(true);
         if (dir == null) {
@@ -225,7 +225,7 @@ public class DataPruner {
         if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
             MyLog.v(this,
                     method + "; deleted " + count
-                            + " files, before " + new Date(latestTimestamp).toString());
+                    + " files, before " + new Date(latestTimestamp).toString());
         }
         return count;
     }

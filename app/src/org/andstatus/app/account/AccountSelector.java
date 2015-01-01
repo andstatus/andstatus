@@ -106,12 +106,11 @@ public class AccountSelector extends ListActivity {
             list.add(map);
         }
         
-        ListAdapter adapter = new MySimpleAdapter(this, 
+        return new MySimpleAdapter(this, 
                 list, 
                 R.layout.accountlist_item, 
                 new String[] {KEY_VISIBLE_NAME, KEY_CREDENTIALS_VERIFIED, KEY_SYNC_AUTO, BaseColumns._ID, KEY_TYPE}, 
                 new int[] {R.id.visible_name, R.id.credentials_verified, R.id.sync_auto, R.id.id, R.id.type});
-        return adapter;
     }
 
     private void returnSelectedAccount(MyAccount ma) {

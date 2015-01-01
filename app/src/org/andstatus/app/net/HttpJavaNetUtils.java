@@ -30,6 +30,8 @@ import java.util.Map;
 
 public class HttpJavaNetUtils {
 
+    public static final String UTF_8 = "UTF-8";
+
     private HttpJavaNetUtils() {
     }
     
@@ -40,9 +42,9 @@ public class HttpJavaNetUtils {
                 if(sb.length() > 0) {
                     sb.append('&');
                 }
-                sb.append(URLEncoder.encode(entry.getKey(), "UTF-8"));
+                sb.append(URLEncoder.encode(entry.getKey(), UTF_8));
                 sb.append('=');
-                sb.append(URLEncoder.encode(entry.getValue(), "UTF-8"));
+                sb.append(URLEncoder.encode(entry.getValue(), UTF_8));
             }
             
             return sb.toString();
@@ -52,7 +54,7 @@ public class HttpJavaNetUtils {
     }
 
     static String readAll(InputStream s) throws IOException {
-        return readAll(new InputStreamReader(s, "UTF-8"));
+        return readAll(new InputStreamReader(s, UTF_8));
     }
     
     static String readAll(Reader r) throws IOException {

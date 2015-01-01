@@ -30,7 +30,7 @@ public class ConversationViewLoaderTest extends InstrumentationTestCase {
 
     public void testLoad() {
         Context context = MyContextHolder.get().context();
-        ConversationViewLoader loader = new ConversationViewLoader(context, ma, selectedMessageId, null);
+        ConversationViewLoader loader = new ConversationViewLoader(context, ma, selectedMessageId);
         loader.load();
         List<ConversationOneMessage> list = loader.getMsgs();
         assertTrue("List is not empty", !list.isEmpty());

@@ -46,7 +46,8 @@ public class MySimpleCursorAdapter extends SimpleCursorAdapter {
     public long getItemId(int position) {
         if (mCursor == null) {
             return 0;
-        } if (mCursor.isClosed()) {
+        } 
+        if (mCursor.isClosed()) {
             MyLog.w(this, MyLog.getStackTrace(new IllegalStateException("getItemId, pos=" + position + " Closed cursor")));
             return 0;
         }
@@ -88,12 +89,12 @@ public class MySimpleCursorAdapter extends SimpleCursorAdapter {
             }
         }
         if (view == null) {
-            view = getEmptyView(position, convertView, parent);
+            view = getEmptyView();
         }
         return view;
     }
 
-    private View getEmptyView(int position, View convertView, ViewGroup parent) {
+    private View getEmptyView() {
         return View.inflate(context, layout, null); 
     }
 

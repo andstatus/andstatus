@@ -98,8 +98,11 @@ public final class MyContextHolder {
                 if (get().initialized() && arePreferencesChanged()) {
                     long preferencesChangeTimeLast = MyPreferences.getPreferencesChangeTime() ;
                     if (get().preferencesChangeTime() != preferencesChangeTimeLast) {
-                        MyLog.v(TAG, "Preferences changed " + (java.lang.System.currentTimeMillis() - preferencesChangeTimeLast)/1000 
-                                +  " seconds ago, refreshing...");
+                        MyLog.v(TAG, "Preferences changed "
+                                + java.util.concurrent.TimeUnit.MILLISECONDS
+                                        .toSeconds(java.lang.System.currentTimeMillis()
+                                                - preferencesChangeTimeLast)
+                                + " seconds ago, refreshing...");
                         get().setExpired();
                     }
                 }

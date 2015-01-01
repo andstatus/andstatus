@@ -119,54 +119,8 @@ public class SimpleFileDialog {
         }
         mSubdirs = getDirectories(mDir);
 
-        class SimpleFileDialogOnClickListener implements DialogInterface.OnClickListener {
-            @Override
-            public void onClick(DialogInterface dialog, int item) {
-                String dirOld = mDir;
-                String selectedName = "" + ((AlertDialog) dialog).getListView().getAdapter().getItem(item);
-                if (selectedName.charAt(selectedName.length() - 1) == '/') {
-                    selectedName = selectedName.substring(0, selectedName.length() - 1);
-                }
-
-                // Navigate into the sub-directory
-                if ("..".equals(selectedName)) {
-                    int slashInd = mDir.lastIndexOf("/");
-                    if (slashInd >= 0) {
-                        mDir = mDir.substring(0, slashInd);
-                        if (TextUtils.isEmpty(mDir)) {
-                            mDir = getRootFolder();
-                        }
-                    }
-                } else {
-                    mDir += "/" + selectedName;
-                }
-
-                mSelectedFileName = mDefaultFileName;
-                File dir = new File(mDir);
-                if (dir.isFile()) {
-                    mDir = dirOld;
-                    mSelectedFileName = selectedName;
-                } else {
-                    autoSelectFileInDirectory(dir);
-                }
-                updateDirectory();
-            }
-
-            private void autoSelectFileInDirectory(File dir) {
-                File[] files = dir.listFiles();
-                if (files != null ) {
-                    for (File file : files) {
-                        if (file.isFile()) {
-                            mSelectedFileName = file.getName();
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-
         AlertDialog.Builder dialogBuilder = createDirectoryChooserDialog(mDir, mSubdirs,
-                new SimpleFileDialogOnClickListener());
+                new DirectoryChooserOnClickListener());
 
         dialogBuilder.setPositiveButton("OK", new OnClickListener() {
             @Override
@@ -191,6 +145,52 @@ public class SimpleFileDialog {
         dirsDialog.show();
     }
 
+    private class DirectoryChooserOnClickListener implements DialogInterface.OnClickListener {
+        @Override
+        public void onClick(DialogInterface dialog, int item) {
+            String dirOld = mDir;
+            String selectedName = "" + ((AlertDialog) dialog).getListView().getAdapter().getItem(item);
+            if (selectedName.charAt(selectedName.length() - 1) == '/') {
+                selectedName = selectedName.substring(0, selectedName.length() - 1);
+            }
+
+            // Navigate into the sub-directory
+            if ("..".equals(selectedName)) {
+                int slashInd = mDir.lastIndexOf("/");
+                if (slashInd >= 0) {
+                    mDir = mDir.substring(0, slashInd);
+                    if (TextUtils.isEmpty(mDir)) {
+                        mDir = getRootFolder();
+                    }
+                }
+            } else {
+                mDir += "/" + selectedName;
+            }
+
+            mSelectedFileName = mDefaultFileName;
+            File dir = new File(mDir);
+            if (dir.isFile()) {
+                mDir = dirOld;
+                mSelectedFileName = selectedName;
+            } else {
+                autoSelectFileInDirectory(dir);
+            }
+            updateDirectory();
+        }
+
+        private void autoSelectFileInDirectory(File dir) {
+            File[] files = dir.listFiles();
+            if (files != null ) {
+                for (File file : files) {
+                    if (file.isFile()) {
+                        mSelectedFileName = file.getName();
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    
     private String fixInputDir(String dirIn) {
         String dir = dirIn;
         if (!isExistingDirectoryLogged(dir)) {

@@ -185,9 +185,8 @@ public final class MyAccount {
                 myAccount.connection = connectionData.getConnectionClass().newInstance();
                 myAccount.connection.enrichConnectionData(connectionData);
                 myAccount.connection.setAccountData(connectionData);
-            } catch (InstantiationException e) {
-                MyLog.i(TAG, e);
-            } catch (IllegalAccessException e) {
+            } catch (ReflectiveOperationException e) {
+                myAccount.connection = null;
                 MyLog.i(TAG, e);
             }
         }

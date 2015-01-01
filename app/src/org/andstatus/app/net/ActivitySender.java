@@ -96,7 +96,7 @@ class ActivitySender {
                 if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
                     MyLog.v(this, "verb '" + verb + "' object id='" + objectId + "' " + jso.toString(2));
                 }
-                if (verb.equals("post") && !TextUtils.isEmpty(objectId)) {
+                if ("post".equals(verb) && !TextUtils.isEmpty(objectId)) {
                     activity.put("verb", "update");
                     jso = conu.httpConnection.postRequest(conu.url, activity);
                 }

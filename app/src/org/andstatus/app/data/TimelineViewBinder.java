@@ -69,7 +69,7 @@ public class TimelineViewBinder implements ViewBinder {
                 break;
             case R.id.attached_image:
                 if ( view instanceof ImageView) {
-                    setAttachedImage(cursor, columnIndex, (ImageView) view);
+                    setAttachedImage(cursor, (ImageView) view);
                 }
                 break;
             case R.id.message_favorited:
@@ -156,7 +156,7 @@ public class TimelineViewBinder implements ViewBinder {
         view.setImageDrawable(avatarDrawable.getDrawable());
     }
 
-    private void setAttachedImage(Cursor cursor, int columnIndex, ImageView view) {
+    private void setAttachedImage(Cursor cursor, ImageView view) {
         Drawable drawable = AttachedImageDrawable.drawableFromCursor(cursor);
         if (drawable != null) {
             view.setVisibility(View.VISIBLE);

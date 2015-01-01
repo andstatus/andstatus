@@ -16,7 +16,6 @@
 
 package org.andstatus.app.service;
 
-import android.media.tv.TvInputService.HardwareSession;
 import android.text.TextUtils;
 
 import org.andstatus.app.data.DataInserter;

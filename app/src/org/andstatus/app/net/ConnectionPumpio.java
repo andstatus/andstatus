@@ -212,8 +212,8 @@ public class ConnectionPumpio extends Connection {
     }
 
     @Override
-    public MbMessage updateStatus(String message, String inReplyToId, Uri mediaUri) throws ConnectionException {
-        message = toHtmlIfAllowed(message);
+    public MbMessage updateStatus(String messageIn, String inReplyToId, Uri mediaUri) throws ConnectionException {
+        String message = toHtmlIfAllowed(messageIn);
         ActivitySender sender = ActivitySender.fromContent(this, message);
         sender.setInReplyTo(inReplyToId);
         sender.setMediaUri(mediaUri);
@@ -298,8 +298,8 @@ public class ConnectionPumpio extends Connection {
     }
     
     @Override
-    public MbMessage postDirectMessage(String message, String recipientId) throws ConnectionException {
-        message = toHtmlIfAllowed(message);
+    public MbMessage postDirectMessage(String messageIn, String recipientId) throws ConnectionException {
+        String message = toHtmlIfAllowed(messageIn);
         ActivitySender sender = ActivitySender.fromContent(this, message);
         if (!TextUtils.isEmpty(recipientId)) {
             sender.setRecipient(recipientId);

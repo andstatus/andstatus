@@ -136,7 +136,7 @@ public class ConversationActivity extends Activity implements MyServiceListener,
                                 MyProvider.uriToAccountUserId(getIntent().getData()));
             }
             ConversationViewLoader loader = new ConversationViewLoader(
-                    ConversationActivity.this, ma, selectedMessageId, contextMenu);
+                    ConversationActivity.this, ma, selectedMessageId);
             if (ma != null) {
                 loader.load();
             }

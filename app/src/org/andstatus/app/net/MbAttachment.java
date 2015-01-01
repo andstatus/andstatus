@@ -56,25 +56,33 @@ public class MbAttachment {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         MbAttachment other = (MbAttachment) obj;
-        if (contentType != other.contentType)
+        if (contentType != other.contentType) {
             return false;
+        }
         if (oid == null) {
-            if (other.oid != null)
+            if (other.oid != null) {
                 return false;
-        } else if (!oid.equals(other.oid))
+            }
+        } else if (!oid.equals(other.oid)) {
             return false;
+        }
         if (uri == null) {
-            if (other.uri != null)
+            if (other.uri != null) {
                 return false;
-        } else if (!uri.equals(other.uri))
+            }
+        } else if (!uri.equals(other.uri)) {
             return false;
+        }
         return true;
     }
 

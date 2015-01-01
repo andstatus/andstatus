@@ -79,10 +79,10 @@ public class ConversationViewAdapter extends BaseAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        return oneMessageToView(oMsgs.get(position), parent);
+        return oneMessageToView(oMsgs.get(position));
     }
     
-    private View oneMessageToView(ConversationOneMessage oMsg, ViewGroup parent) {
+    private View oneMessageToView(ConversationOneMessage oMsg) {
         final String method = "oneMessageToView";
         if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
             MyLog.v(this, method

@@ -17,7 +17,7 @@ public class MySimpleAdapter extends SimpleAdapter {
     @Override
     public long getItemId(int position) {
         @SuppressWarnings("unchecked")
-		Map<String, ?> item = (Map<String, ?>) getItem(position);
+        Map<String, ?> item = (Map<String, ?>) getItem(position);
         return Long.parseLong( (String) item.get(BaseColumns._ID));
     }
 

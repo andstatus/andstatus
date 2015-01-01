@@ -36,7 +36,7 @@ public class MyServiceManager extends BroadcastReceiver {
     private static final String TAG = MyServiceManager.class.getSimpleName();
 
     private final long instanceId = InstanceId.next();
-    
+
     public MyServiceManager() {
         MyLog.v(this, "Created, instanceId=" + instanceId );
     }
@@ -58,7 +58,7 @@ public class MyServiceManager extends BroadcastReceiver {
      * How long are we waiting for {@link MyService} response before deciding that the service is stopped
      */
     private static final int STATE_QUERY_TIMEOUT_SECONDS = 3;
-    
+
     @Override
     public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();
@@ -109,11 +109,11 @@ public class MyServiceManager extends BroadcastReceiver {
     public static void sendManualForegroundCommand(CommandData commandData) {
         sendForegroundCommand(commandData.setManuallyLaunched(true));
     }
-    
+
     public static void sendForegroundCommand(CommandData commandData) {
         sendCommand(commandData.setInForeground(true));
     }
-    
+
     static void sendCommandEvenForUnavailable(CommandData commandData) {
         // Using explicit service intent, see http://stackoverflow.com/questions/18924640/starting-android-service-using-explicit-vs-implicit-intent
         Intent serviceIntent = new Intent(MyContextHolder.get().context(), MyService.class);
@@ -122,14 +122,14 @@ public class MyServiceManager extends BroadcastReceiver {
         }
         MyContextHolder.get().context().startService(serviceIntent);
     }
-    
+
     /**
      * Stop  {@link MyService} asynchronously
      */
     public static synchronized void stopService() {
-		if ( !MyContextHolder.get().isReady() ) {
-			return;
-		}
+        if ( !MyContextHolder.get().isReady() ) {
+            return;
+        }
         // Don't do "context.stopService", because we may lose some information and (or) get Force Close
         // This is "mild" stopping
         CommandData element = new CommandData(CommandEnum.STOP_SERVICE, "");
@@ -143,19 +143,19 @@ public class MyServiceManager extends BroadcastReceiver {
      */
     public static MyServiceState getServiceState() {
         synchronized(mServiceState) {
-           long time = System.nanoTime();
-           if ( waitingForServiceState && (time - stateQueuedTime) > (STATE_QUERY_TIMEOUT_SECONDS * 1000000000L) ) {
-               // Timeout expired
-               waitingForServiceState = false;
-               mServiceState = MyServiceState.STOPPED;
-           } else if ( !waitingForServiceState && mServiceState == MyServiceState.UNKNOWN ) {
-               // State is unknown, we need to query the Service again
-               waitingForServiceState = true;
-               stateQueuedTime = time;
-               mServiceState = MyServiceState.UNKNOWN;
-               CommandData element = new CommandData(CommandEnum.BROADCAST_SERVICE_STATE, "");
-               MyContextHolder.get().context().sendBroadcast(element.toIntent(MyService.intentForThisInitialized()));
-           }
+            long time = System.nanoTime();
+            if ( waitingForServiceState && (time - stateQueuedTime) > java.util.concurrent.TimeUnit.SECONDS.toMillis(STATE_QUERY_TIMEOUT_SECONDS)) {
+                // Timeout expired
+                waitingForServiceState = false;
+                mServiceState = MyServiceState.STOPPED;
+            } else if ( !waitingForServiceState && mServiceState == MyServiceState.UNKNOWN ) {
+                // State is unknown, we need to query the Service again
+                waitingForServiceState = true;
+                stateQueuedTime = time;
+                mServiceState = MyServiceState.UNKNOWN;
+                CommandData element = new CommandData(CommandEnum.BROADCAST_SERVICE_STATE, "");
+                MyContextHolder.get().context().sendBroadcast(element.toIntent(MyService.intentForThisInitialized()));
+            }
         }
         return mServiceState;
     }
@@ -165,7 +165,7 @@ public class MyServiceManager extends BroadcastReceiver {
     private static Boolean mServiceAvailable = true;
     @GuardedBy("serviceAvailableLock")
     private static long timeWhenTheServiceWillBeAvailable = 0;
-	
+
     public static boolean isServiceAvailable() {
         boolean isAvailable = MyContextHolder.get().isReady();
         if (!isAvailable) {

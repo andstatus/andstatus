@@ -31,7 +31,7 @@ import java.util.Map.Entry;
 
 public class SharedPreferencesUtil {
     private static final String TAG = SharedPreferencesUtil.class.getSimpleName();
-    
+
     public static final String FILE_EXTENSION = ".xml";
 
     private SharedPreferencesUtil() {
@@ -41,7 +41,7 @@ public class SharedPreferencesUtil {
         return new File(prefsDirectory(context),
                 context.getPackageName() + "_preferences" + FILE_EXTENSION);
     }
-    
+
     /**
      * @param Context
      * @return Directory for files of SharedPreferences
@@ -83,7 +83,7 @@ public class SharedPreferencesUtil {
             if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
                 MyLog.v(TAG, "delete '" + prefsFileName + "' - nothing to do");
             }
-			return false;
+            return false;
         }
         File prefFile = new File(prefsDirectory(context), prefsFileName + FILE_EXTENSION);
         if (prefFile.exists()) {
@@ -166,7 +166,7 @@ public class SharedPreferencesUtil {
             MessageFormat messageFormat = new MessageFormat(fragment.getText(summaryR)
                     .toString());
             listPref.setSummary(messageFormat.format(new Object[] {
-                summary
+                    summary
             }));
         }
     }
@@ -184,7 +184,7 @@ public class SharedPreferencesUtil {
     public static int isTrueAsInt(Object o) {
         return isTrue(o) ? 1 : 0;
     }
-    
+
     /**
      * Returns true not only for boolean true or String "true", but for "1" also
      */
@@ -209,7 +209,7 @@ public class SharedPreferencesUtil {
         }
         return is;
     }
-    
+
     public static long copyAll(SharedPreferences from, SharedPreferences to) {
         long entryCounter = 0;
         Editor editor = to.edit();

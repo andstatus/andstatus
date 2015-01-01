@@ -77,9 +77,9 @@ public class MyBackupAgentTest extends InstrumentationTestCase {
         assertTrue("Descriptor file created: " + backupManager.getDescriptorFile().getAbsolutePath(), backupManager.getDescriptorFile().exists());
         backupManager.backup();
 
-        assertEquals("Shared preferences backed up", 1, backupManager.getBackupAgent().sharedPreferencesBackedUp);
-        assertEquals("Databases backed up", 1, backupManager.getBackupAgent().databasesBackedUp);
-        assertEquals("Accounts backed up", backupManager.getBackupAgent().accountsBackedUp, MyContextHolder.get()
+        assertEquals("Shared preferences backed up", 1, backupManager.getBackupAgent().getSharedPreferencesBackedUp());
+        assertEquals("Databases backed up", 1, backupManager.getBackupAgent().getDatabasesBackedUp());
+        assertEquals("Accounts backed up", backupManager.getBackupAgent().getAccountsBackedUp(), MyContextHolder.get()
                 .persistentAccounts().size());
         
         assertTrue("Descriptor file was filled: " + backupManager.getDescriptorFile().getAbsolutePath(), backupManager.getDescriptorFile().length() > 10);

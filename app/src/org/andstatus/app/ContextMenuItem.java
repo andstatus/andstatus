@@ -38,16 +38,16 @@ public enum ContextMenuItem {
     BLOCK(16),
     ACT_AS_USER(17),
     ACT_AS(18),
-	OPEN_MESSAGE_PERMALINK(19),
-	VIEW_IMAGE(20),
+    OPEN_MESSAGE_PERMALINK(19),
+    VIEW_IMAGE(20),
     UNKNOWN(100);
 
     private final int id;
-    
+
     ContextMenuItem(int id) {
         this.id = Menu.FIRST + id;
     }
-    
+
     public static ContextMenuItem fromId(int id) {
         for (ContextMenuItem item : ContextMenuItem.values()) {
             if (item.id == id) {
@@ -56,7 +56,7 @@ public enum ContextMenuItem {
         }
         return UNKNOWN;
     }
-    
+
     public MenuItem addTo(Menu menu, int order, int titleRes) {
         return menu.add(Menu.NONE, this.id, order, titleRes);
     }

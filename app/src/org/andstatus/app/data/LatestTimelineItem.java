@@ -196,9 +196,11 @@ public class LatestTimelineItem {
         boolean blnOut = passedMs > frequencyMs;
         
         if (blnOut && MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
-            MyLog.v(this, "It's time to auto update " + timelineType 
-                    + forTheUser()
-                    + ". Minutes passed=" + passedMs/1000/60);
+            MyLog.v(this, "It's time to auto update " 
+                    + timelineType 
+                    + forTheUser() + ". " 
+                    + java.util.concurrent.TimeUnit.MILLISECONDS.toMinutes(passedMs) 
+                    + " minutes passed.");
         }
         return blnOut;
     }

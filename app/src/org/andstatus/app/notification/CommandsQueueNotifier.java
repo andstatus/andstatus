@@ -45,7 +45,7 @@ public class CommandsQueueNotifier {
     public void update(int mainQueueSize, int retryQueueSize) {
         int count = mainQueueSize + retryQueueSize;
         if (count == 0 ) {
-        	myContext.clearNotification(TimelineTypeEnum.ALL);
+            myContext.clearNotification(TimelineTypeEnum.ALL);
         } else if (mNotificationsEnabled && MyPreferences.getDefaultSharedPreferences().getBoolean(MyPreferences.KEY_NOTIFY_OF_COMMANDS_IN_THE_QUEUE, false)) {
             if (mainQueueSize != 0) {
                 MyLog.d(this, mainQueueSize + " commands in Main Queue.");
@@ -66,13 +66,13 @@ public class CommandsQueueNotifier {
 
         Notification.Builder builder =
                 new Notification.Builder(myContext.context())
-                        .setSmallIcon(
-                                MyPreferences.getBoolean(
-                                        MyPreferences.KEY_NOTIFICATION_ICON_ALTERNATIVE, false)
-                                        ? R.drawable.notification_icon_circle
-                                        : R.drawable.notification_icon)
-                        .setContentTitle(messageTitle)
-                        .setContentText(messageText);
+        .setSmallIcon(
+                MyPreferences.getBoolean(
+                        MyPreferences.KEY_NOTIFICATION_ICON_ALTERNATIVE, false)
+                        ? R.drawable.notification_icon_circle
+                                : R.drawable.notification_icon)
+                                .setContentTitle(messageTitle)
+                                .setContentText(messageText);
         // Creates an explicit intent for an Activity in your app
         Intent resultIntent = new Intent(myContext.context(), QueueViewer.class);
 
@@ -87,9 +87,9 @@ public class CommandsQueueNotifier {
         stackBuilder.addNextIntent(resultIntent);
         PendingIntent pendingIntent =
                 stackBuilder.getPendingIntent(
-                    0,
-                    PendingIntent.FLAG_UPDATE_CURRENT
-                );
+                        0,
+                        PendingIntent.FLAG_UPDATE_CURRENT
+                        );
         builder.setContentIntent(pendingIntent);
         myContext.notify(TimelineTypeEnum.ALL, builder.build());
     }

@@ -83,15 +83,12 @@ public abstract class HttpConnection {
      * @return true if something changed (so it needs to be rewritten to persistence...)
      */
     public boolean save(AccountDataWriter dw) {
-        boolean changed = false;
-        // Nothing to save in this implementation
-        return changed;
+        return false;
     }
-    
+
+    /** @return true if changed */
     public boolean save(JSONObject jso) throws JSONException {
-        boolean changed = false;
-        // Nothing to save in this implementation
-        return changed;
+        return false;
     }
     
     /**
