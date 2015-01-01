@@ -14,19 +14,24 @@
 		    <attribute name="in" />
 		    <![CDATA[
 		    var ver_in = attributes.get("in").toString();
-			// project.log("ver_in = " + ver_in);
-			var ver_splitted = ver_in.split("[.]");
+			var ver_splitted = ver_in.split(".");
+			project.log("ver_in = " + ver_in + "; ver_splitted.length=" + ver_splitted.length);
 			var ver_out = "";
 			if ( ver_splitted.length > 0 ) {
 			  	ver_out += ver_splitted[0]; 
 				if ( ver_splitted.length > 1 ) {
-				  ver_out += "." + pad(ver_splitted[1], 2); 
+					// This is e.g. for "14.1-snapshot"
+					var ver_minor_splitted = ver_splitted[1].split("-");
+				  	ver_out += "." + pad(ver_minor_splitted[0], 2);
+				  	if ( ver_minor_splitted.length > 1 ) {
+				  		ver_out += "-" + ver_minor_splitted[1];
+				  	}
 				}
 				if ( ver_splitted.length > 2 ) {
 				  ver_out += "." + pad(ver_splitted[2], 3); 
 				}
 			}
-			// project.log("ver_out = " + ver_out);
+			project.log("ver_out = " + ver_out);
 		    project.setProperty( attributes.get( "out" ), ver_out );
 
 			function pad(n, len) {
