@@ -14,14 +14,15 @@
 		    <attribute name="in" />
 		    <![CDATA[
 		    var ver_in = attributes.get("in").toString();
-			var ver_splitted = ver_in.split(".");
+		    // TODO: Figure out, why split without [] worked for awhile...
+			var ver_splitted = ver_in.split("[.]");
 			project.log("ver_in = " + ver_in + "; ver_splitted.length=" + ver_splitted.length);
 			var ver_out = "";
 			if ( ver_splitted.length > 0 ) {
 			  	ver_out += ver_splitted[0]; 
 				if ( ver_splitted.length > 1 ) {
 					// This is e.g. for "14.1-snapshot"
-					var ver_minor_splitted = ver_splitted[1].split("-");
+					var ver_minor_splitted = ver_splitted[1].split("[-]");
 				  	ver_out += "." + pad(ver_minor_splitted[0], 2);
 				  	if ( ver_minor_splitted.length > 1 ) {
 				  		ver_out += "-" + ver_minor_splitted[1];
