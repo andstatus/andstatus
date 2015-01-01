@@ -185,7 +185,9 @@ public final class MyAccount {
                 myAccount.connection = connectionData.getConnectionClass().newInstance();
                 myAccount.connection.enrichConnectionData(connectionData);
                 myAccount.connection.setAccountData(connectionData);
-            } catch (ReflectiveOperationException e) {
+            // TODO: Since API19 we will use ReflectiveOperationException as a common superclass 
+            // of these two exceptions: InstantiationException and IllegalAccessException
+            } catch (InstantiationException|IllegalAccessException e) {
                 myAccount.connection = null;
                 MyLog.i(TAG, e);
             }

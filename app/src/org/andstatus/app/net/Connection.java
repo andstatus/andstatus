@@ -375,7 +375,7 @@ public abstract class Connection {
         return out;
     }
 
-    public final void setAccountData(OriginConnectionData connectionData) throws ReflectiveOperationException {
+    public final void setAccountData(OriginConnectionData connectionData) throws InstantiationException, IllegalAccessException {
         this.data = connectionData;
         http = connectionData.newHttpConnection();
         http.setConnectionData(HttpConnectionData.fromConnectionData(connectionData));

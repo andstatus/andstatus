@@ -119,7 +119,7 @@ public class OriginConnectionData {
         return connectionClass;
     }
 
-    public HttpConnection newHttpConnection() throws ReflectiveOperationException {
+    public HttpConnection newHttpConnection() throws InstantiationException, IllegalAccessException {
         HttpConnection http = MyContextHolder.get().getHttpConnectionMock();
         if (http == null) {
             http = httpConnectionClass.newInstance();

@@ -25,6 +25,7 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
+import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
 
 public class MyAccountTest  extends InstrumentationTestCase {
@@ -45,11 +46,13 @@ public class MyAccountTest  extends InstrumentationTestCase {
     
     private void createAccountOfOriginType(String userName, OriginType originType) {
         MyContext myContext = MyContextHolder.get();
+        String logMsg = "Creating account '" + userName + "' for '" + originType + "'";
+        MyLog.v(this, logMsg);
         Origin origin = myContext.persistentOrigins().firstOfType(originType);
         MyAccount.Builder builder = MyAccount.Builder.newOrExistingFromAccountName(myContext,
                 userName + AccountName.ORIGIN_SEPARATOR + origin.getName(), TriState.UNKNOWN);
-        assertEquals("Creating account for '" + originType + "'", origin.getId(), builder.getAccount().getOriginId());
-        assertEquals("Creating account for '" + originType + "'", userName + AccountName.ORIGIN_SEPARATOR + origin.getName(), builder.getAccount().getAccountName());
+        assertEquals(logMsg, origin.getId(), builder.getAccount().getOriginId());
+        assertEquals(logMsg, userName + AccountName.ORIGIN_SEPARATOR + origin.getName(), builder.getAccount().getAccountName());
     }
     
 
