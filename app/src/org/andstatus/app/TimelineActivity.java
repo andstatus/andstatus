@@ -468,10 +468,11 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
 
     private void prepareDrawer() {
         ViewGroup mDrawerList = (ViewGroup) findViewById(R.id.navigation_drawer);
-
+        if (mDrawerList == null) {
+            return;
+        }
         TextView item = (TextView) mDrawerList.findViewById(R.id.timelineTypeButton);
         item.setText(timelineTypeButtonText());
-
         prepareCombinedTimelineToggle(mDrawerList);
         updateAccountButtonText(mDrawerList);
     }
