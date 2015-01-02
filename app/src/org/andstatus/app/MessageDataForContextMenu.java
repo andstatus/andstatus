@@ -70,7 +70,7 @@ class MessageDataForContextMenu {
         this.preferredOtherUserId = preferredOtherUserId;
         ma = MyContextHolder.get().persistentAccounts().getAccountWhichMayBeLinkedToThisMessage(msgId, userIdForThisMessage,
                 preferredOtherUserId);
-        if (ma == null) {
+        if (!ma.isValid()) {
             return;
         }
 
@@ -122,7 +122,7 @@ class MessageDataForContextMenu {
                         && ma.getUserId() != preferredOtherUserId
                         && timelineType != TimelineTypeEnum.FOLLOWING_USER) {
                     MyAccount ma2 = MyContextHolder.get().persistentAccounts().fromUserId(preferredOtherUserId);
-                    if (ma2 != null && ma.getOriginId() == ma2.getOriginId()) {
+                    if (ma2.isValid() && ma.getOriginId() == ma2.getOriginId()) {
                         preferSecondAccountToFirst = true;
                     }
                 }

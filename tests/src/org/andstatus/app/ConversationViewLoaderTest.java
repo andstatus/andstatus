@@ -22,7 +22,7 @@ public class ConversationViewLoaderTest extends InstrumentationTestCase {
         MyLog.i(this, "setUp started");
         TestSuite.initializeWithData(this);
         ma = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.CONVERSATION_ACCOUNT_NAME);
-        assertTrue(ma != null);
+        assertTrue(ma.isValid());
         selectedMessageId = MyProvider.oidToId(OidEnum.MSG_OID, ma.getOriginId(), TestSuite.CONVERSATION_ENTRY_MESSAGE_OID);
         assertTrue("Selected message exists", selectedMessageId != 0);
         MyLog.i(this, "setUp ended");

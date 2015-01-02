@@ -76,7 +76,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements MyServic
             return;
         }
         MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(account.name);
-        if (ma == null) {
+        if (!ma.isValid()) {
             syncResult.stats.numIoExceptions++;
             MyLog.d(this, method + "; The account was not loaded, account:" + account.name);
             return;      

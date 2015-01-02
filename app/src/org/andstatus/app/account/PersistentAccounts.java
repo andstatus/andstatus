@@ -138,29 +138,27 @@ public class PersistentAccounts {
      * Find persistent MyAccount by accountName in local cache AND in Android
      * AccountManager
      * 
-     * @return null if was not found
+     * @return Invalid account if was not found
      */
     public MyAccount fromAccountName(String accountNameIn) {
-        MyAccount myAccount = null;
-        AccountName accountName = AccountName.fromAccountName(MyContextHolder.get(), accountNameIn);
-        if (TextUtils.isEmpty(accountName.getUsername())) {
+        MyAccount myAccount = MyAccount.getEmpty(MyContextHolder.get(), accountNameIn);
+        if (!myAccount.isUsernameValid()) {
             return myAccount;
         }
 
         for (MyAccount persistentAccount : mAccounts.values()) {
-            if (persistentAccount.getAccountName().compareTo(accountName.toString()) == 0) {
+            if (persistentAccount.getAccountName().compareTo(myAccount.getAccountName()) == 0) {
                 myAccount = persistentAccount;
                 break;
             }
         }
         // Try to find persisted Account which was not loaded yet
-        if (myAccount == null
-                && !TextUtils.isEmpty(accountName.toString())) {
+        if (!myAccount.isValid()) {
             android.accounts.Account[] androidAccounts = AccountManager.get(
                     MyContextHolder.get().context()).getAccountsByType(
                     AuthenticatorService.ANDROID_ACCOUNT_TYPE);
             for (android.accounts.Account androidAccount : androidAccounts) {
-                if (accountName.compareToString(androidAccount.name) == 0) {
+                if (myAccount.getAccountName().compareTo(androidAccount.name) == 0) {
                     myAccount = Builder.fromAndroidAccount(MyContextHolder.get(), androidAccount)
                             .getAccount();
                     mAccounts.put(myAccount.getAccountName(), myAccount);
@@ -180,18 +178,18 @@ public class PersistentAccounts {
      */
     public MyAccount getCurrentAccount() {
         MyAccount ma = fromAccountName(currentAccountName);
-        if (ma != null) {
+        if (ma.isValid()) {
             return ma;
         }
         currentAccountName = "";
         ma = fromAccountName(defaultAccountName);
-        if (ma == null) {
+        if (!ma.isValid()) {
             defaultAccountName = "";
         }
-        if (ma == null && !mAccounts.isEmpty()) {
+        if (!ma.isValid() && !mAccounts.isEmpty()) {
             ma = mAccounts.values().iterator().next();
         }
-        if (ma != null) {
+        if (ma.isValid()) {
             // Correct Current and Default Accounts if needed
             if (TextUtils.isEmpty(currentAccountName)) {
                 setCurrentAccount(ma);
@@ -229,17 +227,13 @@ public class PersistentAccounts {
         return 0;
     }
 
-    public boolean isAccountUseId(long userId) {
-        return fromUserId(userId) != null;
-    }
-
     /**
-     * Get MyAccount by the UserId. Valid User may not have an Account (in AndStatus)
-     * @param userId
-     * @return null if not found
+     * Get MyAccount by the UserId. 
+     * Please note that a valid User may not have an Account (in AndStatus)
+     * @return Invalid account if was not found
      */
     public MyAccount fromUserId(long userId) {
-        MyAccount ma = null;
+        MyAccount ma = MyAccount.getEmpty(MyContextHolder.get(), "(id=" + userId +")");
         if (userId != 0) {
             for (MyAccount persistentAccount : mAccounts.values()) {
                 if (persistentAccount.getUserId() == userId) {
@@ -282,22 +276,22 @@ public class PersistentAccounts {
      * @param userIdForThisMessage The message is in his timeline. 0 if the message doesn't belong to any timeline
      * @param preferredOtherUserId Preferred account (or 0), used in a case userId is not an Account 
      *          or is not linked to the message 
-     * @return null if nothing suitable found
+     * @return Invalid account if nothing suitable found
      */
     public MyAccount getAccountWhichMayBeLinkedToThisMessage(long messageId, long userIdForThisMessage, 
             long preferredOtherUserId)  {
         final String method = "getAccountWhichMayBeLinkedToThisMessage";
         MyAccount ma = fromUserId(userIdForThisMessage);
-        if ((messageId == 0) || (ma == null)) {
+        if ((messageId == 0) || !ma.isValid()) {
             ma = fromUserId(preferredOtherUserId);
         }
         long originId = MyProvider.msgIdToOriginId(messageId);
-        if ((ma == null) || (originId != ma.getOriginId())) {
+        if (!ma.isValid() || (originId != ma.getOriginId())) {
            ma = findFirstMyAccountByOriginId(originId); 
         }
         if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
             MyLog.v(this, method + "; msgId=" + messageId +"; userId=" + userIdForThisMessage 
-                    + " -> account=" + (ma==null ? "null" : ma.getAccountName()));
+                    + " -> account=" + ma.getAccountName());
         }
         return ma;
     }

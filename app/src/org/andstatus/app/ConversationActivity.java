@@ -137,7 +137,7 @@ public class ConversationActivity extends Activity implements MyServiceListener,
             }
             ConversationViewLoader loader = new ConversationViewLoader(
                     ConversationActivity.this, ma, selectedMessageId);
-            if (ma != null) {
+            if (ma.isValid()) {
                 loader.load();
             }
             timeLoaded = System.currentTimeMillis();
@@ -163,7 +163,7 @@ public class ConversationActivity extends Activity implements MyServiceListener,
     private void recreateTheConversationView(ConversationViewLoader loader) {
         List<ConversationOneMessage> oMsgs = loader.getMsgs();
         CharSequence title = getText(oMsgs.size() > 1 ? R.string.label_conversation : R.string.message) 
-                + ( MyPreferences.showOrigin() && ma != null ? " / " + ma.getOriginName() : "");
+                + ( MyPreferences.showOrigin() && ma != null ? " / " + ma.getOrigin().getName() : "");
         this.getActionBar().setTitle(title);
         ListView list = (ListView) findViewById(android.R.id.list);
 
@@ -192,7 +192,7 @@ public class ConversationActivity extends Activity implements MyServiceListener,
             case SELECT_ACCOUNT_TO_ACT_AS:
                 if (resultCode == RESULT_OK) {
                     MyAccount myAccount = MyContextHolder.get().persistentAccounts().fromAccountName(data.getStringExtra(IntentExtra.EXTRA_ACCOUNT_NAME.key));
-                    if (myAccount != null) {
+                    if (myAccount.isValid()) {
                         contextMenu.setAccountUserIdToActAs(myAccount.getUserId());
                         contextMenu.showContextMenu();
                     }

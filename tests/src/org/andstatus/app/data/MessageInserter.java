@@ -156,7 +156,7 @@ public class MessageInserter extends InstrumentationTestCase {
     
     public static long addMessageForAccount(String accountName, String body, String messageOid) {
         MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(accountName);
-        assertTrue(accountName + " exists", ma != null);
+        assertTrue(accountName + " exists", ma.isValid());
         MessageInserter mi = new MessageInserter(ma);
         return mi.addMessage(mi.buildMessage(mi.buildUser(), body, null, messageOid));
     }

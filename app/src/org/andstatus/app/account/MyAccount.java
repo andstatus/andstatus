@@ -127,10 +127,10 @@ public final class MyAccount {
          */
         public static Builder newOrExistingFromAccountName(MyContext myContext, String accountName, TriState isOAuthTriState) {
             MyAccount persistentAccount = myContext.persistentAccounts().fromAccountName(accountName);
-            if (persistentAccount == null) {
-                return newFromAccountName(myContext, accountName, isOAuthTriState);
-            } else {
+            if (persistentAccount.isValid()) {
                 return fromMyAccount(myContext, persistentAccount, "newOrExistingFromAccountName");
+            } else {
+                return newFromAccountName(myContext, accountName, isOAuthTriState);
             }
         }
         
@@ -143,6 +143,10 @@ public final class MyAccount {
             ma.oAccountName = AccountName.fromAccountName(myContext, accountName);
             ma.setOAuth(isOAuthTriState);
             return fromMyAccount(myContext, ma, "newFromAccountName");
+        }
+
+        private static MyAccount getEmptyAccount(MyContext myContext, String accountName) {
+            return newFromAccountName(myContext, accountName, TriState.UNKNOWN).getAccount();
         }
         
         /**
@@ -631,6 +635,10 @@ public final class MyAccount {
         }
     }
     
+    public static MyAccount getEmpty(MyContext myContext, String accountName) {
+        return Builder.getEmptyAccount(myContext, accountName); 
+    }
+    
     public boolean getCredentialsPresent() {
         return getConnection().getCredentialsPresent();
     }    
@@ -687,12 +695,11 @@ public final class MyAccount {
     }
 
     public boolean isValid() {
-        return (!deleted
-                && version == MyAccount.ACCOUNT_VERSION) 
-                && oAccountName.isValid()
-                && !TextUtils.isEmpty(userOid)
+        return (!deleted && version == MyAccount.ACCOUNT_VERSION) 
                 && userId != 0
-                && connection != null;
+                && connection != null
+                && oAccountName.isValid()
+                && !TextUtils.isEmpty(userOid);
     }
     
     private MyAccount(MyContext myContext, AccountData accountDataIn) {
@@ -750,14 +757,14 @@ public final class MyAccount {
     }
     
     /**
-     * @return id of the system in which the User is defined, see {@link MyDatabase.User#ORIGIN_ID}
+     * @return The system in which the User is defined, see {@link MyDatabase.Origin}
      */
+    public Origin getOrigin() {
+        return oAccountName.getOrigin();
+    }
+
     public long getOriginId() {
         return oAccountName.getOrigin().getId();
-    }
-     
-    public String getOriginName() {
-        return oAccountName.getOrigin().getName();
     }
     
     /**

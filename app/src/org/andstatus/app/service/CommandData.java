@@ -548,7 +548,7 @@ public class CommandData implements Comparable<CommandData> {
     }
 
     /**
-     * @return null if no MyAccount exists with supplied name
+     * @return Invalid account if no MyAccount exists with supplied name
      */
     public MyAccount getAccount() {
         return MyContextHolder.get().persistentAccounts().fromAccountName(accountName);
@@ -660,7 +660,7 @@ public class CommandData implements Comparable<CommandData> {
                             R.string.combined_timeline_off_origin)
                             + " ");
                     MyAccount ma = myContext.persistentAccounts().fromAccountName(accountName);
-                    builder.append(ma != null ? ma.getOriginName() : "?");
+                    builder.append(ma != null ? ma.getOrigin().getName() : "?");
                 }
                 break;
             default:
@@ -670,7 +670,7 @@ public class CommandData implements Comparable<CommandData> {
                             + " ");
                     if (timelineType.atOrigin()) {
                         MyAccount ma = myContext.persistentAccounts().fromAccountName(accountName);
-                        builder.append(ma != null ? ma.getOriginName() : "?");
+                        builder.append(ma != null ? ma.getOrigin().getName() : "?");
                     } else {
                         builder.append(accountName);
                     }

@@ -196,7 +196,10 @@ class MessageEditor {
                         return false;
                     }
                 });
-        boolean enableAttach = isVisible() && MyPreferences.showAttachedImages() ;
+        boolean enableAttach = isVisible()
+                && MyPreferences.showAttachedImages()
+                && (mRecipientId == 0 || mAccount.getOrigin().getOriginType()
+                        .allowAttachmentForDirectMessage());
         item.setEnabled(enableAttach);
         item.setVisible(enableAttach);
     }
@@ -322,7 +325,7 @@ class MessageEditor {
      */
     public void startEditingMessage(String textInitial, Uri mediaUri, long replyToId, long recipientId, 
             MyAccount myAccount) {
-        if (myAccount == null) {
+        if (myAccount == null || !myAccount.isValid()) {
             return;
         }
         String accountGuidPrev = "";

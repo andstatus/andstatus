@@ -64,7 +64,6 @@ public class MyAccountTest  extends InstrumentationTestCase {
     
     public static void fixAccountByName(String accountName) {
         MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(accountName);
-        assertTrue("Account " + accountName + " exists", ma != null);
         assertTrue("Account " + accountName + " is valid", ma.isValid());
         if (ma.getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED ) {
             return;

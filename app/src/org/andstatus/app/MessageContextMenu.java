@@ -271,96 +271,101 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
         }
 
         MyAccount ma = MyContextHolder.get().persistentAccounts().fromUserId(actorUserIdForCurrentMessage);
-        if (ma != null) {
-            long authorId;
-            long senderId;
-            ContextMenuItem contextMenuItem = ContextMenuItem.fromId(item.getItemId());
-            MyLog.v(this, "onContextItemSelected: " + contextMenuItem + "; actor=" + ma.getAccountName());
-            switch (contextMenuItem) {
-                case REPLY:
-                    messageList.getMessageEditor().startEditingMessage("", Uri.EMPTY, mCurrentMsgId, 0, ma);
-                    return true;
-                case DIRECT_MESSAGE:
-                    authorId = MyProvider.msgIdToUserId(MyDatabase.Msg.AUTHOR_ID, mCurrentMsgId);
-                    if (authorId != 0) {
-                        messageList.getMessageEditor().startEditingMessage("", Uri.EMPTY, mCurrentMsgId, authorId, ma);
-                        return true;
-                    }
-                    break;
-                case REBLOG:
-                    MyServiceManager.sendManualForegroundCommand( new CommandData(CommandEnum.REBLOG, ma.getAccountName(), mCurrentMsgId));
-                    return true;
-                case DESTROY_REBLOG:
-                    MyServiceManager.sendManualForegroundCommand( new CommandData(CommandEnum.DESTROY_REBLOG, ma.getAccountName(), mCurrentMsgId));
-                    return true;
-                case DESTROY_STATUS:
-                    MyServiceManager.sendManualForegroundCommand( new CommandData(CommandEnum.DESTROY_STATUS, ma.getAccountName(), mCurrentMsgId));
-                    return true;
-                case FAVORITE:
-                    MyServiceManager.sendManualForegroundCommand( new CommandData(CommandEnum.CREATE_FAVORITE, ma.getAccountName(), mCurrentMsgId));
-                    return true;
-                case DESTROY_FAVORITE:
-                    MyServiceManager.sendManualForegroundCommand( new CommandData(CommandEnum.DESTROY_FAVORITE, ma.getAccountName(), mCurrentMsgId));
-                    return true;
-                case SHARE:
-                    return new MessageShare(messageList.getActivity(), mCurrentMsgId).share();
-                case VIEW_IMAGE:
-                    FileProvider.viewImage(messageList.getActivity(), imageFilename);
-                    return true;
-                case OPEN_MESSAGE_PERMALINK:
-                    return new MessageShare(messageList.getActivity(), mCurrentMsgId).openPermalink();
-                case SENDER_MESSAGES:
-                    senderId = MyProvider.msgIdToUserId(MyDatabase.Msg.SENDER_ID, mCurrentMsgId);
-                    if (senderId != 0) {
-                        /**
-                         * We better switch to the account selected for this message in order not to
-                         * add new "MsgOfUser" entries hence duplicated messages in the combined timeline 
-                         */
-                        MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
-                        switchTimelineActivity(TimelineTypeEnum.USER, messageList.isTimelineCombined(), senderId);
-                        return true;
-                    }
-                    break;
-                case AUTHOR_MESSAGES:
-                    authorId = MyProvider.msgIdToUserId(MyDatabase.Msg.AUTHOR_ID, mCurrentMsgId);
-                    if (authorId != 0) {
-                        /**
-                         * We better switch to the account selected for this message in order not to
-                         * add new "MsgOfUser" entries hence duplicated messages in the combined timeline 
-                         */
-                        MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
-                        switchTimelineActivity(TimelineTypeEnum.USER, messageList.isTimelineCombined(), authorId);
-                        return true;
-                    }
-                    break;
-                case FOLLOW_SENDER:
-                    senderId = MyProvider.msgIdToUserId(MyDatabase.Msg.SENDER_ID, mCurrentMsgId);
-                    MyServiceManager.sendManualForegroundCommand( new CommandData(CommandEnum.FOLLOW_USER, ma.getAccountName(), senderId));
-                    return true;
-                case STOP_FOLLOWING_SENDER:
-                    senderId = MyProvider.msgIdToUserId(MyDatabase.Msg.SENDER_ID, mCurrentMsgId);
-                    MyServiceManager.sendManualForegroundCommand( new CommandData(CommandEnum.STOP_FOLLOWING_USER, ma.getAccountName(), senderId));
-                    return true;
-                case FOLLOW_AUTHOR:
-                    authorId = MyProvider.msgIdToUserId(MyDatabase.Msg.AUTHOR_ID, mCurrentMsgId);
-                    MyServiceManager.sendManualForegroundCommand( new CommandData(CommandEnum.FOLLOW_USER, ma.getAccountName(), authorId));
-                    return true;
-                case STOP_FOLLOWING_AUTHOR:
-                    authorId = MyProvider.msgIdToUserId(MyDatabase.Msg.AUTHOR_ID, mCurrentMsgId);
-                    MyServiceManager.sendManualForegroundCommand( new CommandData(CommandEnum.STOP_FOLLOWING_USER, ma.getAccountName(), authorId));
-                    return true;
-                case ACT_AS:
-                    AccountSelector.selectAccount(messageList.getActivity(), ma.getOriginId(), ActivityRequestCode.SELECT_ACCOUNT_TO_ACT_AS);
-                    return true;
-                case ACT_AS_USER:
-                    setAccountUserIdToActAs(ma.firstOtherAccountOfThisOrigin().getUserId());
-                    showContextMenu();
-                    return true;
-                default:
-                    break;
-            }
+        if (ma.isValid()) {
+            return onContextItemSelectedValid(item, ma);
+        } else {
+            return false;
         }
+    }
 
+    private boolean onContextItemSelectedValid(MenuItem item, MyAccount ma) {
+        long authorId;
+        long senderId;
+        ContextMenuItem contextMenuItem = ContextMenuItem.fromId(item.getItemId());
+        MyLog.v(this, "onContextItemSelected: " + contextMenuItem + "; actor=" + ma.getAccountName());
+        switch (contextMenuItem) {
+            case REPLY:
+                messageList.getMessageEditor().startEditingMessage("", Uri.EMPTY, mCurrentMsgId, 0, ma);
+                return true;
+            case DIRECT_MESSAGE:
+                authorId = MyProvider.msgIdToUserId(MyDatabase.Msg.AUTHOR_ID, mCurrentMsgId);
+                if (authorId != 0) {
+                    messageList.getMessageEditor().startEditingMessage("", Uri.EMPTY, mCurrentMsgId, authorId, ma);
+                    return true;
+                }
+                break;
+            case REBLOG:
+                MyServiceManager.sendManualForegroundCommand( new CommandData(CommandEnum.REBLOG, ma.getAccountName(), mCurrentMsgId));
+                return true;
+            case DESTROY_REBLOG:
+                MyServiceManager.sendManualForegroundCommand( new CommandData(CommandEnum.DESTROY_REBLOG, ma.getAccountName(), mCurrentMsgId));
+                return true;
+            case DESTROY_STATUS:
+                MyServiceManager.sendManualForegroundCommand( new CommandData(CommandEnum.DESTROY_STATUS, ma.getAccountName(), mCurrentMsgId));
+                return true;
+            case FAVORITE:
+                MyServiceManager.sendManualForegroundCommand( new CommandData(CommandEnum.CREATE_FAVORITE, ma.getAccountName(), mCurrentMsgId));
+                return true;
+            case DESTROY_FAVORITE:
+                MyServiceManager.sendManualForegroundCommand( new CommandData(CommandEnum.DESTROY_FAVORITE, ma.getAccountName(), mCurrentMsgId));
+                return true;
+            case SHARE:
+                return new MessageShare(messageList.getActivity(), mCurrentMsgId).share();
+            case VIEW_IMAGE:
+                FileProvider.viewImage(messageList.getActivity(), imageFilename);
+                return true;
+            case OPEN_MESSAGE_PERMALINK:
+                return new MessageShare(messageList.getActivity(), mCurrentMsgId).openPermalink();
+            case SENDER_MESSAGES:
+                senderId = MyProvider.msgIdToUserId(MyDatabase.Msg.SENDER_ID, mCurrentMsgId);
+                if (senderId != 0) {
+                    /**
+                     * We better switch to the account selected for this message in order not to
+                     * add new "MsgOfUser" entries hence duplicated messages in the combined timeline 
+                     */
+                    MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
+                    switchTimelineActivity(TimelineTypeEnum.USER, messageList.isTimelineCombined(), senderId);
+                    return true;
+                }
+                break;
+            case AUTHOR_MESSAGES:
+                authorId = MyProvider.msgIdToUserId(MyDatabase.Msg.AUTHOR_ID, mCurrentMsgId);
+                if (authorId != 0) {
+                    /**
+                     * We better switch to the account selected for this message in order not to
+                     * add new "MsgOfUser" entries hence duplicated messages in the combined timeline 
+                     */
+                    MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
+                    switchTimelineActivity(TimelineTypeEnum.USER, messageList.isTimelineCombined(), authorId);
+                    return true;
+                }
+                break;
+            case FOLLOW_SENDER:
+                senderId = MyProvider.msgIdToUserId(MyDatabase.Msg.SENDER_ID, mCurrentMsgId);
+                MyServiceManager.sendManualForegroundCommand( new CommandData(CommandEnum.FOLLOW_USER, ma.getAccountName(), senderId));
+                return true;
+            case STOP_FOLLOWING_SENDER:
+                senderId = MyProvider.msgIdToUserId(MyDatabase.Msg.SENDER_ID, mCurrentMsgId);
+                MyServiceManager.sendManualForegroundCommand( new CommandData(CommandEnum.STOP_FOLLOWING_USER, ma.getAccountName(), senderId));
+                return true;
+            case FOLLOW_AUTHOR:
+                authorId = MyProvider.msgIdToUserId(MyDatabase.Msg.AUTHOR_ID, mCurrentMsgId);
+                MyServiceManager.sendManualForegroundCommand( new CommandData(CommandEnum.FOLLOW_USER, ma.getAccountName(), authorId));
+                return true;
+            case STOP_FOLLOWING_AUTHOR:
+                authorId = MyProvider.msgIdToUserId(MyDatabase.Msg.AUTHOR_ID, mCurrentMsgId);
+                MyServiceManager.sendManualForegroundCommand( new CommandData(CommandEnum.STOP_FOLLOWING_USER, ma.getAccountName(), authorId));
+                return true;
+            case ACT_AS:
+                AccountSelector.selectAccount(messageList.getActivity(), ma.getOriginId(), ActivityRequestCode.SELECT_ACCOUNT_TO_ACT_AS);
+                return true;
+            case ACT_AS_USER:
+                setAccountUserIdToActAs(ma.firstOtherAccountOfThisOrigin().getUserId());
+                showContextMenu();
+                return true;
+            default:
+                break;
+        }
         return false;
     }
     

@@ -51,7 +51,7 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
         TestSuite.initializeWithData(this);
 
         MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.CONVERSATION_ACCOUNT_NAME);
-        assertTrue(ma != null);
+        assertTrue(ma.isValid());
         MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
         
         Intent intent = new Intent();

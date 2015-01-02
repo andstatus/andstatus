@@ -37,7 +37,7 @@ public class AccountUserIds {
         boolean isAccount = false;
         if (selectedUserId != 0) {
             MyAccount ma = MyContextHolder.get().persistentAccounts().fromUserId(selectedUserId);
-            if (ma != null) {
+            if (ma.isValid()) {
                 isAccount = true;
                 accountUserId = ma.getUserId();
             }

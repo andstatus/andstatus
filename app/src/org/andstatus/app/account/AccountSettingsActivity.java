@@ -92,7 +92,6 @@ public class AccountSettingsActivity extends Activity {
     private boolean overrideBackActivity = false;
     
     private StateOfAccountChangeProcess state = null;
-    private Origin originOfUser;
     private EditText usernameEditable;
     private EditText passwordEditable;
     private StringBuilder mLatestErrorMessage = new StringBuilder();
@@ -207,12 +206,11 @@ public class AccountSettingsActivity extends Activity {
             if (origin.isPersistent()
                     && state.getAccount().getOriginId() != origin.getId()) {
                 // If we have changed the System, we should recreate the Account
-                originOfUser = origin;
                 state.builder = MyAccount.Builder.newOrExistingFromAccountName(
                         MyContextHolder.get(), 
                         AccountName.fromOriginAndUserNames(
                                 MyContextHolder.get(),
-                                originOfUser.getName(),
+                                origin.getName(),
                                 state.getAccount().getUsername()).toString(),
                         TriState.fromBoolean(state.getAccount().isOAuth()));
                 updateScreen();
@@ -279,12 +277,10 @@ public class AccountSettingsActivity extends Activity {
 
     private void showOrigin() {
         MyAccount ma = state.getAccount();
-        originOfUser = MyContextHolder.get().persistentOrigins().fromId(ma.getOriginId());
-        
         TextView view = (TextView) findViewById(R.id.origin_name);
         view.setText(this.getText(R.string.title_preference_origin_system)
-                                  .toString().replace("{0}",originOfUser.getName())
-                                  .replace("{1}", originOfUser.getOriginType().getTitle()));
+                                  .toString().replace("{0}", ma.getOrigin().getName())
+                                  .replace("{1}", ma.getOrigin().getOriginType().getTitle()));
     }
 
     private void showUsername() {
@@ -528,7 +524,7 @@ public class AccountSettingsActivity extends Activity {
             String username = usernameEditable.getText().toString();
             if (username.compareTo(state.getAccount().getUsername()) != 0) {
                 boolean isOAuth = state.getAccount().isOAuth();
-                String originName = state.getAccount().getOriginName();
+                String originName = state.getAccount().getOrigin().getName();
                 state.builder = MyAccount.Builder.newOrExistingFromAccountName(
                         MyContextHolder.get(), 
                         AccountName.fromOriginAndUserNames(MyContextHolder.get(), 

@@ -47,7 +47,7 @@ public class GnuSocialMessagesInserter extends InstrumentationTestCase {
         origin = MyContextHolder.get().persistentOrigins().fromName(TestSuite.GNUSOCIAL_TEST_ORIGIN_NAME);
         assertTrue(TestSuite.GNUSOCIAL_TEST_ORIGIN_NAME + " exists", origin != null);
         ma = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME); 
-        assertTrue(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME + " exists", ma != null);
+        assertTrue(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME + " exists", ma.isValid());
         accountMbUser = userFromOid(TestSuite.GNUSOCIAL_TEST_ACCOUNT_USER_OID);
     }
     

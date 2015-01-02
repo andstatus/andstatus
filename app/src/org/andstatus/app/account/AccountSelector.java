@@ -73,9 +73,9 @@ public class AccountSelector extends ListActivity {
         getListView().setOnItemClickListener(new OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                long userId = Long.parseLong(((TextView)view.findViewById(R.id.id)).getText().toString());
-                MyAccount ma = MyContextHolder.get().persistentAccounts().fromUserId(userId);
-                returnSelectedAccount(ma);
+                long userId = Long.parseLong(((TextView) view.findViewById(R.id.id)).getText()
+                        .toString());
+                returnSelectedAccount(MyContextHolder.get().persistentAccounts().fromUserId(userId));
             }
         });
     }
@@ -115,9 +115,7 @@ public class AccountSelector extends ListActivity {
 
     private void returnSelectedAccount(MyAccount ma) {
         Intent dataToReturn = new Intent();
-        if (ma != null) {
-            dataToReturn.putExtra(IntentExtra.EXTRA_ACCOUNT_NAME.key, ma.getAccountName());
-        }
+        dataToReturn.putExtra(IntentExtra.EXTRA_ACCOUNT_NAME.key, ma.getAccountName());
         setResult(RESULT_OK, dataToReturn);
         finish();
     }

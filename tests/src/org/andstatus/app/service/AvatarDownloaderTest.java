@@ -47,7 +47,7 @@ public class AvatarDownloaderTest extends InstrumentationTestCase {
         MyLog.i(this, "setUp started");
         TestSuite.initializeWithData(this);
         ma = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.CONVERSATION_ACCOUNT_NAME);
-        assertTrue(TestSuite.CONVERSATION_ACCOUNT_NAME + " exists", ma != null);
+        assertTrue(TestSuite.CONVERSATION_ACCOUNT_NAME + " exists", ma.isValid());
         MyLog.i(this, "setUp ended");
     }
 

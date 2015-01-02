@@ -82,14 +82,14 @@ class CommandExecutorStrategy implements CommandExecutorParent {
                 strategy = new CommandExecutorOther();
                 break;
             default:
-                if (execContext.getMyAccount() == null) {
+                if (!execContext.getMyAccount().isValid()) {
                     if (execContext.getTimelineType() == TimelineTypeEnum.PUBLIC) {
                         strategy = new CommandExecutorAllOrigins();
                     } else {
                         strategy = new CommandExecutorAllAccounts();
                     }
-                } else if (execContext.getMyAccount().getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED
-                        && execContext.getMyAccount().isValid()) {
+                } else if (execContext.getMyAccount().getCredentialsVerified() 
+                        == CredentialsVerificationStatus.SUCCEEDED) {
                     switch (execContext.getCommandData().getCommand()) {
                         case AUTOMATIC_UPDATE:
                         case FETCH_TIMELINE:

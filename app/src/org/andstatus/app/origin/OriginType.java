@@ -53,16 +53,16 @@ public enum OriginType {
     public static final OriginType ORIGIN_TYPE_DEFAULT_BEFORE_TWITTER = GNUSOCIAL;
     public static final int TEXT_LIMIT_MAXIMUM = 5000;
 
-    private long id;
-    private String title;
+    private final long id;
+    private final String title;
 
-    private ApiEnum api;
-    protected boolean canSetUrlOfOrigin = false;
+    private final ApiEnum api;
+    protected final boolean canSetUrlOfOrigin;
 
-    private Class<? extends Origin> originClass = Origin.class;
-    private Class<? extends org.andstatus.app.net.Connection> connectionClass = ConnectionEmpty.class;
-    private Class<? extends org.andstatus.app.net.HttpConnection> httpConnectionClassOauth = HttpConnectionEmpty.class;
-    private Class<? extends org.andstatus.app.net.HttpConnection> httpConnectionClassBasic = HttpConnectionEmpty.class;
+    private final Class<? extends Origin> originClass;
+    private final Class<? extends org.andstatus.app.net.Connection> connectionClass;
+    private final Class<? extends org.andstatus.app.net.HttpConnection> httpConnectionClassOauth;
+    private final Class<? extends org.andstatus.app.net.HttpConnection> httpConnectionClassBasic;
 
     /**
      * Default OAuth setting
@@ -99,7 +99,8 @@ public enum OriginType {
     protected URL urlDefault = null;
     protected String basicPath = BASIC_PATH_DEFAULT;
     protected String oauthPath = OAUTH_PATH_DEFAULT;
-    
+    private final boolean mAllowAttachmentForDirectMessage;
+
     private OriginType(long id, String title, ApiEnum api) {
         this.id = id;
         this.title = title;
@@ -123,6 +124,7 @@ public enum OriginType {
                 connectionClass = ConnectionTwitter1p1.class;
                 httpConnectionClassOauth = HttpConnectionOAuthApache.class;
                 httpConnectionClassBasic = HttpConnectionBasic.class;
+                mAllowAttachmentForDirectMessage = false;
                 break;
             case PUMPIO:
                 isOAuthDefault = true;  
@@ -138,6 +140,8 @@ public enum OriginType {
                 originClass = OriginPumpio.class;
                 connectionClass = ConnectionPumpio.class;
                 httpConnectionClassOauth = HttpConnectionOAuthJavaNet.class;
+                httpConnectionClassBasic = HttpConnectionEmpty.class;
+                mAllowAttachmentForDirectMessage = true;
                 break;
             case GNUSOCIAL_TWITTER:
                 isOAuthDefault = false;  
@@ -153,8 +157,15 @@ public enum OriginType {
                 connectionClass = ConnectionTwitterGnuSocial.class;
                 httpConnectionClassOauth = HttpConnectionOAuthApache.class;
                 httpConnectionClassBasic = HttpConnectionBasic.class;
+                mAllowAttachmentForDirectMessage = false;
                 break;
             default:
+                canSetUrlOfOrigin = false;
+                originClass = Origin.class;
+                connectionClass = ConnectionEmpty.class;
+                httpConnectionClassOauth = HttpConnectionEmpty.class;
+                httpConnectionClassBasic = HttpConnectionEmpty.class;
+                mAllowAttachmentForDirectMessage = false;
                 break;
         }
     }
@@ -210,6 +221,10 @@ public enum OriginType {
             fixed = isOAuthDefault;
         }
         return fixed;
+    }
+    
+    public boolean allowAttachmentForDirectMessage() {
+        return mAllowAttachmentForDirectMessage;
     }
     
     public static OriginType fromId( long id) {

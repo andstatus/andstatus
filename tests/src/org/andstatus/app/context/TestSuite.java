@@ -340,7 +340,7 @@ public class TestSuite extends TestCase {
 
     public static MyAccount getConversationMyAccount() {
         MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(CONVERSATION_ACCOUNT_NAME); 
-        assertTrue(CONVERSATION_ACCOUNT_NAME + " exists", ma != null);
+        assertTrue(CONVERSATION_ACCOUNT_NAME + " exists", ma.isValid());
         Origin origin = MyContextHolder.get().persistentOrigins().fromId(ma.getOriginId());
         assertTrue("Origin for " + ma.getAccountName() + " exists", origin != null);
         return ma;

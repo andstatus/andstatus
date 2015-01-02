@@ -171,9 +171,8 @@ public enum CommandEnum {
         }
         int resId = titleResId;
         MyAccount ma = myContext.persistentAccounts().fromAccountName(accountName);
-        if (ma != null) {
-            resId = myContext.persistentOrigins().fromId(ma.getOriginId())
-                    .alternativeTermForResourceId(titleResId);
+        if (ma.isValid()) {
+            resId = ma.getOrigin().alternativeTermForResourceId(titleResId);
         }
         return myContext.context().getText(resId);
     }

@@ -106,7 +106,7 @@ public class TimelineSql {
                 String where = Msg.PUBLIC + "=1";
                 if (!isCombined) {
                     MyAccount ma = MyContextHolder.get().persistentAccounts().fromUserId(MyProvider.uriToAccountUserId(uri));
-                    if (ma != null) {
+                    if (ma.isValid()) {
                         where += " AND " + Msg.ORIGIN_ID + "=" + ma.getOriginId();
                     }
                 }
@@ -116,7 +116,7 @@ public class TimelineSql {
                 where = "";
                 if (!isCombined) {
                     MyAccount ma = MyContextHolder.get().persistentAccounts().fromUserId(MyProvider.uriToAccountUserId(uri));
-                    if (ma != null) {
+                    if (ma.isValid()) {
                         where = Msg.ORIGIN_ID + "=" + ma.getOriginId();
                     }
                 }
