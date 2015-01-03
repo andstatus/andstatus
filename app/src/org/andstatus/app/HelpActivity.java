@@ -143,10 +143,10 @@ public class HelpActivity extends Activity implements SwipeInterface {
             public void onClick(View v) {
                 if (MyContextHolder.get().isReady()) {
                     MyPreferences.checkAndUpdateLastOpenedAppVersion(HelpActivity.this, true);
-                    if (MyContextHolder.get().persistentAccounts().getCurrentAccount() == null) {
-                        startActivity(new Intent(HelpActivity.this, AccountSettingsActivity.class));
-                    } else {
+                    if (MyContextHolder.get().persistentAccounts().getCurrentAccount().isValid()) {
                         startActivity(new Intent(HelpActivity.this, TimelineActivity.class));
+                    } else {
+                        startActivity(new Intent(HelpActivity.this, AccountSettingsActivity.class));
                     }
                 }
                 finish();
@@ -221,7 +221,7 @@ public class HelpActivity extends Activity implements SwipeInterface {
         MyContextHolder.upgradeIfNeeded(this);
         // We assume that user pressed back after adding first account
         if ( wasPaused && mIsFirstActivity 
-                &&  MyContextHolder.get().persistentAccounts().getCurrentAccount() != null ) {
+                &&  MyContextHolder.get().persistentAccounts().getCurrentAccount().isValid() ) {
             Intent intent = new Intent(this, TimelineActivity.class);
             startActivity(intent);
             finish();

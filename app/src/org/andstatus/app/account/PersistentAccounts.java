@@ -174,7 +174,7 @@ public class PersistentAccounts {
     /**
      * Get instance of current MyAccount (MyAccount selected by the user). The account isPersistent.
      * As a side effect the function changes current account if old value is not valid.
-     * @return MyAccount or null if no persistent accounts exist
+     * @return Invalid account if no persistent accounts exist
      */
     public MyAccount getCurrentAccount() {
         MyAccount ma = fromAccountName(currentAccountName);
@@ -203,28 +203,16 @@ public class PersistentAccounts {
     
     /**
      * Get Guid of current MyAccount (MyAccount selected by the user). The account isPersistent
-     * 
-     * @param Context
-     * @return Account name or empty string if no persistent accounts exist
      */
     public String getCurrentAccountName() {
-        MyAccount ma = getCurrentAccount();
-        if (ma != null) {
-            return ma.getAccountName();
-        } else {
-            return "";
-        }
+        return getCurrentAccount().getAccountName();
     }
     
     /**
      * @return 0 if no current account
      */
     public long getCurrentAccountUserId() {
-        MyAccount ma = getCurrentAccount();
-        if (ma != null) {
-            return ma.getUserId();
-        }
-        return 0;
+        return getCurrentAccount().getUserId();
     }
 
     /**
@@ -249,12 +237,12 @@ public class PersistentAccounts {
      * Return first verified MyAccount of the provided originId.
      * If there is no verified account, any account of this Origin is been returned.
      * @param originId
-     * @return null if not found
+     * @return Invalid account if not found
      */
     public MyAccount findFirstMyAccountByOriginId(long originId) {
         MyAccount ma = null;
         for (MyAccount persistentAccount : mAccounts.values()) {
-            if (persistentAccount.getOriginId() == originId) {
+            if (originId==0 || persistentAccount.getOriginId() == originId) {
                 if ( persistentAccount.getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED) {
                     ma = persistentAccount;
                     break;
@@ -264,33 +252,30 @@ public class PersistentAccounts {
                 }
             }
         }
+        if (ma == null) {
+            ma = MyAccount.getEmpty(MyContextHolder.get(), "");
+        }
         return ma;
     }
     
     /**
-     * Find account of the User linked to this message, 
-     * or other appropriate account in a case the User is not an Account.
-     * For any action with the message we should choose an Account 
-     * from the same originating (source) System.
-     * @param messageId  Message ID
-     * @param userIdForThisMessage The message is in his timeline. 0 if the message doesn't belong to any timeline
-     * @param preferredOtherUserId Preferred account (or 0), used in a case userId is not an Account 
-     *          or is not linked to the message 
+     * Find MyAccount, which may be linked to this message. 
+     * First try two supplied user IDs, then try any other existing account
      * @return Invalid account if nothing suitable found
      */
-    public MyAccount getAccountWhichMayBeLinkedToThisMessage(long messageId, long userIdForThisMessage, 
-            long preferredOtherUserId)  {
+    public MyAccount getAccountWhichMayBeLinkedToThisMessage(long messageId, long firstUserId, 
+            long secondUserIdPreferred)  {
         final String method = "getAccountWhichMayBeLinkedToThisMessage";
-        MyAccount ma = fromUserId(userIdForThisMessage);
-        if ((messageId == 0) || !ma.isValid()) {
-            ma = fromUserId(preferredOtherUserId);
-        }
         long originId = MyProvider.msgIdToOriginId(messageId);
-        if (!ma.isValid() || (originId != ma.getOriginId())) {
+        MyAccount ma = fromUserId(firstUserId);
+        if ((messageId == 0) || !ma.isValid() || (originId != ma.getOriginId())) {
+            ma = fromUserId(secondUserIdPreferred);
+        }
+        if (!ma.isValid() || (originId != 0 && originId != ma.getOriginId())) {
            ma = findFirstMyAccountByOriginId(originId); 
         }
         if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
-            MyLog.v(this, method + "; msgId=" + messageId +"; userId=" + userIdForThisMessage 
+            MyLog.v(this, method + "; msgId=" + messageId +"; userId=" + firstUserId 
                     + " -> account=" + ma.getAccountName());
         }
         return ma;
@@ -337,7 +322,7 @@ public class PersistentAccounts {
                     break;
                 }
             }
-        } else if (ma != null) {
+        } else {
             yes = ma.isGlobalSearchSupported();
         }
         return yes;

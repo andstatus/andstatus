@@ -15,9 +15,9 @@ class CommandExecutorAllOrigins extends CommandExecutorStrategy {
     public void execute() {
         for (Origin origin : MyContextHolder.get().persistentOrigins().collection()) {
             MyAccount acc = MyContextHolder.get().persistentAccounts().findFirstMyAccountByOriginId(origin.getId());
-            if ( acc==null || acc.getCredentialsVerified() != CredentialsVerificationStatus.SUCCEEDED) {
+            if ( !acc.isValid() || acc.getCredentialsVerified() != CredentialsVerificationStatus.SUCCEEDED) {
                 execContext.getResult().incrementNumAuthExceptions();
-                if (acc != null) {
+                if (acc.isValid()) {
                     execContext.getResult().setMessage(acc.getAccountName() + " account verification failed");
                 }
             } else {

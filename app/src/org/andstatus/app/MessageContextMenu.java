@@ -52,6 +52,7 @@ import org.andstatus.app.account.AccountSelector;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.FileProvider;
+import org.andstatus.app.data.MessageForAccount;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.TimelineTypeEnum;
@@ -116,30 +117,27 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
             }
         }
         actorUserIdForCurrentMessage = 0;
-        MessageDataForContextMenu md = new MessageDataForContextMenu(messageList.getActivity(), userIdForThisMessage, getCurrentMyAccountUserId(), messageList.getTimelineType(), mCurrentMsgId
-                );
-        if (md.ma == null) {
+        MessageForAccount msg = new MessageDataForContextMenu(messageList.getActivity(),
+                userIdForThisMessage, getCurrentMyAccountUserId(), messageList.getTimelineType(),
+                mCurrentMsgId, accountUserIdToActAs!=0).getMsg();
+        if (!msg.myAccount().isValid()) {
             return;
         }
-        if (accountUserIdToActAs==0 && md.preferSecondAccountToFirst) {
-            // Yes, use current Account!
-            md = new MessageDataForContextMenu(getContext(), getCurrentMyAccountUserId(), 0, messageList.getTimelineType(), mCurrentMsgId);
-        }
-        actorUserIdForCurrentMessage = md.ma.getUserId();
+        actorUserIdForCurrentMessage = msg.myAccount().getUserId();
         accountUserIdToActAs = 0;
 
         int menuItemId = 0;
         // Create the Context menu
         try {
-            menu.setHeaderTitle((MyContextHolder.get().persistentAccounts().size() > 1 ? md.ma.shortestUniqueAccountName() + ": " : "")
-                    + md.body);
+            menu.setHeaderTitle((MyContextHolder.get().persistentAccounts().size() > 1 ? msg.myAccount().shortestUniqueAccountName() + ": " : "")
+                    + msg.bodyTrimmed);
 
-            if (!md.isDirect) {
+            if (!msg.isDirect()) {
                 REPLY.addTo(menu, menuItemId++, R.string.menu_item_reply);
             }
             SHARE.addTo(menu, menuItemId++, R.string.menu_item_share);
-            if (!TextUtils.isEmpty(md.imageFilename)) {
-                imageFilename = md.imageFilename;
+            if (!TextUtils.isEmpty(msg.imageFilename)) {
+                imageFilename = msg.imageFilename;
                 VIEW_IMAGE.addTo(menu, menuItemId++, R.string.menu_item_view_image);
             }
 
@@ -147,27 +145,27 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
             DIRECT_MESSAGE.addTo(menu, menuItemId++,
                     R.string.menu_item_direct_message);
 
-            if (!md.isDirect) {
-                if (md.favorited) {
+            if (!msg.isDirect()) {
+                if (msg.favorited) {
                     DESTROY_FAVORITE.addTo(menu, menuItemId++,
                             R.string.menu_item_destroy_favorite);
                 } else {
                     FAVORITE.addTo(menu, menuItemId++,
                             R.string.menu_item_favorite);
                 }
-                if (md.reblogged) {
+                if (msg.reblogged) {
                     DESTROY_REBLOG.addTo(menu, menuItemId++,
-                            md.ma.alternativeTermForResourceId(R.string.menu_item_destroy_reblog));
+                            msg.myAccount().alternativeTermForResourceId(R.string.menu_item_destroy_reblog));
                 } else {
                     // Don't allow a User to reblog himself
-                    if (actorUserIdForCurrentMessage != md.senderId) {
+                    if (actorUserIdForCurrentMessage != msg.senderId) {
                         REBLOG.addTo(menu, menuItemId++,
-                                md.ma.alternativeTermForResourceId(R.string.menu_item_reblog));
+                                msg.myAccount().alternativeTermForResourceId(R.string.menu_item_reblog));
                     }
                 }
             }
 
-            if (messageList.getSelectedUserId() != md.senderId) {
+            if (messageList.getSelectedUserId() != msg.senderId) {
                 /*
                  * Messages by the Sender of this message ("User timeline" of
                  * that user)
@@ -175,10 +173,10 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
                 SENDER_MESSAGES.addTo(menu, menuItemId++,
                         String.format(
                                 getContext().getText(R.string.menu_item_user_messages).toString(),
-                                MyProvider.userIdToName(md.senderId)));
+                                MyProvider.userIdToName(msg.senderId)));
             }
 
-            if (messageList.getSelectedUserId() != md.authorId && md.senderId != md.authorId) {
+            if (messageList.getSelectedUserId() != msg.authorId && msg.senderId != msg.authorId) {
                 /*
                  * Messages by the Author of this message ("User timeline" of
                  * that user)
@@ -186,56 +184,56 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
                 AUTHOR_MESSAGES.addTo(menu, menuItemId++,
                         String.format(
                                 getContext().getText(R.string.menu_item_user_messages).toString(),
-                                MyProvider.userIdToName(md.authorId)));
+                                MyProvider.userIdToName(msg.authorId)));
             }
 
             OPEN_MESSAGE_PERMALINK.addTo(menu, menuItemId++, R.string.menu_item_open_message_permalink);
             
-            if (md.isSender) {
+            if (msg.isSender) {
                 // This message is by current User, hence we may delete it.
-                if (md.isDirect) {
+                if (msg.isDirect()) {
                     // This is a Direct Message
                     // TODO: Delete Direct message
-                } else if (!md.reblogged) {
+                } else if (!msg.reblogged) {
                     DESTROY_STATUS.addTo(menu, menuItemId++,
                             R.string.menu_item_destroy_status);
                 }
             }
 
-            if (!md.isSender) {
-                if (md.senderFollowed) {
+            if (!msg.isSender) {
+                if (msg.senderFollowed) {
                     STOP_FOLLOWING_SENDER.addTo(menu, menuItemId++,
                             String.format(
                                     getContext().getText(R.string.menu_item_stop_following_user).toString(),
-                                    MyProvider.userIdToName(md.senderId)));
+                                    MyProvider.userIdToName(msg.senderId)));
                 } else {
                     FOLLOW_SENDER.addTo(menu, menuItemId++,
                             String.format(
                                     getContext().getText(R.string.menu_item_follow_user).toString(),
-                                    MyProvider.userIdToName(md.senderId)));
+                                    MyProvider.userIdToName(msg.senderId)));
                 }
             }
-            if (!md.isAuthor && (md.authorId != md.senderId)) {
-                if (md.authorFollowed) {
+            if (!msg.isAuthor && (msg.authorId != msg.senderId)) {
+                if (msg.authorFollowed) {
                     STOP_FOLLOWING_AUTHOR.addTo(menu, menuItemId++,
                             String.format(
                                     getContext().getText(R.string.menu_item_stop_following_user).toString(),
-                                    MyProvider.userIdToName(md.authorId)));
+                                    MyProvider.userIdToName(msg.authorId)));
                 } else {
                     FOLLOW_AUTHOR.addTo(menu, menuItemId++,
                             String.format(
                                     getContext().getText(R.string.menu_item_follow_user).toString(),
-                                    MyProvider.userIdToName(md.authorId)));
+                                    MyProvider.userIdToName(msg.authorId)));
                 }
             }
-            switch (md.ma.accountsOfThisOrigin()) {
+            switch (msg.myAccount().numberOfAccountsOfThisOrigin()) {
                 case 1:
                     break;
                 case 2:
                     ACT_AS_USER.addTo(menu, menuItemId++,
                             String.format(
                                     getContext().getText(R.string.menu_item_act_as_user).toString(),
-                                    md.ma.firstOtherAccountOfThisOrigin().shortestUniqueAccountName()));
+                                    msg.myAccount().firstOtherAccountOfThisOrigin().shortestUniqueAccountName()));
                     break;
                 default:
                     ACT_AS.addTo(menu, menuItemId++, R.string.menu_item_act_as);

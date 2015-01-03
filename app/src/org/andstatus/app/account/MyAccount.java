@@ -918,7 +918,7 @@ public final class MyAccount {
         return jso;
     }
     
-    public int accountsOfThisOrigin() {
+    public int numberOfAccountsOfThisOrigin() {
         int count = 0;
         for (MyAccount persistentAccount : MyContextHolder.get().persistentAccounts().collection()) {
             if (persistentAccount.getOriginId() == this.getOriginId()) {

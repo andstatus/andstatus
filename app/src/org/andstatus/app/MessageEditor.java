@@ -147,24 +147,18 @@ class MessageEditor {
                 });
         MyAccount accountForButton = accountforCreateMessageButton();
         item.setVisible(!isVisible()
-                && accountForButton != null 
+                && accountForButton.isValid() 
                 && mMessageList.getTimelineType() != TimelineTypeEnum.DIRECT
                 && mMessageList.getTimelineType() != TimelineTypeEnum.MESSAGESTOACT
                 && accountForButton.getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED);
     }
 
     private MyAccount accountforCreateMessageButton() {
-        MyAccount accountForButton = null;
         if (isVisible()) {
-            accountForButton = mAccount;
+            return mAccount;
         } else {
-            accountForButton = MyContextHolder.get().persistentAccounts().getCurrentAccount();
-            if (accountForButton != null 
-                    && accountForButton.getCredentialsVerified() != MyAccount.CredentialsVerificationStatus.SUCCEEDED ) {
-                accountForButton = null;
-            }
+            return MyContextHolder.get().persistentAccounts().getCurrentAccount();
         }
-        return accountForButton;
     }
     
     private void prepareHideMessageButton(Menu menu) {

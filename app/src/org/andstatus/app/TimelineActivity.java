@@ -306,7 +306,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         super.onResume();
         MyLog.v(this, method + ", instanceId=" + mInstanceId);
         if (!mFinishing) {
-            if (MyContextHolder.get().persistentAccounts().getCurrentAccount() != null) {
+            if (MyContextHolder.get().persistentAccounts().getCurrentAccount().isValid()) {
                 long preferencesChangeTimeNew = MyContextHolder.initialize(this, this);
                 if (preferencesChangeTimeNew != mPreferencesChangeTime) {
                     MyLog.v(this, method + "; Restarting this Activity to apply all new changes of preferences");
@@ -441,8 +441,8 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     public boolean onPrepareOptionsMenu(Menu menu) {
         mOptionsMenu = menu;
         MyAccount ma = MyContextHolder.get().persistentAccounts().getCurrentAccount();
-        boolean enableReload = isTimelineCombined() || ( ma != null
-                && ma.getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED);
+        boolean enableReload = isTimelineCombined()
+                || ma.getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED;
         MenuItem item = menu.findItem(R.id.reload_menu_item);
         item.setEnabled(enableReload);
         item.setVisible(enableReload);

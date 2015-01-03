@@ -27,9 +27,16 @@
     </header>
 
     <release android:versionName="14.1" android:versionCode="118"
-        versionDate="2014-12-26"
-        versionTitle="Cleaning???">
+        versionDate="2014-01-03"
+        versionTitle="Private attachments fixing">
         <changes>
+            <change>Fixed: [Pump.io] Attachment was not sent with a Direct message.
+                Please note that only pump.io supports attaching images to Direct messages. 
+                This is a restriction of the 
+                <a href="https://dev.twitter.com/rest/reference/post/direct_messages/new">Twitter API</a>, 
+                not of AndStatus. 
+                <a href="https://github.com/andstatus/andstatus/issues/203">#203</a>
+            </change>
 	        <change>&quot;Log network level messages&quot; option added allowing deeper debugging.
 	            If &quot;Log everything to file&quot; is also enabled, separate .json files are
 	            created for each request and response.

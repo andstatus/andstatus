@@ -25,6 +25,7 @@ import org.andstatus.app.net.HttpApacheUtils;
 import org.andstatus.app.util.MyLog;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpGet;
 
 import java.io.BufferedOutputStream;
@@ -88,31 +89,12 @@ class FileDownloader {
         DownloadFile fileTemp = new DownloadFile("temp_" + data.getFilenameNew());
         try {
             // See http://hc.apache.org/httpcomponents-client-ga/tutorial/html/fundamentals.html
-            HttpGet httpget = new HttpGet(data.getUrl().toExternalForm());
-            HttpResponse response = HttpApacheUtils.getHttpClient().execute(httpget);
+            HttpResponse response = getResponse();
             parseStatusCode(response.getStatusLine().getStatusCode());
             try {
                 HttpEntity entity = response.getEntity();
                 if (entity != null) {
-                    InputStream in = entity.getContent();
-                    try {
-                        byte[] buffer = new byte[1024];
-                        int length;
-                        OutputStream out = null;
-                        out = new BufferedOutputStream(new FileOutputStream(fileTemp.getFile()));
-                        try {
-                            if (mockNetworkError) {
-                                throw new IOException(method + ", Mocked IO exception");
-                            }
-                            while ((length = in.read(buffer)) > 0) {
-                                out.write(buffer, 0, length);
-                            }
-                        } finally {
-                            DbUtils.closeSilently(out);
-                        }
-                    } finally {
-                        DbUtils.closeSilently(in);
-                    }
+                    readToFile(entity, fileTemp);
                 }
             } finally {
                 DbUtils.closeSilently(response);
@@ -132,6 +114,12 @@ class FileDownloader {
         }
     }
 
+    private HttpResponse getResponse() throws IOException, ClientProtocolException {
+        HttpGet httpget = new HttpGet(data.getUrl().toExternalForm());
+        HttpResponse response = HttpApacheUtils.getHttpClient().execute(httpget);
+        return response;
+    }
+
     private void parseStatusCode(int code) throws IOException {
         switch (code) {
         case 200:
@@ -149,6 +137,30 @@ class FileDownloader {
             throw new IOException(String.valueOf(code));
         default:
             break;
+        }
+    }
+
+    private void readToFile(HttpEntity entity, DownloadFile fileTemp)
+            throws IOException {
+        final String method = "readToFile";
+        InputStream in = entity.getContent();
+        try {
+            byte[] buffer = new byte[1024];
+            int length;
+            OutputStream out = null;
+            out = new BufferedOutputStream(new FileOutputStream(fileTemp.getFile()));
+            try {
+                if (mockNetworkError) {
+                    throw new IOException(method + ", Mocked IO exception");
+                }
+                while ((length = in.read(buffer)) > 0) {
+                    out.write(buffer, 0, length);
+                }
+            } finally {
+                DbUtils.closeSilently(out);
+            }
+        } finally {
+            DbUtils.closeSilently(in);
         }
     }
     
