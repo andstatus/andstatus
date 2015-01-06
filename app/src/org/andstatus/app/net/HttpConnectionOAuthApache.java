@@ -20,9 +20,13 @@ import oauth.signpost.OAuthConsumer;
 import oauth.signpost.OAuthProvider;
 import oauth.signpost.commonshttp.CommonsHttpOAuthConsumer;
 import oauth.signpost.commonshttp.CommonsHttpOAuthProvider;
+import oauth.signpost.exception.OAuthCommunicationException;
+import oauth.signpost.exception.OAuthExpectationFailedException;
+import oauth.signpost.exception.OAuthMessageSignerException;
 
 import org.andstatus.app.net.Connection.ApiRoutineEnum;
 import org.andstatus.app.util.MyLog;
+import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.HttpResponseException;
 import org.apache.http.client.methods.HttpGet;
@@ -31,16 +35,18 @@ import org.apache.http.impl.client.BasicResponseHandler;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.json.JSONTokener;
 
-public class HttpConnectionOAuthApache extends HttpConnectionOAuth implements HttpApacheRequest {
+import java.io.File;
+import java.io.IOException;
+
+public class HttpConnectionOAuthApache extends HttpConnectionOAuth implements HttpConnectionApacheSpecific {
     private static final String NULL_JSON = "(null)";
     private HttpClient mClient;
 
     @Override
     protected void setConnectionData(HttpConnectionData connectionData) {
         super.setConnectionData(connectionData);
-        mClient = HttpApacheUtils.getHttpClient();
+        mClient = HttpConnectionApacheCommon.getHttpClient();
     }  
 
     @Override
@@ -56,38 +62,14 @@ public class HttpConnectionOAuthApache extends HttpConnectionOAuth implements Ht
     
     @Override
     protected final JSONObject getRequest(String path) throws ConnectionException {
-        HttpGet get = new HttpGet(pathToUrl(path));
-        return new HttpApacheUtils(this).getRequestAsObject(get);
+        HttpGet get = new HttpGet(pathToUrlString(path));
+        return new HttpConnectionApacheCommon(this).getRequestAsObject(get);
     }
 
     @Override
     protected final JSONArray getRequestAsArray(String path) throws ConnectionException {
-        HttpGet get = new HttpGet(pathToUrl(path));
-        return new HttpApacheUtils(this).getRequestAsArray(get);
-    }
-
-    @Override
-    public JSONTokener getRequest(HttpGet get) throws ConnectionException {
-        JSONTokener jso = null;
-        String response = null;
-        boolean ok = false;
-        try {
-            if (data.oauthClientKeys.areKeysPresent()) {
-                getConsumer().sign(get);
-            }
-            response = mClient.execute(get, new BasicResponseHandler());
-            jso = new JSONTokener(response);
-            ok = true;
-        } catch (Exception e) {
-			String logmsg = "getRequest; URI='" + get.getURI().toString() + "'";
-            MyLog.i(this, logmsg, e);
-            throw new ConnectionException(logmsg, e);
-        }
-        MyLog.logNetworkLevelMessage("getRequest_oauthApache", response);
-        if (!ok) {
-            jso = null;
-        }
-        return jso;
+        HttpGet get = new HttpGet(pathToUrlString(path));
+        return new HttpConnectionApacheCommon(this).getRequestAsArray(get);
     }
 
     @Override
@@ -102,25 +84,23 @@ public class HttpConnectionOAuthApache extends HttpConnectionOAuth implements Ht
     
     @Override
     protected final JSONObject postRequest(String path) throws ConnectionException {
-        return new HttpApacheUtils(this).postRequest(path);
+        return new HttpConnectionApacheCommon(this).postRequest(path);
     }
 
     @Override
     protected JSONObject postRequest(String path, JSONObject formParams) throws ConnectionException {
-        return new HttpApacheUtils(this).postRequest(path, formParams);
+        return new HttpConnectionApacheCommon(this).postRequest(path, formParams);
     }
     
     @Override
-    public JSONObject postRequest(HttpPost post) throws ConnectionException {
+    public JSONObject httpApachePostRequest(HttpPost post) throws ConnectionException {
         JSONObject jso = null;
         String response = null;
         boolean ok = false;
 		String logmsg = "postRequest; URI='" + post.getURI().toString() + "'";
         try {
-            if (data.oauthClientKeys.areKeysPresent()) {
-                // sign the request to authenticate
-                getConsumer().sign(post);
-            }
+            // TODO: Redo like for get request
+            signRequest(post);
             response = mClient.execute(post, new BasicResponseHandler());
             jso = new JSONObject(response);
             ok = true;
@@ -141,5 +121,27 @@ public class HttpConnectionOAuthApache extends HttpConnectionOAuth implements Ht
             jso = null;
         }
         return jso;
+    }
+
+    @Override
+    public HttpResponse httpApacheGetResponse(HttpGet httpGet) throws IOException {
+        signRequest(httpGet);
+        return mClient.execute(httpGet);
+    }
+
+    private void signRequest(Object httpGetOrPost) throws IOException {
+        if (data.oauthClientKeys.areKeysPresent()) {
+            try {
+                getConsumer().sign(httpGetOrPost);
+            } catch (OAuthMessageSignerException | OAuthExpectationFailedException
+                    | OAuthCommunicationException e) {
+                throw new IOException(e);
+            }
+        }
+    }
+ 
+    @Override
+    public void downloadFile(String url, File file) throws ConnectionException {
+        new HttpConnectionApacheCommon(this).downloadFile(url, file);
     }
 }

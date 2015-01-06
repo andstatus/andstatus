@@ -21,28 +21,20 @@ import android.text.TextUtils;
 import android.util.Base64;
 
 import org.andstatus.app.account.AccountDataWriter;
-import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.net.ConnectionException.StatusCode;
-import org.andstatus.app.util.I18n;
-import org.andstatus.app.util.MyLog;
-import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.protocol.HTTP;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.json.JSONTokener;
 
+import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 
-public class HttpConnectionBasic extends HttpConnection implements HttpApacheRequest  {
+public class HttpConnectionBasic extends HttpConnection implements HttpConnectionApacheSpecific  {
     protected String mPassword = "";
 
     @Override
@@ -53,16 +45,16 @@ public class HttpConnectionBasic extends HttpConnection implements HttpApacheReq
 
     @Override
     protected JSONObject postRequest(String path) throws ConnectionException {
-        return new HttpApacheUtils(this).postRequest(path);
+        return new HttpConnectionApacheCommon(this).postRequest(path);
     }
 
     @Override
     protected JSONObject postRequest(String path, JSONObject formParams) throws ConnectionException {
-        return new HttpApacheUtils(this).postRequest(path, formParams);
+        return new HttpConnectionApacheCommon(this).postRequest(path, formParams);
     }
 
     @Override
-    public JSONObject postRequest(HttpPost postMethod) throws ConnectionException {
+    public JSONObject httpApachePostRequest(HttpPost postMethod) throws ConnectionException {
         String method = "postRequest";
         String result = "?";
         JSONObject jObj = null;
@@ -70,14 +62,14 @@ public class HttpConnectionBasic extends HttpConnection implements HttpApacheReq
         Exception e1 = null;
         String logmsg = method + "; URI='" + postMethod.getURI().toString() + "'";
         try {
-            HttpClient client = HttpApacheUtils.getHttpClient();
+            HttpClient client = HttpConnectionApacheCommon.getHttpClient();
             postMethod.setHeader("User-Agent", HttpConnection.USER_AGENT);
             if (getCredentialsPresent()) {
                 postMethod.addHeader("Authorization", "Basic " + getCredentials());
             }
             HttpResponse httpResponse = client.execute(postMethod);
             statusLine = httpResponse.getStatusLine();
-            result = retrieveInputStream(httpResponse.getEntity());
+            result = HttpConnectionApacheCommon.readHttpResponseToString(httpResponse);
             if (!TextUtils.isEmpty(result)) {
                 jObj = new JSONObject(result);
                 String error = jObj.optString("error");
@@ -92,55 +84,30 @@ public class HttpConnectionBasic extends HttpConnection implements HttpApacheReq
         } finally {
             postMethod.abort();
         }
-        parseStatusLine(statusLine, e1, logmsg, result);
+        new HttpConnectionApacheCommon(this).parseStatusLine(statusLine, e1, logmsg, result);
         return jObj;
     }
 
     @Override
     protected final JSONObject getRequest(String path) throws ConnectionException {
-        HttpGet get = new HttpGet(pathToUrl(path));
-        return new HttpApacheUtils(this).getRequestAsObject(get);
+        HttpGet get = new HttpGet(pathToUrlString(path));
+        return new HttpConnectionApacheCommon(this).getRequestAsObject(get);
     }
 
     @Override
     protected final JSONArray getRequestAsArray(String path) throws ConnectionException {
-        HttpGet get = new HttpGet(pathToUrl(path));
-        return new HttpApacheUtils(this).getRequestAsArray(get);
+        HttpGet get = new HttpGet(pathToUrlString(path));
+        return new HttpConnectionApacheCommon(this).getRequestAsArray(get);
     }
 
     @Override
-    public JSONTokener getRequest(HttpGet getMethod) throws ConnectionException {
-        JSONTokener jso = null;
-        String response = null;
-        StatusLine statusLine = null;
-        Exception e1 = null;
-        String logmsg = "getRequest; URI='" + getMethod.getURI().toString() + "'";
-        HttpClient client = HttpApacheUtils.getHttpClient();
-        try {
-            getMethod.setHeader("User-Agent", HttpConnection.USER_AGENT);
-            if (getCredentialsPresent()) {
-                getMethod.addHeader("Authorization", "Basic " + getCredentials());
-            }
-            HttpResponse httpResponse = client.execute(getMethod);
-            statusLine = httpResponse.getStatusLine();
-            response = retrieveInputStream(httpResponse.getEntity());
-            jso = new JSONTokener(response);
-        } catch (Exception e) {
-            e1 = e;
-        } finally {
-            getMethod.abort();
+    public HttpResponse httpApacheGetResponse(HttpGet getMethod) throws IOException {
+        HttpClient client = HttpConnectionApacheCommon.getHttpClient();
+        getMethod.setHeader("User-Agent", HttpConnection.USER_AGENT);
+        if (getCredentialsPresent()) {
+            getMethod.addHeader("Authorization", "Basic " + getCredentials());
         }
-        MyLog.logNetworkLevelMessage("getRequest_basic", response);
-        parseStatusLine(statusLine, e1, logmsg, response);
-        return jso;
-    }
-
-    private String appendResponse(String logMsgIn, String response) {
-        String logMsg = (logMsgIn == null) ? "" : logMsgIn;
-        if (!TextUtils.isEmpty(response)) {
-            logMsg += "; response='" + I18n.trimTextAt(response, 120) + "'";
-        }
-        return logMsg;
+        return client.execute(getMethod);
     }
 
     @Override
@@ -165,40 +132,6 @@ public class HttpConnectionBasic extends HttpConnection implements HttpApacheReq
     @Override
     public String getPassword() {
         return mPassword;
-    }
-
-
-    /**
-     * Retrieve the input stream from the HTTP connection.
-     * 
-     * @param httpEntity
-     * @return String
-     */
-    private String retrieveInputStream(HttpEntity httpEntity) {
-        int length = (int) httpEntity.getContentLength();
-        if ( length <= 0 ) {
-            // Length is unknown or large
-            length = 1024;
-        }
-        StringBuilder stringBuffer = new StringBuilder(length);
-        InputStreamReader inputStreamReader = null;
-        try {
-            inputStreamReader = new InputStreamReader(httpEntity.getContent(), HTTP.UTF_8);
-            char[] buffer = new char[length];
-            int count;
-            while ((count = inputStreamReader.read(buffer, 0, length - 1)) > 0) {
-                stringBuffer.append(buffer, 0, count);
-            }
-        } catch (UnsupportedEncodingException e) {
-            MyLog.e(this, e);
-        } catch (IllegalStateException e) {
-            MyLog.e(this, e);
-        } catch (IOException e) {
-            MyLog.e(this, e);
-        } finally {
-            DbUtils.closeSilently(inputStreamReader);
-        }
-        return stringBuffer.toString();
     }
 
     /**
@@ -236,31 +169,8 @@ public class HttpConnectionBasic extends HttpConnection implements HttpApacheReq
         return changed;
     }
 
-    /**
-     * Parse the status code and throw appropriate exceptions when necessary.
-     * 
-     * @param code
-     * @param response 
-     * @throws ConnectionException
-     */
-    private void parseStatusLine(StatusLine statusLine, Throwable tr, String logMsgIn, String response) throws ConnectionException {
-        String logMsg = (logMsgIn == null) ? "" : logMsgIn;
-        ConnectionException.StatusCode statusCode = StatusCode.UNKNOWN;
-        if (statusLine != null) {
-            switch (ConnectionException.StatusCode.fromResponseCode(statusLine.getStatusCode())) {
-                case OK:
-                case UNKNOWN:
-                    return;
-                default:
-                    break;
-            }
-            statusCode = ConnectionException.StatusCode.fromResponseCode(statusLine.getStatusCode());
-            logMsg += "; statusLine='" + statusLine + "'";
-        }
-        logMsg = appendResponse(logMsg, response);
-        if (tr != null) {
-            MyLog.i(this, statusCode.toString() + "; " + logMsg, tr);
-        }
-        throw ConnectionException.fromStatusCodeAndThrowable(statusCode, logMsg, tr);
+    @Override
+    public void downloadFile(String url, File file) throws ConnectionException {
+        new HttpConnectionApacheCommon(this).downloadFile(url, file);
     }
 }

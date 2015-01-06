@@ -19,42 +19,43 @@ package org.andstatus.app.net;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.File;
+
 public class HttpConnectionEmpty extends HttpConnection {
 
     @Override
     protected JSONObject postRequest(String path, JSONObject formParams) throws ConnectionException {
-        // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     protected JSONObject postRequest(String path) throws ConnectionException {
-        // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     protected JSONObject getRequest(String path) throws ConnectionException {
-        // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     protected JSONArray getRequestAsArray(String path) throws ConnectionException {
-        // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     public void clearAuthInformation() {
-        // TODO Auto-generated method stub
-
+        // Empty
     }
 
     @Override
     public boolean getCredentialsPresent() {
-        // TODO Auto-generated method stub
         return false;
+    }
+
+    @Override
+    public void downloadFile(String url, File file) {
+        // Empty
     }
 
 }

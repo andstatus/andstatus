@@ -25,6 +25,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -33,7 +34,7 @@ public class HttpConnectionMock extends HttpConnection {
     private volatile long mPostedCounter = 0;
     private volatile JSONObject mPostedObject = null;
     private final List<String> mPostedPaths = new CopyOnWriteArrayList<String>();
-    private volatile JSONObject responseObject = null;
+    private volatile JSONObject jsonResponseObject = null;
     private volatile ConnectionException exception = null;
 
     private volatile String password = "password";
@@ -48,7 +49,7 @@ public class HttpConnectionMock extends HttpConnection {
     }
     
     public void setResponse(JSONObject jso) {
-        responseObject = jso;
+        jsonResponseObject = jso;
     }
 
     public void setException(ConnectionException exception) {
@@ -60,7 +61,7 @@ public class HttpConnectionMock extends HttpConnection {
         onRequest("postRequestWithObject", path);
         mPostedObject = jso;
         throwExceptionIfSet();
-        return responseObject;
+        return jsonResponseObject;
     }
 
     private void networkDelay() {
@@ -97,7 +98,7 @@ public class HttpConnectionMock extends HttpConnection {
     protected JSONObject postRequest(String path) throws ConnectionException {
         onRequest("postRequest", path);
         throwExceptionIfSet();
-        return responseObject;
+        return jsonResponseObject;
     }
 
     private void onRequest(String method, String path) {
@@ -117,7 +118,7 @@ public class HttpConnectionMock extends HttpConnection {
     private JSONObject getRequestInner(String method, String path) throws ConnectionException {
         onRequest(method, path);
         throwExceptionIfSet();
-        return responseObject;
+        return jsonResponseObject;
     }
     
     @Override
@@ -202,5 +203,10 @@ public class HttpConnectionMock extends HttpConnection {
     @Override
     public HttpConnection getNewInstance() {
         return this;
+    }
+
+    @Override
+    public void downloadFile(String url, File file) {
+        // Empty
     }
 }

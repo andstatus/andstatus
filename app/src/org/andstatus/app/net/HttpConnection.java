@@ -25,6 +25,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
+
 public abstract class HttpConnection {
     protected HttpConnectionData data;
 
@@ -47,7 +51,7 @@ public abstract class HttpConnection {
         this.data = data;
     }  
     
-    public String pathToUrl(String path) {
+    public String pathToUrlString(String path) {
         return UrlUtils.pathToUrlString(data.originUrl, path);
     }
     
@@ -118,5 +122,21 @@ public abstract class HttpConnection {
             MyLog.e(this, e);
         }
         return null;
+    }
+
+    public abstract void downloadFile(String url, File file) throws ConnectionException;
+
+    public URL pathToUrl(String path) throws ConnectionException {
+        return stringToUrl(pathToUrlString(path));
+    }
+
+    protected URL stringToUrl(String strUrl) throws ConnectionException {
+        URL url = null;
+        try {
+            url = new URL(strUrl);
+        } catch (MalformedURLException e) {
+            throw new ConnectionException("Url: " + strUrl, e);
+        }
+        return url;
     }
 }

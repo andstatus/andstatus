@@ -21,10 +21,16 @@ import android.text.TextUtils;
 
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyContentType;
+import org.andstatus.app.net.ConnectionException.StatusCode;
+import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.UriUtils;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
+import org.apache.http.StatusLine;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
@@ -38,22 +44,24 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-public class HttpApacheUtils {
-    private HttpApacheRequest request;
+public class HttpConnectionApacheCommon {
+    private HttpConnectionApacheSpecific specific;
 
-    HttpApacheUtils(HttpApacheRequest request) {
-        this.request = request;
+    HttpConnectionApacheCommon(HttpConnectionApacheSpecific specificIn) {
+        this.specific = specificIn;
     }
 
     final JSONArray getRequestAsArray(HttpGet get) throws ConnectionException {
-        return jsonTokenerToArray(request.getRequest(get));
+        return jsonTokenerToArray(httpApacheGetRequest(get));
     }
 
     final JSONArray jsonTokenerToArray(JSONTokener jst) throws ConnectionException {
@@ -83,10 +91,65 @@ public class HttpApacheUtils {
         return jsa;
     }
 
+    public JSONTokener httpApacheGetRequest(HttpGet httpGet) throws ConnectionException {
+        JSONTokener jso = null;
+        String strReceived = null;
+        StatusLine statusLine = null;
+        Exception e1 = null;
+        String logmsg = "getRequest; URI='" + httpGet.getURI().toString() + "'";
+        HttpResponse httpResponse = null;
+        try {
+            httpResponse = specific.httpApacheGetResponse(httpGet);
+            statusLine = httpResponse.getStatusLine();
+            strReceived = readHttpResponseToString(httpResponse);
+            jso = new JSONTokener(strReceived);
+        } catch (IOException e) {
+            e1 = e;
+        } finally {
+            httpGet.abort();
+            DbUtils.closeSilently(httpResponse);            
+        }
+        MyLog.logNetworkLevelMessage("getRequest_basic", strReceived);
+        parseStatusLine(statusLine, e1, logmsg, strReceived);
+        return jso;
+    }
+    
+    /**
+     * Parse and throw appropriate exceptions when necessary
+     */
+    void parseStatusLine(StatusLine statusLine, Throwable tr, String logMsgIn, String strResponse) throws ConnectionException {
+        String logMsg = (logMsgIn == null) ? "" : logMsgIn;
+        ConnectionException.StatusCode statusCode = StatusCode.UNKNOWN;
+        if (statusLine != null) {
+            switch (ConnectionException.StatusCode.fromResponseCode(statusLine.getStatusCode())) {
+                case OK:
+                case UNKNOWN:
+                    return;
+                default:
+                    break;
+            }
+            statusCode = ConnectionException.StatusCode.fromResponseCode(statusLine.getStatusCode());
+            logMsg += "; statusLine='" + statusLine + "'";
+        }
+        logMsg = appendStringResponse(logMsg, strResponse);
+        if (tr != null) {
+            MyLog.i(this, statusCode.toString() + "; " + logMsg, tr);
+        }
+        throw ConnectionException.fromStatusCodeAndThrowable(statusCode, logMsg, tr);
+    }
+    
+    private String appendStringResponse(String logMsgIn, String strResponse) {
+        String logMsg = (logMsgIn == null) ? "" : logMsgIn;
+        if (!TextUtils.isEmpty(strResponse)) {
+            logMsg += "; response='" + I18n.trimTextAt(strResponse, 120) + "'";
+        }
+        return logMsg;
+    }
+    
     final JSONObject getRequestAsObject(HttpGet get) throws ConnectionException {
         String method = "getRequestAsObject";
         JSONObject jso = null;
-        JSONTokener jst = request.getRequest(get);
+        JSONTokener jst = httpApacheGetRequest(get);
         try {
             jso = (JSONObject) jst.nextValue();
         } catch (JSONException e) {
@@ -98,15 +161,15 @@ public class HttpApacheUtils {
     }
 
     protected JSONObject postRequest(String path) throws ConnectionException {
-        HttpPost post = new HttpPost(request.pathToUrl(path));
-        return request.postRequest(post);
+        HttpPost post = new HttpPost(specific.pathToUrlString(path));
+        return specific.httpApachePostRequest(post);
     }
 
     /**
      * @return empty {@link JSONObject} in a case of error
      */
     protected JSONObject postRequest(String path, JSONObject formParams) throws ConnectionException {
-        HttpPost postMethod = new HttpPost(request.pathToUrl(path));
+        HttpPost postMethod = new HttpPost(specific.pathToUrlString(path));
         JSONObject out = new JSONObject();
         MyLog.logNetworkLevelMessage("postRequest_formParams", formParams);
         try {
@@ -117,7 +180,7 @@ public class HttpApacheUtils {
             } else {
                 fillSinglePartPost(postMethod, formParams);
             }
-            out = request.postRequest(postMethod);
+            out = specific.httpApachePostRequest(postMethod);
         } catch (UnsupportedEncodingException e) {
             MyLog.i(this, e);
         }
@@ -159,7 +222,7 @@ public class HttpApacheUtils {
 
     private void fillSinglePartPost(HttpPost postMethod, JSONObject formParams)
             throws ConnectionException, UnsupportedEncodingException {
-        List<NameValuePair> nvFormParams = HttpApacheUtils.jsonToNameValuePair(formParams);
+        List<NameValuePair> nvFormParams = HttpConnectionApacheCommon.jsonToNameValuePair(formParams);
         if (nvFormParams != null) {
             UrlEncodedFormEntity formEntity = new UrlEncodedFormEntity(nvFormParams, HTTP.UTF_8);
             postMethod.setEntity(formEntity);
@@ -188,4 +251,38 @@ public class HttpApacheUtils {
                     MyHttpClientFactory.getHttpClient() ;
     }
 
+    protected void downloadFile(String url, File file) throws ConnectionException {
+        // See http://hc.apache.org/httpcomponents-client-ga/tutorial/html/fundamentals.html
+        HttpGet httpGet = new HttpGet(url);
+        String logmsg = "downloadFile; URL='" + url + "'";
+        StatusLine statusLine = null;
+        Exception e1 = null;
+        HttpResponse httpResponse = null;
+        try {
+            httpResponse = specific.httpApacheGetResponse(httpGet);
+            statusLine = httpResponse.getStatusLine();
+            HttpEntity entity = httpResponse.getEntity();
+            if (entity != null) {
+                HttpConnectionUtils.readStreamToFile(entity.getContent(), file);
+            }
+        } catch (IOException e) {
+            e1 = e;
+        } finally {
+            DbUtils.closeSilently(httpResponse);
+        }
+        parseStatusLine(statusLine, e1, logmsg, null);
+    }
+
+    public static String readHttpResponseToString(HttpResponse httpResponse) throws IOException {
+        HttpEntity httpEntity = httpResponse.getEntity();
+        if (httpEntity != null) {
+            try {
+                return HttpConnectionUtils.readStreamToString(httpEntity.getContent());
+            } catch (IllegalStateException e) {
+                throw new IOException(e);
+            }
+        }
+        return null;
+    }
+    
 }

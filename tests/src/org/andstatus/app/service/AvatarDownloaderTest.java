@@ -57,7 +57,7 @@ public class AvatarDownloaderTest extends InstrumentationTestCase {
         
         AvatarData.deleteAllOfThisUser(ma.getUserId());
         
-        FileDownloader loader = FileDownloader.newForUser(ma.getUserId());
+        FileDownloader loader = new AvatarDownloader(ma.getUserId());
         assertEquals("Not loaded yet", DownloadStatus.ABSENT, loader.getStatus());
         loadAndAssertStatusForMa(DownloadStatus.LOADED, false);
         
@@ -136,14 +136,14 @@ public class AvatarDownloaderTest extends InstrumentationTestCase {
     }
 
     private long loadAndAssertStatusForMa(DownloadStatus status, boolean mockNetworkError) throws IOException {
-        FileDownloader loader = FileDownloader.newForUser(ma.getUserId());
+        FileDownloader loader = new AvatarDownloader(ma.getUserId());
         loader.mockNetworkError = mockNetworkError;
         CommandData commandData = new CommandData(CommandEnum.FETCH_AVATAR, null);
         loader.load(commandData);
 
         DownloadData data = AvatarData.newForUser(ma.getUserId());
         if (DownloadStatus.LOADED.equals(status)) {
-            assertFalse("Loaded " + data.getUrl(), commandData.getResult().hasError());
+            assertFalse("Loaded " + data, commandData.getResult().hasError());
             assertEquals("Loaded " + data.getUrl(), status, loader.getStatus());
         } else {
             assertTrue("Error loading " + data.getUrl(), commandData.getResult().hasError());

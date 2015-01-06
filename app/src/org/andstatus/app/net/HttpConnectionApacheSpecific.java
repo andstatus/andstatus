@@ -16,13 +16,19 @@
 
 package org.andstatus.app.net;
 
+import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.json.JSONObject;
-import org.json.JSONTokener;
 
-public interface HttpApacheRequest {
-    JSONObject postRequest(HttpPost postMethod) throws ConnectionException;
-    JSONTokener getRequest(HttpGet get) throws ConnectionException;
-    String pathToUrl(String path);
+import java.io.IOException;
+
+/**
+ * Implementation, specific to Basic or OAuth 
+ * @author yvolk@yurivolkov.com
+ */
+public interface HttpConnectionApacheSpecific {
+    JSONObject httpApachePostRequest(HttpPost postMethod) throws ConnectionException;
+    String pathToUrlString(String path);
+    HttpResponse httpApacheGetResponse(HttpGet httpGet) throws IOException;
 }

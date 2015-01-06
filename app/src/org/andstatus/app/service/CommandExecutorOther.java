@@ -80,7 +80,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 FileDownloader.newForDownloadRow(execContext.getCommandData().itemId).load(execContext.getCommandData());
                 break;
             case FETCH_AVATAR:
-                FileDownloader.newForUser(execContext.getCommandData().itemId).load(execContext.getCommandData());
+                (new AvatarDownloader(execContext.getCommandData().itemId)).load(execContext.getCommandData());
                 break;
             case NOTIFY_CLEAR:
                 AppWidgets.clearAndUpdateWidgets(execContext.getMyContext());

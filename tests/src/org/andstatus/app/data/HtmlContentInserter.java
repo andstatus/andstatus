@@ -58,7 +58,7 @@ public class HtmlContentInserter extends InstrumentationTestCase {
         testHtmlContent();
     }
     
-    private void testHtmlContent() {
+    private void testHtmlContent() throws Exception {
         boolean isHtmlContentAllowedStored = origin.isHtmlContentAllowed(); 
         MbUser author1 = buildUserFromOid("acct:html@example.com");
         author1.avatarUrl = "http://png-5.findicons.com/files/icons/2198/dark_glass/128/html.png";
@@ -75,19 +75,21 @@ public class HtmlContentInserter extends InstrumentationTestCase {
         setHtmlContentAllowed(isHtmlContentAllowedStored);
     }
 
-    private void setHtmlContentAllowed(boolean allowed) {
+    private void setHtmlContentAllowed(boolean allowed) throws Exception {
         new Origin.Builder(origin).setHtmlContentAllowed(allowed).save();
         MyContextHolder.get().persistentOrigins().initialize();
+        MyContextHolder.get().persistentAccounts().initialize();
+        mySetup();
     }
     
-    private void assertHtmlMessage(MbUser author, String bodyString, String messageOid) {
+    private void assertHtmlMessage(MbUser author, String bodyString, String messageOid) throws Exception {
         assertHtmlMessageContentAllowed(author, bodyString, messageOid, true);
         assertHtmlMessageContentAllowed(author, bodyString + " no HTML", 
         		TextUtils.isEmpty(messageOid) ? null : messageOid + "-noHtml", false);
     }
 
 	private MessageInserter assertHtmlMessageContentAllowed(MbUser author,
-			String bodyString, String messageOid, boolean htmlContentAllowed) {
+			String bodyString, String messageOid, boolean htmlContentAllowed) throws Exception {
 		setHtmlContentAllowed(htmlContentAllowed);
         MessageInserter mi = new MessageInserter(ma);
         long msgId1 = mi.addMessage(mi.buildMessage(author, bodyString, null, messageOid));

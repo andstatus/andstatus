@@ -293,7 +293,7 @@ public class DownloadData {
     }
 
     private void logError(String message, Exception e) {
-        errorMessage = e.toString() + ", " + message + "; " + userMsgUrlToString();
+        errorMessage = (e == null ? "" : e.toString() + ", ") + message + "; " + userMsgUrlToString();
         MyLog.v(this, message + "; " + userMsgUrlToString(), e);
     }
     
@@ -396,4 +396,22 @@ public class DownloadData {
         this.errorMessage = errorMessage;
     }
 
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        builder.append(this.getClass().getSimpleName());
+        builder.append("; URL:" + getUrl().toExternalForm());
+        if(userId != 0) {
+            builder.append("; userId:" + userId);
+        }
+        if(msgId != 0) {
+            builder.append("; msgId:" + msgId);
+        }
+        builder.append("; status:" + getStatus());
+        if(!TextUtils.isEmpty(errorMessage)) {
+            builder.append("; errorMessage:'" + getMessage() + "'");
+        }
+        
+        return builder.toString();
+    }
 }

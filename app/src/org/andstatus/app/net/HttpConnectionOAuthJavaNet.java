@@ -38,9 +38,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
@@ -60,14 +60,14 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
      */
     @Override
     public void registerClient(String path) throws ConnectionException {		
-		String logmsg = "registerClient; for " + data.originUrl + "; URL='" + pathToUrl(path) + "'";
+		String logmsg = "registerClient; for " + data.originUrl + "; URL='" + pathToUrlString(path) + "'";
         MyLog.v(this, logmsg);
         String consumerKey = "";
         String consumerSecret = "";
         data.oauthClientKeys.clear();
         Writer writer = null;
         try {
-			URL endpoint = new URL(pathToUrl(path));
+			URL endpoint = new URL(pathToUrlString(path));
             HttpURLConnection conn = (HttpURLConnection) endpoint.openConnection();
                     
             Map<String, String> params = new HashMap<String, String>();
@@ -76,7 +76,7 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
             params.put("redirect_uris", HttpConnection.CALLBACK_URI.toString());
             params.put("client_name", HttpConnection.USER_AGENT);
             params.put("application_name", HttpConnection.USER_AGENT);
-            String requestBody = HttpJavaNetUtils.encode(params);
+            String requestBody = HttpConnectionUtils.encode(params);
             conn.setDoOutput(true);
             conn.setDoInput(true);
             
@@ -85,11 +85,11 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
             writer.close();
             
             if(conn.getResponseCode() != 200) {
-                String msg = HttpJavaNetUtils.readAll(new InputStreamReader(conn.getErrorStream(), UTF_8));
+                String msg = HttpConnectionUtils.readStreamToString(conn.getErrorStream());
                 MyLog.i(this, "Server returned an error response: " + msg);
                 MyLog.i(this, "Server returned an error response: " + conn.getResponseMessage());
             } else {
-                String response = HttpJavaNetUtils.readAll(new InputStreamReader(conn.getInputStream(), UTF_8));
+                String response = HttpConnectionUtils.readStreamToString(conn.getInputStream());
                 JSONObject jso = new JSONObject(response);
                 if (jso != null) {
                     consumerKey = jso.getString("client_id");
@@ -129,7 +129,7 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
 		String logmsg = method;
         try {
             MyLog.logNetworkLevelMessage("postRequest_formParams", formParams);
-			url = new URL(pathToUrl(path));
+			url = new URL(pathToUrlString(path));
 			logmsg += "; URL=" + url.toExternalForm();
             MyLog.v(this, logmsg);
         
@@ -149,22 +149,23 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
             int responseCode = conn.getResponseCode();
             switch(responseCode) {
                 case 200:
-                    result = new JSONObject(HttpJavaNetUtils.readAll(conn.getInputStream()));
+                    result = new JSONObject(HttpConnectionUtils.readStreamToString(conn.getInputStream()));
                     break;
                 default:
-                    String responseString = HttpJavaNetUtils.readAll(new InputStreamReader(conn.getErrorStream(), UTF_8));
+                    String responseString = HttpConnectionUtils.readStreamToString(conn.getErrorStream());
                     throw exceptionFromJsonErrorResponse(path, responseCode, responseString, StatusCode.UNKNOWN);
             }
         } catch (JSONException e) {
             throw ConnectionException.loggedJsonException(this, logmsg, e, result);
-        } catch(Exception e) {
+        } catch (IOException e) {
             throw new ConnectionException(logmsg, e);
         }
         MyLog.logNetworkLevelMessage("postRequest_result", result);
         return result;
     }
 
-    private void writeMedia(HttpURLConnection conn, JSONObject formParams) throws OAuthMessageSignerException, OAuthExpectationFailedException, OAuthCommunicationException, IOException, JSONException {
+    private void writeMedia(HttpURLConnection conn, JSONObject formParams)
+            throws ConnectionException, IOException, JSONException {
         Uri mediaUri = Uri.parse(formParams.getString(KEY_MEDIA_PART_URI));
         conn.setChunkedStreamingMode(0);
         conn.setRequestProperty("Content-Type", MyContentType.uri2MimeType(mediaUri, null));
@@ -188,10 +189,9 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
     }
 
     private void writeJson(HttpURLConnection conn, JSONObject formParams) throws IOException,
-            OAuthMessageSignerException, OAuthExpectationFailedException, OAuthCommunicationException {
+            ConnectionException {
         conn.setRequestProperty("Content-Type", "application/json");
         setAuthorization(conn, getConsumer(), false);
-        
         OutputStreamWriter writer = null;
         try {
             OutputStream os = conn.getOutputStream();
@@ -224,35 +224,47 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
         if (TextUtils.isEmpty(path)) {
             throw new IllegalArgumentException("path is empty");
         }
-        String responseString = "";
-        JSONObject result = null;
-        String logmsg = "getRequest";
+        ReadResult result = new ReadResult();
+        getRequest(pathToUrl(path), result);
+        MyLog.logNetworkLevelMessage("getRequest_oauthJavaNet", result.jsonResult);
+        return result.jsonResult;
+    }
+
+    private void getRequest(URL urlIn, ReadResult result) throws ConnectionException {
+        String method = "getRequest; ";
+        StringBuilder logBuilder = new StringBuilder(method);
         try {
             OAuthConsumer consumer = getConsumer();
-            
-            URL url = new URL(pathToUrl(path));
-            logmsg += "; URL=" + url.toExternalForm();
+            URL url = urlIn;
+            logBuilder.append("URL='" + url.toExternalForm() + "';");
             HttpURLConnection conn;
             boolean redirected = false;
             boolean done=false;
+            boolean authenticate = true;
             do {
                 conn = (HttpURLConnection) url.openConnection();
                 conn.setInstanceFollowRedirects(false);
-                setAuthorization(conn, consumer, redirected);
+                if (authenticate) {
+                    setAuthorization(conn, consumer, redirected);
+                }
                 conn.connect();
                 int responseCode = conn.getResponseCode();
                 StatusCode statusCode = StatusCode.fromResponseCode(responseCode);
                 switch(responseCode) {
                     case 200:
                         try {
-                            responseString = HttpJavaNetUtils.readAll(conn.getInputStream());
-                            result = new JSONObject(responseString);
+                            if (result.fileResult == null) {
+                                result.strResponse = HttpConnectionUtils.readStreamToString(conn.getInputStream());
+                                result.jsonResult = new JSONObject(result.strResponse);
+                            } else {
+                                HttpConnectionUtils.readStreamToFile(conn.getInputStream(), result.fileResult);
+                            }
                             done = true;
                         } catch (JSONException e) {
                             throw ConnectionException.loggedJsonException(this,
                                     "Error reading response: '"
-                                            + responseCode + NON_JSON_RESPONSE + responseString
-                                            + "'; " + logmsg,
+                                            + responseCode + NON_JSON_RESPONSE + result.strResponse
+                                            + "'; " + logBuilder,
                                             e, null);
                         }
                         break;
@@ -260,35 +272,66 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
                     case 302:
                     case 303:
                     case 307:
-                        url = new URL(conn.getHeaderField("Location").replace("%3F", "?"));
-                        MyLog.v(this, "Following redirect to " + url);
                         redirected = true;
+                        url = new URL(conn.getHeaderField("Location").replace("%3F", "?"));
+                        String logMsg3 = "Following redirect to " + url.toExternalForm();
+                        logBuilder.append(logMsg3 + "; ");
+                        MyLog.v(this, method + logMsg3);
                         if (MyLog.isLoggable(MyLog.APPTAG, MyLog.VERBOSE)) {
-                            StringBuilder message = new StringBuilder("Headers: ");
+                            StringBuilder message = new StringBuilder(method + "Headers: ");
                             for (int posn=0 ; ; posn++) {
                                 String fieldName = conn.getHeaderFieldKey(posn);
                                 if ( fieldName == null) {
-                                    MyLog.v(this, message.toString());
                                     break;
                                 }
-                                message.append(fieldName +": " + conn.getHeaderField(fieldName) + "; ");
+                                message.append(fieldName +": " + conn.getHeaderField(fieldName) + ";\n");
+                            }
+                            MyLog.v(this, message.toString());
+                        }
+                        conn.disconnect();
+                        break;
+                    default:
+                        result.strResponse = HttpConnectionUtils.readStreamToString(conn.getErrorStream());
+                        String logMsg2 = ERROR_GETTING + url.toExternalForm()
+                                + COMMA_STATUS + responseCode + NON_JSON_RESPONSE + result.strResponse + "'";
+                        boolean stop = result.fileResult == null || !redirected || !authenticate;
+                        if (stop) {
+                            if (result.fileResult == null) {
+                                throw exceptionFromJsonErrorResponse(logBuilder.toString(), responseCode, result.strResponse, statusCode);
+                            } else {
+                                throw ConnectionException.fromStatusCode(statusCode, logMsg2);
                             }
                         }
-                        break;                        
-                    default:
-                        responseString = HttpJavaNetUtils.readAll(new InputStreamReader(conn.getErrorStream(), UTF_8));
-                        throw exceptionFromJsonErrorResponse(logmsg, responseCode, responseString, statusCode);
+                        MyLog.v(this, method + logMsg2);
+                        logBuilder.append(logMsg2 + "; ");
+                        authenticate = false;
+                        String logMsg4 = "Retrying without authentication connection to '" + url.toExternalForm() + "'";
+                        logBuilder.append(logMsg4 + "; ");
+                        MyLog.v(this, method + logMsg4);
+                        break;
                 }
             } while (!done);
-        } catch (ConnectionException e) {
+        } catch(ConnectionException e) {
             throw e;
-        } catch(Exception e) {
-            throw new ConnectionException(logmsg, e);
+        } catch(IOException e) {
+            throw new ConnectionException(logBuilder.toString(), e);
         }
-        MyLog.logNetworkLevelMessage("getRequest_oauthJavaNet", result);
-        return result;
     }
 
+    private static class ReadResult {
+        String strResponse = null;
+        JSONObject jsonResult = null;
+        File fileResult = null;
+
+        public ReadResult() {
+            // Empty
+        }
+
+        public ReadResult(File file) {
+            fileResult = file;
+        }
+    }
+    
     public ConnectionException exceptionFromJsonErrorResponse(String path, int responseCode,
             String responseString,
             StatusCode statusCodeIn) {
@@ -311,9 +354,11 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
     }
 
     private void setAuthorization(HttpURLConnection conn, OAuthConsumer consumer, boolean redirected)
-            throws OAuthMessageSignerException, OAuthExpectationFailedException,
-            OAuthCommunicationException {
-        if (getCredentialsPresent()) {
+            throws ConnectionException {
+        if (!getCredentialsPresent()) {
+            return;
+        }
+        try {
             if (data.originUrl.getHost().contentEquals(data.urlForUserToken.getHost())) {
                 consumer.sign(conn);
             } else {
@@ -329,6 +374,9 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
                     consumer.sign(conn);
                 }
             }
+        } catch (OAuthMessageSignerException | OAuthExpectationFailedException
+                | OAuthCommunicationException e) {
+            throw new ConnectionException(e);
         }
     }
 
@@ -354,5 +402,11 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
             throw ConnectionException.loggedJsonException(this, "No array was returned", null, jso);
         }
         return jsa;
+    }
+
+    @Override
+    public void downloadFile(String url, File file) throws ConnectionException {
+        ReadResult result = new ReadResult(file);
+        getRequest(stringToUrl(url), result);
     }
 }

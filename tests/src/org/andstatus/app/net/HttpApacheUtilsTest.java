@@ -28,7 +28,7 @@ public class HttpApacheUtilsTest extends InstrumentationTestCase {
                 + "{\"text\":\"Text2\",\"to_user\":\"andstatus\",\"from_user\":\"otherauthor\"}]"
                 + ",\"since_id\":\"Wed, 05 Mar 2014 16:37:17 +0100\""
                 + "}";
-        HttpApacheUtils utils = new HttpApacheUtils(null);
+        HttpConnectionApacheCommon utils = new HttpConnectionApacheCommon(null);
         JSONTokener jst = new JSONTokener(in);
         JSONArray jsa = utils.jsonTokenerToArray(jst);
         assertEquals(2, jsa.length());

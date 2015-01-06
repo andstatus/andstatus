@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,38 +16,30 @@
 
 package org.andstatus.app.service;
 
-import org.andstatus.app.data.AvatarData;
+import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
 import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.data.DownloadFile;
 import org.andstatus.app.data.DownloadStatus;
-import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.net.HttpApacheUtils;
+import org.andstatus.app.net.ConnectionException;
 import org.andstatus.app.util.MyLog;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.methods.HttpGet;
 
-import java.io.BufferedOutputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.File;
 
-class FileDownloader {
-    private final DownloadData data;
-    boolean mockNetworkError = false;
-    
-    static FileDownloader newForUser(long userIdIn) {
-        return new FileDownloader(AvatarData.newForUser(userIdIn));
-    }
+abstract class FileDownloader {
+    protected final DownloadData data;
+    public boolean mockNetworkError;
 
     static FileDownloader newForDownloadRow(long rowIdIn) {
-        return new FileDownloader(DownloadData.fromRowId(rowIdIn));
+        DownloadData data = DownloadData.fromRowId(rowIdIn);
+        if (data.userId != 0) {
+            return new AvatarDownloader(data);
+        } else {
+            return new AttachmentDownloader(data);
+        }
     }
     
-    private FileDownloader(DownloadData dataIn) {
+    protected FileDownloader(DownloadData dataIn) {
         data = dataIn;
     }
     
@@ -79,30 +71,34 @@ class FileDownloader {
         downloadFile();
         data.saveToDatabase();
         if (!data.isError()) {
-            data.deleteOtherOfThisUser();
-            MyLog.v(this, "Loaded avatar userId:" + data.userId + "; url:" + data.getUrl().toExternalForm());
+            onSuccessfulLoad();
         }
     }
+
+    protected abstract void onSuccessfulLoad();
 
     private void downloadFile() {
         final String method = "downloadFile";
         DownloadFile fileTemp = new DownloadFile("temp_" + data.getFilenameNew());
         try {
-            // See http://hc.apache.org/httpcomponents-client-ga/tutorial/html/fundamentals.html
-            HttpResponse response = getResponse();
-            parseStatusCode(response.getStatusLine().getStatusCode());
-            try {
-                HttpEntity entity = response.getEntity();
-                if (entity != null) {
-                    readToFile(entity, fileTemp);
+            String url = data.getUrl().toExternalForm();
+            File file = fileTemp.getFile();
+            MyAccount ma = findBestAccountForDownload();
+            MyLog.v(this, "About to download " + data.toString() + "; account:" + ma.getAccountName());
+            if (ma.getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED) {
+                ma.getConnection().downloadFile(url, file);
+                if (mockNetworkError) {
+                    throw new ConnectionException(method + ", Mocked IO exception");
                 }
-            } finally {
-                DbUtils.closeSilently(response);
-            }            
-        } catch (FileNotFoundException e) {
-            data.hardErrorLogged(method + ", File not found", e);
-        } catch (IOException e) {
-            data.softErrorLogged(method, e);
+            } else {
+                data.hardErrorLogged(method + ", No account to download the file", null);
+            }
+        } catch (ConnectionException e) {
+            if (e.isHardError()) {
+                data.hardErrorLogged(method, e);
+            } else {
+                data.softErrorLogged(method, e);
+            }
         }
         if (data.isError()) {
             fileTemp.delete();
@@ -113,56 +109,6 @@ class FileDownloader {
             data.softErrorLogged(method + ", Couldn't rename file " + fileTemp + " to " + fileNew, null);
         }
     }
-
-    private HttpResponse getResponse() throws IOException, ClientProtocolException {
-        HttpGet httpget = new HttpGet(data.getUrl().toExternalForm());
-        HttpResponse response = HttpApacheUtils.getHttpClient().execute(httpget);
-        return response;
-    }
-
-    private void parseStatusCode(int code) throws IOException {
-        switch (code) {
-        case 200:
-        case 304:
-            break;
-        case 401:
-            throw new IOException(String.valueOf(code));
-        case 400:
-        case 403:
-        case 404:
-            throw new FileNotFoundException(String.valueOf(code));
-        case 500:
-        case 502:
-        case 503:
-            throw new IOException(String.valueOf(code));
-        default:
-            break;
-        }
-    }
-
-    private void readToFile(HttpEntity entity, DownloadFile fileTemp)
-            throws IOException {
-        final String method = "readToFile";
-        InputStream in = entity.getContent();
-        try {
-            byte[] buffer = new byte[1024];
-            int length;
-            OutputStream out = null;
-            out = new BufferedOutputStream(new FileOutputStream(fileTemp.getFile()));
-            try {
-                if (mockNetworkError) {
-                    throw new IOException(method + ", Mocked IO exception");
-                }
-                while ((length = in.read(buffer)) > 0) {
-                    out.write(buffer, 0, length);
-                }
-            } finally {
-                DbUtils.closeSilently(out);
-            }
-        } finally {
-            DbUtils.closeSilently(in);
-        }
-    }
     
     public DownloadStatus getStatus() {
         return data.getStatus();
@@ -171,4 +117,6 @@ class FileDownloader {
     public String getFilename() {
         return data.getFilename();
     }
+
+    protected abstract MyAccount findBestAccountForDownload();
 }
