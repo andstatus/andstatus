@@ -27,6 +27,7 @@ import org.andstatus.app.net.HttpConnectionMock;
 import org.andstatus.app.util.RawResourceUtils;
 import org.andstatus.app.util.TriState;
 
+import java.io.IOException;
 import java.util.Arrays;
 
 public class CommandExecutorStrategyTest extends InstrumentationTestCase {
@@ -64,12 +65,12 @@ public class CommandExecutorStrategyTest extends InstrumentationTestCase {
         strategy = CommandExecutorStrategy.getStrategy(commandData, null);
         assertEquals(CommandExecutorSearch.class, strategy.getClass());
         strategy.execute();
-        assertTrue("Requested '" + Arrays.toString(httpConnectionMock.getPostedPaths().toArray()) + "'", httpConnectionMock.getPostedPaths().get(0).contains(TestSuite.GLOBAL_PUBLIC_MESSAGE_TEXT) );
+        assertTrue("Requested '" + Arrays.toString(httpConnectionMock.getResults().toArray()) + "'", httpConnectionMock.getResults().get(0).getUrl().contains(TestSuite.GLOBAL_PUBLIC_MESSAGE_TEXT) );
     }
 
-    public void testUpdateDestroyStatus() {
+    public void testUpdateDestroyStatus() throws IOException {
         String body = "Some text to send " + System.currentTimeMillis() + "ms"; 
-        httpConnectionMock.setResponse(RawResourceUtils.getJSONObject(this.getInstrumentation().getContext(), 
+        httpConnectionMock.setResponse(RawResourceUtils.getString(this.getInstrumentation().getContext(), 
                 org.andstatus.app.tests.R.raw.quitter_update_status_response));
        
         CommandData commandData = CommandData.updateStatus(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME, 

@@ -27,6 +27,7 @@ import org.andstatus.app.net.ConnectionException.StatusCode;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.UriUtils;
+import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -39,10 +40,7 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.HTTP;
-import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
-import org.json.JSONTokener;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -58,106 +56,6 @@ public class HttpConnectionApacheCommon {
 
     HttpConnectionApacheCommon(HttpConnectionApacheSpecific specificIn) {
         this.specific = specificIn;
-    }
-
-    final JSONArray getRequestAsArray(HttpGet get) throws ConnectionException {
-        return jsonTokenerToArray(httpApacheGetRequest(get));
-    }
-
-    final JSONArray jsonTokenerToArray(JSONTokener jst) throws ConnectionException {
-        String method = "jsonTokenerToArray";
-        JSONArray jsa = null;
-        try {
-            Object obj = jst.nextValue();
-            if (JSONObject.class.isInstance(obj)) {
-                JSONObject jso = (JSONObject) obj;
-                Iterator<String> iterator =  jso.keys();
-                while (iterator.hasNext()) {
-                    String key = iterator.next();
-                    Object obj2 = jso.get(key);                    
-                    if (JSONArray.class.isInstance(obj2)) {
-                        MyLog.v(this, method + " found array inside '" + key + "' object");
-                        obj = obj2;
-                        break;
-                    }
-                }
-            }
-            jsa = (JSONArray) obj;
-        } catch (JSONException e) {
-            throw ConnectionException.loggedJsonException(this, method, e, jst);
-        } catch (ClassCastException e) {
-            throw ConnectionException.loggedHardJsonException(this, method, e, jst);
-        }
-        return jsa;
-    }
-
-    public JSONTokener httpApacheGetRequest(HttpGet httpGet) throws ConnectionException {
-        JSONTokener jso = null;
-        String strReceived = null;
-        StatusLine statusLine = null;
-        Exception e1 = null;
-        String logmsg = "getRequest; URI='" + httpGet.getURI().toString() + "'";
-        HttpResponse httpResponse = null;
-        try {
-            httpResponse = specific.httpApacheGetResponse(httpGet);
-            statusLine = httpResponse.getStatusLine();
-            strReceived = readHttpResponseToString(httpResponse);
-            jso = new JSONTokener(strReceived);
-        } catch (IOException e) {
-            e1 = e;
-        } finally {
-            httpGet.abort();
-            DbUtils.closeSilently(httpResponse);            
-        }
-        MyLog.logNetworkLevelMessage("getRequest_basic", strReceived);
-        parseStatusLine(statusLine, e1, logmsg, strReceived);
-        return jso;
-    }
-    
-    /**
-     * Parse and throw appropriate exceptions when necessary
-     */
-    void parseStatusLine(StatusLine statusLine, Throwable tr, String logMsgIn, String strResponse) throws ConnectionException {
-        String logMsg = (logMsgIn == null) ? "" : logMsgIn;
-        ConnectionException.StatusCode statusCode = StatusCode.UNKNOWN;
-        if (statusLine != null) {
-            switch (ConnectionException.StatusCode.fromResponseCode(statusLine.getStatusCode())) {
-                case OK:
-                case UNKNOWN:
-                    return;
-                default:
-                    break;
-            }
-            statusCode = ConnectionException.StatusCode.fromResponseCode(statusLine.getStatusCode());
-            logMsg += "; statusLine='" + statusLine + "'";
-        }
-        logMsg = appendStringResponse(logMsg, strResponse);
-        if (tr != null) {
-            MyLog.i(this, statusCode.toString() + "; " + logMsg, tr);
-        }
-        throw ConnectionException.fromStatusCodeAndThrowable(statusCode, logMsg, tr);
-    }
-    
-    private String appendStringResponse(String logMsgIn, String strResponse) {
-        String logMsg = (logMsgIn == null) ? "" : logMsgIn;
-        if (!TextUtils.isEmpty(strResponse)) {
-            logMsg += "; response='" + I18n.trimTextAt(strResponse, 120) + "'";
-        }
-        return logMsg;
-    }
-    
-    final JSONObject getRequestAsObject(HttpGet get) throws ConnectionException {
-        String method = "getRequestAsObject";
-        JSONObject jso = null;
-        JSONTokener jst = httpApacheGetRequest(get);
-        try {
-            jso = (JSONObject) jst.nextValue();
-        } catch (JSONException e) {
-            throw ConnectionException.loggedJsonException(this, method, e, jst);
-        } catch (ClassCastException e) {
-            throw ConnectionException.loggedHardJsonException(this, method, e, jst);
-        }
-        return jso;
     }
 
     protected JSONObject postRequest(String path) throws ConnectionException {
@@ -252,25 +150,82 @@ public class HttpConnectionApacheCommon {
     }
 
     protected void downloadFile(String url, File file) throws ConnectionException {
+        HttpReadResult result = new HttpReadResult(url, file);
+        getRequest(result);
+    }
+
+    protected void getRequest(HttpReadResult result) throws ConnectionException {
+        String method = "getRequest; ";
         // See http://hc.apache.org/httpcomponents-client-ga/tutorial/html/fundamentals.html
-        HttpGet httpGet = new HttpGet(url);
-        String logmsg = "downloadFile; URL='" + url + "'";
+        StringBuilder logBuilder =  new StringBuilder(method + "URL='" + result.getUrl() + "'; ");
         StatusLine statusLine = null;
+        String strResponse = "";
         Exception e1 = null;
         HttpResponse httpResponse = null;
         try {
-            httpResponse = specific.httpApacheGetResponse(httpGet);
-            statusLine = httpResponse.getStatusLine();
-            HttpEntity entity = httpResponse.getEntity();
-            if (entity != null) {
-                HttpConnectionUtils.readStreamToFile(entity.getContent(), file);
-            }
+            boolean stop = false;
+            boolean authenticate = true;
+            do {
+                HttpGet httpGet = newHttpGet(result.getUrl());
+                if (authenticate) {
+                    specific.httpApacheSetAuthorization(httpGet);
+                }
+                httpResponse = specific.httpApacheGetResponse(httpGet);
+                statusLine = httpResponse.getStatusLine();
+                result.statusCode = ConnectionException.StatusCode.fromResponseCode(statusLine.getStatusCode());
+                switch (result.statusCode) {
+                    case OK:
+                    case UNKNOWN:
+                        HttpEntity entity = httpResponse.getEntity();
+                        if (entity != null) {
+                            if (result.fileResult != null) {
+                                HttpConnectionUtils.readStreamToFile(entity.getContent(), result.fileResult);
+                            } else {
+                                result.strResponse = HttpConnectionUtils.readStreamToString(entity.getContent());
+                            }
+                        }
+                        stop = true;
+                        break;
+                    case MOVED:
+                        result.redirected = true;
+                        result.setUrl(httpResponse.getHeaders("Location")[0].getValue().replace("%3F", "?"));
+                        String logMsg3 = "Following redirect to '" + result.getUrl() + "'";
+                        logBuilder.append(logMsg3 + "; ");
+                        MyLog.v(this, method + logMsg3);
+                        if (MyLog.isLoggable(MyLog.APPTAG, MyLog.VERBOSE)) {
+                            StringBuilder message = new StringBuilder(method + "Headers: ");
+                            for (Header header: httpResponse.getAllHeaders()) {
+                                message.append(header.getName() +": " + header.getValue() + ";\n");
+                            }
+                            MyLog.v(this, message.toString());
+                        }
+                        break;
+                    default:
+                        entity = httpResponse.getEntity();
+                        if (entity != null) {
+                            result.strResponse = HttpConnectionUtils.readStreamToString(entity.getContent());
+                        }
+                        stop = isStatusLineOk(statusLine) || !authenticate;
+                        if (!stop) {
+                            authenticate = false;
+                            DbUtils.closeSilently(httpResponse);
+                            MyLog.v(this, logBuilder.toString() + "; retrying without authentication; statusLine='" + statusLine + "'");
+                        }
+                        break;
+                }
+            } while (!stop);
         } catch (IOException e) {
             e1 = e;
         } finally {
             DbUtils.closeSilently(httpResponse);
         }
-        parseStatusLine(statusLine, e1, logmsg, null);
+        parseStatusLine(statusLine, e1, logBuilder.toString(), strResponse);
+    }
+    
+    private HttpGet newHttpGet(String url) {
+        HttpGet httpGet = new HttpGet(url);
+        httpGet.setHeader("User-Agent", HttpConnection.USER_AGENT);
+        return httpGet;
     }
 
     public static String readHttpResponseToString(HttpResponse httpResponse) throws IOException {
@@ -283,6 +238,48 @@ public class HttpConnectionApacheCommon {
             }
         }
         return null;
+    }
+    
+    
+    /**
+     * Parse and throw appropriate exceptions when necessary
+     */
+    void parseStatusLine(StatusLine statusLine, Throwable tr, String logMsgIn, String strResponse) throws ConnectionException {
+        String logMsg = (logMsgIn == null) ? "" : logMsgIn;
+        ConnectionException.StatusCode statusCode = StatusCode.UNKNOWN;
+        if (statusLine != null) {
+            if (isStatusLineOk(statusLine)) {
+                return;
+            }
+            statusCode = ConnectionException.StatusCode.fromResponseCode(statusLine.getStatusCode());
+            logMsg += "; statusLine='" + statusLine + "'";
+        }
+        logMsg = appendStringResponse(logMsg, strResponse);
+        if (tr != null) {
+            MyLog.i(this, statusCode.toString() + "; " + logMsg, tr);
+        }
+        throw ConnectionException.fromStatusCodeAndThrowable(statusCode, logMsg, tr);
+    }
+
+    boolean isStatusLineOk(StatusLine statusLine) {
+        if (statusLine != null) {
+            switch (ConnectionException.StatusCode.fromResponseCode(statusLine.getStatusCode())) {
+                case OK:
+                case UNKNOWN:
+                    return true;
+                default:
+                    break;
+            }
+        }
+        return false;
+    }
+    
+    private String appendStringResponse(String logMsgIn, String strResponse) {
+        String logMsg = (logMsgIn == null) ? "" : logMsgIn;
+        if (!TextUtils.isEmpty(strResponse)) {
+            logMsg += "; response='" + I18n.trimTextAt(strResponse, 120) + "'";
+        }
+        return logMsg;
     }
     
 }

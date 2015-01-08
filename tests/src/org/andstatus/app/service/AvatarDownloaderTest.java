@@ -39,21 +39,31 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 public class AvatarDownloaderTest extends InstrumentationTestCase {
-    private MyAccount ma;
+    private MyAccount ma = MyAccount.getEmpty(MyContextHolder.get(), "");
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
         MyLog.i(this, "setUp started");
         TestSuite.initializeWithData(this);
-        ma = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.CONVERSATION_ACCOUNT_NAME);
-        assertTrue(TestSuite.CONVERSATION_ACCOUNT_NAME + " exists", ma.isValid());
         MyLog.i(this, "setUp ended");
     }
 
-    public void testLoad() throws IOException {
-        String urlStringOld = MyProvider.userIdToStringColumnValue(User.AVATAR_URL, ma.getUserId());
-        assertEquals(TestSuite.CONVERSATION_ACCOUNT_AVATAR_URL, urlStringOld);
+    public void testLoadPumpio() throws IOException {
+        ma = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.CONVERSATION_ACCOUNT_NAME);
+        assertTrue(TestSuite.CONVERSATION_ACCOUNT_NAME + " exists", ma.isValid());
+        loadforOneMyAccount(TestSuite.CONVERSATION_ACCOUNT_AVATAR_URL);
+    }
+
+    public void testLoadBasicAuth() throws IOException {
+        ma = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME);
+        assertTrue(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME + " exists", ma.isValid());
+        loadforOneMyAccount(TestSuite.GNUSOCIAL_TEST_ACCOUNT_AVATAR_URL);
+    }
+    
+    private void loadforOneMyAccount(String urlStringInitial) throws IOException {
+        String urlString1 = MyProvider.userIdToStringColumnValue(User.AVATAR_URL, ma.getUserId());
+        assertEquals(urlStringInitial, urlString1);
         
         AvatarData.deleteAllOfThisUser(ma.getUserId());
         
@@ -85,7 +95,7 @@ public class AvatarDownloaderTest extends InstrumentationTestCase {
         changeMaAvatarUrl("");
         loadAndAssertStatusForMa(DownloadStatus.HARD_ERROR, false);
         
-        changeMaAvatarUrl(urlStringOld);
+        changeMaAvatarUrl(urlStringInitial);
         long rowIdError = loadAndAssertStatusForMa(DownloadStatus.ABSENT, true);
         long rowIdRecovered = loadAndAssertStatusForMa(DownloadStatus.LOADED, false);
         assertEquals("Updated the same row ", rowIdError, rowIdRecovered);
@@ -97,6 +107,8 @@ public class AvatarDownloaderTest extends InstrumentationTestCase {
     }
 
     public void testDeletedFile() throws IOException {
+        ma = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.CONVERSATION_ACCOUNT_NAME);
+        
         changeMaAvatarUrl(TestSuite.CONVERSATION_ACCOUNT_AVATAR_URL);
         String urlString = MyProvider.userIdToStringColumnValue(User.AVATAR_URL, ma.getUserId());
         assertEquals(TestSuite.CONVERSATION_ACCOUNT_AVATAR_URL, urlString);

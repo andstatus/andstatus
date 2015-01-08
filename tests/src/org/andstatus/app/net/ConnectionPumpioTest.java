@@ -34,7 +34,7 @@ import org.andstatus.app.util.UrlUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.net.MalformedURLException;
+import java.io.IOException;
 import java.net.URL;
 import java.util.Calendar;
 import java.util.List;
@@ -133,10 +133,10 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         }
     }
     
-    public void testGetTimeline() throws ConnectionException {
+    public void testGetTimeline() throws IOException {
         String sinceId = originUrl.toExternalForm() + "/activity/frefq3232sf";
 
-        JSONObject jso = RawResourceUtils.getJSONObject(this.getInstrumentation().getContext(), 
+        String jso = RawResourceUtils.getString(this.getInstrumentation().getContext(), 
                 org.andstatus.app.tests.R.raw.user_t131t_inbox);
         httpConnectionMock.setResponse(jso);
         
@@ -185,8 +185,8 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         assertEquals("Is a reply to this user", mbMessage.inReplyToMessage.sender.getUserName(), "jankusanagi@identi.ca");
     }
 
-    public void testGetUsersFollowedBy() throws ConnectionException {
-        JSONObject jso = RawResourceUtils.getJSONObject(this.getInstrumentation().getContext(), 
+    public void testGetUsersFollowedBy() throws IOException {
+        String jso = RawResourceUtils.getString(this.getInstrumentation().getContext(), 
                 org.andstatus.app.tests.R.raw.user_t131t_following);
         httpConnectionMock.setResponse(jso);
         
@@ -207,7 +207,7 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
     public void testUpdateStatus() throws ConnectionException, JSONException {
         String body = "@peter Do you think it's true?";
         String inReplyToId = "https://identi.ca/api/note/94893FsdsdfFdgtjuk38ErKv";
-        httpConnectionMock.setResponse(new JSONObject());
+        httpConnectionMock.setResponse("");
         connection.data.setAccountUserOid("acct:mytester@" + originUrl.getHost());
         connection.updateStatus(body, inReplyToId, null);
         JSONObject activity = httpConnectionMock.getPostedJSONObject();
@@ -232,8 +232,8 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         assertTrue("InReplyTo is not present", !obj.has("inReplyTo"));
     }
     
-    public void testUnfollowUser() throws ConnectionException {
-        JSONObject jso = RawResourceUtils.getJSONObject(this.getInstrumentation().getContext(), 
+    public void testUnfollowUser() throws IOException {
+        String jso = RawResourceUtils.getString(this.getInstrumentation().getContext(), 
                 org.andstatus.app.tests.R.raw.unfollow_pumpio);
         httpConnectionMock.setResponse(jso);
         connection.data.setAccountUserOid("acct:t131t@" + originUrl.getHost());
@@ -250,8 +250,8 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         assertEquals("Bad date shouldn't throw (" + stringDate + ")", 0, connection.parseDate(stringDate) );
     }
     
-    public void testDestroyStatus() throws JSONException, ConnectionException {
-        JSONObject jso = RawResourceUtils.getJSONObject(this.getInstrumentation().getContext(), 
+    public void testDestroyStatus() throws IOException {
+        String jso = RawResourceUtils.getString(this.getInstrumentation().getContext(), 
                 org.andstatus.app.tests.R.raw.destroy_status_response_pumpio);
         httpConnectionMock.setResponse(jso);
         connection.data.setAccountUserOid(TestSuite.CONVERSATION_ACCOUNT_USER_OID);
@@ -266,8 +266,8 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         assertTrue(thrown);
     }
     
-    public void testPostWithMedia() throws ConnectionException, MalformedURLException {
-        JSONObject jso = RawResourceUtils.getJSONObject(this.getInstrumentation().getContext(), 
+    public void testPostWithMedia() throws IOException {
+        String jso = RawResourceUtils.getString(this.getInstrumentation().getContext(), 
                 org.andstatus.app.tests.R.raw.pumpio_activity_with_image);
         httpConnectionMock.setResponse(jso);
         
@@ -277,8 +277,8 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         assertEquals("Message returned", privateGetMessageWithAttachment(this.getInstrumentation().getContext(), false), message2);
     }
     
-    private MbMessage privateGetMessageWithAttachment(Context context, boolean uniqueUid) throws ConnectionException, MalformedURLException {
-        JSONObject jso = RawResourceUtils.getJSONObject(context, 
+    private MbMessage privateGetMessageWithAttachment(Context context, boolean uniqueUid) throws IOException {
+        String jso = RawResourceUtils.getString(context, 
                 org.andstatus.app.tests.R.raw.pumpio_activity_with_image);
         httpConnectionMock.setResponse(jso);
 
@@ -295,7 +295,7 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         return msg;
     }
 
-    public void testGetMessageWithAttachment() throws ConnectionException, MalformedURLException {
+    public void testGetMessageWithAttachment() throws IOException {
         privateGetMessageWithAttachment(this.getInstrumentation().getContext(), true);    
     }
     

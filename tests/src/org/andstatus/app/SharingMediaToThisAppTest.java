@@ -11,6 +11,7 @@ import org.andstatus.app.account.AccountSelector;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.net.HttpReadResult;
 import org.andstatus.app.service.MyServiceTestHelper;
 import org.andstatus.app.util.MyLog;
 
@@ -70,7 +71,7 @@ public class SharingMediaToThisAppTest extends ActivityInstrumentationTestCase2<
         mService.waitForServiceStopped();
         
         String message = "Data was posted " + mService.httpConnectionMock.getPostedCounter() + " times; "
-                + Arrays.toString(mService.httpConnectionMock.getPostedPaths().toArray(new String[]{}));
+                + Arrays.toString(mService.httpConnectionMock.getResults().toArray());
         MyLog.v(this, method  + "; " + message);
         assertTrue(message, mService.httpConnectionMock.getPostedCounter() > 0);
         assertTrue(message, mService.httpConnectionMock.substring2PostedPath("statuses/update").length() > 0 );

@@ -31,4 +31,5 @@ public interface HttpConnectionApacheSpecific {
     JSONObject httpApachePostRequest(HttpPost postMethod) throws ConnectionException;
     String pathToUrlString(String path);
     HttpResponse httpApacheGetResponse(HttpGet httpGet) throws IOException;
+    void httpApacheSetAuthorization(HttpGet httpGet) throws IOException;
 }

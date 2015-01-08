@@ -39,7 +39,8 @@ import org.andstatus.app.util.SelectionAndArgs;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
 import org.andstatus.app.util.UrlUtils;
-import org.json.JSONObject;
+
+import java.io.IOException;
 
 public class VerifyCredentialsTest extends InstrumentationTestCase {
     Context context;
@@ -82,8 +83,8 @@ public class VerifyCredentialsTest extends InstrumentationTestCase {
         }
     }
 
-    public void testVerifyCredentials() throws ConnectionException {
-        JSONObject jso = RawResourceUtils.getJSONObject(this.getInstrumentation().getContext(), 
+    public void testVerifyCredentials() throws IOException {
+        String jso = RawResourceUtils.getString(this.getInstrumentation().getContext(), 
                 org.andstatus.app.tests.R.raw.verify_credentials_twitter);
         httpConnection.setResponse(jso);
         

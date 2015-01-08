@@ -406,7 +406,7 @@ public class ConnectionPumpio extends Connection {
         if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
             try {
                 MyLog.v(this, "messageFromJson: " + jso.toString(2));
-            } catch (JSONException e) {
+            } catch (NullPointerException | JSONException e) {
                 ConnectionException.loggedJsonException(this, "messageFromJson", e, jso);
             }
         }

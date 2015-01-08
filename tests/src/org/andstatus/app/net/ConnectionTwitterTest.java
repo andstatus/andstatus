@@ -27,9 +27,8 @@ import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.util.RawResourceUtils;
 import org.andstatus.app.util.TriState;
-import org.json.JSONObject;
 
-import java.net.MalformedURLException;
+import java.io.IOException;
 import java.net.URL;
 import java.util.Calendar;
 import java.util.Date;
@@ -65,8 +64,8 @@ public class ConnectionTwitterTest extends InstrumentationTestCase {
         }
     }
 
-    public void testGetTimeline() throws ConnectionException {
-        JSONObject jso = RawResourceUtils.getJSONObject(this.getInstrumentation().getContext(), 
+    public void testGetTimeline() throws IOException {
+        String jso = RawResourceUtils.getString(this.getInstrumentation().getContext(), 
                 org.andstatus.app.tests.R.raw.twitter_home_timeline);
         httpConnection.setResponse(jso);
         
@@ -125,8 +124,8 @@ public class ConnectionTwitterTest extends InstrumentationTestCase {
         assertEquals("Body of this message starts with", startsWith, mbMessage.getBody().substring(0, startsWith.length()));
     }
 
-    public void testGetMessageWithAttachment() throws ConnectionException, MalformedURLException {
-        JSONObject jso = RawResourceUtils.getJSONObject(this.getInstrumentation().getContext(), 
+    public void testGetMessageWithAttachment() throws IOException {
+        String jso = RawResourceUtils.getString(this.getInstrumentation().getContext(), 
                 org.andstatus.app.tests.R.raw.twitter_message_with_media);
         httpConnection.setResponse(jso);
 

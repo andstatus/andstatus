@@ -16,7 +16,6 @@
 
 package org.andstatus.app.net;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.File;
@@ -34,16 +33,6 @@ public class HttpConnectionEmpty extends HttpConnection {
     }
 
     @Override
-    protected JSONObject getRequest(String path) throws ConnectionException {
-        return null;
-    }
-
-    @Override
-    protected JSONArray getRequestAsArray(String path) throws ConnectionException {
-        return null;
-    }
-
-    @Override
     public void clearAuthInformation() {
         // Empty
     }
@@ -55,6 +44,11 @@ public class HttpConnectionEmpty extends HttpConnection {
 
     @Override
     public void downloadFile(String url, File file) {
+        // Empty
+    }
+
+    @Override
+    protected void getRequest(HttpReadResult result) throws ConnectionException {
         // Empty
     }
 

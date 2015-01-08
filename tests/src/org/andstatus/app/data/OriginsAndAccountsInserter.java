@@ -49,27 +49,35 @@ public class OriginsAndAccountsInserter extends InstrumentationTestCase {
         OriginTest.createOneOrigin(OriginType.TWITTER, TestSuite.TWITTER_TEST_ORIGIN_NAME,
                 TestSuite.getTestOriginHost(TestSuite.TWITTER_TEST_ORIGIN_NAME), true,
                 false);
-        OriginTest.createOneOrigin(TestSuite.CONVERSATION_ORIGIN_TYPE,
-                TestSuite.CONVERSATION_ORIGIN_NAME,
-                TestSuite.getTestOriginHost(TestSuite.CONVERSATION_ORIGIN_NAME), true, true);
+        OriginTest.createOneOrigin(OriginType.PUMPIO,
+                TestSuite.PUMPIO_ORIGIN_NAME,
+                TestSuite.getTestOriginHost(TestSuite.PUMPIO_ORIGIN_NAME), true, true);
         OriginTest.createOneOrigin(OriginType.GNUSOCIAL, TestSuite.GNUSOCIAL_TEST_ORIGIN_NAME,
                 TestSuite.getTestOriginHost(TestSuite.GNUSOCIAL_TEST_ORIGIN_NAME), true, true);
         myContext.persistentOrigins().initialize();
-        
-        Origin pumpioOrigin = myContext.persistentOrigins().fromName(TestSuite.CONVERSATION_ORIGIN_NAME);
-        assertEquals("Origin for conversation created", pumpioOrigin.getOriginType(), TestSuite.CONVERSATION_ORIGIN_TYPE);
-        
+
+        Origin pumpioOrigin = myContext.persistentOrigins().fromName(TestSuite.PUMPIO_ORIGIN_NAME);
+        assertEquals("Pumpio test origin created", pumpioOrigin.getOriginType(), OriginType.PUMPIO);
         addAccount(pumpioOrigin, "acct:firstTestUser@identi.ca", "firstTestUser@identi.ca", "");
         addAccount(pumpioOrigin, "acct:t131t@identi.ca", "t131t@identi.ca", "");
-        addAccount(pumpioOrigin, TestSuite.CONVERSATION_ACCOUNT_USER_OID, TestSuite.CONVERSATION_ACCOUNT_USERNAME, TestSuite.CONVERSATION_ACCOUNT_AVATAR_URL);
 
         Origin twitterOrigin = myContext.persistentOrigins().fromName(TestSuite.TWITTER_TEST_ORIGIN_NAME);
-        assertEquals("Twitter test origin created", twitterOrigin.getOriginType(), OriginType.TWITTER);
-        addAccount(twitterOrigin, TestSuite.TWITTER_TEST_ACCOUNT_USER_OID, TestSuite.TWITTER_TEST_ACCOUNT_USERNAME, "");
-        
+        assertEquals("Twitter test origin created", twitterOrigin.getOriginType(),OriginType.TWITTER);
+        addAccount(twitterOrigin, TestSuite.TWITTER_TEST_ACCOUNT_USER_OID,
+                TestSuite.TWITTER_TEST_ACCOUNT_USERNAME, "");
+
         Origin gnuSocialOrigin = myContext.persistentOrigins().fromName(TestSuite.GNUSOCIAL_TEST_ORIGIN_NAME);
         assertEquals("GNU social Origin created", gnuSocialOrigin.getOriginType(), OriginType.GNUSOCIAL);
-        addAccount(gnuSocialOrigin, TestSuite.GNUSOCIAL_TEST_ACCOUNT_USER_OID, TestSuite.GNUSOCIAL_TEST_ACCOUNT_USERNAME, "");
+        addAccount(gnuSocialOrigin, TestSuite.GNUSOCIAL_TEST_ACCOUNT_USER_OID,
+                TestSuite.GNUSOCIAL_TEST_ACCOUNT_USERNAME,
+                TestSuite.GNUSOCIAL_TEST_ACCOUNT_AVATAR_URL);
+
+        Origin conversationOrigin = myContext.persistentOrigins().fromName(
+                TestSuite.CONVERSATION_ORIGIN_NAME);
+        assertEquals("Origin for conversation created", conversationOrigin.getOriginType(),
+                TestSuite.CONVERSATION_ORIGIN_TYPE);
+        addAccount(conversationOrigin, TestSuite.CONVERSATION_ACCOUNT_USER_OID,
+                TestSuite.CONVERSATION_ACCOUNT_USERNAME, TestSuite.CONVERSATION_ACCOUNT_AVATAR_URL);
         
         MyPreferences.onPreferencesChanged();
         MyContextHolder.initialize(null, this);

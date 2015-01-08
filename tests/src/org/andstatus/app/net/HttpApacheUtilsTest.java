@@ -19,18 +19,17 @@ package org.andstatus.app.net;
 import android.test.InstrumentationTestCase;
 
 import org.json.JSONArray;
-import org.json.JSONTokener;
 
 public class HttpApacheUtilsTest extends InstrumentationTestCase {
     
-    public void testJsonTokenerToArray() throws ConnectionException {
+    public void testResultToArray() throws ConnectionException {
         final String in = "{\"results\":[{\"text\":\"Text1\",\"to_user\":\"someuser\",\"from_user\":\"author1\"}," 
                 + "{\"text\":\"Text2\",\"to_user\":\"andstatus\",\"from_user\":\"otherauthor\"}]"
                 + ",\"since_id\":\"Wed, 05 Mar 2014 16:37:17 +0100\""
                 + "}";
-        HttpConnectionApacheCommon utils = new HttpConnectionApacheCommon(null);
-        JSONTokener jst = new JSONTokener(in);
-        JSONArray jsa = utils.jsonTokenerToArray(jst);
+        HttpReadResult result = new HttpReadResult("");
+        result.strResponse = in;
+        JSONArray jsa =  result.getJsonArray();
         assertEquals(2, jsa.length());
     }
 }

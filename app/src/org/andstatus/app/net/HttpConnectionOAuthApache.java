@@ -32,7 +32,6 @@ import org.apache.http.client.HttpResponseException;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.BasicResponseHandler;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -58,18 +57,6 @@ public class HttpConnectionOAuthApache extends HttpConnectionOAuth implements Ht
         provider.setHttpClient(mClient);
         provider.setOAuth10a(true);
         return provider;
-    }
-    
-    @Override
-    protected final JSONObject getRequest(String path) throws ConnectionException {
-        HttpGet get = new HttpGet(pathToUrlString(path));
-        return new HttpConnectionApacheCommon(this).getRequestAsObject(get);
-    }
-
-    @Override
-    protected final JSONArray getRequestAsArray(String path) throws ConnectionException {
-        HttpGet get = new HttpGet(pathToUrlString(path));
-        return new HttpConnectionApacheCommon(this).getRequestAsArray(get);
     }
 
     @Override
@@ -125,7 +112,6 @@ public class HttpConnectionOAuthApache extends HttpConnectionOAuth implements Ht
 
     @Override
     public HttpResponse httpApacheGetResponse(HttpGet httpGet) throws IOException {
-        signRequest(httpGet);
         return mClient.execute(httpGet);
     }
 
@@ -143,5 +129,15 @@ public class HttpConnectionOAuthApache extends HttpConnectionOAuth implements Ht
     @Override
     public void downloadFile(String url, File file) throws ConnectionException {
         new HttpConnectionApacheCommon(this).downloadFile(url, file);
+    }
+
+    @Override
+    public void httpApacheSetAuthorization(HttpGet httpGet) throws IOException {
+        signRequest(httpGet);
+    }
+
+    @Override
+    protected void getRequest(HttpReadResult result) throws ConnectionException {
+        new HttpConnectionApacheCommon(this).getRequest(result);
     }
 }

@@ -31,7 +31,6 @@ import java.net.URLEncoder;
 import java.util.Map;
 
 public class HttpConnectionUtils {
-
     public static final String UTF_8 = "UTF-8";
 
     private HttpConnectionUtils() {
@@ -91,5 +90,5 @@ public class HttpConnectionUtils {
             DbUtils.closeSilently(in);
         }
     }
-
+    
 }

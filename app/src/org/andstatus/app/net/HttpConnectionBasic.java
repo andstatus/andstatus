@@ -26,7 +26,6 @@ import org.apache.http.StatusLine;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -89,25 +88,9 @@ public class HttpConnectionBasic extends HttpConnection implements HttpConnectio
     }
 
     @Override
-    protected final JSONObject getRequest(String path) throws ConnectionException {
-        HttpGet get = new HttpGet(pathToUrlString(path));
-        return new HttpConnectionApacheCommon(this).getRequestAsObject(get);
-    }
-
-    @Override
-    protected final JSONArray getRequestAsArray(String path) throws ConnectionException {
-        HttpGet get = new HttpGet(pathToUrlString(path));
-        return new HttpConnectionApacheCommon(this).getRequestAsArray(get);
-    }
-
-    @Override
-    public HttpResponse httpApacheGetResponse(HttpGet getMethod) throws IOException {
+    public HttpResponse httpApacheGetResponse(HttpGet httpGet) throws IOException {
         HttpClient client = HttpConnectionApacheCommon.getHttpClient();
-        getMethod.setHeader("User-Agent", HttpConnection.USER_AGENT);
-        if (getCredentialsPresent()) {
-            getMethod.addHeader("Authorization", "Basic " + getCredentials());
-        }
-        return client.execute(getMethod);
+        return client.execute(httpGet);
     }
 
     @Override
@@ -172,5 +155,17 @@ public class HttpConnectionBasic extends HttpConnection implements HttpConnectio
     @Override
     public void downloadFile(String url, File file) throws ConnectionException {
         new HttpConnectionApacheCommon(this).downloadFile(url, file);
+    }
+
+    @Override
+    public void httpApacheSetAuthorization(HttpGet httpGet) {
+        if (getCredentialsPresent()) {
+            httpGet.addHeader("Authorization", "Basic " + getCredentials());
+        }
+    }
+
+    @Override
+    protected void getRequest(HttpReadResult result) throws ConnectionException {
+        new HttpConnectionApacheCommon(this).getRequest(result);
     }
 }

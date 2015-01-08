@@ -17,6 +17,7 @@
 package org.andstatus.app.net;
 
 import android.net.Uri;
+import android.text.TextUtils;
 
 import org.andstatus.app.account.AccountDataWriter;
 import org.andstatus.app.util.MyLog;
@@ -57,9 +58,25 @@ public abstract class HttpConnection {
     
     protected abstract JSONObject postRequest(String path) throws ConnectionException;
 
-    protected abstract JSONObject getRequest(String path) throws ConnectionException;
+    public final JSONObject getRequest(String path) throws ConnectionException {
+        if (TextUtils.isEmpty(path)) {
+            throw new IllegalArgumentException("path is empty");
+        }
+        HttpReadResult result = new HttpReadResult(pathToUrlString(path));
+        getRequest(result);
+        return result.getJsonObject();
+    }
     
-    protected abstract JSONArray getRequestAsArray(String path) throws ConnectionException;
+    public final JSONArray getRequestAsArray(String path) throws ConnectionException {
+        if (TextUtils.isEmpty(path)) {
+            throw new IllegalArgumentException("path is empty");
+        }
+        HttpReadResult result = new HttpReadResult(pathToUrlString(path));
+        getRequest(result);
+        return result.getJsonArray();
+    }
+
+    protected abstract void getRequest(HttpReadResult result) throws ConnectionException;
 
     public abstract void clearAuthInformation();
 

@@ -66,6 +66,7 @@ public class MyHttpClientFactory {
                 .setRetryHandler(DavHttpRequestRetryHandler.INSTANCE)
                 .setRedirectStrategy(DavRedirectStrategy.INSTANCE)  
                 */
+                .disableRedirectHandling()
                 .setUserAgent(HttpConnection.USER_AGENT)
                 .disableCookieManagement();
 

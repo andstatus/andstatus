@@ -479,6 +479,9 @@ public class CommandData implements Comparable<CommandData> {
     public String toString() {
         StringBuilder builder = new StringBuilder();
         builder.append("command:" + command.save() + ",");
+        if (timelineType != TimelineTypeEnum.UNKNOWN) {
+            builder.append(timelineType + ",");
+        }
         if (mInForeground) {
             builder.append("foreground,");
         }
@@ -510,9 +513,6 @@ public class CommandData implements Comparable<CommandData> {
         }
         if (!TextUtils.isEmpty(getAccountName())) {
             builder.append("account:" + getAccountName() + ",");
-        }
-        if (timelineType != TimelineTypeEnum.UNKNOWN) {
-            builder.append(timelineType + ",");
         }
         if (itemId != 0) {
             builder.append("itemId:" + itemId + ",");

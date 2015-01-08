@@ -37,13 +37,18 @@ public class ConnectionException extends IOException {
         CREDENTIALS_OF_OTHER_USER,
         NO_CREDENTIALS_FOR_HOST, 
         UNAUTHORIZED, 
-        FORBIDDEN, INTERNAL_SERVER_ERROR, BAD_GATEWAY, SERVICE_UNAVAILABLE;
+        FORBIDDEN, INTERNAL_SERVER_ERROR, BAD_GATEWAY, SERVICE_UNAVAILABLE, MOVED;
         
         public static StatusCode fromResponseCode(int responseCode) {
             switch (responseCode) {
 	            case 200:
 	            case 304:
 	            	return OK;
+                case 301:
+                case 302:
+                case 303:
+                case 307:
+                    return MOVED;
                 case 400:
                     return BAD_REQUEST;
                 case 401:

@@ -21,7 +21,6 @@ import android.text.TextUtils;
 import org.andstatus.app.net.ConnectionException;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -31,10 +30,8 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class HttpConnectionMock extends HttpConnection {
-    private volatile long mPostedCounter = 0;
-    private volatile JSONObject mPostedObject = null;
-    private final List<String> mPostedPaths = new CopyOnWriteArrayList<String>();
-    private volatile JSONObject jsonResponseObject = null;
+    private final List<HttpReadResult> results = new CopyOnWriteArrayList<HttpReadResult>();
+    private volatile String responseString = "";
     private volatile ConnectionException exception = null;
 
     private volatile String password = "password";
@@ -48,8 +45,8 @@ public class HttpConnectionMock extends HttpConnection {
         MyLog.v(this, "Created, instanceId:" + mInstanceId);
     }
     
-    public void setResponse(JSONObject jso) {
-        jsonResponseObject = jso;
+    public void setResponse(String responseString) {
+        this.responseString = responseString;
     }
 
     public void setException(ConnectionException exception) {
@@ -58,10 +55,20 @@ public class HttpConnectionMock extends HttpConnection {
     
     @Override
     protected JSONObject postRequest(String path, JSONObject jso) throws ConnectionException {
-        onRequest("postRequestWithObject", path);
-        mPostedObject = jso;
+        HttpReadResult result = new HttpReadResult(pathToUrlString(path), jso.toString()); 
+        onRequest("postRequestWithObject", result);
         throwExceptionIfSet();
-        return jsonResponseObject;
+        return getJsonObject();
+    }
+
+    private JSONObject getJsonObject() {
+        try {
+            return new JSONObject(responseString);
+        } catch (JSONException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return null;
     }
 
     private void networkDelay() {
@@ -96,53 +103,24 @@ public class HttpConnectionMock extends HttpConnection {
 
     @Override
     protected JSONObject postRequest(String path) throws ConnectionException {
-        onRequest("postRequest", path);
+        HttpReadResult result = new HttpReadResult(pathToUrlString(path)); 
+        onRequest("postRequest", result);
         throwExceptionIfSet();
-        return jsonResponseObject;
+        return getJsonObject();
     }
 
-    private void onRequest(String method, String path) {
-        mPostedCounter++;
-        MyLog.v(this, method + " num:" + mPostedCounter + "; path:'" + path +"', host:'" 
+    private void onRequest(String method, HttpReadResult result) {
+        result.strResponse = responseString;
+        results.add(result);
+        MyLog.v(this, method + " num:" + results.size() + "; path:'" + result.getUrl() +"', host:'" 
         + data.originUrl + "', instanceId:" + mInstanceId );
         MyLog.v(this, Arrays.toString(Thread.currentThread().getStackTrace()));
-        mPostedPaths.add(path);
         networkDelay();
     }
 
-    @Override
-    protected JSONObject getRequest(String path) throws ConnectionException {
-        return getRequestInner("getRequest", path);
-    }
-
-    private JSONObject getRequestInner(String method, String path) throws ConnectionException {
-        onRequest(method, path);
+    private void getRequestInner(String method, HttpReadResult result) throws ConnectionException {
+        onRequest(method, result);
         throwExceptionIfSet();
-        return jsonResponseObject;
-    }
-    
-    @Override
-    protected JSONArray getRequestAsArray(String path) throws ConnectionException {
-        JSONObject jso = getRequestInner("getRequestAsArray", path);
-        JSONArray jsa = null;
-        if (jso == null) {
-            throw new ConnectionException("Response is null");
-        }
-        if (jso.has("items")) {
-            try {
-                jsa = jso.getJSONArray("items");
-            } catch (JSONException e) {
-                throw new ConnectionException("'items' is not an array?!");
-            }
-        } else {
-            try {
-                MyLog.d(this, "Response from server: " + jso.toString(4));
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-            throw new ConnectionException("No array was returned");
-        }
-        return jsa;
     }
 
     @Override
@@ -167,19 +145,19 @@ public class HttpConnectionMock extends HttpConnection {
         return !TextUtils.isEmpty(password) || ( !TextUtils.isDigitsOnly(userToken) && !TextUtils.isEmpty(userSecret));
     }
 
-    public JSONObject getPostedJSONObject() {
-        return mPostedObject;
+    public JSONObject getPostedJSONObject() throws ConnectionException {
+        return results.get(results.size()-1).getPostedJsonObject();
     }
 
-    public List<String> getPostedPaths() {
-        return mPostedPaths;
+    public List<HttpReadResult> getResults() {
+        return results;
     }
 
     public String substring2PostedPath(String substringToSearch) {
         String found = "";
-        for (String path : mPostedPaths) {
-            if (path.contains(substringToSearch)) {
-                found = path;
+        for (HttpReadResult result : getResults()) {
+            if (result.getUrl().contains(substringToSearch)) {
+                found = result.getUrl();
                 break;
             }
         }
@@ -187,13 +165,11 @@ public class HttpConnectionMock extends HttpConnection {
     }
     
     public long getPostedCounter() {
-        return mPostedCounter;
+        return results.size();
     }
 
     public void clearPostedData() {
-        mPostedCounter = 0;
-        mPostedObject = null;
-        mPostedPaths.clear();
+        results.clear();
     }
 
     public long getInstanceId() {
@@ -208,5 +184,10 @@ public class HttpConnectionMock extends HttpConnection {
     @Override
     public void downloadFile(String url, File file) {
         // Empty
+    }
+
+    @Override
+    protected void getRequest(HttpReadResult result) throws ConnectionException {
+        getRequestInner("getRequest", result);
     }
 }

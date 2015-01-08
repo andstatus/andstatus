@@ -226,9 +226,12 @@ public class TestSuite extends TestCase {
     public static final String TESTRUN_UID = String.valueOf(System.currentTimeMillis());
     
     private static final String TEST_ORIGIN_PARENT_HOST = "example.com";
+    public static final String PUMPIO_ORIGIN_NAME = "PumpioTest";
+    public static final String PUMPIO_TEST_ACCOUNT_USERNAME = "testerofandstatus@identi.ca";
+    public static final String PUMPIO_TEST_ACCOUNT_NAME = PUMPIO_TEST_ACCOUNT_USERNAME + "/" + PUMPIO_ORIGIN_NAME;
     public static final OriginType CONVERSATION_ORIGIN_TYPE = OriginType.PUMPIO;
-    public static final String CONVERSATION_ORIGIN_NAME = "PumpioTest";
-    public static final String CONVERSATION_ACCOUNT_USERNAME = "testerofandstatus@identi.ca";
+    public static final String CONVERSATION_ORIGIN_NAME = PUMPIO_ORIGIN_NAME;
+    public static final String CONVERSATION_ACCOUNT_USERNAME = PUMPIO_TEST_ACCOUNT_USERNAME;
     public static final String CONVERSATION_ACCOUNT_NAME = CONVERSATION_ACCOUNT_USERNAME + "/" + CONVERSATION_ORIGIN_NAME;
     public static final String CONVERSATION_ACCOUNT_USER_OID = "acct:" + CONVERSATION_ACCOUNT_USERNAME;
     public static final String CONVERSATION_ACCOUNT_AVATAR_URL = "http://andstatus.org/andstatus/images/AndStatus_logo.png";
@@ -238,6 +241,7 @@ public class TestSuite extends TestCase {
     public static final String GNUSOCIAL_TEST_ACCOUNT_USERNAME = "t131t";
     public static final String GNUSOCIAL_TEST_ACCOUNT_NAME = GNUSOCIAL_TEST_ACCOUNT_USERNAME + "/" + GNUSOCIAL_TEST_ORIGIN_NAME;
     public static final String GNUSOCIAL_TEST_ACCOUNT_USER_OID = "115391";
+    public static final String GNUSOCIAL_TEST_ACCOUNT_AVATAR_URL = "https://quitter.se/avatar/115686-48-20150106084830.jpeg";
     public static final String TWITTER_TEST_ORIGIN_NAME = "TwitterTest";
     public static final String TWITTER_TEST_ACCOUNT_USERNAME = "t131t";
     public static final String TWITTER_TEST_ACCOUNT_USER_OID = "144771645";

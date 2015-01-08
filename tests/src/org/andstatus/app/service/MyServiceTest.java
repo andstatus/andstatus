@@ -109,7 +109,7 @@ public class MyServiceTest extends InstrumentationTestCase {
         assertTrue("First command started executing", mService.waitForCommandExecutionStarted(startCount));
         assertTrue("First command ended executing", mService.waitForCommandExecutionEnded(endCount));
         String message = "Data was posted " + mService.httpConnectionMock.getPostedCounter() + " times; "
-                + Arrays.toString(mService.httpConnectionMock.getPostedPaths().toArray(new String[]{}));
+                + Arrays.toString(mService.httpConnectionMock.getResults().toArray());
         MyLog.v(this, method  + "; " + message);
         assertEquals("connection istance Id", mService.connectionInstanceId, mService.httpConnectionMock.getInstanceId());
         assertTrue(message, mService.httpConnectionMock.getPostedCounter() == 1);
@@ -147,11 +147,10 @@ public class MyServiceTest extends InstrumentationTestCase {
         mService.sendListenedToCommand();
         assertTrue("First command started executing", mService.waitForCommandExecutionStarted(startCount));
         assertTrue("First command ended executing", mService.waitForCommandExecutionEnded(endCount));
-        assertTrue("Data was posted " + mService.httpConnectionMock.getPostedCounter() + " times",
-                mService.httpConnectionMock.getPostedCounter() == 1);
+        assertEquals("Data was posted " + mService.httpConnectionMock.getPostedCounter() + " times",
+                mService.httpConnectionMock.getPostedCounter(), 1);
 
         assertTrue(TestSuite.setAndWaitForIsInForeground(true));
-        mService.sendListenedToCommand();
 
         CommandData cd2 = new CommandData(CommandEnum.FETCH_TIMELINE,
                 TestSuite.TWITTER_TEST_ACCOUNT_NAME, TimelineTypeEnum.MENTIONS, 0);
@@ -159,9 +158,8 @@ public class MyServiceTest extends InstrumentationTestCase {
         mService.sendListenedToCommand();
 
         assertTrue("Service stopped", mService.waitForServiceStopped());
-        assertTrue("No new data was posted while in foreround " + mService.httpConnectionMock.getPostedCounter()
-                + " times",
-                mService.httpConnectionMock.getPostedCounter() == 1);
+        assertEquals("No new data was posted while in foreround",
+                mService.httpConnectionMock.getPostedCounter(), 1);
 
         Queue<CommandData> queue = new PriorityBlockingQueue<CommandData>(100);
         CommandData.loadQueue(MyContextHolder.get().context(), queue,

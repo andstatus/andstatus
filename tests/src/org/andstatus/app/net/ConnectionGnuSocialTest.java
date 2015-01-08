@@ -28,9 +28,8 @@ import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.util.RawResourceUtils;
 import org.andstatus.app.util.TriState;
-import org.json.JSONObject;
 
-import java.net.MalformedURLException;
+import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 
@@ -65,8 +64,8 @@ public class ConnectionGnuSocialTest extends InstrumentationTestCase {
         httpConnectionMock.data.originUrl = origin.getUrl();
     }
 
-    public void testGetPublicTimeline() throws ConnectionException {
-        JSONObject jso = RawResourceUtils.getJSONObject(this.getInstrumentation().getContext(), 
+    public void testGetPublicTimeline() throws IOException {
+        String jso = RawResourceUtils.getString(this.getInstrumentation().getContext(), 
                 org.andstatus.app.tests.R.raw.quitter_home);
         httpConnectionMock.setResponse(jso);
         
@@ -104,8 +103,8 @@ public class ConnectionGnuSocialTest extends InstrumentationTestCase {
         assertEquals("Sender's WebFinger ID", "mmn@social.umeahackerspace.se", mbMessage.sender.getWebFingerId());
     }
 
-    public void testSearch() throws ConnectionException {
-        JSONObject jso = RawResourceUtils.getJSONObject(this.getInstrumentation().getContext(), 
+    public void testSearch() throws IOException {
+        String jso = RawResourceUtils.getString(this.getInstrumentation().getContext(), 
                 org.andstatus.app.tests.R.raw.twitter_home_timeline);
         httpConnectionMock.setResponse(jso);
         
@@ -115,8 +114,8 @@ public class ConnectionGnuSocialTest extends InstrumentationTestCase {
         assertEquals("Number of items in the Timeline", size, timeline.size());
     }
 
-    public void testPostWithMedia() throws ConnectionException, MalformedURLException {
-        JSONObject jso = RawResourceUtils.getJSONObject(this.getInstrumentation().getContext(), 
+    public void testPostWithMedia() throws IOException {
+        String jso = RawResourceUtils.getString(this.getInstrumentation().getContext(), 
                 org.andstatus.app.tests.R.raw.quitter_message_with_attachment);
         httpConnectionMock.setResponse(jso);
         
@@ -125,13 +124,13 @@ public class ConnectionGnuSocialTest extends InstrumentationTestCase {
         assertEquals("Message returned", privateGetMessageWithAttachment(this.getInstrumentation().getContext(), false), message2);
     }
     
-    public void testGetMessageWithAttachment() throws ConnectionException, MalformedURLException {
+    public void testGetMessageWithAttachment() throws IOException {
         privateGetMessageWithAttachment(this.getInstrumentation().getContext(), true);
     }
 
-    private MbMessage privateGetMessageWithAttachment(Context context, boolean uniqueUid) throws ConnectionException, MalformedURLException {
+    private MbMessage privateGetMessageWithAttachment(Context context, boolean uniqueUid) throws IOException {
         // Originally downloaded from https://quitter.se/api/statuses/show.json?id=2215662
-        JSONObject jso = RawResourceUtils.getJSONObject(context, 
+        String jso = RawResourceUtils.getString(context, 
                 org.andstatus.app.tests.R.raw.quitter_message_with_attachment);
         httpConnectionMock.setResponse(jso);
         MbMessage msg = connection.getMessage("2215662");
