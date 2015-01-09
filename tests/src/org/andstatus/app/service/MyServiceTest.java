@@ -26,7 +26,6 @@ import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.util.MyLog;
 
 import java.net.MalformedURLException;
-import java.util.Arrays;
 import java.util.Queue;
 import java.util.concurrent.PriorityBlockingQueue;
 

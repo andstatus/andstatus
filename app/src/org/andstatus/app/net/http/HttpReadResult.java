@@ -113,11 +113,11 @@ public class HttpReadResult {
         return logMsg()
                 + ((statusCode == StatusCode.OK) || TextUtils.isEmpty(statusLine) 
                         ? "" : "; statusLine:'" + statusLine + "'")
-                + "; statusCode:" + statusCode + " ( " + intStatusCode + " )" 
+                + "; statusCode:" + statusCode + " (" + intStatusCode + ")" 
                 + "; url:'" + urlString + "'"
                 + (authenticate ? "; authenticated" : "")
                 + (redirected ? "; redirected from:'" + urlInitial + "'" : "")
-                + ( hasFormParams() ? "" : "; posted:'" + formParams.toString() + "'")
+                + ( hasFormParams() ? "; posted:'" + formParams.toString() + "'" : "")
                 + (TextUtils.isEmpty(strResponse) ? "" : "; response:'" + I18n.trimTextAt(strResponse, 40) + "'")
                 + (fileResult == null ? "" : "; saved to file");
     }

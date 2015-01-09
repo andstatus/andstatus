@@ -40,5 +40,9 @@ public class HttpReadResultTest extends InstrumentationTestCase {
         assertEquals(false, result.hasFormParams());
         result.setFormParams(new JSONObject("{}"));
         assertEquals(false, result.hasFormParams());
+        assertFalse(result.toString(), result.toString().contains("posted"));
+        result.setFormParams(new JSONObject("{\"text\":\"Text1\"}"));
+        assertEquals(true, result.hasFormParams());
+        assertTrue(result.toString(), result.toString().contains("posted"));
     }
 }

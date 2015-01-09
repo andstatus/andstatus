@@ -128,7 +128,7 @@ public final class MyAccount {
         public static Builder newOrExistingFromAccountName(MyContext myContext, String accountName, TriState isOAuthTriState) {
             MyAccount persistentAccount = myContext.persistentAccounts().fromAccountName(accountName);
             if (persistentAccount.isValid()) {
-                return fromMyAccount(myContext, persistentAccount, "newOrExistingFromAccountName");
+                return fromMyAccount(myContext, persistentAccount, "newOrExistingFromAccountName", false);
             } else {
                 return newFromAccountName(myContext, accountName, isOAuthTriState);
             }
@@ -142,7 +142,7 @@ public final class MyAccount {
             MyAccount ma = new MyAccount(myContext, null);
             ma.oAccountName = AccountName.fromAccountName(myContext, accountName);
             ma.setOAuth(isOAuthTriState);
-            return fromMyAccount(myContext, ma, "newFromAccountName");
+            return fromMyAccount(myContext, ma, "newFromAccountName", true);
         }
 
         private static MyAccount getEmptyAccount(MyContext myContext, String accountName) {
@@ -163,14 +163,16 @@ public final class MyAccount {
         }
 
         static Builder fromAccountData(MyContext myContext, AccountData accountData, String method) {
-            return fromMyAccount(myContext, new MyAccount(myContext, accountData), method);
+            return fromMyAccount(myContext, new MyAccount(myContext, accountData), method, false);
         }
         
-        protected static Builder fromMyAccount(MyContext myContext, MyAccount ma, String method) {
+        protected static Builder fromMyAccount(MyContext myContext, MyAccount ma, String method, boolean isNew) {
             Builder builder = new Builder(myContext, ma);
             builder.setConnection();
             builder.fixInconsistenciesWithChangedEnvironmentSilently();
-            builder.logLoadResult(method);
+            if (!isNew) {
+                builder.logLoadResult(method);
+            }
             return builder;
         }
 

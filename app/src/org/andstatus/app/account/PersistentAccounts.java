@@ -123,7 +123,7 @@ public class PersistentAccounts {
             }
         }
         if (found) {
-            MyAccount.Builder.fromMyAccount(MyContextHolder.get(), ma, "delete").deleteData();
+            MyAccount.Builder.fromMyAccount(MyContextHolder.get(), ma, "delete", false).deleteData();
 
             // And delete the object from the list
             mAccounts.remove(ma.getAccountName());
@@ -307,7 +307,7 @@ public class PersistentAccounts {
     public void onMyPreferencesChanged(MyContext myContext) {
         long syncFrequencySeconds = MyPreferences.getSyncFrequencySeconds();
         for (MyAccount ma : mAccounts.values()) {
-            Builder builder = Builder.fromMyAccount(myContext, ma, "onMyPreferencesChanged");
+            Builder builder = Builder.fromMyAccount(myContext, ma, "onMyPreferencesChanged", false);
             builder.setSyncFrequency(syncFrequencySeconds);
             builder.save();
         }
