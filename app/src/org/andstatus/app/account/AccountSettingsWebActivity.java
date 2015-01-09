@@ -26,7 +26,7 @@ import android.webkit.WebViewClient;
 
 import org.andstatus.app.ClassInApplicationPackage;
 import org.andstatus.app.R;
-import org.andstatus.app.net.HttpConnection;
+import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.util.MyLog;
 
 public class AccountSettingsWebActivity extends Activity {

@@ -8,8 +8,8 @@ import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MessageInserter;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyProvider;
-import org.andstatus.app.net.MbConfig;
-import org.andstatus.app.net.OAuthClientKeysTest;
+import org.andstatus.app.net.social.MbConfig;
+import org.andstatus.app.net.http.OAuthClientKeysTest;
 import org.andstatus.app.origin.Origin.Builder;
 import org.andstatus.app.util.UrlUtils;
 

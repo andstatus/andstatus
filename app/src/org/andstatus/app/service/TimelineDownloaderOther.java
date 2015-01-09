@@ -23,10 +23,10 @@ import org.andstatus.app.data.LatestTimelineItem;
 import org.andstatus.app.data.LatestUserMessages;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.MyDatabase.OidEnum;
-import org.andstatus.app.net.ConnectionException;
-import org.andstatus.app.net.MbTimelineItem;
-import org.andstatus.app.net.TimelinePosition;
-import org.andstatus.app.net.ConnectionException.StatusCode;
+import org.andstatus.app.net.http.ConnectionException;
+import org.andstatus.app.net.social.MbTimelineItem;
+import org.andstatus.app.net.social.TimelinePosition;
+import org.andstatus.app.net.http.ConnectionException.StatusCode;
 import org.andstatus.app.util.MyLog;
 
 import java.util.Date;

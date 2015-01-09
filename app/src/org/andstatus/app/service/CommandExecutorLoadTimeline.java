@@ -18,7 +18,7 @@ package org.andstatus.app.service;
 
 import android.database.sqlite.SQLiteConstraintException;
 
-import org.andstatus.app.net.ConnectionException;
+import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.util.MyLog;
 
 class CommandExecutorLoadTimeline extends CommandExecutorStrategy {

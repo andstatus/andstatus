@@ -16,15 +16,15 @@
 
 package org.andstatus.app.origin;
 
-import org.andstatus.app.net.ConnectionEmpty;
-import org.andstatus.app.net.ConnectionPumpio;
-import org.andstatus.app.net.ConnectionTwitter1p1;
-import org.andstatus.app.net.HttpConnectionBasic;
-import org.andstatus.app.net.HttpConnectionEmpty;
-import org.andstatus.app.net.HttpConnectionOAuthApache;
-import org.andstatus.app.net.HttpConnectionOAuthJavaNet;
-import org.andstatus.app.net.Connection.ApiEnum;
-import org.andstatus.app.net.ConnectionTwitterGnuSocial;
+import org.andstatus.app.net.social.ConnectionEmpty;
+import org.andstatus.app.net.social.ConnectionPumpio;
+import org.andstatus.app.net.social.ConnectionTwitter1p1;
+import org.andstatus.app.net.http.HttpConnectionBasic;
+import org.andstatus.app.net.http.HttpConnectionEmpty;
+import org.andstatus.app.net.http.HttpConnectionOAuthApache;
+import org.andstatus.app.net.http.HttpConnectionOAuthJavaNet;
+import org.andstatus.app.net.social.Connection.ApiEnum;
+import org.andstatus.app.net.social.ConnectionTwitterGnuSocial;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UrlUtils;
 
@@ -60,9 +60,9 @@ public enum OriginType {
     protected final boolean canSetUrlOfOrigin;
 
     private final Class<? extends Origin> originClass;
-    private final Class<? extends org.andstatus.app.net.Connection> connectionClass;
-    private final Class<? extends org.andstatus.app.net.HttpConnection> httpConnectionClassOauth;
-    private final Class<? extends org.andstatus.app.net.HttpConnection> httpConnectionClassBasic;
+    private final Class<? extends org.andstatus.app.net.social.Connection> connectionClass;
+    private final Class<? extends org.andstatus.app.net.http.HttpConnection> httpConnectionClassOauth;
+    private final Class<? extends org.andstatus.app.net.http.HttpConnection> httpConnectionClassBasic;
 
     /**
      * Default OAuth setting
@@ -174,11 +174,11 @@ public enum OriginType {
         return originClass;
     }
     
-    public Class<? extends org.andstatus.app.net.Connection> getConnectionClass() {
+    public Class<? extends org.andstatus.app.net.social.Connection> getConnectionClass() {
         return connectionClass;
     }
     
-    public Class<? extends org.andstatus.app.net.HttpConnection> getHttpConnectionClass(boolean isOAuth) {
+    public Class<? extends org.andstatus.app.net.http.HttpConnection> getHttpConnectionClass(boolean isOAuth) {
         if (fixIsOAuth(isOAuth)) {
             return httpConnectionClassOauth;
         } else {

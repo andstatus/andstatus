@@ -23,7 +23,7 @@ import org.andstatus.app.account.PersistentAccounts;
 import org.andstatus.app.data.AssersionData;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.TimelineTypeEnum;
-import org.andstatus.app.net.HttpConnection;
+import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.origin.PersistentOrigins;
 import org.andstatus.app.service.ConnectionRequired;
 

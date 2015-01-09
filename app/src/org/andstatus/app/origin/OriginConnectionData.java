@@ -18,9 +18,9 @@ package org.andstatus.app.origin;
 
 import org.andstatus.app.account.AccountDataReader;
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.net.ConnectionEmpty;
-import org.andstatus.app.net.HttpConnection;
-import org.andstatus.app.net.HttpConnectionEmpty;
+import org.andstatus.app.net.social.ConnectionEmpty;
+import org.andstatus.app.net.http.HttpConnection;
+import org.andstatus.app.net.http.HttpConnectionEmpty;
 import org.andstatus.app.util.TriState;
 
 import java.net.URL;
@@ -38,8 +38,8 @@ public class OriginConnectionData {
     private String accountUserOid = "";
     private AccountDataReader dataReader = null;
     
-    private Class<? extends org.andstatus.app.net.Connection> connectionClass = ConnectionEmpty.class;
-    private Class<? extends org.andstatus.app.net.HttpConnection> httpConnectionClass = HttpConnectionEmpty.class;
+    private Class<? extends org.andstatus.app.net.social.Connection> connectionClass = ConnectionEmpty.class;
+    private Class<? extends org.andstatus.app.net.http.HttpConnection> httpConnectionClass = HttpConnectionEmpty.class;
     
     private OriginConnectionData() {
     }
@@ -115,7 +115,7 @@ public class OriginConnectionData {
         this.dataReader = dataReader;
     }
 
-    public Class<? extends org.andstatus.app.net.Connection> getConnectionClass() {
+    public Class<? extends org.andstatus.app.net.social.Connection> getConnectionClass() {
         return connectionClass;
     }
 
@@ -127,7 +127,7 @@ public class OriginConnectionData {
         return http;
     }
 
-    public void setHttpConnectionClass(Class<? extends org.andstatus.app.net.HttpConnection> httpConnectionClass) {
+    public void setHttpConnectionClass(Class<? extends org.andstatus.app.net.http.HttpConnection> httpConnectionClass) {
         this.httpConnectionClass = httpConnectionClass;
     }
 }

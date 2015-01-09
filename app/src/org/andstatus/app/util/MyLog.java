@@ -531,45 +531,47 @@ public class MyLog {
         return out;
     }
 
-    public static void logNetworkLevelMessage(Object objTag, Object obj) {
-        if (obj != null && isLoggable(objTag, VERBOSE) 
+    public static void logNetworkLevelMessage(Object objTag, String namePrefix, Object jso) {
+        if (jso != null && isLoggable(objTag, VERBOSE) 
                 && MyPreferences.getBoolean(MyPreferences.KEY_LOG_NETWORK_LEVEL_MESSAGES, false)) {
-            logJson(objTag, obj, MyPreferences.getBoolean(MyPreferences.KEY_LOG_EVERYTHING_TO_FILE, false));
+            logJson(objTag, namePrefix, jso, MyPreferences.getBoolean(MyPreferences.KEY_LOG_EVERYTHING_TO_FILE, false));
         }
     }
    
-    public static void logJson(Object objTag, Object obj, boolean toFile) {
-        if (obj == null) {
+    public static void logJson(Object objTag, String namePrefix, Object jso, boolean toFile) {
+        if (jso == null) {
             return;
         }
         try {
-            Object obj2 = obj;
-            if (String.class.isInstance(obj)) {
-                if (TextUtils.isEmpty((String) obj)) {
+            Object jso2 = jso;
+            if (String.class.isInstance(jso)) {
+                if (TextUtils.isEmpty((String) jso)) {
                     return;
                 }
-                obj2 = (new JSONTokener((String) obj)).nextValue();
+                jso2 = (new JSONTokener((String) jso)).nextValue();
              }
             String strJso = "";
-            if (JSONObject.class.isInstance(obj2)) {
-               strJso = ((JSONObject) obj2).toString(2);
-            } else if (JSONArray.class.isInstance(obj2)) {
-                strJso = ((JSONArray) obj2).toString(2);
+            if (JSONObject.class.isInstance(jso2)) {
+               strJso = ((JSONObject) jso2).toString(2);
+            } else if (JSONArray.class.isInstance(jso2)) {
+                strJso = ((JSONArray) jso2).toString(2);
             } else {
-                strJso = "Class " + obj2.getClass().getCanonicalName() + " " + obj2.toString();
+                strJso = "Class " + jso2.getClass().getCanonicalName() + " " + jso2.toString();
             }
             if (toFile) {
-                writeStringToFile(strJso, uniqueDateTimeFormatted() + "_" + objTagToString(objTag) + "_log.json");
+                writeStringToFile(strJso, uniqueDateTimeFormatted()  + "_" + namePrefix
+                        + "_" + objTagToString(objTag) + "_log.json");
             } else {
-                v(objTag, "jso: " + strJso);
+                v(objTag, namePrefix + "; jso: " + strJso);
             }
         } catch (JSONException ignored1) {
             ignored(objTag, ignored1);
             try {
                 if (toFile) {
-                    writeStringToFile(obj.toString(), uniqueDateTimeFormatted() + "_" + objTagToString(objTag) + "_invalid_log.json");
+                    writeStringToFile(jso.toString(), uniqueDateTimeFormatted() + "_" + namePrefix 
+                            + "_" + objTagToString(objTag) + "_invalid_log.json");
                 }
-                v(objTag, "invalid obj: " + obj.toString());
+                v(objTag, namePrefix + "; invalid obj: " + jso.toString());
             } catch (Exception ignored2) {
                 ignored(objTag, ignored2);
             }

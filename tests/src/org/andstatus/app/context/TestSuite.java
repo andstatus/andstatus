@@ -38,9 +38,9 @@ import org.andstatus.app.data.ConversationInserter;
 import org.andstatus.app.data.MessageInserter;
 import org.andstatus.app.data.OriginsAndAccountsInserter;
 import org.andstatus.app.data.GnuSocialMessagesInserter;
-import org.andstatus.app.net.ConnectionException;
-import org.andstatus.app.net.HttpConnection;
-import org.andstatus.app.net.MbUser;
+import org.andstatus.app.net.http.ConnectionException;
+import org.andstatus.app.net.http.HttpConnection;
+import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.service.MyServiceManager;
@@ -49,6 +49,7 @@ import org.andstatus.app.util.MyLog;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.Locale;
 import java.util.TimeZone;
 
 /**
@@ -253,7 +254,7 @@ public class TestSuite extends TestCase {
     public static final Uri LOCAL_IMAGE_TEST_URI = Uri.parse("android.resource://org.andstatus.app.tests/drawable/icon.png");
     
     public static String getTestOriginHost(String testOriginName) {
-        String host = testOriginName.toLowerCase() + "." + TEST_ORIGIN_PARENT_HOST;
+        String host = testOriginName.toLowerCase(Locale.US) + "." + TEST_ORIGIN_PARENT_HOST;
         if (testOriginName.equalsIgnoreCase(TWITTER_TEST_ORIGIN_NAME)) {
             host = "api." + host;
         }

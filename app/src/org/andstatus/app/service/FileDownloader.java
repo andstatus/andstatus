@@ -21,7 +21,7 @@ import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
 import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.data.DownloadFile;
 import org.andstatus.app.data.DownloadStatus;
-import org.andstatus.app.net.ConnectionException;
+import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.util.MyLog;
 
 import java.io.File;

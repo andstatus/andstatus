@@ -14,7 +14,7 @@ import org.andstatus.app.account.PersistentAccounts;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.net.ConnectionException;
+import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.FileUtils;
 import org.andstatus.app.util.MyLog;

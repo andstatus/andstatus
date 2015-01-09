@@ -56,7 +56,8 @@ public class MyServiceTest extends InstrumentationTestCase {
         String urlString = "http://andstatus.org/nonexistent2_avatar_" + System.currentTimeMillis() +  ".png";
         AvatarDownloaderTest.changeAvatarUrl(ma, urlString);
         
-        mService.listentedToCommand = new CommandData(CommandEnum.FETCH_AVATAR, "", TimelineTypeEnum.UNKNOWN, ma.getUserId());
+        mService.listentedToCommand = new CommandData(CommandEnum.FETCH_AVATAR, "", TimelineTypeEnum.UNKNOWN, 
+                ma.getUserId());
 
         long startCount = mService.executionStartCount;
         long endCount = mService.executionEndCount;
@@ -65,8 +66,7 @@ public class MyServiceTest extends InstrumentationTestCase {
         assertTrue("First command started executing", mService.waitForCommandExecutionStarted(startCount));
         mService.sendListenedToCommand();
         assertTrue("First command ended executing", mService.waitForCommandExecutionEnded(endCount));
-        assertTrue("Data was posted " + mService.httpConnectionMock.getPostedCounter() + " times",
-                mService.httpConnectionMock.getPostedCounter() == 0);
+        assertEquals(mService.httpConnectionMock.toString(), 1, mService.httpConnectionMock.getRequestsCounter());
         mService.sendListenedToCommand();
         assertFalse("Duplicated command didn't start executing",
                 mService.waitForCommandExecutionStarted(startCount + 1));
@@ -90,8 +90,8 @@ public class MyServiceTest extends InstrumentationTestCase {
         
         assertTrue("First command started executing", mService.waitForCommandExecutionStarted(startCount));
         assertTrue("First command ended executing", mService.waitForCommandExecutionEnded(endCount));
-        assertTrue("Data was posted " + mService.httpConnectionMock.getPostedCounter() + " times",
-                mService.httpConnectionMock.getPostedCounter() > 1);
+        assertTrue(mService.httpConnectionMock.toString(), 
+                mService.httpConnectionMock.getRequestsCounter() > 1);
         assertTrue("Service stopped", mService.waitForServiceStopped());
         MyLog.v(this, "testAutomaticUpdates ended");
     }
@@ -108,11 +108,9 @@ public class MyServiceTest extends InstrumentationTestCase {
         
         assertTrue("First command started executing", mService.waitForCommandExecutionStarted(startCount));
         assertTrue("First command ended executing", mService.waitForCommandExecutionEnded(endCount));
-        String message = "Data was posted " + mService.httpConnectionMock.getPostedCounter() + " times; "
-                + Arrays.toString(mService.httpConnectionMock.getResults().toArray());
-        MyLog.v(this, method  + "; " + message);
+        MyLog.v(this, method  + "; " + mService.httpConnectionMock.toString());
         assertEquals("connection istance Id", mService.connectionInstanceId, mService.httpConnectionMock.getInstanceId());
-        assertTrue(message, mService.httpConnectionMock.getPostedCounter() == 1);
+        assertEquals(mService.httpConnectionMock.toString(), 1, mService.httpConnectionMock.getRequestsCounter());
         assertTrue("Service stopped", mService.waitForServiceStopped());
         MyLog.v(this, method + " ended");
     }
@@ -127,8 +125,8 @@ public class MyServiceTest extends InstrumentationTestCase {
         mService.sendListenedToCommand();
         assertTrue("First command started executing", mService.waitForCommandExecutionStarted(startCount));
         assertTrue("First command ended executing", mService.waitForCommandExecutionEnded(endCount));
-        assertTrue("Data was posted " + mService.httpConnectionMock.getPostedCounter() + " times",
-                mService.httpConnectionMock.getPostedCounter() > 0);
+        assertTrue(mService.httpConnectionMock.toString(),
+                mService.httpConnectionMock.getRequestsCounter() > 0);
         assertTrue("Service stopped", mService.waitForServiceStopped());
         MyLog.v(this, "testRateLimitStatus ended");
     }
@@ -147,8 +145,8 @@ public class MyServiceTest extends InstrumentationTestCase {
         mService.sendListenedToCommand();
         assertTrue("First command started executing", mService.waitForCommandExecutionStarted(startCount));
         assertTrue("First command ended executing", mService.waitForCommandExecutionEnded(endCount));
-        assertEquals("Data was posted " + mService.httpConnectionMock.getPostedCounter() + " times",
-                mService.httpConnectionMock.getPostedCounter(), 1);
+        assertEquals(mService.httpConnectionMock.toString(),
+                mService.httpConnectionMock.getRequestsCounter(), 1);
 
         assertTrue(TestSuite.setAndWaitForIsInForeground(true));
 
@@ -159,7 +157,7 @@ public class MyServiceTest extends InstrumentationTestCase {
 
         assertTrue("Service stopped", mService.waitForServiceStopped());
         assertEquals("No new data was posted while in foreround",
-                mService.httpConnectionMock.getPostedCounter(), 1);
+                mService.httpConnectionMock.getRequestsCounter(), 1);
 
         Queue<CommandData> queue = new PriorityBlockingQueue<CommandData>(100);
         CommandData.loadQueue(MyContextHolder.get().context(), queue,

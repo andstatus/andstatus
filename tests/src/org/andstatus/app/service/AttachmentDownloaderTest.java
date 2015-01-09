@@ -27,8 +27,8 @@ import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MessageInserter;
-import org.andstatus.app.net.MbAttachment;
-import org.andstatus.app.net.MbMessage;
+import org.andstatus.app.net.social.MbAttachment;
+import org.andstatus.app.net.social.MbMessage;
 import org.andstatus.app.util.MyLog;
 
 import java.io.IOException;

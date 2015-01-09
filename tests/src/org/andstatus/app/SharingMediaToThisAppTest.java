@@ -11,7 +11,6 @@ import org.andstatus.app.account.AccountSelector;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.net.HttpReadResult;
 import org.andstatus.app.service.MyServiceTestHelper;
 import org.andstatus.app.util.MyLog;
 

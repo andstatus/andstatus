@@ -17,7 +17,7 @@
 package org.andstatus.app.service;
 
 import org.andstatus.app.data.DataInserter;
-import org.andstatus.app.net.ConnectionException;
+import org.andstatus.app.net.http.ConnectionException;
 
 /**
  * Downloads ("loads") different types of Timelines 

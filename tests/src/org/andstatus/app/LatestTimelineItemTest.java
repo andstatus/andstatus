@@ -7,7 +7,7 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.LatestTimelineItem;
 import org.andstatus.app.data.TimelineTypeEnum;
-import org.andstatus.app.net.TimelinePosition;
+import org.andstatus.app.net.social.TimelinePosition;
 
 public class LatestTimelineItemTest extends InstrumentationTestCase {
     

@@ -3,8 +3,8 @@ package org.andstatus.app.service;
 import android.text.TextUtils;
 
 import org.andstatus.app.data.DataInserter;
-import org.andstatus.app.net.ConnectionException;
-import org.andstatus.app.net.MbTimelineItem;
+import org.andstatus.app.net.http.ConnectionException;
+import org.andstatus.app.net.social.MbTimelineItem;
 import org.andstatus.app.util.MyLog;
 
 import java.util.List;

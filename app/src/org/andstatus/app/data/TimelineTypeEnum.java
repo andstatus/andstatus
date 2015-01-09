@@ -22,7 +22,7 @@ import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.data.MyDatabase.FollowingUser;
 import org.andstatus.app.data.MyDatabase.User;
-import org.andstatus.app.net.Connection;
+import org.andstatus.app.net.social.Connection;
 
 /**
  * These values help set timeline filters closer to the database (in ContentProvider...)
