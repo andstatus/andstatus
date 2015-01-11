@@ -27,7 +27,7 @@
     </header>
 
     <release android:versionName="14.1" android:versionCode="118"
-        versionDate="2014-01-03"
+        versionDate="2014-01-11"
         versionTitle="Private attachments fixing">
         <changes>
             <change>Fixed: [Pump.io] Attachment was not sent with a Direct message.
@@ -37,6 +37,8 @@
                 not of AndStatus. 
                 <a href="https://github.com/andstatus/andstatus/issues/203">#203</a>
             </change>
+            <change>Fixed: [Pump.io] Private attachments are not downloaded. 
+                <a href="https://github.com/andstatus/andstatus/issues/204">#204</a></change>
 	        <change>&quot;Log network level messages&quot; option added allowing deeper debugging.
 	            If &quot;Log everything to file&quot; is also enabled, separate .json files are
 	            created for each request and response.

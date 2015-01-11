@@ -431,22 +431,24 @@ public class MyLog {
     }
     
     public static void setNextLogFileName() {
-        synchronized (logFileLock) {
-            if (isLogToFileEnabled()) {
-                setLogToFile(true);
-            }
-        }
+        setNextLogFileName(true);
     }
     
     public static void setLogToFile(boolean logEnabled) {
+        if (logEnabled) {
+            setNextLogFileName(false);
+        } else { 
+            synchronized (logFileLock) {
+                logFileName = null;
+            }
+        }
+    }
+
+    private static void setNextLogFileName(boolean changeExisting) {
         String filename = currentDateTimeFormatted() + "_log.txt";
         synchronized (logFileLock) {
-            if (logEnabled) {
-                if (logFileName == null) {
-                    logFileName = filename; 
-                }
-            } else { 
-                logFileName = null;
+            if (logFileName == null || changeExisting) {
+                logFileName = filename; 
             }
         }
     }
@@ -543,6 +545,7 @@ public class MyLog {
             return;
         }
         try {
+            boolean isEmpty = false;
             Object jso2 = jso;
             if (String.class.isInstance(jso)) {
                 if (TextUtils.isEmpty((String) jso)) {
@@ -552,13 +555,17 @@ public class MyLog {
              }
             String strJso = "";
             if (JSONObject.class.isInstance(jso2)) {
-               strJso = ((JSONObject) jso2).toString(2);
+                JSONObject jso3 = (JSONObject) jso2;
+                isEmpty = jso3.length() == 0;
+                strJso = jso3.toString(2);
             } else if (JSONArray.class.isInstance(jso2)) {
-                strJso = ((JSONArray) jso2).toString(2);
+                JSONArray jsa = ((JSONArray) jso2);
+                isEmpty = jsa.length() == 0;
+                strJso = jsa.toString(2);
             } else {
                 strJso = "Class " + jso2.getClass().getCanonicalName() + " " + jso2.toString();
             }
-            if (toFile) {
+            if (toFile && !isEmpty) {
                 writeStringToFile(strJso, uniqueDateTimeFormatted()  + "_" + namePrefix
                         + "_" + objTagToString(objTag) + "_log.json");
             } else {
