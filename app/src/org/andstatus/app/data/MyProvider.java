@@ -101,6 +101,7 @@ public class MyProvider extends ContentProvider {
         MSG_PROJECTION_MAP.put(MsgOfUser.FAVORITED, MsgOfUser.FAVORITED);
         MSG_PROJECTION_MAP.put(MsgOfUser.REBLOGGED, MsgOfUser.REBLOGGED);
         MSG_PROJECTION_MAP.put(MsgOfUser.REBLOG_OID, MsgOfUser.REBLOG_OID);
+        MSG_PROJECTION_MAP.put(MsgOfUser.SUBSCRIBED, MsgOfUser.SUBSCRIBED);
         MSG_PROJECTION_MAP.put(Msg.CREATED_DATE, Msg.CREATED_DATE);
         MSG_PROJECTION_MAP.put(Msg.SENT_DATE, Msg.SENT_DATE);
         MSG_PROJECTION_MAP.put(Msg.INS_DATE, Msg.INS_DATE);

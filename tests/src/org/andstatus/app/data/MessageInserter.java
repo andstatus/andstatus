@@ -40,12 +40,17 @@ public class MessageInserter extends InstrumentationTestCase {
     private MyAccount ma;
     private Origin origin;
     private MbUser accountMbUser;
-    
+
     public MessageInserter(MyAccount maIn) {
         ma = maIn;
         assertTrue(ma != null);
         origin = MyContextHolder.get().persistentOrigins().fromId(ma.getOriginId());
         assertTrue("Origin for " + ma.getAccountName() + " exists", origin != null);
+        accountMbUser = buildUserFromOid(ma.getUserOid());
+    }
+
+    public MbUser getAccountMbUser() {
+        return accountMbUser;
     }
     
     public MbUser buildUser() {
@@ -61,7 +66,7 @@ public class MessageInserter extends InstrumentationTestCase {
         return mbUser;
     }
     
-    public MbUser buildUserFromOid(String userOid) {
+    public final MbUser buildUserFromOid(String userOid) {
         MbUser mbUser = MbUser.fromOriginAndUserOid(origin.getId(), userOid);
         if (origin.getOriginType() == OriginType.PUMPIO) {
             ConnectionPumpio connection = new ConnectionPumpio();
@@ -122,20 +127,14 @@ public class MessageInserter extends InstrumentationTestCase {
             assertEquals("Message permalink", message.url, origin.messagePermalink(messageId));
         }
         
-        if (message.isPublic() ) {
+        if (message.favoritedByActor == TriState.TRUE) {
             long msgIdFromMsgOfUser = MyProvider.conditionToLongColumnValue(MyDatabase.MsgOfUser.TABLE_NAME, MyDatabase.MsgOfUser.MSG_ID, 
                     "t." + MyDatabase.MsgOfUser.MSG_ID + "=" + messageId);
-            assertEquals("msgofuser not found for msgId=" + messageId, 0, msgIdFromMsgOfUser);
-        } else {
-            if (message.favoritedByActor == TriState.TRUE) {
-                long msgIdFromMsgOfUser = MyProvider.conditionToLongColumnValue(MyDatabase.MsgOfUser.TABLE_NAME, MyDatabase.MsgOfUser.MSG_ID, 
-                        "t." + MyDatabase.MsgOfUser.MSG_ID + "=" + messageId);
-                assertEquals("msgofuser found for msgId=" + messageId, messageId, msgIdFromMsgOfUser);
-                
-                long userIdFromMsgOfUser = MyProvider.conditionToLongColumnValue(MyDatabase.MsgOfUser.TABLE_NAME, MyDatabase.MsgOfUser.MSG_ID, 
-                        "t." + MyDatabase.MsgOfUser.USER_ID + "=" + ma.getUserId());
-                assertEquals("userId found for msgId=" + messageId, ma.getUserId(), userIdFromMsgOfUser);
-            }
+            assertEquals("msgofuser found for msgId=" + messageId, messageId, msgIdFromMsgOfUser);
+            
+            long userIdFromMsgOfUser = MyProvider.conditionToLongColumnValue(MyDatabase.MsgOfUser.TABLE_NAME, MyDatabase.MsgOfUser.MSG_ID, 
+                    "t." + MyDatabase.MsgOfUser.USER_ID + "=" + ma.getUserId());
+            assertEquals("userId found for msgId=" + messageId, ma.getUserId(), userIdFromMsgOfUser);
         }
         
         return messageId;

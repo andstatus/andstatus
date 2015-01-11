@@ -30,7 +30,7 @@ import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
 
 /**
- * Helper class to find out relation of a Message to MyAccount 
+ * Helper class to find out a relation of a Message to MyAccount 
  * @author yvolk@yurivolkov.com
  */
 public class MessageForAccount {
