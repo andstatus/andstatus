@@ -627,7 +627,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
                 Long.toString(ORIGIN_ID_TWITTER) + 
                  ", 1, 'Twitter', 'https://api.twitter.com',    1, 1,  140, 23",
                 "2, 2, 'pump.io', '',                           1, 1,    0,  0",
-                "3, 3, 'Quitter', 'https://quitter.se',         1, 1,    0,  0",
+                "3, 3, 'Quitter.se', 'https://quitter.se',      1, 1,    0,  0",
                 "4, 3, 'LoadAverage','https://loadaverage.org', 1, 1,    0,  0",
                 "5, 3, 'Vinilox', 'http://status.vinilox.eu',   0, 1,    0,  0",
                 "6, 3, 'GNUsocial.de', 'https://gnusocial.de',  1, 1,    0,  0",
