@@ -371,6 +371,9 @@ class MessageEditor {
     }
     
 	public void clearEditor() {
+        if (mEditText != null) {
+            mEditText.setText("");
+        }
 	    dataCurrent = new MessageEditorData(messageListAccount());
 	}
 
@@ -390,8 +393,8 @@ class MessageEditor {
         }
     }
     
-    public void loadState(SharedPreferences savedInstanceState) {
-        dataLoaded = MessageEditorData.load(savedInstanceState);
+    public void loadState(SharedPreferences savedState) {
+        dataLoaded = MessageEditorData.load(savedState);
     }
     
     public boolean isStateLoaded() {
@@ -439,5 +442,14 @@ class MessageEditor {
 
     public MessageEditorData getData() {
         return dataCurrent;
+    }
+
+    public void updateScreen() {
+        if (isStateLoaded()) {
+            continueEditingLoadedState();
+        } else if (isVisible()) {
+            // This is done to request focus (if we need this...)
+            show();
+        }
     }
 }

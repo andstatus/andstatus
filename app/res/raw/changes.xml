@@ -27,8 +27,8 @@
     </header>
 
     <release android:versionName="14.1" android:versionCode="118"
-        versionDate="2014-01-11"
-        versionTitle="Private attachments fixing">
+        versionDate="2014-01-18"
+        versionTitle="Fixed Private attachments and typed text persistence">
         <changes>
             <change>Fixed: [Pump.io] Attachment was not sent with a Direct message.
                 Please note that only pump.io supports attaching images to Direct messages. 
@@ -37,9 +37,12 @@
                 not of AndStatus. 
                 <a href="https://github.com/andstatus/andstatus/issues/203">#203</a>
             </change>
+            <change>Fixed: Sometimes typed text is lost when switching from 
+                portrait to landscape orientation. 
+                <a href="https://github.com/andstatus/andstatus/issues/194">#194</a></change>
             <change>Fixed: [Pump.io] Private attachments are not downloaded. 
                 <a href="https://github.com/andstatus/andstatus/issues/204">#204</a></change>
-	        <change>&quot;Log network level messages&quot; option added allowing deeper debugging.
+            <change>&quot;Log network level messages&quot; option added allowing deeper debugging.
 	            If &quot;Log everything to file&quot; is also enabled, separate .json files are
 	            created for each request and response.
 	        </change>

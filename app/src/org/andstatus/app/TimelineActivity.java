@@ -87,7 +87,7 @@ import java.util.List;
 public class TimelineActivity extends ListActivity implements MyServiceListener, OnScrollListener, OnItemClickListener, ActionableMessageList, LoaderCallbacks<Cursor> {
     private static final int DIALOG_ID_TIMELINE_TYPE = 9;
     private static final int LOADER_ID = 1;
-    private static final String PERSISTENCE_NAME = TimelineActivity.class.getSimpleName();
+    private static final String ACTIVITY_PERSISTENCE_NAME = TimelineActivity.class.getSimpleName();
 
     /**
      * Visibility of the layout indicates whether Messages are being loaded into the list (asynchronously...)
@@ -232,7 +232,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     }
 
     private boolean restoreActivityState() {
-        SharedPreferences activityState = MyPreferences.getSharedPreferences(PERSISTENCE_NAME);
+        SharedPreferences activityState = MyPreferences.getSharedPreferences(ACTIVITY_PERSISTENCE_NAME);
         boolean stateRestored = false;
         if (activityState != null) {
             stateRestored = mListParametersNew.restoreState(activityState);
@@ -802,12 +802,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     private void updateScreen() {
         MyServiceManager.setServiceAvailable();
         invalidateOptionsMenu();
-        if (mMessageEditor.isStateLoaded()) {
-            mMessageEditor.continueEditingLoadedState();
-        } else if (mMessageEditor.isVisible()) {
-            // This is done to request focus (if we need this...)
-            mMessageEditor.show();
-        }
+        mMessageEditor.updateScreen();
         updateTitle();
     }
 
@@ -1080,7 +1075,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     }
 
     protected void saveActivityState() {
-        SharedPreferences.Editor outState = MyPreferences.getSharedPreferences(PERSISTENCE_NAME).edit();
+        SharedPreferences.Editor outState = MyPreferences.getSharedPreferences(ACTIVITY_PERSISTENCE_NAME).edit();
         mListParametersNew.saveState(outState);
         mMessageEditor.saveState(outState);
         mContextMenu.saveState(outState);

@@ -21,6 +21,7 @@ import java.util.List;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.AsyncTask.Status;
@@ -52,6 +53,7 @@ import org.andstatus.app.util.UriUtils;
  * @author yvolk@yurivolkov.com
  */
 public class ConversationActivity extends Activity implements MyServiceListener, ActionableMessageList {
+    private static final String ACTIVITY_PERSISTENCE_NAME = ConversationActivity.class.getSimpleName();
 
     /**
      * Id of current Message, which is sort of a "center" of the conversation view
@@ -104,9 +106,20 @@ public class ConversationActivity extends Activity implements MyServiceListener,
         mMessageEditor.hide();
         contextMenu = new MessageContextMenu(this);
         
+        restoreActivityState();
+        mMessageEditor.updateScreen();
+        
         showConversation();
     }
 
+    private boolean restoreActivityState() {
+        SharedPreferences activityState = MyPreferences.getSharedPreferences(ACTIVITY_PERSISTENCE_NAME);
+        if (activityState != null) {
+            mMessageEditor.loadState(activityState);
+        }
+        return mMessageEditor.isStateLoaded();
+    }
+    
     protected void showConversation() {
         MyLog.v(this, "showConversation, instanceId=" + instanceId);
         synchronized (loaderLock) {
@@ -224,9 +237,16 @@ public class ConversationActivity extends Activity implements MyServiceListener,
         isPaused = true;
         super.onPause();
         myServiceReceiver.unregisterReceiver(this);
+        saveActivityState();
         MyContextHolder.get().setInForeground(false);
     }
 
+    protected void saveActivityState() {
+        SharedPreferences.Editor outState = MyPreferences.getSharedPreferences(ACTIVITY_PERSISTENCE_NAME).edit();
+        mMessageEditor.saveState(outState);
+        outState.commit();
+    }
+    
     @Override
     public void onReceive(CommandData commandData, MyServiceEvent event) {
         if (event == MyServiceEvent.AFTER_EXECUTING_COMMAND) {
