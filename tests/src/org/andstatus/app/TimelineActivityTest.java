@@ -18,8 +18,6 @@ package org.andstatus.app;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.view.MenuItem;
-import android.view.View;
 import android.widget.ListView;
 
 import org.andstatus.app.account.AccountSelector;
@@ -42,7 +40,7 @@ import org.andstatus.app.util.MyLog;
  */
 public class TimelineActivityTest extends android.test.ActivityInstrumentationTestCase2<TimelineActivity> {
     private TimelineActivity mActivity;
-    
+
     @Override
     protected void setUp() throws Exception {
         super.setUp();
@@ -74,23 +72,6 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
 
     public TimelineActivityTest() {
         super(TimelineActivity.class);
-    }
-
-    public void testBlogButton() throws InterruptedException {
-        final String method = "testBlogButton";
-        TestSuite.waitForListLoaded(this, mActivity, 2);
-        
-        MenuItem createMessageButton = mActivity.getOptionsMenu().findItem(R.id.createMessageButton);
-        assertTrue(createMessageButton != null);
-        assertTrue("Blog button is visible", createMessageButton.isVisible());
-        View editorView = mActivity.findViewById(R.id.message_editor);
-        assertTrue(editorView != null);
-        assertFalse(editorView.getVisibility() == android.view.View.VISIBLE);
-        ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<TimelineActivity>(this, mActivity);
-        helper.clickMenuItem(method + " clicker 1", R.id.createMessageButton);
-        assertTrue("Editor appeared", editorView.getVisibility() == android.view.View.VISIBLE);
-        helper.clickMenuItem(method + " clicker 2", R.id.createMessageButton);
-        assertFalse("Editor hidden again", editorView.getVisibility() == android.view.View.VISIBLE);
     }
     
     public void testOpeningConversationActivity() throws InterruptedException {

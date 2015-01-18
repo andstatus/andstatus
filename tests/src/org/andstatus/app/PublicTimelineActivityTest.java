@@ -66,6 +66,7 @@ public class PublicTimelineActivityTest extends android.test.ActivityInstrumenta
 
     @Override
     protected void tearDown() throws Exception {
+        mActivity.finish();
         super.tearDown();
     }
 

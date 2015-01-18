@@ -37,8 +37,8 @@ import static org.andstatus.app.ContextMenuItem.STOP_FOLLOWING_SENDER;
 
 import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
-import android.os.Bundle;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.text.TextUtils;
 import android.view.ContextMenu;
 import android.view.MenuItem;
@@ -283,12 +283,12 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
         MyLog.v(this, "onContextItemSelected: " + contextMenuItem + "; actor=" + ma.getAccountName());
         switch (contextMenuItem) {
             case REPLY:
-                messageList.getMessageEditor().startEditingMessage("", Uri.EMPTY, mCurrentMsgId, 0, ma);
+                messageList.getMessageEditor().startEditingMessage(new MessageEditorData(ma).setReplyToId(mCurrentMsgId));
                 return true;
             case DIRECT_MESSAGE:
                 authorId = MyProvider.msgIdToUserId(MyDatabase.Msg.AUTHOR_ID, mCurrentMsgId);
                 if (authorId != 0) {
-                    messageList.getMessageEditor().startEditingMessage("", Uri.EMPTY, mCurrentMsgId, authorId, ma);
+                    messageList.getMessageEditor().startEditingMessage(new MessageEditorData(ma).setReplyToId(mCurrentMsgId).setRecipientId(authorId));
                     return true;
                 }
                 break;
@@ -401,14 +401,14 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
         }
     }
     
-    public void loadState(Bundle savedInstanceState) {
+    public void loadState(SharedPreferences savedInstanceState) {
         if (savedInstanceState != null 
-                && savedInstanceState.containsKey(IntentExtra.EXTRA_ITEMID.key)) {
-            mCurrentMsgId = savedInstanceState.getLong(IntentExtra.EXTRA_ITEMID.key);
+                && savedInstanceState.contains(IntentExtra.EXTRA_ITEMID.key)) {
+            mCurrentMsgId = savedInstanceState.getLong(IntentExtra.EXTRA_ITEMID.key, 0);
         }
     }
     
-    public void saveState(Bundle outState) {
+    public void saveState(Editor outState) {
         if (outState != null) {
             outState.putLong(IntentExtra.EXTRA_ITEMID.key, mCurrentMsgId);
         }

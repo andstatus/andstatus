@@ -49,7 +49,7 @@
   <string name="button_create_message_twitter">Tweet</string>
   <string name="button_delete">Delete</string>
   <string name="button_discard">Discard</string>
-  <string name="button_hide">Hide</string>
+  <string name="button_hide">Clear and Hide</string>
   <string name="button_overflow">Overflow</string>
   <string name="button_restore">Restore</string>
   <string name="button_save">Save</string>

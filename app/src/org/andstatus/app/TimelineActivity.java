@@ -27,6 +27,7 @@ import android.app.SearchManager;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.Loader;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.MatrixCursor;
 import android.net.Uri;
@@ -86,6 +87,7 @@ import java.util.List;
 public class TimelineActivity extends ListActivity implements MyServiceListener, OnScrollListener, OnItemClickListener, ActionableMessageList, LoaderCallbacks<Cursor> {
     private static final int DIALOG_ID_TIMELINE_TYPE = 9;
     private static final int LOADER_ID = 1;
+    private static final String PERSISTENCE_NAME = TimelineActivity.class.getSimpleName();
 
     /**
      * Visibility of the layout indicates whether Messages are being loaded into the list (asynchronously...)
@@ -178,8 +180,8 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         mContextMenu = new MessageContextMenu(this);
         mMessageEditor = new MessageEditor(this);
 
-        boolean isInstanceStateRestored = restoreInstanceState(savedInstanceState);
-
+        restoreActivityState();
+        
         LayoutInflater inflater = LayoutInflater.from(this);
         // Create list footer to show the progress of message loading
         mLoadingLayout = (LinearLayout) inflater.inflate(R.layout.item_loading, null);
@@ -196,8 +198,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
 
         getLoaderManager().initLoader(LOADER_ID, null, this);
 
-        if (!isInstanceStateRestored) {
-            mListParametersNew.setTimelineCombined(MyPreferences.getDefaultSharedPreferences().getBoolean(MyPreferences.KEY_TIMELINE_IS_COMBINED, false));
+        if (savedInstanceState == null) {
             parseNewIntent(getIntent());
         }
         updateScreen();
@@ -230,16 +231,17 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         return new MatrixCursor(TimelineSql.getTimelineProjection());
     }
 
-    private boolean restoreInstanceState(Bundle savedInstanceState) {
-        boolean isInstanceStateRestored = false;
-        if (savedInstanceState != null) {
-            isInstanceStateRestored = mListParametersNew.restoreState(savedInstanceState);
-            if (isInstanceStateRestored) {
-                mMessageEditor.loadState(savedInstanceState);
-                mContextMenu.loadState(savedInstanceState);
+    private boolean restoreActivityState() {
+        SharedPreferences activityState = MyPreferences.getSharedPreferences(PERSISTENCE_NAME);
+        boolean stateRestored = false;
+        if (activityState != null) {
+            stateRestored = mListParametersNew.restoreState(activityState);
+            if (stateRestored) {
+                mMessageEditor.loadState(activityState);
+                mContextMenu.loadState(activityState);
             }
         }
-        return isInstanceStateRestored;
+        return stateRestored;
     }
 
     /**
@@ -352,7 +354,8 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                 saveListPosition();
             }
             mPositionRestored = false;
-        }        
+        }
+        saveActivityState();
         MyContextHolder.get().setInForeground(false);
     }
 
@@ -1076,12 +1079,12 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         startActivity(new Intent(this, MySettingsActivity.class));
     }
 
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        mMessageEditor.saveState(outState);
+    protected void saveActivityState() {
+        SharedPreferences.Editor outState = MyPreferences.getSharedPreferences(PERSISTENCE_NAME).edit();
         mListParametersNew.saveState(outState);
+        mMessageEditor.saveState(outState);
         mContextMenu.saveState(outState);
-        super.onSaveInstanceState(outState);
+        outState.commit();
     }
 
     @Override
@@ -1139,7 +1142,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
 
     private void accountToShareViaSelected(Intent data) {
         MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(data.getStringExtra(IntentExtra.EXTRA_ACCOUNT_NAME.key));
-        mMessageEditor.startEditingMessage(mTextToShareViaThisApp, mMediaToShareViaThisApp, 0, 0, ma);
+        mMessageEditor.startEditingMessage(new MessageEditorData(ma).setMessageText(mTextToShareViaThisApp).setMediaUri(mMediaToShareViaThisApp));
     }
 
     private void attachmentSelected(Intent data) {

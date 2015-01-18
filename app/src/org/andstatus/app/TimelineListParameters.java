@@ -20,6 +20,8 @@ import android.app.LoaderManager;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -228,28 +230,28 @@ class TimelineListParameters {
         return myAccountUserId;
     }
 
-    public void saveState(Bundle outState) {
+    public void saveState(Editor outState) {
         outState.putString(IntentExtra.EXTRA_TIMELINE_TYPE.key, getTimelineType().save());
         outState.putBoolean(IntentExtra.EXTRA_TIMELINE_IS_COMBINED.key, isTimelineCombined());
         outState.putString(IntentExtra.EXTRA_SEARCH_QUERY.key, mSearchQuery);
         outState.putLong(IntentExtra.EXTRA_SELECTEDUSERID.key, mSelectedUserId);
     }
     
-    boolean restoreState(Bundle savedInstanceState) {
+    boolean restoreState(SharedPreferences savedInstanceState) {
         TimelineTypeEnum timelineTypeNew = TimelineTypeEnum.load(savedInstanceState
-                .getString(IntentExtra.EXTRA_TIMELINE_TYPE.key));
+                .getString(IntentExtra.EXTRA_TIMELINE_TYPE.key,""));
         if (timelineTypeNew == TimelineTypeEnum.UNKNOWN) {
             return false;
         }
         setTimelineType(timelineTypeNew);
-        if (savedInstanceState.containsKey(IntentExtra.EXTRA_TIMELINE_IS_COMBINED.key)) {
-            setTimelineCombined(savedInstanceState.getBoolean(IntentExtra.EXTRA_TIMELINE_IS_COMBINED.key));
+        if (savedInstanceState.contains(IntentExtra.EXTRA_TIMELINE_IS_COMBINED.key)) {
+            setTimelineCombined(savedInstanceState.getBoolean(IntentExtra.EXTRA_TIMELINE_IS_COMBINED.key, false));
         }
-        if (savedInstanceState.containsKey(IntentExtra.EXTRA_SEARCH_QUERY.key)) {
-            mSearchQuery = notNullString(savedInstanceState.getString(IntentExtra.EXTRA_SEARCH_QUERY.key));
+        if (savedInstanceState.contains(IntentExtra.EXTRA_SEARCH_QUERY.key)) {
+            mSearchQuery = notNullString(savedInstanceState.getString(IntentExtra.EXTRA_SEARCH_QUERY.key, ""));
         }
-        if (savedInstanceState.containsKey(IntentExtra.EXTRA_SELECTEDUSERID.key)) {
-            mSelectedUserId = savedInstanceState.getLong(IntentExtra.EXTRA_SELECTEDUSERID.key);
+        if (savedInstanceState.contains(IntentExtra.EXTRA_SELECTEDUSERID.key)) {
+            mSelectedUserId = savedInstanceState.getLong(IntentExtra.EXTRA_SELECTEDUSERID.key, 0);
         }
         return true;
     }

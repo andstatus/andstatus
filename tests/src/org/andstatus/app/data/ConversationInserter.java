@@ -79,7 +79,7 @@ public class ConversationInserter extends InstrumentationTestCase {
         
         MbUser author2 = buildUserFromOid("acct:second@identi.ca");
         author2.avatarUrl = "http://png.findicons.com/files/icons/1780/black_and_orange/300/android_orange.png";
-        MbUser author3 = buildUserFromOid("acct:third@pump.example.com");
+        MbUser author3 = buildUserFromOid(TestSuite.CONVERSATION_MEMBER_USER_OID);
         author3.avatarUrl = "http://www.large-icons.com/stock-icons/free-large-android/48x48/happy-robot.gif";
         MbUser author4 = buildUserFromOid("acct:fourthWithoutAvatar@pump.example.com");
         

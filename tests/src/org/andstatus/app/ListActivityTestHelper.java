@@ -130,17 +130,19 @@ public class ListActivityTestHelper<T extends ListActivity> extends Instrumentat
     
         MyLog.v(this, method + "-Log before run clicker");
         mActivity.runOnUiThread(clicker);
-        mTestCase.getInstrumentation().waitForIdleSync();
         Thread.sleep(500);
+        mTestCase.getInstrumentation().waitForIdleSync();
     }
     
     public void clickMenuItem(String method, int menuItemResourceId) throws InterruptedException {
         assertTrue(menuItemResourceId != 0);
 
         MyLog.v(this, method + "-Log before run clicker");
-        mTestCase.getInstrumentation().invokeMenuActionSync(mActivity, menuItemResourceId, 0);
-        mTestCase.getInstrumentation().waitForIdleSync();
+        if (!mTestCase.getInstrumentation().invokeMenuActionSync(mActivity, menuItemResourceId, 0)) {
+            MyLog.w(this, method + "-Log returned false");
+        }
         Thread.sleep(500);
+        mTestCase.getInstrumentation().waitForIdleSync();
     }
     
 }

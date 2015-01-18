@@ -1,6 +1,5 @@
 /**
- * Copyright (C) 2013 yvolk (Yuri Volkov), http://yurivolkov.com
- * Copyright (C) 2008 Torgny Bjers
+ * Copyright (C) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,9 +31,9 @@ import org.andstatus.app.service.MyServiceManager;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.net.Uri;
-import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -63,37 +62,14 @@ class MessageEditor {
      */
     private EditText mEditText;
     private TextView mCharsLeftText;
-    private Uri mMediaUri = Uri.EMPTY;
 
     /**
      * Information about the message we are editing
      */
     private TextView mDetails;
 
-    /**
-     * Id of the Message to which we are replying
-     * -1 - is non-existent id
-     */
-    private long mReplyToId = -1;
-    /**
-     * Recipient Id. If =0 we are editing Public message
-     */
-    private long mRecipientId = 0;
-
-    /**
-     * {@link MyAccount} to use with this message (send/reply As ...)
-     */
-    private MyAccount mAccount = null;
-
-    /**
-     * Do we hold loaded but not restored state
-     */
-    private boolean mIsStateLoaded = false;
-    private String mMessageTextRestored = "";
-    private Uri mMediaUriRestored = null;
-    private long replyToIdRestored = 0;
-    private long recipientIdRestored = 0;
-    private String accountGuidRestored = "";
+    private MessageEditorData dataCurrent = new MessageEditorData();
+    private MessageEditorData dataLoaded = new MessageEditorData();
     
     public MessageEditor(ActionableMessageList actionableMessageList) {
         mMessageList = actionableMessageList;
@@ -137,10 +113,8 @@ class MessageEditor {
                     @Override
                     public boolean onMenuItemClick(MenuItem item) {
                         MyAccount accountForButton = accountforCreateMessageButton();
-                        if (isVisible() || accountForButton == null) {
-                            hide();
-                        } else {
-                            startEditingMessage("", Uri.EMPTY, 0, 0, accountForButton);
+                        if (accountForButton != null) {
+                            startEditingMessage(new MessageEditorData(accountForButton));
                         }
                         return false;
                     }
@@ -155,7 +129,7 @@ class MessageEditor {
 
     private MyAccount accountforCreateMessageButton() {
         if (isVisible()) {
-            return mAccount;
+            return dataCurrent.getMyAccount();
         } else {
             return MyContextHolder.get().persistentAccounts().getCurrentAccount();
         }
@@ -170,7 +144,7 @@ class MessageEditor {
                 new MenuItem.OnMenuItemClickListener() {
                     @Override
                     public boolean onMenuItemClick(MenuItem item) {
-                        hide();
+                        clearAndHide();
                         return false;
                     }
                 });
@@ -192,7 +166,7 @@ class MessageEditor {
                 });
         boolean enableAttach = isVisible()
                 && MyPreferences.showAttachedImages()
-                && (mRecipientId == 0 || mAccount.getOrigin().getOriginType()
+                && (dataCurrent.recipientId == 0 || dataCurrent.getMyAccount().getOrigin().getOriginType()
                         .allowAttachmentForDirectMessage());
         item.setEnabled(enableAttach);
         item.setVisible(enableAttach);
@@ -203,9 +177,7 @@ class MessageEditor {
         mEditText.addTextChangedListener(new TextWatcher() {
             @Override
             public void afterTextChanged(Editable s) {
-                if (mAccount != null) {
-                    mCharsLeftText.setText(String.valueOf(mAccount.charactersLeftForMessage(s.toString())));
-                }
+                mCharsLeftText.setText(String.valueOf(dataCurrent.getMyAccount().charactersLeftForMessage(s.toString())));
             }
 
             @Override
@@ -228,7 +200,7 @@ class MessageEditor {
                             sendMessageAndCloseEditor();
                             return true;
                         default:
-                            mCharsLeftText.setText(String.valueOf(mAccount
+                            mCharsLeftText.setText(String.valueOf(dataCurrent.getMyAccount()
                                     .charactersLeftForMessage(mEditText.getText().toString())));
                             break;
                     }
@@ -265,7 +237,7 @@ class MessageEditor {
     }
 
     public void show() {
-        mCharsLeftText.setText(String.valueOf(mAccount
+        mCharsLeftText.setText(String.valueOf(dataCurrent.getMyAccount()
                 .charactersLeftForMessage(mEditText.getText().toString())));
         
         mEditorView.setVisibility(View.VISIBLE);
@@ -317,59 +289,43 @@ class MessageEditor {
      * @param replyToId =0 if not replying
      * @param recipientId =0 if this is Public message
      */
-    public void startEditingMessage(String textInitial, Uri mediaUri, long replyToId, long recipientId, 
-            MyAccount myAccount) {
-        if (myAccount == null || !myAccount.isValid()) {
+    public void startEditingMessage(MessageEditorData dataIn) {
+        if (!dataIn.getMyAccount().isValid()) {
             return;
         }
-        String accountGuidPrev = "";
-        if (mAccount != null) {
-            accountGuidPrev = mAccount.getAccountName();
-        }
-        if (mReplyToId != replyToId || mRecipientId != recipientId 
-                || accountGuidPrev.compareTo(myAccount.getAccountName()) != 0) {
-            mMediaUri = UriUtils.notNull(mediaUri);
-            mReplyToId = replyToId;
-            mRecipientId = recipientId;
-            mAccount = myAccount;
-            String textInitial2 = textInitial;
-            if (recipientId == 0 && replyToId != 0) {
-                String replyToName = MyProvider.msgIdToUsername(MyDatabase.Msg.AUTHOR_ID, replyToId);
-                if (!TextUtils.isEmpty(textInitial2)) {
-                    textInitial2 += " ";
-                }
-                textInitial2 = "@" + replyToName + " ";
-            }
-            mEditText.setText(textInitial2);
+        if (dataCurrent.replyToId != dataIn.replyToId || dataCurrent.recipientId != dataIn.recipientId 
+                || dataCurrent.getMyAccount().getAccountName().compareTo(dataIn.getMyAccount().getAccountName()) != 0) {
+            dataCurrent = dataIn;
+            mEditText.setText(dataCurrent.messageText);
             showMessageDetails();
         }
         
-        if (mAccount.getConnection().isApiSupported(ApiRoutineEnum.ACCOUNT_RATE_LIMIT_STATUS)) {
+        if (dataCurrent.getMyAccount().getConnection().isApiSupported(ApiRoutineEnum.ACCOUNT_RATE_LIMIT_STATUS)) {
             // Start asynchronous task that will show Rate limit status
-            MyServiceManager.sendForegroundCommand(new CommandData(CommandEnum.RATE_LIMIT_STATUS, mAccount.getAccountName()));
+            MyServiceManager.sendForegroundCommand(new CommandData(CommandEnum.RATE_LIMIT_STATUS, dataCurrent.getMyAccount().getAccountName()));
         }
         
         show();
     }
 
     private void showMessageDetails() {
-        String messageDetails = showAccountName() ? mAccount.getAccountName() : "";
-        if (mRecipientId == 0) {
-            if (mReplyToId != 0) {
-                String replyToName = MyProvider.msgIdToUsername(MyDatabase.Msg.AUTHOR_ID, mReplyToId);
+        String messageDetails = showAccountName() ? dataCurrent.getMyAccount().getAccountName() : "";
+        if (dataCurrent.recipientId == 0) {
+            if (dataCurrent.replyToId != 0) {
+                String replyToName = MyProvider.msgIdToUsername(MyDatabase.Msg.AUTHOR_ID, dataCurrent.replyToId);
                 messageDetails += " " + String.format(
                         MyContextHolder.get().context().getText(R.string.message_source_in_reply_to).toString(), 
                         replyToName);
             }
         } else {
-            String recipientName = MyProvider.userIdToName(mRecipientId);
+            String recipientName = MyProvider.userIdToName(dataCurrent.recipientId);
             if (!TextUtils.isEmpty(recipientName)) {
                 messageDetails += " " + String.format(
                         MyContextHolder.get().context().getText(R.string.message_source_to).toString(), 
                         recipientName);
             }
         }
-        if (!UriUtils.isEmpty(mMediaUri)) {
+        if (!UriUtils.isEmpty(dataCurrent.mediaUri)) {
             messageDetails += " (" + MyContextHolder.get().context().getText(R.string.label_with_media).toString() + ")"; 
         }
         mDetails.setText(messageDetails);
@@ -383,93 +339,69 @@ class MessageEditor {
     private boolean showAccountName() {
         boolean show = mMessageList.isTimelineCombined() 
                 || mMessageList.getTimelineType() == TimelineTypeEnum.USER;
-        if (!show && mAccount != null) {
-            show = mAccount.getUserId() != mMessageList.getCurrentMyAccountUserId();
+        if (!show) {
+            show = dataCurrent.getMyAccount().getUserId() != mMessageList.getCurrentMyAccountUserId();
         }
         return show;
     }
     
     private void sendMessageAndCloseEditor() {
         String status = mEditText.getText().toString();
-        if (mAccount == null) {
-        	closeEditor();
+        if (!dataCurrent.getMyAccount().isValid()) {
+            clearAndHide();
         } else if (TextUtils.isEmpty(status.trim())) {
             Toast.makeText(getActivity(), R.string.cannot_send_empty_message,
                     Toast.LENGTH_SHORT).show();
-        } else if (mAccount.charactersLeftForMessage(status) < 0) {
+        } else if (dataCurrent.getMyAccount().charactersLeftForMessage(status) < 0) {
             Toast.makeText(getActivity(), R.string.message_is_too_long,
                     Toast.LENGTH_SHORT).show();
         } else {
 			if (MyPreferences.getBoolean(MyPreferences.KEY_SENDING_MESSAGES_LOG_ENABLED, false)) {
 				MyLog.setLogToFile(true);
 			}
-            CommandData commandData = CommandData.updateStatus(mAccount.getAccountName(), status, mReplyToId, mRecipientId, mMediaUri);
+            CommandData commandData = CommandData.updateStatus(dataCurrent.getMyAccount().getAccountName(), status, dataCurrent.replyToId, dataCurrent.recipientId, dataCurrent.mediaUri);
             MyServiceManager.sendForegroundCommand(commandData);
-            closeEditor();
+            clearAndHide();
         }
     }
 
-	private void closeEditor() {
-		// Let's assume that everything will be Ok
-		// so we may clear the text box with the sent message text...
-		mReplyToId = 0;
-		mRecipientId = 0;
-		mEditText.setText("");
-		mAccount = null;
-		mMediaUri = Uri.EMPTY;
-
-		hide();
+    private void clearAndHide() {
+        clearEditor();
+        hide();
+    }
+    
+	public void clearEditor() {
+	    dataCurrent = new MessageEditorData(messageListAccount());
 	}
+
+    private MyAccount messageListAccount() {
+        return MyContextHolder.get().persistentAccounts().fromUserId(
+                mMessageList.getCurrentMyAccountUserId());
+    }
 
 	private Activity getActivity() {
 		return mMessageList.getActivity();
 	}
     
-    public void saveState(Bundle outState) {
-        mIsStateLoaded = false;
-        if (outState != null && mEditText != null && mAccount != null) {
-            String messageText = mEditText.getText().toString();
-            if (!TextUtils.isEmpty(messageText) || !UriUtils.isEmpty(mMediaUri)) {
-                outState.putString(IntentExtra.EXTRA_MESSAGE_TEXT.key, messageText);
-                if (!UriUtils.isEmpty(mMediaUri)) {
-                    outState.putString(IntentExtra.EXTRA_MEDIA_URI.key, mMediaUri.toString());
-                }
-                outState.putLong(IntentExtra.EXTRA_INREPLYTOID.key, mReplyToId);
-                outState.putLong(IntentExtra.EXTRA_RECIPIENTID.key, mRecipientId);
-                outState.putString(IntentExtra.EXTRA_ACCOUNT_NAME.key, mAccount.getAccountName());
-            }
+    public void saveState(SharedPreferences.Editor outState) {
+        if (outState != null && mEditText != null) {
+            dataCurrent.messageText = mEditText.getText().toString();
+            dataCurrent.save(outState);
         }
     }
     
-    public void loadState(Bundle savedInstanceState) {
-        if (savedInstanceState != null 
-                && savedInstanceState.containsKey(IntentExtra.EXTRA_INREPLYTOID.key) 
-                && savedInstanceState.containsKey(IntentExtra.EXTRA_MESSAGE_TEXT.key)) {
-            String messageText = savedInstanceState.getString(IntentExtra.EXTRA_MESSAGE_TEXT.key);
-            Uri mediaUri = UriUtils.fromString(savedInstanceState.getString(IntentExtra.EXTRA_MEDIA_URI.key));
-            if (!TextUtils.isEmpty(messageText) || !UriUtils.isEmpty(mediaUri)) {
-                mMessageTextRestored = messageText;
-                mMediaUriRestored = mediaUri;
-                replyToIdRestored = savedInstanceState.getLong(IntentExtra.EXTRA_INREPLYTOID.key);
-                recipientIdRestored = savedInstanceState.getLong(IntentExtra.EXTRA_RECIPIENTID.key);
-                accountGuidRestored = savedInstanceState.getString(IntentExtra.EXTRA_ACCOUNT_NAME.key);
-                mIsStateLoaded = true;
-            }
-        }
+    public void loadState(SharedPreferences savedInstanceState) {
+        dataLoaded = MessageEditorData.load(savedInstanceState);
     }
     
-    /**
-     * Do we hold loaded but not restored state?
-     */
     public boolean isStateLoaded() {
-        return mIsStateLoaded;
+        return !dataLoaded.isEmpty();
     }
     
     public void continueEditingLoadedState() {
         if (isStateLoaded()) {
-            mIsStateLoaded = false;
-            startEditingMessage(mMessageTextRestored, mMediaUriRestored, replyToIdRestored, recipientIdRestored, 
-                    MyContextHolder.get().persistentAccounts().fromAccountName(accountGuidRestored));
+            startEditingMessage(dataLoaded);
+            dataLoaded = new MessageEditorData(messageListAccount());
         }
     }
 
@@ -499,13 +431,13 @@ class MessageEditor {
 	private Intent getIntentToPickImages() {
 		return new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
 	}
-	
-    public Uri getMediaUri() {
-        return mMediaUri;
-    }
 
     public void setMedia(Uri mediaUri) {
-        mMediaUri = UriUtils.notNull(mediaUri);
+        dataCurrent.mediaUri = UriUtils.notNull(mediaUri);
         showMessageDetails();
+    }
+
+    public MessageEditorData getData() {
+        return dataCurrent;
     }
 }
