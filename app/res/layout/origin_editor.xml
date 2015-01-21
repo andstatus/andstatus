@@ -5,67 +5,75 @@
     android:layout_height="match_parent"
     android:orientation="vertical" >
 
-    <TextView
-        android:id="@+id/label_origin_type"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/label_origin_type" />
-
-    <Spinner
-        android:id="@+id/origin_type"
+    <ScrollView
+        android:id="@+id/main_container"
+        android:layout_weight="1"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:entries="@array/origin_system_types_entries"
-        android:prompt="@string/label_origin_type" />
-
-    <TextView
-        android:id="@+id/label_origin_name"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/label_origin_name" />
-
-    <EditText
-        android:id="@+id/origin_name"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:ems="10"
-        android:hint="@string/label_origin_name" >
-
-    </EditText>
-
-    <TextView
-        android:id="@+id/label_host"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/label_host" />
-
-    <EditText
-        android:id="@+id/host"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:ems="10"
-        android:hint="@string/label_host" />
-
-    <CheckBox
-        android:id="@+id/is_ssl"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/title_preference_ssl" />
-
-    <CheckBox
-        android:id="@+id/allow_html"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/label_allow_html_content" />
-
+        android:layout_height="0dp" >
+    
     <LinearLayout
-        android:id="@+id/filler"
-        android:orientation="vertical"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1" />
+        android:orientation="vertical" >
+
+	    <TextView
+	        android:id="@+id/label_origin_type"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:text="@string/label_origin_type" />
+	
+	    <Spinner
+	        android:id="@+id/origin_type"
+	        android:layout_width="match_parent"
+	        android:layout_height="wrap_content"
+	        android:entries="@array/origin_system_types_entries"
+	        android:prompt="@string/label_origin_type" />
+	
+	    <TextView
+	        android:id="@+id/label_origin_name"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:text="@string/label_origin_name" />
+	
+	    <EditText
+	        android:id="@+id/origin_name"
+	        android:layout_width="match_parent"
+	        android:layout_height="wrap_content"
+	        android:ems="10"
+	        android:hint="@string/label_origin_name" >
+	
+	    </EditText>
+	
+	    <TextView
+	        android:id="@+id/label_host"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:text="@string/label_host" />
+	
+	    <EditText
+	        android:id="@+id/host"
+	        android:layout_width="match_parent"
+	        android:layout_height="wrap_content"
+	        android:ems="10"
+	        android:hint="@string/label_host" />
+	
+	    <CheckBox
+	        android:id="@+id/is_ssl"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:text="@string/title_preference_ssl" />
+	
+	    <CheckBox
+	        android:id="@+id/allow_html"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:text="@string/label_allow_html_content" />
+        
+    </LinearLayout>
+    </ScrollView>
 
     <LinearLayout
+        android:id="@+id/buttons_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" >
 
