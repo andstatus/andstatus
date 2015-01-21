@@ -51,7 +51,8 @@ class CommandExecutorLoadAllTimelines extends CommandExecutorStrategy {
 
     private TimelineTypeEnum[] getTimelines() {
         TimelineTypeEnum[] timelineTypes;
-        if (execContext.getCommandData().getTimelineType() == TimelineTypeEnum.ALL) {
+        if (execContext.getCommandData().getTimelineType() == TimelineTypeEnum.ALL
+                || execContext.getCommandData().getTimelineType() == TimelineTypeEnum.EVERYTHING) {
             timelineTypes = new TimelineTypeEnum[] {
                     TimelineTypeEnum.HOME, TimelineTypeEnum.MENTIONS,
                     TimelineTypeEnum.DIRECT

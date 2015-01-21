@@ -30,20 +30,12 @@ import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 public class MyHttpClientFactory {
 
     /** Based on: https://github.com/rfc2822/davdroid/blob/master/src/at/bitfire/davdroid/webdav/DavHttpClient.java */
-    private final static RequestConfig REQUEST_CONFIG;
     private final static Registry<ConnectionSocketFactory> SOCKET_FACTORY_REGISTRY;
 
     static {
         SOCKET_FACTORY_REGISTRY = RegistryBuilder.<ConnectionSocketFactory> create()
                 .register("http", PlainConnectionSocketFactory.getSocketFactory())
                 .register("https", TlsSniSocketFactory.INSTANCE)
-                .build();
-        
-        // use request defaults from AndroidHttpClient
-        REQUEST_CONFIG = RequestConfig.copy(RequestConfig.DEFAULT)
-                .setConnectTimeout(MyPreferences.getConnectionTimeoutMs())
-                .setSocketTimeout(2*MyPreferences.getConnectionTimeoutMs())
-                .setStaleConnectionCheckEnabled(false)
                 .build();
     }
 
@@ -57,11 +49,18 @@ public class MyHttpClientFactory {
         connectionManager.setMaxTotal(3);
         // max.  2 connections per host
         connectionManager.setDefaultMaxPerRoute(2);
+
+        // use request defaults from AndroidHttpClient
+        RequestConfig requestConfig = RequestConfig.copy(RequestConfig.DEFAULT)
+                .setConnectTimeout(MyPreferences.getConnectionTimeoutMs())
+                .setSocketTimeout(2*MyPreferences.getConnectionTimeoutMs())
+                .setStaleConnectionCheckEnabled(false)
+                .build();
         
         HttpClientBuilder builder = HttpClients.custom()
                 .useSystemProperties()
                 .setConnectionManager(connectionManager)
-                .setDefaultRequestConfig(REQUEST_CONFIG)
+                .setDefaultRequestConfig(requestConfig)
                 /* TODO maybe:  
                 .setRetryHandler(DavHttpRequestRetryHandler.INSTANCE)
                 .setRedirectStrategy(DavRedirectStrategy.INSTANCE)  

@@ -55,9 +55,12 @@ public final class DbUtils {
                 if (rowId != -1) {
                     break;
                 }
-                MyLog.v(method, " Error inserting row, pass=" + pass);
+                MyLog.v(method, "Error inserting row, table=" + tableName + "; pass=" + pass);
+            } catch (NullPointerException e) {
+                MyLog.i(method, "NullPointerException, table=" + tableName + "; pass=" + pass, e);
+                break;
             } catch (SQLiteException e) {
-                MyLog.i(method, " Database is locked, pass=" + pass, e);
+                MyLog.i(method, "Database is locked, table=" + tableName + "; pass=" + pass, e);
                 rowId = -1;
             }
             waitBetweenRetries(method);
