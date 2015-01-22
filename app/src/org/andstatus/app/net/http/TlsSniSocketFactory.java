@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (c) 2014 Ricki Hirner (bitfire web engineering).
+ * Copyright (C) 2014 yvolk (Yuri Volkov), http://yurivolkov.com - Insecure connection added
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Public License v3.0
  * which accompanies this distribution, and is available at
@@ -20,23 +21,31 @@ import javax.net.ssl.SSLSocket;
 import android.annotation.TargetApi;
 import android.net.SSLCertificateSocketFactory;
 import android.os.Build;
-import android.util.Log;
 
+import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.util.MyLog;
 import org.apache.http.HttpHost;
+import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.socket.LayeredConnectionSocketFactory;
+import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
 import org.apache.http.conn.ssl.BrowserCompatHostnameVerifier;
 import org.apache.http.protocol.HttpContext;
 
 public class TlsSniSocketFactory implements LayeredConnectionSocketFactory {
-    private static final String TAG = "davdroid.SNISocketFactory";
-    
-    static final TlsSniSocketFactory INSTANCE = new TlsSniSocketFactory();
-    
-    private static final SSLCertificateSocketFactory SSL_SOCKET_FACTORY =
-            (SSLCertificateSocketFactory)SSLCertificateSocketFactory.getDefault(0);
-    private static final HostnameVerifier HOSTNAME_VERIFIER = new BrowserCompatHostnameVerifier();
 
+    private static volatile TlsSniSocketFactory instance;
+    public static ConnectionSocketFactory getInstance() {
+        if (instance == null) {
+            instance = new TlsSniSocketFactory();
+        }
+        return instance;
+    }
+    public static void forget() {
+        instance = null;
+    }
+    
+    private final boolean secure;
+    private final SSLCertificateSocketFactory sslSocketFactory;
     
     /*
     For SSL connections without HTTP(S) proxy:
@@ -56,21 +65,32 @@ public class TlsSniSocketFactory implements LayeredConnectionSocketFactory {
            active by Android's defaults, which it isn't at the moment).
     */
 
-
+    public TlsSniSocketFactory() {
+        secure = !MyPreferences.getBoolean(MyPreferences.KEY_ALLOW_INSECURE_SSL, false);
+        if (secure) {
+            sslSocketFactory = (SSLCertificateSocketFactory) SSLCertificateSocketFactory
+                    .getDefault(MyPreferences.getConnectionTimeoutMs());
+        } else {
+            sslSocketFactory = (SSLCertificateSocketFactory) SSLCertificateSocketFactory
+                    .getInsecure(MyPreferences.getConnectionTimeoutMs(), null);
+            MyLog.i(this, "Insecure SSL allowed");
+        }
+    }
+    
     @Override
     public Socket createSocket(HttpContext context) throws IOException {
-        return SSL_SOCKET_FACTORY.createSocket();
+        return sslSocketFactory.createSocket();
     }
 
     @Override
     public Socket connectSocket(int timeout, Socket plain, HttpHost host, InetSocketAddress remoteAddr, InetSocketAddress localAddr, HttpContext context) throws IOException {
-        MyLog.d(TAG, "Preparing direct SSL connection (without proxy) to " + host);
+        MyLog.d(this, "Preparing direct SSL connection (without proxy) to " + host);
         
         // we'll rather use an SSLSocket directly
         plain.close();
         
         // create a plain SSL socket, but don't do hostname/certificate verification yet
-        SSLSocket ssl = (SSLSocket)SSL_SOCKET_FACTORY.createSocket(remoteAddr.getAddress(), host.getPort());
+        SSLSocket ssl = (SSLSocket)sslSocketFactory.createSocket(remoteAddr.getAddress(), host.getPort());
         
         // connect, set SNI, shake hands, verify, print connection info
         connectWithSNI(ssl, host.getHostName());
@@ -80,13 +100,13 @@ public class TlsSniSocketFactory implements LayeredConnectionSocketFactory {
 
     @Override
     public Socket createLayeredSocket(Socket plain, String host, int port, HttpContext context) throws IOException {
-        Log.d(TAG, "Preparing layered SSL connection (over proxy) to " + host);
+        MyLog.d(this, "Preparing layered SSL connection (over proxy) to " + host);
         
         // create a layered SSL socket, but don't do hostname/certificate verification yet
-        SSLSocket ssl = (SSLSocket)SSL_SOCKET_FACTORY.createSocket(plain, host, port, true);
+        SSLSocket ssl = (SSLSocket)sslSocketFactory.createSocket(plain, host, port, true);
 
         // already connected, but verify host name again and print some connection info
-        Log.w(TAG, "Setting SNI/TLSv1.2 will silently fail because the handshake is already done");
+        MyLog.w(this, "Setting SNI/TLSv1.2 will silently fail because the handshake is already done");
         connectWithSNI(ssl, host);
 
         return ssl;
@@ -101,25 +121,31 @@ public class TlsSniSocketFactory implements LayeredConnectionSocketFactory {
         
         // - set SNI host name
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            MyLog.d(TAG, "Using documented SNI with host name " + host);
-            SSL_SOCKET_FACTORY.setHostname(ssl, host);
+            MyLog.d(this, "Using documented SNI with host name " + host);
+            sslSocketFactory.setHostname(ssl, host);
         } else {
-            MyLog.d(TAG, "No documented SNI support on Android <4.2, trying with reflection");
+            MyLog.d(this, "No documented SNI support on Android <4.2, trying with reflection");
             try {
                 java.lang.reflect.Method setHostnameMethod = ssl.getClass().getMethod("setHostname", String.class);
                 setHostnameMethod.invoke(ssl, host);
             } catch (Exception e) {
-                MyLog.i(TAG, "SNI not useable", e);
+                MyLog.i(this, "SNI not useable", e);
             }
         }
         
         // verify hostname and certificate
         SSLSession session = ssl.getSession();
-        if (!HOSTNAME_VERIFIER.verify(host, session)) {
+        if (!session.isValid()) {
+            MyLog.i(this, "Invalid session to host:'" + host + "'");
+        }
+
+        HostnameVerifier hostnameVerifier = secure ? new BrowserCompatHostnameVerifier() : new AllowAllHostnameVerifier();
+        if (!hostnameVerifier.verify(host, session)) {
+            MyLog.i(this, "Cannot verify hostname: " + host);
             throw new SSLPeerUnverifiedException("Cannot verify hostname: " + host);
         }
 
-        MyLog.i(TAG, "Established " + session.getProtocol() + " connection with " + session.getPeerHost() +
+        MyLog.i(this, "Established " + session.getProtocol() + " connection with " + session.getPeerHost() +
                 " using " + session.getCipherSuite());
     }
     

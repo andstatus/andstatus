@@ -224,6 +224,9 @@
   <string name="options_menu_mentions">Mentions</string>
   <string name="options_menu_search">Search</string>
   <string name="origin_settings_action">Microblogging system</string>
+  <string name="preference_allow_insecure_ssl_title">Allow insecure SSL</string>
+  <string name="preference_allow_insecure_ssl_summary_off">You are safe: only secure SSL connections allowed</string>
+  <string name="preference_allow_insecure_ssl_summary_on">Warning: Your connections are not secure. Please tell your server administrator to fix this and then turn off this option</string>
   <string name="preference_allow_misconfigured_ssl_title">Allow misconfigured SSL</string>
   <string name="preference_allow_misconfigured_ssl_summary_off">You are safe: only properly configured SSL connections allowed</string>
   <string name="preference_allow_misconfigured_ssl_summary_on">Warning: Your connections are not secure, because security certificates, issued for any host, are accepted. TLS and SNI protocols are not available. Please tell your server administrator to fix this and then turn off this option</string>

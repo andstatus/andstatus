@@ -22,6 +22,7 @@ import android.content.Context;
 import android.database.sqlite.SQLiteException;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+
 import net.jcip.annotations.ThreadSafe;
 
 import org.andstatus.app.ClassInApplicationPackage;
@@ -31,6 +32,7 @@ import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyDatabaseConverterController;
 import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.net.http.HttpConnection;
+import org.andstatus.app.net.http.TlsSniSocketFactory;
 import org.andstatus.app.origin.PersistentOrigins;
 import org.andstatus.app.service.ConnectionRequired;
 import org.andstatus.app.util.MyLog;
@@ -189,6 +191,7 @@ public final class MyContextImpl implements MyContext {
      */
     public void release() {
         MyLog.forget();
+        TlsSniSocketFactory.forget();
     }
 
     @Override

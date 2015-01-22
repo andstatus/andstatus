@@ -26,6 +26,18 @@
 		</subtitle>
     </header>
 
+    <release android:versionName="14.2" android:versionCode="119"
+        versionDate="2014-01-22"
+        versionTitle="Bug fixes and connection to Quitter.Zone">
+        <changes>
+            <change>Reported crashes fixed.</change>
+            <change>Fixed: Microblogging system editor layout doesn't fit in a small screen.</change>
+            <change>Some devices cannot connect to Quitter.Zone in a default (secure) mode. 
+                For them another debugging option added:
+                &quot;Allow insecure SSL&quot;.
+                 <a href="https://github.com/andstatus/andstatus/issues/214">#214</a></change>
+            </changes>
+    </release>
     <release android:versionName="14.1" android:versionCode="118"
         versionDate="2014-01-18"
         versionTitle="Fixed Private attachments and typed text persistence">

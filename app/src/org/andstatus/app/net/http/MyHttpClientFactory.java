@@ -30,21 +30,18 @@ import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 public class MyHttpClientFactory {
 
     /** Based on: https://github.com/rfc2822/davdroid/blob/master/src/at/bitfire/davdroid/webdav/DavHttpClient.java */
-    private final static Registry<ConnectionSocketFactory> SOCKET_FACTORY_REGISTRY;
-
-    static {
-        SOCKET_FACTORY_REGISTRY = RegistryBuilder.<ConnectionSocketFactory> create()
-                .register("http", PlainConnectionSocketFactory.getSocketFactory())
-                .register("https", TlsSniSocketFactory.INSTANCE)
-                .build();
-    }
 
     private MyHttpClientFactory() {
         // Empty
     }
     
     public static HttpClient getHttpClient() {
-        PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager(SOCKET_FACTORY_REGISTRY);
+        Registry<ConnectionSocketFactory> registry = 
+                RegistryBuilder.<ConnectionSocketFactory> create()
+                    .register("http", PlainConnectionSocketFactory.getSocketFactory())
+                    .register("https", TlsSniSocketFactory.getInstance())
+                    .build();
+        PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager(registry);
         // max.  3 connections in total
         connectionManager.setMaxTotal(3);
         // max.  2 connections per host

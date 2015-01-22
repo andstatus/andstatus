@@ -70,6 +70,7 @@ public class MyPreferences {
     public static final String KEY_COMMANDS_QUEUE = "commands_queue";
 
     public static final String KEY_ALLOW_MISCONFIGURED_SSL = "allow_misconfigured_ssl";
+    public static final String KEY_ALLOW_INSECURE_SSL = "allow_insecure_ssl";
     public static final String KEY_USE_KITKAT_MEDIA_CHOOSER = "use_kitkat_media_chooser";
     public static final String KEY_DEBUGGING_INFO_IN_UI = "debugging_info_in_ui";
     
