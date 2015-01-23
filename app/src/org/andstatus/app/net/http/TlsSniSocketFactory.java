@@ -66,7 +66,7 @@ public class TlsSniSocketFactory implements LayeredConnectionSocketFactory {
     */
 
     public TlsSniSocketFactory() {
-        secure = !MyPreferences.getBoolean(MyPreferences.KEY_ALLOW_INSECURE_SSL, false);
+        secure = SslModeEnum.getPreference() == SslModeEnum.SECURE;
         if (secure) {
             sslSocketFactory = (SSLCertificateSocketFactory) SSLCertificateSocketFactory
                     .getDefault(MyPreferences.getConnectionTimeoutMs());
@@ -141,7 +141,6 @@ public class TlsSniSocketFactory implements LayeredConnectionSocketFactory {
 
         HostnameVerifier hostnameVerifier = secure ? new BrowserCompatHostnameVerifier() : new AllowAllHostnameVerifier();
         if (!hostnameVerifier.verify(host, session)) {
-            MyLog.i(this, "Cannot verify hostname: " + host);
             throw new SSLPeerUnverifiedException("Cannot verify hostname: " + host);
         }
 

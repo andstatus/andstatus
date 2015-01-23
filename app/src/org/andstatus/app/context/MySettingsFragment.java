@@ -39,6 +39,7 @@ import org.andstatus.app.TimelineActivity;
 import org.andstatus.app.account.AccountSettingsActivity;
 import org.andstatus.app.backup.BackupActivity;
 import org.andstatus.app.backup.RestoreActivity;
+import org.andstatus.app.net.http.SslModeEnum;
 import org.andstatus.app.origin.OriginList;
 import org.andstatus.app.service.QueueViewer;
 import org.andstatus.app.util.MyLog;
@@ -98,6 +99,7 @@ public class MySettingsFragment extends PreferenceFragment implements
        in the Preference summary?</a>
      */
     protected void showAllPreferences() {
+        showManageAccounts();
         showFrequency();
         showConnectionTimeout();
         showHistorySize();
@@ -107,7 +109,10 @@ public class MySettingsFragment extends PreferenceFragment implements
         showUseExternalStorage();
         showBackupRestore();
         showAuthorInTimeline();
-        
+        showSslMode();
+    }
+
+    private void showManageAccounts() {
         Preference myPref = findPreference(KEY_MANAGE_EXISTING_ACCOUNTS);
         CharSequence summary;
         if (MyContextHolder.get().persistentAccounts().isEmpty()) {
@@ -117,7 +122,7 @@ public class MySettingsFragment extends PreferenceFragment implements
         }
         myPref.setSummary(summary);
     }
-
+    
     protected void showFrequency() {
         SharedPreferencesUtil.showListPreference(this, MyPreferences.KEY_SYNC_FREQUENCY_SECONDS, R.array.fetch_frequency_values, R.array.fetch_frequency_entries, R.string.summary_preference_frequency);
     }
@@ -190,6 +195,13 @@ public class MySettingsFragment extends PreferenceFragment implements
     private void showAuthorInTimeline() {
         SharedPreferencesUtil.showListPreference(this, MyPreferences.KEY_USER_IN_TIMELINE, R.array.user_in_timeline_values, R.array.user_in_timeline_entries, R.string.summary_preference_user_in_timeline);
     }
+
+    private void showSslMode() {
+        findPreference(MyPreferences.KEY_SSL_MODE).setSummary(
+                getText(SslModeEnum.getPreference().getEntryResourceId())
+                + "\n"
+                + getText(SslModeEnum.getPreference().getSummaryResourceId()));
+    }
     
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
@@ -202,27 +214,34 @@ public class MySettingsFragment extends PreferenceFragment implements
             MyLog.logSharedPreferencesValue(this, sharedPreferences, key);
             MyPreferences.onPreferencesChanged();
             
-            if (MyPreferences.KEY_SYNC_FREQUENCY_SECONDS.equals(key)) {
-                MyContextHolder.get().persistentAccounts().onMyPreferencesChanged(MyContextHolder.get());
-                showFrequency();
-            }
-            if (MyPreferences.KEY_CONNNECTION_TIMEOUT_SECONDS.equals(key)) {
-                showConnectionTimeout();
-            }
-            if (MyPreferences.KEY_RINGTONE_PREFERENCE.equals(key)) {
-                showRingtone();
-            }
-            if (MyPreferences.KEY_HISTORY_SIZE.equals(key)) {
-                showHistorySize();
-            }
-            if (MyPreferences.KEY_HISTORY_TIME.equals(key)) {
-                showHistoryTime();
-            }
-            if (MyPreferences.KEY_MIN_LOG_LEVEL.equals(key)) {
-                showMinLogLevel();
-            }
-            if (MyPreferences.KEY_USER_IN_TIMELINE.equals(key)) {
-                showAuthorInTimeline();
+            switch (key) {
+                case MyPreferences.KEY_SYNC_FREQUENCY_SECONDS:
+                    MyContextHolder.get().persistentAccounts().onMyPreferencesChanged(MyContextHolder.get());
+                    showFrequency();
+                    break;
+                case MyPreferences.KEY_CONNNECTION_TIMEOUT_SECONDS:
+                    showConnectionTimeout();
+                    break;
+                case MyPreferences.KEY_RINGTONE_PREFERENCE:
+                    showRingtone();
+                    break;
+                case MyPreferences.KEY_HISTORY_SIZE:
+                    showHistorySize();
+                    break;
+                case MyPreferences.KEY_HISTORY_TIME:
+                    showHistoryTime();
+                    break;
+                case MyPreferences.KEY_MIN_LOG_LEVEL:
+                    showMinLogLevel();
+                    break;
+                case MyPreferences.KEY_USER_IN_TIMELINE:
+                    showAuthorInTimeline();
+                    break;
+                case MyPreferences.KEY_SSL_MODE:
+                    showSslMode();
+                    break;
+                default:
+                    break;
             }
         } finally {
             onSharedPreferenceChangedIsBusy = false;

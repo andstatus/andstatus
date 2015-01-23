@@ -49,7 +49,7 @@
   <string name="button_create_message_twitter">Твит</string>
   <string name="button_delete">Удалить</string>
   <string name="button_discard">Отмена</string>
-  <string name="button_hide">Скрыть</string>
+  <string name="button_hide">Очистить и скрыть</string>
   <string name="button_overflow">Переполнение</string>
   <string name="button_restore">Восстановить</string>
   <string name="button_save">Сохранить</string>
@@ -64,6 +64,7 @@
   <string name="combined_timeline_on">объединённая</string>
   <string name="combined_timeline_off_account">для</string>
   <string name="combined_timeline_off_origin">в</string>
+  <string name="created_label">Создан</string>
   <string name="dialog_summary_acquiring_an_access_token">Пожалуйста подождите пока AndStatus обменяет токен OAuth запроса на токен доступа</string>
   <string name="dialog_summary_acquiring_a_request_token">Пожалуйста подождите завершения получения токена запроса для OAuth</string>
   <string name="dialog_summary_authentication_failed">Пожалуйста проверьте Ваши имя пользователя и пароль.</string>
@@ -223,11 +224,16 @@
   <string name="options_menu_mentions">Упоминания</string>
   <string name="options_menu_search">Поиск</string>
   <string name="origin_settings_action">Система микроблогов</string>
-  <string name="preference_allow_misconfigured_ssl_title">Разрешить некорректные SSL соединения</string>
-  <string name="preference_allow_misconfigured_ssl_summary_off">Вы в безопасности: разрешены только правильно настроенные SSL соединения</string>
-  <string name="preference_allow_misconfigured_ssl_summary_on">Предупреждение: Безопасность ваших соединений не обеспечена, потому что разрешено использование сертификатов, выпущенных для любых хостов. Протоколы TLS и SNI не используются. Пожалуйста, попросите Вашего Администратора исправить данную ситуацию на сервере, а потом выключите эту опцию</string>
+  <string name="preference_ssl_mode_title">Режим SSL и безопасность</string>
+  <string name="preference_ssl_mode_secure_summary">Вы в безопасности: разрешены только правильно настроенные SSL соединения</string>
+  <string name="preference_ssl_mode_insecure_summary">Предупреждение: Ваши соединения не являются безопасными. Пожалуйста, попросите Вашего Администратора сервера это исправить, а затем вернитесь в безопасный режим</string>
+  <string name="preference_ssl_mode_misconfigured_summary">Предупреждение: Безопасность ваших соединений не обеспечена, потому что разрешено использование сертификатов, выпущенных для любых хостов. Протоколы TLS и SNI не используются. Пожалуйста, попросите Вашего Администратора сервера это исправить, а затем вернитесь в безопасный режим</string>
+  <string name="preference_ssl_mode_secure">Безопасный SSL режим</string>
+  <string name="preference_ssl_mode_insecure">Незащищённый SSL режим</string>
+  <string name="preference_ssl_mode_misconfigured">Некорректно настроенный SSL</string>
   <string name="preference_debugging_info_in_ui_title">Отладочная информация в пользовательском интерфейсе</string>
   <string name="preference_log_everything_to_file_title">Сохранять весь журнал в файл</string>
+  <string name="preference_log_network_level_messages_title">Журналировать сообщения сетевого уровня</string>
   <string name="preference_notification_icon_alternative_title">Альтернативный значок уведомления</string>
   <string name="preference_notification_icon_alternative_off">Иконка в виде букв \"&amp;s\"</string>
   <string name="preference_notification_icon_alternative_on">Иконка в виде круга</string>

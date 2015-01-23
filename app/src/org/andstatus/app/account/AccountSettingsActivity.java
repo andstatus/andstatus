@@ -233,6 +233,9 @@ public class AccountSettingsActivity extends Activity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
+            case android.R.id.home:
+                closeAndGoBack();
+                return true;
             case R.id.preferences_menu_id:
                 startMyPreferenceActivity();
                 break;

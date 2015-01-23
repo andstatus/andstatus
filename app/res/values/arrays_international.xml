@@ -96,6 +96,16 @@
         <item>365</item>
         <item>3653</item>
     </string-array>
+    <string-array name="preference_ssl_mode_entries">
+        <item>@string/preference_ssl_mode_secure</item>
+        <item>@string/preference_ssl_mode_insecure</item>
+        <item>@string/preference_ssl_mode_misconfigured</item>
+    </string-array>
+    <string-array name="preference_ssl_mode_values">
+        <item>secure</item>
+        <item>insecure</item>
+        <item>misconfigured</item>
+    </string-array>
     <string-array name="log_level_entries">
         <item>INFO</item>
         <item>DEBUG</item>

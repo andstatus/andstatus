@@ -105,7 +105,7 @@
   <string name="error">Error</string>
   <string name="error_invalid_value">Entrada inválida</string>
   <string name="error_twitter_404">La página no se puede encontrar. Por favor, informa de este error!</string>
-  <string name="error_connection_error">Se ha producido un error de conexión. Por favor, informa de este error!</string>
+  <string name="error_connection_error">Error de conexión</string>
   <string name="error_set_username">No se pudo establecer el nombre de usuario para: </string>
   <string name="error_credentials_of_other_user">Estas son las credenciales de otro usuario</string>
   <string name="favorite_created">Creado Favoritos.</string>
@@ -150,7 +150,7 @@
   <string name="label_backup_file">Copia de seguridad</string>
   <string name="label_backup_folder">Carpeta de la copia de seguridad</string>
   <string name="label_conversation">Conversación</string>
-  <string name="label_host">Anfitrión (Host)</string>
+  <string name="label_host">Servidor (nodo)</string>
   <string name="label_manage_origin_systems">Administrar las redes sociales</string>
   <string name="label_origin_list">Redes sociales</string>
   <string name="label_origin_name">Nombre de la red social (único y no se puede cambiar)</string>
@@ -223,10 +223,8 @@
   <string name="options_menu_mentions">Menciones</string>
   <string name="options_menu_search">Buscar</string>
   <string name="origin_settings_action">Red social</string>
-  <string name="preference_allow_misconfigured_ssl_title">Permitir SSL desconfigurada</string>
-  <string name="preference_allow_misconfigured_ssl_summary_off">Estás seguro: tan sólo las conexiones SSL bien configuradas son permitidas</string>
-  <string name="preference_allow_misconfigured_ssl_summary_on">Atención: Tus conexiones no son seguras, gracias a los certificados de seguridad, las incidencias de cualquier servidor son aceptadas. Los protocolos TLS y SNI no están disponibles. Por favor, contacta con el administrador de tu servidor para arreglarlo y entonces desactivar esta opción.</string>
   <string name="preference_debugging_info_in_ui_title">Información de desarrollo en la interfaz de usuario</string>
+  <string name="preference_log_everything_to_file_title">Registrar todo</string>
   <string name="preference_notification_icon_alternative_title">Icono de notificación alternativo</string>
   <string name="preference_notification_icon_alternative_off">Icono de las letras \"&amp;s\"</string>
   <string name="preference_notification_icon_alternative_on">Icono circular</string>
@@ -289,53 +287,36 @@
         finalmente, escribe la respuesta abajo.\n
         Para cancelar una publicación o una contestación, simplemente pulsa en el icono del mensaje con un signo menos \"-\".
 	 </string>
-  <string name="user_manual_page_2"><h2><b>4. Mensajes directos (privados)</b></h2>\n\n
-Abre el menú y pulsa <b>Inicio</b>
-y selecciona <b>Mensajes Directos</b> en la lista.\n
-Para <b>eliminar</b> tu mensaje directo (o tu mensaje público),
-<b>mantén pulsado</b> en él y selecciona <b>Eliminar</b>.\n\n
-Los nuevos mensajes se recuperán con los plazos estipulados si has activado
-<b>Sincronización automática</b>
-en los ajustes de Cuenta y Sincronización de Android.
-En cualquier caso, siempre se puede obtener actualizaciones desde Internet
-utilizando manualmente el comando \"Actualizar\" en el Menú de Opciones.\n\n
+  <string name="user_manual_page_2">
+<h2><b>4. Mensajes directos (o privados)</b></h2>\n\n
+Abre el menú lateral de la derecha, pulsa la línea temporal que estés usando y selecciona  <b>Mensajes directos</b> en la lista.\n
+Para <b>eliminar</b> tu mensaje (público o privado), 
+<b>déjalo pulsado</b> y selecciona <b>Borrar el mensaje</b>.\n\n
+Los nuevos mensajes saldrán en las línas temporales en segundo plano si has activado la <b>Sincronización automática</b> en los ajustes de Android de \"Cuentas\" para esa cuenta en AndStatus. 
+De todos modos, siempre se actualizarán manualmente usando la acción de \"Recargar\" de la barra de acción (la barra superior).\n\n
 <h2><b>5. Menciones</b></h2>\n\n
-Abre el menú, presiona <b>Inicio</b> y luego selecciona <b>Menciones</b>.\n
-Aquí enumerará cada mensaje que menciona su <b>@nombre de usuario</b>
-(o incluso las menciones de en todas tus cuentas AndStatus para una línea
-de tiempo \"combinada\").\n\n
-<h2><b>6. Búsqueda local </b></h2>\n\n
-Esta búsqueda se hace entre los mensajes ya cargados desde Internet.
-Por lo tanto, está disponible incluso sin conexión\n
-1. Con el fin de encontrar cualquier palabra o frase en el texto de los mensajes,
-haga clic en \"Menú\" para abrir el menú de opciones y luego <b>Buscar</b>
-o puede hacer clic en el botón <b>Buscar</b> de su dispositivo.\n
-Si desea que se muestren los mensajes de un usuario específico,
-por favor, busque en \"nombre de usuario\".\n
-Para ver las menciones de un usuario específico, buscar \"@nombre de usuario\".\n\n
-2. Para buscar rápidamente los mensajes de un usuario
-(de un autor o de un remitente de un mensaje seleccionado), seleccione
-\"Mensajes por nombre de usuario\" en el menú de contexto del mensaje. Esto es en realidad
-una especie de búsqueda global (véase más adelante).\n\n
+Pulsa la línea temporal actual en el panel lateral y selecciona <b>Menciones</b>.\n
+Menciones mostrará cada mensaje que menciona a tu <b>@nombre de usuario</b>
+(o incluso alguna de las cuentas en AndStatus para una línea temporal \"combinada\").\n\n
+<h2><b>6. Buscar (búsqueda local)</b></h2>\n\n
+Busca entre todos los mensajes ya descargados de Internet.
+Por tanto, está disponible hasta desconectado.\n
+1.  Para encontrar cualquier palabra o frase en los mensajes de texto,
+selecciona <b>Buscar</b> en la barra de acción o pulsa la tecla de búsqueda de tu dispositivo si la tiene.\n
+Si quieres ver los mensajes de un determinado usuario, 
+por favor, busca su \"nombre de usuario\".\n
+Para ver las menciones de un determinado usuario, busca su \"@nombre de usuario\".\n\n
+2. Para buscar rápidamente los mensajes del usuario que ha mandado un determinado mensaje, selecciona
+\"Mensajes de Nombre de usuario\" en el menú emergente al dejar pulsado el mensaje. 
+Esto también tiene algo que ver con la Búsqueda global (abajo).\n\n
 <h2><b>7. Búsqueda global</b></h2>\n\n
-La función de búsqueda global solicita directamente los resultados de búsqueda
-a los servidores del sistema de Microblogging.
-Por eso se necesita conexión a Internet directa a los sistemas.
-En primer lugar, se le presentará los resultados de la búsqueda local. En paralelo,
-AndStatus hará peticiones de resultados al sistema de microblogging de la cuenta seleccionada
-(o a todos los sistemas de microblogging, si la línea de tiempo es \"combinada\").
-Los resultados de la búsqueda se actualizan sobre la recepción de las respuestas de los servidores.
-En un caso de no haber conexión
-(es decir, sin respuesta de un servidor de un sistema de microblogging)
-verá los resultados de la búsqueda local solamente.\n
-Tenga en cuenta que el sistema pump.io no soporta todavía la búsqueda global.\n
-<b>1.</b> La búsqueda global con una palabra o una frase se puede iniciar
-sólo desde la línea temporal \"Pública\".
-Después del cambio a esta línea de tiempo,
-pulse el icono de la barra de acción (barra superior) con forma de lupa.\n
-<b>2.</b> Otra forma de buscar globalmente los mensajes de un autor o de un remitente
-del mensaje seleccionado es seleccionar
-\"Mensajes por nombre de usuario\" en el menú contextual de este mensaje.</string>
+La Búsqueda global envía una una petición de búsqueda directamente a los servidores de la red social. 
+He aquí por qué una conexión de internet por parte de estas redes es necesaria.\n
+Primero se enseñan los resultados locales, mientras, AndStatus descarga los resultados del servidor de la cuenta seleccionada (o de varios servidores si las líneas temporales están \"combinadas\").
+Los resultados de las búsquedas son actualizados cuando reciben una respuesta por parte de los servidores. En caso de que la conexión fallara (p.e. si no responde el servidor de la red social) sólo verás los resultados de la búsqueda local.\n
+Por favor, ten en cuenta que la red Pump.io no soporta búsquedas globales todavía.\n
+1. La búsqueda global se activa con el icono de \"Buscar globalmente\" en la barra de acción.\n
+2. Otro modo de buscar globalmente mensajes del autor de un determinado mensaje es seleccionando \"Mensajes de Nombre de usuario\" en el menú emergente del mensaje.</string>
   <string name="search_timeline_label">Búsqueda de mensajes, usuarios y hashtags</string>
   <string name="search_timeline_hint">Introduzca un nombre de usuario/frase</string>
   <string name="search_direct_messages_label">Buscar mensajes directos</string>

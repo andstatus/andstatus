@@ -69,8 +69,7 @@ public class MyPreferences {
     public static final String KEY_ABOUT_APPLICATION = "about_application";
     public static final String KEY_COMMANDS_QUEUE = "commands_queue";
 
-    public static final String KEY_ALLOW_MISCONFIGURED_SSL = "allow_misconfigured_ssl";
-    public static final String KEY_ALLOW_INSECURE_SSL = "allow_insecure_ssl";
+    public static final String KEY_SSL_MODE = "ssl_mode";
     public static final String KEY_USE_KITKAT_MEDIA_CHOOSER = "use_kitkat_media_chooser";
     public static final String KEY_DEBUGGING_INFO_IN_UI = "debugging_info_in_ui";
     
@@ -201,20 +200,26 @@ public class MyPreferences {
 
     private static long getLongStoredAsString(String key, long defaultValue) {
         long longValue = defaultValue;
-        SharedPreferences sp = getDefaultSharedPreferences();
-        if (sp != null) {
-            try {
-                long longValueStored = Long.parseLong(sp.getString(key, "0"));
-                if (longValueStored > 0) { 
-                    longValue = longValueStored;
-                }
-            } catch (NumberFormatException e) {
-                MyLog.v(TAG, e);
+        try {
+            long longValueStored = Long.parseLong(getString(key, "0"));
+            if (longValueStored > 0) { 
+                longValue = longValueStored;
             }
+        } catch (NumberFormatException e) {
+            MyLog.v(TAG, e);
         }
         return longValue;
     }
 
+    public static String getString(String key, String defaultValue) {
+        String longValue = defaultValue;
+        SharedPreferences sp = getDefaultSharedPreferences();
+        if (sp != null) {
+            longValue = sp.getString(key, defaultValue);
+        }
+        return longValue;
+    }
+    
     private static final long CONNNECTION_TIMEOUT_DEFAULT_SECONDS = 30;
     public static int getConnectionTimeoutMs() {
         return (int) java.util.concurrent.TimeUnit.SECONDS.toMillis(getLongStoredAsString(

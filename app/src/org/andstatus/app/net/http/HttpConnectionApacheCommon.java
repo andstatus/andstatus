@@ -20,7 +20,6 @@ import android.net.Uri;
 import android.text.TextUtils;
 
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.util.MyLog;
@@ -129,7 +128,7 @@ public class HttpConnectionApacheCommon {
     }
 
     public static HttpClient getHttpClient() {
-        return MyPreferences.getBoolean(MyPreferences.KEY_ALLOW_MISCONFIGURED_SSL, false) ?
+        return SslModeEnum.getPreference() == SslModeEnum.MISCONFIGURED ?
                 MisconfiguredSslHttpClientFactory.getHttpClient() :
                     MyHttpClientFactory.getHttpClient() ;
     }
