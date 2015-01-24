@@ -22,13 +22,14 @@ import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.data.DownloadFile;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.net.http.ConnectionException;
+import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.util.MyLog;
 
 import java.io.File;
 
 abstract class FileDownloader {
     protected final DownloadData data;
-    public boolean mockNetworkError;
+    public Connection connectionMock;
 
     static FileDownloader newForDownloadRow(long rowIdIn) {
         DownloadData data = DownloadData.fromRowId(rowIdIn);
@@ -86,10 +87,7 @@ abstract class FileDownloader {
             MyAccount ma = findBestAccountForDownload();
             MyLog.v(this, "About to download " + data.toString() + "; account:" + ma.getAccountName());
             if (ma.getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED) {
-                ma.getConnection().downloadFile(url, file);
-                if (mockNetworkError) {
-                    throw new ConnectionException(method + ", Mocked IO exception");
-                }
+                ((connectionMock != null) ? connectionMock : ma.getConnection()).downloadFile(url, file);
             } else {
                 data.hardErrorLogged(method + ", No account to download the file", null);
             }

@@ -19,6 +19,7 @@ package org.andstatus.app.context;
 import junit.framework.TestCase;
 
 import android.app.Activity;
+import android.app.Instrumentation;
 import android.app.KeyguardManager;
 import android.content.Context;
 import android.content.Intent;
@@ -78,10 +79,19 @@ public class TestSuite extends TestCase {
         }
         for (int iter=1; iter<6; iter++) {
             MyLog.d(TAG, "Initializing Test Suite, iteration=" + iter);
-            context = testCase.getInstrumentation().getTargetContext();
+            if (testCase == null) {
+                MyLog.e(TAG, "testCase is null.");
+                throw new IllegalArgumentException("testCase is null");
+            }
+            Instrumentation instrumentation = testCase.getInstrumentation();
+            if (instrumentation == null) {
+                MyLog.e(TAG, "testCase.getInstrumentation() is null.");
+                throw new IllegalArgumentException("testCase.getInstrumentation() returned null");
+            }
+            context = instrumentation.getTargetContext();
             if (context == null) {
                 MyLog.e(TAG, "targetContext is null.");
-                throw new IllegalArgumentException("this.getInstrumentation().getTargetContext() returned null");
+                throw new IllegalArgumentException("testCase.getInstrumentation().getTargetContext() returned null");
             }
             MyLog.d(TAG, "Before MyContextHolder.initialize " + iter);
             try {

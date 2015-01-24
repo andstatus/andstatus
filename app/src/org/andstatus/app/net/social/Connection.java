@@ -500,4 +500,8 @@ public abstract class Connection {
     public void downloadFile(String url, File file) throws ConnectionException {
         http.downloadFile(url, file);
     }
+
+    public HttpConnection getHttp() {
+        return http;
+    }
 }

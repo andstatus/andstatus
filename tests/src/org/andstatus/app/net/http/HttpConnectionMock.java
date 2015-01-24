@@ -23,6 +23,8 @@ import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
 import org.json.JSONObject;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -57,6 +59,7 @@ public class HttpConnectionMock extends HttpConnection {
 
     private final List<HttpReadResult> results = new CopyOnWriteArrayList<HttpReadResult>();
     private volatile String responseString = "";
+    private volatile InputStream responseFileStream = null;
     private volatile ConnectionException exception = null;
 
     private volatile String password = "password";
@@ -74,6 +77,10 @@ public class HttpConnectionMock extends HttpConnection {
         this.responseString = responseString;
     }
 
+    public void setResponseFileStream(InputStream inputStream) {
+        this.responseFileStream = inputStream;
+    }
+    
     public void setException(ConnectionException exception) {
         this.exception = exception;
     }
@@ -116,6 +123,13 @@ public class HttpConnectionMock extends HttpConnection {
 
     private void onRequest(String method, HttpReadResult result) {
         result.strResponse = responseString;
+        if (result.fileResult != null && responseFileStream != null) {
+            try {
+                HttpConnectionUtils.readStreamToFile(responseFileStream, result.fileResult);
+            } catch (IOException e) {
+                result.setException(e);
+            }
+        }
         results.add(result);
         MyLog.v(this, method + " num:" + results.size() + "; path:'" + result.getUrl() +"', host:'" 
         + data.originUrl + "', instanceId:" + mInstanceId );

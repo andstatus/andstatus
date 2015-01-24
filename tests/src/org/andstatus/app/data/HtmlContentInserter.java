@@ -25,9 +25,11 @@ import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MyDatabase.Msg;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.origin.Origin;
+import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.MyHtml;
 
 public class HtmlContentInserter extends InstrumentationTestCase {
+    private InstrumentationTestCase testCase;
     private MyAccount ma;
     private Origin origin;
     public static final String HTML_BODY_IMG_STRING = "A message with <b>HTML</b> <i>img</i> tag: " 
@@ -35,9 +37,13 @@ public class HtmlContentInserter extends InstrumentationTestCase {
             + ", <a href='http://www.fsf.org/'>the link in 'a' tag</a> <br/>" 
             + "and a plain text link to the issue 60: https://github.com/andstatus/andstatus/issues/60";
     
+    public HtmlContentInserter(InstrumentationTestCase parent) {
+        testCase = parent;
+    }
+    
     private void mySetup() throws Exception {
         origin = MyContextHolder.get().persistentOrigins().fromName(TestSuite.CONVERSATION_ORIGIN_NAME);
-        assertTrue(TestSuite.CONVERSATION_ORIGIN_NAME + " exists", origin != null);
+        assertTrue(TestSuite.CONVERSATION_ORIGIN_NAME + " exists", origin.getOriginType() != OriginType.UNKNOWN);
         ma = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.CONVERSATION_ACCOUNT_NAME); 
         assertTrue(TestSuite.CONVERSATION_ACCOUNT_NAME + " exists", ma.isValid());
     }
@@ -77,9 +83,10 @@ public class HtmlContentInserter extends InstrumentationTestCase {
 
     private void setHtmlContentAllowed(boolean allowed) throws Exception {
         new Origin.Builder(origin).setHtmlContentAllowed(allowed).save();
-        MyContextHolder.get().persistentOrigins().initialize();
-        MyContextHolder.get().persistentAccounts().initialize();
+        TestSuite.forget();
+        TestSuite.initialize(testCase);
         mySetup();
+        assertEquals(allowed, origin.isHtmlContentAllowed());
     }
     
     private void assertHtmlMessage(MbUser author, String bodyString, String messageOid) throws Exception {

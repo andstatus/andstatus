@@ -17,13 +17,11 @@
 package org.andstatus.app;
 
 import android.content.Context;
-import android.graphics.Point;
 import android.util.AttributeSet;
-import android.view.Display;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.ImageView;
 
+import org.andstatus.app.data.AttachedImageDrawable;
 import org.andstatus.app.util.MyLog;
 
 /**
@@ -32,7 +30,7 @@ import org.andstatus.app.util.MyLog;
  */
 public class AttachedImageView extends ImageView {
     private View referencedView = null;
-    private static final int MAX_HEIGH = 2500;
+    private static final int MAX_HEIGHT = 2500;
 
     public AttachedImageView(Context context) {
         super(context);
@@ -61,15 +59,16 @@ public class AttachedImageView extends ImageView {
         }
         final String method = "onMeasure";
         int refWidthPixels = referencedView.getMeasuredWidth();
-        int height = (int) Math.floor(refWidthPixels * getDrawableHeightToWidthRation());
+        int height = (int) Math.floor(refWidthPixels * getDrawableHeightToWidthRatio());
         MyLog.v(this, method + "; refWidth=" + refWidthPixels + ", height=" + height + ", widthSpec=" + MeasureSpec.toString(widthMeasureSpec));
         int mode = MeasureSpec.EXACTLY;
         if (height == 0) {
-            height = MAX_HEIGH;
+            height = MAX_HEIGHT;
             mode = MeasureSpec.AT_MOST;
         }
-        if (height > 0.75 * getDisplayHeight()) {
-            height = (int) Math.floor(0.75 * getDisplayHeight()) ;
+        if (height > AttachedImageDrawable.MAX_ATTACHED_IMAGE_PART * getDisplayHeight()) {
+            height = (int) Math.floor(AttachedImageDrawable.MAX_ATTACHED_IMAGE_PART
+                    * getDisplayHeight());
         }
         getLayoutParams().height = height;
         int measuredWidth;
@@ -79,17 +78,11 @@ public class AttachedImageView extends ImageView {
         setMeasuredDimension(measuredWidth, measuredHeight);
     }
     
-    /**
-     * See http://stackoverflow.com/questions/1016896/how-to-get-screen-dimensions
-     */
     public int getDisplayHeight() {
-        Display display = ((WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
-        Point size = new Point();
-        display.getSize(size);
-        return size.y;        
+        return AttachedImageDrawable.getDisplaySize(getContext()).y;
     }
-    
-    private float getDrawableHeightToWidthRation() {
+
+    private float getDrawableHeightToWidthRatio() {
         float ratio = 9f / 19f;
         if (getDrawable() != null) {
             int width = getDrawable().getIntrinsicWidth();

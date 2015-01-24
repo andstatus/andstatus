@@ -37,7 +37,7 @@ public class MessageShareTest extends InstrumentationTestCase {
     }
 
     public void testShareHtml() throws Exception {
-        new HtmlContentInserter().insertHtml();
+        new HtmlContentInserter(this).insertHtml();
         
         Origin origin = MyContextHolder.get().persistentOrigins().fromName(TestSuite.CONVERSATION_ORIGIN_NAME);
         assertTrue(TestSuite.CONVERSATION_ORIGIN_NAME + " exists", origin != null);

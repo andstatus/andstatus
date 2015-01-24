@@ -27,6 +27,8 @@ import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MessageInserter;
+import org.andstatus.app.net.http.ConnectionException;
+import org.andstatus.app.net.social.ConnectionTwitterGnuSocialMock;
 import org.andstatus.app.net.social.MbAttachment;
 import org.andstatus.app.net.social.MbMessage;
 import org.andstatus.app.util.MyLog;
@@ -83,7 +85,9 @@ public class AttachmentDownloaderTest extends InstrumentationTestCase {
 
     private long loadAndAssertStatusForRow(long downloadRowId, DownloadStatus status, boolean mockNetworkError) throws IOException {
         FileDownloader loader = FileDownloader.newForDownloadRow(downloadRowId);
-        loader.mockNetworkError = mockNetworkError;
+        if (mockNetworkError) {
+            loader.connectionMock = new ConnectionTwitterGnuSocialMock(new ConnectionException("Mocked IO exception"));
+        }
         CommandData commandData = new CommandData(CommandEnum.FETCH_AVATAR, null);
         loader.load(commandData);
 

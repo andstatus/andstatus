@@ -29,6 +29,8 @@ import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyDatabase.Download;
 import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.data.MyProvider;
+import org.andstatus.app.net.http.ConnectionException;
+import org.andstatus.app.net.social.ConnectionTwitterGnuSocialMock;
 import org.andstatus.app.service.FileDownloader;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
@@ -149,7 +151,9 @@ public class AvatarDownloaderTest extends InstrumentationTestCase {
 
     private long loadAndAssertStatusForMa(DownloadStatus status, boolean mockNetworkError) throws IOException {
         FileDownloader loader = new AvatarDownloader(ma.getUserId());
-        loader.mockNetworkError = mockNetworkError;
+        if (mockNetworkError) {
+            loader.connectionMock = new ConnectionTwitterGnuSocialMock(new ConnectionException("Mocked IO exception"));
+        }
         CommandData commandData = new CommandData(CommandEnum.FETCH_AVATAR, null);
         loader.load(commandData);
 
