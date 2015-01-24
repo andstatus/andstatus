@@ -37,7 +37,10 @@ public class ConnectionException extends IOException {
         CREDENTIALS_OF_OTHER_USER,
         NO_CREDENTIALS_FOR_HOST, 
         UNAUTHORIZED, 
-        FORBIDDEN, INTERNAL_SERVER_ERROR, BAD_GATEWAY, SERVICE_UNAVAILABLE, MOVED;
+        FORBIDDEN, INTERNAL_SERVER_ERROR, BAD_GATEWAY, SERVICE_UNAVAILABLE, MOVED,
+        REQUEST_ENTITY_TOO_LARGE,
+        CLIENT_ERROR,
+        SERVER_ERROR;
         
         public static StatusCode fromResponseCode(int responseCode) {
             switch (responseCode) {
@@ -57,6 +60,8 @@ public class ConnectionException extends IOException {
                     return FORBIDDEN;
                 case 404:
                     return NOT_FOUND;
+                case 413:
+                    return REQUEST_ENTITY_TOO_LARGE;
                 case 500:
                     return INTERNAL_SERVER_ERROR;
                 case 502:
@@ -64,6 +69,11 @@ public class ConnectionException extends IOException {
                 case 503:
                     return SERVICE_UNAVAILABLE;
                 default:
+                    if (responseCode >= 500) {
+                        return SERVER_ERROR;
+                    } else if (responseCode >= 400) {
+                        return CLIENT_ERROR;
+                    }
                     return UNKNOWN;
             }
         }
