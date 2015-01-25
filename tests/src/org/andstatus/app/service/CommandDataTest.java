@@ -18,10 +18,12 @@ package org.andstatus.app.service;
 
 import android.test.InstrumentationTestCase;
 
+import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MyDatabase.OidEnum;
 import org.andstatus.app.data.MyProvider;
+import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 
 import java.util.Queue;
@@ -116,6 +118,26 @@ public class CommandDataTest extends InstrumentationTestCase {
         assertEquals(CommandEnum.GET_STATUS, queue.poll().getCommand());
         assertEquals(CommandEnum.SEARCH_MESSAGE, queue.poll().getCommand());
         assertEquals(CommandEnum.AUTOMATIC_UPDATE, queue.poll().getCommand());
+    }
+    
+    public void testSummary() {
+        followUnfollowSummary(CommandEnum.FOLLOW_USER);
+        followUnfollowSummary(CommandEnum.STOP_FOLLOWING_USER);
+    }
+
+    private void followUnfollowSummary(CommandEnum command) {
+        MyAccount ma = MyContextHolder.get().persistentAccounts()
+                .fromAccountName(TestSuite.CONVERSATION_ACCOUNT_NAME);
+        assertTrue(ma.isValid());
+        long userId = MyProvider.oidToId(OidEnum.USER_OID, ma.getOrigin().getId(),
+                TestSuite.CONVERSATION_MEMBER_USER_OID);
+        CommandData data = new CommandData(command, 
+                TestSuite.CONVERSATION_ACCOUNT_NAME, userId);
+        String summary = data.toCommandSummary(MyContextHolder.get());
+        String msgLog = command.name() + "; Summary:'" + summary + "'";
+        MyLog.v(this, msgLog);
+        assertTrue(msgLog, summary.contains(command.getTitle(MyContextHolder.get(),
+                ma.getAccountName()) + " " + MyProvider.userIdToName(userId)));
     }
     
     @Override

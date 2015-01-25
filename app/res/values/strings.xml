@@ -65,6 +65,8 @@
   <string name="combined_timeline_on">combined</string>
   <string name="combined_timeline_off_account">for</string>
   <string name="combined_timeline_off_origin">at</string>
+  <string name="command_follow_user">Follow</string>
+  <string name="command_stop_following_user">Stop following</string>
   <string name="created_label">Created</string>
   <string name="dialog_summary_acquiring_an_access_token">Please wait while AndStatus is exchanging an OAuth Request token for Access token</string>
   <string name="dialog_summary_acquiring_a_request_token">Please wait while AndStatus is acquiring a request token for OAuth</string>

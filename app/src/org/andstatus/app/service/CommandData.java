@@ -593,37 +593,37 @@ public class CommandData implements Comparable<CommandData> {
     }
 
     private String toUserFrindlyForm(MyContext myContext, boolean summaryOnly) {
-        StringBuilder builder = new StringBuilder(toShortCommandName(myContext) + " ");
+        StringBuilder builder = new StringBuilder(toShortCommandName(myContext));
         if (!summaryOnly) {
             if (mInForeground) {
-                builder.append(", foreground ");
+                I18n.appendWithSpace(builder, ", foreground");
             }
             if (mManuallyLaunched) {
-                builder.append(", manual ");
+                I18n.appendWithSpace(builder, ", manual");
             }
         }
         switch (command) {
             case FETCH_AVATAR:
-                builder.append(myContext.context().getText(R.string.combined_timeline_off_account)
-                        + " ");
-                builder.append(MyProvider.userIdToName(itemId));
+                I18n.appendWithSpace(builder, 
+                        myContext.context().getText(R.string.combined_timeline_off_account));
+                I18n.appendWithSpace(builder, MyProvider.userIdToName(itemId));
                 if (myContext.persistentAccounts().getDistinctOriginsCount() > 1) {
                     long originId = MyProvider.userIdToLongColumnValue(MyDatabase.User.ORIGIN_ID,
                             itemId);
-                    builder.append(" "
-                            + myContext.context().getText(R.string.combined_timeline_off_origin)
-                            + " ");
-                    builder.append(myContext.persistentOrigins().fromId(originId).getName());
+                    I18n.appendWithSpace(builder, 
+                            myContext.context().getText(R.string.combined_timeline_off_origin));
+                    I18n.appendWithSpace(builder, 
+                            myContext.persistentOrigins().fromId(originId).getName());
                 }
                 break;
             case FETCH_ATTACHMENT:
             case UPDATE_STATUS:
-                builder.append("\"");
+                I18n.appendWithSpace(builder, "\"");
                 builder.append(trimConditionally(
                         bundle.getString(IntentExtra.EXTRA_MESSAGE_TEXT.key), summaryOnly));
                 builder.append("\"");
                 if (getMediaUri() != null) {
-                    builder.append(" ("
+                    I18n.appendWithSpace(builder, "("
                             + MyContextHolder.get().context().getText(R.string.label_with_media)
                                     .toString());
                     if (!summaryOnly) {
@@ -638,50 +638,52 @@ public class CommandData implements Comparable<CommandData> {
             case FETCH_TIMELINE:
                 if (!TextUtils.isEmpty(accountName)) {
                     if (timelineType == TimelineTypeEnum.USER) {
-                        builder.append(MyProvider.userIdToName(itemId) + " ");
+                        I18n.appendWithSpace(builder, MyProvider.userIdToName(itemId));
                     }
-                    builder.append(timelineType.getPrepositionForNotCombinedTimeline(myContext
+                    I18n.appendWithSpace(builder, 
+                            timelineType.getPrepositionForNotCombinedTimeline(myContext
                             .context()));
                     MyAccount ma = myContext.persistentAccounts().fromAccountName(accountName);
                     if (ma == null) {
-                        builder.append(" ('" + accountName + "' ?)");
+                        I18n.appendWithSpace(builder, "('" + accountName + "' ?)");
                     } else {
-                        builder.append(" "
-                                + TimelineActivity.buildAccountButtonText(ma.getUserId()));
+                        I18n.appendWithSpace(builder,
+                                TimelineActivity.buildAccountButtonText(ma.getUserId()));
                     }
                 }
+                break;
+            case FOLLOW_USER:
+            case STOP_FOLLOWING_USER:
+                I18n.appendWithSpace(builder, MyProvider.userIdToName(itemId));
                 break;
             case SEARCH_MESSAGE:
-                builder.append("\"");
+                I18n.appendWithSpace(builder, "\"");
                 builder.append(trimConditionally(getSearchQuery(), summaryOnly));
-                builder.append("\" ");
-                if (!TextUtils.isEmpty(accountName)) {
-                    builder.append(myContext.context().getText(
-                            R.string.combined_timeline_off_origin)
-                            + " ");
-                    MyAccount ma = myContext.persistentAccounts().fromAccountName(accountName);
-                    builder.append(ma != null ? ma.getOrigin().getName() : "?");
-                }
+                builder.append("\"");
+                appendAccountName(myContext, builder);
                 break;
             default:
-                if (!TextUtils.isEmpty(accountName)) {
-                    builder.append(timelineType.getPrepositionForNotCombinedTimeline(myContext
-                            .context())
-                            + " ");
-                    if (timelineType.atOrigin()) {
-                        MyAccount ma = myContext.persistentAccounts().fromAccountName(accountName);
-                        builder.append(ma != null ? ma.getOrigin().getName() : "?");
-                    } else {
-                        builder.append(accountName);
-                    }
-                }
+                appendAccountName(myContext, builder);
                 break;
         }
         if (!summaryOnly) {            
-            builder.append(" \n" + createdDateWithLabel(myContext.context())); 
-            builder.append(" \n" + getResult().toSummary());
+            builder.append("\n" + createdDateWithLabel(myContext.context())); 
+            builder.append("\n" + getResult().toSummary());
         }
         return builder.toString();
+    }
+
+    private void appendAccountName(MyContext myContext, StringBuilder builder) {
+        if (!TextUtils.isEmpty(accountName)) {
+            I18n.appendWithSpace(builder, 
+                    timelineType.getPrepositionForNotCombinedTimeline(myContext.context()));
+            if (timelineType.atOrigin()) {
+                MyAccount ma = myContext.persistentAccounts().fromAccountName(accountName);
+                I18n.appendWithSpace(builder, ma != null ? ma.getOrigin().getName() : "?");
+            } else {
+                I18n.appendWithSpace(builder, accountName);
+            }
+        }
     }
 
     public String createdDateWithLabel(Context context) {

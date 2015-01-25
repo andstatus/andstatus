@@ -59,8 +59,8 @@ public enum CommandEnum {
     CREATE_FAVORITE("create-favorite", R.string.menu_item_favorite, 0, ConnectionRequired.ONLINE), 
     DESTROY_FAVORITE("destroy-favorite", R.string.menu_item_destroy_favorite, 0, ConnectionRequired.ONLINE),
 
-    FOLLOW_USER("follow-user", R.string.menu_item_follow_user, 0, ConnectionRequired.ONLINE), 
-    STOP_FOLLOWING_USER("stop-following-user", R.string.menu_item_stop_following_user, 0, ConnectionRequired.ONLINE),
+    FOLLOW_USER("follow-user", R.string.command_follow_user, 0, ConnectionRequired.ONLINE), 
+    STOP_FOLLOWING_USER("stop-following-user", R.string.command_stop_following_user, 0, ConnectionRequired.ONLINE),
 
     /**
      * This command is for sending both public and direct messages

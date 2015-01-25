@@ -53,6 +53,7 @@
   <string name="button_overflow">Переполнение</string>
   <string name="button_restore">Восстановить</string>
   <string name="button_save">Сохранить</string>
+  <string name="button_skip">Пропустить</string>
   <string name="button_send">Отправить</string>
   <string name="cannot_send_empty_message">Невозможно отправить пустое сообщение.</string>
   <string name="category_title_preference_appearance">Внешний вид</string>
@@ -64,6 +65,8 @@
   <string name="combined_timeline_on">объединённая</string>
   <string name="combined_timeline_off_account">для</string>
   <string name="combined_timeline_off_origin">в</string>
+  <string name="command_follow_user">Следовать за</string>
+  <string name="command_stop_following_user">Перестать следовать за</string>
   <string name="created_label">Создан</string>
   <string name="dialog_summary_acquiring_an_access_token">Пожалуйста подождите пока AndStatus обменяет токен OAuth запроса на токен доступа</string>
   <string name="dialog_summary_acquiring_a_request_token">Пожалуйста подождите завершения получения токена запроса для OAuth</string>
@@ -176,7 +179,7 @@
   <string name="menu_item_destroy_status">Удалить сообщение</string>
   <string name="menu_item_direct_message">Личное сообщение</string>
   <string name="menu_item_favorite">Добавить в избранное</string>
-  <string name="menu_item_follow_user">Следить за \"%1s\"</string>
+  <string name="menu_item_follow_user">Следовать за \"%1s\"</string>
   <string name="menu_item_view_image">Посмотреть картинку</string>
   <string name="menu_item_open_message_permalink">Открыть в Интернете</string>
   <string name="menu_item_reply">Ответить</string>
@@ -184,7 +187,7 @@
   <string name="menu_item_reblog_twitter">Ретвитнуть</string>
   <string name="menu_item_resend">Отправить повторно</string>
   <string name="menu_item_share">Поделиться</string>
-  <string name="menu_item_stop_following_user">Не следить за \"%1s\"</string>
+  <string name="menu_item_stop_following_user">Перестать следовать за \"%1s\"</string>
   <string name="menu_item_user_messages">Сообщения \"%1s\"</string>
   <string name="menu_item_view_profile">Посмотреть профиль</string>
   <string name="message_sent">Ваше сообщение отправлено.</string>
