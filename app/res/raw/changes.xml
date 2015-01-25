@@ -26,6 +26,18 @@
 		</subtitle>
     </header>
 
+    <release android:versionName="14.3" android:versionCode="120"
+        versionDate="2014-01-25"
+        versionTitle="Extra large pictures don't crash any more">
+        <changes>
+            <change>Fixed: Crash during downloading large pictures
+                <a href="https://github.com/andstatus/andstatus/issues/179">#179</a></change>
+            </changes>
+            <change>#UX improvement: When after upgrade Change log is shown, 
+                the button below it is &quot;Skip&quot; now, 
+                not &quot;Get started&quot; as during the first launch 
+                <a href="https://github.com/andstatus/andstatus/issues/218">#218</a></change>
+    </release>
     <release android:versionName="14.2" android:versionCode="119"
         versionDate="2014-01-23"
         versionTitle="Bug fixes and connection to Quitter.Zone">

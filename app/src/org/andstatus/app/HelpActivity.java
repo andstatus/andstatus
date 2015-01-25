@@ -102,6 +102,14 @@ public class HelpActivity extends Activity implements SwipeInterface {
             mIsFirstActivity = getIntent().getBooleanExtra(EXTRA_IS_FIRST_ACTIVITY, mIsFirstActivity);
         }
 
+        showVersionText();
+        showChangeLog();
+        showRestoreButton();
+        showGetStartedButton();
+        setupHelpFlipper();
+    }
+
+    private void showVersionText() {
         TextView versionText = (TextView) findViewById(R.id.splash_application_version);
         try {
             PackageManager pm = getPackageManager();
@@ -110,10 +118,6 @@ public class HelpActivity extends Activity implements SwipeInterface {
         } catch (NameNotFoundException e) {
             MyLog.e(this, "Unable to obtain package information", e);
         }
-
-        // Show the Change log
-        Xslt.toWebView(this, R.id.help_changelog, R.raw.changes, R.raw.changes2html);
-        
         versionText.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -122,7 +126,13 @@ public class HelpActivity extends Activity implements SwipeInterface {
                 startActivity(intent);
             }
         });
+    }
 
+    private void showChangeLog() {
+        Xslt.toWebView(this, R.id.help_changelog, R.raw.changes, R.raw.changes2html);
+    }
+    
+    private void showRestoreButton() {
         Button restoreButton = (Button) findViewById(R.id.button_restore);
         if (MyContextHolder.get().isReady() && MyContextHolder.get().persistentAccounts().isEmpty()) {
             restoreButton.setOnClickListener(new OnClickListener() {
@@ -135,7 +145,9 @@ public class HelpActivity extends Activity implements SwipeInterface {
         } else {
             restoreButton.setVisibility(View.GONE);
         }
-        
+    }
+
+    private void showGetStartedButton() {
         //The button is always visible in order to avoid a User's confusion,
         final Button getStarted = (Button) findViewById(R.id.button_help_get_started);
         getStarted.setOnClickListener(new OnClickListener() {
@@ -152,8 +164,9 @@ public class HelpActivity extends Activity implements SwipeInterface {
                 finish();
             }
         });
-
-        setupHelpFlipper();
+        if (MyContextHolder.get().persistentAccounts().getCurrentAccount().isValid()) {
+            getStarted.setText(R.string.button_skip);
+        }
     }
 
     private void setupHelpFlipper() {

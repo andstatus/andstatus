@@ -15,6 +15,7 @@ package org.andstatus.app.service;
  * limitations under the License.
  */
 
+import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.test.InstrumentationTestCase;
 
@@ -82,7 +83,10 @@ public class LargeImageTest extends InstrumentationTestCase {
     }
 
     private void loadingTest(DownloadData dd) {
-        new AttachedImageDrawable(dd.getRowId(), dd.getFilename())
+        Drawable drawable = new AttachedImageDrawable(dd.getRowId(), dd.getFilename())
                 .getDrawable();
+        Rect bounds = drawable.getBounds();
+        assertTrue("Not wide already " + bounds.width(), bounds.width() < 4000 && bounds.width() > 10);
+        assertTrue("Not high already " + bounds.height(), bounds.height() < 4000 && bounds.height() > 10);
     }
 }

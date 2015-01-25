@@ -53,6 +53,7 @@
   <string name="button_overflow">Overflow</string>
   <string name="button_restore">Restore</string>
   <string name="button_save">Save</string>
+  <string name="button_skip">Skip</string>
   <string name="button_send">Send</string>
   <string name="cannot_send_empty_message">Cannot send empty message.</string>
   <string name="category_title_preference_appearance">Appearance</string>
