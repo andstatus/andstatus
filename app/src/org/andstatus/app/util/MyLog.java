@@ -255,6 +255,10 @@ public class MyLog {
         return tag;
     }
 
+    public static boolean isLoggable(int level) {
+        return isLoggable(APPTAG, level);
+    }
+    
     /**
      * 
      * @param tag If tag is empty then {@link #APPTAG} is used

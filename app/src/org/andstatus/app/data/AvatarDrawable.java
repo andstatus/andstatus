@@ -53,7 +53,7 @@ public class AvatarDrawable {
     
     public Drawable getDrawable() {
         if (downloadFile.exists()) {
-            return Drawable.createFromPath(downloadFile.getFile().getAbsolutePath());
+            return AttachedImageDrawable.drawableFromPath(this, downloadFile.getFile().getAbsolutePath());
         } 
         AvatarData.newForUser(userId).requestDownload();
         return getDefaultDrawable();
