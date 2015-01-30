@@ -385,6 +385,10 @@ public class MyService extends Service {
             if ( mExecutor != null && (mExecutor.getStatus() != Status.RUNNING)) {
                 removeExecutor(logMessageBuilder);
             }
+            if ( mExecutor != null && !isExecutorReallyWorkingNow()) {
+                logMessageBuilder.append(" Killing stalled Executor " + mExecutor);
+                removeExecutor(logMessageBuilder);
+            }
             if (mExecutor != null) {
                 logMessageBuilder.append(" There is an Executor already " + mExecutor);
             } else {
@@ -486,6 +490,7 @@ public class MyService extends Service {
             stopDelayed(true);
         }
         MyLog.d(this, "Service destroyed");
+        MyLog.setNextLogFileName();
     }
     
     /**

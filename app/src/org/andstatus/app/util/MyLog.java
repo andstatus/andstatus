@@ -365,7 +365,13 @@ public class MyLog {
     
     static boolean writeStringToFile(String string, String filename, boolean append, boolean logged) {
         boolean ok = false;
-        File file = getLogFile(filename, logged);
+        if (TextUtils.isEmpty(filename)) {
+            if (logged) {
+                MyLog.v("writeStringToFile", "Empy filename");
+            }
+            return false;
+        }
+        File file = getFileInLogDir(filename, logged);
         Writer out = null;
         try {
             out = new BufferedWriter(new OutputStreamWriter(
@@ -382,7 +388,7 @@ public class MyLog {
         return ok;
     }
 
-    public static File getLogFile(String filename, boolean logged) {
+    public static File getFileInLogDir(String filename, boolean logged) {
         File dir1 = getLogDir(logged);
         if (dir1 == null) { 
             return null; 
@@ -465,8 +471,7 @@ public class MyLog {
     
     private static Object logFileWriterLock = new Object();
     static void logToFile(int logLevel, String tag, String msg, Throwable tr) {
-        String filename = getLogFilename();
-        if (filename == null) {
+        if(!isLogToFileEnabled()) {
             return;
         }
         StringBuilder builder = new StringBuilder();
@@ -487,9 +492,26 @@ public class MyLog {
             builder.append(getStackTrace(tr));
         }
         builder.append("\n");
-        synchronized (logFileWriterLock) {
-            writeStringToFile(builder.toString(), filename, true, false);
+        witeRawStringToLogFile(builder);
+    }
+
+    private static void witeRawStringToLogFile(StringBuilder builder)
+    {
+        synchronized (logFileWriterLock)
+        {
+            writeStringToFile(builder.toString(), getMostNewLogFileName(),
+                              true, false);
         }
+    }
+    
+    private static String getMostNewLogFileName() {
+        String filename = getLogFilename();
+        if (filename != null && 
+                !getFileInLogDir(filename, false).exists()) {
+            setNextLogFileName(true);
+            filename = getLogFilename();
+        }
+        return filename;
     }
     
     public static String getLogFilename() {

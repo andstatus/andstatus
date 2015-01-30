@@ -20,7 +20,7 @@
  -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
 	package="org.andstatus.app" 
-	android:versionName="14.3" android:versionCode="120"
+	android:versionName="14.4-snapshot" android:versionCode="120"
 	android:installLocation="internalOnly">
 
 	<uses-sdk android:minSdkVersion="16" android:targetSdkVersion="21" />

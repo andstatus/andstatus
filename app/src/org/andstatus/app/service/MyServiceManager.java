@@ -64,19 +64,13 @@ public class MyServiceManager extends BroadcastReceiver {
         String action = intent.getAction();
         if (action.equals(MyService.ACTION_SERVICE_STATE)) {
             MyContextHolder.initialize(context, this);
-            boolean justStopped = false;
             synchronized (mServiceState) {
                 stateQueuedTime = System.nanoTime();
                 waitingForServiceState = false;
-                MyServiceState stateOld = mServiceState;
                 mServiceState = MyServiceState.load(intent
                         .getStringExtra(IntentExtra.EXTRA_SERVICE_STATE.key));
-                justStopped = mServiceState==MyServiceState.STOPPED && stateOld != MyServiceState.STOPPED;
             }
             MyLog.d(this, "Notification received: Service state=" + mServiceState);
-            if (justStopped) {
-                MyLog.setNextLogFileName();
-            }
         } else if ("android.intent.action.BOOT_COMPLETED".equals(action)) {
             MyLog.d(this, "Trying to start service on boot");
             sendCommand(CommandData.getEmpty());            

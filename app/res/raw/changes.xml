@@ -26,6 +26,20 @@
 		</subtitle>
     </header>
 
+    <release android:versionName="14.4" android:versionCode="121"
+        versionDate="2014-01-31"
+        versionTitle="Stalled connectios are killed">
+        <changes>
+            <change>Fixed: Sometime a commection doesn't end after
+                predefined timeout. It this case special "Heartbeat"
+                process kills command execution after 10
+                minutes without a progress.<br/>
+                This fix should help Users, who encountered syncyng stop, 
+                and also thouse complaing about large
+                power consuption (due to a long executuin freeze...)
+                </change>
+        </changes>
+    </release>
     <release android:versionName="14.3" android:versionCode="120"
         versionDate="2014-01-26"
         versionTitle="Extra large pictures don't crash any more">
