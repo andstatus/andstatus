@@ -46,14 +46,15 @@ public class MyLogTest  extends InstrumentationTestCase {
         final String method = "testLogFilename";
         MyLog.setLogToFile(true);
         assertFalse(TextUtils.isEmpty(MyLog.getLogFilename()));
-        File file = MyLog.getLogFile(MyLog.getLogFilename(), true);
         MyLog.v(this, method);
+        File file = MyLog.getFileInLogDir(MyLog.getLogFilename(), true);
         assertTrue(file.exists());
         
         MyLog.setLogToFile(false);
         assertTrue(TextUtils.isEmpty(MyLog.getLogFilename()));
         file.delete();
         MyLog.v(this, method);
+        assertEquals(MyLog.getLogFilename(), null);
         assertFalse(file.exists());
     }
 }

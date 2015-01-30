@@ -305,8 +305,7 @@ public class MyBackupAgent extends BackupAgent {
             return;
         }
         backupDescriptor.getLogger().logProgress("External storage is not available");
-        MyPreferences.getDefaultSharedPreferences().edit()
-                .putBoolean(MyPreferences.KEY_USE_EXTERNAL_STORAGE, false).commit();
+        MyPreferences.putBoolean(MyPreferences.KEY_USE_EXTERNAL_STORAGE, false);
     }
 
     private void assertNextHeader(MyBackupDataInput data, String key) throws IOException {

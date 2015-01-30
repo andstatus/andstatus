@@ -37,7 +37,10 @@
                 This fix should help Users, who encountered syncyng stop, 
                 and also thouse complaing about large
                 power consuption (due to a long executuin freeze...)
-                </change>
+            </change>
+            <change>Implemented: On a first launch the system tries to store data on SD
+                <a href="https://github.com/andstatus/andstatus/issues/216">#216</a>
+            </change>
         </changes>
     </release>
     <release android:versionName="14.3" android:versionCode="120"

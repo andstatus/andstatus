@@ -38,6 +38,7 @@ import org.andstatus.app.service.ConnectionRequired;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
 
+import java.io.File;
 import java.util.Locale;
 
 /**
@@ -83,6 +84,7 @@ public final class MyContextImpl implements MyContext {
         MyContextImpl newMyContext = getCreator(context, initializerName);
         if ( newMyContext.mContext != null) {
             MyLog.v(TAG, method + " Starting initialization by " + initializerName);
+            tryToSetExternalStorageOnFirstLaunch();
             newMyContext.mPreferencesChangeTime = MyPreferences.getPreferencesChangeTime();
             MyDatabase newDb = new MyDatabase(newMyContext.mContext);
             try {
@@ -108,6 +110,17 @@ public final class MyContextImpl implements MyContext {
         return newMyContext;
     }
     
+    private void tryToSetExternalStorageOnFirstLaunch() {
+        File databaseFile = MyPreferences.getDatabasePath(MyDatabase.DATABASE_NAME, null);
+        if (databaseFile.exists()) {
+            // This is not a first launch
+            return;
+        }
+        boolean isExternalAvailable = MyPreferences.isWritableExternalStorageAvailable(null);
+        MyLog.i(this, "External storage is " + (isExternalAvailable ? "" : "un") + "available");
+        MyPreferences.putBoolean(MyPreferences.KEY_USE_EXTERNAL_STORAGE, isExternalAvailable);
+    }
+
     @Override
     public String toString() {
         return  MyLog.objTagToString(this) +  " initialized by " + mInitializedBy + "; state=" + mState +  "; " + (mContext == null ? "no context" : "context=" + mContext.getClass().getName());
