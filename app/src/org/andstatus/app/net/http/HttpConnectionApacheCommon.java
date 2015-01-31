@@ -30,7 +30,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.StatusLine;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.entity.UrlEncodedFormEntityHacked;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
@@ -106,11 +106,11 @@ public class HttpConnectionApacheCommon {
             throws ConnectionException, UnsupportedEncodingException {
         List<NameValuePair> nvFormParams = HttpConnectionApacheCommon.jsonToNameValuePair(formParams);
         if (nvFormParams != null) {
-            UrlEncodedFormEntity formEntity = new UrlEncodedFormEntity(nvFormParams, HTTP.UTF_8);
+            HttpEntity formEntity = new UrlEncodedFormEntityHacked(nvFormParams, HTTP.UTF_8);
             postMethod.setEntity(formEntity);
         }
     }
-
+    
     /**
      * @throws ConnectionException
      */

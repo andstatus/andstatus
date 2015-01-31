@@ -40,6 +40,7 @@ public enum ContextMenuItem {
     ACT_AS(18),
     OPEN_MESSAGE_PERMALINK(19),
     VIEW_IMAGE(20),
+    OPEN_CONVERSATION(21),
     UNKNOWN(100);
 
     private final int id;

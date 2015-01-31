@@ -41,6 +41,9 @@
             <change>Implemented: On a first launch the system tries to store data on SD
                 <a href="https://github.com/andstatus/andstatus/issues/216">#216</a>
             </change>
+            <change>Fixed: Unable to send a message with an asterisk (*) on Twitter
+                <a href="https://github.com/andstatus/andstatus/issues/219">#219</a>
+            </change>
         </changes>
     </release>
     <release android:versionName="14.3" android:versionCode="120"

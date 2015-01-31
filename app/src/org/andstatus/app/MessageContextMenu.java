@@ -35,10 +35,12 @@ import static org.andstatus.app.ContextMenuItem.SHARE;
 import static org.andstatus.app.ContextMenuItem.STOP_FOLLOWING_AUTHOR;
 import static org.andstatus.app.ContextMenuItem.STOP_FOLLOWING_SENDER;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.net.Uri;
 import android.text.TextUtils;
 import android.view.ContextMenu;
 import android.view.MenuItem;
@@ -188,6 +190,7 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
             }
 
             OPEN_MESSAGE_PERMALINK.addTo(menu, menuItemId++, R.string.menu_item_open_message_permalink);
+            ContextMenuItem.OPEN_CONVERSATION.addTo(menu, menuItemId++, R.string.menu_item_open_conversation);
             
             if (msg.isSender) {
                 // This message is by current User, hence we may delete it.
@@ -314,6 +317,21 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
                 return true;
             case OPEN_MESSAGE_PERMALINK:
                 return new MessageShare(messageList.getActivity(), mCurrentMsgId).openPermalink();
+            case OPEN_CONVERSATION:
+                Uri uri = MyProvider.getTimelineMsgUri(ma.getUserId(), messageList.getTimelineType(), true, mCurrentMsgId);
+                String action = messageList.getActivity().getIntent().getAction();
+                if (Intent.ACTION_PICK.equals(action) || Intent.ACTION_GET_CONTENT.equals(action)) {
+                    if (MyLog.isLoggable(this, MyLog.DEBUG)) {
+                        MyLog.d(this, "onItemClick, setData=" + uri);
+                    }
+                    messageList.getActivity().setResult(Activity.RESULT_OK, new Intent().setData(uri));
+                } else {
+                    if (MyLog.isLoggable(this, MyLog.DEBUG)) {
+                        MyLog.d(this, "onItemClick, startActivity=" + uri);
+                    }
+                    messageList.getActivity().startActivity(new Intent(Intent.ACTION_VIEW, uri));
+                }
+                return true;
             case SENDER_MESSAGES:
                 senderId = MyProvider.msgIdToUserId(MyDatabase.Msg.SENDER_ID, mCurrentMsgId);
                 if (senderId != 0) {
