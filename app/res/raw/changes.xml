@@ -44,6 +44,11 @@
             <change>Fixed: Unable to send a message with an asterisk (*) on Twitter
                 <a href="https://github.com/andstatus/andstatus/issues/219">#219</a>
             </change>
+            <change>Added another message context menu item: &quot;Open Conversation&quot;,
+                which effectively duplicates single click on a message, 
+                but looks like may help newbies to find, where Conversation view is.
+                <a href="https://github.com/andstatus/andstatus/issues/209">#209</a>
+            </change>
         </changes>
     </release>
     <release android:versionName="14.3" android:versionCode="120"

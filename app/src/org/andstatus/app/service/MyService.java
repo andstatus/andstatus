@@ -26,6 +26,7 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.notification.CommandsQueueNotifier;
+import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.TriState;
@@ -40,6 +41,7 @@ import android.os.AsyncTask;
 import android.os.AsyncTask.Status;
 import android.os.IBinder;
 import android.os.PowerManager;
+
 import net.jcip.annotations.GuardedBy;
 
 /**
@@ -266,16 +268,22 @@ public class MyService extends Service {
                 AppWidgets.updateWidgets(MyContextHolder.get());
                 widgetsInitialized = true;
             }
-            synchronized(heartBeatLock) {
-                if (mHeartBeat != null && mHeartBeat.getStatus() == Status.RUNNING) {
-                    mHeartBeat.cancel(true);
-                }
-                mHeartBeat = new HeartBeat();
-                mHeartBeat.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-            }
+            reviveHeartBeat();
         }
         if (changed) {
             MyServiceBroadcaster.newInstance(MyContextHolder.get(), getServiceState()).broadcast();
+        }
+    }
+    private void reviveHeartBeat() {
+        synchronized(heartBeatLock) {
+            if (mHeartBeat != null && !mHeartBeat.isReallyWorking()) {
+                mHeartBeat.cancel(true);
+                mHeartBeat = null;
+            }
+            if (mHeartBeat == null) {
+                mHeartBeat = new HeartBeat();
+                mHeartBeat.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            }
         }
     }
 
@@ -800,6 +808,7 @@ public class MyService extends Service {
             MyLog.v(this, method);
             currentlyExecuting = null;
             currentlyExecutingSince = 0;
+            reviveHeartBeat();
             startStopExecution();
         }
         
@@ -858,16 +867,20 @@ public class MyService extends Service {
     
     private class HeartBeat extends AsyncTask<Void, Long, Void> {
         private static final long HEARTBEAT_PERIOD_SECONDS = 11;
+        private final long mInstanceId = InstanceId.next();
+        private final long workingSince = MyLog.uniqueCurrentTimeMS();
+        private volatile long previousBeat = workingSince;
+        private volatile long mIteration = 0;
 
         @Override
         protected Void doInBackground(Void... arg0) {
-            MyLog.v(this, "Started");
+            MyLog.v(this, "Started instance " + mInstanceId);
             String breakReason = "";
             for (long iteration = 1; iteration < 10000; iteration++) {
                 try {
                     synchronized(heartBeatLock) {
-                        if (mHeartBeat != this) {
-                            breakReason = "Other instance found";
+                        if (mHeartBeat != this && mHeartBeat.isReallyWorking() ) {
+                            breakReason = "Other instance found: " + mHeartBeat;
                             break;
                         }
                         if (isCancelled()) {
@@ -889,17 +902,43 @@ public class MyService extends Service {
                 }
                 publishProgress(iteration);
             }
-            MyLog.v(this, "Ended; " + breakReason);
+            MyLog.v(this, "Ended; " + this + " - " + breakReason);
             synchronized(heartBeatLock) {
-                mHeartBeat = null;
+                if (mHeartBeat == this) {
+                    mHeartBeat = null;
+                }
             }
             return null;
         }
 
         @Override
         protected void onProgressUpdate(Long... values) {
-            MyLog.v(this, "onProgressUpdate; " + values[0]);
+            mIteration = values[0];
+            previousBeat = MyLog.uniqueCurrentTimeMS();
+            MyLog.v(this, "onProgressUpdate; " + this);
             startStopExecution();
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder builder = new StringBuilder();
+            builder.append("HeartBeat [id=");
+            builder.append(mInstanceId);
+            builder.append(", since=");
+            builder.append(RelativeTime.secondsAgo(workingSince));
+            builder.append("sec, iteration=");
+            builder.append(mIteration);
+            builder.append("]");
+            return builder.toString();
+        }
+        
+        public boolean isReallyWorking() {
+            if (getStatus() != Status.RUNNING
+                    || RelativeTime.moreSecondsAgoThan(previousBeat,
+                            HEARTBEAT_PERIOD_SECONDS + 3)) {
+                return false;
+            }
+            return true;
         }
     }
     
