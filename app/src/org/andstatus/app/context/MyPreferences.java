@@ -411,13 +411,19 @@ public class MyPreferences {
         loadTheme(activity);
         activity.setContentView(layoutId);
         if (getBoolean(MyPreferences.KEY_TRUE_BLACK, false) && !isThemeLight()) {
-            setVeiwToTrueBlack(activity, R.id.myLayoutParent);
-            setVeiwToTrueBlack(activity, android.R.id.list);
+            setViewToTrueBlack(activity.findViewById(R.id.myLayoutParent));
+            setViewToTrueBlack(activity.findViewById(android.R.id.list));
+        }
+    }
+    
+    public static void setTrueBlack(View parentView) {
+        if (getBoolean(MyPreferences.KEY_TRUE_BLACK, false) && !isThemeLight()) {
+            setViewToTrueBlack(parentView.findViewById(R.id.myLayoutParent));
+            setViewToTrueBlack(parentView.findViewById(android.R.id.list));
         }
     }
 
-    private static void setVeiwToTrueBlack(Activity activity, int id) {
-        View view = activity.findViewById(id);
+    private static void setViewToTrueBlack(View view) {
         if (view != null) {
             view.setBackground(null);
             view.setBackgroundColor(Color.BLACK);

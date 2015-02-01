@@ -257,6 +257,9 @@
   <string name="reltime_seconds_ago_formats_2">{0} seconds ago</string>
   <string name="reltime_just_now">just now</string>
   <string name="reltime_years_ago">more than a year ago</string>
+  <string name="remove_account_menu_item">Remove account</string>
+  <string name="remove_account_dialog_title">Remove account?</string>
+  <string name="remove_account_dialog_text">Removing the account will delete all its data from the device. Continue?</string>
   <string name="resolve_view">View Message</string>
   <string name="splash_button_learn_more">Learn More</string>
   <string name="splash_button_get_started">Get Started</string>

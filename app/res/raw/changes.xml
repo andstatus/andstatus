@@ -49,6 +49,10 @@
                 but looks like may help newbies to find, where Conversation view is.
                 <a href="https://github.com/andstatus/andstatus/issues/209">#209</a>
             </change>
+            <change>Added &quot;Remove account&quot; action to the Account settings view
+                as an alternative way to delete AndStatus accounts.
+                <a href="https://github.com/andstatus/andstatus/issues/223">#223</a>
+            </change>
         </changes>
     </release>
     <release android:versionName="14.3" android:versionCode="120"
