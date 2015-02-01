@@ -67,8 +67,11 @@ public class AttachedImageDrawable {
         Bitmap bitmap = BitmapFactory
                 .decodeFile(path, calculateScaling(objTag, getImageSize(path)));
         if (MyLog.isLoggable(MyLog.VERBOSE)) {
-            MyLog.v(objTag, "Loaded bitmap " + bitmap.getWidth() + "x" + bitmap.getHeight()
+            MyLog.v(objTag, (bitmap == null ? "Failed to load bitmap" : "Loaded bitmap " + bitmap.getWidth() + "x" + bitmap.getHeight())
                     + " '" + path + "'");
+        }
+        if (bitmap == null) {
+            return null;
         }
         return new BitmapDrawable(MyContextHolder.get().context().getResources(), bitmap);
     }
