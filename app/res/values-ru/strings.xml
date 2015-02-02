@@ -181,6 +181,7 @@
   <string name="menu_item_favorite">Добавить в избранное</string>
   <string name="menu_item_follow_user">Следовать за \"%1s\"</string>
   <string name="menu_item_view_image">Посмотреть картинку</string>
+  <string name="menu_item_open_conversation">Открыть в окне обсуждения</string>
   <string name="menu_item_open_message_permalink">Открыть в Интернете</string>
   <string name="menu_item_reply">Ответить</string>
   <string name="menu_item_reblog">Пересказать</string>
@@ -256,6 +257,9 @@
   <string name="reltime_seconds_ago_formats_2">{0} секунду назад</string>
   <string name="reltime_just_now">только что</string>
   <string name="reltime_years_ago">больше года назад</string>
+  <string name="remove_account_menu_item">Удалить аккаунт</string>
+  <string name="remove_account_dialog_title">Удалить аккаунт?</string>
+  <string name="remove_account_dialog_text">При удалении аккаунта (учётной записи пользователя) из устройства будут удалены все данные, относящиеся к данному аккаунту. Продолжить?</string>
   <string name="resolve_view">Посмотреть сообщение</string>
   <string name="splash_button_learn_more">Узнать больше</string>
   <string name="splash_button_get_started">Начать работу</string>

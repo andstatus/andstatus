@@ -50,7 +50,6 @@
   <string name="button_create_message_twitter">Tweet</string>
   <string name="button_delete">Löschen</string>
   <string name="button_discard">Verwerfen</string>
-  <string name="button_hide">Verstecken</string>
   <string name="button_overflow">Überlauf</string>
   <string name="button_restore">Wiederherstellen</string>
   <string name="button_save">Speichern</string>
@@ -105,7 +104,6 @@
   <string name="empty_in_parenthesis">(leer)</string>
   <string name="error">Fehler</string>
   <string name="error_twitter_404">Seite konnte nicht gefunden werden. Bitte melde diesen Fehler!</string>
-  <string name="error_connection_error">Ein Verbindungsfehler ist aufgetreten. Bitte melde diesen Fehler!</string>
   <string name="error_set_username">Konnte den Usernamen nicht verwenden: </string>
   <string name="error_credentials_of_other_user">Dieser Name ist bereits vergeben</string>
   <string name="favorite_created">Favorit erstellt</string>
@@ -221,9 +219,6 @@
   <string name="options_menu_mentions">Erwähnungen</string>
   <string name="options_menu_search">Suche</string>
   <string name="origin_settings_action">Microblogging System</string>
-  <string name="preference_allow_misconfigured_ssl_title">Falsch konfiguriertes SSL zulassen</string>
-  <string name="preference_allow_misconfigured_ssl_summary_off">Du bist sicher: nur korrekt konfigurierte SSL-Verbindungen sind erlaubt</string>
-  <string name="preference_allow_misconfigured_ssl_summary_on">Warnung: Deine Verbindungen sind nicht sicher, weil Sicherheitszertifikate für jeden beliebigen Host angenommen werden. TLS- und SNI-Protokolle sind nicht verfügbar. Bitte melde dich bei deinem Server-Administrator, damit er dieses Problem behebt und diese Option deaktiviert</string>
   <string name="preference_use_kitkat_media_chooser_title">KitKat Medienauswahl verwenden</string>
   <string name="reltime_days_ago_formats_1">Gestern</string>
   <string name="reltime_days_ago_formats_2">vor {0} Tagen</string>

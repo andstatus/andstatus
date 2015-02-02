@@ -48,7 +48,6 @@
   <string name="button_create_message_twitter">Tweet</string>
   <string name="button_delete">Ta bort</string>
   <string name="button_discard">Kasta</string>
-  <string name="button_hide">Dölj</string>
   <string name="button_restore">Återställ</string>
   <string name="button_save">Spara</string>
   <string name="button_send">Skicka</string>
@@ -200,7 +199,6 @@
   <string name="options_menu_mentions">Omnämningar</string>
   <string name="options_menu_search">Sök</string>
   <string name="origin_settings_action">Mikrobloggs-system</string>
-  <string name="preference_allow_misconfigured_ssl_title">Tillåt felkonfigurerad SSL</string>
   <string name="reltime_days_ago_formats_1">igår</string>
   <string name="reltime_days_ago_formats_2">{0} dagar sedan</string>
   <string name="reltime_hours_ago_formats_1">en timme sedan</string>
