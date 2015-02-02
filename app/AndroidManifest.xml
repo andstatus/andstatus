@@ -241,7 +241,7 @@
         <activity android:name=".service.QueueViewer"
             android:label="@string/title_preference_notifications_queue"
             android:exported="true"
-            android:parentActivityName=".context.MySettingsActivity">
+            android:parentActivityName=".TimelineActivity">
         </activity>
     </application>
 </manifest>

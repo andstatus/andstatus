@@ -72,6 +72,7 @@ import org.andstatus.app.service.MyServiceEvent;
 import org.andstatus.app.service.MyServiceListener;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.service.MyServiceReceiver;
+import org.andstatus.app.service.QueueViewer;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
@@ -500,8 +501,8 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
             return true;
         }
         switch (item.getItemId()) {
-            case R.id.preferences_menu_id:
-                startMyPreferenceActivity();
+            case R.id.global_search_menu_id:
+                onSearchRequested(true);
                 break;
             case R.id.search_menu_id:
                 onSearchRequested();
@@ -509,8 +510,11 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
             case R.id.reload_menu_item:
                 manualReload(false, true);
                 break;
-            case R.id.global_search_menu_id:
-                onSearchRequested(true);
+            case R.id.commands_queue_id:
+                startActivity(new Intent(getActivity(), QueueViewer.class));
+                break;
+            case R.id.preferences_menu_id:
+                startMyPreferenceActivity();
                 break;
             case R.id.help_menu_id:
                 onHelp();

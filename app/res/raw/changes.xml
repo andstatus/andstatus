@@ -53,6 +53,9 @@
                 as an alternative way to delete AndStatus accounts.
                 <a href="https://github.com/andstatus/andstatus/issues/223">#223</a>
             </change>
+            <change>UX improvement: Added &quot;Commands in the Queue&quot; item to Action bars of 
+                a Timeline and a Conversation views.
+            </change>
         </changes>
     </release>
     <release android:versionName="14.3" android:versionCode="120"
@@ -61,7 +64,7 @@
         <changes>
             <change>Fixed: Crash during downloading large pictures
                 <a href="https://github.com/andstatus/andstatus/issues/179">#179</a></change>
-            <change>#UX improvement: When after upgrade Change log is shown, 
+            <change>UX improvement: When after upgrade Change log is shown, 
                 the button below it is &quot;Skip&quot; now, 
                 not &quot;Get started&quot; as during the first launch 
                 <a href="https://github.com/andstatus/andstatus/issues/218">#218</a></change>

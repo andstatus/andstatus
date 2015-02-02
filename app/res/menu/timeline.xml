@@ -59,6 +59,11 @@
         android:title="@string/options_menu_reload">
     </item>
     <item
+        android:id="@+id/commands_queue_id"
+        android:showAsAction="never"
+        android:title="@string/title_preference_notifications_queue">
+    </item>
+    <item
         android:id="@+id/preferences_menu_id"
         android:alphabeticShortcut="p"
         android:icon="@drawable/ic_menu_preferences"

@@ -43,6 +43,7 @@ import org.andstatus.app.service.MyServiceEvent;
 import org.andstatus.app.service.MyServiceListener;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.service.MyServiceReceiver;
+import org.andstatus.app.service.QueueViewer;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.UriUtils;
@@ -299,6 +300,9 @@ public class ConversationActivity extends Activity implements MyServiceListener,
         switch (item.getItemId()) {
             case R.id.reload_menu_item:
                 showConversation();
+                break;
+            case R.id.commands_queue_id:
+                startActivity(new Intent(getActivity(), QueueViewer.class));
                 break;
             default:
                 break;
