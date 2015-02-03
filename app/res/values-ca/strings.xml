@@ -125,6 +125,10 @@
   <string name="label_conversation">Conversa</string>
   <string name="label_host">Amfitrió</string>
   <string name="label_origin_list">Sistemes de microblogging</string>
+  <string name="label_origin_system">Sistema de microblogging</string>
+  <string name="label_origin_type">Tipus de sistema de Microblogging</string>
+  <string name="label_restore">Restaura les dades de l\'aplicació des d\'una còpia de seguretat</string>
+  <string name="label_upgrading">Actualització en curs. Espera.</string>
   <string name="loading">S\'està carregant...</string>
   <string name="message">Missatge</string>
   <string name="message_twitter">Piulet</string>
@@ -180,6 +184,7 @@
   <string name="preference_ssl_mode_secure_summary">Estàs segur: només es permeten les connexions segures SSL</string>
   <string name="preference_ssl_mode_secure">SSL segur</string>
   <string name="preference_ssl_mode_insecure">SSL insegur</string>
+  <string name="preference_notification_icon_alternative_title">Icona de notificació alternativa</string>
   <string name="preference_true_black_title">Fons negre autèntic</string>
   <string name="reltime_days_ago_formats_1">ahir</string>
   <string name="reltime_days_ago_formats_2">fa {0} dies</string>
@@ -212,6 +217,7 @@
   <string name="summary_preference_notifications_mentions_off">Sense notificacions per les mencions</string>
   <string name="summary_preference_notifications_mentions_on">Rebràs notificacions de noves mencions</string>
   <string name="summary_preference_oauth_off">Autenticació bàsica</string>
+  <string name="summary_preference_show_avatars_on">Es mostraran els avatars dels usuaris</string>
   <string name="summary_preference_ssl_off">Sense SSL</string>
   <string name="summary_preference_ssl_on">SSL habilitat</string>
   <string name="summary_preference_theme_size">Selecciona la mida del text</string>
@@ -246,9 +252,12 @@
   <string name="title_preference_enter_sends_message">La tecla de retorn envia el missatge</string>
   <string name="title_preference_frequency">Freqüència de sincronització</string>
   <string name="title_preference_history_size">Mida de l\'historial</string>
+  <string name="title_preference_notification_sound">To de notificació</string>
   <string name="title_preference_notifications">Notificacions</string>
+  <string name="title_preference_notifications_enabled">Habilita les notificacions</string>
   <string name="title_preference_notifications_messages">Missatges directes nous</string>
   <string name="title_preference_notifications_mentions">Mencions noves</string>
+  <string name="title_preference_notifications_queue">Ordres en la cua</string>
   <string name="title_preference_oauth">OAuth</string>
   <string name="title_preference_origin_system">{0}, tipus: {1}</string>
   <string name="title_preference_password">Contrasenya</string>
