@@ -1,6 +1,6 @@
 <?xml-stylesheet type='text/xsl' href='changes2html.xsl' encoding="utf-8"?>
 <!-- 
-	Copyright (C) 2012-2014 yvolk (Yuri Volkov), http://yurivolkov.com
+	Copyright (C) 2012-2015 yvolk (Yuri Volkov), http://yurivolkov.com
 	
 	Licensed under the Apache License, Version 2.0 (the "License");
 	you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@
     </header>
 
     <release android:versionName="14.4" android:versionCode="121"
-        versionDate="2014-01-31"
+        versionDate="2014-02-03"
         versionTitle="Stalled connectios are killed">
         <changes>
             <change>Fixed: Sometime a commection doesn't end after

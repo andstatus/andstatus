@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- 
-    Copyright (c) 2010-2014 yvolk (Yuri Volkov), http://yurivolkov.com
+    Copyright (c) 2010-2015 yvolk (Yuri Volkov), http://yurivolkov.com
 	Copyright (C) 2008 Torgny Bjers
 	
 	Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,7 +20,7 @@
  -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
 	package="org.andstatus.app" 
-	android:versionName="14.4-snapshot" android:versionCode="120"
+	android:versionName="14.4" android:versionCode="121"
 	android:installLocation="internalOnly">
 
 	<uses-sdk android:minSdkVersion="16" android:targetSdkVersion="21" />

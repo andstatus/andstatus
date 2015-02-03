@@ -79,7 +79,6 @@
   <string name="dialog_title_timeline_loading">Rafraîchir la timeline&#8230;</string>
   <string name="error">Erreur</string>
   <string name="error_twitter_404">Page non trouvée. Merci de rapporter cette erreur !</string>
-  <string name="error_connection_error">Une erreur est survenue lors de la connexion. Merci de rapporter cette erreur !</string>
   <string name="error_set_username">Impossible d\'enregistrer l\'identifiant pour : </string>
   <string name="error_credentials_of_other_user">Ce sont les identifiants d\'un autre utilisateur</string>
   <string name="favorite_created">Marqué comme favori.</string>

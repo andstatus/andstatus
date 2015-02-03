@@ -181,6 +181,7 @@
   <string name="menu_item_favorite">Favorito</string>
   <string name="menu_item_follow_user">Seguir a \"%1s\"</string>
   <string name="menu_item_view_image">Ver imagen</string>
+  <string name="menu_item_open_conversation">Abrir conversación</string>
   <string name="menu_item_open_message_permalink">Ver en navegador</string>
   <string name="menu_item_reply">Responder</string>
   <string name="menu_item_reblog">Repetir</string>
@@ -256,6 +257,9 @@
   <string name="reltime_seconds_ago_formats_2">hace {0} segundos</string>
   <string name="reltime_just_now">en este momento</string>
   <string name="reltime_years_ago">hace más de un año</string>
+  <string name="remove_account_menu_item">Eliminar cuenta</string>
+  <string name="remove_account_dialog_title">¿Eliminar cuenta?</string>
+  <string name="remove_account_dialog_text">Al eliminar la cuenta se borrará toda la información en el dispositivo. ¿Desea continuar?</string>
   <string name="resolve_view">Ver mensaje</string>
   <string name="splash_button_learn_more">Más información</string>
   <string name="splash_button_get_started">Comenzar</string>
