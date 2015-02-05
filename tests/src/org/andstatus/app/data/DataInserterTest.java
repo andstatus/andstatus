@@ -278,7 +278,7 @@ public class DataInserterTest extends InstrumentationTestCase {
                 .getInstrumentation().getContext());
 
         MyAccount ma = MyContextHolder.get().persistentAccounts()
-                .findFirstMyAccountByOriginId(message.originId);
+                .findFirstSucceededMyAccountByOriginId(message.originId);
         DataInserter di = new DataInserter(ma);
         long messageId = di.insertOrUpdateMsg(message);
         assertTrue("Message added", messageId != 0);

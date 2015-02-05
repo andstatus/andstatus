@@ -55,7 +55,6 @@ import android.widget.TextView;
 
 import org.andstatus.app.account.AccountSelector;
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MySettingsActivity;
 import org.andstatus.app.context.MyPreferences;
@@ -445,8 +444,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     public boolean onPrepareOptionsMenu(Menu menu) {
         mOptionsMenu = menu;
         MyAccount ma = MyContextHolder.get().persistentAccounts().getCurrentAccount();
-        boolean enableReload = isTimelineCombined()
-                || ma.getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED;
+        boolean enableReload = isTimelineCombined() || ma.isValidAndVerified();
         MenuItem item = menu.findItem(R.id.reload_menu_item);
         item.setEnabled(enableReload);
         item.setVisible(enableReload);
@@ -653,7 +651,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     public static String buildAccountButtonText(long myAccountUserId) {
         MyAccount ma = MyContextHolder.get().persistentAccounts().fromUserId(myAccountUserId);
         String accountButtonText = ma.shortestUniqueAccountName();
-        if (ma.getCredentialsVerified() != CredentialsVerificationStatus.SUCCEEDED) {
+        if (!ma.isValidAndVerified()) {
             accountButtonText = "(" + accountButtonText + ")";
         }
         return accountButtonText;
@@ -1054,7 +1052,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
             if (!ma.isValid() || ma.getOriginId() != originId) {
                 ma = MyContextHolder.get().persistentAccounts().fromUserId(userId);
                 if (!ma.isValid()) {
-                    ma = MyContextHolder.get().persistentAccounts().findFirstMyAccountByOriginId(originId);
+                    ma = MyContextHolder.get().persistentAccounts().findFirstSucceededMyAccountByOriginId(originId);
                 }
             }
         }

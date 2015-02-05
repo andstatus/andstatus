@@ -101,7 +101,19 @@
 	        android:layout_width="wrap_content"
 	        android:layout_height="wrap_content"
 	        android:text="@string/label_allow_html_content" />
-        
+	    	    	    	
+	    <CheckBox
+	        android:id="@+id/in_combined_global_search"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:text="@string/in_combined_global_search_label" />
+	    	    	    	
+	    <CheckBox
+	        android:id="@+id/in_combined_public_reload"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:text="@string/in_combined_public_reload_label" />
+	    	    
     </LinearLayout>
     </ScrollView>
 

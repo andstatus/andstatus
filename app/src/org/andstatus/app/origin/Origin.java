@@ -70,6 +70,12 @@ public class Origin {
      */
     private int textLimit = OriginType.TEXT_LIMIT_MAXIMUM;
 
+    
+    /** Include this system in Global Search while in Combined Timeline */
+    private boolean inCombinedGlobalSearch = true;
+    /** Include this system in Reload while in Combined Public Timeline */
+    private boolean inCombinedPublicReload = true;
+    
     public OriginType getOriginType() {
         return originType;
     }
@@ -226,6 +232,14 @@ public class Origin {
         return allowHtml;
     }
 
+    public boolean isInCombinedGlobalSearch() {
+        return inCombinedGlobalSearch;
+    }
+
+    public boolean isInCombinedPublicReload() {
+        return inCombinedPublicReload;
+    }
+    
     public boolean hasChildren() {
         long count = 0;
         Cursor cursor = null;
@@ -334,6 +348,10 @@ public class Origin {
             if (originType1.textLimitDefault == 0) {
                 origin.setTextLimit(c.getInt(c.getColumnIndex(MyDatabase.Origin.TEXT_LIMIT)));
             }
+            origin.inCombinedGlobalSearch = (c.getInt(c
+                    .getColumnIndex(MyDatabase.Origin.IN_COMBINED_GLOBAL_SEARCH)) != 0);
+            origin.inCombinedPublicReload = (c.getInt(c
+                    .getColumnIndex(MyDatabase.Origin.IN_COMBINED_PUBLIC_RELOAD)) != 0);
         }
 
         public Builder(Origin original) {
@@ -350,6 +368,8 @@ public class Origin {
             cloned.allowHtml = original.allowHtml;
             cloned.shortUrlLength = original.shortUrlLength;
             cloned.setTextLimit(original.getTextLimit());
+            cloned.inCombinedGlobalSearch = original.inCombinedGlobalSearch;
+            cloned.inCombinedPublicReload = original.inCombinedPublicReload;
             return cloned;
         }
 
@@ -389,8 +409,9 @@ public class Origin {
             return this;
         }
 
-        void setSslMode(SslModeEnum mode) {
+        public Builder setSslMode(SslModeEnum mode) {
             origin.sslMode = mode;
+            return this;
         }
         
         public Builder setHtmlContentAllowed(boolean allowHtml) {
@@ -398,6 +419,16 @@ public class Origin {
             return this;
         }
 
+        public Builder setInCombinedGlobalSearch(boolean inCombinedGlobalSearch) {
+            origin.inCombinedGlobalSearch = inCombinedGlobalSearch;
+            return this;
+        }
+
+        public Builder setInCombinedPublicReload(boolean inCombinedPublicReload) {
+            origin.inCombinedPublicReload = inCombinedPublicReload;
+            return this;
+        }
+        
         public Builder save(MbConfig config) {
             origin.shortUrlLength = config.shortUrlLength;
             origin.setTextLimit(config.textLimit);
@@ -430,6 +461,8 @@ public class Origin {
             values.put(MyDatabase.Origin.ALLOW_HTML, origin.allowHtml);
             values.put(MyDatabase.Origin.SHORT_URL_LENGTH, origin.shortUrlLength);
             values.put(MyDatabase.Origin.TEXT_LIMIT, origin.getTextLimit());
+            values.put(MyDatabase.Origin.IN_COMBINED_GLOBAL_SEARCH, origin.inCombinedGlobalSearch);
+            values.put(MyDatabase.Origin.IN_COMBINED_PUBLIC_RELOAD, origin.inCombinedPublicReload);
 
             boolean changed = false;
             if (origin.id == 0) {

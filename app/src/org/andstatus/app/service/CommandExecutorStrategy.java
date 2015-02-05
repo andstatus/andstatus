@@ -19,7 +19,6 @@ package org.andstatus.app.service;
 import android.text.TextUtils;
 
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.net.http.ConnectionException;
@@ -88,8 +87,7 @@ class CommandExecutorStrategy implements CommandExecutorParent {
                     } else {
                         strategy = new CommandExecutorAllAccounts();
                     }
-                } else if (execContext.getMyAccount().getCredentialsVerified() 
-                        == CredentialsVerificationStatus.SUCCEEDED) {
+                } else if (execContext.getMyAccount().isValidAndVerified()) {
                     switch (execContext.getCommandData().getCommand()) {
                         case AUTOMATIC_UPDATE:
                         case FETCH_TIMELINE:

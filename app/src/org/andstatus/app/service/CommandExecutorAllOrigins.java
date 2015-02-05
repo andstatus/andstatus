@@ -1,9 +1,10 @@
 package org.andstatus.app.service;
 
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.origin.Origin;
+import org.andstatus.app.util.MyLog;
 
 /**
  * Execute command for one account of each origin
@@ -14,16 +15,34 @@ class CommandExecutorAllOrigins extends CommandExecutorStrategy {
     @Override
     public void execute() {
         for (Origin origin : MyContextHolder.get().persistentOrigins().collection()) {
-            MyAccount acc = MyContextHolder.get().persistentAccounts().findFirstMyAccountByOriginId(origin.getId());
-            if ( !acc.isValid() || acc.getCredentialsVerified() != CredentialsVerificationStatus.SUCCEEDED) {
-                execContext.getResult().incrementNumAuthExceptions();
-                if (acc.isValid()) {
-                    execContext.getResult().setMessage(acc.getAccountName() + " account verification failed");
-                }
-            } else {
-                execContext.setMyAccount(acc);
-                CommandExecutorStrategy.executeStep(execContext, this);
+            MyAccount ma = MyContextHolder.get().persistentAccounts().findFirstSucceededMyAccountByOriginId(origin.getId());
+            if (!ma.isValidAndVerified()) {
+                MyLog.v(this, "Origin '" + origin.getName() + "' skipped as no valid authenticated accounts");
+                continue;
+            } 
+            switch (execContext.getCommandData().getCommand()) {
+                case SEARCH_MESSAGE:
+                    if (!origin.isInCombinedGlobalSearch()) {
+                        MyLog.v(this, "Origin '" + origin.getName() + "' skipped from global search");
+                        continue;
+                    }
+                    if (!ma.isGlobalSearchSupported()) {
+                        MyLog.v(this, "Origin '" + origin.getName() + "' skipped as global search not supported");
+                        continue;
+                    }
+                    break;
+                case FETCH_TIMELINE:
+                    if (execContext.getCommandData().getTimelineType() == TimelineTypeEnum.PUBLIC &&
+                            !origin.isInCombinedPublicReload()) {
+                        MyLog.v(this, "Origin '" + origin.getName() + "' skipped from pulic timeline reload");
+                        continue;
+                    }
+                    break;
+                default:
+                    break;
             }
+            execContext.setMyAccount(ma);
+            CommandExecutorStrategy.executeStep(execContext, this);
             if (isStopping()) {
                 if ( !execContext.getResult().hasError()) {
                     execContext.getResult().incrementNumIoExceptions();

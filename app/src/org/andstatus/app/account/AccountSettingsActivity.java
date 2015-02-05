@@ -356,7 +356,7 @@ public class AccountSettingsActivity extends Activity {
             passwordEditable.setText(ma.getPassword());
         }
         passwordEditable.setVisibility(isNeeded ? View.VISIBLE : View.GONE);
-        passwordEditable.setEnabled(ma.getCredentialsVerified()!=CredentialsVerificationStatus.SUCCEEDED);
+        passwordEditable.setEnabled(!ma.isValidAndVerified());
         passwordEditable.addTextChangedListener(textWatcher);
     }
 
@@ -427,7 +427,7 @@ public class AccountSettingsActivity extends Activity {
     private void showVerifyCredentialsButton() {
         TextView textView = showTextView(
                 R.id.verify_credentials,
-                state.getAccount().getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED
+                state.getAccount().isValidAndVerified()
                         ? R.string.title_preference_verify_credentials
                         : R.string.title_preference_verify_credentials_failed,
                 state.builder.isPersistent());

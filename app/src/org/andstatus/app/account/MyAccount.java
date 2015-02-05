@@ -320,8 +320,7 @@ public final class MyAccount {
 
         private Account getNewOrExistingAndroidAccount() {
             Account androidAccount = myAccount.getExisingAndroidAccount();
-            if ((androidAccount == null)
-                    && (myAccount.getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED)) {
+            if ((androidAccount == null) && myAccount.isValidAndVerified()) {
                 try {
                     /**
                      * Now add this account to the Account Manager See {@link
@@ -379,7 +378,7 @@ public final class MyAccount {
          */
         public boolean verifyCredentials(boolean reVerify) throws ConnectionException {
             boolean ok = false;
-            if (!reVerify && myAccount.getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED) {
+            if (!reVerify && myAccount.isValidAndVerified()) {
                 ok = true;
             }
             if (!ok) {
@@ -649,6 +648,10 @@ public final class MyAccount {
         return credentialsVerified;
     }
  
+    public boolean isValidAndVerified() {
+        return isValid() && getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED;        
+    }
+    
     private boolean isPersistent() {
         return accountData.isPersistent();
     }
@@ -869,13 +872,15 @@ public final class MyAccount {
         try {
             members += "id:" + userId + ",";
             members += "oid:" + userOid + ",";
-            if (isPersistent()) {
-                members += "persistent,";
+            if (!isPersistent()) {
+                members += "not persistent,";
             }
             if (isOAuth()) {
                 members += "OAuth,";
             }
-            members += "verified:" + getCredentialsVerified().name() + ",";
+            if (getCredentialsVerified() != CredentialsVerificationStatus.SUCCEEDED) {
+                members += "verified:" + getCredentialsVerified().name() + ",";
+            }
             if (getCredentialsPresent()) {
                 members += "credentialsPresent:true,";
             }

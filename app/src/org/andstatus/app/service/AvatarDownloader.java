@@ -36,7 +36,7 @@ public class AvatarDownloader extends FileDownloader {
     @Override
     protected MyAccount findBestAccountForDownload() {
         long originId = MyProvider.userIdToLongColumnValue(MyDatabase.User.ORIGIN_ID, data.userId);
-        return MyContextHolder.get().persistentAccounts().findFirstMyAccountByOriginId(originId);
+        return MyContextHolder.get().persistentAccounts().findFirstSucceededMyAccountByOriginId(originId);
     }
 
     @Override

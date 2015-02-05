@@ -239,11 +239,11 @@ public class PersistentAccounts {
      * @param originId
      * @return Invalid account if not found
      */
-    public MyAccount findFirstMyAccountByOriginId(long originId) {
+    public MyAccount findFirstSucceededMyAccountByOriginId(long originId) {
         MyAccount ma = null;
         for (MyAccount persistentAccount : mAccounts.values()) {
             if (originId==0 || persistentAccount.getOriginId() == originId) {
-                if ( persistentAccount.getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED) {
+                if (persistentAccount.isValidAndVerified()) {
                     ma = persistentAccount;
                     break;
                 }
@@ -272,7 +272,7 @@ public class PersistentAccounts {
             ma = fromUserId(secondUserIdPreferred);
         }
         if (!ma.isValid() || (originId != 0 && originId != ma.getOriginId())) {
-           ma = findFirstMyAccountByOriginId(originId); 
+           ma = findFirstSucceededMyAccountByOriginId(originId); 
         }
         if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
             MyLog.v(this, method + "; msgId=" + messageId +"; userId=" + firstUserId 

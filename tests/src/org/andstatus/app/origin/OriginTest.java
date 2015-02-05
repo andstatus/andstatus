@@ -89,46 +89,55 @@ public class OriginTest extends InstrumentationTestCase {
         String hostOrUrl = "sn" + seed + ".example.org";
         boolean isSsl = true;
         boolean allowHtml = true;
-        createOneOrigin(originType, originName, hostOrUrl, isSsl, SslModeEnum.SECURE, allowHtml);
+        boolean inCombinedGlobalSearch = true;
+        boolean inCombinedPublicReload = true;
+        
+        createOneOrigin(originType, originName, hostOrUrl, isSsl, SslModeEnum.SECURE, allowHtml,
+                inCombinedGlobalSearch, inCombinedPublicReload);
         createOneOrigin(originType, originName, "https://" + hostOrUrl
-                + "/somepath", isSsl, SslModeEnum.INSECURE, allowHtml);
+                + "/somepath", isSsl, SslModeEnum.INSECURE, allowHtml, 
+                inCombinedGlobalSearch, false);
         createOneOrigin(originType, originName, "https://" + hostOrUrl
-                + "/pathwithslash/", isSsl, SslModeEnum.MISCONFIGURED, allowHtml);
+                + "/pathwithslash/", isSsl, SslModeEnum.MISCONFIGURED, allowHtml,
+                false, inCombinedPublicReload);
         isSsl = false;
-        Origin.Builder builder = createOneOrigin(originType, originName,
-                hostOrUrl, isSsl, SslModeEnum.SECURE, allowHtml);
-        Origin origin = builder.build();
+        Origin.Builder builder2 = createOneOrigin(originType, originName,
+                hostOrUrl, isSsl, SslModeEnum.SECURE, allowHtml, 
+                inCombinedGlobalSearch, inCombinedPublicReload);
+        Origin origin = builder2.build();
         assertEquals("New origin has no children", false, origin.hasChildren());
-        assertEquals("Origin deleted", true, builder.delete());
+        assertEquals("Origin deleted", true, builder2.delete());
     }
 
     public static Builder createOneOrigin(OriginType originType,
-            String originName, String hostOrUrl, boolean isSsl, 
-            SslModeEnum sslMode, boolean allowHtml) {
+            String originName, String hostOrUrl, boolean isSsl,
+            SslModeEnum sslMode, boolean allowHtml, 
+            boolean inCombinedGlobalSearch, boolean inCombinedPublicReload) {
         Origin.Builder builder = new Origin.Builder(originType);
-        builder.setName(originName);
-        builder.setHostOrUrl(hostOrUrl);
-        builder.setSsl(isSsl);
-        builder.setSslMode(sslMode);
-        builder.setHtmlContentAllowed(allowHtml);
-        builder.save();
-        Origin origin = builder.build();
+        Origin origin = builder.setName(originName)
+                .setHostOrUrl(hostOrUrl)
+                .setSsl(isSsl)
+                .setSslMode(sslMode)
+                .setHtmlContentAllowed(allowHtml)
+                .save().build();
         if (origin.isOAuthDefault() || origin.canChangeOAuth()) {
             OAuthClientKeysTest.insertTestKeys(origin);
         }
 
-        checkAttributes(originName, hostOrUrl, isSsl, sslMode, allowHtml, origin);
+        checkAttributes(origin, originName, hostOrUrl, isSsl, sslMode, allowHtml,
+                inCombinedGlobalSearch, inCombinedPublicReload);
 
         MyContextHolder.get().persistentOrigins().initialize();
         Origin origin2 = MyContextHolder.get().persistentOrigins()
                 .fromId(origin.getId());
-        checkAttributes(originName, hostOrUrl, isSsl, sslMode, allowHtml, origin2);
+        checkAttributes(origin2, originName, hostOrUrl, isSsl, sslMode, allowHtml,
+                inCombinedGlobalSearch, inCombinedPublicReload);
 
         return builder;
     }
 
-    private static void checkAttributes(String originName, String hostOrUrl,
-            boolean isSsl, SslModeEnum sslMode, boolean allowHtml, Origin origin) {
+    private static void checkAttributes(Origin origin, String originName, String hostOrUrl,
+            boolean isSsl, SslModeEnum sslMode, boolean allowHtml, boolean inCombinedGlobalSearch, boolean inCombinedPublicReload) {
         assertTrue("Origin " + originName + " added", origin.isPersistent());
         assertEquals(originName, origin.getName());
         if (origin.canSetUrlOfOrigin()) {

@@ -55,7 +55,7 @@ public class AvatarDrawable {
         if (downloadFile.exists()) {
             return AttachedImageDrawable.drawableFromPath(this, downloadFile.getFile().getAbsolutePath());
         } 
-        AvatarData.newForUser(userId).requestDownload();
+        AvatarData.asyncRequestDownload(userId);
         return getDefaultDrawable();
     }
 

@@ -49,14 +49,18 @@ public class OriginsAndAccountsInserter extends InstrumentationTestCase {
 
         OriginTest.createOneOrigin(OriginType.TWITTER, TestSuite.TWITTER_TEST_ORIGIN_NAME,
                 TestSuite.getTestOriginHost(TestSuite.TWITTER_TEST_ORIGIN_NAME), 
-                true, SslModeEnum.SECURE, false);
+                true, SslModeEnum.SECURE, false, true, true);
         OriginTest.createOneOrigin(OriginType.PUMPIO,
                 TestSuite.PUMPIO_ORIGIN_NAME,
                 TestSuite.getTestOriginHost(TestSuite.PUMPIO_ORIGIN_NAME), 
-                true, SslModeEnum.SECURE, true);
+                true, SslModeEnum.SECURE, true, true, true);
         OriginTest.createOneOrigin(OriginType.GNUSOCIAL, TestSuite.GNUSOCIAL_TEST_ORIGIN_NAME,
                 TestSuite.getTestOriginHost(TestSuite.GNUSOCIAL_TEST_ORIGIN_NAME), 
-                true, SslModeEnum.SECURE, true);
+                true, SslModeEnum.SECURE, true, true, true);
+        String additionalOriginName = TestSuite.GNUSOCIAL_TEST_ORIGIN_NAME + "ins";
+        OriginTest.createOneOrigin(OriginType.GNUSOCIAL, additionalOriginName,
+                TestSuite.getTestOriginHost(additionalOriginName), 
+                true, SslModeEnum.INSECURE, true, false, true);
         myContext.persistentOrigins().initialize();
 
         Origin pumpioOrigin = myContext.persistentOrigins().fromName(TestSuite.PUMPIO_ORIGIN_NAME);

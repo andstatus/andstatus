@@ -55,25 +55,31 @@ public class OriginEditorTest extends ActivityInstrumentationTestCase2<OriginEdi
         String host = originName + ".example.com";
         boolean isSsl = false;
         boolean allowHtml = true;
-        forOneOrigin(originType, originName, host, isSsl, SslModeEnum.SECURE, allowHtml);
+        forOneOrigin(originType, originName, host, isSsl, SslModeEnum.SECURE, allowHtml,
+                true, true);
         
         host = originName + ".some.example.com";
         isSsl = true;
         allowHtml = false;
-        forOneOrigin(originType, originName, host, isSsl, SslModeEnum.INSECURE, allowHtml);
+        forOneOrigin(originType, originName, host, isSsl, SslModeEnum.INSECURE, allowHtml,
+                false, true);
 
         host = originName + ". badhost.example.com";
-        forOneOrigin(originType, originName, host, isSsl, SslModeEnum.MISCONFIGURED, allowHtml);
+        forOneOrigin(originType, originName, host, isSsl, SslModeEnum.MISCONFIGURED, allowHtml,
+                true, false);
 
         host = "http://" + originName + ".fourth.example.com";
-        forOneOrigin(originType, originName, host, isSsl, SslModeEnum.SECURE, allowHtml);
+        forOneOrigin(originType, originName, host, isSsl, SslModeEnum.SECURE, allowHtml,
+                false, false);
 
         host = "http://" + originName + ".fifth.example.com/status";
-        forOneOrigin(originType, originName, host, isSsl, SslModeEnum.INSECURE, allowHtml);
+        forOneOrigin(originType, originName, host, isSsl, SslModeEnum.INSECURE, allowHtml,
+                true, true);
     }
     
     public void forOneOrigin(final OriginType originType, final String originName,
-            final String hostOrUrl, final boolean isSsl, final SslModeEnum sslMode, final boolean allowHtml)
+            final String hostOrUrl, final boolean isSsl, final SslModeEnum sslMode, final boolean allowHtml,
+            final boolean inCombinedGlobalSearch, final boolean inCombinedPublicReload)
             throws InterruptedException {
         final String method = "OriginEditorTest";
 
@@ -118,6 +124,10 @@ public class OriginEditorTest extends ActivityInstrumentationTestCase2<OriginEdi
                 checkBoxIsSsl.setChecked(isSsl);
                 spinnerSslMode.setSelection(sslMode.getEntriesPosition());
                 checkBoxAllowHtml.setChecked(allowHtml);
+                ((CheckBox) activity.findViewById(R.id.in_combined_global_search)).
+                        setChecked(inCombinedGlobalSearch);
+                ((CheckBox) activity.findViewById(R.id.in_combined_public_reload)).
+                        setChecked(inCombinedPublicReload);
                 try {
                     Thread.sleep(1000);
                 } catch (InterruptedException ignored) { }
@@ -148,5 +158,7 @@ public class OriginEditorTest extends ActivityInstrumentationTestCase2<OriginEdi
         }
         assertEquals(isSsl, origin.isSsl());
         assertEquals(allowHtml, origin.isHtmlContentAllowed());
+        assertEquals(inCombinedGlobalSearch, origin.isInCombinedGlobalSearch());
+        assertEquals(inCombinedPublicReload, origin.isInCombinedPublicReload());
     }
 }

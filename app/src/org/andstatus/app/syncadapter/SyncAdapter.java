@@ -26,7 +26,6 @@ import android.content.SyncResult;
 import android.os.Bundle;
 
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.service.CommandData;
@@ -80,7 +79,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements MyServic
             syncResult.stats.numIoExceptions++;
             MyLog.d(this, method + "; The account was not loaded, account:" + account.name);
             return;      
-        } else if (ma.getCredentialsVerified() != CredentialsVerificationStatus.SUCCEEDED) {
+        } else if (!ma.isValidAndVerified()) {
             syncResult.stats.numAuthExceptions++;
             MyLog.d(this, method + "; Credentials failed, skipping; account:" + account.name);
             return;

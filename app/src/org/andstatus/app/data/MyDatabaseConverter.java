@@ -305,9 +305,13 @@ class MyDatabaseConverter {
 
             sql = "ALTER TABLE origin ADD COLUMN ssl_mode INTEGER DEFAULT 1";
             MyDatabase.execSQL(db, sql);
-            sql = "UPDATE origin SET ssl_mode=1";
+            sql = "ALTER TABLE origin ADD COLUMN in_combined_global_search BOOLEAN DEFAULT 1";
             MyDatabase.execSQL(db, sql);
-            sql = "UPDATE origin SET ssl_mode=2 WHERE origin_name='Quitter.Zone'";
+            sql = "ALTER TABLE origin ADD COLUMN in_combined_public_reload BOOLEAN DEFAULT 1";
+            MyDatabase.execSQL(db, sql);
+            sql = "UPDATE origin SET ssl_mode=1, in_combined_global_search=1, in_combined_public_reload=1";
+            MyDatabase.execSQL(db, sql);
+            sql = "UPDATE origin SET ssl_mode=2 WHERE origin_url LIKE '%quitter.zone%'";
             MyDatabase.execSQL(db, sql);
             
             ok = true;

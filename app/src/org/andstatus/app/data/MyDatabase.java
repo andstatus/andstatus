@@ -429,6 +429,10 @@ public final class MyDatabase extends SQLiteOpenHelper  {
         public static final String ALLOW_HTML = "allow_html";
         public static final String TEXT_LIMIT = "text_limit";
         public static final String SHORT_URL_LENGTH = "short_url_length";
+        /** Include this system in Global Search while in Combined Timeline */
+        public static final String IN_COMBINED_GLOBAL_SEARCH = "in_combined_global_search";
+        /** Include this system in Reload while in Combined Public Timeline */
+        public static final String IN_COMBINED_PUBLIC_RELOAD = "in_combined_public_reload";
     }
     
     /**
@@ -607,7 +611,9 @@ public final class MyDatabase extends SQLiteOpenHelper  {
                 + Origin.SSL_MODE + " INTEGER DEFAULT 1 NOT NULL," 
                 + Origin.ALLOW_HTML + " BOOLEAN DEFAULT 1 NOT NULL," 
                 + Origin.TEXT_LIMIT + " INTEGER NOT NULL,"
-                + Origin.SHORT_URL_LENGTH + " INTEGER NOT NULL DEFAULT 0" 
+                + Origin.SHORT_URL_LENGTH + " INTEGER NOT NULL DEFAULT 0," 
+                + Origin.IN_COMBINED_GLOBAL_SEARCH + " BOOLEAN DEFAULT 1 NOT NULL," 
+                + Origin.IN_COMBINED_PUBLIC_RELOAD + " BOOLEAN DEFAULT 1 NOT NULL" 
                 + ")");
         
         execSQL(db, "CREATE UNIQUE INDEX idx_origin_name ON " + Origin.TABLE_NAME + " (" 
@@ -620,7 +626,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
                 + Origin.ORIGIN_NAME + "," 
                 + Origin.ORIGIN_URL + "," 
                 + Origin.SSL + "," 
-                + Origin.ALLOW_HTML + "," 
+                + Origin.SSL_MODE + "," 
                 + Origin.TEXT_LIMIT + ","
                 + Origin.SHORT_URL_LENGTH
                 + ") VALUES ("
@@ -638,7 +644,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
                 " 8, 3,'Quitter.no',     'https://quitter.no',       1, 1,    0,  0",
                 " 9, 3,'Quitter.is',     'https://quitter.is',       1, 1,    0,  0",
                 "10, 3,'Quitter.España', 'https://quitter.es',       1, 1,    0,  0",
-                "11, 3,'Quitter.Zone',   'https://quitter.zone',     1, 1,    0,  0"   
+                "11, 3,'Quitter.Zone',   'https://quitter.zone',     1, 2,    0,  0"   
                 };
         for (String value : values) {
             execSQL(db, sqlIns.replace("%s", value));

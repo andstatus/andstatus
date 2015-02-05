@@ -30,7 +30,6 @@ import android.widget.TextView;
 import org.andstatus.app.ActivityRequestCode;
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
-import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
 import org.andstatus.app.context.MyContextHolder;
 
 import java.util.ArrayList;
@@ -98,7 +97,7 @@ public class AccountSelector extends ListActivity {
             String visibleName = ma.getAccountName();
             map.put(KEY_VISIBLE_NAME, visibleName);
             map.put(KEY_CREDENTIALS_VERIFIED,
-                    ma.getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED ? ""
+                    ma.isValidAndVerified() ? ""
                             : ma.getCredentialsVerified().name().substring(0, 1));
             map.put(KEY_SYNC_AUTO, ma.getSyncAutomatically() ? "" : getText(R.string.off).toString());
             map.put(BaseColumns._ID, Long.toString(ma.getUserId()));

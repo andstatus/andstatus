@@ -56,7 +56,6 @@ public class OriginEditor extends Activity {
     private EditText editTextHost;
     private CheckBox checkBoxIsSsl;
     private Spinner spinnerSslMode;
-    private CheckBox checkBoxAllowHtml;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,7 +87,6 @@ public class OriginEditor extends Activity {
         editTextHost = (EditText) findViewById(R.id.host);
         checkBoxIsSsl = (CheckBox) findViewById(R.id.is_ssl);
         spinnerSslMode = (Spinner) findViewById(R.id.ssl_mode);
-        checkBoxAllowHtml = (CheckBox) findViewById(R.id.allow_html);
 
         processNewIntent(getIntent());
     }
@@ -143,10 +141,13 @@ public class OriginEditor extends Activity {
         });
         showSslModeSummary(origin.getSslMode());
         showSslMode(origin.isSsl());
-        checkBoxAllowHtml.setChecked(origin.isHtmlContentAllowed());
+        ((CheckBox) findViewById(R.id.allow_html)).setChecked(origin.isHtmlContentAllowed());
         
         buttonDelete.setVisibility(origin.hasChildren() ? View.GONE : View.VISIBLE);
 
+        ((CheckBox) findViewById(R.id.in_combined_global_search)).setChecked(origin.isInCombinedGlobalSearch());
+        ((CheckBox) findViewById(R.id.in_combined_public_reload)).setChecked(origin.isInCombinedPublicReload());
+        
         String title = getText(R.string.label_origin_system).toString();
         if (origin.isPersistent()) {
             title = origin.getName() + " - " + title;
@@ -188,7 +189,9 @@ public class OriginEditor extends Activity {
         builder.setHostOrUrl(editTextHost.getText().toString());
         builder.setSsl(checkBoxIsSsl.isChecked());
         builder.setSslMode(SslModeEnum.fromEntriesPosition(spinnerSslMode.getSelectedItemPosition()));
-        builder.setHtmlContentAllowed(checkBoxAllowHtml.isChecked());
+        builder.setHtmlContentAllowed(((CheckBox) findViewById(R.id.allow_html)).isChecked());
+        builder.setInCombinedGlobalSearch(((CheckBox) findViewById(R.id.in_combined_global_search)).isChecked());
+        builder.setInCombinedPublicReload(((CheckBox) findViewById(R.id.in_combined_public_reload)).isChecked());
         builder.save();
         MyLog.v(this, (builder.isSaved() ? "Saved" : "Not saved") + ": " + builder.build().toString());
         if (builder.isSaved()) {

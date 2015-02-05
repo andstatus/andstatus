@@ -17,7 +17,6 @@
 package org.andstatus.app.service;
 
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
 import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.data.DownloadFile;
 import org.andstatus.app.data.DownloadStatus;
@@ -86,7 +85,7 @@ abstract class FileDownloader {
             File file = fileTemp.getFile();
             MyAccount ma = findBestAccountForDownload();
             MyLog.v(this, "About to download " + data.toString() + "; account:" + ma.getAccountName());
-            if (ma.getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED) {
+            if (ma.isValidAndVerified()) {
                 ((connectionMock != null) ? connectionMock : ma.getConnection()).downloadFile(url, file);
             } else {
                 data.hardErrorLogged(method + ", No account to download the file", null);

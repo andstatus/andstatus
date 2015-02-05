@@ -17,7 +17,6 @@
 package org.andstatus.app.service;
 
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.data.MessageForAccount;
@@ -34,10 +33,9 @@ public class AttachmentDownloader extends FileDownloader {
     protected MyAccount findBestAccountForDownload() {
         long originId = MyProvider.msgIdToOriginId(data.msgId);
         boolean subscribedFound = false;
-        MyAccount bestAccount = MyContextHolder.get().persistentAccounts().findFirstMyAccountByOriginId(originId);
+        MyAccount bestAccount = MyContextHolder.get().persistentAccounts().findFirstSucceededMyAccountByOriginId(originId);
         for( MyAccount ma : MyContextHolder.get().persistentAccounts().collection()) {
-            if(ma.getOriginId() == originId 
-                    && ma.getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED) {
+            if(ma.getOriginId() == originId && ma.isValidAndVerified()) {
                 MessageForAccount msg = new MessageForAccount(data.msgId, ma);
                 if(msg.hasPrivateAccess()) {
                     bestAccount = ma;

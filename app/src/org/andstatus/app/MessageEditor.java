@@ -17,7 +17,6 @@
 package org.andstatus.app;
 
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.MyDatabase;
@@ -121,10 +120,9 @@ class MessageEditor {
                 });
         MyAccount accountForButton = accountforCreateMessageButton();
         item.setVisible(!isVisible()
-                && accountForButton.isValid() 
+                && accountForButton.isValidAndVerified() 
                 && mMessageList.getTimelineType() != TimelineTypeEnum.DIRECT
-                && mMessageList.getTimelineType() != TimelineTypeEnum.MESSAGESTOACT
-                && accountForButton.getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED);
+                && mMessageList.getTimelineType() != TimelineTypeEnum.MESSAGESTOACT);
     }
 
     private MyAccount accountforCreateMessageButton() {

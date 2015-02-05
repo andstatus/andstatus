@@ -16,10 +16,22 @@
 
 package org.andstatus.app.data;
 
+import android.os.AsyncTask;
+
 import org.andstatus.app.data.MyDatabase.User;
 
 public class AvatarData extends DownloadData {
 
+    public static void asyncRequestDownload(final long userIdIn) {
+        new AsyncTask<Void, Void, Void>(){
+            @Override
+            protected Void doInBackground(Void... params) {
+                newForUser(userIdIn).requestDownload();  
+                return null;
+            }
+        }.execute();
+    }
+    
     public static DownloadData newForUser(long userIdIn) {
         return new AvatarData(userIdIn);
     }

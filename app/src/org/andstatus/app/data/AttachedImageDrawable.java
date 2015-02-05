@@ -57,7 +57,7 @@ public class AttachedImageDrawable {
             String path = downloadFile.getFile().getAbsolutePath();
             return drawableFromPath(this, path);
         } 
-        DownloadData.fromRowId(downloadRowId).requestDownload();
+        DownloadData.asyncRequestDownload(downloadRowId);
         return null;
     }
 

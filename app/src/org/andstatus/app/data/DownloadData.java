@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
+import android.os.AsyncTask;
 import android.text.TextUtils;
 
 import org.andstatus.app.context.MyContextHolder;
@@ -413,5 +414,15 @@ public class DownloadData {
         }
         
         return builder.toString();
+    }
+
+    public static void asyncRequestDownload(final long downloadRowId) {
+        new AsyncTask<Void, Void, Void>(){
+            @Override
+            protected Void doInBackground(Void... params) {
+                DownloadData.fromRowId(downloadRowId).requestDownload();
+                return null;
+            }
+        }.execute();
     }
 }

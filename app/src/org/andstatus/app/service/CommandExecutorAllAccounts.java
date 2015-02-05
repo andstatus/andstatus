@@ -17,8 +17,8 @@
 package org.andstatus.app.service;
 
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.util.MyLog;
 
 /**
  * Execute command for each account
@@ -28,14 +28,13 @@ public class CommandExecutorAllAccounts extends CommandExecutorStrategy {
 
     @Override
     public void execute() {
-        for (MyAccount acc : MyContextHolder.get().persistentAccounts().collection()) {
-            if ( acc.getCredentialsVerified() != CredentialsVerificationStatus.SUCCEEDED) {
-                execContext.getResult().incrementNumAuthExceptions();
-                execContext.getResult().setMessage(acc.getAccountName() + " account verification failed");
-            } else {
-                execContext.setMyAccount(acc);
-                CommandExecutorStrategy.executeStep(execContext, this);
-            }
+        for (MyAccount ma : MyContextHolder.get().persistentAccounts().collection()) {
+            if ( !ma.isValidAndVerified()) {
+                MyLog.v(this, "Account '" + ma.getAccountName() + "' skipped as no valid authenticated account");
+                continue;
+            } 
+            execContext.setMyAccount(ma);
+            CommandExecutorStrategy.executeStep(execContext, this);
             if (isStopping()) {
                 if ( !execContext.getResult().hasError()) {
                     execContext.getResult().incrementNumIoExceptions();
