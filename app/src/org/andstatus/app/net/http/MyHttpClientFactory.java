@@ -35,11 +35,11 @@ public class MyHttpClientFactory {
         // Empty
     }
     
-    public static HttpClient getHttpClient() {
+    public static HttpClient getHttpClient(SslModeEnum sslMode) {
         Registry<ConnectionSocketFactory> registry = 
                 RegistryBuilder.<ConnectionSocketFactory> create()
                     .register("http", PlainConnectionSocketFactory.getSocketFactory())
-                    .register("https", TlsSniSocketFactory.getInstance())
+                    .register("https", TlsSniSocketFactory.getInstance(sslMode))
                     .build();
         PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager(registry);
         // max.  3 connections in total

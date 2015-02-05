@@ -1,6 +1,6 @@
 /*******************************************************************************
+ * Copyright (C) 2015 yvolk (Yuri Volkov), http://yurivolkov.com - Insecure connection added
  * Copyright (c) 2014 Ricki Hirner (bitfire web engineering).
- * Copyright (C) 2014 yvolk (Yuri Volkov), http://yurivolkov.com - Insecure connection added
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Public License v3.0
  * which accompanies this distribution, and is available at
@@ -12,6 +12,7 @@ package org.andstatus.app.net.http;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLPeerUnverifiedException;
@@ -33,15 +34,15 @@ import org.apache.http.protocol.HttpContext;
 
 public class TlsSniSocketFactory implements LayeredConnectionSocketFactory {
 
-    private static volatile TlsSniSocketFactory instance;
-    public static ConnectionSocketFactory getInstance() {
-        if (instance == null) {
-            instance = new TlsSniSocketFactory();
+    private static final ConcurrentHashMap<SslModeEnum, TlsSniSocketFactory> instances = new ConcurrentHashMap<SslModeEnum, TlsSniSocketFactory>();
+    public static ConnectionSocketFactory getInstance(SslModeEnum sslMode) {
+        if (!instances.containsKey(sslMode)) {
+            instances.put(sslMode, new TlsSniSocketFactory(sslMode));
         }
-        return instance;
+        return instances.get(sslMode);
     }
     public static void forget() {
-        instance = null;
+        instances.clear();
     }
     
     private final boolean secure;
@@ -65,8 +66,8 @@ public class TlsSniSocketFactory implements LayeredConnectionSocketFactory {
            active by Android's defaults, which it isn't at the moment).
     */
 
-    public TlsSniSocketFactory() {
-        secure = SslModeEnum.getPreference() == SslModeEnum.SECURE;
+    public TlsSniSocketFactory(SslModeEnum sslMode) {
+        secure = sslMode == SslModeEnum.SECURE;
         if (secure) {
             sslSocketFactory = (SSLCertificateSocketFactory) SSLCertificateSocketFactory
                     .getDefault(MyPreferences.getConnectionTimeoutMs());

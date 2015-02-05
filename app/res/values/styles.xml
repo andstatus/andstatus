@@ -50,5 +50,14 @@
         <item name="android:paddingTop">10dp</item>
         <item name="android:textAppearance">?android:attr/textAppearanceMedium</item>
 	</style>
-		
+
+	<!-- http://stackoverflow.com/questions/5049852/android-drawing-separator-divider-line-in-layout -->
+	<style name="Divider">
+	    <item name="android:layout_width">match_parent</item>
+	    <item name="android:layout_height">1dp</item>
+	    <item name="android:paddingBottom">2dp</item>
+    	<item name="android:paddingTop">2dp</item>
+	    <item name="android:background">?android:attr/listDivider</item>
+	</style>
+				
 </resources>

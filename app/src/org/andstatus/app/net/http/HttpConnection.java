@@ -144,6 +144,10 @@ public abstract class HttpConnection {
      */
     public abstract boolean getCredentialsPresent();
 
+    public SslModeEnum getSslMode() {
+        return data.sslMode;
+    }
+    
     public void setUserTokenWithSecret(String token, String secret) {
         throw new IllegalArgumentException("setUserTokenWithSecret is for OAuth only!");
     }

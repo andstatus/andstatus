@@ -21,6 +21,7 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.net.social.ConnectionEmpty;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.net.http.HttpConnectionEmpty;
+import org.andstatus.app.net.http.SslModeEnum;
 import org.andstatus.app.util.TriState;
 
 import java.net.URL;
@@ -29,6 +30,7 @@ public class OriginConnectionData {
     private OriginType originType;
     private long originId = 0;
     private boolean isSsl = true;
+    private SslModeEnum sslMode = SslModeEnum.SECURE;
     private boolean isOAuth = true;
     private URL originUrl = null;
     private String basicPath = "";
@@ -50,6 +52,7 @@ public class OriginConnectionData {
         connectionData.basicPath = origin.getOriginType().basicPath;
         connectionData.oauthPath = origin.getOriginType().oauthPath;
         connectionData.isSsl = origin.isSsl();
+        connectionData.sslMode = origin.getSslMode();
         connectionData.originType = origin.getOriginType();
         connectionData.originId = origin.getId();
         connectionData.isOAuth = origin.getOriginType().fixIsOAuth(triStateOAuth);
@@ -71,6 +74,10 @@ public class OriginConnectionData {
         return isSsl;
     }
 
+    public SslModeEnum getSslMode() {
+        return sslMode;
+    }
+    
     public boolean isOAuth() {
         return isOAuth;
     }

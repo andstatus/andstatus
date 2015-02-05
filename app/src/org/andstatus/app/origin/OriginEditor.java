@@ -25,15 +25,20 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.net.http.SslModeEnum;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.UrlUtils;
 
@@ -50,6 +55,7 @@ public class OriginEditor extends Activity {
     private EditText editTextOriginName;
     private EditText editTextHost;
     private CheckBox checkBoxIsSsl;
+    private Spinner spinnerSslMode;
     private CheckBox checkBoxAllowHtml;
 
     @Override
@@ -81,6 +87,7 @@ public class OriginEditor extends Activity {
         editTextOriginName = (EditText) findViewById(R.id.origin_name);
         editTextHost = (EditText) findViewById(R.id.host);
         checkBoxIsSsl = (CheckBox) findViewById(R.id.is_ssl);
+        spinnerSslMode = (Spinner) findViewById(R.id.ssl_mode);
         checkBoxAllowHtml = (CheckBox) findViewById(R.id.allow_html);
 
         processNewIntent(getIntent());
@@ -115,6 +122,27 @@ public class OriginEditor extends Activity {
         editTextHost.setText(strHost);
         
         checkBoxIsSsl.setChecked(origin.isSsl());
+        checkBoxIsSsl.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                showSslMode(isChecked);
+            }
+        });
+        spinnerSslMode.setSelection(origin.getSslMode().getEntriesPosition());
+        spinnerSslMode.setOnItemSelectedListener(new OnItemSelectedListener() {
+
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                showSslModeSummary(SslModeEnum.fromEntriesPosition(position));
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                // Empty
+            }
+        });
+        showSslModeSummary(origin.getSslMode());
+        showSslMode(origin.isSsl());
         checkBoxAllowHtml.setChecked(origin.isHtmlContentAllowed());
         
         buttonDelete.setVisibility(origin.hasChildren() ? View.GONE : View.VISIBLE);
@@ -124,6 +152,14 @@ public class OriginEditor extends Activity {
             title = origin.getName() + " - " + title;
         }
         getActionBar().setTitle(title);
+    }
+
+    void showSslModeSummary(SslModeEnum sslMode) {
+        ((TextView)findViewById(R.id.ssl_mode_summary)).setText(sslMode.getSummaryResourceId());
+    }
+    
+    void showSslMode(boolean isSsl) {
+        findViewById(R.id.ssl_mode_container).setVisibility(isSsl ? View.VISIBLE : View.GONE);
     }
     
     @Override
@@ -151,6 +187,7 @@ public class OriginEditor extends Activity {
     private void saveOthers() {
         builder.setHostOrUrl(editTextHost.getText().toString());
         builder.setSsl(checkBoxIsSsl.isChecked());
+        builder.setSslMode(SslModeEnum.fromEntriesPosition(spinnerSslMode.getSelectedItemPosition()));
         builder.setHtmlContentAllowed(checkBoxAllowHtml.isChecked());
         builder.save();
         MyLog.v(this, (builder.isSaved() ? "Saved" : "Not saved") + ": " + builder.build().toString());

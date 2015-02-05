@@ -27,6 +27,7 @@ public class HttpConnectionData implements Cloneable {
     protected OriginType originType;
     protected long originId;
     public boolean isSsl;
+    public SslModeEnum sslMode;
     public String basicPath;
     protected String oauthPath;
     protected String accountUsername;
@@ -49,6 +50,7 @@ public class HttpConnectionData implements Cloneable {
         data.originType = oConnectionData.getOriginType();
         data.originId = oConnectionData.getOriginId();
         data.isSsl = oConnectionData.isSsl();
+        data.sslMode = oConnectionData.getSslMode();
         data.basicPath = oConnectionData.getBasicPath();
         data.oauthPath = oConnectionData.getOauthPath();
         data.accountUsername = oConnectionData.getAccountUsername();
@@ -70,8 +72,10 @@ public class HttpConnectionData implements Cloneable {
 
     @Override
     public String toString() {
-        return "HttpConnectionData {" + originId + ", " + originType + ", isSsl:" + isSsl + ", basicPath:"
-                + basicPath + ", oauthPath:" + oauthPath + ", accountUsername:" + accountUsername
+        return "HttpConnectionData {" + originId + ", " + originType + ", isSsl:" + isSsl
+                + ", sslMode:" + sslMode
+                + ", basicPath:" + basicPath 
+                + ", oauthPath:" + oauthPath + ", accountUsername:" + accountUsername
                 + ", originUrl:" + originUrl + ", hostForUserToken:" + urlForUserToken + ", dataReader:"
                 + dataReader + ", oauthClientKeys:" + oauthClientKeys + "}";
     }

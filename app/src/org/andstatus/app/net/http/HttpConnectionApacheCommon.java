@@ -127,10 +127,10 @@ public class HttpConnectionApacheCommon {
         return formParams;
     }
 
-    public static HttpClient getHttpClient() {
-        return SslModeEnum.getPreference() == SslModeEnum.MISCONFIGURED ?
+    public static HttpClient getHttpClient(SslModeEnum sslMode) {
+        return sslMode == SslModeEnum.MISCONFIGURED ?
                 MisconfiguredSslHttpClientFactory.getHttpClient() :
-                    MyHttpClientFactory.getHttpClient() ;
+                    MyHttpClientFactory.getHttpClient(sslMode) ;
     }
 
     protected void getRequest(HttpReadResult result) throws ConnectionException {

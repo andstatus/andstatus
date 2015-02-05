@@ -39,7 +39,6 @@ import org.andstatus.app.TimelineActivity;
 import org.andstatus.app.account.AccountSettingsActivity;
 import org.andstatus.app.backup.BackupActivity;
 import org.andstatus.app.backup.RestoreActivity;
-import org.andstatus.app.net.http.SslModeEnum;
 import org.andstatus.app.origin.OriginList;
 import org.andstatus.app.service.QueueViewer;
 import org.andstatus.app.util.MyLog;
@@ -109,7 +108,6 @@ public class MySettingsFragment extends PreferenceFragment implements
         showUseExternalStorage();
         showBackupRestore();
         showAuthorInTimeline();
-        showSslMode();
     }
 
     private void showManageAccounts() {
@@ -195,13 +193,6 @@ public class MySettingsFragment extends PreferenceFragment implements
     private void showAuthorInTimeline() {
         SharedPreferencesUtil.showListPreference(this, MyPreferences.KEY_USER_IN_TIMELINE, R.array.user_in_timeline_values, R.array.user_in_timeline_entries, R.string.summary_preference_user_in_timeline);
     }
-
-    private void showSslMode() {
-        findPreference(MyPreferences.KEY_SSL_MODE).setSummary(
-                getText(SslModeEnum.getPreference().getEntryResourceId())
-                + "\n"
-                + getText(SslModeEnum.getPreference().getSummaryResourceId()));
-    }
     
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
@@ -236,9 +227,6 @@ public class MySettingsFragment extends PreferenceFragment implements
                     break;
                 case MyPreferences.KEY_USER_IN_TIMELINE:
                     showAuthorInTimeline();
-                    break;
-                case MyPreferences.KEY_SSL_MODE:
-                    showSslMode();
                     break;
                 default:
                     break;

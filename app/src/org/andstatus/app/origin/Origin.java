@@ -29,6 +29,7 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyDatabase;
+import org.andstatus.app.net.http.SslModeEnum;
 import org.andstatus.app.net.social.Connection.ApiEnum;
 import org.andstatus.app.net.social.MbConfig;
 import org.andstatus.app.util.MyLog;
@@ -60,6 +61,7 @@ public class Origin {
     protected URL url = null;
 
     protected boolean ssl = true;
+    private SslModeEnum sslMode = SslModeEnum.SECURE;
 
     private boolean allowHtml = false;
 
@@ -212,6 +214,10 @@ public class Origin {
         return ssl;
     }
 
+    public SslModeEnum getSslMode() {
+        return sslMode;
+    }
+
     String keyOf(String keyRoot) {
         return keyRoot + Long.toString(id);
     }
@@ -269,8 +275,10 @@ public class Origin {
 
     @Override
     public String toString() {
-        return "Origin [name:" + getName() + "; url:" + getUrl() + "; type:"
-                + originType.toString() + "]";
+        return "Origin:{name:" + getName() + "; url:" + getUrl() 
+                + ", " + originType
+                + (isSsl() ? ", " + getSslMode() : "" )
+                + "}";
     }
 
     protected int getTextLimit() {
@@ -316,6 +324,8 @@ public class Origin {
             origin.name = c.getString(c.getColumnIndex(MyDatabase.Origin.ORIGIN_NAME));
             setHostOrUrl(c.getString(c.getColumnIndex(MyDatabase.Origin.ORIGIN_URL)));
             setSsl(c.getInt(c.getColumnIndex(MyDatabase.Origin.SSL)) != 0);
+            setSslMode(SslModeEnum.fromId(c.getLong(c.getColumnIndex(MyDatabase.Origin.SSL_MODE))));
+            
             origin.allowHtml = (c.getInt(c.getColumnIndex(MyDatabase.Origin.ALLOW_HTML)) != 0);
             if (originType1.shortUrlLengthDefault == 0) {
                 origin.shortUrlLength = c.getInt(c
@@ -336,6 +346,7 @@ public class Origin {
             cloned.name = original.name;
             cloned.url = original.url;
             cloned.ssl = original.ssl;
+            cloned.sslMode = original.sslMode;
             cloned.allowHtml = original.allowHtml;
             cloned.shortUrlLength = original.shortUrlLength;
             cloned.setTextLimit(original.getTextLimit());
@@ -378,6 +389,10 @@ public class Origin {
             return this;
         }
 
+        void setSslMode(SslModeEnum mode) {
+            origin.sslMode = mode;
+        }
+        
         public Builder setHtmlContentAllowed(boolean allowHtml) {
             origin.allowHtml = allowHtml;
             return this;
@@ -411,6 +426,7 @@ public class Origin {
             ContentValues values = new ContentValues();
             values.put(MyDatabase.Origin.ORIGIN_URL, origin.url != null ? origin.url.toExternalForm() : "");
             values.put(MyDatabase.Origin.SSL, origin.ssl);
+            values.put(MyDatabase.Origin.SSL_MODE, origin.getSslMode().getId());
             values.put(MyDatabase.Origin.ALLOW_HTML, origin.allowHtml);
             values.put(MyDatabase.Origin.SHORT_URL_LENGTH, origin.shortUrlLength);
             values.put(MyDatabase.Origin.TEXT_LIMIT, origin.getTextLimit());

@@ -50,7 +50,7 @@ public class HttpConnectionBasic extends HttpConnection implements HttpConnectio
     @Override
     public void httpApachePostRequest(HttpPost postMethod, HttpReadResult result) throws ConnectionException {
         try {
-            HttpClient client = HttpConnectionApacheCommon.getHttpClient();
+            HttpClient client = HttpConnectionApacheCommon.getHttpClient(data.sslMode);
             postMethod.setHeader("User-Agent", HttpConnection.USER_AGENT);
             if (getCredentialsPresent()) {
                 postMethod.addHeader("Authorization", "Basic " + getCredentials());
@@ -69,7 +69,7 @@ public class HttpConnectionBasic extends HttpConnection implements HttpConnectio
 
     @Override
     public HttpResponse httpApacheGetResponse(HttpGet httpGet) throws IOException {
-        HttpClient client = HttpConnectionApacheCommon.getHttpClient();
+        HttpClient client = HttpConnectionApacheCommon.getHttpClient(data.sslMode);
         return client.execute(httpGet);
     }
 

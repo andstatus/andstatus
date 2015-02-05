@@ -208,7 +208,7 @@ public enum OriginType {
     
     @Override
     public String toString() {
-        return "OriginType [ id:" + id + "; code:" + title + "]";
+        return "OriginType: {id:" + id + ", title:'" + title + "'}";
     }
     
     public boolean fixIsOAuth(TriState triStateOAuth) {

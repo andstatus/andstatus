@@ -26,7 +26,6 @@ import oauth.signpost.exception.OAuthMessageSignerException;
 
 import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
 import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.BasicResponseHandler;
@@ -34,12 +33,10 @@ import org.apache.http.impl.client.BasicResponseHandler;
 import java.io.IOException;
 
 public class HttpConnectionOAuthApache extends HttpConnectionOAuth implements HttpConnectionApacheSpecific {
-    private HttpClient mClient;
 
     @Override
     public void setConnectionData(HttpConnectionData connectionData) {
         super.setConnectionData(connectionData);
-        mClient = HttpConnectionApacheCommon.getHttpClient();
     }  
 
     @Override
@@ -48,7 +45,7 @@ public class HttpConnectionOAuthApache extends HttpConnectionOAuth implements Ht
         provider = new CommonsHttpOAuthProvider(getApiUrl(ApiRoutineEnum.OAUTH_REQUEST_TOKEN),
                 getApiUrl(ApiRoutineEnum.OAUTH_ACCESS_TOKEN), getApiUrl(ApiRoutineEnum.OAUTH_AUTHORIZE));
 
-        provider.setHttpClient(mClient);
+        provider.setHttpClient(HttpConnectionApacheCommon.getHttpClient(data.sslMode));
         provider.setOAuth10a(true);
         return provider;
     }
@@ -75,7 +72,8 @@ public class HttpConnectionOAuthApache extends HttpConnectionOAuth implements Ht
             if (result.authenticate) {
                 signRequest(post);
             }
-            result.strResponse = mClient.execute(post, new BasicResponseHandler());
+            result.strResponse = HttpConnectionApacheCommon.getHttpClient(data.sslMode).execute(
+                    post, new BasicResponseHandler());
         } catch (Exception e) {
             // We don't catch other exceptions because in fact it's vary difficult to tell
             // what was a real cause of it. So let's make code clearer.
@@ -85,7 +83,7 @@ public class HttpConnectionOAuthApache extends HttpConnectionOAuth implements Ht
 
     @Override
     public HttpResponse httpApacheGetResponse(HttpGet httpGet) throws IOException {
-        return mClient.execute(httpGet);
+        return HttpConnectionApacheCommon.getHttpClient(data.sslMode).execute(httpGet);
     }
 
     private void signRequest(Object httpGetOrPost) throws IOException {

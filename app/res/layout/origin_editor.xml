@@ -24,11 +24,13 @@
 	
 	    <Spinner
 	        android:id="@+id/origin_type"
-	        android:layout_width="match_parent"
+	        android:layout_width="wrap_content"
 	        android:layout_height="wrap_content"
 	        android:entries="@array/origin_system_types_entries"
 	        android:prompt="@string/label_origin_type" />
 	
+		<View style="@style/Divider"/>
+			    
 	    <TextView
 	        android:id="@+id/label_origin_name"
 	        android:layout_width="wrap_content"
@@ -62,7 +64,38 @@
 	        android:layout_width="wrap_content"
 	        android:layout_height="wrap_content"
 	        android:text="@string/title_preference_ssl" />
-	
+
+	    <LinearLayout
+	        android:id="@+id/ssl_mode_container"
+	        android:layout_width="match_parent"
+	        android:layout_height="wrap_content"
+	        android:orientation="vertical" >
+	        
+			<View style="@style/Divider"/>
+	        
+		    <TextView
+		        android:id="@+id/ssl_mode_label"
+		        android:layout_width="wrap_content"
+		        android:layout_height="wrap_content"
+		        android:text="@string/preference_ssl_mode_title" />
+		
+		    <Spinner
+		        android:id="@+id/ssl_mode"
+		        android:layout_width="wrap_content"
+		        android:layout_height="wrap_content"
+		        android:entries="@array/preference_ssl_mode_entries"
+		        android:prompt="@string/preference_ssl_mode_title" />
+		    
+		    <TextView
+		        android:id="@+id/ssl_mode_summary"
+		        android:layout_width="wrap_content"
+		        android:layout_height="wrap_content"
+		        android:text="@string/preference_ssl_mode_secure_summary" />
+	        
+			<View style="@style/Divider"/>
+			
+	    </LinearLayout>
+	    	    	    	
 	    <CheckBox
 	        android:id="@+id/allow_html"
 	        android:layout_width="wrap_content"

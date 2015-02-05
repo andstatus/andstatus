@@ -31,4 +31,5 @@ public interface HttpConnectionApacheSpecific {
     String pathToUrlString(String path);
     HttpResponse httpApacheGetResponse(HttpGet httpGet) throws IOException;
     void httpApacheSetAuthorization(HttpGet httpGet) throws IOException;
+    SslModeEnum getSslMode();
 }

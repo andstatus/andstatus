@@ -28,6 +28,7 @@ import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MyDatabase.OidEnum;
 import org.andstatus.app.net.http.ConnectionException;
+import org.andstatus.app.net.http.SslModeEnum;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginTest;
@@ -47,13 +48,15 @@ public class OriginsAndAccountsInserter extends InstrumentationTestCase {
         assertEquals("Data path", "ok", TestSuite.checkDataPath(this));
 
         OriginTest.createOneOrigin(OriginType.TWITTER, TestSuite.TWITTER_TEST_ORIGIN_NAME,
-                TestSuite.getTestOriginHost(TestSuite.TWITTER_TEST_ORIGIN_NAME), true,
-                false);
+                TestSuite.getTestOriginHost(TestSuite.TWITTER_TEST_ORIGIN_NAME), 
+                true, SslModeEnum.SECURE, false);
         OriginTest.createOneOrigin(OriginType.PUMPIO,
                 TestSuite.PUMPIO_ORIGIN_NAME,
-                TestSuite.getTestOriginHost(TestSuite.PUMPIO_ORIGIN_NAME), true, true);
+                TestSuite.getTestOriginHost(TestSuite.PUMPIO_ORIGIN_NAME), 
+                true, SslModeEnum.SECURE, true);
         OriginTest.createOneOrigin(OriginType.GNUSOCIAL, TestSuite.GNUSOCIAL_TEST_ORIGIN_NAME,
-                TestSuite.getTestOriginHost(TestSuite.GNUSOCIAL_TEST_ORIGIN_NAME), true, true);
+                TestSuite.getTestOriginHost(TestSuite.GNUSOCIAL_TEST_ORIGIN_NAME), 
+                true, SslModeEnum.SECURE, true);
         myContext.persistentOrigins().initialize();
 
         Origin pumpioOrigin = myContext.persistentOrigins().fromName(TestSuite.PUMPIO_ORIGIN_NAME);

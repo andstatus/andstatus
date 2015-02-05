@@ -40,6 +40,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
      * This is used to check (and upgrade if necessary) 
      * existing database after application update.
      * 
+     * v.20 2015-02-04 app.v.15 SslMode added to Origin
      * v.19 2014-11-15 Index on sent date added to messages
      * v.18 2014-09-21 Duplicated User.USERNAME allowed
      * v.17 2014-09-05 Attachment added. Origin "URL" instead of "host"
@@ -56,7 +57,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
      *      All messages are in the same table. 
      *      Allows to have multiple User Accounts in different Originating systems (twitter.com etc. ) 
      */
-    public static final int DATABASE_VERSION = 19;
+    public static final int DATABASE_VERSION = 20;
     public static final String DATABASE_NAME = "andstatus.sqlite";
 
     /**
@@ -424,6 +425,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
         public static final String ORIGIN_NAME = "origin_name";
         public static final String ORIGIN_URL = "origin_url";
         public static final String SSL = "ssl";
+        public static final String SSL_MODE = "ssl_mode";
         public static final String ALLOW_HTML = "allow_html";
         public static final String TEXT_LIMIT = "text_limit";
         public static final String SHORT_URL_LENGTH = "short_url_length";
@@ -601,8 +603,9 @@ public final class MyDatabase extends SQLiteOpenHelper  {
                 + Origin.ORIGIN_TYPE_ID + " INTEGER NOT NULL," 
                 + Origin.ORIGIN_NAME + " TEXT NOT NULL," 
                 + Origin.ORIGIN_URL + " TEXT NOT NULL," 
-                + Origin.SSL + " BOOLEAN DEFAULT 0 NOT NULL," 
-                + Origin.ALLOW_HTML + " BOOLEAN DEFAULT 0 NOT NULL," 
+                + Origin.SSL + " BOOLEAN DEFAULT 1 NOT NULL," 
+                + Origin.SSL_MODE + " INTEGER DEFAULT 1 NOT NULL," 
+                + Origin.ALLOW_HTML + " BOOLEAN DEFAULT 1 NOT NULL," 
                 + Origin.TEXT_LIMIT + " INTEGER NOT NULL,"
                 + Origin.SHORT_URL_LENGTH + " INTEGER NOT NULL DEFAULT 0" 
                 + ")");

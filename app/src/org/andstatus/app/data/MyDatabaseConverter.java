@@ -136,6 +136,9 @@ class MyDatabaseConverter {
         if (currentVersion == 18) {
             currentVersion = convert18to19(db, currentVersion);
         }
+        if (currentVersion == 19) {
+            currentVersion = convert19to20(db, currentVersion);
+        }
         if ( currentVersion == newVersion) {
             MyLog.i(this, "Successfully upgraded database from version " + oldVersion + " to version "
                     + newVersion + ".");
@@ -284,6 +287,27 @@ class MyDatabaseConverter {
             logUpgradeStepStart(oldVersion, versionTo);
 
             sql = "CREATE INDEX idx_msg_sent_date ON msg (msg_sent_date)";
+            MyDatabase.execSQL(db, sql);
+            
+            ok = true;
+        } catch (Exception e) {
+            MyLog.e(this, e);
+        }
+        return assessUpgradeStepResult(oldVersion, versionTo, ok, sql);
+    }
+
+    private int convert19to20(SQLiteDatabase db, int oldVersion) {
+        final int versionTo = 20;
+        boolean ok = false;
+        String sql = "";
+        try {
+            logUpgradeStepStart(oldVersion, versionTo);
+
+            sql = "ALTER TABLE origin ADD COLUMN ssl_mode INTEGER DEFAULT 1";
+            MyDatabase.execSQL(db, sql);
+            sql = "UPDATE origin SET ssl_mode=1";
+            MyDatabase.execSQL(db, sql);
+            sql = "UPDATE origin SET ssl_mode=2 WHERE origin_name='Quitter.Zone'";
             MyDatabase.execSQL(db, sql);
             
             ok = true;

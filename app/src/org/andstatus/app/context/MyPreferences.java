@@ -69,7 +69,6 @@ public class MyPreferences {
     public static final String KEY_ABOUT_APPLICATION = "about_application";
     public static final String KEY_COMMANDS_QUEUE = "commands_queue";
 
-    public static final String KEY_SSL_MODE = "ssl_mode";
     public static final String KEY_USE_KITKAT_MEDIA_CHOOSER = "use_kitkat_media_chooser";
     public static final String KEY_DEBUGGING_INFO_IN_UI = "debugging_info_in_ui";
     

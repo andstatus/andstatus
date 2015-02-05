@@ -27,6 +27,7 @@ import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.net.http.SslModeEnum;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.UrlUtils;
@@ -54,25 +55,25 @@ public class OriginEditorTest extends ActivityInstrumentationTestCase2<OriginEdi
         String host = originName + ".example.com";
         boolean isSsl = false;
         boolean allowHtml = true;
-        forOneOrigin(originType, originName, host, isSsl, allowHtml);
+        forOneOrigin(originType, originName, host, isSsl, SslModeEnum.SECURE, allowHtml);
         
         host = originName + ".some.example.com";
         isSsl = true;
         allowHtml = false;
-        forOneOrigin(originType, originName, host, isSsl, allowHtml);
+        forOneOrigin(originType, originName, host, isSsl, SslModeEnum.INSECURE, allowHtml);
 
         host = originName + ". badhost.example.com";
-        forOneOrigin(originType, originName, host, isSsl, allowHtml);
+        forOneOrigin(originType, originName, host, isSsl, SslModeEnum.MISCONFIGURED, allowHtml);
 
         host = "http://" + originName + ".fourth.example.com";
-        forOneOrigin(originType, originName, host, isSsl, allowHtml);
+        forOneOrigin(originType, originName, host, isSsl, SslModeEnum.SECURE, allowHtml);
 
         host = "http://" + originName + ".fifth.example.com/status";
-        forOneOrigin(originType, originName, host, isSsl, allowHtml);
+        forOneOrigin(originType, originName, host, isSsl, SslModeEnum.INSECURE, allowHtml);
     }
     
     public void forOneOrigin(final OriginType originType, final String originName,
-            final String hostOrUrl, final boolean isSsl, final boolean allowHtml)
+            final String hostOrUrl, final boolean isSsl, final SslModeEnum sslMode, final boolean allowHtml)
             throws InterruptedException {
         final String method = "OriginEditorTest";
 
@@ -105,6 +106,7 @@ public class OriginEditorTest extends ActivityInstrumentationTestCase2<OriginEdi
         final EditText editTextOriginName = (EditText) activity.findViewById(R.id.origin_name);
         final EditText editTextHost = (EditText) activity.findViewById(R.id.host);
         final CheckBox checkBoxIsSsl = (CheckBox) activity.findViewById(R.id.is_ssl);
+        final Spinner spinnerSslMode = (Spinner) activity.findViewById(R.id.ssl_mode);
         final CheckBox checkBoxAllowHtml = (CheckBox) activity.findViewById(R.id.allow_html);
 
         Runnable clicker = new Runnable() {
@@ -114,6 +116,7 @@ public class OriginEditorTest extends ActivityInstrumentationTestCase2<OriginEdi
                 editTextOriginName.setText(originName);
                 editTextHost.setText(hostOrUrl);
                 checkBoxIsSsl.setChecked(isSsl);
+                spinnerSslMode.setSelection(sslMode.getEntriesPosition());
                 checkBoxAllowHtml.setChecked(allowHtml);
                 try {
                     Thread.sleep(1000);

@@ -10,6 +10,7 @@ import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.net.social.MbConfig;
 import org.andstatus.app.net.http.OAuthClientKeysTest;
+import org.andstatus.app.net.http.SslModeEnum;
 import org.andstatus.app.origin.Origin.Builder;
 import org.andstatus.app.util.UrlUtils;
 
@@ -88,26 +89,27 @@ public class OriginTest extends InstrumentationTestCase {
         String hostOrUrl = "sn" + seed + ".example.org";
         boolean isSsl = true;
         boolean allowHtml = true;
-        createOneOrigin(originType, originName, hostOrUrl, isSsl, allowHtml);
+        createOneOrigin(originType, originName, hostOrUrl, isSsl, SslModeEnum.SECURE, allowHtml);
         createOneOrigin(originType, originName, "https://" + hostOrUrl
-                + "/somepath", isSsl, allowHtml);
+                + "/somepath", isSsl, SslModeEnum.INSECURE, allowHtml);
         createOneOrigin(originType, originName, "https://" + hostOrUrl
-                + "/pathwithslash/", isSsl, allowHtml);
+                + "/pathwithslash/", isSsl, SslModeEnum.MISCONFIGURED, allowHtml);
         isSsl = false;
         Origin.Builder builder = createOneOrigin(originType, originName,
-                hostOrUrl, isSsl, allowHtml);
+                hostOrUrl, isSsl, SslModeEnum.SECURE, allowHtml);
         Origin origin = builder.build();
         assertEquals("New origin has no children", false, origin.hasChildren());
         assertEquals("Origin deleted", true, builder.delete());
     }
 
     public static Builder createOneOrigin(OriginType originType,
-            String originName, String hostOrUrl, boolean isSsl,
-            boolean allowHtml) {
+            String originName, String hostOrUrl, boolean isSsl, 
+            SslModeEnum sslMode, boolean allowHtml) {
         Origin.Builder builder = new Origin.Builder(originType);
         builder.setName(originName);
         builder.setHostOrUrl(hostOrUrl);
         builder.setSsl(isSsl);
+        builder.setSslMode(sslMode);
         builder.setHtmlContentAllowed(allowHtml);
         builder.save();
         Origin origin = builder.build();
@@ -115,18 +117,18 @@ public class OriginTest extends InstrumentationTestCase {
             OAuthClientKeysTest.insertTestKeys(origin);
         }
 
-        checkAttributes(originName, hostOrUrl, isSsl, allowHtml, origin);
+        checkAttributes(originName, hostOrUrl, isSsl, sslMode, allowHtml, origin);
 
         MyContextHolder.get().persistentOrigins().initialize();
         Origin origin2 = MyContextHolder.get().persistentOrigins()
                 .fromId(origin.getId());
-        checkAttributes(originName, hostOrUrl, isSsl, allowHtml, origin2);
+        checkAttributes(originName, hostOrUrl, isSsl, sslMode, allowHtml, origin2);
 
         return builder;
     }
 
     private static void checkAttributes(String originName, String hostOrUrl,
-            boolean isSsl, boolean allowHtml, Origin origin) {
+            boolean isSsl, SslModeEnum sslMode, boolean allowHtml, Origin origin) {
         assertTrue("Origin " + originName + " added", origin.isPersistent());
         assertEquals(originName, origin.getName());
         if (origin.canSetUrlOfOrigin()) {
@@ -144,6 +146,7 @@ public class OriginTest extends InstrumentationTestCase {
             assertEquals(origin.getOriginType().urlDefault, origin.getUrl());
         }
         assertEquals(isSsl, origin.isSsl());
+        assertEquals(sslMode, origin.getSslMode());
         assertEquals(allowHtml, origin.isHtmlContentAllowed());
     }
 

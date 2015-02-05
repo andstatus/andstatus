@@ -14,13 +14,10 @@
 	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 	See the License for the specific language governing permissions and
 	limitations under the License.
-    
-    TODO: Add narrow enough intent filters to activities in order not to see these activities everywhere
-     ("Open with...")
  -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
 	package="org.andstatus.app" 
-	android:versionName="14.4" android:versionCode="121"
+	android:versionName="15.0-snapshot" android:versionCode="121"
 	android:installLocation="internalOnly">
 
 	<uses-sdk android:minSdkVersion="16" android:targetSdkVersion="21" />
