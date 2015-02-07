@@ -27,7 +27,7 @@ import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.origin.OriginList;
+import org.andstatus.app.origin.PersistentOriginList;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
 
@@ -79,7 +79,7 @@ public class AccountSettingsActivityTest extends ActivityInstrumentationTestCase
     
     private void openingOriginList() throws InterruptedException {
         final String method = "testOpeningOriginList";
-        ActivityMonitor activityMonitor = getInstrumentation().addMonitor(OriginList.class.getName(), null, false);
+        ActivityMonitor activityMonitor = getInstrumentation().addMonitor(PersistentOriginList.class.getName(), null, false);
         Runnable clicker = new Runnable() {
             @Override
             public void run() {

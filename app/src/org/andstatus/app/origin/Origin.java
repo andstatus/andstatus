@@ -377,11 +377,24 @@ public class Origin {
             return clone(origin);
         }
 
-        public Builder setName(String name) {
+        public Builder setName(String nameIn) {
+            String name = correctedName(nameIn);
             if (!origin.isPersistent() && origin.isNameValid(name)) {
                 origin.name = name;
             }
             return this;
+        }
+
+        private String correctedName(String nameIn) {
+            if (origin.isNameValid(nameIn)) {
+                return nameIn;
+            }
+            if (TextUtils.isEmpty(nameIn)) {
+                return "";
+            }
+            // Test with: http://www.regexplanet.com/advanced/java/index.html
+            return nameIn.trim().replaceAll("ñ","n")
+                    .replaceAll("[^a-zA-Z_0-9/\\.\\-]+", ".").replaceAll("[\\.]+", ".");
         }
 
         public Builder setUrl(URL urlIn) {
@@ -400,7 +413,7 @@ public class Origin {
             }
             return this;
         }
-
+        
         public Builder setSsl(boolean ssl) {
             if (origin.originType.canChangeSsl) {
                 origin.ssl = ssl;

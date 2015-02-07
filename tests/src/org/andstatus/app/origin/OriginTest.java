@@ -174,4 +174,25 @@ public class OriginTest extends InstrumentationTestCase {
         assertTrue(desc, permalink.contains(userName + "/status/" + messageOid));
         assertFalse(desc, permalink.contains("://api."));
     }
+    
+    public void testNameFix() {
+        checkOneName("o.mrblog.nl", " o. mrblog. nl ");
+        checkOneName("o.mrblog.nl", " o.   mrblog. nl ");
+        checkOneName("Aqeel.s.instance", "Aqeel's instance");
+        checkOneName("BKA.li.Public.GS", "BKA.li Public GS");
+        checkOneName("Quitter.Espanol", "Quitter Español");
+    }
+    
+    private void checkOneName(String out, String in) {
+        assertEquals(out, new Origin.Builder(OriginType.GNUSOCIAL).setName(in).build().getName());
+    }
+
+    public void testHostFix() {
+        checkOneHost("https://o.mrblog.nl", " o. mrBlog. nl ", true);
+        checkOneHost("http://o.mrblog.nl", " o.   mrblog. nl ", false);
+    }
+    
+    private void checkOneHost(String out, String in, boolean ssl) {
+        assertEquals(out, new Origin.Builder(OriginType.GNUSOCIAL).setHostOrUrl(in).setSsl(ssl).build().getUrl().toExternalForm());
+    }
 }

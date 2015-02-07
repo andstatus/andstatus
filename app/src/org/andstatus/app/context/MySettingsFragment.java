@@ -39,7 +39,7 @@ import org.andstatus.app.TimelineActivity;
 import org.andstatus.app.account.AccountSettingsActivity;
 import org.andstatus.app.backup.BackupActivity;
 import org.andstatus.app.backup.RestoreActivity;
-import org.andstatus.app.origin.OriginList;
+import org.andstatus.app.origin.PersistentOriginList;
 import org.andstatus.app.service.QueueViewer;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
@@ -259,7 +259,7 @@ public class MySettingsFragment extends PreferenceFragment implements
                 }
                 break;
             case KEY_MANAGE_ORIGIN_SYSTEMS:
-                startActivity(new Intent(getActivity(), OriginList.class));
+                startActivity(new Intent(getActivity(), PersistentOriginList.class));
                 break;
             case KEY_ABOUT_APPLICATION:
                 startActivity(new Intent(getActivity(), HelpActivity.class));

@@ -17,6 +17,7 @@
 package org.andstatus.app.origin;
 
 import org.andstatus.app.account.AccountDataReader;
+import org.andstatus.app.account.AccountDataReaderEmpty;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.net.social.ConnectionEmpty;
 import org.andstatus.app.net.http.HttpConnection;
@@ -59,6 +60,7 @@ public class OriginConnectionData {
         connectionData.connectionClass = origin.getOriginType().getConnectionClass();
         connectionData.httpConnectionClass = origin.getOriginType()
                 .getHttpConnectionClass(connectionData.isOAuth());
+        connectionData.dataReader = new AccountDataReaderEmpty();
         return connectionData;
     }
 

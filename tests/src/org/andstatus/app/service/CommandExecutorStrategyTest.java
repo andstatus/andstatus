@@ -24,6 +24,8 @@ import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.ConnectionException.StatusCode;
 import org.andstatus.app.net.http.HttpConnectionMock;
+import org.andstatus.app.origin.DiscoveredOrigins;
+import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.RawResourceUtils;
 import org.andstatus.app.util.TriState;
 
@@ -125,6 +127,18 @@ public class CommandExecutorStrategyTest extends InstrumentationTestCase {
         assertFalse(commandData.getResult().hasError());
         
         httpConnectionMock.setException(null);
+    }
+    
+    public void testDiscoverOrigins() throws IOException {
+        httpConnectionMock.setResponse(RawResourceUtils.getString(this.getInstrumentation().getContext(), 
+                org.andstatus.app.tests.R.raw.get_open_instances));
+        CommandData commandData = new CommandData(CommandEnum.GET_OPEN_INSTANCES, "", OriginType.GNUSOCIAL.getId());
+        DiscoveredOrigins.clear();
+        CommandExecutorStrategy.executeCommand(commandData, null);
+        assertEquals(1, commandData.getResult().getExecutionCount());
+        assertFalse(commandData.getResult().hasError());
+        assertTrue(commandData.getResult().getDownloadedCount() > 0);
+        assertFalse(DiscoveredOrigins.get().isEmpty());
     }
     
     @Override

@@ -94,10 +94,7 @@ public class ConnectionPumpio extends Connection {
                 url = "";
                 break;
         }
-        if (!TextUtils.isEmpty(url)) {
-            url = http.data.basicPath + "/" + url;
-        }
-        return url;
+        return prependWithBasicPath(url);
     }
 
     @Override

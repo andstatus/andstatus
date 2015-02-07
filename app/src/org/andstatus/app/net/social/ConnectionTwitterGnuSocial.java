@@ -23,6 +23,7 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnection;
+import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.UriUtils;
 import org.andstatus.app.util.UrlUtils;
@@ -32,6 +33,7 @@ import org.json.JSONObject;
 
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -47,6 +49,9 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitter1p0 {
             case GET_CONFIG:
                 url = "statusnet/config" + EXTENSION;
                 break;
+            case GET_OPEN_INSTANCES:
+                url = "http://gstools.org/api/get_open_instances";
+                break;
             case PUBLIC_TIMELINE:
                 url = "statuses/public_timeline" + EXTENSION;
                 break;
@@ -58,13 +63,11 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitter1p0 {
                 break;
         }
         if (TextUtils.isEmpty(url)) {
-            url = super.getApiPath1(routine);
-        } else {
-            url = http.data.basicPath + "/" + url;
-        }
-        return url;
+            return super.getApiPath1(routine);
+        } 
+        return prependWithBasicPath(url);
     }
-    
+
     @Override
     public List<String> getIdsOfUsersFollowedBy(String userId) throws ConnectionException {
         Uri sUri = Uri.parse(getApiPath(ApiRoutineEnum.GET_FRIENDS_IDS));
@@ -175,4 +178,43 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitter1p0 {
         }
         return mbUser;
     }
+    
+    @Override
+    public List<MbOrigin> getOpenInstances() throws ConnectionException {
+        JSONObject result = http.getUnauthenticatedRequest(getApiPath(ApiRoutineEnum.GET_OPEN_INSTANCES));
+        List<MbOrigin> origins = new ArrayList<MbOrigin>();
+        StringBuilder logMessage = new StringBuilder(ApiRoutineEnum.GET_OPEN_INSTANCES.toString());
+        boolean error = false;
+        if (result == null) {
+            I18n.appendWithSpace(logMessage, "Response is null JSON");
+            error = true;
+        }
+        if (!error && !result.optString("status").equals("OK")) {
+            I18n.appendWithSpace(logMessage, "gtools service returned the error: '" + result.optString("error") + "'");
+            error = true;
+        }
+        if (!error) {
+            JSONObject data = result.optJSONObject("data");
+            if (data != null) {
+                try {
+                    Iterator<String> iterator = data.keys();
+                    while(iterator.hasNext()) {
+                        String key = iterator.next();
+                        JSONObject instance = data.getJSONObject(key);
+                        origins.add(new MbOrigin(instance.optString("instance_name"),
+                                instance.optString("instance_address"),
+                                instance.optLong("users_count"),
+                                instance.optLong("notices_count")));
+                    }
+                } catch (JSONException e) {
+                    throw ConnectionException.loggedJsonException(this, logMessage.toString(), e, data);
+                }
+            }
+        }
+        if (error) {
+            throw new ConnectionException(logMessage.toString());
+        }
+        return origins;
+    }
+    
 }

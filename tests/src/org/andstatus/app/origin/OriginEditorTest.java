@@ -64,11 +64,11 @@ public class OriginEditorTest extends ActivityInstrumentationTestCase2<OriginEdi
         forOneOrigin(originType, originName, host, isSsl, SslModeEnum.INSECURE, allowHtml,
                 false, true);
 
-        host = originName + ". badhost.example.com";
+        host = originName + ". я badhost.example.com";
         forOneOrigin(originType, originName, host, isSsl, SslModeEnum.MISCONFIGURED, allowHtml,
                 true, false);
 
-        host = "http://" + originName + ".fourth.example.com";
+        host = "http://" + originName + ".fourth. example. com ";
         forOneOrigin(originType, originName, host, isSsl, SslModeEnum.SECURE, allowHtml,
                 false, false);
 

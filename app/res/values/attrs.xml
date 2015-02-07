@@ -57,6 +57,7 @@
         <attr name="helpIcon" format="reference" />
         <attr name="hideMessageIcon" format="reference" />
         <attr name="mySearchIcon" format="reference" />
+        <attr name="newIcon" format="reference" />
         <attr name="postMessageIcon" format="reference" />
         <attr name="reloadIcon" format="reference" />
         <attr name="replyBackground" format="reference" />

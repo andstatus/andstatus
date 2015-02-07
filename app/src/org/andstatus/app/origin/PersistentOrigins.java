@@ -31,7 +31,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class PersistentOrigins {
-    private Map<String,Origin> mOrigins = new ConcurrentHashMap<String, Origin>();
+    private final Map<String,Origin> mOrigins = new ConcurrentHashMap<String, Origin>();
     
     private PersistentOrigins() {
     }
@@ -111,5 +111,4 @@ public class PersistentOrigins {
     public boolean isHtmlContentAllowed(long originId) {
         return fromId(originId).isHtmlContentAllowed();
     }
-    
 }

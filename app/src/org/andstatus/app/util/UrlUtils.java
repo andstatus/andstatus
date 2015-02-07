@@ -24,6 +24,7 @@ import org.json.JSONObject;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Locale;
 
 public final class UrlUtils {
     private static final String TAG = UrlUtils.class.getSimpleName();
@@ -83,14 +84,23 @@ public final class UrlUtils {
         if (TextUtils.isEmpty(hostOrUrl)) {
             return null;
         }
-        if (hostIsValid(hostOrUrl)) {
-            return fromString("http" + (isSsl ? "s" : "") + "://" + hostOrUrl);
+        String corrected = correctedHostOrUrl(hostOrUrl); 
+        if (hostIsValid(corrected)) {
+            return fromString("http" + (isSsl ? "s" : "") + "://" + corrected);
         }
-        URL urlIn = fromString(hostOrUrl);
+        URL urlIn = fromString(corrected);
         if (urlIn == null || urlIn.getProtocol().equals(isSsl ? "https" : "http")) {
             return urlIn;
         }
         return fromString( (isSsl ? "https" : "http") + urlIn.toExternalForm().substring(urlIn.toExternalForm().indexOf(":")));
+    }
+
+    private static String correctedHostOrUrl(String hostOrUrl) {
+        if (TextUtils.isEmpty(hostOrUrl)) {
+            return "";
+        }
+        // Test with: http://www.regexplanet.com/advanced/java/index.html
+        return hostOrUrl.replaceAll(" ","").toLowerCase(Locale.ENGLISH);
     }
     
     public static String pathToUrlString(URL originUrl, String path) {

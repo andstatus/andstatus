@@ -58,8 +58,8 @@ import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.origin.Origin;
-import org.andstatus.app.origin.OriginList;
 import org.andstatus.app.origin.OriginType;
+import org.andstatus.app.origin.PersistentOriginList;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.service.MyServiceState;
 import org.andstatus.app.util.DialogFactory;
@@ -119,7 +119,7 @@ public class AccountSettingsActivity extends Activity {
     }
     
     protected boolean selectOrigin() {
-        Intent i = new Intent(AccountSettingsActivity.this, OriginList.class);
+        Intent i = new Intent(AccountSettingsActivity.this, PersistentOriginList.class);
         i.setAction(Intent.ACTION_INSERT);
         startActivityForResult(i, ActivityRequestCode.SELECT_ORIGIN.id);
         return true;

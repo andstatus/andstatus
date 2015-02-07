@@ -214,7 +214,13 @@
             android:noHistory="true">
         </activity>
 
-        <activity android:name=".origin.OriginList"
+        <activity android:name=".origin.DiscoveredOriginList"
+            android:theme="@style/DialogThemeSelector"
+            android:label="@string/discover_open_instances_title"
+            android:parentActivityName=".origin.PersistentOriginList">
+        </activity>
+        
+        <activity android:name=".origin.PersistentOriginList"
             android:theme="@style/DialogThemeSelector"
             android:label="@string/label_origin_list"
             android:parentActivityName=".context.MySettingsActivity">

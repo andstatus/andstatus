@@ -103,6 +103,7 @@
   <string name="dialog_title_sending_message">Sending a message&#8230;</string>
   <string name="dialog_title_service_unavailable">Service Unavailable</string>
   <string name="dialog_title_timeline_loading">Updating a Timeline&#8230;</string>
+  <string name="discover_open_instances_title">Discover open instances</string>
   <string name="drawer_close">Close navigation drawer</string>
   <string name="drawer_open">Open navigation drawer</string>
   <string name="empty_in_parenthesis">(empty)</string>
@@ -125,6 +126,7 @@
   <string name="fetch_frequency_entries_8_hours">8 hours</string>
   <string name="fetch_frequency_entries_12_hours">12 hours</string>
   <string name="fetch_frequency_entries_1_day">day</string>
+  <string name="get_open_instances_title">Get Open Instances</string>
   <string name="header_accounts">Accounts</string>
   <string name="header_add_new_account">Add new account</string>
   <string name="header_manage_existing_accounts">Manage existing accounts</string>

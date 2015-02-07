@@ -26,6 +26,32 @@
 		</subtitle>
     </header>
 
+    <release android:versionName="15.0" android:versionCode="122"
+        versionDate="2014-02-07"
+        versionTitle="Discovery of open GNU Social instances">
+        <changes>
+            <change>Implemented discovery of open GNU Social instances (servers)
+                using the new &quot;get_open_instances&quot; gstools.org API. 
+                From now on there is no need to have all open instances 
+                preconfigured in AndStatus:
+                a User may select new &quot;Microblogging system&quot; 
+                from the live list, downloaded via online service. 
+                We hope that this feature will stimulate GNU social instance owners to
+                register in this discovery service.
+                <a href="https://github.com/andstatus/andstatus/issues/84">#84</a>
+            </change>
+            <change>&quot;SSL Mode&quot; setting moved to Microblogging system, 
+                allowing to have different SSL mode per Microblogging system.
+            </change>
+            <change>Added two options to Microblogging system: &quot;Include in Global Search
+				while in Combined Timeline&quot; and 
+				&quot;Include in Reload while in Comblined Public timeline&quot;.
+            </change>
+            <change>Fixed ANR (application freeze/or crash) when requesting download of
+				Avatars and Attachments during a Timeline drawing.
+            </change>
+        </changes>
+    </release>
     <release android:versionName="14.4" android:versionCode="121"
         versionDate="2014-02-03"
         versionTitle="Stalled connections are killed">

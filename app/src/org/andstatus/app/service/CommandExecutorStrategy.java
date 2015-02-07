@@ -80,6 +80,9 @@ class CommandExecutorStrategy implements CommandExecutorParent {
             case FETCH_AVATAR:
                 strategy = new CommandExecutorOther();
                 break;
+            case GET_OPEN_INSTANCES:
+                strategy = new CommandExecutorGetOpenInstances();
+                break;
             default:
                 if (!execContext.getMyAccount().isValid()) {
                     if (execContext.getTimelineType() == TimelineTypeEnum.PUBLIC) {

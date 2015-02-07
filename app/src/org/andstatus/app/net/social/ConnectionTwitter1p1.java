@@ -99,11 +99,9 @@ public class ConnectionTwitter1p1 extends ConnectionTwitter {
                 break;
         }
         if (TextUtils.isEmpty(url)) {
-            url = super.getApiPath1(routine);
-        } else {
-            url = http.data.basicPath + "/" + url;
-        }
-        return url;
+            return super.getApiPath1(routine);
+        } 
+        return prependWithBasicPath(url);
     }
 
     @Override

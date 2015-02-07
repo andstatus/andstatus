@@ -22,7 +22,6 @@ import android.text.TextUtils;
 
 import org.andstatus.app.account.AccountDataWriter;
 import org.andstatus.app.data.MyDatabase.User;
-import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.ConnectionException.StatusCode;
 import org.andstatus.app.net.http.HttpConnection;
@@ -86,7 +85,8 @@ public abstract class Connection {
         /** List of users */
         GET_FRIENDS, 
         /** List of Users' IDs */
-        GET_FRIENDS_IDS, 
+        GET_FRIENDS_IDS,
+        GET_OPEN_INSTANCES,
         GET_USER,
         POST_MESSAGE,
         POST_WITH_MEDIA,
@@ -426,6 +426,10 @@ public abstract class Connection {
     public MbConfig getConfig() throws ConnectionException {
         return MbConfig.getEmpty();
     }
+
+    public List<MbOrigin> getOpenInstances() throws ConnectionException {
+        throw ConnectionException.fromStatusCode(StatusCode.UNSUPPORTED_API, MyLog.objTagToString(this));
+    }
     
     /**
      * @return Unix time. Returns 0 in a case of an error or absence of such a field
@@ -503,5 +507,12 @@ public abstract class Connection {
 
     public HttpConnection getHttp() {
         return http;
+    }
+
+    protected String prependWithBasicPath(String url) {
+        if (!TextUtils.isEmpty(url) && !url.contains("://")) {
+            url = http.data.basicPath + "/" + url;
+        }
+        return url;
     }
 }

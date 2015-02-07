@@ -39,6 +39,7 @@ import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.net.http.SslModeEnum;
+import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.UrlUtils;
 
@@ -61,6 +62,7 @@ public class OriginEditor extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         MyPreferences.setThemedContentView(this, R.layout.origin_editor);
+        MyServiceManager.setServiceUnavailable();
 
         buttonSave = (Button) findViewById(R.id.button_save);
         Button buttonDiscard = (Button) findViewById(R.id.button_discard);
@@ -97,7 +99,12 @@ public class OriginEditor extends Activity {
         if (Intent.ACTION_INSERT.equals(editorAction)) {
             buttonSave.setOnClickListener(new AddOrigin());
             buttonSave.setText(R.string.button_add);
-            builder = new Origin.Builder(OriginType.GNUSOCIAL);
+            Origin origin = DiscoveredOrigins.fromName(intentNew.getStringExtra(IntentExtra.EXTRA_ORIGIN_NAME.key));
+            if (origin.isValid()) {
+                builder = new Origin.Builder(origin);
+            } else {
+                builder = new Origin.Builder(OriginType.GNUSOCIAL);
+            }
         } else {
             buttonSave.setOnClickListener(new SaveOrigin());
             spinnerOriginType.setEnabled(false);

@@ -76,15 +76,19 @@ public abstract class HttpConnection {
     protected abstract void postRequest(HttpReadResult result)  throws ConnectionException;
     
     public final JSONObject getRequest(String path) throws ConnectionException {
-        HttpReadResult result = getRequestCommon(path);
-        return result.getJsonObject();
+        return getRequestCommon(path, true).getJsonObject();
     }
 
-    private HttpReadResult getRequestCommon(String path) throws ConnectionException {
+    public final JSONObject getUnauthenticatedRequest(String path) throws ConnectionException {
+        return getRequestCommon(path, false).getJsonObject();
+    }
+    
+    private HttpReadResult getRequestCommon(String path, boolean authenticated) throws ConnectionException {
         if (TextUtils.isEmpty(path)) {
             throw new IllegalArgumentException("path is empty");
         }
         HttpReadResult result = new HttpReadResult(pathToUrlString(path));
+        result.authenticate = authenticated;
         getRequest(result);
         MyLog.logNetworkLevelMessage(this, "getRequest_response", result.strResponse);
         result.parseAndThrow();
@@ -92,8 +96,7 @@ public abstract class HttpConnection {
     }
     
     public final JSONArray getRequestAsArray(String path) throws ConnectionException {
-        HttpReadResult result = getRequestCommon(path);
-        return result.getJsonArray();
+        return getRequestCommon(path, true).getJsonArray();
     }
 
     public final void downloadFile(String url, File file) throws ConnectionException {
