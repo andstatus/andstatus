@@ -1236,6 +1236,9 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     }
 
     private void onReceiveBeforeExecutingCommand(CommandData commandData) {
+        if (mMessageEditor.isVisible()) {
+            return;
+        }
         if (mSyncIndicator.getVisibility() != View.VISIBLE) {
             mSyncIndicator.setVisibility(View.VISIBLE);
         }
@@ -1334,5 +1337,11 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     @Override
     public long getSelectedUserId() {
         return mListParametersNew.mSelectedUserId;
+    }
+
+    @Override
+    public void invalidateOptionsMenu() {
+        hideSyncIndicator();
+        super.invalidateOptionsMenu();
     }
 }

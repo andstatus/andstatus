@@ -19,20 +19,39 @@
     android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
-    <LinearLayout
-	    android:id="@+id/myLayoutParent"
+    <RelativeLayout
+	    android:id="@+id/myRelativeLayoutParent"
 	    android:layout_width="match_parent"
 	    android:layout_height="match_parent"
 	    android:orientation="vertical" >
 
 	    <LinearLayout
+		    android:id="@+id/myLayoutParent"
+		    android:layout_width="match_parent"
+		    android:layout_height="match_parent"
+		    android:orientation="vertical" >
+	
+		    <ListView
+		        android:id="@+android:id/list"
+		        android:layout_width="match_parent"
+		        android:layout_height="0dip"
+		        android:layout_weight="1"
+		        android:scrollbars="vertical" />
+		
+	    </LinearLayout>
+
+	    <!-- On setting background see:
+	     http://stackoverflow.com/questions/11914547/setting-a-view-background-based-on-theme-attribute-crash-the-app -->
+	    <LinearLayout
 	        android:id="@+id/sync_indicator"
-	        android:layout_width="wrap_content"
+	        android:layout_width="match_parent"
 	        android:layout_height="wrap_content"
+	        android:background="?android:attr/colorBackground"
 	        android:paddingBottom="15dip"
 	        android:paddingLeft="5dip"
 	        android:paddingRight="5dip"
 	        android:paddingTop="15dip"
+	    	android:layout_alignParentBottom="true"
 	        android:visibility="gone" >
 	
 	        <ProgressBar
@@ -47,18 +66,8 @@
 	            android:text="@string/syncing"
 	            android:textAppearance="?attr/messageBodyAppearance"
 	            android:textColor="?attr/messageBodyColor"
-	            android:textStyle="?attr/messageBodyStyle" >
-	
-	        </TextView>
+	            android:textStyle="?attr/messageBodyStyle" />
 	    </LinearLayout>
-	
-	    <ListView
-	        android:id="@+android:id/list"
-	        android:layout_width="match_parent"
-	        android:layout_height="0dip"
-	        android:layout_weight="1"
-	        android:scrollbars="vertical" />
-	
-    </LinearLayout>
+    </RelativeLayout>
     <include layout="@layout/navigation_drawer" />
 </android.support.v4.widget.DrawerLayout>
