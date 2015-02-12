@@ -27,7 +27,7 @@
     </header>
 
     <release android:versionName="15.0" android:versionCode="122"
-        versionDate="2014-02-07"
+        versionDate="2014-02-12"
         versionTitle="Discovery of open GNU Social instances">
         <changes>
             <change>Implemented discovery of open GNU Social instances (servers)
@@ -47,6 +47,8 @@
 				while in Combined Timeline&quot; and 
 				&quot;Include in Reload while in Comblined Public timeline&quot;.
             </change>
+            <change>Added &quot;Swipe to Refresh&quot; feature for a Timeline view. 
+                The swipe duplicates &quot;Reload&quot; menu item.</change>
             <change>Fixed ANR (application freeze/or crash) when requesting download of
 				Avatars and Attachments during a Timeline drawing.
             </change>

@@ -1,6 +1,5 @@
 /* 
- * Copyright (c) 2011-2014 yvolk (Yuri Volkov), http://yurivolkov.com
- * Copyright (C) 2008 Torgny Bjers
+ * Copyright (c) 2011-2015 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +34,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.SearchRecentSuggestions;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -77,14 +77,17 @@ import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.UriUtils;
 import org.andstatus.app.widget.MySimpleCursorAdapter;
+import org.andstatus.app.widget.MySwipeRefreshLayout;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @author yvolk@yurivolkov.com, torgny.bjers
+ * @author yvolk@yurivolkov.com
  */
-public class TimelineActivity extends ListActivity implements MyServiceListener, OnScrollListener, OnItemClickListener, ActionableMessageList, LoaderCallbacks<Cursor> {
+public class TimelineActivity extends ListActivity implements MyServiceListener,
+        OnScrollListener, OnItemClickListener, ActionableMessageList, 
+        LoaderCallbacks<Cursor> {
     private static final int DIALOG_ID_TIMELINE_TYPE = 9;
     private static final int LOADER_ID = 1;
     private static final String ACTIVITY_PERSISTENCE_NAME = TimelineActivity.class.getSimpleName();
@@ -95,6 +98,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
      * when new items are being loaded into the list 
      */
     private LinearLayout mLoadingLayout;
+    private MySwipeRefreshLayout mSwipeRefreshLayout = null;
 
     /** Parameters of currently shown Timeline */
     private TimelineListParameters mListParameters;
@@ -179,6 +183,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         mSyncIndicator = findViewById(R.id.sync_indicator);
         mContextMenu = new MessageContextMenu(this);
         mMessageEditor = new MessageEditor(this);
+        initializeSwipeRefresh();
 
         restoreActivityState();
         
@@ -203,6 +208,16 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         }
         updateScreen();
         queryListData(false);
+    }
+
+    private void initializeSwipeRefresh() {
+        mSwipeRefreshLayout = (MySwipeRefreshLayout) findViewById(R.id.swipeRefreshLayout);
+        mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                manualReload(false, true);
+            }
+        });
     }
 
     @Override
@@ -1297,8 +1312,12 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     private void setLoading(boolean loading) {
         if (isLoading() != loading && !isFinishing()) {
             MyLog.v(this, "isLoading set to " + loading + ", instanceId=" + mInstanceId );
+            if (mSwipeRefreshLayout != null) {
+                mSwipeRefreshLayout.setRefreshing(loading);
+            }
             if (loading) {
                 mLoadingLayout.setVisibility(View.VISIBLE);
+                
             } else {
                 mLoadingLayout.setVisibility(View.INVISIBLE);
             }

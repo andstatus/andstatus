@@ -35,6 +35,14 @@ public class DiscoveredOriginList extends OriginList implements MyServiceListene
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        initializeSwipeRefresh();
+        if (DiscoveredOrigins.get().isEmpty()) {
+            mSwipeRefreshLayout.setRefreshing(true);
+            manualReload();
+        }
+    }
+
+    private void initializeSwipeRefresh() {
         mSwipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.myLayoutParent);
         mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
@@ -42,10 +50,6 @@ public class DiscoveredOriginList extends OriginList implements MyServiceListene
                 manualReload();
             }
         });
-        if (DiscoveredOrigins.get().isEmpty()) {
-            mSwipeRefreshLayout.setRefreshing(true);
-            manualReload();
-        }
     }
 
     protected Iterable<Origin> getOrigins() {
