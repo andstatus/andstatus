@@ -52,6 +52,9 @@
             <change>Fixed ANR (application freeze/or crash) when requesting download of
 				Avatars and Attachments during a Timeline drawing.
             </change>
+            <changes>Added Japanese (<a href="https://crowdin.com/profile/naofum">naofum</a>) 
+                and Arabic (<a href="https://quitter.no/dragnucs">dragnucs</a>) translations. 
+                Thank you for contributions!</changes>
         </changes>
     </release>
     <release android:versionName="14.4" android:versionCode="121"
