@@ -50,7 +50,6 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.CheckBox;
 import android.widget.CursorAdapter;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.TextView;
 
 import org.andstatus.app.account.AccountSelector;
@@ -126,7 +125,8 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     private volatile boolean mFinishing = false;
 
     private boolean mShowSyncIndicatorOnTimeline = false;
-    private View mSyncIndicator = null;    
+    private View mSyncIndicator = null;
+    private boolean mIsLoading = false;
 
     /**
      * Time when shared preferences where changed
@@ -355,16 +355,16 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
 
     @Override
     protected void onPause() {
+        final String method = "onPause";
         super.onPause();
         if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
-            MyLog.v(this, "onPause, instanceId=" + mInstanceId);
+            MyLog.v(this, method + "; instanceId=" + mInstanceId);
         }
         mServiceConnector.unregisterReceiver(this);
-        hideSyncIndicator();
+        setSyncIndicator(method, false);
 
         if (mPositionRestored) {
-            // Get rid of the "fast scroll thumb"
-            ((ListView) findViewById(android.R.id.list)).setFastScrollEnabled(false);
+            setFastScrollThumb(false);
             if (!isLoading()) {
                 saveListPosition();
             }
@@ -372,6 +372,17 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         }
         saveActivityState();
         MyContextHolder.get().setInForeground(false);
+    }
+
+    private void setSyncIndicator(String source, boolean isVisible) {
+        if (isVisible ? (mSyncIndicator.getVisibility() != View.VISIBLE) : ((mSyncIndicator.getVisibility() == View.VISIBLE))) {
+            MyLog.v(this, source + " set Sync indicator to " + isVisible);
+            mSyncIndicator.setVisibility(isVisible ? View.VISIBLE : View.GONE);
+        }
+    }
+    
+    private void setFastScrollThumb(boolean isVisible) {
+        getListView().setFastScrollEnabled(isVisible);
     }
 
     /**
@@ -644,8 +655,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
             case OnScrollListener.SCROLL_STATE_TOUCH_SCROLL:
                 break;
             case OnScrollListener.SCROLL_STATE_FLING:
-                // Turn the "fast scroll thumb" on
-                view.setFastScrollEnabled(true);
+                setFastScrollThumb(true);
                 break;
             default:
                 break;
@@ -732,8 +742,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                 mListParametersNew.mSelectedUserId = appSearchData.getLong(IntentExtra.EXTRA_SELECTEDUSERID.key, mListParametersNew.mSelectedUserId);
                 if (!TextUtils.isEmpty(mListParametersNew.mSearchQuery)
                         && appSearchData.getBoolean(IntentExtra.EXTRA_GLOBAL_SEARCH.key, false)) {
-                    MyLog.v(this, "Global search: " + mListParametersNew.mSearchQuery);
-                    setLoading(true);
+                    setSyncing("Global search: " + mListParametersNew.mSearchQuery, true);
                     MyServiceManager.sendForegroundCommand(
                             CommandData.searchCommand(
                                     isTimelineCombined()
@@ -903,7 +912,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         args.putBoolean(IntentExtra.EXTRA_LOAD_ONE_MORE_PAGE.key, loadOneMorePage);
         args.putInt(IntentExtra.EXTRA_ROWS_LIMIT.key, calcRowsLimit(loadOneMorePage));
         getLoaderManager().restartLoader(LOADER_ID, args, this);
-        setLoading(true);
+        setLoading(method, true);
     }
 
     private int calcRowsLimit(boolean loadOneMorePage) {
@@ -953,11 +962,12 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
-        MyLog.v(this, "onLoaderReset; " + loader);
+        final String method = "onLoaderReset"; 
+        MyLog.v(this, method + " ; " + loader);
         if (getListAdapter() != null) {
             ((CursorAdapter) getListAdapter()).swapCursor(null);
         }
-        setLoading(false);
+        setLoading(method, false);
     }
 
     @Override
@@ -977,7 +987,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         if (doChangeListContent) {
             changeListContent(myLoader, cursor);
         } else {
-            setLoading(false);
+            setLoading(method, false);
             updateScreen();
             clearNotifications();
         }
@@ -1014,7 +1024,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         } else {
             launchReloadIfNeeded(myLoader.getParams().timelineToReload);
         }
-        setLoading(false);
+        setLoading(method, false);
         updateScreen();
         clearNotifications();
     }
@@ -1075,7 +1085,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
             return;
         }
 
-        setLoading(true);
+        setSyncing("manualReload", true);
         MyServiceManager.sendForegroundCommand(
                 (new CommandData(CommandEnum.FETCH_TIMELINE,
                         allAccounts ? "" : ma.getAccountName(), timelineTypeForReload, userId)).setManuallyLaunched(manuallyLauched)
@@ -1213,20 +1223,43 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     public void onReceive(CommandData commandData, MyServiceEvent event) {
         switch (event) {
             case BEFORE_EXECUTING_COMMAND:
-                if (mShowSyncIndicatorOnTimeline
-                        && isCommandToShowInSyncIndicator(commandData.getCommand())) {
-                    onReceiveBeforeExecutingCommand(commandData);
-                }
+                showSyncIndicator(commandData);
                 break;
             case AFTER_EXECUTING_COMMAND:
                 onReceiveAfterExecutingCommand(commandData);
                 break;
             case ON_STOP:
-                hideSyncIndicator();
+                setSyncing("onReceive STOP", false);
+                setSyncIndicator("onReceive STOP", false);
                 break;
             default:
                 break;
         }
+    }
+    
+    private void showSyncIndicator(CommandData commandData) {
+        if (!mShowSyncIndicatorOnTimeline
+                || !isCommandToShowInSyncIndicator(commandData.getCommand())
+                || mMessageEditor.isVisible()) {
+            return;
+        }
+        setSyncIndicator("Before " + commandData.getCommand(), true);
+        new AsyncTask<CommandData, Void, String>() {
+
+            @Override
+            protected String doInBackground(CommandData... commandData) {
+                return commandData[0].toCommandSummary(MyContextHolder.get());
+            }
+
+            @Override
+            protected void onPostExecute(String result) {
+                String syncMessage = getText(R.string.title_preference_syncing) + ": "
+                        + result;
+                ((TextView) findViewById(R.id.sync_text)).setText(syncMessage);
+                MyLog.v(this, syncMessage);
+            }
+
+        }.execute(commandData);
     }
 
     private boolean isCommandToShowInSyncIndicator(CommandEnum command) {
@@ -1250,37 +1283,12 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         }
     }
 
-    private void onReceiveBeforeExecutingCommand(CommandData commandData) {
-        if (mMessageEditor.isVisible()) {
-            return;
-        }
-        if (mSyncIndicator.getVisibility() != View.VISIBLE) {
-            mSyncIndicator.setVisibility(View.VISIBLE);
-        }
-        new AsyncTask<CommandData, Void, String>() {
-
-            @Override
-            protected String doInBackground(CommandData... commandData) {
-                return commandData[0].toCommandSummary(MyContextHolder.get());
-            }
-
-            @Override
-            protected void onPostExecute(String result) {
-                String syncMessage = getText(R.string.title_preference_syncing) + ": "
-                        + result;
-                ((TextView) findViewById(R.id.sync_text)).setText(syncMessage);
-                MyLog.v(this, syncMessage);
-            }
-
-        }.execute(commandData);
-    }
-
     private void onReceiveAfterExecutingCommand(CommandData commandData) {
         switch (commandData.getCommand()) {
             case FETCH_TIMELINE:
             case SEARCH_MESSAGE:
-                if (isLoading()) {
-                    setLoading(false);
+                if (commandData.isInForeground() && !commandData.isStep()) {
+                    setSyncing("After executing " + commandData.getCommand(), false);
                 }
                 break;
             case RATE_LIMIT_STATUS:
@@ -1299,31 +1307,27 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         }
     }
 
-    private void hideSyncIndicator() {
-        if (mSyncIndicator.getVisibility() == View.VISIBLE) {
-            mSyncIndicator.setVisibility(View.GONE);
-        }
-    }
-
     private boolean isLoading() {
-        return mLoadingLayout.getVisibility() == View.VISIBLE;
+        return mIsLoading;
     }
 
-    private void setLoading(boolean loading) {
-        if (isLoading() != loading && !isFinishing()) {
-            MyLog.v(this, "isLoading set to " + loading + ", instanceId=" + mInstanceId );
-            if (mSwipeRefreshLayout != null) {
-                mSwipeRefreshLayout.setRefreshing(loading);
-            }
-            if (loading) {
-                mLoadingLayout.setVisibility(View.VISIBLE);
-                
-            } else {
-                mLoadingLayout.setVisibility(View.INVISIBLE);
-            }
+    private void setLoading(String source, boolean isLoading) {
+        if (isLoading() != isLoading && !isFinishing()) {
+            mIsLoading = isLoading;
+            MyLog.v(this, source + " set isLoading to " + isLoading);
+            mLoadingLayout.setVisibility(isLoading ? View.VISIBLE : View.INVISIBLE);
         }
     }
 
+    private void setSyncing(String source, boolean isSyncing) {
+        if (mSwipeRefreshLayout != null 
+                && mSwipeRefreshLayout.isRefreshing() != isSyncing 
+                && !isFinishing()) {
+            MyLog.v(this, source + " set Syncing to " + isSyncing);
+             mSwipeRefreshLayout.setRefreshing(isSyncing);
+        }
+    }
+    
     protected Menu getOptionsMenu() {
         return mOptionsMenu;
     }
@@ -1338,6 +1342,12 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         return mMessageEditor;
     }
 
+    @Override
+    public void onMessageEditorVisibilityChange(boolean isVisible) {
+        setSyncIndicator("onMessageEditorVisibilityChange", false);
+        invalidateOptionsMenu();
+    }
+    
     @Override
     public long getCurrentMyAccountUserId() {
         return mListParametersNew.myAccountUserId;
@@ -1356,11 +1366,5 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     @Override
     public long getSelectedUserId() {
         return mListParametersNew.mSelectedUserId;
-    }
-
-    @Override
-    public void invalidateOptionsMenu() {
-        hideSyncIndicator();
-        super.invalidateOptionsMenu();
     }
 }

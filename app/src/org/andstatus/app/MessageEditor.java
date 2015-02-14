@@ -219,32 +219,19 @@ class MessageEditor {
             }
         });
     }
-    
-    /**
-     * Continue message editing
-     * @return new state of visibility
-     */
-    public boolean toggleVisibility() {
-        boolean isVisibleNew = !isVisible();
-        if (isVisibleNew) {
-            show();
-        } else {
-            hide();
-        }
-        return isVisibleNew;
-    }
 
     public void show() {
         mCharsLeftText.setText(String.valueOf(dataCurrent.getMyAccount()
                 .charactersLeftForMessage(mEditText.getText().toString())));
         
-        mEditorView.setVisibility(View.VISIBLE);
-        
-        mEditText.requestFocus();
-        if (!isHardwareKeyboardAttached()) {
-            openSoftKeyboard();
+        if (!isVisible()) {
+            mEditorView.setVisibility(View.VISIBLE);
+            mEditText.requestFocus();
+            if (!isHardwareKeyboardAttached()) {
+                openSoftKeyboard();
+            }
+            mMessageList.onMessageEditorVisibilityChange(true);
         }
-        getActivity().invalidateOptionsMenu();
     }
     
     private boolean isHardwareKeyboardAttached() {
@@ -264,9 +251,11 @@ class MessageEditor {
     }
     
     public void hide() {
-        mEditorView.setVisibility(View.GONE);
-        closeSoftKeyboard();
-        getActivity().invalidateOptionsMenu();
+        if (isVisible()) {
+            mEditorView.setVisibility(View.GONE);
+            closeSoftKeyboard();
+            mMessageList.onMessageEditorVisibilityChange(false);
+        }
     }
 
     private void closeSoftKeyboard() {
@@ -445,9 +434,6 @@ class MessageEditor {
     public void updateScreen() {
         if (isStateLoaded()) {
             continueEditingLoadedState();
-        } else if (isVisible()) {
-            // This is done to request focus (if we need this...)
-            show();
         }
     }
 }

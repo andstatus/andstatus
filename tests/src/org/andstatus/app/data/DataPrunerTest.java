@@ -58,7 +58,7 @@ public class DataPrunerTest extends InstrumentationTestCase  {
             assertFalse("File " + logFile2.getName() + " was old: " + millisToDateString(lastModifiedNew), 
                     logFile2.exists());
         } else {
-            fail("Couldn't set modification date to " + millisToDateString(lastModifiedNew));
+            fail("Couldn't set modification date of '" + logFile1.getAbsolutePath() + "' to " + millisToDateString(lastModifiedNew));
         }
 
         clearPrunedDate();

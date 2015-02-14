@@ -27,6 +27,7 @@ import org.andstatus.app.data.TimelineTypeEnum;
 public interface ActionableMessageList {
     Activity getActivity();
     MessageEditor getMessageEditor();
+    void onMessageEditorVisibilityChange(boolean isVisible);
     long getLinkedUserIdFromCursor(int position);
     long getCurrentMyAccountUserId();
     long getSelectedUserId();

@@ -24,6 +24,7 @@
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
   <string name="account_settings_action">إعدادات حساب AndStatus</string>
   <string name="account_settings_activity_title">حساب</string>
+  <string name="account_settings_summary">تردد المزامنة، التنبيهات، إلخ.</string>
   <string name="settings_action">إعدادات</string>
   <string name="settings_activity_title">إعدادات</string>
   <string name="action_menu_overflow_description">مزيد من الإجراءات&#8230;</string>
@@ -96,6 +97,9 @@
   <string name="dialog_title_service_unavailable">الخدمة غير متوفرة</string>
   <string name="dialog_title_timeline_loading">تحديث الخط الزمني&#8230;</string>
   <string name="discover_open_instances_title">اكتشاف مماثالات مفتوحة</string>
+  <string name="drawer_close">إغلاق لوحة التحكم</string>
+  <string name="drawer_open">فتح لوحة التحكم</string>
+  <string name="empty_in_parenthesis">(فارغ)</string>
   <string name="error">خطأ</string>
   <string name="error_invalid_value">قيمة غير صالحة</string>
   <string name="error_twitter_404">لا يمكن العثور على هذه الصفحة. الرجاء الإبلاغ عن هذا الخطأ!</string>
@@ -152,4 +156,11 @@
   <string name="label_origin_list">انظمة التدوين المصغرة</string>
   <string name="label_origin_name">اسم نظام التدوين (فريد وغير قابل للتغيير)</string>
   <string name="label_origin_system">نظام التدوين المصغر</string>
+  <string name="label_origin_type">نوع نظام التدوين المصغر</string>
+  <string name="label_restore">استعادة بيانات التطبيق من النسخ الاحتياطي</string>
+  <string name="label_upgrading">جاري ترقية. الرجاء الانتظار.</string>
+  <string name="label_with_media">مع وسائط</string>
+  <string name="latest_error_label">آخر خطأ</string>
+  <string name="loading">جار التحميل&#8230;</string>
+  <string name="message">رسالة</string>
 </resources>

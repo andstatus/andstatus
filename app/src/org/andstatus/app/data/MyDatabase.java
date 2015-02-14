@@ -643,8 +643,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
                 " 7, 3,'GNUsocial.no',   'https://gnusocial.no',     1, 1,    0,  0",
                 " 8, 3,'Quitter.no',     'https://quitter.no',       1, 1,    0,  0",
                 " 9, 3,'Quitter.is',     'https://quitter.is',       1, 1,    0,  0",
-                "10, 3,'Quitter.España', 'https://quitter.es',       1, 1,    0,  0",
-                "11, 3,'Quitter.Zone',   'https://quitter.zone',     1, 2,    0,  0"   
+                "10, 3,'Quitter.España', 'https://quitter.es',       1, 1,    0,  0"
                 };
         for (String value : values) {
             execSQL(db, sqlIns.replace("%s", value));

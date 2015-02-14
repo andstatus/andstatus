@@ -91,8 +91,8 @@
   <string name="dialog_title_preference_connection_timeout">接続タイムアウト (秒)</string>
   <string name="dialog_title_preference_frequency">更新を取得する間隔&#8230;</string>
   <string name="dialog_title_preference_history_size">履歴サイズ</string>
-  <string name="dialog_title_preference_history_time">履歴時間</string>
-  <string name="dialog_title_preference_min_log_level">最小ログ記録レベル</string>
+  <string name="dialog_title_preference_history_time">履歴期間</string>
+  <string name="dialog_title_preference_min_log_level">最低ログ記録レベル</string>
   <string name="dialog_title_preference_password">パスワード</string>
   <string name="dialog_title_preference_theme_color">色のテーマを選択してください</string>
   <string name="dialog_title_preference_theme_size">サイズを選択してください</string>
@@ -239,9 +239,9 @@
   <string name="preference_ssl_mode_secure">セキュリティで保護された SSL</string>
   <string name="preference_ssl_mode_insecure">安全でない SSL</string>
   <string name="preference_ssl_mode_misconfigured">SSL が正しく構成されていません</string>
-  <string name="preference_debugging_info_in_ui_title">ユーザー インターフェイス内のデバッグ情報</string>
-  <string name="preference_log_everything_to_file_title">すべてのログをファイルに出力します</string>
-  <string name="preference_log_network_level_messages_title">ネットワーク レベルのメッセージをログ出力します</string>
+  <string name="preference_debugging_info_in_ui_title">ユーザー インターフェイス内にデバッグ情報</string>
+  <string name="preference_log_everything_to_file_title">すべてのログをファイルに出力</string>
+  <string name="preference_log_network_level_messages_title">ネットワーク レベルのメッセージをログ出力</string>
   <string name="preference_notification_icon_alternative_title">代替の通知アイコン</string>
   <string name="preference_notification_icon_alternative_off">アイコンとして \"&amp;s\" の文字</string>
   <string name="preference_notification_icon_alternative_on">アイコンとして丸</string>
@@ -278,7 +278,7 @@ AndStatus はあなたのアカウントを、すべてのネットワークか�
 * このガイドへのリンクは、アクションバー&gt;設定&gt;AndStatus について&gt;さらに詳しく、から利用できます。\n
 * 次ページの変更ログでは、AndStatus のすべての機能の説明と議論へのリンクを参照することができます。\n\n  
 <h2><b>1. はじめに</b></h2>\n\n
-下の \"始めましょう\" ボタンをタップすると、新しいアカウントを追加する画面が開かれます。\n
+下の \"始めましょう\" ボタンをタップすると、新しいアカウントを追加する画面が開きます。\n
 まず、リストからアカウントのマイクロブログシステムを選択するように求められます。
 Twetter、pump.io、いくつかの \"GNU social\" 型システム (Quitter、LoadAverageと、Vinilox)
 が事前に設定されています)。\n
@@ -369,8 +369,8 @@ pump.io システムは、まだグローバル検索をサポートしていな
   <string name="summary_preference_enable_android_backup_off">Android のバックアップは要求されません</string>
   <string name="summary_preference_enable_android_backup_on">バックアップが必要になるデータの変更を AndStatus が Android に通知します (実験的)</string>
   <string name="summary_preference_frequency">更新を {0} ごとに取得します。</string>
-  <string name="summary_preference_history_size">メッセージの履歴は {0} までです。</string>
-  <string name="summary_preference_history_time">メッセージの履歴は {0} までです。</string>
+  <string name="summary_preference_history_size">メッセージの履歴は {0} まで。</string>
+  <string name="summary_preference_history_time">メッセージの履歴は {0} まで。</string>
   <string name="summary_preference_host">システムのホスト名、例えば quitter.se</string>
   <string name="summary_preference_theme_color">色とスタイル</string>
   <string name="summary_preference_min_log_level">レベルは {0} です。</string>
@@ -394,7 +394,7 @@ pump.io システムは、まだグローバル検索をサポートしていな
   <string name="summary_preference_show_avatars_on">ユーザーのアバターが表示されます</string>
   <string name="summary_preference_ssl_off">非 SSL</string>
   <string name="summary_preference_ssl_on">SSL がオン</string>
-  <string name="summary_preference_storage">どこに、どのような情報を格納するか</string>
+  <string name="summary_preference_storage">どこに、どのような情報を格納しますか</string>
   <string name="summary_preference_storage_external_off">データは内部メモリに格納されます</string>
   <string name="summary_preference_storage_external_on">データは外部メモリに格納されます</string>
   <string name="summary_preference_sync_indicator_on_timeline_off">同期インジケーターを表示しません</string>
@@ -447,7 +447,7 @@ pump.io システムは、まだグローバル検索をサポートしていな
   <string name="title_preference_history_size">履歴サイズ</string>
   <string name="title_preference_history_time">履歴時間</string>
   <string name="title_preference_is_default_account">これはデフォルトのアカウントです</string>
-  <string name="title_preference_min_log_level">最小ログ記録レベル</string>
+  <string name="title_preference_min_log_level">最低ログ記録レベル</string>
   <string name="title_preference_notification_sound">通知の着信音</string>
   <string name="title_preference_notifications">通知</string>
   <string name="title_preference_notifications_enabled">通知を有効にする</string>
@@ -465,9 +465,9 @@ pump.io システムは、まだグローバル検索をサポートしていな
   <string name="title_preference_ssl">SSL</string>
   <string name="title_preference_storage_external">外部ストレージ</string>
   <string name="title_preference_sync_after_message_was_sent">メッセージを送信した後に同期</string>
-  <string name="title_preference_sync_indicator_on_timeline">タイムライン上の同期インジケーター</string>
+  <string name="title_preference_sync_indicator_on_timeline">タイムライン上に同期インジケーター</string>
   <string name="title_preference_sync_while_using_application">アプリケーションを使用中に同期</string>
-  <string name="title_preference_syncing">同期しています</string>
+  <string name="title_preference_syncing">同期</string>
   <string name="title_preference_theme_color">色のテーマ</string>
   <string name="title_preference_theme_size">サイズ</string>
   <string name="title_preference_username">ユーザー名</string>

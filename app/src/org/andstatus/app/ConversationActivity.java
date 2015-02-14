@@ -321,6 +321,11 @@ public class ConversationActivity extends Activity implements MyServiceListener,
     }
 
     @Override
+    public void onMessageEditorVisibilityChange(boolean isVisible) {
+        // Empty
+    }
+    
+    @Override
     public long getLinkedUserIdFromCursor(int position) {
         synchronized(messagesLock) {
             if (position < 0 || position >= messages.size() ) {

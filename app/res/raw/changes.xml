@@ -27,21 +27,22 @@
     </header>
 
     <release android:versionName="15.0" android:versionCode="122"
-        versionDate="2014-02-12"
+        versionDate="2014-02-14"
         versionTitle="Discovery of open GNU Social instances">
         <changes>
             <change>Implemented discovery of open GNU Social instances (servers)
-                using the new &quot;get_open_instances&quot; gstools.org API. 
+                using the new &quot;get_open_instances&quot;
+                <a href="http://gstools.org/api/doc/">gstools.org API</a>. 
                 From now on there is no need to have all open instances 
                 preconfigured in AndStatus:
                 a User may select new &quot;Microblogging system&quot; 
-                from the live list, downloaded via online service. 
+                from a live list, downloaded via an online service. 
                 We hope that this feature will stimulate GNU social instance owners to
                 register in this discovery service.
                 <a href="https://github.com/andstatus/andstatus/issues/84">#84</a>
             </change>
             <change>&quot;SSL Mode&quot; setting moved to Microblogging system, 
-                allowing to have different SSL mode per Microblogging system.
+                allowing to have specific SSL mode per Microblogging system.
             </change>
             <change>Added two options to Microblogging system: &quot;Include in Global Search
 				while in Combined Timeline&quot; and 
@@ -49,6 +50,8 @@
             </change>
             <change>Added &quot;Swipe to Refresh&quot; feature for a Timeline view. 
                 The swipe duplicates &quot;Reload&quot; menu item.</change>
+            <change>Syncing indicator on a Timeline moved to the bottom and 
+                it doesn't cause timeline tremors anymore.</change>
             <change>Fixed ANR (application freeze/or crash) when requesting download of
 				Avatars and Attachments during a Timeline drawing.
             </change>

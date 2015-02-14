@@ -66,6 +66,7 @@ public class CommandData implements Comparable<CommandData> {
     private int priority = 0;
     private volatile boolean mInForeground = false;
     private volatile boolean mManuallyLaunched = false;
+    private volatile boolean mIsStep = false;
 
     /**
      * This is: 1. Generally: Message ID ({@link MyDatabase.Msg#MSG_ID} of the
@@ -117,6 +118,7 @@ public class CommandData implements Comparable<CommandData> {
                 execContext.getMyAccount().getAccountName(),
                 execContext.getTimelineType()
                 );
+        commandData.mIsStep = true;
         commandData.commandResult = execContext.getCommandData().getResult().forOneExecStep();
         return commandData;
     }
@@ -163,7 +165,9 @@ public class CommandData implements Comparable<CommandData> {
                     commandData.mInForeground = commandData.bundle
                             .getBoolean(IntentExtra.EXTRA_IN_FOREGROUND.key);
                     commandData.mManuallyLaunched = commandData.bundle
-                            .getBoolean(IntentExtra.EXTRA_MANUALLY_LAUCHED.key);
+                            .getBoolean(IntentExtra.EXTRA_MANUALLY_LAUNCHED.key);
+                    commandData.mIsStep = commandData.bundle
+                            .getBoolean(IntentExtra.EXTRA_IS_STEP.key);
                     commandData.commandResult = commandData.bundle
                             .getParcelable(IntentExtra.EXTRA_COMMAND_RESULT.key);
                     break;
@@ -195,7 +199,8 @@ public class CommandData implements Comparable<CommandData> {
             bundle.putLong(IntentExtra.EXTRA_ITEMID.key, itemId);
         }
         bundle.putBoolean(IntentExtra.EXTRA_IN_FOREGROUND.key, mInForeground);
-        bundle.putBoolean(IntentExtra.EXTRA_MANUALLY_LAUCHED.key, mManuallyLaunched);
+        bundle.putBoolean(IntentExtra.EXTRA_MANUALLY_LAUNCHED.key, mManuallyLaunched);
+        bundle.putBoolean(IntentExtra.EXTRA_IS_STEP.key, mIsStep);
         bundle.putParcelable(IntentExtra.EXTRA_COMMAND_RESULT.key, commandResult);
         intent.putExtras(bundle);
         return intent;
@@ -249,7 +254,8 @@ public class CommandData implements Comparable<CommandData> {
         ed.putString(IntentExtra.EXTRA_TIMELINE_TYPE.key + si, timelineType.save());
         ed.putLong(IntentExtra.EXTRA_ITEMID.key + si, itemId);
         ed.putBoolean(IntentExtra.EXTRA_IN_FOREGROUND.key + si, mInForeground);
-        ed.putBoolean(IntentExtra.EXTRA_MANUALLY_LAUCHED.key + si, mManuallyLaunched);
+        ed.putBoolean(IntentExtra.EXTRA_MANUALLY_LAUNCHED.key + si, mManuallyLaunched);
+        ed.putBoolean(IntentExtra.EXTRA_IS_STEP.key + si, mIsStep);
         switch (command) {
             case FETCH_ATTACHMENT:
                 ed.putString(IntentExtra.EXTRA_MESSAGE_TEXT.key + si,
@@ -488,6 +494,9 @@ public class CommandData implements Comparable<CommandData> {
         if (mManuallyLaunched) {
             builder.append("manual,");
         }
+        if (mIsStep) {
+            builder.append("step,");
+        }
         builder.append("created:"
                 + RelativeTime.getDifference(MyContextHolder.get().context(), getCreatedDate())
                 + ",");
@@ -575,6 +584,10 @@ public class CommandData implements Comparable<CommandData> {
         return mManuallyLaunched;
     }
 
+    public boolean isStep() {
+        return mIsStep;
+    }
+    
     public CommandData setManuallyLaunched(boolean manuallyLaunched) {
         this.mManuallyLaunched = manuallyLaunched;
         return this;
@@ -600,6 +613,9 @@ public class CommandData implements Comparable<CommandData> {
             }
             if (mManuallyLaunched) {
                 I18n.appendWithSpace(builder, ", manual");
+            }
+            if (mIsStep) {
+                I18n.appendWithSpace(builder, ", step");
             }
         }
         switch (command) {
