@@ -46,7 +46,7 @@
             </change>
             <change>Added two options to Microblogging system: &quot;Include in Global Search
 				while in Combined Timeline&quot; and 
-				&quot;Include in Reload while in Comblined Public timeline&quot;.
+				&quot;Include in Reload while in Combined Public timeline&quot;.
             </change>
             <change>Added &quot;Swipe to Refresh&quot; feature for a Timeline view. 
                 The swipe duplicates &quot;Reload&quot; menu item.</change>
