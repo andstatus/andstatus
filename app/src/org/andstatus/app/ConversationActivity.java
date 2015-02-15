@@ -322,7 +322,7 @@ public class ConversationActivity extends Activity implements MyServiceListener,
 
     @Override
     public void onMessageEditorVisibilityChange(boolean isVisible) {
-        // Empty
+        invalidateOptionsMenu();
     }
     
     @Override
