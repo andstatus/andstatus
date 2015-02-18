@@ -48,7 +48,12 @@ public class ConversationViewLoader {
     private ReplyLevelComparator replyLevelComparator = new ReplyLevelComparator();
     
     List<ConversationOneMessage> oMsgs = new ArrayList<ConversationOneMessage>();
+    progressPublisher mProgress;
 
+    interface progressPublisher {
+        void publish(String progress);
+    }
+    
     public List<ConversationOneMessage> getMsgs() {
         return oMsgs;
     }
@@ -61,7 +66,8 @@ public class ConversationViewLoader {
         this.selectedMessageId = selectedMessageId;
     }
     
-    public void load() {
+    public void load(progressPublisher publisher) {
+        mProgress = publisher;
         idsOfTheMessagesToFind.clear();
         oMsgs.clear();
         findPreviousMessagesRecursively(new ConversationOneMessage(selectedMessageId, 0));
@@ -138,6 +144,7 @@ public class ConversationViewLoader {
             MyLog.v(this, "Message id=" + oMsg.mMsgId + " is in the list already");
         } else {
             oMsgs.add(oMsg);
+            mProgress.publish(Integer.toString(oMsgs.size()));
             added = true;
         }
         return added;

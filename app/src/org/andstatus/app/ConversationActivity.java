@@ -26,6 +26,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.AsyncTask.Status;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -33,6 +34,7 @@ import android.widget.ListView;
 
 import net.jcip.annotations.GuardedBy;
 
+import org.andstatus.app.ConversationViewLoader.progressPublisher;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
@@ -44,6 +46,7 @@ import org.andstatus.app.service.MyServiceListener;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.service.MyServiceReceiver;
 import org.andstatus.app.service.QueueViewer;
+import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.UriUtils;
@@ -63,7 +66,7 @@ public class ConversationActivity extends Activity implements MyServiceListener,
     /**
      * We use this for message requests
      */
-    private volatile MyAccount ma = null;
+    private volatile MyAccount ma = MyAccount.getEmpty(MyContextHolder.get(), "");
 
     protected long instanceId;
     MyServiceReceiver myServiceReceiver;
@@ -109,8 +112,6 @@ public class ConversationActivity extends Activity implements MyServiceListener,
         
         restoreActivityState();
         mMessageEditor.updateScreen();
-        
-        showConversation();
     }
 
     private boolean restoreActivityState() {
@@ -133,7 +134,7 @@ public class ConversationActivity extends Activity implements MyServiceListener,
         }
     }
 
-    private class ContentLoader extends AsyncTask<Void, Void, ConversationViewLoader> {
+    private class ContentLoader extends AsyncTask<Void, String, ConversationViewLoader> implements progressPublisher {
         private volatile long timeStarted = 0;
         private volatile long timeLoaded = 0;
         private volatile long timeCompleted = 0;
@@ -141,23 +142,30 @@ public class ConversationActivity extends Activity implements MyServiceListener,
         @Override
         protected ConversationViewLoader doInBackground(Void... params) {
             timeStarted = System.currentTimeMillis();
+            publishProgress("...");
 
-            if (ma == null) {
+            if (!ma.isValid()) {
                 ma = MyContextHolder
                         .get()
                         .persistentAccounts()
                         .getAccountWhichMayBeLinkedToThisMessage(selectedMessageId, 0,
                                 MyProvider.uriToAccountUserId(getIntent().getData()));
             }
+            publishProgress("");
             ConversationViewLoader loader = new ConversationViewLoader(
                     ConversationActivity.this, ma, selectedMessageId);
             if (ma.isValid()) {
-                loader.load();
+                loader.load(this);
             }
             timeLoaded = System.currentTimeMillis();
             return loader;
         }
         
+        @Override
+        protected void onProgressUpdate(String... values) {
+            updateTitle(values[0]);
+        }
+
         @Override
         protected void onPostExecute(ConversationViewLoader loader) {
             try {
@@ -172,13 +180,38 @@ public class ConversationActivity extends Activity implements MyServiceListener,
             MyLog.v(this, "ContentLoader completed, " + loader.getMsgs().size() + " items, " + timeTotal + "ms total, " 
             + (timeCompleted - timeLoaded) + "ms in the foreground");
         }
+
+        @Override
+        public void publish(String progress) {
+            publishProgress(progress);
+        }
+    }
+    
+    void updateTitle(String progress) {
+        StringBuilder title = new StringBuilder(getText(getNumberOfMessages() > 1 ? R.string.label_conversation
+                : R.string.message));
+        if (ma.isValid()) {
+            I18n.appendWithSpace(title, "/ " + ma.getOrigin().getName());
+        } else {
+            I18n.appendWithSpace(title, "/ ? (" + selectedMessageId + ")");
+        }
+        if (!TextUtils.isEmpty(progress)) {
+            I18n.appendWithSpace(title, progress);
+        }
+        this.getActionBar().setTitle(title.toString());
+    }
+
+    private int getNumberOfMessages() {
+        int size;
+        synchronized(messagesLock) {
+            size = messages.size();
+        }
+        return size;
     }
     
     private void recreateTheConversationView(ConversationViewLoader loader) {
         List<ConversationOneMessage> oMsgs = loader.getMsgs();
-        CharSequence title = getText(oMsgs.size() > 1 ? R.string.label_conversation : R.string.message) 
-                + ( MyPreferences.showOrigin() && ma != null ? " / " + ma.getOrigin().getName() : "");
-        this.getActionBar().setTitle(title);
+        updateTitle("");
         ListView list = (ListView) findViewById(android.R.id.list);
 
         long itemIdOfListPosition = selectedMessageId;
@@ -231,6 +264,9 @@ public class ConversationActivity extends Activity implements MyServiceListener,
         super.onResume();
         myServiceReceiver.registerReceiver(this);
         MyContextHolder.get().setInForeground(true);
+        if (getNumberOfMessages() == 0) {
+            showConversation();
+        }
     }
 
     @Override

@@ -3,6 +3,7 @@ package org.andstatus.app;
 import android.content.Context;
 import android.test.InstrumentationTestCase;
 
+import org.andstatus.app.ConversationViewLoader.progressPublisher;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
@@ -12,9 +13,10 @@ import org.andstatus.app.util.MyLog;
 
 import java.util.List;
 
-public class ConversationViewLoaderTest extends InstrumentationTestCase {
+public class ConversationViewLoaderTest extends InstrumentationTestCase implements progressPublisher {
     private MyAccount ma;
     private long selectedMessageId;
+    private long progressCounter = 0;
 
     @Override
     protected void setUp() throws Exception {
@@ -31,7 +33,8 @@ public class ConversationViewLoaderTest extends InstrumentationTestCase {
     public void testLoad() {
         Context context = MyContextHolder.get().context();
         ConversationViewLoader loader = new ConversationViewLoader(context, ma, selectedMessageId);
-        loader.load();
+        progressCounter = 0;
+        loader.load(this);
         List<ConversationOneMessage> list = loader.getMsgs();
         assertTrue("List is not empty", !list.isEmpty());
         boolean indentFound = false;
@@ -46,5 +49,11 @@ public class ConversationViewLoaderTest extends InstrumentationTestCase {
         }
         assertTrue("Indented message found", indentFound);
         assertTrue("Ordered message found", orderFound);
+        assertTrue(progressCounter > 0);
+    }
+
+    @Override
+    public void publish(String progress) {
+        progressCounter++;
     }
 }
