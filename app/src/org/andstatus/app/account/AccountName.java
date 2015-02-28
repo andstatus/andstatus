@@ -18,7 +18,6 @@ package org.andstatus.app.account;
 
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.origin.Origin;
-import org.andstatus.app.origin.OriginType;
 
 /**
  * Account name, unique for this application and suitable for {@link android.accounts.AccountManager}
@@ -85,7 +84,7 @@ class AccountName {
 
     protected static AccountName getEmpty() {
         AccountName accountName = new AccountName();
-        accountName.origin = Origin.getEmpty(OriginType.UNKNOWN);
+        accountName.origin = Origin.Builder.buildUnknown();
         accountName.username = "";
         return accountName;
     }

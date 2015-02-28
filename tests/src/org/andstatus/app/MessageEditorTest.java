@@ -72,7 +72,7 @@ public class MessageEditorTest extends android.test.ActivityInstrumentationTestC
                 .fromUserId(mActivity.getCurrentMyAccountUserId());
         MessageEditorData data = new MessageEditorData(ma)
                 .setMediaUri(Uri.parse("http://example.com/" + TestSuite.TESTRUN_UID + "/some.png"))
-                .setReplyToId(
+                .setInReplyToId(
                         MyProvider.oidToId(OidEnum.MSG_OID, MyContextHolder.get()
                                 .persistentOrigins()
                                 .fromName(TestSuite.CONVERSATION_ORIGIN_NAME).getId(),
@@ -80,6 +80,7 @@ public class MessageEditorTest extends android.test.ActivityInstrumentationTestC
                 .setRecipientId(
                         MyProvider.oidToId(OidEnum.USER_OID, ma.getOrigin().getId(),
                                 TestSuite.CONVERSATION_MEMBER_USER_OID))
+                .addMentionsToText()
                 .setMessageText("Some text " + TestSuite.TESTRUN_UID);
         return data;
     }

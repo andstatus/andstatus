@@ -22,6 +22,7 @@ import android.net.Uri;
 import android.text.TextUtils;
 
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.UserInTimeline;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.origin.Origin;
@@ -89,9 +90,14 @@ public class MessageShare {
         return new StringBuilder()
                 .append(msgBodyText)
                 .append(
-                        String.format(html ? SIGNATURE_FORMAT_HTML
-                                : SIGNATURE_PLAIN_TEXT,
-                                MyProvider.msgIdToUsername(MyDatabase.Msg.AUTHOR_ID, messageId),
+                        String.format(
+                                html ? SIGNATURE_FORMAT_HTML
+                                        : SIGNATURE_PLAIN_TEXT,
+                                MyProvider.msgIdToUsername(
+                                        MyDatabase.Msg.AUTHOR_ID,
+                                        messageId,
+                                        origin.isMentionAsWebFingerId() ? UserInTimeline.WEBFINGER_ID
+                                                : UserInTimeline.USERNAME),
                                 origin.messagePermalink(messageId)
                                 )).toString();
     }

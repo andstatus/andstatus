@@ -75,7 +75,7 @@ public class PersistentOrigins {
                 return origin;
             }
         }
-        return Origin.Builder.getUnknown();
+        return Origin.Builder.buildUnknown();
     }
     
     /**
@@ -87,7 +87,7 @@ public class PersistentOrigins {
             origin = mOrigins.get(originName);
         }
         if (origin == null) {
-            origin = Origin.Builder.getUnknown();
+            origin = Origin.Builder.buildUnknown();
         }
         return origin;
     }
@@ -101,7 +101,7 @@ public class PersistentOrigins {
                 return origin;
             }
         }
-        return Origin.Builder.getUnknown();
+        return Origin.Builder.buildUnknown();
     }
 
     public Collection<Origin> collection() {

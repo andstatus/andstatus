@@ -127,7 +127,7 @@ public class ConversationInserter extends InstrumentationTestCase {
     }
 
     private MbUser getAuthor1() {
-        MbUser author1 = buildUserFromOid("acct:first@example.net");
+        MbUser author1 = buildUserFromOid(TestSuite.CONVERSATION_ENTRY_USER_OID);
         author1.avatarUrl = "https://raw.github.com/andstatus/andstatus/master/res/drawable/splash_logo.png";
         return author1;
     }

@@ -247,6 +247,7 @@ public class TestSuite extends TestCase {
     public static final String CONVERSATION_ACCOUNT_USER_OID = "acct:" + CONVERSATION_ACCOUNT_USERNAME;
     public static final String CONVERSATION_ACCOUNT_AVATAR_URL = "http://andstatus.org/andstatus/images/AndStatus_logo.png";
     public static final String CONVERSATION_ENTRY_MESSAGE_OID = "http://identi.ca/testerofandstatus/comment/thisisfakeuri" + TESTRUN_UID;
+    public static final String CONVERSATION_ENTRY_USER_OID = "acct:first@example.net";
     public static final String CONVERSATION_MEMBER_USER_OID = "acct:third@pump.example.com";
     public static final String HTML_MESSAGE_OID = "http://identi.ca/testerofandstatus/comment/htmlfakeuri" + TESTRUN_UID;
     public static final String GNUSOCIAL_TEST_ORIGIN_NAME = "GNUsocialTest";
@@ -370,4 +371,5 @@ public class TestSuite extends TestCase {
     public static long getConversationOriginId() {
         return getConversationMyAccount().getOriginId();
     }
+
 }

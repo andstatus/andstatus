@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2013 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2013-2105 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,37 +16,241 @@
 
 package org.andstatus.app;
 
+import android.app.Activity;
+import android.content.Intent;
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import org.andstatus.app.account.AccountSelector;
+import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.data.FileProvider;
+import org.andstatus.app.data.MyDatabase;
+import org.andstatus.app.data.MyProvider;
+import org.andstatus.app.data.TimelineTypeEnum;
+import org.andstatus.app.service.CommandData;
+import org.andstatus.app.service.CommandEnum;
+import org.andstatus.app.service.MyServiceManager;
+import org.andstatus.app.util.MyLog;
+
 public enum ContextMenuItem {
-    REPLY(1),
-    DIRECT_MESSAGE(2),
-    FAVORITE(3),
-    DESTROY_FAVORITE(4),
-    REBLOG(5),
-    DESTROY_REBLOG(6),
-    DESTROY_STATUS(7),
-    SHARE(8),
-    SENDER_MESSAGES(9),
-    AUTHOR_MESSAGES(10),
-    FOLLOW_SENDER(11),
-    STOP_FOLLOWING_SENDER(12),
-    FOLLOW_AUTHOR(13),
-    STOP_FOLLOWING_AUTHOR(14),
+    REPLY(1, true) {
+        @Override
+        MessageEditorData executeAsync(MyAccount ma, long msgId) {
+            return new MessageEditorData(ma).setInReplyToId(msgId).addMentionsToText();
+        }
+
+        @Override
+        boolean executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
+            menu.messageList.getMessageEditor().startEditingMessage(editorData);
+            return true;
+        }
+    },
+    DIRECT_MESSAGE(2, true) {
+        @Override
+        MessageEditorData executeAsync(MyAccount ma, long msgId) {
+            return new MessageEditorData(ma).setInReplyToId(msgId)
+                    .setRecipientId(MyProvider.msgIdToUserId(MyDatabase.Msg.AUTHOR_ID, msgId))
+                    .addMentionsToText();
+        }
+
+        @Override
+        boolean executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
+            if (editorData.recipientId != 0) {
+                menu.messageList.getMessageEditor().startEditingMessage(editorData);
+            }
+            return true;
+        }
+    },
+    FAVORITE(3) {
+        @Override
+        boolean executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
+            sendCommandMsg(CommandEnum.CREATE_FAVORITE, editorData);
+            return true;
+        }
+    },
+    DESTROY_FAVORITE(4) {
+        @Override
+        boolean executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
+            sendCommandMsg(CommandEnum.DESTROY_FAVORITE, editorData);
+            return true;
+        }
+    },
+    REBLOG(5) {
+        @Override
+        boolean executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
+            sendCommandMsg(CommandEnum.REBLOG, editorData);
+            return true;
+        }
+    },
+    DESTROY_REBLOG(6) {
+        @Override
+        boolean executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
+            sendCommandMsg(CommandEnum.DESTROY_REBLOG, editorData);
+            return true;
+        }
+    },
+    DESTROY_STATUS(7) {
+        @Override
+        boolean executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
+            sendCommandMsg(CommandEnum.DESTROY_STATUS, editorData);
+            return true;
+        }
+    },
+    SHARE(8) {
+        @Override
+        boolean executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
+            return new MessageShare(menu.messageList.getActivity(), menu.getMsgId()).share();
+        }
+    },
+    SENDER_MESSAGES(9, true) {
+        @Override
+        MessageEditorData executeAsync(MyAccount ma, long msgId) {
+            return getUserId(ma, msgId, MyDatabase.Msg.SENDER_ID);
+        }
+
+        @Override
+        boolean executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
+            if (editorData.recipientId != 0) {
+                /**
+                 * We better switch to the account selected for this message in order not to
+                 * add new "MsgOfUser" entries hence duplicated messages in the combined timeline 
+                 */
+                MyContextHolder.get().persistentAccounts().setCurrentAccount(editorData.ma);
+                menu.switchTimelineActivity(TimelineTypeEnum.USER, menu.messageList.isTimelineCombined(), editorData.recipientId);
+            }
+            return true;
+        }
+    },
+    AUTHOR_MESSAGES(10, true) {
+        @Override
+        MessageEditorData executeAsync(MyAccount ma, long msgId) {
+            return getUserId(ma, msgId, MyDatabase.Msg.AUTHOR_ID);
+        }
+
+        boolean executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
+            if (editorData.recipientId != 0) {
+                /**
+                 * We better switch to the account selected for this message in order not to
+                 * add new "MsgOfUser" entries hence duplicated messages in the combined timeline 
+                 */
+                MyContextHolder.get().persistentAccounts().setCurrentAccount(editorData.ma);
+                menu.switchTimelineActivity(TimelineTypeEnum.USER, menu.messageList.isTimelineCombined(), editorData.recipientId);
+            }
+            return true;
+        }
+    },
+    FOLLOW_SENDER(11, true) {
+        @Override
+        MessageEditorData executeAsync(MyAccount ma, long msgId) {
+            return getUserId(ma, msgId, MyDatabase.Msg.SENDER_ID);
+        }
+
+        @Override
+        boolean executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
+            sendCommandUser(CommandEnum.FOLLOW_USER, editorData);
+            return true;
+        }
+    },
+    STOP_FOLLOWING_SENDER(12, true) {
+        @Override
+        MessageEditorData executeAsync(MyAccount ma, long msgId) {
+            return getUserId(ma, msgId, MyDatabase.Msg.SENDER_ID);
+        }
+
+        @Override
+        boolean executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
+            sendCommandUser(CommandEnum.STOP_FOLLOWING_USER, editorData);
+            return true;
+        }
+    },
+    FOLLOW_AUTHOR(13, true) {
+        @Override
+        MessageEditorData executeAsync(MyAccount ma, long msgId) {
+            return getUserId(ma, msgId, MyDatabase.Msg.AUTHOR_ID);
+        }
+
+        @Override
+        boolean executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
+            sendCommandUser(CommandEnum.FOLLOW_USER, editorData);
+            return true;
+        }
+    },
+    STOP_FOLLOWING_AUTHOR(14, true) {
+        @Override
+        MessageEditorData executeAsync(MyAccount ma, long msgId) {
+            return getUserId(ma, msgId, MyDatabase.Msg.AUTHOR_ID);
+        }
+
+        @Override
+        boolean executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
+            sendCommandUser(CommandEnum.STOP_FOLLOWING_USER, editorData);
+            return true;
+        }
+    },
     PROFILE(15),
     BLOCK(16),
-    ACT_AS_USER(17),
-    ACT_AS(18),
-    OPEN_MESSAGE_PERMALINK(19),
-    VIEW_IMAGE(20),
-    OPEN_CONVERSATION(21),
+    ACT_AS_USER(17) {
+        @Override
+        boolean executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
+            menu.setAccountUserIdToActAs(editorData.ma.firstOtherAccountOfThisOrigin().getUserId());
+            menu.showContextMenu();
+            return true;
+        }
+    },
+    ACT_AS(18) {
+        @Override
+        boolean executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
+            AccountSelector.selectAccount(menu.messageList.getActivity(), editorData.ma.getOriginId(), ActivityRequestCode.SELECT_ACCOUNT_TO_ACT_AS);
+            return true;
+        }
+    },
+    OPEN_MESSAGE_PERMALINK(19) {
+        @Override
+        boolean executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
+            return new MessageShare(menu.messageList.getActivity(), menu.getMsgId()).openPermalink();
+        }
+    },
+    VIEW_IMAGE(20) {
+        @Override
+        boolean executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
+            FileProvider.viewImage(menu.messageList.getActivity(), menu.imageFilename);
+            return true;
+        }
+    },
+    OPEN_CONVERSATION(21) {
+        @Override
+        boolean executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
+            Uri uri = MyProvider.getTimelineMsgUri(editorData.ma.getUserId(), menu.messageList.getTimelineType(), true, menu.getMsgId());
+            String action = menu.messageList.getActivity().getIntent().getAction();
+            if (Intent.ACTION_PICK.equals(action) || Intent.ACTION_GET_CONTENT.equals(action)) {
+                if (MyLog.isLoggable(this, MyLog.DEBUG)) {
+                    MyLog.d(this, "onItemClick, setData=" + uri);
+                }
+                menu.messageList.getActivity().setResult(Activity.RESULT_OK, new Intent().setData(uri));
+            } else {
+                if (MyLog.isLoggable(this, MyLog.DEBUG)) {
+                    MyLog.d(this, "onItemClick, startActivity=" + uri);
+                }
+                menu.messageList.getActivity().startActivity(new Intent(Intent.ACTION_VIEW, uri));
+            }
+            return true;
+        }
+    },
     UNKNOWN(100);
 
     private final int id;
+    private final boolean mIsAsync;
 
     ContextMenuItem(int id) {
+        this(id, false);
+    }
+
+    ContextMenuItem(int id, boolean isAsync) {
         this.id = Menu.FIRST + id;
+        this.mIsAsync = isAsync;
     }
 
     public static ContextMenuItem fromId(int id) {
@@ -64,5 +268,49 @@ public enum ContextMenuItem {
 
     public MenuItem addTo(Menu menu, int order, CharSequence title) {
         return menu.add(Menu.NONE, this.id, order, title);
+    }
+    
+    public boolean execute(MessageContextMenu menu, MyAccount ma) {
+        if (mIsAsync) {
+            executeAsync1(menu, ma);
+            return true;
+        } else {
+            return executeOnUiThread(menu, new MessageEditorData(ma).setInReplyToId(menu.getMsgId()));
+        }
+    }
+    
+    private void executeAsync1(final MessageContextMenu menu, final MyAccount ma) {
+        new AsyncTask<Void, Void, MessageEditorData>(){
+            @Override
+            protected MessageEditorData doInBackground(Void... params) {
+                return executeAsync(ma, menu.getMsgId());
+            }
+
+            @Override
+            protected void onPostExecute(MessageEditorData editorData) {
+                executeOnUiThread(menu, editorData);
+            }
+        }.execute();
+    }
+
+    MessageEditorData executeAsync(MyAccount ma, long msgId) {
+        return new MessageEditorData(ma);
+    }
+
+    MessageEditorData getUserId(MyAccount ma, long msgId, String msgUserIdColumnName) {
+        return new MessageEditorData(ma)
+                .setRecipientId(MyProvider.msgIdToUserId(msgUserIdColumnName, msgId));
+    }
+
+    boolean executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
+        return false;
+    }
+    
+    void sendCommandUser(CommandEnum command, MessageEditorData editorData) {
+        MyServiceManager.sendManualForegroundCommand( new CommandData(command, editorData.ma.getAccountName(), editorData.recipientId));
+    }
+    
+    void sendCommandMsg(CommandEnum command, MessageEditorData editorData) {
+        MyServiceManager.sendManualForegroundCommand( new CommandData(command, editorData.ma.getAccountName(), editorData.inReplyToId));
     }
 }

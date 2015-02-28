@@ -5,6 +5,7 @@ import android.test.InstrumentationTestCase;
 
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.context.UserInTimeline;
 import org.andstatus.app.data.MessageInserter;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyProvider;
@@ -41,6 +42,7 @@ public class OriginTest extends InstrumentationTestCase {
         // Depending on number of spans!
         assertTrue("Characters left " + charactersLeft, charactersLeft == 18
                 || charactersLeft == 2);
+        assertFalse(origin.isMentionAsWebFingerId());
 
         origin = MyContextHolder.get().persistentOrigins()
                 .firstOfType(OriginType.PUMPIO);
@@ -50,22 +52,25 @@ public class OriginTest extends InstrumentationTestCase {
         assertEquals("Characters left",
                 origin.getTextLimit() - message.length(),
                 origin.charactersLeftForMessage(message));
+        assertTrue(origin.isMentionAsWebFingerId());
 
         origin = MyContextHolder.get().persistentOrigins()
                 .firstOfType(OriginType.GNUSOCIAL);
-        textLimit = 200;
+        textLimit = Origin.TEXT_LIMIT_FOR_WEBFINGER_ID;
         int uploadLimit = 0;
         MbConfig config = MbConfig.fromTextLimit(textLimit, uploadLimit);
         origin = new Origin.Builder(origin).save(config).build();
         assertEquals("Textlimit", textLimit, origin.getTextLimit());
+        assertTrue(origin.isMentionAsWebFingerId());
 
-        textLimit = 140;
+        textLimit = OriginType.TWITTER.textLimitDefault;
         config = MbConfig.fromTextLimit(textLimit, uploadLimit);
         origin = new Origin.Builder(origin).save(config).build();
         assertEquals("Textlimit", textLimit, origin.getTextLimit());
         assertEquals("Short URL length", 0, origin.shortUrlLength);
         assertEquals("Characters left", textLimit - message.length(),
                 origin.charactersLeftForMessage(message));
+        assertFalse(origin.isMentionAsWebFingerId());
 
         textLimit = 0;
         config = MbConfig.fromTextLimit(textLimit, uploadLimit);
@@ -80,6 +85,7 @@ public class OriginTest extends InstrumentationTestCase {
                 origin.getTextLimit() - message.length()
                         - config.shortUrlLength + urlString.length(),
                 origin.charactersLeftForMessage(message));
+        assertTrue(origin.isMentionAsWebFingerId());
     }
 
     public void testAddDeleteOrigin() {
@@ -113,13 +119,14 @@ public class OriginTest extends InstrumentationTestCase {
             String originName, String hostOrUrl, boolean isSsl,
             SslModeEnum sslMode, boolean allowHtml, 
             boolean inCombinedGlobalSearch, boolean inCombinedPublicReload) {
-        Origin.Builder builder = new Origin.Builder(originType);
-        Origin origin = builder.setName(originName)
+        Origin.Builder builder = new Origin.Builder(originType).setName(originName)
                 .setHostOrUrl(hostOrUrl)
                 .setSsl(isSsl)
                 .setSslMode(sslMode)
                 .setHtmlContentAllowed(allowHtml)
-                .save().build();
+                .save();
+        assertTrue(builder.toString(), builder.isSaved());
+        Origin origin = builder.build();
         if (origin.isOAuthDefault() || origin.canChangeOAuth()) {
             OAuthClientKeysTest.insertTestKeys(origin);
         }
@@ -167,7 +174,8 @@ public class OriginTest extends InstrumentationTestCase {
         long msgId = MessageInserter.addMessageForAccount(TestSuite.TWITTER_TEST_ACCOUNT_NAME,
                 body, messageOid);
         assertTrue(msgId != 0);
-        String userName = MyProvider.msgIdToUsername(MyDatabase.Msg.AUTHOR_ID, msgId);
+        String userName = MyProvider.msgIdToUsername(MyDatabase.Msg.AUTHOR_ID, msgId, 
+                UserInTimeline.USERNAME);
         String permalink = origin.messagePermalink(msgId);
         String desc = "Permalink of Twitter message '" + messageOid + "' by '" + userName
                 + "' at " + origin.toString() + " is " + permalink;

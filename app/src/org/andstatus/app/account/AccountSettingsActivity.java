@@ -58,7 +58,6 @@ import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.origin.Origin;
-import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.origin.PersistentOriginList;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.service.MyServiceState;
@@ -203,7 +202,7 @@ public class AccountSettingsActivity extends Activity {
     }
 
     private void onOriginSelected(int resultCode, Intent data) {
-        Origin origin = Origin.getEmpty(OriginType.ORIGIN_TYPE_DEFAULT);
+        Origin origin = Origin.Builder.buildUnknown();
         if (resultCode == RESULT_OK) {
             origin = MyContextHolder.get().persistentOrigins()
                     .fromName(data.getStringExtra(IntentExtra.EXTRA_ORIGIN_NAME.key));

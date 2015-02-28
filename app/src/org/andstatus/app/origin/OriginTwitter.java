@@ -19,6 +19,7 @@ package org.andstatus.app.origin;
 import android.net.Uri;
 
 import org.andstatus.app.R;
+import org.andstatus.app.context.UserInTimeline;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.MyDatabase.Msg;
@@ -64,7 +65,8 @@ class OriginTwitter extends Origin {
         if (url == null) {
             return "";
         }
-        String userName = MyProvider.msgIdToUsername(MyDatabase.Msg.AUTHOR_ID, messageId);
+        String userName = MyProvider.msgIdToUsername(MyDatabase.Msg.AUTHOR_ID, messageId, 
+                UserInTimeline.USERNAME);
         return Uri.withAppendedPath(fixUriforPermalink(UriUtils.fromUrl(url)), userName
                 + "/status/"
                 + MyProvider.msgIdToStringColumnValue(Msg.MSG_OID, messageId)).toString();

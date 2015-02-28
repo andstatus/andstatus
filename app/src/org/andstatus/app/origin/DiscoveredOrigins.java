@@ -46,7 +46,7 @@ public class DiscoveredOrigins {
         if (!TextUtils.isEmpty(originName) && mOrigins.containsKey(originName)) {
             return mOrigins.get(originName);
         } else {
-            return Origin.getEmpty(OriginType.UNKNOWN);
+            return Origin.Builder.buildUnknown();
         }
     }
 }

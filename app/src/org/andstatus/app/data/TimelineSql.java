@@ -159,7 +159,7 @@ public class TimelineSql {
         if (!authorNameDefined && columns.contains(MyDatabase.User.AUTHOR_NAME)) {
             tables = "(" + tables + ") LEFT OUTER JOIN (SELECT "
                     + BaseColumns._ID + ", " 
-                    + MyProvider.authorNameField() + " AS " + MyDatabase.User.AUTHOR_NAME
+                    + MyProvider.userNameField() + " AS " + MyDatabase.User.AUTHOR_NAME
                     + " FROM " + User.TABLE_NAME + ") AS author ON "
                     + MyProvider.MSG_TABLE_ALIAS + "." + MyDatabase.Msg.AUTHOR_ID + "=author."
                     + BaseColumns._ID;
@@ -194,21 +194,21 @@ public class TimelineSql {
         }
         if (columns.contains(MyDatabase.User.SENDER_NAME)) {
             tables = "(" + tables + ") LEFT OUTER JOIN (SELECT " + BaseColumns._ID + ", "
-                    + MyProvider.authorNameField() + " AS " + MyDatabase.User.SENDER_NAME
+                    + MyProvider.userNameField() + " AS " + MyDatabase.User.SENDER_NAME
                     + " FROM " + User.TABLE_NAME + ") AS sender ON "
                     + MyProvider.MSG_TABLE_ALIAS + "." + MyDatabase.Msg.SENDER_ID + "=sender."
                     + BaseColumns._ID;
         }
         if (columns.contains(MyDatabase.User.IN_REPLY_TO_NAME)) {
             tables = "(" + tables + ") LEFT OUTER JOIN (SELECT " + BaseColumns._ID + ", "
-                    + MyProvider.authorNameField() + " AS " + MyDatabase.User.IN_REPLY_TO_NAME
+                    + MyProvider.userNameField() + " AS " + MyDatabase.User.IN_REPLY_TO_NAME
                     + " FROM " + User.TABLE_NAME + ") AS prevauthor ON "
                     + MyProvider.MSG_TABLE_ALIAS + "." + MyDatabase.Msg.IN_REPLY_TO_USER_ID
                     + "=prevauthor." + BaseColumns._ID;
         }
         if (columns.contains(MyDatabase.User.RECIPIENT_NAME)) {
             tables = "(" + tables + ") LEFT OUTER JOIN (SELECT " + BaseColumns._ID + ", "
-                    + MyProvider.authorNameField() + " AS " + MyDatabase.User.RECIPIENT_NAME
+                    + MyProvider.userNameField() + " AS " + MyDatabase.User.RECIPIENT_NAME
                     + " FROM " + User.TABLE_NAME + ") AS recipient ON "
                     + MyProvider.MSG_TABLE_ALIAS + "." + MyDatabase.Msg.RECIPIENT_ID + "=recipient."
                     + BaseColumns._ID;

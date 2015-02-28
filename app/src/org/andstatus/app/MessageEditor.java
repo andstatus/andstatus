@@ -280,7 +280,7 @@ class MessageEditor {
         if (!dataIn.getMyAccount().isValid()) {
             return;
         }
-        if (dataCurrent.replyToId != dataIn.replyToId || dataCurrent.recipientId != dataIn.recipientId 
+        if (dataCurrent.inReplyToId != dataIn.inReplyToId || dataCurrent.recipientId != dataIn.recipientId 
                 || dataCurrent.getMyAccount().getAccountName().compareTo(dataIn.getMyAccount().getAccountName()) != 0) {
             dataCurrent = dataIn;
             mEditText.setText(dataCurrent.messageText);
@@ -298,8 +298,8 @@ class MessageEditor {
     private void showMessageDetails() {
         String messageDetails = showAccountName() ? dataCurrent.getMyAccount().getAccountName() : "";
         if (dataCurrent.recipientId == 0) {
-            if (dataCurrent.replyToId != 0) {
-                String replyToName = MyProvider.msgIdToUsername(MyDatabase.Msg.AUTHOR_ID, dataCurrent.replyToId);
+            if (dataCurrent.inReplyToId != 0) {
+                String replyToName = MyProvider.msgIdToUsername(MyDatabase.Msg.AUTHOR_ID, dataCurrent.inReplyToId, MyPreferences.userInTimeline());
                 messageDetails += " " + String.format(
                         MyContextHolder.get().context().getText(R.string.message_source_in_reply_to).toString(), 
                         replyToName);
@@ -346,7 +346,7 @@ class MessageEditor {
 			if (MyPreferences.getBoolean(MyPreferences.KEY_SENDING_MESSAGES_LOG_ENABLED, false)) {
 				MyLog.setLogToFile(true);
 			}
-            CommandData commandData = CommandData.updateStatus(dataCurrent.getMyAccount().getAccountName(), status, dataCurrent.replyToId, dataCurrent.recipientId, dataCurrent.mediaUri);
+            CommandData commandData = CommandData.updateStatus(dataCurrent.getMyAccount().getAccountName(), status, dataCurrent.inReplyToId, dataCurrent.recipientId, dataCurrent.mediaUri);
             MyServiceManager.sendForegroundCommand(commandData);
             clearAndHide();
         }

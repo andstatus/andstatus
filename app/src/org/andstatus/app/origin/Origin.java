@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2014-2015 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,12 +40,13 @@ import java.net.URL;
 
 /**
  * Microblogging system (twitter.com, identi.ca, ... ) where messages are being
- * created (it's the "Origin" of the messages). TODO: Currently the class is
- * almost a stub and serves for several predefined origins only :-)
+ * created (it's the "Origin" of the messages)
  * 
  * @author yvolk@yurivolkov.com
  */
 public class Origin {
+    public static final int TEXT_LIMIT_FOR_WEBFINGER_ID = 200;
+
     private static final String TAG = Origin.class.getSimpleName();
 
     /** See {@link OriginType#shortUrlLengthDefault} */
@@ -75,6 +76,12 @@ public class Origin {
     private boolean inCombinedGlobalSearch = true;
     /** Include this system in Reload while in Combined Public Timeline */
     private boolean inCombinedPublicReload = true;
+    
+    private TriState mIsMentionAsWebFingerId = TriState.UNKNOWN;
+    
+    protected Origin() {
+        // Empty
+    }
     
     public OriginType getOriginType() {
         return originType;
@@ -239,6 +246,22 @@ public class Origin {
     public boolean isInCombinedPublicReload() {
         return inCombinedPublicReload;
     }
+
+    private boolean isMentionAsWebFingerIdDefault() {
+        switch (originType) {
+            case PUMPIO:
+                return true;
+            case TWITTER:
+                return false;
+            default:
+                break;
+        }
+        return getTextLimit() == 0 || getTextLimit() >= TEXT_LIMIT_FOR_WEBFINGER_ID;
+    }
+    
+    public boolean isMentionAsWebFingerId() {
+        return mIsMentionAsWebFingerId.toBoolean(isMentionAsWebFingerIdDefault());
+    }
     
     public boolean hasChildren() {
         long count = 0;
@@ -268,8 +291,8 @@ public class Origin {
         }
         return count != 0;
     }
-    
-    public static Origin getEmpty(OriginType originType) {
+
+    private static Origin getEmpty(OriginType originType) {
         Origin origin;
         try {
             origin = originType.getOriginClass().newInstance();
@@ -299,15 +322,8 @@ public class Origin {
         return textLimit;
     }
 
-    protected void setTextLimit(int textLimit) {
-        if (textLimit <= 0) {
-            this.textLimit = OriginType.TEXT_LIMIT_MAXIMUM;
-        } else {
-            this.textLimit = textLimit;
-        }
-    }
-
     public static final class Builder {
+
         private final Origin origin;
         /*
          * Result of the last "save" action
@@ -318,8 +334,8 @@ public class Origin {
             return saved;
         }
 
-        public static Origin getUnknown() {
-            return getEmpty(OriginType.UNKNOWN);
+        public static Origin buildUnknown() {
+            return new Builder(OriginType.UNKNOWN).build();
         }
 
         public Builder(OriginType originType) {
@@ -346,35 +362,40 @@ public class Origin {
                         .getColumnIndex(MyDatabase.Origin.SHORT_URL_LENGTH));
             }
             if (originType1.textLimitDefault == 0) {
-                origin.setTextLimit(c.getInt(c.getColumnIndex(MyDatabase.Origin.TEXT_LIMIT)));
+                setTextLimit(c.getInt(c.getColumnIndex(MyDatabase.Origin.TEXT_LIMIT)));
             }
             origin.inCombinedGlobalSearch = (c.getInt(c
                     .getColumnIndex(MyDatabase.Origin.IN_COMBINED_GLOBAL_SEARCH)) != 0);
             origin.inCombinedPublicReload = (c.getInt(c
                     .getColumnIndex(MyDatabase.Origin.IN_COMBINED_PUBLIC_RELOAD)) != 0);
+            // TODO Restore from a database: setIsMentionAsWebFingerId
         }
 
+        protected void setTextLimit(int textLimit) {
+            if (textLimit <= 0) {
+                origin.textLimit = OriginType.TEXT_LIMIT_MAXIMUM;
+            } else {
+                origin.textLimit = textLimit;
+            }
+        }
+        
         public Builder(Origin original) {
-            origin = clone(original);
-        }
-
-        private Origin clone(Origin original) {
-            Origin cloned = getEmpty(original.originType);
-            cloned.id = original.id;
-            cloned.name = original.name;
-            cloned.url = original.url;
-            cloned.ssl = original.ssl;
-            cloned.sslMode = original.sslMode;
-            cloned.allowHtml = original.allowHtml;
-            cloned.shortUrlLength = original.shortUrlLength;
-            cloned.setTextLimit(original.getTextLimit());
-            cloned.inCombinedGlobalSearch = original.inCombinedGlobalSearch;
-            cloned.inCombinedPublicReload = original.inCombinedPublicReload;
-            return cloned;
+            origin = getEmpty(original.originType);
+            origin.id = original.id;
+            origin.name = original.name;
+            setUrl(original.url);
+            setSsl(original.ssl);
+            setSslMode(original.sslMode);
+            setHtmlContentAllowed(original.allowHtml);
+            origin.shortUrlLength = original.shortUrlLength;
+            setTextLimit(original.getTextLimit());
+            setInCombinedGlobalSearch(original.inCombinedGlobalSearch);
+            setInCombinedPublicReload(original.inCombinedPublicReload);
+            setIsMentionAsWebFingerId(original.mIsMentionAsWebFingerId);
         }
 
         public Origin build() {
-            return clone(origin);
+            return new Builder(origin).origin;
         }
 
         public Builder setName(String nameIn) {
@@ -441,10 +462,15 @@ public class Origin {
             origin.inCombinedPublicReload = inCombinedPublicReload;
             return this;
         }
+
+        public Builder setIsMentionAsWebFingerId(TriState isMentionAsWebFingerId) {
+            origin.mIsMentionAsWebFingerId = isMentionAsWebFingerId;
+            return this;
+        }
         
         public Builder save(MbConfig config) {
             origin.shortUrlLength = config.shortUrlLength;
-            origin.setTextLimit(config.textLimit);
+            setTextLimit(config.textLimit);
             save();
             return this;
         }
@@ -476,6 +502,7 @@ public class Origin {
             values.put(MyDatabase.Origin.TEXT_LIMIT, origin.getTextLimit());
             values.put(MyDatabase.Origin.IN_COMBINED_GLOBAL_SEARCH, origin.inCombinedGlobalSearch);
             values.put(MyDatabase.Origin.IN_COMBINED_PUBLIC_RELOAD, origin.inCombinedPublicReload);
+            // TODO: save origin.mIsMentionAsWebFingerId
 
             boolean changed = false;
             if (origin.id == 0) {
@@ -507,6 +534,11 @@ public class Origin {
                 }
             }
             return deleted;
+        }
+        
+        @Override
+        public String toString() {
+            return "Builder" + (isSaved() ? "saved " : " not") + " saved; " + origin.toString();
         }
     }
 }

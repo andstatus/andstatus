@@ -22,6 +22,7 @@ import android.text.TextUtils;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.UserInTimeline;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.util.UriUtils;
@@ -33,7 +34,8 @@ class MessageEditorData {
      * Id of the Message to which we are replying
      * -1 - is non-existent id
      */
-    long replyToId = 0;
+    long inReplyToId = 0;
+    boolean mReplyAll = false; 
     long recipientId = 0;
     MyAccount ma = MyAccount.getEmpty(MyContextHolder.get(), "");
 
@@ -57,7 +59,7 @@ class MessageEditorData {
         result = prime * result + ((mediaUri == null) ? 0 : mediaUri.hashCode());
         result = prime * result + ((messageText == null) ? 0 : messageText.hashCode());
         result = prime * result + (int) (recipientId ^ (recipientId >>> 32));
-        result = prime * result + (int) (replyToId ^ (replyToId >>> 32));
+        result = prime * result + (int) (inReplyToId ^ (inReplyToId >>> 32));
         return result;
     }
 
@@ -87,7 +89,7 @@ class MessageEditorData {
             return false;
         if (recipientId != other.recipientId)
             return false;
-        if (replyToId != other.replyToId)
+        if (inReplyToId != other.inReplyToId)
             return false;
         return true;
     }
@@ -99,12 +101,14 @@ class MessageEditorData {
         builder.append(messageText);
         builder.append(", mediaUri=");
         builder.append(mediaUri);
-        builder.append(", replyToId=");
-        builder.append(replyToId);
+        builder.append(", inReplyToId=");
+        builder.append(inReplyToId);
+        builder.append(", mReplyAll=");
+        builder.append(mReplyAll);
         builder.append(", recipientId=");
         builder.append(recipientId);
         builder.append(", ma=");
-        builder.append(ma.getAccountName());
+        builder.append(ma);
         builder.append("]");
         return builder.toString();
     }
@@ -113,7 +117,7 @@ class MessageEditorData {
         if (outState != null) {
             outState.putString(IntentExtra.EXTRA_MESSAGE_TEXT.key, messageText);
             outState.putString(IntentExtra.EXTRA_MEDIA_URI.key, mediaUri.toString());
-            outState.putLong(IntentExtra.EXTRA_INREPLYTOID.key, replyToId);
+            outState.putLong(IntentExtra.EXTRA_INREPLYTOID.key, inReplyToId);
             outState.putLong(IntentExtra.EXTRA_RECIPIENTID.key, recipientId);
             outState.putString(IntentExtra.EXTRA_ACCOUNT_NAME.key, getMyAccount().getAccountName());
         }
@@ -131,7 +135,7 @@ class MessageEditorData {
             if (!TextUtils.isEmpty(messageText) || !UriUtils.isEmpty(mediaUri)) {
                 data.messageText = messageText;
                 data.mediaUri = mediaUri;
-                data.replyToId = savedState.getLong(IntentExtra.EXTRA_INREPLYTOID.key, 0);
+                data.inReplyToId = savedState.getLong(IntentExtra.EXTRA_INREPLYTOID.key, 0);
                 data.recipientId = savedState.getLong(IntentExtra.EXTRA_RECIPIENTID.key, 0);
             }
             return data;
@@ -150,7 +154,6 @@ class MessageEditorData {
 
     public MessageEditorData setMessageText(String textInitial) {
         messageText = textInitial;
-        addReplyToNameToMessageText();
         return this;
     }
 
@@ -159,23 +162,39 @@ class MessageEditorData {
         return this;
     }
     
-    public MessageEditorData setReplyToId(long msgId) {
-        replyToId = msgId;
-        addReplyToNameToMessageText();
+    public MessageEditorData setInReplyToId(long msgId) {
+        inReplyToId = msgId;
+        return this;
+    }
+    
+    public MessageEditorData setReplyAll(boolean replyAll) {
+        mReplyAll = replyAll;
         return this;
     }
 
-    private void addReplyToNameToMessageText() {
-        if (recipientId != 0 || replyToId == 0) {
-            return;
+    public MessageEditorData addMentionsToText() {
+        if (inReplyToId != 0) {
+            if (mReplyAll) {
+                // TODO
+            } else {
+                addReplyToNameToText();
+            }
         }
+        return this;
+    }
+    
+    private void addReplyToNameToText() {
         String messageText1 = messageText;
-        String replyToName = MyProvider.msgIdToUsername(MyDatabase.Msg.AUTHOR_ID, replyToId);
-        if (!TextUtils.isEmpty(messageText1)) {
-            messageText1 += " ";
+        String name = MyProvider.msgIdToUsername(MyDatabase.Msg.AUTHOR_ID, inReplyToId, ma
+                .getOrigin().isMentionAsWebFingerId() ? UserInTimeline.WEBFINGER_ID
+                : UserInTimeline.USERNAME);
+        if (!TextUtils.isEmpty(name)) {
+            if (!TextUtils.isEmpty(messageText1)) {
+                messageText1 += " ";
+            }
+            messageText1 = "@" + name + " ";
+            messageText = messageText1;
         }
-        messageText1 = "@" + replyToName + " ";
-        messageText = messageText1;
     }
 
     public MessageEditorData setRecipientId(long userId) {

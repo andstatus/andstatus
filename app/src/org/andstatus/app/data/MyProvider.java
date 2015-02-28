@@ -43,6 +43,7 @@ import org.andstatus.app.ClassInApplicationPackage;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.context.UserInTimeline;
 import org.andstatus.app.data.MyDatabase.Download;
 import org.andstatus.app.data.MyDatabase.FollowingUser;
 import org.andstatus.app.data.MyDatabase.Msg;
@@ -649,8 +650,13 @@ public class MyProvider extends ContentProvider {
         return c;
     }
 
-    public static String authorNameField() {
-        switch (MyPreferences.userInTimeline()) {
+    public static String userNameField() {
+        UserInTimeline userInTimeline = MyPreferences.userInTimeline();
+        return userNameField(userInTimeline);
+    }
+
+    public static String userNameField(UserInTimeline userInTimeline) {
+        switch (userInTimeline) {
             case AT_USERNAME:
                 return "('@' || " + MyDatabase.User.USERNAME + ")";
             case WEBFINGER_ID:
@@ -901,22 +907,22 @@ public class MyProvider extends ContentProvider {
         return oid;
     }
     
-    public static String msgIdToUsername(String msgUserColumnName, long messageId) {
+    public static String msgIdToUsername(String userIdColumnName, long messageId, UserInTimeline userInTimeline) {
         String userName = "";
         if (messageId != 0) {
             SQLiteStatement prog = null;
             String sql = "";
             try {
-                if (msgUserColumnName.contentEquals(MyDatabase.Msg.SENDER_ID) ||
-                        msgUserColumnName.contentEquals(MyDatabase.Msg.AUTHOR_ID) ||
-                        msgUserColumnName.contentEquals(MyDatabase.Msg.IN_REPLY_TO_USER_ID) ||
-                        msgUserColumnName.contentEquals(MyDatabase.Msg.RECIPIENT_ID)) {
-                    sql = "SELECT " + MyDatabase.User.USERNAME + " FROM " + User.TABLE_NAME
+                if (userIdColumnName.contentEquals(MyDatabase.Msg.SENDER_ID) ||
+                        userIdColumnName.contentEquals(MyDatabase.Msg.AUTHOR_ID) ||
+                        userIdColumnName.contentEquals(MyDatabase.Msg.IN_REPLY_TO_USER_ID) ||
+                        userIdColumnName.contentEquals(MyDatabase.Msg.RECIPIENT_ID)) {
+                    sql = "SELECT " + userNameField(userInTimeline) + " FROM " + User.TABLE_NAME
                             + " INNER JOIN " + Msg.TABLE_NAME + " ON "
-                            + Msg.TABLE_NAME + "." + msgUserColumnName + "=" + User.TABLE_NAME + "." + BaseColumns._ID
+                            + Msg.TABLE_NAME + "." + userIdColumnName + "=" + User.TABLE_NAME + "." + BaseColumns._ID
                             + " WHERE " + Msg.TABLE_NAME + "." + BaseColumns._ID + "=" + messageId;
                 } else {
-                    throw new IllegalArgumentException("msgIdToUsername; Unknown name \"" + msgUserColumnName);
+                    throw new IllegalArgumentException("msgIdToUsername; Unknown name \"" + userIdColumnName + "\"");
                 }
                 SQLiteDatabase db = MyContextHolder.get().getDatabase().getReadableDatabase();
                 prog = db.compileStatement(sql);
@@ -931,7 +937,7 @@ public class MyProvider extends ContentProvider {
                 DbUtils.closeSilently(prog);
             }
             if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
-                MyLog.v(TAG, "msgIdTo" + msgUserColumnName + ": " + messageId + " -> " + userName );
+                MyLog.v(TAG, "msgIdTo" + userIdColumnName + ": " + messageId + " -> " + userName );
             }
         }
         return userName;
@@ -1046,16 +1052,16 @@ public class MyProvider extends ContentProvider {
         return TextUtils.isEmpty(columnValue) ? "" : columnValue;
     }
     
-    public static long msgIdToUserId(String msgUserColumnName, long systemId) {
+    public static long msgIdToUserId(String msgUserIdColumnName, long systemId) {
         long userId = 0;
         try {
-            if (msgUserColumnName.contentEquals(MyDatabase.Msg.SENDER_ID) ||
-                    msgUserColumnName.contentEquals(MyDatabase.Msg.AUTHOR_ID) ||
-                    msgUserColumnName.contentEquals(MyDatabase.Msg.IN_REPLY_TO_USER_ID) ||
-                    msgUserColumnName.contentEquals(MyDatabase.Msg.RECIPIENT_ID)) {
-                userId = msgIdToLongColumnValue(msgUserColumnName, systemId);
+            if (msgUserIdColumnName.contentEquals(MyDatabase.Msg.SENDER_ID) ||
+                    msgUserIdColumnName.contentEquals(MyDatabase.Msg.AUTHOR_ID) ||
+                    msgUserIdColumnName.contentEquals(MyDatabase.Msg.IN_REPLY_TO_USER_ID) ||
+                    msgUserIdColumnName.contentEquals(MyDatabase.Msg.RECIPIENT_ID)) {
+                userId = msgIdToLongColumnValue(msgUserIdColumnName, systemId);
             } else {
-                throw new IllegalArgumentException("msgIdToUserId; Unknown name \"" + msgUserColumnName);
+                throw new IllegalArgumentException("msgIdToUserId; Unknown name \"" + msgUserIdColumnName);
             }
         } catch (Exception e) {
             MyLog.e(TAG, "msgIdToUserId", e);
