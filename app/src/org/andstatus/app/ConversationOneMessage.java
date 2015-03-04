@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2013 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2013-2015 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import android.graphics.drawable.Drawable;
 import android.text.Html;
 import android.text.TextUtils;
 
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.AttachedImageDrawable;
 import org.andstatus.app.data.AvatarDrawable;
@@ -30,6 +31,8 @@ import org.andstatus.app.data.MyDatabase.MsgOfUser;
 import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.TimelineSql;
+import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.SharedPreferencesUtil;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -37,8 +40,8 @@ import java.util.Set;
 /**
  * One message row
  */
-class ConversationOneMessage implements Comparable<ConversationOneMessage> {
-    long mMsgId;
+public class ConversationOneMessage implements Comparable<ConversationOneMessage> {
+    private long mMsgId;
     long mInReplyToMsgId = 0;
     long mCreatedDate = 0;
     long mLinkedUserId = 0;
@@ -69,10 +72,9 @@ class ConversationOneMessage implements Comparable<ConversationOneMessage> {
     
     AvatarDrawable mAvatarDrawable = null;
     Drawable mImageDrawable = null;
-    
-    public ConversationOneMessage(long msgId, int replyLevel) {
-        mMsgId = msgId;
-        mReplyLevel = replyLevel;
+
+    public ConversationOneMessage() {
+        // Empty
     }
 
     public boolean isLoaded() {
@@ -88,12 +90,12 @@ class ConversationOneMessage implements Comparable<ConversationOneMessage> {
             return false;
         }
         final ConversationOneMessage other = (ConversationOneMessage) o;
-        return mMsgId == other.mMsgId;
+        return getMsgId() == other.getMsgId();
     }
 
     @Override
     public int hashCode() {
-        return Long.valueOf(mMsgId).hashCode();
+        return Long.valueOf(getMsgId()).hashCode();
     }
 
     /**
@@ -104,10 +106,10 @@ class ConversationOneMessage implements Comparable<ConversationOneMessage> {
         int compared = mListOrder - another.mListOrder;
         if (compared == 0) {
             if (mCreatedDate == another.mCreatedDate) {
-                if ( mMsgId == another.mMsgId) {
+                if ( getMsgId() == another.getMsgId()) {
                     compared = 0;
                 } else {
-                    compared = (another.mMsgId - mMsgId > 0 ? 1 : -1);
+                    compared = (another.getMsgId() - getMsgId() > 0 ? 1 : -1);
                 }
             } else {
                 compared = (another.mCreatedDate - mCreatedDate > 0 ? 1 : -1);
@@ -116,6 +118,10 @@ class ConversationOneMessage implements Comparable<ConversationOneMessage> {
         return compared;
     }
 
+    String[] getProjection() {
+        return TimelineSql.getConversationProjection();        
+    }
+    
     void load(Cursor cursor) {
         /**
          * IDs of all known senders of this message except for the Author
@@ -173,5 +179,29 @@ class ConversationOneMessage implements Comparable<ConversationOneMessage> {
             }
             mRebloggersString += MyProvider.userIdToName(rebloggerId);
         }
+    }
+
+    long getMsgId() {
+        return mMsgId;
+    }
+
+    void setMsgId(long mMsgId) {
+        this.mMsgId = mMsgId;
+    }
+    
+    boolean noIdOfReply() {
+        return mInReplyToMsgId !=0 && !SharedPreferencesUtil.isEmpty(mInReplyToName);
+    }
+    
+    void copyFromWrongReply(ConversationOneMessage aReply) {
+        MyLog.v(this, "Message id=" + aReply.getMsgId() + " has reply to name ("
+                + aReply.mInReplyToName
+                + ") but no reply to message id");
+        // This allows to place the message on a Timeline correctly
+        mCreatedDate = aReply.mCreatedDate - 60000;
+        mAuthor = aReply.mInReplyToName;
+        mBody = "("
+                + MyContextHolder.get().context().getText(R.string.id_of_this_message_was_not_specified)
+                + ")";
     }
 }

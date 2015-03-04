@@ -74,7 +74,7 @@ public class ConversationViewAdapter extends BaseAdapter {
 
     @Override
     public long getItemId(int position) {
-        return oMsgs.get(position).mMsgId;
+        return oMsgs.get(position).getMsgId();
     }
 
     @Override
@@ -86,7 +86,7 @@ public class ConversationViewAdapter extends BaseAdapter {
         final String method = "oneMessageToView";
         if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
             MyLog.v(this, method
-                    + ": msgId=" + oMsg.mMsgId
+                    + ": msgId=" + oMsg.getMsgId()
                     + (oMsg.mAvatarDrawable != null ? ", avatar="
                             + oMsg.mAvatarDrawable : ""));
         }
@@ -104,7 +104,7 @@ public class ConversationViewAdapter extends BaseAdapter {
         int indentPixels = indent0 * oMsg.mIndentLevel;
 
         LinearLayout messageIndented = (LinearLayout) messageView.findViewById(R.id.message_indented);
-        if (oMsg.mMsgId == selectedMessageId  && oMsgs.size() > 1) {
+        if (oMsg.getMsgId() == selectedMessageId  && oMsgs.size() > 1) {
             MySimpleCursorAdapter.setBackgroundCompat(messageIndented, context.getResources().getDrawable(R.drawable.message_current_background));
         }
 
@@ -154,7 +154,7 @@ public class ConversationViewAdapter extends BaseAdapter {
         messageIndented.setPadding(indentPixels + 6, 2, 6, 2);
         
         TextView id = (TextView) messageView.findViewById(R.id.id);
-        id.setText(Long.toString(oMsg.mMsgId));
+        id.setText(Long.toString(oMsg.getMsgId()));
         TextView linkedUserId = (TextView) messageView.findViewById(R.id.linked_user_id);
         linkedUserId.setText(Long.toString(oMsg.mLinkedUserId));
 
@@ -224,7 +224,7 @@ public class ConversationViewAdapter extends BaseAdapter {
 
     private int msgIdToHistoryOrder(long msgId) {
         for (ConversationOneMessage oMsg : oMsgs) {
-            if (oMsg.mMsgId == msgId ) {
+            if (oMsg.getMsgId() == msgId ) {
                 return oMsg.mHistoryOrder;
             }
         }

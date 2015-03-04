@@ -184,6 +184,7 @@ public class MessageEditorTest extends android.test.ActivityInstrumentationTestC
     
     private void assertTextCleared() {
         final MessageEditor editor = mActivity.getMessageEditor();
+        assertTrue("Editor is not null", editor != null);
         Runnable assertEditor = new Runnable() {
             @Override
             public void run() {

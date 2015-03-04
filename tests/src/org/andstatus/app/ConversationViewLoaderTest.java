@@ -3,7 +3,7 @@ package org.andstatus.app;
 import android.content.Context;
 import android.test.InstrumentationTestCase;
 
-import org.andstatus.app.ConversationViewLoader.progressPublisher;
+import org.andstatus.app.ConversationLoader.progressPublisher;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
@@ -32,7 +32,9 @@ public class ConversationViewLoaderTest extends InstrumentationTestCase implemen
 
     public void testLoad() {
         Context context = MyContextHolder.get().context();
-        ConversationViewLoader loader = new ConversationViewLoader(context, ma, selectedMessageId);
+        ConversationLoader<ConversationOneMessage> loader = new ConversationLoader<ConversationOneMessage>(
+                ConversationOneMessage.class,
+                context, ma, selectedMessageId);
         progressCounter = 0;
         loader.load(this);
         List<ConversationOneMessage> list = loader.getMsgs();

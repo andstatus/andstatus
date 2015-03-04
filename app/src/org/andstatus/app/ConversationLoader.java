@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2013 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2013-2015 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,18 +20,16 @@ import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 
-import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyProvider;
-import org.andstatus.app.data.TimelineSql;
 import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.SharedPreferencesUtil;
+import org.andstatus.app.util.TFactory;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -39,28 +37,31 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-public class ConversationViewLoader {
+public class ConversationLoader<T extends ConversationOneMessage> {
     private static final int MAX_INDENT_LEVEL = 19;
     
     private Context context;
     private MyAccount ma;
     private long selectedMessageId;
-    private ReplyLevelComparator replyLevelComparator = new ReplyLevelComparator();
-    
-    List<ConversationOneMessage> oMsgs = new ArrayList<ConversationOneMessage>();
+    private boolean mAllowLoadingFromInternet = false;
+    private ReplyLevelComparator<T> replyLevelComparator = new ReplyLevelComparator<T>();
+    private final TFactory<T> tFactory;
+
+    List<T> mMsgs = new ArrayList<T>();
     progressPublisher mProgress;
 
     interface progressPublisher {
         void publish(String progress);
     }
     
-    public List<ConversationOneMessage> getMsgs() {
-        return oMsgs;
+    public List<T> getMsgs() {
+        return mMsgs;
     }
 
     List<Long> idsOfTheMessagesToFind = new ArrayList<Long>();
 
-    public ConversationViewLoader(Context context, MyAccount ma, long selectedMessageId) {
+    public ConversationLoader(Class<T> tClass, Context context, MyAccount ma, long selectedMessageId) {
+        tFactory = new TFactory<T>(tClass);
         this.context = context;
         this.ma = ma;
         this.selectedMessageId = selectedMessageId;
@@ -69,35 +70,35 @@ public class ConversationViewLoader {
     public void load(progressPublisher publisher) {
         mProgress = publisher;
         idsOfTheMessagesToFind.clear();
-        oMsgs.clear();
-        findPreviousMessagesRecursively(new ConversationOneMessage(selectedMessageId, 0));
-        Collections.sort(oMsgs, replyLevelComparator);
+        mMsgs.clear();
+        findPreviousMessagesRecursively(newOMsg(selectedMessageId, 0));
+        Collections.sort(mMsgs, replyLevelComparator);
         enumerateMessages();
         if (MyPreferences.getBoolean(
                 MyPreferences.KEY_OLD_MESSAGES_FIRST_IN_CONVERSATION, false)) {
             reverseListOrder();
         }
-        Collections.sort(oMsgs);
+        Collections.sort(mMsgs);
     }
 
-    private void findPreviousMessagesRecursively(ConversationOneMessage oMsg) {
-        if (!addMessageIdToFind(oMsg.mMsgId)) {
+    private void findPreviousMessagesRecursively(T oMsg) {
+        if (!addMessageIdToFind(oMsg.getMsgId())) {
             return;
         }
         findRepliesRecursively(oMsg);
-        MyLog.v(this, "findPreviousMessages id=" + oMsg.mMsgId);
+        MyLog.v(this, "findPreviousMessages id=" + oMsg.getMsgId());
         loadMessageFromDatabase(oMsg);
         if (oMsg.isLoaded()) {
             if (addMessageToList(oMsg)) {
                 if (oMsg.mInReplyToMsgId != 0) {
-                    findPreviousMessagesRecursively(new ConversationOneMessage(oMsg.mInReplyToMsgId,
+                    findPreviousMessagesRecursively(newOMsg(oMsg.mInReplyToMsgId,
                             oMsg.mReplyLevel - 1));
                 } else {
                     checkInReplyToNameOf(oMsg);                    
                 }
             }
-        } else {
-            retrieveFromInternet(oMsg.mMsgId);
+        } else if (mAllowLoadingFromInternet) {
+            loadFromInternet(oMsg.getMsgId());
         }
     }
     
@@ -115,21 +116,28 @@ public class ConversationViewLoader {
         return true;
     }
 
-    public void findRepliesRecursively(ConversationOneMessage oMsg) {
-        MyLog.v(this, "findReplies for id=" + oMsg.mMsgId);
-        List<Long> replies = MyProvider.getReplyIds(oMsg.mMsgId);
+    public void findRepliesRecursively(T oMsg) {
+        MyLog.v(this, "findReplies for id=" + oMsg.getMsgId());
+        List<Long> replies = MyProvider.getReplyIds(oMsg.getMsgId());
         oMsg.mNReplies = replies.size();
         for (long replyId : replies) {
-            ConversationOneMessage oMsgReply = new ConversationOneMessage(replyId, oMsg.mReplyLevel + 1);
+            T oMsgReply = newOMsg(replyId, oMsg.mReplyLevel + 1);
             findPreviousMessagesRecursively(oMsgReply);
         }
     }
     
+    private T newOMsg(long msgId, int replyLevel) {
+        T oMsg = tFactory.newT();
+        oMsg.setMsgId(msgId);
+        oMsg.mReplyLevel = replyLevel;
+        return oMsg;
+    }
+    
     private void loadMessageFromDatabase(ConversationOneMessage oMsg) {
-        Uri uri = MyProvider.getTimelineMsgUri(ma.getUserId(), TimelineTypeEnum.EVERYTHING, true, oMsg.mMsgId);
+        Uri uri = MyProvider.getTimelineMsgUri(ma.getUserId(), TimelineTypeEnum.EVERYTHING, true, oMsg.getMsgId());
         Cursor cursor = null;
         try {
-            cursor = context.getContentResolver().query(uri, TimelineSql.getConversationProjection(), null, null, null);
+            cursor = context.getContentResolver().query(uri, oMsg.getProjection(), null, null, null);
             if (cursor != null && cursor.moveToFirst()) {
                 oMsg.load(cursor);
             }
@@ -138,54 +146,48 @@ public class ConversationViewLoader {
         }
     }
 
-    private boolean addMessageToList(ConversationOneMessage oMsg) {
+    private boolean addMessageToList(T oMsg) {
         boolean added = false;
-        if (oMsgs.contains(oMsg)) {
-            MyLog.v(this, "Message id=" + oMsg.mMsgId + " is in the list already");
+        if (mMsgs.contains(oMsg)) {
+            MyLog.v(this, "Message id=" + oMsg.getMsgId() + " is in the list already");
         } else {
-            oMsgs.add(oMsg);
-            mProgress.publish(Integer.toString(oMsgs.size()));
+            mMsgs.add(oMsg);
+            if (mProgress != null) {
+                mProgress.publish(Integer.toString(mMsgs.size()));
+            }
             added = true;
         }
         return added;
     }
     
-    private void checkInReplyToNameOf(ConversationOneMessage oMsg) {
-        if (!SharedPreferencesUtil.isEmpty(oMsg.mInReplyToName)) {
-            MyLog.v(this, "Message id=" + oMsg.mMsgId + " has reply to name ("
-                    + oMsg.mInReplyToName
-                    + ") but no reply to message id");
+    private void checkInReplyToNameOf(T oMsg) {
+        if (oMsg.noIdOfReply()) {
             // Don't try to retrieve this message again. 
             // It looks like such messages really exist.
-            ConversationOneMessage oMsg2 = new ConversationOneMessage(0, oMsg.mReplyLevel-1);
-            // This allows to place the message on the timeline correctly
-            oMsg2.mCreatedDate = oMsg.mCreatedDate - 60000;
-            oMsg2.mAuthor = oMsg.mInReplyToName;
-            oMsg2.mBody = "("
-                    + context.getText(R.string.id_of_this_message_was_not_specified)
-                    + ")";
+            T oMsg2 = newOMsg(0, oMsg.mReplyLevel-1);
+            oMsg2.copyFromWrongReply(oMsg);
             addMessageToList(oMsg2);
         }
     }
 
-    private void retrieveFromInternet(long msgId) {
-        MyLog.v(this, "Message id=" + msgId + " should be retrieved from the Internet");
+    private void loadFromInternet(long msgId) {
+        MyLog.v(this, "Message id=" + msgId + " will be loaded from the Internet");
         MyServiceManager.sendForegroundCommand(new CommandData(CommandEnum.GET_STATUS, ma
                 .getAccountName(), msgId));
     }
 
-    private static class ReplyLevelComparator implements Comparator<ConversationOneMessage>, Serializable {
+    private static class ReplyLevelComparator<T extends ConversationOneMessage> implements Comparator<T>, Serializable {
         private static final long serialVersionUID = 1L;
 
         @Override
-        public int compare(ConversationOneMessage lhs, ConversationOneMessage rhs) {
+        public int compare(T lhs, T rhs) {
             int compared = rhs.mReplyLevel - lhs.mReplyLevel;
             if (compared == 0) {
                 if (lhs.mCreatedDate == rhs.mCreatedDate) {
-                    if ( lhs.mMsgId == rhs.mMsgId) {
+                    if ( lhs.getMsgId() == rhs.getMsgId()) {
                         compared = 0;
                     } else {
-                        compared = (rhs.mMsgId - lhs.mMsgId > 0 ? 1 : -1);
+                        compared = (rhs.getMsgId() - lhs.getMsgId() > 0 ? 1 : -1);
                     }
                 } else {
                     compared = (rhs.mCreatedDate - lhs.mCreatedDate > 0 ? 1 : -1);
@@ -202,13 +204,13 @@ public class ConversationViewLoader {
     
     private void enumerateMessages() {
         idsOfTheMessagesToFind.clear();
-        for (ConversationOneMessage oMsg : oMsgs) {
+        for (ConversationOneMessage oMsg : mMsgs) {
             oMsg.mListOrder = 0;
             oMsg.mHistoryOrder = 0;
         }
         OrderCounters order = new OrderCounters();
-        for (int ind = oMsgs.size()-1; ind >= 0; ind--) {
-            ConversationOneMessage oMsg = oMsgs.get(ind);
+        for (int ind = mMsgs.size()-1; ind >= 0; ind--) {
+            ConversationOneMessage oMsg = mMsgs.get(ind);
             if (oMsg.mListOrder < 0 ) {
                 continue;
             }
@@ -217,7 +219,7 @@ public class ConversationViewLoader {
     }
 
     private void enumerateBranch(ConversationOneMessage oMsg, OrderCounters order, int indent) {
-        if (!addMessageIdToFind(oMsg.mMsgId)) {
+        if (!addMessageIdToFind(oMsg.getMsgId())) {
             return;
         }
         int indentNext = indent;
@@ -228,9 +230,9 @@ public class ConversationViewLoader {
                 && indentNext < MAX_INDENT_LEVEL) {
             indentNext++;
         }
-        for (int ind = oMsgs.size() - 1; ind >= 0; ind--) {
-           ConversationOneMessage reply = oMsgs.get(ind);
-           if (reply.mInReplyToMsgId == oMsg.mMsgId) {
+        for (int ind = mMsgs.size() - 1; ind >= 0; ind--) {
+           ConversationOneMessage reply = mMsgs.get(ind);
+           if (reply.mInReplyToMsgId == oMsg.getMsgId()) {
                reply.mNParentReplies = oMsg.mNReplies;
                enumerateBranch(reply, order, indentNext);
            }
@@ -238,9 +240,17 @@ public class ConversationViewLoader {
     }
 
     private void reverseListOrder() {
-        for (ConversationOneMessage oMsg : oMsgs) {
-            oMsg.mListOrder = oMsgs.size() - oMsg.mListOrder - 1; 
+        for (ConversationOneMessage oMsg : mMsgs) {
+            oMsg.mListOrder = mMsgs.size() - oMsg.mListOrder - 1; 
         }
+    }
+
+    public boolean ismAllowLoadingFromInternet() {
+        return mAllowLoadingFromInternet;
+    }
+
+    public void allowLoadingFromInternet() {
+        this.mAllowLoadingFromInternet = true;
     }
     
 }

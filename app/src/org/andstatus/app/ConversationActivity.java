@@ -34,7 +34,7 @@ import android.widget.ListView;
 
 import net.jcip.annotations.GuardedBy;
 
-import org.andstatus.app.ConversationViewLoader.progressPublisher;
+import org.andstatus.app.ConversationLoader.progressPublisher;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
@@ -77,13 +77,12 @@ public class ConversationActivity extends Activity implements MyServiceListener,
      */
     private MessageEditor mMessageEditor;
 
-    private Object messagesLock = new Object(); 
-    @GuardedBy("messagesLock")
-    private List<ConversationOneMessage> messages = new ArrayList<ConversationOneMessage>();
-
     private final Object loaderLock = new Object();
     @GuardedBy("loaderLock")
-    private ContentLoader contentLoader = new ContentLoader();
+    private ContentLoader<ConversationOneMessage> completedLoader = new ContentLoader<ConversationOneMessage>(
+            ConversationOneMessage.class);
+    @GuardedBy("loaderLock")
+    private ContentLoader<ConversationOneMessage> workingLoader = completedLoader;
     private boolean isPaused = false;
     
     @Override
@@ -125,22 +124,33 @@ public class ConversationActivity extends Activity implements MyServiceListener,
     protected void showConversation() {
         MyLog.v(this, "showConversation, instanceId=" + instanceId);
         synchronized (loaderLock) {
-            if (selectedMessageId != 0 && contentLoader.getStatus() != Status.RUNNING) {
-                if (contentLoader.getStatus() == Status.FINISHED) {
-                    contentLoader = new ContentLoader();
-                }
-                contentLoader.execute();
+            if (selectedMessageId != 0 && workingLoader.getStatus() != Status.RUNNING) {
+                /* On passing the same info twice (Generic parameter + Class) read here:
+                 * http://codereview.stackexchange.com/questions/51084/generic-callback-object-but-i-need-the-type-parameter-inside-methods
+                 */
+                workingLoader = new ContentLoader<ConversationOneMessage>(ConversationOneMessage.class);
+                workingLoader.execute();
             }
         }
     }
 
-    private class ContentLoader extends AsyncTask<Void, String, ConversationViewLoader> implements progressPublisher {
+    private class ContentLoader<T extends ConversationOneMessage> extends AsyncTask<Void, String, ConversationLoader<T>> implements progressPublisher {
         private volatile long timeStarted = 0;
         private volatile long timeLoaded = 0;
         private volatile long timeCompleted = 0;
+        private final Class<T> mTClass;
+        private List<T> mMsgs = new ArrayList<T>();
+
+        public ContentLoader(Class<T> tClass) {
+            mTClass = tClass;
+        }
+
+        List<T> getMsgs() {
+            return mMsgs;
+        }
 
         @Override
-        protected ConversationViewLoader doInBackground(Void... params) {
+        protected ConversationLoader<T> doInBackground(Void... params) {
             timeStarted = System.currentTimeMillis();
             publishProgress("...");
 
@@ -152,13 +162,19 @@ public class ConversationActivity extends Activity implements MyServiceListener,
                                 MyProvider.uriToAccountUserId(getIntent().getData()));
             }
             publishProgress("");
-            ConversationViewLoader loader = new ConversationViewLoader(
+            ConversationLoader<T> loader = new ConversationLoader<T>(mTClass,
                     ConversationActivity.this, ma, selectedMessageId);
             if (ma.isValid()) {
+                loader.allowLoadingFromInternet();
                 loader.load(this);
             }
             timeLoaded = System.currentTimeMillis();
             return loader;
+        }
+
+        @Override
+        public void publish(String progress) {
+            publishProgress(progress);
         }
         
         @Override
@@ -167,10 +183,11 @@ public class ConversationActivity extends Activity implements MyServiceListener,
         }
 
         @Override
-        protected void onPostExecute(ConversationViewLoader loader) {
+        protected void onPostExecute(ConversationLoader<T> loader) {
             try {
                 if (!isPaused) {
-                    recreateTheConversationView(loader);
+                    mMsgs = loader.getMsgs();
+                    onContentLoaderCompleted();
                 }
             } catch (Exception e) {
                 MyLog.i(this,"on Recreating view", e);
@@ -180,10 +197,32 @@ public class ConversationActivity extends Activity implements MyServiceListener,
             MyLog.v(this, "ContentLoader completed, " + loader.getMsgs().size() + " items, " + timeTotal + "ms total, " 
             + (timeCompleted - timeLoaded) + "ms in the foreground");
         }
+    }
 
-        @Override
-        public void publish(String progress) {
-            publishProgress(progress);
+    private void onContentLoaderCompleted() {
+        ContentLoader<ConversationOneMessage> loader = updateCompletedLoader();
+        updateTitle("");
+        ListView list = (ListView) findViewById(android.R.id.list);
+        long itemIdOfListPosition = selectedMessageId;
+        if (list.getChildCount() > 1) {
+            itemIdOfListPosition = list.getAdapter().getItemId(list.getFirstVisiblePosition());
+        }
+        int firstListPosition = -1;
+        for (int ind = 0; ind < loader.getMsgs().size(); ind++) {
+            if (loader.getMsgs().get(ind).getMsgId() == itemIdOfListPosition) {
+                firstListPosition = ind;
+            }
+        }
+        list.setAdapter(new ConversationViewAdapter(contextMenu, selectedMessageId, loader.getMsgs()));
+        if (firstListPosition >= 0) {
+            list.setSelectionFromTop(firstListPosition, 0);
+        }
+    }
+
+    private ContentLoader<ConversationOneMessage> updateCompletedLoader() {
+        synchronized(loaderLock) {
+            completedLoader = workingLoader;
+            return workingLoader;
         }
     }
     
@@ -202,34 +241,8 @@ public class ConversationActivity extends Activity implements MyServiceListener,
     }
 
     private int getNumberOfMessages() {
-        int size;
-        synchronized(messagesLock) {
-            size = messages.size();
-        }
-        return size;
-    }
-    
-    private void recreateTheConversationView(ConversationViewLoader loader) {
-        List<ConversationOneMessage> oMsgs = loader.getMsgs();
-        updateTitle("");
-        ListView list = (ListView) findViewById(android.R.id.list);
-
-        long itemIdOfListPosition = selectedMessageId;
-        if (list.getChildCount() > 1) {
-            itemIdOfListPosition = list.getAdapter().getItemId(list.getFirstVisiblePosition());
-        }
-        int firstListPosition = -1;
-        for (int ind = 0; ind < oMsgs.size(); ind++) {
-            if (oMsgs.get(ind).mMsgId == itemIdOfListPosition) {
-                firstListPosition = ind;
-            }
-        }
-        synchronized(messagesLock) {
-            messages = oMsgs;
-        }
-        list.setAdapter(new ConversationViewAdapter(contextMenu, selectedMessageId, oMsgs));
-        if (firstListPosition >= 0) {
-            list.setSelectionFromTop(firstListPosition, 0);
+        synchronized(loaderLock) {
+            return completedLoader.getMsgs().size();
         }
     }
 
@@ -363,11 +376,11 @@ public class ConversationActivity extends Activity implements MyServiceListener,
     
     @Override
     public long getLinkedUserIdFromCursor(int position) {
-        synchronized(messagesLock) {
-            if (position < 0 || position >= messages.size() ) {
+        synchronized(loaderLock) {
+            if (position < 0 || position >= getNumberOfMessages() ) {
                 return 0;
             } else {
-                return messages.get(position).mLinkedUserId;
+                return completedLoader.getMsgs().get(position).mLinkedUserId;
             }
         }
     }
