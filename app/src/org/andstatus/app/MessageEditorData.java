@@ -25,7 +25,11 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.UserInTimeline;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyProvider;
+import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.util.UriUtils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 class MessageEditorData {
     String messageText = "";
@@ -175,24 +179,54 @@ class MessageEditorData {
     public MessageEditorData addMentionsToText() {
         if (inReplyToId != 0) {
             if (mReplyAll) {
-                // TODO
+                addConversationMembersToText();
             } else {
-                addReplyToNameToText();
+                addMentionedAuthorOfMessageToText(inReplyToId);
             }
         }
         return this;
     }
     
-    private void addReplyToNameToText() {
-        String messageText1 = messageText;
-        String name = MyProvider.msgIdToUsername(MyDatabase.Msg.AUTHOR_ID, inReplyToId, ma
-                .getOrigin().isMentionAsWebFingerId() ? UserInTimeline.WEBFINGER_ID
-                : UserInTimeline.USERNAME);
-        if (!TextUtils.isEmpty(name)) {
-            if (!TextUtils.isEmpty(messageText1)) {
-                messageText1 += " ";
+    private void addConversationMembersToText() {
+        if (!ma.isValid()) {
+            return;
+        }
+        ConversationLoader<ConversationMemberItem> loader = new ConversationLoader<ConversationMemberItem>(
+                ConversationMemberItem.class,
+                MyContextHolder.get().context(), ma, inReplyToId);
+        loader.load(null);
+        List<Long> mentioned = new ArrayList<Long>();
+        mentioned.add(ma.getUserId());
+        for(ConversationMemberItem item : loader.getMsgs()) {
+            if (!mentioned.contains(item.authorId)) {
+                addMentionedUserToText(item.authorId);
+                mentioned.add(item.authorId);
             }
-            messageText1 = "@" + name + " ";
+        }
+    }
+
+    private void addMentionedUserToText(long mentionedUserId) {
+        String name = MyProvider.userIdToName(mentionedUserId, getUserInTimeline());
+        addMetionedUsernameToText(name);
+    }
+
+    private UserInTimeline getUserInTimeline() {
+        return ma
+                .getOrigin().isMentionAsWebFingerId() ? UserInTimeline.WEBFINGER_ID
+                : UserInTimeline.USERNAME;
+    }
+
+    private void addMentionedAuthorOfMessageToText(long messageId) {
+        String name = MyProvider.msgIdToUsername(MyDatabase.Msg.AUTHOR_ID, messageId, getUserInTimeline());
+        addMetionedUsernameToText(name);
+    }
+    
+    private void addMetionedUsernameToText(String name) {
+        if (!TextUtils.isEmpty(name)) {
+            String messageText1 = "@" + name + " ";
+            if (!TextUtils.isEmpty(messageText)) {
+                messageText1 += messageText;
+            }
             messageText = messageText1;
         }
     }

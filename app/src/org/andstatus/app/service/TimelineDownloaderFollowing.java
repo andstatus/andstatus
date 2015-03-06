@@ -61,7 +61,7 @@ class TimelineDownloaderFollowing extends TimelineDownloader {
         
         if (MyLog.isLoggable(this, MyLog.DEBUG)) {
             String strLog = "Loading " + execContext.getTimelineType() + "; account=" + execContext.getMyAccount().getAccountName();
-            strLog += "; user='" + MyProvider.userIdToName(execContext.getTimelineUserId()) + "', oid=" + userOid;
+            strLog += "; user='" + MyProvider.userIdToWebfingerId(execContext.getTimelineUserId()) + "', oid=" + userOid;
             if (latestTimelineItem.getTimelineDownloadedDate() > 0) {
                 strLog += "; last time downloaded at=" +  (new Date(latestTimelineItem.getTimelineDownloadedDate()).toString());
             }

@@ -622,7 +622,7 @@ public class CommandData implements Comparable<CommandData> {
             case FETCH_AVATAR:
                 I18n.appendWithSpace(builder, 
                         myContext.context().getText(R.string.combined_timeline_off_account));
-                I18n.appendWithSpace(builder, MyProvider.userIdToName(itemId));
+                I18n.appendWithSpace(builder, MyProvider.userIdToWebfingerId(itemId));
                 if (myContext.persistentAccounts().getDistinctOriginsCount() > 1) {
                     long originId = MyProvider.userIdToLongColumnValue(MyDatabase.User.ORIGIN_ID,
                             itemId);
@@ -654,7 +654,7 @@ public class CommandData implements Comparable<CommandData> {
             case FETCH_TIMELINE:
                 if (!TextUtils.isEmpty(accountName)) {
                     if (timelineType == TimelineTypeEnum.USER) {
-                        I18n.appendWithSpace(builder, MyProvider.userIdToName(itemId));
+                        I18n.appendWithSpace(builder, MyProvider.userIdToWebfingerId(itemId));
                     }
                     I18n.appendWithSpace(builder, 
                             timelineType.getPrepositionForNotCombinedTimeline(myContext
@@ -670,7 +670,7 @@ public class CommandData implements Comparable<CommandData> {
                 break;
             case FOLLOW_USER:
             case STOP_FOLLOWING_USER:
-                I18n.appendWithSpace(builder, MyProvider.userIdToName(itemId));
+                I18n.appendWithSpace(builder, MyProvider.userIdToWebfingerId(itemId));
                 break;
             case SEARCH_MESSAGE:
                 I18n.appendWithSpace(builder, "\"");

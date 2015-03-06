@@ -36,7 +36,7 @@ import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
 
 public enum ContextMenuItem {
-    REPLY(1, true) {
+    REPLY(true) {
         @Override
         MessageEditorData executeAsync(MyAccount ma, long msgId) {
             return new MessageEditorData(ma).setInReplyToId(msgId).addMentionsToText();
@@ -48,7 +48,19 @@ public enum ContextMenuItem {
             return true;
         }
     },
-    DIRECT_MESSAGE(2, true) {
+    REPLY_ALL(true) {
+        @Override
+        MessageEditorData executeAsync(MyAccount ma, long msgId) {
+            return new MessageEditorData(ma).setInReplyToId(msgId).setReplyAll(true).addMentionsToText();
+        }
+
+        @Override
+        boolean executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
+            menu.messageList.getMessageEditor().startEditingMessage(editorData);
+            return true;
+        }
+    },
+    DIRECT_MESSAGE(true) {
         @Override
         MessageEditorData executeAsync(MyAccount ma, long msgId) {
             return new MessageEditorData(ma).setInReplyToId(msgId)
@@ -64,48 +76,48 @@ public enum ContextMenuItem {
             return true;
         }
     },
-    FAVORITE(3) {
+    FAVORITE() {
         @Override
         boolean executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
             sendCommandMsg(CommandEnum.CREATE_FAVORITE, editorData);
             return true;
         }
     },
-    DESTROY_FAVORITE(4) {
+    DESTROY_FAVORITE() {
         @Override
         boolean executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
             sendCommandMsg(CommandEnum.DESTROY_FAVORITE, editorData);
             return true;
         }
     },
-    REBLOG(5) {
+    REBLOG() {
         @Override
         boolean executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
             sendCommandMsg(CommandEnum.REBLOG, editorData);
             return true;
         }
     },
-    DESTROY_REBLOG(6) {
+    DESTROY_REBLOG() {
         @Override
         boolean executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
             sendCommandMsg(CommandEnum.DESTROY_REBLOG, editorData);
             return true;
         }
     },
-    DESTROY_STATUS(7) {
+    DESTROY_STATUS() {
         @Override
         boolean executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
             sendCommandMsg(CommandEnum.DESTROY_STATUS, editorData);
             return true;
         }
     },
-    SHARE(8) {
+    SHARE() {
         @Override
         boolean executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
             return new MessageShare(menu.messageList.getActivity(), menu.getMsgId()).share();
         }
     },
-    SENDER_MESSAGES(9, true) {
+    SENDER_MESSAGES(true) {
         @Override
         MessageEditorData executeAsync(MyAccount ma, long msgId) {
             return getUserId(ma, msgId, MyDatabase.Msg.SENDER_ID);
@@ -124,7 +136,7 @@ public enum ContextMenuItem {
             return true;
         }
     },
-    AUTHOR_MESSAGES(10, true) {
+    AUTHOR_MESSAGES(true) {
         @Override
         MessageEditorData executeAsync(MyAccount ma, long msgId) {
             return getUserId(ma, msgId, MyDatabase.Msg.AUTHOR_ID);
@@ -142,7 +154,7 @@ public enum ContextMenuItem {
             return true;
         }
     },
-    FOLLOW_SENDER(11, true) {
+    FOLLOW_SENDER(true) {
         @Override
         MessageEditorData executeAsync(MyAccount ma, long msgId) {
             return getUserId(ma, msgId, MyDatabase.Msg.SENDER_ID);
@@ -154,7 +166,7 @@ public enum ContextMenuItem {
             return true;
         }
     },
-    STOP_FOLLOWING_SENDER(12, true) {
+    STOP_FOLLOWING_SENDER(true) {
         @Override
         MessageEditorData executeAsync(MyAccount ma, long msgId) {
             return getUserId(ma, msgId, MyDatabase.Msg.SENDER_ID);
@@ -166,7 +178,7 @@ public enum ContextMenuItem {
             return true;
         }
     },
-    FOLLOW_AUTHOR(13, true) {
+    FOLLOW_AUTHOR(true) {
         @Override
         MessageEditorData executeAsync(MyAccount ma, long msgId) {
             return getUserId(ma, msgId, MyDatabase.Msg.AUTHOR_ID);
@@ -178,7 +190,7 @@ public enum ContextMenuItem {
             return true;
         }
     },
-    STOP_FOLLOWING_AUTHOR(14, true) {
+    STOP_FOLLOWING_AUTHOR(true) {
         @Override
         MessageEditorData executeAsync(MyAccount ma, long msgId) {
             return getUserId(ma, msgId, MyDatabase.Msg.AUTHOR_ID);
@@ -190,9 +202,9 @@ public enum ContextMenuItem {
             return true;
         }
     },
-    PROFILE(15),
-    BLOCK(16),
-    ACT_AS_USER(17) {
+    PROFILE(),
+    BLOCK(),
+    ACT_AS_USER() {
         @Override
         boolean executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
             menu.setAccountUserIdToActAs(editorData.ma.firstOtherAccountOfThisOrigin().getUserId());
@@ -200,27 +212,27 @@ public enum ContextMenuItem {
             return true;
         }
     },
-    ACT_AS(18) {
+    ACT_AS() {
         @Override
         boolean executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
             AccountSelector.selectAccount(menu.messageList.getActivity(), editorData.ma.getOriginId(), ActivityRequestCode.SELECT_ACCOUNT_TO_ACT_AS);
             return true;
         }
     },
-    OPEN_MESSAGE_PERMALINK(19) {
+    OPEN_MESSAGE_PERMALINK() {
         @Override
         boolean executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
             return new MessageShare(menu.messageList.getActivity(), menu.getMsgId()).openPermalink();
         }
     },
-    VIEW_IMAGE(20) {
+    VIEW_IMAGE() {
         @Override
         boolean executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
             FileProvider.viewImage(menu.messageList.getActivity(), menu.imageFilename);
             return true;
         }
     },
-    OPEN_CONVERSATION(21) {
+    OPEN_CONVERSATION() {
         @Override
         boolean executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
             Uri uri = MyProvider.getTimelineMsgUri(editorData.ma.getUserId(), menu.messageList.getTimelineType(), true, menu.getMsgId());
@@ -239,23 +251,25 @@ public enum ContextMenuItem {
             return true;
         }
     },
-    UNKNOWN(100);
+    UNKNOWN();
 
-    private final int id;
     private final boolean mIsAsync;
 
-    ContextMenuItem(int id) {
-        this(id, false);
+    ContextMenuItem() {
+        this(false);
     }
 
-    ContextMenuItem(int id, boolean isAsync) {
-        this.id = Menu.FIRST + id;
+    ContextMenuItem(boolean isAsync) {
         this.mIsAsync = isAsync;
     }
 
+    int getId() {
+        return Menu.FIRST + ordinal() + 1;
+    }
+    
     public static ContextMenuItem fromId(int id) {
         for (ContextMenuItem item : ContextMenuItem.values()) {
-            if (item.id == id) {
+            if (item.getId() == id) {
                 return item;
             }
         }
@@ -263,11 +277,11 @@ public enum ContextMenuItem {
     }
 
     public MenuItem addTo(Menu menu, int order, int titleRes) {
-        return menu.add(Menu.NONE, this.id, order, titleRes);
+        return menu.add(Menu.NONE, this.getId(), order, titleRes);
     }
 
     public MenuItem addTo(Menu menu, int order, CharSequence title) {
-        return menu.add(Menu.NONE, this.id, order, title);
+        return menu.add(Menu.NONE, this.getId(), order, title);
     }
     
     public boolean execute(MessageContextMenu menu, MyAccount ma) {

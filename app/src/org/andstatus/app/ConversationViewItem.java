@@ -37,13 +37,7 @@ import org.andstatus.app.util.SharedPreferencesUtil;
 import java.util.HashSet;
 import java.util.Set;
 
-/**
- * One message row
- */
-public class ConversationOneMessage implements Comparable<ConversationOneMessage> {
-    private long mMsgId;
-    long mInReplyToMsgId = 0;
-    long mCreatedDate = 0;
+public class ConversationViewItem extends ConversationItem {
     long mLinkedUserId = 0;
     boolean mFavorited = false;
     String mAuthor = "";
@@ -57,71 +51,19 @@ public class ConversationOneMessage implements Comparable<ConversationOneMessage
     String mInReplyToName = "";
     String mRecipientName = "";
 
-    /** Numeration starts from 0 **/
-    int mListOrder = 0;
-    /**
-     * This order is reverse to the {@link #mListOrder}. 
-     * First message in the conversation has it == 1.
-     * The number is visible to the user.
-     */
-    int mHistoryOrder = 0;
-    int mNReplies = 0;
-    int mNParentReplies = 0;
-    int mIndentLevel = 0;
-    int mReplyLevel = 0;
-    
     AvatarDrawable mAvatarDrawable = null;
     Drawable mImageDrawable = null;
 
-    public ConversationOneMessage() {
+    public ConversationViewItem() {
         // Empty
-    }
-
-    public boolean isLoaded() {
-        return mCreatedDate > 0;
     }
     
     @Override
-    public boolean equals(Object o) {
-        if (o == this) {
-            return true;
-        }
-        if (!(o instanceof ConversationOneMessage)) {
-            return false;
-        }
-        final ConversationOneMessage other = (ConversationOneMessage) o;
-        return getMsgId() == other.getMsgId();
-    }
-
-    @Override
-    public int hashCode() {
-        return Long.valueOf(getMsgId()).hashCode();
-    }
-
-    /**
-     * The newest replies are first, "branches" look up
-     */
-    @Override
-    public int compareTo(ConversationOneMessage another) {
-        int compared = mListOrder - another.mListOrder;
-        if (compared == 0) {
-            if (mCreatedDate == another.mCreatedDate) {
-                if ( getMsgId() == another.getMsgId()) {
-                    compared = 0;
-                } else {
-                    compared = (another.getMsgId() - getMsgId() > 0 ? 1 : -1);
-                }
-            } else {
-                compared = (another.mCreatedDate - mCreatedDate > 0 ? 1 : -1);
-            }
-        }
-        return compared;
-    }
-
     String[] getProjection() {
         return TimelineSql.getConversationProjection();        
     }
-    
+
+    @Override
     void load(Cursor cursor) {
         /**
          * IDs of all known senders of this message except for the Author
@@ -136,8 +78,7 @@ public class ConversationOneMessage implements Comparable<ConversationOneMessage
     
             if (ind == 0) {
                 // This is the same for all retrieved rows
-                mInReplyToMsgId = cursor.getLong(cursor.getColumnIndex(Msg.IN_REPLY_TO_MSG_ID));
-                mCreatedDate = cursor.getLong(cursor.getColumnIndex(Msg.CREATED_DATE));
+                super.load(cursor);
                 mAuthor = TimelineSql.userColumnNameToNameAtTimeline(cursor, User.AUTHOR_NAME, false);
                 mBody = cursor.getString(cursor.getColumnIndex(Msg.BODY));
                 String via = cursor.getString(cursor.getColumnIndex(Msg.VIA));
@@ -177,31 +118,26 @@ public class ConversationOneMessage implements Comparable<ConversationOneMessage
             if (!TextUtils.isEmpty(mRebloggersString)) {
                 mRebloggersString += ", ";
             }
-            mRebloggersString += MyProvider.userIdToName(rebloggerId);
+            mRebloggersString += MyProvider.userIdToWebfingerId(rebloggerId);
         }
     }
-
-    long getMsgId() {
-        return mMsgId;
-    }
-
-    void setMsgId(long mMsgId) {
-        this.mMsgId = mMsgId;
+    
+    @Override
+    protected boolean isWrongReply() {
+        return mInReplyToMsgId==0 && !SharedPreferencesUtil.isEmpty(mInReplyToName);
     }
     
-    boolean noIdOfReply() {
-        return mInReplyToMsgId !=0 && !SharedPreferencesUtil.isEmpty(mInReplyToName);
-    }
-    
-    void copyFromWrongReply(ConversationOneMessage aReply) {
-        MyLog.v(this, "Message id=" + aReply.getMsgId() + " has reply to name ("
-                + aReply.mInReplyToName
-                + ") but no reply to message id");
-        // This allows to place the message on a Timeline correctly
-        mCreatedDate = aReply.mCreatedDate - 60000;
-        mAuthor = aReply.mInReplyToName;
-        mBody = "("
-                + MyContextHolder.get().context().getText(R.string.id_of_this_message_was_not_specified)
-                + ")";
+    @Override
+    void copyFromWrongReply(ConversationItem aReply) {
+        super.copyFromWrongReply(aReply);
+        if (ConversationViewItem.class.isAssignableFrom(aReply.getClass())) {
+            mAuthor =  ((ConversationViewItem)aReply).mInReplyToName;
+            MyLog.v(this, "Message id=" + aReply.getMsgId() + " has reply to name ("
+                    + mAuthor
+                    + ") but no reply to message id");
+            mBody = "("
+                    + MyContextHolder.get().context().getText(R.string.id_of_this_message_was_not_specified)
+                    + ")";
+        }
     }
 }

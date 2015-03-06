@@ -155,7 +155,7 @@ public class LatestTimelineItem {
     }
 
     private String forTheUser() {
-        return " for the userName=" + MyProvider.userIdToName(userId);
+        return " for the userName=" + MyProvider.userIdToWebfingerId(userId);
     }
 
     private void saveChanged() {

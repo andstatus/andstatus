@@ -856,7 +856,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                     && !(ta.isTimelineCombined()
                             && MyContextHolder.get().persistentAccounts()
                             .fromUserId(ta.getSelectedUserId()).isValid())) {
-                I18n.appendWithSpace(title, MyProvider.userIdToName(ta.getSelectedUserId()));
+                I18n.appendWithSpace(title, MyProvider.userIdToWebfingerId(ta.getSelectedUserId()));
             }
             if (ta.isTimelineCombined()) {
                 I18n.appendWithSpace(title, ta.mContext.getText(R.string.combined_timeline_on));

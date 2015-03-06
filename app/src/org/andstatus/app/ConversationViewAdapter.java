@@ -50,11 +50,11 @@ public class ConversationViewAdapter extends BaseAdapter {
     private Context context;
     private MyAccount ma;
     private long selectedMessageId;
-    private List<ConversationOneMessage> oMsgs;
+    private List<ConversationViewItem> oMsgs;
 
     public ConversationViewAdapter(MessageContextMenu contextMenu,
             long selectedMessageId,
-            List<ConversationOneMessage> oMsgs) {
+            List<ConversationViewItem> oMsgs) {
         this.contextMenu = contextMenu;
         this.context = this.contextMenu.getContext();
         this.ma = MyContextHolder.get().persistentAccounts().fromUserId(this.contextMenu.getCurrentMyAccountUserId());
@@ -82,7 +82,7 @@ public class ConversationViewAdapter extends BaseAdapter {
         return oneMessageToView(oMsgs.get(position));
     }
     
-    private View oneMessageToView(ConversationOneMessage oMsg) {
+    private View oneMessageToView(ConversationViewItem oMsg) {
         final String method = "oneMessageToView";
         if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
             MyLog.v(this, method
@@ -223,7 +223,7 @@ public class ConversationViewAdapter extends BaseAdapter {
     }
 
     private int msgIdToHistoryOrder(long msgId) {
-        for (ConversationOneMessage oMsg : oMsgs) {
+        for (ConversationViewItem oMsg : oMsgs) {
             if (oMsg.getMsgId() == msgId ) {
                 return oMsg.mHistoryOrder;
             }

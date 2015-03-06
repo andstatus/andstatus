@@ -943,10 +943,14 @@ public class MyProvider extends ContentProvider {
         return userName;
     }
 
-    public static String userIdToName(long userId) {
-        return idToStringColumnValue(MyDatabase.User.TABLE_NAME, MyDatabase.User.WEBFINGER_ID, userId);
+    public static String userIdToWebfingerId(long userId) {
+        return userIdToName(userId, UserInTimeline.WEBFINGER_ID);
     }
 
+    public static String userIdToName(long userId, UserInTimeline userInTimeline) {
+        return idToStringColumnValue(MyDatabase.User.TABLE_NAME, userNameField(userInTimeline), userId);
+    }
+    
     /**
      * Convenience method to get column value from {@link MyDatabase.User} table
      * @param columnName without table name

@@ -116,9 +116,9 @@ public class MbUser {
         } else if (UriUtils.isEmpty(uri)){
             // Do nothing
         } else {
-            MyContext myConect = MyContextHolder.get();
-            if(myConect.isReady()) {
-                Origin origin = myConect.persistentOrigins().fromId(originId);
+            MyContext myContect = MyContextHolder.get();
+            if(myContect.isReady()) {
+                Origin origin = myContect.persistentOrigins().fromId(originId);
                 webFingerId = userName + "@" + origin.fixUriforPermalink(uri).getHost();
             } else {
                 webFingerId = userName + "@" + uri.getHost();

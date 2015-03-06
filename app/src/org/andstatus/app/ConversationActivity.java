@@ -79,10 +79,10 @@ public class ConversationActivity extends Activity implements MyServiceListener,
 
     private final Object loaderLock = new Object();
     @GuardedBy("loaderLock")
-    private ContentLoader<ConversationOneMessage> completedLoader = new ContentLoader<ConversationOneMessage>(
-            ConversationOneMessage.class);
+    private ContentLoader<ConversationViewItem> completedLoader = new ContentLoader<ConversationViewItem>(
+            ConversationViewItem.class);
     @GuardedBy("loaderLock")
-    private ContentLoader<ConversationOneMessage> workingLoader = completedLoader;
+    private ContentLoader<ConversationViewItem> workingLoader = completedLoader;
     private boolean isPaused = false;
     
     @Override
@@ -128,13 +128,13 @@ public class ConversationActivity extends Activity implements MyServiceListener,
                 /* On passing the same info twice (Generic parameter + Class) read here:
                  * http://codereview.stackexchange.com/questions/51084/generic-callback-object-but-i-need-the-type-parameter-inside-methods
                  */
-                workingLoader = new ContentLoader<ConversationOneMessage>(ConversationOneMessage.class);
+                workingLoader = new ContentLoader<ConversationViewItem>(ConversationViewItem.class);
                 workingLoader.execute();
             }
         }
     }
 
-    private class ContentLoader<T extends ConversationOneMessage> extends AsyncTask<Void, String, ConversationLoader<T>> implements progressPublisher {
+    private class ContentLoader<T extends ConversationViewItem> extends AsyncTask<Void, String, ConversationLoader<T>> implements progressPublisher {
         private volatile long timeStarted = 0;
         private volatile long timeLoaded = 0;
         private volatile long timeCompleted = 0;
@@ -200,7 +200,7 @@ public class ConversationActivity extends Activity implements MyServiceListener,
     }
 
     private void onContentLoaderCompleted() {
-        ContentLoader<ConversationOneMessage> loader = updateCompletedLoader();
+        ContentLoader<ConversationViewItem> loader = updateCompletedLoader();
         updateTitle("");
         ListView list = (ListView) findViewById(android.R.id.list);
         long itemIdOfListPosition = selectedMessageId;
@@ -219,7 +219,7 @@ public class ConversationActivity extends Activity implements MyServiceListener,
         }
     }
 
-    private ContentLoader<ConversationOneMessage> updateCompletedLoader() {
+    private ContentLoader<ConversationViewItem> updateCompletedLoader() {
         synchronized(loaderLock) {
             completedLoader = workingLoader;
             return workingLoader;

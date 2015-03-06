@@ -120,7 +120,7 @@ public final class UserMsg {
     public boolean save() {
         boolean ok = true;
         if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
-            MyLog.v(this, "User=" + MyProvider.userIdToName(userId) 
+            MyLog.v(this, "User=" + MyProvider.userIdToWebfingerId(userId) 
                     + " Latest msg at " + (new Date(getLastMsgDate()).toString())
                     + (changed ? "" : " not changed")                    
                     );
@@ -134,7 +134,7 @@ public final class UserMsg {
         if (msgDate > lastMsgDate) {
             lastMsgDate = msgDate;
             lastMsgId = MyProvider.userIdToLongColumnValue(User.USER_MSG_ID, userId);
-            MyLog.v(this, "There is newer information in the database. User=" + MyProvider.userIdToName(userId) 
+            MyLog.v(this, "There is newer information in the database. User=" + MyProvider.userIdToWebfingerId(userId) 
                     + " Latest msg at " + (new Date(getLastMsgDate()).toString()));
             changed = false;
             return ok;

@@ -137,7 +137,7 @@ public class CommandDataTest extends InstrumentationTestCase {
         String msgLog = command.name() + "; Summary:'" + summary + "'";
         MyLog.v(this, msgLog);
         assertTrue(msgLog, summary.contains(command.getTitle(MyContextHolder.get(),
-                ma.getAccountName()) + " " + MyProvider.userIdToName(userId)));
+                ma.getAccountName()) + " " + MyProvider.userIdToWebfingerId(userId)));
     }
     
     @Override

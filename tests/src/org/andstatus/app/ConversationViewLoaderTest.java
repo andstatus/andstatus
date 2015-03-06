@@ -32,16 +32,16 @@ public class ConversationViewLoaderTest extends InstrumentationTestCase implemen
 
     public void testLoad() {
         Context context = MyContextHolder.get().context();
-        ConversationLoader<ConversationOneMessage> loader = new ConversationLoader<ConversationOneMessage>(
-                ConversationOneMessage.class,
+        ConversationLoader<ConversationViewItem> loader = new ConversationLoader<ConversationViewItem>(
+                ConversationViewItem.class,
                 context, ma, selectedMessageId);
         progressCounter = 0;
         loader.load(this);
-        List<ConversationOneMessage> list = loader.getMsgs();
+        List<ConversationViewItem> list = loader.getMsgs();
         assertTrue("List is not empty", !list.isEmpty());
         boolean indentFound = false;
         boolean orderFound = false;
-        for( ConversationOneMessage oMsg : list) {
+        for( ConversationViewItem oMsg : list) {
             if (oMsg.mIndentLevel > 0) {
                 indentFound = true;
             }

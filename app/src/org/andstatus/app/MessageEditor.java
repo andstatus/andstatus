@@ -305,7 +305,7 @@ class MessageEditor {
                         replyToName);
             }
         } else {
-            String recipientName = MyProvider.userIdToName(dataCurrent.recipientId);
+            String recipientName = MyProvider.userIdToWebfingerId(dataCurrent.recipientId);
             if (!TextUtils.isEmpty(recipientName)) {
                 messageDetails += " " + String.format(
                         MyContextHolder.get().context().getText(R.string.message_source_to).toString(), 

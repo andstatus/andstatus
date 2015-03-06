@@ -37,7 +37,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-public class ConversationLoader<T extends ConversationOneMessage> {
+public class ConversationLoader<T extends ConversationItem> {
     private static final int MAX_INDENT_LEVEL = 19;
     
     private Context context;
@@ -133,7 +133,7 @@ public class ConversationLoader<T extends ConversationOneMessage> {
         return oMsg;
     }
     
-    private void loadMessageFromDatabase(ConversationOneMessage oMsg) {
+    private void loadMessageFromDatabase(ConversationItem oMsg) {
         Uri uri = MyProvider.getTimelineMsgUri(ma.getUserId(), TimelineTypeEnum.EVERYTHING, true, oMsg.getMsgId());
         Cursor cursor = null;
         try {
@@ -161,7 +161,7 @@ public class ConversationLoader<T extends ConversationOneMessage> {
     }
     
     private void checkInReplyToNameOf(T oMsg) {
-        if (oMsg.noIdOfReply()) {
+        if (oMsg.isWrongReply()) {
             // Don't try to retrieve this message again. 
             // It looks like such messages really exist.
             T oMsg2 = newOMsg(0, oMsg.mReplyLevel-1);
@@ -176,7 +176,7 @@ public class ConversationLoader<T extends ConversationOneMessage> {
                 .getAccountName(), msgId));
     }
 
-    private static class ReplyLevelComparator<T extends ConversationOneMessage> implements Comparator<T>, Serializable {
+    private static class ReplyLevelComparator<T extends ConversationItem> implements Comparator<T>, Serializable {
         private static final long serialVersionUID = 1L;
 
         @Override
@@ -204,13 +204,13 @@ public class ConversationLoader<T extends ConversationOneMessage> {
     
     private void enumerateMessages() {
         idsOfTheMessagesToFind.clear();
-        for (ConversationOneMessage oMsg : mMsgs) {
+        for (ConversationItem oMsg : mMsgs) {
             oMsg.mListOrder = 0;
             oMsg.mHistoryOrder = 0;
         }
         OrderCounters order = new OrderCounters();
         for (int ind = mMsgs.size()-1; ind >= 0; ind--) {
-            ConversationOneMessage oMsg = mMsgs.get(ind);
+            ConversationItem oMsg = mMsgs.get(ind);
             if (oMsg.mListOrder < 0 ) {
                 continue;
             }
@@ -218,7 +218,7 @@ public class ConversationLoader<T extends ConversationOneMessage> {
         }
     }
 
-    private void enumerateBranch(ConversationOneMessage oMsg, OrderCounters order, int indent) {
+    private void enumerateBranch(ConversationItem oMsg, OrderCounters order, int indent) {
         if (!addMessageIdToFind(oMsg.getMsgId())) {
             return;
         }
@@ -231,7 +231,7 @@ public class ConversationLoader<T extends ConversationOneMessage> {
             indentNext++;
         }
         for (int ind = mMsgs.size() - 1; ind >= 0; ind--) {
-           ConversationOneMessage reply = mMsgs.get(ind);
+           ConversationItem reply = mMsgs.get(ind);
            if (reply.mInReplyToMsgId == oMsg.getMsgId()) {
                reply.mNParentReplies = oMsg.mNReplies;
                enumerateBranch(reply, order, indentNext);
@@ -240,7 +240,7 @@ public class ConversationLoader<T extends ConversationOneMessage> {
     }
 
     private void reverseListOrder() {
-        for (ConversationOneMessage oMsg : mMsgs) {
+        for (ConversationItem oMsg : mMsgs) {
             oMsg.mListOrder = mMsgs.size() - oMsg.mListOrder - 1; 
         }
     }

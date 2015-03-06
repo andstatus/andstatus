@@ -26,6 +26,20 @@
 		</subtitle>
     </header>
 
+    <release android:versionName="16.0" android:versionCode="123"
+        versionDate="2014-03-06"
+        versionTitle="Reply to All">
+        <changes>
+            <change>&quot;Reply to All&quot; menu item added allowing to include 
+                all conversation participants into a reply. 
+                Please note that for simplicity also those participants are included, 
+                who joined the conversation later, 
+                or who took part in other branches of the conversation.
+                <a href="https://github.com/andstatus/andstatus/issues/185">#185</a>
+            </change>
+        </changes>
+    </release>
+    
     <release android:versionName="15.0" android:versionCode="122"
         versionDate="2014-02-14"
         versionTitle="Discovery of open GNU Social instances">

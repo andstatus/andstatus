@@ -107,6 +107,7 @@ public class GnuSocialMessagesInserter extends InstrumentationTestCase {
         String userName = "user" + userOid;
         MbUser mbUser = MbUser.fromOriginAndUserOid(origin.getId(), userOid);
         mbUser.setUserName(userName);
+        mbUser.setUrl(origin.getUrl());
         if (accountMbUser != null) {
             mbUser.actor = accountMbUser;
         }
