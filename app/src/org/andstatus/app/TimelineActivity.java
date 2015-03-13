@@ -32,6 +32,7 @@ import android.database.MatrixCursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Looper;
 import android.provider.SearchRecentSuggestions;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -415,6 +416,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         super.finish();
     }
 
+    // That advice doesn't fit here:
     // see http://stackoverflow.com/questions/5996885/how-to-wait-for-android-runonuithread-to-be-finished
     private void savePositionOnUiThread() {
         Runnable runnable = new Runnable() {
@@ -423,19 +425,9 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                 if (mPositionRestored) {
                     saveListPosition();
                 }
-                synchronized(this) {
-                   this.notify();
-                }
             }
         };
-        try {
-            synchronized(runnable) {
-                runOnUiThread(runnable);
-                runnable.wait();
-            }
-        } catch (InterruptedException e) {
-            MyLog.ignored(this, e);
-        }
+        runOnUiThread(runnable);
     }
 
     @Override
