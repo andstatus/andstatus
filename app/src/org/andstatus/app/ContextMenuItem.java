@@ -131,14 +131,20 @@ public enum ContextMenuItem {
 
         @Override
         boolean executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
-            MyLog.v(this, "text='" + editorData.messageText + "'");
-            if (!TextUtils.isEmpty(editorData.messageText)) {
-                // http://developer.android.com/guide/topics/text/copy-paste.html
-                ClipboardManager clipboard = (ClipboardManager) MyContextHolder.get().context().getSystemService(Context.CLIPBOARD_SERVICE);
-                ClipData clip = ClipData.newPlainText(I18n.trimTextAt(editorData.messageText, 40), editorData.messageText);
-                clipboard.setPrimaryClip(clip);
-                MyLog.v(this, "clip='" + clip.toString() + "'");
-            }
+            copyMessageText(editorData);
+            return true;
+        }
+    },
+    COPY_AUTHOR(true) {
+        @Override
+        MessageEditorData executeAsync(MyAccount ma, long msgId) {
+            return new MessageEditorData(ma).addMentionedUserToText(
+                    MyProvider.msgIdToUserId(MyDatabase.Msg.AUTHOR_ID, msgId));
+        }
+
+        @Override
+        boolean executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
+            copyMessageText(editorData);
             return true;
         }
     },
@@ -299,6 +305,17 @@ public enum ContextMenuItem {
             }
         }
         return UNKNOWN;
+    }
+
+    protected void copyMessageText(MessageEditorData editorData) {
+        MyLog.v(this, "text='" + editorData.messageText + "'");
+        if (!TextUtils.isEmpty(editorData.messageText)) {
+            // http://developer.android.com/guide/topics/text/copy-paste.html
+            ClipboardManager clipboard = (ClipboardManager) MyContextHolder.get().context().getSystemService(Context.CLIPBOARD_SERVICE);
+            ClipData clip = ClipData.newPlainText(I18n.trimTextAt(editorData.messageText, 40), editorData.messageText);
+            clipboard.setPrimaryClip(clip);
+            MyLog.v(this, "clip='" + clip.toString() + "'");
+        }
     }
 
     public MenuItem addTo(Menu menu, int order, int titleRes) {

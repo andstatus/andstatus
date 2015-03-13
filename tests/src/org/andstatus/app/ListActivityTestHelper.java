@@ -1,6 +1,7 @@
 package org.andstatus.app;
 
 import android.app.Activity;
+import android.app.Instrumentation;
 import android.app.ListActivity;
 import android.app.Instrumentation.ActivityMonitor;
 import android.test.ActivityInstrumentationTestCase2;
@@ -33,20 +34,17 @@ public class ListActivityTestHelper<T extends ListActivity> extends Instrumentat
         mActivity = testCase.getActivity();
     }
 
-    public void selectListPosition(String method, int position) throws InterruptedException {
-        selectListPosition(method, position, false);
-    }
-    
     public void invokeContextMenuAction(String method, int position, ContextMenuItem menuItem) throws InterruptedException {
-        selectListPosition(method, position, true);
-        mTestCase.getInstrumentation().invokeContextMenuAction(mActivity, menuItem.getId(), 0);
+        selectListPosition(method, position);
+        MyLog.v(this, method + "; before invokeContextMenuAction on item=" + menuItem);
+        
+        invokeContextMenuAction(mTestCase.getInstrumentation(), mActivity, getListView()
+                .getChildAt(position), menuItem.getId());
     }
     
-    private void selectListPosition(final String method, final int positionIn, final boolean requestFocus) throws InterruptedException {
-        TestSuite.waitForIdleSync(mTestCase);
+    public void selectListPosition(final String method, final int positionIn) throws InterruptedException {
         MyLog.v(this, method + " before setSelection " + positionIn);
-        
-        mActivity.runOnUiThread(new Runnable() {
+        mTestCase.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
                 int position = positionIn;
@@ -57,16 +55,39 @@ public class ListActivityTestHelper<T extends ListActivity> extends Instrumentat
                 MyLog.v(this, method + " on     setSelection " + position 
                         + " of " + (la.getCount() - 1));
                 getListView().setSelection(position);
-                if (requestFocus) {
-                    getListView().getChildAt(position).setFocusable(true);
-                    getListView().getChildAt(position).requestFocus();
-                }
             }
         });
         TestSuite.waitForIdleSync(mTestCase);
         MyLog.v(this, method + " after  setSelection");
     }
 
+    /**
+     * InstrumentationTestCase.getInstrumentation().invokeContextMenuAction doesn't work properly
+     *
+     * Note: This method cannot be invoked on the main thread.
+     * See https://github.com/google/google-authenticator-android/blob/master/tests/src/com/google/android/apps/authenticator/TestUtilities.java
+     */
+    public static void invokeContextMenuAction(
+        Instrumentation instrumentation, final Activity activity, final View view, final int itemId) throws InterruptedException {
+        instrumentation.runOnMainSync(new Runnable() {
+            @Override
+            public void run() {
+                MyLog.v("invokeContextMenuAction", "performLongClick");
+                view.performLongClick();
+            }
+        });
+        TestSuite.waitForIdleSync(instrumentation);
+
+        instrumentation.runOnMainSync(new Runnable() {
+            @Override
+            public void run() {
+                MyLog.v("invokeContextMenuAction", "performContextMenuIdentifierAction");
+                activity.getWindow().performContextMenuIdentifierAction(itemId, 0);
+            }
+        });
+        TestSuite.waitForIdleSync(instrumentation);
+        MyLog.v("invokeContextMenuAction", "ended");
+    } 
     
     public ListView getListView() {
         return (ListView) mActivity.findViewById(android.R.id.list);
@@ -104,7 +125,7 @@ public class ListActivityTestHelper<T extends ListActivity> extends Instrumentat
     }
     
     public void clickListPosition(final String method, final int position) throws InterruptedException {
-        mActivity.runOnUiThread(new Runnable() {
+        mTestCase.getInstrumentation().runOnMainSync(new Runnable() {
             // See
             // http://stackoverflow.com/questions/8094268/android-listview-performitemclick
             @Override
@@ -117,7 +138,6 @@ public class ListActivityTestHelper<T extends ListActivity> extends Instrumentat
             }
         });
         mTestCase.getInstrumentation().waitForIdleSync();
-        Thread.sleep(500);
     }
 
     public ActivityMonitor addMonitor(Class<? extends Activity> classOfActivity) {
@@ -151,8 +171,7 @@ public class ListActivityTestHelper<T extends ListActivity> extends Instrumentat
           };
     
         MyLog.v(this, method + "-Log before run clicker");
-        mActivity.runOnUiThread(clicker);
-        Thread.sleep(500);
+        mTestCase.getInstrumentation().runOnMainSync(clicker);
         mTestCase.getInstrumentation().waitForIdleSync();
     }
     

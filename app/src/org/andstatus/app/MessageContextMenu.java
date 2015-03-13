@@ -112,6 +112,7 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
 
             if (isEditorVisible()) {
                 ContextMenuItem.COPY_TEXT.addTo(menu, order++, R.string.menu_item_copy_text);
+                ContextMenuItem.COPY_AUTHOR.addTo(menu, order++, R.string.menu_item_copy_author);
             }
             if (!msg.isDirect() && !isEditorVisible()) {
                 ContextMenuItem.REPLY.addTo(menu, order++, R.string.menu_item_reply);

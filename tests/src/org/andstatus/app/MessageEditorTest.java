@@ -153,8 +153,7 @@ public class MessageEditorTest extends android.test.ActivityInstrumentationTestC
                 editor.startEditingMessage(data);
             }
           };
-        mActivity.runOnUiThread(startEditing);
-        Thread.sleep(500);
+        getInstrumentation().runOnMainSync(startEditing);
         getInstrumentation().waitForIdleSync();
         
         assertTrue(editorView.getVisibility() == android.view.View.VISIBLE);
@@ -184,7 +183,7 @@ public class MessageEditorTest extends android.test.ActivityInstrumentationTestC
                 assertEquals(description, data, editor.getData());
             }
           };
-        mActivity.runOnUiThread(assertEditor);
+        getInstrumentation().runOnMainSync(assertEditor);
     }
     
     private void assertTextCleared() {
@@ -198,7 +197,7 @@ public class MessageEditorTest extends android.test.ActivityInstrumentationTestC
                         mActivity.getCurrentMyAccountUserId())), editor.getData());
             }
           };
-        mActivity.runOnUiThread(assertEditor);
+        getInstrumentation().runOnMainSync(assertEditor);
     }
     
     public void testContextMenu() throws InterruptedException {
@@ -209,30 +208,37 @@ public class MessageEditorTest extends android.test.ActivityInstrumentationTestC
         int position = helper.getPositionOfReply();
         long msgId = helper.getItemIdAtPosition(position);
         String body = MyProvider.msgIdToStringColumnValue(MyDatabase.Msg.BODY, msgId);
+
         helper.invokeContextMenuAction(method, position, ContextMenuItem.COPY_TEXT);
-        assertClipboardText(method, body);
+        assertEquals(body, getClipboardText());
+        
+        helper.invokeContextMenuAction(method, position, ContextMenuItem.COPY_AUTHOR);
+        String text = getClipboardText();
+        assertTrue("Text: '" + text + "'", text.startsWith("@") && text.lastIndexOf("@") > 1);
     }
-
-    private void assertClipboardText(final String method, final String text)
-            throws InterruptedException {
-        MyLog.v(MessageEditorTest.this, method + " started, text='" + text + "'");
-        Runnable assertClipboard = new Runnable() {
-            @Override
-            public void run() {
-                // http://developer.android.com/guide/topics/text/copy-paste.html
-                ClipboardManager clipboard = (ClipboardManager) MyContextHolder.get().context()
-                        .getSystemService(Context.CLIPBOARD_SERVICE);
-                ClipData.Item item = clipboard.getPrimaryClip().getItemAt(0);
-                MyLog.v(MessageEditorTest.this, method + "; assertClipboard item='" + item + "'");
-                MyLog.v(MessageEditorTest.this, method + "; assertClipboard item.getText()='" + item.getText() + "'");
-                MyLog.v(MessageEditorTest.this, method + "; assertClipboard item.getHtmlText()='" + item.getHtmlText() + "'");
-                CharSequence textA = TextUtils.isEmpty(item.getHtmlText()) ? item.getText() : item.getHtmlText();
-                assertEquals(text, textA);
-            }
-        };
-        mActivity.runOnUiThread(assertClipboard);
-        TestSuite.waitForIdleSync(MessageEditorTest.this);
-
-        MyLog.v(MessageEditorTest.this, method + " ended, text='" + text + "'");
+    
+    private String getClipboardText() {
+        final String method = "getClipboardText";
+        MyLog.v(MessageEditorTest.this, method + " started");
+        ClipboardReader reader = new ClipboardReader();
+        getInstrumentation().runOnMainSync(reader);
+        MyLog.v(MessageEditorTest.this, method + "; clip='" + reader.clip + "'");
+        if (reader.clip == null) {
+            return "";
+        }
+        ClipData.Item item = reader.clip.getItemAt(0);
+        return (TextUtils.isEmpty(item.getHtmlText()) ? item.getText() : item.getHtmlText())
+                .toString();
+    }
+    
+    private static class ClipboardReader implements Runnable {
+        volatile ClipData clip = null;
+        @Override
+        public void run() {
+            // http://developer.android.com/guide/topics/text/copy-paste.html
+            ClipboardManager clipboard = (ClipboardManager) MyContextHolder.get().context()
+                    .getSystemService(Context.CLIPBOARD_SERVICE);
+            clip = clipboard.getPrimaryClip();
+        }
     }
 }

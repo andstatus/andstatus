@@ -411,15 +411,31 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         if (!mFinishing) {
             mFinishing = true;
         }
-        runOnUiThread( new Runnable() {
+        savePositionOnUiThread();
+        super.finish();
+    }
+
+    // see http://stackoverflow.com/questions/5996885/how-to-wait-for-android-runonuithread-to-be-finished
+    private void savePositionOnUiThread() {
+        Runnable runnable = new Runnable() {
             @Override 
             public void run() {
                 if (mPositionRestored) {
                     saveListPosition();
                 }
+                synchronized(this) {
+                   this.notify();
+                }
             }
-        });
-        super.finish();
+        };
+        try {
+            synchronized(runnable) {
+                runOnUiThread(runnable);
+                runnable.wait();
+            }
+        } catch (InterruptedException e) {
+            MyLog.ignored(this, e);
+        }
     }
 
     @Override

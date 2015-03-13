@@ -178,6 +178,7 @@
   <string name="menu_item_act_as_user">Act as \"%1s\"</string>
   <string name="menu_item_block">Block</string>
   <string name="menu_item_copy_text">Copy text to clipboard</string>
+  <string name="menu_item_copy_author">Copy @author to clipboard</string>
   <string name="menu_item_destroy_favorite">Undo favorite</string>
   <string name="menu_item_destroy_reblog">Undo repost</string>
   <string name="menu_item_destroy_reblog_twitter">Undo retweet</string>

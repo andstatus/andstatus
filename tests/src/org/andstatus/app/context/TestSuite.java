@@ -323,10 +323,13 @@ public class TestSuite extends TestCase {
         return itemsCount;
     }
 
-
     public static void waitForIdleSync(InstrumentationTestCase instrumentationTestCase) throws InterruptedException {
+        waitForIdleSync(instrumentationTestCase.getInstrumentation());
+    }
+
+    public static void waitForIdleSync(Instrumentation instrumentation) throws InterruptedException {
         Thread.sleep(200);
-        instrumentationTestCase.getInstrumentation().waitForIdleSync();
+        instrumentation.waitForIdleSync();
         Thread.sleep(2000);
     }
     

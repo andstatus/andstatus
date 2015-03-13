@@ -204,9 +204,10 @@ class MessageEditorData {
         }
     }
 
-    private void addMentionedUserToText(long mentionedUserId) {
+    public MessageEditorData addMentionedUserToText(long mentionedUserId) {
         String name = MyProvider.userIdToName(mentionedUserId, getUserInTimeline());
         addMetionedUsernameToText(name);
+        return this;
     }
 
     private UserInTimeline getUserInTimeline() {
