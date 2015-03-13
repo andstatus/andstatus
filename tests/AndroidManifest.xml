@@ -18,7 +18,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="org.andstatus.app.tests" android:versionName="13.3" android:versionCode="9">
 
-	<uses-sdk android:minSdkVersion="16"/>
+	<uses-sdk android:minSdkVersion="16" android:targetSdkVersion="22" />
+	<uses-permission android:name="android.permission.INJECT_EVENTS"/>
 
     <application android:label="AndStatus tests" android:icon="@drawable/icon">
         <uses-library android:name="android.test.runner" />

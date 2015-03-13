@@ -17,9 +17,13 @@
 package org.andstatus.app;
 
 import android.app.Activity;
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -33,6 +37,7 @@ import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
+import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
 
 public enum ContextMenuItem {
@@ -115,6 +120,26 @@ public enum ContextMenuItem {
         @Override
         boolean executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
             return new MessageShare(menu.messageList.getActivity(), menu.getMsgId()).share();
+        }
+    },
+    COPY_TEXT(true) {
+        @Override
+        MessageEditorData executeAsync(MyAccount ma, long msgId) {
+            String body = MyProvider.msgIdToStringColumnValue(MyDatabase.Msg.BODY, msgId);
+            return new MessageEditorData(ma).setMessageText(body);
+        }
+
+        @Override
+        boolean executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
+            MyLog.v(this, "text='" + editorData.messageText + "'");
+            if (!TextUtils.isEmpty(editorData.messageText)) {
+                // http://developer.android.com/guide/topics/text/copy-paste.html
+                ClipboardManager clipboard = (ClipboardManager) MyContextHolder.get().context().getSystemService(Context.CLIPBOARD_SERVICE);
+                ClipData clip = ClipData.newPlainText(I18n.trimTextAt(editorData.messageText, 40), editorData.messageText);
+                clipboard.setPrimaryClip(clip);
+                MyLog.v(this, "clip='" + clip.toString() + "'");
+            }
+            return true;
         }
     },
     SENDER_MESSAGES(true) {
@@ -285,6 +310,7 @@ public enum ContextMenuItem {
     }
     
     public boolean execute(MessageContextMenu menu, MyAccount ma) {
+        MyLog.v(this, "execute started");
         if (mIsAsync) {
             executeAsync1(menu, ma);
             return true;
@@ -297,11 +323,13 @@ public enum ContextMenuItem {
         new AsyncTask<Void, Void, MessageEditorData>(){
             @Override
             protected MessageEditorData doInBackground(Void... params) {
+                MyLog.v(ContextMenuItem.this, "execute async started");
                 return executeAsync(ma, menu.getMsgId());
             }
 
             @Override
             protected void onPostExecute(MessageEditorData editorData) {
+                MyLog.v(ContextMenuItem.this, "execute async ended");
                 executeOnUiThread(menu, editorData);
             }
         }.execute();

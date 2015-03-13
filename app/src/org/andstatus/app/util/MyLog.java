@@ -247,6 +247,8 @@ public class MyLog {
             tag = "(null)";
         } else if (objTag instanceof String) {
             tag = (String) objTag;
+        } else if (objTag instanceof Enum<?>) {
+            tag = ((Enum<?>) objTag).toString();
         } else if (objTag instanceof Class<?>) {
             tag = ((Class<?>) objTag).getSimpleName();
         }else {

@@ -88,7 +88,10 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
             mMsgId = Long.parseLong(id.getText().toString());
             if (userIdForThisMessage == 0) {
                 TextView linkedUserId = (TextView) v.findViewById(R.id.linked_user_id);
-                userIdForThisMessage = Long.parseLong(linkedUserId.getText().toString());
+                String strIserId = linkedUserId.getText().toString();
+                if (!TextUtils.isEmpty(strIserId)) {
+                    userIdForThisMessage = Long.parseLong(strIserId);
+                }
             }
         }
         actorUserIdForCurrentMessage = 0;
@@ -101,41 +104,46 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
         actorUserIdForCurrentMessage = msg.myAccount().getUserId();
         accountUserIdToActAs = 0;
 
-        int menuItemId = 0;
+        int order = 0;
         // Create the Context menu
         try {
             menu.setHeaderTitle((MyContextHolder.get().persistentAccounts().size() > 1 ? msg.myAccount().shortestUniqueAccountName() + ": " : "")
                     + msg.bodyTrimmed);
 
-            if (!msg.isDirect()) {
-                ContextMenuItem.REPLY.addTo(menu, menuItemId++, R.string.menu_item_reply);
-                ContextMenuItem.REPLY_ALL.addTo(menu, menuItemId++, R.string.menu_item_reply_all);
+            if (isEditorVisible()) {
+                ContextMenuItem.COPY_TEXT.addTo(menu, order++, R.string.menu_item_copy_text);
             }
-            ContextMenuItem.SHARE.addTo(menu, menuItemId++, R.string.menu_item_share);
+            if (!msg.isDirect() && !isEditorVisible()) {
+                ContextMenuItem.REPLY.addTo(menu, order++, R.string.menu_item_reply);
+                ContextMenuItem.REPLY_ALL.addTo(menu, order++, R.string.menu_item_reply_all);
+            }
+            ContextMenuItem.SHARE.addTo(menu, order++, R.string.menu_item_share);
             if (!TextUtils.isEmpty(msg.imageFilename)) {
                 imageFilename = msg.imageFilename;
-                ContextMenuItem.VIEW_IMAGE.addTo(menu, menuItemId++, R.string.menu_item_view_image);
+                ContextMenuItem.VIEW_IMAGE.addTo(menu, order++, R.string.menu_item_view_image);
             }
 
-            // TODO: Only if he follows me?
-            ContextMenuItem.DIRECT_MESSAGE.addTo(menu, menuItemId++,
-                    R.string.menu_item_direct_message);
+            if (!isEditorVisible()) {
+                // TODO: Only if he follows me?
+                ContextMenuItem.DIRECT_MESSAGE.addTo(menu, order++,
+                        R.string.menu_item_direct_message);
+            }
 
             if (!msg.isDirect()) {
                 if (msg.favorited) {
-                    ContextMenuItem.DESTROY_FAVORITE.addTo(menu, menuItemId++,
+                    ContextMenuItem.DESTROY_FAVORITE.addTo(menu, order++,
                             R.string.menu_item_destroy_favorite);
                 } else {
-                    ContextMenuItem.FAVORITE.addTo(menu, menuItemId++,
+                    ContextMenuItem.FAVORITE.addTo(menu, order++,
                             R.string.menu_item_favorite);
                 }
                 if (msg.reblogged) {
-                    ContextMenuItem.DESTROY_REBLOG.addTo(menu, menuItemId++,
+                    ContextMenuItem.DESTROY_REBLOG.addTo(menu, order++,
                             msg.myAccount().alternativeTermForResourceId(R.string.menu_item_destroy_reblog));
                 } else {
                     // Don't allow a User to reblog himself
                     if (actorUserIdForCurrentMessage != msg.senderId) {
-                        ContextMenuItem.REBLOG.addTo(menu, menuItemId++,
+                        ContextMenuItem.REBLOG.addTo(menu, order++,
                                 msg.myAccount().alternativeTermForResourceId(R.string.menu_item_reblog));
                     }
                 }
@@ -146,7 +154,7 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
                  * Messages by the Sender of this message ("User timeline" of
                  * that user)
                  */
-                ContextMenuItem.SENDER_MESSAGES.addTo(menu, menuItemId++,
+                ContextMenuItem.SENDER_MESSAGES.addTo(menu, order++,
                         String.format(
                                 getContext().getText(R.string.menu_item_user_messages).toString(),
                                 MyProvider.userIdToWebfingerId(msg.senderId)));
@@ -157,14 +165,14 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
                  * Messages by the Author of this message ("User timeline" of
                  * that user)
                  */
-                ContextMenuItem.AUTHOR_MESSAGES.addTo(menu, menuItemId++,
+                ContextMenuItem.AUTHOR_MESSAGES.addTo(menu, order++,
                         String.format(
                                 getContext().getText(R.string.menu_item_user_messages).toString(),
                                 MyProvider.userIdToWebfingerId(msg.authorId)));
             }
 
-            ContextMenuItem.OPEN_MESSAGE_PERMALINK.addTo(menu, menuItemId++, R.string.menu_item_open_message_permalink);
-            ContextMenuItem.OPEN_CONVERSATION.addTo(menu, menuItemId++, R.string.menu_item_open_conversation);
+            ContextMenuItem.OPEN_MESSAGE_PERMALINK.addTo(menu, order++, R.string.menu_item_open_message_permalink);
+            ContextMenuItem.OPEN_CONVERSATION.addTo(menu, order++, R.string.menu_item_open_conversation);
             
             if (msg.isSender) {
                 // This message is by current User, hence we may delete it.
@@ -172,19 +180,19 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
                     // This is a Direct Message
                     // TODO: Delete Direct message
                 } else if (!msg.reblogged) {
-                    ContextMenuItem.DESTROY_STATUS.addTo(menu, menuItemId++,
+                    ContextMenuItem.DESTROY_STATUS.addTo(menu, order++,
                             R.string.menu_item_destroy_status);
                 }
             }
 
             if (!msg.isSender) {
                 if (msg.senderFollowed) {
-                    ContextMenuItem.STOP_FOLLOWING_SENDER.addTo(menu, menuItemId++,
+                    ContextMenuItem.STOP_FOLLOWING_SENDER.addTo(menu, order++,
                             String.format(
                                     getContext().getText(R.string.menu_item_stop_following_user).toString(),
                                     MyProvider.userIdToWebfingerId(msg.senderId)));
                 } else {
-                    ContextMenuItem.FOLLOW_SENDER.addTo(menu, menuItemId++,
+                    ContextMenuItem.FOLLOW_SENDER.addTo(menu, order++,
                             String.format(
                                     getContext().getText(R.string.menu_item_follow_user).toString(),
                                     MyProvider.userIdToWebfingerId(msg.senderId)));
@@ -192,12 +200,12 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
             }
             if (!msg.isAuthor && (msg.authorId != msg.senderId)) {
                 if (msg.authorFollowed) {
-                    ContextMenuItem.STOP_FOLLOWING_AUTHOR.addTo(menu, menuItemId++,
+                    ContextMenuItem.STOP_FOLLOWING_AUTHOR.addTo(menu, order++,
                             String.format(
                                     getContext().getText(R.string.menu_item_stop_following_user).toString(),
                                     MyProvider.userIdToWebfingerId(msg.authorId)));
                 } else {
-                    ContextMenuItem.FOLLOW_AUTHOR.addTo(menu, menuItemId++,
+                    ContextMenuItem.FOLLOW_AUTHOR.addTo(menu, order++,
                             String.format(
                                     getContext().getText(R.string.menu_item_follow_user).toString(),
                                     MyProvider.userIdToWebfingerId(msg.authorId)));
@@ -207,18 +215,22 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
                 case 1:
                     break;
                 case 2:
-                    ContextMenuItem.ACT_AS_USER.addTo(menu, menuItemId++,
+                    ContextMenuItem.ACT_AS_USER.addTo(menu, order++,
                             String.format(
                                     getContext().getText(R.string.menu_item_act_as_user).toString(),
                                     msg.myAccount().firstOtherAccountOfThisOrigin().shortestUniqueAccountName()));
                     break;
                 default:
-                    ContextMenuItem.ACT_AS.addTo(menu, menuItemId++, R.string.menu_item_act_as);
+                    ContextMenuItem.ACT_AS.addTo(menu, order++, R.string.menu_item_act_as);
                     break;
             }
         } catch (Exception e) {
             MyLog.e(this, "onCreateContextMenu", e);
         }
+    }
+
+    private boolean isEditorVisible() {
+        return messageList.getMessageEditor().isVisible();
     }
 
     protected long getCurrentMyAccountUserId() {

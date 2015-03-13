@@ -16,14 +16,19 @@
 
 package org.andstatus.app;
 
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.text.TextUtils;
 import android.view.MenuItem;
 import android.view.View;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.data.MyDatabase.OidEnum;
@@ -43,9 +48,9 @@ public class MessageEditorTest extends android.test.ActivityInstrumentationTestC
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        MyLog.setLogToFile(true);
         MyLog.i(this, "setUp started");
         TestSuite.initializeWithData(this);
+        MyLog.setLogToFile(true);
 
         MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.CONVERSATION_ACCOUNT_NAME);
         assertTrue(ma.isValid());
@@ -194,5 +199,40 @@ public class MessageEditorTest extends android.test.ActivityInstrumentationTestC
             }
           };
         mActivity.runOnUiThread(assertEditor);
+    }
+    
+    public void testContextMenu() throws InterruptedException {
+        final String method = "testContextMenu";
+        TestSuite.waitForListLoaded(this, mActivity, 2);
+        openEditor();
+        ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<TimelineActivity>(this, ConversationActivity.class); 
+        int position = helper.getPositionOfReply();
+        long msgId = helper.getItemIdAtPosition(position);
+        String body = MyProvider.msgIdToStringColumnValue(MyDatabase.Msg.BODY, msgId);
+        helper.invokeContextMenuAction(method, position, ContextMenuItem.COPY_TEXT);
+        assertClipboardText(method, body);
+    }
+
+    private void assertClipboardText(final String method, final String text)
+            throws InterruptedException {
+        MyLog.v(MessageEditorTest.this, method + " started, text='" + text + "'");
+        Runnable assertClipboard = new Runnable() {
+            @Override
+            public void run() {
+                // http://developer.android.com/guide/topics/text/copy-paste.html
+                ClipboardManager clipboard = (ClipboardManager) MyContextHolder.get().context()
+                        .getSystemService(Context.CLIPBOARD_SERVICE);
+                ClipData.Item item = clipboard.getPrimaryClip().getItemAt(0);
+                MyLog.v(MessageEditorTest.this, method + "; assertClipboard item='" + item + "'");
+                MyLog.v(MessageEditorTest.this, method + "; assertClipboard item.getText()='" + item.getText() + "'");
+                MyLog.v(MessageEditorTest.this, method + "; assertClipboard item.getHtmlText()='" + item.getHtmlText() + "'");
+                CharSequence textA = TextUtils.isEmpty(item.getHtmlText()) ? item.getText() : item.getHtmlText();
+                assertEquals(text, textA);
+            }
+        };
+        mActivity.runOnUiThread(assertClipboard);
+        TestSuite.waitForIdleSync(MessageEditorTest.this);
+
+        MyLog.v(MessageEditorTest.this, method + " ended, text='" + text + "'");
     }
 }

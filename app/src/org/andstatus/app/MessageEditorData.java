@@ -25,7 +25,6 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.UserInTimeline;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyProvider;
-import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.util.UriUtils;
 
 import java.util.ArrayList;

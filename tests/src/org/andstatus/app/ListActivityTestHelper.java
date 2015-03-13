@@ -32,8 +32,17 @@ public class ListActivityTestHelper<T extends ListActivity> extends Instrumentat
         addMonitor(classOfActivityToMonitor);
         mActivity = testCase.getActivity();
     }
+
+    public void selectListPosition(String method, int position) throws InterruptedException {
+        selectListPosition(method, position, false);
+    }
     
-    public void selectListPosition(final String method, final int positionIn) throws InterruptedException {
+    public void invokeContextMenuAction(String method, int position, ContextMenuItem menuItem) throws InterruptedException {
+        selectListPosition(method, position, true);
+        mTestCase.getInstrumentation().invokeContextMenuAction(mActivity, menuItem.getId(), 0);
+    }
+    
+    private void selectListPosition(final String method, final int positionIn, final boolean requestFocus) throws InterruptedException {
         TestSuite.waitForIdleSync(mTestCase);
         MyLog.v(this, method + " before setSelection " + positionIn);
         
@@ -48,12 +57,17 @@ public class ListActivityTestHelper<T extends ListActivity> extends Instrumentat
                 MyLog.v(this, method + " on     setSelection " + position 
                         + " of " + (la.getCount() - 1));
                 getListView().setSelection(position);
+                if (requestFocus) {
+                    getListView().getChildAt(position).setFocusable(true);
+                    getListView().getChildAt(position).requestFocus();
+                }
             }
         });
         TestSuite.waitForIdleSync(mTestCase);
         MyLog.v(this, method + " after  setSelection");
     }
 
+    
     public ListView getListView() {
         return (ListView) mActivity.findViewById(android.R.id.list);
     }
@@ -79,6 +93,14 @@ public class ListActivityTestHelper<T extends ListActivity> extends Instrumentat
             }
         }
         return position;
+    }
+
+    public long getItemIdAtPosition(int position) {
+        long itemId = 0;
+        if(position >= 0 && position < getListView().getCount()) {
+            itemId = getListView().getAdapter().getItemId(position);
+        }
+        return itemId;
     }
     
     public void clickListPosition(final String method, final int position) throws InterruptedException {

@@ -457,7 +457,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         mContextMenu.onContextItemSelected(item);
         return super.onContextItemSelected(item);
     }
-
+    
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         super.onCreateOptionsMenu(menu);
