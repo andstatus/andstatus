@@ -22,6 +22,7 @@ import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.MenuItem;
 
+import org.andstatus.app.R;
 import org.andstatus.app.TimelineActivity;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
@@ -37,6 +38,7 @@ public class MySettingsActivity extends Activity {
         super.onCreate(savedInstanceState);
 
         MyContextHolder.initialize(this, this);
+        this.getActionBar().setTitle(R.string.settings_activity_title);
         
         getFragmentManager().beginTransaction()
         .replace(android.R.id.content, new MySettingsFragment(), MySettingsFragment.class.getSimpleName())

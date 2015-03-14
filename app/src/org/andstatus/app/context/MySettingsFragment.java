@@ -26,6 +26,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.preference.CheckBoxPreference;
+import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceScreen;
@@ -108,6 +109,9 @@ public class MySettingsFragment extends PreferenceFragment implements
         showUseExternalStorage();
         showBackupRestore();
         showAuthorInTimeline();
+        showCustomLocale();
+        showThemeColor();
+        showThemeSize();
     }
 
     private void showManageAccounts() {
@@ -194,6 +198,23 @@ public class MySettingsFragment extends PreferenceFragment implements
         SharedPreferencesUtil.showListPreference(this, MyPreferences.KEY_USER_IN_TIMELINE, R.array.user_in_timeline_values, R.array.user_in_timeline_entries, R.string.summary_preference_user_in_timeline);
     }
     
+    private void showCustomLocale() {
+        showListPreference(MyPreferences.KEY_CUSTOM_LOCALE);
+    }
+
+    private void showThemeColor() {
+        showListPreference(MyPreferences.KEY_THEME_COLOR);
+    }
+    
+    private void showThemeSize() {
+        showListPreference(MyPreferences.KEY_THEME_SIZE);
+    }
+
+    private void showListPreference(String key) {
+        ListPreference myPref = (ListPreference) findPreference(key);
+        myPref.setSummary(myPref.getEntry());
+    }
+    
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         if (mIgnorePreferenceChange || onSharedPreferenceChangedIsBusy
@@ -206,6 +227,17 @@ public class MySettingsFragment extends PreferenceFragment implements
             MyPreferences.onPreferencesChanged();
             
             switch (key) {
+                case MyPreferences.KEY_CUSTOM_LOCALE:
+                    MyPreferences.setLocale(getActivity());
+                    getActivity().finish();
+                    startActivity(getActivity().getIntent());
+                    break;
+                case MyPreferences.KEY_THEME_COLOR:
+                    showThemeColor();
+                    break;
+                case MyPreferences.KEY_THEME_SIZE:
+                    showThemeSize();
+                    break;
                 case MyPreferences.KEY_SYNC_FREQUENCY_SECONDS:
                     MyContextHolder.get().persistentAccounts().onMyPreferencesChanged(MyContextHolder.get());
                     showFrequency();

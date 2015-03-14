@@ -31,7 +31,7 @@ public class RawResourceUtils {
     }
 
     public static String getString(Context context, int id) throws IOException {
-        // reads an UTF-8 string resource - API 9 required
+        // TODO: reads an UTF-8 string resource - API 9 required
         //return new String(getResource(id, context), Charset.forName("UTF-8"));
         return new String(getBytes(id, context));
     }

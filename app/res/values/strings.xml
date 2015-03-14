@@ -69,6 +69,8 @@
   <string name="command_follow_user">Follow</string>
   <string name="command_stop_following_user">Stop following</string>
   <string name="created_label">Created</string>
+  <string name="custom_locale_title">Application language</string>
+  <string name="device_default">Device default</string>
   <string name="dialog_summary_acquiring_an_access_token">Please wait while AndStatus is exchanging an OAuth Request token for Access token</string>
   <string name="dialog_summary_acquiring_a_request_token">Please wait while AndStatus is acquiring a request token for OAuth</string>
   <string name="dialog_summary_authentication_failed">Please check your username and password.</string>
@@ -422,7 +424,7 @@ of the selected message is to select
   <string name="summary_preference_vibration_off">Vibration is turned off</string>
   <string name="summary_preference_vibration_on">Vibrate on incoming message</string>
   <string name="system_is_busy_try_later">The system is busy. Please try again later.</string>
-  <string name="theme_color_entries_defautl">Device Default</string>
+  <string name="theme_color_entries_defautl">Device default</string>
   <string name="theme_color_entries_light">Light</string>
   <string name="theme_color_entries_dark">Dark</string>
   <string name="theme_size_entries_small">Small</string>

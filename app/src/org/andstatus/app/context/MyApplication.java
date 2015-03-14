@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2013-2015 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,27 +17,31 @@
 package org.andstatus.app.context;
 
 import org.andstatus.app.util.MyLog;
-
 import android.app.Application;
+import android.content.res.Configuration;
 import android.database.DatabaseErrorHandler;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteDatabase.CursorFactory;
-
 import java.io.File;
 
 /**
  * @author yvolk@yurivolkov.com
  */
 public class MyApplication extends Application {
-    private static final String TAG = MyApplication.class.getSimpleName();
-
+    
     @Override
     public void onCreate() {
         super.onCreate();
         MyLog.v(this, "onCreate started");
         MyContextHolder.storeContextIfNotPresent(this, this);
+        MyPreferences.setLocale(this);
     }
 
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(MyPreferences.onConfigurationChanged(this, newConfig));
+    }
+    
     @Override
     public File getDatabasePath(String name) {
         return MyPreferences.getDatabasePath(name, null);
@@ -50,7 +54,7 @@ public class MyApplication extends Application {
         if (dbAbsolutePath != null) {
             db = SQLiteDatabase.openDatabase(dbAbsolutePath.getPath(), factory, SQLiteDatabase.CREATE_IF_NECESSARY + SQLiteDatabase.OPEN_READWRITE );
         }
-        if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+        if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
             MyLog.v(this, "openOrCreateDatabase, name=" + name + ( db!=null ? " opened '" + db.getPath() + "'" : " NOT opened" ));
         }
         return db;

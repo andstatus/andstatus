@@ -24,6 +24,30 @@
         <item>"1"</item>
         <item>".*"</item>
     </string-array>
+    <string-array name="custom_locale_entries">
+        <item>@string/device_default</item>
+        <item>English</item>
+        <item>Arabic</item>
+        <item>Catalan</item>
+        <item>French</item>
+        <item>German</item>
+        <item>Japanese</item>
+        <item>Russian</item>
+        <item>Spanish</item>
+        <item>Swedish</item>
+    </string-array>
+    <string-array name="custom_locale_values">
+        <item>default</item>
+        <item>en</item>
+        <item>ar</item>
+        <item>ca</item>
+        <item>fr</item>
+        <item>de</item>
+        <item>ja</item>
+        <item>ru</item>
+        <item>es</item>
+        <item>sv</item>
+    </string-array>
     <string-array name="fetch_frequency_entries">
         <item>@string/fetch_frequency_entries_3_minutes</item>
         <item>@string/fetch_frequency_entries_5_minutes</item>

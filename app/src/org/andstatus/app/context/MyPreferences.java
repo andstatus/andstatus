@@ -20,20 +20,25 @@ import org.andstatus.app.R;
 import org.andstatus.app.TimelineActivity;
 import org.andstatus.app.util.MyLog;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.backup.BackupManager;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.content.res.Configuration;
 import android.graphics.Color;
+import android.os.Build;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.view.View;
 
 import java.io.File;
+import java.util.Locale;
 
 /**
  * This is a central point of accessing SharedPreferences
@@ -91,6 +96,9 @@ public class MyPreferences {
     public static final String KEY_SHOW_AVATARS = "show_avatars";
     public static final String KEY_SHOW_ATTACHED_IMAGES = "show_attached_images";
     public static final String KEY_SHOW_ORIGIN = "show_origin";
+
+    public static final String KEY_CUSTOM_LOCALE = "custom_locale";
+    public static final String CUSTOM_LOCALE_DEFAULT = "default";
     
     /**
      * Use this dir: http://developer.android.com/reference/android/content/Context.html#getExternalFilesDir(java.lang.String)
@@ -244,6 +252,52 @@ public class MyPreferences {
         }
     }
 
+    private static volatile Locale mLocale = null;
+    private static volatile Locale mDefaultLocale = null;
+    public static void setLocale(ContextWrapper contextWrapper) {
+        if (mDefaultLocale == null) {
+            mDefaultLocale = contextWrapper.getBaseContext().getResources().getConfiguration().locale;
+        }
+        String strLocale = getString(KEY_CUSTOM_LOCALE, CUSTOM_LOCALE_DEFAULT);
+        if (!strLocale.equals(CUSTOM_LOCALE_DEFAULT) || mLocale != null) {
+            Configuration config = contextWrapper.getBaseContext().getResources().getConfiguration();
+            if (strLocale.equals(CUSTOM_LOCALE_DEFAULT)) {
+                customizeConfig(contextWrapper, config, mDefaultLocale);
+                mLocale = null;
+            } else {
+                mLocale = new Locale(strLocale);
+                customizeConfig(contextWrapper, config, mLocale);
+            }
+        }
+    }
+    
+    public static Configuration onConfigurationChanged(ContextWrapper contextWrapper, Configuration newConfig) {
+        if (mLocale == null || mDefaultLocale == null) {
+            mDefaultLocale = newConfig.locale;
+        }
+        return customizeConfig(contextWrapper, newConfig, mLocale);
+    }
+    
+    private static Configuration customizeConfig(ContextWrapper contextWrapper, Configuration newConfig, Locale locale) {
+        Configuration configCustom = newConfig;
+        if (locale != null && !newConfig.locale.equals(locale)) {
+            Locale.setDefault(locale);
+            configCustom = new Configuration(newConfig);
+            setLocale(configCustom, locale);
+            contextWrapper.getBaseContext().getResources().updateConfiguration(configCustom, contextWrapper.getBaseContext().getResources().getDisplayMetrics());            
+        }
+        return configCustom;
+    }
+
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
+    private static void setLocale(Configuration configCustom, Locale locale) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            configCustom.setLocale(locale);
+        } else {
+            configCustom.locale = locale;
+        }
+    }    
+    
 	public static void putLong(String key, long value) {
         SharedPreferences sp = getDefaultSharedPreferences();
         if (sp != null) {
