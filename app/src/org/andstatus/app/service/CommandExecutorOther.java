@@ -35,7 +35,6 @@ import org.andstatus.app.net.social.MbRateLimitStatus;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.net.http.ConnectionException.StatusCode;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
 
@@ -116,7 +115,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                     (create ? "create" : "destroy") + "Favorite; msgId not found: " + msgId);
         }
         if (ok) {
-            if (SharedPreferencesUtil.isTrue(message.favoritedByActor) != create) {
+            if (message.favoritedByActor.toBoolean(!create) != create) {
                 /**
                  * yvolk: 2011-09-27 Twitter docs state that
                  * this may happen due to asynchronous nature of

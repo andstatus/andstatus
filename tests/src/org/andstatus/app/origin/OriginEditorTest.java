@@ -30,6 +30,7 @@ import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.net.http.SslModeEnum;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UrlUtils;
 
 import java.net.URL;
@@ -55,30 +56,31 @@ public class OriginEditorTest extends ActivityInstrumentationTestCase2<OriginEdi
         String host = originName + ".example.com";
         boolean isSsl = false;
         boolean allowHtml = true;
-        forOneOrigin(originType, originName, host, isSsl, SslModeEnum.SECURE, allowHtml,
+        forOneOrigin(originType, originName, host, isSsl, SslModeEnum.SECURE, allowHtml, TriState.UNKNOWN,
                 true, true);
         
         host = originName + ".some.example.com";
         isSsl = true;
         allowHtml = false;
-        forOneOrigin(originType, originName, host, isSsl, SslModeEnum.INSECURE, allowHtml,
+        forOneOrigin(originType, originName, host, isSsl, SslModeEnum.INSECURE, allowHtml, TriState.UNKNOWN,
                 false, true);
 
         host = originName + ". я badhost.example.com";
-        forOneOrigin(originType, originName, host, isSsl, SslModeEnum.MISCONFIGURED, allowHtml,
+        forOneOrigin(originType, originName, host, isSsl, SslModeEnum.MISCONFIGURED, allowHtml, TriState.UNKNOWN,
                 true, false);
 
         host = "http://" + originName + ".fourth. example. com ";
-        forOneOrigin(originType, originName, host, isSsl, SslModeEnum.SECURE, allowHtml,
+        forOneOrigin(originType, originName, host, isSsl, SslModeEnum.SECURE, allowHtml, TriState.UNKNOWN,
                 false, false);
 
         host = "http://" + originName + ".fifth.example.com/status";
-        forOneOrigin(originType, originName, host, isSsl, SslModeEnum.INSECURE, allowHtml,
+        forOneOrigin(originType, originName, host, isSsl, SslModeEnum.INSECURE, allowHtml, TriState.UNKNOWN,
                 true, true);
     }
     
     public void forOneOrigin(final OriginType originType, final String originName,
-            final String hostOrUrl, final boolean isSsl, final SslModeEnum sslMode, final boolean allowHtml,
+            final String hostOrUrl, final boolean isSsl, final SslModeEnum sslMode, 
+            final boolean allowHtml, final TriState mentionAsWebFingerId,
             final boolean inCombinedGlobalSearch, final boolean inCombinedPublicReload)
             throws InterruptedException {
         final String method = "OriginEditorTest";
@@ -114,6 +116,8 @@ public class OriginEditorTest extends ActivityInstrumentationTestCase2<OriginEdi
         final CheckBox checkBoxIsSsl = (CheckBox) activity.findViewById(R.id.is_ssl);
         final Spinner spinnerSslMode = (Spinner) activity.findViewById(R.id.ssl_mode);
         final CheckBox checkBoxAllowHtml = (CheckBox) activity.findViewById(R.id.allow_html);
+        final Spinner spinnerMentionAsWebFingerId = (Spinner) activity
+                .findViewById(R.id.mention_as_webfingerid);
 
         Runnable clicker = new Runnable() {
             @Override
@@ -124,6 +128,7 @@ public class OriginEditorTest extends ActivityInstrumentationTestCase2<OriginEdi
                 checkBoxIsSsl.setChecked(isSsl);
                 spinnerSslMode.setSelection(sslMode.getEntriesPosition());
                 checkBoxAllowHtml.setChecked(allowHtml);
+                spinnerMentionAsWebFingerId.setSelection(mentionAsWebFingerId.getEntriesPosition());
                 ((CheckBox) activity.findViewById(R.id.in_combined_global_search)).
                         setChecked(inCombinedGlobalSearch);
                 ((CheckBox) activity.findViewById(R.id.in_combined_public_reload)).
@@ -157,7 +162,9 @@ public class OriginEditorTest extends ActivityInstrumentationTestCase2<OriginEdi
             }
         }
         assertEquals(isSsl, origin.isSsl());
+        assertEquals(sslMode, origin.getSslMode());
         assertEquals(allowHtml, origin.isHtmlContentAllowed());
+        assertEquals(mentionAsWebFingerId, origin.getMentionAsWebFingerId());
         assertEquals(inCombinedGlobalSearch, origin.isInCombinedGlobalSearch());
         assertEquals(inCombinedPublicReload, origin.isInCombinedPublicReload());
     }

@@ -41,7 +41,7 @@ public class MyBackupDescriptor {
     private static final Object TAG = MyBackupDescriptor.class;
     
     static final int BACKUP_SCHEMA_VERSION_UNKNOWN = -1;
-    static final int BACKUP_SCHEMA_VERSION = 2;
+    static final int BACKUP_SCHEMA_VERSION = 3;
     static final String KEY_ACCOUNTS_COUNT = "accounts_count";
     static final String KEY_CREATED_DATE = "created_date";
     static final String KEY_BACKUP_SCHEMA_VERSION = "backup_schema_version";

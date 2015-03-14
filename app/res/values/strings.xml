@@ -25,6 +25,7 @@
   <string name="account_settings_action">AndStatus account settings</string>
   <string name="account_settings_activity_title">Account</string>
   <string name="account_settings_summary">Sync frequency, notifications, etc.</string>
+  <string name="automatic">Auto</string>
   <string name="settings_action">Settings</string>
   <string name="settings_activity_title">Settings</string>
   <string name="action_menu_overflow_description">More actions&#8230;</string>
@@ -174,6 +175,7 @@
   <string name="message_edit_hint">Enter your message here!</string>
   <string name="message_characters_left">Characters left:</string>
   <string name="message_is_too_long">Message is too long.</string>
+  <string name="mention_as_webfingerid_title">Mention as @webFingerId</string>
   <string name="menu_item_act_as">Act as&#8230;</string>
   <string name="menu_item_act_as_user">Act as \"%1s\"</string>
   <string name="menu_item_block">Block</string>
@@ -200,6 +202,7 @@
   <string name="menu_item_view_profile">View Profile</string>
   <string name="message_sent">Your message has been sent.</string>
   <string name="messages_activity">Direct Messages</string>
+  <string name="no">No</string>
   <string name="not_set">not set</string>
   <string name="notification_message_formats_1">{0} message</string>
   <string name="notification_message_formats_2">{0} messages</string>
@@ -500,4 +503,5 @@ of the selected message is to select
   <string name="user_in_timeline_entries_webfingerid">webFingerId</string>
   <string name="user_in_timeline_entries_real_name">Real name</string>
   <string name="user_in_timeline_entries_real_name_at_username">Real name @username</string>
+  <string name="yes">Yes</string>
 </resources>

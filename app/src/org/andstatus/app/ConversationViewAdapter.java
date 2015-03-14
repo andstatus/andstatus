@@ -90,14 +90,33 @@ public class ConversationViewAdapter extends BaseAdapter {
                     + (oMsg.mAvatarDrawable != null ? ", avatar="
                             + oMsg.mAvatarDrawable : ""));
         }
+        View messageView = findMessageView();
+        messageView.setOnCreateContextMenuListener(contextMenu);
+        TextView id = (TextView) messageView.findViewById(R.id.id);
+        id.setText(Long.toString(oMsg.getMsgId()));
+        TextView linkedUserId = (TextView) messageView.findViewById(R.id.linked_user_id);
+        linkedUserId.setText(Long.toString(oMsg.mLinkedUserId));
+
+        setIndent(oMsg, messageView);
+        setMessageAuthor(oMsg, messageView);
+        setMessageNumber(oMsg, messageView);
+        setMessageBody(oMsg, messageView);
+        setMessageDetails(oMsg, messageView);
+        setFavorited(oMsg, messageView);
+        return messageView;
+    }
+
+    private View findMessageView() {
         LayoutInflater inflater = LayoutInflater.from(context);
         int layoutResource = R.layout.message_conversation;
         if (!Activity.class.isAssignableFrom(context.getClass())) {
             MyLog.w(this, "Context should be from an Activity");
         }
         View messageView = inflater.inflate(layoutResource, null);
-        messageView.setOnCreateContextMenuListener(contextMenu);
-
+        return messageView;
+    }
+    
+    private void setIndent(ConversationViewItem oMsg, View messageView) {
         float displayDensity = context.getResources().getDisplayMetrics().density;
         // See  http://stackoverflow.com/questions/2238883/what-is-the-correct-way-to-specify-dimensions-in-dip-from-java-code
         int indent0 = (int)( 10 * displayDensity);
@@ -152,22 +171,22 @@ public class ConversationViewAdapter extends BaseAdapter {
             ((ViewGroup) messageIndented.getParent()).addView(avatarView);
         }
         messageIndented.setPadding(indentPixels + 6, 2, 6, 2);
-        
-        TextView id = (TextView) messageView.findViewById(R.id.id);
-        id.setText(Long.toString(oMsg.getMsgId()));
-        TextView linkedUserId = (TextView) messageView.findViewById(R.id.linked_user_id);
-        linkedUserId.setText(Long.toString(oMsg.mLinkedUserId));
+    }
 
+    private void setMessageAuthor(ConversationViewItem oMsg, View messageView) {
         TextView author = (TextView) messageView.findViewById(R.id.message_author);
-        TextView body = (TextView) messageView.findViewById(R.id.message_body);
-        TextView details = (TextView) messageView.findViewById(R.id.message_details);
 
         author.setText(oMsg.mAuthor);
+    }
 
+    private void setMessageNumber(ConversationViewItem oMsg, View messageView) {
         TextView number = (TextView) messageView.findViewById(R.id.message_number);
         number.setText(Integer.toString(oMsg.mHistoryOrder));
-        
+    }
+
+    private void setMessageBody(ConversationViewItem oMsg, View messageView) {
         if (!TextUtils.isEmpty(oMsg.mBody)) {
+            TextView body = (TextView) messageView.findViewById(R.id.message_body);
             body.setLinksClickable(true);
             body.setMovementMethod(LinkMovementMethod.getInstance());                
             body.setFocusable(true);
@@ -178,8 +197,9 @@ public class ConversationViewAdapter extends BaseAdapter {
                 Linkify.addLinks(body, Linkify.ALL);
             }
         }
+    }
 
-        // Everything else goes to messageDetails
+    private void setMessageDetails(ConversationViewItem oMsg, View messageView) {
         String messageDetails = RelativeTime.getDifference(context, oMsg.mCreatedDate);
         if (!SharedPreferencesUtil.isEmpty(oMsg.mVia)) {
             messageDetails += " " + String.format(
@@ -216,12 +236,14 @@ public class ConversationViewAdapter extends BaseAdapter {
         if (MyPreferences.getBoolean(MyPreferences.KEY_DEBUGGING_INFO_IN_UI, false)) {
             messageDetails = messageDetails + " (i" + oMsg.mIndentLevel + ",r" + oMsg.mReplyLevel + ")";
         }
-        details.setText(messageDetails);
-        ImageView favorited = (ImageView) messageView.findViewById(R.id.message_favorited);
-        favorited.setImageResource(oMsg.mFavorited ? android.R.drawable.star_on : android.R.drawable.star_off);
-        return messageView;
+        ((TextView) messageView.findViewById(R.id.message_details)).setText(messageDetails);
     }
 
+    private void setFavorited(ConversationViewItem oMsg, View messageView) {
+        ImageView favorited = (ImageView) messageView.findViewById(R.id.message_favorited);
+        favorited.setImageResource(oMsg.mFavorited ? android.R.drawable.star_on : android.R.drawable.star_off);
+    }
+    
     private int msgIdToHistoryOrder(long msgId) {
         for (ConversationViewItem oMsg : oMsgs) {
             if (oMsg.getMsgId() == msgId ) {

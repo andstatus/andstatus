@@ -3,21 +3,19 @@ package org.andstatus.app.net.http;
 import org.andstatus.app.R;
 
 public enum SslModeEnum {
-    SECURE(1, R.string.preference_ssl_mode_secure, R.string.preference_ssl_mode_secure_summary),
-    INSECURE(2, R.string.preference_ssl_mode_insecure, R.string.preference_ssl_mode_insecure_summary),
-    MISCONFIGURED(3, R.string.preference_ssl_mode_misconfigured, R.string.preference_ssl_mode_misconfigured_summary);
+    SECURE(1, R.string.preference_ssl_mode_secure_summary),
+    INSECURE(2, R.string.preference_ssl_mode_insecure_summary),
+    MISCONFIGURED(3, R.string.preference_ssl_mode_misconfigured_summary);
     
     private final long id;
-    private final int entryResourceId;
     private final int summaryResourceId;
 
-    SslModeEnum(long id, int entryResourceId, int summaryResourceId) {
+    SslModeEnum(long id, int summaryResourceId) {
         this.id = id;
         this.summaryResourceId = summaryResourceId;
-        this.entryResourceId = entryResourceId;
     }
     
-    public static SslModeEnum fromId(Long id) {
+    public static SslModeEnum fromId(long id) {
         for (SslModeEnum tt : SslModeEnum.values()) {
             if (tt.id == id) {
                 return tt;
@@ -33,10 +31,6 @@ public enum SslModeEnum {
     @Override
     public String toString() {
         return "SSL mode:" + this.name();
-    }
-    
-    public int getEntryResourceId() {
-        return entryResourceId;
     }
 
     public int getSummaryResourceId() {

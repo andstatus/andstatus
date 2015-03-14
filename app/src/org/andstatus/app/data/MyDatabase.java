@@ -19,8 +19,10 @@ package org.andstatus.app.data;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextState;
 import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.net.http.SslModeEnum;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.TriState;
 
 import java.util.Locale;
 
@@ -40,6 +42,8 @@ public final class MyDatabase extends SQLiteOpenHelper  {
      * This is used to check (and upgrade if necessary) 
      * existing database after application update.
      * 
+     * v.21 2015-03-14 app.v.16 mention_as_webfinger_id added to Origin, 
+     *                 index on {@link Msg#IN_REPLY_TO_MSG_ID} added. 
      * v.20 2015-02-04 app.v.15 SslMode added to Origin
      * v.19 2014-11-15 Index on sent date added to messages
      * v.18 2014-09-21 Duplicated User.USERNAME allowed
@@ -57,7 +61,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
      *      All messages are in the same table. 
      *      Allows to have multiple User Accounts in different Originating systems (twitter.com etc. ) 
      */
-    public static final int DATABASE_VERSION = 20;
+    public static final int DATABASE_VERSION = 21;
     public static final String DATABASE_NAME = "andstatus.sqlite";
 
     /**
@@ -429,6 +433,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
         public static final String ALLOW_HTML = "allow_html";
         public static final String TEXT_LIMIT = "text_limit";
         public static final String SHORT_URL_LENGTH = "short_url_length";
+        public static final String MENTION_AS_WEBFINGER_ID = "mention_as_webfinger_id";
         /** Include this system in Global Search while in Combined Timeline */
         public static final String IN_COMBINED_GLOBAL_SEARCH = "in_combined_global_search";
         /** Include this system in Reload while in Combined Public Timeline */
@@ -519,6 +524,10 @@ public final class MyDatabase extends SQLiteOpenHelper  {
         execSQL(db, "CREATE INDEX idx_msg_sent_date ON " + Msg.TABLE_NAME + " (" 
                 + Msg.SENT_DATE
                 + ")");
+
+        execSQL(db, "CREATE INDEX idx_msg_in_reply_to_msg_id ON " + Msg.TABLE_NAME + " (" 
+                + Msg.IN_REPLY_TO_MSG_ID
+                + ")");
         
         execSQL(db, "CREATE TABLE " + MsgOfUser.TABLE_NAME + " (" 
                 + MsgOfUser.USER_ID + " INTEGER NOT NULL," 
@@ -608,10 +617,11 @@ public final class MyDatabase extends SQLiteOpenHelper  {
                 + Origin.ORIGIN_NAME + " TEXT NOT NULL," 
                 + Origin.ORIGIN_URL + " TEXT NOT NULL," 
                 + Origin.SSL + " BOOLEAN DEFAULT 1 NOT NULL," 
-                + Origin.SSL_MODE + " INTEGER DEFAULT 1 NOT NULL," 
+                + Origin.SSL_MODE + " INTEGER DEFAULT " + SslModeEnum.SECURE.getId() + " NOT NULL," 
                 + Origin.ALLOW_HTML + " BOOLEAN DEFAULT 1 NOT NULL," 
                 + Origin.TEXT_LIMIT + " INTEGER NOT NULL,"
                 + Origin.SHORT_URL_LENGTH + " INTEGER NOT NULL DEFAULT 0," 
+                + Origin.MENTION_AS_WEBFINGER_ID + " INTEGER DEFAULT " + TriState.UNKNOWN.getId() + " NOT NULL," 
                 + Origin.IN_COMBINED_GLOBAL_SEARCH + " BOOLEAN DEFAULT 1 NOT NULL," 
                 + Origin.IN_COMBINED_PUBLIC_RELOAD + " BOOLEAN DEFAULT 1 NOT NULL" 
                 + ")");

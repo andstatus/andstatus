@@ -96,6 +96,11 @@
         <item>365</item>
         <item>3653</item>
     </string-array>
+    <string-array name="mention_as_webfingerid_entries">
+        <item>@string/yes</item>
+        <item>@string/no</item>
+        <item>@string/automatic</item>
+    </string-array>
     <string-array name="preference_ssl_mode_entries">
         <item>@string/preference_ssl_mode_secure</item>
         <item>@string/preference_ssl_mode_insecure</item>

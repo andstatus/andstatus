@@ -265,7 +265,7 @@ public class DataInserterTest extends InstrumentationTestCase {
         Cursor cursor = context.getContentResolver().query(contentUri, PROJECTION, sa.selection,
                 sa.selectionArgs, sortOrder);
         assertTrue("Cursor returned", cursor != null);
-        assertTrue("Message found, id=" + messageId, cursor.getCount() == 1);
+        assertTrue("Message found, id=" + messageId + ", count=" + cursor.getCount(), cursor.getCount() == 1);
         cursor.moveToFirst();
         assertTrue("Message favorited", cursor.getInt(0) == 1);
         assertTrue("Message not favorited by AccountUser", cursor.getLong(1) == TestSuite

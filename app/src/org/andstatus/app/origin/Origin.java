@@ -77,7 +77,7 @@ public class Origin {
     /** Include this system in Reload while in Combined Public Timeline */
     private boolean inCombinedPublicReload = true;
     
-    private TriState mIsMentionAsWebFingerId = TriState.UNKNOWN;
+    private TriState mMentionAsWebFingerId = TriState.UNKNOWN;
     
     protected Origin() {
         // Empty
@@ -259,8 +259,12 @@ public class Origin {
         return getTextLimit() == 0 || getTextLimit() >= TEXT_LIMIT_FOR_WEBFINGER_ID;
     }
     
+    public TriState getMentionAsWebFingerId() {
+        return mMentionAsWebFingerId;
+    }
+
     public boolean isMentionAsWebFingerId() {
-        return mIsMentionAsWebFingerId.toBoolean(isMentionAsWebFingerIdDefault());
+        return mMentionAsWebFingerId.toBoolean(isMentionAsWebFingerIdDefault());
     }
     
     public boolean hasChildren() {
@@ -312,9 +316,11 @@ public class Origin {
 
     @Override
     public String toString() {
-        return "Origin:{name:" + getName() + "; url:" + getUrl() 
-                + ", " + originType
+        return "Origin:{name:" + getName() 
+                + ", type:" + originType
+                + (getUrl() != null ? ", url:" + getUrl() : "" )
                 + (isSsl() ? ", " + getSslMode() : "" )
+                + (getMentionAsWebFingerId() != TriState.UNKNOWN ? ", mentionAsWf:" + getMentionAsWebFingerId() : "" )
                 + "}";
     }
 
@@ -368,7 +374,8 @@ public class Origin {
                     .getColumnIndex(MyDatabase.Origin.IN_COMBINED_GLOBAL_SEARCH)) != 0);
             origin.inCombinedPublicReload = (c.getInt(c
                     .getColumnIndex(MyDatabase.Origin.IN_COMBINED_PUBLIC_RELOAD)) != 0);
-            // TODO Restore from a database: setIsMentionAsWebFingerId
+            setMentionAsWebFingerId(TriState.fromId(c.getLong(c
+                    .getColumnIndex(MyDatabase.Origin.MENTION_AS_WEBFINGER_ID))));
         }
 
         protected void setTextLimit(int textLimit) {
@@ -391,7 +398,7 @@ public class Origin {
             setTextLimit(original.getTextLimit());
             setInCombinedGlobalSearch(original.inCombinedGlobalSearch);
             setInCombinedPublicReload(original.inCombinedPublicReload);
-            setIsMentionAsWebFingerId(original.mIsMentionAsWebFingerId);
+            setMentionAsWebFingerId(original.mMentionAsWebFingerId);
         }
 
         public Origin build() {
@@ -463,8 +470,8 @@ public class Origin {
             return this;
         }
 
-        public Builder setIsMentionAsWebFingerId(TriState isMentionAsWebFingerId) {
-            origin.mIsMentionAsWebFingerId = isMentionAsWebFingerId;
+        public Builder setMentionAsWebFingerId(TriState mentionAsWebFingerId) {
+            origin.mMentionAsWebFingerId = mentionAsWebFingerId;
             return this;
         }
         
@@ -502,7 +509,7 @@ public class Origin {
             values.put(MyDatabase.Origin.TEXT_LIMIT, origin.getTextLimit());
             values.put(MyDatabase.Origin.IN_COMBINED_GLOBAL_SEARCH, origin.inCombinedGlobalSearch);
             values.put(MyDatabase.Origin.IN_COMBINED_PUBLIC_RELOAD, origin.inCombinedPublicReload);
-            // TODO: save origin.mIsMentionAsWebFingerId
+            values.put(MyDatabase.Origin.MENTION_AS_WEBFINGER_ID, origin.mMentionAsWebFingerId.getId());
 
             boolean changed = false;
             if (origin.id == 0) {

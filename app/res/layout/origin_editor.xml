@@ -101,7 +101,23 @@
 	        android:layout_width="wrap_content"
 	        android:layout_height="wrap_content"
 	        android:text="@string/label_allow_html_content" />
-	    	    	    	
+
+	        
+	    <TextView
+	        android:id="@+id/mention_as_webfingerid_label"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:text="@string/mention_as_webfingerid_title" />
+	
+	    <Spinner
+	        android:id="@+id/mention_as_webfingerid"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:entries="@array/mention_as_webfingerid_entries"
+	        android:prompt="@string/mention_as_webfingerid_title" />
+	    
+		<View style="@style/Divider"/>
+	    	    	    	    	    	
 	    <CheckBox
 	        android:id="@+id/in_combined_global_search"
 	        android:layout_width="wrap_content"

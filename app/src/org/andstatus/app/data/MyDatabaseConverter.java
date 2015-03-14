@@ -139,6 +139,9 @@ class MyDatabaseConverter {
         if (currentVersion == 19) {
             currentVersion = convert19to20(db, currentVersion);
         }
+        if (currentVersion == 20) {
+            currentVersion = convert20to21(db, currentVersion);
+        }
         if ( currentVersion == newVersion) {
             MyLog.i(this, "Successfully upgraded database from version " + oldVersion + " to version "
                     + newVersion + ".");
@@ -312,6 +315,27 @@ class MyDatabaseConverter {
             sql = "UPDATE origin SET ssl_mode=1, in_combined_global_search=1, in_combined_public_reload=1";
             MyDatabase.execSQL(db, sql);
             sql = "UPDATE origin SET ssl_mode=2 WHERE origin_url LIKE '%quitter.zone%'";
+            MyDatabase.execSQL(db, sql);
+            
+            ok = true;
+        } catch (Exception e) {
+            MyLog.e(this, e);
+        }
+        return assessUpgradeStepResult(oldVersion, versionTo, ok, sql);
+    }
+
+    private int convert20to21(SQLiteDatabase db, int oldVersion) {
+        final int versionTo = 21;
+        boolean ok = false;
+        String sql = "";
+        try {
+            logUpgradeStepStart(oldVersion, versionTo);
+
+            sql = "ALTER TABLE origin ADD COLUMN mention_as_webfinger_id INTEGER DEFAULT 3";
+            MyDatabase.execSQL(db, sql);
+            sql = "UPDATE origin SET mention_as_webfinger_id=3";
+            MyDatabase.execSQL(db, sql);
+            sql = "CREATE INDEX idx_msg_in_reply_to_msg_id ON msg (in_reply_to_msg_id)";
             MyDatabase.execSQL(db, sql);
             
             ok = true;

@@ -1,5 +1,5 @@
 /* 
- * Copyright (c) 2013 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (c) 2013-2015 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,49 @@
 package org.andstatus.app.util;
 
 public enum TriState {
-    TRUE,
-    FALSE,
-    UNKNOWN;
+    TRUE(2),
+    FALSE(1),
+    UNKNOWN(3);
 
+    private final long id;
+    
+    TriState(long id) {
+        this.id = id;
+    }
+    
+    public static TriState fromId(long id) {
+        for (TriState tt : TriState.values()) {
+            if (tt.id == id) {
+                return tt;
+            }
+        }
+        return UNKNOWN;
+    }
+
+    public Long getId() {
+        return id;
+    }
+    
+    public int getEntriesPosition() {
+        return ordinal();
+    }
+    
+    public static TriState fromEntriesPosition(int position) {
+        TriState obj = UNKNOWN;
+        for(TriState val : values()) {
+            if (val.ordinal() == position) {
+                obj = val;
+                break;
+            }
+        }
+        return obj;
+    }
+    
+    @Override
+    public String toString() {
+        return "SSL mode:" + this.name();
+    }
+    
     public boolean toBoolean(boolean defaultValue) {
         switch (this){
             case FALSE:

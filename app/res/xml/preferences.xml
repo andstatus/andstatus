@@ -243,11 +243,6 @@
             <Preference android:key="report_bug" android:title="@string/title_preference_report_bug">
 	            <intent android:action="android.intent.action.VIEW" android:data="https://github.com/andstatus/andstatus/issues" />
 	        </Preference>
-            <org.andstatus.app.context.MultilineListPreference android:entryValues="@array/preference_ssl_mode_values"
-	            android:entries="@array/preference_ssl_mode_entries"
-	            android:dialogTitle="@string/preference_ssl_mode_title"
-	            android:title="@string/preference_ssl_mode_title" android:key="ssl_mode"
-	            android:defaultValue="secure" />
             <org.andstatus.app.context.MultilineCheckBoxPreference android:key="use_kitkat_media_chooser"
                 android:title="@string/preference_use_kitkat_media_chooser_title"
                 android:defaultValue="true" />

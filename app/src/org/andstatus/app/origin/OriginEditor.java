@@ -41,6 +41,7 @@ import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.net.http.SslModeEnum;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UrlUtils;
 
 /**
@@ -57,6 +58,7 @@ public class OriginEditor extends Activity {
     private EditText editTextHost;
     private CheckBox checkBoxIsSsl;
     private Spinner spinnerSslMode;
+    private Spinner spinnerMentionAsWebFingerId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -89,6 +91,7 @@ public class OriginEditor extends Activity {
         editTextHost = (EditText) findViewById(R.id.host);
         checkBoxIsSsl = (CheckBox) findViewById(R.id.is_ssl);
         spinnerSslMode = (Spinner) findViewById(R.id.ssl_mode);
+        spinnerMentionAsWebFingerId = (Spinner) findViewById(R.id.mention_as_webfingerid);
 
         processNewIntent(getIntent());
     }
@@ -149,6 +152,8 @@ public class OriginEditor extends Activity {
         showSslModeSummary(origin.getSslMode());
         showSslMode(origin.isSsl());
         ((CheckBox) findViewById(R.id.allow_html)).setChecked(origin.isHtmlContentAllowed());
+
+        spinnerMentionAsWebFingerId.setSelection(origin.getMentionAsWebFingerId().getEntriesPosition());
         
         buttonDelete.setVisibility(origin.hasChildren() ? View.GONE : View.VISIBLE);
 
@@ -197,6 +202,8 @@ public class OriginEditor extends Activity {
         builder.setSsl(checkBoxIsSsl.isChecked());
         builder.setSslMode(SslModeEnum.fromEntriesPosition(spinnerSslMode.getSelectedItemPosition()));
         builder.setHtmlContentAllowed(((CheckBox) findViewById(R.id.allow_html)).isChecked());
+        builder.setMentionAsWebFingerId(TriState.fromEntriesPosition(spinnerMentionAsWebFingerId
+                .getSelectedItemPosition()));
         builder.setInCombinedGlobalSearch(((CheckBox) findViewById(R.id.in_combined_global_search)).isChecked());
         builder.setInCombinedPublicReload(((CheckBox) findViewById(R.id.in_combined_public_reload)).isChecked());
         builder.save();

@@ -208,7 +208,7 @@ public class DataInserter {
                     && actorId != 0
                     && actorId == execContext.getMyAccount().getUserId()) {
                 values.put(MyDatabase.MsgOfUser.FAVORITED,
-                        SharedPreferencesUtil.isTrue(message.favoritedByActor));
+                        message.favoritedByActor.toBoolean(false));
                 MyLog.v(this,
                         "Message '"
                                 + message.oid
