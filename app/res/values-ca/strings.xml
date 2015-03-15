@@ -225,7 +225,6 @@
   <string name="summary_preference_vibration_off">Vibració inhabilitada</string>
   <string name="summary_preference_vibration_on">Vibració en rebre un missatge</string>
   <string name="system_is_busy_try_later">El sistema està ocupat. Torna a intentar-ho més tard.</string>
-  <string name="theme_color_entries_defautl">Dispositiu per defecte</string>
   <string name="theme_color_entries_light">Clar</string>
   <string name="theme_color_entries_dark">Fosc</string>
   <string name="theme_size_entries_small">Petit</string>

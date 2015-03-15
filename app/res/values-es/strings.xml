@@ -177,6 +177,8 @@
   <string name="menu_item_act_as">Actuar como&#8230;</string>
   <string name="menu_item_act_as_user">Actuar como \"%1s\"</string>
   <string name="menu_item_block">Boquea</string>
+  <string name="menu_item_copy_text">Copiar texto</string>
+  <string name="menu_item_copy_author">Copiar @autor</string>
   <string name="menu_item_destroy_favorite">Deshacer favorito</string>
   <string name="menu_item_destroy_reblog">Deshacer repetición</string>
   <string name="menu_item_destroy_reblog_twitter">Deshacer retweet</string>
@@ -188,6 +190,7 @@
   <string name="menu_item_open_conversation">Abrir conversación</string>
   <string name="menu_item_open_message_permalink">Ver en navegador</string>
   <string name="menu_item_reply">Responder</string>
+  <string name="menu_item_reply_all">Responder a todos</string>
   <string name="menu_item_reblog">Repetir</string>
   <string name="menu_item_reblog_twitter">Retweet</string>
   <string name="menu_item_resend">Reenviar</string>
@@ -391,7 +394,6 @@ Por favor, ten en cuenta que la red Pump.io no soporta búsquedas globales todav
   <string name="summary_preference_vibration_off">Vibración desactivada</string>
   <string name="summary_preference_vibration_on">Vibración para los mensajes entrantes</string>
   <string name="system_is_busy_try_later">El sistema está ocupado. Por favor, inténtelo de nuevo más tarde.</string>
-  <string name="theme_color_entries_defautl">Predeterminado</string>
   <string name="theme_color_entries_light">Claro</string>
   <string name="theme_color_entries_dark">Oscuro</string>
   <string name="theme_size_entries_small">Pequeño</string>

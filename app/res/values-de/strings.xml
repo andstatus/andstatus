@@ -50,9 +50,11 @@
   <string name="button_create_message_twitter">Tweet</string>
   <string name="button_delete">Löschen</string>
   <string name="button_discard">Verwerfen</string>
+  <string name="button_hide">Bereinigen und ausblenden</string>
   <string name="button_overflow">Überlauf</string>
   <string name="button_restore">Wiederherstellen</string>
   <string name="button_save">Speichern</string>
+  <string name="button_skip">Überspringen</string>
   <string name="button_send">Senden</string>
   <string name="cannot_send_empty_message">Kann keine leere Nachricht senden.</string>
   <string name="category_title_preference_appearance">Design</string>
@@ -64,6 +66,9 @@
   <string name="combined_timeline_on">kombiniert</string>
   <string name="combined_timeline_off_account">für</string>
   <string name="combined_timeline_off_origin">auf</string>
+  <string name="command_follow_user">Folgen</string>
+  <string name="command_stop_following_user">Folgen beenden</string>
+  <string name="created_label">Erstellt</string>
   <string name="dialog_summary_acquiring_an_access_token">Bitte warten, während AndStatus OAuth Request Token und Access Token austauscht</string>
   <string name="dialog_summary_acquiring_a_request_token">Bitte warten, während AndStatus ein Request Token für OAuth abholt</string>
   <string name="dialog_summary_authentication_failed">Bitte überprüfe Username und Passwort.</string>
@@ -99,11 +104,14 @@
   <string name="dialog_title_sending_message">Sende eine Nachricht&#8230;</string>
   <string name="dialog_title_service_unavailable">Service nicht erreichbar</string>
   <string name="dialog_title_timeline_loading">Aktualisiere eine Timeline&#8230;</string>
+  <string name="discover_open_instances_title">Überblick öffentlicher Server</string>
   <string name="drawer_close">Navigationsfeld schließen</string>
   <string name="drawer_open">Navigationsleiste öffnen</string>
   <string name="empty_in_parenthesis">(leer)</string>
   <string name="error">Fehler</string>
+  <string name="error_invalid_value">Ungültiger Wert</string>
   <string name="error_twitter_404">Seite konnte nicht gefunden werden. Bitte melde diesen Fehler!</string>
+  <string name="error_connection_error">Ein Verbindungsfehler ist aufgetreten</string>
   <string name="error_set_username">Konnte den Usernamen nicht verwenden: </string>
   <string name="error_credentials_of_other_user">Dieser Name ist bereits vergeben</string>
   <string name="favorite_created">Favorit erstellt</string>
@@ -119,6 +127,7 @@
   <string name="fetch_frequency_entries_8_hours">8 Stunden</string>
   <string name="fetch_frequency_entries_12_hours">12 Stunden</string>
   <string name="fetch_frequency_entries_1_day">1 Tag</string>
+  <string name="get_open_instances_title">Öffentliche Server</string>
   <string name="header_accounts">Konten</string>
   <string name="header_add_new_account">Neuen Account hinzufügen</string>
   <string name="header_manage_existing_accounts">Bestehende Accounts verwalten</string>
@@ -142,6 +151,7 @@
   <string name="history_time_entries_1year">1 Jahr</string>
   <string name="history_time_entries_10years">10 Jahre</string>
   <string name="id_of_this_message_was_not_specified">Id dieser Nachricht wurde nicht festgelegt</string>
+  <string name="in_combined_global_search_label">Globale Suche in der kombinierten Zeitleiste integrieren</string>
   <string name="label_accountselector">Wähle einen Account</string>
   <string name="label_allow_html_content">HTML-Inhalte erlauben</string>
   <string name="label_backup">Anwendungsdaten auf der SD-Karte sichern</string>
@@ -157,6 +167,7 @@
   <string name="label_restore">Anwendungsdaten aus einem Backup wiederherstellen</string>
   <string name="label_upgrading">Aktualisierung läuft. Bitte warte.</string>
   <string name="label_with_media">mit Anhang</string>
+  <string name="latest_error_label">Aktuelle Fehlermeldung</string>
   <string name="loading">Lade&#8230;</string>
   <string name="message">Nachricht</string>
   <string name="message_twitter">Tweet</string>
@@ -173,6 +184,8 @@
   <string name="menu_item_direct_message">Direktnachricht</string>
   <string name="menu_item_favorite">Favorit</string>
   <string name="menu_item_follow_user">Folge \"%1s\"</string>
+  <string name="menu_item_view_image">Bild anzeigen</string>
+  <string name="menu_item_open_conversation">Öffne Gespräch</string>
   <string name="menu_item_open_message_permalink">Im Internet öffnen</string>
   <string name="menu_item_reply">Antworten</string>
   <string name="menu_item_reblog">Reblog</string>
@@ -219,6 +232,20 @@
   <string name="options_menu_mentions">Erwähnungen</string>
   <string name="options_menu_search">Suche</string>
   <string name="origin_settings_action">Microblogging System</string>
+  <string name="preference_ssl_mode_title">SSL-Modus und Sicherheit</string>
+  <string name="preference_ssl_mode_secure_summary">Sie sind sicher: Nur sichere SSL-Verbindungen erlaubt</string>
+  <string name="preference_ssl_mode_insecure_summary">Warnung: Ihre Verbindungen sind nicht sicher. Bitte informieren Sie Ihren Server-Administrator, um dieses Problem zu beheben und in einem sicheren Modus fortzufahren</string>
+  <string name="preference_ssl_mode_misconfigured_summary">Warnung: Ihre Verbindungen sind nicht sicher, weil Sicherheitszertifikate für jeden beliebigen Host angenommen werden. TLS- und SNI-Protokolle sind nicht verfügbar. Bitte informieren Sie den Server-Administrator, damit er dieses Problem behebt und diese Option deaktiviert</string>
+  <string name="preference_ssl_mode_secure">Sicheres SSL</string>
+  <string name="preference_ssl_mode_insecure">Unsicheres SSL</string>
+  <string name="preference_ssl_mode_misconfigured">Miskonfiguriertes SSL</string>
+  <string name="preference_debugging_info_in_ui_title">Debug-Informationen in einer Benutzeroberfläche</string>
+  <string name="preference_log_everything_to_file_title">Logge alles in eine Datei</string>
+  <string name="preference_log_network_level_messages_title">Logge Netzwerkebene betreffende Benachrichtigungen</string>
+  <string name="preference_notification_icon_alternative_title">Alternatives Benachrichtigungssymbol</string>
+  <string name="preference_notification_icon_alternative_off">Icon als \"&amp;s\" Buchstaben</string>
+  <string name="preference_notification_icon_alternative_on">Icon als Kreis</string>
+  <string name="preference_true_black_title">Rein schwarzer Hintergrund</string>
   <string name="preference_use_kitkat_media_chooser_title">KitKat Medienauswahl verwenden</string>
   <string name="reltime_days_ago_formats_1">Gestern</string>
   <string name="reltime_days_ago_formats_2">vor {0} Tagen</string>
@@ -234,6 +261,9 @@
   <string name="reltime_seconds_ago_formats_2">vor {0} Sekunden</string>
   <string name="reltime_just_now">gerade eben</string>
   <string name="reltime_years_ago">vor über einem Jahr</string>
+  <string name="remove_account_menu_item">Konto entfernen</string>
+  <string name="remove_account_dialog_title">Konto entfernen?</string>
+  <string name="remove_account_dialog_text">Das Entfernen des Kontos wird alle seine Daten vom Gerät löschen? Fortfahren?</string>
   <string name="resolve_view">Nachricht anzeigen</string>
   <string name="splash_button_learn_more">Mehr erfaren</string>
   <string name="splash_button_get_started">Loslegen</string>
@@ -241,6 +271,41 @@
 	    StatusNet (GNU social) und pump.io.\n Open Source Lizenz.</string>
   <string name="syncing">Synchronisiere&#8230;</string>
   <string name="syncing_timeline_for_somebody">Synchronisiere %1$s für %2$s</string>
+  <string name="user_manual_page_1"><h1><b>AndStatus Anleitung</b></h1>\n\n
+AndStatus ist ein Open Source Client für soziale Netzwerke, der Unterhaltungen per Diskussionsstrang in Baumstruktur ermöglicht. 
+Unterstützt werden unterschiedliche Protokolle, inklusive GNU social, Twitter und Pump.io. 
+AndStatus kombiniert deine Konten aller Netzwerke in eine Timeline 
+und ermöglicht Lesen sowie Posting auch offline.\n   	    
+* Link zu dieser Anleitung ist available in der Action bar&gt;Settings&gt;About AndStatus&gt;Learn More.\n
+* Das Change Log auf der nächsten Seite bietet einen Blick auf Beschreibungen und Links zu Diskussionen betreffend aller Eigenschaften von AndStatus.\n\n  
+<h2><b>1. Loslegen</b></h2>\n\n
+Tippe die \"Get Started\" Schaltfläche unten an: Oberfläche, um ein neues Konto anzulegen wird geöffnet.\n
+Zunächst wirst du aufgefordert, ein Microblogging System eines bestehenden Kontos aus einer Liste auszuwählen.
+Twitter, pump.io und verschiedene \"GNU social\"-artige Systems (Quitter, LoadAverage und Vinilox)-
+sind vorkonfiguriert).\n
+Im Falle dein (\"GNU social\"-artiges) System sei nicht gelistet, 
+tippe den Menüpunkt \"Überblick öffentlicher Server\" an, um ein System aus einer dynamischen von der GNU social Gemeinschaft gepflegten Liste auszuwählen; 
+oder manuell \"Neues System hinzufügen\" bevor das neue Konto erstellt wird.\n
+Für Twitter kannst du direkt \"Konto hinzufügen\" antippen. 
+Für andere Systeme wirst du aufgefordert, zuvor deinen Benutzernamen und Passwort einzugeben, um \"Neuen Account hinzufügen\" zu ermöglichen .\n
+Nach erfolgreicher Kontoerstellung, tippe bitte \"linker Pfeil\" in der 
+\"Action bar\" oder die \"Zurück\" Schaltfläche deines Geräts. 
+Diesmal wird die \"Home Timeline\" geöffnet und Nachrichten dieses Kontos werden heruntergeladen.\n 
+Gratulation! Bitte unten weiterlesen, was du weiterhin tun kannst.\n\n
+Und nicht vergessen, das AndStatus Widget an einen Home screen deines Geräts anzuheften: 
+Das Widget informiert über neue Nachrichten und kann verwendet werden um die Anwendung zu starten.\n\n
+<h2><b>2. AndStatus Grundlagen</b></h2>\n\n
+Der erste Anblick von AndStatus (nachdem mindestestens ein Konto hinzugefügt wurde) zeigt die Home Timeline.\n
+Um eine Aktion für eine bestimmte Nachricht in der Liste auszuführen, muss diese  per <b>langes Tippen</b> berührt werden, um das \"Kontextmenü\" zu öffnen.\n
+Du kannst eine Nachricht <b>antippen</b>, um mehr Details über sie und den Diskussionsstrang, zu dem diese Nachricht gehört zu sehen.\n
+Öffne einen \"Navigation Drawer\" amr linken Rand und tippe den gegenwärtigen Timeline Modus (\"Home\") um zu anderen Ansichten zu wechseln.\n\n
+<h2><b>3. Senden und Antworten</b></h2>\n\n
+Um deinen Status zu aktualisieren, tippe die \"Post\" Schaltfläche (\"Tweet\" für Twitter),
+schreibe einen Text in das Textfeld am unteren Rand und tippe auf <b>Send</b>.\n
+Um auf eine Nachricht zu antworten, benutze <b>langes Tippen</b> auf die Nachricht und wähle <b>Antworten</b> im Kontextmenü aus,
+schreibe deine Antwort in das Textfeld unten.\n
+Um eine Antwort abzubrechen, einfach die \"Hide\" Schaltfläche antippen, um das Textfeld zu  verstecken.
+  </string>
   <string name="search_timeline_label">Nachrichten, User und Hashtags durchsuchen</string>
   <string name="search_timeline_hint">Username/Stichwort eingeben</string>
   <string name="search_direct_messages_label">Direktnachrichten durchsuchen</string>
@@ -296,7 +361,6 @@
   <string name="summary_preference_vibration_off">Vibration ist abgeschaltet</string>
   <string name="summary_preference_vibration_on">Vibrieren bei eingehender Nachricht</string>
   <string name="system_is_busy_try_later">Das System ist beschäftigt. Bitte versuche es später erneut.</string>
-  <string name="theme_color_entries_defautl">Systemstandard</string>
   <string name="theme_color_entries_light">Hell</string>
   <string name="theme_color_entries_dark">Dunkel</string>
   <string name="theme_size_entries_small">Klein</string>
@@ -305,6 +369,7 @@
   <string name="timeline_reloaded">Timeline wurde neu geladen.</string>
   <string name="timeline_title_all">Alle</string>
   <string name="timeline_title_direct_messages">Direktnachrichten</string>
+  <string name="timeline_title_everything">Alles</string>
   <string name="timeline_title_favorites">Favoriten</string>
   <string name="timeline_title_following_user">Folgend</string>
   <string name="timeline_title_home">Start</string>

@@ -112,7 +112,7 @@
                 <org.andstatus.app.context.MultilineListPreference android:key="custom_locale" 
                     android:entries="@array/custom_locale_entries"
                     android:entryValues="@array/custom_locale_values"
-                    android:defaultValue=""
+                    android:defaultValue="default"
                     android:title="@string/custom_locale_title"
                     android:dialogTitle="@string/custom_locale_title" />
 			    <org.andstatus.app.context.MultilineListPreference android:key="theme_color" android:entries="@array/theme_color_entries"

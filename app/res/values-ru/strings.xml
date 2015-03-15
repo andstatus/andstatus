@@ -25,6 +25,7 @@
   <string name="account_settings_action">Настройки Учётных записей (Аккаунтов)</string>
   <string name="account_settings_activity_title">Аккаунт</string>
   <string name="account_settings_summary">Частота синхронизации, уведомления и др.</string>
+  <string name="automatic">Автонастройка</string>
   <string name="settings_action">Настройки</string>
   <string name="settings_activity_title">Настройки</string>
   <string name="action_menu_overflow_description">Другие действия&#8230;</string>
@@ -68,6 +69,8 @@
   <string name="command_follow_user">Следовать за</string>
   <string name="command_stop_following_user">Перестать следовать за</string>
   <string name="created_label">Создан</string>
+  <string name="custom_locale_title">Язык приложения</string>
+  <string name="device_default">По умолчанию в устройстве</string>
   <string name="dialog_summary_acquiring_an_access_token">Пожалуйста подождите пока AndStatus обменяет токен OAuth запроса на токен доступа</string>
   <string name="dialog_summary_acquiring_a_request_token">Пожалуйста подождите завершения получения токена запроса для OAuth</string>
   <string name="dialog_summary_authentication_failed">Пожалуйста проверьте Ваши имя пользователя и пароль.</string>
@@ -174,9 +177,12 @@
   <string name="message_edit_hint">Что происходит?</string>
   <string name="message_characters_left">Осталось символов:</string>
   <string name="message_is_too_long">Сообщение - слишком длинное.</string>
+  <string name="mention_as_webfingerid_title">Упоминания как @webFingerId</string>
   <string name="menu_item_act_as">От имени&#8230;</string>
   <string name="menu_item_act_as_user">От имени \"%1s\"</string>
   <string name="menu_item_block">Блокировать</string>
+  <string name="menu_item_copy_text">Копировать текст в буфер</string>
+  <string name="menu_item_copy_author">Копировать @автор в буфер</string>
   <string name="menu_item_destroy_favorite">Удалить из избранного</string>
   <string name="menu_item_destroy_reblog">Удалить пересказ</string>
   <string name="menu_item_destroy_reblog_twitter">Удалить ретвит</string>
@@ -188,6 +194,7 @@
   <string name="menu_item_open_conversation">Открыть в окне обсуждения</string>
   <string name="menu_item_open_message_permalink">Открыть в Интернете</string>
   <string name="menu_item_reply">Ответить</string>
+  <string name="menu_item_reply_all">Ответить всем</string>
   <string name="menu_item_reblog">Пересказать</string>
   <string name="menu_item_reblog_twitter">Ретвитнуть</string>
   <string name="menu_item_resend">Отправить повторно</string>
@@ -197,6 +204,7 @@
   <string name="menu_item_view_profile">Посмотреть профиль</string>
   <string name="message_sent">Ваше сообщение отправлено.</string>
   <string name="messages_activity">Личные сообщения</string>
+  <string name="no">Нет</string>
   <string name="not_set">не задан</string>
   <string name="notification_message_formats_1">{0} сообщение</string>
   <string name="notification_message_formats_2">{0} сообщения</string>
@@ -490,4 +498,5 @@ Twitter, pump.io и несколько систем GNU social (включая Q
   <string name="user_in_timeline_entries_webfingerid">webFingerId</string>
   <string name="user_in_timeline_entries_real_name">Настоящее имя</string>
   <string name="user_in_timeline_entries_real_name_at_username">Настоящее имя @имяпользователя</string>
+  <string name="yes">Да</string>
 </resources>
