@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XML Spy v4.4 U (http://www.xmlspy.com) by Dmitry Grobov (DDS) -->
+<xs:schema targetNamespace="http://www.w3.org/XML/1998/namespace" xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<xs:attribute name="lang" type="xs:language">
+		<xs:annotation>
+			<xs:documentation>Element content's languige</xs:documentation>
+		</xs:annotation>
+	</xs:attribute>
+</xs:schema>

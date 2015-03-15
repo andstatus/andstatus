@@ -85,8 +85,10 @@ public class Xslt {
         try {
             output = toHtmlString(activity, resXml, resXsl);
 
+            // See http://stackoverflow.com/questions/14474223/utf-8-not-encoding-html-in-webview-android
             WebView view = (WebView) activity.findViewById(resView);
-            view.loadData(output,"text/html","utf-8");
+            view.getSettings().setDefaultTextEncodingName("utf-8");
+            view.loadData(output,"text/html; charset=utf-8","utf-8");
         } catch (Exception e) {
             MyLog.e(TAG, e);
         }

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Copyright (c) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
+    Copyright (c) 2015 yvolk (Yuri Volkov), http://yurivolkov.com
 	Copyright (C) 2008 Torgny Bjers
 	
 	Licensed under the Apache License, Version 2.0 (the "License");
@@ -72,25 +72,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" >
 
-                <LinearLayout
+                <WebView
+                    android:id="@+id/user_guide"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical" >
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:padding="10dp"
-                        android:text="@string/user_manual_page_1"
-                        android:textSize="20sp" />
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:padding="10dip"
-                        android:text="@string/user_manual_page_2"
-                        android:textSize="20sp" />
-                </LinearLayout>
+                    android:padding="10dip" />
             </ScrollView>
 
             <ScrollView
@@ -98,7 +84,7 @@
                 android:layout_height="match_parent" >
 
                 <WebView
-                    android:id="@+id/help_changelog"
+                    android:id="@+id/changelog"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:padding="10dip" />

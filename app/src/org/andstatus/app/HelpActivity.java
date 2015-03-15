@@ -104,6 +104,7 @@ public class HelpActivity extends Activity implements SwipeInterface {
 
         showVersionText();
         showChangeLog();
+        showUserGuide();
         showRestoreButton();
         showGetStartedButton();
         setupHelpFlipper();
@@ -129,7 +130,11 @@ public class HelpActivity extends Activity implements SwipeInterface {
     }
 
     private void showChangeLog() {
-        Xslt.toWebView(this, R.id.help_changelog, R.raw.changes, R.raw.changes2html);
+        Xslt.toWebView(this, R.id.changelog, R.raw.changes, R.raw.changes2html);
+    }
+
+    private void showUserGuide() {
+        Xslt.toWebView(this, R.id.user_guide, R.raw.user_guide, R.raw.fb2_2_html);
     }
     
     private void showRestoreButton() {
@@ -173,13 +178,15 @@ public class HelpActivity extends Activity implements SwipeInterface {
         mFlipper = ((ViewFlipper) this.findViewById(R.id.help_flipper));
         
         // In order to have swipe gestures we need to add listeners to every page
-        // Only in case of WebView (changelog) we need to set listener on than WebView,
-        // not on its parent: ScrollView
+        // Only in a case of WebView we need to set a listener on than WebView,
+        // not on its parent ScrollView
         ActivitySwipeDetector swipe = new ActivitySwipeDetector(this, this);
         for (int ind = 0; ind < mFlipper.getChildCount()-1; ind++ ) {
             mFlipper.getChildAt(ind).setOnTouchListener(swipe);
         }
-        View view = findViewById(R.id.help_changelog);
+        View view = findViewById(R.id.changelog);
+        view.setOnTouchListener(swipe);
+        view = findViewById(R.id.user_guide);
         view.setOnTouchListener(swipe);
         
         final Button learnMore = (Button) findViewById(R.id.button_help_learn_more);

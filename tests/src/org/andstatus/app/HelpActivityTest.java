@@ -31,7 +31,7 @@ public class HelpActivityTest extends ActivityInstrumentationTestCase2<HelpActiv
         ViewFlipper mFlipper = ((ViewFlipper) mActivity.findViewById(R.id.help_flipper));
         assertTrue(mFlipper != null);
         assertEquals("At Changelog page", HelpActivity.PAGE_INDEX_CHANGELOG, mFlipper.getDisplayedChild());
-        View changeLogView = mActivity.findViewById(R.id.help_changelog);
+        View changeLogView = mActivity.findViewById(R.id.changelog);
         assertTrue(changeLogView != null);
         
         Thread.sleep(500);

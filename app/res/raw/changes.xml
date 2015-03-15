@@ -27,8 +27,8 @@
     </header>
 
     <release android:versionName="16.0" android:versionCode="123"
-        versionDate="2014-03-14"
-        versionTitle="Posting enhancements and custom Application language">
+        versionDate="2014-03-15"
+        versionTitle="Posting enhancements and custom Application language. New User guide format.">
         <changes>
             <change>&quot;Reply to All&quot; menu item added, allowing to include 
                 all conversation participants into a reply. 
@@ -50,6 +50,12 @@
             <change>&quot;Application language&quot; setting added, allowing to have
                 Language of AndStatus User Interface other than Device Language.
                 <a href="https://github.com/andstatus/andstatus/issues/201">#201</a>
+            </change>
+            <change>User Guide is moved to a separate file, 
+                which may be translated and updated one paragraph at a time. This
+                file has FB2 ebook format (only with .xml extension), 
+                which simplifies its reading outside of an application.
+                <a href="https://github.com/andstatus/andstatus/issues/229">#229</a>
             </change>
         </changes>
     </release>
