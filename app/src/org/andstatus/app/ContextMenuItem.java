@@ -39,6 +39,7 @@ import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.MyHtml;
 
 public enum ContextMenuItem {
     REPLY(true) {
@@ -126,6 +127,9 @@ public enum ContextMenuItem {
         @Override
         MessageEditorData executeAsync(MyAccount ma, long msgId) {
             String body = MyProvider.msgIdToStringColumnValue(MyDatabase.Msg.BODY, msgId);
+            if (ma.getOrigin().isHtmlContentAllowed()) {
+                body = MyHtml.fromHtml(body);
+            }
             return new MessageEditorData(ma).setMessageText(body);
         }
 
