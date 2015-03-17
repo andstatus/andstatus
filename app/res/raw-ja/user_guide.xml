@@ -1,0 +1,217 @@
+<?xml-stylesheet type='text/xsl' href='../raw/fb2_2_html.xsl' encoding="utf-8"?>
+<!-- 
+    Copyright (C) 2015 Yuri Volkov, yvolk@yurivolkov.com
+    
+    Translations are copyrighted by corresponding Translators.
+        
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+    
+         http://www.apache.org/licenses/LICENSE-2.0
+    
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+ -->
+ <!-- How to allow stylesheet to be applied to this file: 
+ http://stackoverflow.com/questions/4811205/xslt-stylesheet-relative-path-problem-under-windows -->
+<FictionBook xmlns="http://www.gribuser.ru/xml/fictionbook/2.0"
+xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../res-src/fb2/FictionBook.xsd">
+<description>
+    <title-info>
+        <genre>computers</genre>
+        <author>
+            <first-name>AndStatus project</first-name>
+            <last-name></last-name>
+        </author>
+        <book-title>AndStatus ユーザー ガイド</book-title>
+        <lang>ja</lang>
+        <src-lang>en</src-lang>
+    </title-info>
+    <document-info>
+        <author>
+            <nickname>AndStatus project</nickname>
+            <home-page>http://www.andstatus.org</home-page>
+            <email>andstatus@gmail.com</email>
+        </author>
+        <date>2015-03-15</date>
+        <id></id>
+        <version>1</version>
+    </document-info>
+</description>
+<body>
+<section>
+    <title>
+        <p>はじめに</p>
+    </title>
+    <p>AndStatus は、会話をツリー形式のスレッドで表示する、
+オープンソースで低トラフィックなソーシャルネットワーキングのクライアントです。
+        GNU social、Twitter および Pump.io を含めた、複数のプロトコルをサポートしています。
+        AndStatus はあなたのアカウントを、すべてのネットワークから 1 つのタイムラインにまとめて、
+オフラインの間でも読んだり投稿したりすることができます。</p>
+    <p>アクションバー&gt;ヘルプで、このガイドへのリンクがご利用できます。</p>
+    <p>次ページの変更履歴で、AndStatus のすべての機能の説明と
+議論へのリンクを参照することができます。</p>
+</section>
+<section>
+    <title>
+        <p>1. 始めましょう</p>
+    </title>
+    <p>下の "始めましょう" ボタンをタップすると、
+新しいアカウントを追加する画面が開きます。
+    </p>
+    <p>まず、アカウントのソーシャルネットワークを
+リストから選択するように求められます。
+        Twetter、pump.io、およびいくつかの "GNU social" 型システム (Quitter、
+LoadAverageと、Vinilox) が事前に設定されています。
+    </p>
+    <p>ご利用の ("GNU social" 型) システムが記載されていない場合は、
+メニュー項目 "オープンインスタンスを検出" をタップして、
+GNU ソーシャル コミュニティがメンテナンスしている、ライブ オンラインリストからシステムを選択するか、
+新しいアカウントを追加する前に、手動で "新しいシステムを追加" します。</p>
+    <p>Twitter では、すぐに "このアカウントを追加"
+を押すことができます。
+        他のシステムでは、"このアカウントを追加" する前に、
+あなたのユーザー名とパスワードを入力するよう求められます。</p>
+    <p>アカウントの作成が成功したら、"アクションバー" の "左矢印"
+またはデバイスの "戻る" ボタンをタップしてください。
+        この時、ホーム タイムラインが開かれて、
+このアカウントのメッセージが、インターネットからダウンロードを開始します。
+    </p>
+    <p>おめでとうございます! さらに何ができるかについては、以下をお読みください。
+    </p>
+    <p>また、お使いのデバイスのホーム画面に AndStatus のウィジェットを追加することを
+忘れないでください：
+ウィジェットは新しいメッセージについて通知したり、AndStatus を起動するために
+使うことができます。
+    </p>
+</section>
+<section>
+    <title>
+        <p>2. AndStatus の基本</p>
+    </title>
+    <p>AndStatus の最初のビューは、(少なくともアカウントが 1 つ追加された後)
+ホーム タイムラインが 1 つ表示されます。
+    </p>
+    <p>リスト内のメッセージに対して操作を実行するには、
+メッセージを
+<strong>長押し</strong>
+して "コンテキストメニュー" を表示する必要があります。
+    </p>
+    <p>メッセージを <strong>クリック</strong>
+してさらに詳細を取得したり、
+メッセージが属する会話のツリーを見ることができます。
+    </p>
+    <p>左側の "ナビゲーション ドロワー" を開いて、現在のタイムライン種類の
+項目 ("ホーム") をタップすると、
+他のビューに切り替わります。
+    </p>
+</section>
+<section>
+    <title>
+        <p>3. 送信と返信</p>
+    </title>
+    <p>自分のステータスを更新するには、"投稿" ボタン
+(Twitter は "ツイート") をタップします。
+画面の下部にあるテキストエリアにテキストを入力して、
+<strong>送信</strong> をタップします。.
+    </p>
+    <p>返信するには、メッセージを <strong>長押し</strong> して、
+コンテキストメニューから <strong>返信</strong> を選択し、
+下部に返信を入力します。
+    </p>
+    <p>返信を中止するには、"非表示" ボタンをタップして、
+テキストエリアを非表示にします。</p>
+</section>
+<section>
+    <title>
+        <p>4. ダイレクト (プライベート) メッセージ</p>
+    </title>
+    <p>左側のナビゲーションドロワーを開き、現在のタイムライン種類の
+項目 (ホーム)
+をタップし、リストから
+<strong>ダイレクトメッセージ</strong>
+を選択します。
+    </p>
+    <p>あなたのメッセージ (公開またはプライベート) を
+<strong>削除</strong> するには、
+その上で <strong>長押し</strong> して、
+<strong>メッセージを削除</strong> を選択します。.
+    </p>
+    <p>この AndStatus アカウントに対して、Android の "アカウントと同期" 設定で
+<strong>自動同期</strong> をオンにしている場合、
+新しいメッセージは、バックグラウンドでタイムラインに取得されます。
+        いつでも、アクションバーの "再読み込み" コマンドを使用して、
+手動でインターネットから更新することができます。
+    </p>
+</section>
+<section>
+    <title>
+        <p>5. メンション</p>
+    </title>
+    <p>ナビゲーションドロワーで、現在のタイムライン種類の項目をタップして、
+その後で
+<strong>メンション</strong>
+を選択します。
+    </p>
+    <p>あなたの <strong>@ユーザー名</strong> をメンションしている
+(あるいは "まとめられた" タイムラインに対する、
+あなたのすべての AndStatus アカウントをメンションしている)
+すべてのメッセージのリストが表示されます。
+    </p>
+</section>
+<section>
+    <title>
+        <p>6. 検索 (ローカル検索)</p>
+    </title>
+    <p>ローカル検索は、すでにインターネットからロードしたメッセージを
+検索します。
+したがって、オフラインでも利用可能です。
+    </p>
+    <p>1. メッセージのテキストに含まれる任意の単語やフレーズを検索するには、
+アクションバーの <strong>検索</strong> を選択するか、
+お使いのデバイスの
+<strong>検索</strong> ボタンをクリックします。
+    </p>
+    <p>特定のユーザからのメッセージを表示したい場合は、
+"ユーザー名" で検索してください。</p>
+    <p>特定のユーザーのメンションを参照するには、"@ユーザー名" で検索してください。
+    </p>
+    <p>2. ユーザーごとのメッセージをすばやく検索するには
+(選択したメッセージの作成者または送信者)、
+メッセージのコンテキストメニューから "ユーザー名 のメッセージ" を選択します。
+        これは実際にグローバル検索を並べ替えます (下記参照)。
+    </p>
+</section>
+<section>
+    <title>
+        <p>7. グローバル検索</p>
+    </title>
+    <p>グローバル検索機能は、ソーシャルネットワークのサーバーに
+直接検索要求を送信します。
+ライブのインターネット接続がシステムに必要とされる理由はここにあります。
+    </p>
+    <p>まず、ローカル検索の結果が表示されます。
+        並行して、選択したアカウントのソーシャルネットワーク から
+(またはタイムラインが "まとめられて" いる場合、
+すべてのソーシャルネットワークから)
+AndStatus は結果をダウンロードします。
+        サーバからの応答を受信すると順次、検索結果が更新されます。
+        接続エラーの場合
+(ソーシャルネットワークのサーバーから応答がないなど)
+ローカル検索の結果のみ表示されます。
+    </p>
+    <p>pump.io システムは、まだグローバル検索をサポートしていないことにご注意ください。
+    </p>
+    <p>1. 単語やフレーズによるグローバル検索は、
+"アクションバー" の "グローバル検索" 項目を使用して開始します。</p>
+    <p>2. もう一つの、選択したメッセージの作成者または送信者でグローバル検索を行う方法は、
+このメッセージのコンテキストメニューから
+"ユーザー名 のメッセージ" を選択します。</p>
+</section>
+</body>
+</FictionBook>

@@ -137,7 +137,7 @@ public class ListActivityTestHelper<T extends ListActivity> extends Instrumentat
                         position, rowId);
             }
         });
-        mTestCase.getInstrumentation().waitForIdleSync();
+        TestSuite.waitForIdleSync(mTestCase);
     }
 
     public ActivityMonitor addMonitor(Class<? extends Activity> classOfActivity) {
