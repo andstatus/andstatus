@@ -2,73 +2,22 @@
 <html><head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
     <title>AndStatus - low traffic social networking client with tree-like threaded conversations for Android</title>
-    <style>
-    @import url(http://fonts.googleapis.com/css?family=Roboto:400,300,700);
-
-    html {
-        margin: 0;
-        padding: 0;
-        background-color: #fff;
-        color: #000;
-        font-family: 'Roboto', sans-serif;
-        font-size: 1.2em;
-        font-weight: 300;
-    }
-
-    body {
-        width: 900px;
-        margin: 0 auto;
-        padding: 0;
-        text-align: center;
-    }
-
-    #pic {
-        display: block;
-        max-width: 900px;
-        max-height: 500px;
-        margin: 0 auto;
-    }
-
-    h1 {
-        font-size: 64px;
-        font-weight: 400;
-    }
-    
-    h2 {
-	font-size: 32px;
-	font-weight: 400;
-    }
-
-    h1 img {
-        height: 1em;
-        width: auto;
-    }
-
-    #slidy-container {
-    display: block;
-    max-width: 900px;
-    max-height: 500px;
-    margin: 0 auto;
-    overflow: hidden;
-    }
-
-    #slidy-container #photo {
-    height:500px;
-    width:900px;
-    }
-    </style>
+	<style>
+	@import url(http://fonts.googleapis.com/css?family=Roboto:400,300,700);
+	@import "styles/styles.css"
+	</style>
 </head>
 <body>
     <div style="text-align:center;">
-    <h1><img src="andstatus-logo.png" alt=""> AndStatus</h1>
+    <h1><img src="images/andstatus-logo.png" alt=""> AndStatus</h1>
     <p>A low traffic social networking client with tree-like threaded conversations for Android.</p>
     <div id="slidy-container">
 
       <figure id="slidy">
 
-      <img id="photo" src="andstatus-screen-phone.png" alt="AndStatus on Smartphone">
+      <img id="photo" src="images/andstatus-screen-phone.png" alt="AndStatus on Smartphone">
 
-      <img id="photo" src="andstatus-screen-tablet.png" alt="AndStatus on Tablet">
+      <img id="photo" src="images/andstatus-screen-tablet.png" alt="AndStatus on Tablet">
       
       </figure>
 
@@ -89,7 +38,7 @@
 	For more information please read the <a href="https://github.com/andstatus/andstatus/wiki" target="_blank">AndStatus Wiki</a>.</p>
 	<h2>Download</h2>
 	  <div style="text-align:center;"
-	  <p><a href="https://f-droid.org/repository/browse/?fdid=org.andstatus.app" target="_blank"><img alt="Get it on F-Droid" src="get-it-on-fdroid.svg" width="250"></a> <a href="https://play.google.com/store/apps/details?id=org.andstatus.app" target="_blank"><img alt="Get it on Google Play" src="get-it-on-google-play.svg" width="250"></a><br />Or <a href="https://github.com/andstatus/andstatus/" target="_blank">Get the source</a> and <a href="https://github.com/andstatus/andstatus/wiki/Building-AndStatus-from-Source-code-on-your-Android-device-using-AIDE-application" target="_blank">build it yourself</a></p>
+	  <p><a href="https://f-droid.org/repository/browse/?fdid=org.andstatus.app" target="_blank"><img src="images/get-it-on-fdroid.svg" width="250" alt="Get it on F-Droid" ></a> <a href="https://play.google.com/store/apps/details?id=org.andstatus.app" target="_blank"><img src="images/get-it-on-google-play.svg" width="250" alt="Get it on Google Play"></a><br />Or <a href="https://github.com/andstatus/andstatus/" target="_blank">Get the source</a> and <a href="https://github.com/andstatus/andstatus/wiki/Building-AndStatus-from-Source-code-on-your-Android-device-using-AIDE-application" target="_blank">build it yourself</a></p>
 	  </ul>
 	  </div>
         </div>
@@ -105,103 +54,52 @@
     </div>
 
 </body>
-
-
-<script>
-
-var timeOnSlide = 3,
-
-timeBetweenSlides = 1,
-
-animationstring = 'animation',
-
-animation = false,
-
-keyframeprefix = '',
-
-domPrefixes = 'Webkit Moz O Khtml'.split(' '),
-
-pfx  = '',
-
-slidy = document.getElementById("slidy");
-
-if (slidy.style.animationName !== undefined) { animation = true; }
-
-if ( animation === false ) {
-
-for ( var i = 0; i < domPrefixes.length; i++ ) {
-
-if ( slidy.style[ domPrefixes[i] + 'AnimationName' ] !== undefined ) {
-
-pfx = domPrefixes[ i ];
-
-animationstring = pfx + 'Animation';
-
-keyframeprefix = '-' + pfx.toLowerCase() + '-';
-
-animation = true;
-
-break;
-
-} } }
-
-if ( animation === false ) {
-
-  // animate using a JavaScript fallback, if you wish
-
-} else {
-
-var images = slidy.getElementsByTagName("img"),
-
-firstImg = images[0],
-
-imgWrap = firstImg.cloneNode(false);
-
-slidy.appendChild(imgWrap);
-
-var imgCount = images.length,
-
-totalTime = (timeOnSlide + timeBetweenSlides) * (imgCount - 1),
-
-slideRatio = (timeOnSlide / totalTime)*100,
-
-moveRatio = (timeBetweenSlides / totalTime)*100,
-
-basePercentage = 100/imgCount,
-
-position = 0,
-
-css = document.createElement("style");
-
-css.type = "text/css";
-
-css.innerHTML += "#slidy { text-align: left; margin: 0; font-size: 0; position: relative; width: " + (imgCount * 100) + "%;  }";
-
-css.innerHTML += "#slidy img { float: left; width: " + basePercentage + "%; }";
-
-css.innerHTML += "@"+keyframeprefix+"keyframes slidy {";
-
-for (i=0;i<(imgCount-1); i++) {
-
-position+= slideRatio;
-
-css.innerHTML += position+"% { left: -"+(i * 100)+"%; }";
-
-position += moveRatio;
-
-css.innerHTML += position+"% { left: -"+((i+1) * 100)+"%; }";
-
-}
-
-css.innerHTML += "}";
-
-css.innerHTML += "#slidy { left: 0%; "+keyframeprefix+"transform: translate3d(0,0,0); "+keyframeprefix+"animation: "+totalTime+"s slidy infinite; }";
-
-document.body.appendChild(css);
-
-}
-
-</script>
-
-
+	<script type="text/javascript" language="JavaScript">
+		var timeOnSlide = 3,
+		timeBetweenSlides = 1,
+		animationstring = 'animation',
+		animation = false,
+		keyframeprefix = '',
+		domPrefixes = 'Webkit Moz O Khtml'.split(' '),
+		pfx  = '',
+		slidy = document.getElementById("slidy");
+		if (slidy.style.animationName !== undefined) { animation = true; }
+		if ( animation === false ) {
+		for ( var i = 0; i < domPrefixes.length; i++ ) {
+		if ( slidy.style[ domPrefixes[i] + 'AnimationName' ] !== undefined ) {
+		pfx = domPrefixes[ i ];
+		animationstring = pfx + 'Animation';
+		keyframeprefix = '-' + pfx.toLowerCase() + '-';
+		animation = true;
+		break;
+		} } }
+		if ( animation === false ) {
+		  // animate using a JavaScript fallback, if you wish
+		} else {
+		var images = slidy.getElementsByTagName("img"),
+		firstImg = images[0],
+		imgWrap = firstImg.cloneNode(false);
+		slidy.appendChild(imgWrap);
+		var imgCount = images.length,
+		totalTime = (timeOnSlide + timeBetweenSlides) * (imgCount - 1),
+		slideRatio = (timeOnSlide / totalTime)*100,
+		moveRatio = (timeBetweenSlides / totalTime)*100,
+		basePercentage = 100/imgCount,
+		position = 0,
+		css = document.createElement("style");
+		css.type = "text/css";
+		css.innerHTML += "#slidy { text-align: left; margin: 0; font-size: 0; position: relative; width: " + (imgCount * 100) + "%;  }";
+		css.innerHTML += "#slidy img { float: left; width: " + basePercentage + "%; }";
+		css.innerHTML += "@"+keyframeprefix+"keyframes slidy {";
+		for (i=0;i<(imgCount-1); i++) {
+		position+= slideRatio;
+		css.innerHTML += position+"% { left: -"+(i * 100)+"%; }";
+		position += moveRatio;
+		css.innerHTML += position+"% { left: -"+((i+1) * 100)+"%; }";
+		}
+		css.innerHTML += "}";
+		css.innerHTML += "#slidy { left: 0%; "+keyframeprefix+"transform: translate3d(0,0,0); "+keyframeprefix+"animation: "+totalTime+"s slidy infinite; }";
+		document.body.appendChild(css);
+		}
+	</script>
 </html>
