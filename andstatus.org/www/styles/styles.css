@@ -1,51 +1,44 @@
 html {
-        margin: 0;
-        padding: 0;
-        background-color: #fff;
-        color: #000;
-        font-family: 'Roboto', sans-serif;
-        font-size: 1.2em;
-        font-weight: 300;
-    }
+    margin: 0;
+    padding: 0;
+    background-color: #fff;
+    color: #000;
+    font-family: 'Roboto', sans-serif;
+    font-size: 1.2em;
+    font-weight: 300;
+}
 
-    body {
-        width: 900px;
-        margin: 0 auto;
-        padding: 0;
-        text-align: center;
-    }
-
-    #pic {
-        display: block;
-        max-width: 900px;
-        max-height: 500px;
-        margin: 0 auto;
-    }
-
-    h1 {
-        font-size: 64px;
-        font-weight: 400;
-    }
-    
-    h2 {
-	font-size: 32px;
-	font-weight: 400;
-    }
-
-    h1 img {
-        height: 1em;
-        width: auto;
-    }
-
-    #slidy-container {
+#pic {
     display: block;
     max-width: 900px;
     max-height: 500px;
     margin: 0 auto;
-    overflow: hidden;
-    }
+}
 
-    #slidy-container #photo {
-    height:500px;
-    width:900px;
-    }
+h1 {
+    font-size: 64px;
+    font-weight: 400;
+}
+
+h2 {
+	font-size: 32px;
+	font-weight: 400;
+}
+
+h1 img {
+    height: 1em;
+    width: auto;
+}
+
+#slidy-container {
+	display: block;
+	max-width: 900px;
+	max-height: 500px;
+	margin: 0 auto;
+	overflow: hidden;
+}
+
+#slidy-container #photo {
+	height:500px;
+	width:900px;
+}
