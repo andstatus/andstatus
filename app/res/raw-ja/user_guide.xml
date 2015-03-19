@@ -1,4 +1,4 @@
-<?xml-stylesheet type='text/xsl' href='../raw/fb2_2_html.xsl' encoding="utf-8"?>
+<?xml-stylesheet version='1.0' type='text/xsl' href='../raw/fb2_2_html.xsl' encoding="utf-8"?>
 <!-- 
     Copyright (C) 2015 Yuri Volkov, yvolk@yurivolkov.com
     
@@ -16,8 +16,6 @@
     See the License for the specific language governing permissions and
     limitations under the License.
  -->
- <!-- How to allow stylesheet to be applied to this file: 
- http://stackoverflow.com/questions/4811205/xslt-stylesheet-relative-path-problem-under-windows -->
 <FictionBook xmlns="http://www.gribuser.ru/xml/fictionbook/2.0"
 xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../res-src/fb2/FictionBook.xsd">
@@ -31,6 +29,9 @@ xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../res-src/
         <book-title>AndStatus ユーザー ガイド</book-title>
         <lang>ja</lang>
         <src-lang>en</src-lang>
+        <translator>
+            <nickname></nickname>
+        </translator>
     </title-info>
     <document-info>
         <author>
@@ -118,7 +119,7 @@ GNU ソーシャル コミュニティがメンテナンスしている、ライ
     <p>自分のステータスを更新するには、"投稿" ボタン
 (Twitter は "ツイート") をタップします。
 画面の下部にあるテキストエリアにテキストを入力して、
-<strong>送信</strong> をタップします。.
+<strong>送信</strong> をタップします。..
     </p>
     <p>返信するには、メッセージを <strong>長押し</strong> して、
 コンテキストメニューから <strong>返信</strong> を選択し、
@@ -140,7 +141,7 @@ GNU ソーシャル コミュニティがメンテナンスしている、ライ
     <p>あなたのメッセージ (公開またはプライベート) を
 <strong>削除</strong> するには、
 その上で <strong>長押し</strong> して、
-<strong>メッセージを削除</strong> を選択します。.
+<strong>メッセージを削除</strong> を選択します。..
     </p>
     <p>この AndStatus アカウントに対して、Android の "アカウントと同期" 設定で
 <strong>自動同期</strong> をオンにしている場合、

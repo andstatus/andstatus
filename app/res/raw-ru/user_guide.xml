@@ -1,4 +1,4 @@
-<?xml-stylesheet type='text/xsl' href='../raw/fb2_2_html.xsl' encoding="utf-8"?>
+<?xml-stylesheet version='1.0' type='text/xsl' href='../raw/fb2_2_html.xsl' encoding="utf-8"?>
 <!-- 
     Copyright (C) 2015 Yuri Volkov, yvolk@yurivolkov.com
     
@@ -29,6 +29,9 @@ xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../res-src/
         <book-title>Руководство пользователя AndStatus</book-title>
         <lang>ru</lang>
         <src-lang>en</src-lang>
+        <translator>
+            <nickname>Юрий Волков</nickname>
+        </translator>
     </title-info>
     <document-info>
         <author>
@@ -132,7 +135,7 @@ xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../res-src/
         <p>5. Упоминания</p>
     </title>
     <p>В Панели навигации измените тип Ленты времени на 
-<strong>Упоминания</strong>.
+<strong>Упоминания</strong>
     </p>
     <p>В списке упоминаний будут показаны все сообщения, в которых упоминается Ваше 
 <strong>@имяпользователя</strong>

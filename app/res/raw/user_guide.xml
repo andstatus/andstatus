@@ -29,6 +29,9 @@ xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../res-src/
         <book-title>AndStatus User Guide</book-title>
         <lang>en</lang>
         <src-lang>en</src-lang>
+        <translator>
+            <nickname>Placeholder for Translator credits</nickname>
+        </translator>
     </title-info>
     <document-info>
         <author>
