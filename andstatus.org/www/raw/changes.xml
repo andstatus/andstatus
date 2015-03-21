@@ -27,7 +27,7 @@
     </header>
 
     <release android:versionName="16.0" android:versionCode="123"
-        versionDate="2014-03-15"
+        versionDate="2014-03-21"
         versionTitle="Posting enhancements and custom Application language. New User guide format.">
         <changes>
             <change>&quot;Reply to All&quot; menu item added, allowing to include 
