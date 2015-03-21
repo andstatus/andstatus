@@ -31,6 +31,9 @@ import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
+import org.andstatus.app.R;
+import org.andstatus.app.context.MyPreferences;
+
 /**
  * XSLT utils 
  * @author yvolk@yurivolkov.com
@@ -84,11 +87,18 @@ public class Xslt {
         String output = "";
         try {
             output = toHtmlString(activity, resXml, resXsl);
-
+            if (!MyPreferences.isEnLocale()) {
+                final String key1 = "Translator credits";
+                output = output.replace(key1, activity.getText(R.string.translator_credits));
+            }
             // See http://stackoverflow.com/questions/14474223/utf-8-not-encoding-html-in-webview-android
             WebView view = (WebView) activity.findViewById(resView);
             view.getSettings().setDefaultTextEncodingName("utf-8");
-            view.loadData(output,"text/html; charset=utf-8","utf-8");
+            view.getSettings().setBuiltInZoomControls(true); 
+            view.getSettings().setJavaScriptEnabled(true);
+            // Used this answer for adding a stylesheet: http://stackoverflow.com/a/7736654/297710
+            // See also http://stackoverflow.com/questions/13638892/where-is-the-path-file-android-asset-documented
+            view.loadDataWithBaseURL("file:///android_asset/", output,"text/html","utf-8", null);
         } catch (Exception e) {
             MyLog.e(TAG, e);
         }

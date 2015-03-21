@@ -404,6 +404,7 @@
   <string name="title_preference_vibration">Виброзвонок</string>
   <string name="title_sending_messages_log_enabled">Записывать в файл журнала попытки отправки сообщений</string>
   <string name="title_timeline">Линия времени</string>
+  <string name="translator_credits">Русский перевод</string>
   <string name="message_source_from">из %1$s</string>
   <string name="message_source_in_reply_to">в ответ на %1$s</string>
   <string name="message_source_to">для %1$s</string>

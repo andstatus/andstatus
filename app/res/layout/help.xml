@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
     Copyright (c) 2015 yvolk (Yuri Volkov), http://yurivolkov.com
-	Copyright (C) 2008 Torgny Bjers
 	
 	Licensed under the Apache License, Version 2.0 (the "License");
 	you may not use this file except in compliance with the License.
@@ -67,28 +66,17 @@
 
             </LinearLayout>
 
-            <ScrollView
-                android:id="@+id/help_page1"
+            <WebView
+                android:id="@+id/user_guide"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent" >
+                android:layout_height="wrap_content"
+                android:padding="10dip" />
 
-                <WebView
-                    android:id="@+id/user_guide"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:padding="10dip" />
-            </ScrollView>
-
-            <ScrollView
+            <WebView
+                android:id="@+id/changelog"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent" >
-
-                <WebView
-                    android:id="@+id/changelog"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:padding="10dip" />
-            </ScrollView>
+                android:layout_height="wrap_content"
+                android:padding="10dip" />
         </ViewFlipper>
     </LinearLayout>
 

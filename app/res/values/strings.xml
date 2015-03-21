@@ -403,6 +403,7 @@
   <string name="title_preference_vibration">Vibration</string>
   <string name="title_sending_messages_log_enabled">Log Sending messages to a file</string>
   <string name="title_timeline">Timeline</string>
+  <string name="translator_credits">Translator credits</string>
   <string name="message_source_from">from %1$s</string>
   <string name="message_source_in_reply_to">in reply to %1$s</string>
   <string name="message_source_to">to %1$s</string>

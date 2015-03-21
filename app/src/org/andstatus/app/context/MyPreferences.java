@@ -252,6 +252,14 @@ public class MyPreferences {
         }
     }
 
+    public static boolean isEnLocale() {
+        Locale locale = mLocale;
+        if (locale == null) {
+            locale = mDefaultLocale;
+        }
+        return  locale == null ? true : (locale.getLanguage().isEmpty() ? true : locale.getLanguage().startsWith("en")); 
+    }
+    
     private static volatile Locale mLocale = null;
     private static volatile Locale mDefaultLocale = null;
     public static void setLocale(ContextWrapper contextWrapper) {

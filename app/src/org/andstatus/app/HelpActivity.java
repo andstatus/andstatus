@@ -1,6 +1,5 @@
 /* 
- * Copyright (C) 2012-2014 yvolk (Yuri Volkov), http://yurivolkov.com
- * Copyright (C) 2008 Torgny Bjers
+ * Copyright (C) 2012-2015 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,10 +45,6 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.ViewFlipper;
 
-/**
- * @author yvolk@yurivolkov.com
- * @author Torgny 
- */
 public class HelpActivity extends Activity implements SwipeInterface {
 
     // Constants
