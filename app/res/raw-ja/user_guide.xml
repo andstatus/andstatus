@@ -30,7 +30,7 @@ xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../res-src/
         <lang>ja</lang>
         <src-lang>en</src-lang>
         <translator>
-            <nickname></nickname>
+            <nickname>Naofumi Fukue</nickname>
         </translator>
     </title-info>
     <document-info>

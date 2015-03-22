@@ -1,0 +1,16 @@
+L'AndStatus és un client de xarxes socails de baix trànsit amb converses arborescents. Permet múltiples protocols, incloent-hi el GNU social ("StatusNet", p. ex. Quitter, LoadAverage, Vinilox...). Twitter i Pump.io. L'AndStatus combina els teus comptes de totes les xarxes en una única línia temporal i et permet llegir i escriure fins i tot fora de línia.
+
+Per a Android 4.1 o superior. Llicència de codi obert.
+
+Característiques diferencials de l'AndStatus:
+
+1. Molts comptes de sistemes de xarxes socials diferents. Pots tenir diversos comptes de cada, escriure i respondre com qualsevol "Tu" i compartir entre comptes i sistemes.
+2. No cal que ser en línia per a escriure novetats. Els missatges no enviats es mantenen (en la "cua de sortida") fins i tot després de reiniciar. S'enviaran quan el dispositiu sigui en línia.
+3. Visualització de converses en arbre.
+4. La "Cerca global" permet cercar missatges públics en tots els sistemes registrats en una única consulta.
+5. Els piulets, missatges, avatars i imatges adjuntes es mantenen sincronitzats en segon pla, quan el dispositiu té una bona connexió.
+6. La memòria cau de les dades es pot emmagatzemar per anys o només per dies, tu tries.
+7. Fes i restaura, fàcilment, còpies de seguretat dels comptes i les dades entre dispositius.
+8. Gratuït i sense anuncis, amb el suport de la comunitat.
+
+Visiteu el registre de canvis per a les descripcions de totes les característiques de l'AndStatus:

@@ -1,0 +1,13 @@
+AndStatus ist ein Client für soziale Netzwerke mit geringem Datenaufkommen und baumartiger Gesprächsdarstelung. Es unterstützt verschiedene Protokolle wie GNU social ("StatusNet" z.B. Quitter, LoadAverage, Vinilox, uvm.), Twitter und Pump.io. AndStatus führt Nachrichten verschiedener Konten dieser Netzwerke in eine Timeline zusammen und erlaubt dir das Lesen und Posten auch dann, wenn keine Internetverbindung besteht. Open-Source-Lizenz.
+
+Unterscheidungsmerkmale von AndStatus:
+ Viele Konten in verschiedenen sozialen Netzwerken. Mehrere Konten pro Netzwerk werden unterstützt, schreibe/antworte von einem beliebigen Konto und teile die Nachrichten über Konten- und Systemgrenzen.
+2. Du musst nicht online sein, um Nachrichten zu versenden. Nicht gesendete Nachrichten werden (in einer Warteschlange) vorgehalten. Auch über einen Neustart des Gerätes hinaus. Sie werden versendet, sobald das Gerät wieder Online ist.
+3. Komfortabele Baum-artige "Gesrpächsansicht".
+4. "Globale Suche" erlaubt mit nur einer Abfrage das Suchen von Nachrichten in allen registrierten Netzwerken.
+5. Tweets, Nachrichten, Avatare und angehängte Bilder werden im Hintergrund synchronisiert, sobald das Gerät eine gute Internetverbindung hat.
+6. Daten können für Jahre oder nur wenige Tage zwischengespeichert werden - du hast die Wahl.
+7. Konten und Daten lassen sich bequem Sichern, zwischen verschiedenen Geräten austauschen und Wiederherstellen.
+8. Kostenlos und werbefrei - unterstützt von einer Gemeinschaft.
+
+Im Change Log findet sich eine Beschreibung aller Funktionen von AndStatus:

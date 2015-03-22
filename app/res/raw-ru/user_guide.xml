@@ -30,7 +30,7 @@ xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../res-src/
         <lang>ru</lang>
         <src-lang>en</src-lang>
         <translator>
-            <nickname>Юрий Волков</nickname>
+            <nickname>(C) Юрий Волков, 2015</nickname>
         </translator>
     </title-info>
     <document-info>

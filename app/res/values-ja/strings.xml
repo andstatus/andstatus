@@ -25,6 +25,7 @@
   <string name="account_settings_action">AndStatus アカウントの設定</string>
   <string name="account_settings_activity_title">アカウント</string>
   <string name="account_settings_summary">同期の頻度、通知など</string>
+  <string name="automatic">自動</string>
   <string name="settings_action">設定</string>
   <string name="settings_activity_title">設定</string>
   <string name="action_menu_overflow_description">その他の操作&#8230;</string>
@@ -68,6 +69,8 @@
   <string name="command_follow_user">フォローする</string>
   <string name="command_stop_following_user">フォローをやめる</string>
   <string name="created_label">作成</string>
+  <string name="custom_locale_title">アプリケーションの言語</string>
+  <string name="device_default">デバイス デフォルト</string>
   <string name="dialog_summary_acquiring_an_access_token">AndStatus がアクセス トークンのために OAuth リクエスト トークンを交換するまでお待ちください。</string>
   <string name="dialog_summary_acquiring_a_request_token">AndStatus が OAuth のためにリクエスト トークンを取得する間お待ちください</string>
   <string name="dialog_summary_authentication_failed">ユーザー名とパスワードを確認してください。</string>
@@ -174,6 +177,7 @@
   <string name="message_edit_hint">ここにメッセージを入力してください!</string>
   <string name="message_characters_left">残り文字数:</string>
   <string name="message_is_too_long">メッセージが長すぎます。</string>
+  <string name="mention_as_webfingerid_title">\@webFingerId としてメンション</string>
   <string name="menu_item_act_as">&#8230;として活動</string>
   <string name="menu_item_act_as_user">\"%1s\" として活動</string>
   <string name="menu_item_block">ブロック</string>
@@ -200,6 +204,7 @@
   <string name="menu_item_view_profile">プロフィールを表示</string>
   <string name="message_sent">メッセージを送信しました。</string>
   <string name="messages_activity">ダイレクトメッセージ</string>
+  <string name="no">いいえ</string>
   <string name="not_set">設定しない</string>
   <string name="notification_message_formats_1">{0} メッセージ</string>
   <string name="notification_message_formats_2">{0} メッセージ</string>
@@ -273,92 +278,6 @@
   <string name="splash_payoff_line">ツリー形式スレッドの、オープンソースで低トラフィックなソーシャルネットワー キングのクライアント。GNU social、Twitter、および Pump.io をサポートします。</string>
   <string name="syncing">同期中&#8230;</string>
   <string name="syncing_timeline_for_somebody">%2$s に %1$s を同期中</string>
-  <string name="user_manual_page_1"><h1><b>AndStatus ユーザーガイド</b></h1>\n\n
-AndStatus は、会話をツリー形式のスレッドで表示する、オープンソースで低トラフィックなソーシャルネットワーキングのクライアントです。 
-GNU social、Twitter および Pump.io を含めた、複数のプロトコルをサポートしています。 
-AndStatus はあなたのアカウントを、すべてのネットワークから 1 つのタイムラインにまとめて、 
-オフラインの間でも読んだり投稿したりすることができます。\n   	    
-* このガイドへのリンクは、アクションバー&gt;設定&gt;AndStatus について&gt;さらに詳しく、から利用できます。\n
-* 次ページの変更ログでは、AndStatus のすべての機能の説明と議論へのリンクを参照することができます。\n\n  
-<h2><b>1. はじめに</b></h2>\n\n
-下の \"始めましょう\" ボタンをタップすると、新しいアカウントを追加する画面が開きます。\n
-まず、リストからアカウントのマイクロブログシステムを選択するように求められます。
-Twetter、pump.io、いくつかの \"GNU social\" 型システム (Quitter、LoadAverageと、Vinilox)
-が事前に設定されています)。\n
-あなたの (\"GNU social\" 型) システムが記載されていない場合は、
-メニュー項目 \"オープンインスタンスを検出\" をタップして、
-GNU ソーシャルコミュニティによってメンテナンスされる、ライブオンラインリストからシステムを選択するか、
-新しいアカウントを追加する前に、手動で \"新しいシステムを追加\" します。\n
-Twitter では、すぐに \"このアカウントを追加\" を押すことができます。
-他のシステムでは、\"このアカウントを追加\" する前に、
-あなたのユーザー名とパスワードを入力するよう求められます。\n
-アカウントの作成が成功した後、\"アクションバー\" の \"左矢印\" またはデバイスの \"戻る\" ボタンをタップします。
-この時に、ホーム タイムラインが開かれ、
-このアカウントのメッセージが、インターネットからダウンロードを開始します。\n 
-おめでとうございます! さらに何ができるかについて、以下をお読みください。\n\n
-また、お使いのデバイスのホーム画面に AndStatus のウィジェットを追加することを忘れないでください：
-ウィジェットは新しいメッセージについて通知したり、AndStatus を起動するために用いることができます。\n\n
-<h2><b>2. AndStatus の基本</b></h2>\n\n
-AndStatus の最初のビューは、(少なくとも 1 つアカウントが追加された後は) ホーム タイムラインが 1 つ表示されます。\n
-リスト内のメッセージに対して操作を実行するには、メッセージを <b>長押し</b> して \"コンテキストメニュー\" を表示する必要があります。\n
-あなたはメッセージを <b>クリック</b> してさらに詳細を取得したり、メッセージが属する会話のツリーを見ることができます。\n
-左側の \"ナビゲーションドロワー\" を開いて、現在のタイムライン種類の項目 (\"ホーム\") をタップすると、
-他のビューに切り替わります。\n\n
-<h2><b>3. 送信と返信</b></h2>\n\n
-自分のステータスを更新するために、\"投稿\" ボタン (Twitter の \"ツイート\") をタップします。
-画面の下部にあるテキスト領域にテキストを入力して、<b>送信</b> をタップします。\n
-返信するには、メッセージを <b>長押し</b> して、コンテキストメニューから <b>返信</b> を選択し、
-下部に返信を入力します。\n
-返信を中止するには、\"非表示\" ボタンをタップして、テキスト領域を非表示にします。
-  </string>
-  <string name="user_manual_page_2">
-<h2><b>4. ダイレクト (プライベート) メッセージ</b></h2>\n\n
-左側のナビゲーションドロワーを開き、現在のタイムラインの種類の項目 (ホーム) をタップし、
-リストから <b>ダイレクトメッセージ</b> を選択します。\n
-あなたのメッセージ (公開またはプライベート) を <b>削除</b> するには、
-その上で <b>長押し</b> して、<b>メッセージを削除</b> を選択します。\n\n
-この AndStatus アカウントに対して、Android の \"アカウントと同期\" 設定で
-<b>自動同期</b> をオンにしている場合、
-新しいメッセージは、バックグラウンドでタイムラインに取得されます。
-いずれにしても、アクションバーで \"再読み込み\" コマンドを使用して、
-いつでも手動でインターネットから更新することができます。\n\n
-<h2><b>5. メンション</b></h2>\n\n
-ナビゲーションドロワーで、現在のタイムラインの種類の項目をタップし、
-その後 <b>メンション</b> を選択します。\n
-あなたの <b>@ユーザー名</b> をメンションする
-(あるいは \"まとめられた\" タイムラインに対する、あなたのすべての AndStatus アカウントをメンションする)
-すべてのメッセージのリストが表示されます。\n\n
-<h2><b>6. 検索 (ローカル検索)</b></h2>\n\n
-ローカル検索は、すでにインターネットからロードしたメッセージを検索します。
-したがって、オフラインでも利用可能です。\n
-1.  メッセージのテキストに含まれる任意の単語やフレーズを見つけるには、
-アクションバーの <b>検索</b> を選択するか、 
-お使いのデバイスの専用 <b>検索</b> ボタンをクリックします。\n
-特定のユーザからのメッセージを表示したい場合は、
-\"ユーザー名\" を検索してください。\n
-特定のユーザーのコメントを参照するには、\"@ユーザー名\" を検索してください。\n\n
-2. ユーザー別のメッセージを迅速に検索するには 
-(選択したメッセージの作成者または送信者)、
-メッセージのコンテキストメニューから \"ユーザー名 のメッセージ\" を選択します。
-これは実際にグローバル検索を並べ替えます (下記参照)。\n\n
-<h2><b>7. グローバル検索</b></h2>\n\n
-グローバル検索機能は、マイクロブログ システムのサーバーに
-直接検索要求を送信します。
-ライブのインターネット接続がシステムに必要とされる理由はここにあります。\n
-まず、ローカル検索の結果が表示されます。
-並行して、選択したアカウントのマイクロブログ システムから
-(またはタイムラインが \"まとめられて\" いる場合、すべてのマイクロブログ システムから)
-AndStatus は結果をダウンロードします
-検索結果は、サーバからの応答を受信すると順次更新されます。
-接続エラーの場合
-(例えば、マイクロブログ システムのサーバーから応答がない)
-ローカル検索の結果のみ表示されます。\n
-pump.io システムは、まだグローバル検索をサポートしていないことにご注意ください。\n
-1. 単語やフレーズによるグローバル検索は、
-\"アクションバー\" の \"グローバル検索\" 項目を使用して開始します。\n
-2. 選択したメッセージの作成者または送信者によってグローバル検索を行うもう一つの方法は、
-このメッセージのコンテキストメニューから \"ユーザー名 のメッセージ\" を選択することです。
-  </string>
   <string name="search_timeline_label">メッセージ、ユーザー、およびハッシュを検索</string>
   <string name="search_timeline_hint">ユーザー名/フレーズを入力してください</string>
   <string name="search_direct_messages_label">ダイレクトメッセージを検索</string>
@@ -414,6 +333,7 @@ pump.io システムは、まだグローバル検索をサポートしていな
   <string name="summary_preference_vibration_off">バイブレーションはオフになっています</string>
   <string name="summary_preference_vibration_on">着信メッセージでバイブレーションします</string>
   <string name="system_is_busy_try_later">システムがビジー状態です。後でもう一度やり直してください。</string>
+  <string name="theme_color_entries_defautl">デバイス デフォルト</string>
   <string name="theme_color_entries_light">ライト</string>
   <string name="theme_color_entries_dark">ダーク</string>
   <string name="theme_size_entries_small">小</string>
@@ -494,4 +414,5 @@ pump.io システムは、まだグローバル検索をサポートしていな
   <string name="user_in_timeline_entries_webfingerid">webFingerId</string>
   <string name="user_in_timeline_entries_real_name">実名</string>
   <string name="user_in_timeline_entries_real_name_at_username">実名 @ユーザー名</string>
+  <string name="yes">はい</string>
 </resources>

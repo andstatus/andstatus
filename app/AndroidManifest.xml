@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- 
     Copyright (c) 2010-2015 yvolk (Yuri Volkov), http://yurivolkov.com
-	Copyright (C) 2008 Torgny Bjers
+	Copyright (c) 2008 Torgny Bjers
 	
 	Licensed under the Apache License, Version 2.0 (the "License");
 	you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
  -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
 	package="org.andstatus.app" 
-	android:versionName="16.0-snapshot" android:versionCode="123"
+	android:versionName="16.0" android:versionCode="123"
 	android:installLocation="internalOnly">
 
 	<uses-sdk android:minSdkVersion="16" android:targetSdkVersion="22" />

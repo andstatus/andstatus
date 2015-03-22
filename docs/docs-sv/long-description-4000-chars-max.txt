@@ -1,0 +1,12 @@
+ AndStatus kombinerar dina konton från alla nätverk till en tidslinje och låter dig reda och posta även när du är offline.
+
+För Android 4.1 eller högre. Open Source-licens. Många konton i olika sociala nätverkssystem.
+2. De kommer skickas när din enhet är online.
+3.
+4.
+5.
+6.
+7.
+8.
+
+Se ändringsloggen för beskrivning av alla AndStatus' funktioner:
