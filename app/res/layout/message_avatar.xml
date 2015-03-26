@@ -37,7 +37,8 @@
             android:layout_width="match_parent"
             android:layout_height="0dip"
             android:layout_weight="1"
-            android:orientation="horizontal" >
+            android:orientation="horizontal"
+            android:layout_marginBottom="-9dip" >
 
             <TextView
                 android:id="@+id/message_author"
@@ -99,8 +100,8 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:paddingTop="2dp"
-        android:paddingLeft="1dp"
-        android:paddingRight="1dp"
+        android:paddingLeft="5dp"
+        android:paddingRight="4dp"
         android:scaleType="fitCenter" />
 
 </RelativeLayout>
