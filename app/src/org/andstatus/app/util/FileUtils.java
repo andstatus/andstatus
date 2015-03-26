@@ -164,5 +164,14 @@ public class FileUtils {
         }
         return nDeleted;
     }
-    
+
+    /**
+     * Accepts null argument
+     */
+    public static boolean exists(File file) {
+        if (file == null) {
+            return false;
+        }
+        return file.exists();
+    }
 }

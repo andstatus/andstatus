@@ -392,7 +392,7 @@ public class MyLog {
 
     public static File getFileInLogDir(String filename, boolean logged) {
         File dir1 = getLogDir(logged);
-        if (dir1 == null) { 
+        if (dir1 == null || filename == null) { 
             return null; 
         }
         return new File(dir1, filename);
@@ -501,15 +501,14 @@ public class MyLog {
     {
         synchronized (logFileWriterLock)
         {
-            writeStringToFile(builder.toString(), getMostNewLogFileName(),
+            writeStringToFile(builder.toString(), getMostRecentLogFileName(),
                               true, false);
         }
     }
     
-    private static String getMostNewLogFileName() {
+    private static String getMostRecentLogFileName() {
         String filename = getLogFilename();
-        if (filename != null && 
-                !getFileInLogDir(filename, false).exists()) {
+        if (FileUtils.exists(getFileInLogDir(filename, false))) {
             setNextLogFileName(true);
             filename = getLogFilename();
         }
