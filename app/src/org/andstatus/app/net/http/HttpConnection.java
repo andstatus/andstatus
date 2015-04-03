@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2015 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,9 @@ import android.net.Uri;
 import android.text.TextUtils;
 
 import org.andstatus.app.account.AccountDataWriter;
+import org.andstatus.app.net.http.ConnectionException.StatusCode;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UrlUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -59,11 +61,27 @@ public abstract class HttpConnection {
     }
 
     public final JSONObject postRequest(String path, JSONObject formParams) throws ConnectionException {
+        /** See https://github.com/andstatus/andstatus/issues/249 */
+        if (data.useLegacyHttpProtocol == TriState.UNKNOWN) {
+            try {
+                return postRequestOneHttpProtocol(path, formParams, false);
+            } catch (ConnectionException e) {
+                if (e.getStatusCode() != StatusCode.LENGTH_REQUIRED) {
+                    throw e;
+                }
+                MyLog.v(this, "Automatic fallback to legacy HTTP", e);
+            }
+        }
+        return postRequestOneHttpProtocol(path, formParams, data.useLegacyHttpProtocol.toBoolean(true));
+    }
+
+    private JSONObject postRequestOneHttpProtocol(String path, JSONObject formParams, 
+            boolean isLegacyHttpProtocol ) throws ConnectionException {
         if (TextUtils.isEmpty(path)) {
             throw new IllegalArgumentException("path is empty");
         }
-        HttpReadResult result = new HttpReadResult(pathToUrlString(path));
-        result.setFormParams(formParams);
+        HttpReadResult result = new HttpReadResult(pathToUrlString(path)).setFormParams(formParams)
+                .setLegacyHttpProtocol(isLegacyHttpProtocol);
         if( result.hasFormParams()) {
             MyLog.logNetworkLevelMessage(this, "postRequest_formParams", result.getFormParams());
         }
@@ -73,7 +91,7 @@ public abstract class HttpConnection {
         return result.getJsonObject();
     }
     
-    protected abstract void postRequest(HttpReadResult result)  throws ConnectionException;
+    protected abstract void postRequest(HttpReadResult result) throws ConnectionException;
     
     public final JSONObject getRequest(String path) throws ConnectionException {
         return getRequestCommon(path, true).getJsonObject();

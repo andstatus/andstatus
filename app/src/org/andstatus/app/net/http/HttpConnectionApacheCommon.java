@@ -22,24 +22,28 @@ import android.text.TextUtils;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyContentType;
+import org.andstatus.app.net.http.ConnectionException.StatusCode;
+import org.andstatus.app.util.FileUtils;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
+import org.apache.http.HttpVersion;
 import org.apache.http.NameValuePair;
+import org.apache.http.ProtocolVersion;
 import org.apache.http.StatusLine;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.entity.UrlEncodedFormEntityHacked;
+import org.apache.http.client.entity.UrlEncodedFormEntityHC4;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPostHC4;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.HTTP;
 import org.json.JSONObject;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -55,7 +59,10 @@ public class HttpConnectionApacheCommon {
     }
 
     protected void postRequest(HttpReadResult result) throws ConnectionException {
-        HttpPost httpPost = new HttpPost(result.getUrl());
+        HttpPostHC4 httpPost = new HttpPostHC4(result.getUrl());
+        if (result.isLegacyHttpProtocol()) {
+            httpPost.setProtocolVersion(HttpVersion.HTTP_1_0);
+        }
         try {
             if ( !result.hasFormParams()) {
                 // Nothing to do at this step
@@ -70,7 +77,7 @@ public class HttpConnectionApacheCommon {
         }
     }
 
-    private void fillMultiPartPost(HttpPost postMethod, JSONObject formParams) throws ConnectionException {
+    private void fillMultiPartPost(HttpPostHC4 httpPost, JSONObject formParams) throws ConnectionException {
         MultipartEntityBuilder builder = MultipartEntityBuilder.create(); 
         Uri mediaUri = null;
         String mediaPartName = "";
@@ -91,23 +98,25 @@ public class HttpConnectionApacheCommon {
         if (!TextUtils.isEmpty(mediaPartName) && !UriUtils.isEmpty(mediaUri)) {
             try {
                 InputStream ins = MyContextHolder.get().context().getContentResolver().openInputStream(mediaUri);
-                ContentType contentType2 = ContentType.create(MyContentType.uri2MimeType(mediaUri, null)); 
-                builder.addBinaryBody(mediaPartName, ins, contentType2, mediaUri.getPath());
-            } catch (SecurityException e) {
-                throw new ConnectionException("mediaUri='" + mediaUri + "'", e);
-            } catch (FileNotFoundException e) {
-                throw new ConnectionException("mediaUri='" + mediaUri + "'", e);
+                ContentType contentType2 = ContentType.create(MyContentType.uri2MimeType(mediaUri, null));
+                if (httpPost.getProtocolVersion() == HttpVersion.HTTP_1_0 ) {
+                    builder.addBinaryBody(mediaPartName, FileUtils.getBytes(ins), contentType2, mediaUri.getPath());
+                } else {
+                    builder.addBinaryBody(mediaPartName, ins, contentType2, mediaUri.getPath());
+                }
+            } catch (SecurityException | IOException e) {
+                throw ConnectionException.hardConnectionException("mediaUri='" + mediaUri + "'", e);
             }
         }
-        postMethod.setEntity(builder.build()); 
+        httpPost.setEntity(builder.build()); 
     }
-
-    private void fillSinglePartPost(HttpPost postMethod, JSONObject formParams)
+    
+    private void fillSinglePartPost(HttpPostHC4 httpPost, JSONObject formParams)
             throws ConnectionException, UnsupportedEncodingException {
         List<NameValuePair> nvFormParams = HttpConnectionApacheCommon.jsonToNameValuePair(formParams);
         if (nvFormParams != null) {
-            HttpEntity formEntity = new UrlEncodedFormEntityHacked(nvFormParams, HTTP.UTF_8);
-            postMethod.setEntity(formEntity);
+            HttpEntity formEntity = new UrlEncodedFormEntityHC4(nvFormParams, HTTP.UTF_8);
+            httpPost.setEntity(formEntity);
         }
     }
     

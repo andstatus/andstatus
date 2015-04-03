@@ -18,7 +18,7 @@ package org.andstatus.app.net.http;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPostHC4;
 
 import java.io.IOException;
 
@@ -27,7 +27,7 @@ import java.io.IOException;
  * @author yvolk@yurivolkov.com
  */
 public interface HttpConnectionApacheSpecific {
-    void httpApachePostRequest(HttpPost postMethod, HttpReadResult result) throws ConnectionException;
+    void httpApachePostRequest(HttpPostHC4 httpPost, HttpReadResult result) throws ConnectionException;
     String pathToUrlString(String path);
     HttpResponse httpApacheGetResponse(HttpGet httpGet) throws IOException;
     void httpApacheSetAuthorization(HttpGet httpGet) throws IOException;

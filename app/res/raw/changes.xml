@@ -26,6 +26,18 @@
 		</subtitle>
     </header>
 
+    <release android:versionName="17.0" android:versionCode="124"
+        versionDate="2014-04-04"
+        versionTitle="Sending attachments fix for legacy servers">
+        <changes>
+            <change>Fixed: Gnusocial.no, Quitter.no and and some other servers didn't 
+                allow sending attachments via AndStatus due to HTTP protocol incompatibility. 
+                &quot;Use legacy HTTP protocol&quot; option added to a Social network editor 
+                to allow posting images to such servers.
+                <a href="https://github.com/andstatus/andstatus/issues/249">#249</a>
+            </change>
+        </changes>
+    </release>
     <release android:versionName="16.0" android:versionCode="123"
         versionDate="2014-03-21"
         versionTitle="Posting enhancements and custom Application language. New User guide format.">
@@ -59,7 +71,6 @@
             </change>
         </changes>
     </release>
-    
     <release android:versionName="15.0" android:versionCode="122"
         versionDate="2014-02-14"
         versionTitle="Discovery of open GNU Social instances">

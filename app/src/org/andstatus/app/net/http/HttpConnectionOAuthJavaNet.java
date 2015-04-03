@@ -147,6 +147,7 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
         }
     }
 
+    /** This method is not legacy HTTP */
     private void writeMedia(HttpURLConnection conn, JSONObject formParams)
             throws ConnectionException, IOException, JSONException {
         Uri mediaUri = Uri.parse(formParams.getString(KEY_MEDIA_PART_URI));

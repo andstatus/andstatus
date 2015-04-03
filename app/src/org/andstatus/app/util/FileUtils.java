@@ -79,9 +79,16 @@ public class FileUtils {
 
     /** Reads the whole file */
     public static byte[] getBytes(File file) throws IOException {
-        ByteArrayOutputStream bout = new ByteArrayOutputStream();
         if (file != null) {
-            InputStream is = new FileInputStream(file);
+            return getBytes(new FileInputStream(file));
+        }
+        return new byte[0];
+    }
+
+    /** Read the stream into an array and close the stream **/
+    public static byte[] getBytes(InputStream is) throws IOException {
+        ByteArrayOutputStream bout = new ByteArrayOutputStream();
+        if (is != null) {
             byte[] readBuffer = new byte[4 * 1024];
             try {
                 int read;
@@ -99,7 +106,7 @@ public class FileUtils {
         }
         return new byte[0];
     }
-
+    
     /** Reads up to 'size' bytes, starting from 'offset' */
     public static byte[] getBytes(File file, int offset, int size) throws IOException {
         if (file != null) {
@@ -108,7 +115,7 @@ public class FileUtils {
             try {
                 long bytesSkipped = is.skip(offset);
                 if (bytesSkipped < offset) {
-                    throw new FileNotFoundException("Skiiped only " + bytesSkipped 
+                    throw new FileNotFoundException("Skipped only " + bytesSkipped 
                             + " of " + offset + " bytes in file='" + file.getAbsolutePath() + "'");
                 }
                 int bytesRead = is.read(readBuffer, 0, size);

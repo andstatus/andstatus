@@ -32,6 +32,7 @@ public class OriginConnectionData {
     private long originId = 0;
     private boolean isSsl = true;
     private SslModeEnum sslMode = SslModeEnum.SECURE;
+    private TriState useLegacyHttpProtocol = TriState.UNKNOWN;
     private boolean isOAuth = true;
     private URL originUrl = null;
     private String basicPath = "";
@@ -55,6 +56,7 @@ public class OriginConnectionData {
         connectionData.isSsl = origin.isSsl();
         connectionData.sslMode = origin.getSslMode();
         connectionData.originType = origin.getOriginType();
+        connectionData.useLegacyHttpProtocol = origin.useLegacyHttpProtocol();
         connectionData.originId = origin.getId();
         connectionData.isOAuth = origin.getOriginType().fixIsOAuth(triStateOAuth);
         connectionData.connectionClass = origin.getOriginType().getConnectionClass();
@@ -78,6 +80,10 @@ public class OriginConnectionData {
 
     public SslModeEnum getSslMode() {
         return sslMode;
+    }
+
+    public TriState useLegacyHttpProtocol() {
+        return useLegacyHttpProtocol;
     }
     
     public boolean isOAuth() {

@@ -36,12 +36,13 @@ public class HttpReadResult {
     private String urlString = "";
     private URL url;
     boolean authenticate = true;
+    private boolean mIsLegacyHttpProtocol = false;
     
     JSONObject formParams = new JSONObject();
     StringBuilder logBuilder =  new StringBuilder();
     Exception e1 = null;
     String strResponse = "";
-    File fileResult = null;
+    final File fileResult;
     String statusLine = "";
     private int intStatusCode = 0;
     private StatusCode statusCode = StatusCode.UNKNOWN;
@@ -49,13 +50,13 @@ public class HttpReadResult {
     boolean redirected = false;
 
     public HttpReadResult(String urlIn) throws ConnectionException {
-        urlInitial = urlIn;
-        setUrl(urlIn);
+        this (urlIn, (File) null);
     }
 
     public HttpReadResult(String urlIn, File file) throws ConnectionException {
-        this(urlIn);
+        urlInitial = urlIn;
         fileResult = file;
+        setUrl(urlIn);
     }
 
     public HttpReadResult(String urlIn, JSONObject formParamsIn) throws ConnectionException {
@@ -113,8 +114,9 @@ public class HttpReadResult {
         return logMsg()
                 + ((statusCode == StatusCode.OK) || TextUtils.isEmpty(statusLine) 
                         ? "" : "; statusLine:'" + statusLine + "'")
-                + "; statusCode:" + statusCode + " (" + intStatusCode + ")" 
+                + (intStatusCode == 0 ? "" : "; statusCode:" + statusCode + " (" + intStatusCode + ")") 
                 + "; url:'" + urlString + "'"
+                + (isLegacyHttpProtocol() ? "; legacy HTTP" : "")
                 + (authenticate ? "; authenticated" : "")
                 + (redirected ? "; redirected from:'" + urlInitial + "'" : "")
                 + ( hasFormParams() ? "; posted:'" + formParams.toString() + "'" : "")
@@ -227,10 +229,11 @@ public class HttpReadResult {
                 && (statusCode == StatusCode.OK || statusCode == StatusCode.UNKNOWN);
     }
 
-    public void setFormParams(JSONObject formParamsIn) {
+    public HttpReadResult setFormParams(JSONObject formParamsIn) {
         if (formParamsIn != null) {
             formParams = formParamsIn;
         }
+        return this;
     }
 
     public boolean hasFormParams() {
@@ -240,5 +243,18 @@ public class HttpReadResult {
     public JSONObject getFormParams() {
         return formParams;
     }
-    
+ 
+    public boolean isLegacyHttpProtocol() {
+        return mIsLegacyHttpProtocol;
+    }
+
+    public HttpReadResult setLegacyHttpProtocol(boolean mIsLegacyHttpProtocol) {
+        this.mIsLegacyHttpProtocol = mIsLegacyHttpProtocol;
+        return this;
+    }
+
+    public void resetError() {
+        e1 = null;
+        statusCode = StatusCode.UNKNOWN;
+    }
 }

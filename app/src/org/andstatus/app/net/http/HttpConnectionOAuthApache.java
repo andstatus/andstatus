@@ -27,7 +27,7 @@ import oauth.signpost.exception.OAuthMessageSignerException;
 import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPostHC4;
 import org.apache.http.impl.client.BasicResponseHandler;
 
 import java.io.IOException;
@@ -66,7 +66,7 @@ public class HttpConnectionOAuthApache extends HttpConnectionOAuth implements Ht
     }
     
     @Override
-    public void httpApachePostRequest(HttpPost post, HttpReadResult result) throws ConnectionException {
+    public void httpApachePostRequest(HttpPostHC4 post, HttpReadResult result) throws ConnectionException {
         try {
             // TODO: Redo like for get request
             if (result.authenticate) {

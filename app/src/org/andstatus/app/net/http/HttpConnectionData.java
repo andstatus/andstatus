@@ -20,6 +20,7 @@ import org.andstatus.app.account.AccountDataReader;
 import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.TriState;
 
 import java.net.URL;
 
@@ -28,6 +29,7 @@ public class HttpConnectionData implements Cloneable {
     protected long originId;
     public boolean isSsl;
     public SslModeEnum sslMode;
+    public TriState useLegacyHttpProtocol;
     public String basicPath;
     protected String oauthPath;
     protected String accountUsername;
@@ -51,6 +53,7 @@ public class HttpConnectionData implements Cloneable {
         data.originId = oConnectionData.getOriginId();
         data.isSsl = oConnectionData.isSsl();
         data.sslMode = oConnectionData.getSslMode();
+        data.useLegacyHttpProtocol = oConnectionData.useLegacyHttpProtocol();
         data.basicPath = oConnectionData.getBasicPath();
         data.oauthPath = oConnectionData.getOauthPath();
         data.accountUsername = oConnectionData.getAccountUsername();
@@ -74,6 +77,8 @@ public class HttpConnectionData implements Cloneable {
     public String toString() {
         return "HttpConnectionData {" + originId + ", " + originType + ", isSsl:" + isSsl
                 + ", sslMode:" + sslMode
+                + (useLegacyHttpProtocol != TriState.UNKNOWN ? 
+                        ", HTTP:" + (useLegacyHttpProtocol == TriState.TRUE ?  "legacy" : "latest") : "")
                 + ", basicPath:" + basicPath 
                 + ", oauthPath:" + oauthPath + ", accountUsername:" + accountUsername
                 + ", originUrl:" + originUrl + ", hostForUserToken:" + urlForUserToken + ", dataReader:"

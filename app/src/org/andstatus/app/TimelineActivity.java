@@ -1178,6 +1178,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     private void attachmentSelected(Intent data) {
         Uri uri = UriUtils.notNull(data.getData());
         if (!UriUtils.isEmpty(uri)) {
+            UriUtils.takePersistableUriPermission(getActivity(), uri, data.getFlags());
             mMediaToShareViaThisApp = uri;
             if (mMessageEditor.isVisible()) {
                 mMessageEditor.setMedia(mMediaToShareViaThisApp);

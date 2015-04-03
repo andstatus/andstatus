@@ -262,6 +262,7 @@ public class ConversationActivity extends Activity implements MyServiceListener,
                 Uri uri = data != null ? UriUtils.notNull(data.getData()) : null;
                 if (resultCode == RESULT_OK && !UriUtils.isEmpty(uri) 
                         && mMessageEditor.isVisible()) {
+                    UriUtils.takePersistableUriPermission(getActivity(), uri, data.getFlags());
                     mMessageEditor.setMedia(uri);
                 }
                 break;

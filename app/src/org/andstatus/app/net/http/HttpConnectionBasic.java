@@ -27,6 +27,7 @@ import org.apache.http.StatusLine;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPostHC4;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -48,7 +49,7 @@ public class HttpConnectionBasic extends HttpConnection implements HttpConnectio
     }
 
     @Override
-    public void httpApachePostRequest(HttpPost postMethod, HttpReadResult result) throws ConnectionException {
+    public void httpApachePostRequest(HttpPostHC4 postMethod, HttpReadResult result) throws ConnectionException {
         try {
             HttpClient client = HttpConnectionApacheCommon.getHttpClient(data.sslMode);
             postMethod.setHeader("User-Agent", HttpConnection.USER_AGENT);

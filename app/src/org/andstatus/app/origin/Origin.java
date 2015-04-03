@@ -64,6 +64,8 @@ public class Origin {
     protected boolean ssl = true;
     private SslModeEnum sslMode = SslModeEnum.SECURE;
 
+    private TriState useLegacyHttpProtocol = TriState.UNKNOWN;
+
     private boolean allowHtml = false;
 
     /**
@@ -231,6 +233,10 @@ public class Origin {
         return sslMode;
     }
 
+    public TriState useLegacyHttpProtocol() {
+        return useLegacyHttpProtocol;
+    }
+    
     String keyOf(String keyRoot) {
         return keyRoot + Long.toString(id);
     }

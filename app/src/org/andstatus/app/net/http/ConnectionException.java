@@ -39,6 +39,7 @@ public class ConnectionException extends IOException {
         UNAUTHORIZED, 
         FORBIDDEN, INTERNAL_SERVER_ERROR, BAD_GATEWAY, SERVICE_UNAVAILABLE, MOVED,
         REQUEST_ENTITY_TOO_LARGE,
+        LENGTH_REQUIRED,
         CLIENT_ERROR,
         SERVER_ERROR;
         
@@ -60,6 +61,8 @@ public class ConnectionException extends IOException {
                     return FORBIDDEN;
                 case 404:
                     return NOT_FOUND;
+                case 411:
+                    return LENGTH_REQUIRED;
                 case 413:
                     return REQUEST_ENTITY_TOO_LARGE;
                 case 500:

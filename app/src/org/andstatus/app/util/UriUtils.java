@@ -16,9 +16,12 @@
 
 package org.andstatus.app.util;
 
+import android.annotation.TargetApi;
+import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.text.TextUtils;
-
 import java.net.URL;
 
 public class UriUtils {
@@ -46,6 +49,35 @@ public class UriUtils {
             return Uri.EMPTY;
         } else {
             return fromString(url.toExternalForm());
+        }
+    }
+    
+    /** See http://developer.android.com/guide/topics/providers/document-provider.html */
+    @TargetApi(Build.VERSION_CODES.KITKAT)
+    public static int flagsToTakePersistableUriPermission() {
+        int flags = Intent.FLAG_GRANT_READ_URI_PERMISSION;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            flags = flags | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION;
+        }
+        return flags;
+    }
+    
+    /** See http://stackoverflow.com/questions/25999886/android-content-provider-uri-doesnt-work-after-reboot */
+    @TargetApi(Build.VERSION_CODES.KITKAT)
+    public static void takePersistableUriPermission(Context context, Uri uri, int takeFlagsIn) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
+            return;
+        }
+        if ((takeFlagsIn & Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION) != 0) {
+            final int takeFlags = takeFlagsIn & (Intent.FLAG_GRANT_READ_URI_PERMISSION
+                            | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+            try {
+                context.getContentResolver().takePersistableUriPermission(uri, takeFlags);
+            } catch (SecurityException e) {
+                MyLog.i(context,"Exception while taking persistable URI permission for '" + uri + "'", e);
+            }
+        } else {
+            MyLog.i(context,"No persistable URI permission for '" + uri + "'");
         }
     }
 }
