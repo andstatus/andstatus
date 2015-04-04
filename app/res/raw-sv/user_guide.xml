@@ -1,0 +1,144 @@
+<?xml-stylesheet version='1.0' type='text/xsl' href='../raw/fb2_2_html.xsl' encoding="utf-8"?>
+<!-- 
+    Copyright (C) 2015 Yuri Volkov, yvolk@yurivolkov.com
+    
+    Translations are copyrighted by corresponding Translators.
+        
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+    
+         http://www.apache.org/licenses/LICENSE-2.0
+    
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+ -->
+<FictionBook xmlns="http://www.gribuser.ru/xml/fictionbook/2.0"
+xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../res-src/fb2/FictionBook.xsd">
+<description>
+    <title-info>
+        <genre>computers</genre>
+        <author>
+            <first-name>AndStatus project</first-name>
+            <last-name></last-name>
+        </author>
+        <book-title>AndStatus Användarmanual</book-title>
+        <lang>sv</lang>
+        <src-lang>en</src-lang>
+        <translator>
+            <nickname>Henrik Mattsson-Mårn</nickname>
+        </translator>
+    </title-info>
+    <document-info>
+        <author>
+            <nickname>AndStatus project</nickname>
+            <home-page>http://www.andstatus.org</home-page>
+            <email>andstatus@gmail.com</email>
+        </author>
+        <date>2015-03-15</date>
+        <id></id>
+        <version>1</version>
+    </document-info>
+</description>
+<body>
+<section>
+    <title>
+        <p>Introduktion</p>
+    </title>
+    <p></p>
+    <p></p>
+    <p></p>
+</section>
+<section>
+    <title>
+        <p>1. Komma igång</p>
+    </title>
+    <p>
+    </p>
+    <p>
+    </p>
+    <p></p>
+    <p></p>
+    <p>
+    </p>
+    <p>Grattis! Läs nedan om vad mer du kan göra.
+    </p>
+    <p>
+    </p>
+</section>
+<section>
+    <title>
+        <p></p>
+    </title>
+    <p>
+    </p>
+    <p>
+    </p>
+    <p>
+    </p>
+    <p>
+    </p>
+</section>
+<section>
+    <title>
+        <p>3. Skicka och besvara</p>
+    </title>
+    <p>.
+    </p>
+    <p>
+    </p>
+    <p></p>
+</section>
+<section>
+    <title>
+        <p>4. Direkta (privata) meddelanden</p>
+    </title>
+    <p>
+    </p>
+    <p>.
+    </p>
+    <p>
+    </p>
+</section>
+<section>
+    <title>
+        <p>5. Omnämnanden</p>
+    </title>
+    <p>
+    </p>
+    <p>
+    </p>
+</section>
+<section>
+    <title>
+        <p></p>
+    </title>
+    <p>
+    </p>
+    <p>
+    </p>
+    <p></p>
+    <p>
+    </p>
+    <p>
+    </p>
+</section>
+<section>
+    <title>
+        <p></p>
+    </title>
+    <p>
+    </p>
+    <p>
+    </p>
+    <p>
+    </p>
+    <p></p>
+    <p></p>
+</section>
+</body>
+</FictionBook>

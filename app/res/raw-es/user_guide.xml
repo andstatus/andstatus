@@ -1,0 +1,208 @@
+<?xml-stylesheet version='1.0' type='text/xsl' href='../raw/fb2_2_html.xsl' encoding="utf-8"?>
+<!-- 
+    Copyright (C) 2015 Yuri Volkov, yvolk@yurivolkov.com
+    
+    Translations are copyrighted by corresponding Translators.
+        
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+    
+         http://www.apache.org/licenses/LICENSE-2.0
+    
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+ -->
+<FictionBook xmlns="http://www.gribuser.ru/xml/fictionbook/2.0"
+xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../res-src/fb2/FictionBook.xsd">
+<description>
+    <title-info>
+        <genre>computers</genre>
+        <author>
+            <first-name>AndStatus project</first-name>
+            <last-name></last-name>
+        </author>
+        <book-title>Manual de uso de AndStatus</book-title>
+        <lang>es</lang>
+        <src-lang>en</src-lang>
+        <translator>
+            <nickname></nickname>
+        </translator>
+    </title-info>
+    <document-info>
+        <author>
+            <nickname>AndStatus project</nickname>
+            <home-page>http://www.andstatus.org</home-page>
+            <email>andstatus@gmail.com</email>
+        </author>
+        <date>2015-03-15</date>
+        <id></id>
+        <version>1</version>
+    </document-info>
+</description>
+<body>
+<section>
+    <title>
+        <p>Introducción</p>
+    </title>
+    <p>Andstatus es un ligero cliente para redes sociales basadas en conversaciones ramificadas.
+Soporta múltiples protocolos, incluyendo GNU social, Twitter y Pump.io.
+AndStatus combina las cuentas de todas tus redes sociales en una Línea temporal y permite leer y publicar incluso estando desconectado.</p>
+    <p>Hay un enlace a esta guía en la barra de acción (barra superior)&gt;Ayuda.</p>
+    <p>Cambios en la versión, la siguiente página te permitirá ver descripciones y enlaces a discusiones sobre todas las características de AndStatus.</p>
+</section>
+<section>
+    <title>
+        <p>1. Primeros pasos</p>
+    </title>
+    <p>Al el botón de abajo «Comenzar» se mostrará la pantalla para añadir una cuenta nueva.
+    </p>
+    <p>Antes de nada, se te mostrará una pantalla con una lista para seleccionar la cuenta de la red social que quieras. Twitter, Pump.io y algunos servidores de GNU social (Quitter, LoadAverage y Vinilox) ya están configurados.
+    </p>
+    <p>En el caso de que tu servidor (de GNU social) no esté en la lista, pulsa en el menú «Descubre servidores abiertos» (símbolo de la lupa) para elegir un servidor de una lista en línea mantenida por la comunidad de GNU social, o "Añadir un nuevo servidor" (símbolo «+») para añadir manualmente una cuenta nueva.</p>
+    <p>Para Twitter, puedes pulsar directamente «Añadir esta cuenta».
+Para otras redes sociales se pedirá escribir tu nombre de usuario y contraseña antes de pulsar «Añadir esta cuenta». </p>
+    <p>After successful creation of an account, please tap "left arrow"
+        on an
+        "Action bar" or "Back" button on your device.
+        This time a Home Timeline will be opened,
+        and messages for this account will start downloading from the Internet.
+    </p>
+    <p>Congratulations! Please read below about what you can do further.
+    </p>
+    <p>And don't forget to add AndStatus's widget to a Home screen of Your
+        device:
+        the widget will inform you about new messages and may be used to launch
+        AndStatus.
+    </p>
+</section>
+<section>
+    <title>
+        <p>2. AndStatus basics</p>
+    </title>
+    <p>The first view of AndStatus (after at least one account has been added)
+        contains a Home Timeline.
+    </p>
+    <p>In order to perform an action on a message in the list you
+        should
+        <strong>hold down</strong>
+        on it to get its "Context menu".
+    </p>
+    <p>You may <strong>click</strong>
+        a message to get more details on it and to see
+        a conversation tree to which the message belongs.
+    </p>
+    <p>Open a "Navigation Drawer" on a left and tap current Timeline
+        type item ("Home")
+        to switch to the other views.
+    </p>
+</section>
+<section>
+    <title>
+        <p>3. Sending and replying</p>
+    </title>
+    <p>In order to update your status, tap the "Post" button
+        ("Tweet" for Twitter),
+        type in a text into the text area at the bottom of the screen and tap
+        <strong>Send</strong>.
+    </p>
+    <p>In order to reply, <strong>hold down</strong>
+        a message and select <strong>Reply</strong>
+        from a Context menu, type in your reply at the bottom.
+    </p>
+    <p>To abort a reply, simply tap the "Hide" button to hide the
+       text area.</p>
+</section>
+<section>
+    <title>
+        <p>4. Direct (private) messages</p>
+    </title>
+    <p>Open a Navigation Drawer on a left, tap current Timeline type
+        item (Home)
+        and select
+        <strong>Direct Messages</strong>
+        from the list.
+    </p>
+    <p>In order to <strong>delete</strong>
+        your message (public or private),
+        <strong>hold down</strong> on it and select
+        <strong>Remove message</strong>.
+    </p>
+    <p>New messages are fetched to timelines in a background
+        if you have turned on  <strong>Automatic sync</strong>
+        in Android "Account and Sync" settings for this
+        AndStatus Account.
+        In any case you may always get updates from the Internet
+        manually using "Reload" command on an Action bar.
+    </p>
+</section>
+<section>
+    <title>
+        <p>5. Mentions</p>
+    </title>
+    <p>Tap current Timeline type item in a Navigation Drawer
+        and then select
+        <strong>Mentions</strong>
+        .
+    </p>
+    <p>Mentions will list every message that mentions your
+        <strong>@username</strong>
+        (or even mentions of all your AndStatus accounts for a
+        "combined" timeline).
+    </p>
+</section>
+<section>
+    <title>
+        <p>6. Search (local search)</p>
+    </title>
+    <p>Local search searches among messages already loaded from the
+        Internet.
+        Hence it is available even offline.
+    </p>
+    <p>1. In order to find any word or phrase in a text of messages,
+        select <strong>Search</strong>
+        on an Action bar or click a dedicated
+        <strong>Search</strong> button on your device.
+    </p>
+    <p>If you wish to show messages from a specific user,
+        please search for "username".</p>
+    <p>To see mentions of a specific User, search for "@username".
+    </p>
+    <p>2. To search quickly for messages by a user
+        (an Author or a Sender of a selected message), select
+        "Messages by UserName" from the context menu of the message.
+        This is actually sort of a Global Search (see below).
+    </p>
+</section>
+<section>
+    <title>
+        <p>7. Global search</p>
+    </title>
+    <p>Global search function sends a search request directly to
+        Social networks' servers.
+        This is why live Internet connection to the networks is required.
+    </p>
+    <p>First, you are presented with the results of the Local search.
+        In parallel, AndStatus downloads results
+        from a Social network of the selected Account
+        (or from all Social networks, if a Timeline is
+        "combined").
+        Search results are being updated upon receiving responses from the servers.
+        In a case of connection error
+        (i.e. no response from a server of a Social network)
+        you will see results of a Local Search only.
+    </p>
+    <p>Please note that pump.io system doesn't support Global search yet.
+    </p>
+    <p>1. Global search by a word or a phrase is initiated
+        using its "Global search" item on an "Action bar".</p>
+    <p>2. Another way to search globally for messages by an Author or a Sender
+        of the selected message is to select
+        "Messages by UserName" from a Context menu of this message.</p>
+</section>
+</body>
+</FictionBook>

@@ -38,6 +38,16 @@
                 to &quot;Yes&quot; is recommended for these servers.  
                 <a href="https://github.com/andstatus/andstatus/issues/249">#249</a>
             </change>
+            <change>References to a &quot;Microblogging system&quot; changed to
+                a &quot;Social network&quot;.  
+                <a href="https://github.com/andstatus/andstatus/issues/239">#239</a>
+            </change>
+            <change>Portuguese translation added, thanks to Sérgio Marques. Thanks to all 
+                translators for updates!<br/>
+                User Guide in different languages is starting to appear.
+                Crowdin.com is working on fixing related
+                <a href="https://crowdin.com/project/andstatus/discussions/13">translation 
+                    service bugs</a>, which we reported to them.</change>
         </changes>
     </release>
     <release android:versionName="16.0" android:versionCode="123"

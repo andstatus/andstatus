@@ -61,7 +61,7 @@
   <string name="category_title_preference_credentials">Имя пользователя и пароль</string>
   <string name="category_title_preference_information">Информация</string>
   <string name="category_title_preference_notifications">Уведомления</string>
-  <string name="category_title_preference_origin">Система микроблогов</string>
+  <string name="category_title_preference_origin">Социальная сеть</string>
   <string name="category_title_preference_settings">Настройки</string>
   <string name="combined_timeline_on">объединённая</string>
   <string name="combined_timeline_off_account">для</string>
@@ -162,11 +162,11 @@
   <string name="label_backup_folder">Папка бэкапа</string>
   <string name="label_conversation">Обсуждение</string>
   <string name="label_host">Хост</string>
-  <string name="label_manage_origin_systems">Управление системами микроблогов</string>
-  <string name="label_origin_list">Система микроблогов</string>
-  <string name="label_origin_name">Имя системы микроблогов (уникальное и неизменное)</string>
-  <string name="label_origin_system">Система микроблогов</string>
-  <string name="label_origin_type">Тип системы микроблогов</string>
+  <string name="label_manage_origin_systems">Управление социальными сетями</string>
+  <string name="label_origin_list">Социальные сети</string>
+  <string name="label_origin_name">Имя Социальной сети (уникальное и неизменное)</string>
+  <string name="label_origin_system">Социальная сеть</string>
+  <string name="label_origin_type">Тип Социальной сети</string>
   <string name="label_restore">Восстановить данные приложения из Бэкапа</string>
   <string name="label_upgrading">Идёт обновление приложения. Пожалуйста подождите.</string>
   <string name="label_with_media">с медиа-контентом</string>
@@ -239,7 +239,7 @@
   <string name="options_menu_reload">Загрузка</string>
   <string name="options_menu_mentions">Упоминания</string>
   <string name="options_menu_search">Поиск</string>
-  <string name="origin_settings_action">Система микроблогов</string>
+  <string name="origin_settings_action">Социальная сеть</string>
   <string name="preference_ssl_mode_title">Режим SSL и безопасность</string>
   <string name="preference_ssl_mode_secure_summary">Вы в безопасности: разрешены только правильно настроенные SSL соединения</string>
   <string name="preference_ssl_mode_insecure_summary">Предупреждение: Ваши соединения не являются безопасными. Пожалуйста, попросите Вашего Администратора сервера это исправить, а затем вернитесь в безопасный режим</string>
@@ -286,7 +286,7 @@
   <string name="status_destroyed">Сообщение удалено.</string>
   <string name="summary_preference_accounts_absent">Пока нет ни одного AndStatus-аккаунта</string>
   <string name="summary_preference_accounts_present">Количество AndStatus аккаунтов</string>
-  <string name="summary_preference_add_account_oauth">Щёлкните здесь для открытия сайта Системы в браузере.</string>
+  <string name="summary_preference_add_account_oauth">Нажмите здесь, чтобы открыть в браузере сайт Социальной сети.</string>
   <string name="summary_preference_add_account_basic">Щёлкните здесь для аутентификации пользователя и добавления учётной записи (аккаунта).</string>
   <string name="summary_preference_appearance">Изменить внешний вид программы AndStatus</string>
   <string name="summary_preference_enable_android_backup_off">AndStatus не будет запрашивать создание бэкапов данных</string>
@@ -311,8 +311,8 @@
   <string name="summary_preference_notifications_timeline_on">Вы будете уведомлены о новых сообщениях</string>
   <string name="summary_preference_oauth_off">Базовая аутентификация</string>
   <string name="summary_preference_oauth_on">OAuth (защищённая аутентификация)</string>
-  <string name="summary_preference_origin_system">Щёлкните здесь для выбора Системы микроблогов</string>
-  <string name="summary_preference_password">Ваш пароль в Системе микроблогов</string>
+  <string name="summary_preference_origin_system">Нажмите здесь, чтобы выбрать Социальную сеть</string>
+  <string name="summary_preference_password">Ваш пароль в этой Социальной сети</string>
   <string name="summary_preference_show_avatars_off">Аватары пользователей не будут показаны</string>
   <string name="summary_preference_show_avatars_on">Аватары пользователей будут показаны</string>
   <string name="summary_preference_ssl_off">без SSL</string>
@@ -327,7 +327,7 @@
   <string name="summary_preference_syncing">Когда синхронизировать Линии времени и как это показывать Пользователю</string>
   <string name="summary_preference_theme_size">Выберите размер текста</string>
   <string name="summary_preference_user_in_timeline">Пользователь будет показан как \"{0}\"</string>
-  <string name="summary_preference_username">Ваше имя пользователя в Системе микроблогов</string>
+  <string name="summary_preference_username">Ваше имя пользователя в этой Социальной сети</string>
   <string name="summary_preference_username_pumpio">Введите Ваш ID на Вашем pump.io сайте. Он выглядит как email: пользователя \"@\" имя сервера; например: andstatus@identi.ca</string>
   <string name="summary_preference_verify_credentials">Данный аккаунт успешно аутентифицирован. Щёлкните Назад (&lt;) для продолжения или щёлкните здесь для повторной проверки</string>
   <string name="summary_preference_verify_credentials_failed">Проверка завершилась неудачно. Щёлкните здесь для аутентификации пользователя и включения данной учётной записи</string>
@@ -397,7 +397,7 @@
   <string name="title_preference_username_pumpio">Webfinger ID</string>
   <string name="title_preference_show_avatars">Показать аватары</string>
   <string name="title_preference_show_attached_images">Показать вложенные изображения</string>
-  <string name="title_preference_show_origin">Показать систему микроблогов на Ленте времени</string>
+  <string name="title_preference_show_origin">Показывать Социальную сеть на Ленте времени</string>
   <string name="title_preference_user_in_timeline">Как показать Пользователя на Ленте времени</string>
   <string name="title_preference_verify_credentials">Перепроверить учётную запись</string>
   <string name="title_preference_verify_credentials_failed">Проверить учётную запись</string>
@@ -411,6 +411,7 @@
   <string name="reblogged_by">пересказано %1$s</string>
   <string name="reblogged_by_twitter">ретвитнуто %1$s</string>
   <string name="unimplemented">Не реализовано.</string>
+  <string name="use_legacy_http_protocol_title">Использовать старый HTTP протокол</string>
   <string name="user_in_timeline_entries_username">имяпользователя</string>
   <string name="user_in_timeline_entries_at_username">"@имяпользователя"</string>
   <string name="user_in_timeline_entries_webfingerid">webFingerId</string>

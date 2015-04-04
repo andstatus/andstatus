@@ -403,6 +403,7 @@
   <string name="title_preference_vibration">バイブレーション</string>
   <string name="title_sending_messages_log_enabled">送信メッセージをファイルにロギング</string>
   <string name="title_timeline">タイムライン</string>
+  <string name="translator_credits">翻訳者クレジット</string>
   <string name="message_source_from">%1$s から</string>
   <string name="message_source_in_reply_to">%1$s に返信</string>
   <string name="message_source_to">%1$s に</string>

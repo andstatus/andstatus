@@ -25,6 +25,7 @@
   <string name="account_settings_action">AndStatus Accounteinstellungen</string>
   <string name="account_settings_activity_title">Konto</string>
   <string name="account_settings_summary">Synchronisation Frequenz, Benachrichtigungen etc.</string>
+  <string name="automatic">Auto</string>
   <string name="settings_action">Einstellungen</string>
   <string name="settings_activity_title">Einstellungen</string>
   <string name="action_menu_overflow_description">Weitere Aktionen&#8230;</string>
@@ -69,6 +70,8 @@
   <string name="command_follow_user">Folgen</string>
   <string name="command_stop_following_user">Folgen beenden</string>
   <string name="created_label">Erstellt</string>
+  <string name="custom_locale_title">Sprache der Anwendung</string>
+  <string name="device_default">Gerätestandard</string>
   <string name="dialog_summary_acquiring_an_access_token">Bitte warten, während AndStatus OAuth Request Token und Access Token austauscht</string>
   <string name="dialog_summary_acquiring_a_request_token">Bitte warten, während AndStatus ein Request Token für OAuth abholt</string>
   <string name="dialog_summary_authentication_failed">Bitte überprüfe Username und Passwort.</string>
@@ -152,6 +155,7 @@
   <string name="history_time_entries_10years">10 Jahre</string>
   <string name="id_of_this_message_was_not_specified">Id dieser Nachricht wurde nicht festgelegt</string>
   <string name="in_combined_global_search_label">Globale Suche in der kombinierten Zeitleiste integrieren</string>
+  <string name="in_combined_public_reload_label">In \"Aktualisieren\" einschließen so lange in kombinierter öffentlicher Timeline</string>
   <string name="label_accountselector">Wähle einen Account</string>
   <string name="label_allow_html_content">HTML-Inhalte erlauben</string>
   <string name="label_backup">Anwendungsdaten auf der SD-Karte sichern</string>
@@ -174,9 +178,12 @@
   <string name="message_edit_hint">Gib hier deinen Nachricht ein!</string>
   <string name="message_characters_left">Zeichen übrig:</string>
   <string name="message_is_too_long">Nachricht ist zu lang.</string>
+  <string name="mention_as_webfingerid_title">Erwähnung als @webFingerId</string>
   <string name="menu_item_act_as">Handle als&#8230;</string>
   <string name="menu_item_act_as_user">Handle als \"%1s\"</string>
   <string name="menu_item_block">Blocke</string>
+  <string name="menu_item_copy_text">Text in die Zwischenablage kopieren</string>
+  <string name="menu_item_copy_author">Kopiere @autor in die Zwischenablage</string>
   <string name="menu_item_destroy_favorite">Favorit zurücknehmen</string>
   <string name="menu_item_destroy_reblog">Reblog zurücknehmen</string>
   <string name="menu_item_destroy_reblog_twitter">Retweet zurücknehmen</string>
@@ -188,6 +195,7 @@
   <string name="menu_item_open_conversation">Öffne Gespräch</string>
   <string name="menu_item_open_message_permalink">Im Internet öffnen</string>
   <string name="menu_item_reply">Antworten</string>
+  <string name="menu_item_reply_all">Allen antworten</string>
   <string name="menu_item_reblog">Reblog</string>
   <string name="menu_item_reblog_twitter">Retweet</string>
   <string name="menu_item_resend">Erneut senden</string>
@@ -197,6 +205,7 @@
   <string name="menu_item_view_profile">Profil anzeigen</string>
   <string name="message_sent">Deine Nachricht wurde verschickt.</string>
   <string name="messages_activity">Direktnachrichten</string>
+  <string name="no">Nein</string>
   <string name="not_set">nicht festgelegt</string>
   <string name="notification_message_formats_1">{0} neuen Message</string>
   <string name="notification_message_formats_2">{0} neue Messages</string>
@@ -243,8 +252,8 @@
   <string name="preference_log_everything_to_file_title">Logge alles in eine Datei</string>
   <string name="preference_log_network_level_messages_title">Logge Netzwerkebene betreffende Benachrichtigungen</string>
   <string name="preference_notification_icon_alternative_title">Alternatives Benachrichtigungssymbol</string>
-  <string name="preference_notification_icon_alternative_off">Icon als \"&amp;s\" Buchstaben</string>
-  <string name="preference_notification_icon_alternative_on">Icon als Kreis</string>
+  <string name="preference_notification_icon_alternative_off">Symbol als \"&amp;s\" Buchstaben</string>
+  <string name="preference_notification_icon_alternative_on">Symbol als Kreis</string>
   <string name="preference_true_black_title">Rein schwarzer Hintergrund</string>
   <string name="preference_use_kitkat_media_chooser_title">KitKat Medienauswahl verwenden</string>
   <string name="reltime_days_ago_formats_1">Gestern</string>
@@ -271,41 +280,6 @@
 	    StatusNet (GNU social) und pump.io.\n Open Source Lizenz.</string>
   <string name="syncing">Synchronisiere&#8230;</string>
   <string name="syncing_timeline_for_somebody">Synchronisiere %1$s für %2$s</string>
-  <string name="user_manual_page_1"><h1><b>AndStatus Anleitung</b></h1>\n\n
-AndStatus ist ein Open Source Client für soziale Netzwerke, der Unterhaltungen per Diskussionsstrang in Baumstruktur ermöglicht. 
-Unterstützt werden unterschiedliche Protokolle, inklusive GNU social, Twitter und Pump.io. 
-AndStatus kombiniert deine Konten aller Netzwerke in eine Timeline 
-und ermöglicht Lesen sowie Posting auch offline.\n   	    
-* Link zu dieser Anleitung ist available in der Action bar&gt;Settings&gt;About AndStatus&gt;Learn More.\n
-* Das Change Log auf der nächsten Seite bietet einen Blick auf Beschreibungen und Links zu Diskussionen betreffend aller Eigenschaften von AndStatus.\n\n  
-<h2><b>1. Loslegen</b></h2>\n\n
-Tippe die \"Get Started\" Schaltfläche unten an: Oberfläche, um ein neues Konto anzulegen wird geöffnet.\n
-Zunächst wirst du aufgefordert, ein Microblogging System eines bestehenden Kontos aus einer Liste auszuwählen.
-Twitter, pump.io und verschiedene \"GNU social\"-artige Systems (Quitter, LoadAverage und Vinilox)-
-sind vorkonfiguriert).\n
-Im Falle dein (\"GNU social\"-artiges) System sei nicht gelistet, 
-tippe den Menüpunkt \"Überblick öffentlicher Server\" an, um ein System aus einer dynamischen von der GNU social Gemeinschaft gepflegten Liste auszuwählen; 
-oder manuell \"Neues System hinzufügen\" bevor das neue Konto erstellt wird.\n
-Für Twitter kannst du direkt \"Konto hinzufügen\" antippen. 
-Für andere Systeme wirst du aufgefordert, zuvor deinen Benutzernamen und Passwort einzugeben, um \"Neuen Account hinzufügen\" zu ermöglichen .\n
-Nach erfolgreicher Kontoerstellung, tippe bitte \"linker Pfeil\" in der 
-\"Action bar\" oder die \"Zurück\" Schaltfläche deines Geräts. 
-Diesmal wird die \"Home Timeline\" geöffnet und Nachrichten dieses Kontos werden heruntergeladen.\n 
-Gratulation! Bitte unten weiterlesen, was du weiterhin tun kannst.\n\n
-Und nicht vergessen, das AndStatus Widget an einen Home screen deines Geräts anzuheften: 
-Das Widget informiert über neue Nachrichten und kann verwendet werden um die Anwendung zu starten.\n\n
-<h2><b>2. AndStatus Grundlagen</b></h2>\n\n
-Der erste Anblick von AndStatus (nachdem mindestestens ein Konto hinzugefügt wurde) zeigt die Home Timeline.\n
-Um eine Aktion für eine bestimmte Nachricht in der Liste auszuführen, muss diese  per <b>langes Tippen</b> berührt werden, um das \"Kontextmenü\" zu öffnen.\n
-Du kannst eine Nachricht <b>antippen</b>, um mehr Details über sie und den Diskussionsstrang, zu dem diese Nachricht gehört zu sehen.\n
-Öffne einen \"Navigation Drawer\" amr linken Rand und tippe den gegenwärtigen Timeline Modus (\"Home\") um zu anderen Ansichten zu wechseln.\n\n
-<h2><b>3. Senden und Antworten</b></h2>\n\n
-Um deinen Status zu aktualisieren, tippe die \"Post\" Schaltfläche (\"Tweet\" für Twitter),
-schreibe einen Text in das Textfeld am unteren Rand und tippe auf <b>Send</b>.\n
-Um auf eine Nachricht zu antworten, benutze <b>langes Tippen</b> auf die Nachricht und wähle <b>Antworten</b> im Kontextmenü aus,
-schreibe deine Antwort in das Textfeld unten.\n
-Um eine Antwort abzubrechen, einfach die \"Hide\" Schaltfläche antippen, um das Textfeld zu  verstecken.
-  </string>
   <string name="search_timeline_label">Nachrichten, User und Hashtags durchsuchen</string>
   <string name="search_timeline_hint">Username/Stichwort eingeben</string>
   <string name="search_direct_messages_label">Direktnachrichten durchsuchen</string>
@@ -361,6 +335,7 @@ Um eine Antwort abzubrechen, einfach die \"Hide\" Schaltfläche antippen, um das
   <string name="summary_preference_vibration_off">Vibration ist abgeschaltet</string>
   <string name="summary_preference_vibration_on">Vibrieren bei eingehender Nachricht</string>
   <string name="system_is_busy_try_later">Das System ist beschäftigt. Bitte versuche es später erneut.</string>
+  <string name="theme_color_entries_defautl">Gerätestandard</string>
   <string name="theme_color_entries_light">Hell</string>
   <string name="theme_color_entries_dark">Dunkel</string>
   <string name="theme_size_entries_small">Klein</string>
@@ -430,6 +405,7 @@ Um eine Antwort abzubrechen, einfach die \"Hide\" Schaltfläche antippen, um das
   <string name="title_preference_vibration">Vibration</string>
   <string name="title_sending_messages_log_enabled">Gesendete Mitteilungen in eine Datei loggen</string>
   <string name="title_timeline">Timeline</string>
+  <string name="translator_credits">Übersetzer-Impressum</string>
   <string name="message_source_from">von %1$s</string>
   <string name="message_source_in_reply_to">als Antwort auf %1$s</string>
   <string name="message_source_to">an %1$s</string>
@@ -441,4 +417,5 @@ Um eine Antwort abzubrechen, einfach die \"Hide\" Schaltfläche antippen, um das
   <string name="user_in_timeline_entries_webfingerid">webFingerId</string>
   <string name="user_in_timeline_entries_real_name">Echter Name</string>
   <string name="user_in_timeline_entries_real_name_at_username">Echter Name @benutzername</string>
+  <string name="yes">Ja</string>
 </resources>

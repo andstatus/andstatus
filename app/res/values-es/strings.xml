@@ -25,6 +25,7 @@
   <string name="account_settings_action">Configuración de la cuenta AndStatus</string>
   <string name="account_settings_activity_title">Cuenta</string>
   <string name="account_settings_summary">Sicronización de frecuencia, notificaciones , etc.</string>
+  <string name="automatic">Automático</string>
   <string name="settings_action">Configuración</string>
   <string name="settings_activity_title">Configuración</string>
   <string name="action_menu_overflow_description">Más opciones&#8230;</string>
@@ -68,6 +69,8 @@
   <string name="command_follow_user">Seguir a</string>
   <string name="command_stop_following_user">Dejar de seguir a</string>
   <string name="created_label">Creado</string>
+  <string name="custom_locale_title">Idioma de la aplicación</string>
+  <string name="device_default">Predeterminado</string>
   <string name="dialog_summary_acquiring_an_access_token">Por favor, espere mientras AndStatus intercambia una solicitud de prueba de OAuth para la prueba de acceso</string>
   <string name="dialog_summary_acquiring_a_request_token">Por favor espere mientras AndStatus adquiere una prueba de solicitud de OAuth</string>
   <string name="dialog_summary_authentication_failed">Por favor verifique su nombre de usuario y contraseña.</string>
@@ -174,6 +177,7 @@
   <string name="message_edit_hint">¡Escriba aquí su mensaje!</string>
   <string name="message_characters_left">Caracteres sobrantes:</string>
   <string name="message_is_too_long">El mensaje es demasiado largo.</string>
+  <string name="mention_as_webfingerid_title">Mencionar como @Identificador</string>
   <string name="menu_item_act_as">Actuar como&#8230;</string>
   <string name="menu_item_act_as_user">Actuar como \"%1s\"</string>
   <string name="menu_item_block">Boquea</string>
@@ -200,6 +204,7 @@
   <string name="menu_item_view_profile">Ver Perfil</string>
   <string name="message_sent">Tu mensaje ha sido enviado.</string>
   <string name="messages_activity">Mensajes directos</string>
+  <string name="no">No</string>
   <string name="not_set">no establecido</string>
   <string name="notification_message_formats_1">{0} mensaje</string>
   <string name="notification_message_formats_2">{0} mensajes</string>
@@ -275,70 +280,6 @@
 	    Licencia Open Source (de código abierto).</string>
   <string name="syncing">Sincronizando&#8230;</string>
   <string name="syncing_timeline_for_somebody">Sincronizando %1$s para %2$s</string>
-  <string name="user_manual_page_1"><h1><b>Manual de uso de AndStatus</b></h1>\n\n
-        Andstatus es un ligero cliente para redes sociales basadas en conversaciones ramificadas. 
-        Soporta múltiples protocolos, incluyendo GNU social (StatusNet), Twitter y Pump.io.
-        AndStatus combina las cuentas de todas tus redes sociales en una Línea temporal y permite leer y publicar incluso estando desconectado.\n 
-        Licencia de Código Abierto.\n   	    
-        * Hay un enlace a este manual en el menú&gt;Configuración&gt;Acerca de AndStatus&gt;Más información.\n
-        * Cambios en la versión , en la siguiente página, te permitirá ver descripciones y enlaces a discusiones sobre todas las características de AndStatus.\n\n  
-        <h2><b>1. Primeros pasos</b></h2>\n\n
-        Al el botón de abajo \"Comenzar\": se mostrará la pantalla para añadir una cuenta nueva.\n
-        Seguramente quieras cambiar el sistema de microblogging predeterminado (\"Twitter\") a alguna otra red social
-        (Twitter, Pump.io y sistemas basados en StatusNet (GNU social) como estos tres ejemplos: Quitter, LoadAverage y Vinilox, que están preconfigurados).\n
-        En el caso de que tu servidor ( basado en StatusNet) no esté listado, abre el menú, selecciona \"Configuración - 
-        Administra las redes sociales\" y \"Añadir nueva red social\" después, añade una cuenta nueva.\n
-        Para Twitter puedes pulsar directamente \"Añadir esta cuenta\" sin más complicación. 
-        Para otras redes sociales se te pedirá que introduzcas tu Usuario y Contraseña antes de que se active \"Añadir esta cuenta\".\n
-        Después de la introducción exitosa de la cuenta, pulsa  la \"flecha de atrás\" de la
-        \"Barra de Acción\" o pulsa el botón de \"Atrás\" de tu dispositivo.
-        Ahora se abrirá la línea temporal Inicio y se descargarán de internet todos los  
-        mensajes para esta cuenta.\n 
-        ¡Felicidades! Lee abajo para saber qué hacer después.\n\n
-        Y no te olvides de añadir el widget de AndStatus a la pantalla principal de tu dispositivo: 
-        el widget te informará sobre los nuevos mensajes y podrás usarlo para abrir AndStatus.\n\n
-        <h2><b>2. Lo básico de AndStatus</b></h2>\n\n
-        Lo primero que ves en AndStatus (después de añadir al menos una cuenta) es la línea temporal Inicio.\n
-        Para interaccionar con algún mensaje deberás <b>pulsarlo</b>
-        hasta que se abra un menú contextual.\n
-        Deberás <b>pulsar</b> sobre un mensaje para ver más detalles o leer la conversación ramificada entera a la que pertenece.\n
-        Abre el menú y después <b>Inicio</b> para cambiarlo a otras líneas temporales.\n\n
-        <h2><b>3. Publicando y respondiendo</b></h2>\n\n
-        Para actualizar tu estado, pulsa el icono de arriba del mensaje con el más \"+\",
-        escribe en la parte de abajo de la pantalla y pulsa el botón de envío con forma de punta de flecha.\n
-        Para responder, <b>deja pulsado</b> un mensaje y selecciona <b>Responder</b>,
-        finalmente, escribe la respuesta abajo.\n
-        Para cancelar una publicación o una contestación, simplemente pulsa en el icono del mensaje con un signo menos \"-\".</string>
-  <string name="user_manual_page_2">
-<h2><b>4. Mensajes directos (o privados)</b></h2>\n\n
-Abre el menú lateral de la derecha, pulsa la línea temporal que estés usando y selecciona  <b>Mensajes directos</b> en la lista.\n
-Para <b>eliminar</b> tu mensaje (público o privado), 
-<b>déjalo pulsado</b> y selecciona <b>Borrar el mensaje</b>.\n\n
-Los nuevos mensajes saldrán en las línas temporales en segundo plano si has activado la <b>Sincronización automática</b> en los ajustes de Android de \"Cuentas\" para esa cuenta en AndStatus. 
-De todos modos, siempre se actualizarán manualmente usando la acción de \"Actualizar\" de la barra de acción (la barra superior).\n\n
-<h2><b>5. Menciones</b></h2>\n\n
-Pulsa la línea temporal actual en el panel lateral y selecciona <b>Menciones</b>.\n
-Menciones mostrará cada mensaje que menciona a tu <b>@nombre de usuario</b>
-(o incluso alguna de las cuentas en AndStatus para una línea temporal \"combinada\").\n\n
-<h2><b>6. Buscar (búsqueda local)</b></h2>\n\n
-Busca entre todos los mensajes ya descargados de Internet.
-Por tanto, está disponible hasta desconectado.\n
-1.  Para encontrar cualquier palabra o frase en los mensajes de texto,
-selecciona <b>Buscar</b> en la barra de acción o pulsa la tecla de búsqueda de tu dispositivo si la tiene.\n
-Si quieres ver los mensajes de un determinado usuario, 
-por favor, busca su \"nombre de usuario\".\n
-Para ver las menciones de un determinado usuario, busca su \"@nombre de usuario\".\n\n
-2. Para buscar rápidamente los mensajes del usuario que ha mandado un determinado mensaje, selecciona
-\"Mensajes de Nombre de usuario\" en el menú emergente al dejar pulsado el mensaje. 
-Esto también tiene algo que ver con la Búsqueda global (abajo).\n\n
-<h2><b>7. Búsqueda global</b></h2>\n\n
-La Búsqueda global envía una una petición de búsqueda directamente a los servidores de la red social. 
-He aquí por qué una conexión de internet por parte de estas redes es necesaria.\n
-Primero se enseñan los resultados locales, mientras, AndStatus descarga los resultados del servidor de la cuenta seleccionada (o de varios servidores si las líneas temporales están \"combinadas\").
-Los resultados de las búsquedas son actualizados cuando reciben una respuesta por parte de los servidores. En caso de que la conexión fallara (p.e. si no responde el servidor de la red social) sólo verás los resultados de la búsqueda local.\n
-Por favor, ten en cuenta que la red Pump.io no soporta búsquedas globales todavía.\n
-1. La búsqueda global se activa con el icono de \"Buscar globalmente\" en la barra de acción.\n
-2. Otro modo de buscar globalmente mensajes del autor de un determinado mensaje es seleccionando \"Mensajes de Nombre de usuario\" en el menú emergente del mensaje.</string>
   <string name="search_timeline_label">Búsqueda de mensajes, usuarios y hashtags</string>
   <string name="search_timeline_hint">Introduzca un nombre de usuario/frase</string>
   <string name="search_direct_messages_label">Buscar mensajes directos</string>
@@ -394,6 +335,7 @@ Por favor, ten en cuenta que la red Pump.io no soporta búsquedas globales todav
   <string name="summary_preference_vibration_off">Vibración desactivada</string>
   <string name="summary_preference_vibration_on">Vibración para los mensajes entrantes</string>
   <string name="system_is_busy_try_later">El sistema está ocupado. Por favor, inténtelo de nuevo más tarde.</string>
+  <string name="theme_color_entries_defautl">Predeterminado</string>
   <string name="theme_color_entries_light">Claro</string>
   <string name="theme_color_entries_dark">Oscuro</string>
   <string name="theme_size_entries_small">Pequeño</string>
@@ -463,6 +405,7 @@ Por favor, ten en cuenta que la red Pump.io no soporta búsquedas globales todav
   <string name="title_preference_vibration">Vibración</string>
   <string name="title_sending_messages_log_enabled">Registrar los mensajes enviados en un archivo</string>
   <string name="title_timeline">Línea temporal</string>
+  <string name="translator_credits">Traductores</string>
   <string name="message_source_from">desde %1$s</string>
   <string name="message_source_in_reply_to">en respuesta a %1$s</string>
   <string name="message_source_to">para %1$s</string>
@@ -474,4 +417,5 @@ Por favor, ten en cuenta que la red Pump.io no soporta búsquedas globales todav
   <string name="user_in_timeline_entries_webfingerid">Identificación de Webfinger</string>
   <string name="user_in_timeline_entries_real_name">Nombre real</string>
   <string name="user_in_timeline_entries_real_name_at_username">Nombre real @usuario</string>
+  <string name="yes">Sí</string>
 </resources>

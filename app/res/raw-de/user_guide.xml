@@ -1,0 +1,205 @@
+<?xml-stylesheet version='1.0' type='text/xsl' href='../raw/fb2_2_html.xsl' encoding="utf-8"?>
+<!-- 
+    Copyright (C) 2015 Yuri Volkov, yvolk@yurivolkov.com
+    
+    Translations are copyrighted by corresponding Translators.
+        
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+    
+         http://www.apache.org/licenses/LICENSE-2.0
+    
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+ -->
+<FictionBook xmlns="http://www.gribuser.ru/xml/fictionbook/2.0"
+xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../res-src/fb2/FictionBook.xsd">
+<description>
+    <title-info>
+        <genre>computers</genre>
+        <author>
+            <first-name>AndStatus project</first-name>
+            <last-name></last-name>
+        </author>
+        <book-title>AndStatus Benutzerhandbuch</book-title>
+        <lang>de</lang>
+        <src-lang>en</src-lang>
+        <translator>
+            <nickname>morph, vinzv</nickname>
+        </translator>
+    </title-info>
+    <document-info>
+        <author>
+            <nickname>AndStatus project</nickname>
+            <home-page>http://www.andstatus.org</home-page>
+            <email>andstatus@gmail.com</email>
+        </author>
+        <date>2015-03-15</date>
+        <id></id>
+        <version>1</version>
+    </document-info>
+</description>
+<body>
+<section>
+    <title>
+        <p>Einleitung</p>
+    </title>
+    <p>AndStatus ist ein Open Source Client für soziale Netzwerke, der Unterhaltungen per Diskussionsstrang in Baumstruktur ermöglicht.
+Unterstützt werden unterschiedliche Protokolle, inklusive GNU social, Twitter und Pump.io.
+AndStatus kombiniert deine Konten aller Netzwerke in eine Timeline und ermöglicht Lesen sowie Posting auch offline.</p>
+    <p>Link zu dieser Anleitung ist in der Menüleiste-&gt;Hilfe enthalten.</p>
+    <p>Das Change Log auf der nächsten Seite bietet einen Blick auf Beschreibungen und Links zu Diskussionen betreffend aller Eigenschaften von AndStatus.</p>
+</section>
+<section>
+    <title>
+        <p>1. Loslegen</p>
+    </title>
+    <p>Tippe die "Loslegen" Schaltfläche unten an: die Oberfläche, um ein neues Konto anzulegen wird geöffnet.
+    </p>
+    <p>Zunächst wirst du aufgefordert, ein Microblogging System eines bestehenden Kontos aus einer Liste auszuwählen.
+Twitter, Pump.io und verschiedene "GNU social"-artige Systeme (Quitter, LoadAverage und Vinilox) sind vorkonfiguriert.
+    </p>
+    <p>Falls dein ("GNU social"-artiges) System nicht gelistet ist,
+tippe den Menüpunkt "Überblick öffentlicher Server" an, um ein System aus einer von der GNU social Gemeinschaft gepflegten dynamischen Liste auszuwählen;
+oder manuell "Neues System hinzufügen" bevor das neue Konto erstellt wird.
+Für Twitter kannst du direkt "Konto hinzufügen" antippen.</p>
+    <p>Für andere Systeme wirst du aufgefordert, zuvor deinen Benutzernamen und Passwort einzugeben, um "Neuen Account hinzufügen" zu ermöglichen .
+Nach erfolgreicher Kontoerstellung, tippe bitte "linker Pfeil" in der
+ActionBar oder die "Zurück" Schaltfläche deines Geräts.</p>
+    <p>Diesmal wird die "Home Timeline" geöffnet und Nachrichten dieses Kontos werden heruntergeladen.
+    </p>
+    <p>Gratulation! Bitte unten weiterlesen, was du weiterhin tun kannst.
+    </p>
+    <p>Und vergiss nicht, das AndStatus Widget auf einem Home Screen deines Geräts anzufügen:
+Das Widget informiert über neue Nachrichten und kann verwendet werden, um die Anwendung zu starten.
+    </p>
+</section>
+<section>
+    <title>
+        <p>2. AndStatus Grundlagen</p>
+    </title>
+    <p>Die erste Ansicht von AndStatus (nachdem mindestestens ein Konto hinzugefügt wurde) 
+        zeigt eine Home Timeline.
+    </p>
+    <p>Um eine Aktion für eine bestimmte Nachricht in der Liste auszuführen, 
+        muss diese 
+        per <strong>langes Tippen</strong> berührt werden, 
+        um das "Kontextmenü" zu öffnen.
+    </p>
+    <p>Du kannst eine Nachricht <strong>antippen</strong>, 
+        um mehr Details über sie und den 
+        Diskussionsstrang zu sehen, zu dem diese Nachricht gehört.
+    </p>
+    <p>Öffne einen "Navigation Drawer" am linken Rand und tippe den gegenwärtigen Timeline 
+        Modus ("Home") 
+        um zu anderen Ansichten zu wechseln.
+    </p>
+</section>
+<section>
+    <title>
+        <p>3. Senden und Antworten</p>
+    </title>
+    <p>Um deinen Status zu aktualisieren, tippe die "Post" Schaltfläche 
+        ("Tweet" für Twitter), 
+        schreibe einen Text in das Textfeld am unteren Rand und tippe auf 
+        <strong>Senden</strong>.
+    </p>
+    <p>Um auf eine Nachricht zu antworten, benutze <strong>langes Tippen</strong> 
+        auf die Nachricht und wähle <strong>Antworten</strong> 
+        im Kontextmenü aus, schreibe deine Antwort in das Textfeld unten.
+    </p>
+    <p>Um eine Antwort abzubrechen, einfach die "Hide" Schaltfläche antippen, um das 
+       Textfeld zu verstecken.</p>
+</section>
+<section>
+    <title>
+        <p>4. Direkte (private) Nachrichten</p>
+    </title>
+    <p>Öffne einen "Navigation Drawer" am linken Rand, tippe den gegenwärtigen Timeline Modus 
+        (Home) 
+        und wähle 
+        <strong>Direct Messages</strong> 
+        aus der Liste.
+    </p>
+    <p>Um deine Nachricht (öffentlich oder privat) 
+        zu <strong>löschen</strong>, halte sie durch 
+        <strong>langes Antippen</strong> und wähle 
+        <strong>Nachricht entfernen</strong>.
+    </p>
+    <p>Neue Nachrichten werden im Hintergrund abgeholt, 
+        wenn du <strong>Automatic sync</strong> 
+        in Android Einstellungen unter 
+        "Konten und Synchronisation" 
+        für dieses AndStatus-Konto 
+        aktiviert hast.
+    </p>
+</section>
+<section>
+    <title>
+        <p>5. Erwähnungen</p>
+    </title>
+    <p>Tippe auf den aktuellen Timeline Typ im Navigation Drawer 
+        und wähle dann 
+        <strong>Erwähnungen</strong>
+        .
+    </p>
+    <p>"Erwähnungen" listet jede Nachricht, die deinen 
+        <strong>@benutzernamen</strong> erwähnt 
+        (oder eben Erwähnungen in allen deinen AndStatus Konten in einer 
+        "kombinierten" Timeline).
+    </p>
+</section>
+<section>
+    <title>
+        <p>6. Suche (lokale Suche)</p>
+    </title>
+    <p>"Lokale Suche" sucht unter Nachrichten, die bereits aus dem Internet 
+        heruntergeladen wurden. 
+        Daher ist sie auch offline verfügbar.
+    </p>
+    <p>1. Um ein Wort oder eine Formulierung im Text der Nachrichten zu finden,
+        wähle <strong>Suchen</strong>
+        auf einer Menüleiste oder tippe auf einen dedizierten
+        <strong>Suchen</strong>Button an deinem Gerät.
+    </p>
+    <p>Falls du die Nachrichten eines bestimmten Nutzers sehen möchtest,
+        suche bitte nach "benutzername".</p>
+    <p>Um Erwähnungen eines bestimmten Nutzers zu sehen, suche nach "@benutzername".
+    </p>
+    <p>2. Um schnell nach Nachrichten eines Benutzers (Verfasser oder Sender einer ausgewählten Nachricht) zu suchen, wähle "Nachrichten von UserName" im Kontextmenü der Nachricht (über langes Antippen) erreichbar.
+Das ist eigentlich eine Art globaler Suche (siehe unten).
+    </p>
+</section>
+<section>
+    <title>
+        <p>7. Globale Suche</p>
+    </title>
+    <p>Die globale Suchfunktion sendet eine Suchanfrage direkt an
+        die Server des sozialen Netzwerks.
+        Deshalb ist hierfür auch eine Internetverbindung nötig.
+    </p>
+    <p>Zuerst werden dir Ergebnisse einer lokalen Suche gezeigt.
+        Parallel lädt AndStatus Ergebnisse von einem
+        sozialen Netzwerk des gewählten Kontos
+        (oder von allen sozialen Netzwerken, falls eine Timline
+        "kombiniert" ist).
+        Suchtreffer werden aktualisiert sobald Antworten der Server eintreffen.
+        Im Falle eines Verbindungsfehlers
+        (z.B. wenn der Server eines sozialen Netzwerks nicht antwortet)
+        siehst du nur Ergebnisse der lokalen Suche.
+    </p>
+    <p>Bitte beachte, dass das pump.io System globale Suchen noch nicht unterstützt.
+    </p>
+    <p>1. Globale Suche nach einem Wort oder Satz wird über 
+        das "Global Search" Symbol in der ActionBar gestartet.</p>
+    <p>2. Ein weiterer Weg zur globalen Suche nach Nachrichten eines Verfassers oder Senders
+        der Nachrichten ist, "Nachrichten von BenutzerName" im Kontextmenü
+        der Nachricht auszuwählen.</p>
+</section>
+</body>
+</FictionBook>
