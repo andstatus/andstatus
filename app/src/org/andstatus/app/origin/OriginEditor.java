@@ -59,6 +59,7 @@ public class OriginEditor extends Activity {
     private CheckBox checkBoxIsSsl;
     private Spinner spinnerSslMode;
     private Spinner spinnerMentionAsWebFingerId;
+    private Spinner spinnerUseLegacyHttpProtocol;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,6 +93,7 @@ public class OriginEditor extends Activity {
         checkBoxIsSsl = (CheckBox) findViewById(R.id.is_ssl);
         spinnerSslMode = (Spinner) findViewById(R.id.ssl_mode);
         spinnerMentionAsWebFingerId = (Spinner) findViewById(R.id.mention_as_webfingerid);
+        spinnerUseLegacyHttpProtocol = (Spinner) findViewById(R.id.use_legacy_http_protocol);
 
         processNewIntent(getIntent());
     }
@@ -154,6 +156,7 @@ public class OriginEditor extends Activity {
         ((CheckBox) findViewById(R.id.allow_html)).setChecked(origin.isHtmlContentAllowed());
 
         spinnerMentionAsWebFingerId.setSelection(origin.getMentionAsWebFingerId().getEntriesPosition());
+        spinnerUseLegacyHttpProtocol.setSelection(origin.useLegacyHttpProtocol().getEntriesPosition());
         
         buttonDelete.setVisibility(origin.hasChildren() ? View.GONE : View.VISIBLE);
 
@@ -203,6 +206,8 @@ public class OriginEditor extends Activity {
         builder.setSslMode(SslModeEnum.fromEntriesPosition(spinnerSslMode.getSelectedItemPosition()));
         builder.setHtmlContentAllowed(((CheckBox) findViewById(R.id.allow_html)).isChecked());
         builder.setMentionAsWebFingerId(TriState.fromEntriesPosition(spinnerMentionAsWebFingerId
+                .getSelectedItemPosition()));
+        builder.setUseLegacyHttpProtocol(TriState.fromEntriesPosition(spinnerUseLegacyHttpProtocol
                 .getSelectedItemPosition()));
         builder.setInCombinedGlobalSearch(((CheckBox) findViewById(R.id.in_combined_global_search)).isChecked());
         builder.setInCombinedPublicReload(((CheckBox) findViewById(R.id.in_combined_public_reload)).isChecked());

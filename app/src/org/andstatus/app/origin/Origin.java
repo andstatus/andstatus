@@ -64,7 +64,7 @@ public class Origin {
     protected boolean ssl = true;
     private SslModeEnum sslMode = SslModeEnum.SECURE;
 
-    private TriState useLegacyHttpProtocol = TriState.UNKNOWN;
+    private TriState mUseLegacyHttpProtocol = TriState.UNKNOWN;
 
     private boolean allowHtml = false;
 
@@ -199,7 +199,7 @@ public class Origin {
     public boolean isNameValid(String originNameToCheck) {
         boolean ok = false;
         if (originNameToCheck != null) {
-            String validOriginNameRegex = "[a-zA-Z_0-9/\\.\\-]+";
+            String validOriginNameRegex = "[a-zñA-Z_0-9/\\.\\-]+";
             ok = originNameToCheck.matches(validOriginNameRegex);
         }
         return ok;
@@ -234,7 +234,7 @@ public class Origin {
     }
 
     public TriState useLegacyHttpProtocol() {
-        return useLegacyHttpProtocol;
+        return mUseLegacyHttpProtocol;
     }
     
     String keyOf(String keyRoot) {
@@ -382,6 +382,8 @@ public class Origin {
                     .getColumnIndex(MyDatabase.Origin.IN_COMBINED_PUBLIC_RELOAD)) != 0);
             setMentionAsWebFingerId(TriState.fromId(c.getLong(c
                     .getColumnIndex(MyDatabase.Origin.MENTION_AS_WEBFINGER_ID))));
+            setUseLegacyHttpProtocol(TriState.fromId(c.getLong(c
+                    .getColumnIndex(MyDatabase.Origin.USE_LEGACY_HTTP))));
         }
 
         protected void setTextLimit(int textLimit) {
@@ -405,6 +407,7 @@ public class Origin {
             setInCombinedGlobalSearch(original.inCombinedGlobalSearch);
             setInCombinedPublicReload(original.inCombinedPublicReload);
             setMentionAsWebFingerId(original.mMentionAsWebFingerId);
+            origin.mUseLegacyHttpProtocol = original.mUseLegacyHttpProtocol;
         }
 
         public Origin build() {
@@ -480,6 +483,11 @@ public class Origin {
             origin.mMentionAsWebFingerId = mentionAsWebFingerId;
             return this;
         }
+
+        public Builder setUseLegacyHttpProtocol(TriState useLegacyHttpProtocol) {
+            origin.mUseLegacyHttpProtocol = useLegacyHttpProtocol;
+            return this;
+        }
         
         public Builder save(MbConfig config) {
             origin.shortUrlLength = config.shortUrlLength;
@@ -516,6 +524,7 @@ public class Origin {
             values.put(MyDatabase.Origin.IN_COMBINED_GLOBAL_SEARCH, origin.inCombinedGlobalSearch);
             values.put(MyDatabase.Origin.IN_COMBINED_PUBLIC_RELOAD, origin.inCombinedPublicReload);
             values.put(MyDatabase.Origin.MENTION_AS_WEBFINGER_ID, origin.mMentionAsWebFingerId.getId());
+            values.put(MyDatabase.Origin.USE_LEGACY_HTTP, origin.useLegacyHttpProtocol().getId());
 
             boolean changed = false;
             if (origin.id == 0) {

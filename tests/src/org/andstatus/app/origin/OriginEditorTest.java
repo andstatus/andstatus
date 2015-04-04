@@ -57,30 +57,36 @@ public class OriginEditorTest extends ActivityInstrumentationTestCase2<OriginEdi
         boolean isSsl = false;
         boolean allowHtml = true;
         forOneOrigin(originType, originName, host, isSsl, SslModeEnum.SECURE, allowHtml, TriState.UNKNOWN,
+                TriState.UNKNOWN,
                 true, true);
         
         host = originName + ".some.example.com";
         isSsl = true;
         allowHtml = false;
         forOneOrigin(originType, originName, host, isSsl, SslModeEnum.INSECURE, allowHtml, TriState.UNKNOWN,
+                TriState.UNKNOWN,
                 false, true);
 
         host = originName + ". я badhost.example.com";
         forOneOrigin(originType, originName, host, isSsl, SslModeEnum.MISCONFIGURED, allowHtml, TriState.UNKNOWN,
+                TriState.TRUE,
                 true, false);
 
         host = "http://" + originName + ".fourth. example. com ";
         forOneOrigin(originType, originName, host, isSsl, SslModeEnum.SECURE, allowHtml, TriState.UNKNOWN,
+                TriState.FALSE,
                 false, false);
 
         host = "http://" + originName + ".fifth.example.com/status";
         forOneOrigin(originType, originName, host, isSsl, SslModeEnum.INSECURE, allowHtml, TriState.UNKNOWN,
+                TriState.UNKNOWN,
                 true, true);
     }
     
     public void forOneOrigin(final OriginType originType, final String originName,
             final String hostOrUrl, final boolean isSsl, final SslModeEnum sslMode, 
             final boolean allowHtml, final TriState mentionAsWebFingerId,
+            final TriState useLegacyHttpProtocol,
             final boolean inCombinedGlobalSearch, final boolean inCombinedPublicReload)
             throws InterruptedException {
         final String method = "OriginEditorTest";
@@ -118,6 +124,8 @@ public class OriginEditorTest extends ActivityInstrumentationTestCase2<OriginEdi
         final CheckBox checkBoxAllowHtml = (CheckBox) activity.findViewById(R.id.allow_html);
         final Spinner spinnerMentionAsWebFingerId = (Spinner) activity
                 .findViewById(R.id.mention_as_webfingerid);
+        final Spinner spinnerUseLegacyHttpProtocol = (Spinner) activity
+                .findViewById(R.id.use_legacy_http_protocol);
 
         Runnable clicker = new Runnable() {
             @Override
@@ -129,6 +137,7 @@ public class OriginEditorTest extends ActivityInstrumentationTestCase2<OriginEdi
                 spinnerSslMode.setSelection(sslMode.getEntriesPosition());
                 checkBoxAllowHtml.setChecked(allowHtml);
                 spinnerMentionAsWebFingerId.setSelection(mentionAsWebFingerId.getEntriesPosition());
+                spinnerUseLegacyHttpProtocol.setSelection(useLegacyHttpProtocol.getEntriesPosition());
                 ((CheckBox) activity.findViewById(R.id.in_combined_global_search)).
                         setChecked(inCombinedGlobalSearch);
                 ((CheckBox) activity.findViewById(R.id.in_combined_public_reload)).
@@ -165,6 +174,7 @@ public class OriginEditorTest extends ActivityInstrumentationTestCase2<OriginEdi
         assertEquals(sslMode, origin.getSslMode());
         assertEquals(allowHtml, origin.isHtmlContentAllowed());
         assertEquals(mentionAsWebFingerId, origin.getMentionAsWebFingerId());
+        assertEquals(useLegacyHttpProtocol, origin.useLegacyHttpProtocol());
         assertEquals(inCombinedGlobalSearch, origin.isInCombinedGlobalSearch());
         assertEquals(inCombinedPublicReload, origin.isInCombinedPublicReload());
     }

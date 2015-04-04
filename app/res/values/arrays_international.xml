@@ -120,7 +120,7 @@
         <item>365</item>
         <item>3653</item>
     </string-array>
-    <string-array name="mention_as_webfingerid_entries">
+    <string-array name="tristate_yes_no_auto_entries">
         <item>@string/yes</item>
         <item>@string/no</item>
         <item>@string/automatic</item>

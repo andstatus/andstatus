@@ -142,6 +142,9 @@ class MyDatabaseConverter {
         if (currentVersion == 20) {
             currentVersion = convert20to21(db, currentVersion);
         }
+        if (currentVersion == 21) {
+            currentVersion = convert21to22(db, currentVersion);
+        }
         if ( currentVersion == newVersion) {
             MyLog.i(this, "Successfully upgraded database from version " + oldVersion + " to version "
                     + newVersion + ".");
@@ -336,6 +339,25 @@ class MyDatabaseConverter {
             sql = "UPDATE origin SET mention_as_webfinger_id=3";
             MyDatabase.execSQL(db, sql);
             sql = "CREATE INDEX idx_msg_in_reply_to_msg_id ON msg (in_reply_to_msg_id)";
+            MyDatabase.execSQL(db, sql);
+            
+            ok = true;
+        } catch (Exception e) {
+            MyLog.e(this, e);
+        }
+        return assessUpgradeStepResult(oldVersion, versionTo, ok, sql);
+    }
+
+    private int convert21to22(SQLiteDatabase db, int oldVersion) {
+        final int versionTo = 22;
+        boolean ok = false;
+        String sql = "";
+        try {
+            logUpgradeStepStart(oldVersion, versionTo);
+
+            sql = "ALTER TABLE origin ADD COLUMN use_legacy_http INTEGER DEFAULT 3";
+            MyDatabase.execSQL(db, sql);
+            sql = "UPDATE origin SET use_legacy_http=3";
             MyDatabase.execSQL(db, sql);
             
             ok = true;

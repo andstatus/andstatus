@@ -30,10 +30,12 @@
         versionDate="2014-04-04"
         versionTitle="Sending attachments fix for legacy servers">
         <changes>
-            <change>Fixed: Gnusocial.no, Quitter.no and and some other servers didn't 
+            <change>Fixed: gnusocial.no, quitter.no, quitter.es and some other servers didn't 
                 allow sending attachments via AndStatus due to HTTP protocol incompatibility. 
                 &quot;Use legacy HTTP protocol&quot; option added to a Social network editor 
-                to allow posting images to such servers.
+                to allow posting images to such servers. Default &quot;Auto&quot; 
+                value may not always work, so setting &quot;Use legacy HTTP protocol&quot;
+                to &quot;Yes&quot; is recommended for these servers.  
                 <a href="https://github.com/andstatus/andstatus/issues/249">#249</a>
             </change>
         </changes>

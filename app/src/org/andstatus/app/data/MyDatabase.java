@@ -42,6 +42,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
      * This is used to check (and upgrade if necessary) 
      * existing database after application update.
      * 
+     * v.22 2015-04-04 app.v.17 use_legacy_http added to Origin, 
      * v.21 2015-03-14 app.v.16 mention_as_webfinger_id added to Origin, 
      *                 index on {@link Msg#IN_REPLY_TO_MSG_ID} added. 
      * v.20 2015-02-04 app.v.15 SslMode added to Origin
@@ -61,7 +62,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
      *      All messages are in the same table. 
      *      Allows to have multiple User Accounts in different Originating systems (twitter.com etc. ) 
      */
-    public static final int DATABASE_VERSION = 21;
+    public static final int DATABASE_VERSION = 22;
     public static final String DATABASE_NAME = "andstatus.sqlite";
 
     /**
@@ -434,6 +435,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
         public static final String TEXT_LIMIT = "text_limit";
         public static final String SHORT_URL_LENGTH = "short_url_length";
         public static final String MENTION_AS_WEBFINGER_ID = "mention_as_webfinger_id";
+        public static final String USE_LEGACY_HTTP = "use_legacy_http";
         /** Include this system in Global Search while in Combined Timeline */
         public static final String IN_COMBINED_GLOBAL_SEARCH = "in_combined_global_search";
         /** Include this system in Reload while in Combined Public Timeline */
@@ -622,6 +624,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
                 + Origin.TEXT_LIMIT + " INTEGER NOT NULL,"
                 + Origin.SHORT_URL_LENGTH + " INTEGER NOT NULL DEFAULT 0," 
                 + Origin.MENTION_AS_WEBFINGER_ID + " INTEGER DEFAULT " + TriState.UNKNOWN.getId() + " NOT NULL," 
+                + Origin.USE_LEGACY_HTTP + " INTEGER DEFAULT " + TriState.UNKNOWN.getId() + " NOT NULL," 
                 + Origin.IN_COMBINED_GLOBAL_SEARCH + " BOOLEAN DEFAULT 1 NOT NULL," 
                 + Origin.IN_COMBINED_PUBLIC_RELOAD + " BOOLEAN DEFAULT 1 NOT NULL" 
                 + ")");
