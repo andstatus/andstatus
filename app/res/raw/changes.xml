@@ -48,6 +48,10 @@
                 Crowdin.com is working on fixing related
                 <a href="https://crowdin.com/project/andstatus/discussions/13">translation 
                     service bugs</a>, which we reported to them.</change>
+            <change>Settings restructured. Separate sections for a Timeline 
+                and  Attachments created. 
+                <a href="https://github.com/andstatus/andstatus/issues/235">#235</a>
+            </change>
         </changes>
     </release>
     <release android:versionName="16.0" android:versionCode="123"

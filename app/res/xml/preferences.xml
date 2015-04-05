@@ -38,181 +38,188 @@
     <!-- SETTINGS -->
 	<PreferenceCategory android:title="@string/category_title_preference_settings">
 
-        <!-- SYNCING -->
-        <PreferenceScreen android:key="preference_screen_syncing"
+	    <!-- APPEARANCE -->
+        <PreferenceScreen android:key="preference_screen_apperance"
+            android:summary="@string/summary_preference_appearance"
+            android:title="@string/title_preference_appearance">
+            <org.andstatus.app.context.MultilineListPreference android:key="custom_locale" 
+                android:entries="@array/custom_locale_entries"
+                android:entryValues="@array/custom_locale_values"
+                android:defaultValue="default"
+                android:title="@string/custom_locale_title"
+                android:dialogTitle="@string/custom_locale_title" />
+            <org.andstatus.app.context.MultilineListPreference android:key="theme_color" android:entries="@array/theme_color_entries"
+                android:entryValues="@array/theme_color_values"
+                android:defaultValue="DeviceDefault"
+                android:title="@string/title_preference_theme_color"
+                android:summary="@string/summary_preference_theme_color"
+                android:dialogTitle="@string/dialog_title_preference_theme_color" />
+            <org.andstatus.app.context.MultilineCheckBoxPreference android:key="true_black"
+                android:defaultValue="false"
+                android:title="@string/preference_true_black_title" />
+            <org.andstatus.app.context.MultilineListPreference android:key="theme_size" android:entries="@array/theme_size_entries"
+                android:entryValues="@array/theme_size_values"
+                android:defaultValue="StandardSize"
+                android:title="@string/title_preference_theme_size"
+                android:summary="@string/summary_preference_theme_size"
+                android:dialogTitle="@string/dialog_title_preference_theme_size" />
+        </PreferenceScreen>
+        
+        <!-- TIMELINE -->
+        <PreferenceScreen android:key="preference_screen_timeline"
+            android:title="@string/title_timeline">
+            <org.andstatus.app.context.MultilineListPreference android:key="user_in_timeline" 
+                android:entries="@array/user_in_timeline_entries"
+                android:entryValues="@array/user_in_timeline_values"
+                android:defaultValue="3"
+                android:title="@string/title_preference_user_in_timeline"
+                android:summary="@string/summary_preference_user_in_timeline"
+                android:dialogTitle="@string/title_preference_user_in_timeline" />
+		    <org.andstatus.app.context.MultilineCheckBoxPreference android:key="show_avatars"
+                android:defaultValue="true"
+				android:title="@string/title_preference_show_avatars"
+				android:summaryOff="@string/summary_preference_show_avatars_off"
+				android:summaryOn="@string/summary_preference_show_avatars_on" />
+            <org.andstatus.app.context.MultilineCheckBoxPreference android:key="show_origin"
+                android:defaultValue="true"
+                android:title="@string/title_preference_show_origin" />
+            <org.andstatus.app.context.MultilineCheckBoxPreference android:key="mark_replies_in_timeline"
+                android:title="@string/title_preference_mark_replies_in_timeline"
+                android:defaultValue="false" />
+            <org.andstatus.app.context.MultilineCheckBoxPreference android:key="old_messages_first_in_conversation"
+                android:title="@string/title_preference_old_messages_first_in_conversation"
+                android:defaultValue="false" />
+            <org.andstatus.app.context.MultilineCheckBoxPreference android:key="enter_sends_message"
+				android:title="@string/title_preference_enter_sends_message"
+				android:defaultValue="true" />
+        </PreferenceScreen>
+
+		<!-- ATTACHMENTS -->
+        <PreferenceScreen android:key="preference_screen_attachments"
+            android:title="@string/attachments">
+            <org.andstatus.app.context.MultilineCheckBoxPreference android:key="show_attached_images"
+                android:defaultValue="true"
+                android:title="@string/title_preference_show_attached_images" />
+            <org.andstatus.app.context.MultilineCheckBoxPreference android:key="download_attachments_over_wifi_only"
+                android:title="@string/title_preference_download_attachments_over_wifi_only"
+                android:defaultValue="true"
+                android:dependency="show_attached_images" />
+            <org.andstatus.app.context.MultilineCheckBoxPreference android:key="use_kitkat_media_chooser"
+                android:title="@string/preference_use_kitkat_media_chooser_title"
+                android:defaultValue="true"
+                android:dependency="show_attached_images" />
+        </PreferenceScreen>
+        
+		<!-- SYNCING -->
+	    <PreferenceScreen android:key="preference_screen_syncing"
             android:summary="@string/summary_preference_syncing"
             android:title="@string/title_preference_syncing">
-            <PreferenceCategory android:title="@string/title_preference_syncing">
-                <org.andstatus.app.context.MultilineListPreference android:entryValues="@array/fetch_frequency_values"
-                    android:entries="@array/fetch_frequency_entries" android:summary="@string/summary_preference_frequency"
-                    android:dialogTitle="@string/dialog_title_preference_frequency"
-                    android:title="@string/title_preference_frequency" android:key="fetch_frequency"
-                    android:defaultValue="900" />
-                <org.andstatus.app.context.MultilineCheckBoxPreference android:key="sync_while_using_application"
-                    android:title="@string/title_preference_sync_while_using_application"
-                    android:summaryOff="@string/summary_preference_sync_while_using_application_off"
-                    android:summaryOn="@string/summary_preference_sync_while_using_application_on"
-                    android:defaultValue="true" />
-                <org.andstatus.app.context.MultilineCheckBoxPreference android:key="sync_indicator_on_timeline"
-                    android:title="@string/title_preference_sync_indicator_on_timeline"
-                    android:summaryOff="@string/summary_preference_sync_indicator_on_timeline_off"
-                    android:summaryOn="@string/summary_preference_sync_indicator_on_timeline_on"
-                    android:defaultValue="true" />
-                <org.andstatus.app.context.MultilineCheckBoxPreference android:key="sync_after_message_was_sent"
-                    android:title="@string/title_preference_sync_after_message_was_sent"
-                    android:defaultValue="false" />
-                <org.andstatus.app.context.MultilineCheckBoxPreference android:key="download_attachments_over_wifi_only"
-                    android:title="@string/title_preference_download_attachments_over_wifi_only"
-                    android:defaultValue="true" />
-                <EditTextPreference
-		            android:dialogTitle="@string/dialog_title_preference_connection_timeout"
-		            android:key="connection_timeout"
-		            android:persistent="true"
-		            android:singleLine="true"
-		            android:defaultValue="30"
-		            android:title="@string/title_preference_connection_timeout" />
-            </PreferenceCategory>
+            <org.andstatus.app.context.MultilineListPreference android:entryValues="@array/fetch_frequency_values"
+                android:entries="@array/fetch_frequency_entries" android:summary="@string/summary_preference_frequency"
+                android:dialogTitle="@string/dialog_title_preference_frequency"
+                android:title="@string/title_preference_frequency" android:key="fetch_frequency"
+                android:defaultValue="900" />
+            <org.andstatus.app.context.MultilineCheckBoxPreference android:key="sync_while_using_application"
+                android:title="@string/title_preference_sync_while_using_application"
+                android:summaryOff="@string/summary_preference_sync_while_using_application_off"
+                android:summaryOn="@string/summary_preference_sync_while_using_application_on"
+                android:defaultValue="true" />
+            <org.andstatus.app.context.MultilineCheckBoxPreference android:key="sync_indicator_on_timeline"
+                android:title="@string/title_preference_sync_indicator_on_timeline"
+                android:summaryOff="@string/summary_preference_sync_indicator_on_timeline_off"
+                android:summaryOn="@string/summary_preference_sync_indicator_on_timeline_on"
+                android:defaultValue="true" />
+            <org.andstatus.app.context.MultilineCheckBoxPreference android:key="sync_after_message_was_sent"
+                android:title="@string/title_preference_sync_after_message_was_sent"
+                android:defaultValue="false" />
+            <EditTextPreference
+	            android:dialogTitle="@string/dialog_title_preference_connection_timeout"
+	            android:key="connection_timeout"
+	            android:persistent="true"
+	            android:singleLine="true"
+	            android:defaultValue="30"
+	            android:title="@string/title_preference_connection_timeout" />
         </PreferenceScreen>
-	    
+        
+        <!-- NOTIFICATIONS -->
+		<PreferenceScreen android:key="preference_screen_notifications"
+			android:summary="@string/summary_preference_notifications" 
+			android:title="@string/title_preference_notifications">
+			<org.andstatus.app.context.MultilineCheckBoxPreference android:key="notifications_enabled"
+                android:title="@string/title_preference_notifications_enabled"
+				android:summaryOn="@string/summary_preference_notifications_enabled_on" 
+				android:summaryOff="@string/summary_preference_notifications_enabled_off" />
+			<org.andstatus.app.context.MultilineCheckBoxPreference android:key="notifications_messages"
+				android:title="@string/title_preference_notifications_messages"
+				android:summaryOn="@string/summary_preference_notifications_messages_on"
+				android:summaryOff="@string/summary_preference_notifications_messages_off" 
+				android:defaultValue="true" 
+				android:dependency="notifications_enabled" />
+			<org.andstatus.app.context.MultilineCheckBoxPreference android:key="notifications_mentions"
+				android:title="@string/title_preference_notifications_mentions"
+				android:summaryOn="@string/summary_preference_notifications_mentions_on"
+				android:summaryOff="@string/summary_preference_notifications_mentions_off" 
+				android:defaultValue="true" 
+				android:dependency="notifications_enabled" />
+			<org.andstatus.app.context.MultilineCheckBoxPreference android:key="notifications_timeline"
+				android:title="@string/title_preference_notifications_timeline"
+				android:summaryOn="@string/summary_preference_notifications_timeline_on"
+				android:summaryOff="@string/summary_preference_notifications_timeline_off"
+				android:defaultValue="false" 
+				android:dependency="notifications_enabled" />
+            <org.andstatus.app.context.MultilineCheckBoxPreference android:key="notifications_queue"
+                android:title="@string/title_preference_notifications_queue"
+                android:summaryOn="@string/summary_preference_notifications_queue_on"
+                android:summaryOff="@string/summary_preference_notifications_queue_off"
+                android:defaultValue="false" 
+                android:dependency="notifications_enabled" />
+            <org.andstatus.app.context.MultilineCheckBoxPreference android:key="vibration"
+				android:title="@string/title_preference_vibration"
+				android:summaryOn="@string/summary_preference_vibration_on"
+				android:summaryOff="@string/summary_preference_vibration_off" 
+				android:defaultValue="true" 
+				android:dependency="notifications_enabled" />
+            <org.andstatus.app.context.MultilineCheckBoxPreference android:key="notification_icon_alternative"
+                android:title="@string/preference_notification_icon_alternative_title"
+                android:defaultValue="false" 
+                android:summaryOff="@string/preference_notification_icon_alternative_off"
+                android:summaryOn="@string/preference_notification_icon_alternative_on" 
+                android:dependency="notifications_enabled" />
+            <RingtonePreference android:key="notification_ringtone" 
+				android:ringtoneType="notification" 
+				android:title="@string/title_preference_notification_sound"
+				android:dependency="notifications_enabled" />
+		</PreferenceScreen>
+        
 		<!-- STORAGE -->
 		<PreferenceScreen android:key="preference_screen_storage"
 			android:summary="@string/summary_preference_storage"
 			android:title="@string/title_preference_storage">
-			<PreferenceCategory android:title="@string/summary_preference_storage">
-                <org.andstatus.app.context.MultilineCheckBoxPreference android:key="use_external_storage_new"
-		            android:persistent="false"
-                    android:title="@string/title_preference_storage_external"
-                    android:summaryOff="@string/summary_preference_storage_external_off"
-                    android:summaryOn="@string/summary_preference_storage_external_on" />
-				<org.andstatus.app.context.MultilineListPreference android:entryValues="@array/history_size_values"
-					android:entries="@array/history_size_entries" android:summary="@string/summary_preference_history_size"
-					android:dialogTitle="@string/dialog_title_preference_history_size"
-					android:defaultValue="100000"
-					android:title="@string/title_preference_history_size" android:key="history_size" />
-				<org.andstatus.app.context.MultilineListPreference android:entryValues="@array/history_time_values"
-					android:entries="@array/history_time_entries" android:summary="@string/summary_preference_history_time"
-					android:dialogTitle="@string/dialog_title_preference_history_time"
-					android:defaultValue="365"
-					android:title="@string/title_preference_history_time" android:key="history_time" />
-		        <Preference
-		            android:key="backup_restore"
-		            android:persistent="false" />
-				<org.andstatus.app.context.MultilineCheckBoxPreference android:key="enable_android_backup"
-                    android:title="@string/title_preference_enable_android_backup"
-                    android:summaryOff="@string/summary_preference_enable_android_backup_off"
-                    android:summaryOn="@string/summary_preference_enable_android_backup_on" />
-			</PreferenceCategory>
-		</PreferenceScreen>
-        
-		<!-- APPEARANCE -->
-		<PreferenceScreen android:key="preference_screen_apperance"
-			android:summary="@string/summary_preference_appearance"
-			android:title="@string/title_preference_appearance">
-			<PreferenceCategory android:title="@string/category_title_preference_appearance">
-                <org.andstatus.app.context.MultilineListPreference android:key="custom_locale" 
-                    android:entries="@array/custom_locale_entries"
-                    android:entryValues="@array/custom_locale_values"
-                    android:defaultValue="default"
-                    android:title="@string/custom_locale_title"
-                    android:dialogTitle="@string/custom_locale_title" />
-			    <org.andstatus.app.context.MultilineListPreference android:key="theme_color" android:entries="@array/theme_color_entries"
-                    android:entryValues="@array/theme_color_values"
-                    android:defaultValue="DeviceDefault"
-                    android:title="@string/title_preference_theme_color"
-                    android:summary="@string/summary_preference_theme_color"
-                    android:dialogTitle="@string/dialog_title_preference_theme_color" />
-                <org.andstatus.app.context.MultilineCheckBoxPreference android:key="true_black"
-                    android:defaultValue="false"
-                    android:title="@string/preference_true_black_title" />
-                <org.andstatus.app.context.MultilineListPreference android:key="theme_size" android:entries="@array/theme_size_entries"
-					android:entryValues="@array/theme_size_values"
-					android:defaultValue="StandardSize"
-					android:title="@string/title_preference_theme_size"
-					android:summary="@string/summary_preference_theme_size"
-					android:dialogTitle="@string/dialog_title_preference_theme_size" />
-                <org.andstatus.app.context.MultilineListPreference android:key="user_in_timeline" 
-                    android:entries="@array/user_in_timeline_entries"
-                    android:entryValues="@array/user_in_timeline_values"
-                    android:defaultValue="3"
-                    android:title="@string/title_preference_user_in_timeline"
-                    android:summary="@string/summary_preference_user_in_timeline"
-                    android:dialogTitle="@string/title_preference_user_in_timeline" />
-			    <org.andstatus.app.context.MultilineCheckBoxPreference android:key="show_avatars"
-                    android:defaultValue="true"
-					android:title="@string/title_preference_show_avatars"
-					android:summaryOff="@string/summary_preference_show_avatars_off"
-					android:summaryOn="@string/summary_preference_show_avatars_on" />
-                <org.andstatus.app.context.MultilineCheckBoxPreference android:key="show_attached_images"
-                    android:defaultValue="true"
-                    android:title="@string/title_preference_show_attached_images" />
-                <org.andstatus.app.context.MultilineCheckBoxPreference android:key="show_origin"
-                    android:defaultValue="true"
-                    android:title="@string/title_preference_show_origin" />
-                <org.andstatus.app.context.MultilineCheckBoxPreference android:key="enter_sends_message"
-					android:title="@string/title_preference_enter_sends_message"
-					android:defaultValue="true" />
-                <org.andstatus.app.context.MultilineCheckBoxPreference android:key="old_messages_first_in_conversation"
-                    android:title="@string/title_preference_old_messages_first_in_conversation"
-                    android:defaultValue="false" />
-                <org.andstatus.app.context.MultilineCheckBoxPreference android:key="mark_replies_in_timeline"
-                    android:title="@string/title_preference_mark_replies_in_timeline"
-                    android:defaultValue="false" />
-                <org.andstatus.app.context.MultilineCheckBoxPreference android:key="notification_icon_alternative"
-                    android:title="@string/preference_notification_icon_alternative_title"
-                    android:defaultValue="false" 
-					android:summaryOff="@string/preference_notification_icon_alternative_off"
-					android:summaryOn="@string/preference_notification_icon_alternative_on" />
-            </PreferenceCategory>
-		</PreferenceScreen>
-
-		<!-- NOTIFICATIONS -->
-		<PreferenceScreen android:key="preference_screen_notifications"
-			android:summary="@string/summary_preference_notifications" 
-			android:title="@string/title_preference_notifications">
-			<PreferenceCategory android:title="@string/category_title_preference_notifications">
-				<org.andstatus.app.context.MultilineCheckBoxPreference android:key="notifications_enabled"
-                    android:title="@string/title_preference_notifications_enabled"
-					android:summaryOn="@string/summary_preference_notifications_enabled_on" 
-					android:summaryOff="@string/summary_preference_notifications_enabled_off"
-					android:disableDependentsState="false" />
-				<org.andstatus.app.context.MultilineCheckBoxPreference android:key="notifications_messages"
-					android:title="@string/title_preference_notifications_messages"
-					android:summaryOn="@string/summary_preference_notifications_messages_on"
-					android:summaryOff="@string/summary_preference_notifications_messages_off" 
-					android:defaultValue="true" 
-					android:dependency="notifications_enabled" />
-				<org.andstatus.app.context.MultilineCheckBoxPreference android:key="notifications_mentions"
-					android:title="@string/title_preference_notifications_mentions"
-					android:summaryOn="@string/summary_preference_notifications_mentions_on"
-					android:summaryOff="@string/summary_preference_notifications_mentions_off" 
-					android:defaultValue="true" 
-					android:dependency="notifications_enabled" />
-				<org.andstatus.app.context.MultilineCheckBoxPreference android:key="notifications_timeline"
-					android:title="@string/title_preference_notifications_timeline"
-					android:summaryOn="@string/summary_preference_notifications_timeline_on"
-					android:summaryOff="@string/summary_preference_notifications_timeline_off"
-					android:defaultValue="false" 
-					android:dependency="notifications_enabled" />
-                <org.andstatus.app.context.MultilineCheckBoxPreference android:key="notifications_queue"
-                    android:title="@string/title_preference_notifications_queue"
-                    android:summaryOn="@string/summary_preference_notifications_queue_on"
-                    android:summaryOff="@string/summary_preference_notifications_queue_off"
-                    android:defaultValue="false" 
-                    android:dependency="notifications_enabled" />
-                <org.andstatus.app.context.MultilineCheckBoxPreference android:key="vibration"
-					android:title="@string/title_preference_vibration"
-					android:summaryOn="@string/summary_preference_vibration_on"
-					android:summaryOff="@string/summary_preference_vibration_off" 
-					android:defaultValue="true" 
-					android:dependency="notifications_enabled" />
-				<RingtonePreference android:key="notification_ringtone" 
-					android:ringtoneType="notification" 
-					android:title="@string/title_preference_notification_sound"
-					android:dependency="notifications_enabled" />
-			</PreferenceCategory>
+            <org.andstatus.app.context.MultilineCheckBoxPreference android:key="use_external_storage_new"
+	            android:persistent="false"
+                android:title="@string/title_preference_storage_external"
+                android:summaryOff="@string/summary_preference_storage_external_off"
+                android:summaryOn="@string/summary_preference_storage_external_on" />
+			<org.andstatus.app.context.MultilineListPreference android:entryValues="@array/history_size_values"
+				android:entries="@array/history_size_entries" android:summary="@string/summary_preference_history_size"
+				android:dialogTitle="@string/dialog_title_preference_history_size"
+				android:defaultValue="100000"
+				android:title="@string/title_preference_history_size" android:key="history_size" />
+			<org.andstatus.app.context.MultilineListPreference android:entryValues="@array/history_time_values"
+				android:entries="@array/history_time_entries" android:summary="@string/summary_preference_history_time"
+				android:dialogTitle="@string/dialog_title_preference_history_time"
+				android:defaultValue="365"
+				android:title="@string/title_preference_history_time" android:key="history_time" />
+	        <Preference
+	            android:key="backup_restore"
+	            android:persistent="false" />
+			<org.andstatus.app.context.MultilineCheckBoxPreference android:key="enable_android_backup"
+                android:title="@string/title_preference_enable_android_backup"
+                android:summaryOff="@string/summary_preference_enable_android_backup_off"
+                android:summaryOn="@string/summary_preference_enable_android_backup_on" />
 		</PreferenceScreen>
 	</PreferenceCategory>
-
+    
 	<!-- INFORMATION -->
 	<PreferenceCategory android:title="@string/category_title_preference_information">
         <Preference android:key="about_application" 
@@ -226,6 +233,8 @@
 		<Preference android:key="contact_developer" android:title="@string/title_preference_contact_developer">
 			<intent android:action="android.intent.action.VIEW" android:data="https://github.com/andstatus/andstatus/wiki" />
 		</Preference>
+        
+        <!-- DEBUGGING -->
         <PreferenceScreen android:key="preference_screen_debugging"
             android:title="@string/title_preference_debugging">
             <Preference
@@ -249,9 +258,6 @@
             <Preference android:key="report_bug" android:title="@string/title_preference_report_bug">
 	            <intent android:action="android.intent.action.VIEW" android:data="https://github.com/andstatus/andstatus/issues" />
 	        </Preference>
-            <org.andstatus.app.context.MultilineCheckBoxPreference android:key="use_kitkat_media_chooser"
-                android:title="@string/preference_use_kitkat_media_chooser_title"
-                android:defaultValue="true" />
         </PreferenceScreen>
 	</PreferenceCategory>
 
