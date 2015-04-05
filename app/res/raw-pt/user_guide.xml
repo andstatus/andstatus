@@ -57,8 +57,7 @@ xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../res-src/
     <title>
         <p>1. Iniciação</p>
     </title>
-    <p>Tap "Get Started" button below: screen to add
-        new account will be opened.
+    <p>Toque no botão "Iniciar" para abrir um ecrã no qual poderá adicionar uma nova conta.
     </p>
     <p>Primeiro, será solicitada a inserção de uma conta de rede social da lista.
 As contas Twitter, Pump.io e diversas "GNU social" (Quitter, LoadAverage e Vinilox) estão pré-configuradas.
@@ -110,65 +109,37 @@ As contas Twitter, Pump.io e diversas "GNU social" (Quitter, LoadAverage e Vinil
     <title>
         <p>5. Menções</p>
     </title>
-    <p>Tap current Timeline type item in a Navigation Drawer
-        and then select
-        <strong>Mentions</strong>
-        .
+    <p>Toque num item da cronologia através da gaveta de navegação e selecione <strong>Menções</strong>.
     </p>
-    <p>Mentions will list every message that mentions your
-        <strong>@username</strong>
-        (or even mentions of all your AndStatus accounts for a
-        "combined" timeline).
+    <p>As menções irão listar todas as mensagens em que se mencione o seu <strong>@username</strong> (ou até as menções de todas as suas contas AndStatus numa cronologia combinada).
     </p>
 </section>
 <section>
     <title>
-        <p>6. Search (local search)</p>
+        <p>6. Procura (procura local)</p>
     </title>
-    <p>Local search searches among messages already loaded from the
-        Internet.
-        Hence it is available even offline.
+    <p>A procura local pesquisa as mensagens que já tenham sido descarregadas. Nestes termos, também está disponível localmente.
     </p>
-    <p>1. In order to find any word or phrase in a text of messages,
-        select <strong>Search</strong>
-        on an Action bar or click a dedicated
-        <strong>Search</strong> button on your device.
+    <p>1. Para poder localizar uma palavra ou frase no texto de uma mensagem, selecione <strong>Procurar</strong> na barra de ações ou clique no botão de <strong>Procura</strong> do seu dispositivo, se existente.
     </p>
-    <p>If you wish to show messages from a specific user,
-        please search for "username".</p>
-    <p>To see mentions of a specific User, search for "@username".
+    <p>Se quiser mostrar as mensagens de dum dado utilizador, procure pelo "nome de utilizador".</p>
+    <p>Para ver as menções de uma dado utilizador, procure por "@username".
     </p>
-    <p>2. To search quickly for messages by a user
-        (an Author or a Sender of a selected message), select
-        "Messages by UserName" from the context menu of the message.
-        This is actually sort of a Global Search (see below).
+    <p>2. Para procurar rapidamente as mensagens de um utilizador (autor ou remetente se uma mensagem selecionada), selecione "Mensagens por nome de utilizador" no menu de contexto da mensagem. Este método é similar ao método de procura global (veja abaixo).
     </p>
 </section>
 <section>
     <title>
-        <p>7. Global search</p>
+        <p>7. Procura global</p>
     </title>
-    <p>Global search function sends a search request directly to
-        Social networks' servers.
-        This is why live Internet connection to the networks is required.
+    <p>A procura global envia um pedido de procura diretamente aos servidores da rede social. Assim, é necessária uma ligação à Internet.
     </p>
-    <p>First, you are presented with the results of the Local search.
-        In parallel, AndStatus downloads results
-        from a Social network of the selected Account
-        (or from all Social networks, if a Timeline is
-        "combined").
-        Search results are being updated upon receiving responses from the servers.
-        In a case of connection error
-        (i.e. no response from a server of a Social network)
-        you will see results of a Local Search only.
+    <p>Primeiro, serão exibidos os resultados da procura local. Simultaneamente, o AndStatus transfere os resultados da rede social da conta selecionada (ou de todas as redes sociais, caso utilize uma cronologia combinada). Os resultados da procura serão atualizados À medida que forem recebidas as respostas dos servidores. Se ocorrer um erro na ligação (por exemplo, o servidor da rede social não responde), apenas serã omostrados os resultados da procura local.
     </p>
-    <p>Please note that pump.io system doesn't support Global search yet.
+    <p>Tenha em atenção que o sistema pump.io ainda não tem suporte à procura global.
     </p>
-    <p>1. Global search by a word or a phrase is initiated
-        using its "Global search" item on an "Action bar".</p>
-    <p>2. Another way to search globally for messages by an Author or a Sender
-        of the selected message is to select
-        "Messages by UserName" from a Context menu of this message.</p>
+    <p>1. A procura global de palavras ou frases inicia-se através do item "Procura global", existente na barra de ações.</p>
+    <p>2. Outra forma de efetuar um procura global de mensagens, por autor ou remetente, é selecionar "Mensagens por nome de utilizador, existente no menu de contexto de qualquer mensagem.</p>
 </section>
 </body>
 </FictionBook>

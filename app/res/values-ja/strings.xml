@@ -61,7 +61,7 @@
   <string name="category_title_preference_credentials">ユーザーの資格情報</string>
   <string name="category_title_preference_information">情報</string>
   <string name="category_title_preference_notifications">通知</string>
-  <string name="category_title_preference_origin">マイクロブログ システム</string>
+  <string name="category_title_preference_origin">ソーシャル ネットワーク</string>
   <string name="category_title_preference_settings">設定</string>
   <string name="combined_timeline_on">まとめ</string>
   <string name="combined_timeline_off_account">対象</string>
@@ -162,11 +162,11 @@
   <string name="label_backup_folder">バックアップ フォルダー</string>
   <string name="label_conversation">会話</string>
   <string name="label_host">ホスト</string>
-  <string name="label_manage_origin_systems">マイクロブログ システムの管理</string>
-  <string name="label_origin_list">マイクロブログ システム</string>
-  <string name="label_origin_name">マイクロブログ システムの名前 (ユニークかつ変更不可能)</string>
-  <string name="label_origin_system">マイクロブログ システム</string>
-  <string name="label_origin_type">マイクロブログ システムの種類</string>
+  <string name="label_manage_origin_systems">ソーシャル ネットワークの管理</string>
+  <string name="label_origin_list">ソーシャル ネットワーク</string>
+  <string name="label_origin_name">ソーシャル ネットワークの名前 (一意で変更不可)</string>
+  <string name="label_origin_system">ソーシャル ネットワーク</string>
+  <string name="label_origin_type">ソーシャル ネットワークのタイプ</string>
   <string name="label_restore">バックアップからアプリケーション データを復元</string>
   <string name="label_upgrading">アップグレードを実行中です。お待ちください。</string>
   <string name="label_with_media">メディアで</string>
@@ -239,7 +239,7 @@
   <string name="options_menu_reload">再読み込み</string>
   <string name="options_menu_mentions">メンション</string>
   <string name="options_menu_search">検索</string>
-  <string name="origin_settings_action">マイクロブログ システム</string>
+  <string name="origin_settings_action">ソーシャル ネットワーク</string>
   <string name="preference_ssl_mode_title">SSL モードとセキュリティ</string>
   <string name="preference_ssl_mode_secure_summary">安全: セキュリティで保護された SSL 接続のみ許可されます</string>
   <string name="preference_ssl_mode_insecure_summary">警告: あなたの接続はセキュリティで保護されません。この問題を解決するには、サーバー管理者に連絡してください。その後で、セキュリティで保護されたモードに戻ります</string>
@@ -285,7 +285,7 @@
   <string name="status_destroyed">メッセージは削除されました。</string>
   <string name="summary_preference_accounts_absent">まだ AndStatus アカウントはありません</string>
   <string name="summary_preference_accounts_present">AndStatus アカウントの数</string>
-  <string name="summary_preference_add_account_oauth">マイクロブログ システム サイトをブラウザーで開くには、ここをタップします。</string>
+  <string name="summary_preference_add_account_oauth">ここをタップすると、ソーシャル ネットワークのサイトをブラウザーで開きます。</string>
   <string name="summary_preference_add_account_basic">資格情報を確認し、アカウントを追加するには、ここをタップします。</string>
   <string name="summary_preference_appearance">AndStatus のルック アンド フィールを変更します。</string>
   <string name="summary_preference_enable_android_backup_off">Android のバックアップは要求されません</string>
@@ -310,8 +310,8 @@
   <string name="summary_preference_notifications_timeline_on">新しいホーム メッセージが通知されます。</string>
   <string name="summary_preference_oauth_off">ベーシック認証</string>
   <string name="summary_preference_oauth_on">OAuth (セキュリティで保護された認証) がオン</string>
-  <string name="summary_preference_origin_system">マイクロブログ システムを選択するには、ここをタップします。</string>
-  <string name="summary_preference_password">マイクロブログ システムのパスワード</string>
+  <string name="summary_preference_origin_system">ここをタップして、ソーシャル ネットワークを選択します</string>
+  <string name="summary_preference_password">ソーシャル ネットワークのパスワード</string>
   <string name="summary_preference_show_avatars_off">ユーザーのアバターは表示されません</string>
   <string name="summary_preference_show_avatars_on">ユーザーのアバターが表示されます</string>
   <string name="summary_preference_ssl_off">非 SSL</string>
@@ -326,7 +326,7 @@
   <string name="summary_preference_syncing">タイムラインを同期するタイミングと、その表示方法</string>
   <string name="summary_preference_theme_size">テキストサイズを選択します</string>
   <string name="summary_preference_user_in_timeline">ユーザーは \"{0}\" として表示されます</string>
-  <string name="summary_preference_username">マイクロブログ システムのユーザー名</string>
+  <string name="summary_preference_username">ソーシャル ネットワークのユーザー名</string>
   <string name="summary_preference_username_pumpio">pump.io サイトのあなたの ID を入力してください。メールアドレスのような形式です。ユーザー名の後に \"@\" そしてサーバー。例えば: andstatus@identi.ca</string>
   <string name="summary_preference_verify_credentials">このアカウントは確認済みで有効になっています。戻る (&lt;) をタップして続行するか、ここをタップして、ユーザーの資格情報を再度確認します。</string>
   <string name="summary_preference_verify_credentials_failed">確認に失敗しました。資格情報を確認し、このユーザーアカウントを有効にするには、ここをタップします。</string>
@@ -396,7 +396,7 @@
   <string name="title_preference_username_pumpio">Webfinger ID</string>
   <string name="title_preference_show_avatars">アバターを表示</string>
   <string name="title_preference_show_attached_images">添付画像を表示</string>
-  <string name="title_preference_show_origin">タイムラインに、マイクロブログ システムを表示</string>
+  <string name="title_preference_show_origin">タイムラインにソーシャル ネットワークを表示</string>
   <string name="title_preference_user_in_timeline">タイムラインに、ユーザーを表示する方法</string>
   <string name="title_preference_verify_credentials">資格情報を再確認</string>
   <string name="title_preference_verify_credentials_failed">資格情報を確認</string>
@@ -410,6 +410,7 @@
   <string name="reblogged_by">%1$s が再投稿</string>
   <string name="reblogged_by_twitter">%1$s がリツイート</string>
   <string name="unimplemented">実装されていません。</string>
+  <string name="use_legacy_http_protocol_title">従来の HTTP プロトコルを使用</string>
   <string name="user_in_timeline_entries_username">ユーザー名</string>
   <string name="user_in_timeline_entries_at_username">"@ユーザー名"</string>
   <string name="user_in_timeline_entries_webfingerid">webFingerId</string>
