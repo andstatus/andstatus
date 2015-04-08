@@ -25,6 +25,7 @@
   <string name="account_settings_action">AndStatus Accounteinstellungen</string>
   <string name="account_settings_activity_title">Konto</string>
   <string name="account_settings_summary">Synchronisation Frequenz, Benachrichtigungen etc.</string>
+  <string name="attachments">Anhänge</string>
   <string name="automatic">Auto</string>
   <string name="settings_action">Einstellungen</string>
   <string name="settings_activity_title">Einstellungen</string>
@@ -62,7 +63,7 @@
   <string name="category_title_preference_credentials">Anmeldedaten</string>
   <string name="category_title_preference_information">Informationen</string>
   <string name="category_title_preference_notifications">Benachrichtigungen</string>
-  <string name="category_title_preference_origin">Microbloggingsystem</string>
+  <string name="category_title_preference_origin">Soziales Netzwerk</string>
   <string name="category_title_preference_settings">Einstellungen</string>
   <string name="combined_timeline_on">kombiniert</string>
   <string name="combined_timeline_off_account">für</string>
@@ -163,11 +164,11 @@
   <string name="label_backup_folder">Backupverzeichnis</string>
   <string name="label_conversation">Unterhaltung</string>
   <string name="label_host">Host</string>
-  <string name="label_manage_origin_systems">Microblogging Systeme verwalten</string>
-  <string name="label_origin_list">Microblogging Systeme</string>
-  <string name="label_origin_name">Name des Microblogging Systems (eindeutig und nicht veränderbar)</string>
-  <string name="label_origin_system">Microblogging System</string>
-  <string name="label_origin_type">Typ des Microblogging Systems</string>
+  <string name="label_manage_origin_systems">Verwalte Soziale Netzwerke</string>
+  <string name="label_origin_list">Soziale Netzwerke</string>
+  <string name="label_origin_name">Name des Sozialen Netzes (einzigartig und nicht änderbar)</string>
+  <string name="label_origin_system">Soziales Netzwerk</string>
+  <string name="label_origin_type">Typ des Sozialen Netzwerks</string>
   <string name="label_restore">Anwendungsdaten aus einem Backup wiederherstellen</string>
   <string name="label_upgrading">Aktualisierung läuft. Bitte warte.</string>
   <string name="label_with_media">mit Anhang</string>
@@ -240,7 +241,7 @@
   <string name="options_menu_reload">Neu laden</string>
   <string name="options_menu_mentions">Erwähnungen</string>
   <string name="options_menu_search">Suche</string>
-  <string name="origin_settings_action">Microblogging System</string>
+  <string name="origin_settings_action">Soziales Netzwerk</string>
   <string name="preference_ssl_mode_title">SSL-Modus und Sicherheit</string>
   <string name="preference_ssl_mode_secure_summary">Sie sind sicher: Nur sichere SSL-Verbindungen erlaubt</string>
   <string name="preference_ssl_mode_insecure_summary">Warnung: Ihre Verbindungen sind nicht sicher. Bitte informieren Sie Ihren Server-Administrator, um dieses Problem zu beheben und in einem sicheren Modus fortzufahren</string>
@@ -287,7 +288,7 @@
   <string name="status_destroyed">Die Nachricht wurde gelöscht.</string>
   <string name="summary_preference_accounts_absent">Noch keine AndStatus Accounts</string>
   <string name="summary_preference_accounts_present">Anzahl der AndStatus Accounts</string>
-  <string name="summary_preference_add_account_oauth">Tippe hier um die Seite des Microblogging Systems im Browser zu öffnen.</string>
+  <string name="summary_preference_add_account_oauth">Tippen Sie hier, um eine Webseite des Sozialen Netzes in einem Browser zu öffnen.</string>
   <string name="summary_preference_add_account_basic">Tippe hier um deine Zugangsdaten zu verifizieren und den Account hinzuzufügen.</string>
   <string name="summary_preference_appearance">Aussehen und Verhalten von AndStatus verändern</string>
   <string name="summary_preference_enable_android_backup_off">Android Backups werden nicht angefordert</string>
@@ -312,8 +313,8 @@
   <string name="summary_preference_notifications_timeline_on">Du wirst bei neuen Home Nachrichten benachrichtigt</string>
   <string name="summary_preference_oauth_off">Basis Authentifizierung</string>
   <string name="summary_preference_oauth_on">OAuth (sichere Authentifizierung) ist an</string>
-  <string name="summary_preference_origin_system">Tippe hier um ein Microbloggingsystem zu wählen</string>
-  <string name="summary_preference_password">Dein Passwort auf diesem Microbloggingsystem</string>
+  <string name="summary_preference_origin_system">Tippen Sie hier, um ein Soziales Netzwerk auszuwählen</string>
+  <string name="summary_preference_password">Ihr Passwort im Sozialen Netz</string>
   <string name="summary_preference_show_avatars_off">Keine User Avatare werden angezeigt</string>
   <string name="summary_preference_show_avatars_on">User Avatare werden angezeigt</string>
   <string name="summary_preference_ssl_off">Kein SSL</string>
@@ -328,7 +329,7 @@
   <string name="summary_preference_syncing">Zeitpunkt und Anzeige der Synchronisation der Timeline </string>
   <string name="summary_preference_theme_size">Schriftgröße wählen</string>
   <string name="summary_preference_user_in_timeline">Benutzer wird als \"{0}\" angezeigt</string>
-  <string name="summary_preference_username">Dein Username beim Microbloggingsystem</string>
+  <string name="summary_preference_username">Ihr Benutzername in diesem Sozialen Netz</string>
   <string name="summary_preference_username_pumpio">Trage deine ID auf deiner pump.io Seite ein. Diese sieht wie eine Emailadresse aus: dein Username, dann \"@\"  gefolgt von deinem Server; z.B.: andstatus@identi.ca</string>
   <string name="summary_preference_verify_credentials">Dieser Account ist überprüft und aktiviert. Tippe auf Zurück (&lt;) um fortzufahren or tippe hier um die Zugangsdaten des Users erneut zu prüfen.</string>
   <string name="summary_preference_verify_credentials_failed">Überprüfung fehlgeschlagen. Hier tippen zur überprüfen der Zugangsdaten und zum Aktivieren dieses Benutzerkontos</string>
@@ -398,7 +399,7 @@
   <string name="title_preference_username_pumpio">Webfinger-ID</string>
   <string name="title_preference_show_avatars">Avatare anzeigen</string>
   <string name="title_preference_show_attached_images">Angehängte Bilder anzeigen</string>
-  <string name="title_preference_show_origin">Microblogging-System in der Timeline anzeigen</string>
+  <string name="title_preference_show_origin">Soziales Netzwerk in einer Timeline anzeigen</string>
   <string name="title_preference_user_in_timeline">Wie einen Benutzer in der Timeline angezeigt wird</string>
   <string name="title_preference_verify_credentials">Zugangsdaten reverifizieren</string>
   <string name="title_preference_verify_credentials_failed">Zugangsdaten verifizieren</string>
@@ -412,6 +413,7 @@
   <string name="reblogged_by">reblogged von %1$s</string>
   <string name="reblogged_by_twitter">retweeted von %1$s</string>
   <string name="unimplemented">Nicht implementiert.</string>
+  <string name="use_legacy_http_protocol_title">Veraltetes HTTP-Protokoll verwenden</string>
   <string name="user_in_timeline_entries_username">Benutzername</string>
   <string name="user_in_timeline_entries_at_username">"@benutzername"</string>
   <string name="user_in_timeline_entries_webfingerid">webFingerId</string>

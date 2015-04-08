@@ -66,143 +66,89 @@ AndStatus combina las cuentas de todas tus redes sociales en una Línea temporal
     <p>En el caso de que tu servidor (de GNU social) no esté en la lista, pulsa en el menú «Descubre servidores abiertos» (símbolo de la lupa) para elegir un servidor de una lista en línea mantenida por la comunidad de GNU social, o "Añadir un nuevo servidor" (símbolo «+») para añadir manualmente una cuenta nueva.</p>
     <p>Para Twitter, puedes pulsar directamente «Añadir esta cuenta».
 Para otras redes sociales se pedirá escribir tu nombre de usuario y contraseña antes de pulsar «Añadir esta cuenta». </p>
-    <p>After successful creation of an account, please tap "left arrow"
-        on an
-        "Action bar" or "Back" button on your device.
-        This time a Home Timeline will be opened,
-        and messages for this account will start downloading from the Internet.
+    <p>Después de crear una cuenta, por favor, pulsa la «flecha hacia atrás» en la barra superior (barra de acción) o la tecla «Atrás» de su dispositivo.
+Esta vez se abrirá la línea temporal «Inicio» y se descargarán los mensajes desde Internet.
     </p>
-    <p>Congratulations! Please read below about what you can do further.
+    <p>¡Felicidades! Por favor, lee abajo qué más puedes hacer.
     </p>
-    <p>And don't forget to add AndStatus's widget to a Home screen of Your
-        device:
-        the widget will inform you about new messages and may be used to launch
-        AndStatus.
+    <p>Recuerda que puedes añadir el «widget» de AndStatus al escritorio de tu dispositivo: éste te informatá sobre los nuevos mensajes y como lanzador de AndStatus.
     </p>
 </section>
 <section>
     <title>
-        <p>2. AndStatus basics</p>
+        <p>2. Lo básico de AndStatus</p>
     </title>
-    <p>The first view of AndStatus (after at least one account has been added)
-        contains a Home Timeline.
+    <p>Lo primero que se ve de AndStatus (tras incluir al menos una cuenta) es la línea temporal principal «Inicio».
     </p>
-    <p>In order to perform an action on a message in the list you
-        should
-        <strong>hold down</strong>
-        on it to get its "Context menu".
+    <p>Con la finalidad de interaccionar con un mensaje de la lista, deberás <strong>dejarlo pulsado</strong> para que salga el «menú contextual».
     </p>
-    <p>You may <strong>click</strong>
-        a message to get more details on it and to see
-        a conversation tree to which the message belongs.
+    <p>Deberás <strong>pulsar</strong> un mensaje para ver más detalles y la conversación a la que pertenece de forma ramificada.
     </p>
-    <p>Open a "Navigation Drawer" on a left and tap current Timeline
-        type item ("Home")
-        to switch to the other views.
+    <p>Abre un «Panel de navegación» de la izquierda y pulsa sobre la línea temporal actual («Inicio») para cambiarlo por otros.
     </p>
 </section>
 <section>
     <title>
-        <p>3. Sending and replying</p>
+        <p>3. Enviar y responder</p>
     </title>
-    <p>In order to update your status, tap the "Post" button
-        ("Tweet" for Twitter),
-        type in a text into the text area at the bottom of the screen and tap
-        <strong>Send</strong>.
+    <p>Para actualizar tu estado, pulsa en el botón «Publicar» con el icono de un mensaje y un «+», escribe el texto en la parte de abajo de la pantalla y pulsa <strong>enviar</strong>.
     </p>
-    <p>In order to reply, <strong>hold down</strong>
-        a message and select <strong>Reply</strong>
-        from a Context menu, type in your reply at the bottom.
+    <p>Para responder, <strong>deja pulsado</strong> el mensaje y selecciona <strong>Responder</strong> desde el menú contextual y escribe tu respuesta abajo.
     </p>
-    <p>To abort a reply, simply tap the "Hide" button to hide the
-       text area.</p>
+    <p>Para cancelar una respuesta, simplemente pulsa en el botón «Borrar y ocultar» con el icono del mensaje con un «-».</p>
 </section>
 <section>
     <title>
-        <p>4. Direct (private) messages</p>
+        <p>4. Mensajes directos (privados)</p>
     </title>
-    <p>Open a Navigation Drawer on a left, tap current Timeline type
-        item (Home)
-        and select
-        <strong>Direct Messages</strong>
-        from the list.
+    <p>Abre el panel de navegación de la izquierda y pulsa la línea temporal actual («Inicio») y selecciona <strong>Mensajes directos</strong> de la lista.
     </p>
-    <p>In order to <strong>delete</strong>
-        your message (public or private),
-        <strong>hold down</strong> on it and select
-        <strong>Remove message</strong>.
+    <p>Para <strong>eliminar</strong> tu mensaje (público o privado), <strong>déjalo pulsado</strong> y selecciona <strong>Borra el mensaje</strong>.
     </p>
-    <p>New messages are fetched to timelines in a background
-        if you have turned on  <strong>Automatic sync</strong>
-        in Android "Account and Sync" settings for this
-        AndStatus Account.
-        In any case you may always get updates from the Internet
-        manually using "Reload" command on an Action bar.
+    <p>Los nuevos mensajes serán descargados en segundo plano si se activa <strong>«Sincronizar mientras se usa la aplicación»</strong> en los ajustes de sincronización. 
+También puedes obtenerlos manualmente arrastrando la línea temporal hacia abajo o pulsando en menú de la barra de acción «Actualizar».
     </p>
 </section>
 <section>
     <title>
-        <p>5. Mentions</p>
+        <p>5. Menciones</p>
     </title>
-    <p>Tap current Timeline type item in a Navigation Drawer
-        and then select
-        <strong>Mentions</strong>
+    <p>Pulsa la actual línea temporal del panel de navegación lateral y selecciona <strong>Menciones</strong>
         .
     </p>
-    <p>Mentions will list every message that mentions your
-        <strong>@username</strong>
-        (or even mentions of all your AndStatus accounts for a
-        "combined" timeline).
+    <p>«Menciones» mostrará cada mensaje que mencione (valga la redundancia) tu <strong>@NombreDeUsuario</strong> (o incluso mendiones de todas tus cuentas en AndStatus si has seleccionado una línea temporal «combinada»).
     </p>
 </section>
 <section>
     <title>
-        <p>6. Search (local search)</p>
+        <p>6. Buscar (búsqueda local)</p>
     </title>
-    <p>Local search searches among messages already loaded from the
-        Internet.
-        Hence it is available even offline.
+    <p>La búsqueda local se hace con mensajes ya descargados de Internet. Por lo tanto está disponible incluso desconectado.
     </p>
-    <p>1. In order to find any word or phrase in a text of messages,
-        select <strong>Search</strong>
-        on an Action bar or click a dedicated
-        <strong>Search</strong> button on your device.
+    <p>1. Para encontrar una palabra o frase en un mensaje,  selecciona <strong>Buscar</strong> en la barra de acción o pulsa el botón <strong>Buscar</strong> de tu dispositivo si lo tiene.
     </p>
-    <p>If you wish to show messages from a specific user,
-        please search for "username".</p>
-    <p>To see mentions of a specific User, search for "@username".
+    <p>Si quieres que muestre los mensajes de un usuario en especial, por favor, búscalo por «NombreDeUsuario».</p>
+    <p>Para ver las menciones de un usuario en especial, búscalo por «@NombreDeUsuario»
     </p>
-    <p>2. To search quickly for messages by a user
-        (an Author or a Sender of a selected message), select
-        "Messages by UserName" from the context menu of the message.
-        This is actually sort of a Global Search (see below).
+    <p>2. Para ver rápidamente los mensajes de un usuario (el autor de un determinado mensaje), selecciona «Mensajes de NombreDeUsuario» del menú contextual del mensaje. Esto es algo así como una Búsqueda global (ver abajo).
     </p>
 </section>
 <section>
     <title>
-        <p>7. Global search</p>
+        <p>7. Búsqueda global</p>
     </title>
-    <p>Global search function sends a search request directly to
-        Social networks' servers.
-        This is why live Internet connection to the networks is required.
+    <p>La función de la búsqueda global es buscar directamente en los servidores de la red social.
+Por esto es por lo que se necesita una conexión a Internet.
     </p>
-    <p>First, you are presented with the results of the Local search.
-        In parallel, AndStatus downloads results
-        from a Social network of the selected Account
-        (or from all Social networks, if a Timeline is
-        "combined").
-        Search results are being updated upon receiving responses from the servers.
-        In a case of connection error
-        (i.e. no response from a server of a Social network)
-        you will see results of a Local Search only.
+    <p>Al principio se te muestran los resultados de la búsqueda local.
+Al mismo tiempo, AndStatus descarga los resultados de la red social de la cuenta seleccionada (o de todas si la línea temporal está «combinada»).
+Los resultados de las búsquedas se actualizan según reciben respuestas de los servidores.
+En caso de un fallo en la conexión (como que no haya una respuesta del servidor de la red social) sólo se mostrarán los resultados de la búsqueda local.
     </p>
-    <p>Please note that pump.io system doesn't support Global search yet.
+    <p>Por favor, ten en cuenta que la red social Pump.io no soporta todavía las búsquedas globales.
     </p>
-    <p>1. Global search by a word or a phrase is initiated
-        using its "Global search" item on an "Action bar".</p>
-    <p>2. Another way to search globally for messages by an Author or a Sender
-        of the selected message is to select
-        "Messages by UserName" from a Context menu of this message.</p>
+    <p>1. La búsqueda global de una palabra o frase se inicia usando el botón «Búsqueda global» de la barra de acción.</p>
+    <p>2. Otro modo de buscar globalmente los mensajes del autor de un determinado mensaje es seleccionar «Mensajes de Nombre de Usuario» del menú contextual de ese mensaje.</p>
 </section>
 </body>
 </FictionBook>

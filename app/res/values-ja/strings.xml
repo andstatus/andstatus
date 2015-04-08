@@ -25,6 +25,7 @@
   <string name="account_settings_action">AndStatus アカウントの設定</string>
   <string name="account_settings_activity_title">アカウント</string>
   <string name="account_settings_summary">同期の頻度、通知など</string>
+  <string name="attachments">添付ファイル</string>
   <string name="automatic">自動</string>
   <string name="settings_action">設定</string>
   <string name="settings_activity_title">設定</string>
@@ -320,7 +321,7 @@
   <string name="summary_preference_storage_external_off">データは内部メモリに格納されます</string>
   <string name="summary_preference_storage_external_on">データは外部メモリに格納されます</string>
   <string name="summary_preference_sync_indicator_on_timeline_off">同期インジケーターを表示しません</string>
-  <string name="summary_preference_sync_indicator_on_timeline_on">タイムラインの上部に別のバーでタイムラインの同期状況が表示されます</string>
+  <string name="summary_preference_sync_indicator_on_timeline_on">タイムラインの下のバーに同期の進行状況が表示されます</string>
   <string name="summary_preference_sync_while_using_application_off">スクロールの滑らかさを維持するために、タイムラインの参照や会話をしている間にバックグラウンド同期をしません</string>
   <string name="summary_preference_sync_while_using_application_on">バック グラウンド同期は常にオンです。タイムラインが時々フリーズすることがあります。</string>
   <string name="summary_preference_syncing">タイムラインを同期するタイミングと、その表示方法</string>

@@ -25,6 +25,7 @@
   <string name="account_settings_action">Configuración de la cuenta AndStatus</string>
   <string name="account_settings_activity_title">Cuenta</string>
   <string name="account_settings_summary">Sicronización de frecuencia, notificaciones , etc.</string>
+  <string name="attachments">Adjuntos</string>
   <string name="automatic">Automático</string>
   <string name="settings_action">Configuración</string>
   <string name="settings_activity_title">Configuración</string>
@@ -61,7 +62,7 @@
   <string name="category_title_preference_credentials">Credenciales de usuario</string>
   <string name="category_title_preference_information">Información</string>
   <string name="category_title_preference_notifications">Notificaciones</string>
-  <string name="category_title_preference_origin">Parámetros de la red social</string>
+  <string name="category_title_preference_origin">Red social</string>
   <string name="category_title_preference_settings">Configuración</string>
   <string name="combined_timeline_on">combinado</string>
   <string name="combined_timeline_off_account">para</string>
@@ -162,10 +163,10 @@
   <string name="label_backup_folder">Carpeta de la copia de seguridad</string>
   <string name="label_conversation">Conversación</string>
   <string name="label_host">Servidor (nodo)</string>
-  <string name="label_manage_origin_systems">Administrar las redes sociales</string>
+  <string name="label_manage_origin_systems">Configurar redes sociales</string>
   <string name="label_origin_list">Redes sociales</string>
-  <string name="label_origin_name">Nombre de la red social (único y no se puede cambiar)</string>
-  <string name="label_origin_system">Red social</string>
+  <string name="label_origin_name">Nombre de la red social (única y permanente)</string>
+  <string name="label_origin_system">Red Social</string>
   <string name="label_origin_type">Tipo de red social</string>
   <string name="label_restore">Restaurar información desde una copia de seguridad</string>
   <string name="label_upgrading">Actualización en curso. Por favor, espere.</string>
@@ -287,7 +288,7 @@
   <string name="status_destroyed">El mensaje ha sido eliminado.</string>
   <string name="summary_preference_accounts_absent">Aún no tiene cuentas en AndStatus</string>
   <string name="summary_preference_accounts_present">Número de cuentas en AndStatus</string>
-  <string name="summary_preference_add_account_oauth">Pulse aquí para abrir la página web de la red social en un navegador.</string>
+  <string name="summary_preference_add_account_oauth">Pulsa aquí para abrir la red social en un navegador.</string>
   <string name="summary_preference_add_account_basic">Pulse aquí para verificar las credenciales y agregar la cuenta.</string>
   <string name="summary_preference_appearance">Cambiar el aspecto de AndStatus</string>
   <string name="summary_preference_enable_android_backup_off">No se pedirá confirmación para las copias de seguridad</string>
@@ -312,8 +313,8 @@
   <string name="summary_preference_notifications_timeline_on">Se le notificarán los nuevos mensajes en el Inicio</string>
   <string name="summary_preference_oauth_off">Autentificación básica</string>
   <string name="summary_preference_oauth_on">OAuth (autenticación segura) activada</string>
-  <string name="summary_preference_origin_system">Pulsa para seleccionar una red social</string>
-  <string name="summary_preference_password">Contraseña de la red social</string>
+  <string name="summary_preference_origin_system">Pulsa aquí para seleccionar una red social</string>
+  <string name="summary_preference_password">Tu contraseña en la red social</string>
   <string name="summary_preference_show_avatars_off">No se mostrarán los avatares de los usuarios</string>
   <string name="summary_preference_show_avatars_on">Se mostrarán los avatares de los usuarios</string>
   <string name="summary_preference_ssl_off">Sin SSL</string>
@@ -322,13 +323,13 @@
   <string name="summary_preference_storage_external_off">Almacenar datos en la memoria interna</string>
   <string name="summary_preference_storage_external_on">Almacenar datos en la memoria externa</string>
   <string name="summary_preference_sync_indicator_on_timeline_off">Sin indicador de sincronización</string>
-  <string name="summary_preference_sync_indicator_on_timeline_on">Se mostrará una barra a parte para la sincronización de la línea temporal</string>
+  <string name="summary_preference_sync_indicator_on_timeline_on">Verás debajo de la línea temporal una barra con el progreso de sincronización</string>
   <string name="summary_preference_sync_while_using_application_off">Sin sincronizaciones de fondo mientras se navega por la línea temporal o en conversaciones para preservar la fluidez de la navegación</string>
   <string name="summary_preference_sync_while_using_application_on">Sincronización de fondo siempre activada. Puede congelar la línea temporal.</string>
   <string name="summary_preference_syncing">Cuándo sincronizar la línea temporal y cómo notificarlo</string>
   <string name="summary_preference_theme_size">Selecciona el tamaño del texto</string>
   <string name="summary_preference_user_in_timeline">Los usuarios se mostrarán como \"{0}\"</string>
-  <string name="summary_preference_username">Se mostrarán los avatares de usuario</string>
+  <string name="summary_preference_username">Tu nombre de usuario en la red social</string>
   <string name="summary_preference_username_pumpio">Introduzca su ID de tu servidor pump.io. Se parece a una dirección de correo electrónico, con su nombre de usuario a continuación \"@\" después tu servidor, por ejemplo: andstatus@identi.ca</string>
   <string name="summary_preference_verify_credentials">Esta cuenta está verificada y habilitada. Pulse Back (&lt;) para continuar o pulse aquí para verificar las credenciales del usuario nuevo..</string>
   <string name="summary_preference_verify_credentials_failed">Fallo en la verificación. Pulse aquí para verificar las credenciales y permitir esta cuenta de usuario</string>
@@ -398,7 +399,7 @@
   <string name="title_preference_username_pumpio">Identificación de Webfinger</string>
   <string name="title_preference_show_avatars">Visualizar Avatares</string>
   <string name="title_preference_show_attached_images">Mostrar imágenes adjuntas</string>
-  <string name="title_preference_show_origin">Mostrar red social en una línea temporal</string>
+  <string name="title_preference_show_origin">Mostrar una red social en la línea temporal</string>
   <string name="title_preference_user_in_timeline">Cómo mostrar a los usuarios en la línea temporal</string>
   <string name="title_preference_verify_credentials">Volver a verificar las credenciales</string>
   <string name="title_preference_verify_credentials_failed">Verificar las credenciales</string>
@@ -412,6 +413,7 @@
   <string name="reblogged_by">repetido por %1$s</string>
   <string name="reblogged_by_twitter">retweeteado por %1$s</string>
   <string name="unimplemented">No implementado.</string>
+  <string name="use_legacy_http_protocol_title">Usar el protocolo HTTP legacy</string>
   <string name="user_in_timeline_entries_username">usuario</string>
   <string name="user_in_timeline_entries_at_username">"@usuario"</string>
   <string name="user_in_timeline_entries_webfingerid">Identificación de Webfinger</string>
