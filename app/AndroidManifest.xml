@@ -246,5 +246,12 @@
             android:exported="true"
             android:parentActivityName=".TimelineActivity">
         </activity>
-    </application>
+        
+        <activity android:name="org.acra.CrashReportDialog"
+            android:excludeFromRecents="true"
+            android:finishOnTaskLaunch="true"
+            android:launchMode="singleInstance"
+            android:theme="@style/DialogThemeSelector" />
+        
+</application>
 </manifest>

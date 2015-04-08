@@ -16,18 +16,32 @@
 
 package org.andstatus.app.context;
 
+import org.acra.ACRA;
+import org.acra.ReportingInteractionMode;
+import org.acra.annotation.ReportsCrashes;
+
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.R;
+
 import android.app.Application;
 import android.content.res.Configuration;
 import android.database.DatabaseErrorHandler;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteDatabase.CursorFactory;
+
 import java.io.File;
 
+@ReportsCrashes(formKey = "",
+        mode = ReportingInteractionMode.DIALOG,
+        mailTo = "andstatus@gmail.com",
+        resDialogIcon = R.drawable.icon,
+        resDialogText = R.string.crash_dialog_text,
+        resDialogCommentPrompt = R.string.crash_dialog_comment_prompt)
 /**
  * @author yvolk@yurivolkov.com
  */
 public class MyApplication extends Application {
+    
     
     @Override
     public void onCreate() {
@@ -35,6 +49,7 @@ public class MyApplication extends Application {
         MyLog.v(this, "onCreate started");
         MyContextHolder.storeContextIfNotPresent(this, this);
         MyPreferences.setLocale(this);
+        ACRA.init(this);
     }
 
     @Override
