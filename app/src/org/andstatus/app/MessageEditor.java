@@ -348,7 +348,7 @@ class MessageEditor {
 			if (MyPreferences.getBoolean(MyPreferences.KEY_SENDING_MESSAGES_LOG_ENABLED, false)) {
 				MyLog.setLogToFile(true);
 			}
-			if (MyLog.isLoggable(MyLog.VERBOSE) && status.equals("Let it be AndStatus crash!")) {
+			if (MyLog.isLoggable(MyLog.VERBOSE) && status.equals("Crash test 2015-04-10")) {
 			    throw new NullPointerException("This is a test crash event");
 			}
             CommandData commandData = CommandData.updateStatus(dataCurrent.getMyAccount().getAccountName(), status, dataCurrent.inReplyToId, dataCurrent.recipientId, dataCurrent.mediaUri);

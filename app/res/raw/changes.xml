@@ -27,7 +27,7 @@
     </header>
 
     <release android:versionName="17.0" android:versionCode="124"
-        versionDate="2014-04-08"
+        versionDate="2014-04-10"
         versionTitle="Sending attachments fix for legacy servers">
         <changes>
             <change>Fixed: gnusocial.no, quitter.no, quitter.es and some other servers didn't 
@@ -55,7 +55,7 @@
             <change><a href="https://github.com/ACRA/acra">ACRA</a> crash reporting added to AndStatus. 
                 It automates collecting of all required information and allows a User 
                 to send the report via email to AndStatus team. 
-                Please help fixing AndStatus by sendining your crash reports! 
+                Please help to fix AndStatus by sendining your crash reports. 
                 <a href="https://github.com/andstatus/andstatus/issues/250">#250</a>
             </change>
         </changes>
