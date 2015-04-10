@@ -27,7 +27,7 @@
     </header>
 
     <release android:versionName="17.0" android:versionCode="124"
-        versionDate="2014-04-10"
+        versionDate="2015-04-10"
         versionTitle="Sending attachments fix for legacy servers">
         <changes>
             <change>Fixed: gnusocial.no, quitter.no, quitter.es and some other servers didn't 
@@ -61,7 +61,7 @@
         </changes>
     </release>
     <release android:versionName="16.0" android:versionCode="123"
-        versionDate="2014-03-21"
+        versionDate="2015-03-21"
         versionTitle="Posting enhancements and custom Application language. New User guide format.">
         <changes>
             <change>&quot;Reply to All&quot; menu item added, allowing to include 
@@ -94,7 +94,7 @@
         </changes>
     </release>
     <release android:versionName="15.0" android:versionCode="122"
-        versionDate="2014-02-14"
+        versionDate="2015-02-14"
         versionTitle="Discovery of open GNU Social instances">
         <changes>
             <change>Implemented discovery of open GNU Social instances (servers)
@@ -128,7 +128,7 @@
         </changes>
     </release>
     <release android:versionName="14.4" android:versionCode="121"
-        versionDate="2014-02-03"
+        versionDate="2015-02-03"
         versionTitle="Stalled connections are killed">
         <changes>
             <change>Fixed: Sometimes a command/connection doesn't end after
@@ -160,7 +160,7 @@
         </changes>
     </release>
     <release android:versionName="14.3" android:versionCode="120"
-        versionDate="2014-01-26"
+        versionDate="2015-01-26"
         versionTitle="Extra large pictures don't crash any more">
         <changes>
             <change>Fixed: Crash during downloading large pictures
@@ -172,7 +172,7 @@
         </changes>
     </release>
     <release android:versionName="14.2" android:versionCode="119"
-        versionDate="2014-01-23"
+        versionDate="2015-01-23"
         versionTitle="Bug fixes and connection to Quitter.Zone">
         <changes>
             <change>Reported crashes fixed.</change>
@@ -187,7 +187,7 @@
             </changes>
     </release>
     <release android:versionName="14.1" android:versionCode="118"
-        versionDate="2014-01-18"
+        versionDate="2015-01-18"
         versionTitle="Fixed Private attachments and typed text persistence">
         <changes>
             <change>Fixed: [Pump.io] Attachment was not sent with a Direct message.
