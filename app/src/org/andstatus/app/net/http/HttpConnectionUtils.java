@@ -56,6 +56,9 @@ public class HttpConnectionUtils {
 
     private static final int BUFFER_LENGTH = 4096;
     static String readStreamToString(InputStream in) throws IOException {
+        if (in == null) {
+            return "";
+        }
         char[] buffer = new char[BUFFER_LENGTH];
         int count;
         StringBuilder builder = new StringBuilder();
@@ -75,6 +78,9 @@ public class HttpConnectionUtils {
     }
 
     public static void readStreamToFile(InputStream in, File file) throws IOException {
+        if (in == null || file == null) {
+            return;
+        }
         byte[] buffer = new byte[BUFFER_LENGTH];
         int count;
         try {
