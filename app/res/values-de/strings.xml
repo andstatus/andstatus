@@ -275,7 +275,7 @@
   <string name="remove_account_dialog_title">Konto entfernen?</string>
   <string name="remove_account_dialog_text">Das Entfernen des Kontos wird alle seine Daten vom Gerät löschen? Fortfahren?</string>
   <string name="resolve_view">Nachricht anzeigen</string>
-  <string name="splash_button_learn_more">Mehr erfaren</string>
+  <string name="splash_button_learn_more">Mehr erfahren</string>
   <string name="splash_button_get_started">Loslegen</string>
   <string name="splash_payoff_line">Dateneffizienter Microblogging Client für Twitter, 
 	    StatusNet (GNU social) und pump.io.\n Open Source Lizenz.</string>
