@@ -1,0 +1,16 @@
+O AndStatus é uma aplicação open source para redes sociais e com conversas ao estilo de árvore. Tem suporte a diversos protocolos, incluindo o GNU Social (StatusNet,  Quitter, LoadAverage, Vinilox, etc.), Twitter e Pump.io. O AndStatus combina as contas de todas as redes numa única cronologia e permite-lhe ler e publicar mensagens mesmo se estiver offline.
+
+Para o Android 4.1 ou superior. Licenças de código aberto.
+
+Características distintivas do AndStatus:
+
+1. Diversas contas para as diversas redes sociais. Pode possuir várias contas em cada uma das redes, escrever ou responder de qualquer uma delas e partilhá-lhas entre as contas e sistemas.
+2. Não precisa de estar ligado à rede para publicar as suas atualizações. As mensagens não enviadas serão guardadas (na fila de envio) mesmo após reiniciar o seu dispositivo. E serão enviadas assim que o dispositivo estiver ligado à rede.
+3. Uma "Vista de conversas" conveniente.
+4. Uma "Procura global" que lhe permite procurar mensagens em todas as redes sociais através de uma única consulta.
+5. Sincronização de tweets/mensagens/avatars/imagens em segundo plano, se o seu dispositivo estiver ligado à rede.
+6. Os itens em cache podem ser guardados por diversos anos ou apenas por alguns dias. Você escolhe.
+7. Criação/restauro de backups e dados para os poder transferir entre dispositivos.
+8. Livre, sem anúncios e suportado pela comunidade.
+
+Consulte o registo de alterações para ver todas as funcionalidades do AndStatus:

@@ -49,9 +49,9 @@ xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../res-src/
     <title>
         <p>Introdução</p>
     </title>
-    <p>O AndStatus é uma aplicação Open Source para redes sociais e que utiliza o estilo em árvore para as conversas. Tem suporte a diversos protocolos, incluindo GNU Social, Twitter  e  Pump.io. O AndStatus combina todas as contas de todas as redes numa cronologia e permite-lhe a leitura e publicação de itens mesmo se estiver offline.</p>
+    <p>O AndStatus é uma aplicação Open Source para redes sociais e que utiliza o estilo em árvore para as conversas. Tem suporte a diversos protocolos, incluindo GNU Social, Twitter  e  Pump.io. O AndStatus combina as contas de todas as redes numa cronologia e permite-lhe a leitura e publicação de itens mesmo se estiver offline.</p>
     <p>A ligação para este guia está disponível na barra de ação -> Ajuda.</p>
-    <p>O registo de alterações na página seguinte permite-lhe ver a descrição e as ligações para todas as funcionalidades do AndStatus.</p>
+    <p>A página seguinte permite-lhe ver a descrição e as ligações para todas as funcionalidades do AndStatus.</p>
 </section>
 <section>
     <title>
@@ -62,11 +62,11 @@ xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../res-src/
     <p>Primeiro, será solicitada a inserção de uma conta de rede social da lista.
 As contas Twitter, Pump.io e diversas "GNU social" (Quitter, LoadAverage e Vinilox) estão pré-configuradas.
     </p>
-    <p>No caso em que a sua rede ("GNU social") não estiver na lista, clique no item de menu "Descobrir instâncias abertas" para escolher um sistema de uma lista online, desenvolvida pela comunidade GNU social ou "Adicione um novo sistema" manualmente antes de adicionar uma nova conta.</p>
+    <p>Se a sua rede ("GNU social") não estiver na lista, clique no item de menu "Descobrir instâncias abertas" para escolher um sistema de uma lista online, desenvolvida pela comunidade GNU social ou "Adicione um novo sistema" manualmente antes de adicionar uma nova conta.</p>
     <p>Para as contas Twitter, está disponível a opção "Adicionar esta conta". Para os outros sistemas, será solicitado o seu nome de utilizador e palavra-passe antes de aparecer a opção "Adicionar esta conta".</p>
-    <p>Após criar uma conta com sucesso, toque na seta para  a esquerda na barra de ação ou no botão "Back" do seu dispositivo. Aparecerá a sua cronologia e as mensagens para a sua conta serão transferidas automaticamente.
+    <p>Após criar uma conta com sucesso, toque na seta para  a esquerda na barra de ação ou no botão "Back" do seu dispositivo. Aparecerá a sua cronologia e as mensagens das suas contas serão transferidas automaticamente.
     </p>
-    <p>Parabéns! Leia abaixo para saber o que mais pode fazer.
+    <p>Muito bem! Leia abaixo para saber o que mais pode fazer.
     </p>
     <p>E não se esqueça de colocar o widget do AndStatus no ecrã do seu dispositivo. Através do widget, será informado sobre a existência de novas mensagens e pode também ser utilizado para abrir a aplicação.
     </p>
@@ -77,7 +77,7 @@ As contas Twitter, Pump.io e diversas "GNU social" (Quitter, LoadAverage e Vinil
     </title>
     <p>A primeira vista do AndStatus (após a criação de uma conta), contém a sua cronologia.
     </p>
-    <p>Para efetuar qualquer ação numa mensagem da lista, deve <strong>pressionar longamente</strong> na mensagem para abrir o menu de contexto.
+    <p>Para efetuar qualquer ação numa mensagem da lista, deve <strong>pressionar longamente</strong> a mensagem para abrir o menu de contexto.
     </p>
     <p>Pode <strong>clicar</strong> na mensagem para obter os detalhes e para ver a árvore de conversas a que a mensagem pertence.
     </p>
@@ -90,7 +90,7 @@ As contas Twitter, Pump.io e diversas "GNU social" (Quitter, LoadAverage e Vinil
     </title>
     <p>Para atualizar o seu estado, toque no botão "Publicar" ("Tweet" para o Twitter), escreva o seu texto na área de texto, existente na base do ecrã, e clique em <strong>Enviar</strong>..
     </p>
-    <p>Para respostas, <strong>pressione longamente</strong> na mensagem, selecione <strong>Responder</strong> no menu de contexto e escreva a sua resposta.
+    <p>Para respostas, <strong>pressione longamente</strong> a mensagem, selecione <strong>Responder</strong> no menu de contexto e escreva a sua resposta.
     </p>
     <p>Para abortar a resposta, clique no botão "Ocultar" para ocultar a área de texto.</p>
 </section>
@@ -100,7 +100,7 @@ As contas Twitter, Pump.io e diversas "GNU social" (Quitter, LoadAverage e Vinil
     </title>
     <p>Abra a gaveta de navegação, toque no item ("Home") da sua cronologia e selecione <strong>Mensagem direta</strong> na lista.
     </p>
-    <p>Para <strong>eliminar</strong> a sua mensagem (pública ou privada), <strong>pressione longamente</strong> na mensagem e selecione <strong>Remover mensagem</strong>..
+    <p>Para <strong>eliminar</strong> a sua mensagem (pública ou privada), <strong>pressione longamente</strong> a mensagem e selecione <strong>Remover mensagem</strong>..
     </p>
     <p>As novas mensagens serão obtidas automaticamente em segundo plano se ativar a opção <strong>Sincronização automática</strong> das contas AndStatus nas definições "Contas e sincronização" do Android. Se quiser receber as mensagens através da opção manual, utilize o botão "Recarregar" na barra de ação.
     </p>

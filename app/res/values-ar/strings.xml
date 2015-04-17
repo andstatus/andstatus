@@ -25,6 +25,7 @@
   <string name="account_settings_action">إعدادات حساب AndStatus</string>
   <string name="account_settings_activity_title">حساب</string>
   <string name="account_settings_summary">تردد المزامنة، التنبيهات، إلخ.</string>
+  <string name="attachments">مرفقات</string>
   <string name="automatic">تلقائي</string>
   <string name="settings_action">إعدادات</string>
   <string name="settings_activity_title">إعدادات</string>
@@ -60,7 +61,7 @@
   <string name="category_title_preference_credentials">اعتماد المستخدم</string>
   <string name="category_title_preference_information">البيانات</string>
   <string name="category_title_preference_notifications">إشعارات</string>
-  <string name="category_title_preference_origin">نظام التدوين المصغر</string>
+  <string name="category_title_preference_origin">موقع اجتماعي</string>
   <string name="category_title_preference_settings">إعدادات</string>
   <string name="combined_timeline_on">مدمجة</string>
   <string name="combined_timeline_off_account">من أجل</string>
@@ -157,11 +158,11 @@
   <string name="label_backup_folder">مجلد النسخ الاحتياطي</string>
   <string name="label_conversation">المحادثة</string>
   <string name="label_host">المضيف</string>
-  <string name="label_manage_origin_systems">إدارة أنظمة التدوين الكصغرة</string>
-  <string name="label_origin_list">انظمة التدوين المصغرة</string>
-  <string name="label_origin_name">اسم نظام التدوين (فريد وغير قابل للتغيير)</string>
-  <string name="label_origin_system">نظام التدوين المصغر</string>
-  <string name="label_origin_type">نوع نظام التدوين المصغر</string>
+  <string name="label_manage_origin_systems">إدارة المواقع الاجتماعية</string>
+  <string name="label_origin_list">المواقع الاجتماعية</string>
+  <string name="label_origin_name">اسم الموقع الاجتماعي (فريد وغير قابل للتغيير)</string>
+  <string name="label_origin_system">موقع اجتماعي</string>
+  <string name="label_origin_type">نوع الموقع الاجتماعي</string>
   <string name="label_restore">استعادة بيانات التطبيق من النسخ الاحتياطي</string>
   <string name="label_upgrading">جاري ترقية. الرجاء الانتظار.</string>
   <string name="label_with_media">مع وسائط</string>
@@ -234,6 +235,7 @@
   <string name="options_menu_reload">إعادة التحميل</string>
   <string name="options_menu_mentions">الإشارات</string>
   <string name="options_menu_search">بحث</string>
+  <string name="origin_settings_action">موقع اجتماعي</string>
   <string name="preference_ssl_mode_title">الوضع الأمن و SSL</string>
   <string name="preference_ssl_mode_secure_summary">أنت آمن: يسمح فقط بالاتصالات SSL الآمنة</string>
   <string name="preference_ssl_mode_secure">SSL آمن</string>
@@ -264,6 +266,7 @@
   <string name="resolve_view">عرض رسالة</string>
   <string name="splash_button_learn_more">الإطلاع عن المزيد</string>
   <string name="splash_button_get_started">ابدأ الاستخدام</string>
+  <string name="splash_payoff_line">خادم تواصل اجتماعي مفتوح المصدر بمحادثة مشعبة واستعمال حكيم للبيانات. يدعم GNU social, twitter و pump.io.</string>
   <string name="syncing">مزامنة جارية&#8230;</string>
   <string name="syncing_timeline_for_somebody">مزامنة %1$s ل %2$s</string>
   <string name="search_timeline_label">البحث في الرسائل والمستخدمين و هاشطاك</string>
@@ -273,6 +276,7 @@
   <string name="status_destroyed">تم حذف الرسالة.</string>
   <string name="summary_preference_accounts_absent">لا يوجد أي حساب Andstatus بعد</string>
   <string name="summary_preference_accounts_present">عدد حسابات Andstatus</string>
+  <string name="summary_preference_add_account_oauth">اضغط هنا لفتح الموقع الاجتماعي في المتصفح.</string>
   <string name="summary_preference_add_account_basic">اضغط هنا للتحقق من بيانات الاعتماد وإضافة الحساب.</string>
   <string name="summary_preference_appearance">تغيير مظهر AndStatus</string>
   <string name="summary_preference_enable_android_backup_off">لن يتم طلب نسخ أندرويد الإحتياطية</string>
@@ -293,6 +297,8 @@
   <string name="summary_preference_notifications_timeline_on">سيتم إعلامك عن رسائل الصفحة الرئيسية الجديدة</string>
   <string name="summary_preference_oauth_off">مصادقة مبدئية</string>
   <string name="summary_preference_oauth_on">OAuth (مصادقة آمنة) مفعلة</string>
+  <string name="summary_preference_origin_system">اضغط هنا لتحديد موقع اجتماعي</string>
+  <string name="summary_preference_password">كلمة المرور الخاصة بك في الموقع الاجتماعي</string>
   <string name="summary_preference_show_avatars_off">لن يتم عرض صور المستخدمين</string>
   <string name="summary_preference_show_avatars_on">ستُعرض صور المستخدمين</string>
   <string name="summary_preference_ssl_off">بدون SSL</string>
@@ -301,12 +307,12 @@
   <string name="summary_preference_storage_external_off">يتم تخزين البيانات في الذاكرة الداخلية</string>
   <string name="summary_preference_storage_external_on">يتم تخزين البيانات في الذاكرة الخارجية</string>
   <string name="summary_preference_sync_indicator_on_timeline_off">بدون مؤشر المزامنة</string>
-  <string name="summary_preference_sync_indicator_on_timeline_on">سوف تشاهد تقدُم مزامنة الخط الزمني في شريط منفصل عنه</string>
   <string name="summary_preference_sync_while_using_application_off">لا مزامنة خلفية أثناء تصفح  الخط الزمني والمحادثات حفاظا على نعومة للتمرير</string>
   <string name="summary_preference_sync_while_using_application_on">المزامنة الخلفية دائماً مفعلة. قد يُجمَّد الخط الزمني في بعض الأحيان.</string>
   <string name="summary_preference_syncing">مزامنة الخط الزمني في أي حين وكيف يوضحُ ذلك</string>
   <string name="summary_preference_theme_size">حدد حجم النص</string>
   <string name="summary_preference_user_in_timeline">سيتم عرض المستخدم على شكل \"{0}\"</string>
+  <string name="summary_preference_username">اسم المستخدم الخاص بك في الموقع الاجتماعي</string>
   <string name="summary_preference_username_pumpio">أدخل المعرف الخاص بك في موقعك  pump.io.  إنه يبدو كعنوان بريد كتروني، مع اسم المستخدم الخاص بك ثم \"@\" ثم الخادم؛ مثلاً: andstatus@identi.ca</string>
   <string name="summary_preference_verify_credentials">هذا الحساب مؤكد ومفعل. اضغط الخلف (&lt;) للمتابعة أو اضغط هنا للتحقق من بيانات الاعتماد للمستخدم مرة أخرى.</string>
   <string name="summary_preference_verify_credentials_failed">فشل التحقق. اضغط هنا للتحقق من بيانات الاعتماد وتفعيل \"حساب المستخدم\" هذا</string>
@@ -376,6 +382,7 @@
   <string name="title_preference_username_pumpio">Webfinger ID</string>
   <string name="title_preference_show_avatars">عرض صور المستخدمين</string>
   <string name="title_preference_show_attached_images">عرض الصور المرفقة</string>
+  <string name="title_preference_show_origin">عرض الموقع الاجتماعي في الخط الزمني</string>
   <string name="title_preference_user_in_timeline">كيفية يظهر المستخدم في الخط الزمني</string>
   <string name="title_preference_verify_credentials">إعادة التحقق من وثائق التفويض</string>
   <string name="title_preference_verify_credentials_failed">تحقق من وثائق التفويض</string>
