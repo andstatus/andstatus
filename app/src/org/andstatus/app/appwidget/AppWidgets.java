@@ -85,7 +85,7 @@ public class AppWidgets {
         final String method = "updateView";
         MyAppWidgetData widgetData = mAppWidgets.get(appWidgetId);
         if (widgetData == null) {
-            if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
+            if (MyLog.isVerboseEnabled()) {
                 MyLog.d(this, method + "; Widget not found, id=" + appWidgetId);
             }
             return;
@@ -97,7 +97,7 @@ public class AppWidgets {
             MyAppWidgetData widgetData) {
         final String method = "updateView";
         try {
-            if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
+            if (MyLog.isVerboseEnabled()) {
                 MyLog.v(this, method + "; Started id=" + widgetData.getId());
             }
             MyRemoteViewData viewData = MyRemoteViewData.fromViewData(myContext.context(), widgetData);

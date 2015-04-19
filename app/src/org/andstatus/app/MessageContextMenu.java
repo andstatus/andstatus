@@ -270,7 +270,7 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
 
     void switchTimelineActivity(TimelineTypeEnum timelineType, boolean isTimelineCombined, long selectedUserId) {
         Intent intent;
-        if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
+        if (MyLog.isVerboseEnabled()) {
             MyLog.v(this, "switchTimelineActivity; " + timelineType 
                     + "; isCombined=" + (isTimelineCombined ? "yes" : "no")
                     + "; userId=" + selectedUserId);

@@ -80,7 +80,7 @@ public class SharedPreferencesUtil {
         boolean isDeleted = false;
 
         if (context == null || TextUtils.isEmpty(prefsFileName)) {
-            if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+            if (MyLog.isVerboseEnabled()) {
                 MyLog.v(TAG, "delete '" + prefsFileName + "' - nothing to do");
             }
             return false;
@@ -88,7 +88,7 @@ public class SharedPreferencesUtil {
         File prefFile = new File(prefsDirectory(context), prefsFileName + FILE_EXTENSION);
         if (prefFile.exists()) {
             isDeleted = prefFile.delete();
-            if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+            if (MyLog.isVerboseEnabled()) {
                 MyLog.v(TAG, "The prefs file '" + prefFile.getAbsolutePath() + "' was "
                         + (isDeleted ? "" : "not ") + " deleted");
             }
@@ -110,14 +110,14 @@ public class SharedPreferencesUtil {
 
         if (context == null || oldPrefsFileName == null || oldPrefsFileName.length() == 0
                 || newPrefsFileName == null || newPrefsFileName.length() == 0) {
-            if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+            if (MyLog.isVerboseEnabled()) {
                 MyLog.v(TAG, "rename: Nothing to do");
             }
         } else {
             File newPrefFile = new File(prefsDirectory(context), newPrefsFileName + FILE_EXTENSION);
             if (newPrefFile.exists()) {
                 try {
-                    if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+                    if (MyLog.isVerboseEnabled()) {
                         MyLog.v(TAG, "rename: New file already exists: \""
                                 + newPrefFile.getCanonicalPath() + "\"");
                     }
@@ -128,7 +128,7 @@ public class SharedPreferencesUtil {
                 File oldPrefFile = new File(prefsDirectory(context), oldPrefsFileName + FILE_EXTENSION);
                 if (oldPrefFile.exists()) {
                     isRenamed = oldPrefFile.renameTo(newPrefFile);
-                    if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+                    if (MyLog.isVerboseEnabled()) {
                         MyLog.v(TAG, "The prefs file '" + oldPrefFile.getAbsolutePath() + "' was "
                                 + (isRenamed ? "" : "not ") + " renamed");
                     }

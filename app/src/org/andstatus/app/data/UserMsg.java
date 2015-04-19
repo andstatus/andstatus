@@ -119,7 +119,7 @@ public final class UserMsg {
      */
     public boolean save() {
         boolean ok = true;
-        if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+        if (MyLog.isVerboseEnabled()) {
             MyLog.v(this, "User=" + MyProvider.userIdToWebfingerId(userId) 
                     + " Latest msg at " + (new Date(getLastMsgDate()).toString())
                     + (changed ? "" : " not changed")                    

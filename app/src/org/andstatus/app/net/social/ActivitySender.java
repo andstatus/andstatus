@@ -95,7 +95,7 @@ class ActivitySender {
             ConnectionAndUrl conu = connection.getConnectionAndUrl(ApiRoutineEnum.POST_MESSAGE, connection.data.getAccountUserOid());
             jso = conu.httpConnection.postRequest(conu.url, activity);
             if (jso != null) {
-                if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+                if (MyLog.isVerboseEnabled()) {
                     MyLog.v(this, "verb '" + verb + "' object id='" + objectId + "' " + jso.toString(2));
                 }
                 if ("post".equals(verb) && !TextUtils.isEmpty(objectId)) {
@@ -161,7 +161,7 @@ class ActivitySender {
             ConnectionAndUrl conu = connection.getConnectionAndUrl(ApiRoutineEnum.POST_WITH_MEDIA, connection.data.getAccountUserOid());
             obj1 = conu.httpConnection.postRequest(conu.url, formParams);
             if (obj1 != null) {
-                if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+                if (MyLog.isVerboseEnabled()) {
                     MyLog.v(this, "uploaded '" + mMediaUri.toString() + "' " + obj1.toString(2));
                 }
                 objectId = obj1.optString("id");

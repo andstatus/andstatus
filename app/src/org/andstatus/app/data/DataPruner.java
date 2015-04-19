@@ -150,7 +150,7 @@ public class DataPruner {
         }
         pruneLogs(MAX_DAYS_LOGS_TO_KEEP);
         setDataPrunedNow();
-        if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
+        if (MyLog.isVerboseEnabled()) {
             MyLog.v(this,
                     method + " " + (pruned ? "succeded" : "failed") + "; History time=" + maxDays + " days; deleted " + nDeletedTime
                     + " , before " + new Date(latestTimestamp).toString());
@@ -222,7 +222,7 @@ public class DataPruner {
                 MyLog.v(this, method + "; skipped " + file.getName() + ", modified " + new Date(file.lastModified()).toString());
             }
         }
-        if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
+        if (MyLog.isVerboseEnabled()) {
             MyLog.v(this,
                     method + "; deleted " + count
                     + " files, before " + new Date(latestTimestamp).toString());

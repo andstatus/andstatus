@@ -69,7 +69,7 @@ public class MyApplication extends Application {
         if (dbAbsolutePath != null) {
             db = SQLiteDatabase.openDatabase(dbAbsolutePath.getPath(), factory, SQLiteDatabase.CREATE_IF_NECESSARY + SQLiteDatabase.OPEN_READWRITE );
         }
-        if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
+        if (MyLog.isVerboseEnabled()) {
             MyLog.v(this, "openOrCreateDatabase, name=" + name + ( db!=null ? " opened '" + db.getPath() + "'" : " NOT opened" ));
         }
         return db;

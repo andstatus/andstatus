@@ -274,7 +274,7 @@ public class PersistentAccounts {
         if (!ma.isValid() || (originId != 0 && originId != ma.getOriginId())) {
            ma = findFirstSucceededMyAccountByOriginId(originId); 
         }
-        if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
+        if (MyLog.isVerboseEnabled()) {
             MyLog.v(this, method + "; msgId=" + messageId +"; userId=" + firstUserId 
                     + " -> account=" + ma.getAccountName());
         }

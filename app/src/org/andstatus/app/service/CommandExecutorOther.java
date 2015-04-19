@@ -330,7 +330,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         boolean ok = false;
         MbMessage message = null;
         try {
-            if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
+            if (MyLog.isVerboseEnabled()) {
                 MyLog.v(this, method + ", text:'" + MyLog.trimmedString(status, 40) + "'");
             }
             if (recipientUserId == 0) {

@@ -128,7 +128,7 @@ class TimelineListPositionStorage {
         } else {
             put(firstVisibleItemId, lastItemSentDate);
 
-            if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
+            if (MyLog.isVerboseEnabled()) {
                 MyLog.v(this, method + " succeeded key=" + keyFirstVisibleItemId + ", id="
                         + firstVisibleItemId + ", pos=" + firstVisiblePosition + ", lastdate="
                         + new Date(lastItemSentDate).toString() + ", lastpos=" + lastPosition);
@@ -171,7 +171,7 @@ class TimelineListPositionStorage {
     void clear() {
         sp.edit().remove(keyFirstVisibleItemId).remove(keyLastRetrievedItemSentDate)
                 .remove(keyQueryString).commit();
-        if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
+        if (MyLog.isVerboseEnabled()) {
             MyLog.v(this, "Position forgot key=" + keyFirstVisibleItemId);
         }
     }
@@ -211,12 +211,12 @@ class TimelineListPositionStorage {
             MyLog.v(this, method, e);
         }
         if (loaded) {
-            if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
+            if (MyLog.isVerboseEnabled()) {
                 MyLog.v(this, method + " succeeded key=" + keyFirstVisibleItemId + ", id="
                         + firstItemId +"; index=" + scrollPos);
             }
         } else {
-            if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
+            if (MyLog.isVerboseEnabled()) {
                 MyLog.v(this, method + " failed key=" + keyFirstVisibleItemId + ", id="
                         + firstItemId);
             }
@@ -229,14 +229,14 @@ class TimelineListPositionStorage {
         if (mListView == null) {
             return;
         }
-        if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
+        if (MyLog.isVerboseEnabled()) {
             MyLog.v(this, "setSelectionAtBottom, 1");
         }
         int viewHeight = mListView.getHeight();
         int childHeight;
         childHeight = 30;
         int y = viewHeight - childHeight;
-        if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
+        if (MyLog.isVerboseEnabled()) {
             MyLog.v(this, "set position of last item to " + y + "px");
         }
         mListView.setSelectionFromTop(scrollPos, y);
@@ -256,7 +256,7 @@ class TimelineListPositionStorage {
         int listPos;
         boolean itemFound = false;
         int itemCount = mListView.getCount();
-        if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
+        if (MyLog.isVerboseEnabled()) {
             MyLog.v(this, "item count: " + itemCount);
         }
         for (listPos = 0; !itemFound && (listPos < itemCount); listPos++) {

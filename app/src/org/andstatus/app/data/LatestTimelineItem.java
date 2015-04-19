@@ -129,7 +129,7 @@ public class LatestTimelineItem {
      * Persist the info into the Database
      */
     public void save() {
-        if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+        if (MyLog.isVerboseEnabled()) {
             MyLog.v(this, this.toString());
         }
         if (maySaveThis && changed()) {
@@ -195,7 +195,7 @@ public class LatestTimelineItem {
         long passedMs = System.currentTimeMillis() - getTimelineDownloadedDate(); 
         boolean blnOut = passedMs > frequencyMs;
         
-        if (blnOut && MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+        if (blnOut && MyLog.isVerboseEnabled()) {
             MyLog.v(this, "It's time to auto update " 
                     + timelineType 
                     + forTheUser() + ". " 

@@ -395,7 +395,7 @@ public class MyPreferences {
                     }
                 }
             }
-            if (logged && logEnabled && MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+            if (logged && logEnabled && MyLog.isVerboseEnabled()) {
                 MyLog.v(TAG, method + "; " + (isStorageExternal(forcedUseExternalStorage) ? "External" : "Internal") 
                         + " path: '" + ( (dir == null) ? "(null)" : dir ) + "'");
             }
@@ -503,7 +503,7 @@ public class MyPreferences {
         themeName.append(themeSize);
         int themeId = context.getResources().getIdentifier(themeName.toString(), "style",
                 "org.andstatus.app");
-        if (themeId == 0 || MyLog.isLoggable(context, MyLog.VERBOSE)) {
+        if (themeId == 0 || MyLog.isVerboseEnabled()) {
             String text = "loadTheme; theme=\"" + themeName.toString() + "\"; id=" + Integer.toHexString(themeId);
             if (themeId == 0) {
                 MyLog.e(context, text);

@@ -225,7 +225,7 @@ public final class MyAccount {
 
         private void logLoadResult(String method) {
             if (myAccount.isValid()) { 
-                if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+                if (MyLog.isVerboseEnabled()) {
                     MyLog.v(TAG, method + " Loaded " + this.toString());
                 }
             } else {

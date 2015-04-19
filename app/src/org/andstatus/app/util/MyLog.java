@@ -257,6 +257,10 @@ public class MyLog {
         return tag;
     }
 
+    public static boolean isVerboseEnabled() {
+        return isLoggable(VERBOSE);
+    }
+    
     public static boolean isLoggable(int level) {
         return isLoggable(APPTAG, level);
     }

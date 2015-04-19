@@ -358,7 +358,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     protected void onPause() {
         final String method = "onPause";
         super.onPause();
-        if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
+        if (MyLog.isVerboseEnabled()) {
             MyLog.v(this, method + "; instanceId=" + mInstanceId);
         }
         mServiceConnector.unregisterReceiver(this);
@@ -574,7 +574,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     @Override
     public void onItemClick(AdapterView<?> adapterView, final View view, final int position, final long id) {
         if (id <= 0) {
-            if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
+            if (MyLog.isVerboseEnabled()) {
                 MyLog.v(this, "onItemClick, position=" + position + "; id=" + id + "; view=" + view);
             }
             return;
@@ -587,7 +587,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                 long linkedUserId = getLinkedUserIdFromCursor(position);
                 MyAccount ma = MyContextHolder.get().persistentAccounts().getAccountWhichMayBeLinkedToThisMessage(id, linkedUserId,
                         mListParametersNew.myAccountUserId);
-                if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
+                if (MyLog.isVerboseEnabled()) {
                     MyLog.v(this,
                             "onItemClick, position=" + position + "; id=" + id + "; view=" + view
                             + "; linkedUserId=" + linkedUserId 
@@ -692,7 +692,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
 
     @Override
     protected void onNewIntent(Intent intent) {
-        if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
+        if (MyLog.isVerboseEnabled()) {
             MyLog.v(this, "onNewIntent, instanceId=" + mInstanceId
                     + (mFinishing ? ", Is finishing" : "")
                     );
@@ -891,7 +891,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                 actionBar.setTitle(title);
                 actionBar.setSubtitle(subTitle);
             }
-            if (MyLog.isLoggable(activity, MyLog.VERBOSE)) {
+            if (MyLog.isVerboseEnabled()) {
                 MyLog.v(activity, "Title: " + toString());
             }
         }

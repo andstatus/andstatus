@@ -616,7 +616,7 @@ public class MyProvider extends ContentProvider {
         if (MyContextHolder.get().isReady()) {
             // Get the database and run the query
             SQLiteDatabase db = MyContextHolder.get().getDatabase().getReadableDatabase();
-            boolean logQuery = MyLog.isLoggable(TAG, MyLog.VERBOSE);
+            boolean logQuery = MyLog.isVerboseEnabled();
             try {
                 if (sql.length() == 0) {
                     sql = qb.buildQuery(projection, selection, null, null, orderBy, null);
@@ -780,7 +780,7 @@ public class MyProvider extends ContentProvider {
             prog = db.compileStatement(sql);
             id = prog.simpleQueryForLong();
             if ((id == 1 || id == 388) 
-                && MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+                && MyLog.isVerboseEnabled()) {
                 MyLog.v(TAG, "oidToId: sql='" + sql +"'");
             }
         } catch (SQLiteDoneException e) {
@@ -792,7 +792,7 @@ public class MyProvider extends ContentProvider {
         } finally {
             DbUtils.closeSilently(prog);
         }
-        if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+        if (MyLog.isVerboseEnabled()) {
             MyLog.v(TAG, "oidToId:" + originId + "+" + oid + " -> " + id + " oidEnum=" + oidEnum );
         }
         return id;
@@ -900,7 +900,7 @@ public class MyProvider extends ContentProvider {
             } finally {
                 DbUtils.closeSilently(prog);
             }
-            if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+            if (MyLog.isVerboseEnabled()) {
                 MyLog.v(TAG, method + ": " + oe + " + " + entityId + " -> " + oid);
             }
         }
@@ -936,7 +936,7 @@ public class MyProvider extends ContentProvider {
             } finally {
                 DbUtils.closeSilently(prog);
             }
-            if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+            if (MyLog.isVerboseEnabled()) {
                 MyLog.v(TAG, "msgIdTo" + userIdColumnName + ": " + messageId + " -> " + userName );
             }
         }
@@ -1003,7 +1003,7 @@ public class MyProvider extends ContentProvider {
             } finally {
                 DbUtils.closeSilently(prog);
             }
-            if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+            if (MyLog.isVerboseEnabled()) {
                 MyLog.v(TAG, method + " table=" + tableName + ", column=" + columnName + " where '" + condition + "' -> " + columnValue );
             }
         }
@@ -1049,7 +1049,7 @@ public class MyProvider extends ContentProvider {
             } finally {
                 DbUtils.closeSilently(prog);
             }
-            if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+            if (MyLog.isVerboseEnabled()) {
                 MyLog.v(TAG, method + " table=" + tableName + ", column=" + columnName + ", id=" + systemId + " -> " + columnValue );
             }
         }
@@ -1120,7 +1120,7 @@ public class MyProvider extends ContentProvider {
         } finally {
             DbUtils.closeSilently(prog);
         }
-        if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+        if (MyLog.isVerboseEnabled()) {
             MyLog.v(TAG, "userNameToId:" + originId + "+" + userName + " -> " + id);
         }
         return id;

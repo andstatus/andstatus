@@ -231,7 +231,7 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
                                 : "Not redirected to ") + "'" + result.getUrl() + "'";
                         logBuilder.append(logMsg3 + "; ");
                         MyLog.v(this, method + logMsg3);
-                        if (MyLog.isLoggable(MyLog.APPTAG, MyLog.VERBOSE)) {
+                        if (MyLog.isVerboseEnabled()) {
                             StringBuilder message = new StringBuilder(method + "Headers: ");
                             for (Entry<String, List<String>> entry : conn.getHeaderFields().entrySet()) {
                                 for (String value : entry.getValue()) {

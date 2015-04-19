@@ -73,7 +73,7 @@ class MyRemoteViewData {
         }
         onClickIntent = getOnClickIntent(context, widgetData);
         
-        if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
+        if (MyLog.isVerboseEnabled()) {
             MyLog.v(this, method + "; text=\"" + widgetText.replaceAll("\n", "; ") + "\"; comment=\""
                     + widgetComment + "\"");
         }

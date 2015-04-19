@@ -84,7 +84,7 @@ public class ConversationViewAdapter extends BaseAdapter {
     
     private View oneMessageToView(ConversationViewItem oMsg) {
         final String method = "oneMessageToView";
-        if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
+        if (MyLog.isVerboseEnabled()) {
             MyLog.v(this, method
                     + ": msgId=" + oMsg.getMsgId()
                     + (oMsg.mAvatarDrawable != null ? ", avatar="
@@ -142,7 +142,7 @@ public class ConversationViewAdapter extends BaseAdapter {
             layoutParams.leftMargin = indentPixels - 4;
             divider.setLayoutParams(layoutParams);
             
-            if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
+            if (MyLog.isVerboseEnabled()) {
                 MyLog.v(this,"density=" + displayDensity);
             }
             viewToTheLeftId = 2;

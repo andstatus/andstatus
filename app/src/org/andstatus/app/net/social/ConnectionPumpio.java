@@ -403,7 +403,7 @@ public class ConnectionPumpio extends Connection {
     }
 
     MbMessage messageFromJson(JSONObject jso) throws ConnectionException {
-        if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
+        if (MyLog.isVerboseEnabled()) {
             try {
                 MyLog.v(this, "messageFromJson: " + jso.toString(2));
             } catch (NullPointerException | JSONException e) {

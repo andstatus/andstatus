@@ -220,7 +220,7 @@ public class DataInserter {
 
             boolean mentioned = isMentionedAndPutInReplyToMessage(message, lum, values);
             
-            if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+            if (MyLog.isVerboseEnabled()) {
                 MyLog.v(this, ((rowId==0) ? "insertMsg" : "updateMsg") 
                         + ":" 
                         + (isNew ? " new;" : "") 

@@ -176,7 +176,7 @@ public class HttpConnectionApacheCommon {
                         result.setUrl(httpResponse.getHeaders("Location")[0].getValue().replace("%3F", "?"));
                         String logMsg3 = "Following redirect to '" + result.getUrl() + "'";
                         MyLog.v(this, method + logMsg3);
-                        if (MyLog.isLoggable(MyLog.APPTAG, MyLog.VERBOSE)) {
+                        if (MyLog.isVerboseEnabled()) {
                             StringBuilder message = new StringBuilder(method + "Headers: ");
                             for (Header header: httpResponse.getAllHeaders()) {
                                 message.append(header.getName() +": " + header.getValue() + ";\n");

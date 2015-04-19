@@ -169,7 +169,7 @@ public abstract class Connection {
             MyLog.e(this.getClass().getSimpleName(), detailMessage);
             throw new ConnectionException(StatusCode.UNSUPPORTED_API, this.getClass().getSimpleName() + ": " + detailMessage);
         } else {
-            if (MyLog.isLoggable(null, MyLog.VERBOSE )) {
+            if (MyLog.isVerboseEnabled()) {
                 MyLog.v(this.getClass().getSimpleName(), "API '" + routine + "' Path=" + path);  
             }
         }
@@ -184,7 +184,7 @@ public abstract class Connection {
      */
     public boolean isApiSupported(ApiRoutineEnum routine) {
         boolean is = !TextUtils.isEmpty(this.getApiPath1(routine));
-        if (!is && MyLog.isLoggable(null, MyLog.VERBOSE )) {
+        if (!is && MyLog.isVerboseEnabled()) {
           MyLog.v(this.getClass().getSimpleName(), "The API routine '" + routine + "' is not supported");  
         }
         return is;

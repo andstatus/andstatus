@@ -209,7 +209,7 @@ public class StorageSwitch {
                     }
                 }
                 if (!done) {
-                    if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
+                    if (MyLog.isVerboseEnabled()) {
                         MyLog.v(this, method + " from: " + dbFileOld.getPath());
                         MyLog.v(this, method + " to: " + dbFileNew.getPath());
                     }
@@ -319,7 +319,7 @@ public class StorageSwitch {
                     }
                 }
                 if (!done) {
-                    if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
+                    if (MyLog.isVerboseEnabled()) {
                         MyLog.v(this, method + " from: " + dirOld.getPath());
                         MyLog.v(this, method + " to: " + dirNew.getPath());
                     }

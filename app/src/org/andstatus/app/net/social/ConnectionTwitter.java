@@ -107,7 +107,7 @@ public abstract class ConnectionTwitter extends Connection {
     @Override
     public boolean destroyStatus(String statusId) throws ConnectionException {
         JSONObject jso = http.postRequest(getApiPath(ApiRoutineEnum.DESTROY_MESSAGE) + statusId + EXTENSION);
-        if (jso != null && MyLog.isLoggable(null, MyLog.VERBOSE)) {
+        if (jso != null && MyLog.isVerboseEnabled()) {
             try {
                 MyLog.v(TAG, "destroyStatus response: " + jso.toString(2));
             } catch (JSONException e) {

@@ -72,7 +72,7 @@ public class TimelineCursorLoader1 extends Loader<Cursor> implements MyServiceLi
     }
 
     private void logV(String method, Object obj) {
-        if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
+        if (MyLog.isVerboseEnabled()) {
             String message = (obj != null) ? obj.toString() : "";
             MyLog.v(this, String.valueOf(instanceId) + " " + method + "; " + message);
         }
@@ -104,7 +104,7 @@ public class TimelineCursorLoader1 extends Loader<Cursor> implements MyServiceLi
         final String method = "restartLoader";
         boolean ended = false;
         synchronized (asyncLoaderLock) {
-            if (MyLog.isLoggable(this, MyLog.VERBOSE) && asyncLoader != null) {
+            if (MyLog.isVerboseEnabled() && asyncLoader != null) {
                 logV(method, "status:" + getAsyncLoaderStatus());
             }
             if (cancelAsyncTask(method)) {
@@ -151,7 +151,7 @@ public class TimelineCursorLoader1 extends Loader<Cursor> implements MyServiceLi
     private boolean cancelAsyncTask(String callerMethod) {
         boolean cancelled = false;
         synchronized (asyncLoaderLock) {
-            if (MyLog.isLoggable(this, MyLog.VERBOSE) && asyncLoader != null) {
+            if (MyLog.isVerboseEnabled() && asyncLoader != null) {
                 logV(callerMethod + "-cancelAsyncTask", "status:" + getAsyncLoaderStatus());
             }
             if (asyncLoader != null && asyncLoader.getStatus() == Status.RUNNING) {
@@ -231,7 +231,7 @@ public class TimelineCursorLoader1 extends Loader<Cursor> implements MyServiceLi
             getParams().cancelled = false;
             getParams().timelineToReload = TimelineTypeEnum.UNKNOWN;
             
-            if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
+            if (MyLog.isVerboseEnabled()) {
                 logV("markStart", (TextUtils.isEmpty(getParams().mSearchQuery) ? ""
                         : "queryString=\"" + getParams().mSearchQuery + "\"; ")
                         + getParams().mTimelineType
@@ -319,7 +319,7 @@ public class TimelineCursorLoader1 extends Loader<Cursor> implements MyServiceLi
         }
         
         private void logExecutionStats(Cursor cursor) {
-            if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
+            if (MyLog.isVerboseEnabled()) {
                 StringBuilder text = new StringBuilder(getParams().cancelled ? "cancelled" : "ended");
                 if (!getParams().cancelled) {
                     String cursorInfo;
@@ -353,7 +353,7 @@ public class TimelineCursorLoader1 extends Loader<Cursor> implements MyServiceLi
             case GET_STATUS:
             case SEARCH_MESSAGE:
                 if (commandData.getResult().getDownloadedCount() > 0) {
-                    if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
+                    if (MyLog.isVerboseEnabled()) {
                         logV(method, "Content changed, " + commandData.toString());
                     }
                     onContentChanged();
@@ -368,7 +368,7 @@ public class TimelineCursorLoader1 extends Loader<Cursor> implements MyServiceLi
             case REBLOG:
             case UPDATE_STATUS:
                 if (!commandData.getResult().hasError()) {
-                    if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
+                    if (MyLog.isVerboseEnabled()) {
                         logV(method, "Content changed, " + commandData.toString());
                     }
                     onContentChanged();

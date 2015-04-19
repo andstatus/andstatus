@@ -125,7 +125,7 @@ public class MyAppWidgetData {
                 dateSince = prefs.getLong(PREF_DATESINCE_KEY, 0);
             }
 
-            if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
+            if (MyLog.isVerboseEnabled()) {
                 MyLog.v(this, "Prefs for appWidgetId=" + mAppWidgetId
                         + " were loaded");
             }
@@ -171,7 +171,7 @@ public class MyAppWidgetData {
                 prefs.putLong(PREF_DATECHECKED_KEY, dateLastChecked);
                 prefs.putLong(PREF_DATESINCE_KEY, dateSince);
                 prefs.commit();
-                if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
+                if (MyLog.isVerboseEnabled()) {
                     MyLog.v(this, "Saved " + toString());
                 }
                 ok = true;
