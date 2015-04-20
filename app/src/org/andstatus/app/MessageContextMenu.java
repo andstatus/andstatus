@@ -95,6 +95,10 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
             }
         }
         actorUserIdForCurrentMessage = 0;
+        if (mMsgId <= 0) {
+            mMsgId = 0;
+            return;
+        }
         MessageForAccount msg = new MessageDataForContextMenu(messageList.getActivity(),
                 userIdForThisMessage, getCurrentMyAccountUserId(), messageList.getTimelineType(),
                 mMsgId, accountUserIdToActAs!=0).getMsg();

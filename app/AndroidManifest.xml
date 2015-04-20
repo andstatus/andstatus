@@ -17,7 +17,7 @@
  -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
 	package="org.andstatus.app" 
-	android:versionName="17.0.1" android:versionCode="124"
+	android:versionName="17.0.2" android:versionCode="124"
 	android:installLocation="internalOnly">
 
 	<uses-sdk android:minSdkVersion="16" android:targetSdkVersion="22" />
