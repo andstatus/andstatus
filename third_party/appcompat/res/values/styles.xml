@@ -120,6 +120,8 @@
 
     <style name="Widget.AppCompat.Spinner" parent="Base.Widget.AppCompat.Spinner" />
 
+    <style name="Widget.AppCompat.Spinner.Underlined" parent="Base.Widget.AppCompat.Spinner.Underlined" />
+
     <style name="Widget.AppCompat.Spinner.DropDown" />
 
     <style name="Widget.AppCompat.Spinner.DropDown.ActionBar" parent="Base.Widget.AppCompat.Spinner.DropDown.ActionBar" />
@@ -187,16 +189,8 @@
            parent="Base.Widget.AppCompat.AutoCompleteTextView">
     </style>
 
-    <style name="Widget.AppCompat.Light.AutoCompleteTextView"
-           parent="Base.Widget.AppCompat.Light.AutoCompleteTextView">
-    </style>
-
     <style name="Widget.AppCompat.ActivityChooserView"
            parent="Base.Widget.AppCompat.ActivityChooserView">
-    </style>
-
-    <style name="Widget.AppCompat.Light.ActivityChooserView"
-           parent="Base.Widget.AppCompat.Light.ActivityChooserView">
     </style>
 
     <style name="Widget.AppCompat.SearchView" parent="Base.Widget.AppCompat.SearchView" />
@@ -206,6 +200,14 @@
     </style>
 
     <style name="Widget.AppCompat.CompoundButton.Switch" parent="Base.Widget.AppCompat.CompoundButton.Switch" />
+
+    <style name="Widget.AppCompat.RatingBar" parent="Base.Widget.AppCompat.RatingBar" />
+
+    <style name="Widget.AppCompat.Button" parent="Base.Widget.AppCompat.Button" />
+
+    <style name="Widget.AppCompat.Button.Small" parent="Base.Widget.AppCompat.Button.Small" />
+
+    <style name="Widget.AppCompat.TextView.SpinnerItem" parent="Base.Widget.AppCompat.TextView.SpinnerItem" />
 
     <!-- Toolbar -->
 
@@ -272,6 +274,8 @@
 
     <style name="TextAppearance.AppCompat.Widget.Switch" parent="Base.TextAppearance.AppCompat.Widget.Switch" />
 
+    <style name="TextAppearance.AppCompat.Widget.TextView.SpinnerItem" parent="Base.TextAppearance.AppCompat.Widget.TextView.SpinnerItem" />
+
     <!--
          The following themes are deprecated.
     -->
@@ -291,5 +295,7 @@
     <style name="Widget.AppCompat.Light.Spinner.DropDown.ActionBar" parent="Widget.AppCompat.Spinner.DropDown.ActionBar" />
     <style name="Widget.AppCompat.Light.ListView.DropDown" parent="Widget.AppCompat.ListView.DropDown" />
     <style name="Widget.AppCompat.Light.ListPopupWindow" parent="Widget.AppCompat.ListPopupWindow" />
+    <style name="Widget.AppCompat.Light.AutoCompleteTextView" parent="Widget.AppCompat.AutoCompleteTextView" />
+    <style name="Widget.AppCompat.Light.ActivityChooserView" parent="Widget.AppCompat.ActivityChooserView" />
 
 </resources>
