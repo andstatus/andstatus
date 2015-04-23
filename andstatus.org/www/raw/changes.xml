@@ -26,6 +26,13 @@
 		</subtitle>
     </header>
 
+    <release android:versionName="17.1" android:versionCode="125"
+        versionDate="2015-04-23"
+        versionTitle="Bug fixes">
+        <changes>
+            <change>Fixed several bugs using crash reports, provided by users.</change>
+        </changes>
+    </release>
     <release android:versionName="17.0" android:versionCode="124"
         versionDate="2015-04-10"
         versionTitle="Sending attachments fix for legacy servers">
