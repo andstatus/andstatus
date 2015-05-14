@@ -43,6 +43,7 @@ import android.os.IBinder;
 import android.os.PowerManager;
 
 import net.jcip.annotations.GuardedBy;
+import java.util.concurrent.RejectedExecutionException;
 
 /**
  * This is an application service that serves as a connection between this Android Device
@@ -282,7 +283,12 @@ public class MyService extends Service {
             }
             if (mHeartBeat == null) {
                 mHeartBeat = new HeartBeat();
-                mHeartBeat.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                try {
+                    mHeartBeat.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                } catch (RejectedExecutionException e) {
+                    MyLog.w(this, "Launching new HeartBeat", e);
+                    mHeartBeat = null;
+                }
             }
         }
     }
