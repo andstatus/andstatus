@@ -282,8 +282,7 @@ class MessageEditor {
         if (!dataIn.getMyAccount().isValid()) {
             return;
         }
-        if (dataCurrent.inReplyToId != dataIn.inReplyToId || dataCurrent.recipientId != dataIn.recipientId 
-                || dataCurrent.getMyAccount().getAccountName().compareTo(dataIn.getMyAccount().getAccountName()) != 0) {
+        if (dataCurrent.isEmpty() || !dataCurrent.sameContext(dataIn)) {
             dataCurrent = dataIn;
             mEditText.setText(dataCurrent.messageText);
             showMessageDetails();

@@ -235,4 +235,12 @@ class MessageEditorData {
         recipientId = userId;
         return this;
     }
+
+    public boolean sameContext(MessageEditorData dataIn) {
+        return inReplyToId == dataIn.inReplyToId
+                && recipientId == dataIn.recipientId
+                && getMyAccount().getAccountName()
+                        .compareTo(dataIn.getMyAccount().getAccountName()) == 0
+                && mReplyAll == dataIn.mReplyAll;
+    }
 }
