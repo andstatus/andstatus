@@ -29,7 +29,7 @@ import org.andstatus.app.data.MyDatabase.Download;
 import org.andstatus.app.data.MyDatabase.Msg;
 import org.andstatus.app.data.MyDatabase.MsgOfUser;
 import org.andstatus.app.data.MyDatabase.User;
-import org.andstatus.app.data.MyProvider;
+import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.TimelineSql;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
@@ -118,7 +118,7 @@ public class ConversationViewItem extends ConversationItem {
             if (!TextUtils.isEmpty(mRebloggersString)) {
                 mRebloggersString += ", ";
             }
-            mRebloggersString += MyProvider.userIdToWebfingerId(rebloggerId);
+            mRebloggersString += MyQuery.userIdToWebfingerId(rebloggerId);
         }
     }
     

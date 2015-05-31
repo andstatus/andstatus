@@ -20,7 +20,7 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.MyDatabase;
-import org.andstatus.app.data.MyProvider;
+import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
 import org.andstatus.app.service.CommandData;
@@ -300,13 +300,13 @@ class MessageEditor {
         String messageDetails = showAccountName() ? dataCurrent.getMyAccount().getAccountName() : "";
         if (dataCurrent.recipientId == 0) {
             if (dataCurrent.inReplyToId != 0) {
-                String replyToName = MyProvider.msgIdToUsername(MyDatabase.Msg.AUTHOR_ID, dataCurrent.inReplyToId, MyPreferences.userInTimeline());
+                String replyToName = MyQuery.msgIdToUsername(MyDatabase.Msg.AUTHOR_ID, dataCurrent.inReplyToId, MyPreferences.userInTimeline());
                 messageDetails += " " + String.format(
                         MyContextHolder.get().context().getText(R.string.message_source_in_reply_to).toString(), 
                         replyToName);
             }
         } else {
-            String recipientName = MyProvider.userIdToWebfingerId(dataCurrent.recipientId);
+            String recipientName = MyQuery.userIdToWebfingerId(dataCurrent.recipientId);
             if (!TextUtils.isEmpty(recipientName)) {
                 messageDetails += " " + String.format(
                         MyContextHolder.get().context().getText(R.string.message_source_to).toString(), 

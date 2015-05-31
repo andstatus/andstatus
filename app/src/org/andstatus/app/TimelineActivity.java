@@ -59,11 +59,12 @@ import org.andstatus.app.context.MySettingsActivity;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyDatabase.User;
-import org.andstatus.app.data.MyProvider;
+import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.TimelineSearchSuggestionsProvider;
 import org.andstatus.app.data.TimelineSql;
 import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.data.TimelineViewBinder;
+import org.andstatus.app.data.ParsedUri;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceEvent;
@@ -592,7 +593,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                             + "; linkedUserId=" + linkedUserId 
                             + " account=" + ma.getAccountName());
                 }
-                return MyProvider.getTimelineMsgUri(ma.getUserId(), mListParametersNew.getTimelineType(), true, id);
+                return ParsedUri.getTimelineMsgUri(ma.getUserId(), mListParametersNew.getTimelineType(), true, id);
             }
 
             @Override
@@ -863,7 +864,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                     && !(ta.isTimelineCombined()
                             && MyContextHolder.get().persistentAccounts()
                             .fromUserId(ta.getSelectedUserId()).isValid())) {
-                I18n.appendWithSpace(title, MyProvider.userIdToWebfingerId(ta.getSelectedUserId()));
+                I18n.appendWithSpace(title, MyQuery.userIdToWebfingerId(ta.getSelectedUserId()));
             }
             if (ta.isTimelineCombined()) {
                 I18n.appendWithSpace(title, ta.mContext.getText(R.string.combined_timeline_on));
@@ -1076,7 +1077,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         boolean allAccounts = mListParametersNew.isTimelineCombined();
         if (userId != 0) {
             allAccounts = false;
-            long originId = MyProvider.userIdToLongColumnValue(MyDatabase.User.ORIGIN_ID, userId);
+            long originId = MyQuery.userIdToLongColumnValue(MyDatabase.User.ORIGIN_ID, userId);
             if (originId == 0) {
                 MyLog.e(this, "Unknown origin for userId=" + userId);
                 return;

@@ -99,7 +99,7 @@ public class GnuSocialMessagesInserter extends InstrumentationTestCase {
     private void addPublicMessage(MbMessage message, boolean isPublic) {
         message.setPublic(isPublic);
         long id = addMessage(message);
-        long storedPublic = MyProvider.msgIdToLongColumnValue(Msg.PUBLIC, id);
+        long storedPublic = MyQuery.msgIdToLongColumnValue(Msg.PUBLIC, id);
         assertTrue("Message is " + (isPublic ? "public" : "private" )+ ": " + message.getBody(), (isPublic == ( storedPublic != 0)));
     }
 

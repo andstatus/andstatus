@@ -32,7 +32,7 @@ import android.widget.TextView;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.MessageForAccount;
-import org.andstatus.app.data.MyProvider;
+import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.util.MyLog;
 
@@ -162,7 +162,7 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
                 ContextMenuItem.SENDER_MESSAGES.addTo(menu, order++,
                         String.format(
                                 getContext().getText(R.string.menu_item_user_messages).toString(),
-                                MyProvider.userIdToWebfingerId(msg.senderId)));
+                                MyQuery.userIdToWebfingerId(msg.senderId)));
             }
 
             if (messageList.getSelectedUserId() != msg.authorId && msg.senderId != msg.authorId) {
@@ -173,7 +173,7 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
                 ContextMenuItem.AUTHOR_MESSAGES.addTo(menu, order++,
                         String.format(
                                 getContext().getText(R.string.menu_item_user_messages).toString(),
-                                MyProvider.userIdToWebfingerId(msg.authorId)));
+                                MyQuery.userIdToWebfingerId(msg.authorId)));
             }
 
             ContextMenuItem.OPEN_MESSAGE_PERMALINK.addTo(menu, order++, R.string.menu_item_open_message_permalink);
@@ -195,12 +195,12 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
                     ContextMenuItem.STOP_FOLLOWING_SENDER.addTo(menu, order++,
                             String.format(
                                     getContext().getText(R.string.menu_item_stop_following_user).toString(),
-                                    MyProvider.userIdToWebfingerId(msg.senderId)));
+                                    MyQuery.userIdToWebfingerId(msg.senderId)));
                 } else {
                     ContextMenuItem.FOLLOW_SENDER.addTo(menu, order++,
                             String.format(
                                     getContext().getText(R.string.menu_item_follow_user).toString(),
-                                    MyProvider.userIdToWebfingerId(msg.senderId)));
+                                    MyQuery.userIdToWebfingerId(msg.senderId)));
                 }
             }
             if (!msg.isAuthor && (msg.authorId != msg.senderId)) {
@@ -208,12 +208,12 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
                     ContextMenuItem.STOP_FOLLOWING_AUTHOR.addTo(menu, order++,
                             String.format(
                                     getContext().getText(R.string.menu_item_stop_following_user).toString(),
-                                    MyProvider.userIdToWebfingerId(msg.authorId)));
+                                    MyQuery.userIdToWebfingerId(msg.authorId)));
                 } else {
                     ContextMenuItem.FOLLOW_AUTHOR.addTo(menu, order++,
                             String.format(
                                     getContext().getText(R.string.menu_item_follow_user).toString(),
-                                    MyProvider.userIdToWebfingerId(msg.authorId)));
+                                    MyQuery.userIdToWebfingerId(msg.authorId)));
                 }
             }
             switch (msg.myAccount().numberOfAccountsOfThisOrigin()) {

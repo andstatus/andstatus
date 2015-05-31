@@ -20,7 +20,7 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.data.MessageForAccount;
-import org.andstatus.app.data.MyProvider;
+import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.util.MyLog;
 
 public class AttachmentDownloader extends FileDownloader {
@@ -31,7 +31,7 @@ public class AttachmentDownloader extends FileDownloader {
 
     @Override
     protected MyAccount findBestAccountForDownload() {
-        long originId = MyProvider.msgIdToOriginId(data.msgId);
+        long originId = MyQuery.msgIdToOriginId(data.msgId);
         boolean subscribedFound = false;
         MyAccount bestAccount = MyContextHolder.get().persistentAccounts().findFirstSucceededMyAccountByOriginId(originId);
         for( MyAccount ma : MyContextHolder.get().persistentAccounts().collection()) {

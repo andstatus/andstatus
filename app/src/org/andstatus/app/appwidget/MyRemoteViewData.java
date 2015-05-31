@@ -13,6 +13,7 @@ import org.andstatus.app.TimelineActivity;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.TimelineTypeEnum;
+import org.andstatus.app.data.ParsedUri;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
@@ -164,7 +165,7 @@ class MyRemoteViewData {
         
         // This line is necessary to actually bring Extra to the target intent
         // see http://stackoverflow.com/questions/1198558/how-to-send-parameters-from-a-notification-click-to-an-activity
-        intent.setData(android.net.Uri.parse(MyProvider.TIMELINE_URI.toString() 
+        intent.setData(android.net.Uri.parse(ParsedUri.TIMELINE_URI.toString() 
                 + "#" + android.os.SystemClock.elapsedRealtime()));
         return PendingIntent.getActivity(context, 0 /* no requestCode */, intent, 0 /* no flags */);
     }

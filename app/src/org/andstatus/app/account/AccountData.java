@@ -28,7 +28,7 @@ import android.text.TextUtils;
 import org.andstatus.app.account.MyAccount.Builder.SaveResult;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.data.MyProvider;
+import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.json.JSONException;
@@ -62,16 +62,16 @@ public class AccountData implements Parcelable, AccountDataWriter {
         android.accounts.AccountManager am = AccountManager.get(myContext.context());
         AccountData accountData = fromJsonString(am.getUserData(androidAccount, KEY_ACCOUNT), true);
         accountData.setDataBoolean(MyAccount.KEY_IS_SYNCABLE,
-                ContentResolver.getIsSyncable(androidAccount, MyProvider.AUTHORITY) != 0);
+                ContentResolver.getIsSyncable(androidAccount, MatchedUri.AUTHORITY) != 0);
         accountData.setDataBoolean(MyAccount.KEY_SYNC_AUTOMATICALLY,
-                ContentResolver.getSyncAutomatically(androidAccount, MyProvider.AUTHORITY));
+                ContentResolver.getSyncAutomatically(androidAccount, MatchedUri.AUTHORITY));
         accountData.setDataLong(MyPreferences.KEY_SYNC_FREQUENCY_SECONDS, getSyncFrequencySeconds(androidAccount));
         return accountData;
     }
 
     private static long getSyncFrequencySeconds(Account account) {
         long syncFrequencySeconds = 0;
-        List<PeriodicSync> syncs = ContentResolver.getPeriodicSyncs(account, MyProvider.AUTHORITY);
+        List<PeriodicSync> syncs = ContentResolver.getPeriodicSyncs(account, MatchedUri.AUTHORITY);
         if (!syncs.isEmpty()) {
             syncFrequencySeconds = syncs.get(0).period;
         }
@@ -118,18 +118,18 @@ public class AccountData implements Parcelable, AccountDataWriter {
                 setSyncFrequencySeconds(androidAccount, syncFrequencySeconds);
             }
             boolean isSyncable = getDataBoolean(MyAccount.KEY_IS_SYNCABLE, true);
-            if (isSyncable != (ContentResolver.getIsSyncable(androidAccount, MyProvider.AUTHORITY) != 0)) {
-                ContentResolver.setIsSyncable(androidAccount, MyProvider.AUTHORITY, isSyncable ? 1
+            if (isSyncable != (ContentResolver.getIsSyncable(androidAccount, MatchedUri.AUTHORITY) != 0)) {
+                ContentResolver.setIsSyncable(androidAccount, MatchedUri.AUTHORITY, isSyncable ? 1
                         : 0);
             }
             boolean syncAutomatically = getDataBoolean(MyAccount.KEY_SYNC_AUTOMATICALLY, true);
             if (syncAutomatically != ContentResolver.getSyncAutomatically(androidAccount,
-                    MyProvider.AUTHORITY)) {
+                    MatchedUri.AUTHORITY)) {
                 // We need to preserve sync on/off during backup/restore.
                 // don't know about "network tickles"... See:
                 // http://stackoverflow.com/questions/5013254/what-is-a-network-tickle-and-how-to-i-go-about-sending-one
                 ContentResolver
-                        .setSyncAutomatically(androidAccount, MyProvider.AUTHORITY,
+                        .setSyncAutomatically(androidAccount, MatchedUri.AUTHORITY,
                                 syncAutomatically);
             }
             android.accounts.AccountManager am = AccountManager.get(myContext.context());
@@ -163,9 +163,9 @@ public class AccountData implements Parcelable, AccountDataWriter {
         // http://developer.android.com/reference/android/content/ContentResolver.html#addPeriodicSync(android.accounts.Account, java.lang.String, android.os.Bundle, long)
         // and
         // http://stackoverflow.com/questions/11090604/android-syncadapter-automatically-initialize-syncing
-        ContentResolver.removePeriodicSync(androidAccount, MyProvider.AUTHORITY, new Bundle());
+        ContentResolver.removePeriodicSync(androidAccount, MatchedUri.AUTHORITY, new Bundle());
         if (syncFrequencySeconds > 0) {
-            ContentResolver.addPeriodicSync(androidAccount, MyProvider.AUTHORITY, new Bundle(), syncFrequencySeconds);
+            ContentResolver.addPeriodicSync(androidAccount, MatchedUri.AUTHORITY, new Bundle(), syncFrequencySeconds);
         }
     }
     

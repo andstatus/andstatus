@@ -24,7 +24,7 @@ import android.text.TextUtils;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.UserInTimeline;
 import org.andstatus.app.data.MyDatabase;
-import org.andstatus.app.data.MyProvider;
+import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
@@ -37,7 +37,7 @@ public class MessageShare {
     public MessageShare(Context context, long messageId) {
         this.context = context;
         this.messageId = messageId;
-        origin = MyContextHolder.get().persistentOrigins().fromId(MyProvider.msgIdToOriginId(messageId));
+        origin = MyContextHolder.get().persistentOrigins().fromId(MyQuery.msgIdToOriginId(messageId));
         if (origin == null) {
             MyLog.v(context, "Origin not found for messageId=" + messageId);
         }
@@ -57,7 +57,7 @@ public class MessageShare {
 
     Intent intentForShare() {
         StringBuilder subject = new StringBuilder();
-        String msgBody = MyProvider.msgIdToStringColumnValue(MyDatabase.Msg.BODY, messageId);
+        String msgBody = MyQuery.msgIdToStringColumnValue(MyDatabase.Msg.BODY, messageId);
         String msgBodyPlainText = msgBody;
         if (origin.isHtmlContentAllowed()) {
             msgBodyPlainText = MyHtml.fromHtml(msgBody);
@@ -93,7 +93,7 @@ public class MessageShare {
                         String.format(
                                 html ? SIGNATURE_FORMAT_HTML
                                         : SIGNATURE_PLAIN_TEXT,
-                                MyProvider.msgIdToUsername(
+                                MyQuery.msgIdToUsername(
                                         MyDatabase.Msg.AUTHOR_ID,
                                         messageId,
                                         origin.isMentionAsWebFingerId() ? UserInTimeline.WEBFINGER_ID

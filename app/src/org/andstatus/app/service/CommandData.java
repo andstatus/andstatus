@@ -31,7 +31,7 @@ import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.MyDatabase;
-import org.andstatus.app.data.MyProvider;
+import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
@@ -365,7 +365,7 @@ public class CommandData implements Comparable<CommandData> {
             commandData.bundle.putString(
                     IntentExtra.EXTRA_MESSAGE_TEXT.key,
                     trimConditionally(
-                            MyProvider.msgIdToStringColumnValue(MyDatabase.Msg.BODY, msgId), true)
+                            MyQuery.msgIdToStringColumnValue(MyDatabase.Msg.BODY, msgId), true)
                             .toString());
         }
         return commandData;
@@ -622,9 +622,9 @@ public class CommandData implements Comparable<CommandData> {
             case FETCH_AVATAR:
                 I18n.appendWithSpace(builder, 
                         myContext.context().getText(R.string.combined_timeline_off_account));
-                I18n.appendWithSpace(builder, MyProvider.userIdToWebfingerId(itemId));
+                I18n.appendWithSpace(builder, MyQuery.userIdToWebfingerId(itemId));
                 if (myContext.persistentAccounts().getDistinctOriginsCount() > 1) {
-                    long originId = MyProvider.userIdToLongColumnValue(MyDatabase.User.ORIGIN_ID,
+                    long originId = MyQuery.userIdToLongColumnValue(MyDatabase.User.ORIGIN_ID,
                             itemId);
                     I18n.appendWithSpace(builder, 
                             myContext.context().getText(R.string.combined_timeline_off_origin));
@@ -654,7 +654,7 @@ public class CommandData implements Comparable<CommandData> {
             case FETCH_TIMELINE:
                 if (!TextUtils.isEmpty(accountName)) {
                     if (timelineType == TimelineTypeEnum.USER) {
-                        I18n.appendWithSpace(builder, MyProvider.userIdToWebfingerId(itemId));
+                        I18n.appendWithSpace(builder, MyQuery.userIdToWebfingerId(itemId));
                     }
                     I18n.appendWithSpace(builder, 
                             timelineType.getPrepositionForNotCombinedTimeline(myContext
@@ -670,7 +670,7 @@ public class CommandData implements Comparable<CommandData> {
                 break;
             case FOLLOW_USER:
             case STOP_FOLLOWING_USER:
-                I18n.appendWithSpace(builder, MyProvider.userIdToWebfingerId(itemId));
+                I18n.appendWithSpace(builder, MyQuery.userIdToWebfingerId(itemId));
                 break;
             case SEARCH_MESSAGE:
                 I18n.appendWithSpace(builder, "\"");

@@ -100,7 +100,7 @@ public class HtmlContentInserter extends InstrumentationTestCase {
 		setHtmlContentAllowed(htmlContentAllowed);
         MessageInserter mi = new MessageInserter(ma);
         long msgId1 = mi.addMessage(mi.buildMessage(author, bodyString, null, messageOid));
-        String body1 = MyProvider.msgIdToStringColumnValue(Msg.BODY, msgId1);
+        String body1 = MyQuery.msgIdToStringColumnValue(Msg.BODY, msgId1);
         if (htmlContentAllowed) {
             assertEquals("HTML preserved", bodyString, body1);
         } else {

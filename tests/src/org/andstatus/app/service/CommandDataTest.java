@@ -22,7 +22,7 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MyDatabase.OidEnum;
-import org.andstatus.app.data.MyProvider;
+import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 
@@ -43,7 +43,7 @@ public class CommandDataTest extends InstrumentationTestCase {
                 body, 0, 0, TestSuite.LOCAL_IMAGE_TEST_URI);
         testQueueOneCommandData(commandData, time0);
 
-        long msgId = MyProvider.oidToId(OidEnum.MSG_OID, MyContextHolder.get().persistentOrigins()
+        long msgId = MyQuery.oidToId(OidEnum.MSG_OID, MyContextHolder.get().persistentOrigins()
                 .fromName(TestSuite.CONVERSATION_ORIGIN_NAME).getId(),
                 TestSuite.CONVERSATION_ENTRY_MESSAGE_OID);
         long downloadDataRowId = 23;
@@ -129,7 +129,7 @@ public class CommandDataTest extends InstrumentationTestCase {
         MyAccount ma = MyContextHolder.get().persistentAccounts()
                 .fromAccountName(TestSuite.CONVERSATION_ACCOUNT_NAME);
         assertTrue(ma.isValid());
-        long userId = MyProvider.oidToId(OidEnum.USER_OID, ma.getOrigin().getId(),
+        long userId = MyQuery.oidToId(OidEnum.USER_OID, ma.getOrigin().getId(),
                 TestSuite.CONVERSATION_MEMBER_USER_OID);
         CommandData data = new CommandData(command, 
                 TestSuite.CONVERSATION_ACCOUNT_NAME, userId);
@@ -137,7 +137,7 @@ public class CommandDataTest extends InstrumentationTestCase {
         String msgLog = command.name() + "; Summary:'" + summary + "'";
         MyLog.v(this, msgLog);
         assertTrue(msgLog, summary.contains(command.getTitle(MyContextHolder.get(),
-                ma.getAccountName()) + " " + MyProvider.userIdToWebfingerId(userId)));
+                ma.getAccountName()) + " " + MyQuery.userIdToWebfingerId(userId)));
     }
     
     @Override

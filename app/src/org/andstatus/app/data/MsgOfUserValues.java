@@ -45,14 +45,14 @@ class MsgOfUserValues {
     public static MsgOfUserValues valueOf(long userId, ContentValues values) {
         MsgOfUserValues userValues = new MsgOfUserValues(userId);
         userValues.setMsgId(values.getAsLong(BaseColumns._ID));
-        MyProvider.moveBooleanKey(MsgOfUser.SUBSCRIBED, values, userValues.contentValues);
-        MyProvider.moveBooleanKey(MsgOfUser.FAVORITED, values, userValues.contentValues);
-        MyProvider.moveBooleanKey(MsgOfUser.REBLOGGED, values, userValues.contentValues);
+        MyQuery.moveBooleanKey(MsgOfUser.SUBSCRIBED, values, userValues.contentValues);
+        MyQuery.moveBooleanKey(MsgOfUser.FAVORITED, values, userValues.contentValues);
+        MyQuery.moveBooleanKey(MsgOfUser.REBLOGGED, values, userValues.contentValues);
         // The value is String!
-        MyProvider.moveStringKey(MsgOfUser.REBLOG_OID, values, userValues.contentValues);
-        MyProvider.moveBooleanKey(MsgOfUser.MENTIONED, values, userValues.contentValues);
-        MyProvider.moveBooleanKey(MsgOfUser.REPLIED, values, userValues.contentValues);
-        MyProvider.moveBooleanKey(MsgOfUser.DIRECTED, values, userValues.contentValues);
+        MyQuery.moveStringKey(MsgOfUser.REBLOG_OID, values, userValues.contentValues);
+        MyQuery.moveBooleanKey(MsgOfUser.MENTIONED, values, userValues.contentValues);
+        MyQuery.moveBooleanKey(MsgOfUser.REPLIED, values, userValues.contentValues);
+        MyQuery.moveBooleanKey(MsgOfUser.DIRECTED, values, userValues.contentValues);
         return userValues;
     }
 

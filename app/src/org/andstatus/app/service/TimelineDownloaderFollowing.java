@@ -25,9 +25,9 @@ import org.andstatus.app.data.FollowingUserValues;
 import org.andstatus.app.data.LatestTimelineItem;
 import org.andstatus.app.data.LatestUserMessages;
 import org.andstatus.app.data.MyDatabase;
-import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.MyDatabase.OidEnum;
 import org.andstatus.app.data.MyDatabase.User;
+import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.social.MbTimelineItem;
@@ -47,7 +47,7 @@ class TimelineDownloaderFollowing extends TimelineDownloader {
 
     @Override
     public void download() throws ConnectionException {
-        String userOid =  MyProvider.idToOid(OidEnum.USER_OID, execContext.getTimelineUserId(), 0);
+        String userOid =  MyQuery.idToOid(OidEnum.USER_OID, execContext.getTimelineUserId(), 0);
         if (TextUtils.isEmpty(userOid)) {
             MyLog.d(this, "userOid is Empty." + execContext);
             execContext.getResult().incrementParseExceptions();
@@ -61,7 +61,7 @@ class TimelineDownloaderFollowing extends TimelineDownloader {
         
         if (MyLog.isLoggable(this, MyLog.DEBUG)) {
             String strLog = "Loading " + execContext.getTimelineType() + "; account=" + execContext.getMyAccount().getAccountName();
-            strLog += "; user='" + MyProvider.userIdToWebfingerId(execContext.getTimelineUserId()) + "', oid=" + userOid;
+            strLog += "; user='" + MyQuery.userIdToWebfingerId(execContext.getTimelineUserId()) + "', oid=" + userOid;
             if (latestTimelineItem.getTimelineDownloadedDate() > 0) {
                 strLog += "; last time downloaded at=" +  (new Date(latestTimelineItem.getTimelineDownloadedDate()).toString());
             }
@@ -88,14 +88,14 @@ class TimelineDownloaderFollowing extends TimelineDownloader {
                     + " and " + ApiRoutineEnum.GET_FRIENDS_IDS);
         }
         // Old list of followed users
-        Set<Long> followedIdsOld = MyProvider.getIdsOfUsersFollowedBy(execContext.getTimelineUserId());
+        Set<Long> followedIdsOld = MyQuery.getIdsOfUsersFollowedBy(execContext.getTimelineUserId());
         SQLiteDatabase db = MyContextHolder.get().getDatabase().getWritableDatabase();
         for (String followedUserOid : followedUsersOids) {
-            long friendId = MyProvider.oidToId(MyDatabase.OidEnum.USER_OID, execContext.getMyAccount().getOriginId(), followedUserOid);
+            long friendId = MyQuery.oidToId(MyDatabase.OidEnum.USER_OID, execContext.getMyAccount().getOriginId(), followedUserOid);
             long msgId = 0;
             if (friendId != 0) {
                 followedIdsOld.remove(friendId);
-                msgId = MyProvider.userIdToLongColumnValue(User.USER_MSG_ID, friendId);
+                msgId = MyQuery.userIdToLongColumnValue(User.USER_MSG_ID, friendId);
             }
             // The Friend doesn't have any messages sent, so let's download the latest
             if (msgId == 0) {
@@ -104,7 +104,7 @@ class TimelineDownloaderFollowing extends TimelineDownloader {
                     if (friendId == 0 || execContext.getMyAccount().getConnection().userObjectHasMessage()) {
                         MbUser mbUser = execContext.getMyAccount().getConnection().getUser(followedUserOid);
                         friendId = di.insertOrUpdateUser(mbUser, lum);
-                        msgId = MyProvider.userIdToLongColumnValue(User.USER_MSG_ID, friendId);
+                        msgId = MyQuery.userIdToLongColumnValue(User.USER_MSG_ID, friendId);
                     } 
                     if (friendId != 0 && msgId == 0) {
                         downloadOneMessageBy(followedUserOid, lum);

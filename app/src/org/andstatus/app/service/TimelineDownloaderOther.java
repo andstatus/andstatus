@@ -21,8 +21,8 @@ import android.text.TextUtils;
 import org.andstatus.app.data.DataInserter;
 import org.andstatus.app.data.LatestTimelineItem;
 import org.andstatus.app.data.LatestUserMessages;
-import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.MyDatabase.OidEnum;
+import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.social.MbTimelineItem;
 import org.andstatus.app.net.social.TimelinePosition;
@@ -42,14 +42,14 @@ class TimelineDownloaderOther extends TimelineDownloader {
         if (MyLog.isLoggable(this, MyLog.DEBUG)) {
             String strLog = "Loading " + execContext.getTimelineType() + "; account=" 
         + execContext.getMyAccount().getAccountName()
-        + "; user=" + MyProvider.userIdToWebfingerId(execContext.getTimelineUserId());
+        + "; user=" + MyQuery.userIdToWebfingerId(execContext.getTimelineUserId());
             if (latestTimelineItem.getTimelineItemDate() > 0) {
                 strLog += "; last Timeline item at=" + (new Date(latestTimelineItem.getTimelineItemDate()).toString())
                         + "; last time downloaded at=" +  (new Date(latestTimelineItem.getTimelineDownloadedDate()).toString());
             }
             MyLog.d(this, strLog);
         }
-        String userOid =  MyProvider.idToOid(OidEnum.USER_OID, execContext.getTimelineUserId(), 0);
+        String userOid =  MyQuery.idToOid(OidEnum.USER_OID, execContext.getTimelineUserId(), 0);
         if (TextUtils.isEmpty(userOid)) {
             throw new ConnectionException("User oId is not found for id=" + execContext.getTimelineUserId());
         }

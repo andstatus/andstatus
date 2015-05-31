@@ -75,13 +75,13 @@ public class LatestTimelineItem {
         maySaveThis = !TextUtils.isEmpty(timelineType.columnNameTimelineDownloadedDate());
         
         if (maySaveThis) {
-            timelineDownloadedDate = MyProvider.userIdToLongColumnValue(
+            timelineDownloadedDate = MyQuery.userIdToLongColumnValue(
                     timelineType.columnNameTimelineDownloadedDate(), userId);
             if (!TextUtils.isEmpty(timelineType.columnNameLatestTimelinePosition())) {
-                timelineItemDate = MyProvider.userIdToLongColumnValue(
+                timelineItemDate = MyQuery.userIdToLongColumnValue(
                         timelineType.columnNameLatestTimelineItemDate(), userId);
                 if (timelineItemDate != 0) {
-                    position = new TimelinePosition(MyProvider.userIdToStringColumnValue(
+                    position = new TimelinePosition(MyQuery.userIdToStringColumnValue(
                             timelineType.columnNameLatestTimelinePosition(), userId));
                 }
             }
@@ -150,12 +150,12 @@ public class LatestTimelineItem {
                             ? " downloaded at " + (new Date(getTimelineDownloadedDate()).toString()) 
                             : " never downloaded")
                     + (changed() ? "" : " not changed")                    
-                    + " latest position=" + MyProvider.quoteIfNotQuoted(position.getPosition())
+                    + " latest position=" + MyQuery.quoteIfNotQuoted(position.getPosition())
                     + "]";
     }
 
     private String forTheUser() {
-        return " for the userName=" + MyProvider.userIdToWebfingerId(userId);
+        return " for the userName=" + MyQuery.userIdToWebfingerId(userId);
     }
 
     private void saveChanged() {
@@ -169,7 +169,7 @@ public class LatestTimelineItem {
                     sql += ", ";
                 }
                 sql += timelineType.columnNameLatestTimelinePosition() + "=" 
-                + MyProvider.quoteIfNotQuoted(position.getPosition()) + ", "
+                + MyQuery.quoteIfNotQuoted(position.getPosition()) + ", "
                 + timelineType.columnNameLatestTimelineItemDate() + "="
                 + timelineItemDate;
             }

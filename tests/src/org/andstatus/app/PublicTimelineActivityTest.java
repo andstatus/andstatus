@@ -25,7 +25,7 @@ import android.widget.TextView;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.data.MyProvider;
+import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.data.MyDatabase.Msg;
 import org.andstatus.app.service.MyServiceManager;
@@ -152,7 +152,7 @@ public class PublicTimelineActivityTest extends android.test.ActivityInstrumenta
                 long id = Long.parseLong(String.valueOf(idView.getText()));
                 assertTrue("Message #" + id + " '" + bodyView.getText() + "' contains '" + publicMessageText + "'",
                         String.valueOf(bodyView.getText()).contains(publicMessageText));
-                long storedPublic = MyProvider.msgIdToLongColumnValue(Msg.PUBLIC, id);
+                long storedPublic = MyQuery.msgIdToLongColumnValue(Msg.PUBLIC, id);
                 assertTrue("Message #" + id + " '" + bodyView.getText() + "' is public", storedPublic != 0);
                 msgCount++;
             }

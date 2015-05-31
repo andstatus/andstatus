@@ -28,8 +28,9 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.LatestTimelineItem;
 import org.andstatus.app.data.MyDatabase;
-import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.MyDatabase.User;
+import org.andstatus.app.data.MyQuery;
+import org.andstatus.app.data.ProjectionMap;
 import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.MyServiceEvent;
@@ -241,7 +242,7 @@ public class TimelineCursorLoader1 extends Loader<Cursor> implements MyServiceLi
         
         private void prepareQueryInBackground() {
             if (getParams().mLastItemSentDate > 0) {
-                getParams().mSa.addSelection(MyProvider.MSG_TABLE_ALIAS + "." + MyDatabase.Msg.SENT_DATE
+                getParams().mSa.addSelection(ProjectionMap.MSG_TABLE_ALIAS + "." + MyDatabase.Msg.SENT_DATE
                         + " >= ?",
                         new String[] {
                             String.valueOf(getParams().mLastItemSentDate)
@@ -293,7 +294,7 @@ public class TimelineCursorLoader1 extends Loader<Cursor> implements MyServiceLi
                         }
                         break;
                     default:
-                        if ( MyProvider.userIdToLongColumnValue(User.HOME_TIMELINE_DATE, getParams().myAccountUserId) == 0) {
+                        if ( MyQuery.userIdToLongColumnValue(User.HOME_TIMELINE_DATE, getParams().myAccountUserId) == 0) {
                             // This is supposed to be a one time task.
                             getParams().timelineToReload = TimelineTypeEnum.ALL;
                         } 

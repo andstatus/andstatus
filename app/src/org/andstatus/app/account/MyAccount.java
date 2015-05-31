@@ -31,9 +31,10 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DataInserter;
 import org.andstatus.app.data.LatestUserMessages;
+import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyDatabaseConverterController;
-import org.andstatus.app.data.MyProvider;
+import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
@@ -488,7 +489,7 @@ public final class MyAccount {
         }
         
         private void assignUserId() {
-            myAccount.userId = MyProvider.userNameToId(myAccount.getOriginId(), myAccount.getUsername());
+            myAccount.userId = MyQuery.userNameToId(myAccount.getOriginId(), myAccount.getUsername());
             if (myAccount.userId == 0) {
                 DataInserter di = new DataInserter(myAccount);
                 try {
@@ -848,7 +849,7 @@ public final class MyAccount {
     
     public void requestSync() {
         if (isPersistent()) {
-           ContentResolver.requestSync(getExisingAndroidAccount(), MyProvider.AUTHORITY, new Bundle()); 
+           ContentResolver.requestSync(getExisingAndroidAccount(), MatchedUri.AUTHORITY, new Bundle()); 
         }
     }
 

@@ -29,7 +29,7 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MyDatabase;
-import org.andstatus.app.data.MyProvider;
+import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.data.MyDatabase.OidEnum;
 import org.andstatus.app.service.MyServiceManager;
@@ -78,12 +78,12 @@ public class MessageEditorTest extends android.test.ActivityInstrumentationTestC
         MessageEditorData data = new MessageEditorData(ma)
                 .setMediaUri(Uri.parse("http://example.com/" + TestSuite.TESTRUN_UID + "/some.png"))
                 .setInReplyToId(
-                        MyProvider.oidToId(OidEnum.MSG_OID, MyContextHolder.get()
+                        MyQuery.oidToId(OidEnum.MSG_OID, MyContextHolder.get()
                                 .persistentOrigins()
                                 .fromName(TestSuite.CONVERSATION_ORIGIN_NAME).getId(),
                                 TestSuite.CONVERSATION_ENTRY_MESSAGE_OID))
                 .setRecipientId(
-                        MyProvider.oidToId(OidEnum.USER_OID, ma.getOrigin().getId(),
+                        MyQuery.oidToId(OidEnum.USER_OID, ma.getOrigin().getId(),
                                 TestSuite.CONVERSATION_MEMBER_USER_OID))
                 .addMentionsToText()
                 .setMessageText("Some text " + TestSuite.TESTRUN_UID);
@@ -207,7 +207,7 @@ public class MessageEditorTest extends android.test.ActivityInstrumentationTestC
         ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<TimelineActivity>(this, ConversationActivity.class); 
         int position = helper.getPositionOfReply();
         long msgId = helper.getItemIdAtPosition(position);
-        String body = MyProvider.msgIdToStringColumnValue(MyDatabase.Msg.BODY, msgId);
+        String body = MyQuery.msgIdToStringColumnValue(MyDatabase.Msg.BODY, msgId);
 
         helper.invokeContextMenuAction(method, position, ContextMenuItem.COPY_TEXT);
         assertEquals(body, getClipboardText());

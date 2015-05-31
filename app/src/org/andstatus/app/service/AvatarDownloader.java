@@ -21,7 +21,7 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.AvatarData;
 import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.data.MyDatabase;
-import org.andstatus.app.data.MyProvider;
+import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.util.MyLog;
 
 public class AvatarDownloader extends FileDownloader {
@@ -35,7 +35,7 @@ public class AvatarDownloader extends FileDownloader {
 
     @Override
     protected MyAccount findBestAccountForDownload() {
-        long originId = MyProvider.userIdToLongColumnValue(MyDatabase.User.ORIGIN_ID, data.userId);
+        long originId = MyQuery.userIdToLongColumnValue(MyDatabase.User.ORIGIN_ID, data.userId);
         return MyContextHolder.get().persistentAccounts().findFirstSucceededMyAccountByOriginId(originId);
     }
 

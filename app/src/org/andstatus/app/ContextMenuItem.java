@@ -32,8 +32,9 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.FileProvider;
 import org.andstatus.app.data.MyDatabase;
-import org.andstatus.app.data.MyProvider;
+import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.TimelineTypeEnum;
+import org.andstatus.app.data.ParsedUri;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
@@ -70,7 +71,7 @@ public enum ContextMenuItem {
         @Override
         MessageEditorData executeAsync(MyAccount ma, long msgId) {
             return new MessageEditorData(ma).setInReplyToId(msgId)
-                    .setRecipientId(MyProvider.msgIdToUserId(MyDatabase.Msg.AUTHOR_ID, msgId))
+                    .setRecipientId(MyQuery.msgIdToUserId(MyDatabase.Msg.AUTHOR_ID, msgId))
                     .addMentionsToText();
         }
 
@@ -126,7 +127,7 @@ public enum ContextMenuItem {
     COPY_TEXT(true) {
         @Override
         MessageEditorData executeAsync(MyAccount ma, long msgId) {
-            String body = MyProvider.msgIdToStringColumnValue(MyDatabase.Msg.BODY, msgId);
+            String body = MyQuery.msgIdToStringColumnValue(MyDatabase.Msg.BODY, msgId);
             if (ma.getOrigin().isHtmlContentAllowed()) {
                 body = MyHtml.fromHtml(body);
             }
@@ -143,7 +144,7 @@ public enum ContextMenuItem {
         @Override
         MessageEditorData executeAsync(MyAccount ma, long msgId) {
             return new MessageEditorData(ma).addMentionedUserToText(
-                    MyProvider.msgIdToUserId(MyDatabase.Msg.AUTHOR_ID, msgId));
+                    MyQuery.msgIdToUserId(MyDatabase.Msg.AUTHOR_ID, msgId));
         }
 
         @Override
@@ -270,7 +271,7 @@ public enum ContextMenuItem {
     OPEN_CONVERSATION() {
         @Override
         boolean executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
-            Uri uri = MyProvider.getTimelineMsgUri(editorData.ma.getUserId(), menu.messageList.getTimelineType(), true, menu.getMsgId());
+            Uri uri = ParsedUri.getTimelineMsgUri(editorData.ma.getUserId(), menu.messageList.getTimelineType(), true, menu.getMsgId());
             String action = menu.messageList.getActivity().getIntent().getAction();
             if (Intent.ACTION_PICK.equals(action) || Intent.ACTION_GET_CONTENT.equals(action)) {
                 if (MyLog.isLoggable(this, MyLog.DEBUG)) {
@@ -362,7 +363,7 @@ public enum ContextMenuItem {
 
     MessageEditorData getUserId(MyAccount ma, long msgId, String msgUserIdColumnName) {
         return new MessageEditorData(ma)
-                .setRecipientId(MyProvider.msgIdToUserId(msgUserIdColumnName, msgId));
+                .setRecipientId(MyQuery.msgIdToUserId(msgUserIdColumnName, msgId));
     }
 
     boolean executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {

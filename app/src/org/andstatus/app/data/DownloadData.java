@@ -155,7 +155,7 @@ public class DownloadData {
     }
 
     private String optionalUrlWhereClause() {
-        return url != null ? " AND " + Download.URL + "=" + MyProvider.quoteIfNotQuoted(url.toExternalForm()) : "";
+        return url != null ? " AND " + Download.URL + "=" + MyQuery.quoteIfNotQuoted(url.toExternalForm()) : "";
     }
 
     private void fixFieldsAfterLoad() {

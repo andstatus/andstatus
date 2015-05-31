@@ -105,12 +105,12 @@ public class DataPruner {
                 });
                 sa.selection += " AND " + sqlNotFavoritedMessage;
                 sa.selection += " AND " + sqlNotLatestMessageByFollowedUser;
-                nDeletedTime = mContentResolver.delete(MyProvider.MSG_CONTENT_URI, sa.selection, sa.selectionArgs);
+                nDeletedTime = mContentResolver.delete(ParsedUri.MSG_CONTENT_URI, sa.selection, sa.selectionArgs);
             }
 
             if (maxSize > 0) {
                 nDeletedSize = 0;
-                cursor = mContentResolver.query(MyProvider.MSG_CONTENT_COUNT_URI, null, null, null, null);
+                cursor = mContentResolver.query(ParsedUri.MSG_CONTENT_COUNT_URI, null, null, null, null);
                 if (cursor.moveToFirst()) {
                     // Count is in the first column
                     nTweets = cursor.getInt(0);
@@ -119,7 +119,7 @@ public class DataPruner {
                 cursor.close();
                 if (nToDeleteSize > 0) {
                     // Find INS_DATE of the most recent tweet to delete
-                    cursor = mContentResolver.query(MyProvider.MSG_CONTENT_URI, new String[] {
+                    cursor = mContentResolver.query(ParsedUri.MSG_CONTENT_URI, new String[] {
                             MyDatabase.Msg.INS_DATE
                     }, null, null, MyDatabase.Msg.INS_DATE + " ASC LIMIT 0," + nToDeleteSize);
                     if (cursor.moveToLast()) {
@@ -133,7 +133,7 @@ public class DataPruner {
                         });
                         sa.selection += " AND " + sqlNotFavoritedMessage;
                         sa.selection += " AND " + sqlNotLatestMessageByFollowedUser;
-                        nDeletedSize = mContentResolver.delete(MyProvider.MSG_CONTENT_URI, sa.selection,
+                        nDeletedSize = mContentResolver.delete(ParsedUri.MSG_CONTENT_URI, sa.selection,
                                 sa.selectionArgs);
                     }
                 }

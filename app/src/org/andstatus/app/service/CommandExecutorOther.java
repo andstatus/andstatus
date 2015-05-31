@@ -26,9 +26,10 @@ import org.andstatus.app.IntentExtra;
 import org.andstatus.app.appwidget.AppWidgets;
 import org.andstatus.app.data.DataInserter;
 import org.andstatus.app.data.MyDatabase;
-import org.andstatus.app.data.MyProvider;
+import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.data.MyDatabase.OidEnum;
+import org.andstatus.app.data.ParsedUri;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.social.MbMessage;
 import org.andstatus.app.net.social.MbRateLimitStatus;
@@ -95,7 +96,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
      */
     private void createOrDestroyFavorite(long msgId, boolean create) {
         boolean ok = false;
-        String oid = MyProvider.idToOid(OidEnum.MSG_OID, msgId, 0);
+        String oid = MyQuery.idToOid(OidEnum.MSG_OID, msgId, 0);
         MbMessage message = null;
         boolean errorLogged = false;
         if (oid.length() > 0) {
@@ -166,7 +167,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
      */
     private void followOrStopFollowingUser(long userId, boolean follow) {
         boolean ok = false;
-        String oid = MyProvider.idToOid(OidEnum.USER_OID, userId, 0);
+        String oid = MyQuery.idToOid(OidEnum.USER_OID, userId, 0);
         MbUser user = null;
         boolean errorLogged = false;
         if (oid.length() > 0) {
@@ -202,7 +203,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
             }
             if (ok) {
                 new DataInserter(execContext).insertOrUpdateUser(user);
-                execContext.getContext().getContentResolver().notifyChange(MyProvider.TIMELINE_URI, null);
+                execContext.getContext().getContentResolver().notifyChange(ParsedUri.TIMELINE_URI, null);
             }
         }
         logOk(ok || !errorLogged);
@@ -215,7 +216,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
      */
     private void destroyStatus(long msgId) {
         boolean ok = false;
-        String oid = MyProvider.idToOid(OidEnum.MSG_OID, msgId, 0);
+        String oid = MyQuery.idToOid(OidEnum.MSG_OID, msgId, 0);
         try {
             if (TextUtils.isEmpty(oid)) {
                 ok = true;
@@ -239,7 +240,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
             try {
                 // TODO: Maybe we should use Timeline Uri...
                 execContext.getContext().getContentResolver()
-                        .delete(MyProvider.MSG_CONTENT_URI, BaseColumns._ID + " = " + msgId, 
+                        .delete(ParsedUri.MSG_CONTENT_URI, BaseColumns._ID + " = " + msgId, 
                                 null);
             } catch (Exception e) {
                 MyLog.e(this, "Error destroying status locally", e);
@@ -254,7 +255,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
      */
     private void destroyReblog(long msgId) {
         boolean ok = false;
-        String oid = MyProvider.idToOid(OidEnum.REBLOG_OID, msgId, execContext.getMyAccount().getUserId());
+        String oid = MyQuery.idToOid(OidEnum.REBLOG_OID, msgId, execContext.getMyAccount().getUserId());
         try {
             ok = execContext.getMyAccount().getConnection().destroyStatus(oid);
             logOk(ok);
@@ -274,7 +275,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 ContentValues values = new ContentValues();
                 values.put(MyDatabase.MsgOfUser.REBLOGGED, 0);
                 values.putNull(MyDatabase.MsgOfUser.REBLOG_OID);
-                Uri msgUri = MyProvider.getTimelineMsgUri(execContext.getMyAccount().getUserId(), TimelineTypeEnum.HOME, false, msgId);
+                Uri msgUri = ParsedUri.getTimelineMsgUri(execContext.getMyAccount().getUserId(), TimelineTypeEnum.HOME, false, msgId);
                 execContext.getContext().getContentResolver().update(msgUri, values, null, null);
             } catch (Exception e) {
                 MyLog.e(this, "Error destroying reblog locally", e);
@@ -285,7 +286,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
 
     private void getStatus() {
         boolean ok = false;
-        String oid = MyProvider.idToOid(OidEnum.MSG_OID, execContext.getCommandData().itemId, 0);
+        String oid = MyQuery.idToOid(OidEnum.MSG_OID, execContext.getCommandData().itemId, 0);
         if (TextUtils.isEmpty(oid)) {
             execContext.getResult().incrementParseExceptions();
             MyLog.w(this, "getStatus failed, no OID for id=" + execContext.getCommandData().itemId);
@@ -334,11 +335,11 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 MyLog.v(this, method + ", text:'" + MyLog.trimmedString(status, 40) + "'");
             }
             if (recipientUserId == 0) {
-                String replyToMsgOid = MyProvider.idToOid(OidEnum.MSG_OID, replyToMsgId, 0);
+                String replyToMsgOid = MyQuery.idToOid(OidEnum.MSG_OID, replyToMsgId, 0);
                 message = execContext.getMyAccount().getConnection()
                         .updateStatus(status.trim(), replyToMsgOid, mediaUri);
             } else {
-                String recipientOid = MyProvider.idToOid(OidEnum.USER_OID, recipientUserId, 0);
+                String recipientOid = MyQuery.idToOid(OidEnum.USER_OID, recipientUserId, 0);
                 // Currently we don't use Screen Name, I guess id is enough.
                 message = execContext.getMyAccount().getConnection()
                         .postDirectMessage(status.trim(), recipientOid, mediaUri);
@@ -359,7 +360,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
     }
 
     private void reblog(long rebloggedId) {
-        String oid = MyProvider.idToOid(OidEnum.MSG_OID, rebloggedId, 0);
+        String oid = MyQuery.idToOid(OidEnum.MSG_OID, rebloggedId, 0);
         boolean ok = false;
         MbMessage result = null;
         try {

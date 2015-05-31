@@ -11,7 +11,7 @@ import org.andstatus.app.backup.MyBackupDescriptor;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.data.MyProvider;
+import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.util.MyLog;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -266,7 +266,7 @@ public class PersistentAccounts {
     public MyAccount getAccountWhichMayBeLinkedToThisMessage(long messageId, long firstUserId, 
             long secondUserIdPreferred)  {
         final String method = "getAccountWhichMayBeLinkedToThisMessage";
-        long originId = MyProvider.msgIdToOriginId(messageId);
+        long originId = MyQuery.msgIdToOriginId(messageId);
         MyAccount ma = fromUserId(firstUserId);
         if ((messageId == 0) || !ma.isValid() || (originId != ma.getOriginId())) {
             ma = fromUserId(secondUserIdPreferred);

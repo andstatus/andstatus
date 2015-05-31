@@ -28,16 +28,16 @@ import android.os.Bundle;
 
 import org.andstatus.app.data.AccountUserIds;
 import org.andstatus.app.data.MyDatabase;
-import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.TimelineSql;
 import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.data.MyDatabase.User;
+import org.andstatus.app.data.ParsedUri;
 import org.andstatus.app.util.SelectionAndArgs;
 
 import java.util.Arrays;
 import java.util.Date;
 
-class TimelineListParameters {
+public class TimelineListParameters {
     final Context mContext;
     
     LoaderManager.LoaderCallbacks<Cursor> mLoaderCallbacks = null;
@@ -110,7 +110,7 @@ class TimelineListParameters {
     }
     
     private void prepareQueryForeground(boolean positionRestored) {
-        mContentUri = MyProvider.getTimelineSearchUri(myAccountUserId, mTimelineType,
+        mContentUri = ParsedUri.getTimelineSearchUri(myAccountUserId, mTimelineType,
                 mTimelineCombined, mSearchQuery);
 
         if (mSa.nArgs == 0) {

@@ -25,7 +25,6 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MyDatabase;
-import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.MyDatabase.Msg;
 import org.andstatus.app.data.MyDatabase.MsgOfUser;
 import org.andstatus.app.data.MyDatabase.OidEnum;
@@ -68,10 +67,10 @@ public class DataInserterTest extends InstrumentationTestCase {
         somebody.setUrl("http://identi.ca/somebody");
         di.insertOrUpdateUser(somebody);
 
-        long somebodyId = MyProvider.oidToId(OidEnum.USER_OID, TestSuite.getConversationOriginId(), userOid);
+        long somebodyId = MyQuery.oidToId(OidEnum.USER_OID, TestSuite.getConversationOriginId(), userOid);
         assertTrue("User " + username + " added", somebodyId != 0);
 
-        Set<Long> followedIds = MyProvider.getIdsOfUsersFollowedBy(TestSuite
+        Set<Long> followedIds = MyQuery.getIdsOfUsersFollowedBy(TestSuite
                 .getConversationMyAccount().getUserId());
         assertFalse("User " + username + " is not followed", followedIds.contains(somebodyId));
 
@@ -98,16 +97,16 @@ public class DataInserterTest extends InstrumentationTestCase {
                         .fromId(TestSuite.getConversationOriginId())
                         .messagePermalink(messageId));
 
-        long authorId = MyProvider.msgIdToLongColumnValue(Msg.AUTHOR_ID, messageId);
+        long authorId = MyQuery.msgIdToLongColumnValue(Msg.AUTHOR_ID, messageId);
         assertEquals("Author of the message", somebodyId, authorId);
-        String url = MyProvider.msgIdToStringColumnValue(Msg.URL, messageId);
+        String url = MyQuery.msgIdToStringColumnValue(Msg.URL, messageId);
         assertEquals("Url of the message", message.url, url);
-        long senderId = MyProvider.msgIdToLongColumnValue(Msg.SENDER_ID, messageId);
+        long senderId = MyQuery.msgIdToLongColumnValue(Msg.SENDER_ID, messageId);
         assertEquals("Sender of the message", somebodyId, senderId);
-        url = MyProvider.userIdToStringColumnValue(User.URL, senderId);
+        url = MyQuery.userIdToStringColumnValue(User.URL, senderId);
         assertEquals("Url of the sender " + somebody.getUserName(), somebody.getUrl(), url);
 
-        Uri contentUri = MyProvider.getTimelineUri(
+        Uri contentUri = ParsedUri.getTimelineUri(
                 TestSuite.getConversationMyAccount().getUserId(), TimelineTypeEnum.FOLLOWING_USER,
                 false);
         SelectionAndArgs sa = new SelectionAndArgs();
@@ -127,7 +126,7 @@ public class DataInserterTest extends InstrumentationTestCase {
         somebody.followedByActor = TriState.TRUE;
         di.insertOrUpdateUser(somebody);
 
-        followedIds = MyProvider.getIdsOfUsersFollowedBy(TestSuite.getConversationMyAccount()
+        followedIds = MyQuery.getIdsOfUsersFollowedBy(TestSuite.getConversationMyAccount()
                 .getUserId());
         assertTrue("User " + username + ", id=" + somebodyId + " is followed",
                 followedIds.contains(somebodyId));
@@ -159,7 +158,7 @@ public class DataInserterTest extends InstrumentationTestCase {
         long messageId = new MessageInserter(TestSuite.getConversationMyAccount())
                 .addMessage(message);
 
-        Uri contentUri = MyProvider.getTimelineUri(
+        Uri contentUri = ParsedUri.getTimelineUri(
                 TestSuite.getConversationMyAccount().getUserId(), TimelineTypeEnum.HOME, false);
         SelectionAndArgs sa = new SelectionAndArgs();
         String sortOrder = MyDatabase.Msg.DEFAULT_SORT_ORDER;
@@ -211,7 +210,7 @@ public class DataInserterTest extends InstrumentationTestCase {
         long messageId = di.insertOrUpdateMsg(message);
         assertTrue("Message added", messageId != 0);
 
-        Uri contentUri = MyProvider.getTimelineUri(
+        Uri contentUri = ParsedUri.getTimelineUri(
                 TestSuite.getConversationMyAccount().getUserId(), TimelineTypeEnum.HOME, false);
         SelectionAndArgs sa = new SelectionAndArgs();
         String sortOrder = MyDatabase.Msg.DEFAULT_SORT_ORDER;
@@ -250,7 +249,7 @@ public class DataInserterTest extends InstrumentationTestCase {
         long messageId = di.insertOrUpdateMsg(message);
         assertTrue("Message added", messageId != 0);
 
-        Uri contentUri = MyProvider.getTimelineUri(
+        Uri contentUri = ParsedUri.getTimelineUri(
                 TestSuite.getConversationMyAccount().getUserId(), TimelineTypeEnum.HOME, false);
         SelectionAndArgs sa = new SelectionAndArgs();
         String sortOrder = MyDatabase.Msg.DEFAULT_SORT_ORDER;
@@ -298,20 +297,20 @@ public class DataInserterTest extends InstrumentationTestCase {
         long userId1 = di.insertOrUpdateUser(user1);
         assertTrue("User added", userId1 != 0);
         assertEquals("Username stored", user1.getUserName(),
-                MyProvider.userIdToStringColumnValue(MyDatabase.User.USERNAME, userId1));
+                MyQuery.userIdToStringColumnValue(MyDatabase.User.USERNAME, userId1));
 
         MbUser user1partial = MbUser.fromOriginAndUserOid(user1.originId, user1.oid);
         long userId1partial = di.insertOrUpdateUser(user1partial);
         assertEquals("Same user", userId1, userId1partial);
         assertEquals("Username didn't change", user1.getUserName(),
-                MyProvider.userIdToStringColumnValue(MyDatabase.User.USERNAME, userId1));
+                MyQuery.userIdToStringColumnValue(MyDatabase.User.USERNAME, userId1));
 
         MbUser user1Renamed = user1;
         user1Renamed.setUserName(user1Renamed.getUserName() + "renamed");
         long userId1Renamed = di.insertOrUpdateUser(user1Renamed);
         assertEquals("Same user renamed", userId1, userId1Renamed);
         assertEquals("Same user renamed", user1Renamed.getUserName(),
-                MyProvider.userIdToStringColumnValue(MyDatabase.User.USERNAME, userId1));
+                MyQuery.userIdToStringColumnValue(MyDatabase.User.USERNAME, userId1));
 
         MbUser user2SameOldUserName = new MessageInserter(ma).buildUserFromOid("34805"
                 + TestSuite.TESTRUN_UID);
@@ -319,7 +318,7 @@ public class DataInserterTest extends InstrumentationTestCase {
         long userId2 = di.insertOrUpdateUser(user2SameOldUserName);
         assertTrue("Other user with the same user name as old name of user", userId1 != userId2);
         assertEquals("Username stored", user2SameOldUserName.getUserName(),
-                MyProvider.userIdToStringColumnValue(MyDatabase.User.USERNAME, userId2));
+                MyQuery.userIdToStringColumnValue(MyDatabase.User.USERNAME, userId2));
 
         MbUser user3SameNewUserName = new MessageInserter(ma).buildUserFromOid("34806"
                 + TestSuite.TESTRUN_UID);
@@ -328,6 +327,6 @@ public class DataInserterTest extends InstrumentationTestCase {
         assertTrue("User added " + user3SameNewUserName, userId3 != 0);
         assertTrue("Other user with the same user name as old name of user", userId1 != userId3);
         assertEquals("Username stored for userId=" + userId3, user3SameNewUserName.getUserName(),
-                MyProvider.userIdToStringColumnValue(MyDatabase.User.USERNAME, userId3));
+                MyQuery.userIdToStringColumnValue(MyDatabase.User.USERNAME, userId3));
     }
 }

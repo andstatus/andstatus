@@ -267,6 +267,9 @@ public class AccountSettingsActivity extends Activity {
     }
     
     private void updateScreen() {
+        if (getFragmentManager().findFragmentByTag(FRAGMENT_TAG) == null) {
+            return;
+        }
         showTitle();
         showErrors();
         showOrigin();

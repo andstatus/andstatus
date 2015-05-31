@@ -10,7 +10,7 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyDatabase.OidEnum;
-import org.andstatus.app.data.MyProvider;
+import org.andstatus.app.data.MyQuery;
 
 public class MessageEditorDataTest extends InstrumentationTestCase {
 
@@ -23,13 +23,13 @@ public class MessageEditorDataTest extends InstrumentationTestCase {
     public void testMessageEditorDataConversation() {
         MyAccount ma = MyContextHolder.get().persistentAccounts()
                 .fromAccountName(TestSuite.CONVERSATION_ACCOUNT_NAME);
-        long entryMsgId = MyProvider.oidToId(OidEnum.MSG_OID, MyContextHolder.get()
+        long entryMsgId = MyQuery.oidToId(OidEnum.MSG_OID, MyContextHolder.get()
                 .persistentOrigins()
                 .fromName(TestSuite.CONVERSATION_ORIGIN_NAME).getId(),
                 TestSuite.CONVERSATION_ENTRY_MESSAGE_OID);
-        long entryUserId = MyProvider.oidToId(OidEnum.USER_OID, ma.getOrigin().getId(),
+        long entryUserId = MyQuery.oidToId(OidEnum.USER_OID, ma.getOrigin().getId(),
                 TestSuite.CONVERSATION_ENTRY_USER_OID);
-        long memberUserId = MyProvider.oidToId(OidEnum.USER_OID, ma.getOrigin().getId(),
+        long memberUserId = MyQuery.oidToId(OidEnum.USER_OID, ma.getOrigin().getId(),
                 TestSuite.CONVERSATION_MEMBER_USER_OID);
         assertData(ma, entryMsgId, entryUserId, 0, memberUserId, false);
         assertData(ma, entryMsgId, entryUserId, 0, memberUserId, true);
@@ -57,7 +57,7 @@ public class MessageEditorDataTest extends InstrumentationTestCase {
         if (mentionedUserId == 0) {
             return;
         }
-        String expectedName = MyProvider.userIdToStringColumnValue(
+        String expectedName = MyQuery.userIdToStringColumnValue(
                 data.ma.getOrigin().isMentionAsWebFingerId() ? MyDatabase.User.WEBFINGER_ID
                         : MyDatabase.User.USERNAME, mentionedUserId);
         assertTrue(!TextUtils.isEmpty(expectedName));

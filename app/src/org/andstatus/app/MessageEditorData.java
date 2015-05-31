@@ -24,7 +24,7 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.UserInTimeline;
 import org.andstatus.app.data.MyDatabase;
-import org.andstatus.app.data.MyProvider;
+import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.util.UriUtils;
 
 import java.util.ArrayList;
@@ -205,7 +205,7 @@ class MessageEditorData {
     }
 
     public MessageEditorData addMentionedUserToText(long mentionedUserId) {
-        String name = MyProvider.userIdToName(mentionedUserId, getUserInTimeline());
+        String name = MyQuery.userIdToName(mentionedUserId, getUserInTimeline());
         addMetionedUsernameToText(name);
         return this;
     }
@@ -217,7 +217,7 @@ class MessageEditorData {
     }
 
     private void addMentionedAuthorOfMessageToText(long messageId) {
-        String name = MyProvider.msgIdToUsername(MyDatabase.Msg.AUTHOR_ID, messageId, getUserInTimeline());
+        String name = MyQuery.msgIdToUsername(MyDatabase.Msg.AUTHOR_ID, messageId, getUserInTimeline());
         addMetionedUsernameToText(name);
     }
     

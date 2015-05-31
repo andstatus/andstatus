@@ -20,6 +20,7 @@ import org.andstatus.app.appwidget.AppWidgets;
 import org.andstatus.app.data.DataPruner;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.TimelineTypeEnum;
+import org.andstatus.app.data.ParsedUri;
 import org.andstatus.app.notification.AddedMessagesNotifier;
 import org.andstatus.app.util.MyLog;
 
@@ -73,6 +74,6 @@ class CommandExecutorLoadAllTimelines extends CommandExecutorStrategy {
 
     private void notifyViaContentResolver() {
         // see http://stackoverflow.com/questions/6678046/when-contentresolver-notifychange-is-called-for-a-given-uri-are-contentobserv
-        execContext.getContext().getContentResolver().notifyChange(MyProvider.TIMELINE_URI, null);
+        execContext.getContext().getContentResolver().notifyChange(ParsedUri.TIMELINE_URI, null);
     }
 }

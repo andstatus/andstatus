@@ -24,7 +24,6 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyDatabase;
-import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
@@ -65,7 +64,7 @@ public class MessageForAccount {
 
     private void getData() {
         // Get the record for the currently selected item
-        Uri uri = MyProvider.getTimelineMsgUri(ma.getUserId(), TimelineTypeEnum.MESSAGESTOACT, false, msgId);
+        Uri uri = ParsedUri.getTimelineMsgUri(ma.getUserId(), TimelineTypeEnum.MESSAGESTOACT, false, msgId);
         Cursor cursor = null;
         try {
             cursor = MyContextHolder.get().context().getContentResolver().query(uri, new String[] {

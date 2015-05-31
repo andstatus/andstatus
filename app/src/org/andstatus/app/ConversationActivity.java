@@ -38,8 +38,8 @@ import org.andstatus.app.ConversationLoader.progressPublisher;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.TimelineTypeEnum;
+import org.andstatus.app.data.ParsedUri;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.MyServiceEvent;
 import org.andstatus.app.service.MyServiceListener;
@@ -98,10 +98,7 @@ public class ConversationActivity extends Activity implements MyServiceListener,
         MyServiceManager.setServiceAvailable();
         myServiceReceiver = new MyServiceReceiver(this);
 
-        final Intent intent = getIntent();
-        Uri uri = intent.getData();
-
-        selectedMessageId = MyProvider.uriToMessageId(uri);
+        selectedMessageId = ParsedUri.fromUri(getIntent().getData()).getMessageId();
 
         MyPreferences.setThemedContentView(this, R.layout.conversation);
         
@@ -159,7 +156,7 @@ public class ConversationActivity extends Activity implements MyServiceListener,
                         .get()
                         .persistentAccounts()
                         .getAccountWhichMayBeLinkedToThisMessage(selectedMessageId, 0,
-                                MyProvider.uriToAccountUserId(getIntent().getData()));
+                                ParsedUri.fromUri(getIntent().getData()).getAccountUserId());
             }
             publishProgress("");
             ConversationLoader<T> loader = new ConversationLoader<T>(mTClass,

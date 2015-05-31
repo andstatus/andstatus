@@ -28,7 +28,7 @@ import org.andstatus.app.data.DownloadFile;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyDatabase.Download;
 import org.andstatus.app.data.MyDatabase.User;
-import org.andstatus.app.data.MyProvider;
+import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.social.ConnectionTwitterGnuSocialMock;
 import org.andstatus.app.service.FileDownloader;
@@ -64,7 +64,7 @@ public class AvatarDownloaderTest extends InstrumentationTestCase {
     }
     
     private void loadforOneMyAccount(String urlStringInitial) throws IOException {
-        String urlString1 = MyProvider.userIdToStringColumnValue(User.AVATAR_URL, ma.getUserId());
+        String urlString1 = MyQuery.userIdToStringColumnValue(User.AVATAR_URL, ma.getUserId());
         assertEquals(urlStringInitial, urlString1);
         
         AvatarData.deleteAllOfThisUser(ma.getUserId());
@@ -112,7 +112,7 @@ public class AvatarDownloaderTest extends InstrumentationTestCase {
         ma = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.CONVERSATION_ACCOUNT_NAME);
         
         changeMaAvatarUrl(TestSuite.CONVERSATION_ACCOUNT_AVATAR_URL);
-        String urlString = MyProvider.userIdToStringColumnValue(User.AVATAR_URL, ma.getUserId());
+        String urlString = MyQuery.userIdToStringColumnValue(User.AVATAR_URL, ma.getUserId());
         assertEquals(TestSuite.CONVERSATION_ACCOUNT_AVATAR_URL, urlString);
         
         loadAndAssertStatusForMa(DownloadStatus.LOADED, false);
@@ -146,7 +146,7 @@ public class AvatarDownloaderTest extends InstrumentationTestCase {
         values.put(Download.DOWNLOAD_STATUS, status.save());
         return MyContextHolder.get().getDatabase().getWritableDatabase()
                 .update(Download.TABLE_NAME, values, Download.USER_ID + "=" + ma.getUserId() 
-                        + " AND " + Download.URL + "=" + MyProvider.quoteIfNotQuoted(url.toExternalForm()), null);
+                        + " AND " + Download.URL + "=" + MyQuery.quoteIfNotQuoted(url.toExternalForm()), null);
     }
 
     private long loadAndAssertStatusForMa(DownloadStatus status, boolean mockNetworkError) throws IOException {

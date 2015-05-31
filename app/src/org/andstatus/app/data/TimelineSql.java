@@ -25,6 +25,7 @@ import android.text.TextUtils;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.context.UserInTimeline;
 import org.andstatus.app.data.MyDatabase.Download;
 import org.andstatus.app.data.MyDatabase.FollowingUser;
 import org.andstatus.app.data.MyDatabase.Msg;
@@ -51,13 +52,13 @@ public class TimelineSql {
      * @return String for {@link SQLiteQueryBuilder#setTables(String)}
      */
     static String tablesForTimeline(Uri uri, String[] projection) {
-        TimelineTypeEnum tt = MyProvider.uriToTimelineType(uri);
-        boolean isCombined = MyProvider.uriToIsCombined(uri) || tt == TimelineTypeEnum.USER;
-        AccountUserIds accountUserIds = new AccountUserIds(isCombined, MyProvider.uriToAccountUserId(uri));
+        ParsedUri uriParser = ParsedUri.fromUri(uri);
+        TimelineTypeEnum tt = uriParser.getTimelineType();
+        AccountUserIds accountUserIds = new AccountUserIds(uriParser.isCombined(), uriParser.getAccountUserId());
     
         Collection<String> columns = new java.util.HashSet<String>(Arrays.asList(projection));
     
-        String tables = Msg.TABLE_NAME + " AS " + MyProvider.MSG_TABLE_ALIAS;
+        String tables = Msg.TABLE_NAME + " AS " + ProjectionMap.MSG_TABLE_ALIAS;
         boolean linkedUserDefined = false;
         boolean authorNameDefined = false;
         String authorTableName = "";
@@ -87,43 +88,43 @@ public class TimelineSql {
                  * Select only the latest message from each following User's
                  * timeline
                  */
-                tables  += " LEFT JOIN " + Msg.TABLE_NAME + " AS " + MyProvider.MSG_TABLE_ALIAS
+                tables  += " LEFT JOIN " + Msg.TABLE_NAME + " AS " + ProjectionMap.MSG_TABLE_ALIAS
                         + " ON (" 
-                        + MyProvider.MSG_TABLE_ALIAS + "." + MyDatabase.Msg.SENDER_ID 
+                        + ProjectionMap.MSG_TABLE_ALIAS + "." + MyDatabase.Msg.SENDER_ID 
                         + "=fuser." + MyDatabase.FollowingUser.FOLLOWING_USER_ID 
-                        + " AND " + MyProvider.MSG_TABLE_ALIAS + "." + BaseColumns._ID 
+                        + " AND " + ProjectionMap.MSG_TABLE_ALIAS + "." + BaseColumns._ID 
                         + "=u1." + MyDatabase.User.USER_MSG_ID
                         + ")";
                 break;
             case MESSAGESTOACT:
                 if (accountUserIds.size() == 1) {
                     tables = "(SELECT " + accountUserIds.getAccountUserId() + " AS " + MyDatabase.User.LINKED_USER_ID
-                            + ", * FROM " + Msg.TABLE_NAME + ") AS " + MyProvider.MSG_TABLE_ALIAS;
+                            + ", * FROM " + Msg.TABLE_NAME + ") AS " + ProjectionMap.MSG_TABLE_ALIAS;
                     linkedUserDefined = true;
                 }
                 break;
             case PUBLIC:
                 String where = Msg.PUBLIC + "=1";
-                if (!isCombined) {
-                    MyAccount ma = MyContextHolder.get().persistentAccounts().fromUserId(MyProvider.uriToAccountUserId(uri));
+                if (!uriParser.isCombined()) {
+                    MyAccount ma = MyContextHolder.get().persistentAccounts().fromUserId(uriParser.getAccountUserId());
                     if (ma.isValid()) {
                         where += " AND " + Msg.ORIGIN_ID + "=" + ma.getOriginId();
                     }
                 }
-                tables = "(SELECT * FROM " + Msg.TABLE_NAME + " WHERE (" + where + ")) AS " + MyProvider.MSG_TABLE_ALIAS;
+                tables = "(SELECT * FROM " + Msg.TABLE_NAME + " WHERE (" + where + ")) AS " + ProjectionMap.MSG_TABLE_ALIAS;
                 break;
             case EVERYTHING:
                 where = "";
-                if (!isCombined) {
-                    MyAccount ma = MyContextHolder.get().persistentAccounts().fromUserId(MyProvider.uriToAccountUserId(uri));
+                if (!uriParser.isCombined()) {
+                    MyAccount ma = MyContextHolder.get().persistentAccounts().fromUserId(uriParser.getAccountUserId());
                     if (ma.isValid()) {
                         where = Msg.ORIGIN_ID + "=" + ma.getOriginId();
                     }
                 }
                 tables = "(SELECT *"
                         + " FROM " + Msg.TABLE_NAME
-                        + (isCombined ? "" : " WHERE (" + where + ")")
-                        + ") AS " + MyProvider.MSG_TABLE_ALIAS;
+                        + (uriParser.isCombined() ? "" : " WHERE (" + where + ")")
+                        + ") AS " + ProjectionMap.MSG_TABLE_ALIAS;
                 break;
             default:
                 break;
@@ -136,7 +137,7 @@ public class TimelineSql {
                     + (linkedUserDefined ? "" : ", " + MyDatabase.MsgOfUser.USER_ID + " AS " 
                     + MyDatabase.User.LINKED_USER_ID)   
                     + " FROM " +  MsgOfUser.TABLE_NAME + ") AS mou ON "
-                    + MyProvider.MSG_TABLE_ALIAS + "." + BaseColumns._ID + "="
+                    + ProjectionMap.MSG_TABLE_ALIAS + "." + BaseColumns._ID + "="
                     + "mou." + MyDatabase.MsgOfUser.MSG_ID;
             switch (tt) {
                 case FOLLOWING_USER:
@@ -159,9 +160,9 @@ public class TimelineSql {
         if (!authorNameDefined && columns.contains(MyDatabase.User.AUTHOR_NAME)) {
             tables = "(" + tables + ") LEFT OUTER JOIN (SELECT "
                     + BaseColumns._ID + ", " 
-                    + MyProvider.userNameField() + " AS " + MyDatabase.User.AUTHOR_NAME
+                    + TimelineSql.userNameField() + " AS " + MyDatabase.User.AUTHOR_NAME
                     + " FROM " + User.TABLE_NAME + ") AS author ON "
-                    + MyProvider.MSG_TABLE_ALIAS + "." + MyDatabase.Msg.AUTHOR_ID + "=author."
+                    + ProjectionMap.MSG_TABLE_ALIAS + "." + MyDatabase.Msg.AUTHOR_ID + "=author."
                     + BaseColumns._ID;
             authorNameDefined = true;
             authorTableName = "author";
@@ -171,7 +172,7 @@ public class TimelineSql {
                     + MyDatabase.Download.USER_ID + ", "
                     + MyDatabase.Download.DOWNLOAD_STATUS + ", "
                     + MyDatabase.Download.FILE_NAME
-                    + " FROM " + MyDatabase.Download.TABLE_NAME + ") AS " + MyProvider.AVATAR_IMAGE_TABLE_ALIAS 
+                    + " FROM " + MyDatabase.Download.TABLE_NAME + ") AS " + ProjectionMap.AVATAR_IMAGE_TABLE_ALIAS 
                     + " ON "
                     + "av." + Download.DOWNLOAD_STATUS 
                     + "=" + DownloadStatus.LOADED.save() + " AND " 
@@ -185,32 +186,32 @@ public class TimelineSql {
                     + MyDatabase.Download.CONTENT_TYPE + ", "
                     + (columns.contains(MyDatabase.Download.IMAGE_URL) ? MyDatabase.Download.URL + ", " : "")
                     + MyDatabase.Download.FILE_NAME
-                    + " FROM " + MyDatabase.Download.TABLE_NAME + ") AS " + MyProvider.ATTACHMENT_IMAGE_TABLE_ALIAS 
+                    + " FROM " + MyDatabase.Download.TABLE_NAME + ") AS " + ProjectionMap.ATTACHMENT_IMAGE_TABLE_ALIAS 
                     +  " ON "
-                    + MyProvider.ATTACHMENT_IMAGE_TABLE_ALIAS + "." + Download.CONTENT_TYPE 
+                    + ProjectionMap.ATTACHMENT_IMAGE_TABLE_ALIAS + "." + Download.CONTENT_TYPE 
                     + "=" + MyContentType.IMAGE.save() + " AND " 
-                    + MyProvider.ATTACHMENT_IMAGE_TABLE_ALIAS + "." + MyDatabase.Download.MSG_ID 
-                    + "=" + MyProvider.MSG_TABLE_ALIAS + "." + BaseColumns._ID;
+                    + ProjectionMap.ATTACHMENT_IMAGE_TABLE_ALIAS + "." + MyDatabase.Download.MSG_ID 
+                    + "=" + ProjectionMap.MSG_TABLE_ALIAS + "." + BaseColumns._ID;
         }
         if (columns.contains(MyDatabase.User.SENDER_NAME)) {
             tables = "(" + tables + ") LEFT OUTER JOIN (SELECT " + BaseColumns._ID + ", "
-                    + MyProvider.userNameField() + " AS " + MyDatabase.User.SENDER_NAME
+                    + TimelineSql.userNameField() + " AS " + MyDatabase.User.SENDER_NAME
                     + " FROM " + User.TABLE_NAME + ") AS sender ON "
-                    + MyProvider.MSG_TABLE_ALIAS + "." + MyDatabase.Msg.SENDER_ID + "=sender."
+                    + ProjectionMap.MSG_TABLE_ALIAS + "." + MyDatabase.Msg.SENDER_ID + "=sender."
                     + BaseColumns._ID;
         }
         if (columns.contains(MyDatabase.User.IN_REPLY_TO_NAME)) {
             tables = "(" + tables + ") LEFT OUTER JOIN (SELECT " + BaseColumns._ID + ", "
-                    + MyProvider.userNameField() + " AS " + MyDatabase.User.IN_REPLY_TO_NAME
+                    + TimelineSql.userNameField() + " AS " + MyDatabase.User.IN_REPLY_TO_NAME
                     + " FROM " + User.TABLE_NAME + ") AS prevauthor ON "
-                    + MyProvider.MSG_TABLE_ALIAS + "." + MyDatabase.Msg.IN_REPLY_TO_USER_ID
+                    + ProjectionMap.MSG_TABLE_ALIAS + "." + MyDatabase.Msg.IN_REPLY_TO_USER_ID
                     + "=prevauthor." + BaseColumns._ID;
         }
         if (columns.contains(MyDatabase.User.RECIPIENT_NAME)) {
             tables = "(" + tables + ") LEFT OUTER JOIN (SELECT " + BaseColumns._ID + ", "
-                    + MyProvider.userNameField() + " AS " + MyDatabase.User.RECIPIENT_NAME
+                    + TimelineSql.userNameField() + " AS " + MyDatabase.User.RECIPIENT_NAME
                     + " FROM " + User.TABLE_NAME + ") AS recipient ON "
-                    + MyProvider.MSG_TABLE_ALIAS + "." + MyDatabase.Msg.RECIPIENT_ID + "=recipient."
+                    + ProjectionMap.MSG_TABLE_ALIAS + "." + MyDatabase.Msg.RECIPIENT_ID + "=recipient."
                     + BaseColumns._ID;
         }
         if (columns.contains(MyDatabase.FollowingUser.AUTHOR_FOLLOWED)) {
@@ -222,7 +223,7 @@ public class TimelineSql {
                     + " FROM " + FollowingUser.TABLE_NAME + ") AS followingauthor ON ("
                     + "followingauthor." + MyDatabase.FollowingUser.USER_ID + "=" + MyDatabase.User.LINKED_USER_ID
                     + " AND "
-                    + MyProvider.MSG_TABLE_ALIAS + "." + MyDatabase.Msg.AUTHOR_ID
+                    + ProjectionMap.MSG_TABLE_ALIAS + "." + MyDatabase.Msg.AUTHOR_ID
                     + "=followingauthor." + MyDatabase.FollowingUser.FOLLOWING_USER_ID
                     + ")";
         }
@@ -235,7 +236,7 @@ public class TimelineSql {
                     + " FROM " + FollowingUser.TABLE_NAME + ") AS followingsender ON ("
                     + "followingsender." + MyDatabase.FollowingUser.USER_ID + "=" + MyDatabase.User.LINKED_USER_ID
                     + " AND "
-                    + MyProvider.MSG_TABLE_ALIAS + "." + MyDatabase.Msg.SENDER_ID
+                    + ProjectionMap.MSG_TABLE_ALIAS + "." + MyDatabase.Msg.SENDER_ID
                     + "=followingsender." + MyDatabase.FollowingUser.FOLLOWING_USER_ID
                     + ")";
         }
@@ -311,13 +312,18 @@ public class TimelineSql {
                     if (origin.getOriginType() == OriginType.GNUSOCIAL && MyPreferences.getBoolean(MyPreferences.KEY_DEBUGGING_INFO_IN_UI, false)) {
                         int authorIdColumn = cursor.getColumnIndex(Msg.AUTHOR_ID);
                         if (authorIdColumn >= 0) {
-                            userName += " id:" + MyProvider.idToOid(OidEnum.USER_OID, cursor.getLong(authorIdColumn), 0);
+                            userName += " id:" + MyQuery.idToOid(OidEnum.USER_OID, cursor.getLong(authorIdColumn), 0);
                         }
                     }
                 }
             }
         }
         return userName;
+    }
+
+    public static String userNameField() {
+        UserInTimeline userInTimeline = MyPreferences.userInTimeline();
+        return MyQuery.userNameField(userInTimeline);
     }
     
 }

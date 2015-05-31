@@ -128,11 +128,11 @@ public class MessageInserter extends InstrumentationTestCase {
         }
         
         if (message.favoritedByActor == TriState.TRUE) {
-            long msgIdFromMsgOfUser = MyProvider.conditionToLongColumnValue(MyDatabase.MsgOfUser.TABLE_NAME, MyDatabase.MsgOfUser.MSG_ID, 
+            long msgIdFromMsgOfUser = MyQuery.conditionToLongColumnValue(MyDatabase.MsgOfUser.TABLE_NAME, MyDatabase.MsgOfUser.MSG_ID, 
                     "t." + MyDatabase.MsgOfUser.MSG_ID + "=" + messageId);
             assertEquals("msgofuser found for msgId=" + messageId, messageId, msgIdFromMsgOfUser);
             
-            long userIdFromMsgOfUser = MyProvider.conditionToLongColumnValue(MyDatabase.MsgOfUser.TABLE_NAME, MyDatabase.MsgOfUser.MSG_ID, 
+            long userIdFromMsgOfUser = MyQuery.conditionToLongColumnValue(MyDatabase.MsgOfUser.TABLE_NAME, MyDatabase.MsgOfUser.MSG_ID, 
                     "t." + MyDatabase.MsgOfUser.USER_ID + "=" + ma.getUserId());
             assertEquals("userId found for msgId=" + messageId, ma.getUserId(), userIdFromMsgOfUser);
         }
@@ -141,13 +141,13 @@ public class MessageInserter extends InstrumentationTestCase {
     }
 
     public static void deleteOldMessage(long originId, String messageOid) {
-        long messageIdOld = MyProvider.oidToId(OidEnum.MSG_OID, originId, messageOid);
+        long messageIdOld = MyQuery.oidToId(OidEnum.MSG_OID, originId, messageOid);
         if (messageIdOld != 0) {
             SelectionAndArgs sa = new SelectionAndArgs();
             sa.addSelection(MyDatabase.Msg._ID + " = ?", new String[] {
                 String.valueOf(messageIdOld)
             });
-            int deleted = TestSuite.getMyContextForTest().context().getContentResolver().delete(MyProvider.MSG_CONTENT_URI, sa.selection,
+            int deleted = TestSuite.getMyContextForTest().context().getContentResolver().delete(ParsedUri.MSG_CONTENT_URI, sa.selection,
                     sa.selectionArgs);
             assertEquals( "Old message id=" + messageIdOld + " deleted", 1, deleted);
         }

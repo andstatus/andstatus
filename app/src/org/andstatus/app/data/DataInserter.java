@@ -144,16 +144,16 @@ public class DataInserter {
             boolean isNew = true;
 
             // Lookup the System's (AndStatus) id from the Originated system's id
-            rowId = MyProvider.oidToId(OidEnum.MSG_OID, execContext.getMyAccount().getOriginId(), rowOid);
+            rowId = MyQuery.oidToId(OidEnum.MSG_OID, execContext.getMyAccount().getOriginId(), rowOid);
             // Construct the Uri to the Msg
-            Uri msgUri = MyProvider.getTimelineMsgUri(execContext.getMyAccount().getUserId(), execContext.getTimelineType(), false, rowId);
+            Uri msgUri = ParsedUri.getTimelineMsgUri(execContext.getMyAccount().getUserId(), execContext.getTimelineType(), false, rowId);
 
             long sentDateStored = 0;
             if (rowId != 0) {
-                sentDateStored = MyProvider.msgIdToLongColumnValue(Msg.SENT_DATE, rowId);
+                sentDateStored = MyQuery.msgIdToLongColumnValue(Msg.SENT_DATE, rowId);
                 isNew = (sentDateStored == 0);
                 if (!isNew) {
-                  long senderIdStored = MyProvider.msgIdToLongColumnValue(Msg.SENDER_ID, rowId);
+                  long senderIdStored = MyQuery.msgIdToLongColumnValue(Msg.SENDER_ID, rowId);
                   isNew = (senderIdStored == 0);
                 }
             }
@@ -232,8 +232,8 @@ public class DataInserter {
             }
             if (rowId == 0) {
                 // There was no such row so add the new one
-                msgUri = execContext.getContext().getContentResolver().insert(MyProvider.getTimelineUri(execContext.getMyAccount().getUserId(), execContext.getTimelineType(), false), values);
-                rowId = MyProvider.uriToMessageId(msgUri);
+                msgUri = execContext.getContext().getContentResolver().insert(ParsedUri.getTimelineUri(execContext.getMyAccount().getUserId(), execContext.getTimelineType(), false), values);
+                rowId = ParsedUri.fromUri(msgUri).getMessageId();
             } else {
                 execContext.getContext().getContentResolver().update(msgUri, values, null, null);
             }
@@ -279,9 +279,9 @@ public class DataInserter {
             DataInserter di = new DataInserter(execContext);
             inReplyToMessageId = di.insertOrUpdateMsg(message.inReplyToMessage, lum);
             if (message.inReplyToMessage.sender != null) {
-                inReplyToUserId = MyProvider.oidToId(OidEnum.USER_OID, message.originId, message.inReplyToMessage.sender.oid);
+                inReplyToUserId = MyQuery.oidToId(OidEnum.USER_OID, message.originId, message.inReplyToMessage.sender.oid);
             } else if (inReplyToMessageId != 0) {
-                inReplyToUserId = MyProvider.msgIdToLongColumnValue(Msg.SENDER_ID, inReplyToMessageId);
+                inReplyToUserId = MyQuery.msgIdToLongColumnValue(Msg.SENDER_ID, inReplyToMessageId);
             }
             if (inReplyToMessageId != 0) {
                 values.put(MyDatabase.Msg.IN_REPLY_TO_MSG_ID, inReplyToMessageId);
@@ -329,7 +329,7 @@ public class DataInserter {
         long userId = 0L;
         if (!SharedPreferencesUtil.isEmpty(userOid)) {
             // Lookup the System's (AndStatus) id from the Originated system's id
-            userId = MyProvider.oidToId(OidEnum.USER_OID, originId, userOid);
+            userId = MyQuery.oidToId(OidEnum.USER_OID, originId, userOid);
         }
         try {
             ContentValues values = new ContentValues();
@@ -393,14 +393,14 @@ public class DataInserter {
             }
             
             // Construct the Uri to the User
-            Uri userUri = MyProvider.getUserUri(execContext.getMyAccount().getUserId(), userId);
+            Uri userUri = ParsedUri.getUserUri(execContext.getMyAccount().getUserId(), userId);
             if (userId == 0) {
                 // There was no such row so add new one
-                
                 values.put(MyDatabase.User.USER_OID, userOid);
                 values.put(MyDatabase.User.ORIGIN_ID, originId);
-                userUri = execContext.getContext().getContentResolver().insert(userUri, values);
-                userId = MyProvider.uriToUserId(userUri);
+                userId = ParsedUri.fromUri(
+                        execContext.getContext().getContentResolver().insert(userUri, values))
+                        .getUserId();
             } else if (values.size() > 0) {
                 execContext.getContext().getContentResolver().update(userUri, values, null, null);
             }
@@ -420,7 +420,7 @@ public class DataInserter {
         LatestUserMessages lum = new LatestUserMessages();
         long rowId = insertOrUpdateMsg(message, lum);
         lum.save();
-        execContext.getContext().getContentResolver().notifyChange(MyProvider.TIMELINE_URI, null);
+        execContext.getContext().getContentResolver().notifyChange(ParsedUri.TIMELINE_URI, null);
         return rowId;
     }
 }

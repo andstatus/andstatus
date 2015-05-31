@@ -62,8 +62,8 @@ public final class UserMsg {
         if (userId == 0) {
             throw new IllegalArgumentException(TAG + ": userId==0");
         }
-        lastMsgId = MyProvider.userIdToLongColumnValue(User.USER_MSG_ID, userId);
-        lastMsgDate = MyProvider.userIdToLongColumnValue(User.USER_MSG_DATE, userId);
+        lastMsgId = MyQuery.userIdToLongColumnValue(User.USER_MSG_ID, userId);
+        lastMsgDate = MyQuery.userIdToLongColumnValue(User.USER_MSG_DATE, userId);
     }
 
     /**
@@ -104,7 +104,7 @@ public final class UserMsg {
         }
         long msgDate = msgDateIn;
         if (msgDate == 0) {
-            msgDate = MyProvider.msgIdToLongColumnValue(Msg.SENT_DATE, msgId);
+            msgDate = MyQuery.msgIdToLongColumnValue(Msg.SENT_DATE, msgId);
         }
         if (msgDate > lastMsgDate) {
             lastMsgDate = msgDate;
@@ -120,7 +120,7 @@ public final class UserMsg {
     public boolean save() {
         boolean ok = true;
         if (MyLog.isVerboseEnabled()) {
-            MyLog.v(this, "User=" + MyProvider.userIdToWebfingerId(userId) 
+            MyLog.v(this, "User=" + MyQuery.userIdToWebfingerId(userId) 
                     + " Latest msg at " + (new Date(getLastMsgDate()).toString())
                     + (changed ? "" : " not changed")                    
                     );
@@ -130,11 +130,11 @@ public final class UserMsg {
         }
 
         // As a precaution compare with stored values ones again
-        long msgDate = MyProvider.userIdToLongColumnValue(User.USER_MSG_DATE, userId);
+        long msgDate = MyQuery.userIdToLongColumnValue(User.USER_MSG_DATE, userId);
         if (msgDate > lastMsgDate) {
             lastMsgDate = msgDate;
-            lastMsgId = MyProvider.userIdToLongColumnValue(User.USER_MSG_ID, userId);
-            MyLog.v(this, "There is newer information in the database. User=" + MyProvider.userIdToWebfingerId(userId) 
+            lastMsgId = MyQuery.userIdToLongColumnValue(User.USER_MSG_ID, userId);
+            MyLog.v(this, "There is newer information in the database. User=" + MyQuery.userIdToWebfingerId(userId) 
                     + " Latest msg at " + (new Date(getLastMsgDate()).toString()));
             changed = false;
             return ok;

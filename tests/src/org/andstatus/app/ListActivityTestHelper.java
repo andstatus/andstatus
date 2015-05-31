@@ -13,7 +13,7 @@ import android.widget.ListView;
 
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MyDatabase;
-import org.andstatus.app.data.MyProvider;
+import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.util.MyLog;
 
 public class ListActivityTestHelper<T extends ListActivity> extends InstrumentationTestCase {
@@ -97,7 +97,7 @@ public class ListActivityTestHelper<T extends ListActivity> extends Instrumentat
         int position = -1;
         for (int ind = 0; ind < getListView().getCount(); ind++) {
             long itemId = getListView().getAdapter().getItemId(ind);
-            if (MyProvider.msgIdToLongColumnValue(MyDatabase.Msg.IN_REPLY_TO_MSG_ID, itemId) != 0) {
+            if (MyQuery.msgIdToLongColumnValue(MyDatabase.Msg.IN_REPLY_TO_MSG_ID, itemId) != 0) {
                 position = ind; 
                 break;
             }

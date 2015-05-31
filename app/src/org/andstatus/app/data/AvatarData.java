@@ -37,7 +37,7 @@ public class AvatarData extends DownloadData {
     }
     
     private AvatarData(long userIdIn) {
-        super(userIdIn, MyProvider.userIdToStringColumnValue(User.AVATAR_URL, userIdIn));
+        super(userIdIn, MyQuery.userIdToStringColumnValue(User.AVATAR_URL, userIdIn));
     }
     
 }
