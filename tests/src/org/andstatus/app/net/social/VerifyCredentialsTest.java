@@ -26,12 +26,12 @@ import org.andstatus.app.account.AccountDataReaderEmpty;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyDatabase.Msg;
 import org.andstatus.app.data.MyDatabase.OidEnum;
 import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.data.TimelineTypeEnum;
-import org.andstatus.app.data.ParsedUri;
+import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.net.http.HttpConnectionMock;
 import org.andstatus.app.net.http.OAuthClientKeys;
 import org.andstatus.app.origin.Origin;
@@ -108,7 +108,7 @@ public class VerifyCredentialsTest extends InstrumentationTestCase {
                 MyQuery.idToOid(OidEnum.USER_OID, userId, 0));
 
         String msgOid = "383296535213002752";
-        Uri contentUri = ParsedUri.getTimelineUri(userId, TimelineTypeEnum.EVERYTHING, false);
+        Uri contentUri = MatchedUri.MSG_CONTENT_URI;
         SelectionAndArgs sa = new SelectionAndArgs();
         String sortOrder = MyDatabase.Msg.DEFAULT_SORT_ORDER;
         sa.addSelection(MyDatabase.Msg.SENDER_ID + " = ? AND " 

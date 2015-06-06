@@ -53,7 +53,7 @@ public class TimelineSql {
      */
     static String tablesForTimeline(Uri uri, String[] projection) {
         ParsedUri uriParser = ParsedUri.fromUri(uri);
-        TimelineTypeEnum tt = uriParser.getTimelineType();
+        TimelineType tt = uriParser.getTimelineType();
         AccountUserIds accountUserIds = new AccountUserIds(uriParser.isCombined(), uriParser.getAccountUserId());
     
         Collection<String> columns = new java.util.HashSet<String>(Arrays.asList(projection));

@@ -22,7 +22,7 @@ import android.text.format.Time;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.data.TimelineTypeEnum;
+import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.service.CommandResult;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
@@ -153,7 +153,7 @@ public class MyAppWidgetProviderTest extends InstrumentationTestCase {
 
         long dateSinceMin = System.currentTimeMillis();  
     	// To set dateSince correctly!
-        updateWidgets(1, TimelineTypeEnum.HOME, 0);
+        updateWidgets(1, TimelineType.HOME, 0);
         Thread.sleep(5000);
         long dateSinceMax = System.currentTimeMillis();  
         Thread.sleep(5000);
@@ -162,19 +162,19 @@ public class MyAppWidgetProviderTest extends InstrumentationTestCase {
         checkDateChecked(dateSinceMin, dateSinceMax);
     	
     	int numMentions = 3;
-        updateWidgets(0, TimelineTypeEnum.HOME, numMentions);
+        updateWidgets(0, TimelineType.HOME, numMentions);
     	
     	int numDirect = 1;
-        updateWidgets(numDirect, TimelineTypeEnum.DIRECT, 0);
+        updateWidgets(numDirect, TimelineType.DIRECT, 0);
     	
     	int numHome = 7;
-        updateWidgets(numHome, TimelineTypeEnum.HOME, 0);
+        updateWidgets(numHome, TimelineType.HOME, 0);
     	
         checkWidgetData(numMentions, numDirect, numHome);
         
         long dateCheckedMin = System.currentTimeMillis();  
         numMentions++;
-        updateWidgets(0, TimelineTypeEnum.HOME, 1);
+        updateWidgets(0, TimelineType.HOME, 1);
         checkWidgetData(numMentions, numDirect, numHome);
         long dateCheckedMax = System.currentTimeMillis();
         
@@ -253,7 +253,7 @@ public class MyAppWidgetProviderTest extends InstrumentationTestCase {
 	 * @throws InterruptedException 
 	 * @see MyAppWidgetProvider
 	 */
-	private void updateWidgets(int msgAdded, TimelineTypeEnum timelineType, int mentionsAdded) throws InterruptedException{
+	private void updateWidgets(int msgAdded, TimelineType timelineType, int mentionsAdded) throws InterruptedException{
         Thread.sleep(500);
         AppWidgets appWidgets = AppWidgets.newInstance(myContext);
         CommandResult result = new CommandResult();

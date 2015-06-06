@@ -100,17 +100,16 @@ public class DataPruner {
             if (maxDays > 0) {
                 latestTimestamp = System.currentTimeMillis() - java.util.concurrent.TimeUnit.DAYS.toMillis(maxDays);
                 SelectionAndArgs sa = new SelectionAndArgs();
-                sa.addSelection(Msg.TABLE_NAME + "." + MyDatabase.Msg.INS_DATE + " <  ?", new String[] {
-                        String.valueOf(latestTimestamp)
-                });
-                sa.selection += " AND " + sqlNotFavoritedMessage;
-                sa.selection += " AND " + sqlNotLatestMessageByFollowedUser;
-                nDeletedTime = mContentResolver.delete(ParsedUri.MSG_CONTENT_URI, sa.selection, sa.selectionArgs);
+                sa.addSelection(Msg.TABLE_NAME + "." + MyDatabase.Msg.INS_DATE + " <  ?", 
+                        new String[] {String.valueOf(latestTimestamp)});
+                sa.addSelection(sqlNotFavoritedMessage);
+                sa.addSelection(sqlNotLatestMessageByFollowedUser);
+                nDeletedTime = mContentResolver.delete(MatchedUri.MSG_CONTENT_URI, sa.selection, sa.selectionArgs);
             }
 
             if (maxSize > 0) {
                 nDeletedSize = 0;
-                cursor = mContentResolver.query(ParsedUri.MSG_CONTENT_COUNT_URI, null, null, null, null);
+                cursor = mContentResolver.query(MatchedUri.MSG_CONTENT_COUNT_URI, null, null, null, null);
                 if (cursor.moveToFirst()) {
                     // Count is in the first column
                     nTweets = cursor.getInt(0);
@@ -119,7 +118,7 @@ public class DataPruner {
                 cursor.close();
                 if (nToDeleteSize > 0) {
                     // Find INS_DATE of the most recent tweet to delete
-                    cursor = mContentResolver.query(ParsedUri.MSG_CONTENT_URI, new String[] {
+                    cursor = mContentResolver.query(MatchedUri.MSG_CONTENT_URI, new String[] {
                             MyDatabase.Msg.INS_DATE
                     }, null, null, MyDatabase.Msg.INS_DATE + " ASC LIMIT 0," + nToDeleteSize);
                     if (cursor.moveToLast()) {
@@ -128,12 +127,11 @@ public class DataPruner {
                     cursor.close();
                     if (latestTimestampSize > 0) {
                         SelectionAndArgs sa = new SelectionAndArgs();
-                        sa.addSelection(Msg.TABLE_NAME + "." + MyDatabase.Msg.INS_DATE + " <=  ?", new String[] {
-                                String.valueOf(latestTimestampSize)
-                        });
-                        sa.selection += " AND " + sqlNotFavoritedMessage;
-                        sa.selection += " AND " + sqlNotLatestMessageByFollowedUser;
-                        nDeletedSize = mContentResolver.delete(ParsedUri.MSG_CONTENT_URI, sa.selection,
+                        sa.addSelection(Msg.TABLE_NAME + "." + MyDatabase.Msg.INS_DATE + " <=  ?", 
+                                new String[] {String.valueOf(latestTimestampSize)});
+                        sa.addSelection(sqlNotFavoritedMessage);
+                        sa.addSelection(sqlNotLatestMessageByFollowedUser);
+                        nDeletedSize = mContentResolver.delete(MatchedUri.MSG_CONTENT_URI, sa.selection,
                                 sa.selectionArgs);
                     }
                 }

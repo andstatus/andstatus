@@ -56,7 +56,7 @@ public class DataInserterTest extends InstrumentationTestCase {
         MessageInserter.deleteOldMessage(TestSuite.getConversationOriginId(), messageOid);
 
         CommandExecutionContext counters = new CommandExecutionContext(CommandData.getEmpty(),
-                TestSuite.getConversationMyAccount()).setTimelineType(TimelineTypeEnum.HOME);
+                TestSuite.getConversationMyAccount()).setTimelineType(TimelineType.HOME);
         DataInserter di = new DataInserter(counters);
         String username = "somebody@identi.ca";
         String userOid = "acct:" + username;
@@ -106,8 +106,8 @@ public class DataInserterTest extends InstrumentationTestCase {
         url = MyQuery.userIdToStringColumnValue(User.URL, senderId);
         assertEquals("Url of the sender " + somebody.getUserName(), somebody.getUrl(), url);
 
-        Uri contentUri = ParsedUri.getTimelineUri(
-                TestSuite.getConversationMyAccount().getUserId(), TimelineTypeEnum.FOLLOWING_USER,
+        Uri contentUri = MatchedUri.getTimelineUri(
+                TestSuite.getConversationMyAccount().getUserId(), TimelineType.FOLLOWING_USER,
                 false);
         SelectionAndArgs sa = new SelectionAndArgs();
         String sortOrder = MyDatabase.Msg.DEFAULT_SORT_ORDER;
@@ -158,8 +158,8 @@ public class DataInserterTest extends InstrumentationTestCase {
         long messageId = new MessageInserter(TestSuite.getConversationMyAccount())
                 .addMessage(message);
 
-        Uri contentUri = ParsedUri.getTimelineUri(
-                TestSuite.getConversationMyAccount().getUserId(), TimelineTypeEnum.HOME, false);
+        Uri contentUri = MatchedUri.getTimelineUri(
+                TestSuite.getConversationMyAccount().getUserId(), TimelineType.HOME, false);
         SelectionAndArgs sa = new SelectionAndArgs();
         String sortOrder = MyDatabase.Msg.DEFAULT_SORT_ORDER;
         sa.addSelection(MyDatabase.Msg.MSG_ID + " = ?",
@@ -210,8 +210,8 @@ public class DataInserterTest extends InstrumentationTestCase {
         long messageId = di.insertOrUpdateMsg(message);
         assertTrue("Message added", messageId != 0);
 
-        Uri contentUri = ParsedUri.getTimelineUri(
-                TestSuite.getConversationMyAccount().getUserId(), TimelineTypeEnum.HOME, false);
+        Uri contentUri = MatchedUri.getTimelineUri(
+                TestSuite.getConversationMyAccount().getUserId(), TimelineType.HOME, false);
         SelectionAndArgs sa = new SelectionAndArgs();
         String sortOrder = MyDatabase.Msg.DEFAULT_SORT_ORDER;
         sa.addSelection(MyDatabase.Msg.MSG_ID + " = ?",
@@ -249,8 +249,8 @@ public class DataInserterTest extends InstrumentationTestCase {
         long messageId = di.insertOrUpdateMsg(message);
         assertTrue("Message added", messageId != 0);
 
-        Uri contentUri = ParsedUri.getTimelineUri(
-                TestSuite.getConversationMyAccount().getUserId(), TimelineTypeEnum.HOME, false);
+        Uri contentUri = MatchedUri.getTimelineUri(
+                TestSuite.getConversationMyAccount().getUserId(), TimelineType.HOME, false);
         SelectionAndArgs sa = new SelectionAndArgs();
         String sortOrder = MyDatabase.Msg.DEFAULT_SORT_ORDER;
         sa.addSelection(MyDatabase.Msg.MSG_ID + " = ?",

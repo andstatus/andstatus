@@ -26,7 +26,7 @@ import android.widget.ListView;
 import org.andstatus.app.TimelineActivity.TimelineTitle;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.MyDatabase;
-import org.andstatus.app.data.TimelineTypeEnum;
+import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.util.MyLog;
 
 import java.util.Date;
@@ -61,7 +61,7 @@ class TimelineListPositionStorage {
         this.mListParameters = listParameters;
         
         queryString = listParameters.mSearchQuery; 
-        if (listParameters.mTimelineType == TimelineTypeEnum.USER) {
+        if (listParameters.mTimelineType == TimelineType.USER) {
             mUserId = listParameters.mSelectedUserId;
         } else if (!listParameters.mTimelineCombined) {
             mUserId = listParameters.myAccountUserId;

@@ -2,7 +2,7 @@ package org.andstatus.app.service;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.data.TimelineTypeEnum;
+import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.MyLog;
 
@@ -32,7 +32,7 @@ class CommandExecutorAllOrigins extends CommandExecutorStrategy {
                     }
                     break;
                 case FETCH_TIMELINE:
-                    if (execContext.getCommandData().getTimelineType() == TimelineTypeEnum.PUBLIC &&
+                    if (execContext.getCommandData().getTimelineType() == TimelineType.PUBLIC &&
                             !origin.isInCombinedPublicReload()) {
                         MyLog.v(this, "Origin '" + origin.getName() + "' skipped from pulic timeline reload");
                         continue;

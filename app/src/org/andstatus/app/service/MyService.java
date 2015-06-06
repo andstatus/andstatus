@@ -24,7 +24,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.data.TimelineTypeEnum;
+import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.notification.CommandsQueueNotifier;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
@@ -793,7 +793,7 @@ public class MyService extends Service {
                 return;
             }
             addToMainQueue(new CommandData(CommandEnum.FETCH_TIMELINE,
-                    commandDataExecuted.getAccountName(), TimelineTypeEnum.HOME)
+                    commandDataExecuted.getAccountName(), TimelineType.HOME)
                     .setInForeground(commandDataExecuted.isInForeground()));
         }
         

@@ -27,11 +27,11 @@ import android.net.Uri;
 import android.os.Bundle;
 
 import org.andstatus.app.data.AccountUserIds;
+import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.TimelineSql;
-import org.andstatus.app.data.TimelineTypeEnum;
+import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.data.MyDatabase.User;
-import org.andstatus.app.data.ParsedUri;
 import org.andstatus.app.util.SelectionAndArgs;
 
 import java.util.Arrays;
@@ -48,14 +48,14 @@ public class TimelineListParameters {
      */
     static final int PAGE_SIZE = 100;
     
-    TimelineTypeEnum mTimelineType = TimelineTypeEnum.UNKNOWN;
+    TimelineType mTimelineType = TimelineType.UNKNOWN;
     /** Combined Timeline shows messages from all accounts */
     boolean mTimelineCombined = false;
     long myAccountUserId = 0;
     /**
-     * Selected User for the {@link TimelineTypeEnum#USER} timeline.
+     * Selected User for the {@link TimelineType#USER} timeline.
      * This is either User Id of current account OR user id of any other selected user.
-     * So it's never == 0 for the {@link TimelineTypeEnum#USER} timeline
+     * So it's never == 0 for the {@link TimelineType#USER} timeline
      */
     long mSelectedUserId = 0;
     /**
@@ -78,7 +78,7 @@ public class TimelineListParameters {
     // Execution state / data:
     volatile long startTime = 0;
     volatile boolean cancelled = false;
-    volatile TimelineTypeEnum timelineToReload = TimelineTypeEnum.UNKNOWN;
+    volatile TimelineType timelineToReload = TimelineType.UNKNOWN;
     
 
     public static TimelineListParameters clone(TimelineListParameters prev, Bundle args) {
@@ -110,7 +110,7 @@ public class TimelineListParameters {
     }
     
     private void prepareQueryForeground(boolean positionRestored) {
-        mContentUri = ParsedUri.getTimelineSearchUri(myAccountUserId, mTimelineType,
+        mContentUri = MatchedUri.getTimelineSearchUri(myAccountUserId, mTimelineType,
                 mTimelineCombined, mSearchQuery);
 
         if (mSa.nArgs == 0) {
@@ -190,7 +190,7 @@ public class TimelineListParameters {
     }
 
     public boolean isEmpty() {
-        return mTimelineType == TimelineTypeEnum.UNKNOWN;
+        return mTimelineType == TimelineType.UNKNOWN;
     }
     
     @Override
@@ -206,11 +206,11 @@ public class TimelineListParameters {
                 + cancelled + ", timelineToReload=" + timelineToReload + "]";
     }
 
-    public TimelineTypeEnum getTimelineType() {
+    public TimelineType getTimelineType() {
         return mTimelineType;
     }
 
-    public void setTimelineType(TimelineTypeEnum timelineType) {
+    public void setTimelineType(TimelineType timelineType) {
         mTimelineType = timelineType;
     }
     
@@ -238,9 +238,9 @@ public class TimelineListParameters {
     }
     
     boolean restoreState(SharedPreferences savedInstanceState) {
-        TimelineTypeEnum timelineTypeNew = TimelineTypeEnum.load(savedInstanceState
+        TimelineType timelineTypeNew = TimelineType.load(savedInstanceState
                 .getString(IntentExtra.EXTRA_TIMELINE_TYPE.key,""));
-        if (timelineTypeNew == TimelineTypeEnum.UNKNOWN) {
+        if (timelineTypeNew == TimelineType.UNKNOWN) {
             return false;
         }
         setTimelineType(timelineTypeNew);
@@ -257,9 +257,9 @@ public class TimelineListParameters {
     }
     
     void parseIntentData(Intent intentNew) {
-        setTimelineType(TimelineTypeEnum.load(intentNew
+        setTimelineType(TimelineType.load(intentNew
                 .getStringExtra(IntentExtra.EXTRA_TIMELINE_TYPE.key)));
-        if (getTimelineType() != TimelineTypeEnum.UNKNOWN) {
+        if (getTimelineType() != TimelineType.UNKNOWN) {
             setTimelineCombined(intentNew.getBooleanExtra(IntentExtra.EXTRA_TIMELINE_IS_COMBINED.key, isTimelineCombined()));
             mSearchQuery = notNullString(intentNew.getStringExtra(SearchManager.QUERY));
             mSelectedUserId = intentNew.getLongExtra(IntentExtra.EXTRA_SELECTEDUSERID.key, mSelectedUserId);

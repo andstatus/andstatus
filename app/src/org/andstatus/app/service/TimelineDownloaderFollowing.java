@@ -28,7 +28,7 @@ import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyDatabase.OidEnum;
 import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.data.TimelineTypeEnum;
+import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.social.MbTimelineItem;
 import org.andstatus.app.net.social.MbTimelineItem.ItemType;
@@ -132,7 +132,7 @@ class TimelineDownloaderFollowing extends TimelineDownloader {
     }
 
     private void downloadOneMessageBy(String userOid, LatestUserMessages lum) throws ConnectionException {
-        execContext.setTimelineType(TimelineTypeEnum.USER);
+        execContext.setTimelineType(TimelineType.USER);
         List<MbTimelineItem> messages = execContext.getMyAccount().getConnection().getTimeline(
                 execContext.getTimelineType().getConnectionApiRoutine(), TimelinePosition.getEmpty(), 1, userOid);
         DataInserter di = new DataInserter(execContext);

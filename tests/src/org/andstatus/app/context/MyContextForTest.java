@@ -24,7 +24,7 @@ import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextState;
 import org.andstatus.app.data.AssersionData;
 import org.andstatus.app.data.MyDatabase;
-import org.andstatus.app.data.TimelineTypeEnum;
+import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.origin.PersistentOrigins;
 import org.andstatus.app.service.ConnectionRequired;
@@ -44,7 +44,7 @@ public class MyContextForTest implements MyContext {
     private Set<AssersionData> dataSet = new CopyOnWriteArraySet<AssersionData>();
     private HttpConnection httpConnection;
     private ConnectionRequired mOnline = ConnectionRequired.ANY; 
-    private Map<TimelineTypeEnum, Notification> notifications = new ConcurrentHashMap<TimelineTypeEnum, Notification>();
+    private Map<TimelineType, Notification> notifications = new ConcurrentHashMap<TimelineType, Notification>();
 
     public MyContextForTest setContext(MyContext myContextIn) {
         myContext = myContextIn;
@@ -209,18 +209,18 @@ public class MyContextForTest implements MyContext {
     }
 
 	@Override
-	public void notify(TimelineTypeEnum id, Notification notification) {
+	public void notify(TimelineType id, Notification notification) {
 		myContext.notify(id, notification);
 		notifications.put(id, notification);
 	}
 
 	@Override
-	public void clearNotification(TimelineTypeEnum id) {
+	public void clearNotification(TimelineType id) {
 		myContext.clearNotification(id);
 		notifications.remove(id);
 	}
 	
-	public Map<TimelineTypeEnum, Notification> getNotifications() {
+	public Map<TimelineType, Notification> getNotifications() {
 		return notifications;
 	}
 }

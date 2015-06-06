@@ -21,7 +21,7 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.data.TimelineTypeEnum;
+import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
@@ -123,8 +123,8 @@ class MessageEditor {
         MyAccount accountForButton = accountforCreateMessageButton();
         item.setVisible(!isVisible()
                 && accountForButton.isValidAndVerified() 
-                && mMessageList.getTimelineType() != TimelineTypeEnum.DIRECT
-                && mMessageList.getTimelineType() != TimelineTypeEnum.MESSAGESTOACT);
+                && mMessageList.getTimelineType() != TimelineType.DIRECT
+                && mMessageList.getTimelineType() != TimelineType.MESSAGESTOACT);
     }
 
     private MyAccount accountforCreateMessageButton() {
@@ -326,7 +326,7 @@ class MessageEditor {
     
     private boolean showAccountName() {
         boolean show = mMessageList.isTimelineCombined() 
-                || mMessageList.getTimelineType() == TimelineTypeEnum.USER;
+                || mMessageList.getTimelineType() == TimelineType.USER;
         if (!show) {
             show = dataCurrent.getMyAccount().getUserId() != mMessageList.getCurrentMyAccountUserId();
         }

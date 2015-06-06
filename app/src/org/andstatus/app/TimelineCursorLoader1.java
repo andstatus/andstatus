@@ -31,7 +31,7 @@ import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.ProjectionMap;
-import org.andstatus.app.data.TimelineTypeEnum;
+import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.MyServiceEvent;
 import org.andstatus.app.service.MyServiceListener;
@@ -230,7 +230,7 @@ public class TimelineCursorLoader1 extends Loader<Cursor> implements MyServiceLi
         private void markStart() {
             getParams().startTime = System.nanoTime();
             getParams().cancelled = false;
-            getParams().timelineToReload = TimelineTypeEnum.UNKNOWN;
+            getParams().timelineToReload = TimelineType.UNKNOWN;
             
             if (MyLog.isVerboseEnabled()) {
                 logV("markStart", (TextUtils.isEmpty(getParams().mSearchQuery) ? ""
@@ -296,7 +296,7 @@ public class TimelineCursorLoader1 extends Loader<Cursor> implements MyServiceLi
                     default:
                         if ( MyQuery.userIdToLongColumnValue(User.HOME_TIMELINE_DATE, getParams().myAccountUserId) == 0) {
                             // This is supposed to be a one time task.
-                            getParams().timelineToReload = TimelineTypeEnum.ALL;
+                            getParams().timelineToReload = TimelineType.ALL;
                         } 
                         break;
                 }

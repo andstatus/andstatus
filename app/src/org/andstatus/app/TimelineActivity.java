@@ -57,14 +57,14 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MySettingsActivity;
 import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.TimelineSearchSuggestionsProvider;
 import org.andstatus.app.data.TimelineSql;
-import org.andstatus.app.data.TimelineTypeEnum;
+import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.data.TimelineViewBinder;
-import org.andstatus.app.data.ParsedUri;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceEvent;
@@ -247,17 +247,14 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         return new MatrixCursor(TimelineSql.getTimelineProjection());
     }
 
-    private boolean restoreActivityState() {
+    private void restoreActivityState() {
         SharedPreferences activityState = MyPreferences.getSharedPreferences(ACTIVITY_PERSISTENCE_NAME);
-        boolean stateRestored = false;
         if (activityState != null) {
-            stateRestored = mListParametersNew.restoreState(activityState);
-            if (stateRestored) {
+            if (mListParametersNew.restoreState(activityState)) {
                 mMessageEditor.loadState(activityState);
                 mContextMenu.loadState(activityState);
             }
         }
-        return stateRestored;
     }
 
     /**
@@ -309,7 +306,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         final String method = "onSearchRequested";
         Bundle appSearchData = new Bundle();
         appSearchData.putString(IntentExtra.EXTRA_TIMELINE_TYPE.key,
-                appGlobalSearch ? TimelineTypeEnum.EVERYTHING.save() : mListParametersNew.getTimelineType().save());
+                appGlobalSearch ? TimelineType.EVERYTHING.save() : mListParametersNew.getTimelineType().save());
         appSearchData.putBoolean(IntentExtra.EXTRA_TIMELINE_IS_COMBINED.key, mListParametersNew.isTimelineCombined());
         appSearchData.putLong(IntentExtra.EXTRA_SELECTEDUSERID.key, mListParametersNew.mSelectedUserId);
         appSearchData.putBoolean(IntentExtra.EXTRA_GLOBAL_SEARCH.key, appGlobalSearch);
@@ -450,8 +447,8 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
             public void onClick(DialogInterface dialog, int which) {
                 // The 'which' argument contains the index position of the
                 // selected item
-                TimelineTypeEnum type = selector.positionToType(which);
-                if (type != TimelineTypeEnum.UNKNOWN) {
+                TimelineType type = selector.positionToType(which);
+                if (type != TimelineType.UNKNOWN) {
                     mContextMenu.switchTimelineActivity(type,
                             mListParametersNew.isTimelineCombined(), mListParametersNew.myAccountUserId);
                 }
@@ -593,7 +590,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                             + "; linkedUserId=" + linkedUserId 
                             + " account=" + ma.getAccountName());
                 }
-                return ParsedUri.getTimelineMsgUri(ma.getUserId(), mListParametersNew.getTimelineType(), true, id);
+                return MatchedUri.getTimelineMsgUri(ma.getUserId(), mListParametersNew.getTimelineType(), true, id);
             }
 
             @Override
@@ -710,19 +707,19 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
 
     private void parseNewIntent(Intent intentNew) {
         mRateLimitText = "";
-        mListParametersNew.setTimelineType(TimelineTypeEnum.UNKNOWN);
+        mListParametersNew.setTimelineType(TimelineType.UNKNOWN);
         mListParametersNew.myAccountUserId = MyContextHolder.get().persistentAccounts().getCurrentAccountUserId();
         mListParametersNew.mSelectedUserId = 0;
         parseAppSearchData(intentNew);
-        if (mListParametersNew.getTimelineType() == TimelineTypeEnum.UNKNOWN) {
+        if (mListParametersNew.getTimelineType() == TimelineType.UNKNOWN) {
             mListParametersNew.parseIntentData(intentNew);
         }
-        if (mListParametersNew.getTimelineType() == TimelineTypeEnum.UNKNOWN) {
+        if (mListParametersNew.getTimelineType() == TimelineType.UNKNOWN) {
             /* Set default values */
-            mListParametersNew.setTimelineType(TimelineTypeEnum.HOME);
+            mListParametersNew.setTimelineType(TimelineType.HOME);
             mListParametersNew.mSearchQuery = "";
         }
-        if (mListParametersNew.getTimelineType() == TimelineTypeEnum.USER) {
+        if (mListParametersNew.getTimelineType() == TimelineType.USER) {
             if (mListParametersNew.mSelectedUserId == 0) {
                 mListParametersNew.mSelectedUserId = mListParametersNew.myAccountUserId;
             }
@@ -741,9 +738,9 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         Bundle appSearchData = intentNew.getBundleExtra(SearchManager.APP_DATA);
         if (appSearchData != null) {
             // We use other packaging of the same parameters in onSearchRequested
-            mListParametersNew.setTimelineType(TimelineTypeEnum.load(appSearchData
+            mListParametersNew.setTimelineType(TimelineType.load(appSearchData
                     .getString(IntentExtra.EXTRA_TIMELINE_TYPE.key)));
-            if (mListParametersNew.getTimelineType() != TimelineTypeEnum.UNKNOWN) {
+            if (mListParametersNew.getTimelineType() != TimelineType.UNKNOWN) {
                 mListParametersNew.setTimelineCombined(appSearchData.getBoolean(IntentExtra.EXTRA_TIMELINE_IS_COMBINED.key, mListParametersNew.isTimelineCombined()));
                 /* The query itself is still from the Intent */
                 mListParametersNew.mSearchQuery = TimelineListParameters.notNullString(intentNew.getStringExtra(SearchManager.QUERY));
@@ -841,7 +838,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     }
 
     private void updateTitle() {
-        new TimelineTitle(mListParameters.getTimelineType() != TimelineTypeEnum.UNKNOWN ?
+        new TimelineTitle(mListParameters.getTimelineType() != TimelineType.UNKNOWN ?
                 mListParameters : mListParametersNew
                 , mRateLimitText).updateTitle(this);
     }
@@ -860,7 +857,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
             if (!TextUtils.isEmpty(ta.mSearchQuery)) {
                 I18n.appendWithSpace(title, "'" + ta.mSearchQuery + "'");
             }
-            if (ta.getTimelineType() == TimelineTypeEnum.USER
+            if (ta.getTimelineType() == TimelineType.USER
                     && !(ta.isTimelineCombined()
                             && MyContextHolder.get().persistentAccounts()
                             .fromUserId(ta.getSelectedUserId()).isValid())) {
@@ -1037,7 +1034,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         clearNotifications();
     }
 
-    private void launchReloadIfNeeded(TimelineTypeEnum timelineToReload) {
+    private void launchReloadIfNeeded(TimelineType timelineToReload) {
         switch (timelineToReload) {
             case ALL:
                 manualReload(true, false);
@@ -1057,7 +1054,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
      */
     protected void manualReload(boolean allTimelineTypes, boolean manuallyLauched) {
         MyAccount ma = MyContextHolder.get().persistentAccounts().fromUserId(mListParametersNew.myAccountUserId);
-        TimelineTypeEnum timelineTypeForReload = TimelineTypeEnum.HOME;
+        TimelineType timelineTypeForReload = TimelineType.HOME;
         long userId = 0;
         switch (mListParametersNew.getTimelineType()) {
             case DIRECT:
@@ -1146,8 +1143,8 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         if (ma.isValid()) {
             MyLog.v(this, "Restarting the activity for the selected account " + ma.getAccountName());
             finish();
-            TimelineTypeEnum timelineTypeNew = mListParametersNew.getTimelineType();
-            if (mListParametersNew.getTimelineType() == TimelineTypeEnum.USER
+            TimelineType timelineTypeNew = mListParametersNew.getTimelineType();
+            if (mListParametersNew.getTimelineType() == TimelineType.USER
                     && !MyContextHolder.get().persistentAccounts()
                             .fromUserId(mListParametersNew.mSelectedUserId).isValid()) {
                 /*  "Other User's timeline" vs "My User's timeline" 
@@ -1155,7 +1152,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                  * so let's switch to the HOME
                  * TODO: Open "Other User's timeline" in a separate Activity?!
                  */
-                timelineTypeNew = TimelineTypeEnum.HOME;
+                timelineTypeNew = TimelineType.HOME;
             }
             MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
             mContextMenu.switchTimelineActivity(timelineTypeNew, mListParametersNew.isTimelineCombined(), ma.getUserId());
@@ -1363,7 +1360,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     }
 
     @Override
-    public TimelineTypeEnum getTimelineType() {
+    public TimelineType getTimelineType() {
         return mListParametersNew.getTimelineType();
     }
 

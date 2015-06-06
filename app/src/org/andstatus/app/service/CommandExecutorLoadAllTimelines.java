@@ -1,5 +1,5 @@
 /* 
- * Copyright (c) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (c) 2015 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,9 +18,7 @@ package org.andstatus.app.service;
 
 import org.andstatus.app.appwidget.AppWidgets;
 import org.andstatus.app.data.DataPruner;
-import org.andstatus.app.data.MyProvider;
-import org.andstatus.app.data.TimelineTypeEnum;
-import org.andstatus.app.data.ParsedUri;
+import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.notification.AddedMessagesNotifier;
 import org.andstatus.app.util.MyLog;
 
@@ -28,7 +26,7 @@ class CommandExecutorLoadAllTimelines extends CommandExecutorStrategy {
     
     @Override
     void execute() {
-        for (TimelineTypeEnum timelineType : getTimelines()) {
+        for (TimelineType timelineType : getTimelines()) {
             if (isStopping()) {
                 break;
             }
@@ -45,21 +43,19 @@ class CommandExecutorLoadAllTimelines extends CommandExecutorStrategy {
             
             AddedMessagesNotifier.newInstance(execContext.getMyContext()).update(
                     execContext.getResult());
-            
-            notifyViaContentResolver();
         }
     }
 
-    private TimelineTypeEnum[] getTimelines() {
-        TimelineTypeEnum[] timelineTypes;
-        if (execContext.getCommandData().getTimelineType() == TimelineTypeEnum.ALL
-                || execContext.getCommandData().getTimelineType() == TimelineTypeEnum.EVERYTHING) {
-            timelineTypes = new TimelineTypeEnum[] {
-                    TimelineTypeEnum.HOME, TimelineTypeEnum.MENTIONS,
-                    TimelineTypeEnum.DIRECT
+    private TimelineType[] getTimelines() {
+        TimelineType[] timelineTypes;
+        if (execContext.getCommandData().getTimelineType() == TimelineType.ALL
+                || execContext.getCommandData().getTimelineType() == TimelineType.EVERYTHING) {
+            timelineTypes = new TimelineType[] {
+                    TimelineType.HOME, TimelineType.MENTIONS,
+                    TimelineType.DIRECT
             };
         } else {
-            timelineTypes = new TimelineTypeEnum[] {
+            timelineTypes = new TimelineType[] {
                     execContext.getCommandData().getTimelineType()
             };
         }
@@ -70,10 +66,5 @@ class CommandExecutorLoadAllTimelines extends CommandExecutorStrategy {
         AppWidgets appWidgets = AppWidgets.newInstance(execContext.getMyContext());
         appWidgets.updateData(execContext.getResult());
         appWidgets.updateViews();
-    }
-
-    private void notifyViaContentResolver() {
-        // see http://stackoverflow.com/questions/6678046/when-contentresolver-notifychange-is-called-for-a-given-uri-are-contentobserv
-        execContext.getContext().getContentResolver().notifyChange(ParsedUri.TIMELINE_URI, null);
     }
 }

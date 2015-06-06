@@ -22,7 +22,7 @@ import android.content.Context;
 import org.andstatus.app.account.PersistentAccounts;
 import org.andstatus.app.data.AssersionData;
 import org.andstatus.app.data.MyDatabase;
-import org.andstatus.app.data.TimelineTypeEnum;
+import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.origin.PersistentOrigins;
 import org.andstatus.app.service.ConnectionRequired;
@@ -50,8 +50,8 @@ public interface MyContext {
     /** Is our application in Foreground now? **/
     boolean isInForeground();
     void setInForeground(boolean inForeground);
-    void notify(TimelineTypeEnum id, Notification notification);
-    void clearNotification(TimelineTypeEnum id);
+    void notify(TimelineType id, Notification notification);
+    void clearNotification(TimelineType id);
     
     // For testing
     boolean isTestRun();

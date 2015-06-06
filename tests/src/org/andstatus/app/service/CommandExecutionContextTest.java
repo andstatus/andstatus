@@ -5,7 +5,7 @@ import android.test.InstrumentationTestCase;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.data.TimelineTypeEnum;
+import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.util.TriState;
 
 public class CommandExecutionContextTest extends InstrumentationTestCase {
@@ -19,8 +19,8 @@ public class CommandExecutionContextTest extends InstrumentationTestCase {
     }
 
     public void testHomeAccumulation() {
-        CommandExecutionContext execContext = new CommandExecutionContext(CommandData.getEmpty(), ma).setTimelineType(TimelineTypeEnum.HOME);
-        assertEquals(execContext.getTimelineType(), TimelineTypeEnum.HOME);
+        CommandExecutionContext execContext = new CommandExecutionContext(CommandData.getEmpty(), ma).setTimelineType(TimelineType.HOME);
+        assertEquals(execContext.getTimelineType(), TimelineType.HOME);
         
         final int MESSAGES = 4;
         final int MENTIONS = 2;
@@ -36,7 +36,7 @@ public class CommandExecutionContextTest extends InstrumentationTestCase {
     }
 
     public void testDirectAccumulation() {
-        CommandExecutionContext execContext = new CommandExecutionContext(CommandData.getEmpty(), ma).setTimelineType(TimelineTypeEnum.DIRECT);
+        CommandExecutionContext execContext = new CommandExecutionContext(CommandData.getEmpty(), ma).setTimelineType(TimelineType.DIRECT);
         final int MESSAGES = 4;
         for (int ind=0; ind < MESSAGES; ind++) {
             execContext.getResult().incrementMessagesCount(execContext.getTimelineType());

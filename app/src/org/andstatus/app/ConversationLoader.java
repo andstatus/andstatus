@@ -23,9 +23,9 @@ import android.net.Uri;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DbUtils;
+import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.data.TimelineTypeEnum;
-import org.andstatus.app.data.ParsedUri;
+import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
@@ -135,7 +135,7 @@ public class ConversationLoader<T extends ConversationItem> {
     }
     
     private void loadMessageFromDatabase(ConversationItem oMsg) {
-        Uri uri = ParsedUri.getTimelineMsgUri(ma.getUserId(), TimelineTypeEnum.EVERYTHING, true, oMsg.getMsgId());
+        Uri uri = MatchedUri.getTimelineMsgUri(ma.getUserId(), TimelineType.EVERYTHING, true, oMsg.getMsgId());
         Cursor cursor = null;
         try {
             cursor = context.getContentResolver().query(uri, oMsg.getProjection(), null, null, null);

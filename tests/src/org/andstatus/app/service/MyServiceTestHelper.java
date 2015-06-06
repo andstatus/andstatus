@@ -6,7 +6,7 @@ import org.andstatus.app.account.MyAccountTest;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.data.TimelineTypeEnum;
+import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.net.http.HttpConnectionMock;
 import org.andstatus.app.util.MyLog;
 
@@ -48,7 +48,7 @@ public class MyServiceTestHelper implements MyServiceListener {
     }
 
     private void dropQueues() {
-        listentedToCommand = new CommandData(CommandEnum.DROP_QUEUES, "", TimelineTypeEnum.UNKNOWN, 0);
+        listentedToCommand = new CommandData(CommandEnum.DROP_QUEUES, "", TimelineType.UNKNOWN, 0);
         long endCount = executionEndCount;
         sendListenedToCommand();
         TestCase.assertTrue("Drop queues command ended executing", waitForCommandExecutionEnded(endCount));

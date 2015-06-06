@@ -6,7 +6,7 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.LatestTimelineItem;
-import org.andstatus.app.data.TimelineTypeEnum;
+import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.net.social.TimelinePosition;
 
 public class LatestTimelineItemTest extends InstrumentationTestCase {
@@ -26,11 +26,11 @@ public class LatestTimelineItemTest extends InstrumentationTestCase {
     }
 
     private void testTimelineForAccount(String accountName) {
-        oneTimelineType(TimelineTypeEnum.PUBLIC, accountName);
-        oneTimelineType(TimelineTypeEnum.HOME, accountName);
+        oneTimelineType(TimelineType.PUBLIC, accountName);
+        oneTimelineType(TimelineType.HOME, accountName);
     }
 
-    private void oneTimelineType(TimelineTypeEnum timelineType, String accountName) {
+    private void oneTimelineType(TimelineType timelineType, String accountName) {
         MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(accountName);
         assertTrue(ma.isValid());
         assertEquals("Account was found", ma.getAccountName(), accountName);

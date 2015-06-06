@@ -21,7 +21,7 @@ import android.content.Context;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.MessageForAccount;
-import org.andstatus.app.data.TimelineTypeEnum;
+import org.andstatus.app.data.TimelineType;
 
 /**
  * Helper class for the message context menu creation 
@@ -31,7 +31,7 @@ class MessageDataForContextMenu {
     private MessageForAccount msg;
     
     public MessageDataForContextMenu(Context context, long firstUserId, 
-            long secondUserIdPreferred, TimelineTypeEnum timelineType, long msgId, boolean forceFirstUser) {
+            long secondUserIdPreferred, TimelineType timelineType, long msgId, boolean forceFirstUser) {
         MyAccount ma = MyContextHolder.get().persistentAccounts()
                 .getAccountWhichMayBeLinkedToThisMessage(msgId, firstUserId,
                         secondUserIdPreferred);
@@ -42,7 +42,7 @@ class MessageDataForContextMenu {
         if ( !forceFirstUser 
                 && !msg.isTiedToThisAccount()
                 && ma.getUserId() != secondUserIdPreferred
-                && timelineType != TimelineTypeEnum.FOLLOWING_USER) {
+                && timelineType != TimelineType.FOLLOWING_USER) {
             MyAccount ma2 = MyContextHolder.get().persistentAccounts().fromUserId(secondUserIdPreferred);
             if (ma2.isValid() && ma.getOriginId() == ma2.getOriginId()) {
                 msg = new MessageForAccount(msgId, ma2);

@@ -18,7 +18,7 @@ package org.andstatus.app;
 
 import android.app.Activity;
 
-import org.andstatus.app.data.TimelineTypeEnum;
+import org.andstatus.app.data.TimelineType;
 
 /**
  * Activity should implement this interface in order to use {@link MessageContextMenu} 
@@ -31,6 +31,6 @@ public interface ActionableMessageList {
     long getLinkedUserIdFromCursor(int position);
     long getCurrentMyAccountUserId();
     long getSelectedUserId();
-    TimelineTypeEnum getTimelineType();
+    TimelineType getTimelineType();
     boolean isTimelineCombined();
 }

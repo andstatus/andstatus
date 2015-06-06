@@ -24,7 +24,7 @@ import android.content.Intent;
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.data.TimelineTypeEnum;
+import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.service.QueueViewer;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
@@ -45,7 +45,7 @@ public class CommandsQueueNotifier {
     public void update(int mainQueueSize, int retryQueueSize) {
         int count = mainQueueSize + retryQueueSize;
         if (count == 0 ) {
-            myContext.clearNotification(TimelineTypeEnum.ALL);
+            myContext.clearNotification(TimelineType.ALL);
         } else if (mNotificationsEnabled && MyPreferences.getDefaultSharedPreferences().getBoolean(MyPreferences.KEY_NOTIFY_OF_COMMANDS_IN_THE_QUEUE, false)) {
             if (mainQueueSize != 0) {
                 MyLog.d(this, mainQueueSize + " commands in Main Queue.");
@@ -91,6 +91,6 @@ public class CommandsQueueNotifier {
                         PendingIntent.FLAG_UPDATE_CURRENT
                         );
         builder.setContentIntent(pendingIntent);
-        myContext.notify(TimelineTypeEnum.ALL, builder.build());
+        myContext.notify(TimelineType.ALL, builder.build());
     }
 }

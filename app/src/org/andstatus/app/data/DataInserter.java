@@ -146,7 +146,7 @@ public class DataInserter {
             // Lookup the System's (AndStatus) id from the Originated system's id
             rowId = MyQuery.oidToId(OidEnum.MSG_OID, execContext.getMyAccount().getOriginId(), rowOid);
             // Construct the Uri to the Msg
-            Uri msgUri = ParsedUri.getTimelineMsgUri(execContext.getMyAccount().getUserId(), execContext.getTimelineType(), false, rowId);
+            Uri msgUri = MatchedUri.getMsgUri(execContext.getMyAccount().getUserId(), rowId);
 
             long sentDateStored = 0;
             if (rowId != 0) {
@@ -191,7 +191,7 @@ public class DataInserter {
                             + execContext.getMyAccount().getAccountName() );
                 }
             }
-            if (execContext.getTimelineType() == TimelineTypeEnum.HOME) {
+            if (execContext.getTimelineType() == TimelineType.HOME) {
                 values.put(MyDatabase.MsgOfUser.SUBSCRIBED, 1);
             }
             if (!TextUtils.isEmpty(message.via)) {
@@ -232,7 +232,7 @@ public class DataInserter {
             }
             if (rowId == 0) {
                 // There was no such row so add the new one
-                msgUri = execContext.getContext().getContentResolver().insert(ParsedUri.getTimelineUri(execContext.getMyAccount().getUserId(), execContext.getTimelineType(), false), values);
+                msgUri = execContext.getContext().getContentResolver().insert(MatchedUri.getMsgUri(execContext.getMyAccount().getUserId(), 0), values);
                 rowId = ParsedUri.fromUri(msgUri).getMessageId();
             } else {
                 execContext.getContext().getContentResolver().update(msgUri, values, null, null);
@@ -270,7 +270,7 @@ public class DataInserter {
     }
 
     private boolean isMentionedAndPutInReplyToMessage(MbMessage message, LatestUserMessages lum, ContentValues values) {
-        boolean mentioned = execContext.getTimelineType() == TimelineTypeEnum.MENTIONS;
+        boolean mentioned = execContext.getTimelineType() == TimelineType.MENTIONS;
         if (message.inReplyToMessage != null) {
             // If the Msg is a Reply to another message
             Long inReplyToMessageId = 0L;
@@ -393,7 +393,7 @@ public class DataInserter {
             }
             
             // Construct the Uri to the User
-            Uri userUri = ParsedUri.getUserUri(execContext.getMyAccount().getUserId(), userId);
+            Uri userUri = MatchedUri.getUserUri(execContext.getMyAccount().getUserId(), userId);
             if (userId == 0) {
                 // There was no such row so add new one
                 values.put(MyDatabase.User.USER_OID, userOid);
@@ -420,7 +420,6 @@ public class DataInserter {
         LatestUserMessages lum = new LatestUserMessages();
         long rowId = insertOrUpdateMsg(message, lum);
         lum.save();
-        execContext.getContext().getContentResolver().notifyChange(ParsedUri.TIMELINE_URI, null);
         return rowId;
     }
 }

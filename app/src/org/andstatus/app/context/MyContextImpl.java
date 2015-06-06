@@ -30,7 +30,7 @@ import org.andstatus.app.account.PersistentAccounts;
 import org.andstatus.app.data.AssersionData;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyDatabaseConverterController;
-import org.andstatus.app.data.TimelineTypeEnum;
+import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.net.http.TlsSniSocketFactory;
 import org.andstatus.app.origin.PersistentOrigins;
@@ -323,13 +323,13 @@ public final class MyContextImpl implements MyContext {
     }
 
 	@Override
-	public void notify(TimelineTypeEnum id, Notification notification) {
+	public void notify(TimelineType id, Notification notification) {
         NotificationManager nM = (NotificationManager) context().getSystemService(android.content.Context.NOTIFICATION_SERVICE);
         nM.notify(MyLog.APPTAG, id.ordinal(), notification);
 	}
 
 	@Override
-	public void clearNotification(TimelineTypeEnum id) {
+	public void clearNotification(TimelineType id) {
         NotificationManager nM = (NotificationManager) context().getSystemService(android.content.Context.NOTIFICATION_SERVICE);
         nM.cancel(MyLog.APPTAG, id.ordinal());
 	}

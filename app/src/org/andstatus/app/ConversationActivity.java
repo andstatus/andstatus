@@ -38,7 +38,7 @@ import org.andstatus.app.ConversationLoader.progressPublisher;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.data.TimelineTypeEnum;
+import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.data.ParsedUri;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.MyServiceEvent;
@@ -110,12 +110,11 @@ public class ConversationActivity extends Activity implements MyServiceListener,
         mMessageEditor.updateScreen();
     }
 
-    private boolean restoreActivityState() {
+    private void restoreActivityState() {
         SharedPreferences activityState = MyPreferences.getSharedPreferences(ACTIVITY_PERSISTENCE_NAME);
         if (activityState != null) {
             mMessageEditor.loadState(activityState);
         }
-        return mMessageEditor.isStateLoaded();
     }
     
     protected void showConversation() {
@@ -398,8 +397,8 @@ public class ConversationActivity extends Activity implements MyServiceListener,
     }
 
     @Override
-    public TimelineTypeEnum getTimelineType() {
-        return TimelineTypeEnum.MESSAGESTOACT;
+    public TimelineType getTimelineType() {
+        return TimelineType.MESSAGESTOACT;
     }
 
     @Override

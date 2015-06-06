@@ -5,7 +5,7 @@ import android.content.Context;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.data.TimelineTypeEnum;
+import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.util.MyLog;
 
 import java.util.LinkedList;
@@ -15,7 +15,7 @@ public class CommandExecutionContext {
     private LinkedList<CommandData> stackOfCommandDataOfExecSteps = new LinkedList<CommandData>();
 
     private MyAccount ma;
-    private TimelineTypeEnum timelineType;    
+    private TimelineType timelineType;    
     /**
      * The Timeline (if any) is of this User 
      */
@@ -52,10 +52,10 @@ public class CommandExecutionContext {
         return myContext.context();
     }
 
-    public TimelineTypeEnum getTimelineType() {
+    public TimelineType getTimelineType() {
         return timelineType;
     }
-    public CommandExecutionContext setTimelineType(TimelineTypeEnum timelineType) {
+    public CommandExecutionContext setTimelineType(TimelineType timelineType) {
         this.timelineType = timelineType;
         return this;
     }
@@ -93,7 +93,7 @@ public class CommandExecutionContext {
         return MyLog.formatKeyValue(
                 "CommandExecutionContext",
                 (ma == null ? "" : ma.toString() + ",")
-                + (TimelineTypeEnum.UNKNOWN.equals(timelineType) ? "" : timelineType
+                + (TimelineType.UNKNOWN.equals(timelineType) ? "" : timelineType
                         .toString() + ",")
                         + (timelineUserId == 0 ? "" : "userId:" + timelineUserId + ",")
                         + commandData.toString());
@@ -104,7 +104,7 @@ public class CommandExecutionContext {
         if (ma != null) {
             builder.append(ma.getAccountName() + ", ");
         }
-        if (!TimelineTypeEnum.UNKNOWN.equals(timelineType)) {
+        if (!TimelineType.UNKNOWN.equals(timelineType)) {
             builder.append(timelineType.toString() + ", ");
         }
         if (timelineUserId != 0) {

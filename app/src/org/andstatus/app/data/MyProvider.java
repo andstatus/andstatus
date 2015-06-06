@@ -1,6 +1,5 @@
 /* 
- * Copyright (C) 2012-2013 yvolk (Yuri Volkov), http://yurivolkov.com
- * Copyright (C) 2008 Torgny Bjers
+ * Copyright (C) 2012-2015 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -75,52 +74,62 @@ public class MyProvider extends ContentProvider {
     @Override
     public int delete(Uri uri, String selection, String[] selectionArgs) {
         SQLiteDatabase db = MyContextHolder.get().getDatabase().getWritableDatabase();
-        String sqlDesc = "";
         int count = 0;
         ParsedUri uriParser = ParsedUri.fromUri(uri);
         switch (uriParser.matched()) {
             case MSG:
-                db.beginTransaction();
-                try {
-                    // Delete all related records from MyDatabase.MsgOfUser for these messages
-                    String selectionG = " EXISTS ("
-                            + "SELECT * FROM " + Msg.TABLE_NAME + " WHERE ("
-                            + Msg.TABLE_NAME + "." + BaseColumns._ID + "=" + MsgOfUser.TABLE_NAME + "." + MyDatabase.MsgOfUser.MSG_ID
-                            + ") AND ("
-                            + selection
-                            + "))";
-                    String descSuffix = "; args=" + Arrays.toString(selectionArgs);
-                    sqlDesc = selectionG + descSuffix;
-                    count = db.delete(MsgOfUser.TABLE_NAME, selectionG, selectionArgs);
-                    // Now delete messages themselves
-                    sqlDesc = selection + descSuffix;
-                    count = db.delete(Msg.TABLE_NAME, selection, selectionArgs);
-                    db.setTransactionSuccessful();
-                } catch(Exception e) {
-                    MyLog.d(TAG, "; SQL='" + sqlDesc + "'", e);
-                } finally {
-                    db.endTransaction();
-                }
-                if (count > 0) {
-                    getContext().getContentResolver().notifyChange(ParsedUri.TIMELINE_URI, null);
-                }
+                count = deleteMessages(db, selection, selectionArgs);
                 break;
 
-            case USERS:
-                count = db.delete(User.TABLE_NAME, selection, selectionArgs);
+            case MSG_ITEM:
+                count = deleteMessages(db, BaseColumns._ID + "=" + uriParser.getMessageId(), null);
                 break;
-
+                
             case USER:
-                // TODO: Delete related records also... 
-                long userId = uriParser.getUserId();
-                count = db.delete(User.TABLE_NAME, BaseColumns._ID + "=" + userId
-                        + (!TextUtils.isEmpty(selection) ? " AND (" + selection + ')' : ""),
-                        selectionArgs);
+                count = deleteUsers(db, selection, selectionArgs);
+                break;
+
+            case USER_ITEM:
+                count = deleteUsers(db, BaseColumns._ID + "=" + uriParser.getUserId(), null);
                 break;
 
             default:
                 throw new IllegalArgumentException(uriParser.toString());
         }
+        return count;
+    }
+
+    private int deleteMessages(SQLiteDatabase db, String selection, String[] selectionArgs) {
+        int count = 0;
+        String sqlDesc = "";
+        db.beginTransaction();
+        try {
+            // Delete all related records from MyDatabase.MsgOfUser for these messages
+            String selectionG = " EXISTS ("
+                    + "SELECT * FROM " + Msg.TABLE_NAME + " WHERE ("
+                    + Msg.TABLE_NAME + "." + BaseColumns._ID + "=" + MsgOfUser.TABLE_NAME + "." + MyDatabase.MsgOfUser.MSG_ID
+                    + ") AND ("
+                    + selection
+                    + "))";
+            String descSuffix = "; args=" + Arrays.toString(selectionArgs);
+            sqlDesc = selectionG + descSuffix;
+            count = db.delete(MsgOfUser.TABLE_NAME, selectionG, selectionArgs);
+            // Now delete messages themselves
+            sqlDesc = selection + descSuffix;
+            count = db.delete(Msg.TABLE_NAME, selection, selectionArgs);
+            db.setTransactionSuccessful();
+        } catch(Exception e) {
+            MyLog.d(TAG, "; SQL='" + sqlDesc + "'", e);
+        } finally {
+            db.endTransaction();
+        }
+        return count;
+    }
+
+    private int deleteUsers(SQLiteDatabase db, String selection, String[] selectionArgs) {
+        int count;
+        // TODO: Delete related records also... 
+        count = db.delete(User.TABLE_NAME, selection, selectionArgs);
         return count;
     }
 
@@ -141,8 +150,6 @@ public class MyProvider extends ContentProvider {
         long rowId;
         Uri newUri = null;
         try {
-            // 2010-07-21 yvolk: "now" is calculated exactly like it is in other
-            // parts of the code
             Long now = System.currentTimeMillis();
             SQLiteDatabase db = MyContextHolder.get().getDatabase().getWritableDatabase();
 
@@ -156,7 +163,7 @@ public class MyProvider extends ContentProvider {
 
             ParsedUri uriParser = ParsedUri.fromUri(uri);
             switch (uriParser.matched()) {
-                case TIMELINE:
+                case MSG_ITEM:
                     accountUserId = uriParser.getAccountUserId();
                     
                     table = Msg.TABLE_NAME;
@@ -177,11 +184,11 @@ public class MyProvider extends ContentProvider {
                     msgOfUserValues = MsgOfUserValues.valueOf(accountUserId, values);
                     break;
                     
-                case ORIGIN:
+                case ORIGIN_ITEM:
                     table = Origin.TABLE_NAME;
                     break;
 
-                case USER:
+                case USER_ITEM:
                     table = User.TABLE_NAME;
                     values.put(User.INS_DATE, now);
                     accountUserId = uriParser.getAccountUserId();
@@ -208,15 +215,14 @@ public class MyProvider extends ContentProvider {
             }
 
             switch (uriParser.matched()) {
-                case TIMELINE:
-                    // The resulted Uri has several parameters...
-                    newUri = ParsedUri.getTimelineMsgUri(accountUserId, TimelineTypeEnum.HOME , true, rowId);
+                case MSG_ITEM:
+                    newUri = MatchedUri.getMsgUri(accountUserId, rowId);
                     break;
-                case USER:
-                    newUri = ParsedUri.getUserUri(accountUserId, rowId);
+                case ORIGIN_ITEM:
+                    newUri = MatchedUri.getOriginUri(rowId);
                     break;
-                case ORIGIN:
-                    newUri = ParsedUri.getOriginUri(rowId);
+                case USER_ITEM:
+                    newUri = MatchedUri.getUserUri(accountUserId, rowId);
                     break;
                 default:
                     break;
@@ -257,13 +263,6 @@ public class MyProvider extends ContentProvider {
                 qb.setProjectionMap(ProjectionMap.MSG);
                 break;
 
-            case MSG_COUNT:
-                sql = "SELECT count(*) FROM " + Msg.TABLE_NAME + " AS " + ProjectionMap.MSG_TABLE_ALIAS;
-                if (!TextUtils.isEmpty(selection)) {
-                    sql += " WHERE " + selection;
-                }
-                break;
-
             case TIMELINE_MSG_ID:
                 qb.setTables(TimelineSql.tablesForTimeline(uri, projection));
                 qb.setProjectionMap(ProjectionMap.MSG);
@@ -289,17 +288,25 @@ public class MyProvider extends ContentProvider {
                 }
                 break;
 
+            case MSG_COUNT:
+                sql = "SELECT count(*) FROM " + Msg.TABLE_NAME + " AS " + ProjectionMap.MSG_TABLE_ALIAS;
+                if (!TextUtils.isEmpty(selection)) {
+                    sql += " WHERE " + selection;
+                }
+                break;
+
             case MSG:
                 qb.setTables(Msg.TABLE_NAME + " AS " + ProjectionMap.MSG_TABLE_ALIAS);
                 qb.setProjectionMap(ProjectionMap.MSG);
                 break;
 
-            case USERS:
+            case USER:
+            case USERLIST:
                 qb.setTables(User.TABLE_NAME);
                 qb.setProjectionMap(ProjectionMap.USER);
                 break;
 
-            case USER:
+            case USER_ITEM:
                 qb.setTables(User.TABLE_NAME);
                 qb.setProjectionMap(ProjectionMap.USER);
                 qb.appendWhere(BaseColumns._ID + "=" + uriParser.getUserId());
@@ -315,6 +322,7 @@ public class MyProvider extends ContentProvider {
             switch (uriParser.matched()) {
                 case TIMELINE:
                 case TIMELINE_MSG_ID:
+                case TIMELINE_SEARCH:
                     orderBy = Msg.DEFAULT_SORT_ORDER;
                     break;
 
@@ -322,8 +330,9 @@ public class MyProvider extends ContentProvider {
                     orderBy = "";
                     break;
 
-                case USERS:
                 case USER:
+                case USERLIST:
+                case USER_ITEM:
                     orderBy = User.DEFAULT_SORT_ORDER;
                     break;
 
@@ -387,9 +396,6 @@ public class MyProvider extends ContentProvider {
 
     /**
      * Update objects (one or several records) in the database
-     * 
-     * @see android.content.ContentProvider#update(android.net.Uri,
-     *      android.content.ContentValues, java.lang.String, java.lang.String[])
      */
     @Override
     public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
@@ -402,7 +408,7 @@ public class MyProvider extends ContentProvider {
                 count = db.update(Msg.TABLE_NAME, values, selection, selectionArgs);
                 break;
 
-            case TIMELINE_MSG_ID:
+            case MSG_ITEM:
                 accountUserId = uriParser.getAccountUserId();
                 long rowId = uriParser.getMessageId();
                 MsgOfUserValues msgOfUserValues = MsgOfUserValues.valueOf(accountUserId, values);
@@ -415,10 +421,11 @@ public class MyProvider extends ContentProvider {
                 count += msgOfUserValues.update(db);
                 break;
 
-            case USERS:
+            case USER:
                 count = db.update(User.TABLE_NAME, values, selection, selectionArgs);
                 break;
-            case USER:
+
+            case USER_ITEM:
                 accountUserId = uriParser.getAccountUserId();
                 long selectedUserId = uriParser.getUserId();
                 FollowingUserValues followingUserValues = FollowingUserValues.valueOf(accountUserId, selectedUserId, values);

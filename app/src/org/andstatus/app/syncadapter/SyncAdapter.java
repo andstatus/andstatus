@@ -27,7 +27,7 @@ import android.os.Bundle;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.data.TimelineTypeEnum;
+import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyService;
@@ -96,7 +96,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements MyServic
         try {
             MyLog.v(this, method + "; Started, account:" + account.name);
             mCommandData = new CommandData(CommandEnum.AUTOMATIC_UPDATE, account.name,
-                    TimelineTypeEnum.ALL, 0);
+                    TimelineType.ALL, 0);
             intentReceiver.registerReceiver(mContext);	
             MyServiceManager.sendCommand(mCommandData);
             final long numIterations = 10;

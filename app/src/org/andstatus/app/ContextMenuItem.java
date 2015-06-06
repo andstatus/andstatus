@@ -31,10 +31,10 @@ import org.andstatus.app.account.AccountSelector;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.FileProvider;
+import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.data.TimelineTypeEnum;
-import org.andstatus.app.data.ParsedUri;
+import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
@@ -167,7 +167,7 @@ public enum ContextMenuItem {
                  * add new "MsgOfUser" entries hence duplicated messages in the combined timeline 
                  */
                 MyContextHolder.get().persistentAccounts().setCurrentAccount(editorData.ma);
-                menu.switchTimelineActivity(TimelineTypeEnum.USER, menu.messageList.isTimelineCombined(), editorData.recipientId);
+                menu.switchTimelineActivity(TimelineType.USER, menu.messageList.isTimelineCombined(), editorData.recipientId);
             }
             return true;
         }
@@ -185,7 +185,7 @@ public enum ContextMenuItem {
                  * add new "MsgOfUser" entries hence duplicated messages in the combined timeline 
                  */
                 MyContextHolder.get().persistentAccounts().setCurrentAccount(editorData.ma);
-                menu.switchTimelineActivity(TimelineTypeEnum.USER, menu.messageList.isTimelineCombined(), editorData.recipientId);
+                menu.switchTimelineActivity(TimelineType.USER, menu.messageList.isTimelineCombined(), editorData.recipientId);
             }
             return true;
         }
@@ -271,7 +271,7 @@ public enum ContextMenuItem {
     OPEN_CONVERSATION() {
         @Override
         boolean executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
-            Uri uri = ParsedUri.getTimelineMsgUri(editorData.ma.getUserId(), menu.messageList.getTimelineType(), true, menu.getMsgId());
+            Uri uri = MatchedUri.getTimelineMsgUri(editorData.ma.getUserId(), menu.messageList.getTimelineType(), true, menu.getMsgId());
             String action = menu.messageList.getActivity().getIntent().getAction();
             if (Intent.ACTION_PICK.equals(action) || Intent.ACTION_GET_CONTENT.equals(action)) {
                 if (MyLog.isLoggable(this, MyLog.DEBUG)) {

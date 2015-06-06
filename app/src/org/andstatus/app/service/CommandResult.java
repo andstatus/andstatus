@@ -23,7 +23,7 @@ import android.text.TextUtils;
 
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.data.TimelineTypeEnum;
+import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
 
@@ -269,7 +269,7 @@ public final class CommandResult implements Parcelable {
         this.remainingHits = remainingHits;
     }
 
-    public void incrementMessagesCount(TimelineTypeEnum timelineType) {
+    public void incrementMessagesCount(TimelineType timelineType) {
         switch (timelineType) {
             case HOME:
                 messagesAdded++;

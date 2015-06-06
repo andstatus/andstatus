@@ -28,7 +28,7 @@ import org.andstatus.app.R;
 import org.andstatus.app.TimelineActivity;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.data.TimelineTypeEnum;
+import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.service.CommandResult;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
@@ -50,12 +50,12 @@ public class AddedMessagesNotifier {
         if (!MyPreferences.getDefaultSharedPreferences().getBoolean(MyPreferences.KEY_NOTIFICATIONS_ENABLED, false)) {
             return;
         }
-        notifyForOneType(TimelineTypeEnum.HOME, result.getMessagesAdded());
-        notifyForOneType(TimelineTypeEnum.MENTIONS, result.getMentionsAdded());
-        notifyForOneType(TimelineTypeEnum.DIRECT, result.getDirectedAdded());
+        notifyForOneType(TimelineType.HOME, result.getMessagesAdded());
+        notifyForOneType(TimelineType.MENTIONS, result.getMentionsAdded());
+        notifyForOneType(TimelineType.DIRECT, result.getDirectedAdded());
     }
 
-    private void notifyForOneType(TimelineTypeEnum timelineType, int numMessages) {
+    private void notifyForOneType(TimelineType timelineType, int numMessages) {
         if (numMessages == 0 || !areNotificationsEnabled(timelineType)) {
             return;
         }
@@ -95,7 +95,7 @@ public class AddedMessagesNotifier {
         notify(timelineType, messageTitleResId, messageText);
     }
 
-    private boolean areNotificationsEnabled(TimelineTypeEnum timelineType) {
+    private boolean areNotificationsEnabled(TimelineType timelineType) {
         switch (timelineType) {
             case MENTIONS:
                 return MyPreferences.getDefaultSharedPreferences().getBoolean(MyPreferences.KEY_NOTIFY_OF_MENTIONS, false);
@@ -108,7 +108,7 @@ public class AddedMessagesNotifier {
         }
     }
 
-    private void notify(TimelineTypeEnum timelineType, int messageTitleResId,
+    private void notify(TimelineType timelineType, int messageTitleResId,
             String messageText) {
         String ringtone = MyPreferences.getDefaultSharedPreferences()
                 .getString(MyPreferences.KEY_RINGTONE_PREFERENCE, null);

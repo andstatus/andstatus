@@ -26,7 +26,7 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.data.TimelineTypeEnum;
+import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.data.MyDatabase.Msg;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
@@ -50,7 +50,7 @@ public class PublicTimelineActivityTest extends android.test.ActivityInstrumenta
         assertEquals(ma.getUserId(), MyContextHolder.get().persistentAccounts().getCurrentAccountUserId());
         
         final Intent intent = new Intent();
-        intent.putExtra(IntentExtra.EXTRA_TIMELINE_TYPE.key, TimelineTypeEnum.PUBLIC.save());
+        intent.putExtra(IntentExtra.EXTRA_TIMELINE_TYPE.key, TimelineType.PUBLIC.save());
         // In order to shorten opening of activity in a case of large database
         intent.putExtra(IntentExtra.EXTRA_TIMELINE_IS_COMBINED.key, false);
         setActivityIntent(intent);

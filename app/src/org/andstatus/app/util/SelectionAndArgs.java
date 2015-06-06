@@ -35,6 +35,10 @@ public final class SelectionAndArgs {
       selectionArgs = new String[] {};
       nArgs = 0;
   }
+
+  public int addSelection(String selection_in) {
+      return addSelection(selection_in, null);
+  }
   
   public int addSelection(String selectionAdd, String[] selectionArgsAdd) {
       int nArgsAdd = selectionArgsAdd == null ? 0 : selectionArgsAdd.length;
@@ -55,4 +59,5 @@ public final class SelectionAndArgs {
       }
       return nArgs;
   }
+
 }

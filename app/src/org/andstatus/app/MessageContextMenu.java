@@ -33,7 +33,7 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.MessageForAccount;
 import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.data.TimelineTypeEnum;
+import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.util.MyLog;
 
 /**
@@ -272,7 +272,7 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
         }
     }
 
-    void switchTimelineActivity(TimelineTypeEnum timelineType, boolean isTimelineCombined, long selectedUserId) {
+    void switchTimelineActivity(TimelineType timelineType, boolean isTimelineCombined, long selectedUserId) {
         Intent intent;
         if (MyLog.isVerboseEnabled()) {
             MyLog.v(this, "switchTimelineActivity; " + timelineType 

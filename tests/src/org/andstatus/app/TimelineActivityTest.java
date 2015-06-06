@@ -25,7 +25,7 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.ConversationInserter;
-import org.andstatus.app.data.TimelineTypeEnum;
+import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
@@ -53,7 +53,7 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
         MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
         
         Intent intent = new Intent();
-        intent.putExtra(IntentExtra.EXTRA_TIMELINE_TYPE.key, TimelineTypeEnum.HOME.save());
+        intent.putExtra(IntentExtra.EXTRA_TIMELINE_TYPE.key, TimelineType.HOME.save());
         // In order to shorten opening of activity in a case of a large database
         intent.putExtra(IntentExtra.EXTRA_TIMELINE_IS_COMBINED.key, false);
         setActivityIntent(intent);

@@ -36,7 +36,7 @@ import java.util.Date;
 public class LatestTimelineItem {
     private static final String TAG = LatestTimelineItem.class.getSimpleName();
 
-    private TimelineTypeEnum timelineType;
+    private TimelineType timelineType;
     /**
      * The timeline is of this User, for all timeline types.
      */
@@ -66,7 +66,7 @@ public class LatestTimelineItem {
      * Retrieve information about the last downloaded message from this timeline
      * @param userIdIn Should always be Id of the User of this timeline
      */
-    public LatestTimelineItem(TimelineTypeEnum timelineTypeIn, long userIdIn) {
+    public LatestTimelineItem(TimelineType timelineTypeIn, long userIdIn) {
         timelineType = timelineTypeIn;
         userId = userIdIn;
         if (userId == 0) {

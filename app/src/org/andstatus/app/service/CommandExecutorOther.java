@@ -19,17 +19,16 @@ package org.andstatus.app.service;
 
 import android.content.ContentValues;
 import android.net.Uri;
-import android.provider.BaseColumns;
 import android.text.TextUtils;
 
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.appwidget.AppWidgets;
 import org.andstatus.app.data.DataInserter;
+import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.data.TimelineTypeEnum;
+import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.data.MyDatabase.OidEnum;
-import org.andstatus.app.data.ParsedUri;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.social.MbMessage;
 import org.andstatus.app.net.social.MbRateLimitStatus;
@@ -203,7 +202,6 @@ class CommandExecutorOther extends CommandExecutorStrategy{
             }
             if (ok) {
                 new DataInserter(execContext).insertOrUpdateUser(user);
-                execContext.getContext().getContentResolver().notifyChange(ParsedUri.TIMELINE_URI, null);
             }
         }
         logOk(ok || !errorLogged);
@@ -238,10 +236,8 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         if (ok) {
             // And delete the status from the local storage
             try {
-                // TODO: Maybe we should use Timeline Uri...
                 execContext.getContext().getContentResolver()
-                        .delete(ParsedUri.MSG_CONTENT_URI, BaseColumns._ID + " = " + msgId, 
-                                null);
+                        .delete(MatchedUri.getMsgUri(0, msgId), null, null);
             } catch (Exception e) {
                 MyLog.e(this, "Error destroying status locally", e);
             }
@@ -275,7 +271,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 ContentValues values = new ContentValues();
                 values.put(MyDatabase.MsgOfUser.REBLOGGED, 0);
                 values.putNull(MyDatabase.MsgOfUser.REBLOG_OID);
-                Uri msgUri = ParsedUri.getTimelineMsgUri(execContext.getMyAccount().getUserId(), TimelineTypeEnum.HOME, false, msgId);
+                Uri msgUri = MatchedUri.getMsgUri(execContext.getMyAccount().getUserId(), msgId);
                 execContext.getContext().getContentResolver().update(msgUri, values, null, null);
             } catch (Exception e) {
                 MyLog.e(this, "Error destroying reblog locally", e);
@@ -353,8 +349,8 @@ class CommandExecutorOther extends CommandExecutorStrategy{
             // The message was sent successfully
             // New User's message should be put into the user's Home timeline.
             long msgId = new DataInserter(
-                    execContext.setTimelineType((recipientUserId == 0) ? TimelineTypeEnum.HOME
-                            : TimelineTypeEnum.DIRECT)).insertOrUpdateMsg(message);
+                    execContext.setTimelineType((recipientUserId == 0) ? TimelineType.HOME
+                            : TimelineType.DIRECT)).insertOrUpdateMsg(message);
             execContext.getResult().setItemId(msgId);
         }
     }
@@ -375,7 +371,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
             // The tweet was sent successfully
             // Reblog should be put into the user's Home timeline!
             new DataInserter(execContext.
-                    setTimelineType(TimelineTypeEnum.HOME)).insertOrUpdateMsg(result);
+                    setTimelineType(TimelineType.HOME)).insertOrUpdateMsg(result);
         }
     }
     

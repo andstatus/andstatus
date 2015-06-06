@@ -25,11 +25,11 @@ import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.net.social.Connection;
 
 /**
- * These values help set timeline filters closer to the database (in ContentProvider...)
+ * These values help set Timeline filters
  */
-public enum TimelineTypeEnum {
+public enum TimelineType {
     /**
-     * The Timeline type is unknown
+     * The type is unknown
      */
     UNKNOWN("unknown", R.string.timeline_title_unknown, 
             User.HOME_TIMELINE_POSITION, User.HOME_TIMELINE_ITEM_DATE, User.HOME_TIMELINE_DATE, Connection.ApiRoutineEnum.DUMMY),
@@ -98,28 +98,28 @@ public enum TimelineTypeEnum {
     /**
      * code of the enum that is used in messages
      */
-    private String code;
+    private final String code;
     /**
-     * The id of the string resource with the localized name of this Timeline to use in UI
+     * The id of the string resource with the localized name of this enum to use in UI
      */
-    private int titleResId;
+    private final int titleResId;
     /**
      * Position of the latest downloaded timeline item 
      * E.g. the "timeline item" is a "message" for Twitter and an "Activity" for Pump.Io.
      * Name of the column in the {@link User} table.  
      */
-    private String columnNameLatestTimelinePosition;
-    private String columnNameLatestTimelineItemDate;
+    private final String columnNameLatestTimelinePosition;
+    private final String columnNameLatestTimelineItemDate;
     /**
      * Date when this timeline was last time fetched (downloaded). 
      * Name of the column in the {@link User} table.
      */
-    private String columnNameTimelineDownloadedDate;
+    private final String columnNameTimelineDownloadedDate;
     /**
      * Api routine to download this timeline
      */
-    private Connection.ApiRoutineEnum connectionApiRoutine;
-    private boolean mAtOrigin;
+    private final Connection.ApiRoutineEnum connectionApiRoutine;
+    private final boolean mAtOrigin;
     
     public String columnNameLatestTimelinePosition() {
         return columnNameLatestTimelinePosition;
@@ -133,7 +133,7 @@ public enum TimelineTypeEnum {
         return columnNameTimelineDownloadedDate;
     }
 
-    private TimelineTypeEnum(String code, int resId, 
+    private TimelineType(String code, int resId, 
             String columnNameLatestTimelinePosition, String columnNameLatestTimelineItemDate, 
             String columnNameTimelineDownloadedDate, 
             Connection.ApiRoutineEnum connectionApiRoutine) {
@@ -143,7 +143,7 @@ public enum TimelineTypeEnum {
                 connectionApiRoutine, false);
     }
     
-    private TimelineTypeEnum(String code, int resId, 
+    private TimelineType(String code, int resId, 
             String columnNameLatestTimelinePosition, String columnNameLatestTimelineItemDate, 
             String columnNameTimelineDownloadedDate, 
             Connection.ApiRoutineEnum connectionApiRoutine,
@@ -199,8 +199,8 @@ public enum TimelineTypeEnum {
     /**
      * Returns the enum or UNKNOWN
      */
-    public static TimelineTypeEnum load(String strCode) {
-        for (TimelineTypeEnum tt : TimelineTypeEnum.values()) {
+    public static TimelineType load(String strCode) {
+        for (TimelineType tt : TimelineType.values()) {
             if (tt.code.equals(strCode)) {
                 return tt;
             }

@@ -3,7 +3,7 @@ package org.andstatus.app.notification;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.data.TimelineTypeEnum;
+import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.service.CommandResult;
 
 import android.test.InstrumentationTestCase;
@@ -21,23 +21,23 @@ public class AddedMessagesNotifierTest extends InstrumentationTestCase {
 
     public void testCreateNotification() {
     	CommandResult result = new CommandResult();
-    	result.incrementMessagesCount(TimelineTypeEnum.DIRECT);
+    	result.incrementMessagesCount(TimelineType.DIRECT);
     	TestSuite.getMyContextForTest().getNotifications().clear();
         AddedMessagesNotifier.newInstance(MyContextHolder.get()).update(result);
-        assertNull(TestSuite.getMyContextForTest().getNotifications().get(TimelineTypeEnum.HOME));
-        assertNull(TestSuite.getMyContextForTest().getNotifications().get(TimelineTypeEnum.MENTIONS));
-        assertNotNull(TestSuite.getMyContextForTest().getNotifications().get(TimelineTypeEnum.DIRECT));
+        assertNull(TestSuite.getMyContextForTest().getNotifications().get(TimelineType.HOME));
+        assertNull(TestSuite.getMyContextForTest().getNotifications().get(TimelineType.MENTIONS));
+        assertNotNull(TestSuite.getMyContextForTest().getNotifications().get(TimelineType.DIRECT));
 
     	result.incrementMentionsCount();
         AddedMessagesNotifier.newInstance(MyContextHolder.get()).update(result);
-        assertNull(TestSuite.getMyContextForTest().getNotifications().get(TimelineTypeEnum.HOME));
-        assertNotNull(TestSuite.getMyContextForTest().getNotifications().get(TimelineTypeEnum.MENTIONS));
-        assertNotNull(TestSuite.getMyContextForTest().getNotifications().get(TimelineTypeEnum.DIRECT));
+        assertNull(TestSuite.getMyContextForTest().getNotifications().get(TimelineType.HOME));
+        assertNotNull(TestSuite.getMyContextForTest().getNotifications().get(TimelineType.MENTIONS));
+        assertNotNull(TestSuite.getMyContextForTest().getNotifications().get(TimelineType.DIRECT));
 
-    	result.incrementMessagesCount(TimelineTypeEnum.HOME);
+    	result.incrementMessagesCount(TimelineType.HOME);
         AddedMessagesNotifier.newInstance(MyContextHolder.get()).update(result);
-        assertNotNull(TestSuite.getMyContextForTest().getNotifications().get(TimelineTypeEnum.HOME));
-        assertNotNull(TestSuite.getMyContextForTest().getNotifications().get(TimelineTypeEnum.MENTIONS));
-        assertNotNull(TestSuite.getMyContextForTest().getNotifications().get(TimelineTypeEnum.DIRECT));
+        assertNotNull(TestSuite.getMyContextForTest().getNotifications().get(TimelineType.HOME));
+        assertNotNull(TestSuite.getMyContextForTest().getNotifications().get(TimelineType.MENTIONS));
+        assertNotNull(TestSuite.getMyContextForTest().getNotifications().get(TimelineType.DIRECT));
     }
 }

@@ -109,9 +109,9 @@ public class MessageInserter extends InstrumentationTestCase {
     }
     
     public long addMessage(MbMessage message) {
-        TimelineTypeEnum tt = TimelineTypeEnum.HOME;
+        TimelineType tt = TimelineType.HOME;
         if (message.isPublic() ) {
-            tt = TimelineTypeEnum.PUBLIC;
+            tt = TimelineType.PUBLIC;
         }
         DataInserter di = new DataInserter(new CommandExecutionContext(CommandData.getEmpty(), ma).setTimelineType(tt));
         long messageId = di.insertOrUpdateMsg(message);
@@ -143,12 +143,7 @@ public class MessageInserter extends InstrumentationTestCase {
     public static void deleteOldMessage(long originId, String messageOid) {
         long messageIdOld = MyQuery.oidToId(OidEnum.MSG_OID, originId, messageOid);
         if (messageIdOld != 0) {
-            SelectionAndArgs sa = new SelectionAndArgs();
-            sa.addSelection(MyDatabase.Msg._ID + " = ?", new String[] {
-                String.valueOf(messageIdOld)
-            });
-            int deleted = TestSuite.getMyContextForTest().context().getContentResolver().delete(ParsedUri.MSG_CONTENT_URI, sa.selection,
-                    sa.selectionArgs);
+            int deleted = TestSuite.getMyContextForTest().context().getContentResolver().delete(MatchedUri.getMsgUri(0, messageIdOld),  null, null);
             assertEquals( "Old message id=" + messageIdOld + " deleted", 1, deleted);
         }
     }

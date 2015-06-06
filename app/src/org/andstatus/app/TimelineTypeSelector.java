@@ -2,18 +2,18 @@ package org.andstatus.app;
 
 import android.content.Context;
 
-import org.andstatus.app.data.TimelineTypeEnum;
+import org.andstatus.app.data.TimelineType;
 
 public class TimelineTypeSelector {
-    private static TimelineTypeEnum[] timelineTypes = {
-            TimelineTypeEnum.HOME,
-            TimelineTypeEnum.FAVORITES,
-            TimelineTypeEnum.MENTIONS,
-            TimelineTypeEnum.DIRECT,
-            TimelineTypeEnum.USER,
-            TimelineTypeEnum.FOLLOWING_USER,
-            TimelineTypeEnum.PUBLIC,
-            TimelineTypeEnum.EVERYTHING
+    private static TimelineType[] timelineTypes = {
+            TimelineType.HOME,
+            TimelineType.FAVORITES,
+            TimelineType.MENTIONS,
+            TimelineType.DIRECT,
+            TimelineType.USER,
+            TimelineType.FOLLOWING_USER,
+            TimelineType.PUBLIC,
+            TimelineType.EVERYTHING
     };
     
     private Context context;
@@ -31,17 +31,17 @@ public class TimelineTypeSelector {
         return titles;
     }
 
-    public TimelineTypeEnum positionToType(int position) {
-        TimelineTypeEnum type = TimelineTypeEnum.UNKNOWN;
+    public TimelineType positionToType(int position) {
+        TimelineType type = TimelineType.UNKNOWN;
         if (position >= 0 && position < timelineTypes.length) {
             type = timelineTypes[position];
         }
         return type;
     }
 
-    public static TimelineTypeEnum selectableType(TimelineTypeEnum typeSelected) {
-        TimelineTypeEnum typeSelectable = TimelineTypeEnum.HOME;
-        for (TimelineTypeEnum type : timelineTypes) {
+    public static TimelineType selectableType(TimelineType typeSelected) {
+        TimelineType typeSelectable = TimelineType.HOME;
+        for (TimelineType type : timelineTypes) {
             if (type == typeSelected) {
                 typeSelectable = typeSelected;
                 break;
