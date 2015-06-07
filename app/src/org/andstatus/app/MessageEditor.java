@@ -122,7 +122,7 @@ class MessageEditor {
                 });
         MyAccount accountForButton = accountforCreateMessageButton();
         item.setVisible(!isVisible()
-                && accountForButton.isValidAndVerified() 
+                && accountForButton.isValidAndSucceeded() 
                 && mMessageList.getTimelineType() != TimelineType.DIRECT
                 && mMessageList.getTimelineType() != TimelineType.MESSAGESTOACT);
     }

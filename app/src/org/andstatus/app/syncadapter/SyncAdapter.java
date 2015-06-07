@@ -79,7 +79,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements MyServic
             syncResult.stats.numIoExceptions++;
             MyLog.d(this, method + "; The account was not loaded, account:" + account.name);
             return;      
-        } else if (!ma.isValidAndVerified()) {
+        } else if (!ma.isValidAndSucceeded()) {
             syncResult.stats.numAuthExceptions++;
             MyLog.d(this, method + "; Credentials failed, skipping; account:" + account.name);
             return;

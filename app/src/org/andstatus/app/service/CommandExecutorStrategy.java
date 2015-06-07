@@ -90,7 +90,7 @@ class CommandExecutorStrategy implements CommandExecutorParent {
                     } else {
                         strategy = new CommandExecutorAllAccounts();
                     }
-                } else if (execContext.getMyAccount().isValidAndVerified()) {
+                } else if (execContext.getMyAccount().isValidAndSucceeded()) {
                     switch (execContext.getCommandData().getCommand()) {
                         case AUTOMATIC_UPDATE:
                         case FETCH_TIMELINE:

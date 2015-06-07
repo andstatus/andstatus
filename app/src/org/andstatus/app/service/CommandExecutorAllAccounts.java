@@ -29,7 +29,7 @@ public class CommandExecutorAllAccounts extends CommandExecutorStrategy {
     @Override
     public void execute() {
         for (MyAccount ma : MyContextHolder.get().persistentAccounts().collection()) {
-            if ( !ma.isValidAndVerified()) {
+            if ( !ma.isValidAndSucceeded()) {
                 MyLog.v(this, "Account '" + ma.getAccountName() + "' skipped as no valid authenticated account");
                 continue;
             } 

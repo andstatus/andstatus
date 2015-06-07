@@ -16,7 +16,7 @@ class CommandExecutorAllOrigins extends CommandExecutorStrategy {
     public void execute() {
         for (Origin origin : MyContextHolder.get().persistentOrigins().collection()) {
             MyAccount ma = MyContextHolder.get().persistentAccounts().findFirstSucceededMyAccountByOriginId(origin.getId());
-            if (!ma.isValidAndVerified()) {
+            if (!ma.isValidAndSucceeded()) {
                 MyLog.v(this, "Origin '" + origin.getName() + "' skipped as no valid authenticated accounts");
                 continue;
             } 

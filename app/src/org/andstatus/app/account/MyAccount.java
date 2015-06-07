@@ -321,7 +321,7 @@ public final class MyAccount {
 
         private Account getNewOrExistingAndroidAccount() {
             Account androidAccount = myAccount.getExisingAndroidAccount();
-            if ((androidAccount == null) && myAccount.isValidAndVerified()) {
+            if ((androidAccount == null) && myAccount.isValidAndSucceeded()) {
                 try {
                     /**
                      * Now add this account to the Account Manager See {@link
@@ -379,7 +379,7 @@ public final class MyAccount {
          */
         public boolean verifyCredentials(boolean reVerify) throws ConnectionException {
             boolean ok = false;
-            if (!reVerify && myAccount.isValidAndVerified()) {
+            if (!reVerify && myAccount.isValidAndSucceeded()) {
                 ok = true;
             }
             if (!ok) {
@@ -649,7 +649,7 @@ public final class MyAccount {
         return credentialsVerified;
     }
  
-    public boolean isValidAndVerified() {
+    public boolean isValidAndSucceeded() {
         return isValid() && getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED;        
     }
     

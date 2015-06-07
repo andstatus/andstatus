@@ -31,19 +31,20 @@ class MessageDataForContextMenu {
     private MessageForAccount msg;
     
     public MessageDataForContextMenu(Context context, long firstUserId, 
-            long secondUserIdPreferred, TimelineType timelineType, long msgId, boolean forceFirstUser) {
+            long preferredUserId, TimelineType timelineType, long msgId, boolean forceFirstUser) {
         MyAccount ma = MyContextHolder.get().persistentAccounts()
-                .getAccountWhichMayBeLinkedToThisMessage(msgId, firstUserId,
-                        secondUserIdPreferred);
+                .getAccountForThisMessage(msgId, firstUserId,
+                        preferredUserId,
+                        false);
         msg = new MessageForAccount(msgId, ma);
         if (!ma.isValid()) {
             return;
         }
         if ( !forceFirstUser 
                 && !msg.isTiedToThisAccount()
-                && ma.getUserId() != secondUserIdPreferred
+                && ma.getUserId() != preferredUserId
                 && timelineType != TimelineType.FOLLOWING_USER) {
-            MyAccount ma2 = MyContextHolder.get().persistentAccounts().fromUserId(secondUserIdPreferred);
+            MyAccount ma2 = MyContextHolder.get().persistentAccounts().fromUserId(preferredUserId);
             if (ma2.isValid() && ma.getOriginId() == ma2.getOriginId()) {
                 msg = new MessageForAccount(msgId, ma2);
             }

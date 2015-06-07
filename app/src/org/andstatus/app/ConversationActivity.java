@@ -150,17 +150,19 @@ public class ConversationActivity extends Activity implements MyServiceEventsLis
             timeStarted = System.currentTimeMillis();
             publishProgress("...");
 
-            if (!ma.isValid()) {
+            if (!ma.isValidAndSucceeded()) {
                 ma = MyContextHolder
                         .get()
                         .persistentAccounts()
-                        .getAccountWhichMayBeLinkedToThisMessage(selectedMessageId, 0,
-                                ParsedUri.fromUri(getIntent().getData()).getAccountUserId());
+                        .getAccountForThisMessage(selectedMessageId, 
+                                ParsedUri.fromUri(getIntent().getData()).getAccountUserId(),
+                                0,
+                                true);
             }
             publishProgress("");
             ConversationLoader<T> loader = new ConversationLoader<T>(mTClass,
                     ConversationActivity.this, ma, selectedMessageId);
-            if (ma.isValid()) {
+            if (ma.isValidAndSucceeded()) {
                 loader.allowLoadingFromInternet();
                 loader.load(this);
             }

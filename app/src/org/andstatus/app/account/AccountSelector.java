@@ -97,7 +97,7 @@ public class AccountSelector extends ListActivity {
             String visibleName = ma.getAccountName();
             map.put(KEY_VISIBLE_NAME, visibleName);
             map.put(KEY_CREDENTIALS_VERIFIED,
-                    ma.isValidAndVerified() ? ""
+                    ma.isValidAndSucceeded() ? ""
                             : ma.getCredentialsVerified().name().substring(0, 1));
             map.put(KEY_SYNC_AUTO, ma.getSyncAutomatically() ? "" : getText(R.string.off).toString());
             map.put(BaseColumns._ID, Long.toString(ma.getUserId()));

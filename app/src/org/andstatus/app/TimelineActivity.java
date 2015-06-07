@@ -475,7 +475,7 @@ public class TimelineActivity extends ListActivity implements MyServiceEventsLis
     public boolean onPrepareOptionsMenu(Menu menu) {
         mOptionsMenu = menu;
         MyAccount ma = MyContextHolder.get().persistentAccounts().getCurrentAccount();
-        boolean enableReload = isTimelineCombined() || ma.isValidAndVerified();
+        boolean enableReload = isTimelineCombined() || ma.isValidAndSucceeded();
         MenuItem item = menu.findItem(R.id.reload_menu_item);
         item.setEnabled(enableReload);
         item.setVisible(enableReload);
@@ -582,8 +582,8 @@ public class TimelineActivity extends ListActivity implements MyServiceEventsLis
             @Override
             protected Uri doInBackground(Void... params) {
                 long linkedUserId = getLinkedUserIdFromCursor(position);
-                MyAccount ma = MyContextHolder.get().persistentAccounts().getAccountWhichMayBeLinkedToThisMessage(id, linkedUserId,
-                        mListParametersNew.myAccountUserId);
+                MyAccount ma = MyContextHolder.get().persistentAccounts().getAccountForThisMessage(id, linkedUserId,
+                        mListParametersNew.myAccountUserId, false);
                 if (MyLog.isVerboseEnabled()) {
                     MyLog.v(this,
                             "onItemClick, position=" + position + "; id=" + id + "; view=" + view
@@ -681,7 +681,7 @@ public class TimelineActivity extends ListActivity implements MyServiceEventsLis
     public static String buildAccountButtonText(long myAccountUserId) {
         MyAccount ma = MyContextHolder.get().persistentAccounts().fromUserId(myAccountUserId);
         String accountButtonText = ma.shortestUniqueAccountName();
-        if (!ma.isValidAndVerified()) {
+        if (!ma.isValidAndSucceeded()) {
             accountButtonText = "(" + accountButtonText + ")";
         }
         return accountButtonText;

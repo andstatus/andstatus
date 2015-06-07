@@ -85,7 +85,7 @@ abstract class FileDownloader {
             File file = fileTemp.getFile();
             MyAccount ma = findBestAccountForDownload();
             MyLog.v(this, "About to download " + data.toString() + "; account:" + ma.getAccountName());
-            if (ma.isValidAndVerified()) {
+            if (ma.isValidAndSucceeded()) {
                 ((connectionMock != null) ? connectionMock : ma.getConnection()).downloadFile(url, file);
             } else {
                 data.hardErrorLogged(method + ", No account to download the file", null);

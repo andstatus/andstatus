@@ -243,7 +243,7 @@ public class PersistentAccounts {
         MyAccount ma = null;
         for (MyAccount persistentAccount : mAccounts.values()) {
             if (originId==0 || persistentAccount.getOriginId() == originId) {
-                if (persistentAccount.isValidAndVerified()) {
+                if (persistentAccount.isValidAndSucceeded()) {
                     ma = persistentAccount;
                     break;
                 }
@@ -263,24 +263,46 @@ public class PersistentAccounts {
      * First try two supplied user IDs, then try any other existing account
      * @return Invalid account if nothing suitable found
      */
-    public MyAccount getAccountWhichMayBeLinkedToThisMessage(long messageId, long firstUserId, 
-            long secondUserIdPreferred)  {
-        final String method = "getAccountWhichMayBeLinkedToThisMessage";
+    public MyAccount getAccountForThisMessage(long messageId, long firstUserId, 
+            long preferredUserId, boolean succeededOnly)  {
+        final String method = "getAccountForThisMessage";
         long originId = MyQuery.msgIdToOriginId(messageId);
-        MyAccount ma = fromUserId(firstUserId);
-        if ((messageId == 0) || !ma.isValid() || (originId != ma.getOriginId())) {
-            ma = fromUserId(secondUserIdPreferred);
+        MyAccount ma = null;
+        if (originId != 0) {
+            ma = fromUserId(firstUserId);
         }
-        if (!ma.isValid() || (originId != 0 && originId != ma.getOriginId())) {
-           ma = findFirstSucceededMyAccountByOriginId(originId); 
+        if (!accountFits(ma, originId, succeededOnly)) {
+            ma = betterFit(ma, fromUserId(preferredUserId), originId, succeededOnly);
+        }
+        if (!accountFits(ma, originId, succeededOnly)) {
+            ma = betterFit(ma, findFirstSucceededMyAccountByOriginId(originId), originId, succeededOnly);
         }
         if (MyLog.isVerboseEnabled()) {
-            MyLog.v(this, method + "; msgId=" + messageId +"; userId=" + firstUserId 
+            MyLog.v(this, method + "; msgId=" + messageId 
+                    + "; userId1=" + firstUserId 
+                    + "; userId2=" + preferredUserId
+                    + (succeededOnly ? "; succeeded only" : "")
                     + " -> account=" + ma.getAccountName());
         }
         return ma;
     }
 
+    private boolean accountFits(MyAccount ma, long originId, boolean succeededOnly) {
+        return ma != null
+                && (succeededOnly ? ma.isValidAndSucceeded() : ma.isValid())
+                && (originId == 0 || ma.getOriginId() == originId);
+    }
+    
+    private MyAccount betterFit(MyAccount oldMa, MyAccount newMa, long originId, boolean succeededOnly) {
+        if (accountFits(oldMa, originId, succeededOnly) || !accountFits(newMa, originId, false)) {
+            return oldMa;
+        }
+        if ((oldMa == null || !oldMa.isValid()) && ( newMa != null && newMa.isValid())) {
+            return newMa;
+        }
+        return oldMa;
+    }
+    
     /**
      * Set provided MyAccount as Current one.
      * Current account selection is not persistent
