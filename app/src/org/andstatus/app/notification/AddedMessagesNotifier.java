@@ -28,6 +28,7 @@ import org.andstatus.app.R;
 import org.andstatus.app.TimelineActivity;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.service.CommandResult;
 import org.andstatus.app.util.I18n;
@@ -135,10 +136,12 @@ public class AddedMessagesNotifier {
         // Prepare "intent" to launch timeline activities exactly like in
         // org.andstatus.app.TimelineActivity.onOptionsItemSelected
         Intent intent = new Intent(myContext.context(), TimelineActivity.class);
-        intent.putExtra(IntentExtra.TIMELINE_TYPE.key, timelineType.save());
-        intent.putExtra(IntentExtra.TIMELINE_IS_COMBINED.key, myContext.persistentAccounts().size() > 1);
+        intent.setData(Uri.withAppendedPath(
+                MatchedUri.getTimelineUri(0, timelineType, myContext.persistentAccounts().size() > 1, 0),
+                "rnd/" + android.os.SystemClock.elapsedRealtime()
+                ));
         PendingIntent pendingIntent = PendingIntent.getActivity(myContext.context(), timelineType.hashCode(),
-                intent, 0);
+                intent, PendingIntent.FLAG_UPDATE_CURRENT);
         builder.setContentIntent(pendingIntent);
         myContext.notify(timelineType, builder.build());
     }

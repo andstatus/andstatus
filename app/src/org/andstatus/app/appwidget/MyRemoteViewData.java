@@ -149,26 +149,21 @@ class MyRemoteViewData {
                 timeLineType = TimelineType.MENTIONS;
             }
         }
-        intent.putExtra(IntentExtra.TIMELINE_TYPE.key,
-                timeLineType.save());
-
         // There are more than one account,
         // so turn Combined timeline on in order to show all the new messages.
         boolean isTimelineCombined = MyContextHolder.get().persistentAccounts().size() > 1;
-        if (isTimelineCombined) {
-            intent.putExtra(IntentExtra.TIMELINE_IS_COMBINED.key, true);
-        }
 
         // TODO: We don't mention exact MyAccount in the intent 
         // On the other hand the Widget is not Account aware yet also,
         //   so for now this is correct.
         long myAccountId = MyContextHolder.get().persistentAccounts().getCurrentAccountUserId();
         
-        // This line is necessary to actually bring Extra to the target intent
+        // "rnd" is necessary to actually bring Extra to the target intent
         // see http://stackoverflow.com/questions/1198558/how-to-send-parameters-from-a-notification-click-to-an-activity
         intent.setData(Uri.withAppendedPath(MatchedUri.getTimelineUri(
-                myAccountId, timeLineType, isTimelineCombined),
+                myAccountId, timeLineType, isTimelineCombined, 0),
                 "rnd/" + android.os.SystemClock.elapsedRealtime()));
-        return PendingIntent.getActivity(context, 0 /* no requestCode */, intent, 0 /* no flags */);
+        return PendingIntent.getActivity(context, timeLineType.hashCode(), intent, 
+                PendingIntent.FLAG_UPDATE_CURRENT);
     }
 }

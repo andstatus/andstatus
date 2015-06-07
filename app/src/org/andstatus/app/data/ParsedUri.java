@@ -27,7 +27,7 @@ public class ParsedUri {
     
     private ParsedUri(Uri uri) {
         this.uri = uri == null ? Uri.EMPTY : uri;
-        matchedUri = MatchedUri.fromUri(uri);
+        matchedUri = MatchedUri.fromUri(this.uri);
     }
     
     public static ParsedUri fromUri(Uri uri) {
@@ -66,9 +66,18 @@ public class ParsedUri {
     }
     
     public long getUserId() {
+        return getUserId(0);
+    }
+    
+    public long getUserId(long defaultValue) {
         long userId = 0;
         try {
             switch (matchedUri) {
+                case TIMELINE_SEARCH:
+                case TIMELINE_ITEM:
+                case TIMELINE:
+                    userId = Long.parseLong(uri.getPathSegments().get(7));
+                    break;
                 case USER_ITEM:
                     userId = Long.parseLong(uri.getPathSegments().get(3));
                     break;
@@ -78,7 +87,7 @@ public class ParsedUri {
         } catch (Exception e) {
             MyLog.e(this, toString(), e);
         }
-        return userId;        
+        return userId == 0 ? defaultValue : userId;        
     }
     
     public TimelineType getTimelineType() {
@@ -114,12 +123,16 @@ public class ParsedUri {
         }
         return tt;        
     }
+
+    public boolean isCombined() {
+        return isCombined(false);
+    }
     
     /**
      * @return Is the timeline/userlist combined. false for URIs that don't contain such information
      */
-    public boolean isCombined() {
-        boolean isCombined = false;
+    public boolean isCombined(boolean defaultValue) {
+        boolean isCombined = defaultValue;
         try {
             switch (getTimelineType()) {
             case USER:
@@ -148,7 +161,7 @@ public class ParsedUri {
         try {
             switch (matchedUri) {
                 case TIMELINE_ITEM:
-                    messageId = Long.parseLong(uri.getPathSegments().get(7));
+                    messageId = Long.parseLong(uri.getPathSegments().get(9));
                     break;
                 case MSG_ITEM:
                     messageId = Long.parseLong(uri.getPathSegments().get(3));
@@ -160,6 +173,25 @@ public class ParsedUri {
             MyLog.d(this, toString(), e);
         }
         return messageId;        
+    }
+
+    public String getSearchQuery() {
+        String searchString = "";
+        try {
+            switch (matchedUri) {
+                case TIMELINE_SEARCH:
+                    searchString = uri.getPathSegments().get(9);
+                    break;
+                default:
+                    break;
+            }
+        } catch (Exception e) {
+            MyLog.d(this, toString(), e);
+        }
+        if (searchString == null) {
+            searchString = "";
+        }
+        return searchString;        
     }
     
 }

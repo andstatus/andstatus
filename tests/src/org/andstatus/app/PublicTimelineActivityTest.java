@@ -25,6 +25,7 @@ import android.widget.TextView;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.data.MyDatabase.Msg;
@@ -49,16 +50,15 @@ public class PublicTimelineActivityTest extends android.test.ActivityInstrumenta
         
         assertEquals(ma.getUserId(), MyContextHolder.get().persistentAccounts().getCurrentAccountUserId());
         
-        final Intent intent = new Intent();
-        intent.putExtra(IntentExtra.TIMELINE_TYPE.key, TimelineType.PUBLIC.save());
-        // In order to shorten opening of activity in a case of large database
-        intent.putExtra(IntentExtra.TIMELINE_IS_COMBINED.key, false);
+        Intent intent = new Intent(Intent.ACTION_VIEW, 
+                MatchedUri.getTimelineUri(ma.getUserId(), TimelineType.PUBLIC, false, 0));
         setActivityIntent(intent);
         
         mActivity = getActivity();
         TestSuite.waitForListLoaded(this, mActivity, 2);
         
         assertEquals(ma.getUserId(), mActivity.getCurrentMyAccountUserId());
+        assertEquals(TimelineType.PUBLIC, mActivity.getTimelineType());
         
         assertTrue("MyService is available", MyServiceManager.isServiceAvailable());
         MyLog.i(this, "setUp ended");

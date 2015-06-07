@@ -31,6 +31,7 @@ import android.widget.TextView;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MessageForAccount;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.TimelineType;
@@ -282,9 +283,9 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
         
         // Actually we use one Activity for all timelines...
         intent = new Intent(getContext(), TimelineActivity.class);
-        intent.putExtra(IntentExtra.TIMELINE_TYPE.key, TimelineTypeSelector.selectableType(timelineType).save());
-        intent.putExtra(IntentExtra.TIMELINE_IS_COMBINED.key, isTimelineCombined);
-        intent.putExtra(IntentExtra.SELECTED_USERID.key, selectedUserId);
+        intent.setData(MatchedUri.getTimelineUri(MyContextHolder.get().persistentAccounts()
+                .getCurrentAccountUserId(), TimelineTypeSelector.selectableType(timelineType),
+                isTimelineCombined, selectedUserId));
         // We don't use Intent.ACTION_SEARCH action anywhere, so there is no need it setting it.
         // - we're analyzing query instead!
         messageList.getActivity().startActivity(intent);

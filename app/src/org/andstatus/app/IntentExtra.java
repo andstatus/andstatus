@@ -16,6 +16,8 @@
 
 package org.andstatus.app;
 
+import org.andstatus.app.data.ParsedUri;
+
 /**
  * Names of extras are used in the Intent-messaging 
  * (e.g. to notify Widget of new Messages)
@@ -73,6 +75,10 @@ public enum IntentExtra{
      * Number of new tweets. Value is integer
      */
     NUMTWEETS("NUMTWEETS"),
+
+    /** See {@link ParsedUri} */
+    TIMELINE_URI("TIMELINE_URI"),
+    
     /**
      * This extra is used to determine which timeline to show in
      * TimelineActivity Value is {@link MyDatabase.TimelineTypeEnum} 

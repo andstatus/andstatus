@@ -64,7 +64,7 @@ public class MessageForAccount {
 
     private void getData() {
         // Get the record for the currently selected item
-        Uri uri = MatchedUri.getTimelineItemUri(ma.getUserId(), TimelineType.MESSAGESTOACT, false, msgId);
+        Uri uri = MatchedUri.getTimelineItemUri(ma.getUserId(), TimelineType.MESSAGESTOACT, false, 0, msgId);
         Cursor cursor = null;
         try {
             cursor = MyContextHolder.get().context().getContentResolver().query(uri, new String[] {

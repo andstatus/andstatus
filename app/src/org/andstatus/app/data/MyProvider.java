@@ -272,8 +272,8 @@ public class MyProvider extends ContentProvider {
             case TIMELINE_SEARCH:
                 qb.setTables(TimelineSql.tablesForTimeline(uri, projection));
                 qb.setProjectionMap(ProjectionMap.MSG);
-                String s1 = uri.getLastPathSegment();
-                if (s1 != null) {
+                String searchQuery = uriParser.getSearchQuery();
+                if (!TextUtils.isEmpty(searchQuery)) {
                     if (!TextUtils.isEmpty(selection)) {
                         selection = " AND (" + selection + ")";
                     } else {
@@ -283,8 +283,8 @@ public class MyProvider extends ContentProvider {
                     selection = "(" + User.AUTHOR_NAME + " LIKE ?  OR " + Msg.BODY
                             + " LIKE ?)" + selection;
 
-                    selectionArgs = addBeforeArray(selectionArgs, "%" + s1 + "%");
-                    selectionArgs = addBeforeArray(selectionArgs, "%" + s1 + "%");
+                    selectionArgs = addBeforeArray(selectionArgs, "%" + searchQuery + "%");
+                    selectionArgs = addBeforeArray(selectionArgs, "%" + searchQuery + "%");
                 }
                 break;
 

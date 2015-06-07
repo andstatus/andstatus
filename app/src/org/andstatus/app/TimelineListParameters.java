@@ -25,10 +25,12 @@ import android.content.SharedPreferences.Editor;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.TextUtils;
 
 import org.andstatus.app.data.AccountUserIds;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyDatabase;
+import org.andstatus.app.data.ParsedUri;
 import org.andstatus.app.data.TimelineSql;
 import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.data.MyDatabase.User;
@@ -111,7 +113,7 @@ public class TimelineListParameters {
     
     private void prepareQueryForeground(boolean positionRestored) {
         mContentUri = MatchedUri.getTimelineSearchUri(myAccountUserId, mTimelineType,
-                mTimelineCombined, mSearchQuery);
+                mTimelineCombined, mSelectedUserId, mSearchQuery);
 
         if (mSa.nArgs == 0) {
             // In fact this is needed every time you want to load
@@ -231,39 +233,40 @@ public class TimelineListParameters {
     }
 
     public void saveState(Editor outState) {
-        outState.putString(IntentExtra.TIMELINE_TYPE.key, getTimelineType().save());
-        outState.putBoolean(IntentExtra.TIMELINE_IS_COMBINED.key, isTimelineCombined());
-        outState.putString(IntentExtra.SEARCH_QUERY.key, mSearchQuery);
-        outState.putLong(IntentExtra.SELECTED_USERID.key, mSelectedUserId);
+        outState.putString(IntentExtra.TIMELINE_URI.key, getTimelineUri(false).toString());
     }
     
     boolean restoreState(SharedPreferences savedInstanceState) {
-        TimelineType timelineTypeNew = TimelineType.load(savedInstanceState
-                .getString(IntentExtra.TIMELINE_TYPE.key,""));
-        if (timelineTypeNew == TimelineType.UNKNOWN) {
+        return parseUri(Uri.parse(savedInstanceState.getString(IntentExtra.TIMELINE_URI.key,"")));
+    }
+    
+    /** @return true if parsed successfully */
+    boolean parseIntentData(Intent intentNew) {
+        if (!parseUri(intentNew.getData())) {
             return false;
         }
-        setTimelineType(timelineTypeNew);
-        if (savedInstanceState.contains(IntentExtra.TIMELINE_IS_COMBINED.key)) {
-            setTimelineCombined(savedInstanceState.getBoolean(IntentExtra.TIMELINE_IS_COMBINED.key, false));
-        }
-        if (savedInstanceState.contains(IntentExtra.SEARCH_QUERY.key)) {
-            mSearchQuery = notNullString(savedInstanceState.getString(IntentExtra.SEARCH_QUERY.key, ""));
-        }
-        if (savedInstanceState.contains(IntentExtra.SELECTED_USERID.key)) {
-            mSelectedUserId = savedInstanceState.getLong(IntentExtra.SELECTED_USERID.key, 0);
+        if (TextUtils.isEmpty(mSearchQuery)) {
+            mSearchQuery = notNullString(intentNew.getStringExtra(SearchManager.QUERY));
         }
         return true;
     }
-    
-    void parseIntentData(Intent intentNew) {
-        setTimelineType(TimelineType.load(intentNew
-                .getStringExtra(IntentExtra.TIMELINE_TYPE.key)));
-        if (getTimelineType() != TimelineType.UNKNOWN) {
-            setTimelineCombined(intentNew.getBooleanExtra(IntentExtra.TIMELINE_IS_COMBINED.key, isTimelineCombined()));
-            mSearchQuery = notNullString(intentNew.getStringExtra(SearchManager.QUERY));
-            mSelectedUserId = intentNew.getLongExtra(IntentExtra.SELECTED_USERID.key, mSelectedUserId);
+
+    /** @return true if parsed successfully */
+    boolean parseUri(Uri uri) {
+        ParsedUri parsedUri = ParsedUri.fromUri(uri);
+        setTimelineType(parsedUri.getTimelineType());
+        if (getTimelineType() == TimelineType.UNKNOWN) {
+            return false;
         }
+        setTimelineCombined(parsedUri.isCombined());
+        mSelectedUserId = parsedUri.getUserId();
+        mSearchQuery = parsedUri.getSearchQuery();
+        return true;
+    }
+    
+    Uri getTimelineUri(boolean globalSearch) {
+        return MatchedUri.getTimelineSearchUri(myAccountUserId, globalSearch ? TimelineType.EVERYTHING
+                : getTimelineType(), isTimelineCombined(), getSelectedUserId(), mSearchQuery);
     }
     
     public static String notNullString(String string) {

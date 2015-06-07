@@ -177,7 +177,7 @@ public class CommandData implements Comparable<CommandData> {
     }
 
     /**
-     * @return Intent to be sent to this.AndStatusService
+     * @return Intent to be sent to MyService
      */
     public Intent toIntent(Intent intentIn) {
         Intent intent = intentIn;

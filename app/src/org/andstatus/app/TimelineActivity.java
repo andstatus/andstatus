@@ -202,11 +202,11 @@ public class TimelineActivity extends ListActivity implements MyServiceEventsLis
 
         initializeDrawer();
 
-        getLoaderManager().initLoader(LOADER_ID, null, this);
-
         if (savedInstanceState == null) {
             parseNewIntent(getIntent());
         }
+        getLoaderManager().initLoader(LOADER_ID, null, this);
+        
         updateScreen();
         queryListData(false);
     }
@@ -305,10 +305,8 @@ public class TimelineActivity extends ListActivity implements MyServiceEventsLis
     private boolean onSearchRequested(boolean appGlobalSearch) {
         final String method = "onSearchRequested";
         Bundle appSearchData = new Bundle();
-        appSearchData.putString(IntentExtra.TIMELINE_TYPE.key,
-                appGlobalSearch ? TimelineType.EVERYTHING.save() : mListParametersNew.getTimelineType().save());
-        appSearchData.putBoolean(IntentExtra.TIMELINE_IS_COMBINED.key, mListParametersNew.isTimelineCombined());
-        appSearchData.putLong(IntentExtra.SELECTED_USERID.key, mListParametersNew.mSelectedUserId);
+        appSearchData.putString(IntentExtra.TIMELINE_URI.key, 
+                mListParametersNew.getTimelineUri(appGlobalSearch).toString());
         appSearchData.putBoolean(IntentExtra.GLOBAL_SEARCH.key, appGlobalSearch);
         MyLog.v(this, method  + ": " + appSearchData);
         startSearch(null, false, appSearchData, false);
@@ -590,7 +588,10 @@ public class TimelineActivity extends ListActivity implements MyServiceEventsLis
                             + "; linkedUserId=" + linkedUserId 
                             + " account=" + ma.getAccountName());
                 }
-                return MatchedUri.getTimelineItemUri(ma.getUserId(), mListParametersNew.getTimelineType(), true, id);
+                return MatchedUri.getTimelineItemUri(ma.getUserId(),
+                        mListParametersNew.getTimelineType(),
+                        mListParametersNew.isTimelineCombined(),
+                        mListParametersNew.getSelectedUserId(), id);
             }
 
             @Override
@@ -706,6 +707,9 @@ public class TimelineActivity extends ListActivity implements MyServiceEventsLis
     }
 
     private void parseNewIntent(Intent intentNew) {
+        if (MyLog.isVerboseEnabled()) {
+            MyLog.v(this, "parseNewIntent:" + intentNew);
+        }
         mRateLimitText = "";
         mListParametersNew.setTimelineType(TimelineType.UNKNOWN);
         mListParametersNew.myAccountUserId = MyContextHolder.get().persistentAccounts().getCurrentAccountUserId();
@@ -736,27 +740,23 @@ public class TimelineActivity extends ListActivity implements MyServiceEventsLis
 
     private void parseAppSearchData(Intent intentNew) {
         Bundle appSearchData = intentNew.getBundleExtra(SearchManager.APP_DATA);
-        if (appSearchData != null) {
-            // We use other packaging of the same parameters in onSearchRequested
-            mListParametersNew.setTimelineType(TimelineType.load(appSearchData
-                    .getString(IntentExtra.TIMELINE_TYPE.key)));
-            if (mListParametersNew.getTimelineType() != TimelineType.UNKNOWN) {
-                mListParametersNew.setTimelineCombined(appSearchData.getBoolean(IntentExtra.TIMELINE_IS_COMBINED.key, mListParametersNew.isTimelineCombined()));
-                /* The query itself is still from the Intent */
-                mListParametersNew.mSearchQuery = TimelineListParameters.notNullString(intentNew.getStringExtra(SearchManager.QUERY));
-                mListParametersNew.mSelectedUserId = appSearchData.getLong(IntentExtra.SELECTED_USERID.key, mListParametersNew.mSelectedUserId);
-                if (!TextUtils.isEmpty(mListParametersNew.mSearchQuery)
-                        && appSearchData.getBoolean(IntentExtra.GLOBAL_SEARCH.key, false)) {
-                    setSyncing("Global search: " + mListParametersNew.mSearchQuery, true);
-                    MyServiceManager.sendForegroundCommand(
-                            CommandData.searchCommand(
-                                    isTimelineCombined()
-                                    ? ""
-                                            : MyContextHolder.get().persistentAccounts()
-                                            .getCurrentAccountName(),
-                                            mListParametersNew.mSearchQuery));
-                }
-            }
+        if (appSearchData == null
+                || !mListParametersNew.parseUri(Uri.parse(appSearchData.getString(
+                        IntentExtra.TIMELINE_URI.key, "")))) {
+            return;
+        }
+        /* The query itself is still from the Intent */
+        mListParametersNew.mSearchQuery = TimelineListParameters.notNullString(intentNew.getStringExtra(SearchManager.QUERY));
+        if (!TextUtils.isEmpty(mListParametersNew.mSearchQuery)
+                && appSearchData.getBoolean(IntentExtra.GLOBAL_SEARCH.key, false)) {
+            setSyncing("Global search: " + mListParametersNew.mSearchQuery, true);
+            MyServiceManager.sendForegroundCommand(
+                    CommandData.searchCommand(
+                            isTimelineCombined()
+                            ? ""
+                                    : MyContextHolder.get().persistentAccounts()
+                                    .getCurrentAccountName(),
+                                    mListParametersNew.mSearchQuery));
         }
     }
 

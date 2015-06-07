@@ -108,7 +108,7 @@ public class DataInserterTest extends InstrumentationTestCase {
 
         Uri contentUri = MatchedUri.getTimelineUri(
                 TestSuite.getConversationMyAccount().getUserId(), TimelineType.FOLLOWING_USER,
-                false);
+                false, 0);
         SelectionAndArgs sa = new SelectionAndArgs();
         String sortOrder = MyDatabase.Msg.DEFAULT_SORT_ORDER;
         sa.addSelection(MyDatabase.FollowingUser.FOLLOWING_USER_ID + " = ?",
@@ -159,7 +159,7 @@ public class DataInserterTest extends InstrumentationTestCase {
                 .addMessage(message);
 
         Uri contentUri = MatchedUri.getTimelineUri(
-                TestSuite.getConversationMyAccount().getUserId(), TimelineType.HOME, false);
+                TestSuite.getConversationMyAccount().getUserId(), TimelineType.HOME, false, 0);
         SelectionAndArgs sa = new SelectionAndArgs();
         String sortOrder = MyDatabase.Msg.DEFAULT_SORT_ORDER;
         sa.addSelection(MyDatabase.Msg.MSG_ID + " = ?",
@@ -211,7 +211,7 @@ public class DataInserterTest extends InstrumentationTestCase {
         assertTrue("Message added", messageId != 0);
 
         Uri contentUri = MatchedUri.getTimelineUri(
-                TestSuite.getConversationMyAccount().getUserId(), TimelineType.HOME, false);
+                TestSuite.getConversationMyAccount().getUserId(), TimelineType.HOME, false, 0);
         SelectionAndArgs sa = new SelectionAndArgs();
         String sortOrder = MyDatabase.Msg.DEFAULT_SORT_ORDER;
         sa.addSelection(MyDatabase.Msg.MSG_ID + " = ?",
@@ -250,7 +250,7 @@ public class DataInserterTest extends InstrumentationTestCase {
         assertTrue("Message added", messageId != 0);
 
         Uri contentUri = MatchedUri.getTimelineUri(
-                TestSuite.getConversationMyAccount().getUserId(), TimelineType.HOME, false);
+                TestSuite.getConversationMyAccount().getUserId(), TimelineType.HOME, false, 0);
         SelectionAndArgs sa = new SelectionAndArgs();
         String sortOrder = MyDatabase.Msg.DEFAULT_SORT_ORDER;
         sa.addSelection(MyDatabase.Msg.MSG_ID + " = ?",

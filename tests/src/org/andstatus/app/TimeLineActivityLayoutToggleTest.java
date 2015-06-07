@@ -22,6 +22,7 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
@@ -71,10 +72,8 @@ public class TimeLineActivityLayoutToggleTest extends android.test.ActivityInstr
         assertTrue(ma.isValid());
         MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
         
-        Intent intent = new Intent();
-        intent.putExtra(IntentExtra.TIMELINE_TYPE.key, TimelineType.HOME.save());
-        // In order to shorten opening of activity in a case of a large database
-        intent.putExtra(IntentExtra.TIMELINE_IS_COMBINED.key, false);
+        Intent intent = new Intent(Intent.ACTION_VIEW, 
+                MatchedUri.getTimelineUri(ma.getUserId(), TimelineType.HOME, false, 0));
         setActivityIntent(intent);
         
         activity = getActivity();
