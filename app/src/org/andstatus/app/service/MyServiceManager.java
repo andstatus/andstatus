@@ -17,6 +17,7 @@
 package org.andstatus.app.service;
 
 import org.andstatus.app.IntentExtra;
+import org.andstatus.app.MyAction;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
@@ -62,13 +63,13 @@ public class MyServiceManager extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();
-        if (action.equals(MyService.ACTION_SERVICE_STATE)) {
+        if (action.equals(MyAction.SERVICE_STATE.getAction())) {
             MyContextHolder.initialize(context, this);
             synchronized (mServiceState) {
                 stateQueuedTime = System.nanoTime();
                 waitingForServiceState = false;
                 mServiceState = MyServiceState.load(intent
-                        .getStringExtra(IntentExtra.EXTRA_SERVICE_STATE.key));
+                        .getStringExtra(IntentExtra.SERVICE_STATE.key));
             }
             MyLog.d(this, "Notification received: Service state=" + mServiceState);
         } else if ("android.intent.action.BOOT_COMPLETED".equals(action)) {
@@ -93,7 +94,7 @@ public class MyServiceManager extends BroadcastReceiver {
             // Imitate a soft service error
             commandData.getResult().incrementNumIoExceptions();
             commandData.getResult().setMessage("Service is not available");
-            MyServiceBroadcaster.newInstance(MyContextHolder.get(), MyServiceState.STOPPED)
+            MyServiceEventsBroadcaster.newInstance(MyContextHolder.get(), MyServiceState.STOPPED)
             .setCommandData(commandData).setEvent(MyServiceEvent.AFTER_EXECUTING_COMMAND).broadcast();
             return;
         }
@@ -109,7 +110,8 @@ public class MyServiceManager extends BroadcastReceiver {
     }
 
     static void sendCommandEvenForUnavailable(CommandData commandData) {
-        // Using explicit service intent, see http://stackoverflow.com/questions/18924640/starting-android-service-using-explicit-vs-implicit-intent
+        // Using explicit Service intent, 
+        // see http://stackoverflow.com/questions/18924640/starting-android-service-using-explicit-vs-implicit-intent
         Intent serviceIntent = new Intent(MyContextHolder.get().context(), MyService.class);
         if (commandData != null) {
             serviceIntent = commandData.toIntent(serviceIntent);
@@ -127,7 +129,8 @@ public class MyServiceManager extends BroadcastReceiver {
         // Don't do "context.stopService", because we may lose some information and (or) get Force Close
         // This is "mild" stopping
         CommandData element = new CommandData(CommandEnum.STOP_SERVICE, "");
-        MyContextHolder.get().context().sendBroadcast(element.toIntent(MyService.intentForThisInitialized()));
+        MyContextHolder.get().context()
+                .sendBroadcast(element.toIntent(MyAction.EXECUTE_COMMAND.getIntent()));
     }
 
     /**
@@ -148,7 +151,8 @@ public class MyServiceManager extends BroadcastReceiver {
                 stateQueuedTime = time;
                 mServiceState = MyServiceState.UNKNOWN;
                 CommandData element = new CommandData(CommandEnum.BROADCAST_SERVICE_STATE, "");
-                MyContextHolder.get().context().sendBroadcast(element.toIntent(MyService.intentForThisInitialized()));
+                MyContextHolder.get().context()
+                        .sendBroadcast(element.toIntent(MyAction.EXECUTE_COMMAND.getIntent()));
             }
         }
         return mServiceState;

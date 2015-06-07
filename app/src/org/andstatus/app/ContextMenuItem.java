@@ -271,7 +271,7 @@ public enum ContextMenuItem {
     OPEN_CONVERSATION() {
         @Override
         boolean executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
-            Uri uri = MatchedUri.getTimelineMsgUri(editorData.ma.getUserId(), menu.messageList.getTimelineType(), true, menu.getMsgId());
+            Uri uri = MatchedUri.getTimelineItemUri(editorData.ma.getUserId(), menu.messageList.getTimelineType(), true, menu.getMsgId());
             String action = menu.messageList.getActivity().getIntent().getAction();
             if (Intent.ACTION_PICK.equals(action) || Intent.ACTION_GET_CONTENT.equals(action)) {
                 if (MyLog.isLoggable(this, MyLog.DEBUG)) {
@@ -282,7 +282,7 @@ public enum ContextMenuItem {
                 if (MyLog.isLoggable(this, MyLog.DEBUG)) {
                     MyLog.d(this, "onItemClick, startActivity=" + uri);
                 }
-                menu.messageList.getActivity().startActivity(new Intent(Intent.ACTION_VIEW, uri));
+                menu.messageList.getActivity().startActivity(MyAction.VIEW_CONVERSATION.getIntent(uri));
             }
             return true;
         }

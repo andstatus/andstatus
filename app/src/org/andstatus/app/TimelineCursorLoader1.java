@@ -34,20 +34,20 @@ import org.andstatus.app.data.ProjectionMap;
 import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.MyServiceEvent;
-import org.andstatus.app.service.MyServiceListener;
-import org.andstatus.app.service.MyServiceReceiver;
+import org.andstatus.app.service.MyServiceEventsListener;
+import org.andstatus.app.service.MyServiceEventsReceiver;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
 
 /**
  * @author yvolk@yurivolkov.com
  */
-public class TimelineCursorLoader1 extends Loader<Cursor> implements MyServiceListener {
+public class TimelineCursorLoader1 extends Loader<Cursor> implements MyServiceEventsListener {
     private final TimelineListParameters mParams;
     private Cursor mCursor = null;
 
     private long instanceId = InstanceId.next();
-    private MyServiceReceiver serviceConnector;
+    private MyServiceEventsReceiver serviceConnector;
 
     private final Object asyncLoaderLock = new Object();
     @GuardedBy("asyncLoaderLock")
@@ -56,7 +56,7 @@ public class TimelineCursorLoader1 extends Loader<Cursor> implements MyServiceLi
     public TimelineCursorLoader1(TimelineListParameters params) {
         super(MyContextHolder.get().context());
         this.mParams = params;
-        serviceConnector = new MyServiceReceiver(this);
+        serviceConnector = new MyServiceEventsReceiver(this);
     }
 
     @Override

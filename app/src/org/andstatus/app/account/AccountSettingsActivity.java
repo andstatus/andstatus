@@ -183,7 +183,7 @@ public class AccountSettingsActivity extends Activity {
 
     private void onAccountSelected(int resultCode, Intent data) {
         if (resultCode == RESULT_OK) {
-            state.builder = MyAccount.Builder.newOrExistingFromAccountName(MyContextHolder.get(), data.getStringExtra(IntentExtra.EXTRA_ACCOUNT_NAME.key), TriState.UNKNOWN);
+            state.builder = MyAccount.Builder.newOrExistingFromAccountName(MyContextHolder.get(), data.getStringExtra(IntentExtra.ACCOUNT_NAME.key), TriState.UNKNOWN);
             if (!state.builder.isPersistent()) {
                 mIsFinishing = true;
             }
@@ -205,7 +205,7 @@ public class AccountSettingsActivity extends Activity {
         Origin origin = Origin.Builder.buildUnknown();
         if (resultCode == RESULT_OK) {
             origin = MyContextHolder.get().persistentOrigins()
-                    .fromName(data.getStringExtra(IntentExtra.EXTRA_ORIGIN_NAME.key));
+                    .fromName(data.getStringExtra(IntentExtra.ORIGIN_NAME.key));
             if (origin.isPersistent()
                     && state.getAccount().getOriginId() != origin.getId()) {
                 // If we have changed the System, we should recreate the Account

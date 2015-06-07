@@ -100,7 +100,7 @@ class StateOfAccountChangeProcess {
             }
             
             // Maybe we received MyAccount name as a parameter?!
-            String accountName = extras.getString(IntentExtra.EXTRA_ACCOUNT_NAME.key);
+            String accountName = extras.getString(IntentExtra.ACCOUNT_NAME.key);
             if (!TextUtils.isEmpty(accountName)) {
                 state.builder = MyAccount.Builder.newOrExistingFromAccountName(
                         MyContextHolder.get(),

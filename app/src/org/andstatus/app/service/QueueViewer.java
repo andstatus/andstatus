@@ -43,11 +43,11 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.PriorityBlockingQueue;
 
-public class QueueViewer extends ListActivity implements MyServiceListener {
+public class QueueViewer extends ListActivity implements MyServiceEventsListener {
     private static final String KEY_QUEUE_TYPE = "queue_type";
     private static final String KEY_COMMAND_SUMMARY = "command_summary";
     private static final String KEY_RESULT_SUMMARY = "result_summary";
-    MyServiceReceiver mServiceConnector;
+    MyServiceEventsReceiver mServiceConnector;
     private List<QueueData> mListData = null;
 
     private static class QueueData {
@@ -79,7 +79,7 @@ public class QueueViewer extends ListActivity implements MyServiceListener {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mServiceConnector = new MyServiceReceiver(this);
+        mServiceConnector = new MyServiceEventsReceiver(this);
         MyPreferences.setThemedContentView(this, R.layout.queue);
         showList();
         registerForContextMenu(getListView());

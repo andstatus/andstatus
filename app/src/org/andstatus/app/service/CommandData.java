@@ -90,7 +90,7 @@ public class CommandData implements Comparable<CommandData> {
                 TimelineType.PUBLIC);
         commandData.mInForeground = true;
         commandData.mManuallyLaunched = true;
-        commandData.bundle.putString(IntentExtra.EXTRA_SEARCH_QUERY.key, queryString);
+        commandData.bundle.putString(IntentExtra.SEARCH_QUERY.key, queryString);
         return commandData;
     }
 
@@ -99,15 +99,15 @@ public class CommandData implements Comparable<CommandData> {
         CommandData commandData = new CommandData(CommandEnum.UPDATE_STATUS, accountName);
         commandData.mInForeground = true;
         commandData.mManuallyLaunched = true;
-        commandData.bundle.putString(IntentExtra.EXTRA_MESSAGE_TEXT.key, status);
+        commandData.bundle.putString(IntentExtra.MESSAGE_TEXT.key, status);
         if (replyToId != 0) {
-            commandData.bundle.putLong(IntentExtra.EXTRA_INREPLYTOID.key, replyToId);
+            commandData.bundle.putLong(IntentExtra.INREPLYTOID.key, replyToId);
         }
         if (recipientId != 0) {
-            commandData.bundle.putLong(IntentExtra.EXTRA_RECIPIENTID.key, recipientId);
+            commandData.bundle.putLong(IntentExtra.RECIPIENTID.key, recipientId);
         }
         if (!UriUtils.isEmpty(mediaUri)) {
-            commandData.bundle.putString(IntentExtra.EXTRA_MEDIA_URI.key, mediaUri.toString());
+            commandData.bundle.putString(IntentExtra.MEDIA_URI.key, mediaUri.toString());
         }
         return commandData;
     }
@@ -137,7 +137,7 @@ public class CommandData implements Comparable<CommandData> {
             Bundle bundle = intent.getExtras();
             String strCommand = "";
             if (bundle != null) {
-                strCommand = bundle.getString(IntentExtra.EXTRA_MSGTYPE.key);
+                strCommand = bundle.getString(IntentExtra.COMMAND.key);
             }
             CommandEnum command = CommandEnum.load(strCommand);
             switch (command) {
@@ -150,26 +150,26 @@ public class CommandData implements Comparable<CommandData> {
                 default:
                     String accountName2 = accountNameIn;
                     if (TextUtils.isEmpty(accountName2)) {
-                        accountName2 = bundle.getString(IntentExtra.EXTRA_ACCOUNT_NAME.key);
+                        accountName2 = bundle.getString(IntentExtra.ACCOUNT_NAME.key);
                     }
                     TimelineType timelineType2 = timelineTypeIn;
                     if (timelineType2 == TimelineType.UNKNOWN) {
                         timelineType2 = TimelineType.load(
-                                bundle.getString(IntentExtra.EXTRA_TIMELINE_TYPE.key));
+                                bundle.getString(IntentExtra.TIMELINE_TYPE.key));
                     }
                     commandData = new CommandData(
-                            bundle.getLong(IntentExtra.EXTRA_COMMAND_ID.key, 0),
+                            bundle.getLong(IntentExtra.COMMAND_ID.key, 0),
                             command, accountName2, timelineType2,
-                            bundle.getLong(IntentExtra.EXTRA_ITEMID.key));
+                            bundle.getLong(IntentExtra.ITEMID.key));
                     commandData.bundle = bundle;
                     commandData.mInForeground = commandData.bundle
-                            .getBoolean(IntentExtra.EXTRA_IN_FOREGROUND.key);
+                            .getBoolean(IntentExtra.IN_FOREGROUND.key);
                     commandData.mManuallyLaunched = commandData.bundle
-                            .getBoolean(IntentExtra.EXTRA_MANUALLY_LAUNCHED.key);
+                            .getBoolean(IntentExtra.MANUALLY_LAUNCHED.key);
                     commandData.mIsStep = commandData.bundle
-                            .getBoolean(IntentExtra.EXTRA_IS_STEP.key);
+                            .getBoolean(IntentExtra.IS_STEP.key);
                     commandData.commandResult = commandData.bundle
-                            .getParcelable(IntentExtra.EXTRA_COMMAND_RESULT.key);
+                            .getParcelable(IntentExtra.COMMAND_RESULT.key);
                     break;
             }
         }
@@ -187,21 +187,21 @@ public class CommandData implements Comparable<CommandData> {
         if (bundle == null) {
             bundle = new Bundle();
         }
-        bundle.putLong(IntentExtra.EXTRA_COMMAND_ID.key, id);
-        bundle.putString(IntentExtra.EXTRA_MSGTYPE.key, command.save());
+        bundle.putLong(IntentExtra.COMMAND_ID.key, id);
+        bundle.putString(IntentExtra.COMMAND.key, command.save());
         if (!TextUtils.isEmpty(getAccountName())) {
-            bundle.putString(IntentExtra.EXTRA_ACCOUNT_NAME.key, getAccountName());
+            bundle.putString(IntentExtra.ACCOUNT_NAME.key, getAccountName());
         }
         if (timelineType != TimelineType.UNKNOWN) {
-            bundle.putString(IntentExtra.EXTRA_TIMELINE_TYPE.key, timelineType.save());
+            bundle.putString(IntentExtra.TIMELINE_TYPE.key, timelineType.save());
         }
         if (itemId != 0) {
-            bundle.putLong(IntentExtra.EXTRA_ITEMID.key, itemId);
+            bundle.putLong(IntentExtra.ITEMID.key, itemId);
         }
-        bundle.putBoolean(IntentExtra.EXTRA_IN_FOREGROUND.key, mInForeground);
-        bundle.putBoolean(IntentExtra.EXTRA_MANUALLY_LAUNCHED.key, mManuallyLaunched);
-        bundle.putBoolean(IntentExtra.EXTRA_IS_STEP.key, mIsStep);
-        bundle.putParcelable(IntentExtra.EXTRA_COMMAND_RESULT.key, commandResult);
+        bundle.putBoolean(IntentExtra.IN_FOREGROUND.key, mInForeground);
+        bundle.putBoolean(IntentExtra.MANUALLY_LAUNCHED.key, mManuallyLaunched);
+        bundle.putBoolean(IntentExtra.IS_STEP.key, mIsStep);
+        bundle.putParcelable(IntentExtra.COMMAND_RESULT.key, commandResult);
         intent.putExtras(bundle);
         return intent;
     }
@@ -248,31 +248,31 @@ public class CommandData implements Comparable<CommandData> {
         String si = Integer.toString(index);
 
         android.content.SharedPreferences.Editor ed = sp.edit();
-        ed.putLong(IntentExtra.EXTRA_COMMAND_ID.key + si, id);
-        ed.putString(IntentExtra.EXTRA_MSGTYPE.key + si, command.save());
-        ed.putString(IntentExtra.EXTRA_ACCOUNT_NAME.key + si, getAccountName());
-        ed.putString(IntentExtra.EXTRA_TIMELINE_TYPE.key + si, timelineType.save());
-        ed.putLong(IntentExtra.EXTRA_ITEMID.key + si, itemId);
-        ed.putBoolean(IntentExtra.EXTRA_IN_FOREGROUND.key + si, mInForeground);
-        ed.putBoolean(IntentExtra.EXTRA_MANUALLY_LAUNCHED.key + si, mManuallyLaunched);
-        ed.putBoolean(IntentExtra.EXTRA_IS_STEP.key + si, mIsStep);
+        ed.putLong(IntentExtra.COMMAND_ID.key + si, id);
+        ed.putString(IntentExtra.COMMAND.key + si, command.save());
+        ed.putString(IntentExtra.ACCOUNT_NAME.key + si, getAccountName());
+        ed.putString(IntentExtra.TIMELINE_TYPE.key + si, timelineType.save());
+        ed.putLong(IntentExtra.ITEMID.key + si, itemId);
+        ed.putBoolean(IntentExtra.IN_FOREGROUND.key + si, mInForeground);
+        ed.putBoolean(IntentExtra.MANUALLY_LAUNCHED.key + si, mManuallyLaunched);
+        ed.putBoolean(IntentExtra.IS_STEP.key + si, mIsStep);
         switch (command) {
             case FETCH_ATTACHMENT:
-                ed.putString(IntentExtra.EXTRA_MESSAGE_TEXT.key + si,
-                        bundle.getString(IntentExtra.EXTRA_MESSAGE_TEXT.key));
+                ed.putString(IntentExtra.MESSAGE_TEXT.key + si,
+                        bundle.getString(IntentExtra.MESSAGE_TEXT.key));
                 break;
             case UPDATE_STATUS:
-                ed.putString(IntentExtra.EXTRA_MESSAGE_TEXT.key + si,
-                        bundle.getString(IntentExtra.EXTRA_MESSAGE_TEXT.key));
-                ed.putLong(IntentExtra.EXTRA_INREPLYTOID.key + si,
-                        bundle.getLong(IntentExtra.EXTRA_INREPLYTOID.key));
-                ed.putLong(IntentExtra.EXTRA_RECIPIENTID.key + si,
-                        bundle.getLong(IntentExtra.EXTRA_RECIPIENTID.key));
-                ed.putString(IntentExtra.EXTRA_MEDIA_URI.key + si,
-                        bundle.getString(IntentExtra.EXTRA_MEDIA_URI.key));
+                ed.putString(IntentExtra.MESSAGE_TEXT.key + si,
+                        bundle.getString(IntentExtra.MESSAGE_TEXT.key));
+                ed.putLong(IntentExtra.INREPLYTOID.key + si,
+                        bundle.getLong(IntentExtra.INREPLYTOID.key));
+                ed.putLong(IntentExtra.RECIPIENTID.key + si,
+                        bundle.getLong(IntentExtra.RECIPIENTID.key));
+                ed.putString(IntentExtra.MEDIA_URI.key + si,
+                        bundle.getString(IntentExtra.MEDIA_URI.key));
                 break;
             case SEARCH_MESSAGE:
-                ed.putString(IntentExtra.EXTRA_SEARCH_QUERY.key + si, getSearchQuery());
+                ed.putString(IntentExtra.SEARCH_QUERY.key + si, getSearchQuery());
                 break;
             default:
                 break;
@@ -318,38 +318,38 @@ public class CommandData implements Comparable<CommandData> {
      */
     private static CommandData fromSharedPreferences(SharedPreferences sp, int index) {
         String si = Integer.toString(index);
-        CommandEnum command = CommandEnum.load(sp.getString(IntentExtra.EXTRA_MSGTYPE.key + si,
+        CommandEnum command = CommandEnum.load(sp.getString(IntentExtra.COMMAND.key + si,
                 CommandEnum.EMPTY.save()));
         if (CommandEnum.EMPTY.equals(command)) {
             return CommandData.getEmpty();
         }
         CommandData commandData = new CommandData(
-                sp.getLong(IntentExtra.EXTRA_COMMAND_ID.key + si, 0),
+                sp.getLong(IntentExtra.COMMAND_ID.key + si, 0),
                 command,
-                sp.getString(IntentExtra.EXTRA_ACCOUNT_NAME.key + si, ""),
-                TimelineType.load(sp.getString(IntentExtra.EXTRA_TIMELINE_TYPE.key + si, "")),
-                sp.getLong(IntentExtra.EXTRA_ITEMID.key + si, 0));
-        commandData.bundle.putBoolean(IntentExtra.EXTRA_IN_FOREGROUND.key,
-                sp.getBoolean(IntentExtra.EXTRA_IN_FOREGROUND.key + si, false));
+                sp.getString(IntentExtra.ACCOUNT_NAME.key + si, ""),
+                TimelineType.load(sp.getString(IntentExtra.TIMELINE_TYPE.key + si, "")),
+                sp.getLong(IntentExtra.ITEMID.key + si, 0));
+        commandData.bundle.putBoolean(IntentExtra.IN_FOREGROUND.key,
+                sp.getBoolean(IntentExtra.IN_FOREGROUND.key + si, false));
 
         switch (commandData.command) {
             case FETCH_ATTACHMENT:
-                commandData.bundle.putString(IntentExtra.EXTRA_MESSAGE_TEXT.key,
-                        sp.getString(IntentExtra.EXTRA_MESSAGE_TEXT.key + si, ""));
+                commandData.bundle.putString(IntentExtra.MESSAGE_TEXT.key,
+                        sp.getString(IntentExtra.MESSAGE_TEXT.key + si, ""));
                 break;
             case UPDATE_STATUS:
-                commandData.bundle.putString(IntentExtra.EXTRA_MESSAGE_TEXT.key,
-                        sp.getString(IntentExtra.EXTRA_MESSAGE_TEXT.key + si, ""));
-                commandData.bundle.putLong(IntentExtra.EXTRA_INREPLYTOID.key,
-                        sp.getLong(IntentExtra.EXTRA_INREPLYTOID.key + si, 0));
-                commandData.bundle.putLong(IntentExtra.EXTRA_RECIPIENTID.key,
-                        sp.getLong(IntentExtra.EXTRA_RECIPIENTID.key + si, 0));
-                commandData.bundle.putString(IntentExtra.EXTRA_MEDIA_URI.key,
-                        sp.getString(IntentExtra.EXTRA_MEDIA_URI.key + si, ""));
+                commandData.bundle.putString(IntentExtra.MESSAGE_TEXT.key,
+                        sp.getString(IntentExtra.MESSAGE_TEXT.key + si, ""));
+                commandData.bundle.putLong(IntentExtra.INREPLYTOID.key,
+                        sp.getLong(IntentExtra.INREPLYTOID.key + si, 0));
+                commandData.bundle.putLong(IntentExtra.RECIPIENTID.key,
+                        sp.getLong(IntentExtra.RECIPIENTID.key + si, 0));
+                commandData.bundle.putString(IntentExtra.MEDIA_URI.key,
+                        sp.getString(IntentExtra.MEDIA_URI.key + si, ""));
                 break;
             case SEARCH_MESSAGE:
-                commandData.bundle.putString(IntentExtra.EXTRA_SEARCH_QUERY.key,
-                        sp.getString(IntentExtra.EXTRA_SEARCH_QUERY.key + si, ""));
+                commandData.bundle.putString(IntentExtra.SEARCH_QUERY.key,
+                        sp.getString(IntentExtra.SEARCH_QUERY.key + si, ""));
                 break;
             default:
                 break;
@@ -363,7 +363,7 @@ public class CommandData implements Comparable<CommandData> {
                 downloadDataRowId);
         if (msgId != 0) {
             commandData.bundle.putString(
-                    IntentExtra.EXTRA_MESSAGE_TEXT.key,
+                    IntentExtra.MESSAGE_TEXT.key,
                     trimConditionally(
                             MyQuery.msgIdToStringColumnValue(MyDatabase.Msg.BODY, msgId), true)
                             .toString());
@@ -420,7 +420,7 @@ public class CommandData implements Comparable<CommandData> {
     }
 
     public Uri getMediaUri() {
-        String uriString = getExtraText(IntentExtra.EXTRA_MEDIA_URI);
+        String uriString = getExtraText(IntentExtra.MEDIA_URI);
         if (!TextUtils.isEmpty(uriString)) {
             return Uri.parse(uriString);
         }
@@ -428,11 +428,11 @@ public class CommandData implements Comparable<CommandData> {
     }
 
     public String getMessageText() {
-        return getExtraText(IntentExtra.EXTRA_MESSAGE_TEXT);
+        return getExtraText(IntentExtra.MESSAGE_TEXT);
     }
 
     public String getSearchQuery() {
-        return getExtraText(IntentExtra.EXTRA_SEARCH_QUERY);
+        return getExtraText(IntentExtra.SEARCH_QUERY);
     }
 
     private String getExtraText(IntentExtra intentExtra) {
@@ -504,7 +504,7 @@ public class CommandData implements Comparable<CommandData> {
             case UPDATE_STATUS:
                 builder.append("\"");
                 builder.append(I18n.trimTextAt(
-                        bundle.getString(IntentExtra.EXTRA_MESSAGE_TEXT.key), 40));
+                        bundle.getString(IntentExtra.MESSAGE_TEXT.key), 40));
                 builder.append("\",");
                 if (getMediaUri() != null) {
                     builder.append("media:\"");
@@ -636,7 +636,7 @@ public class CommandData implements Comparable<CommandData> {
             case UPDATE_STATUS:
                 I18n.appendWithSpace(builder, "\"");
                 builder.append(trimConditionally(
-                        bundle.getString(IntentExtra.EXTRA_MESSAGE_TEXT.key), summaryOnly));
+                        bundle.getString(IntentExtra.MESSAGE_TEXT.key), summaryOnly));
                 builder.append("\"");
                 if (getMediaUri() != null) {
                     I18n.appendWithSpace(builder, "("

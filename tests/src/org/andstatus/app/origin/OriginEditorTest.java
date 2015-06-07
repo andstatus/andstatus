@@ -95,7 +95,7 @@ public class OriginEditorTest extends ActivityInstrumentationTestCase2<OriginEdi
         final Intent intent = new Intent();
         if (originOld.isPersistent()) {
             intent.setAction(Intent.ACTION_EDIT);
-            intent.putExtra(IntentExtra.EXTRA_ORIGIN_NAME.key, originOld.getName());
+            intent.putExtra(IntentExtra.ORIGIN_NAME.key, originOld.getName());
         } else {
             intent.setAction(Intent.ACTION_INSERT);
         }

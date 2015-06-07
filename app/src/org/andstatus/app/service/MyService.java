@@ -1,5 +1,5 @@
 /* 
- * Copyright (c) 2011-2014 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (c) 2011-2015 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.andstatus.app.IntentExtra;
+import org.andstatus.app.MyAction;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.TimelineType;
@@ -43,31 +43,15 @@ import android.os.IBinder;
 import android.os.PowerManager;
 
 import net.jcip.annotations.GuardedBy;
+
 import java.util.concurrent.RejectedExecutionException;
 
 /**
- * This is an application service that serves as a connection between this Android Device
- * and Microblogging system. Other applications can interact with it via IPC.
+ * This service asynchronously executes commands, mostly related to communication
+ * between this Android Device and Social networks.
  */
 public class MyService extends Service {
-    private static final String TAG = MyService.class.getSimpleName();
-    
-    public static final long MAX_COMMAND_EXECUTION_SECONDS = 10 * 60;
-    
-    /**
-     * Broadcast with this action is being sent by {@link MyService} to notify of its state.
-     *  Actually {@link MyServiceManager} receives it.
-     */
-    public static final String ACTION_SERVICE_STATE = IntentExtra.MY_ACTION_PREFIX + "SERVICE_STATE";
-
-    /**
-     * This action is used in any intent sent to this service. Actual command to
-     * perform by this service is in the {@link #EXTRA_MSGTYPE} extra of the
-     * intent
-     * 
-     * @see CommandEnum
-     */
-    public static final String ACTION_GO = IntentExtra.MY_ACTION_PREFIX + "GO";
+    public static final long MAX_COMMAND_EXECUTION_SECONDS = 600;
 
     private final Object serviceStateLock = new Object();
     /** We are going to finish this service. But may rethink...  */
@@ -85,7 +69,8 @@ public class MyService extends Service {
     @GuardedBy("serviceStateLock")
     private boolean mInitialized = false;
 
-    private volatile int mLatestProcessedStartId = 0;
+    @GuardedBy("serviceStateLock")
+    private int mLatestProcessedStartId = 0;
     
     private final Object executorLock = new Object();
     @GuardedBy("executorLock")
@@ -165,7 +150,7 @@ public class MyService extends Service {
                 stopDelayed(false);
                 break;
             case BROADCAST_SERVICE_STATE:
-                MyServiceBroadcaster.newInstance(MyContextHolder.get(), getServiceState())
+                MyServiceEventsBroadcaster.newInstance(MyContextHolder.get(), getServiceState())
                         .broadcast();
                 break;
             case UNKNOWN:
@@ -175,7 +160,11 @@ public class MyService extends Service {
                 receiveOtherCommand(commandData);
                 break;
         }
-        mLatestProcessedStartId = startId;
+        synchronized (serviceStateLock) {
+            if (startId > mLatestProcessedStartId) {
+                mLatestProcessedStartId = startId;
+            }
+        }
     }
 
     private void receiveOtherCommand(CommandData commandData) {
@@ -248,7 +237,7 @@ public class MyService extends Service {
     }
 
     private void broadcastAfterExecutingCommand(CommandData commandData) {
-        MyServiceBroadcaster.newInstance(MyContextHolder.get(), getServiceState())
+        MyServiceEventsBroadcaster.newInstance(MyContextHolder.get(), getServiceState())
         .setCommandData(commandData).setEvent(MyServiceEvent.AFTER_EXECUTING_COMMAND).broadcast();
     }
     
@@ -259,7 +248,7 @@ public class MyService extends Service {
             if (!mInitialized) {
                 wasNotInitialized = true;
                 restoreState();
-                registerReceiver(intentReceiver, new IntentFilter(ACTION_GO));
+                registerReceiver(intentReceiver, new IntentFilter(MyAction.EXECUTE_COMMAND.getAction()));
                 mInitialized = true;
                 changed = true;
             }
@@ -272,7 +261,7 @@ public class MyService extends Service {
             reviveHeartBeat();
         }
         if (changed) {
-            MyServiceBroadcaster.newInstance(MyContextHolder.get(), getServiceState()).broadcast();
+            MyServiceEventsBroadcaster.newInstance(MyContextHolder.get(), getServiceState()).broadcast();
         }
     }
     private void reviveHeartBeat() {
@@ -377,7 +366,7 @@ public class MyService extends Service {
             }
         }
         if (success) {
-            logMsg.append("; startId=" + mLatestProcessedStartId);
+            logMsg.append("; startId=" + getLatestProcessedStartId());
         }
         if (success && doStop) {
             logMsg.append("; "
@@ -387,6 +376,12 @@ public class MyService extends Service {
         return success;
     }
 
+    private int getLatestProcessedStartId() {
+        synchronized (serviceStateLock) {
+            return mLatestProcessedStartId;
+        }
+    }
+    
     private void startExecution() {
         acquireWakeLock();
         startExecutor();
@@ -436,7 +431,7 @@ public class MyService extends Service {
             if (mWakeLock == null) {
                 MyLog.d(this, "Acquiring wakelock");
                 PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
-                mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, TAG);
+                mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, MyService.class.getName());
                 mWakeLock.acquire();
             }
         }
@@ -521,13 +516,14 @@ public class MyService extends Service {
             return;
         }
         unInitialize();
-        MyServiceBroadcaster.newInstance(MyContextHolder.get(), getServiceState())
+        MyServiceEventsBroadcaster.newInstance(MyContextHolder.get(), getServiceState())
                 .setEvent(MyServiceEvent.ON_STOP).broadcast();
     }
 
     private void unInitialize() {
         int mainQueueSize = mMainCommandQueue.size();
         int retryQueueSize = mRetryCommandQueue.size();
+        int latestProcessedStartId = 0;
         synchronized (serviceStateLock) {
             if( mInitialized) {
                 try {
@@ -535,22 +531,23 @@ public class MyService extends Service {
                 } catch (Exception e) {
                     MyLog.d(this, "On unregisterReceiver", e);
                 }
+                latestProcessedStartId = mLatestProcessedStartId;
                 saveState();
                 mInitialized = false;
                 mIsStopping = false;
                 mForcedToStop = false;
+                mLatestProcessedStartId = 0;
                 decidedToChangeIsStoppingAt = 0;
             }
         }
         synchronized(heartBeatLock) {
             if (mHeartBeat != null) {
                 mHeartBeat.cancel(true);
+                mHeartBeat = null;
             }
-            mHeartBeat = null;
         }
         relealeWakeLock();
-        stopSelfResult(mLatestProcessedStartId);
-        mLatestProcessedStartId = 0;
+        stopSelfResult(latestProcessedStartId);
         CommandsQueueNotifier.newInstance(MyContextHolder.get()).update(
                 mainQueueSize, retryQueueSize);
     }
@@ -602,14 +599,6 @@ public class MyService extends Service {
         }
     }
     
-    /**
-     * @return This intent will be received by MyService only if it's initialized
-     * (and corresponding broadcast receiver registered)
-     */
-    public static Intent intentForThisInitialized() {
-        return new Intent(MyService.ACTION_GO);
-    }
-    
     private class QueueExecutor extends AsyncTask<Void, Void, Boolean> implements CommandExecutorParent {
         private volatile CommandData currentlyExecuting = null;
         private volatile long currentlyExecutingSince = 0;
@@ -642,7 +631,7 @@ public class MyService extends Service {
                     break;
                 }
                 if (MyContextHolder.get().isOnline(commandData.getCommand().getConnetionRequired())) {
-                    MyServiceBroadcaster.newInstance(MyContextHolder.get(), getServiceState())
+                    MyServiceEventsBroadcaster.newInstance(MyContextHolder.get(), getServiceState())
                         .setCommandData(commandData).setEvent(MyServiceEvent.BEFORE_EXECUTING_COMMAND).broadcast();
                     CommandExecutorStrategy.executeCommand(commandData, this);
                 } else {

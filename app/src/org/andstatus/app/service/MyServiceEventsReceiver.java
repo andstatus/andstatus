@@ -22,17 +22,18 @@ import android.content.Intent;
 import android.content.IntentFilter;
 
 import org.andstatus.app.IntentExtra;
+import org.andstatus.app.MyAction;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
 
 /**
  * @author yvolk@yurivolkov.com
  */
-public final class MyServiceReceiver extends BroadcastReceiver {
+public final class MyServiceEventsReceiver extends BroadcastReceiver {
     private final long mInstanceId = InstanceId.next();
-    private final MyServiceListener listener;
+    private final MyServiceEventsListener listener;
 
-    public MyServiceReceiver(MyServiceListener listener) {
+    public MyServiceEventsReceiver(MyServiceEventsListener listener) {
         super();
         this.listener = listener;
         MyLog.v(this, "Created, instanceId=" + mInstanceId + (listener != null ? "; listener='"
@@ -40,7 +41,7 @@ public final class MyServiceReceiver extends BroadcastReceiver {
     }
     
     public void registerReceiver(Context context) {
-        context.registerReceiver(this, new IntentFilter(MyService.ACTION_SERVICE_STATE));
+        context.registerReceiver(this, new IntentFilter(MyAction.SERVICE_STATE.getAction()));
     }
 
     public void unregisterReceiver(Context context) {
@@ -54,7 +55,7 @@ public final class MyServiceReceiver extends BroadcastReceiver {
     
     @Override
     public void onReceive(Context context, Intent intent) {
-        MyServiceEvent event = MyServiceEvent.load(intent.getStringExtra(IntentExtra.EXTRA_SERVICE_EVENT.key));
+        MyServiceEvent event = MyServiceEvent.load(intent.getStringExtra(IntentExtra.SERVICE_EVENT.key));
         if (event == MyServiceEvent.UNKNOWN) {
             return;
         }

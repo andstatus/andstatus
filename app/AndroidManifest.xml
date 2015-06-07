@@ -14,7 +14,8 @@
 	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 	See the License for the specific language governing permissions and
 	limitations under the License.
- -->
+-->
+ 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
 	package="org.andstatus.app" 
 	android:versionName="17.1" android:versionCode="125"
@@ -102,8 +103,14 @@
 		<activity android:name=".ConversationActivity"
 			android:label="@string/label_conversation"
             android:parentActivityName=".TimelineActivity">
+            <!-- 
+    mimeType attribute is required for intent-filter of .ConversationActivity 
+    as it has both custom action and Uri present in Intent, 
+    see http://stackoverflow.com/questions/12297407/custom-actions-using-implicit-intents-between-applications
+    BTW, any concrete MIME types for our Uri-s are returned by MyProvider 
+             -->
 			<intent-filter android:label="@string/resolve_view">
-				<action android:name="android.intent.action.VIEW"/>
+                <action android:name="org.andstatus.app.action.VIEW_CONVERSATION" />
 				<category android:name="android.intent.category.DEFAULT"/>
 				<data android:mimeType="vnd.android.cursor.item/org.andstatus.app.provider.msg"/>
 			</intent-filter>

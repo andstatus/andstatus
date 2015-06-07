@@ -10,8 +10,8 @@ import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.net.http.HttpConnectionMock;
 import org.andstatus.app.util.MyLog;
 
-public class MyServiceTestHelper implements MyServiceListener {
-    private volatile MyServiceReceiver serviceConnector;
+public class MyServiceTestHelper implements MyServiceEventsListener {
+    private volatile MyServiceEventsReceiver serviceConnector;
     public volatile HttpConnectionMock httpConnectionMock;
     public volatile long connectionInstanceId;
 
@@ -37,7 +37,7 @@ public class MyServiceTestHelper implements MyServiceListener {
         // In order for the mocked connection to have effect:
         MyContextHolder.get().persistentAccounts().initialize();
 
-        serviceConnector = new MyServiceReceiver(this);
+        serviceConnector = new MyServiceEventsReceiver(this);
         serviceConnector.registerReceiver(MyContextHolder.get().context());
         
         dropQueues();

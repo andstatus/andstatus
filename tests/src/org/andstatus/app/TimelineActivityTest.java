@@ -29,7 +29,7 @@ import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
-import org.andstatus.app.service.MyServiceBroadcaster;
+import org.andstatus.app.service.MyServiceEventsBroadcaster;
 import org.andstatus.app.service.MyServiceEvent;
 import org.andstatus.app.service.MyServiceState;
 import org.andstatus.app.util.MyLog;
@@ -53,9 +53,9 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
         MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
         
         Intent intent = new Intent();
-        intent.putExtra(IntentExtra.EXTRA_TIMELINE_TYPE.key, TimelineType.HOME.save());
+        intent.putExtra(IntentExtra.TIMELINE_TYPE.key, TimelineType.HOME.save());
         // In order to shorten opening of activity in a case of a large database
-        intent.putExtra(IntentExtra.EXTRA_TIMELINE_IS_COMBINED.key, false);
+        intent.putExtra(IntentExtra.TIMELINE_IS_COMBINED.key, false);
         setActivityIntent(intent);
         
         mActivity = getActivity();
@@ -153,7 +153,7 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
 
     private void broadcastCommandExecuted() {
         CommandData commandData = new CommandData(CommandEnum.CREATE_FAVORITE, TestSuite.CONVERSATION_ACCOUNT_NAME);
-        MyServiceBroadcaster.newInstance(MyContextHolder.get(), MyServiceState.RUNNING)
+        MyServiceEventsBroadcaster.newInstance(MyContextHolder.get(), MyServiceState.RUNNING)
                 .setCommandData(commandData).setEvent(MyServiceEvent.AFTER_EXECUTING_COMMAND)
                 .broadcast();
     }

@@ -68,9 +68,9 @@ import org.andstatus.app.data.TimelineViewBinder;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceEvent;
-import org.andstatus.app.service.MyServiceListener;
+import org.andstatus.app.service.MyServiceEventsListener;
 import org.andstatus.app.service.MyServiceManager;
-import org.andstatus.app.service.MyServiceReceiver;
+import org.andstatus.app.service.MyServiceEventsReceiver;
 import org.andstatus.app.service.QueueViewer;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.InstanceId;
@@ -85,7 +85,7 @@ import java.util.List;
 /**
  * @author yvolk@yurivolkov.com
  */
-public class TimelineActivity extends ListActivity implements MyServiceListener,
+public class TimelineActivity extends ListActivity implements MyServiceEventsListener,
         OnScrollListener, OnItemClickListener, ActionableMessageList, 
         LoaderCallbacks<Cursor> {
     private static final int DIALOG_ID_TIMELINE_TYPE = 9;
@@ -118,7 +118,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
      * For testing purposes
      */
     private long mInstanceId = 0;
-    MyServiceReceiver mServiceConnector;
+    MyServiceEventsReceiver mServiceConnector;
 
     /**
      * We are going to finish/restart this Activity (e.g. onResume or even onCreate)
@@ -177,7 +177,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         }
 
         mListParametersNew.myAccountUserId = MyContextHolder.get().persistentAccounts().getCurrentAccountUserId();
-        mServiceConnector = new MyServiceReceiver(this);
+        mServiceConnector = new MyServiceEventsReceiver(this);
 
         MyPreferences.setThemedContentView(this, R.layout.timeline);
 
@@ -305,11 +305,11 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     private boolean onSearchRequested(boolean appGlobalSearch) {
         final String method = "onSearchRequested";
         Bundle appSearchData = new Bundle();
-        appSearchData.putString(IntentExtra.EXTRA_TIMELINE_TYPE.key,
+        appSearchData.putString(IntentExtra.TIMELINE_TYPE.key,
                 appGlobalSearch ? TimelineType.EVERYTHING.save() : mListParametersNew.getTimelineType().save());
-        appSearchData.putBoolean(IntentExtra.EXTRA_TIMELINE_IS_COMBINED.key, mListParametersNew.isTimelineCombined());
-        appSearchData.putLong(IntentExtra.EXTRA_SELECTEDUSERID.key, mListParametersNew.mSelectedUserId);
-        appSearchData.putBoolean(IntentExtra.EXTRA_GLOBAL_SEARCH.key, appGlobalSearch);
+        appSearchData.putBoolean(IntentExtra.TIMELINE_IS_COMBINED.key, mListParametersNew.isTimelineCombined());
+        appSearchData.putLong(IntentExtra.SELECTED_USERID.key, mListParametersNew.mSelectedUserId);
+        appSearchData.putBoolean(IntentExtra.GLOBAL_SEARCH.key, appGlobalSearch);
         MyLog.v(this, method  + ": " + appSearchData);
         startSearch(null, false, appSearchData, false);
         return true;
@@ -590,7 +590,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                             + "; linkedUserId=" + linkedUserId 
                             + " account=" + ma.getAccountName());
                 }
-                return MatchedUri.getTimelineMsgUri(ma.getUserId(), mListParametersNew.getTimelineType(), true, id);
+                return MatchedUri.getTimelineItemUri(ma.getUserId(), mListParametersNew.getTimelineType(), true, id);
             }
 
             @Override
@@ -605,7 +605,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                     if (MyLog.isLoggable(this, MyLog.DEBUG)) {
                         MyLog.d(this, "onItemClick, startActivity=" + uri);
                     }
-                    startActivity(new Intent(Intent.ACTION_VIEW, uri));
+                    startActivity(MyAction.VIEW_CONVERSATION.getIntent(uri));
                 }
             }
 
@@ -739,14 +739,14 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         if (appSearchData != null) {
             // We use other packaging of the same parameters in onSearchRequested
             mListParametersNew.setTimelineType(TimelineType.load(appSearchData
-                    .getString(IntentExtra.EXTRA_TIMELINE_TYPE.key)));
+                    .getString(IntentExtra.TIMELINE_TYPE.key)));
             if (mListParametersNew.getTimelineType() != TimelineType.UNKNOWN) {
-                mListParametersNew.setTimelineCombined(appSearchData.getBoolean(IntentExtra.EXTRA_TIMELINE_IS_COMBINED.key, mListParametersNew.isTimelineCombined()));
+                mListParametersNew.setTimelineCombined(appSearchData.getBoolean(IntentExtra.TIMELINE_IS_COMBINED.key, mListParametersNew.isTimelineCombined()));
                 /* The query itself is still from the Intent */
                 mListParametersNew.mSearchQuery = TimelineListParameters.notNullString(intentNew.getStringExtra(SearchManager.QUERY));
-                mListParametersNew.mSelectedUserId = appSearchData.getLong(IntentExtra.EXTRA_SELECTEDUSERID.key, mListParametersNew.mSelectedUserId);
+                mListParametersNew.mSelectedUserId = appSearchData.getLong(IntentExtra.SELECTED_USERID.key, mListParametersNew.mSelectedUserId);
                 if (!TextUtils.isEmpty(mListParametersNew.mSearchQuery)
-                        && appSearchData.getBoolean(IntentExtra.EXTRA_GLOBAL_SEARCH.key, false)) {
+                        && appSearchData.getBoolean(IntentExtra.GLOBAL_SEARCH.key, false)) {
                     setSyncing("Global search: " + mListParametersNew.mSearchQuery, true);
                     MyServiceManager.sendForegroundCommand(
                             CommandData.searchCommand(
@@ -914,8 +914,8 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         }
         MyLog.v(this, method + (loadOneMorePage ? "loadOneMorePage" : ""));
         Bundle args = new Bundle();
-        args.putBoolean(IntentExtra.EXTRA_LOAD_ONE_MORE_PAGE.key, loadOneMorePage);
-        args.putInt(IntentExtra.EXTRA_ROWS_LIMIT.key, calcRowsLimit(loadOneMorePage));
+        args.putBoolean(IntentExtra.LOAD_ONE_MORE_PAGE.key, loadOneMorePage);
+        args.putInt(IntentExtra.ROWS_LIMIT.key, calcRowsLimit(loadOneMorePage));
         getLoaderManager().restartLoader(LOADER_ID, args, this);
         setLoading(method, true);
     }
@@ -941,7 +941,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         final String method = "onCreateLoader";
         Bundle args = argsIn==null ? new Bundle() : argsIn;
         MyLog.v(this, method + " #" + id);
-        args.putBoolean(IntentExtra.EXTRA_POSITION_RESTORED.key, mPositionRestored
+        args.putBoolean(IntentExtra.POSITION_RESTORED.key, mPositionRestored
                 && (getListAdapter() != null));
 
         TimelineListParameters params = TimelineListParameters.clone(mListParametersNew, args);
@@ -1139,7 +1139,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     }
 
     private void accountSelected(Intent data) {
-        MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(data.getStringExtra(IntentExtra.EXTRA_ACCOUNT_NAME.key));
+        MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(data.getStringExtra(IntentExtra.ACCOUNT_NAME.key));
         if (ma.isValid()) {
             MyLog.v(this, "Restarting the activity for the selected account " + ma.getAccountName());
             finish();
@@ -1160,7 +1160,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     }
 
     private void accountToActAsSelected(Intent data) {
-        MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(data.getStringExtra(IntentExtra.EXTRA_ACCOUNT_NAME.key));
+        MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(data.getStringExtra(IntentExtra.ACCOUNT_NAME.key));
         if (ma.isValid()) {
             mContextMenu.setAccountUserIdToActAs(ma.getUserId());
             mContextMenu.showContextMenu();
@@ -1168,7 +1168,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     }
 
     private void accountToShareViaSelected(Intent data) {
-        MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(data.getStringExtra(IntentExtra.EXTRA_ACCOUNT_NAME.key));
+        MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(data.getStringExtra(IntentExtra.ACCOUNT_NAME.key));
         mMessageEditor.startEditingMessage(new MessageEditorData(ma).setMessageText(mTextToShareViaThisApp).setMediaUri(mMediaToShareViaThisApp));
     }
 

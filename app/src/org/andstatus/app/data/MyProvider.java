@@ -263,7 +263,7 @@ public class MyProvider extends ContentProvider {
                 qb.setProjectionMap(ProjectionMap.MSG);
                 break;
 
-            case TIMELINE_MSG_ID:
+            case TIMELINE_ITEM:
                 qb.setTables(TimelineSql.tablesForTimeline(uri, projection));
                 qb.setProjectionMap(ProjectionMap.MSG);
                 qb.appendWhere(ProjectionMap.MSG_TABLE_ALIAS + "." + BaseColumns._ID + "=" + uriParser.getMessageId());
@@ -321,7 +321,7 @@ public class MyProvider extends ContentProvider {
         if (TextUtils.isEmpty(sortOrder)) {
             switch (uriParser.matched()) {
                 case TIMELINE:
-                case TIMELINE_MSG_ID:
+                case TIMELINE_ITEM:
                 case TIMELINE_SEARCH:
                     orderBy = Msg.DEFAULT_SORT_ORDER;
                     break;

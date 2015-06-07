@@ -50,9 +50,9 @@ public class PublicTimelineActivityTest extends android.test.ActivityInstrumenta
         assertEquals(ma.getUserId(), MyContextHolder.get().persistentAccounts().getCurrentAccountUserId());
         
         final Intent intent = new Intent();
-        intent.putExtra(IntentExtra.EXTRA_TIMELINE_TYPE.key, TimelineType.PUBLIC.save());
+        intent.putExtra(IntentExtra.TIMELINE_TYPE.key, TimelineType.PUBLIC.save());
         // In order to shorten opening of activity in a case of large database
-        intent.putExtra(IntentExtra.EXTRA_TIMELINE_IS_COMBINED.key, false);
+        intent.putExtra(IntentExtra.TIMELINE_IS_COMBINED.key, false);
         setActivityIntent(intent);
         
         mActivity = getActivity();

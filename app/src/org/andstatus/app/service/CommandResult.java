@@ -134,26 +134,26 @@ public final class CommandResult implements Parcelable {
     
     void saveToSharedPreferences(android.content.SharedPreferences.Editor ed, int index) {
         String si = Integer.toString(index);
-        ed.putLong(IntentExtra.EXTRA_LAST_EXECUTED_DATE.key + si, lastExecutedDate);
-        ed.putInt(IntentExtra.EXTRA_EXECUTION_COUNT.key + si, executionCount);
-        ed.putInt(IntentExtra.EXTRA_RETRIES_LEFT.key + si, retriesLeft);
-        ed.putLong(IntentExtra.EXTRA_NUM_AUTH_EXCEPTIONS.key + si, numAuthExceptions);
-        ed.putLong(IntentExtra.EXTRA_NUM_IO_EXCEPTIONS.key + si, numIoExceptions);
-        ed.putLong(IntentExtra.EXTRA_NUM_PARSE_EXCEPTIONS.key + si, numParseExceptions);
-        ed.putString(IntentExtra.EXTRA_ERROR_MESSAGE.key + si, mMessage);
-        ed.putInt(IntentExtra.EXTRA_DOWNLOADED_COUNT.key + si, downloadedCount);
+        ed.putLong(IntentExtra.LAST_EXECUTED_DATE.key + si, lastExecutedDate);
+        ed.putInt(IntentExtra.EXECUTION_COUNT.key + si, executionCount);
+        ed.putInt(IntentExtra.RETRIES_LEFT.key + si, retriesLeft);
+        ed.putLong(IntentExtra.NUM_AUTH_EXCEPTIONS.key + si, numAuthExceptions);
+        ed.putLong(IntentExtra.NUM_IO_EXCEPTIONS.key + si, numIoExceptions);
+        ed.putLong(IntentExtra.NUM_PARSE_EXCEPTIONS.key + si, numParseExceptions);
+        ed.putString(IntentExtra.ERROR_MESSAGE.key + si, mMessage);
+        ed.putInt(IntentExtra.DOWNLOADED_COUNT.key + si, downloadedCount);
     }
 
     void loadFromSharedPreferences(SharedPreferences sp, int index) {
         String si = Integer.toString(index);
-        lastExecutedDate = sp.getLong(IntentExtra.EXTRA_LAST_EXECUTED_DATE.key + si, lastExecutedDate);
-        executionCount = sp.getInt(IntentExtra.EXTRA_EXECUTION_COUNT.key + si, executionCount);
-        retriesLeft = sp.getInt(IntentExtra.EXTRA_RETRIES_LEFT.key + si, retriesLeft);
-        numAuthExceptions = sp.getLong(IntentExtra.EXTRA_NUM_AUTH_EXCEPTIONS.key + si, numAuthExceptions);
-        numIoExceptions = sp.getLong(IntentExtra.EXTRA_NUM_IO_EXCEPTIONS.key + si, numIoExceptions);
-        numParseExceptions = sp.getLong(IntentExtra.EXTRA_NUM_PARSE_EXCEPTIONS.key + si, numParseExceptions);
-        mMessage = sp.getString(IntentExtra.EXTRA_ERROR_MESSAGE.key + si, mMessage);
-        downloadedCount = sp.getInt(IntentExtra.EXTRA_DOWNLOADED_COUNT.key + si, downloadedCount);
+        lastExecutedDate = sp.getLong(IntentExtra.LAST_EXECUTED_DATE.key + si, lastExecutedDate);
+        executionCount = sp.getInt(IntentExtra.EXECUTION_COUNT.key + si, executionCount);
+        retriesLeft = sp.getInt(IntentExtra.RETRIES_LEFT.key + si, retriesLeft);
+        numAuthExceptions = sp.getLong(IntentExtra.NUM_AUTH_EXCEPTIONS.key + si, numAuthExceptions);
+        numIoExceptions = sp.getLong(IntentExtra.NUM_IO_EXCEPTIONS.key + si, numIoExceptions);
+        numParseExceptions = sp.getLong(IntentExtra.NUM_PARSE_EXCEPTIONS.key + si, numParseExceptions);
+        mMessage = sp.getString(IntentExtra.ERROR_MESSAGE.key + si, mMessage);
+        downloadedCount = sp.getInt(IntentExtra.DOWNLOADED_COUNT.key + si, downloadedCount);
     }
 
     public int getExecutionCount() {

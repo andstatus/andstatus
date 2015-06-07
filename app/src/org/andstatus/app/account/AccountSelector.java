@@ -114,7 +114,7 @@ public class AccountSelector extends ListActivity {
 
     private void returnSelectedAccount(MyAccount ma) {
         Intent dataToReturn = new Intent();
-        dataToReturn.putExtra(IntentExtra.EXTRA_ACCOUNT_NAME.key, ma.getAccountName());
+        dataToReturn.putExtra(IntentExtra.ACCOUNT_NAME.key, ma.getAccountName());
         setResult(RESULT_OK, dataToReturn);
         finish();
     }

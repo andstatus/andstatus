@@ -121,7 +121,7 @@ public abstract class OriginList extends ListActivity {
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             String name = ((TextView)view.findViewById(R.id.name)).getText().toString();
             Intent dataToReturn = new Intent();
-            dataToReturn.putExtra(IntentExtra.EXTRA_ORIGIN_NAME.key, name);
+            dataToReturn.putExtra(IntentExtra.ORIGIN_NAME.key, name);
             OriginList.this.setResult(RESULT_OK, dataToReturn);
             finish();
         }
@@ -135,7 +135,7 @@ public abstract class OriginList extends ListActivity {
             if (origin.isPersistent()) {
                 Intent intent = new Intent(OriginList.this, OriginEditor.class);
                 intent.setAction(Intent.ACTION_EDIT);
-                intent.putExtra(IntentExtra.EXTRA_ORIGIN_NAME.key, origin.getName());
+                intent.putExtra(IntentExtra.ORIGIN_NAME.key, origin.getName());
                 startActivityForResult(intent, ActivityRequestCode.EDIT_ORIGIN.id);
             }
         }

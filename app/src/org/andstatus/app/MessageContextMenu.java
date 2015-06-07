@@ -282,9 +282,9 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
         
         // Actually we use one Activity for all timelines...
         intent = new Intent(getContext(), TimelineActivity.class);
-        intent.putExtra(IntentExtra.EXTRA_TIMELINE_TYPE.key, TimelineTypeSelector.selectableType(timelineType).save());
-        intent.putExtra(IntentExtra.EXTRA_TIMELINE_IS_COMBINED.key, isTimelineCombined);
-        intent.putExtra(IntentExtra.EXTRA_SELECTEDUSERID.key, selectedUserId);
+        intent.putExtra(IntentExtra.TIMELINE_TYPE.key, TimelineTypeSelector.selectableType(timelineType).save());
+        intent.putExtra(IntentExtra.TIMELINE_IS_COMBINED.key, isTimelineCombined);
+        intent.putExtra(IntentExtra.SELECTED_USERID.key, selectedUserId);
         // We don't use Intent.ACTION_SEARCH action anywhere, so there is no need it setting it.
         // - we're analyzing query instead!
         messageList.getActivity().startActivity(intent);
@@ -308,8 +308,8 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
     
     public void loadState(SharedPreferences savedInstanceState) {
         if (savedInstanceState != null 
-                && savedInstanceState.contains(IntentExtra.EXTRA_ITEMID.key)) {
-            mMsgId = savedInstanceState.getLong(IntentExtra.EXTRA_ITEMID.key, 0);
+                && savedInstanceState.contains(IntentExtra.ITEMID.key)) {
+            mMsgId = savedInstanceState.getLong(IntentExtra.ITEMID.key, 0);
         }
     }
     
@@ -319,7 +319,7 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
 
     public void saveState(Editor outState) {
         if (outState != null) {
-            outState.putLong(IntentExtra.EXTRA_ITEMID.key, mMsgId);
+            outState.putLong(IntentExtra.ITEMID.key, mMsgId);
         }
     }
 }

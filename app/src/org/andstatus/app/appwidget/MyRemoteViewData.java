@@ -149,14 +149,14 @@ class MyRemoteViewData {
                 timeLineType = TimelineType.MENTIONS;
             }
         }
-        intent.putExtra(IntentExtra.EXTRA_TIMELINE_TYPE.key,
+        intent.putExtra(IntentExtra.TIMELINE_TYPE.key,
                 timeLineType.save());
 
         // There are more than one account,
         // so turn Combined timeline on in order to show all the new messages.
         boolean isTimelineCombined = MyContextHolder.get().persistentAccounts().size() > 1;
         if (isTimelineCombined) {
-            intent.putExtra(IntentExtra.EXTRA_TIMELINE_IS_COMBINED.key, true);
+            intent.putExtra(IntentExtra.TIMELINE_IS_COMBINED.key, true);
         }
 
         // TODO: We don't mention exact MyAccount in the intent 

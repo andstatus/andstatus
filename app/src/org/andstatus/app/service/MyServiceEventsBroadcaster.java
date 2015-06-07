@@ -19,41 +19,42 @@ package org.andstatus.app.service;
 import android.content.Intent;
 
 import org.andstatus.app.IntentExtra;
+import org.andstatus.app.MyAction;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.util.MyLog;
 
-public class MyServiceBroadcaster {
+public class MyServiceEventsBroadcaster {
     private final MyContext mMyContext;
     private final MyServiceState mState;
     private CommandData mCommandData = null;
     private MyServiceEvent mEvent = MyServiceEvent.UNKNOWN;
     
-    private MyServiceBroadcaster(MyContext myContext, MyServiceState state) {
+    private MyServiceEventsBroadcaster(MyContext myContext, MyServiceState state) {
         this.mMyContext = myContext;
         this.mState = state;
     }
     
-    public static MyServiceBroadcaster newInstance(MyContext myContext, MyServiceState state) {
-        return new MyServiceBroadcaster(myContext, state);
+    public static MyServiceEventsBroadcaster newInstance(MyContext myContext, MyServiceState state) {
+        return new MyServiceEventsBroadcaster(myContext, state);
     }
 
-    public MyServiceBroadcaster setCommandData(CommandData commandData) {
+    public MyServiceEventsBroadcaster setCommandData(CommandData commandData) {
         this.mCommandData = commandData;
         return this;
     }
 
-    public MyServiceBroadcaster setEvent(MyServiceEvent serviceEvent) {
+    public MyServiceEventsBroadcaster setEvent(MyServiceEvent serviceEvent) {
         this.mEvent = serviceEvent;
         return this;
     }
     
     public void broadcast() {
-        Intent intent = new Intent(MyService.ACTION_SERVICE_STATE);
+        Intent intent = MyAction.SERVICE_STATE.getIntent();
         if (mCommandData != null) {
             intent = mCommandData.toIntent(intent);
         }
-        intent.putExtra(IntentExtra.EXTRA_SERVICE_STATE.key, mState.save());
-        intent.putExtra(IntentExtra.EXTRA_SERVICE_EVENT.key, mEvent.save());
+        intent.putExtra(IntentExtra.SERVICE_STATE.key, mState.save());
+        intent.putExtra(IntentExtra.SERVICE_EVENT.key, mEvent.save());
         mMyContext.context().sendBroadcast(intent);
         MyLog.v(this, "state: " + mState);
     }

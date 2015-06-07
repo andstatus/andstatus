@@ -72,9 +72,9 @@ public class TimeLineActivityLayoutToggleTest extends android.test.ActivityInstr
         MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
         
         Intent intent = new Intent();
-        intent.putExtra(IntentExtra.EXTRA_TIMELINE_TYPE.key, TimelineType.HOME.save());
+        intent.putExtra(IntentExtra.TIMELINE_TYPE.key, TimelineType.HOME.save());
         // In order to shorten opening of activity in a case of a large database
-        intent.putExtra(IntentExtra.EXTRA_TIMELINE_IS_COMBINED.key, false);
+        intent.putExtra(IntentExtra.TIMELINE_IS_COMBINED.key, false);
         setActivityIntent(intent);
         
         activity = getActivity();

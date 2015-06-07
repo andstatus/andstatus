@@ -46,7 +46,7 @@ public enum MatchedUri {
     /**
      * The Timeline URI contains Message id 
      */
-    TIMELINE_MSG_ID(4),
+    TIMELINE_ITEM(4),
     ORIGIN(8),
     ORIGIN_ITEM(11),
     /**
@@ -106,7 +106,7 @@ public enum MatchedUri {
          * 6 - 7. MyDatabase.MSG_TABLE_NAME + "/" + MSG_ID  (optional, used to access specific Message)
          */
         URI_MATCHER.addURI(AUTHORITY, Msg.TABLE_NAME + "/#/" + LISTTYPE_SEGMENT + "/*/" + COMBINED_SEGMENT + "/#/" + SEARCH_SEGMENT + "/*", TIMELINE_SEARCH.code);
-        URI_MATCHER.addURI(AUTHORITY, Msg.TABLE_NAME + "/#/" + LISTTYPE_SEGMENT + "/*/" + COMBINED_SEGMENT + "/#/" + CONTENT_ITEM_SEGMENT + "/#", TIMELINE_MSG_ID.code);
+        URI_MATCHER.addURI(AUTHORITY, Msg.TABLE_NAME + "/#/" + LISTTYPE_SEGMENT + "/*/" + COMBINED_SEGMENT + "/#/" + CONTENT_ITEM_SEGMENT + "/#", TIMELINE_ITEM.code);
         URI_MATCHER.addURI(AUTHORITY, Msg.TABLE_NAME + "/#/" + LISTTYPE_SEGMENT + "/*/" + COMBINED_SEGMENT + "/#", TIMELINE.code);
         URI_MATCHER.addURI(AUTHORITY, Msg.TABLE_NAME + "/#/" + CONTENT_ITEM_SEGMENT + "/#", MSG_ITEM.code);
         URI_MATCHER.addURI(AUTHORITY, Msg.TABLE_NAME + "/" + CONTENT_SEGMENT, MSG.code);
@@ -121,7 +121,7 @@ public enum MatchedUri {
     }
     
     /**
-     *  Content types should be like in AndroidManifest.xml
+     *  MIME types should be like in android:mimeType in AndroidManifest.xml 
      */
     private static final String CONTENT_TYPE_PREFIX = "vnd.android.cursor.dir/"
             + ClassInApplicationPackage.PACKAGE_NAME + ".provider.";
@@ -139,7 +139,8 @@ public enum MatchedUri {
             case MSG_COUNT:
                 type = CONTENT_TYPE_PREFIX + Msg.TABLE_NAME;
                 break;
-            case TIMELINE_MSG_ID:
+            case TIMELINE_ITEM:
+            case MSG_ITEM:
                 type = CONTENT_ITEM_TYPE_PREFIX + Msg.TABLE_NAME;
                 break;
             case ORIGIN_ITEM:
@@ -170,7 +171,7 @@ public enum MatchedUri {
     /**
      * Uri for the message in the account's timeline
      */
-    public static Uri getTimelineMsgUri(long accountUserId, TimelineType timelineType, boolean isCombined, long msgId) {
+    public static Uri getTimelineItemUri(long accountUserId, TimelineType timelineType, boolean isCombined, long msgId) {
         Uri uri = getTimelineUri(accountUserId, timelineType, isCombined);
         uri = Uri.withAppendedPath(uri,  CONTENT_ITEM_SEGMENT);
         uri = ContentUris.withAppendedId(uri, msgId);
@@ -178,7 +179,7 @@ public enum MatchedUri {
     }
 
     /**
-     * Build a Timeline URI for this User / {@link MyAccount}
+     * Build a Timeline Uri for this User / {@link MyAccount}
      * @param accountUserId {@link MyDatabase.User#USER_ID}. This user <i>may</i> be an account: {@link MyAccount#getUserId()} 
      * @return
      */

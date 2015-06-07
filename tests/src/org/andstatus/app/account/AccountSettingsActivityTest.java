@@ -53,7 +53,7 @@ public class AccountSettingsActivityTest extends ActivityInstrumentationTestCase
         }
         
         Intent intent = new Intent();
-        intent.putExtra(IntentExtra.EXTRA_ACCOUNT_NAME.key, ma.getAccountName());
+        intent.putExtra(IntentExtra.ACCOUNT_NAME.key, ma.getAccountName());
         setActivityIntent(intent);
         
         mActivity = getActivity();

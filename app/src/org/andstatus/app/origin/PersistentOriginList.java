@@ -63,7 +63,7 @@ public class PersistentOriginList extends OriginList {
     private void onAddOriginSelected(String originName) {
         Intent intent = new Intent(this, OriginEditor.class);
         intent.setAction(Intent.ACTION_INSERT);
-        intent.putExtra(IntentExtra.EXTRA_ORIGIN_NAME.key, originName);
+        intent.putExtra(IntentExtra.ORIGIN_NAME.key, originName);
         startActivityForResult(intent, ActivityRequestCode.EDIT_ORIGIN.id);
     }
 
@@ -76,7 +76,7 @@ public class PersistentOriginList extends OriginList {
                 break;
             case SELECT_OPEN_INSTANCE:
                 if (resultCode == Activity.RESULT_OK) {
-                    String originName = data.getStringExtra(IntentExtra.EXTRA_ORIGIN_NAME.key);
+                    String originName = data.getStringExtra(IntentExtra.ORIGIN_NAME.key);
                     if (!TextUtils.isEmpty(originName)) {
                         onAddOriginSelected(originName);
                     }

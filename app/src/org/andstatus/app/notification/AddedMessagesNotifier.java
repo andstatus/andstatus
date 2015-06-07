@@ -135,8 +135,8 @@ public class AddedMessagesNotifier {
         // Prepare "intent" to launch timeline activities exactly like in
         // org.andstatus.app.TimelineActivity.onOptionsItemSelected
         Intent intent = new Intent(myContext.context(), TimelineActivity.class);
-        intent.putExtra(IntentExtra.EXTRA_TIMELINE_TYPE.key, timelineType.save());
-        intent.putExtra(IntentExtra.EXTRA_TIMELINE_IS_COMBINED.key, myContext.persistentAccounts().size() > 1);
+        intent.putExtra(IntentExtra.TIMELINE_TYPE.key, timelineType.save());
+        intent.putExtra(IntentExtra.TIMELINE_IS_COMBINED.key, myContext.persistentAccounts().size() > 1);
         PendingIntent pendingIntent = PendingIntent.getActivity(myContext.context(), timelineType.hashCode(),
                 intent, 0);
         builder.setContentIntent(pendingIntent);

@@ -135,7 +135,7 @@ public class ConversationLoader<T extends ConversationItem> {
     }
     
     private void loadMessageFromDatabase(ConversationItem oMsg) {
-        Uri uri = MatchedUri.getTimelineMsgUri(ma.getUserId(), TimelineType.EVERYTHING, true, oMsg.getMsgId());
+        Uri uri = MatchedUri.getTimelineItemUri(ma.getUserId(), TimelineType.EVERYTHING, true, oMsg.getMsgId());
         Cursor cursor = null;
         try {
             cursor = context.getContentResolver().query(uri, oMsg.getProjection(), null, null, null);

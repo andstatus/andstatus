@@ -104,7 +104,7 @@ public class OriginEditor extends Activity {
         if (Intent.ACTION_INSERT.equals(editorAction)) {
             buttonSave.setOnClickListener(new AddOrigin());
             buttonSave.setText(R.string.button_add);
-            Origin origin = DiscoveredOrigins.fromName(intentNew.getStringExtra(IntentExtra.EXTRA_ORIGIN_NAME.key));
+            Origin origin = DiscoveredOrigins.fromName(intentNew.getStringExtra(IntentExtra.ORIGIN_NAME.key));
             if (origin.isValid()) {
                 builder = new Origin.Builder(origin);
             } else {
@@ -114,7 +114,7 @@ public class OriginEditor extends Activity {
             buttonSave.setOnClickListener(new SaveOrigin());
             spinnerOriginType.setEnabled(false);
             editTextOriginName.setEnabled(false);
-            Origin origin = MyContextHolder.get().persistentOrigins().fromName(intentNew.getStringExtra(IntentExtra.EXTRA_ORIGIN_NAME.key));
+            Origin origin = MyContextHolder.get().persistentOrigins().fromName(intentNew.getStringExtra(IntentExtra.ORIGIN_NAME.key));
             builder = new Origin.Builder(origin);
         }
 

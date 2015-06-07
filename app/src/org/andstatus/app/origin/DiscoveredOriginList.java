@@ -24,12 +24,12 @@ import org.andstatus.app.R;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceEvent;
-import org.andstatus.app.service.MyServiceListener;
+import org.andstatus.app.service.MyServiceEventsListener;
 import org.andstatus.app.service.MyServiceManager;
-import org.andstatus.app.service.MyServiceReceiver;
+import org.andstatus.app.service.MyServiceEventsReceiver;
 
-public class DiscoveredOriginList extends OriginList implements MyServiceListener {
-    MyServiceReceiver mServiceConnector = new MyServiceReceiver(this);
+public class DiscoveredOriginList extends OriginList implements MyServiceEventsListener {
+    MyServiceEventsReceiver mServiceConnector = new MyServiceEventsReceiver(this);
     SwipeRefreshLayout mSwipeRefreshLayout = null;
     
     @Override

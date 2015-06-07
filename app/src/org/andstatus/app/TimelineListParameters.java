@@ -94,10 +94,10 @@ public class TimelineListParameters {
         boolean loadOneMorePage = false;
         boolean reQuery = false;
         if (args != null) {
-            loadOneMorePage = args.getBoolean(IntentExtra.EXTRA_LOAD_ONE_MORE_PAGE.key);
-            positionRestored = args.getBoolean(IntentExtra.EXTRA_POSITION_RESTORED.key);
-            reQuery = args.getBoolean(IntentExtra.EXTRA_REQUERY.key);
-            params.mRowsLimit = args.getInt(IntentExtra.EXTRA_ROWS_LIMIT.key);
+            loadOneMorePage = args.getBoolean(IntentExtra.LOAD_ONE_MORE_PAGE.key);
+            positionRestored = args.getBoolean(IntentExtra.POSITION_RESTORED.key);
+            reQuery = args.getBoolean(IntentExtra.REQUERY.key);
+            params.mRowsLimit = args.getInt(IntentExtra.ROWS_LIMIT.key);
         }
         params.mLoadOneMorePage = loadOneMorePage;
         params.mIncrementallyLoadingPages = positionRestored && loadOneMorePage;
@@ -231,38 +231,38 @@ public class TimelineListParameters {
     }
 
     public void saveState(Editor outState) {
-        outState.putString(IntentExtra.EXTRA_TIMELINE_TYPE.key, getTimelineType().save());
-        outState.putBoolean(IntentExtra.EXTRA_TIMELINE_IS_COMBINED.key, isTimelineCombined());
-        outState.putString(IntentExtra.EXTRA_SEARCH_QUERY.key, mSearchQuery);
-        outState.putLong(IntentExtra.EXTRA_SELECTEDUSERID.key, mSelectedUserId);
+        outState.putString(IntentExtra.TIMELINE_TYPE.key, getTimelineType().save());
+        outState.putBoolean(IntentExtra.TIMELINE_IS_COMBINED.key, isTimelineCombined());
+        outState.putString(IntentExtra.SEARCH_QUERY.key, mSearchQuery);
+        outState.putLong(IntentExtra.SELECTED_USERID.key, mSelectedUserId);
     }
     
     boolean restoreState(SharedPreferences savedInstanceState) {
         TimelineType timelineTypeNew = TimelineType.load(savedInstanceState
-                .getString(IntentExtra.EXTRA_TIMELINE_TYPE.key,""));
+                .getString(IntentExtra.TIMELINE_TYPE.key,""));
         if (timelineTypeNew == TimelineType.UNKNOWN) {
             return false;
         }
         setTimelineType(timelineTypeNew);
-        if (savedInstanceState.contains(IntentExtra.EXTRA_TIMELINE_IS_COMBINED.key)) {
-            setTimelineCombined(savedInstanceState.getBoolean(IntentExtra.EXTRA_TIMELINE_IS_COMBINED.key, false));
+        if (savedInstanceState.contains(IntentExtra.TIMELINE_IS_COMBINED.key)) {
+            setTimelineCombined(savedInstanceState.getBoolean(IntentExtra.TIMELINE_IS_COMBINED.key, false));
         }
-        if (savedInstanceState.contains(IntentExtra.EXTRA_SEARCH_QUERY.key)) {
-            mSearchQuery = notNullString(savedInstanceState.getString(IntentExtra.EXTRA_SEARCH_QUERY.key, ""));
+        if (savedInstanceState.contains(IntentExtra.SEARCH_QUERY.key)) {
+            mSearchQuery = notNullString(savedInstanceState.getString(IntentExtra.SEARCH_QUERY.key, ""));
         }
-        if (savedInstanceState.contains(IntentExtra.EXTRA_SELECTEDUSERID.key)) {
-            mSelectedUserId = savedInstanceState.getLong(IntentExtra.EXTRA_SELECTEDUSERID.key, 0);
+        if (savedInstanceState.contains(IntentExtra.SELECTED_USERID.key)) {
+            mSelectedUserId = savedInstanceState.getLong(IntentExtra.SELECTED_USERID.key, 0);
         }
         return true;
     }
     
     void parseIntentData(Intent intentNew) {
         setTimelineType(TimelineType.load(intentNew
-                .getStringExtra(IntentExtra.EXTRA_TIMELINE_TYPE.key)));
+                .getStringExtra(IntentExtra.TIMELINE_TYPE.key)));
         if (getTimelineType() != TimelineType.UNKNOWN) {
-            setTimelineCombined(intentNew.getBooleanExtra(IntentExtra.EXTRA_TIMELINE_IS_COMBINED.key, isTimelineCombined()));
+            setTimelineCombined(intentNew.getBooleanExtra(IntentExtra.TIMELINE_IS_COMBINED.key, isTimelineCombined()));
             mSearchQuery = notNullString(intentNew.getStringExtra(SearchManager.QUERY));
-            mSelectedUserId = intentNew.getLongExtra(IntentExtra.EXTRA_SELECTEDUSERID.key, mSelectedUserId);
+            mSelectedUserId = intentNew.getLongExtra(IntentExtra.SELECTED_USERID.key, mSelectedUserId);
         }
     }
     

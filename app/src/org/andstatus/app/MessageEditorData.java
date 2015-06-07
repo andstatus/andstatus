@@ -118,28 +118,28 @@ class MessageEditorData {
     
     public void save(SharedPreferences.Editor outState) {
         if (outState != null) {
-            outState.putString(IntentExtra.EXTRA_MESSAGE_TEXT.key, messageText);
-            outState.putString(IntentExtra.EXTRA_MEDIA_URI.key, mediaUri.toString());
-            outState.putLong(IntentExtra.EXTRA_INREPLYTOID.key, inReplyToId);
-            outState.putLong(IntentExtra.EXTRA_RECIPIENTID.key, recipientId);
-            outState.putString(IntentExtra.EXTRA_ACCOUNT_NAME.key, getMyAccount().getAccountName());
+            outState.putString(IntentExtra.MESSAGE_TEXT.key, messageText);
+            outState.putString(IntentExtra.MEDIA_URI.key, mediaUri.toString());
+            outState.putLong(IntentExtra.INREPLYTOID.key, inReplyToId);
+            outState.putLong(IntentExtra.RECIPIENTID.key, recipientId);
+            outState.putString(IntentExtra.ACCOUNT_NAME.key, getMyAccount().getAccountName());
         }
     }
     
     static MessageEditorData load(SharedPreferences savedState) {
         if (savedState != null 
-                && savedState.contains(IntentExtra.EXTRA_INREPLYTOID.key) 
-                && savedState.contains(IntentExtra.EXTRA_MESSAGE_TEXT.key)) {
+                && savedState.contains(IntentExtra.INREPLYTOID.key) 
+                && savedState.contains(IntentExtra.MESSAGE_TEXT.key)) {
             MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(
-                    savedState.getString(IntentExtra.EXTRA_ACCOUNT_NAME.key, ""));
+                    savedState.getString(IntentExtra.ACCOUNT_NAME.key, ""));
             MessageEditorData data = new MessageEditorData(ma);
-            String messageText = savedState.getString(IntentExtra.EXTRA_MESSAGE_TEXT.key, "");
-            Uri mediaUri = UriUtils.fromString(savedState.getString(IntentExtra.EXTRA_MEDIA_URI.key, ""));
+            String messageText = savedState.getString(IntentExtra.MESSAGE_TEXT.key, "");
+            Uri mediaUri = UriUtils.fromString(savedState.getString(IntentExtra.MEDIA_URI.key, ""));
             if (!TextUtils.isEmpty(messageText) || !UriUtils.isEmpty(mediaUri)) {
                 data.messageText = messageText;
                 data.mediaUri = mediaUri;
-                data.inReplyToId = savedState.getLong(IntentExtra.EXTRA_INREPLYTOID.key, 0);
-                data.recipientId = savedState.getLong(IntentExtra.EXTRA_RECIPIENTID.key, 0);
+                data.inReplyToId = savedState.getLong(IntentExtra.INREPLYTOID.key, 0);
+                data.recipientId = savedState.getLong(IntentExtra.RECIPIENTID.key, 0);
             }
             return data;
         } else {

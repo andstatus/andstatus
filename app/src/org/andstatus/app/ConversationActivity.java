@@ -42,9 +42,9 @@ import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.data.ParsedUri;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.MyServiceEvent;
-import org.andstatus.app.service.MyServiceListener;
+import org.andstatus.app.service.MyServiceEventsListener;
 import org.andstatus.app.service.MyServiceManager;
-import org.andstatus.app.service.MyServiceReceiver;
+import org.andstatus.app.service.MyServiceEventsReceiver;
 import org.andstatus.app.service.QueueViewer;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.InstanceId;
@@ -56,7 +56,7 @@ import org.andstatus.app.util.UriUtils;
  * 
  * @author yvolk@yurivolkov.com
  */
-public class ConversationActivity extends Activity implements MyServiceListener, ActionableMessageList {
+public class ConversationActivity extends Activity implements MyServiceEventsListener, ActionableMessageList {
     private static final String ACTIVITY_PERSISTENCE_NAME = ConversationActivity.class.getSimpleName();
 
     /**
@@ -69,7 +69,7 @@ public class ConversationActivity extends Activity implements MyServiceListener,
     private volatile MyAccount ma = MyAccount.getEmpty(MyContextHolder.get(), "");
 
     protected long instanceId;
-    MyServiceReceiver myServiceReceiver;
+    MyServiceEventsReceiver myServiceReceiver;
 
     private MessageContextMenu contextMenu;
     /** 
@@ -96,7 +96,7 @@ public class ConversationActivity extends Activity implements MyServiceListener,
             MyLog.v(this, "onCreate reuse the same instanceId=" + instanceId);
         }
         MyServiceManager.setServiceAvailable();
-        myServiceReceiver = new MyServiceReceiver(this);
+        myServiceReceiver = new MyServiceEventsReceiver(this);
 
         selectedMessageId = ParsedUri.fromUri(getIntent().getData()).getMessageId();
 
@@ -247,7 +247,7 @@ public class ConversationActivity extends Activity implements MyServiceListener,
         switch (ActivityRequestCode.fromId(requestCode)) {
             case SELECT_ACCOUNT_TO_ACT_AS:
                 if (resultCode == RESULT_OK) {
-                    MyAccount myAccount = MyContextHolder.get().persistentAccounts().fromAccountName(data.getStringExtra(IntentExtra.EXTRA_ACCOUNT_NAME.key));
+                    MyAccount myAccount = MyContextHolder.get().persistentAccounts().fromAccountName(data.getStringExtra(IntentExtra.ACCOUNT_NAME.key));
                     if (myAccount.isValid()) {
                         contextMenu.setAccountUserIdToActAs(myAccount.getUserId());
                         contextMenu.showContextMenu();

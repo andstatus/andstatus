@@ -32,14 +32,14 @@ import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyService;
 import org.andstatus.app.service.MyServiceEvent;
-import org.andstatus.app.service.MyServiceListener;
+import org.andstatus.app.service.MyServiceEventsListener;
 import org.andstatus.app.service.MyServiceManager;
-import org.andstatus.app.service.MyServiceReceiver;
+import org.andstatus.app.service.MyServiceEventsReceiver;
 import org.andstatus.app.util.MyLog;
 
 import net.jcip.annotations.GuardedBy;
 
-public class SyncAdapter extends AbstractThreadedSyncAdapter implements MyServiceListener {
+public class SyncAdapter extends AbstractThreadedSyncAdapter implements MyServiceEventsListener {
 
     private final Context mContext;
     private volatile CommandData mCommandData;
@@ -91,7 +91,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements MyServic
             mNumIoExceptions = 0;
             mNumParseExceptions = 0;
         }
-        MyServiceReceiver intentReceiver = new MyServiceReceiver(this);
+        MyServiceEventsReceiver intentReceiver = new MyServiceEventsReceiver(this);
         boolean interrupted = true;
         try {
             MyLog.v(this, method + "; Started, account:" + account.name);

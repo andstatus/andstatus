@@ -49,7 +49,7 @@ public class ParsedUri {
             switch (matchedUri) {
                 case TIMELINE:
                 case TIMELINE_SEARCH:
-                case TIMELINE_MSG_ID:
+                case TIMELINE_ITEM:
                 case MSG_ITEM:
                 case ORIGIN_ITEM:
                 case USERLIST:
@@ -87,7 +87,7 @@ public class ParsedUri {
             switch (matchedUri) {
                 case TIMELINE:
                 case TIMELINE_SEARCH:
-                case TIMELINE_MSG_ID:
+                case TIMELINE_ITEM:
                     tt = TimelineType.load(uri.getPathSegments().get(3));
                     break;
                 default:
@@ -129,7 +129,7 @@ public class ParsedUri {
                 switch (matchedUri) {
                     case TIMELINE:
                     case TIMELINE_SEARCH:
-                    case TIMELINE_MSG_ID:
+                    case TIMELINE_ITEM:
                         isCombined = ( (Long.parseLong(uri.getPathSegments().get(5)) == 0) ? false : true);
                         break;
                     default:
@@ -147,7 +147,7 @@ public class ParsedUri {
         long messageId = 0;
         try {
             switch (matchedUri) {
-                case TIMELINE_MSG_ID:
+                case TIMELINE_ITEM:
                     messageId = Long.parseLong(uri.getPathSegments().get(7));
                     break;
                 case MSG_ITEM:
