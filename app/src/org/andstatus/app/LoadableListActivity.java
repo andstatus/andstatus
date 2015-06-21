@@ -107,14 +107,14 @@ public abstract class LoadableListActivity extends Activity implements MyService
     interface ProgressPublisher {
         void publish(String progress);
     }
-
-    protected abstract SyncLoader getSyncLoader();
+    
+    protected abstract SyncLoader newSyncLoader();
     
     private class AsyncLoader extends AsyncTask<Void, String, SyncLoader> implements LoadableListActivity.ProgressPublisher {
         private volatile long timeStarted = 0;
         private volatile long timeLoaded = 0;
         private volatile long timeCompleted = 0;
-        private SyncLoader mSyncLoader = null;
+        private SyncLoader mSyncLoader = newSyncLoader();
 
         SyncLoader getSyncLoader() {
             return mSyncLoader;
@@ -124,7 +124,7 @@ public abstract class LoadableListActivity extends Activity implements MyService
         protected SyncLoader doInBackground(Void... params) {
             timeStarted = System.currentTimeMillis();
             publishProgress("...");
-            SyncLoader loader = LoadableListActivity.this.getSyncLoader();
+            SyncLoader loader = newSyncLoader();
             if (ma.isValidAndSucceeded()) {
                 loader.allowLoadingFromInternet();
                 loader.load(this);
@@ -202,11 +202,17 @@ public abstract class LoadableListActivity extends Activity implements MyService
         this.getActionBar().setTitle(title.toString());
     }
 
-    abstract protected String getCustomTitle();
+    abstract protected CharSequence getCustomTitle();
     
     protected int size() {
         synchronized(loaderLock) {
-            return mCompletedLoader.getSyncLoader().size();
+            return getLoaded().size();
+        }
+    }
+
+    protected SyncLoader getLoaded() {
+        synchronized(loaderLock) {
+            return mCompletedLoader.getSyncLoader();
         }
     }
     

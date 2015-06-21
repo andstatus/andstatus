@@ -20,6 +20,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 
+import org.andstatus.app.LoadableListActivity.SyncLoader;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DbUtils;
@@ -38,7 +39,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-public class ConversationLoader<T extends ConversationItem> {
+public class ConversationLoader<T extends ConversationItem> implements SyncLoader {
     private static final int MAX_INDENT_LEVEL = 19;
     
     private Context context;
@@ -64,6 +65,7 @@ public class ConversationLoader<T extends ConversationItem> {
         this.selectedMessageId = selectedMessageId;
     }
     
+    @Override
     public void load(LoadableListActivity.ProgressPublisher publisher) {
         mProgress = publisher;
         idsOfTheMessagesToFind.clear();
@@ -248,6 +250,19 @@ public class ConversationLoader<T extends ConversationItem> {
 
     public void allowLoadingFromInternet() {
         this.mAllowLoadingFromInternet = true;
+    }
+
+    @Override
+    public int size() {
+        return mMsgs.size();
+    }
+
+    @Override
+    public long getId(int location) {
+        if (location < size()) {
+            return mMsgs.get(location).getMsgId();
+        }
+        return 0;
     }
     
 }
