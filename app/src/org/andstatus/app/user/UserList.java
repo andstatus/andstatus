@@ -19,6 +19,10 @@ package org.andstatus.app.user;
 import android.app.ListActivity;
 import android.os.Bundle;
 
+import org.andstatus.app.R;
+import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.data.ParsedUri;
+
 /**
  *  List of users for different contexts 
  *  e.g. "Users of the message", "Followers of my account(s)" etc.
@@ -26,9 +30,15 @@ import android.os.Bundle;
  */
 public class UserList extends ListActivity {
 
+    protected long mSelectedMessageId = 0;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        
+        mSelectedMessageId = ParsedUri.fromUri(getIntent().getData()).getMessageId();
+        MyPreferences.setThemedContentView(this, R.layout.userlist);
+        
     }
 
 }

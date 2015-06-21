@@ -49,12 +49,8 @@ public class ConversationLoader<T extends ConversationItem> {
     private final TFactory<T> tFactory;
 
     List<T> mMsgs = new ArrayList<T>();
-    progressPublisher mProgress;
+    LoadableListActivity.ProgressPublisher mProgress;
 
-    interface progressPublisher {
-        void publish(String progress);
-    }
-    
     public List<T> getMsgs() {
         return mMsgs;
     }
@@ -68,7 +64,7 @@ public class ConversationLoader<T extends ConversationItem> {
         this.selectedMessageId = selectedMessageId;
     }
     
-    public void load(progressPublisher publisher) {
+    public void load(LoadableListActivity.ProgressPublisher publisher) {
         mProgress = publisher;
         idsOfTheMessagesToFind.clear();
         mMsgs.clear();

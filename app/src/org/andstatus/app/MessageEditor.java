@@ -27,14 +27,12 @@ import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
 
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.net.Uri;
-import android.os.Build;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -55,6 +53,8 @@ import org.andstatus.app.util.*;
  * "Enter your message here" box 
  */
 class MessageEditor {
+    private static final String PERSISTENCE_NAME = MessageEditor.class.getSimpleName();
+
     private ActionableMessageList mMessageList;
     private android.view.ViewGroup mEditorView;
 
@@ -377,15 +377,20 @@ class MessageEditor {
 		return mMessageList.getActivity();
 	}
     
-    public void saveState(SharedPreferences.Editor outState) {
+    public void saveState() {
+        SharedPreferences.Editor outState = MyPreferences.getSharedPreferences(PERSISTENCE_NAME).edit();
         if (outState != null && mEditText != null) {
             dataCurrent.messageText = mEditText.getText().toString();
             dataCurrent.save(outState);
         }
+        outState.commit();
     }
     
-    public void loadState(SharedPreferences savedState) {
-        dataLoaded = MessageEditorData.load(savedState);
+    public void loadState() {
+        SharedPreferences storedState = MyPreferences.getSharedPreferences(PERSISTENCE_NAME);
+        if (storedState != null) {
+            dataLoaded = MessageEditorData.load(storedState);
+        }
     }
     
     public boolean isStateLoaded() {

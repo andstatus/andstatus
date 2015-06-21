@@ -3,7 +3,7 @@ package org.andstatus.app;
 import android.content.Context;
 import android.test.InstrumentationTestCase;
 
-import org.andstatus.app.ConversationLoader.progressPublisher;
+import org.andstatus.app.LoadableListActivity.ProgressPublisher;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
@@ -13,7 +13,7 @@ import org.andstatus.app.util.MyLog;
 
 import java.util.List;
 
-public class ConversationViewLoaderTest extends InstrumentationTestCase implements progressPublisher {
+public class ConversationViewLoaderTest extends InstrumentationTestCase implements LoadableListActivity.ProgressPublisher {
     private MyAccount ma;
     private long selectedMessageId;
     private long progressCounter = 0;

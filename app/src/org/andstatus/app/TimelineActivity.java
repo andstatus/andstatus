@@ -251,7 +251,7 @@ public class TimelineActivity extends ListActivity implements MyServiceEventsLis
         SharedPreferences activityState = MyPreferences.getSharedPreferences(ACTIVITY_PERSISTENCE_NAME);
         if (activityState != null) {
             if (mListParametersNew.restoreState(activityState)) {
-                mMessageEditor.loadState(activityState);
+                mMessageEditor.loadState();
                 mContextMenu.loadState(activityState);
             }
         }
@@ -1109,7 +1109,7 @@ public class TimelineActivity extends ListActivity implements MyServiceEventsLis
     protected void saveActivityState() {
         SharedPreferences.Editor outState = MyPreferences.getSharedPreferences(ACTIVITY_PERSISTENCE_NAME).edit();
         mListParametersNew.saveState(outState);
-        mMessageEditor.saveState(outState);
+        mMessageEditor.saveState();
         mContextMenu.saveState(outState);
         outState.commit();
     }

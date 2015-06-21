@@ -193,5 +193,15 @@ public class ParsedUri {
         }
         return searchString;        
     }
-    
+
+    public long getItemId() {
+        if (getUserListType() == UserListType.UNKNOWN) {
+            if (getTimelineType() == TimelineType.UNKNOWN) {
+                return 0;
+            }
+            return getMessageId();
+        } else {
+            return getUserId();
+        }
+    }
 }

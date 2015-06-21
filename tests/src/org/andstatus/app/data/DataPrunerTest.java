@@ -48,8 +48,8 @@ public class DataPrunerTest extends InstrumentationTestCase  {
                 MyPreferences.getLong(MyPreferences.KEY_DATA_PRUNED_DATE));
         
         // See http://stackoverflow.com/questions/6633748/file-lastmodified-is-never-what-was-set-with-file-setlastmodified
-        long lastModifiedNew = (System.currentTimeMillis()
-                - java.util.concurrent.TimeUnit.DAYS.toMillis(DataPruner.MAX_DAYS_LOGS_TO_KEEP + 1)) / 1000 * 1000;
+        long lastModifiedNew = ((System.currentTimeMillis()
+                - java.util.concurrent.TimeUnit.DAYS.toMillis(DataPruner.MAX_DAYS_LOGS_TO_KEEP + 1)) / 1000) * 1000;
         if (logFile1.setLastModified(lastModifiedNew)) {
             clearPrunedDate();
             File logFile2 = MyLog.getFileInLogDir(filename, true);
@@ -58,7 +58,9 @@ public class DataPrunerTest extends InstrumentationTestCase  {
             assertFalse("File " + logFile2.getName() + " was old: " + millisToDateString(lastModifiedNew), 
                     logFile2.exists());
         } else {
-            fail("Couldn't set modification date of '" + logFile1.getAbsolutePath() + "' to " + millisToDateString(lastModifiedNew));
+            fail("Couldn't set modification date of '" + logFile1.getAbsolutePath() 
+                    + "' to " + millisToDateString(lastModifiedNew)
+                    + " actual: " + millisToDateString(logFile1.lastModified()));
         }
 
         clearPrunedDate();
