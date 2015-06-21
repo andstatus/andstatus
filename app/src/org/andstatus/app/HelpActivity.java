@@ -21,6 +21,7 @@ import org.andstatus.app.backup.RestoreActivity;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.MySettingsActivity;
+import org.andstatus.app.msg.TimelineActivity;
 import org.andstatus.app.util.ActivitySwipeDetector;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SwipeInterface;

@@ -23,7 +23,7 @@ import android.view.KeyEvent;
 import android.view.MenuItem;
 
 import org.andstatus.app.R;
-import org.andstatus.app.TimelineActivity;
+import org.andstatus.app.msg.TimelineActivity;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
 

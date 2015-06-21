@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-package org.andstatus.app;
+package org.andstatus.app.msg;
 
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.text.TextUtils;
 
+import org.andstatus.app.IntentExtra;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.UserInTimeline;
@@ -30,17 +31,17 @@ import org.andstatus.app.util.UriUtils;
 import java.util.ArrayList;
 import java.util.List;
 
-class MessageEditorData {
-    String messageText = "";
+public class MessageEditorData {
+    public String messageText = "";
     Uri mediaUri = Uri.EMPTY;
     /**
      * Id of the Message to which we are replying
      * -1 - is non-existent id
      */
-    long inReplyToId = 0;
+    public long inReplyToId = 0;
     boolean mReplyAll = false; 
-    long recipientId = 0;
-    MyAccount ma = MyAccount.getEmpty(MyContextHolder.get(), "");
+    public long recipientId = 0;
+    public MyAccount ma = MyAccount.getEmpty(MyContextHolder.get(), "");
 
     public MessageEditorData() {
         this(null);

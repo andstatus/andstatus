@@ -16,6 +16,8 @@
 
 package org.andstatus.app;
 
+import org.andstatus.app.msg.TimelineActivity;
+
 // Request codes for called activities
 public enum ActivityRequestCode {
     ATTACH(6),

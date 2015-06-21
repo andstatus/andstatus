@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-package org.andstatus.app;
+package org.andstatus.app.msg;
 
 import android.content.Context;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
+import org.andstatus.app.R;
 import org.andstatus.app.util.MyLog;
 
 /**

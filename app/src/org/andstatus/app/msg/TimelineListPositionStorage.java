@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.andstatus.app;
+package org.andstatus.app.msg;
 
 import android.content.SharedPreferences;
 import android.database.Cursor;
@@ -23,10 +23,10 @@ import android.widget.CursorAdapter;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 
-import org.andstatus.app.TimelineActivity.TimelineTitle;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.TimelineType;
+import org.andstatus.app.msg.TimelineActivity.TimelineTitle;
 import org.andstatus.app.util.MyLog;
 
 import java.util.Date;

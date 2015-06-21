@@ -1,6 +1,8 @@
-package org.andstatus.app;
+package org.andstatus.app.msg;
 
 import android.test.InstrumentationTestCase;
+
+import org.andstatus.app.msg.TimelineActivity;
 
 public class SharingToThisAppTest extends InstrumentationTestCase {
     public void testInputSharedContent() {

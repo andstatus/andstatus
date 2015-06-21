@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.andstatus.app;
+package org.andstatus.app.msg;
 
 import android.content.Intent;
 import android.test.InstrumentationTestCase;
@@ -25,6 +25,7 @@ import org.andstatus.app.data.HtmlContentInserter;
 import org.andstatus.app.data.MessageInserter;
 import org.andstatus.app.data.MyDatabase.OidEnum;
 import org.andstatus.app.data.MyQuery;
+import org.andstatus.app.msg.MessageShare;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.MyHtml;
 

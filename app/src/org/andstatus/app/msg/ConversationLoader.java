@@ -14,12 +14,14 @@
  * limitations under the License.
  */
 
-package org.andstatus.app;
+package org.andstatus.app.msg;
 
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 
+import org.andstatus.app.LoadableListActivity;
+import org.andstatus.app.LoadableListActivity.ProgressPublisher;
 import org.andstatus.app.LoadableListActivity.SyncLoader;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyPreferences;
@@ -66,7 +68,7 @@ public class ConversationLoader<T extends ConversationItem> implements SyncLoade
     }
     
     @Override
-    public void load(LoadableListActivity.ProgressPublisher publisher) {
+    public void load(ProgressPublisher publisher) {
         mProgress = publisher;
         idsOfTheMessagesToFind.clear();
         mMsgs.clear();

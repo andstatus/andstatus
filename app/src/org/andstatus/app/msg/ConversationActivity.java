@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.andstatus.app;
+package org.andstatus.app.msg;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -25,6 +25,10 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.ListAdapter;
 
+import org.andstatus.app.ActivityRequestCode;
+import org.andstatus.app.IntentExtra;
+import org.andstatus.app.LoadableListActivity;
+import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;

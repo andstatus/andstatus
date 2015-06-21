@@ -1,4 +1,4 @@
-package org.andstatus.app;
+package org.andstatus.app.msg;
 
 import android.content.Intent;
 import android.net.Uri;
@@ -7,10 +7,13 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import org.andstatus.app.ListActivityTestHelper;
+import org.andstatus.app.R;
 import org.andstatus.app.account.AccountSelector;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.msg.TimelineActivity;
 import org.andstatus.app.service.MyServiceTestHelper;
 import org.andstatus.app.util.MyLog;
 
@@ -66,7 +69,7 @@ public class SharingMediaToThisAppTest extends ActivityInstrumentationTestCase2<
         TestSuite.waitForIdleSync(this);
         getInstrumentation().sendStringSync("Test message with an attached image");
         helperTimelineActivity.clickView(method, R.id.messageEditSendButton);
-
+        mService.serviceStopped = false;
         mService.waitForServiceStopped();
         
         String message = "Data was posted " + mService.httpConnectionMock.getPostedCounter() + " times; "

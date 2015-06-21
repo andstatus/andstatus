@@ -17,6 +17,7 @@
 package org.andstatus.app;
 
 import android.app.Activity;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.AsyncTask.Status;
 import android.os.Bundle;
@@ -46,6 +47,8 @@ import org.andstatus.app.util.MyLog;
  */
 public abstract class LoadableListActivity extends Activity implements MyServiceEventsListener {
 
+    ParsedUri mParsedUri = ParsedUri.fromUri(Uri.EMPTY);
+
     /**
      * Id of current list item, which is sort of a "center" of the list view
      */
@@ -54,9 +57,9 @@ public abstract class LoadableListActivity extends Activity implements MyService
     /**
      * We use this to request additional items (from Internet)
      */
-    private volatile MyAccount ma = MyAccount.getEmpty(MyContextHolder.get(), "");
+    private MyAccount ma = MyAccount.getEmpty(MyContextHolder.get(), "");
 
-    protected long mInstanceId;
+    private long mInstanceId;
     MyServiceEventsReceiver myServiceReceiver;
 
     private final Object loaderLock = new Object();
@@ -79,9 +82,13 @@ public abstract class LoadableListActivity extends Activity implements MyService
         MyServiceManager.setServiceAvailable();
         myServiceReceiver = new MyServiceEventsReceiver(this);
 
-        ParsedUri parsedUri = ParsedUri.fromUri(getIntent().getData());
-        ma = MyContextHolder.get().persistentAccounts().fromUserId(parsedUri.getAccountUserId());
-        mItemId = parsedUri.getItemId();
+        mParsedUri = ParsedUri.fromUri(getIntent().getData());
+        ma = MyContextHolder.get().persistentAccounts().fromUserId(getParsedUri().getAccountUserId());
+        mItemId = getParsedUri().getItemId();
+    }
+
+    protected ParsedUri getParsedUri() {
+        return mParsedUri;
     }
     
     protected void showList() {
@@ -97,14 +104,14 @@ public abstract class LoadableListActivity extends Activity implements MyService
         }
     }
 
-    interface SyncLoader {
+    public interface SyncLoader {
         void allowLoadingFromInternet();
         void load(ProgressPublisher publisher);
         int size();
         long getId(int location);
     }
     
-    interface ProgressPublisher {
+    public interface ProgressPublisher {
         void publish(String progress);
     }
     

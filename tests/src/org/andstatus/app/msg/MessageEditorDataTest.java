@@ -1,16 +1,16 @@
-package org.andstatus.app;
+package org.andstatus.app.msg;
 
 import android.net.Uri;
 import android.test.InstrumentationTestCase;
 import android.text.TextUtils;
 
-import org.andstatus.app.MessageEditorData;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyDatabase.OidEnum;
 import org.andstatus.app.data.MyQuery;
+import org.andstatus.app.msg.MessageEditorData;
 
 public class MessageEditorDataTest extends InstrumentationTestCase {
 

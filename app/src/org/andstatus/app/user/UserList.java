@@ -16,19 +16,19 @@
 
 package org.andstatus.app.user;
 
-import android.app.ListActivity;
 import android.os.Bundle;
+import android.widget.ListAdapter;
 
+import org.andstatus.app.LoadableListActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.data.ParsedUri;
 
 /**
  *  List of users for different contexts 
  *  e.g. "Users of the message", "Followers of my account(s)" etc.
  *  @author yvolk@yurivolkov.com
  */
-public class UserList extends ListActivity {
+public class UserList extends LoadableListActivity {
 
     protected long mSelectedMessageId = 0;
 
@@ -36,9 +36,26 @@ public class UserList extends ListActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
-        mSelectedMessageId = ParsedUri.fromUri(getIntent().getData()).getMessageId();
+        mSelectedMessageId = getParsedUri().getMessageId();
         MyPreferences.setThemedContentView(this, R.layout.userlist);
-        
+    }
+
+    @Override
+    protected SyncLoader newSyncLoader() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    protected ListAdapter getAdapter() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    protected CharSequence getCustomTitle() {
+        // TODO Auto-generated method stub
+        return null;
     }
 
 }

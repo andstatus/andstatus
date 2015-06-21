@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-package org.andstatus.app;
+package org.andstatus.app.msg;
 
 import android.database.Cursor;
 import android.graphics.drawable.Drawable;
 import android.text.Html;
 import android.text.TextUtils;
 
+import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.AttachedImageDrawable;

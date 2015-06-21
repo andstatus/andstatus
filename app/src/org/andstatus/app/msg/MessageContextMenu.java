@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.andstatus.app;
+package org.andstatus.app.msg;
 
 import android.content.Context;
 import android.content.Intent;
@@ -29,6 +29,9 @@ import android.view.View.OnCreateContextMenuListener;
 import android.widget.AdapterView;
 import android.widget.TextView;
 
+import org.andstatus.app.ContextMenuItem;
+import org.andstatus.app.IntentExtra;
+import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.MatchedUri;
@@ -43,7 +46,7 @@ import org.andstatus.app.util.MyLog;
  */
 public class MessageContextMenu implements OnCreateContextMenuListener {
 
-    ActionableMessageList messageList;
+    public ActionableMessageList messageList;
     
     private View viewOfTheContext = null;
     /**
@@ -56,7 +59,7 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
      *  oh whose behalf we are going to execute an action on this line in the list (message...) 
      */
     private long actorUserIdForCurrentMessage = 0;
-    String imageFilename = null;
+    public String imageFilename = null;
 
     public void setAccountUserIdToActAs(long accountUserIdToActAs) {
         this.accountUserIdToActAs = accountUserIdToActAs;
@@ -273,7 +276,7 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
         }
     }
 
-    void switchTimelineActivity(TimelineType timelineType, boolean isTimelineCombined, long selectedUserId) {
+    public void switchTimelineActivity(TimelineType timelineType, boolean isTimelineCombined, long selectedUserId) {
         Intent intent;
         if (MyLog.isVerboseEnabled()) {
             MyLog.v(this, "switchTimelineActivity; " + timelineType 

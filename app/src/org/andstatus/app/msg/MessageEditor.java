@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
-package org.andstatus.app;
+package org.andstatus.app.msg;
 
+import org.andstatus.app.ActivityRequestCode;
+import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
@@ -52,7 +54,7 @@ import org.andstatus.app.util.*;
 /**
  * "Enter your message here" box 
  */
-class MessageEditor {
+public class MessageEditor {
     private static final String PERSISTENCE_NAME = MessageEditor.class.getSimpleName();
 
     private ActionableMessageList mMessageList;

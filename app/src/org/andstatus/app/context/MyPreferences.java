@@ -17,7 +17,7 @@
 package org.andstatus.app.context;
 
 import org.andstatus.app.R;
-import org.andstatus.app.TimelineActivity;
+import org.andstatus.app.msg.TimelineActivity;
 import org.andstatus.app.util.MyLog;
 
 import android.annotation.TargetApi;

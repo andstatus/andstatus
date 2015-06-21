@@ -1,4 +1,4 @@
-package org.andstatus.app;
+package org.andstatus.app.msg;
 
 import android.content.Context;
 import android.test.InstrumentationTestCase;
@@ -9,11 +9,13 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MyDatabase.OidEnum;
 import org.andstatus.app.data.MyQuery;
+import org.andstatus.app.msg.ConversationLoader;
+import org.andstatus.app.msg.ConversationViewItem;
 import org.andstatus.app.util.MyLog;
 
 import java.util.List;
 
-public class ConversationViewLoaderTest extends InstrumentationTestCase implements LoadableListActivity.ProgressPublisher {
+public class ConversationViewLoaderTest extends InstrumentationTestCase implements ProgressPublisher {
     private MyAccount ma;
     private long selectedMessageId;
     private long progressCounter = 0;

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.andstatus.app;
+package org.andstatus.app.msg;
 
 import android.content.ClipData;
 import android.content.ClipboardManager;
@@ -25,6 +25,9 @@ import android.text.TextUtils;
 import android.view.MenuItem;
 import android.view.View;
 
+import org.andstatus.app.ContextMenuItem;
+import org.andstatus.app.ListActivityTestHelper;
+import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
@@ -33,6 +36,10 @@ import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.data.MyDatabase.OidEnum;
+import org.andstatus.app.msg.ConversationActivity;
+import org.andstatus.app.msg.MessageEditor;
+import org.andstatus.app.msg.MessageEditorData;
+import org.andstatus.app.msg.TimelineActivity;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
 
@@ -208,17 +215,20 @@ public class MessageEditorTest extends android.test.ActivityInstrumentationTestC
         long msgId = helper.getItemIdAtPosition(position);
         String body = MyQuery.msgIdToStringColumnValue(MyDatabase.Msg.BODY, msgId);
 
+        TestSuite.waitForIdleSync(this);
         helper.invokeContextMenuAction(method, position, ContextMenuItem.COPY_TEXT);
         assertEquals(body, getClipboardText());
         
+        TestSuite.waitForIdleSync(this);
         helper.invokeContextMenuAction(method, position, ContextMenuItem.COPY_AUTHOR);
         String text = getClipboardText();
         assertTrue("Text: '" + text + "'", text.startsWith("@") && text.lastIndexOf("@") > 1);
     }
     
-    private String getClipboardText() {
+    private String getClipboardText() throws InterruptedException {
         final String method = "getClipboardText";
         MyLog.v(MessageEditorTest.this, method + " started");
+        TestSuite.waitForIdleSync(this);
         ClipboardReader reader = new ClipboardReader();
         getInstrumentation().runOnMainSync(reader);
         MyLog.v(MessageEditorTest.this, method + "; clip='" + reader.clip + "'");

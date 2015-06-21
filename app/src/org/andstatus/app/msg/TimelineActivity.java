@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.andstatus.app;
+package org.andstatus.app.msg;
 
 import android.app.ActionBar;
 import android.app.Activity;
@@ -52,6 +52,11 @@ import android.widget.CursorAdapter;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import org.andstatus.app.ActivityRequestCode;
+import org.andstatus.app.HelpActivity;
+import org.andstatus.app.IntentExtra;
+import org.andstatus.app.MyAction;
+import org.andstatus.app.R;
 import org.andstatus.app.account.AccountSelector;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;

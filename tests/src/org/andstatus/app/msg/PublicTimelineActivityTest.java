@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.andstatus.app;
+package org.andstatus.app.msg;
 
 import android.content.Intent;
 import android.view.KeyEvent;
@@ -22,6 +22,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
@@ -29,6 +30,7 @@ import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.data.MyDatabase.Msg;
+import org.andstatus.app.msg.TimelineActivity;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
 
@@ -130,8 +132,10 @@ public class PublicTimelineActivityTest extends android.test.ActivityInstrumenta
     }
 
     private void assertMessagesArePublic(String publicMessageText) throws InterruptedException {
+        
         int msgCount = 0;
         for (int attempt=0; attempt < 3; attempt++) {
+            TestSuite.waitForIdleSync(this);
             msgCount = oneAttempt(publicMessageText);
             if (msgCount > 0) {
                 break;

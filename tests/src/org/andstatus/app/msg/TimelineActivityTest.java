@@ -14,12 +14,14 @@
  * limitations under the License.
  */
 
-package org.andstatus.app;
+package org.andstatus.app.msg;
 
 import android.app.Activity;
 import android.content.Intent;
 import android.widget.ListView;
 
+import org.andstatus.app.ListActivityTestHelper;
+import org.andstatus.app.R;
 import org.andstatus.app.account.AccountSelector;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
@@ -27,6 +29,8 @@ import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.ConversationInserter;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.TimelineType;
+import org.andstatus.app.msg.ConversationActivity;
+import org.andstatus.app.msg.TimelineActivity;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;

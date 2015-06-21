@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.andstatus.app;
+package org.andstatus.app.msg;
 
 import android.app.LoaderManager;
 import android.app.SearchManager;
@@ -27,6 +27,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 
+import org.andstatus.app.IntentExtra;
 import org.andstatus.app.data.AccountUserIds;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyDatabase;
