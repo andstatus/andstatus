@@ -265,12 +265,11 @@ public class TimelineActivity extends ListActivity implements MyServiceEventsLis
     /**
      * View.OnClickListener
      */
-    public boolean onCombinedTimelineToggleClick(View item) {
+    public void onCombinedTimelineToggleClick(View item) {
         closeDrawer();
         boolean on = !isTimelineCombined();
         MyPreferences.getDefaultSharedPreferences().edit().putBoolean(MyPreferences.KEY_TIMELINE_IS_COMBINED, on).commit();
         mContextMenu.switchTimelineActivity(mListParametersNew.getTimelineType(), on, mListParametersNew.myAccountUserId);
-        return true;
     }
 
     private void closeDrawer() {
@@ -281,21 +280,19 @@ public class TimelineActivity extends ListActivity implements MyServiceEventsLis
     /**
      * View.OnClickListener
      */
-    public boolean onTimelineTypeButtonClick(View item) {
+    public void onTimelineTypeButtonClick(View item) {
         showDialog(DIALOG_ID_TIMELINE_TYPE);
         closeDrawer();
-        return true;
     }
 
     /**
      * View.OnClickListener
      */
-    public boolean onSelectAccountButtonClick(View item) {
+    public void onSelectAccountButtonClick(View item) {
         if (MyContextHolder.get().persistentAccounts().size() > 1) {
             AccountSelector.selectAccount(TimelineActivity.this, 0, ActivityRequestCode.SELECT_ACCOUNT);
         }
         closeDrawer();
-        return true;
     }
 
     /**

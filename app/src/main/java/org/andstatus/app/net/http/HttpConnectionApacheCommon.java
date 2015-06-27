@@ -123,7 +123,7 @@ public class HttpConnectionApacheCommon {
     /**
      * @throws ConnectionException
      */
-    static final List<NameValuePair> jsonToNameValuePair(JSONObject jso) throws ConnectionException {
+    static List<NameValuePair> jsonToNameValuePair(JSONObject jso) throws ConnectionException {
         List<NameValuePair> formParams = new ArrayList<NameValuePair>();
         Iterator<String> iterator =  jso.keys();
         while (iterator.hasNext()) {

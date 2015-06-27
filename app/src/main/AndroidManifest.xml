@@ -187,7 +187,7 @@
         <activity
             android:name=".account.AccountSettingsActivity"
             android:label="@string/account_settings_activity_title"
-            android:alwaysRetainTaskState="True"
+            android:alwaysRetainTaskState="true"
             android:launchMode="singleTask"
             android:parentActivityName=".context.MySettingsActivity">
             <intent-filter>
@@ -235,7 +235,7 @@
 
         <activity android:name=".origin.OriginEditor"
             android:label="@string/label_origin_system"
-            android:parentActivityName=".origin.OriginList">
+            android:parentActivityName=".context.MySettingsActivity">
         </activity>
 
         <activity android:name=".backup.BackupActivity"

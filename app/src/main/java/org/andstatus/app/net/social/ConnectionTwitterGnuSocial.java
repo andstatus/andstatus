@@ -37,7 +37,7 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Specific implementation of the {@link org.andstatus.app.net.Connection.ApiEnum#GNUSOCIAL_TWITTER}
+ * Specific implementation of the Twitter API in GNU Social
  * @author yvolk@yurivolkov.com
  */
 public class ConnectionTwitterGnuSocial extends ConnectionTwitter1p0 {

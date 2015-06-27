@@ -136,7 +136,6 @@ public class AccountSettingsActivity extends Activity {
      * We should decide if we should use the stored state or a newly created one
      * @param intent
      * @param calledFrom - for logging only
-     * @param savedInstanceState
      */
     protected void restoreState(Intent intent, String calledFrom) {
         String message = "";
@@ -620,7 +619,7 @@ public class AccountSettingsActivity extends Activity {
     /** 
      * Mark the action completed, close this activity and go back to the proper screen.
      * Return result to the caller if necessary.
-     * See also {@link com.android.email.activity.setup.AccountSetupBasics.finish}
+     * See also com.android.email.activity.setup.AccountSetupBasics.finish() ...
      * 
      * @return
      */

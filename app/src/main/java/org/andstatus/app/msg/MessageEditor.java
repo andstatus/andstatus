@@ -271,15 +271,6 @@ public class MessageEditor {
         return mEditorView.getVisibility() == View.VISIBLE;
     }
     
-    /**
-     * Start editing "Status update" (public message) OR "Direct message".
-     * If both replyId and recipientId parameters are the same, we continue editing 
-     * (i.e. previous not sent message is preserved). This behavior is close to how 
-     * the application worked before.
-     * @param textInitial not null String
-     * @param replyToId =0 if not replying
-     * @param recipientId =0 if this is Public message
-     */
     public void startEditingMessage(MessageEditorData dataIn) {
         if (!dataIn.getMyAccount().isValid()) {
             return;

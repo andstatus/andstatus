@@ -43,7 +43,6 @@ public class SharedPreferencesUtil {
     }
 
     /**
-     * @param Context
      * @return Directory for files of SharedPreferences
      */
     public static File prefsDirectory(Context context) {

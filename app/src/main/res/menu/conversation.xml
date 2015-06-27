@@ -14,11 +14,12 @@
 	See the License for the specific language governing permissions and
 	limitations under the License.
  -->
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:app="http://schemas.android.com/apk/res-auto" >
     <item
         android:id="@+id/hideMessageButton"
         android:icon="?attr/hideMessageIcon"
-        android:showAsAction="always"
+        app:showAsAction="always"
         android:title="@string/button_hide"
         android:visible="false">
     </item>
@@ -26,7 +27,7 @@
         android:id="@+id/attach_menu_id"
         android:alphabeticShortcut="a"
         android:icon="?attr/attachIcon"
-        android:showAsAction="ifRoom"
+        app:showAsAction="ifRoom"
         android:title="@string/options_menu_attach"
         android:visible="false">
     </item>
@@ -34,12 +35,12 @@
         android:id="@+id/reload_menu_item"
         android:alphabeticShortcut="r"
         android:icon="?attr/reloadIcon"
-        android:showAsAction="ifRoom"
+        app:showAsAction="ifRoom"
         android:title="@string/options_menu_reload">
     </item>
     <item
         android:id="@+id/commands_queue_id"
-        android:showAsAction="never"
+        app:showAsAction="never"
         android:title="@string/title_preference_notifications_queue">
     </item>
 </menu>

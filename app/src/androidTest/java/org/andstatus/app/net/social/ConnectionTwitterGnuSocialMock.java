@@ -27,8 +27,9 @@ public class ConnectionTwitterGnuSocialMock extends ConnectionTwitterGnuSocial {
         connectionData.setHttpConnectionClass(HttpConnectionMock.class);
         try {
             setAccountData(connectionData);
-        } catch (InstantiationException | IllegalAccessException e) {
-            // TODO Auto-generated catch block
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
             e.printStackTrace();
         }
         http.data.originUrl = origin.getUrl();

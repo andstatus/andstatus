@@ -35,8 +35,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:textAppearance="?attr/messageUsernameAppearance"
-            android:textStyle="?attr/messageUsernameStyle" />
+            style="@style/messageUsernameAppearance" />
 
         <ImageView
             android:id="@+id/message_favorited"
@@ -50,9 +49,7 @@
         android:id="@+id/message_body"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textAppearance="?attr/messageBodyAppearance"
-        android:textColor="?attr/messageBodyColor"
-        android:textStyle="?attr/messageBodyStyle" />
+        style="@style/messageBodyAppearance" />
 
     <org.andstatus.app.AttachedImageView
         android:id="@+id/attached_image"
@@ -64,9 +61,7 @@
         android:id="@+id/message_details"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textAppearance="?attr/messageDetailsAppearance"
-        android:textColor="?attr/messageDetailsColor"
-        android:textStyle="?attr/messageDetailsStyle" />
+        style="@style/messageDetailsAppearance" />
 
     <TextView
         android:id="@+id/id"

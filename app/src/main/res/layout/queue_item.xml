@@ -11,8 +11,7 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="5dip" 
         android:layout_marginRight="5dip"
-        android:textAppearance="?attr/messageUsernameAppearance"
-        android:textStyle="?attr/messageUsernameStyle" />
+        style="?attr/messageUsernameTextAppearance" />
 
     <LinearLayout
         android:layout_width="wrap_content"
@@ -26,8 +25,7 @@
 	        android:layout_height="wrap_content"
 	        android:layout_marginLeft="5dip"
 	        android:layout_marginRight="5dip"
-            android:textAppearance="?attr/messageUsernameAppearance"
-            android:textStyle="?attr/messageUsernameStyle" />
+            style="@style/messageUsernameAppearance" />
 	    <TextView
 	        android:id="@+id/result_summary"
 	        android:minWidth="100dip"
@@ -35,9 +33,7 @@
 	        android:layout_height="wrap_content"
 	        android:layout_marginLeft="5dip" 
 	        android:layout_marginRight="5dip"
-            android:textAppearance="?attr/messageBodyAppearance"
-            android:textColor="?attr/messageBodyColor"
-            android:textStyle="?attr/messageBodyStyle" />
+            style="@style/messageBodyAppearance" />
 	    <TextView android:id="@+id/id"
 	        android:layout_height="wrap_content"
 	        android:layout_width="0dip"

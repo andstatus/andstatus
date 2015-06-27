@@ -14,13 +14,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+	  xmlns:app="http://schemas.android.com/apk/res-auto" >
 	<group android:id="@+id/MAIN_MENU">
 		<item android:title="@string/settings_action" android:id="@+id/preferences_menu_id"
 			android:alphabeticShortcut="p" android:icon="@drawable/ic_menu_preferences"></item>
 	    <item
 	        android:id="@+id/remove_account_menu_id"
-	        android:showAsAction="never"
+	        app:showAsAction="never"
 	        android:title="@string/remove_account_menu_item">
 	    </item>
 	</group>

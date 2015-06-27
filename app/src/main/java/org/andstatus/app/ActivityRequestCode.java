@@ -33,7 +33,7 @@ public enum ActivityRequestCode {
 
     public final int id;
     
-    private ActivityRequestCode(int id) {
+    ActivityRequestCode(int id) {
         this.id = TimelineActivity.RESULT_FIRST_USER + id;
     }
     

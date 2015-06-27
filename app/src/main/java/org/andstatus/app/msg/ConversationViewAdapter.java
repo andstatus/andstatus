@@ -47,6 +47,8 @@ import org.andstatus.app.widget.MySimpleCursorAdapter;
 
 import java.util.List;
 
+import static android.view.View.NO_ID;
+
 public class ConversationViewAdapter extends BaseAdapter {
     private MessageContextMenu contextMenu;
     private Context context;
@@ -147,9 +149,9 @@ public class ConversationViewAdapter extends BaseAdapter {
             if (MyLog.isVerboseEnabled()) {
                 MyLog.v(this,"density=" + displayDensity);
             }
-            viewToTheLeftId = 2;
             ImageView indentView = new ConversationIndentImageView(context, messageIndented, indentPixels);
-            indentView.setId(viewToTheLeftId);
+            indentView.setId(NO_ID);
+            viewToTheLeftId = indentView.getId();
             ((ViewGroup) messageIndented.getParent()).addView(indentView);
         }
 

@@ -96,7 +96,7 @@ public final class UserMsg {
     }
 
     /** If this message is newer than any we got earlier, remember it
-     * @param msgDate may be 0 (will be retrieved here) 
+     * @param msgDateIn may be 0 (will be retrieved here)
      */
     public void onNewMsg(long msgId, long msgDateIn) {
         if (msgId == 0) {

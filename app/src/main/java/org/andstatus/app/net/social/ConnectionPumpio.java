@@ -146,7 +146,7 @@ public class ConnectionPumpio extends Connection {
             if (stringDate.lastIndexOf('Z') == stringDate.length()-1) {
                 datePrepared = stringDate.substring(0, stringDate.length()-1) + "+0000";
             } else {
-                datePrepared = stringDate.replaceAll("\\+0([0-9]){1}\\:00", "+0$100");
+                datePrepared = stringDate.replaceAll("\\+0([0-9]):00", "+0$100");
             }
             try {
                 unixDate = dateFormat.parse(datePrepared).getTime();

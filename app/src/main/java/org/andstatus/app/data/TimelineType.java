@@ -20,6 +20,7 @@ import android.content.Context;
 
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.account.PersistentAccounts;
 import org.andstatus.app.data.MyDatabase.FollowingUser;
 import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.net.social.Connection;
@@ -55,7 +56,7 @@ public enum TimelineType {
             User.FAVORITES_TIMELINE_POSITION, User.FAVORITES_TIMELINE_ITEM_DATE, User.FAVORITES_TIMELINE_DATE, Connection.ApiRoutineEnum.DUMMY),
     /**
      * Messages of the selected User (where he is an Author or a Sender only (e.g. for Reblog/Retweet). 
-     * This User may be not the same as a user of current account ( {@link MyAccount#currentAccountName}}.
+     * This User may be not the same as a user of current account ( {@link PersistentAccounts#getCurrentAccountName()} ).
      * Moreover, the User may not be "AndStatus account" at all.
      * Hence this timeline type requires the User parameter.
      */

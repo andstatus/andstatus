@@ -506,7 +506,6 @@ public class MyService extends Service {
      * Notify background processes that the service is stopping.
      * Stop if background processes has finished.
      * Persist everything that we'll need on next Service creation and free resources
-     * @param boolean forceNow 
      */
     private void stopDelayed(boolean forceNow) {
         if (!setIsStopping(true, forceNow) && !forceNow) {

@@ -14,20 +14,21 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:app="http://schemas.android.com/apk/res-auto" >
     <item
         android:id="@+id/menuItemShare"
-        android:showAsAction="ifRoom"
+        app:showAsAction="ifRoom"
         android:title="@string/menu_item_share">
     </item>
     <item
         android:id="@+id/menuItemResend"
-        android:showAsAction="ifRoom"
+        app:showAsAction="ifRoom"
         android:title="@string/menu_item_resend">
     </item>
     <item
         android:id="@+id/menuItemDelete"
-        android:showAsAction="ifRoom"
+        app:showAsAction="ifRoom"
         android:title="@string/button_delete">
     </item>
 </menu>

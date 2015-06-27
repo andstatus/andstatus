@@ -16,7 +16,7 @@
 
     This XSL stylesheet is used to transform changes.xml into HTML format    
  -->
-<xsl:stylesheet 
+<xsl:stylesheet
   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
   xmlns:android="http://schemas.android.com/apk/res/android"
   version="1.0">
@@ -26,15 +26,15 @@
   	<h1><xsl:copy-of select="/document/header/title/node()"/></h1>
 	<xsl:apply-templates select="/document/header/subtitle" />
   	<xsl:for-each select="/document/release">
-      <h2><xsl:value-of select="@versionDate"/> 
+      <h2><xsl:value-of select="@versionDate"/>
           v.<xsl:value-of select="@android:versionName"/> (<xsl:value-of select="@android:versionCode"/>)
           <xsl:value-of select="@versionTitle"/></h2>
       <ol>
-      <xsl:for-each select="changes/change">  
+      <xsl:for-each select="changes/change">
         <li><xsl:copy-of select="node()"/></li>
-      </xsl:for-each>   
-      </ol>  
-    </xsl:for-each>   
+      </xsl:for-each>
+      </ol>
+    </xsl:for-each>
 </xsl:template>
 
 <xsl:template match="subtitle">

@@ -209,7 +209,7 @@ public enum MatchedUri {
     /**
      * @param accountUserId userId of MyAccount or 0 if not needed
      * @param tableName 
-     * @param item ID or 0 - if the Item doesn't exist
+     * @param itemId ID or 0 - if the Item doesn't exist
      */
     private static Uri getContentItemUri(long accountUserId, String tableName, long itemId) {
         Uri uri = getBaseAccountUri(accountUserId, tableName); 

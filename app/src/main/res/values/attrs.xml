@@ -20,32 +20,18 @@
  -->
 <resources>
 	<declare-styleable name="StyledAttributes">
-		<attr name="messageUsernameAppearance" format="reference" />
+		<attr name="messageUsernameTextAppearance" format="reference" />
 		<attr name="messageUsernameColor" format="reference|color" />
-		<attr name="messageUsernameStyle">
-			<flag name="normal" value="0"/>
-			<flag name="bold" value="1"/>
-			<flag name="italic" value="2"/>
-		</attr>
 
-		<attr name="messageBodyAppearance" format="reference" />
+		<attr name="messageBodyTextAppearance" format="reference" />
 		<attr name="messageBodyColor" format="reference|color" />
-		<attr name="messageBodyStyle">
-			<flag name="normal" value="0"/>
-			<flag name="bold" value="1"/>
-			<flag name="italic" value="2"/>
-		</attr>
 
-		<attr name="messageDetailsAppearance" format="reference" />
+		<attr name="messageDetailsTextAppearance" format="reference" />
 		<attr name="messageDetailsColor" format="reference|color" />
-		<attr name="messageDetailsStyle">
-			<flag name="normal" value="0"/>
-			<flag name="bold" value="1"/>
-			<flag name="italic" value="2"/>
-		</attr>
 
 		<attr name="textEditColor" format="reference|color" />
-		
+        <attr name="textColorLink" format="reference|color" />
+
 		<attr name="myActionOverflowButtonStyle" format="reference" />
 		<attr name="sectionHeaderStyle" format="reference" />
 		

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- 
-    Copyright (c) 2010-2014 yvolk (Yuri Volkov), http://yurivolkov.com
+    Copyright (c) 2010-2015 yvolk (Yuri Volkov), http://yurivolkov.com
 	Copyright (C) 2008 Torgny Bjers
 	
 	Licensed under the Apache License, Version 2.0 (the "License");
@@ -32,17 +32,15 @@
     <!-- ThemeSelector resolves to different themes depending on configuration (see styles.xml files)
     Groups of the Themes below SHOULD be the same in everything but parent Theme -->
 	<style name="Theme.Dark.AndStatus.StandardSize" parent="@style/DarkThemeSelector">
-		<item name="messageUsernameAppearance">?android:attr/textAppearanceSmall</item>
+		<item name="messageUsernameTextAppearance">?android:attr/textAppearanceSmall</item>
 		<item name="messageUsernameColor">?android:attr/textColorSecondary</item>
-		<item name="messageUsernameStyle">bold</item>
 
-		<item name="messageBodyAppearance">?android:attr/textAppearanceMedium</item>
+		<item name="messageBodyTextAppearance">?android:attr/textAppearanceMedium</item>
 		<item name="messageBodyColor">?android:attr/textColorPrimaryNoDisable</item>
-		<item name="messageBodyStyle">normal</item>
 
-		<item name="messageDetailsAppearance">?android:attr/textAppearanceSmall</item>
+		<item name="messageDetailsTextAppearance">?android:attr/textAppearanceSmall</item>
 		<item name="messageDetailsColor">?android:attr/textColorTertiary</item>
-        <item name="messageDetailsStyle">italic</item>
+		<item name="textColorLink">@color/link_text_light</item>
 
         <item name="myActionOverflowButtonStyle">@android:style/Widget.Holo.ActionButton.Overflow</item>
         <item name="sectionHeaderStyle">@style/sectionHeader</item>
@@ -59,18 +57,16 @@
         <item name="sendIcon">@drawable/ic_action_send_now</item>
     </style>
 	<style name="Theme.Light.AndStatus.StandardSize" parent="@style/LightThemeSelector">
-		<item name="messageUsernameAppearance">?android:attr/textAppearanceSmall</item>
+		<item name="messageUsernameTextAppearance">?android:attr/textAppearanceSmall</item>
 		<item name="messageUsernameColor">?android:attr/textColorSecondary</item>
-		<item name="messageUsernameStyle">bold</item>
 
-		<item name="messageBodyAppearance">?android:attr/textAppearanceMedium</item>
+		<item name="messageBodyTextAppearance">?android:attr/textAppearanceMedium</item>
 		<item name="messageBodyColor">?android:attr/textColorPrimaryNoDisable</item>
-		<item name="messageBodyStyle">normal</item>
+        <item name="textColorLink">@color/link_text_dark</item>
 
-		<item name="messageDetailsAppearance">?android:attr/textAppearanceSmall</item>
+		<item name="messageDetailsTextAppearance">?android:attr/textAppearanceSmall</item>
 		<item name="messageDetailsColor">?android:attr/textColorTertiary</item>
-		<item name="messageDetailsStyle">italic</item>
-				
+
         <item name="myActionOverflowButtonStyle">@android:style/Widget.Holo.Light.ActionButton.Overflow</item>
         <item name="sectionHeaderStyle">@style/sectionHeaderLight</item>
         
@@ -86,17 +82,15 @@
         <item name="sendIcon">@drawable/ic_action_send_now_light</item>
     </style>
 	<style name="Theme.DeviceDefault.AndStatus.StandardSize" parent="@style/DeviceDefaultThemeSelector">
-		<item name="messageUsernameAppearance">?android:attr/textAppearanceSmall</item>
+		<item name="messageUsernameTextAppearance">?android:attr/textAppearanceSmall</item>
 		<item name="messageUsernameColor">?android:attr/textColorSecondary</item>
-		<item name="messageUsernameStyle">bold</item>
 
-		<item name="messageBodyAppearance">?android:attr/textAppearanceMedium</item>
+		<item name="messageBodyTextAppearance">?android:attr/textAppearanceMedium</item>
 		<item name="messageBodyColor">?android:attr/textColorPrimaryNoDisable</item>
-		<item name="messageBodyStyle">normal</item>
+        <item name="textColorLink">@color/link_text_light</item>
 
-		<item name="messageDetailsAppearance">?android:attr/textAppearanceSmall</item>
+		<item name="messageDetailsTextAppearance">?android:attr/textAppearanceSmall</item>
 		<item name="messageDetailsColor">?android:attr/textColorTertiary</item>
-		<item name="messageDetailsStyle">italic</item>
 
         <item name="myActionOverflowButtonStyle">@android:style/Widget.Holo.ActionButton.Overflow</item>
         <item name="sectionHeaderStyle">@style/sectionHeader</item>
@@ -121,34 +115,34 @@
     </style>
     
 	<style name="Theme.Dark.AndStatus.Small" parent="@style/Theme.Dark.AndStatus.StandardSize">
-		<item name="messageUsernameAppearance">?android:attr/textAppearanceSmall</item>
-		<item name="messageBodyAppearance">?android:attr/textAppearanceSmall</item>
-		<item name="messageDetailsAppearance">?android:attr/textAppearanceSmall</item>
+		<item name="messageUsernameTextAppearance">?android:attr/textAppearanceSmall</item>
+		<item name="messageBodyTextAppearance">?android:attr/textAppearanceSmall</item>
+		<item name="messageDetailsTextAppearance">?android:attr/textAppearanceSmall</item>
 	</style>
 	<style name="Theme.Light.AndStatus.Small" parent="@style/Theme.Light.AndStatus.StandardSize">
-		<item name="messageUsernameAppearance">?android:attr/textAppearanceSmall</item>
-		<item name="messageBodyAppearance">?android:attr/textAppearanceSmall</item>
-		<item name="messageDetailsAppearance">?android:attr/textAppearanceSmall</item>
+		<item name="messageUsernameTextAppearance">?android:attr/textAppearanceSmall</item>
+		<item name="messageBodyTextAppearance">?android:attr/textAppearanceSmall</item>
+		<item name="messageDetailsTextAppearance">?android:attr/textAppearanceSmall</item>
 	</style>
 	<style name="Theme.DeviceDefault.AndStatus.Small" parent="@style/Theme.DeviceDefault.AndStatus.StandardSize">
-		<item name="messageUsernameAppearance">?android:attr/textAppearanceSmall</item>
-		<item name="messageBodyAppearance">?android:attr/textAppearanceSmall</item>
-		<item name="messageDetailsAppearance">?android:attr/textAppearanceSmall</item>
+		<item name="messageUsernameTextAppearance">?android:attr/textAppearanceSmall</item>
+		<item name="messageBodyTextAppearance">?android:attr/textAppearanceSmall</item>
+		<item name="messageDetailsTextAppearance">?android:attr/textAppearanceSmall</item>
 	</style>
 		
 	<style name="Theme.Dark.AndStatus.Large" parent="@style/Theme.Dark.AndStatus.StandardSize">
-		<item name="messageUsernameAppearance">?android:attr/textAppearanceMedium</item>
-		<item name="messageBodyAppearance">?android:attr/textAppearanceLarge</item>
-		<item name="messageDetailsAppearance">?android:attr/textAppearanceSmall</item>
+		<item name="messageUsernameTextAppearance">?android:attr/textAppearanceMedium</item>
+		<item name="messageBodyTextAppearance">?android:attr/textAppearanceLarge</item>
+		<item name="messageDetailsTextAppearance">?android:attr/textAppearanceSmall</item>
 	</style>
 	<style name="Theme.Light.AndStatus.Large" parent="@style/Theme.Light.AndStatus.StandardSize">
-		<item name="messageUsernameAppearance">?android:attr/textAppearanceMedium</item>
-		<item name="messageBodyAppearance">?android:attr/textAppearanceLarge</item>
-		<item name="messageDetailsAppearance">?android:attr/textAppearanceSmall</item>
+		<item name="messageUsernameTextAppearance">?android:attr/textAppearanceMedium</item>
+		<item name="messageBodyTextAppearance">?android:attr/textAppearanceLarge</item>
+		<item name="messageDetailsTextAppearance">?android:attr/textAppearanceSmall</item>
 	</style>
 	<style name="Theme.DeviceDefault.AndStatus.Large" parent="@style/Theme.DeviceDefault.AndStatus.StandardSize">
-		<item name="messageUsernameAppearance">?android:attr/textAppearanceMedium</item>
-		<item name="messageBodyAppearance">?android:attr/textAppearanceLarge</item>
-		<item name="messageDetailsAppearance">?android:attr/textAppearanceSmall</item>
+		<item name="messageUsernameTextAppearance">?android:attr/textAppearanceMedium</item>
+		<item name="messageBodyTextAppearance">?android:attr/textAppearanceLarge</item>
+		<item name="messageDetailsTextAppearance">?android:attr/textAppearanceSmall</item>
 	</style>
 </resources>

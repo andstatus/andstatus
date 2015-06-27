@@ -101,7 +101,6 @@ public class MyQuery {
     /**
      * Lookup the System's (AndStatus) id from the Originated system's id
      * 
-     * @param uri - URI of the database table
      * @param originId - see {@link MyDatabase.Msg#ORIGIN_ID}
      * @param oid - see {@link MyDatabase.Msg#MSG_OID}
      * @return - id in our System (i.e. in the table, e.g.

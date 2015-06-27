@@ -73,9 +73,10 @@ public class CommandExecutorGetOpenInstances extends CommandExecutorStrategy {
             connection = connectionData.getConnectionClass().newInstance();
             connection.enrichConnectionData(connectionData);
             connection.setAccountData(connectionData);
-        // TODO: Since API19 we will use ReflectiveOperationException as a common superclass 
-        // of these two exceptions: InstantiationException and IllegalAccessException
-        } catch (InstantiationException|IllegalAccessException e) {
+        // TODO: Since API19 we will use ReflectiveOperationException as a common superclass of these two exceptions: InstantiationException and IllegalAccessException
+        } catch (InstantiationException e) {
+            throw new ConnectionException(origin1.toString(), e);
+        } catch (IllegalAccessException e) {
             throw new ConnectionException(origin1.toString(), e);
         }
         return connection;

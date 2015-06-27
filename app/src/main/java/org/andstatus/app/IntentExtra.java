@@ -16,7 +16,13 @@
 
 package org.andstatus.app;
 
+import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.appwidget.MyAppWidgetProvider;
+import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.ParsedUri;
+import org.andstatus.app.data.TimelineType;
+import org.andstatus.app.service.MyService;
+import org.andstatus.app.service.MyServiceState;
 
 /**
  * Names of extras are used in the Intent-messaging 
@@ -34,7 +40,7 @@ public enum IntentExtra{
     ITEMID("ITEMID"),
     COMMAND_RESULT("COMMAND_RESULT"),
     /**
-     * {@link MyService.ServiceState}
+     * {@link MyServiceState}
      */
     SERVICE_STATE("SERVICE_STATE"),
     SERVICE_EVENT("SERVICE_EVENT"),
@@ -81,11 +87,11 @@ public enum IntentExtra{
     
     /**
      * This extra is used to determine which timeline to show in
-     * TimelineActivity Value is {@link MyDatabase.TimelineTypeEnum} 
+     * TimelineActivity Value is {@link TimelineType}
      */
     TIMELINE_TYPE("TIMELINE_TYPE"),
     /**
-     * Is the timeline combined in {@link TimelineActivity} 
+     * Is the timeline combined
      */
     TIMELINE_IS_COMBINED("TIMELINE_IS_COMBINED"),
     ROWS_LIMIT("ROWS_LIMIT"),

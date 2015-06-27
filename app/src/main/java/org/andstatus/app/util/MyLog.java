@@ -267,7 +267,7 @@ public class MyLog {
     
     /**
      * 
-     * @param tag If tag is empty then {@link #APPTAG} is used
+     * @param objTag If tag is empty then {@link #APPTAG} is used
      * @param level {@link android.util.Log#INFO} ...
      * @return
      */

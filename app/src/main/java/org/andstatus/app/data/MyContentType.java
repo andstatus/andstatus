@@ -43,7 +43,7 @@ public enum MyContentType {
     }
     
     /**
-     * @see http://stackoverflow.com/questions/3571223/how-do-i-get-the-file-extension-of-a-file-in-java
+     * see http://stackoverflow.com/questions/3571223/how-do-i-get-the-file-extension-of-a-file-in-java
      * @return empty string if not found
      */
     public static String getExtension(String filename) {

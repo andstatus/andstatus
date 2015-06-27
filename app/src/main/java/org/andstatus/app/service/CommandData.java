@@ -71,7 +71,7 @@ public class CommandData implements Comparable<CommandData> {
     /**
      * This is: 1. Generally: Message ID ({@link MyDatabase.Msg#MSG_ID} of the
      * {@link MyDatabase.Msg}). 2. User ID ( {@link MyDatabase.User#USER_ID} ) for the
-     * {@link CommandEnum#FETCH_USER_TIMELINE}, {@link CommandEnum#FOLLOW_USER},
+     * {@link CommandEnum#FETCH_TIMELINE}, {@link CommandEnum#FOLLOW_USER},
      * {@link CommandEnum#STOP_FOLLOWING_USER}
      */
     protected long itemId = 0;

@@ -38,7 +38,7 @@
 			    android:orientation="vertical" >
 		
 			    <ListView
-			        android:id="@+android:id/list"
+			        android:id="@android:id/list"
 			        android:layout_width="match_parent"
 			        android:layout_height="0dip"
 			        android:layout_weight="1"
@@ -79,9 +79,7 @@
 			            android:layout_width="wrap_content"
 			            android:layout_height="wrap_content"
 			            android:text="@string/syncing"
-			            android:textAppearance="?attr/messageBodyAppearance"
-			            android:textColor="?attr/messageBodyColor"
-			            android:textStyle="?attr/messageBodyStyle" />
+			            style="@style/messageBodyAppearance" />
 		        </LinearLayout>
 		    </LinearLayout>
 	    </RelativeLayout>

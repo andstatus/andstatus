@@ -18,7 +18,7 @@
  -->
 <FictionBook xmlns="http://www.gribuser.ru/xml/fictionbook/2.0"
 xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../res-src/fb2/FictionBook.xsd">
+xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../../../res-src/fb2/FictionBook.xsd">
 <description>
     <title-info>
         <genre>computers</genre>

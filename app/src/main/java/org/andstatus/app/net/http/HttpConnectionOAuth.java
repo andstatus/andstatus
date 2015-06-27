@@ -52,9 +52,6 @@ abstract class HttpConnectionOAuth extends HttpConnection implements OAuthConsum
         }
     }  
     
-    /**
-     * @see org.andstatus.app.net.Connection#getCredentialsPresent()
-     */
     @Override
     public boolean getCredentialsPresent() {
         boolean yes = false;

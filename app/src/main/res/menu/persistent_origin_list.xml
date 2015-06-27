@@ -14,18 +14,19 @@
 	See the License for the specific language governing permissions and
 	limitations under the License.
  -->
-<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:app="http://schemas.android.com/apk/res-auto" >
     <item
         android:id="@+id/addOriginButton"
         android:icon="?attr/newIcon"
-        android:showAsAction="always"
+        app:showAsAction="always"
         android:title="@string/button_add_origin">
     </item>
     <item
         android:id="@+id/discoverOpenInstances"
         android:alphabeticShortcut="g"
         android:icon="?attr/globalSearchIcon"
-        android:showAsAction="ifRoom"
+        app:showAsAction="ifRoom"
         android:title="@string/discover_open_instances_title">
     </item>
 </menu>

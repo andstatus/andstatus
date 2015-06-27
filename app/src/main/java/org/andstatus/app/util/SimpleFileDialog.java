@@ -35,6 +35,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
+import android.graphics.Color;
 import android.os.Environment;
 import android.text.Editable;
 import android.text.TextUtils;
@@ -51,7 +52,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 public class SimpleFileDialog {
-    private static final int DARK_GREY_COLOR = -12303292;
+    private static final int DARK_GREY_COLOR = 0xFF444444;
 
     private static final String ROOT_FOLDER = "/";
     

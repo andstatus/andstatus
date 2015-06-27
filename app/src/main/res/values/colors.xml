@@ -19,4 +19,6 @@
     <color name="messageBackgroundColorLight">#FFFFFFFF</color>
     <color name="replyMarkColor">#FF47a4ee</color>
     <color name="replyMarkColorLight">#FF47a4ee</color>
+	<color name="link_text_dark">#ff180cac</color>
+	<color name="link_text_light">#ff33b5e5</color>
 </resources>

@@ -48,7 +48,7 @@ public class PersistentAccounts {
     /**
      * Get list of all persistent accounts
      * for the purpose of using these "accounts" elsewhere. Value of
-     * {@link #getCredentialsVerified()} is the main differentiator.
+     * {@link MyAccount#getCredentialsVerified()} is the main differentiator.
      * 
      * @return not null 
      */
