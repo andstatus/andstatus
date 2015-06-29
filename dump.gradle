@@ -1,0 +1,54 @@
+apply plugin: 'java'
+
+version = '17.02'  // TODO: Get the version from ":app" module
+archivesBaseName = 'AndStatus'
+
+println "Projects (" + rootProject.getAllprojects().size() + "): " + rootProject.getAllprojects()
+println "Subprojects (" + rootProject.getSubprojects().size() + "): " + rootProject.getSubprojects()
+println "Configurations (" + configurations.size() + "): " + configurations
+
+// With a workaround to include .git files in the dump
+// See https://issues.gradle.org/browse/GRADLE-1883
+import org.apache.tools.ant.DirectoryScanner
+task myZip(type: Zip) {
+    println 'myZip started'
+    doFirst {
+        DirectoryScanner.defaultExcludes.each { DirectoryScanner.removeDefaultExclude it }
+        DirectoryScanner.addDefaultExclude 'something has to be in here or everything gets excluded'
+
+        destinationDir = new File("../Archives")
+
+        for (int i = 1; i < 1000; i++) {
+            classifier = String.format("%03d%s", i, "-dump")
+            File file = archivePath
+            if (!file.exists()) {
+                println file.getName() + " does not exist"
+                break
+            }
+            println file.getName() + " exists"
+        }
+
+        println "On creating " + archiveName + " in " + relativePath(destinationDir)
+    }
+
+    from projectDir
+    include "*/**"
+    exclude "**/.gradle/**"
+    exclude "**/build/**"
+    exclude "**/temp/**"
+
+    doLast {
+        DirectoryScanner.resetDefaultExcludes()
+    }
+}
+
+task dumpAll(dependsOn: myZip) {
+    println 'dumpAll started'
+    doLast {
+        if (myZip.archivePath.exists()) {
+            println "Successfully created '" + myZip.archiveName + "'"
+        } else {
+            println "ERROR: No dump created '" + myZip.archiveName + "'"
+        }
+    }
+}
