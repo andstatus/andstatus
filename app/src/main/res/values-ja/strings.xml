@@ -334,7 +334,7 @@
   <string name="summary_preference_vibration_off">バイブレーションはオフになっています</string>
   <string name="summary_preference_vibration_on">着信メッセージでバイブレーションします</string>
   <string name="system_is_busy_try_later">システムがビジー状態です。後でもう一度やり直してください。</string>
-  <string name="theme_color_entries_defautl">デバイス デフォルト</string>
+  <string name="theme_color_entries_default">デバイス デフォルト</string>
   <string name="theme_color_entries_light">ライト</string>
   <string name="theme_color_entries_dark">ダーク</string>
   <string name="theme_size_entries_small">小</string>

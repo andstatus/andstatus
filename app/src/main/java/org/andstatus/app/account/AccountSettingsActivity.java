@@ -49,6 +49,7 @@ import oauth.signpost.exception.OAuthNotAuthorizedException;
 import org.andstatus.app.ActivityRequestCode;
 import org.andstatus.app.HelpActivity;
 import org.andstatus.app.IntentExtra;
+import org.andstatus.app.MyActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
 import org.andstatus.app.context.MyContextHolder;
@@ -74,7 +75,7 @@ import android.view.*;
  * 
  * @author yvolk@yurivolkov.com
  */
-public class AccountSettingsActivity extends Activity {
+public class AccountSettingsActivity extends MyActivity {
     private static final String TAG = AccountSettingsActivity.class.getSimpleName();
     private static final String FRAGMENT_TAG = AccountSettingsFragment.class.getSimpleName();
 
@@ -107,7 +108,6 @@ public class AccountSettingsActivity extends Activity {
             return;
         }
 
-        MyPreferences.loadTheme(this);
         getFragmentManager().beginTransaction()
         .replace(android.R.id.content, new AccountSettingsFragment(), FRAGMENT_TAG)
         .commit();
@@ -286,7 +286,7 @@ public class AccountSettingsActivity extends Activity {
         if (ma.isValid()) {
             title += " - " + ma.getAccountName();
         }
-        getActionBar().setTitle(title);
+        getSupportActionBar().setTitle(title);
     }
 
     private void showErrors() {

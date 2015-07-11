@@ -15,8 +15,10 @@
 	See the License for the specific language governing permissions and
 	limitations under the License.
  -->
-<menu xmlns:android="http://schemas.android.com/apk/res/android"
-      xmlns:app="http://schemas.android.com/apk/res-auto" >
+<menu xmlns:tools="http://schemas.android.com/tools"
+      xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:app="http://schemas.android.com/apk/res-auto"
+      tools:context=".msg.TimelineActivity">
     <item
         android:id="@+id/createMessageButton"
         android:icon="?attr/postMessageIcon"

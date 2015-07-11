@@ -89,11 +89,6 @@ public class PersistentOriginList extends OriginList {
     }
 
     @Override
-    protected int getLayoutResourceId() {
-        return R.layout.persistent_origin_list;
-    }
-
-    @Override
     protected int getMenuResourceId() {
         return R.menu.persistent_origin_list;
     }

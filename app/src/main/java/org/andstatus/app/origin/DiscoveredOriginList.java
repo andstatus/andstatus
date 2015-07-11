@@ -86,7 +86,7 @@ public class DiscoveredOriginList extends OriginList implements MyServiceEventsL
 
     @Override
     protected int getLayoutResourceId() {
-        return R.layout.discovered_origin_list;
+        return R.layout.my_list_swipe;
     }
     
     @Override

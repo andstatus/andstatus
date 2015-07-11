@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2015 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,47 +14,40 @@
  * limitations under the License.
  */
 
-package org.andstatus.app.user;
+package org.andstatus.app;
 
 import android.os.Bundle;
-import android.widget.ListAdapter;
+import android.support.v7.app.AppCompatActivity;
+import android.view.Menu;
 
-import org.andstatus.app.LoadableListActivity;
-import org.andstatus.app.R;
 import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.util.MyLog;
 
 /**
- *  List of users for different contexts 
- *  e.g. "Users of the message", "Followers of my account(s)" etc.
- *  @author yvolk@yurivolkov.com
+ * @author yvolk@yurivolkov.com
  */
-public class UserList extends LoadableListActivity {
+public class MyActivity extends AppCompatActivity {
 
-    protected long mSelectedMessageId = 0;
+    protected int mLayoutId = 0;
+    private Menu mOptionsMenu = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        mLayoutId = R.layout.my_list_fragment;
+        MyLog.v(this, "onCreate");
+        MyPreferences.loadTheme(this);
         super.onCreate(savedInstanceState);
-        mSelectedMessageId = getParsedUri().getMessageId();
+        if (mLayoutId != 0) {
+            MyPreferences.setContentView(this, mLayoutId);
+        }
     }
 
     @Override
-    protected SyncLoader newSyncLoader() {
-        // TODO Auto-generated method stub
-        return null;
+    public boolean onCreateOptionsMenu(Menu menu) {
+        mOptionsMenu = menu;
+        return super.onCreateOptionsMenu(menu);
     }
 
-    @Override
-    protected ListAdapter getAdapter() {
-        // TODO Auto-generated method stub
-        return null;
+    public Menu getOptionsMenu() {
+        return mOptionsMenu;
     }
-
-    @Override
-    protected CharSequence getCustomTitle() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
 }

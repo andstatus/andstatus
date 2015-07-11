@@ -153,14 +153,31 @@
         <item>GNU social</item>
     </string-array>
     <string-array name="theme_color_entries">
-        <item>@string/theme_color_entries_defautl</item>
-        <item>@string/theme_color_entries_light</item>
+        <item>@string/theme_color_entries_default</item>
         <item>@string/theme_color_entries_dark</item>
+        <item>@string/theme_color_entries_light</item>
     </string-array>
     <string-array name="theme_size_entries">
         <item>@string/theme_size_entries_small</item>
         <item>@string/theme_size_entries_standard</item>
         <item>@string/theme_size_entries_large</item>
+    </string-array>
+    <string-array name="action_bar_color_entries">
+        <item>@string/color_red</item>
+        <item>@string/color_orange</item>
+        <item>@string/color_green</item>
+        <item>@string/color_teal</item>
+        <item>@string/color_blue</item>
+        <item>@string/color_grey</item>
+    </string-array>
+    <string-array name="background_color_entries">
+        <item>@string/color_black</item>
+        <item>@string/color_night</item>
+        <item>@string/color_midnight</item>
+        <item>@string/color_charcoal</item>
+        <item>@string/color_black_cat</item>
+        <item>@string/color_grey_wolf</item>
+        <item>@string/color_carbon_grey</item>
     </string-array>
     <string-array name="user_in_timeline_entries">
         <item>@string/user_in_timeline_entries_username</item>

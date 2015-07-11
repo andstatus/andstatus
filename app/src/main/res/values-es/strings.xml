@@ -336,7 +336,7 @@
   <string name="summary_preference_vibration_off">Vibración desactivada</string>
   <string name="summary_preference_vibration_on">Vibración para los mensajes entrantes</string>
   <string name="system_is_busy_try_later">El sistema está ocupado. Por favor, inténtelo de nuevo más tarde.</string>
-  <string name="theme_color_entries_defautl">Predeterminado</string>
+  <string name="theme_color_entries_default">Predeterminado</string>
   <string name="theme_color_entries_light">Claro</string>
   <string name="theme_color_entries_dark">Oscuro</string>
   <string name="theme_size_entries_small">Pequeño</string>

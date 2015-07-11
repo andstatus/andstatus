@@ -19,29 +19,28 @@ package org.andstatus.app.backup;
 import android.os.AsyncTask;
 import android.os.AsyncTask.Status;
 import android.os.Bundle;
-import android.app.Activity;
 import android.view.View;
 import android.widget.TextView;
 import android.view.View.OnClickListener;
 
+import org.andstatus.app.MyActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SimpleFileDialog;
 
 import java.io.File;
 
-public class BackupActivity extends Activity {
+public class BackupActivity extends MyActivity {
     File backupFolder = new File(SimpleFileDialog.getRootFolder());
     BackupTask asyncTask = null;
     private int progressCounter = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        MyLog.v(this, "onCreate");
+        mLayoutId = R.layout.backup;
         super.onCreate(savedInstanceState);
-        MyPreferences.setThemedContentView(this, R.layout.backup);
+
         setBackupFolder(MyBackupManager.getDefaultBackupDirectory(this));
 
         findViewById(R.id.button_backup).setOnClickListener(new OnClickListener() {

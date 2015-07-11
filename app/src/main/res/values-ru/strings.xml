@@ -335,7 +335,7 @@
   <string name="summary_preference_vibration_off">Виброзвонок отключён</string>
   <string name="summary_preference_vibration_on">Виброзвонок при входящем сообщении включён</string>
   <string name="system_is_busy_try_later">Система сейчас занята. Пожалуйста, попробуйте попозже.</string>
-  <string name="theme_color_entries_defautl">По умолчанию в устройстве</string>
+  <string name="theme_color_entries_default">По умолчанию в устройстве</string>
   <string name="theme_color_entries_light">Светлая</string>
   <string name="theme_color_entries_dark">Тёмная</string>
   <string name="theme_size_entries_small">Малый</string>

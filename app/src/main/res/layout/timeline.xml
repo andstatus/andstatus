@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- 
-	Copyright (c) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
+	Copyright (c) 2015 yvolk (Yuri Volkov), http://yurivolkov.com
 	
 	Licensed under the Apache License, Version 2.0 (the "License");
 	you may not use this file except in compliance with the License.
@@ -16,11 +16,13 @@
  -->
 <android.support.v4.widget.DrawerLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/drawer_layout"
+	xmlns:tools="http://schemas.android.com/tools"
+	android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+	tools:context=".msg.TimelineActivity">
 	<org.andstatus.app.widget.MySwipeRefreshLayout
-	    android:id="@+id/swipeRefreshLayout"
+	    android:id="@+id/myLayoutParent"
 	    android:layout_width="match_parent"
 	    android:layout_height="match_parent"
 	    android:orientation="vertical" >
@@ -30,22 +32,15 @@
 		    android:layout_width="match_parent"
 		    android:layout_height="match_parent"
 		    android:orientation="vertical" >
-	
-		    <LinearLayout
-			    android:id="@+id/myLayoutParent"
-			    android:layout_width="match_parent"
-			    android:layout_height="match_parent"
-			    android:orientation="vertical" >
-		
-			    <ListView
-			        android:id="@android:id/list"
-			        android:layout_width="match_parent"
-			        android:layout_height="0dip"
-			        android:layout_weight="1"
-			        android:scrollbars="vertical" />
-			
-		    </LinearLayout>
-	
+
+            <fragment
+                android:id="@+id/myListParent"
+                android:name="org.andstatus.app.msg.TimelineFragment"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+				tools:layout="@layout/my_list_fragment"/>
+
 		    <!-- On setting background see:
 		     http://stackoverflow.com/questions/11914547/setting-a-view-background-based-on-theme-attribute-crash-the-app -->
 

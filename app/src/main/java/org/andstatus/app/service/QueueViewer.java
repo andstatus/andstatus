@@ -16,7 +16,6 @@
 
 package org.andstatus.app.service;
 
-import android.app.ListActivity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.provider.BaseColumns;
@@ -28,10 +27,10 @@ import android.view.View;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.ListAdapter;
 
+import org.andstatus.app.MyListActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MySimpleAdapter;
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.util.MyLog;
 
@@ -43,7 +42,7 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.PriorityBlockingQueue;
 
-public class QueueViewer extends ListActivity implements MyServiceEventsListener {
+public class QueueViewer extends MyListActivity implements MyServiceEventsListener {
     private static final String KEY_QUEUE_TYPE = "queue_type";
     private static final String KEY_COMMAND_SUMMARY = "command_summary";
     private static final String KEY_RESULT_SUMMARY = "result_summary";
@@ -78,9 +77,9 @@ public class QueueViewer extends ListActivity implements MyServiceEventsListener
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        mLayoutId = R.layout.my_list;
         super.onCreate(savedInstanceState);
         mServiceConnector = new MyServiceEventsReceiver(this);
-        MyPreferences.setThemedContentView(this, R.layout.queue);
         showList();
         registerForContextMenu(getListView());
     }

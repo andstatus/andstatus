@@ -335,7 +335,7 @@ Com suporte a GNU social, Twitter e Pump.io.</string>
   <string name="summary_preference_vibration_off">A vibração está desligada</string>
   <string name="summary_preference_vibration_on">Vibrar ao receber mensagens</string>
   <string name="system_is_busy_try_later">O sistema está ocupado. Tente mais tarde.</string>
-  <string name="theme_color_entries_defautl">Predefinições</string>
+  <string name="theme_color_entries_default">Predefinições</string>
   <string name="theme_color_entries_light">Claro</string>
   <string name="theme_color_entries_dark">Escuro</string>
   <string name="theme_size_entries_small">Pequeno</string>

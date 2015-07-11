@@ -111,6 +111,8 @@ public class MySettingsFragment extends PreferenceFragment implements
         showAuthorInTimeline();
         showCustomLocale();
         showThemeColor();
+        showActionBarColor();
+        showBackgroundColor();
         showThemeSize();
     }
 
@@ -130,7 +132,7 @@ public class MySettingsFragment extends PreferenceFragment implements
     }
 
     private void showConnectionTimeout() {
-        findPreference(MyPreferences.KEY_CONNNECTION_TIMEOUT_SECONDS).setSummary(
+        findPreference(MyPreferences.KEY_CONNECTION_TIMEOUT_SECONDS).setSummary(
                 Long.toString(java.util.concurrent.TimeUnit.MILLISECONDS.toSeconds(MyPreferences
                         .getConnectionTimeoutMs())) + "s");
     }
@@ -148,8 +150,7 @@ public class MySettingsFragment extends PreferenceFragment implements
     }
     
     protected void showRingtone() {
-        String ringtoneString = MyPreferences.getDefaultSharedPreferences().getString(
-                MyPreferences.KEY_RINGTONE_PREFERENCE, null);
+        String ringtoneString = MyPreferences.getString(MyPreferences.KEY_RINGTONE_PREFERENCE, null);
         Uri uri = Uri.EMPTY;
         Ringtone rt = null;
         if (ringtoneString == null) {
@@ -205,9 +206,17 @@ public class MySettingsFragment extends PreferenceFragment implements
     private void showThemeColor() {
         showListPreference(MyPreferences.KEY_THEME_COLOR);
     }
-    
+
     private void showThemeSize() {
         showListPreference(MyPreferences.KEY_THEME_SIZE);
+    }
+
+    private void showBackgroundColor() {
+        showListPreference(MyPreferences.KEY_BACKGROUND_COLOR);
+    }
+
+    private void showActionBarColor() {
+        showListPreference(MyPreferences.KEY_ACTION_BAR_COLOR);
     }
 
     private void showListPreference(String key) {
@@ -238,11 +247,17 @@ public class MySettingsFragment extends PreferenceFragment implements
                 case MyPreferences.KEY_THEME_SIZE:
                     showThemeSize();
                     break;
+                case MyPreferences.KEY_BACKGROUND_COLOR:
+                    showBackgroundColor();
+                    break;
+                case MyPreferences.KEY_ACTION_BAR_COLOR:
+                    showActionBarColor();
+                    break;
                 case MyPreferences.KEY_SYNC_FREQUENCY_SECONDS:
                     MyContextHolder.get().persistentAccounts().onMyPreferencesChanged(MyContextHolder.get());
                     showFrequency();
                     break;
-                case MyPreferences.KEY_CONNNECTION_TIMEOUT_SECONDS:
+                case MyPreferences.KEY_CONNECTION_TIMEOUT_SECONDS:
                     showConnectionTimeout();
                     break;
                 case MyPreferences.KEY_RINGTONE_PREFERENCE:

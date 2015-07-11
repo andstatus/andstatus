@@ -17,7 +17,6 @@
 package org.andstatus.app.account;
 
 import android.app.Activity;
-import android.app.ListActivity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.provider.BaseColumns;
@@ -29,6 +28,7 @@ import android.widget.TextView;
 
 import org.andstatus.app.ActivityRequestCode;
 import org.andstatus.app.IntentExtra;
+import org.andstatus.app.MyListActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
 
@@ -39,7 +39,7 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-public class AccountSelector extends ListActivity {
+public class AccountSelector extends MyListActivity {
     private static final String KEY_VISIBLE_NAME = "visible_name";
     private static final String KEY_CREDENTIALS_VERIFIED = "credentials_verified";
     private static final String KEY_SYNC_AUTO = "sync_auto";
@@ -55,6 +55,7 @@ public class AccountSelector extends ListActivity {
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        mLayoutId = R.layout.my_list;
         super.onCreate(savedInstanceState);
 
         Map<String, MyAccount> listData = newListData();
@@ -66,7 +67,6 @@ public class AccountSelector extends ListActivity {
             return;
         }
         
-        setContentView(R.layout.accountlist);
         setListAdapter(newListAdapter(listData));
 
         getListView().setOnItemClickListener(new OnItemClickListener() {

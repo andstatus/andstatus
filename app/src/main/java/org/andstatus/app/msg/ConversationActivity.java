@@ -47,10 +47,9 @@ public class ConversationActivity extends LoadableListActivity implements Action
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        mLayoutId = R.layout.my_list_fragment;
         super.onCreate(savedInstanceState);
 
-        MyPreferences.setThemedContentView(this, R.layout.conversation);
-        
         mMessageEditor = new MessageEditor(this);
         mMessageEditor.hide();
         mContextMenu = new MessageContextMenu(this);

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- 
-    Copyright (c) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
+    Copyright (c) 2010-2015 yvolk (Yuri Volkov), http://yurivolkov.com
 	Copyright (C) 2008 Torgny Bjers
 	
 	Licensed under the Apache License, Version 2.0 (the "License");
@@ -39,7 +39,7 @@
 	<PreferenceCategory android:title="@string/category_title_preference_settings">
 
 	    <!-- APPEARANCE -->
-        <PreferenceScreen android:key="preference_screen_apperance"
+        <PreferenceScreen android:key="preference_screen_appearance"
             android:summary="@string/summary_preference_appearance"
             android:title="@string/title_preference_appearance">
             <org.andstatus.app.context.MultilineListPreference android:key="custom_locale" 
@@ -48,16 +48,25 @@
                 android:defaultValue="default"
                 android:title="@string/custom_locale_title"
                 android:dialogTitle="@string/custom_locale_title" />
-            <org.andstatus.app.context.MultilineListPreference android:key="theme_color" android:entries="@array/theme_color_entries"
+            <org.andstatus.app.context.MultilineListPreference android:key="theme_color"
+                android:entries="@array/theme_color_entries"
                 android:entryValues="@array/theme_color_values"
-                android:defaultValue="DeviceDefault"
+                android:defaultValue="Dark"
                 android:title="@string/title_preference_theme_color"
                 android:summary="@string/summary_preference_theme_color"
                 android:dialogTitle="@string/dialog_title_preference_theme_color" />
-            <org.andstatus.app.context.MultilineCheckBoxPreference android:key="true_black"
-                android:defaultValue="false"
-                android:title="@string/preference_true_black_title" />
-            <org.andstatus.app.context.MultilineListPreference android:key="theme_size" android:entries="@array/theme_size_entries"
+            <org.andstatus.app.context.MultilineListPreference android:key="action_bar_color"
+                android:entries="@array/action_bar_color_entries"
+                android:entryValues="@array/action_bar_color_values"
+                android:defaultValue="ActionBarTeal"
+                android:title="@string/action_bar_color_preference_title" />
+            <org.andstatus.app.context.MultilineListPreference android:key="background_color"
+                android:entries="@array/background_color_entries"
+                android:entryValues="@array/background_color_values"
+                android:defaultValue="BackgroundColorBlack"
+                android:title="@string/background_color_preference_title" />
+            <org.andstatus.app.context.MultilineListPreference android:key="theme_size"
+                android:entries="@array/theme_size_entries"
                 android:entryValues="@array/theme_size_values"
                 android:defaultValue="StandardSize"
                 android:title="@string/title_preference_theme_size"

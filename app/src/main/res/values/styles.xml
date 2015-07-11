@@ -1,9 +1,100 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
-	<style name="DarkThemeSelector" parent="android:Theme.Holo" />
-    <style name="LightThemeSelector" parent="android:Theme.Holo.Light" />
-    <style name="DeviceDefaultThemeSelector" parent="android:Theme.DeviceDefault" />
-	<style name="DialogThemeSelector" parent="android:Theme.DeviceDefault.Dialog" />
+
+    <string-array name="action_bar_color_values">
+        <item>ActionBarRed</item>
+        <item>ActionBarOrange</item>
+        <item>ActionBarGreen</item>
+        <item>ActionBarTeal</item>
+        <item>ActionBarBlue</item>
+        <item>ActionBarGrey</item>
+    </string-array>
+    <style name="ActionBarRed">
+        <item name="actionBarColor">@color/red_500</item>
+        <item name="actionBarColorDark">@color/red_700</item>
+    </style>
+    <style name="ActionBarOrange">
+        <item name="actionBarColor">@color/orange_500</item>
+        <item name="actionBarColorDark">@color/orange_700</item>
+    </style>
+    <style name="ActionBarGreen">
+        <item name="actionBarColor">@color/green_500</item>
+        <item name="actionBarColorDark">@color/green_700</item>
+    </style>
+    <style name="ActionBarTeal">
+        <item name="actionBarColor">@color/teal_500</item>
+        <item name="actionBarColorDark">@color/teal_700</item>
+    </style>
+    <style name="ActionBarBlue">
+        <item name="actionBarColor">@color/blue_500</item>
+        <item name="actionBarColorDark">@color/blue_700</item>
+    </style>
+    <style name="ActionBarGrey">
+        <item name="actionBarColor">@color/grey_500</item>
+        <item name="actionBarColorDark">@color/grey_700</item>
+    </style>
+
+    <string-array name="theme_size_values">
+        <item>Small</item>
+        <item>StandardSize</item>
+        <item>Large</item>
+    </string-array>
+    <style name="StandardSize">
+        <item name="messageUsernameTextAppearance">?android:attr/textAppearanceSmall</item>
+        <item name="messageUsernameColor">?android:attr/textColorSecondary</item>
+
+        <item name="messageBodyTextAppearance">?android:attr/textAppearanceMedium</item>
+        <item name="messageBodyColor">?android:attr/textColorPrimaryNoDisable</item>
+
+        <item name="messageDetailsTextAppearance">?android:attr/textAppearanceSmall</item>
+        <item name="messageDetailsColor">?android:attr/textColorTertiary</item>
+
+        <item name="myActionOverflowButtonStyle">@android:style/Widget.Holo.ActionButton.Overflow</item>
+        <item name="sectionHeaderStyle">@style/sectionHeader</item>
+    </style>
+    <style name="Small" parent="@style/StandardSize">
+        <item name="messageUsernameTextAppearance">?android:attr/textAppearanceSmall</item>
+        <item name="messageBodyTextAppearance">?android:attr/textAppearanceSmall</item>
+        <item name="messageDetailsTextAppearance">?android:attr/textAppearanceSmall</item>
+    </style>
+    <style name="Large" parent="@style/StandardSize">
+        <item name="messageUsernameTextAppearance">?android:attr/textAppearanceMedium</item>
+        <item name="messageBodyTextAppearance">?android:attr/textAppearanceLarge</item>
+        <item name="messageDetailsTextAppearance">?android:attr/textAppearanceSmall</item>
+    </style>
+
+    <string-array name="background_color_values">
+        <item>BackgroundColorBlack</item>
+        <item>BackgroundColorNight</item>
+        <item>BackgroundColorMidnight</item>
+        <item>BackgroundColorCharcoal</item>
+        <item>BackgroundColorBlackCat</item>
+        <item>BackgroundColorGreyWolf</item>
+        <item>BackgroundColorCarbonGrey</item>
+    </string-array>
+    <style name="BackgroundColorBlack">
+        <item name="myBackgroundColor">@color/black</item>
+    </style>
+    <style name="BackgroundColorNight">
+        <item name="myBackgroundColor">@color/night</item>
+    </style>
+    <style name="BackgroundColorMidnight">
+        <item name="myBackgroundColor">@color/midnight</item>
+    </style>
+    <style name="BackgroundColorCharcoal">
+        <item name="myBackgroundColor">@color/charcoal</item>
+    </style>
+    <style name="BackgroundColorBlackCat">
+        <item name="myBackgroundColor">@color/black_cat</item>
+    </style>
+    <style name="BackgroundColorGreyWolf">
+        <item name="myBackgroundColor">@color/grey_wolf</item>
+    </style>
+    <style name="BackgroundColorCarbonGrey">
+        <item name="myBackgroundColor">@color/carbon_grey</item>
+    </style>
+
+	<style name="DialogThemeSelector" parent="Base.Theme.AppCompat.Dialog" />
     
     <style name="WidgetStyle">
          <item name="android:background">@drawable/widget_bg</item>

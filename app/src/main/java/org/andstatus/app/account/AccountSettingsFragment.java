@@ -71,7 +71,6 @@ public class AccountSettingsFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.account_settings, container, false);
-        MyPreferences.setTrueBlack(view);
         return view;
     }
 

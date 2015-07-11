@@ -40,7 +40,7 @@ public class AddedMessagesNotifier {
 
     private AddedMessagesNotifier(MyContext myContext) {
         this.myContext = myContext;
-        mNotificationsVibrate = MyPreferences.getDefaultSharedPreferences().getBoolean("vibration", false);
+        mNotificationsVibrate = MyPreferences.getBoolean("vibration", false);
     }
 
     public static AddedMessagesNotifier newInstance(MyContext myContext) {
@@ -48,7 +48,7 @@ public class AddedMessagesNotifier {
     }
 
     public void update(CommandResult result) {
-        if (!MyPreferences.getDefaultSharedPreferences().getBoolean(MyPreferences.KEY_NOTIFICATIONS_ENABLED, false)) {
+        if (!MyPreferences.getBoolean(MyPreferences.KEY_NOTIFICATIONS_ENABLED, false)) {
             return;
         }
         notifyForOneType(TimelineType.HOME, result.getMessagesAdded());
@@ -99,11 +99,11 @@ public class AddedMessagesNotifier {
     private boolean areNotificationsEnabled(TimelineType timelineType) {
         switch (timelineType) {
             case MENTIONS:
-                return MyPreferences.getDefaultSharedPreferences().getBoolean(MyPreferences.KEY_NOTIFY_OF_MENTIONS, false);
+                return MyPreferences.getBoolean(MyPreferences.KEY_NOTIFY_OF_MENTIONS, false);
             case DIRECT:
-                return MyPreferences.getDefaultSharedPreferences().getBoolean(MyPreferences.KEY_NOTIFY_OF_DIRECT_MESSAGES, false);
+                return MyPreferences.getBoolean(MyPreferences.KEY_NOTIFY_OF_DIRECT_MESSAGES, false);
             case HOME:
-                return MyPreferences.getDefaultSharedPreferences().getBoolean(MyPreferences.KEY_NOTIFY_OF_HOME_TIMELINE, false);
+                return MyPreferences.getBoolean(MyPreferences.KEY_NOTIFY_OF_HOME_TIMELINE, false);
             default:
                 return true;
         }
@@ -111,8 +111,7 @@ public class AddedMessagesNotifier {
 
     private void notify(TimelineType timelineType, int messageTitleResId,
             String messageText) {
-        String ringtone = MyPreferences.getDefaultSharedPreferences()
-                .getString(MyPreferences.KEY_RINGTONE_PREFERENCE, null);
+        String ringtone = MyPreferences.getString(MyPreferences.KEY_RINGTONE_PREFERENCE, null);
         Uri sound = TextUtils.isEmpty(ringtone) ? null : Uri.parse(ringtone);
 
         Notification.Builder builder =

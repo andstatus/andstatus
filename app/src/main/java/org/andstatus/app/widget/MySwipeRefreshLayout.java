@@ -16,12 +16,12 @@
 
 package org.andstatus.app.widget;
 
-import android.app.ListActivity;
 import android.content.Context;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.AttributeSet;
 import android.view.View;
 
+import org.andstatus.app.MyListActivity;
 import org.andstatus.app.util.MyLog;
 
 /**
@@ -29,7 +29,7 @@ import org.andstatus.app.util.MyLog;
   */
 public class MySwipeRefreshLayout extends SwipeRefreshLayout {
     private CanChildScrollUpCallback mCanChildScrollUpCallback;
-    private ListActivity mListActivity;
+    private MyListActivity mListActivity;
     
     public MySwipeRefreshLayout(Context context) {
         this(context, null);
@@ -37,8 +37,8 @@ public class MySwipeRefreshLayout extends SwipeRefreshLayout {
     
     public MySwipeRefreshLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
-        if (ListActivity.class.isInstance(context)) {
-            mListActivity = (ListActivity) context;
+        if (MyListActivity.class.isInstance(context)) {
+            mListActivity = (MyListActivity) context;
             MyLog.v(this, "Created for " + MyLog.objTagToString(mListActivity));
         }
     }

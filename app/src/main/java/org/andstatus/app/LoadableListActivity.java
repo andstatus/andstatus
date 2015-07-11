@@ -16,7 +16,6 @@
 
 package org.andstatus.app;
 
-import android.app.Activity;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.AsyncTask.Status;
@@ -30,6 +29,7 @@ import net.jcip.annotations.GuardedBy;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.ParsedUri;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.MyServiceEvent;
@@ -45,7 +45,7 @@ import org.andstatus.app.util.MyLog;
  * 
  * @author yvolk@yurivolkov.com
  */
-public abstract class LoadableListActivity extends Activity implements MyServiceEventsListener {
+public abstract class LoadableListActivity extends MyActivity implements MyServiceEventsListener {
 
     ParsedUri mParsedUri = ParsedUri.fromUri(Uri.EMPTY);
 
@@ -206,7 +206,7 @@ public abstract class LoadableListActivity extends Activity implements MyService
         if (!TextUtils.isEmpty(progress)) {
             I18n.appendWithSpace(title, progress);
         }
-        this.getActionBar().setTitle(title.toString());
+        getSupportActionBar().setTitle(title.toString());
     }
 
     abstract protected CharSequence getCustomTitle();

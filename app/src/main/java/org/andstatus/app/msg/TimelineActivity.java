@@ -16,11 +16,9 @@
 
 package org.andstatus.app.msg;
 
-import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.app.ListActivity;
 import android.app.LoaderManager.LoaderCallbacks;
 import android.app.SearchManager;
 import android.content.DialogInterface;
@@ -28,34 +26,34 @@ import android.content.Intent;
 import android.content.Loader;
 import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.database.MatrixCursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.SearchRecentSuggestions;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
-import android.widget.AbsListView.OnScrollListener;
 import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
 import android.widget.CheckBox;
 import android.widget.CursorAdapter;
 import android.widget.LinearLayout;
+import android.widget.ListAdapter;
 import android.widget.TextView;
 
 import org.andstatus.app.ActivityRequestCode;
 import org.andstatus.app.HelpActivity;
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.MyAction;
+import org.andstatus.app.MyListActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.account.AccountSelector;
 import org.andstatus.app.account.MyAccount;
@@ -67,7 +65,6 @@ import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.TimelineSearchSuggestionsProvider;
-import org.andstatus.app.data.TimelineSql;
 import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.data.TimelineViewBinder;
 import org.andstatus.app.service.CommandData;
@@ -90,9 +87,8 @@ import java.util.List;
 /**
  * @author yvolk@yurivolkov.com
  */
-public class TimelineActivity extends ListActivity implements MyServiceEventsListener,
-        OnScrollListener, OnItemClickListener, ActionableMessageList, 
-        LoaderCallbacks<Cursor> {
+public class TimelineActivity extends MyListActivity implements MyServiceEventsListener,
+        ActionableMessageList, LoaderCallbacks<Cursor> {
     private static final int DIALOG_ID_TIMELINE_TYPE = 9;
     private static final int LOADER_ID = 1;
     private static final String ACTIVITY_PERSISTENCE_NAME = TimelineActivity.class.getSimpleName();
@@ -108,11 +104,6 @@ public class TimelineActivity extends ListActivity implements MyServiceEventsLis
     /** Parameters of currently shown Timeline */
     private TimelineListParameters mListParameters;
     private TimelineListParameters mListParametersNew;
-
-    /**
-     * Is saved position restored (or some default positions set)?
-     */
-    private boolean mPositionRestored = false;
 
     /**
      * The is no more items in the query, so don't try to load more pages
@@ -141,7 +132,6 @@ public class TimelineActivity extends ListActivity implements MyServiceEventsLis
 
     private MessageContextMenu mContextMenu;
     private MessageEditor mMessageEditor;
-    private Menu mOptionsMenu = null;
 
     private String mTextToShareViaThisApp = "";
     private Uri mMediaToShareViaThisApp = Uri.EMPTY;
@@ -158,7 +148,6 @@ public class TimelineActivity extends ListActivity implements MyServiceEventsLis
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
         mListParameters = new TimelineListParameters(this);
         mListParametersNew = new TimelineListParameters(this);
         if (mInstanceId == 0) {
@@ -177,14 +166,15 @@ public class TimelineActivity extends ListActivity implements MyServiceEventsLis
                     + (MyContextHolder.get().isReady() ? "" : ", MyContext is not ready")
                     );
         }
+        mLayoutId = R.layout.timeline;
+        super.onCreate(savedInstanceState);
+
         if (HelpActivity.startFromActivity(this)) {
             return;
         }
 
         mListParametersNew.myAccountUserId = MyContextHolder.get().persistentAccounts().getCurrentAccountUserId();
         mServiceConnector = new MyServiceEventsReceiver(this);
-
-        MyPreferences.setThemedContentView(this, R.layout.timeline);
 
         mSyncIndicator = findViewById(R.id.sync_indicator);
         mContextMenu = new MessageContextMenu(this);
@@ -193,18 +183,6 @@ public class TimelineActivity extends ListActivity implements MyServiceEventsLis
 
         restoreActivityState();
         
-        LayoutInflater inflater = LayoutInflater.from(this);
-        // Create list footer to show the progress of message loading
-        mLoadingLayout = (LinearLayout) inflater.inflate(R.layout.item_loading, null);
-        getListView().addFooterView(mLoadingLayout);
-
-        createListAdapter(getEmptyCursor());
-
-        // Attach listeners to the message list
-        getListView().setOnScrollListener(this);
-        getListView().setOnCreateContextMenuListener(mContextMenu);
-        getListView().setOnItemClickListener(this);
-
         initializeDrawer();
 
         if (savedInstanceState == null) {
@@ -217,7 +195,7 @@ public class TimelineActivity extends ListActivity implements MyServiceEventsLis
     }
 
     private void initializeSwipeRefresh() {
-        mSwipeRefreshLayout = (MySwipeRefreshLayout) findViewById(R.id.swipeRefreshLayout);
+        mSwipeRefreshLayout = (MySwipeRefreshLayout) findViewById(R.id.myLayoutParent);
         mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
@@ -244,12 +222,8 @@ public class TimelineActivity extends ListActivity implements MyServiceEventsLis
 
         mDrawerLayout.setDrawerListener(mDrawerToggle);
 
-        getActionBar().setDisplayHomeAsUpEnabled(true);
-        getActionBar().setHomeButtonEnabled(true);
-    }
-
-    private Cursor getEmptyCursor() {
-        return new MatrixCursor(TimelineSql.getTimelineProjection());
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setHomeButtonEnabled(true);
     }
 
     private void restoreActivityState() {
@@ -339,10 +313,6 @@ public class TimelineActivity extends ListActivity implements MyServiceEventsLis
         }
     }
 
-    private void saveListPosition() {
-        new TimelineListPositionStorage(getListAdapter(), getListView(), mListParameters).save();
-    }
-
     @Override
     public void onContentChanged() {
         if (MyLog.isLoggable(this, MyLog.DEBUG)) {
@@ -360,14 +330,6 @@ public class TimelineActivity extends ListActivity implements MyServiceEventsLis
         }
         mServiceConnector.unregisterReceiver(this);
         setSyncIndicator(method, false);
-
-        if (mPositionRestored) {
-            setFastScrollThumb(false);
-            if (!isLoading()) {
-                saveListPosition();
-            }
-            mPositionRestored = false;
-        }
         saveActivityState();
         MyContextHolder.get().setInForeground(false);
     }
@@ -377,10 +339,6 @@ public class TimelineActivity extends ListActivity implements MyServiceEventsLis
             MyLog.v(this, source + " set Sync indicator to " + isVisible);
             mSyncIndicator.setVisibility(isVisible ? View.VISIBLE : View.GONE);
         }
-    }
-    
-    private void setFastScrollThumb(boolean isVisible) {
-        getListView().setFastScrollEnabled(isVisible);
     }
 
     /**
@@ -409,22 +367,10 @@ public class TimelineActivity extends ListActivity implements MyServiceEventsLis
         if (!mFinishing) {
             mFinishing = true;
         }
-        savePositionOnUiThread();
+        if (getList() != null) {
+            getList().savePositionOnUiThread();
+        }
         super.finish();
-    }
-
-    // That advice doesn't fit here:
-    // see http://stackoverflow.com/questions/5996885/how-to-wait-for-android-runonuithread-to-be-finished
-    private void savePositionOnUiThread() {
-        Runnable runnable = new Runnable() {
-            @Override 
-            public void run() {
-                if (mPositionRestored) {
-                    saveListPosition();
-                }
-            }
-        };
-        runOnUiThread(runnable);
     }
 
     @Override
@@ -473,7 +419,6 @@ public class TimelineActivity extends ListActivity implements MyServiceEventsLis
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-        mOptionsMenu = menu;
         MyAccount ma = MyContextHolder.get().persistentAccounts().getCurrentAccount();
         boolean enableReload = isTimelineCombined() || ma.isValidAndSucceeded();
         MenuItem item = menu.findItem(R.id.reload_menu_item);
@@ -525,7 +470,6 @@ public class TimelineActivity extends ListActivity implements MyServiceEventsLis
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-
         if (mDrawerToggle.onOptionsItemSelected(item)) {
             return true;
         }
@@ -560,15 +504,6 @@ public class TimelineActivity extends ListActivity implements MyServiceEventsLis
         startActivity(intent);
     }
 
-    /**
-     * Listener that checks for clicks on the main list view.
-     * 
-     * @param adapterView
-     * @param view
-     * @param position
-     * @param id
-     */
-    @Override
     public void onItemClick(AdapterView<?> adapterView, final View view, final int position, final long id) {
         if (id <= 0) {
             if (MyLog.isVerboseEnabled()) {
@@ -641,10 +576,9 @@ public class TimelineActivity extends ListActivity implements MyServiceEventsLis
         return userId;
     }
 
-    @Override
     public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount,
-            int totalItemCount) {
-        if (!mNoMoreItems && mPositionRestored && !isLoading()) {
+                         int totalItemCount) {
+        if (!mNoMoreItems) {
             // Idea from http://stackoverflow.com/questions/1080811/android-endless-list
             boolean loadMore = (visibleItemCount > 0) && (firstVisibleItem > 0)
                     && (firstVisibleItem + visibleItemCount >= totalItemCount);
@@ -652,21 +586,6 @@ public class TimelineActivity extends ListActivity implements MyServiceEventsLis
                 MyLog.d(this, "Start Loading more items, rows=" + totalItemCount);
                 queryListData(true);
             }
-        }
-    }
-
-    @Override
-    public void onScrollStateChanged(AbsListView view, int scrollState) {
-        switch (scrollState) {
-            case OnScrollListener.SCROLL_STATE_IDLE:
-                break;
-            case OnScrollListener.SCROLL_STATE_TOUCH_SCROLL:
-                break;
-            case OnScrollListener.SCROLL_STATE_FLING:
-                setFastScrollThumb(true);
-                break;
-            default:
-                break;
         }
     }
 
@@ -845,6 +764,17 @@ public class TimelineActivity extends ListActivity implements MyServiceEventsLis
                 , mRateLimitText).updateTitle(this);
     }
 
+    public View.OnCreateContextMenuListener getContextMenu() {
+        return mContextMenu;
+    }
+
+    public void saveListPosition() {
+        TimelineFragment list = getList();
+        if (list != null) {
+            new TimelineListPositionStorage(getListAdapter(), list.getListView(), mListParameters).save();
+        }
+    }
+
     static class TimelineTitle {
         StringBuilder title = new StringBuilder();
         StringBuilder subTitle = new StringBuilder();
@@ -884,8 +814,8 @@ public class TimelineActivity extends ListActivity implements MyServiceEventsLis
             I18n.appendWithSpace(subTitle, additionalTitleText);
         }
 
-        private void updateTitle(Activity activity) {
-            ActionBar actionBar = activity.getActionBar();
+        private void updateTitle(AppCompatActivity activity) {
+            ActionBar actionBar = activity.getSupportActionBar();
             if (actionBar != null) {
                 actionBar.setTitle(title);
                 actionBar.setSubtitle(subTitle);
@@ -943,8 +873,7 @@ public class TimelineActivity extends ListActivity implements MyServiceEventsLis
         final String method = "onCreateLoader";
         Bundle args = argsIn==null ? new Bundle() : argsIn;
         MyLog.v(this, method + " #" + id);
-        args.putBoolean(IntentExtra.POSITION_RESTORED.key, mPositionRestored
-                && (getListAdapter() != null));
+        args.putBoolean(IntentExtra.POSITION_RESTORED.key, isPositionRestored());
 
         TimelineListParameters params = TimelineListParameters.clone(mListParametersNew, args);
         Intent intent = getIntent();
@@ -953,6 +882,13 @@ public class TimelineActivity extends ListActivity implements MyServiceEventsLis
         }
         saveSearchQuery();
         return new TimelineCursorLoader1(params);
+    }
+
+    private boolean isPositionRestored() {
+        if (getListAdapter() != null) {
+            return getList().isPositionRestored();
+        }
+        return false;
     }
 
     private void saveSearchQuery() {
@@ -1002,13 +938,16 @@ public class TimelineActivity extends ListActivity implements MyServiceEventsLis
 
     // Parameters are not null
     private void changeListContent(final TimelineCursorLoader1 myLoader, final Cursor cursor) {
-        final String method = "changeListContent1"; 
+        final String method = "changeListContent1";
+        TimelineFragment list = getList();
+        if (list == null) {
+            return;
+        }
 
         // This check will prevent continuous loading...
         mNoMoreItems = myLoader.getParams().mIncrementallyLoadingPages &&
                 cursor.getCount() <= getListAdapter().getCount();
         saveListPosition();
-
 
         // This is possible from main thread only, otherwise we are getting an exception
         // The hack is to avoid the Main thread freeze: https://github.com/andstatus/andstatus/issues/183
@@ -1018,7 +957,7 @@ public class TimelineActivity extends ListActivity implements MyServiceEventsLis
         MySimpleCursorAdapter.afterSwapCursor();
 
         mListParameters = myLoader.getParams();
-        mPositionRestored = new TimelineListPositionStorage(getListAdapter(), getListView(), mListParameters).restoreListPosition();
+        list.restoreListPosition(mListParameters);
 
         boolean requestNextPage = false;
         if (!myLoader.getParams().mLoadOneMorePage && myLoader.getParams().mLastItemSentDate > 0
@@ -1034,6 +973,10 @@ public class TimelineActivity extends ListActivity implements MyServiceEventsLis
         setLoading(method, false);
         updateScreen();
         clearNotifications();
+    }
+
+    protected TimelineFragment getList() {
+        return (TimelineFragment) super.getList();
     }
 
     private void launchReloadIfNeeded(TimelineType timelineToReload) {
@@ -1213,7 +1156,9 @@ public class TimelineActivity extends ListActivity implements MyServiceEventsLis
                 toIntArray(viewIds), 0);
         mCursorAdapter.setViewBinder(new TimelineViewBinder());
 
-        setListAdapter(mCursorAdapter);
+        if (getList() != null) {
+            getList().setListAdapter(mCursorAdapter);
+        }
     }
 
     /**
@@ -1315,15 +1260,10 @@ public class TimelineActivity extends ListActivity implements MyServiceEventsLis
         }
     }
 
-    private boolean isLoading() {
-        return mIsLoading;
-    }
-
     private void setLoading(String source, boolean isLoading) {
-        if (isLoading() != isLoading && !isFinishing()) {
-            mIsLoading = isLoading;
-            MyLog.v(this, source + " set isLoading to " + isLoading);
-            mLoadingLayout.setVisibility(isLoading ? View.VISIBLE : View.INVISIBLE);
+        TimelineFragment list = getList();
+        if (list != null && list.isLoading() != isLoading && !isFinishing()) {
+            list.setLoading(source, isLoading);
         }
     }
 
@@ -1334,10 +1274,6 @@ public class TimelineActivity extends ListActivity implements MyServiceEventsLis
             MyLog.v(this, source + " set Syncing to " + isSyncing);
              mSwipeRefreshLayout.setRefreshing(isSyncing);
         }
-    }
-    
-    protected Menu getOptionsMenu() {
-        return mOptionsMenu;
     }
 
     @Override

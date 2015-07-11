@@ -42,21 +42,13 @@ import java.util.Locale;
 
 /**
  * This is a central point of accessing SharedPreferences
- * Noninstantiable class 
  * @author yvolk@yurivolkov.com
  */
 public class MyPreferences {
     private static final String TAG = MyPreferences.class.getSimpleName();
 
-    public static final Class<? extends Activity> HOME_ACTIVITY = TimelineActivity.class; 
-    
     public static final String KEY_USER_IN_TIMELINE = "user_in_timeline";
     
-    /**
-     * This is sort of button to start verification of credentials
-     */
-    public static final String KEY_VERIFY_CREDENTIALS = "verify_credentials";
-
     public static final String KEY_HISTORY_SIZE = "history_size";
     public static final String KEY_HISTORY_TIME = "history_time";
     /**
@@ -66,12 +58,8 @@ public class MyPreferences {
     public static final String KEY_SYNC_INDICATOR_ON_TIMELINE = "sync_indicator_on_timeline";
     public static final String KEY_SYNC_WHILE_USING_APPLICATION = "sync_while_using_application";
     public static final String KEY_DOWNLOAD_ATTACHMENTS_OVER_WIFI_ONLY = "download_attachments_over_wifi_only";
-    public static final String KEY_CONNNECTION_TIMEOUT_SECONDS = "connection_timeout";
+    public static final String KEY_CONNECTION_TIMEOUT_SECONDS = "connection_timeout";
     public static final String KEY_RINGTONE_PREFERENCE = "notification_ringtone";
-    public static final String KEY_CONTACT_DEVELOPER = "contact_developer";
-    public static final String KEY_REPORT_BUG = "report_bug";
-    public static final String KEY_CHANGE_LOG = "change_log";
-    public static final String KEY_ABOUT_APPLICATION = "about_application";
     public static final String KEY_COMMANDS_QUEUE = "commands_queue";
 
     public static final String KEY_USE_KITKAT_MEDIA_CHOOSER = "use_kitkat_media_chooser";
@@ -92,6 +80,8 @@ public class MyPreferences {
     
     public static final String KEY_THEME_SIZE = "theme_size";
     public static final String KEY_THEME_COLOR = "theme_color";
+    public static final String KEY_ACTION_BAR_COLOR = "action_bar_color";
+    public static final String KEY_BACKGROUND_COLOR = "background_color";
     public static final String KEY_TRUE_BLACK = "true_black";
     public static final String KEY_SHOW_AVATARS = "show_avatars";
     public static final String KEY_SHOW_ATTACHED_IMAGES = "show_attached_images";
@@ -106,7 +96,7 @@ public class MyPreferences {
      */
     public static final String KEY_USE_EXTERNAL_STORAGE = "use_external_storage";
     /**
-     * New value for #KEY_USE_EXTERNAL_STORAGE to e confirmed/processed
+     * New value for #KEY_USE_EXTERNAL_STORAGE to be confirmed/processed
      */
     public static final String KEY_USE_EXTERNAL_STORAGE_NEW = "use_external_storage_new";
     public static final String KEY_ENABLE_ANDROID_BACKUP = "enable_android_backup";
@@ -131,12 +121,8 @@ public class MyPreferences {
     public static final String KEY_SYNC_AFTER_MESSAGE_WAS_SENT = "sync_after_message_was_sent";
     public static final String KEY_MARK_REPLIES_IN_TIMELINE = "mark_replies_in_timeline";
 
-
-    private static final String THEME_COLOR_DEVICE_DEFAULT = "DeviceDefault";
-    private static final String THEME_COLOR_LIGHT = "Light";
-    
     private MyPreferences(){
-        throw new AssertionError();
+        // Non instantiable
     }
     
     private static volatile boolean defaultSharedPreferencesLocked = false;
@@ -230,7 +216,7 @@ public class MyPreferences {
     private static final long CONNNECTION_TIMEOUT_DEFAULT_SECONDS = 30;
     public static int getConnectionTimeoutMs() {
         return (int) java.util.concurrent.TimeUnit.SECONDS.toMillis(getLongStoredAsString(
-                KEY_CONNNECTION_TIMEOUT_SECONDS, CONNNECTION_TIMEOUT_DEFAULT_SECONDS));
+                KEY_CONNECTION_TIMEOUT_SECONDS, CONNNECTION_TIMEOUT_DEFAULT_SECONDS));
     }
     
     /**
@@ -332,7 +318,7 @@ public class MyPreferences {
         long value = 0;
         SharedPreferences sp = getDefaultSharedPreferences();
         if (sp != null) {
-            value = getDefaultSharedPreferences().getLong(key, 0);            
+            value = sp.getLong(key, 0);
         }
         return value;
     }
@@ -441,7 +427,7 @@ public class MyPreferences {
         boolean value = defaultValue;
         SharedPreferences sp = getDefaultSharedPreferences();
         if (sp != null) {
-            value = getDefaultSharedPreferences().getBoolean(key, defaultValue); 
+            value = sp.getBoolean(key, defaultValue);
         }
         return value;
     }
@@ -468,18 +454,14 @@ public class MyPreferences {
         return getDataFilesDir(null, null) != null;
     }
 
-    public static void setThemedContentView(Activity activity, int layoutId) {
-        loadTheme(activity);
+    public static void setContentView(Activity activity, int layoutId) {
         activity.setContentView(layoutId);
-        if (getBoolean(MyPreferences.KEY_TRUE_BLACK, false) && !isThemeLight()) {
-            setViewToTrueBlack(activity.findViewById(R.id.myLayoutParent));
-            setViewToTrueBlack(activity.findViewById(android.R.id.list));
-        }
     }
     
     public static void setTrueBlack(View parentView) {
-        if (getBoolean(MyPreferences.KEY_TRUE_BLACK, false) && !isThemeLight()) {
+        if (getBoolean(MyPreferences.KEY_TRUE_BLACK, true) && !isThemeLight()) {
             setViewToTrueBlack(parentView.findViewById(R.id.myLayoutParent));
+            setViewToTrueBlack(parentView.findViewById(R.id.myListParent));
             setViewToTrueBlack(parentView.findViewById(android.R.id.list));
         }
     }
@@ -492,33 +474,50 @@ public class MyPreferences {
     }
     
     /**
-     * Load the theme according to the preferences.
+     * Load a theme according to the preferences.
      */
     public static void loadTheme(Context context) {
-        String themeColor = getDefaultSharedPreferences().getString(KEY_THEME_COLOR, THEME_COLOR_DEVICE_DEFAULT);
-        StringBuilder themeName = new StringBuilder("Theme.");
-        themeName.append(themeColor);
-        themeName.append(".AndStatus.");
-        String themeSize = getDefaultSharedPreferences().getString(KEY_THEME_SIZE, "StandardSize");
-        themeName.append(themeSize);
-        int themeId = context.getResources().getIdentifier(themeName.toString(), "style",
-                "org.andstatus.app");
-        if (themeId == 0 || MyLog.isVerboseEnabled()) {
-            String text = "loadTheme; theme=\"" + themeName.toString() + "\"; id=" + Integer.toHexString(themeId);
-            if (themeId == 0) {
-                MyLog.e(context, text);
-            } else {
-                MyLog.v(context, text);
+        context.setTheme(getThemeId(context));
+        context.getTheme().applyStyle(
+                getStyleId(context, getString(KEY_ACTION_BAR_COLOR, ""), R.style.ActionBarTeal),
+                false);
+        context.getTheme().applyStyle(
+                getStyleId(context, getString(KEY_THEME_SIZE, ""), R.style.StandardSize),
+                false);
+        context.getTheme().applyStyle(
+                getStyleId(context, getString(KEY_BACKGROUND_COLOR, ""), R.style.BackgroundColorBlack),
+                false);
+    }
+
+    private static volatile boolean mIsThemeLight = false;
+    private static int getThemeId(Context context) {
+        String themeName = "Theme.AndStatus." + getString(KEY_THEME_COLOR, "Dark");
+        mIsThemeLight = themeName.contains("Light");
+        return getStyleId(context, themeName, R.style.Theme_AndStatus_Dark);
+    }
+
+    public static boolean isThemeLight() {
+        return mIsThemeLight;
+    }
+
+    private static int getStyleId(Context context, String styleName, int defaultId) {
+        int styleId = 0;
+        if (!TextUtils.isEmpty(styleName)) {
+            styleId = context.getResources().getIdentifier(styleName, "style", "org.andstatus.app");
+            if (styleId == 0 || MyLog.isVerboseEnabled()) {
+                String text = "getStyleId; name:\"" + styleName + "\"; id:" + Integer.toHexString(styleId)
+                        + "; default:" + Integer.toHexString(defaultId);
+                if (styleId == 0) {
+                    MyLog.e(context, text);
+                } else {
+                    MyLog.v(context, text);
+                }
             }
         }
-        if (themeId == 0) {
-            themeId = R.style.Theme_DeviceDefault_AndStatus_StandardSize;
+        if (styleId == 0) {
+            styleId = defaultId;
         }
-        context.setTheme(themeId);
-    }
-    
-    public static boolean isThemeLight() {
-       return getDefaultSharedPreferences().getString(KEY_THEME_COLOR, THEME_COLOR_DEVICE_DEFAULT).contains(THEME_COLOR_LIGHT);
+        return styleId;
     }
 
     /**
@@ -553,18 +552,18 @@ public class MyPreferences {
     }
 
     public static boolean showAvatars() {
-        return getDefaultSharedPreferences().getBoolean(KEY_SHOW_AVATARS, true);
+        return getBoolean(KEY_SHOW_AVATARS, true);
     }
 
     public static boolean showAttachedImages() {
-        return getDefaultSharedPreferences().getBoolean(KEY_SHOW_ATTACHED_IMAGES, true);
+        return getBoolean(KEY_SHOW_ATTACHED_IMAGES, true);
     }
 
     public static boolean showOrigin() {
-        return getDefaultSharedPreferences().getBoolean(KEY_SHOW_ORIGIN, false);
+        return getBoolean(KEY_SHOW_ORIGIN, false);
     }
 
     public static UserInTimeline userInTimeline() {
-        return UserInTimeline.load(getDefaultSharedPreferences().getString(KEY_USER_IN_TIMELINE, ""));
+        return UserInTimeline.load(getString(KEY_USER_IN_TIMELINE, ""));
     }
 }

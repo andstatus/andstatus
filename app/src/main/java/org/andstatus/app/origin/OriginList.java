@@ -24,15 +24,19 @@ import android.view.MenuInflater;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.BaseAdapter;
 import android.widget.ListAdapter;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
 import org.andstatus.app.ActivityRequestCode;
 import org.andstatus.app.IntentExtra;
+import org.andstatus.app.MyActivity;
+import org.andstatus.app.MyListActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.service.MyServiceEventsListener;
 import org.andstatus.app.util.MyLog;
 
 import java.util.ArrayList;
@@ -45,7 +49,7 @@ import java.util.Map;
  * Select or Manage Origins
  * @author yvolk@yurivolkov.com
  */
-public abstract class OriginList extends ListActivity {
+public abstract class OriginList extends MyListActivity {
     protected static final String KEY_VISIBLE_NAME = "visible_name";
     protected static final String KEY_NAME = "name";
     
@@ -54,8 +58,8 @@ public abstract class OriginList extends ListActivity {
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        mLayoutId = getLayoutResourceId();
         super.onCreate(savedInstanceState);
-        MyPreferences.setThemedContentView(this, getLayoutResourceId());
 
         ListAdapter adapter = new SimpleAdapter(this, 
                 data, 
@@ -69,7 +73,9 @@ public abstract class OriginList extends ListActivity {
         processNewIntent(getIntent());
     }
 
-    protected abstract int getLayoutResourceId();
+    protected int getLayoutResourceId() {
+        return R.layout.my_list;
+    }
 
     /**
      * Change the Activity according to the new intent. This procedure is done
@@ -86,7 +92,7 @@ public abstract class OriginList extends ListActivity {
         }
         addEnabled = !Intent.ACTION_PICK.equals(action);
         if (Intent.ACTION_INSERT.equals(action)) {
-            getActionBar().setTitle(R.string.header_add_new_account);
+            getSupportActionBar().setTitle(R.string.header_add_new_account);
         }
         fillList();
     }

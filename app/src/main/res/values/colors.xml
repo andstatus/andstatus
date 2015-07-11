@@ -15,6 +15,29 @@
 	limitations under the License.
  -->
 <resources>
+	<!-- Colors in Material design http://www.google.com/design/spec/style/color.html -->
+	<color name="red_500">#F44336</color>
+	<color name="red_700">#D32F2F</color>
+	<color name="orange_500">#FF9800</color>
+	<color name="orange_700">#F57C00</color>
+	<color name="green_500">#4CAF50</color>
+	<color name="green_700">#388E3C</color>
+    <color name="teal_500">#009688</color>
+    <color name="teal_700">#00796B</color>
+	<color name="blue_500">#2196F3</color>
+	<color name="blue_700">#1976D2</color>
+	<color name="grey_500">#9E9E9E</color>
+	<color name="grey_700">#616161</color>
+
+    <!-- Background colors http://www.computerhope.com/htmcolor.htm -->
+    <color name="black">#000000</color>
+    <color name="night">#0C090A</color>
+    <color name="midnight">#2B1B17</color>
+    <color name="charcoal">#34282C</color>
+    <color name="black_cat">#413839</color>
+    <color name="grey_wolf">#504A4B</color>
+    <color name="carbon_grey">#625D5D</color>
+
     <color name="messageBackgroundColor">#FF000000</color>
     <color name="messageBackgroundColorLight">#FFFFFFFF</color>
     <color name="replyMarkColor">#FF47a4ee</color>

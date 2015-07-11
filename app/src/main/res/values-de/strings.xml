@@ -336,7 +336,7 @@
   <string name="summary_preference_vibration_off">Vibration ist abgeschaltet</string>
   <string name="summary_preference_vibration_on">Vibrieren bei eingehender Nachricht</string>
   <string name="system_is_busy_try_later">Das System ist beschäftigt. Bitte versuche es später erneut.</string>
-  <string name="theme_color_entries_defautl">Gerätestandard</string>
+  <string name="theme_color_entries_default">Gerätestandard</string>
   <string name="theme_color_entries_light">Hell</string>
   <string name="theme_color_entries_dark">Dunkel</string>
   <string name="theme_size_entries_small">Klein</string>

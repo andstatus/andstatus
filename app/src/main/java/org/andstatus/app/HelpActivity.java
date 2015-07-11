@@ -35,6 +35,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -46,7 +47,7 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.ViewFlipper;
 
-public class HelpActivity extends Activity implements SwipeInterface {
+public class HelpActivity extends MyActivity implements SwipeInterface {
 
     // Constants
     public static final String TAG = "HelpActivity";
@@ -75,8 +76,6 @@ public class HelpActivity extends Activity implements SwipeInterface {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
         MyContextHolder.initialize(this, this);
         if (MyPreferences.shouldSetDefaultValues()) {
             // Default values for the preferences will be set only once
@@ -88,8 +87,9 @@ public class HelpActivity extends Activity implements SwipeInterface {
                 MyLog.i(this, "Default values has been set");   
             }
         }
-        
-        MyPreferences.setThemedContentView(this, R.layout.help);
+
+        mLayoutId = R.layout.help;
+        super.onCreate(savedInstanceState);
 
         if (savedInstanceState != null) {
             mIsFirstActivity = savedInstanceState.getBoolean(EXTRA_IS_FIRST_ACTIVITY, false);

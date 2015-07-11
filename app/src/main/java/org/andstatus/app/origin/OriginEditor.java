@@ -16,7 +16,6 @@
 
 package org.andstatus.app.origin;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.media.Ringtone;
@@ -35,9 +34,9 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import org.andstatus.app.IntentExtra;
+import org.andstatus.app.MyActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.net.http.SslModeEnum;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
@@ -48,7 +47,7 @@ import org.andstatus.app.util.UrlUtils;
  * Add/Update Microblogging system
  * @author yvolk@yurivolkov.com
  */
-public class OriginEditor extends Activity {
+public class OriginEditor extends MyActivity {
     private Origin.Builder builder;
 
     private Button buttonSave;
@@ -63,9 +62,10 @@ public class OriginEditor extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        MyPreferences.setThemedContentView(this, R.layout.origin_editor);
         MyServiceManager.setServiceUnavailable();
+
+        mLayoutId = R.layout.origin_editor;
+        super.onCreate(savedInstanceState);
 
         buttonSave = (Button) findViewById(R.id.button_save);
         Button buttonDiscard = (Button) findViewById(R.id.button_discard);
@@ -167,7 +167,7 @@ public class OriginEditor extends Activity {
         if (origin.isPersistent()) {
             title = origin.getName() + " - " + title;
         }
-        getActionBar().setTitle(title);
+        getSupportActionBar().setTitle(title);
     }
 
     void showSslModeSummary(SslModeEnum sslMode) {

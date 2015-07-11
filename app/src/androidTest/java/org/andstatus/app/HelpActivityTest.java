@@ -1,11 +1,31 @@
+/*
+ * Copyright (C) 2015 yvolk (Yuri Volkov), http://yurivolkov.com
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.andstatus.app;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.test.ActivityInstrumentationTestCase2;
 import android.view.View;
 import android.widget.ViewFlipper;
 
+import org.andstatus.app.context.MySettingsActivity;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.msg.ConversationActivity;
+import org.andstatus.app.msg.TimelineActivity;
 
 public class HelpActivityTest extends ActivityInstrumentationTestCase2<HelpActivity> {
     private HelpActivity mActivity;
@@ -33,8 +53,12 @@ public class HelpActivityTest extends ActivityInstrumentationTestCase2<HelpActiv
         assertEquals("At Changelog page", HelpActivity.PAGE_INDEX_CHANGELOG, mFlipper.getDisplayedChild());
         View changeLogView = mActivity.findViewById(R.id.changelog);
         assertTrue(changeLogView != null);
-        
         Thread.sleep(500);
-        mActivity.finish();
+
+        ListActivityTestHelper<HelpActivity> helper = new ListActivityTestHelper<HelpActivity>(this, MySettingsActivity.class);
+        assertTrue("Click on ActionBar item", helper.clickMenuItem("Clicking on Settings menu item", R.id.preferences_menu_id));
+        Activity nextActivity = helper.waitForNextActivity("Clicking on Settings menu item", 10000);
+        Thread.sleep(500);
+        nextActivity.finish();
     }
 }

@@ -35,7 +35,7 @@ public class CommandsQueueNotifier {
 
     private CommandsQueueNotifier(MyContext myContext) {
         this.myContext = myContext;
-        mNotificationsEnabled = MyPreferences.getDefaultSharedPreferences().getBoolean(MyPreferences.KEY_NOTIFICATIONS_ENABLED, false);
+        mNotificationsEnabled = MyPreferences.getBoolean(MyPreferences.KEY_NOTIFICATIONS_ENABLED, false);
     }
 
     public static CommandsQueueNotifier newInstance(MyContext myContext) {
@@ -46,7 +46,7 @@ public class CommandsQueueNotifier {
         int count = mainQueueSize + retryQueueSize;
         if (count == 0 ) {
             myContext.clearNotification(TimelineType.ALL);
-        } else if (mNotificationsEnabled && MyPreferences.getDefaultSharedPreferences().getBoolean(MyPreferences.KEY_NOTIFY_OF_COMMANDS_IN_THE_QUEUE, false)) {
+        } else if (mNotificationsEnabled && MyPreferences.getBoolean(MyPreferences.KEY_NOTIFY_OF_COMMANDS_IN_THE_QUEUE, false)) {
             if (mainQueueSize != 0) {
                 MyLog.d(this, mainQueueSize + " commands in Main Queue.");
             }

@@ -77,7 +77,7 @@ public class MessageEditor {
     public MessageEditor(ActionableMessageList actionableMessageList) {
         mMessageList = actionableMessageList;
 
-        ViewGroup layoutParent = (ViewGroup) getActivity().findViewById(R.id.myLayoutParent);
+        ViewGroup layoutParent = (ViewGroup) getActivity().findViewById(R.id.myListParent);
         LayoutInflater inflater = LayoutInflater.from(getActivity());
         mEditorView = (ViewGroup) inflater.inflate(R.layout.message_editor, null);
         layoutParent.addView(mEditorView);

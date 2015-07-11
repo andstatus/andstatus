@@ -26,15 +26,33 @@
 		</subtitle>
     </header>
 
-    <release android:versionName="17.1" android:versionCode="125"
-        versionDate="2015-04-23"
-        versionTitle="Bug fixes">
+    <release android:versionName="18.X (Not released yet)" android:versionCode="126"
+        versionDate="2015-XX-XX"
+        versionTitle="Material design and new color options">
         <changes>
-            <change>Fixed several bugs using crash reports, provided by users.</change>
+            <change>Added &quot;Action bar color&quot; option, having 6 colors from
+                <a href="http://www.google.com/design/spec/style/color.html">Material
+                    design color palettes</a>. These palettes may be applied for both Dark
+                and Light color themes.
+                <a href="https://github.com/andstatus/andstatus/issues/202">#202</a><br/>
+                Colors of &quot;Device Default&quot; theme are deliberately not customizable
+                in order to preserve your device's theme as much as possible.
+            </change>
+            <change>Added &quot;Background color for the Dark theme&quot; option, having 7 dark
+                colors, including Black color from a
+                <a href="http://www.computerhope.com/htmcolor.htm">List of HTML colors</a>.
+                <a href="https://github.com/andstatus/andstatus/issues/228">#228</a>
+            </change>
+            <change>Links color for the Light theme made darker in order to be easier
+                readable. <a href="https://github.com/andstatus/andstatus/issues/264">#264</a>
+            </change>
+            <change>Source code of AndStatus project converted to Android Studio format,
+                which allows us to use the best tools for the application development.
+            </change>
         </changes>
     </release>
-    <release android:versionName="17.0" android:versionCode="124"
-        versionDate="2015-04-10"
+    <release android:versionName="17.1" android:versionCode="125"
+        versionDate="2015-04-23"
         versionTitle="Sending attachments fix for legacy servers">
         <changes>
             <change>Fixed: gnusocial.no, quitter.no, quitter.es and some other servers didn't 

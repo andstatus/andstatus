@@ -87,7 +87,7 @@ public class PersistentAccounts {
     }
 
     public String getDefaultAccountName() {
-        return MyPreferences.getDefaultSharedPreferences().getString(KEY_DEFAULT_ACCOUNT_NAME, "");
+        return MyPreferences.getString(KEY_DEFAULT_ACCOUNT_NAME, "");
     }
 
     public int getDistinctOriginsCount() {

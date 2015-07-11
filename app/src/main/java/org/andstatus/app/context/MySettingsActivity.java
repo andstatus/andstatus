@@ -19,6 +19,7 @@ package org.andstatus.app.context;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.KeyEvent;
 import android.view.MenuItem;
 
@@ -28,7 +29,7 @@ import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
 
 /** See http://developer.android.com/guide/topics/ui/settings.html */
-public class MySettingsActivity extends Activity {
+public class MySettingsActivity extends AppCompatActivity {
 
     private boolean startTimelineActivity = false;
     
@@ -38,7 +39,7 @@ public class MySettingsActivity extends Activity {
         super.onCreate(savedInstanceState);
 
         MyContextHolder.initialize(this, this);
-        this.getActionBar().setTitle(R.string.settings_activity_title);
+        this.getSupportActionBar().setTitle(R.string.settings_activity_title);
         
         getFragmentManager().beginTransaction()
         .replace(android.R.id.content, new MySettingsFragment(), MySettingsFragment.class.getSimpleName())
