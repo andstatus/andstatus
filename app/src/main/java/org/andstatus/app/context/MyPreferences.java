@@ -90,10 +90,6 @@ public class MyPreferences {
     public static final String KEY_CUSTOM_LOCALE = "custom_locale";
     public static final String CUSTOM_LOCALE_DEFAULT = "default";
     
-    /**
-     * Use this dir: http://developer.android.com/reference/android/content/Context.html#getExternalFilesDir(java.lang.String)
-     * (for API 8)
-     */
     public static final String KEY_USE_EXTERNAL_STORAGE = "use_external_storage";
     /**
      * New value for #KEY_USE_EXTERNAL_STORAGE to be confirmed/processed
@@ -269,6 +265,7 @@ public class MyPreferences {
         if (mLocale == null || mDefaultLocale == null) {
             mDefaultLocale = newConfig.locale;
         }
+        MyTheme.forget();
         return customizeConfig(contextWrapper, newConfig, mLocale);
     }
     
@@ -359,9 +356,17 @@ public class MyPreferences {
         } else {
             if (isStorageExternal(forcedUseExternalStorage)) {
                 if (isWritableExternalStorageAvailable(textToLog)) {
-                    dir = myContext.context().getExternalFilesDir(type);
+                    try {
+                        dir = myContext.context().getExternalFilesDir(type);
+                    } catch (NullPointerException e) {
+                        // I noticed this exception once, but that time it was related to SD card malfunction...
+                        if (logged) {
+                            MyLog.e(TAG, method, e);
+                        }
+                    }
                 }
-            } else {
+            }
+            if (dir == null) {
                 dir = myContext.context().getFilesDir();
                 if (!TextUtils.isEmpty(type)) {
                     dir = new File(dir, type);
@@ -382,8 +387,8 @@ public class MyPreferences {
                 }
             }
             if (logged && logEnabled && MyLog.isVerboseEnabled()) {
-                MyLog.v(TAG, method + "; " + (isStorageExternal(forcedUseExternalStorage) ? "External" : "Internal") 
-                        + " path: '" + ( (dir == null) ? "(null)" : dir ) + "'");
+                MyLog.v(TAG, method + "; " + (isStorageExternal(forcedUseExternalStorage) ? "External" : "Internal")
+                        + " path: '" + ((dir == null) ? "(null)" : dir) + "'");
             }
         }
         if (logged && textToLog.length() > 0) {
@@ -452,72 +457,6 @@ public class MyPreferences {
      */
     public static boolean isDataAvailable() {
         return getDataFilesDir(null, null) != null;
-    }
-
-    public static void setContentView(Activity activity, int layoutId) {
-        activity.setContentView(layoutId);
-    }
-    
-    public static void setTrueBlack(View parentView) {
-        if (getBoolean(MyPreferences.KEY_TRUE_BLACK, true) && !isThemeLight()) {
-            setViewToTrueBlack(parentView.findViewById(R.id.myLayoutParent));
-            setViewToTrueBlack(parentView.findViewById(R.id.myListParent));
-            setViewToTrueBlack(parentView.findViewById(android.R.id.list));
-        }
-    }
-
-    private static void setViewToTrueBlack(View view) {
-        if (view != null) {
-            view.setBackground(null);
-            view.setBackgroundColor(Color.BLACK);
-        }
-    }
-    
-    /**
-     * Load a theme according to the preferences.
-     */
-    public static void loadTheme(Context context) {
-        context.setTheme(getThemeId(context));
-        context.getTheme().applyStyle(
-                getStyleId(context, getString(KEY_ACTION_BAR_COLOR, ""), R.style.ActionBarTeal),
-                false);
-        context.getTheme().applyStyle(
-                getStyleId(context, getString(KEY_THEME_SIZE, ""), R.style.StandardSize),
-                false);
-        context.getTheme().applyStyle(
-                getStyleId(context, getString(KEY_BACKGROUND_COLOR, ""), R.style.BackgroundColorBlack),
-                false);
-    }
-
-    private static volatile boolean mIsThemeLight = false;
-    private static int getThemeId(Context context) {
-        String themeName = "Theme.AndStatus." + getString(KEY_THEME_COLOR, "Dark");
-        mIsThemeLight = themeName.contains("Light");
-        return getStyleId(context, themeName, R.style.Theme_AndStatus_Dark);
-    }
-
-    public static boolean isThemeLight() {
-        return mIsThemeLight;
-    }
-
-    private static int getStyleId(Context context, String styleName, int defaultId) {
-        int styleId = 0;
-        if (!TextUtils.isEmpty(styleName)) {
-            styleId = context.getResources().getIdentifier(styleName, "style", "org.andstatus.app");
-            if (styleId == 0 || MyLog.isVerboseEnabled()) {
-                String text = "getStyleId; name:\"" + styleName + "\"; id:" + Integer.toHexString(styleId)
-                        + "; default:" + Integer.toHexString(defaultId);
-                if (styleId == 0) {
-                    MyLog.e(context, text);
-                } else {
-                    MyLog.v(context, text);
-                }
-            }
-        }
-        if (styleId == 0) {
-            styleId = defaultId;
-        }
-        return styleId;
     }
 
     /**

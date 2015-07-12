@@ -21,7 +21,7 @@ import android.graphics.drawable.Drawable;
 
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.context.MyTheme;
 import org.andstatus.app.util.MyLog;
 
 public class AvatarDrawable {
@@ -48,7 +48,7 @@ public class AvatarDrawable {
     }
 
     public Drawable getDefaultDrawable() {
-        return MyPreferences.isThemeLight() ? DEFAULT_AVATAR_LIGHT : DEFAULT_AVATAR;
+        return MyTheme.isThemeLight() ? DEFAULT_AVATAR_LIGHT : DEFAULT_AVATAR;
     }
     
     public Drawable getDrawable() {

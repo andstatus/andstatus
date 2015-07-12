@@ -20,7 +20,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 
-import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.context.MyTheme;
 import org.andstatus.app.util.MyLog;
 
 /**
@@ -34,10 +34,10 @@ public class MyActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         MyLog.v(this, "onCreate");
-        MyPreferences.loadTheme(this);
+        MyTheme.loadTheme(this);
         super.onCreate(savedInstanceState);
         if (mLayoutId != 0) {
-            MyPreferences.setContentView(this, mLayoutId);
+            MyTheme.setContentView(this, mLayoutId);
         }
     }
 

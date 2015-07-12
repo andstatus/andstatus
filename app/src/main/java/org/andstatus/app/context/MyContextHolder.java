@@ -93,9 +93,9 @@ public final class MyContextHolder {
     }
 
     public static long initializeDuringUpgrade(Context context, Object initializedBy) {
-        if (get().initialized() && arePreferencesChanged()) {
+        if (get().initialized() && didPreferencesChange()) {
             synchronized(CONTEXT_LOCK) {
-                if (get().initialized() && arePreferencesChanged()) {
+                if (get().initialized() && didPreferencesChange()) {
                     long preferencesChangeTimeLast = MyPreferences.getPreferencesChangeTime() ;
                     if (get().preferencesChangeTime() != preferencesChangeTimeLast) {
                         MyLog.v(TAG, "Preferences changed "
@@ -123,7 +123,7 @@ public final class MyContextHolder {
         }
     }
 
-    public static boolean arePreferencesChanged() {
+    public static boolean didPreferencesChange() {
         return get().preferencesChangeTime() != MyPreferences.getPreferencesChangeTime();
     }
     

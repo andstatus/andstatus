@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <style name="DialogThemeSelector" parent="Base.Theme.AppCompat.Dialog" />
+
     <string-array name="action_bar_color_values">
         <item>ActionBarRed</item>
         <item>ActionBarOrange</item>
@@ -94,8 +96,6 @@
         <item name="myBackgroundColor">@color/carbon_grey</item>
     </style>
 
-	<style name="DialogThemeSelector" parent="Base.Theme.AppCompat.Dialog" />
-    
     <style name="WidgetStyle">
          <item name="android:background">@drawable/widget_bg</item>
     </style>

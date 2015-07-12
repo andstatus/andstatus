@@ -27,6 +27,7 @@ import android.widget.SimpleCursorAdapter;
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.context.MyTheme;
 import org.andstatus.app.data.MyDatabase.Msg;
 import org.andstatus.app.util.MyLog;
 
@@ -137,7 +138,7 @@ public class MySimpleCursorAdapter extends SimpleCursorAdapter {
                 // For some reason, referring to the style drawable doesn't work
                 // (to "?attr:replyBackground" )
                 setBackgroundCompat(view, context.getResources().getDrawable(
-                        MyPreferences.isThemeLight() ? R.drawable.reply_timeline_background_light
+                        MyTheme.isThemeLight() ? R.drawable.reply_timeline_background_light
                                 : R.drawable.reply_timeline_background));
                 backgroundSet = true;
             }
