@@ -100,8 +100,10 @@ public class MyTheme {
         }
     }
 
+    /** See http://stackoverflow.com/questions/7896615/android-how-to-get-value-of-an-attribute-in-code
+    * See also {@link android.app.AlertDialog} #resolveDialogTheme for resource resolution
+    */
     private static void setBackgroundColor(Activity activity) {
-        // See http://stackoverflow.com/questions/7896615/android-how-to-get-value-of-an-attribute-in-code
         TypedValue typedValue = new TypedValue();
         activity.getTheme().resolveAttribute(R.attr.myBackgroundColor, typedValue, true);
         int color = typedValue.data;

@@ -47,7 +47,8 @@
     
 	<application android:name=".context.MyApplication" android:label="@string/app_name" 
 	    android:icon="@drawable/icon" android:allowBackup="true" 
-	    android:backupAgent="org.andstatus.app.backup.MyBackupAgent" >
+	    android:backupAgent="org.andstatus.app.backup.MyBackupAgent"
+        android:theme="@style/Theme.AndStatus.FullyDefined">
 		<meta-data android:name="android.app.default_searchable" android:value="org.andstatus.app.TimelineActivity"/>
 		<meta-data android:name="com.google.android.backup.api_key" 
 		    android:value="AEdPqrEAAAAIwaY-1-9DmEnU74ycFHDSJiTl_1CW6CzuHsWMLA" />
@@ -135,7 +136,6 @@
 		</activity>
 
 		<activity android:name=".account.AccountSelector"
-            android:theme="@style/DialogThemeSelector"
             android:label="@string/label_accountselector">
 		</activity>
 		
@@ -222,13 +222,11 @@
         </activity>
 
         <activity android:name=".origin.DiscoveredOriginList"
-            android:theme="@style/DialogThemeSelector"
             android:label="@string/discover_open_instances_title"
             android:parentActivityName=".origin.PersistentOriginList">
         </activity>
         
         <activity android:name=".origin.PersistentOriginList"
-            android:theme="@style/DialogThemeSelector"
             android:label="@string/label_origin_list"
             android:parentActivityName=".context.MySettingsActivity">
         </activity>
@@ -258,7 +256,7 @@
             android:excludeFromRecents="true"
             android:finishOnTaskLaunch="true"
             android:launchMode="singleInstance"
-            android:theme="@style/DialogThemeSelector" />
+            android:theme="?alertDialogTheme" />
         
 </application>
 </manifest>

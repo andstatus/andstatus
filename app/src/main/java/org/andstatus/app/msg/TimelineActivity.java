@@ -284,7 +284,7 @@ public class TimelineActivity extends MyListActivity implements MyServiceEventsL
         appSearchData.putString(IntentExtra.TIMELINE_URI.key, 
                 mListParametersNew.getTimelineUri(appGlobalSearch).toString());
         appSearchData.putBoolean(IntentExtra.GLOBAL_SEARCH.key, appGlobalSearch);
-        MyLog.v(this, method  + ": " + appSearchData);
+        MyLog.v(this, method + ": " + appSearchData);
         startSearch(null, false, appSearchData, false);
         return true;
     }
@@ -384,6 +384,7 @@ public class TimelineActivity extends MyListActivity implements MyServiceEventsL
         return super.onCreateDialog(id);
     }
 
+    // TODO: Replace this with http://developer.android.com/reference/android/app/DialogFragment.html
     private AlertDialog newTimelinetypeSelector() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle(R.string.dialog_title_select_timeline);
@@ -1057,6 +1058,14 @@ public class TimelineActivity extends MyListActivity implements MyServiceEventsL
         mMessageEditor.saveState();
         mContextMenu.saveState(outState);
         outState.commit();
+
+        final String CRASH_TEST_STRING = "Crash test 2015-04-10";
+        if (MyLog.isVerboseEnabled() && mMessageEditor != null &&
+                    mMessageEditor.getData().messageText.contains(CRASH_TEST_STRING)) {
+            MyLog.e(this, "Initiating crash test exception");
+            throw new NullPointerException("This is a test crash event");
+        }
+
     }
 
     @Override
