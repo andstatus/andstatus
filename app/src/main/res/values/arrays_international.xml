@@ -168,6 +168,9 @@
         <item>@string/color_green</item>
         <item>@string/color_teal</item>
         <item>@string/color_blue</item>
+        <item>@string/color_light_blue</item>
+        <item>@string/color_material_blue</item>
+        <item>@string/color_my_blue</item>
         <item>@string/color_grey</item>
     </string-array>
     <string-array name="background_color_entries">

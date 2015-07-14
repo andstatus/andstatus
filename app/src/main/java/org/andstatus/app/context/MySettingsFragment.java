@@ -238,8 +238,7 @@ public class MySettingsFragment extends PreferenceFragment implements
             switch (key) {
                 case MyPreferences.KEY_CUSTOM_LOCALE:
                     MyPreferences.setLocale(getActivity());
-                    getActivity().finish();
-                    startActivity(getActivity().getIntent());
+                    restartMe();
                     break;
                 case MyPreferences.KEY_THEME_COLOR:
                     showThemeColor();
@@ -281,6 +280,11 @@ public class MySettingsFragment extends PreferenceFragment implements
         } finally {
             onSharedPreferenceChangedIsBusy = false;
         }
+    }
+
+    private void restartMe() {
+        getActivity().finish();
+        startActivity(getActivity().getIntent());
     }
 
     @Override

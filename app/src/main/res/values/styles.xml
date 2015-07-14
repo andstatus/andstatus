@@ -6,6 +6,9 @@
         <item>ActionBarGreen</item>
         <item>ActionBarTeal</item>
         <item>ActionBarBlue</item>
+        <item>ActionBarLightBlue</item>
+        <item>ActionBarMaterialBlue</item>
+        <item>ActionBarMyBlue</item>
         <item>ActionBarGrey</item>
     </string-array>
     <style name="ActionBarRed">
@@ -27,6 +30,18 @@
     <style name="ActionBarBlue">
         <item name="actionBarColor">@color/blue_500</item>
         <item name="actionBarColorDark">@color/blue_700</item>
+    </style>
+    <style name="ActionBarLightBlue">
+        <item name="actionBarColor">@color/light_blue_500</item>
+        <item name="actionBarColorDark">@color/light_blue_700</item>
+    </style>
+    <style name="ActionBarMaterialBlue">
+        <item name="actionBarColor">@color/material_blue_500</item>
+        <item name="actionBarColorDark">@color/material_blue_700</item>
+    </style>
+    <style name="ActionBarMyBlue">
+        <item name="actionBarColor">@color/my_blue_500</item>
+        <item name="actionBarColorDark">@color/my_blue_700</item>
     </style>
     <style name="ActionBarGrey">
         <item name="actionBarColor">@color/grey_500</item>

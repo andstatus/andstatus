@@ -58,7 +58,7 @@
             <org.andstatus.app.context.MultilineListPreference android:key="action_bar_color"
                 android:entries="@array/action_bar_color_entries"
                 android:entryValues="@array/action_bar_color_values"
-                android:defaultValue="ActionBarTeal"
+                android:defaultValue="ActionBarMyBlue"
                 android:title="@string/action_bar_color_preference_title" />
             <org.andstatus.app.context.MultilineListPreference android:key="background_color"
                 android:entries="@array/background_color_entries"

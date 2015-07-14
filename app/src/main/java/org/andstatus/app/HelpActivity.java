@@ -35,7 +35,6 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -62,7 +61,7 @@ public class HelpActivity extends MyActivity implements SwipeInterface {
      */
     public static final String EXTRA_IS_FIRST_ACTIVITY = ClassInApplicationPackage.PACKAGE_NAME + ".IS_FIRST_ACTIVITY";
 
-    public static final int PAGE_INDEX_DEFAULT = 0;
+    public static final int PAGE_INDEX_LOGO = 0;
     public static final int PAGE_INDEX_USER_GUIDE = 1;
     public static final int PAGE_INDEX_CHANGELOG = 2;
     
@@ -73,6 +72,7 @@ public class HelpActivity extends MyActivity implements SwipeInterface {
      */
     private boolean mIsFirstActivity = false;
     private boolean wasPaused = false;
+    private static boolean isFirstTimeRun = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,7 +84,8 @@ public class HelpActivity extends MyActivity implements SwipeInterface {
             if (MyPreferences.shouldSetDefaultValues()) {
                 MyLog.e(this, "Default values were not set?!");   
             } else {
-                MyLog.i(this, "Default values has been set");   
+                MyLog.i(this, "Default values has been set");
+                isFirstTimeRun = true;
             }
         }
 
@@ -295,9 +296,11 @@ public class HelpActivity extends MyActivity implements SwipeInterface {
                 intent.putExtra(HelpActivity.EXTRA_IS_FIRST_ACTIVITY, true);
             } 
             
-            int pageIndex = PAGE_INDEX_DEFAULT;
-            if (MyContextHolder.get().isReady() && MyContextHolder.get().persistentAccounts().isEmpty()) {
-                pageIndex = PAGE_INDEX_USER_GUIDE;
+            int pageIndex = PAGE_INDEX_LOGO;
+            if (MyContextHolder.get().persistentAccounts().isEmpty()) {
+                if (!isFirstTimeRun) {
+                    pageIndex = PAGE_INDEX_USER_GUIDE;
+                }
             } else if (showChangeLog) {
                 pageIndex = PAGE_INDEX_CHANGELOG;
             }

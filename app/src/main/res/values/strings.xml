@@ -68,6 +68,9 @@
   <string name="color_black">Black</string>
   <string name="color_black_cat">Black Cat</string>
   <string name="color_blue">Blue</string>
+  <string name="color_light_blue">Light Blue</string>
+  <string name="color_material_blue">Material Blue</string>
+  <string name="color_my_blue">My Blue</string>
   <string name="color_carbon_grey">Carbon Grey</string>
   <string name="color_charcoal">Charcoal</string>
   <string name="color_grey">Grey</string>
