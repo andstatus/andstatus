@@ -16,6 +16,7 @@
 
 package org.andstatus.app.util;
 
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class InstanceId {
@@ -32,5 +33,26 @@ public class InstanceId {
      */
     public static long next() {
         return PREV_INSTANCE_ID.incrementAndGet();
+    }
+
+    // TODO: To be replaced with View.generateViewId() for API >= 17
+    private static final AtomicInteger sNextViewId = new AtomicInteger(1);
+    /**
+     * http://stackoverflow.com/questions/1714297/android-view-setidint-id-programmatically-how-to-avoid-id-conflicts
+     * Generate a value suitable for use in {@link android.view.View#setId(int)}.
+     * This value will not collide with ID values generated at build time by aapt for R.id.
+     *
+     * @return a generated ID value
+     */
+    public static int generateViewId() {
+        for (;;) {
+            final int result = sNextViewId.get();
+            // aapt-generated IDs have the high byte nonzero; clamp to the range under that.
+            int newValue = result + 1;
+            if (newValue > 0x00FFFFFF) newValue = 1; // Roll over to 1, not 0.
+            if (sNextViewId.compareAndSet(result, newValue)) {
+                return result;
+            }
+        }
     }
 }

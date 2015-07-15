@@ -39,6 +39,7 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.AvatarDrawable;
+import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
@@ -150,7 +151,7 @@ public class ConversationViewAdapter extends BaseAdapter {
                 MyLog.v(this,"density=" + displayDensity);
             }
             ImageView indentView = new ConversationIndentImageView(context, messageIndented, indentPixels);
-            indentView.setId(NO_ID);
+            indentView.setId(InstanceId.generateViewId());
             viewToTheLeftId = indentView.getId();
             ((ViewGroup) messageIndented.getParent()).addView(indentView);
         }
