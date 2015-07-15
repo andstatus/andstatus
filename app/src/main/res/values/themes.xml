@@ -26,7 +26,7 @@
 
     <style name="Theme.AndStatus.Base" parent="Theme.AppCompat">
         <item name="textColorLink">@color/link_text_light</item>
-        <item name="dividerColor">@android:color/white</item>
+        <item name="dividerColor">@android:color/darker_gray</item>
 
         <item name="attachIcon">@drawable/ic_action_new_attachment</item>
         <item name="globalSearchIcon">@drawable/ic_action_global_search</item>
