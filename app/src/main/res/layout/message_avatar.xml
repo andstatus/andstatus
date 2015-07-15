@@ -22,6 +22,8 @@
     android:orientation="horizontal"
     tools:context=".TimelineActivity" >
 
+    <View android:id="@+id/divider" style="@style/Divider"/>
+
     <LinearLayout
         android:id="@+id/message_indented"
         android:layout_width="match_parent"

@@ -24,6 +24,8 @@
     android:paddingRight="6dip"
     android:paddingTop="2dip" >
 
+    <View android:id="@+id/divider" style="@style/Divider"/>
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

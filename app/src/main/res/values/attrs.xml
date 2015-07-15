@@ -32,9 +32,9 @@
 		<attr name="textEditColor" format="reference|color" />
         <attr name="textColorLink" format="reference|color" />
 
-		<attr name="myActionOverflowButtonStyle" format="reference" />
 		<attr name="sectionHeaderStyle" format="reference" />
 
+		<attr name="dividerColor" format="reference|color" />
 		<attr name="actionBarColor" format="reference|color" />
 		<attr name="actionBarColorDark" format="reference|color" />
 		<attr name="myBackgroundColor" format="reference|color" />

@@ -58,12 +58,11 @@
         <item name="messageUsernameColor">?android:attr/textColorSecondary</item>
 
         <item name="messageBodyTextAppearance">?android:attr/textAppearanceMedium</item>
-        <item name="messageBodyColor">?android:attr/textColorPrimaryNoDisable</item>
+        <item name="messageBodyColor">?android:attr/textColorPrimary</item>
 
         <item name="messageDetailsTextAppearance">?android:attr/textAppearanceSmall</item>
         <item name="messageDetailsColor">?android:attr/textColorTertiary</item>
 
-        <item name="myActionOverflowButtonStyle">@android:style/Widget.Holo.ActionButton.Overflow</item>
         <item name="sectionHeaderStyle">@style/sectionHeader</item>
     </style>
     <style name="Small" parent="@style/StandardSize">
@@ -158,9 +157,7 @@
 	<style name="Divider">
 	    <item name="android:layout_width">match_parent</item>
 	    <item name="android:layout_height">1dp</item>
-	    <item name="android:paddingBottom">2dp</item>
-    	<item name="android:paddingTop">2dp</item>
-	    <item name="android:background">?android:attr/listDivider</item>
+	    <item name="android:background">?attr/dividerColor</item>
 	</style>
 
     <style name="messageUsernameAppearance" parent="android:Widget.TextView">
