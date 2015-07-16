@@ -53,27 +53,26 @@
         <item>StandardSize</item>
         <item>Large</item>
     </string-array>
-    <style name="StandardSize">
-        <item name="messageUsernameTextAppearance">?android:attr/textAppearanceSmall</item>
+    <style name="AndStatusBaseAttributes">
         <item name="messageUsernameColor">?android:attr/textColorSecondary</item>
-
-        <item name="messageBodyTextAppearance">?android:attr/textAppearanceMedium</item>
         <item name="messageBodyColor">?android:attr/textColorPrimary</item>
-
-        <item name="messageDetailsTextAppearance">?android:attr/textAppearanceSmall</item>
         <item name="messageDetailsColor">?android:attr/textColorTertiary</item>
-
         <item name="sectionHeaderStyle">@style/sectionHeader</item>
     </style>
-    <style name="Small" parent="@style/StandardSize">
+    <style name="StandardSize" parent="@style/AndStatusBaseAttributes">
+        <item name="messageUsernameTextAppearance">?android:attr/textAppearanceSmall</item>
+        <item name="messageBodyTextAppearance">?android:attr/textAppearanceMedium</item>
+        <item name="messageDetailsTextAppearance">?android:attr/textAppearanceSmall</item>
+    </style>
+    <style name="Small" parent="@style/AndStatusBaseAttributes">
         <item name="messageUsernameTextAppearance">?android:attr/textAppearanceSmall</item>
         <item name="messageBodyTextAppearance">?android:attr/textAppearanceSmall</item>
         <item name="messageDetailsTextAppearance">?android:attr/textAppearanceSmall</item>
     </style>
-    <style name="Large" parent="@style/StandardSize">
+    <style name="Large" parent="@style/AndStatusBaseAttributes">
         <item name="messageUsernameTextAppearance">?android:attr/textAppearanceMedium</item>
         <item name="messageBodyTextAppearance">?android:attr/textAppearanceLarge</item>
-        <item name="messageDetailsTextAppearance">?android:attr/textAppearanceSmall</item>
+        <item name="messageDetailsTextAppearance">?android:attr/textAppearanceMedium</item>
     </style>
 
     <string-array name="background_color_values">
@@ -162,10 +161,10 @@
 
     <style name="messageUsernameAppearance" parent="android:Widget.TextView">
         <item name="android:textAppearance">?attr/messageUsernameTextAppearance</item>
-        <item name="android:textStyle">bold</item>
+        <item name="android:textStyle">normal</item>
         <item name="android:textColor">?attr/messageUsernameColor</item>
     </style>
-    <style name="messageBodyAppearance" parent="android:Widget.Holo.TextView">
+    <style name="messageBodyAppearance" parent="android:Widget.TextView">
         <item name="android:textAppearance">?attr/messageBodyTextAppearance</item>
         <item name="android:textStyle">normal</item>
         <item name="android:textColor">?attr/messageBodyColor</item>
