@@ -161,7 +161,7 @@
 
     <style name="messageUsernameAppearance" parent="android:Widget.TextView">
         <item name="android:textAppearance">?attr/messageUsernameTextAppearance</item>
-        <item name="android:textStyle">normal</item>
+        <item name="android:textStyle">bold</item>
         <item name="android:textColor">?attr/messageUsernameColor</item>
     </style>
     <style name="messageBodyAppearance" parent="android:Widget.TextView">
@@ -172,7 +172,7 @@
     </style>
     <style name="messageDetailsAppearance" parent="android:Widget.TextView">
         <item name="android:textAppearance">?attr/messageDetailsTextAppearance</item>
-        <item name="android:textStyle">italic</item>
+        <item name="android:textStyle">normal</item>
         <item name="android:textColor">?attr/messageDetailsColor</item>
     </style>
 </resources>
