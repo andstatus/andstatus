@@ -384,7 +384,13 @@ public class MyService extends Service {
     
     private void startExecution() {
         acquireWakeLock();
-        startExecutor();
+        try {
+            startExecutor();
+        } catch (Exception e) {
+            MyLog.i(this, "Couldn't startExecutor", e);
+            couldStopExecutor(true);
+            releaseWakeLock();
+        }
     }
     
     private void startExecutor() {
@@ -414,10 +420,15 @@ public class MyService extends Service {
             MyLog.v(this, method + "; " + logMessageBuilder);
         }
     }
+    
     private void removeExecutor(StringBuilder logMessageBuilder) {
         synchronized(executorLock) {
             if (mExecutor == null) {
                 return;
+            }
+            if (mExecutor.getStatus() == Status.RUNNING) {
+                logMessageBuilder.append(" Cancelling and");
+                mExecutor.cancel(true);
             }
             logMessageBuilder.append(" Removing Executor " + mExecutor);
             mExecutor = null;
@@ -545,7 +556,7 @@ public class MyService extends Service {
                 mHeartBeat = null;
             }
         }
-        relealeWakeLock();
+        releaseWakeLock();
         stopSelfResult(latestProcessedStartId);
         CommandsQueueNotifier.newInstance(MyContextHolder.get()).update(
                 mainQueueSize, retryQueueSize);
@@ -560,8 +571,7 @@ public class MyService extends Service {
                 // Ok
             } else if ( mExecutor.isReallyWorking() ) {
                 if (forceNow) {
-                    logMessageBuilder.append(" Cancelling Executor " + mExecutor);
-                    mExecutor.cancel(true);
+                    logMessageBuilder.append(" Cancelling working Executor;");
                 } else {
                     logMessageBuilder.append(" Cannot stop now Executor " + mExecutor);
                     could = false;
@@ -588,7 +598,7 @@ public class MyService extends Service {
                 );
     }
     
-    private void relealeWakeLock() {
+    private void releaseWakeLock() {
         synchronized(wakeLockLock) {
             if (mWakeLock != null) {
                 MyLog.d(this, "Releasing wakelock");
