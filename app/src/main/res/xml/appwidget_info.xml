@@ -9,6 +9,7 @@
     android:minHeight="40dip"
     android:updatePeriodMillis="0"
     android:initialLayout="@layout/appwidget"
+	android:resizeMode="horizontal|vertical"
     >
 </appwidget-provider>
 
