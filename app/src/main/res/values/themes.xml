@@ -19,9 +19,9 @@
  -->
 <resources>
     <string-array name="theme_color_values">
-        <item>DeviceDefault</item>
         <item>Dark</item>
         <item>Light</item>
+        <item>DeviceDefault</item>
     </string-array>
 
     <style name="Theme.AndStatus.Base" parent="Theme.AppCompat">

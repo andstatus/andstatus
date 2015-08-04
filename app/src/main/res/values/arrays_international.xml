@@ -153,9 +153,9 @@
         <item>GNU social</item>
     </string-array>
     <string-array name="theme_color_entries">
-        <item>@string/theme_color_entries_default</item>
         <item>@string/theme_color_entries_dark</item>
         <item>@string/theme_color_entries_light</item>
+        <item>@string/theme_color_entries_default</item>
     </string-array>
     <string-array name="theme_size_entries">
         <item>@string/theme_size_entries_small</item>

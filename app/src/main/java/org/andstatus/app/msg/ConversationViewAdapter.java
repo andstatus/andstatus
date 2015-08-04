@@ -38,6 +38,7 @@ import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.context.MyTheme;
 import org.andstatus.app.data.AvatarDrawable;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyHtml;
@@ -47,8 +48,6 @@ import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.widget.MySimpleCursorAdapter;
 
 import java.util.List;
-
-import static android.view.View.NO_ID;
 
 public class ConversationViewAdapter extends BaseAdapter {
     private MessageContextMenu contextMenu;
@@ -129,7 +128,8 @@ public class ConversationViewAdapter extends BaseAdapter {
 
         LinearLayout messageIndented = (LinearLayout) messageView.findViewById(R.id.message_indented);
         if (oMsg.getMsgId() == selectedMessageId  && oMsgs.size() > 1) {
-            MySimpleCursorAdapter.setBackgroundCompat(messageIndented, context.getResources().getDrawable(R.drawable.message_current_background));
+            MySimpleCursorAdapter.setBackgroundCompat(messageIndented, context.getResources().getDrawable(
+                    MyTheme.isThemeLight() ? R.drawable.current_message_background_light : R.drawable.current_message_background));
         }
 
         AttachedImageView imageView = (AttachedImageView) messageView.findViewById(R.id.attached_image);

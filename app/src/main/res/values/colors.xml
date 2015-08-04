@@ -44,10 +44,12 @@
     <color name="grey_wolf">#504A4B</color>
     <color name="carbon_grey">#625D5D</color>
 
-    <color name="messageBackgroundColor">#FF000000</color>
-    <color name="messageBackgroundColorLight">#FFFFFFFF</color>
-    <color name="replyMarkColor">#FF47a4ee</color>
-    <color name="replyMarkColorLight">#FF47a4ee</color>
+    <color name="message_background_color">#FF000000</color>
+    <color name="message_background_color_light">#FFFFFFFF</color>
+    <color name="reply_mark_color">#FF47A4EE</color>
+    <color name="reply_mark_color_light">#FF47A4EE</color>
+	<color name="current_message_border">#FF47A4EE</color>
+	<color name="current_message_border_light">#FF47A4EE</color>
 	<color name="link_text_dark">#ff180cac</color>
 	<color name="link_text_light">#ff33b5e5</color>
 </resources>

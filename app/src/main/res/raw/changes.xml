@@ -43,6 +43,9 @@
                 <a href="http://www.computerhope.com/htmcolor.htm">List of HTML colors</a>.
                 <a href="https://github.com/andstatus/andstatus/issues/228">#228</a>
             </change>
+            <change>Updated layout of individual messages and dividers between them in a Timeline.
+                <a href="https://github.com/andstatus/andstatus/issues/280">#280</a>
+            </change>
             <change>Links color for the Light theme made darker in order to be easier
                 readable. <a href="https://github.com/andstatus/andstatus/issues/264">#264</a>
             </change>

@@ -8,6 +8,6 @@
       android:bottomLeftRadius="0dp" />
   <stroke
       android:width="2dp"
-      android:color="#FFCCFFFF" />
+      android:color="@color/current_message_border" />
   <solid android:color="#00000000" />  
 </shape>
