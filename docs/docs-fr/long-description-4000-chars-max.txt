@@ -1,0 +1,16 @@
+AndStatus est un client pour réseau social consommant peu de bande passante avec des conversation en arborescence. Il supporte de multiples protocoles, dont GNU social ("Statusnet". p. ex. Quitter, LoadAverage, Vinilox, etc.), Twitter et Pump.io. Exécutera combine vos comptes de tous les réseaux dans une seule timeline et vous permet de lire et poster alors même que vous êtes hors-ligne.
+
+Pour Android 4.1 ou supérieur. Licence Open Source.
+
+Différentes fonctionnalités d'AndStatus :
+
+1. Plusieurs comptes de différents types de réseaux sociaux. Vous pouvez avoir plusieurs comptes dans chaque, écrire/répondre depuis n'importe quel "Vous" et partager entre les comptes et les systèmes.
+2. Vous n'avez même pas besoin d'être connecté pour publier vos messages : les messages non envoyés sont conservés (dans la "file d'essai") même après un redémarrage. Ils seront envoyés lorsque votre appareil est en ligne.
+3. Une visualisation des conversation en arborescence.
+4. La "recherche globale" permet la recherche de messages publics dans tous les systèmes enregistrés avec une seule requête.
+5. Les tweets/messages/avatars/images jointes sont synchronisés en arrière-plan, lorsque votre appareil a une bonne connexion.
+6. Les données en mémoire cache peuvent être conservées pour des années ou pour plusieurs jours seulement - selon votre choix.
+7. Sauvegarde et restauration facile des comptes et des données entre vos périphériques.
+8. Gratuit et sans publicité, soutenu par la communauté.
+
+Consultez le journal des modifications pour obtenir une description de toutes les fonctionnalités d'AndStatus :

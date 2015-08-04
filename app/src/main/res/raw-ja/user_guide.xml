@@ -18,7 +18,7 @@
  -->
 <FictionBook xmlns="http://www.gribuser.ru/xml/fictionbook/2.0"
 xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../../../res-src/fb2/FictionBook.xsd">
+xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../res-src/fb2/FictionBook.xsd">
 <description>
     <title-info>
         <genre>computers</genre>
@@ -119,7 +119,7 @@ GNU ソーシャル コミュニティがメンテナンスしている、ライ
     <p>自分のステータスを更新するには、"投稿" ボタン
 (Twitter は "ツイート") をタップします。
 画面の下部にあるテキストエリアにテキストを入力して、
-<strong>送信</strong> をタップします。..
+<strong>送信</strong> をタップします。...
     </p>
     <p>返信するには、メッセージを <strong>長押し</strong> して、
 コンテキストメニューから <strong>返信</strong> を選択し、
@@ -141,7 +141,7 @@ GNU ソーシャル コミュニティがメンテナンスしている、ライ
     <p>あなたのメッセージ (公開またはプライベート) を
 <strong>削除</strong> するには、
 その上で <strong>長押し</strong> して、
-<strong>メッセージを削除</strong> を選択します。..
+<strong>メッセージを削除</strong> を選択します。...
     </p>
     <p>この AndStatus アカウントに対して、Android の "アカウントと同期" 設定で
 <strong>自動同期</strong> をオンにしている場合、

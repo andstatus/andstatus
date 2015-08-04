@@ -18,7 +18,7 @@
  -->
 <FictionBook xmlns="http://www.gribuser.ru/xml/fictionbook/2.0"
 xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../../../res-src/fb2/FictionBook.xsd">
+xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../res-src/fb2/FictionBook.xsd">
 <description>
     <title-info>
         <genre>computers</genre>
@@ -88,7 +88,7 @@ As contas Twitter, Pump.io e diversas "GNU social" (Quitter, LoadAverage e Vinil
     <title>
         <p>3. Enviar e responder</p>
     </title>
-    <p>Para atualizar o seu estado, toque no botão "Publicar" ("Tweet" para o Twitter), escreva o seu texto na área de texto, existente na base do ecrã, e clique em <strong>Enviar</strong>..
+    <p>Para atualizar o seu estado, toque no botão "Publicar" ("Tweet" para o Twitter), escreva o seu texto na área de texto, existente na base do ecrã, e clique em <strong>Enviar</strong>.
     </p>
     <p>Para respostas, <strong>pressione longamente</strong> a mensagem, selecione <strong>Responder</strong> no menu de contexto e escreva a sua resposta.
     </p>
@@ -100,7 +100,7 @@ As contas Twitter, Pump.io e diversas "GNU social" (Quitter, LoadAverage e Vinil
     </title>
     <p>Abra a gaveta de navegação, toque no item ("Home") da sua cronologia e selecione <strong>Mensagem direta</strong> na lista.
     </p>
-    <p>Para <strong>eliminar</strong> a sua mensagem (pública ou privada), <strong>pressione longamente</strong> a mensagem e selecione <strong>Remover mensagem</strong>..
+    <p>Para <strong>eliminar</strong> a sua mensagem (pública ou privada), <strong>pressione longamente</strong> a mensagem e selecione <strong>Remover mensagem</strong>.
     </p>
     <p>As novas mensagens serão obtidas automaticamente em segundo plano se ativar a opção <strong>Sincronização automática</strong> das contas AndStatus nas definições "Contas e sincronização" do Android. Se quiser receber as mensagens através da opção manual, utilize o botão "Recarregar" na barra de ação.
     </p>
@@ -109,7 +109,7 @@ As contas Twitter, Pump.io e diversas "GNU social" (Quitter, LoadAverage e Vinil
     <title>
         <p>5. Menções</p>
     </title>
-    <p>Toque num item da cronologia através da gaveta de navegação e selecione <strong>Menções</strong>.
+    <p>Toque num item da cronologia através da gaveta de navegação e selecione <strong>Menções</strong>
     </p>
     <p>As menções irão listar todas as mensagens em que se mencione o seu <strong>@username</strong> (ou até as menções de todas as suas contas AndStatus numa cronologia combinada).
     </p>

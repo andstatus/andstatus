@@ -18,7 +18,7 @@
  -->
 <FictionBook xmlns="http://www.gribuser.ru/xml/fictionbook/2.0"
 xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../../../res-src/fb2/FictionBook.xsd">
+xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../res-src/fb2/FictionBook.xsd">
 <description>
     <title-info>
         <genre>computers</genre>
@@ -65,7 +65,7 @@ AndStatus combina las cuentas de todas tus redes sociales en una Línea temporal
     </p>
     <p>En el caso de que tu servidor (de GNU social) no esté en la lista, pulsa en el menú «Descubre servidores abiertos» (símbolo de la lupa) para elegir un servidor de una lista en línea mantenida por la comunidad de GNU social, o "Añadir un nuevo servidor" (símbolo «+») para añadir manualmente una cuenta nueva.</p>
     <p>Para Twitter, puedes pulsar directamente «Añadir esta cuenta».
-Para otras redes sociales se pedirá escribir tu nombre de usuario y contraseña antes de pulsar «Añadir esta cuenta». </p>
+Para otras redes sociales se pedirá escribir tu nombre de usuario y contraseña antes de pulsar «Añadir esta cuenta».</p>
     <p>Después de crear una cuenta, por favor, pulsa la «flecha hacia atrás» en la barra superior (barra de acción) o la tecla «Atrás» de su dispositivo.
 Esta vez se abrirá la línea temporal «Inicio» y se descargarán los mensajes desde Internet.
     </p>

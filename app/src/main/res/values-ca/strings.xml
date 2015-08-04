@@ -57,7 +57,6 @@
   <string name="category_title_preference_credentials">Credencials d\'usuari</string>
   <string name="category_title_preference_information">Informació</string>
   <string name="category_title_preference_notifications">Notificacions</string>
-  <string name="category_title_preference_origin">Sistema de microblogging</string>
   <string name="category_title_preference_settings">Configuració</string>
   <string name="combined_timeline_on">combinat</string>
   <string name="combined_timeline_off_account">per a</string>
@@ -124,9 +123,6 @@
   <string name="label_backup_folder">Carpeta de còpia de seguretat</string>
   <string name="label_conversation">Conversa</string>
   <string name="label_host">Amfitrió</string>
-  <string name="label_origin_list">Sistemes de microblogging</string>
-  <string name="label_origin_system">Sistema de microblogging</string>
-  <string name="label_origin_type">Tipus de sistema de Microblogging</string>
   <string name="label_restore">Restaura les dades de l\'aplicació des d\'una còpia de seguretat</string>
   <string name="label_upgrading">Actualització en curs. Espera.</string>
   <string name="loading">S\'està carregant...</string>
@@ -179,7 +175,6 @@
   <string name="options_menu_reload">Torna a carregar</string>
   <string name="options_menu_mentions">Mencions</string>
   <string name="options_menu_search">Cerca</string>
-  <string name="origin_settings_action">Sistema de microblogging</string>
   <string name="preference_ssl_mode_title">Mode SSL i seguretat</string>
   <string name="preference_ssl_mode_secure_summary">Estàs segur: només es permeten les connexions segures SSL</string>
   <string name="preference_ssl_mode_secure">SSL segur</string>

@@ -26,11 +26,11 @@ xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../res-src/
             <first-name>AndStatus project</first-name>
             <last-name></last-name>
         </author>
-        <book-title>AndStatus Användarmanual</book-title>
-        <lang>sv</lang>
+        <book-title>Guide de l'utilisateur AndStatus</book-title>
+        <lang>fr</lang>
         <src-lang>en</src-lang>
         <translator>
-            <nickname>Henrik Mattsson-Mårn</nickname>
+            <nickname>Espace réservé aux crédits de traduction</nickname>
         </translator>
     </title-info>
     <document-info>
@@ -47,15 +47,17 @@ xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../res-src/
 <body>
 <section>
     <title>
-        <p>Introduktion</p>
+        <p>Introduction</p>
     </title>
-    <p></p>
-    <p></p>
-    <p></p>
+    <p>AndStatus est un client de réseau social Open Source ayant une faible consommation de bande passante et avec des conversations en arborescence.
+         Il prend en charge plusieurs protocoles, y compris GNU social, Twitter et Pump.io.
+         AndStatus combine vos comptes de tous les réseaux dans une seule timeline et vous permet de lire et poster alors même que vous êtes hors connexion.</p>
+    <p>Un lien vers ce guide est disponible dans la barre d'action-&gt;Aide.</p>
+    <p>Le journal des modifications sur la page suivante vous permettra de voir des descriptions et des liens vers les discussions de toutes les fonctionnalités d'AndStatus.</p>
 </section>
 <section>
     <title>
-        <p>1. Komma igång</p>
+        <p>1. Mise en route</p>
     </title>
     <p>
     </p>
@@ -65,7 +67,7 @@ xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../res-src/
     <p></p>
     <p>
     </p>
-    <p>Grattis! Läs nedan om vad mer du kan göra.
+    <p>
     </p>
     <p>
     </p>
@@ -85,7 +87,7 @@ xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../res-src/
 </section>
 <section>
     <title>
-        <p>3. Skicka och besvara</p>
+        <p></p>
     </title>
     <p>.
     </p>
@@ -95,7 +97,7 @@ xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../res-src/
 </section>
 <section>
     <title>
-        <p>4. Direkta (privata) meddelanden</p>
+        <p></p>
     </title>
     <p>
     </p>
@@ -106,7 +108,7 @@ xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../res-src/
 </section>
 <section>
     <title>
-        <p>5. Omnämnanden</p>
+        <p></p>
     </title>
     <p>
     </p>

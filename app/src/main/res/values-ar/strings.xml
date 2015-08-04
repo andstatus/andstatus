@@ -319,7 +319,6 @@
   <string name="summary_preference_vibration_off">الهزاز موقف</string>
   <string name="summary_preference_vibration_on">الاهتزاز عند الرسالة الواردة</string>
   <string name="system_is_busy_try_later">النظام مشغول. الرجاء المحاولة مرة لاحقاً.</string>
-  <string name="theme_color_entries_default">اتباع إعدادات الجهاز</string>
   <string name="theme_color_entries_light">فاتح</string>
   <string name="theme_color_entries_dark">داكن</string>
   <string name="theme_size_entries_small">صغير</string>
