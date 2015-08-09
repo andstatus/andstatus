@@ -22,7 +22,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import org.andstatus.app.ListActivityTestHelper;
+import org.andstatus.app.ActivityTestHelper;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
@@ -80,7 +80,7 @@ public class PublicTimelineActivityTest extends android.test.ActivityInstrumenta
     public void testGlobalSearchInOptionsMenu() throws InterruptedException {
         assertFalse("Screen is locked", TestSuite.isScreenLocked(mActivity));
 
-        ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<TimelineActivity>(this, mActivity);
+        ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<TimelineActivity>(this, mActivity);
         helper.clickMenuItem("Global search", R.id.global_search_menu_id);
         getInstrumentation().sendStringSync(TestSuite.GLOBAL_PUBLIC_MESSAGE_TEXT);
         getInstrumentation().sendKeyDownUpSync(KeyEvent.KEYCODE_ENTER);
@@ -122,7 +122,7 @@ public class PublicTimelineActivityTest extends android.test.ActivityInstrumenta
     public void testSearch() throws InterruptedException {
         assertFalse("Screen is locked", TestSuite.isScreenLocked(mActivity));
 
-        ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<TimelineActivity>(this, mActivity);
+        ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<TimelineActivity>(this, mActivity);
         helper.clickMenuItem("Global search", R.id.search_menu_id);
         getInstrumentation().sendStringSync(TestSuite.PUBLIC_MESSAGE_TEXT);
         getInstrumentation().sendKeyDownUpSync(KeyEvent.KEYCODE_ENTER);

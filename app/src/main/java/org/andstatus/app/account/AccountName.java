@@ -25,7 +25,7 @@ import org.andstatus.app.origin.Origin;
  * Immutable class.  
  * @author yvolk@yurivolkov.com
  */
-class AccountName {
+public class AccountName {
 
     /**
      * Prefix of the user's Preferences file
@@ -104,7 +104,7 @@ class AccountName {
         return originName;
     }
     
-    protected static AccountName fromAccountName(MyContext myContext, String accountNameString) {
+    public static AccountName fromAccountName(MyContext myContext, String accountNameString) {
         AccountName accountName = new AccountName();
         accountName.origin = myContext.persistentOrigins().fromName(accountNameToOriginName(accountNameString));
         accountName.username = accountName.accountNameToUsername(accountNameString);
@@ -119,24 +119,20 @@ class AccountName {
         return username + ORIGIN_SEPARATOR + origin.getName();
     }
 
-    Origin getOrigin() {
+    public Origin getOrigin() {
         return origin;
     }
 
-    boolean isValid() {
+    public boolean isValid() {
         return origin.isUsernameValid(username) && origin.isPersistent();
     }
     
-    String getUsername() {
+    public String getUsername() {
         return username;
     }
 
     String getOriginName() {
         return origin.getName();
-    }
-
-    public int compareToString(String string) {
-        return toString().compareTo(string);
     }
 
     /**

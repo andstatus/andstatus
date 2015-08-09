@@ -57,7 +57,7 @@ public class MyTheme {
 
         if (themeId != R.style.Theme_AndStatus_DeviceDefault) {
             theme.applyStyle(
-                    getStyleId(context, MyPreferences.getString(MyPreferences.KEY_ACTION_BAR_COLOR, ""), R.style.ActionBarTeal),
+                    getStyleId(context, MyPreferences.getString(MyPreferences.KEY_ACTION_BAR_COLOR, ""), R.style.ActionBarMyBlue),
                     false);
             theme.applyStyle(
                     getStyleId(context, MyPreferences.getString(MyPreferences.KEY_BACKGROUND_COLOR, ""), R.style.BackgroundColorBlack),

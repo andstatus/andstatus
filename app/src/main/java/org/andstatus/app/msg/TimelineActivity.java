@@ -16,7 +16,6 @@
 
 package org.andstatus.app.msg;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.LoaderManager.LoaderCallbacks;
@@ -46,13 +45,13 @@ import android.widget.AdapterView;
 import android.widget.CheckBox;
 import android.widget.CursorAdapter;
 import android.widget.LinearLayout;
-import android.widget.ListAdapter;
 import android.widget.TextView;
 
 import org.andstatus.app.ActivityRequestCode;
 import org.andstatus.app.HelpActivity;
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.MyAction;
+import org.andstatus.app.MyBaseListActivity;
 import org.andstatus.app.MyListActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.account.AccountSelector;
@@ -1286,7 +1285,7 @@ public class TimelineActivity extends MyListActivity implements MyServiceEventsL
     }
 
     @Override
-    public Activity getActivity() {
+    public MyBaseListActivity getActivity() {
         return this;
     }
 

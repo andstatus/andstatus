@@ -16,7 +16,6 @@
 
 package org.andstatus.app.msg;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -28,10 +27,10 @@ import android.widget.ListAdapter;
 import org.andstatus.app.ActivityRequestCode;
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.LoadableListActivity;
+import org.andstatus.app.MyBaseListActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.service.QueueViewer;
 import org.andstatus.app.util.UriUtils;
@@ -126,7 +125,7 @@ public class ConversationActivity extends LoadableListActivity implements Action
     }
     
     @Override
-    public Activity getActivity() {
+    public MyBaseListActivity getActivity() {
         return this;
     }
 

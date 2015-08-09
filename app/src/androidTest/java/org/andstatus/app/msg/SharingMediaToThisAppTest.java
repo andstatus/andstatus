@@ -13,7 +13,6 @@ import org.andstatus.app.account.AccountSelector;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.msg.TimelineActivity;
 import org.andstatus.app.service.MyServiceTestHelper;
 import org.andstatus.app.util.MyLog;
 
@@ -52,7 +51,7 @@ public class SharingMediaToThisAppTest extends ActivityInstrumentationTestCase2<
         ListActivityTestHelper<TimelineActivity> helperTimelineActivity = new ListActivityTestHelper<TimelineActivity>(this, AccountSelector.class);
         AccountSelector selector = (AccountSelector) helperTimelineActivity.waitForNextActivity(method, 15000);
         ListActivityTestHelper<AccountSelector> helperAccountSelector = new ListActivityTestHelper<AccountSelector>(this, selector);
-        int position = helperAccountSelector.getPositionOfItemId(ma.getUserId());
+        int position = helperAccountSelector.getPositionOfListItemId(ma.getUserId());
         assertTrue("Account found", position >= 0);
         helperAccountSelector.selectListPosition(method, position);
         helperAccountSelector.clickListPosition(method, position);

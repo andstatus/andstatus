@@ -1,6 +1,6 @@
 apply plugin: 'java'
 
-version = '18.0'  // TODO: Get the version from ":app" module
+version = '18.1'  // TODO: Get the version from ":app" module
 archivesBaseName = 'AndStatus'
 
 println "Projects (" + rootProject.getAllprojects().size() + "): " + rootProject.getAllprojects()

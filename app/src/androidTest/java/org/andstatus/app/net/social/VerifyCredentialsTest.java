@@ -92,7 +92,7 @@ public class VerifyCredentialsTest extends InstrumentationTestCase {
         httpConnection.setResponse(jso);
         
         MbUser mbUser = connection.verifyCredentials();
-        assertEquals("User's oid is user oid of this account", "144771645", mbUser.oid);
+        assertEquals("User's oid is user oid of this account", TestSuite.TWITTER_TEST_ACCOUNT_USER_OID, mbUser.oid);
         
         Origin origin = MyContextHolder.get().persistentOrigins().firstOfType(OriginType.TWITTER);
         MyAccount.Builder builder = MyAccount.Builder.newOrExistingFromAccountName(

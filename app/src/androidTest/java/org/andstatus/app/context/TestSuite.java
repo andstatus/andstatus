@@ -238,11 +238,24 @@ public class TestSuite extends TestCase {
     
     private static final String TEST_ORIGIN_PARENT_HOST = "example.com";
     public static final String PUMPIO_ORIGIN_NAME = "PumpioTest";
-    public static final String PUMPIO_TEST_ACCOUNT_USERNAME = "testerofandstatus@identi.ca";
+    private static final String PUMPIO_TEST_ACCOUNT_USERNAME = "t131t@identi.ca";
     public static final String PUMPIO_TEST_ACCOUNT_NAME = PUMPIO_TEST_ACCOUNT_USERNAME + "/" + PUMPIO_ORIGIN_NAME;
+    public static final String PUMPIO_TEST_ACCOUNT_USER_OID = "acct:" + PUMPIO_TEST_ACCOUNT_USERNAME;
+
+    public static final String GNUSOCIAL_TEST_ORIGIN_NAME = "GNUsocialTest";
+    public static final String GNUSOCIAL_TEST_ACCOUNT_USERNAME = "t131t";
+    public static final String GNUSOCIAL_TEST_ACCOUNT_NAME = GNUSOCIAL_TEST_ACCOUNT_USERNAME + "/" + GNUSOCIAL_TEST_ORIGIN_NAME;
+    public static final String GNUSOCIAL_TEST_ACCOUNT_USER_OID = "115391";
+    public static final String GNUSOCIAL_TEST_ACCOUNT_AVATAR_URL = "https://quitter.se/avatar/115686-48-20150106084830.jpeg";
+
+    public static final String TWITTER_TEST_ORIGIN_NAME = "TwitterTest";
+    public static final String TWITTER_TEST_ACCOUNT_USERNAME = "t131t";
+    public static final String TWITTER_TEST_ACCOUNT_USER_OID = "144771645";
+    public static final String TWITTER_TEST_ACCOUNT_NAME = TWITTER_TEST_ACCOUNT_USERNAME + "/" + TWITTER_TEST_ORIGIN_NAME;
+
     public static final OriginType CONVERSATION_ORIGIN_TYPE = OriginType.PUMPIO;
     public static final String CONVERSATION_ORIGIN_NAME = PUMPIO_ORIGIN_NAME;
-    public static final String CONVERSATION_ACCOUNT_USERNAME = PUMPIO_TEST_ACCOUNT_USERNAME;
+    private static final String CONVERSATION_ACCOUNT_USERNAME = "testerofandstatus@identi.ca";
     public static final String CONVERSATION_ACCOUNT_NAME = CONVERSATION_ACCOUNT_USERNAME + "/" + CONVERSATION_ORIGIN_NAME;
     public static final String CONVERSATION_ACCOUNT_USER_OID = "acct:" + CONVERSATION_ACCOUNT_USERNAME;
     public static final String CONVERSATION_ACCOUNT_AVATAR_URL = "http://andstatus.org/images/andstatus-logo.png";
@@ -250,15 +263,10 @@ public class TestSuite extends TestCase {
     public static final String CONVERSATION_ENTRY_USER_OID = "acct:first@example.net";
     public static final String CONVERSATION_MEMBER_USER_OID = "acct:third@pump.example.com";
     public static final String HTML_MESSAGE_OID = "http://identi.ca/testerofandstatus/comment/htmlfakeuri" + TESTRUN_UID;
-    public static final String GNUSOCIAL_TEST_ORIGIN_NAME = "GNUsocialTest";
-    public static final String GNUSOCIAL_TEST_ACCOUNT_USERNAME = "t131t";
-    public static final String GNUSOCIAL_TEST_ACCOUNT_NAME = GNUSOCIAL_TEST_ACCOUNT_USERNAME + "/" + GNUSOCIAL_TEST_ORIGIN_NAME;
-    public static final String GNUSOCIAL_TEST_ACCOUNT_USER_OID = "115391";
-    public static final String GNUSOCIAL_TEST_ACCOUNT_AVATAR_URL = "https://quitter.se/avatar/115686-48-20150106084830.jpeg";
-    public static final String TWITTER_TEST_ORIGIN_NAME = "TwitterTest";
-    public static final String TWITTER_TEST_ACCOUNT_USERNAME = "t131t";
-    public static final String TWITTER_TEST_ACCOUNT_USER_OID = "144771645";
-    public static final String TWITTER_TEST_ACCOUNT_NAME = TWITTER_TEST_ACCOUNT_USERNAME + "/" + TWITTER_TEST_ORIGIN_NAME;
+    private static final String CONVERSATION_ACCOUNT2_USERNAME = "tester2ofandstatus@identi.ca";
+    public static final String CONVERSATION_ACCOUNT2_NAME = CONVERSATION_ACCOUNT2_USERNAME + "/" + CONVERSATION_ORIGIN_NAME;
+    public static final String CONVERSATION_ACCOUNT2_USER_OID = "acct:" + CONVERSATION_ACCOUNT2_USERNAME;
+
     public static final String PLAIN_TEXT_MESSAGE_OID = "2167283" + TESTRUN_UID;
     public static final String PUBLIC_MESSAGE_TEXT = "UniqueText" + TESTRUN_UID;
     public static final String GLOBAL_PUBLIC_MESSAGE_TEXT = "Public_in_AndStatus_" + TESTRUN_UID;

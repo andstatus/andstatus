@@ -20,6 +20,7 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.test.InstrumentationTestCase;
 import android.text.TextUtils;
 
+import org.andstatus.app.account.AccountName;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
 import org.andstatus.app.context.MyContextForTest;
@@ -39,6 +40,7 @@ import org.andstatus.app.util.TriState;
 
 public class OriginsAndAccountsInserter extends InstrumentationTestCase {
     MyContextForTest myContext;
+    private static String firstAccountUserOid = null;
     
     public OriginsAndAccountsInserter(MyContextForTest myContextForTest) {
         myContext = myContextForTest;
@@ -46,65 +48,66 @@ public class OriginsAndAccountsInserter extends InstrumentationTestCase {
 
     public void insert() throws NameNotFoundException, ConnectionException {
         assertEquals("Data path", "ok", TestSuite.checkDataPath(this));
-
-        OriginTest.createOneOrigin(OriginType.TWITTER, TestSuite.TWITTER_TEST_ORIGIN_NAME,
-                TestSuite.getTestOriginHost(TestSuite.TWITTER_TEST_ORIGIN_NAME), 
-                true, SslModeEnum.SECURE, false, true, true);
-        OriginTest.createOneOrigin(OriginType.PUMPIO,
-                TestSuite.PUMPIO_ORIGIN_NAME,
-                TestSuite.getTestOriginHost(TestSuite.PUMPIO_ORIGIN_NAME), 
-                true, SslModeEnum.SECURE, true, true, true);
-        OriginTest.createOneOrigin(OriginType.GNUSOCIAL, TestSuite.GNUSOCIAL_TEST_ORIGIN_NAME,
-                TestSuite.getTestOriginHost(TestSuite.GNUSOCIAL_TEST_ORIGIN_NAME), 
-                true, SslModeEnum.SECURE, true, true, true);
-        String additionalOriginName = TestSuite.GNUSOCIAL_TEST_ORIGIN_NAME + "ins";
-        OriginTest.createOneOrigin(OriginType.GNUSOCIAL, additionalOriginName,
-                TestSuite.getTestOriginHost(additionalOriginName), 
-                true, SslModeEnum.INSECURE, true, false, true);
-        myContext.persistentOrigins().initialize();
-
-        Origin pumpioOrigin = myContext.persistentOrigins().fromName(TestSuite.PUMPIO_ORIGIN_NAME);
-        assertEquals("Pumpio test origin created", pumpioOrigin.getOriginType(), OriginType.PUMPIO);
-        addAccount(pumpioOrigin, "acct:firstTestUser@identi.ca", "firstTestUser@identi.ca", "");
-        addAccount(pumpioOrigin, "acct:t131t@identi.ca", "t131t@identi.ca", "");
-
-        Origin twitterOrigin = myContext.persistentOrigins().fromName(TestSuite.TWITTER_TEST_ORIGIN_NAME);
-        assertEquals("Twitter test origin created", twitterOrigin.getOriginType(),OriginType.TWITTER);
-        addAccount(twitterOrigin, TestSuite.TWITTER_TEST_ACCOUNT_USER_OID,
-                TestSuite.TWITTER_TEST_ACCOUNT_USERNAME, "");
-
-        Origin gnuSocialOrigin = myContext.persistentOrigins().fromName(TestSuite.GNUSOCIAL_TEST_ORIGIN_NAME);
-        assertEquals("GNU social Origin created", gnuSocialOrigin.getOriginType(), OriginType.GNUSOCIAL);
-        addAccount(gnuSocialOrigin, TestSuite.GNUSOCIAL_TEST_ACCOUNT_USER_OID,
-                TestSuite.GNUSOCIAL_TEST_ACCOUNT_USERNAME,
-                TestSuite.GNUSOCIAL_TEST_ACCOUNT_AVATAR_URL);
-
-        Origin conversationOrigin = myContext.persistentOrigins().fromName(
-                TestSuite.CONVERSATION_ORIGIN_NAME);
-        assertEquals("Origin for conversation created", conversationOrigin.getOriginType(),
-                TestSuite.CONVERSATION_ORIGIN_TYPE);
-        addAccount(conversationOrigin, TestSuite.CONVERSATION_ACCOUNT_USER_OID,
-                TestSuite.CONVERSATION_ACCOUNT_USERNAME, TestSuite.CONVERSATION_ACCOUNT_AVATAR_URL);
-        
+        addOrigins();
+        addAccounts();
         MyPreferences.onPreferencesChanged();
         MyContextHolder.initialize(null, this);
         MyServiceManager.setServiceUnavailable();
         assertTrue("Context is ready", MyContextHolder.get().isReady());
         assertEquals("Data path", "ok", TestSuite.checkDataPath(this));
     }
-    
-    private MyAccount addAccount(Origin origin, String userOid, String username, String avatarUrl) throws ConnectionException {
+
+    private void addOrigins() {
+        OriginTest.createOneOrigin(OriginType.TWITTER, TestSuite.TWITTER_TEST_ORIGIN_NAME,
+                TestSuite.getTestOriginHost(TestSuite.TWITTER_TEST_ORIGIN_NAME),
+                true, SslModeEnum.SECURE, false, true, true);
+        OriginTest.createOneOrigin(OriginType.PUMPIO,
+                TestSuite.PUMPIO_ORIGIN_NAME,
+                TestSuite.getTestOriginHost(TestSuite.PUMPIO_ORIGIN_NAME),
+                true, SslModeEnum.SECURE, true, true, true);
+        OriginTest.createOneOrigin(OriginType.GNUSOCIAL, TestSuite.GNUSOCIAL_TEST_ORIGIN_NAME,
+                TestSuite.getTestOriginHost(TestSuite.GNUSOCIAL_TEST_ORIGIN_NAME),
+                true, SslModeEnum.SECURE, true, true, true);
+        String additionalOriginName = TestSuite.GNUSOCIAL_TEST_ORIGIN_NAME + "ins";
+        OriginTest.createOneOrigin(OriginType.GNUSOCIAL, additionalOriginName,
+                TestSuite.getTestOriginHost(additionalOriginName),
+                true, SslModeEnum.INSECURE, true, false, true);
+        myContext.persistentOrigins().initialize();
+    }
+
+    private void addAccounts() throws ConnectionException {
+        addAccount(TestSuite.PUMPIO_TEST_ACCOUNT_USER_OID, TestSuite.PUMPIO_TEST_ACCOUNT_NAME,
+                "", OriginType.PUMPIO);
+        addAccount(TestSuite.TWITTER_TEST_ACCOUNT_USER_OID, TestSuite.TWITTER_TEST_ACCOUNT_NAME,
+                "", OriginType.TWITTER);
+        addAccount(TestSuite.GNUSOCIAL_TEST_ACCOUNT_USER_OID, TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME,
+                TestSuite.GNUSOCIAL_TEST_ACCOUNT_AVATAR_URL, OriginType.GNUSOCIAL);
+        addAccount(TestSuite.CONVERSATION_ACCOUNT_USER_OID, TestSuite.CONVERSATION_ACCOUNT_NAME,
+                TestSuite.CONVERSATION_ACCOUNT_AVATAR_URL, TestSuite.CONVERSATION_ORIGIN_TYPE);
+        addAccount(TestSuite.CONVERSATION_ACCOUNT2_USER_OID, TestSuite.CONVERSATION_ACCOUNT2_NAME,
+                "", TestSuite.CONVERSATION_ORIGIN_TYPE);
+    }
+
+    private MyAccount addAccount(String userOid, String accountNameString, String avatarUrl, OriginType originType) throws ConnectionException {
+        if (firstAccountUserOid == null) {
+            firstAccountUserOid = userOid;
+        }
         assertEquals("Data path", "ok", TestSuite.checkDataPath(this));
-        long accountUserId_existing = MyQuery.oidToId(myContext.getDatabase().getReadableDatabase(), OidEnum.USER_OID, origin.getId(), userOid);
-        MbUser mbUser = MbUser.fromOriginAndUserOid(origin.getId(), userOid);
-        mbUser.setUserName(username);
+        AccountName accountName = AccountName.fromAccountName(myContext, accountNameString);
+        assertTrue("Name '" + accountNameString + "' is valid for " + originType, accountName.isValid());
+        assertEquals("Origin for '" + accountNameString + "' account created", accountName.getOrigin().getOriginType(), originType);
+        long accountUserId_existing = MyQuery.oidToId(myContext.getDatabase().getReadableDatabase(), OidEnum.USER_OID,
+                accountName.getOrigin().getId(), userOid);
+        MbUser mbUser = MbUser.fromOriginAndUserOid(accountName.getOrigin().getId(), userOid);
+        mbUser.setUserName(accountName.getUsername());
         mbUser.avatarUrl = avatarUrl;
         MyAccount ma = addAccountFromMbUser(mbUser);
         long accountUserId = ma.getUserId();
-        if (accountUserId_existing == 0 && !userOid.contains("firstTestUser")) {
-            assertTrue("AccountUserId != 1", accountUserId != 1);
+        String msg = "AccountUserId for '" + accountNameString + ", (first: '" + firstAccountUserOid + "')";
+        if (accountUserId_existing == 0 && !userOid.contains(firstAccountUserOid)) {
+            assertTrue(msg + " != 1", accountUserId != 1);
         } else {
-            assertTrue("AccountUserId != 0", accountUserId != 0);
+            assertTrue(msg + " != 0", accountUserId != 0);
         }
         assertTrue("Account " + userOid + " is persistent", ma != null);
         assertTrue("Account UserOid", ma.getUserOid().equalsIgnoreCase(userOid));

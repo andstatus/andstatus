@@ -29,7 +29,6 @@ import net.jcip.annotations.GuardedBy;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.ParsedUri;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.MyServiceEvent;
@@ -45,7 +44,7 @@ import org.andstatus.app.util.MyLog;
  * 
  * @author yvolk@yurivolkov.com
  */
-public abstract class LoadableListActivity extends MyActivity implements MyServiceEventsListener {
+public abstract class LoadableListActivity extends MyBaseListActivity implements MyServiceEventsListener {
 
     ParsedUri mParsedUri = ParsedUri.fromUri(Uri.EMPTY);
 

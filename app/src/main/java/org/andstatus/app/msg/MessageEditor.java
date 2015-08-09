@@ -17,6 +17,7 @@
 package org.andstatus.app.msg;
 
 import org.andstatus.app.ActivityRequestCode;
+import org.andstatus.app.MyBaseListActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
@@ -29,7 +30,6 @@ import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -363,7 +363,7 @@ public class MessageEditor {
                 mMessageList.getCurrentMyAccountUserId());
     }
 
-	private Activity getActivity() {
+	private MyBaseListActivity getActivity() {
 		return mMessageList.getActivity();
 	}
     

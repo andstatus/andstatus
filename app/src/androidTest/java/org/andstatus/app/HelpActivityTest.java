@@ -55,7 +55,7 @@ public class HelpActivityTest extends ActivityInstrumentationTestCase2<HelpActiv
         assertTrue(changeLogView != null);
         Thread.sleep(500);
 
-        ListActivityTestHelper<HelpActivity> helper = new ListActivityTestHelper<HelpActivity>(this, MySettingsActivity.class);
+        ActivityTestHelper<HelpActivity> helper = new ActivityTestHelper<HelpActivity>(this, MySettingsActivity.class);
         assertTrue("Click on ActionBar item", helper.clickMenuItem("Clicking on Settings menu item", R.id.preferences_menu_id));
         Activity nextActivity = helper.waitForNextActivity("Clicking on Settings menu item", 10000);
         Thread.sleep(500);

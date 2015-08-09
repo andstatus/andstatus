@@ -72,24 +72,31 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
 
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
+        final String method = "onCreateContextMenu";
         long userIdForThisMessage = accountUserIdToActAs;
         viewOfTheContext = v;
+        String logMsg = method;
         if (menuInfo != null) {
             AdapterView.AdapterContextMenuInfo info;
             try {
                 info = (AdapterView.AdapterContextMenuInfo) menuInfo;
             } catch (ClassCastException e) {
-                MyLog.e(this, "bad menuInfo", e);
+                MyLog.e(this, method + "; bad menuInfo", e);
                 return;
             }
 
             mMsgId = info.id;
+            logMsg += "; info.id=" + mMsgId + "; position=" + info.position;
+            messageList.getActivity().setPositionOfContextMenu(info.position);
             if (userIdForThisMessage == 0) {
                 userIdForThisMessage = messageList.getLinkedUserIdFromCursor(info.position);
             }
+
         } else {
+            messageList.getActivity().setPositionOfContextMenu(-1);
             TextView id = (TextView) v.findViewById(R.id.id);
             mMsgId = Long.parseLong(id.getText().toString());
+            logMsg += "; idView.text=" + mMsgId;
             if (userIdForThisMessage == 0) {
                 TextView linkedUserId = (TextView) v.findViewById(R.id.linked_user_id);
                 String strIserId = linkedUserId.getText().toString();
@@ -103,6 +110,7 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
             mMsgId = 0;
             return;
         }
+        MyLog.v(this, logMsg);
         MessageForAccount msg = new MessageDataForContextMenu(messageList.getActivity(),
                 userIdForThisMessage, getCurrentMyAccountUserId(), messageList.getTimelineType(),
                 mMsgId, accountUserIdToActAs!=0).getMsg();
@@ -252,10 +260,13 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
     
     public boolean onContextItemSelected(MenuItem item) {
         AdapterView.AdapterContextMenuInfo info;
+        String msgInfo = "";
         try {
             info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
             if (info != null) {
                 mMsgId = info.id;
+            } else {
+                msgInfo = "; info==null";
             }
         } catch (ClassCastException e) {
             MyLog.e(this, "bad menuInfo", e);
@@ -269,7 +280,7 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
         MyAccount ma = MyContextHolder.get().persistentAccounts().fromUserId(actorUserIdForCurrentMessage);
         if (ma.isValid()) {
             ContextMenuItem contextMenuItem = ContextMenuItem.fromId(item.getItemId());
-            MyLog.v(this, "onContextItemSelected: " + contextMenuItem + "; actor=" + ma.getAccountName());
+            MyLog.v(this, "onContextItemSelected: " + contextMenuItem + "; actor=" + ma.getAccountName() + "; msgId=" + mMsgId + msgInfo);
             return contextMenuItem.execute(this, ma);
         } else {
             return false;

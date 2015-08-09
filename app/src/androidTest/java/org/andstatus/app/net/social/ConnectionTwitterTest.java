@@ -93,7 +93,7 @@ public class ConnectionTwitterTest extends InstrumentationTestCase {
         assertTrue("Is not a reblog", mbMessage.rebloggedMessage == null);
         assertTrue("Is a reply", mbMessage.inReplyToMessage != null);
         assertEquals("Reply to the message id", "17176774678", mbMessage.inReplyToMessage.oid);
-        assertEquals("Reply to the message by userOid", "144771645", mbMessage.inReplyToMessage.sender.oid);
+        assertEquals("Reply to the message by userOid", TestSuite.TWITTER_TEST_ACCOUNT_USER_OID, mbMessage.inReplyToMessage.sender.oid);
         assertTrue("Is not Favorited", !mbMessage.favoritedByActor.toBoolean(true));
         String startsWith = "@t131t";
         assertEquals("Body of this message starts with", startsWith, mbMessage.getBody().substring(0, startsWith.length()));

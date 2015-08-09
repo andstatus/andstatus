@@ -26,7 +26,7 @@ import android.widget.ListAdapter;
  * It assumes the list fragment has this id: R.id.myLayoutParent
  * @author yvolk@yurivolkov.com
  */
-public class MyListActivity extends MyActivity {
+public class MyListActivity extends MyBaseListActivity {
     ListFragment mList;
 
     @Override

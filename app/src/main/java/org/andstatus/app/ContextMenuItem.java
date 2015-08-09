@@ -350,7 +350,7 @@ public enum ContextMenuItem {
         new AsyncTask<Void, Void, MessageEditorData>(){
             @Override
             protected MessageEditorData doInBackground(Void... params) {
-                MyLog.v(ContextMenuItem.this, "execute async started");
+                MyLog.v(ContextMenuItem.this, "execute async started. msgId=" + menu.getMsgId());
                 return executeAsync(ma, menu.getMsgId());
             }
 

@@ -57,7 +57,7 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         super.setUp();
         context = TestSuite.initializeWithData(this);
 
-        Origin origin = MyContextHolder.get().persistentOrigins().fromName(TestSuite.CONVERSATION_ORIGIN_NAME);
+        Origin origin = MyContextHolder.get().persistentOrigins().fromName(TestSuite.PUMPIO_ORIGIN_NAME);
         connectionData = origin.getConnectionData(TriState.UNKNOWN);
         connectionData.setDataReader(new AccountDataReaderEmpty());
         connection = (ConnectionPumpio) connectionData.getConnectionClass().newInstance();

@@ -18,6 +18,8 @@ package org.andstatus.app.msg;
 
 import android.app.Activity;
 
+import org.andstatus.app.MyBaseListActivity;
+import org.andstatus.app.MyListActivity;
 import org.andstatus.app.data.TimelineType;
 
 /**
@@ -25,7 +27,7 @@ import org.andstatus.app.data.TimelineType;
  * @author yvolk@yurivolkov.com
  */
 public interface ActionableMessageList {
-    Activity getActivity();
+    MyBaseListActivity getActivity();
     MessageEditor getMessageEditor();
     void onMessageEditorVisibilityChange(boolean isVisible);
     long getLinkedUserIdFromCursor(int position);

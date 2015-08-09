@@ -17,7 +17,7 @@ public class MessageForAccountTest extends InstrumentationTestCase {
     }
 
     public void testAReply() {
-        MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.PUMPIO_TEST_ACCOUNT_NAME);
+        MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.CONVERSATION_ACCOUNT_NAME);
         assertTrue(ma.isValid());
         MessageInserter mi = new MessageInserter(ma);
         MbUser author1 = mi.getAccountMbUser();

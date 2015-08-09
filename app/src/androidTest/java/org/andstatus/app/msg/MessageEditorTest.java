@@ -26,6 +26,7 @@ import android.view.MenuItem;
 import android.view.View;
 
 import org.andstatus.app.ContextMenuItem;
+import org.andstatus.app.ActivityTestHelper;
 import org.andstatus.app.ListActivityTestHelper;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
@@ -36,10 +37,6 @@ import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.data.MyDatabase.OidEnum;
-import org.andstatus.app.msg.ConversationActivity;
-import org.andstatus.app.msg.MessageEditor;
-import org.andstatus.app.msg.MessageEditorData;
-import org.andstatus.app.msg.TimelineActivity;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
 
@@ -137,7 +134,7 @@ public class MessageEditorTest extends android.test.ActivityInstrumentationTestC
         assertTrue(editorView != null);
         if (editorView.getVisibility() != android.view.View.VISIBLE) {
             assertTrue("Blog button is visible", createMessageButton.isVisible());
-            ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<TimelineActivity>(this, mActivity);
+            ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<TimelineActivity>(this, mActivity);
             helper.clickMenuItem(method + " opening editor", R.id.createMessageButton);
         }
         assertEquals("Editor appeared", android.view.View.VISIBLE, editorView.getVisibility());
@@ -146,7 +143,7 @@ public class MessageEditorTest extends android.test.ActivityInstrumentationTestC
     private void editingStep1() throws InterruptedException {
         final String method = "editingStep1";
 
-        ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<TimelineActivity>(this, mActivity);
+        ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<TimelineActivity>(this, mActivity);
         helper.clickMenuItem(method + " hiding editor", R.id.hideMessageButton);
         View editorView = mActivity.findViewById(R.id.message_editor);
         assertFalse("Editor hidden again", editorView.getVisibility() == android.view.View.VISIBLE);
@@ -170,7 +167,7 @@ public class MessageEditorTest extends android.test.ActivityInstrumentationTestC
     private void editingStep2() throws InterruptedException {
         final String method = "editingStep2";
         assertInitialText("Message restored");
-        ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<TimelineActivity>(this, mActivity);
+        ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<TimelineActivity>(this, mActivity);
         View editorView = mActivity.findViewById(R.id.message_editor);
         helper.clickMenuItem(method + "; Create message cannot hide editor", R.id.createMessageButton);
         assertTrue("Create message cannot hide editor", editorView.getVisibility() == android.view.View.VISIBLE);
@@ -210,19 +207,34 @@ public class MessageEditorTest extends android.test.ActivityInstrumentationTestC
         final String method = "testContextMenu";
         TestSuite.waitForListLoaded(this, mActivity, 2);
         openEditor();
-        ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<TimelineActivity>(this, ConversationActivity.class); 
-        int position = helper.getPositionOfReply();
-        long msgId = helper.getItemIdAtPosition(position);
+        ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<TimelineActivity>(this, ConversationActivity.class);
+        long msgId = helper.getListItemIdOfReply();
         String body = MyQuery.msgIdToStringColumnValue(MyDatabase.Msg.BODY, msgId);
 
-        TestSuite.waitForIdleSync(this);
-        helper.invokeContextMenuAction(method, position, ContextMenuItem.COPY_TEXT);
-        assertEquals(body, getClipboardText());
+        long msgId3 = msgId;
+        String msg = "";
+        for (long attempt = 1; attempt < 4; attempt++) {
+            TestSuite.waitForIdleSync(this);
+            int position = helper.getPositionOfListItemId(msgId);
+            msg = method + "; msgId=" + msgId + "; position=" + position + "; attempt=" + attempt;
+            MyLog.v(this, msg);
+            if ( helper.getListItemIdAtPosition(position) == msgId ) {
+                if (helper.invokeContextMenuAction(method, position, ContextMenuItem.COPY_TEXT)) {
+                    msgId3 = helper.getListItemIdAtPosition(position);
+                    if (msgId3 == msgId) {
+                        break;
+                    } else {
+                        MyLog.i(this, msg + "; Position changed, now pointing to msgId=" + msgId3);
+                    }
+                }
+            };
+        }
+        assertEquals(msg, body, getClipboardText());
         
         TestSuite.waitForIdleSync(this);
-        helper.invokeContextMenuAction(method, position, ContextMenuItem.COPY_AUTHOR);
+        helper.invokeContextMenuAction(method, helper.getPositionOfListItemId(msgId), ContextMenuItem.COPY_AUTHOR);
         String text = getClipboardText();
-        assertTrue("Text: '" + text + "'", text.startsWith("@") && text.lastIndexOf("@") > 1);
+        assertTrue(msg + " Text: '" + text + "'", text.startsWith("@") && text.lastIndexOf("@") > 1);
     }
     
     private String getClipboardText() throws InterruptedException {
