@@ -209,41 +209,24 @@ public class MessageEditorTest extends android.test.ActivityInstrumentationTestC
         openEditor();
         ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<TimelineActivity>(this, ConversationActivity.class);
         long msgId = helper.getListItemIdOfReply();
-        String body = MyQuery.msgIdToStringColumnValue(MyDatabase.Msg.BODY, msgId);
+        String logMsg = "msgId=" + msgId;
 
-        long msgId3 = msgId;
-        String msg = "";
-        for (long attempt = 1; attempt < 4; attempt++) {
-            TestSuite.waitForIdleSync(this);
-            int position = helper.getPositionOfListItemId(msgId);
-            msg = method + "; msgId=" + msgId + "; position=" + position + "; attempt=" + attempt;
-            MyLog.v(this, msg);
-            if ( helper.getListItemIdAtPosition(position) == msgId ) {
-                if (helper.invokeContextMenuAction(method, position, ContextMenuItem.COPY_TEXT)) {
-                    msgId3 = helper.getListItemIdAtPosition(position);
-                    if (msgId3 == msgId) {
-                        break;
-                    } else {
-                        MyLog.i(this, msg + "; Position changed, now pointing to msgId=" + msgId3);
-                    }
-                }
-            };
-        }
-        assertEquals(msg, body, getClipboardText());
-        
-        TestSuite.waitForIdleSync(this);
-        helper.invokeContextMenuAction(method, helper.getPositionOfListItemId(msgId), ContextMenuItem.COPY_AUTHOR);
-        String text = getClipboardText();
-        assertTrue(msg + " Text: '" + text + "'", text.startsWith("@") && text.lastIndexOf("@") > 1);
+        String body = MyQuery.msgIdToStringColumnValue(MyDatabase.Msg.BODY, msgId);
+        helper.invokeContextMenuAction4ListItemId(method, msgId, ContextMenuItem.COPY_TEXT);
+        assertEquals(logMsg, body, getClipboardText(method));
+
+        helper.invokeContextMenuAction4ListItemId(method, msgId, ContextMenuItem.COPY_AUTHOR);
+        String text = getClipboardText(method);
+        assertTrue(logMsg + "; Text: '" + text + "'", text.startsWith("@") && text.lastIndexOf("@") > 1);
     }
     
-    private String getClipboardText() throws InterruptedException {
+    private String getClipboardText(String methodExt) throws InterruptedException {
         final String method = "getClipboardText";
-        MyLog.v(MessageEditorTest.this, method + " started");
+        MyLog.v(methodExt, method + " started");
         TestSuite.waitForIdleSync(this);
         ClipboardReader reader = new ClipboardReader();
         getInstrumentation().runOnMainSync(reader);
-        MyLog.v(MessageEditorTest.this, method + "; clip='" + reader.clip + "'");
+        MyLog.v(methodExt, method + "; clip='" + reader.clip + "'");
         if (reader.clip == null) {
             return "";
         }

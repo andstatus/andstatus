@@ -51,14 +51,37 @@ public class ListActivityTestHelper<T extends MyListActivity> extends Instrument
     /**
      * @return success
      */
-    public boolean invokeContextMenuAction(String method, int position, ContextMenuItem menuItem) throws InterruptedException {
-        selectListPosition(method, position);
-        MyLog.v(this, method + "; before invokeContextMenuAction on menu Item=" + menuItem + " at position=" + position);
-        return invokeContextMenuAction(method, mActivity, position, menuItem.getId());
+    public boolean invokeContextMenuAction4ListItemId(String methodExt, long listItemId, ContextMenuItem menuItem) throws InterruptedException {
+        final String method = "invokeContextMenuAction4ListItemId";
+        boolean success = false;
+        long id2 = listItemId;
+        String msg = "";
+        for (long attempt = 1; attempt < 4; attempt++) {
+            TestSuite.waitForIdleSync(mTestCase);
+            int position = getPositionOfListItemId(listItemId);
+            msg = "listItemId=" + listItemId + "; menu Item=" + menuItem + "; position=" + position + "; attempt=" + attempt;
+            MyLog.v(this, msg);
+            if (getListItemIdAtPosition(position) == listItemId ) {
+                selectListPosition(methodExt, position);
+                if (invokeContextMenuAction(methodExt, mActivity, position, menuItem.getId())) {
+                    id2 = getListItemIdAtPosition(position);
+                    if (id2 == listItemId) {
+                        success = true;
+                        break;
+                    } else {
+                        MyLog.i(methodExt, method + "; Position changed, now pointing to listItemId=" + id2 + "; " + msg);
+                    }
+                }
+            };
+        }
+        MyLog.v(methodExt, method + " ended " + success + "; " + msg);
+        TestSuite.waitForIdleSync(mTestCase);
+        return success;
     }
-    
-    public void selectListPosition(final String method, final int positionIn) throws InterruptedException {
-        MyLog.v(this, method + " before setSelection " + positionIn);
+
+    public void selectListPosition(final String methodExt, final int positionIn) throws InterruptedException {
+        final String method = "selectListPosition";
+        MyLog.v(methodExt, method + " started; position=" + positionIn);
         mTestCase.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
@@ -67,13 +90,13 @@ public class ListActivityTestHelper<T extends MyListActivity> extends Instrument
                 if (la.getCount() <= position) {
                     position = la.getCount() - 1;
                 }
-                MyLog.v(this, method + " on setSelection " + position
+                MyLog.v(methodExt, method + " on setSelection " + position
                         + " of " + (la.getCount() - 1));
                 getListView().setSelectionFromTop(position, 0);
             }
         });
         TestSuite.waitForIdleSync(mTestCase);
-        MyLog.v(this, method + " after setSelection");
+        MyLog.v(methodExt, method + " ended");
     }
 
     /**
@@ -83,17 +106,19 @@ public class ListActivityTestHelper<T extends MyListActivity> extends Instrument
      * Note: This method cannot be invoked on the main thread.
      * See https://github.com/google/google-authenticator-android/blob/master/tests/src/com/google/android/apps/authenticator/TestUtilities.java
      */
-    private boolean invokeContextMenuAction(final String method, final MyListActivity activity,
+    private boolean invokeContextMenuAction(final String methodExt, final MyListActivity activity,
                    int position, final int menuItemId) throws InterruptedException {
+        final String method = "invokeContextMenuAction";
+        MyLog.v(methodExt, method + " started on menuItemId=" + menuItemId + " at position=" + position);
         boolean success = false;
         int position1 = position;
         for (long attempt = 1; attempt < 4; attempt++) {
-            longClickAtPosition(method, position1);
+            longClickAtPosition(methodExt, position1);
             if (mActivity.getPositionOfContextMenu() == position) {
                 success = true;
                 break;
             }
-            MyLog.i(method, "Context menu created for position " + mActivity.getPositionOfContextMenu()
+            MyLog.i(methodExt, method + "; Context menu created for position " + mActivity.getPositionOfContextMenu()
                     + " instead of " + position
                     + "; was set to " + position1 + "; attempt " + attempt);
             position1 = position + (position1 - mActivity.getPositionOfContextMenu());
@@ -102,26 +127,26 @@ public class ListActivityTestHelper<T extends MyListActivity> extends Instrument
             mTestCase.getInstrumentation().runOnMainSync(new Runnable() {
                 @Override
                 public void run() {
-                    MyLog.v(method, "performContextMenuIdentifierAction");
+                    MyLog.v(methodExt, method + "; before performContextMenuIdentifierAction");
                     activity.getWindow().performContextMenuIdentifierAction(menuItemId, 0);
                 }
             });
-            TestSuite.waitForIdleSync(mTestCase.getInstrumentation());
+            TestSuite.waitForIdleSync(mTestCase);
         }
-        MyLog.v(method, "invokeContextMenuAction ended " + success);
+        MyLog.v(methodExt, method + " ended " + success);
         return success;
     }
 
-    private void longClickAtPosition(final String method, final int position) throws InterruptedException {
+    private void longClickAtPosition(final String methodExt, final int position) throws InterruptedException {
         final View view = getListView().getChildAt(position);
         mTestCase.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                MyLog.v(method, "performLongClick on " + view + " at position " + position);
+                MyLog.v(methodExt, "performLongClick on " + view + " at position " + position);
                 view.performLongClick();
             }
         });
-        TestSuite.waitForIdleSync(mTestCase.getInstrumentation());
+        TestSuite.waitForIdleSync(mTestCase);
     }
 
     public ListView getListView() {
@@ -159,19 +184,21 @@ public class ListActivityTestHelper<T extends MyListActivity> extends Instrument
         return itemId;
     }
     
-    public void clickListPosition(final String method, final int position) throws InterruptedException {
+    public void clickListAtPosition(final String methodExt, final int position) throws InterruptedException {
+        final String method = "clickListAtPosition";
         mTestCase.getInstrumentation().runOnMainSync(new Runnable() {
             // See
             // http://stackoverflow.com/questions/8094268/android-listview-performitemclick
             @Override
             public void run() {
                 long listItemId = mActivity.getListAdapter().getItemId(position);
-                MyLog.v(this, method + "-Log on performClick, listItemId=" + listItemId);
+                MyLog.v(methodExt, method + "; on performClick, listItemId=" + listItemId);
                 getListView().performItemClick(
                         getListView().getAdapter().getView(position, null, null),
                         position, listItemId);
             }
         });
+        MyLog.v(methodExt, method + " ended");
         TestSuite.waitForIdleSync(mTestCase);
     }
 
@@ -180,33 +207,32 @@ public class ListActivityTestHelper<T extends MyListActivity> extends Instrument
         return activityMonitor;
     }
     
-    public Activity waitForNextActivity(String method, long timeOut) throws InterruptedException {
+    public Activity waitForNextActivity(String methodExt, long timeOut) throws InterruptedException {
         Activity nextActivity = mTestCase.getInstrumentation().waitForMonitorWithTimeout(activityMonitor, timeOut);
-        MyLog.v(this, method + "-Log after waitForMonitor: " 
-                + nextActivity);
+        MyLog.v(methodExt, "After waitForMonitor: " + nextActivity);
         assertNotNull("Next activity is opened and captured", nextActivity);
         TestSuite.waitForListLoaded(mTestCase, nextActivity, 2);
         activityMonitor = null;
         return nextActivity;
     }
     
-    public void clickView(final String method, int resourceId) throws InterruptedException {
-        clickView(method, mActivity.findViewById(resourceId));
+    public void clickView(String methodExt, int resourceId) throws InterruptedException {
+        clickView(methodExt, mActivity.findViewById(resourceId));
     }
     
-    public void clickView(final String method, final View view) throws InterruptedException {
+    public void clickView(final String methodExt, final View view) throws InterruptedException {
         assertTrue(view != null);
         
         Runnable clicker = new Runnable() {
             @Override
             public void run() {
-                MyLog.v(this, method + "-Log before click");
+                MyLog.v(methodExt, "Before click view");
                 view.performClick();
             }
           };
     
-        MyLog.v(this, method + "-Log before run clicker");
         mTestCase.getInstrumentation().runOnMainSync(clicker);
+        MyLog.v(methodExt, "After click view");
         TestSuite.waitForIdleSync(mTestCase);
     }
 }

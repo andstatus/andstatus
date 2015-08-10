@@ -54,7 +54,7 @@ public class SharingMediaToThisAppTest extends ActivityInstrumentationTestCase2<
         int position = helperAccountSelector.getPositionOfListItemId(ma.getUserId());
         assertTrue("Account found", position >= 0);
         helperAccountSelector.selectListPosition(method, position);
-        helperAccountSelector.clickListPosition(method, position);
+        helperAccountSelector.clickListAtPosition(method, position);
         
         View editorView = getActivity().findViewById(R.id.message_editor);
         assertTrue(editorView != null);
