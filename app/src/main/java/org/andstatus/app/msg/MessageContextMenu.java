@@ -61,10 +61,7 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
     private long actorUserIdForCurrentMessage = 0;
     public String imageFilename = null;
 
-    public void setAccountUserIdToActAs(long accountUserIdToActAs) {
-        this.accountUserIdToActAs = accountUserIdToActAs;
-    }
-    private long accountUserIdToActAs;
+    private long mAccountUserIdToActAs;
 
     public MessageContextMenu(ActionableMessageList actionableMessageList) {
         messageList = actionableMessageList;
@@ -73,7 +70,7 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
         final String method = "onCreateContextMenu";
-        long userIdForThisMessage = accountUserIdToActAs;
+        long userIdForThisMessage = mAccountUserIdToActAs;
         viewOfTheContext = v;
         String logMsg = method;
         if (menuInfo != null) {
@@ -113,12 +110,12 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
         MyLog.v(this, logMsg);
         MessageForAccount msg = new MessageDataForContextMenu(messageList.getActivity(),
                 userIdForThisMessage, getCurrentMyAccountUserId(), messageList.getTimelineType(),
-                mMsgId, accountUserIdToActAs!=0).getMsg();
+                mMsgId, mAccountUserIdToActAs !=0).getMsg();
         if (!msg.myAccount().isValid()) {
             return;
         }
         actorUserIdForCurrentMessage = msg.myAccount().getUserId();
-        accountUserIdToActAs = 0;
+        mAccountUserIdToActAs = 0;
 
         int order = 0;
         // Create the Context menu
@@ -327,14 +324,23 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
             mMsgId = savedInstanceState.getLong(IntentExtra.ITEMID.key, 0);
         }
     }
-    
-    public long getMsgId() {
-        return mMsgId;
-    }
 
     public void saveState(Editor outState) {
         if (outState != null) {
             outState.putLong(IntentExtra.ITEMID.key, mMsgId);
         }
     }
+
+    public long getMsgId() {
+        return mMsgId;
+    }
+
+    public void setAccountUserIdToActAs(long accountUserIdToActAs) {
+        this.mAccountUserIdToActAs = accountUserIdToActAs;
+    }
+
+    public long getAccountUserIdToActAs() {
+        return mAccountUserIdToActAs;
+    }
+
 }

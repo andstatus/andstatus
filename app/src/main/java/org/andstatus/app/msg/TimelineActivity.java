@@ -764,7 +764,7 @@ public class TimelineActivity extends MyListActivity implements MyServiceEventsL
                 , mRateLimitText).updateTitle(this);
     }
 
-    public View.OnCreateContextMenuListener getContextMenu() {
+    public MessageContextMenu getContextMenu() {
         return mContextMenu;
     }
 

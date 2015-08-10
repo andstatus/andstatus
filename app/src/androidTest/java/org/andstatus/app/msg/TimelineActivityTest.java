@@ -20,6 +20,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.widget.ListView;
 
+import org.andstatus.app.ContextMenuItem;
 import org.andstatus.app.ListActivityTestHelper;
 import org.andstatus.app.R;
 import org.andstatus.app.account.AccountSelector;
@@ -28,6 +29,8 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.ConversationInserter;
 import org.andstatus.app.data.MatchedUri;
+import org.andstatus.app.data.MyDatabase;
+import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
@@ -168,5 +171,18 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
         TestSuite.waitForListLoaded(this, nextActivity, 3);
         Thread.sleep(500);
         nextActivity.finish();        
+    }
+
+    public void testActAs() throws InterruptedException {
+        final String method = "testActAs";
+        TestSuite.waitForListLoaded(this, mActivity, 2);
+        ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<TimelineActivity>(this, ConversationActivity.class);
+        long msgId = helper.getListItemIdOfReply();
+        long userId = getActivity().getContextMenu().getAccountUserIdToActAs();
+
+        helper.invokeContextMenuAction4ListItemId(method, msgId, ContextMenuItem.ACT_AS_USER);
+        long userId2 = getActivity().getContextMenu().getAccountUserIdToActAs();
+        String logMsg = "msgId=" + msgId + "; userId=" + userId + "; userId2=" + userId2;
+        assertTrue(logMsg, userId != userId2 );
     }
 }

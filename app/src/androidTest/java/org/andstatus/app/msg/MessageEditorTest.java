@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -45,11 +45,14 @@ import org.andstatus.app.util.MyLog;
  * @author yvolk@yurivolkov.com
  */
 public class MessageEditorTest extends android.test.ActivityInstrumentationTestCase2<TimelineActivity> {
-    private TimelineActivity mActivity;
-
     private static MessageEditorData data = null;
     private static int editingStep = 0;
-    
+    private TimelineActivity mActivity;
+
+    public MessageEditorTest() {
+        super(TimelineActivity.class);
+    }
+
     @Override
     protected void setUp() throws Exception {
         super.setUp();
@@ -60,17 +63,17 @@ public class MessageEditorTest extends android.test.ActivityInstrumentationTestC
         MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.CONVERSATION_ACCOUNT_NAME);
         assertTrue(ma.isValid());
         MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
-        
-        Intent intent = new Intent(Intent.ACTION_VIEW, 
+
+        Intent intent = new Intent(Intent.ACTION_VIEW,
                 MatchedUri.getTimelineUri(ma.getUserId(), TimelineType.HOME, false, 0));
         setActivityIntent(intent);
-        
+
         mActivity = getActivity();
 
         if (data == null) {
             data = getStaticData();
         }
-        
+
         assertTrue("MyService is available", MyServiceManager.isServiceAvailable());
         MyLog.i(this, "setUp ended");
     }
@@ -82,8 +85,8 @@ public class MessageEditorTest extends android.test.ActivityInstrumentationTestC
                 .setMediaUri(Uri.parse("http://example.com/" + TestSuite.TESTRUN_UID + "/some.png"))
                 .setInReplyToId(
                         MyQuery.oidToId(OidEnum.MSG_OID, MyContextHolder.get()
-                                .persistentOrigins()
-                                .fromName(TestSuite.CONVERSATION_ORIGIN_NAME).getId(),
+                                        .persistentOrigins()
+                                        .fromName(TestSuite.CONVERSATION_ORIGIN_NAME).getId(),
                                 TestSuite.CONVERSATION_ENTRY_MESSAGE_OID))
                 .setRecipientId(
                         MyQuery.oidToId(OidEnum.USER_OID, ma.getOrigin().getId(),
@@ -99,10 +102,6 @@ public class MessageEditorTest extends android.test.ActivityInstrumentationTestC
         super.tearDown();
     }
 
-    public MessageEditorTest() {
-        super(TimelineActivity.class);
-    }
-
     public void testEditing1() throws InterruptedException {
         editingTester();
     }
@@ -110,7 +109,7 @@ public class MessageEditorTest extends android.test.ActivityInstrumentationTestC
     public void testEditing2() throws InterruptedException {
         editingTester();
     }
-    
+
     private void editingTester() throws InterruptedException {
         editingStep++;
         TestSuite.waitForListLoaded(this, mActivity, 2);
@@ -119,7 +118,7 @@ public class MessageEditorTest extends android.test.ActivityInstrumentationTestC
             case 1:
                 editingStep1();
                 break;
-            default :
+            default:
                 editingStep2();
                 editingStep = 0;
                 break;
@@ -139,7 +138,7 @@ public class MessageEditorTest extends android.test.ActivityInstrumentationTestC
         }
         assertEquals("Editor appeared", android.view.View.VISIBLE, editorView.getVisibility());
     }
-    
+
     private void editingStep1() throws InterruptedException {
         final String method = "editingStep1";
 
@@ -155,10 +154,10 @@ public class MessageEditorTest extends android.test.ActivityInstrumentationTestC
                 editor.clearEditor();
                 editor.startEditingMessage(data);
             }
-          };
+        };
         getInstrumentation().runOnMainSync(startEditing);
         getInstrumentation().waitForIdleSync();
-        
+
         assertTrue(editorView.getVisibility() == android.view.View.VISIBLE);
 
         assertInitialText("Initial text");
@@ -185,10 +184,10 @@ public class MessageEditorTest extends android.test.ActivityInstrumentationTestC
             public void run() {
                 assertEquals(description, data, editor.getData());
             }
-          };
+        };
         getInstrumentation().runOnMainSync(assertEditor);
     }
-    
+
     private void assertTextCleared() {
         final MessageEditor editor = mActivity.getMessageEditor();
         assertTrue("Editor is not null", editor != null);
@@ -197,14 +196,14 @@ public class MessageEditorTest extends android.test.ActivityInstrumentationTestC
             public void run() {
                 assertEquals(new MessageEditorData(
                         MyContextHolder.get().persistentAccounts().fromUserId(
-                        mActivity.getCurrentMyAccountUserId())), editor.getData());
+                                mActivity.getCurrentMyAccountUserId())), editor.getData());
             }
-          };
+        };
         getInstrumentation().runOnMainSync(assertEditor);
     }
-    
-    public void testContextMenu() throws InterruptedException {
-        final String method = "testContextMenu";
+
+    public void testContextMenuWhileEditing() throws InterruptedException {
+        final String method = "testContextMenuWhileEditing";
         TestSuite.waitForListLoaded(this, mActivity, 2);
         openEditor();
         ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<TimelineActivity>(this, ConversationActivity.class);
@@ -219,7 +218,7 @@ public class MessageEditorTest extends android.test.ActivityInstrumentationTestC
         String text = getClipboardText(method);
         assertTrue(logMsg + "; Text: '" + text + "'", text.startsWith("@") && text.lastIndexOf("@") > 1);
     }
-    
+
     private String getClipboardText(String methodExt) throws InterruptedException {
         final String method = "getClipboardText";
         MyLog.v(methodExt, method + " started");
@@ -234,9 +233,10 @@ public class MessageEditorTest extends android.test.ActivityInstrumentationTestC
         return (TextUtils.isEmpty(item.getHtmlText()) ? item.getText() : item.getHtmlText())
                 .toString();
     }
-    
+
     private static class ClipboardReader implements Runnable {
         volatile ClipData clip = null;
+
         @Override
         public void run() {
             // http://developer.android.com/guide/topics/text/copy-paste.html
