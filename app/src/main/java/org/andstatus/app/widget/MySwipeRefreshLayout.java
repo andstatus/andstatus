@@ -63,14 +63,20 @@ public class MySwipeRefreshLayout extends SwipeRefreshLayout {
     }    
     
     private boolean canListActivityListScrollUp() {
-        // See http://stackoverflow.com/questions/3014089/maintain-save-restore-scroll-position-when-returning-to-a-listview/3035521#3035521
-        int index = mListActivity.getListView().getFirstVisiblePosition();
-        if (index == 0) {
-            View v = mListActivity.getListView().getChildAt(0);
-            int top = (v == null) ? 0 : (v.getTop() - mListActivity.getListView().getPaddingTop());
-            return top < 0;
+        boolean can = true;
+        try {
+            // See http://stackoverflow.com/questions/3014089/maintain-save-restore-scroll-position-when-returning-to-a-listview/3035521#3035521
+            int index = mListActivity.getListView().getFirstVisiblePosition();
+            if (index == 0) {
+                View v = mListActivity.getListView().getChildAt(0);
+                int top = (v == null) ? 0 : (v.getTop() - mListActivity.getListView().getPaddingTop());
+                can = top < 0;
+            }
+        } catch (java.lang.IllegalStateException e) {
+            MyLog.v(this, e);
+            can = false;
         }
-        return true;
+        return can;
     }
     
 }
