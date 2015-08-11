@@ -196,18 +196,34 @@ public class MessageEditorData {
                 MyContextHolder.get().context(), ma, inReplyToId);
         loader.load(null);
         List<Long> mentioned = new ArrayList<Long>();
-        mentioned.add(ma.getUserId());
+        mentioned.add(ma.getUserId());  // Skip an author of this message
+        long authorWhomWeReply = getAuthorWhomWeReply(loader);
+        mentioned.add(authorWhomWeReply);
         for(ConversationMemberItem item : loader.getMsgs()) {
-            if (!mentioned.contains(item.authorId)) {
-                addMentionedUserToText(item.authorId);
-                mentioned.add(item.authorId);
+            mentionConversationMember(mentioned, item);
+        }
+        addMentionedUserToText(authorWhomWeReply);  // He will be mentioned first
+    }
+
+    private long getAuthorWhomWeReply(ConversationLoader<ConversationMemberItem> loader) {
+        for(ConversationMemberItem item : loader.getMsgs()) {
+            if (item.getMsgId() == inReplyToId) {
+                return item.authorId;
             }
+        }
+        return 0;
+    }
+
+    private void mentionConversationMember(List<Long> mentioned, ConversationMemberItem item) {
+        if (!mentioned.contains(item.authorId)) {
+            addMentionedUserToText(item.authorId);
+            mentioned.add(item.authorId);
         }
     }
 
     public MessageEditorData addMentionedUserToText(long mentionedUserId) {
         String name = MyQuery.userIdToName(mentionedUserId, getUserInTimeline());
-        addMetionedUsernameToText(name);
+        addMentionedUsernameToText(name);
         return this;
     }
 
@@ -219,10 +235,10 @@ public class MessageEditorData {
 
     private void addMentionedAuthorOfMessageToText(long messageId) {
         String name = MyQuery.msgIdToUsername(MyDatabase.Msg.AUTHOR_ID, messageId, getUserInTimeline());
-        addMetionedUsernameToText(name);
+        addMentionedUsernameToText(name);
     }
     
-    private void addMetionedUsernameToText(String name) {
+    private void addMentionedUsernameToText(String name) {
         if (!TextUtils.isEmpty(name)) {
             String messageText1 = "@" + name + " ";
             if (!TextUtils.isEmpty(messageText)) {
