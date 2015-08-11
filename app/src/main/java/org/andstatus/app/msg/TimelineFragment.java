@@ -145,14 +145,6 @@ public class TimelineFragment extends ListFragment implements
     }
 
     @Override
-    public boolean onContextItemSelected(MenuItem item) {
-        if (mTimeline != null) {
-            return mTimeline.onContextItemSelected(item);
-        }
-        return false;
-    }
-
-    @Override
     public void onItemClick(AdapterView<?> adapterView, final View view, final int position, final long id) {
         if (mTimeline != null) {
             mTimeline.onItemClick(adapterView, view, position, id);

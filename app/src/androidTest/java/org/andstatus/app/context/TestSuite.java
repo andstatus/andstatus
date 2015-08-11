@@ -247,6 +247,9 @@ public class TestSuite extends TestCase {
     public static final String GNUSOCIAL_TEST_ACCOUNT_NAME = GNUSOCIAL_TEST_ACCOUNT_USERNAME + "/" + GNUSOCIAL_TEST_ORIGIN_NAME;
     public static final String GNUSOCIAL_TEST_ACCOUNT_USER_OID = "115391";
     public static final String GNUSOCIAL_TEST_ACCOUNT_AVATAR_URL = "https://quitter.se/avatar/115686-48-20150106084830.jpeg";
+    public static final String GNUSOCIAL_TEST_ACCOUNT2_USERNAME = "gtester2";
+    public static final String GNUSOCIAL_TEST_ACCOUNT2_NAME = GNUSOCIAL_TEST_ACCOUNT2_USERNAME + "/" + GNUSOCIAL_TEST_ORIGIN_NAME;
+    public static final String GNUSOCIAL_TEST_ACCOUNT2_USER_OID = "8902454";
 
     public static final String TWITTER_TEST_ORIGIN_NAME = "TwitterTest";
     public static final String TWITTER_TEST_ACCOUNT_USERNAME = "t131t";
@@ -310,12 +313,16 @@ public class TestSuite extends TestCase {
     }
 
     public static int waitForListLoaded(InstrumentationTestCase instrumentationTestCase, Activity activity, int minCount) throws InterruptedException {
+        return waitForListLoaded(instrumentationTestCase.getInstrumentation(), activity, minCount);
+    }
+
+    public static int waitForListLoaded(Instrumentation instrumentation, Activity activity, int minCount) throws InterruptedException {
         final ViewGroup list = (ViewGroup) activity.findViewById(android.R.id.list);
         assertTrue(list != null);
         int itemsCount = 0;
         for (int ind=0; ind<60; ind++) {
             Thread.sleep(2000);
-            instrumentationTestCase.getInstrumentation().waitForIdleSync();
+            instrumentation.waitForIdleSync();
             int itemsCountNew = list.getChildCount();
             if (ListView.class.isInstance(list)) {
                 itemsCountNew = ((ListView) list).getCount();
@@ -326,7 +333,7 @@ public class TestSuite extends TestCase {
             }
             itemsCount = itemsCountNew;
         }
-        assertTrue("There are " + itemsCount + " items (min=" + minCount + ") in the list of " + activity.getClass().getSimpleName(), 
+        assertTrue("There are " + itemsCount + " items (min=" + minCount + ") in the list of " + activity.getClass().getSimpleName(),
                 itemsCount >= minCount);
         return itemsCount;
     }

@@ -29,8 +29,6 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.ConversationInserter;
 import org.andstatus.app.data.MatchedUri;
-import org.andstatus.app.data.MyDatabase;
-import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
@@ -176,13 +174,24 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
     public void testActAs() throws InterruptedException {
         final String method = "testActAs";
         TestSuite.waitForListLoaded(this, mActivity, 2);
-        ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<TimelineActivity>(this, ConversationActivity.class);
+        ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<TimelineActivity>(this, AccountSelector.class);
         long msgId = helper.getListItemIdOfReply();
-        long userId = getActivity().getContextMenu().getAccountUserIdToActAs();
+        helper.invokeContextMenuAction4ListItemId(method, msgId, ContextMenuItem.NONEXISTENT);
+        long userId1 = getActivity().getContextMenu().getActorUserIdForCurrentMessage();
+        String logMsg = "msgId=" + msgId + "; userId1=" + userId1;
+        assertTrue(logMsg, userId1 != 0 );
 
-        helper.invokeContextMenuAction4ListItemId(method, msgId, ContextMenuItem.ACT_AS_USER);
-        long userId2 = getActivity().getContextMenu().getAccountUserIdToActAs();
-        String logMsg = "msgId=" + msgId + "; userId=" + userId + "; userId2=" + userId2;
-        assertTrue(logMsg, userId != userId2 );
+        helper.invokeContextMenuAction4ListItemId(method, msgId, ContextMenuItem.ACT_AS);
+
+        AccountSelector accountSelector = (AccountSelector) helper.waitForNextActivity(method, 15000);
+        TestSuite.waitForListLoaded(this, accountSelector, 3);
+        ListActivityTestHelper<AccountSelector> asHelper = new ListActivityTestHelper<AccountSelector>(this, accountSelector);
+        MyAccount ma = MyContextHolder.get().persistentAccounts().fromUserId(userId1);
+        asHelper.clickListAtPosition(method, asHelper.getPositionOfListItemId(ma.firstOtherAccountOfThisOrigin().getUserId()));
+        Thread.sleep(500);
+
+        long userId2 = getActivity().getContextMenu().getActorUserIdForCurrentMessage();
+        logMsg += "; userId2=" + userId2;
+        assertTrue(logMsg, userId1 != userId2 );
     }
 }

@@ -82,6 +82,8 @@ public class OriginsAndAccountsInserter extends InstrumentationTestCase {
                 "", OriginType.TWITTER);
         addAccount(TestSuite.GNUSOCIAL_TEST_ACCOUNT_USER_OID, TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME,
                 TestSuite.GNUSOCIAL_TEST_ACCOUNT_AVATAR_URL, OriginType.GNUSOCIAL);
+        addAccount(TestSuite.GNUSOCIAL_TEST_ACCOUNT2_USER_OID, TestSuite.GNUSOCIAL_TEST_ACCOUNT2_NAME,
+                "", OriginType.GNUSOCIAL);
         addAccount(TestSuite.CONVERSATION_ACCOUNT_USER_OID, TestSuite.CONVERSATION_ACCOUNT_NAME,
                 TestSuite.CONVERSATION_ACCOUNT_AVATAR_URL, TestSuite.CONVERSATION_ORIGIN_TYPE);
         addAccount(TestSuite.CONVERSATION_ACCOUNT2_USER_OID, TestSuite.CONVERSATION_ACCOUNT2_NAME,

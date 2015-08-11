@@ -58,7 +58,7 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
      *  Corresponding account information ( "Reply As..." ... ) 
      *  oh whose behalf we are going to execute an action on this line in the list (message...) 
      */
-    private long actorUserIdForCurrentMessage = 0;
+    private long mActorUserIdForCurrentMessage = 0;
     public String imageFilename = null;
 
     private long mAccountUserIdToActAs;
@@ -102,7 +102,7 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
                 }
             }
         }
-        actorUserIdForCurrentMessage = 0;
+        mActorUserIdForCurrentMessage = 0;
         if (mMsgId <= 0) {
             mMsgId = 0;
             return;
@@ -114,7 +114,7 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
         if (!msg.myAccount().isValid()) {
             return;
         }
-        actorUserIdForCurrentMessage = msg.myAccount().getUserId();
+        mActorUserIdForCurrentMessage = msg.myAccount().getUserId();
         mAccountUserIdToActAs = 0;
 
         int order = 0;
@@ -156,7 +156,7 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
                             msg.myAccount().alternativeTermForResourceId(R.string.menu_item_destroy_reblog));
                 } else {
                     // Don't allow a User to reblog himself
-                    if (actorUserIdForCurrentMessage != msg.senderId) {
+                    if (mActorUserIdForCurrentMessage != msg.senderId) {
                         ContextMenuItem.REBLOG.addTo(menu, order++,
                                 msg.myAccount().alternativeTermForResourceId(R.string.menu_item_reblog));
                     }
@@ -274,7 +274,7 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
             return false;
         }
 
-        MyAccount ma = MyContextHolder.get().persistentAccounts().fromUserId(actorUserIdForCurrentMessage);
+        MyAccount ma = MyContextHolder.get().persistentAccounts().fromUserId(mActorUserIdForCurrentMessage);
         if (ma.isValid()) {
             ContextMenuItem contextMenuItem = ContextMenuItem.fromId(item.getItemId());
             MyLog.v(this, "onContextItemSelected: " + contextMenuItem + "; actor=" + ma.getAccountName() + "; msgId=" + mMsgId + msgInfo);
@@ -339,8 +339,8 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
         this.mAccountUserIdToActAs = accountUserIdToActAs;
     }
 
-    public long getAccountUserIdToActAs() {
-        return mAccountUserIdToActAs;
+    public long getActorUserIdForCurrentMessage() {
+        return mActorUserIdForCurrentMessage;
     }
 
 }

@@ -17,6 +17,7 @@
 package org.andstatus.app;
 
 import android.app.Activity;
+import android.app.Instrumentation;
 import android.app.Instrumentation.ActivityMonitor;
 import android.test.ActivityInstrumentationTestCase2;
 import android.test.ActivityTestCase;
@@ -31,19 +32,23 @@ import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.util.MyLog;
 
 public class ListActivityTestHelper<T extends MyListActivity> extends InstrumentationTestCase {
-    private InstrumentationTestCase mTestCase;
+    private Instrumentation mInstrumentation;
     private T mActivity;
     private ActivityMonitor activityMonitor = null;
 
     public ListActivityTestHelper(ActivityTestCase testCase, T activity) {
+        this(testCase.getInstrumentation(), activity);
+    }
+
+    public ListActivityTestHelper(Instrumentation instrumentation, T activity) {
         super();
-        mTestCase = testCase;
+        mInstrumentation = instrumentation;
         mActivity = activity;
     }
 
     public ListActivityTestHelper(ActivityInstrumentationTestCase2<T> testCase, Class<? extends Activity> classOfActivityToMonitor) {
         super();
-        mTestCase = testCase;
+        mInstrumentation = testCase.getInstrumentation();
         addMonitor(classOfActivityToMonitor);
         mActivity = testCase.getActivity();
     }
@@ -57,7 +62,7 @@ public class ListActivityTestHelper<T extends MyListActivity> extends Instrument
         long id2 = listItemId;
         String msg = "";
         for (long attempt = 1; attempt < 4; attempt++) {
-            TestSuite.waitForIdleSync(mTestCase);
+            TestSuite.waitForIdleSync(mInstrumentation);
             int position = getPositionOfListItemId(listItemId);
             msg = "listItemId=" + listItemId + "; menu Item=" + menuItem + "; position=" + position + "; attempt=" + attempt;
             MyLog.v(this, msg);
@@ -75,14 +80,14 @@ public class ListActivityTestHelper<T extends MyListActivity> extends Instrument
             };
         }
         MyLog.v(methodExt, method + " ended " + success + "; " + msg);
-        TestSuite.waitForIdleSync(mTestCase);
+        TestSuite.waitForIdleSync(mInstrumentation);
         return success;
     }
 
     public void selectListPosition(final String methodExt, final int positionIn) throws InterruptedException {
         final String method = "selectListPosition";
         MyLog.v(methodExt, method + " started; position=" + positionIn);
-        mTestCase.getInstrumentation().runOnMainSync(new Runnable() {
+        mInstrumentation.runOnMainSync(new Runnable() {
             @Override
             public void run() {
                 int position = positionIn;
@@ -95,7 +100,7 @@ public class ListActivityTestHelper<T extends MyListActivity> extends Instrument
                 getListView().setSelectionFromTop(position, 0);
             }
         });
-        TestSuite.waitForIdleSync(mTestCase);
+        TestSuite.waitForIdleSync(mInstrumentation);
         MyLog.v(methodExt, method + " ended");
     }
 
@@ -124,14 +129,14 @@ public class ListActivityTestHelper<T extends MyListActivity> extends Instrument
             position1 = position + (position1 - mActivity.getPositionOfContextMenu());
         }
         if (success) {
-            mTestCase.getInstrumentation().runOnMainSync(new Runnable() {
+            mInstrumentation.runOnMainSync(new Runnable() {
                 @Override
                 public void run() {
                     MyLog.v(methodExt, method + "; before performContextMenuIdentifierAction");
                     activity.getWindow().performContextMenuIdentifierAction(menuItemId, 0);
                 }
             });
-            TestSuite.waitForIdleSync(mTestCase);
+            TestSuite.waitForIdleSync(mInstrumentation);
         }
         MyLog.v(methodExt, method + " ended " + success);
         return success;
@@ -139,14 +144,14 @@ public class ListActivityTestHelper<T extends MyListActivity> extends Instrument
 
     private void longClickAtPosition(final String methodExt, final int position) throws InterruptedException {
         final View view = getListView().getChildAt(position);
-        mTestCase.getInstrumentation().runOnMainSync(new Runnable() {
+        mInstrumentation.runOnMainSync(new Runnable() {
             @Override
             public void run() {
                 MyLog.v(methodExt, "performLongClick on " + view + " at position " + position);
                 view.performLongClick();
             }
         });
-        TestSuite.waitForIdleSync(mTestCase);
+        TestSuite.waitForIdleSync(mInstrumentation);
     }
 
     public ListView getListView() {
@@ -186,7 +191,7 @@ public class ListActivityTestHelper<T extends MyListActivity> extends Instrument
     
     public void clickListAtPosition(final String methodExt, final int position) throws InterruptedException {
         final String method = "clickListAtPosition";
-        mTestCase.getInstrumentation().runOnMainSync(new Runnable() {
+        mInstrumentation.runOnMainSync(new Runnable() {
             // See
             // http://stackoverflow.com/questions/8094268/android-listview-performitemclick
             @Override
@@ -199,19 +204,19 @@ public class ListActivityTestHelper<T extends MyListActivity> extends Instrument
             }
         });
         MyLog.v(methodExt, method + " ended");
-        TestSuite.waitForIdleSync(mTestCase);
+        TestSuite.waitForIdleSync(mInstrumentation);
     }
 
     public ActivityMonitor addMonitor(Class<? extends Activity> classOfActivity) {
-        activityMonitor = mTestCase.getInstrumentation().addMonitor(classOfActivity.getName(), null, false);
+        activityMonitor = mInstrumentation.addMonitor(classOfActivity.getName(), null, false);
         return activityMonitor;
     }
     
     public Activity waitForNextActivity(String methodExt, long timeOut) throws InterruptedException {
-        Activity nextActivity = mTestCase.getInstrumentation().waitForMonitorWithTimeout(activityMonitor, timeOut);
+        Activity nextActivity = mInstrumentation.waitForMonitorWithTimeout(activityMonitor, timeOut);
         MyLog.v(methodExt, "After waitForMonitor: " + nextActivity);
         assertNotNull("Next activity is opened and captured", nextActivity);
-        TestSuite.waitForListLoaded(mTestCase, nextActivity, 2);
+        TestSuite.waitForListLoaded(mInstrumentation, nextActivity, 2);
         activityMonitor = null;
         return nextActivity;
     }
@@ -231,8 +236,8 @@ public class ListActivityTestHelper<T extends MyListActivity> extends Instrument
             }
           };
     
-        mTestCase.getInstrumentation().runOnMainSync(clicker);
+        mInstrumentation.runOnMainSync(clicker);
         MyLog.v(methodExt, "After click view");
-        TestSuite.waitForIdleSync(mTestCase);
+        TestSuite.waitForIdleSync(mInstrumentation);
     }
 }

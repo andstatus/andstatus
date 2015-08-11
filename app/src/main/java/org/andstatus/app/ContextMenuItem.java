@@ -292,6 +292,7 @@ public enum ContextMenuItem {
             return true;
         }
     },
+    NONEXISTENT(),
     UNKNOWN();
 
     private final boolean mIsAsync;
