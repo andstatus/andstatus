@@ -28,7 +28,7 @@ import android.os.Bundle;
 import android.text.TextUtils;
 
 import org.andstatus.app.IntentExtra;
-import org.andstatus.app.data.AccountUserIds;
+import org.andstatus.app.data.SelectedUserIds;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.ParsedUri;
@@ -155,14 +155,14 @@ public class TimelineListParameters {
                     });
                     break;
                 case USER:
-                    AccountUserIds userIds = new AccountUserIds(isTimelineCombined(), getSelectedUserId());
+                    SelectedUserIds userIds = new SelectedUserIds(isTimelineCombined(), getSelectedUserId());
                     // Reblogs are included also
-                    mSa.addSelection(MyDatabase.Msg.AUTHOR_ID + " " + userIds.getSqlUserIds() 
+                    mSa.addSelection(MyDatabase.Msg.AUTHOR_ID + " " + userIds.getSql()
                             + " OR "
-                            + MyDatabase.Msg.SENDER_ID + " " + userIds.getSqlUserIds() 
+                            + MyDatabase.Msg.SENDER_ID + " " + userIds.getSql()
                             + " OR " 
                             + "("
-                            + User.LINKED_USER_ID + " " + userIds.getSqlUserIds() 
+                            + User.LINKED_USER_ID + " " + userIds.getSql()
                             + " AND "
                             + MyDatabase.MsgOfUser.REBLOGGED + " = 1"
                             + ")",

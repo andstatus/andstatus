@@ -23,46 +23,32 @@ import org.andstatus.app.context.MyContextHolder;
  * Helper class to construct sql WHERE clause selecting by UserIds
  * @author yvolk@yurivolkov.com
  */
-public class AccountUserIds {
-    private int mSize = 1;
+public class SelectedUserIds {
+    private int mSize = 0;
     private String sqlUserIds = "";
-    private long accountUserId = 0;
 
     /**
      * @param isCombined timeline
-     * @param selectedUserId May be Account, maybe not. If the selected user is an account 
-     * and timeline is combined, then ALL accounts should be included in the selection 
+     * @param selectedUserId May be an Account, maybe not. If the selected user is an account
+     * and timeline is combined, then ALL accounts of ALL Social networks should be included in the selection
+     * TODO: Social network scope selection ( i.e. for one {@link org.andstatus.app.origin.Origin} )
      */
-    public AccountUserIds(boolean isCombined, long selectedUserId) {
-        boolean isAccount = false;
-        if (selectedUserId != 0) {
-            MyAccount ma = MyContextHolder.get().persistentAccounts().fromUserId(selectedUserId);
-            if (ma.isValid()) {
-                isAccount = true;
-                accountUserId = ma.getUserId();
-            }
-        }
+    public SelectedUserIds(boolean isCombined, long selectedUserId) {
+        boolean isAccount = MyContextHolder.get().persistentAccounts().isAccountUserId(selectedUserId);
         // Allows to link to one or more accounts
-        if (isCombined && isAccount || selectedUserId == 0) {
+        if (isCombined && isAccount) {
             StringBuilder sb = new StringBuilder();
             for (MyAccount ma : MyContextHolder.get().persistentAccounts().collection()) {
                 if (sb.length() > 0) {
                     sb.append(", ");
-                    mSize += 1;
                 }
+                mSize += 1;
                 sb.append(Long.toString(ma.getUserId()));
-                if (accountUserId == 0) {
-                    accountUserId = ma.getUserId();
-                }
             }
             sqlUserIds = sb.toString();
-        } else {
+        } else if (selectedUserId != 0) {
+            mSize = 1;
             sqlUserIds = Long.toString(selectedUserId);
-        }
-        if (mSize == 1) {
-            sqlUserIds = "=" + sqlUserIds;
-        } else {
-            sqlUserIds = " IN (" + sqlUserIds + ")";
         }
     }
 
@@ -70,11 +56,16 @@ public class AccountUserIds {
         return mSize;
     }
 
-    public String getSqlUserIds() {
+    public String getList() {
         return sqlUserIds;
     }
 
-    public long getAccountUserId() {
-        return accountUserId;
+    public String getSql() {
+        if (mSize == 1) {
+            return "=" + sqlUserIds;
+        } else if (mSize > 1) {
+            return " IN (" + sqlUserIds + ")";
+        }
+        return "";
     }
 }

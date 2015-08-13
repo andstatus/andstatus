@@ -215,6 +215,10 @@ public class PersistentAccounts {
         return getCurrentAccount().getUserId();
     }
 
+    public boolean isAccountUserId(long selectedUserId) {
+        return fromUserId(selectedUserId).isValid();
+    }
+
     /**
      * Get MyAccount by the UserId. 
      * Please note that a valid User may not have an Account (in AndStatus)

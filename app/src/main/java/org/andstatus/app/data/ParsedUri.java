@@ -18,6 +18,7 @@ package org.andstatus.app.data;
 
 import android.net.Uri;
 
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.user.UserListType;
 import org.andstatus.app.util.MyLog;
 
@@ -136,7 +137,11 @@ public class ParsedUri {
         try {
             switch (getTimelineType()) {
             case USER:
-                isCombined = true;
+                if (MyContextHolder.get().persistentAccounts().isAccountUserId(getUserId())) {
+                    isCombined = ( (Long.parseLong(uri.getPathSegments().get(5)) == 0) ? false : true);
+                } else {
+                    isCombined = true;
+                }
                 break;
             default:
                 switch (matchedUri) {
