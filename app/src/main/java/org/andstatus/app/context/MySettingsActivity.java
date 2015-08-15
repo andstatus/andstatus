@@ -16,6 +16,7 @@
 
 package org.andstatus.app.context;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.KeyEvent;
@@ -25,6 +26,7 @@ import com.example.android.supportv7.app.AppCompatPreferenceActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.msg.TimelineActivity;
 import org.andstatus.app.service.MyServiceManager;
+import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
 
 import java.util.List;
@@ -40,8 +42,8 @@ public class MySettingsActivity extends AppCompatPreferenceActivity {
     public static final String ANDROID_NO_HEADERS_KEY = ":android:no_headers";
     private boolean startTimelineActivity = false;
     private long mPreferencesChangedAt = MyPreferences.getPreferencesChangeTime();
+    private long mInstanceId = 0;
 
-    @Override
     protected void onCreate(Bundle savedInstanceState) {
         MyTheme.loadTheme(this);
         super.onCreate(savedInstanceState);
@@ -49,6 +51,12 @@ public class MySettingsActivity extends AppCompatPreferenceActivity {
             MyContextHolder.initialize(this, this);
         }
         this.getSupportActionBar().setTitle(getTitleResId());
+
+        boolean isNew = mInstanceId == 0;
+        if (isNew) {
+            mInstanceId = InstanceId.next();
+        }
+        logEvent("onCreate", isNew ? "" : "Reuse the same");
     }
 
     private boolean isRootScreen() {
@@ -80,37 +88,36 @@ public class MySettingsActivity extends AppCompatPreferenceActivity {
     }
 
     @Override
+    protected boolean isValidFragment(String fragmentName) {
+        return MySettingsFragment.class.getName().equals(fragmentName);
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        logEvent("onNewIntent", "");
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
-        if (mPreferencesChangedAt < MyPreferences.getPreferencesChangeTime()) {
-            recreate();
+        if (mPreferencesChangedAt < MyPreferences.getPreferencesChangeTime() || !MyContextHolder.get().initialized()) {
+            logEvent("onResume", "Recreating");
+            restartMe(this);
             return;
         }
         if (isRootScreen()) {
-            MyContextHolder.initialize(this, this);
             MyContextHolder.get().setInForeground(true);
-
             MyServiceManager.setServiceUnavailable();
             MyServiceManager.stopService();
         }
     }
 
     @Override
-    protected boolean isValidFragment(String fragmentName) {
-        return MySettingsFragment.class.getName().equals(fragmentName);
-    }
-
-    @Override
     protected void onPause() {
         super.onPause();
+        logEvent("onPause", "");
         if (isRootScreen()) {
-            if (startTimelineActivity) {
-                MyContextHolder.release();
-                // On modifying activity back stack see http://stackoverflow.com/questions/11366700/modification-of-the-back-stack-in-android
-                Intent i = new Intent(this, TimelineActivity.class);
-                i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                startActivity(i);
-            }
             MyContextHolder.get().setInForeground(false);
         }
     }
@@ -121,16 +128,21 @@ public class MySettingsActivity extends AppCompatPreferenceActivity {
             case android.R.id.home:
                 if (isRootScreen()) {
                     closeAndGoBack();
-                    return true;
                 } else {
                     finish();
-                    return true;
                 }
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
     }
-    
+
+    private void closeAndGoBack() {
+        logEvent("closeAndGoBack", "");
+        startTimelineActivity = true;
+        finish();
+    }
+
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (isRootScreen()
@@ -143,9 +155,38 @@ public class MySettingsActivity extends AppCompatPreferenceActivity {
         return super.onKeyDown(keyCode, event);
     }
 
-    private void closeAndGoBack() {
-        MyLog.v(this, "Going back to a Timeline");
-        finish();
-        startTimelineActivity = true;
+    /**
+     * See http://stackoverflow.com/questions/1397361/how-do-i-restart-an-android-activity
+     */
+    public static void restartMe(Activity activity) {
+        Intent intent = activity.getIntent();
+        activity.finish();
+        activity.startActivity(intent);
+    }
+
+    @Override
+    public void finish() {
+        logEvent("finish", startTimelineActivity ? " and return" : "");
+        super.finish();
+        if (startTimelineActivity) {
+            MyContextHolder.release();
+            // On modifying activity back stack see http://stackoverflow.com/questions/11366700/modification-of-the-back-stack-in-android
+            Intent i = new Intent(this, TimelineActivity.class);
+            i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            startActivity(i);
+        }
+    }
+
+    private void logEvent(String method, String msgLog_in) {
+        if (MyLog.isVerboseEnabled()) {
+            String msgLog = msgLog_in
+                    + " instanceId:" + mInstanceId
+                    + ( isRootScreen() ? "; rootScreen" : "");
+            Bundle bundle = getIntent().getBundleExtra(ANDROID_FRAGMENT_ARGUMENTS_KEY);
+            if (bundle != null) {
+                msgLog += "; preferenceGroup:" + bundle.getString(PREFERENCES_GROUPS_KEY);
+            }
+            MyLog.v(this, method + "; " + msgLog);
+        }
     }
 }

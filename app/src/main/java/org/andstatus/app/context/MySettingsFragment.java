@@ -282,11 +282,11 @@ public class MySettingsFragment extends PreferenceFragment implements
             switch (key) {
                 case MyPreferences.KEY_CUSTOM_LOCALE:
                     MyPreferences.setLocale(getActivity());
-                    restartMe();
+                    MySettingsActivity.restartMe(getActivity());
                     break;
                 case MyPreferences.KEY_THEME_COLOR:
                     showThemeColor();
-                    restartMe();
+                    MySettingsActivity.restartMe(getActivity());
                     break;
                 case MyPreferences.KEY_THEME_SIZE:
                     showThemeSize();
@@ -296,7 +296,7 @@ public class MySettingsFragment extends PreferenceFragment implements
                     break;
                 case MyPreferences.KEY_ACTION_BAR_COLOR:
                     showActionBarColor();
-                    restartMe();
+                    MySettingsActivity.restartMe(getActivity());
                     break;
                 case MyPreferences.KEY_SYNC_FREQUENCY_SECONDS:
                     MyContextHolder.get().persistentAccounts().onMyPreferencesChanged(MyContextHolder.get());
@@ -326,10 +326,6 @@ public class MySettingsFragment extends PreferenceFragment implements
         } finally {
             onSharedPreferenceChangedIsBusy = false;
         }
-    }
-
-    private void restartMe() {
-        getActivity().recreate();
     }
 
     @Override
