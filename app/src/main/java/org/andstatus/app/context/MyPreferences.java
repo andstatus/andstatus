@@ -157,12 +157,16 @@ public class MyPreferences {
         }
     }
     
-    public static void setDefaultValues(int resId, boolean readAgain) {
+    public static void setDefaultValues() {
         Context context = MyContextHolder.get().context();
         if (context == null) {
             MyLog.e(TAG, "setDefaultValues - Was not initialized yet");
         } else {
-            PreferenceManager.setDefaultValues(context, resId, readAgain);
+            for (MyPreferencesGroupsEnum item : MyPreferencesGroupsEnum.values()) {
+                if (item != MyPreferencesGroupsEnum.UNKNOWN) {
+                    PreferenceManager.setDefaultValues(context, item.getPreferencesXmlResId(), false);
+                }
+            }
         }
     }
     

@@ -18,64 +18,114 @@ package org.andstatus.app.context;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.view.KeyEvent;
 import android.view.MenuItem;
 
+import com.example.android.supportv7.app.AppCompatPreferenceActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.msg.TimelineActivity;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
 
-/** See http://developer.android.com/guide/topics/ui/settings.html */
-public class MySettingsActivity extends AppCompatActivity {
+import java.util.List;
 
+/** See http://developer.android.com/guide/topics/ui/settings.html
+ *  Source of the {@link AppCompatPreferenceActivity} class is here:
+ *  https://github.com/android/platform_development/blob/master/samples/Support7Demos/src/com/example/android/supportv7/app/AppCompatPreferenceActivity.java
+ * */
+public class MySettingsActivity extends AppCompatPreferenceActivity {
+
+    public static final String ANDROID_FRAGMENT_ARGUMENTS_KEY = ":android:show_fragment_args";
+    public static final String PREFERENCES_GROUPS_KEY = "preferencesGroup";
+    public static final String ANDROID_NO_HEADERS_KEY = ":android:no_headers";
     private boolean startTimelineActivity = false;
-    
+    private long mPreferencesChangedAt = MyPreferences.getPreferencesChangeTime();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         MyTheme.loadTheme(this);
         super.onCreate(savedInstanceState);
+        if (isRootScreen()) {
+            MyContextHolder.initialize(this, this);
+        }
+        this.getSupportActionBar().setTitle(getTitleResId());
+    }
 
-        MyContextHolder.initialize(this, this);
-        this.getSupportActionBar().setTitle(R.string.settings_activity_title);
-        
-        getFragmentManager().beginTransaction()
-        .replace(android.R.id.content, new MySettingsFragment(), MySettingsFragment.class.getSimpleName())
-        .commit();
+    private boolean isRootScreen() {
+        Bundle bundle = getIntent().getExtras();
+        if (bundle != null) {
+            return !bundle.getBoolean(ANDROID_NO_HEADERS_KEY);
+        }
+        return true;
+    }
+
+    private int getTitleResId() {
+        int titleResId = R.string.settings_activity_title;
+        if (!isRootScreen()) {
+            Bundle bundle = getIntent().getBundleExtra(ANDROID_FRAGMENT_ARGUMENTS_KEY);
+            if (bundle != null) {
+                MyPreferencesGroupsEnum preferencesGroup = MyPreferencesGroupsEnum.load(
+                        bundle.getString(PREFERENCES_GROUPS_KEY));
+                if (preferencesGroup != MyPreferencesGroupsEnum.UNKNOWN) {
+                    titleResId = preferencesGroup.getTitleResId();
+                }
+            }
+        }
+        return titleResId;
+    }
+
+    @Override
+    public void onBuildHeaders(List<Header> target) {
+        loadHeadersFromResource(R.xml.preference_headers, target);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        if (mPreferencesChangedAt < MyPreferences.getPreferencesChangeTime()) {
+            recreate();
+            return;
+        }
+        if (isRootScreen()) {
+            MyContextHolder.initialize(this, this);
+            MyContextHolder.get().setInForeground(true);
 
-        MyContextHolder.initialize(this, this);
-        MyContextHolder.get().setInForeground(true);
-        
-        MyServiceManager.setServiceUnavailable();
-        MyServiceManager.stopService();
+            MyServiceManager.setServiceUnavailable();
+            MyServiceManager.stopService();
+        }
+    }
+
+    @Override
+    protected boolean isValidFragment(String fragmentName) {
+        return MySettingsFragment.class.getName().equals(fragmentName);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-
-        if (startTimelineActivity) {
-            MyContextHolder.release();
-            // On modifying activity back stack see http://stackoverflow.com/questions/11366700/modification-of-the-back-stack-in-android
-            Intent i = new Intent(this, TimelineActivity.class);
-            i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP);
-            startActivity(i);
+        if (isRootScreen()) {
+            if (startTimelineActivity) {
+                MyContextHolder.release();
+                // On modifying activity back stack see http://stackoverflow.com/questions/11366700/modification-of-the-back-stack-in-android
+                Intent i = new Intent(this, TimelineActivity.class);
+                i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                startActivity(i);
+            }
+            MyContextHolder.get().setInForeground(false);
         }
-        MyContextHolder.get().setInForeground(false);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
-                closeAndGoBack();
-                return true;
+                if (isRootScreen()) {
+                    closeAndGoBack();
+                    return true;
+                } else {
+                    finish();
+                    return true;
+                }
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -83,7 +133,8 @@ public class MySettingsActivity extends AppCompatActivity {
     
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (keyCode == KeyEvent.KEYCODE_BACK
+        if (isRootScreen()
+                && keyCode == KeyEvent.KEYCODE_BACK
                 && event.getRepeatCount() == 0
                 && !MyContextHolder.get().persistentAccounts().isEmpty()) {
             closeAndGoBack();
@@ -93,7 +144,7 @@ public class MySettingsActivity extends AppCompatActivity {
     }
 
     private void closeAndGoBack() {
-        MyLog.v(this, "Going back to the Timeline");
+        MyLog.v(this, "Going back to a Timeline");
         finish();
         startTimelineActivity = true;
     }

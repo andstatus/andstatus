@@ -1,6 +1,8 @@
 package org.andstatus.app.context;
 
+import android.os.Bundle;
 import android.preference.CheckBoxPreference;
+import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.test.ActivityInstrumentationTestCase2;
 
@@ -18,15 +20,16 @@ public class MySettingsActivityTest extends ActivityInstrumentationTestCase2<MyS
     protected void setUp() throws Exception {
         super.setUp();
         TestSuite.initialize(this);
-        
         mActivity = getActivity();
     }
     
     public void test() throws InterruptedException {
         PreferenceFragment fragment = (PreferenceFragment) mActivity.getFragmentManager().findFragmentByTag(MySettingsFragment.class.getSimpleName());
-        CheckBoxPreference mUseExternalStorage = (CheckBoxPreference) fragment.findPreference(
-                MyPreferences.KEY_USE_EXTERNAL_STORAGE_NEW);
-        assertTrue(mUseExternalStorage != null);
+        if (fragment != null) {
+            Preference preference = fragment.findPreference(
+                    MySettingsFragment.KEY_MANAGE_EXISTING_ACCOUNTS);
+            assertTrue(MySettingsFragment.KEY_MANAGE_EXISTING_ACCOUNTS, preference != null);
+        }
         Thread.sleep(500);
         assertFalse("MyService is not available", MyServiceManager.isServiceAvailable());
     }

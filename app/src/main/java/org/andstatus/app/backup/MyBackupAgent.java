@@ -283,7 +283,7 @@ public class MyBackupAgent extends BackupAgent {
 
     private void restoreSharedPreferences(MyBackupDataInput data) throws IOException {
         MyLog.i(this, "On restoring Shared preferences");
-        MyPreferences.setDefaultValues(R.xml.preferences, false);
+        MyPreferences.setDefaultValues();
         assertNextHeader(data, SHARED_PREFERENCES_KEY);
         final String filename = "preferences";
         File tempFile = new File(SharedPreferencesUtil.prefsDirectory(MyContextHolder.get()

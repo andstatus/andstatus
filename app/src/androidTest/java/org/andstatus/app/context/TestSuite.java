@@ -116,7 +116,7 @@ public class TestSuite extends TestCase {
             MyLog.d(TAG, "Before setting default preferences");
             // Default values for the preferences will be set only once
             // and in one place: here
-            MyPreferences.setDefaultValues(R.xml.preferences_test, false);
+            MyPreferences.setDefaultValues();
             if (MyPreferences.shouldSetDefaultValues()) {
                 MyLog.e(TAG, "Default values were not set?!");   
             } else {

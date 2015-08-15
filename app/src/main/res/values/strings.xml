@@ -87,7 +87,7 @@
   <string name="command_follow_user">Follow</string>
   <string name="command_stop_following_user">Stop following</string>
   <string name="crash_dialog_text">AndStatus application crashed. You may help fixing the problem. Please press Ok button to send the Crash Report to developers via email.</string>
-  <string name="crash_dialog_comment_prompt">You might add your comments about the problem below:</string>
+  <string name="crash_dialog_comment_prompt">Please provide below your comments about the problem. It would be very helpful for a fix to know: when it occurred and maybe even how it could be reproduced.</string>
   <string name="created_label">Created</string>
   <string name="custom_locale_title">Application language</string>
   <string name="device_default">Device default</string>

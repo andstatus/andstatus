@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<preference-headers xmlns:android="http://schemas.android.com/apk/res/android">
+    <header
+        android:fragment="org.andstatus.app.context.MySettingsFragment"
+        android:title="@string/header_accounts"
+        android:summary="" >
+        <extra android:name="preferencesGroup" android:value="accounts" />
+    </header>
+    <header
+        android:fragment="org.andstatus.app.context.MySettingsFragment"
+        android:title="@string/title_preference_appearance"
+        android:summary="@string/summary_preference_appearance" >
+        <extra android:name="preferencesGroup" android:value="appearance" />
+    </header>
+    <header
+        android:fragment="org.andstatus.app.context.MySettingsFragment"
+        android:title="@string/title_timeline"
+        android:summary="" >
+        <extra android:name="preferencesGroup" android:value="timeline" />
+    </header>
+    <header
+        android:fragment="org.andstatus.app.context.MySettingsFragment"
+        android:title="@string/attachments"
+        android:summary="" >
+        <extra android:name="preferencesGroup" android:value="attachments" />
+    </header>
+    <header
+        android:fragment="org.andstatus.app.context.MySettingsFragment"
+        android:title="@string/title_preference_syncing"
+        android:summary="@string/summary_preference_syncing" >
+        <extra android:name="preferencesGroup" android:value="syncing" />
+    </header>
+    <header
+        android:fragment="org.andstatus.app.context.MySettingsFragment"
+        android:title="@string/title_preference_notifications"
+        android:summary="@string/summary_preference_notifications" >
+        <extra android:name="preferencesGroup" android:value="notifications" />
+    </header>
+    <header
+        android:fragment="org.andstatus.app.context.MySettingsFragment"
+        android:title="@string/title_preference_storage"
+        android:summary="@string/summary_preference_storage" >
+        <extra android:name="preferencesGroup" android:value="storage" />
+    </header>
+    <header
+        android:fragment="org.andstatus.app.context.MySettingsFragment"
+        android:title="@string/category_title_preference_information"
+        android:summary="@string/title_preference_about_application" >
+        <extra android:name="preferencesGroup" android:value="information" />
+    </header>
+    <header
+        android:fragment="org.andstatus.app.context.MySettingsFragment"
+        android:title="@string/title_preference_debugging"
+        android:summary="" >
+        <extra android:name="preferencesGroup" android:value="debugging" />
+    </header>
+</preference-headers>

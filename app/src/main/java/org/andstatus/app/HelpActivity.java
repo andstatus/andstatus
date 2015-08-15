@@ -80,7 +80,7 @@ public class HelpActivity extends MyActivity implements SwipeInterface {
         if (MyPreferences.shouldSetDefaultValues()) {
             // Default values for the preferences will be set only once
             // and in one place: here
-            MyPreferences.setDefaultValues(R.xml.preferences, false);
+            MyPreferences.setDefaultValues();
             if (MyPreferences.shouldSetDefaultValues()) {
                 MyLog.e(this, "Default values were not set?!");   
             } else {

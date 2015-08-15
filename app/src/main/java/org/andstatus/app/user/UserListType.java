@@ -58,7 +58,7 @@ public enum UserListType {
     
     @Override
     public String toString() {
-        return "timeline:" + code;
+        return "UserList:" + code;
     }
 
     /** Localized title for UI */

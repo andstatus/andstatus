@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2015 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,6 @@ import org.andstatus.app.R;
 import org.andstatus.app.account.AccountSettingsActivity;
 import org.andstatus.app.backup.BackupActivity;
 import org.andstatus.app.backup.RestoreActivity;
-import org.andstatus.app.msg.TimelineActivity;
 import org.andstatus.app.origin.PersistentOriginList;
 import org.andstatus.app.service.QueueViewer;
 import org.andstatus.app.util.MyLog;
@@ -52,7 +51,7 @@ public class MySettingsFragment extends PreferenceFragment implements
     private static final String KEY_ADD_NEW_ACCOUNT = "add_new_account";
     private static final String KEY_BACKUP_RESTORE = "backup_restore";
     private static final String KEY_CHANGE_LOG = "change_log";
-    private static final String KEY_MANAGE_EXISTING_ACCOUNTS = "manage_existing_accounts";
+    static final String KEY_MANAGE_EXISTING_ACCOUNTS = "manage_existing_accounts";
     private static final String KEY_MANAGE_ORIGIN_SYSTEMS = "manage_origin_systems";
 
     private StorageSwitch storageSwitch = null;
@@ -60,19 +59,17 @@ public class MySettingsFragment extends PreferenceFragment implements
     private boolean onSharedPreferenceChangedIsBusy = false;
     private boolean mIgnorePreferenceChange = false;
 
-    private boolean startTimelineActivity = false;
-    
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        addPreferencesFromResource(R.xml.preferences);
+        addPreferencesFromResource(MyPreferencesGroupsEnum.load(getArguments()
+                .getString(MySettingsActivity.PREFERENCES_GROUPS_KEY)).getPreferencesXmlResId());
         storageSwitch = new StorageSwitch(this);
     }
 
     @Override
     public void onResume() {
         super.onResume();
-
         showAllPreferences();
         MyPreferences.getDefaultSharedPreferences().registerOnSharedPreferenceChangeListener(this);
     }
@@ -81,15 +78,6 @@ public class MySettingsFragment extends PreferenceFragment implements
     public void onPause() {
         super.onPause();
         MyPreferences.getDefaultSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
-
-        if (startTimelineActivity) {
-            MyContextHolder.release();
-            // On modifying activity back stack see http://stackoverflow.com/questions/11366700/modification-of-the-back-stack-in-android
-            Intent i = new Intent(getActivity(), TimelineActivity.class);
-            i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP);
-            startActivity(i);
-        }
-        MyContextHolder.get().setInForeground(false);
     }
 
     /**
@@ -117,14 +105,16 @@ public class MySettingsFragment extends PreferenceFragment implements
     }
 
     private void showManageAccounts() {
-        Preference myPref = findPreference(KEY_MANAGE_EXISTING_ACCOUNTS);
-        CharSequence summary;
-        if (MyContextHolder.get().persistentAccounts().isEmpty()) {
-            summary = getText(R.string.summary_preference_accounts_absent);
-        } else {
-            summary = getText(R.string.summary_preference_accounts_present) + ": " + MyContextHolder.get().persistentAccounts().size();
+        Preference preference = findPreference(KEY_MANAGE_EXISTING_ACCOUNTS);
+        if (preference != null) {
+            CharSequence summary;
+            if (MyContextHolder.get().persistentAccounts().isEmpty()) {
+                summary = getText(R.string.summary_preference_accounts_absent);
+            } else {
+                summary = getText(R.string.summary_preference_accounts_present) + ": " + MyContextHolder.get().persistentAccounts().size();
+            }
+            preference.setSummary(summary);
         }
-        myPref.setSummary(summary);
     }
     
     protected void showFrequency() {
@@ -132,9 +122,12 @@ public class MySettingsFragment extends PreferenceFragment implements
     }
 
     private void showConnectionTimeout() {
-        findPreference(MyPreferences.KEY_CONNECTION_TIMEOUT_SECONDS).setSummary(
-                Long.toString(java.util.concurrent.TimeUnit.MILLISECONDS.toSeconds(MyPreferences
-                        .getConnectionTimeoutMs())) + "s");
+        Preference preference = findPreference(MyPreferences.KEY_CONNECTION_TIMEOUT_SECONDS);
+        if (preference != null) {
+            preference.setSummary(
+                    Long.toString(java.util.concurrent.TimeUnit.MILLISECONDS.toSeconds(MyPreferences
+                            .getConnectionTimeoutMs())) + "s");
+        }
     }
 
     protected void showHistorySize() {
@@ -150,49 +143,56 @@ public class MySettingsFragment extends PreferenceFragment implements
     }
     
     protected void showRingtone() {
-        String ringtoneString = MyPreferences.getString(MyPreferences.KEY_RINGTONE_PREFERENCE, null);
-        Uri uri = Uri.EMPTY;
-        Ringtone rt = null;
-        if (ringtoneString == null) {
-            uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-        } else if (!TextUtils.isEmpty(ringtoneString)) {
-            uri = Uri.parse(ringtoneString);
-        }
-        MyLog.v(this, "Ringtone URI: " + uri);
-        if (uri != null && uri != Uri.EMPTY) {
-            rt = RingtoneManager.getRingtone(getActivity(), uri);
-        }
         RingtonePreference ringtonePreference = (RingtonePreference) findPreference(MyPreferences.KEY_RINGTONE_PREFERENCE);
-        if (rt != null) {
-            ringtonePreference.setSummary(rt.getTitle(getActivity()));
-        } else {
-            ringtonePreference.setSummary(R.string.summary_preference_no_ringtone);
+        if (ringtonePreference != null) {
+            String ringtoneString = MyPreferences.getString(MyPreferences.KEY_RINGTONE_PREFERENCE, null);
+            Uri uri = Uri.EMPTY;
+            Ringtone rt = null;
+            if (ringtoneString == null) {
+                uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+            } else if (!TextUtils.isEmpty(ringtoneString)) {
+                uri = Uri.parse(ringtoneString);
+            }
+            MyLog.v(this, "Ringtone URI: " + uri);
+            if (uri != null && uri != Uri.EMPTY) {
+                rt = RingtoneManager.getRingtone(getActivity(), uri);
+            }
+            if (rt != null) {
+                ringtonePreference.setSummary(rt.getTitle(getActivity()));
+            } else {
+                ringtonePreference.setSummary(R.string.summary_preference_no_ringtone);
+            }
         }
     }
     
     protected void showUseExternalStorage() {
-        mIgnorePreferenceChange = true;
-        boolean use = MyPreferences.isStorageExternal(null);
         CheckBoxPreference preference = (CheckBoxPreference) getPreferenceScreen().findPreference(
                 MyPreferences.KEY_USE_EXTERNAL_STORAGE_NEW);
-        if (use != preference.isChecked()) {
-            preference.setChecked(use);
+        if (preference != null) {
+            mIgnorePreferenceChange = true;
+            boolean use = MyPreferences.isStorageExternal(null);
+            if (use != preference.isChecked()) {
+                preference.setChecked(use);
+            }
+            if (!Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)
+                    && !preference.isChecked()) {
+                preference.setEnabled(false);
+            }
+            mIgnorePreferenceChange = false;
         }
-        if (!Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED) 
-                && !preference.isChecked()) {
-            preference.setEnabled(false);
-        }
-        mIgnorePreferenceChange = false;
     }
 
     private void showBackupRestore() {
-        CharSequence title;
-        if (MyContextHolder.get().persistentAccounts().isEmpty()) {
-            title = getText(R.string.label_restore);
-        } else {
-            title = getText(R.string.label_backup);
+        Preference preference = findPreference(KEY_BACKUP_RESTORE);
+        if (preference != null) {
+            CharSequence title;
+            if (MyContextHolder.get().persistentAccounts().isEmpty()) {
+                title = getText(R.string.label_restore);
+            } else {
+                title = getText(R.string.label_backup);
+            }
+            preference.setTitle(title);
         }
-        findPreference(KEY_BACKUP_RESTORE).setTitle(title);
     }
 
     private void showAuthorInTimeline() {
@@ -220,71 +220,10 @@ public class MySettingsFragment extends PreferenceFragment implements
     }
 
     private void showListPreference(String key) {
-        ListPreference myPref = (ListPreference) findPreference(key);
-        myPref.setSummary(myPref.getEntry());
-    }
-    
-    @Override
-    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        if (mIgnorePreferenceChange || onSharedPreferenceChangedIsBusy
-                || !MyContextHolder.get().initialized() || storageSwitch.isDataBeingMoved()) {
-            return;
+        ListPreference preference = (ListPreference) findPreference(key);
+        if (preference != null) {
+            preference.setSummary(preference.getEntry());
         }
-        onSharedPreferenceChangedIsBusy = true;
-        try {
-            MyLog.logSharedPreferencesValue(this, sharedPreferences, key);
-            MyPreferences.onPreferencesChanged();
-            
-            switch (key) {
-                case MyPreferences.KEY_CUSTOM_LOCALE:
-                    MyPreferences.setLocale(getActivity());
-                    restartMe();
-                    break;
-                case MyPreferences.KEY_THEME_COLOR:
-                    showThemeColor();
-                    break;
-                case MyPreferences.KEY_THEME_SIZE:
-                    showThemeSize();
-                    break;
-                case MyPreferences.KEY_BACKGROUND_COLOR:
-                    showBackgroundColor();
-                    break;
-                case MyPreferences.KEY_ACTION_BAR_COLOR:
-                    showActionBarColor();
-                    break;
-                case MyPreferences.KEY_SYNC_FREQUENCY_SECONDS:
-                    MyContextHolder.get().persistentAccounts().onMyPreferencesChanged(MyContextHolder.get());
-                    showFrequency();
-                    break;
-                case MyPreferences.KEY_CONNECTION_TIMEOUT_SECONDS:
-                    showConnectionTimeout();
-                    break;
-                case MyPreferences.KEY_RINGTONE_PREFERENCE:
-                    showRingtone();
-                    break;
-                case MyPreferences.KEY_HISTORY_SIZE:
-                    showHistorySize();
-                    break;
-                case MyPreferences.KEY_HISTORY_TIME:
-                    showHistoryTime();
-                    break;
-                case MyPreferences.KEY_MIN_LOG_LEVEL:
-                    showMinLogLevel();
-                    break;
-                case MyPreferences.KEY_USER_IN_TIMELINE:
-                    showAuthorInTimeline();
-                    break;
-                default:
-                    break;
-            }
-        } finally {
-            onSharedPreferenceChangedIsBusy = false;
-        }
-    }
-
-    private void restartMe() {
-        getActivity().finish();
-        startActivity(getActivity().getIntent());
     }
 
     @Override
@@ -328,7 +267,71 @@ public class MySettingsFragment extends PreferenceFragment implements
         }
         return super.onPreferenceTreeClick(preferenceScreen, preference);
     }
-    
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        if (mIgnorePreferenceChange || onSharedPreferenceChangedIsBusy
+                || !MyContextHolder.get().initialized() || storageSwitch.isDataBeingMoved()) {
+            return;
+        }
+        onSharedPreferenceChangedIsBusy = true;
+        try {
+            MyLog.logSharedPreferencesValue(this, key);
+            MyPreferences.onPreferencesChanged();
+
+            switch (key) {
+                case MyPreferences.KEY_CUSTOM_LOCALE:
+                    MyPreferences.setLocale(getActivity());
+                    restartMe();
+                    break;
+                case MyPreferences.KEY_THEME_COLOR:
+                    showThemeColor();
+                    restartMe();
+                    break;
+                case MyPreferences.KEY_THEME_SIZE:
+                    showThemeSize();
+                    break;
+                case MyPreferences.KEY_BACKGROUND_COLOR:
+                    showBackgroundColor();
+                    break;
+                case MyPreferences.KEY_ACTION_BAR_COLOR:
+                    showActionBarColor();
+                    restartMe();
+                    break;
+                case MyPreferences.KEY_SYNC_FREQUENCY_SECONDS:
+                    MyContextHolder.get().persistentAccounts().onMyPreferencesChanged(MyContextHolder.get());
+                    showFrequency();
+                    break;
+                case MyPreferences.KEY_CONNECTION_TIMEOUT_SECONDS:
+                    showConnectionTimeout();
+                    break;
+                case MyPreferences.KEY_RINGTONE_PREFERENCE:
+                    showRingtone();
+                    break;
+                case MyPreferences.KEY_HISTORY_SIZE:
+                    showHistorySize();
+                    break;
+                case MyPreferences.KEY_HISTORY_TIME:
+                    showHistoryTime();
+                    break;
+                case MyPreferences.KEY_MIN_LOG_LEVEL:
+                    showMinLogLevel();
+                    break;
+                case MyPreferences.KEY_USER_IN_TIMELINE:
+                    showAuthorInTimeline();
+                    break;
+                default:
+                    break;
+            }
+        } finally {
+            onSharedPreferenceChangedIsBusy = false;
+        }
+    }
+
+    private void restartMe() {
+        getActivity().recreate();
+    }
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (ActivityRequestCode.fromId(requestCode)) {

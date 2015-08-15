@@ -95,21 +95,22 @@ public class MyLog {
     private static final String COMMA = ",";
 
     private MyLog() {
-        
+        // Empty
     }
 
-    public static void logSharedPreferencesValue(Object objTag, SharedPreferences sharedPreferences, String key) {
-        if (!isLoggable(objTag, DEBUG )) {
+    public static void logSharedPreferencesValue(Object objTag, String key) {
+        SharedPreferences sp = MyPreferences.getDefaultSharedPreferences();
+        if (sp == null || !isLoggable(objTag, DEBUG )) {
             return;
         }
         String value = "(not set)";
-        if (sharedPreferences.contains(key)) {
+        if (sp.contains(key)) {
             try {
-                value = sharedPreferences.getString(key, "");
+                value = sp.getString(key, "");
             } catch (ClassCastException e1) {
                 MyLog.ignored(objTag, e1);
                 try {
-                    value = Boolean.toString(sharedPreferences.getBoolean(key, false));
+                    value = Boolean.toString(sp.getBoolean(key, false));
                 } catch (ClassCastException e2) {
                     MyLog.ignored(objTag, e2);
                     value = "??";
