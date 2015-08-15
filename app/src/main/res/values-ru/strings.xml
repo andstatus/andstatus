@@ -88,7 +88,7 @@
   <string name="command_follow_user">Следовать за</string>
   <string name="command_stop_following_user">Перестать следовать за</string>
   <string name="crash_dialog_text">Приложение AndStatus прекратило работу. Вы можете помочь устранению проблемы. Пожалуйста, нажмите кнопку Ok, чтобы отправить отчёт об ошибке разработчикам по электронной почте.</string>
-  <string name="crash_dialog_comment_prompt">Вы можете добавить комментарий об этой проблеме:</string>
+  <string name="crash_dialog_comment_prompt">Пожалуйста, прокомментируйте данную проблему. Было бы очень полезно для её исправления знать: в какой момент это произошло и, если Вы знаете, как эту проблему можно воспроизвести.</string>
   <string name="created_label">Создан</string>
   <string name="custom_locale_title">Язык приложения</string>
   <string name="device_default">По умолчанию в устройстве</string>

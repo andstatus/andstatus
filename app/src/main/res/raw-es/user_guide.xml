@@ -30,7 +30,7 @@ xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../res-src/
         <lang>es</lang>
         <src-lang>en</src-lang>
         <translator>
-            <nickname></nickname>
+            <nickname>Reconocimiento a los traductores</nickname>
         </translator>
     </title-info>
     <document-info>
