@@ -17,15 +17,32 @@
 <document xmlns:android="http://schemas.android.com/apk/res/android">
     <header>
         <title>AndStatus Change Log</title>
-        <subtitle>List of changes in the 
-			<a href="https://play.google.com/store/apps/details?id=org.andstatus.app" 
-			    onclick="target='_blank'">Google Play</a> releases of AndStatus.</subtitle>
+        <subtitle>List of changes in releases of AndStatus</subtitle>
         <subtitle>
 			For more information on the application please read the 
   				<a href="https://github.com/andstatus/andstatus/wiki">AndStatus Wiki</a>.
 		</subtitle>
     </header>
 
+    <release android:versionName="18.1" android:versionCode="127"
+             versionDate="2015-08-15"
+             versionTitle="Bug fixes and Settings improvements">
+        <changes>
+            <change>Fixed crash while &quot;Swiping to refresh&quot; a Timeline,
+                which occurred for some users.
+                We received crash reports, which pointed to the place, where the error occurs.
+                But unfortunately we still don't know when exactly this crash happens
+                and how it could be reproduced...
+            </change>
+            <change>Settings windows have consistent Action bar now. Settings are restarted
+                after theme and color changes now (not only after Language changes, as before).
+                <a href="https://github.com/andstatus/andstatus/issues/286">#286</a>
+            </change>
+            <change>Fixed &quot;Combined&quot; cannot be turned off for a User timeline.
+                <a href="https://github.com/andstatus/andstatus/issues/287">#287</a>
+            </change>
+        </changes>
+    </release>
     <release android:versionName="18.0" android:versionCode="126"
         versionDate="2015-08-05"
         versionTitle="Material design and new color options">
