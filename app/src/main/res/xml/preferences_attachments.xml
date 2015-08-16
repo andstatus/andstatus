@@ -19,6 +19,11 @@
     <org.andstatus.app.context.MultilineCheckBoxPreference android:key="show_attached_images"
         android:defaultValue="true"
         android:title="@string/title_preference_show_attached_images" />
+    <org.andstatus.app.context.MultilineCheckBoxPreference android:key="attach_images"
+        android:defaultValue="true"
+        android:title="@string/attach_images_title"
+        android:summaryOn="@string/attach_images_summary_on"
+        android:summaryOff="@string/attach_images_summary_off" />
     <org.andstatus.app.context.MultilineCheckBoxPreference android:key="download_attachments_over_wifi_only"
         android:title="@string/title_preference_download_attachments_over_wifi_only"
         android:defaultValue="true"

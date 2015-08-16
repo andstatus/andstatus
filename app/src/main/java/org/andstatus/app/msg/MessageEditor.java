@@ -167,7 +167,7 @@ public class MessageEditor {
                     }
                 });
         boolean enableAttach = isVisible()
-                && MyPreferences.showAttachedImages()
+                && MyPreferences.getBoolean(MyPreferences.KEY_ATTACH_IMAGES, true)
                 && (dataCurrent.recipientId == 0 || dataCurrent.getMyAccount().getOrigin().getOriginType()
                         .allowAttachmentForDirectMessage());
         item.setEnabled(enableAttach);

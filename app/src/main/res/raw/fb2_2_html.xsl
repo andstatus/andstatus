@@ -24,6 +24,11 @@
                     <xsl:value-of
                         select="fb:description/fb:title-info/fb:book-title" />
                 </h1>
+				<p align="right">v.<xsl:value-of
+					select="fb:description/fb:document-info/fb:version" />,
+                    <xsl:value-of
+                        select="fb:description/fb:document-info/fb:date" />
+                </p>
                 <xsl:for-each
                     select="fb:description/fb:title-info/fb:coverpage/fb:image">
                     <xsl:call-template name="image" />
@@ -329,8 +334,14 @@
 			<img border="1">
 				<xsl:choose>
 					<xsl:when test="starts-with(@xlink:href,'#')">
-						<xsl:attribute name="src"><xsl:text>data:</xsl:text><xsl:variable name="href" select="substring-after(@xlink:href,'#')" /><set variable="href" expression="substring-after(@xlink:href,'#')"/><xsl:value-of select="//fb:binary[@id=$href]/@content-type" disable-output-escaping="yes" /><xsl:text>;base64,</xsl:text><!--<xsl:value-of select="substring-after(@xlink:href,'#')"/>--><xsl:value-of select="//fb:binary[@id=$href]"  disable-output-escaping="yes"/></xsl:attribute>
-
+						<xsl:attribute name="src">
+                            <xsl:text>data:</xsl:text>
+                            <xsl:variable name="href" select="substring-after(@xlink:href,'#')" />
+                            <xsl:value-of select="//fb:binary[@id=$href]/@content-type" disable-output-escaping="yes" />
+                            <xsl:text>;base64,</xsl:text>
+                            <!--<xsl:value-of select="substring-after(@xlink:href,'#')"/>-->
+                            <xsl:value-of select="//fb:binary[@id=$href]"  disable-output-escaping="yes"/>
+                        </xsl:attribute>
 					</xsl:when>
 					<xsl:otherwise>
 						<xsl:attribute name="src"><xsl:value-of select="@xlink:href"/></xsl:attribute>

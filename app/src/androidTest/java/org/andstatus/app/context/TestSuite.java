@@ -126,6 +126,7 @@ public class TestSuite extends TestCase {
         MyPreferences.getDefaultSharedPreferences().edit()
             .putString(MyPreferences.KEY_MIN_LOG_LEVEL, Integer.toString(MyLog.VERBOSE))
             .putBoolean(MyPreferences.KEY_SHOW_ATTACHED_IMAGES, true)
+            .putBoolean(MyPreferences.KEY_ATTACH_IMAGES, true)
             .commit();
         MyLog.forget();
         assertTrue("Log level set to verbose", MyLog.isLoggable(TAG, MyLog.VERBOSE));

@@ -25,6 +25,9 @@
   <string name="account_settings_activity_title">Account</string>
   <string name="account_settings_summary">Sync frequency, notifications, etc.</string>
   <string name="action_bar_color_preference_title">Action bar color</string>
+  <string name="attach_images_summary_off">\"Paperclip+\" button, used to attach images to your posts, is hidden</string>
+  <string name="attach_images_summary_on">Use \"Paperclip+\" button (\"Attach\" menu item) to attach images to you message. Or Share image to AndStatus from another application</string>
+  <string name="attach_images_title">Attach images to my messages</string>
   <string name="attachments">Attachments</string>
   <string name="automatic">Auto</string>
   <string name="settings_action">Settings</string>

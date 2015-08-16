@@ -39,9 +39,9 @@ xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../../../re
             <home-page>http://www.andstatus.org</home-page>
             <email>andstatus@gmail.com</email>
         </author>
-        <date>2015-03-15</date>
+        <date>2015-08-16</date>
         <id></id>
-        <version>1</version>
+        <version>2</version>
     </document-info>
 </description>
 <body>
@@ -117,21 +117,81 @@ xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../../../re
     <title>
         <p>3. Sending and replying</p>
     </title>
-    <p>In order to update your status, tap the "Post" button
-        ("Tweet" for Twitter),
-        type in a text into the text area at the bottom of the screen and tap
-        <strong>Send</strong>.
+    <p>1. In order to update your status, tap the "Post" button ("Tweet" for Twitter).
+        It looks like an "Envelope+".
+        Message editor will be opened at a bottom of the screen.
+    </p>
+    <p>2. Type in a text of your message into the text area.
+    </p>
+    <p>3. Optionally, attach an image to your post. Now, as a message Editor is visible,
+        another button appears on an Action bar: "Paperclip+".
+        (The "Attach" menu item may be hidden under an "Overflow" button: "three vertical dots").
+        Tap on that "Attach" button and select a picture. After successful attachment of the image
+        you will see "(with media)" text above a text area, where your are composing your message.
+    </p>
+    <p>4. Tap <strong>Send</strong> to send your message. If you are offline, the message will be
+        put into a Queue to be automatically sent later. (Use "Commands in a queue" menu item
+        to see your unsent messages in the Queue)
     </p>
     <p>In order to reply, <strong>hold down</strong>
         a message and select <strong>Reply</strong>
         from a Context menu, type in your reply at the bottom.
     </p>
-    <p>To abort a reply, simply tap the "Hide" button to hide the
+    <p>To abort a post or reply, simply tap the "Hide" button to hide the
        text area.</p>
 </section>
 <section>
     <title>
-        <p>4. Direct (private) messages</p>
+        <p>4. Attached images: sending and showing</p>
+    </title>
+    <section>
+        <title>
+            <p>4.1. Sending images</p>
+        </title>
+        <p>First way to attach a picture to a post is described in a previous section: you can attach
+            an image to a message, while creating the message.
+        </p>
+        <p>Another way to send an image is to "Share" it via AndStatus: here you start from an image
+            in another application. E.g. you want to take a photo and send it to a social network.
+            Do this:
+        </p>
+        <p>1. Take a picture / find it in a Gallery and click on the picture's thumbnail to open it.
+        </p>
+        <p>2. Select "Share" in the menu. Most of applications do have a "Share" action...
+        </p>
+        <p>3. Select "AndStatus" in a list of applications, which declared that they
+            can share images.
+        </p>
+        <p>4. Now you're in AndStatus. If you have more than one account,
+            select a desired account, otherwise you will be immediately forwarded to
+            a Message Editor.</p>
+        <p>5. Now you are in a Message Editor, with the picture already attached
+            (you should see the "(with media)" text above a message text box).
+        </p>
+        <p>6. Type any text and tap "Send". (It's not allowed to send an image without any text)
+        </p>
+    </section>
+    <section>
+        <title>
+            <p>4.2. Showing attached images</p>
+        </title>
+        <p>We have these settings (in the Settings->Attachments):</p>
+        <p>1. "Download and display attached images" checkbox. If it's turned off, attachments
+            are not even downloaded thus conserving your network traffic.
+        </p>
+        <p>Please note that when you turn this option on, images are not shown immediately,
+            because AndStatus needs some time to download them in a background.
+        </p>
+        <p>2. "Attach images to my messages". When "on", you can use "Paperclip+" button
+            ("Attach" menu item) to attach images to your message.
+            When "off", the "Paperclip", used to attach an image to your post, is hidden.
+        </p>
+        <p>See <a xlink:href="https://github.com/andstatus/andstatus/issues/288">here for more info</a>.</p>
+    </section>
+</section>
+<section>
+    <title>
+        <p>5. Direct (private) messages</p>
     </title>
     <p>Open a Navigation Drawer on a left, tap current Timeline type
         item (Home)
@@ -154,7 +214,7 @@ xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../../../re
 </section>
 <section>
     <title>
-        <p>5. Mentions</p>
+        <p>6. Mentions</p>
     </title>
     <p>Tap current Timeline type item in a Navigation Drawer
         and then select
@@ -169,7 +229,7 @@ xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../../../re
 </section>
 <section>
     <title>
-        <p>6. Search (local search)</p>
+        <p>7. Search (local search)</p>
     </title>
     <p>Local search searches among messages already loaded from the
         Internet.
@@ -192,7 +252,7 @@ xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../../../re
 </section>
 <section>
     <title>
-        <p>7. Global search</p>
+        <p>8. Global search</p>
     </title>
     <p>Global search function sends a search request directly to
         Social networks' servers.

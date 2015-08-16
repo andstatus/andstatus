@@ -82,9 +82,9 @@ public class MyPreferences {
     public static final String KEY_THEME_COLOR = "theme_color";
     public static final String KEY_ACTION_BAR_COLOR = "action_bar_color";
     public static final String KEY_BACKGROUND_COLOR = "background_color";
-    public static final String KEY_TRUE_BLACK = "true_black";
     public static final String KEY_SHOW_AVATARS = "show_avatars";
     public static final String KEY_SHOW_ATTACHED_IMAGES = "show_attached_images";
+    public static final String KEY_ATTACH_IMAGES = "attach_images";
     public static final String KEY_SHOW_ORIGIN = "show_origin";
 
     public static final String KEY_CUSTOM_LOCALE = "custom_locale";
