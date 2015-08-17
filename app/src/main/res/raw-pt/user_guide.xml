@@ -18,7 +18,7 @@
  -->
 <FictionBook xmlns="http://www.gribuser.ru/xml/fictionbook/2.0"
 xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../res-src/fb2/FictionBook.xsd">
+xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../../../res-src/fb2/FictionBook.xsd">
 <description>
     <title-info>
         <genre>computers</genre>
@@ -39,9 +39,9 @@ xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../res-src/
             <home-page>http://www.andstatus.org</home-page>
             <email>andstatus@gmail.com</email>
         </author>
-        <date>2015-03-15</date>
+        <date>2015-08-16</date>
         <id></id>
-        <version>1</version>
+        <version>2</version>
     </document-info>
 </description>
 <body>
@@ -88,15 +88,59 @@ As contas Twitter, Pump.io e diversas "GNU social" (Quitter, LoadAverage e Vinil
     <title>
         <p>3. Enviar e responder</p>
     </title>
-    <p>Para atualizar o seu estado, toque no botão "Publicar" ("Tweet" para o Twitter), escreva o seu texto na área de texto, existente na base do ecrã, e clique em <strong>Enviar</strong>.
+    <p>
     </p>
-    <p>Para respostas, <strong>pressione longamente</strong> a mensagem, selecione <strong>Responder</strong> no menu de contexto e escreva a sua resposta.
+    <p>
     </p>
-    <p>Para abortar a resposta, clique no botão "Ocultar" para ocultar a área de texto.</p>
+    <p>
+    </p>
+    <p>
+    </p>
+    <p>
+    </p>
+    <p></p>
 </section>
 <section>
     <title>
-        <p>4. Mensagens diretas (privadas)</p>
+        <p></p>
+    </title>
+    <section>
+        <title>
+            <p></p>
+        </title>
+        <p>
+        </p>
+        <p>
+        </p>
+        <p>
+        </p>
+        <p>
+        </p>
+        <p>
+        </p>
+        <p></p>
+        <p>
+        </p>
+        <p>
+        </p>
+    </section>
+    <section>
+        <title>
+            <p></p>
+        </title>
+        <p></p>
+        <p>
+        </p>
+        <p>
+        </p>
+        <p>
+        </p>
+        <p>.</p>
+    </section>
+</section>
+<section>
+    <title>
+        <p>5. Mensagens diretas (privadas)</p>
     </title>
     <p>Abra a gaveta de navegação, toque no item ("Home") da sua cronologia e selecione <strong>Mensagem direta</strong> na lista.
     </p>
@@ -107,7 +151,7 @@ As contas Twitter, Pump.io e diversas "GNU social" (Quitter, LoadAverage e Vinil
 </section>
 <section>
     <title>
-        <p>5. Menções</p>
+        <p>6. Menções</p>
     </title>
     <p>Toque num item da cronologia através da gaveta de navegação e selecione <strong>Menções</strong>
     </p>
@@ -116,7 +160,7 @@ As contas Twitter, Pump.io e diversas "GNU social" (Quitter, LoadAverage e Vinil
 </section>
 <section>
     <title>
-        <p>6. Procura (procura local)</p>
+        <p>7. Procura (procura local)</p>
     </title>
     <p>A procura local pesquisa as mensagens que já tenham sido descarregadas. Nestes termos, também está disponível localmente.
     </p>
@@ -130,7 +174,7 @@ As contas Twitter, Pump.io e diversas "GNU social" (Quitter, LoadAverage e Vinil
 </section>
 <section>
     <title>
-        <p>7. Procura global</p>
+        <p>8. Procura global</p>
     </title>
     <p>A procura global envia um pedido de procura diretamente aos servidores da rede social. Assim, é necessária uma ligação à Internet.
     </p>

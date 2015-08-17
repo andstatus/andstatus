@@ -18,7 +18,7 @@
  -->
 <FictionBook xmlns="http://www.gribuser.ru/xml/fictionbook/2.0"
 xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../res-src/fb2/FictionBook.xsd">
+xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../../../res-src/fb2/FictionBook.xsd">
 <description>
     <title-info>
         <genre>computers</genre>
@@ -39,9 +39,9 @@ xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../res-src/
             <home-page>http://www.andstatus.org</home-page>
             <email>andstatus@gmail.com</email>
         </author>
-        <date>2015-03-15</date>
+        <date>2015-08-16</date>
         <id></id>
-        <version>1</version>
+        <version>2</version>
     </document-info>
 </description>
 <body>
@@ -87,7 +87,13 @@ xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../res-src/
     <title>
         <p>3. Skicka och besvara</p>
     </title>
-    <p>.
+    <p>
+    </p>
+    <p>
+    </p>
+    <p>
+    </p>
+    <p>
     </p>
     <p>
     </p>
@@ -95,7 +101,45 @@ xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../res-src/
 </section>
 <section>
     <title>
-        <p>4. Direkta (privata) meddelanden</p>
+        <p></p>
+    </title>
+    <section>
+        <title>
+            <p></p>
+        </title>
+        <p>
+        </p>
+        <p>
+        </p>
+        <p>
+        </p>
+        <p>
+        </p>
+        <p>
+        </p>
+        <p></p>
+        <p>
+        </p>
+        <p>
+        </p>
+    </section>
+    <section>
+        <title>
+            <p></p>
+        </title>
+        <p></p>
+        <p>
+        </p>
+        <p>
+        </p>
+        <p>
+        </p>
+        <p>.</p>
+    </section>
+</section>
+<section>
+    <title>
+        <p></p>
     </title>
     <p>
     </p>
@@ -106,7 +150,7 @@ xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../res-src/
 </section>
 <section>
     <title>
-        <p>5. Omnämnanden</p>
+        <p>6. Omnämnanden</p>
     </title>
     <p>
     </p>

@@ -18,7 +18,7 @@
  -->
 <FictionBook xmlns="http://www.gribuser.ru/xml/fictionbook/2.0"
 xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../res-src/fb2/FictionBook.xsd">
+xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../../../res-src/fb2/FictionBook.xsd">
 <description>
     <title-info>
         <genre>computers</genre>
@@ -39,9 +39,9 @@ xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../res-src/
             <home-page>http://www.andstatus.org</home-page>
             <email>andstatus@gmail.com</email>
         </author>
-        <date>2015-03-15</date>
+        <date>2015-08-16</date>
         <id></id>
-        <version>1</version>
+        <version>2</version>
     </document-info>
 </description>
 <body>
@@ -91,27 +91,71 @@ Esta vez se abrirá la línea temporal «Inicio» y se descargarán los mensajes
     <title>
         <p>3. Enviar y responder</p>
     </title>
-    <p>Para actualizar tu estado, pulsa en el botón «Publicar» con el icono de un mensaje y un «+», escribe el texto en la parte de abajo de la pantalla y pulsa <strong>enviar</strong>.
+    <p>
     </p>
-    <p>Para responder, <strong>deja pulsado</strong> el mensaje y selecciona <strong>Responder</strong> desde el menú contextual y escribe tu respuesta abajo.
+    <p>
     </p>
-    <p>Para cancelar una respuesta, simplemente pulsa en el botón «Borrar y ocultar» con el icono del mensaje con un «-».</p>
+    <p>
+    </p>
+    <p>
+    </p>
+    <p>
+    </p>
+    <p></p>
 </section>
 <section>
     <title>
-        <p>4. Mensajes directos (privados)</p>
+        <p></p>
+    </title>
+    <section>
+        <title>
+            <p></p>
+        </title>
+        <p>
+        </p>
+        <p>
+        </p>
+        <p>
+        </p>
+        <p>
+        </p>
+        <p>
+        </p>
+        <p></p>
+        <p>
+        </p>
+        <p>
+        </p>
+    </section>
+    <section>
+        <title>
+            <p></p>
+        </title>
+        <p></p>
+        <p>
+        </p>
+        <p>
+        </p>
+        <p>
+        </p>
+        <p>.</p>
+    </section>
+</section>
+<section>
+    <title>
+        <p>5. Mensajes directos (privados)</p>
     </title>
     <p>Abre el panel de navegación de la izquierda y pulsa la línea temporal actual («Inicio») y selecciona <strong>Mensajes directos</strong> de la lista.
     </p>
     <p>Para <strong>eliminar</strong> tu mensaje (público o privado), <strong>déjalo pulsado</strong> y selecciona <strong>Borra el mensaje</strong>.
     </p>
-    <p>Los nuevos mensajes serán descargados en segundo plano si se activa <strong>«Sincronizar mientras se usa la aplicación»</strong> en los ajustes de sincronización. 
+    <p>Los nuevos mensajes serán descargados en segundo plano si se activa <strong>«Sincronizar mientras se usa la aplicación»</strong> en los ajustes de sincronización.
 También puedes obtenerlos manualmente arrastrando la línea temporal hacia abajo o pulsando en menú de la barra de acción «Actualizar».
     </p>
 </section>
 <section>
     <title>
-        <p>5. Menciones</p>
+        <p>6. Menciones</p>
     </title>
     <p>Pulsa la actual línea temporal del panel de navegación lateral y selecciona <strong>Menciones</strong>
         .
@@ -121,7 +165,7 @@ También puedes obtenerlos manualmente arrastrando la línea temporal hacia abaj
 </section>
 <section>
     <title>
-        <p>6. Buscar (búsqueda local)</p>
+        <p>7. Buscar (búsqueda local)</p>
     </title>
     <p>La búsqueda local se hace con mensajes ya descargados de Internet. Por lo tanto está disponible incluso desconectado.
     </p>
@@ -135,7 +179,7 @@ También puedes obtenerlos manualmente arrastrando la línea temporal hacia abaj
 </section>
 <section>
     <title>
-        <p>7. Búsqueda global</p>
+        <p>8. Búsqueda global</p>
     </title>
     <p>La función de la búsqueda global es buscar directamente en los servidores de la red social.
 Por esto es por lo que se necesita una conexión a Internet.
