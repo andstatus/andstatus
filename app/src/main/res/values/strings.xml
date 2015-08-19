@@ -419,7 +419,7 @@
   <string name="title_preference_username">Username</string>
   <string name="title_preference_username_pumpio">Webfinger ID</string>
   <string name="title_preference_show_avatars">Display Avatars</string>
-  <string name="title_preference_show_attached_images">Display attached images</string>
+  <string name="title_preference_show_attached_images">Download and display attached images</string>
   <string name="title_preference_show_origin">Display a Social network in a Timeline</string>
   <string name="title_preference_user_in_timeline">How to show a User in a Timeline</string>
   <string name="title_preference_verify_credentials">Reverify credentials</string>
