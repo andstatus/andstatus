@@ -26,6 +26,9 @@
   <string name="account_settings_activity_title">Аккаунт</string>
   <string name="account_settings_summary">Частота синхронизации, уведомления и др.</string>
   <string name="action_bar_color_preference_title">Цвет панели действий</string>
+  <string name="attach_images_summary_off">Кнопка «Скрепка+», используемая для прикрепления изображений к вашим сообщениям, скрыта</string>
+  <string name="attach_images_summary_on">Используйте кнопку «Скрепка+» (пункт меню «Прикрепить») чтобы вложить изображение в ваше сообщение. Или \"поделитесь\" изображением с AndStatus-ом из другого приложения</string>
+  <string name="attach_images_title">Прикреплять изображения к моим сообщениям</string>
   <string name="attachments">Вложения</string>
   <string name="automatic">Автонастройка</string>
   <string name="settings_action">Настройки</string>
@@ -417,7 +420,7 @@
   <string name="title_preference_username">Имя пользователя</string>
   <string name="title_preference_username_pumpio">Webfinger ID</string>
   <string name="title_preference_show_avatars">Показать аватары</string>
-  <string name="title_preference_show_attached_images">Показать вложенные изображения</string>
+  <string name="title_preference_show_attached_images">Загрузить и показать вложенные изображения</string>
   <string name="title_preference_show_origin">Показывать Социальную сеть на Ленте времени</string>
   <string name="title_preference_user_in_timeline">Как показать Пользователя на Ленте времени</string>
   <string name="title_preference_verify_credentials">Перепроверить учётную запись</string>

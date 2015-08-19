@@ -26,6 +26,9 @@
   <string name="account_settings_activity_title">アカウント</string>
   <string name="account_settings_summary">同期の頻度、通知など</string>
   <string name="action_bar_color_preference_title">アクションバーの色</string>
+  <string name="attach_images_summary_off">投稿に画像を添付するために使用する \"クリップ+\" ボタンを非表示にします</string>
+  <string name="attach_images_summary_on">メッセージに画像を添付する \"クリップ+\" ボタン (\"添付\" メニュー項目) を使用します。または別のアプリケーションから AndStatus に画像を共有します</string>
+  <string name="attach_images_title">私のメッセージに画像を添付する</string>
   <string name="attachments">添付ファイル</string>
   <string name="automatic">自動</string>
   <string name="settings_action">設定</string>
@@ -88,7 +91,7 @@
   <string name="command_follow_user">フォローする</string>
   <string name="command_stop_following_user">フォローをやめる</string>
   <string name="crash_dialog_text">AndStatus アプリケーションがクラッシュしました。問題の解決に役立つかもしれません。OK ボタンを押して、開発者にメールでクラッシュ レポートを送信してください。</string>
-  <string name="crash_dialog_comment_prompt">問題に関するコメントを次に追加できます:</string>
+  <string name="crash_dialog_comment_prompt">問題について下にコメントを入力してください。修正するために分かると非常に役立つこと: いつそれが発生したか、再現性があるかどうか。</string>
   <string name="created_label">作成</string>
   <string name="custom_locale_title">アプリケーションの言語</string>
   <string name="device_default">デバイス デフォルト</string>
