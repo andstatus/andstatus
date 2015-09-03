@@ -67,27 +67,31 @@ public class DataInserterTest extends InstrumentationTestCase {
         somebody.setUrl("http://identi.ca/somebody");
         di.insertOrUpdateUser(somebody);
 
-        long somebodyId = MyQuery.oidToId(OidEnum.USER_OID, TestSuite.getConversationOriginId(), userOid);
+        long somebodyId = MyQuery.oidToId(OidEnum.USER_OID, TestSuite.getConversationOriginId(),
+                userOid);
         assertTrue("User " + username + " added", somebodyId != 0);
 
         Set<Long> followedIds = MyQuery.getIdsOfUsersFollowedBy(TestSuite
                 .getConversationMyAccount().getUserId());
         assertFalse("User " + username + " is not followed", followedIds.contains(somebodyId));
 
-        MbMessage message = MbMessage.fromOriginAndOid(TestSuite.getConversationOriginId(), messageOid);
+        MbMessage message = MbMessage.fromOriginAndOid(TestSuite.getConversationOriginId(),
+                messageOid, DownloadStatus.LOADED);
         message.setBody("The test message by Somebody");
         message.sentDate = 13312696000L;
         message.via = "MyCoolClient";
         message.url = "http://identi.ca/somebody/comment/dasdjfdaskdjlkewjz1EhSrTRB";
         message.sender = somebody;
         message.actor = TestSuite.getConversationMbUser();
+
         TestSuite.clearAssertionData();
         long messageId = di.insertOrUpdateMsg(message);
         assertTrue("Message added", messageId != 0);
-        AssersionData data = TestSuite.getMyContextForTest().takeDataByKey("insertOrUpdateMsg");
+        AssersionData data = TestSuite.getMyContextForTest().takeDataByKey(DataInserter.MSG_ASSERTION_KEY);
         assertFalse("Data put", data.isEmpty());
         assertEquals("Message Oid", messageOid, data.getValues()
                 .getAsString(MyDatabase.Msg.MSG_OID));
+        assertEquals("Message is loaded", DownloadStatus.LOADED, DownloadStatus.load(data.getValues().getAsInteger(Msg.MSG_STATUS)));
         assertEquals("Message permalink before storage", message.url,
                 data.getValues().getAsString(MyDatabase.Msg.URL));
         assertEquals(
@@ -97,6 +101,8 @@ public class DataInserterTest extends InstrumentationTestCase {
                         .fromId(TestSuite.getConversationOriginId())
                         .messagePermalink(messageId));
 
+        assertEquals("Message stored as loaded", DownloadStatus.LOADED, DownloadStatus.load(
+                MyQuery.msgIdToLongColumnValue(Msg.MSG_STATUS, messageId)));
         long authorId = MyQuery.msgIdToLongColumnValue(Msg.AUTHOR_ID, messageId);
         assertEquals("Author of the message", somebodyId, authorId);
         String url = MyQuery.msgIdToStringColumnValue(Msg.URL, messageId);
@@ -198,7 +204,7 @@ public class DataInserterTest extends InstrumentationTestCase {
         firstReader.actor = TestSuite.getConversationMbUser();
 
         MbMessage message = MbMessage.fromOriginAndOid(TestSuite.getConversationOriginId(),
-                "https://pumpity.net/api/comment/sdajklsdkiewwpdsldkfsdasdjWED");
+                "https://pumpity.net/api/comment/sdajklsdkiewwpdsldkfsdasdjWED", DownloadStatus.LOADED);
         message.setBody("The test message by Anybody from http://pumpity.net");
         message.sentDate = 13312697000L;
         message.via = "SomeOtherClient";
@@ -237,13 +243,21 @@ public class DataInserterTest extends InstrumentationTestCase {
         author.actor = TestSuite.getConversationMbUser();
 
         MbMessage message = MbMessage.fromOriginAndOid(TestSuite.getConversationOriginId(),
-                "https://pumpity.net/api/comment/jhlkjh3sdffpmnhfd123");
+                "https://pumpity.net/api/comment/jhlkjh3sdffpmnhfd123", DownloadStatus.LOADED);
         message.setBody("The test message by Example from the http://pumpity.net");
         message.sentDate = 13312795000L;
         message.via = "UnknownClient";
         message.sender = author;
         message.actor = TestSuite.getConversationMbUser();
         message.favoritedByActor = TriState.TRUE;
+
+        String inReplyToOid = "https://identi.ca/api/comment/dfjklzdfSf28skdkfgloxWB";
+        MbMessage inReplyTo = MbMessage.fromOriginAndOid(TestSuite.getConversationOriginId(),
+                inReplyToOid, DownloadStatus.UNKNOWN);
+        inReplyTo.sender = MbUser.fromOriginAndUserOid(TestSuite.getConversationOriginId(),
+                "irtUser" + TestSuite.TESTRUN_UID).setUserName("irt" + username);
+        inReplyTo.actor = message.actor;
+        message.inReplyToMessage = inReplyTo;
 
         DataInserter di = new DataInserter(TestSuite.getConversationMyAccount());
         long messageId = di.insertOrUpdateMsg(message);
@@ -270,6 +284,14 @@ public class DataInserterTest extends InstrumentationTestCase {
         assertTrue("Message not favorited by AccountUser", cursor.getLong(1) == TestSuite
                 .getConversationMyAccount().getUserId());
         cursor.close();
+
+        assertEquals("Message stored as loaded", DownloadStatus.LOADED, DownloadStatus.load(
+                MyQuery.msgIdToLongColumnValue(Msg.MSG_STATUS, messageId)));
+        long inReplyToId = MyQuery.oidToId(OidEnum.MSG_OID, TestSuite.getConversationOriginId(),
+                inReplyToOid);
+        assertTrue("In reply to message added", inReplyToId != 0);
+        assertEquals("Message reply status is unknown", DownloadStatus.UNKNOWN, DownloadStatus.load(
+                MyQuery.msgIdToLongColumnValue(Msg.MSG_STATUS, inReplyToId)));
     }
 
     public void testMessageWithAttachment() throws Exception {

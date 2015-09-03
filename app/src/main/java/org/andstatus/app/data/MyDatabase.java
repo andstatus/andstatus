@@ -42,8 +42,9 @@ public final class MyDatabase extends SQLiteOpenHelper  {
      * Current database scheme version, defined by AndStatus developers.
      * This is used to check (and upgrade if necessary) 
      * existing database after application update.
-     * 
-     * v.22 2015-04-04 app.v.17 use_legacy_http added to Origin, 
+     *
+     * v.23 2015-09-02 app.v.19 msg_status added for Unsent messages
+     * v.22 2015-04-04 app.v.17 use_legacy_http added to Origin
      * v.21 2015-03-14 app.v.16 mention_as_webfinger_id added to Origin, 
      *                 index on {@link Msg#IN_REPLY_TO_MSG_ID} added. 
      * v.20 2015-02-04 app.v.15 SslMode added to Origin
@@ -63,7 +64,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
      *      All messages are in the same table. 
      *      Allows to have multiple User Accounts in different Originating systems (twitter.com etc. ) 
      */
-    public static final int DATABASE_VERSION = 22;
+    public static final int DATABASE_VERSION = 23;
     public static final String DATABASE_NAME = "andstatus.sqlite";
 
     /**
@@ -95,6 +96,10 @@ public final class MyDatabase extends SQLiteOpenHelper  {
          * and IDs from different systems may overlap.
          */
         public static final String MSG_OID = "msg_oid";
+        /**
+         * See {@link DownloadStatus}. Defaults to {@link DownloadStatus#UNKNOWN}
+         */
+        public static final String MSG_STATUS = "msg_status";
         /**
          * A link to the representation of the resource. Currently this is simply URL to the HTML 
          * representation of the resource (its "permalink") 
@@ -136,8 +141,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
         public static final String IN_REPLY_TO_USER_ID = "in_reply_to_user_id";
         /**
          * Date and time when the row was created in the originating system.
-         * We store it as long returned by {@link Connection#dateFromJson }.
-         * NULL means the row was not retrieved from the Internet yet
+         * We store it as long milliseconds.
          */
         public static final String CREATED_DATE = "msg_created_date";
         /**
@@ -145,6 +149,8 @@ public final class MyDatabase extends SQLiteOpenHelper  {
          * it's not equal to {@link MyDatabase.Msg#CREATED_DATE} for reblogged messages
          * We change the value if we reblog the message in the application 
          * or if we receive new reblog of the message
+         * This value is set for unsent messages also. So it is updated after successful retrieval
+         * of this sent message from a Social Network.
          */
         public static final String SENT_DATE = "msg_sent_date";
         /**
@@ -398,11 +404,12 @@ public final class MyDatabase extends SQLiteOpenHelper  {
         public static final String VALID_FROM = "valid_from";
         public static final String URL = "url";
         /**
-         * Date and time there was last attempt to load avatar. The attempt may be successful or not.
+         * TODO: Drop this column on next table update as it is not used
+         * Date and time there was last attempt to load this. The attempt may be successful or not.
          */
-        public static final String LOADED_DATE = "loaded_date";
+        private static final String LOADED_DATE = "loaded_date";
         /**
-         * See {@link DownloadStatus}
+         * See {@link DownloadStatus}. Defaults to {@link DownloadStatus#UNKNOWN}
          */
         public static final String DOWNLOAD_STATUS = "download_status";
         public static final String FILE_NAME = "file_name";
@@ -411,7 +418,6 @@ public final class MyDatabase extends SQLiteOpenHelper  {
          * Derived columns (they are not stored in this table but are result of joins)
          */
         /** Alias for the primary key */
-        public static final String AVATAR_ID = "avatar_id";
         public static final String IMAGE_ID = "image_id";
 
         public static final String AVATAR_FILE_NAME = "avatar_file_name";
@@ -504,8 +510,9 @@ public final class MyDatabase extends SQLiteOpenHelper  {
         execSQL(db, "CREATE TABLE " + Msg.TABLE_NAME + " (" 
                 + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," 
                 + Msg.ORIGIN_ID + " INTEGER NOT NULL," 
-                + Msg.MSG_OID + " TEXT," 
-                + Msg.AUTHOR_ID + " INTEGER," 
+                + Msg.MSG_OID + " TEXT,"
+                + Msg.MSG_STATUS + " INTEGER NOT NULL DEFAULT 0,"
+                + Msg.AUTHOR_ID + " INTEGER,"
                 + Msg.SENDER_ID + " INTEGER," 
                 + Msg.RECIPIENT_ID + " INTEGER," 
                 + Msg.BODY + " TEXT," 

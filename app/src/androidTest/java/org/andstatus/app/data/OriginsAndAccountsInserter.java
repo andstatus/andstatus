@@ -98,7 +98,7 @@ public class OriginsAndAccountsInserter extends InstrumentationTestCase {
         AccountName accountName = AccountName.fromAccountName(myContext, accountNameString);
         assertTrue("Name '" + accountNameString + "' is valid for " + originType, accountName.isValid());
         assertEquals("Origin for '" + accountNameString + "' account created", accountName.getOrigin().getOriginType(), originType);
-        long accountUserId_existing = MyQuery.oidToId(myContext.getDatabase().getReadableDatabase(), OidEnum.USER_OID,
+        long accountUserId_existing = MyQuery.oidToId(myContext.getDatabase(), OidEnum.USER_OID,
                 accountName.getOrigin().getId(), userOid);
         MbUser mbUser = MbUser.fromOriginAndUserOid(accountName.getOrigin().getId(), userOid);
         mbUser.setUserName(accountName.getUsername());

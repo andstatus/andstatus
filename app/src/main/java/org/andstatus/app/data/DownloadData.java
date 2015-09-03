@@ -227,7 +227,6 @@ public class DownloadData {
        values.put(Download.CONTENT_TYPE, contentType.save());
        values.put(Download.VALID_FROM, loadTimeNew);
        values.put(Download.URL, url.toExternalForm());
-       values.put(Download.LOADED_DATE, loadTimeNew);
        values.put(Download.DOWNLOAD_STATUS, status.save());
        values.put(Download.FILE_NAME, fileNew.getFilename());
 
@@ -259,7 +258,6 @@ public class DownloadData {
             values.put(Download.FILE_NAME, fileNew.getFilename());
             values.put(Download.VALID_FROM, loadTimeNew);
         }
-        values.put(Download.LOADED_DATE, loadTimeNew);
 
         if (DbUtils.updateRowWithRetry(Download.TABLE_NAME, rowId, values, 3) != 1) {
             softError = true;

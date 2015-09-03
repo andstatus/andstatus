@@ -44,6 +44,7 @@ import java.util.Date;
  */
 public class DataInserter {
     private static final String TAG = DataInserter.class.getSimpleName();
+    public static final String MSG_ASSERTION_KEY = "insertOrUpdateMsg";
     private CommandExecutionContext execContext;
 
     public DataInserter(MyAccount ma) {
@@ -63,7 +64,7 @@ public class DataInserter {
         /**
          * Id of the message in our system, see {@link MyDatabase.Msg#MSG_ID}
          */
-        Long rowId = 0L;
+        Long rowId = messageIn.rowId;
         try {
             if (messageIn.isEmpty()) {
                 MyLog.w(TAG, funcName +", the message is empty, skipping: " + messageIn.toString());
@@ -137,28 +138,35 @@ public class DataInserter {
             }
 
             /**
-             * Is the row first time retrieved?
-             * Actually we count a message as "New" also in a case
-             *  there was only "a stub" stored (without a sent date and a body)
+             * Is the row first time retrieved from a Social Network?
+             * Message can already exist in this these cases:
+             * 1. There was only "a stub" stored (without a sent date and a body)
+             * 2. Message ws "unsent"
              */
-            boolean isNew = true;
+            boolean isFirstTimeLoaded = true;
 
-            // Lookup the System's (AndStatus) id from the Originated system's id
-            rowId = MyQuery.oidToId(OidEnum.MSG_OID, execContext.getMyAccount().getOriginId(), rowOid);
+            if (rowId == 0) {
+                // Lookup the System's (AndStatus) id from the Originated system's id
+                rowId = MyQuery.oidToId(OidEnum.MSG_OID, execContext.getMyAccount().getOriginId(), rowOid);
+            }
             // Construct the Uri to the Msg
             Uri msgUri = MatchedUri.getMsgUri(execContext.getMyAccount().getUserId(), rowId);
 
             long sentDateStored = 0;
+            DownloadStatus statusStored = DownloadStatus.UNKNOWN;
             if (rowId != 0) {
+                statusStored = DownloadStatus.load(MyQuery.msgIdToLongColumnValue(Msg.MSG_STATUS, rowId));
                 sentDateStored = MyQuery.msgIdToLongColumnValue(Msg.SENT_DATE, rowId);
-                isNew = (sentDateStored == 0);
-                if (!isNew) {
+                isFirstTimeLoaded = (statusStored == DownloadStatus.UNKNOWN)
+                        || (message.getStatus() == DownloadStatus.LOADED && statusStored != DownloadStatus.LOADED);
+                if (!isFirstTimeLoaded) {
                   long senderIdStored = MyQuery.msgIdToLongColumnValue(Msg.SENDER_ID, rowId);
-                  isNew = (senderIdStored == 0);
+                  isFirstTimeLoaded = (senderIdStored == 0);
                 }
             }
 
-            if (isNew) {
+            if (isFirstTimeLoaded) {
+                values.put(Msg.MSG_STATUS, message.getStatus().save());
                 values.put(MyDatabase.Msg.CREATED_DATE, createdDate);
                 
                 if (senderId != 0) {
@@ -223,12 +231,12 @@ public class DataInserter {
             if (MyLog.isVerboseEnabled()) {
                 MyLog.v(this, ((rowId==0) ? "insertMsg" : "updateMsg") 
                         + ":" 
-                        + (isNew ? " new;" : "") 
+                        + (isFirstTimeLoaded ? " new;" : "")
                         + (isNewerThanInDatabase ? " newer, sent at " + new Date(sentDate).toString() + ";" : "") );
             }
             
             if (MyContextHolder.get().isTestRun()) {
-                MyContextHolder.get().put(new AssersionData("insertOrUpdateMsg", values));
+                MyContextHolder.get().put(new AssersionData(MSG_ASSERTION_KEY, values));
             }
             if (rowId == 0) {
                 // There was no such row so add the new one
@@ -238,7 +246,7 @@ public class DataInserter {
                 execContext.getContext().getContentResolver().update(msgUri, values, null, null);
             }
 
-            if (isNew) {
+            if (isFirstTimeLoaded) {
                 for (MbAttachment attachment : message.attachments) {
                     DownloadData dd = DownloadData.newForMessage(rowId, attachment.contentType, attachment.getUrl());
                     dd.saveToDatabase();

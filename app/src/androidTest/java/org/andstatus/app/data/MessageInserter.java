@@ -91,7 +91,7 @@ public class MessageInserter extends InstrumentationTestCase {
                 messageOid = String.valueOf(System.nanoTime());
             }
         }
-        MbMessage message = MbMessage.fromOriginAndOid(origin.getId(), messageOid);
+        MbMessage message = MbMessage.fromOriginAndOid(origin.getId(), messageOid, DownloadStatus.LOADED);
         message.setBody(body);
         message.sentDate = System.currentTimeMillis();
         message.via = "AndStatus";

@@ -16,6 +16,8 @@
 
 package org.andstatus.app.context;
 
+import android.text.TextUtils;
+
 import org.andstatus.app.util.MyLog;
 
 /** How to show a User in a Timeline */
@@ -43,7 +45,9 @@ public enum UserInTimeline {
      */
     public static UserInTimeline load(String strCode) {
         try {
-            return load(Long.parseLong(strCode));
+            if (!TextUtils.isEmpty(strCode)) {
+                return load(Long.parseLong(strCode));
+            }
         } catch (NumberFormatException e) {
             MyLog.v(TAG, "Error converting '" + strCode + "'", e);
         }

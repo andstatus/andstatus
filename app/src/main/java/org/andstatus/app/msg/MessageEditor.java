@@ -327,21 +327,20 @@ public class MessageEditor {
     }
     
     private void sendMessageAndCloseEditor() {
-        String status = mEditText.getText().toString();
+        dataCurrent.messageText = mEditText.getText().toString();
         if (!dataCurrent.getMyAccount().isValid()) {
             clearAndHide();
-        } else if (TextUtils.isEmpty(status.trim())) {
+        } else if (TextUtils.isEmpty(dataCurrent.messageText.trim())) {
             Toast.makeText(getActivity(), R.string.cannot_send_empty_message,
                     Toast.LENGTH_SHORT).show();
-        } else if (dataCurrent.getMyAccount().charactersLeftForMessage(status) < 0) {
+        } else if (dataCurrent.getMyAccount().charactersLeftForMessage(dataCurrent.messageText) < 0) {
             Toast.makeText(getActivity(), R.string.message_is_too_long,
                     Toast.LENGTH_SHORT).show();
         } else {
 			if (MyPreferences.getBoolean(MyPreferences.KEY_SENDING_MESSAGES_LOG_ENABLED, false)) {
 				MyLog.setLogToFile(true);
 			}
-            CommandData commandData = CommandData.updateStatus(dataCurrent.getMyAccount().getAccountName(), status, dataCurrent.inReplyToId, dataCurrent.recipientId, dataCurrent.mediaUri);
-            MyServiceManager.sendForegroundCommand(commandData);
+            new MessageSender().execute(dataCurrent);
             clearAndHide();
         }
     }

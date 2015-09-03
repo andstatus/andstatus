@@ -19,6 +19,7 @@ package org.andstatus.app.net.social;
 import android.text.TextUtils;
 
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.TriState;
 
@@ -31,6 +32,7 @@ import java.util.List;
  */
 public class MbMessage {
     private boolean isEmpty = false;
+    private DownloadStatus status = DownloadStatus.UNKNOWN;
     
     public String oid="";
     public long sentDate = 0;
@@ -64,12 +66,16 @@ public class MbMessage {
     
     // In our system
     public long originId = 0L;
-
+    public long rowId = 0L;
     
-    public static MbMessage fromOriginAndOid(long originId, String oid) {
+    public static MbMessage fromOriginAndOid(long originId, String oid, DownloadStatus status) {
         MbMessage message = new MbMessage();
         message.originId = originId;
         message.oid = oid;
+        message.status = status;
+        if (TextUtils.isEmpty(oid) && status == DownloadStatus.LOADED) {
+            message.status = DownloadStatus.UNKNOWN;
+        }
         return message;
     }
     
@@ -98,9 +104,15 @@ public class MbMessage {
             this.body = MyHtml.fromHtml(body);
         }
     }
-    
+
+    public DownloadStatus getStatus() {
+        return status;
+    }
+
     public boolean isEmpty() {
-        return this.isEmpty || TextUtils.isEmpty(oid) || originId==0;
+        return this.isEmpty
+                || (TextUtils.isEmpty(oid) && (status!=DownloadStatus.SENDING || TextUtils.isEmpty(body)))
+                || originId==0;
     }
 
     @Override
@@ -128,12 +140,25 @@ public class MbMessage {
 
     @Override
     public String toString() {
-        return "MbMessage [isEmpty=" + isEmpty + ", oid=" + oid + ", sentDate=" + sentDate
-                + ", sender=" + sender + ", recipient=" + recipient + ", body=" + body
-                + ", rebloggedMessage=" + rebloggedMessage + ", inReplyToMessage="
-                + inReplyToMessage + ", via=" + via + ", url=" + url + ", isPublic=" + isPublic
-                + ", attachments=" + attachments + ", actor=" + actor + ", favoritedByActor="
-                + favoritedByActor + ", originId=" + originId + "]";
+        return "MbMessage{" +
+                "actor=" + actor +
+                ", isEmpty=" + isEmpty +
+                ", status=" + status +
+                ", oid='" + oid + '\'' +
+                ", sentDate=" + sentDate +
+                ", sender=" + sender +
+                ", recipient=" + recipient +
+                ", body='" + body + '\'' +
+                ", rebloggedMessage=" + rebloggedMessage +
+                ", inReplyToMessage=" + inReplyToMessage +
+                ", via='" + via + '\'' +
+                ", url='" + url + '\'' +
+                ", isPublic=" + isPublic +
+                ", attachments=" + attachments +
+                ", favoritedByActor=" + favoritedByActor +
+                ", originId=" + originId +
+                ", rowId=" + rowId +
+                '}';
     }
-    
+
 }

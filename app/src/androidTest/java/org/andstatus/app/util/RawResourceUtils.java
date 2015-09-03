@@ -13,6 +13,7 @@ import org.json.JSONObject;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 
 public class RawResourceUtils {
     
@@ -31,12 +32,11 @@ public class RawResourceUtils {
     }
 
     public static String getString(Context context, int id) throws IOException {
-        // TODO: reads an UTF-8 string resource - API 9 required
-        //return new String(getResource(id, context), Charset.forName("UTF-8"));
-        return new String(getBytes(id, context));
+        return new String(getBytes(id, context), Charset.forName("UTF-8"));
     }
 
-    /* reads resources regardless of their size
+    /**
+     *  reads resources regardless of their size
      */
     public static byte[] getBytes(int id, Context context) throws IOException {
         Resources resources = context.getResources();

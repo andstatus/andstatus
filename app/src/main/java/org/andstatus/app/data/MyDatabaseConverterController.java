@@ -48,7 +48,6 @@ public class MyDatabaseConverterController {
     
     static final long SECONDS_BEFORE_UPGRADE_TRIGGERED = 5L;
     static final long SECONDS_FOR_UPGRADE = 30L;
-    static final long SECONDS_AFTER_UPGRADE = 5L;
 
     public static void attemptToTriggerDatabaseUpgrade(Activity upgradeRequestorIn) {
         String requestorName = MyLog.objTagToString(upgradeRequestorIn);
@@ -78,8 +77,11 @@ public class MyDatabaseConverterController {
             }
             if (!skip && upgradeEnded) {
                 MyLog.v(TAG, "Attempt to trigger database upgrade by " + requestorName 
-                        + ": already completed");
+                        + ": already completed " + (upgradeEndedSuccessfully ? " successfully" : "(failed)"));
                 skip = true;
+                if (!upgradeEndedSuccessfully) {
+                    upgradeEnded = false;
+                }
             }
             if (!skip) {
                 MyLog.v(TAG, "Upgrade lock acquired for " + requestorName);

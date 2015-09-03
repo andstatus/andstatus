@@ -107,57 +107,64 @@ public class MyQuery {
      *         {@link MyDatabase.Msg#_ID} ). Or 0 if nothing was found.
      */
     public static long oidToId(MyDatabase.OidEnum oidEnum, long originId, String oid) {
-        MyDatabase myDb = MyContextHolder.get().getDatabase();
-        if (myDb == null) {
-            MyLog.v(MyProvider.TAG, "oidToId: MyDatabase is null, oid=" + oid);
-            return 0;
-        } else {
-            SQLiteDatabase db = myDb.getReadableDatabase();
-            return oidToId(db, oidEnum, originId, oid);
-        }
+        return oidToId(null, oidEnum, originId, oid);
     }
 
-    static long oidToId(SQLiteDatabase db, MyDatabase.OidEnum oidEnum, long originId, String oid) {
-        long id = 0;
-        String sql = "";
-    
-        SQLiteStatement prog = null;
+    static long oidToId(MyDatabase myDatabase, MyDatabase.OidEnum oidEnum, long originId, String oid) {
+        if (TextUtils.isEmpty(oid)) {
+            return 0;
+        }
+        String msgLog = "oidToId; " + originId + "+" + oid + ", oidEnum=" + oidEnum;
+        String sql;
+        switch (oidEnum) {
+            case MSG_OID:
+                sql = "SELECT " + BaseColumns._ID + " FROM " + Msg.TABLE_NAME
+                        + " WHERE " + Msg.ORIGIN_ID + "=" + originId + " AND " + Msg.MSG_OID
+                        + "=" + quoteIfNotQuoted(oid);
+                break;
+
+            case USER_OID:
+                sql = "SELECT " + BaseColumns._ID + " FROM " + User.TABLE_NAME
+                        + " WHERE " + User.ORIGIN_ID + "=" + originId + " AND " + User.USER_OID
+                        + "=" + quoteIfNotQuoted(oid);
+                break;
+
+            default:
+                throw new IllegalArgumentException(msgLog + "; Unknown oidEnum");
+        }
+        return sqlToLong(myDatabase, msgLog, sql);
+    }
+
+    private static long sqlToLong(MyDatabase myDatabaseIn, String msgLog, String sql) {
+        MyDatabase myDatabase = myDatabaseIn == null ? MyContextHolder.get().getDatabase() : myDatabaseIn ;
+        if (myDatabase == null) {
+            MyLog.v(MyProvider.TAG, msgLog + "; MyDatabase is null");
+            return 0;
+        }
+        String msgLogSql = msgLog + "; sql='" + sql +"'";
+        long value = 0;
+        SQLiteStatement statement = null;
         try {
-            switch (oidEnum) {
-                case MSG_OID:
-                    sql = "SELECT " + BaseColumns._ID + " FROM " + Msg.TABLE_NAME
-                            + " WHERE " + Msg.ORIGIN_ID + "=" + originId + " AND " + Msg.MSG_OID
-                            + "=" + quoteIfNotQuoted(oid);
-                    break;
-    
-                case USER_OID:
-                    sql = "SELECT " + BaseColumns._ID + " FROM " + User.TABLE_NAME
-                            + " WHERE " + User.ORIGIN_ID + "=" + originId + " AND " + User.USER_OID
-                            + "=" + quoteIfNotQuoted(oid);
-                    break;
-    
-                default:
-                    throw new IllegalArgumentException("oidToId; Unknown oidEnum \"" + oidEnum);
-            }
-            prog = db.compileStatement(sql);
-            id = prog.simpleQueryForLong();
-            if ((id == 1 || id == 388) 
+            SQLiteDatabase db = myDatabase.getReadableDatabase();
+            statement = db.compileStatement(sql);
+            value = statement.simpleQueryForLong();
+            if ((value == 1 || value == 388)
                 && MyLog.isVerboseEnabled()) {
-                MyLog.v(MyProvider.TAG, "oidToId: sql='" + sql +"'");
+                MyLog.v(MyProvider.TAG, msgLogSql);
             }
         } catch (SQLiteDoneException e) {
             MyLog.ignored(MyProvider.TAG, e);
-            id = 0;
+            value = 0;
         } catch (Exception e) {
-            MyLog.e(MyProvider.TAG, "oidToId: sql='" + sql +"'", e);
-            id = 0;
+            MyLog.e(MyProvider.TAG, msgLogSql, e);
+            value = 0;
         } finally {
-            DbUtils.closeSilently(prog);
+            DbUtils.closeSilently(statement);
         }
         if (MyLog.isVerboseEnabled()) {
-            MyLog.v(MyProvider.TAG, "oidToId:" + originId + "+" + oid + " -> " + id + " oidEnum=" + oidEnum );
+            MyLog.v(MyProvider.TAG, msgLog + " -> " + value);
         }
-        return id;
+        return value;
     }
 
     /**
@@ -337,35 +344,18 @@ public class MyQuery {
      * @param condition WHERE part of SQL statement
      * @return 0 in case not found or error or systemId==0
      */
-    static long conditionToLongColumnValue(String tableName, String columnName, String condition) {
+    public static long conditionToLongColumnValue(String tableName, String columnName, String condition) {
         final String method = "conditionToLongColumnValue";
+        String msgLog = method + "; table='" + tableName + "', column='" + columnName + "'"
+                + " where '" + condition + "'";
         long columnValue = 0;
         if (TextUtils.isEmpty(tableName) || TextUtils.isEmpty(columnName)) {
-            throw new IllegalArgumentException(method + " tableName or columnName are empty");
+            throw new IllegalArgumentException(msgLog + " tableName or columnName are empty");
         } else if (!TextUtils.isEmpty(condition)) {
-            SQLiteStatement prog = null;
-            String sql = "";
-            try {
-                sql = "SELECT t." + columnName
-                        + " FROM " + tableName + " AS t"
-                        + " WHERE " + condition;
-                SQLiteDatabase db = MyContextHolder.get().getDatabase().getReadableDatabase();
-                prog = db.compileStatement(sql);
-                columnValue = prog.simpleQueryForLong();
-            } catch (SQLiteDoneException e) {
-                MyLog.ignored(MyProvider.TAG, e);
-                columnValue = 0;
-            } catch (Exception e) {
-                MyLog.e(MyProvider.TAG, method + " table='" + tableName 
-                        + "', column='" + columnName + "'"
-                        + " where '" + condition + "'", e);
-                return 0;
-            } finally {
-                DbUtils.closeSilently(prog);
-            }
-            if (MyLog.isVerboseEnabled()) {
-                MyLog.v(MyProvider.TAG, method + " table=" + tableName + ", column=" + columnName + " where '" + condition + "' -> " + columnValue );
-            }
+            String sql = "SELECT t." + columnName
+                    + " FROM " + tableName + " AS t"
+                    + " WHERE " + condition;
+            columnValue = sqlToLong(null, msgLog, sql);
         }
         return columnValue;
     }

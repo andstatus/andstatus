@@ -89,9 +89,10 @@ public class MbUser {
         return userName;
     }
 
-    public void setUserName(String userName) {
+    public MbUser setUserName(String userName) {
         this.userName = userName;
         fixWebFingerId();
+        return this;
     }
 
     public String getUrl() {

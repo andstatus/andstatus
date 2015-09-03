@@ -35,8 +35,9 @@ public class MessageEditorData {
     public String messageText = "";
     Uri mediaUri = Uri.EMPTY;
     /**
-     * Id of the Message to which we are replying
-     * -1 - is non-existent id
+     * Id of the Message to which we are replying.
+     *  0 - This message is not a Reply.
+     * -1 - is non-existent id.
      */
     public long inReplyToId = 0;
     boolean mReplyAll = false; 

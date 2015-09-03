@@ -2,6 +2,7 @@ package org.andstatus.app.msg;
 
 import android.content.Intent;
 import android.net.Uri;
+import android.provider.BaseColumns;
 import android.test.ActivityInstrumentationTestCase2;
 import android.view.View;
 import android.widget.EditText;
@@ -13,6 +14,9 @@ import org.andstatus.app.account.AccountSelector;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.data.DownloadStatus;
+import org.andstatus.app.data.MyDatabase;
+import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.service.MyServiceTestHelper;
 import org.andstatus.app.util.MyLog;
 
@@ -63,19 +67,26 @@ public class SharingMediaToThisAppTest extends ActivityInstrumentationTestCase2<
         String textToFind = MyContextHolder.get().context().getText(R.string.label_with_media).toString();
         assertTrue("Found text '" + textToFind + "'", details.getText().toString().contains(textToFind));
 
+        final String body = "Test message with a shared image " + TestSuite.TESTRUN_UID;
         EditText editText = (EditText) editorView.findViewById(R.id.messageBodyEditText);
         editText.requestFocus();
         TestSuite.waitForIdleSync(this);
-        getInstrumentation().sendStringSync("Test message with an attached image");
+        getInstrumentation().sendStringSync(body);
         helperTimelineActivity.clickView(method, R.id.messageEditSendButton);
         mService.serviceStopped = false;
         mService.waitForServiceStopped();
         
         String message = "Data was posted " + mService.httpConnectionMock.getPostedCounter() + " times; "
                 + Arrays.toString(mService.httpConnectionMock.getResults().toArray());
-        MyLog.v(this, method  + "; " + message);
+        MyLog.v(this, method + "; " + message);
         assertTrue(message, mService.httpConnectionMock.getPostedCounter() > 0);
         assertTrue(message, mService.httpConnectionMock.substring2PostedPath("statuses/update").length() > 0 );
+
+        String condition = "BODY='" + body + "'";
+        long unsentMsgId = MyQuery.conditionToLongColumnValue(MyDatabase.Msg.TABLE_NAME, BaseColumns._ID, condition);
+        assertTrue("Unsent message found: " + condition, unsentMsgId != 0);
+        assertEquals("Status of unsent message", DownloadStatus.SENDING, DownloadStatus.load(
+                MyQuery.msgIdToLongColumnValue(MyDatabase.Msg.MSG_STATUS, unsentMsgId)));
     }
     
     @Override

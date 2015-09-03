@@ -20,6 +20,7 @@ import android.net.Uri;
 import android.text.TextUtils;
 
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.ConnectionException.StatusCode;
@@ -428,7 +429,7 @@ public class ConnectionPumpio extends Connection {
                 MyLog.d(this, "Pumpio activity has no id:" + activity.toString(2));
                 return MbMessage.getEmpty();
             } 
-            message =  MbMessage.fromOriginAndOid(data.getOriginId(), oid);
+            message =  MbMessage.fromOriginAndOid(data.getOriginId(), oid, DownloadStatus.LOADED);
             message.actor = MbUser.fromOriginAndUserOid(data.getOriginId(), data.getAccountUserOid());
             message.sentDate = dateFromJson(activity, "updated");
 
@@ -552,7 +553,7 @@ public class ConnectionPumpio extends Connection {
                 MyLog.d(TAG, "Pumpio object has no id:" + jso.toString(2));
                 return MbMessage.getEmpty();
             } 
-            message =  MbMessage.fromOriginAndOid(data.getOriginId(), oid);
+            message =  MbMessage.fromOriginAndOid(data.getOriginId(), oid, DownloadStatus.LOADED);
             message.actor = MbUser.fromOriginAndUserOid(data.getOriginId(), data.getAccountUserOid());
 
             parseComment(message, jso);

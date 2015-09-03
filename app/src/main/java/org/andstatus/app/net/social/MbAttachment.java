@@ -30,9 +30,20 @@ public class MbAttachment {
     public MyContentType contentType = MyContentType.UNKNOWN;
 
     public static MbAttachment fromUrlAndContentType(URL urlIn, MyContentType contentTypeIn) {
+        return fromUriAndContentType(UriUtils.fromUrl(urlIn),
+                MyContentType.fromUrl(urlIn, contentTypeIn));
+    }
+
+    public static MbAttachment fromUriAndContentType(Uri uriIn, MyContentType contentTypeIn) {
         MbAttachment attachment = new MbAttachment();
-        attachment.uri = UriUtils.fromUrl(urlIn);
-        attachment.contentType = MyContentType.fromUrl(urlIn, contentTypeIn);
+        if (uriIn == null) {
+            throw new IllegalArgumentException("Uri is null");
+        }
+        if (contentTypeIn == null) {
+            throw new IllegalArgumentException("MyContentType is null");
+        }
+        attachment.uri = uriIn;
+        attachment.contentType = contentTypeIn;
         return attachment;
     }
 

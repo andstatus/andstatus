@@ -19,6 +19,7 @@ package org.andstatus.app.net.social;
 import android.net.Uri;
 import android.text.TextUtils;
 
+import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
@@ -215,7 +216,7 @@ public abstract class ConnectionTwitter extends Connection {
             // This is for the Status.net
             oid = jso.optString("id");
         } 
-        MbMessage message =  MbMessage.fromOriginAndOid(data.getOriginId(), oid);
+        MbMessage message =  MbMessage.fromOriginAndOid(data.getOriginId(), oid, DownloadStatus.LOADED);
         message.actor = MbUser.fromOriginAndUserOid(data.getOriginId(), data.getAccountUserOid());
         try {
             message.sentDate = dateFromJson(jso, "created_at");
@@ -260,8 +261,6 @@ public abstract class ConnectionTwitter extends Connection {
 
             // If the Msg is a Reply to other message
             String inReplyToUserOid = "";
-            String inReplyToUserName = "";
-            String inReplyToMessageOid = "";
             if (jso.has("in_reply_to_user_id_str")) {
                 inReplyToUserOid = jso.getString("in_reply_to_user_id_str");
             } else if (jso.has("in_reply_to_user_id")) {
@@ -272,29 +271,25 @@ public abstract class ConnectionTwitter extends Connection {
                 inReplyToUserOid = "";
             }
             if (!SharedPreferencesUtil.isEmpty(inReplyToUserOid)) {
-                if (jso.has("in_reply_to_screen_name")) {
-                    inReplyToUserName = jso.getString("in_reply_to_screen_name");
-                }
-                // Construct "User" from available info
-                JSONObject inReplyToUser = new JSONObject();
-                inReplyToUser.put("id_str", inReplyToUserOid);
-                inReplyToUser.put("screen_name", inReplyToUserName);
+                String inReplyToMessageOid = "";
                 if (jso.has("in_reply_to_status_id_str")) {
                     inReplyToMessageOid = jso.getString("in_reply_to_status_id_str");
                 } else if (jso.has("in_reply_to_status_id")) {
-                    // This is for identi.ca
+                    // This is for StatusNet
                     inReplyToMessageOid = jso.getString("in_reply_to_status_id");
                 }
-                if (SharedPreferencesUtil.isEmpty(inReplyToMessageOid)) {
-                    inReplyToUserOid = "";
-                }
                 if (!SharedPreferencesUtil.isEmpty(inReplyToMessageOid)) {
-                    // Construct Related "Msg" from available info
-                    // and add it recursively
-                    JSONObject inReplyToMessage = new JSONObject();
-                    inReplyToMessage.put("id_str", inReplyToMessageOid);
-                    inReplyToMessage.put("user", inReplyToUser);
-                    message.inReplyToMessage = messageFromJson(inReplyToMessage);
+                    // Construct Related message from available info
+                    MbMessage inReplyToMessage = MbMessage.fromOriginAndOid(data.getOriginId(),
+                            inReplyToMessageOid, DownloadStatus.UNKNOWN);
+                    MbUser inReplyToUser = MbUser.fromOriginAndUserOid(data.getOriginId(),
+                            inReplyToUserOid);
+                    if (jso.has("in_reply_to_screen_name")) {
+                        inReplyToUser.setUserName(jso.getString("in_reply_to_screen_name"));
+                    }
+                    inReplyToMessage.sender = inReplyToUser;
+                    inReplyToMessage.actor = message.actor;
+                    message.inReplyToMessage = inReplyToMessage;
                 }
             }
         } catch (JSONException e) {

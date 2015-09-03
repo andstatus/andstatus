@@ -21,6 +21,7 @@ import android.test.InstrumentationTestCase;
 import org.andstatus.app.account.AccountDataReaderEmpty;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.net.http.HttpConnectionMock;
 import org.andstatus.app.net.http.OAuthClientKeys;
@@ -67,7 +68,7 @@ public class ConnectionTwitterTest extends InstrumentationTestCase {
     }
 
     public void testGetTimeline() throws IOException {
-        String jso = RawResourceUtils.getString(this.getInstrumentation().getContext(), 
+        String jso = RawResourceUtils.getString(this.getInstrumentation().getContext(),
                 org.andstatus.app.tests.R.raw.twitter_home_timeline);
         httpConnection.setResponse(jso);
         
@@ -89,11 +90,13 @@ public class ConnectionTwitterTest extends InstrumentationTestCase {
 
         ind++;
         mbMessage = timeline.get(ind).mbMessage;
+        assertTrue("Message is loaded", mbMessage.getStatus() == DownloadStatus.LOADED);
         assertTrue("Does not have a recipient", mbMessage.recipient == null);
         assertTrue("Is not a reblog", mbMessage.rebloggedMessage == null);
         assertTrue("Is a reply", mbMessage.inReplyToMessage != null);
         assertEquals("Reply to the message id", "17176774678", mbMessage.inReplyToMessage.oid);
         assertEquals("Reply to the message by userOid", TestSuite.TWITTER_TEST_ACCOUNT_USER_OID, mbMessage.inReplyToMessage.sender.oid);
+        assertTrue("Reply status is unknown", mbMessage.inReplyToMessage.getStatus() == DownloadStatus.UNKNOWN);
         assertTrue("Is not Favorited", !mbMessage.favoritedByActor.toBoolean(true));
         String startsWith = "@t131t";
         assertEquals("Body of this message starts with", startsWith, mbMessage.getBody().substring(0, startsWith.length()));

@@ -117,109 +117,109 @@ class MyDatabaseConverter {
     private void convertAll(SQLiteDatabase db, int oldVersion, int newVersion) throws ApplicationUpgradeException {
         int currentVersion = oldVersion;
         MyLog.i(this, "Upgrading database from version " + oldVersion + " to version " + newVersion);
-        if (oldVersion < 14) {
-            throw new ApplicationUpgradeException("Upgrade from this database version (" 
-                    + oldVersion + ") is not supported. Please reinstall the application");
-        } 
-        if (currentVersion == 14) {
-            currentVersion = convert14to15(db, currentVersion);
-        }
-        if (currentVersion == 15) {
-            currentVersion = convert15to16(db, currentVersion);
-        }
-        if (currentVersion == 16) {
-            currentVersion = convert16to17(db, currentVersion);
-        }
-        if (currentVersion == 17) {
-            currentVersion = convert17to18(db, currentVersion);
-        }
-        if (currentVersion == 18) {
-            currentVersion = convert18to19(db, currentVersion);
-        }
-        if (currentVersion == 19) {
-            currentVersion = convert19to20(db, currentVersion);
-        }
-        if (currentVersion == 20) {
-            currentVersion = convert20to21(db, currentVersion);
-        }
-        if (currentVersion == 21) {
-            currentVersion = convert21to22(db, currentVersion);
-        }
+        boolean converterNotFound = false;
+        OneStep oneStep;
+        do {
+            oneStep = null;
+            try {
+                int prevVersion = currentVersion;
+                Class clazz = Class.forName(this.getClass().getName() + "$Convert" + Integer.toString(currentVersion));
+                oneStep = (OneStep) clazz.newInstance();
+                currentVersion = oneStep.execute(db, currentVersion);
+                if (currentVersion == prevVersion) {
+                    MyLog.e(this, "Stuck at version " + prevVersion);
+                    oneStep = null;
+                }
+            } catch (ClassNotFoundException e) {
+                converterNotFound = true;
+                String msgLog = "No converter for version " + currentVersion;
+                if (MyLog.isVerboseEnabled()) {
+                    MyLog.v(this, msgLog, e);
+                } else {
+                    MyLog.i(this, msgLog);
+                }
+            } catch (InstantiationException e) {
+                MyLog.e(this, "Error at version " + currentVersion, e);
+            } catch (IllegalAccessException e) {
+                MyLog.e(this, "Error at version " + currentVersion, e);
+            }
+        } while (oneStep != null && currentVersion < newVersion);
+
         if ( currentVersion == newVersion) {
             MyLog.i(this, "Successfully upgraded database from version " + oldVersion + " to version "
                     + newVersion + ".");
         } else {
-            MyLog.e(this, "Error upgrading database from version " + oldVersion + " to version "
-                    + newVersion + ". Current database version=" + currentVersion);
-            throw new ApplicationUpgradeException("Database upgrade failed. Current database version=" + currentVersion);
+            String msgLog;
+            if (converterNotFound) {
+                msgLog = "This version of application doesn't support database upgrade";
+            } else {
+                msgLog = "Error upgrading database";
+            }
+            msgLog += " from version " + oldVersion + " to version "
+                    + newVersion + ". Current database version=" + currentVersion;
+            MyLog.e(this, msgLog);
+            throw new ApplicationUpgradeException(msgLog);
         }
     }
 
-    private int convert14to15(SQLiteDatabase db, int oldVersion) {
-        final int versionTo = 15;
-        boolean ok = false;
+    private static abstract class OneStep {
+        SQLiteDatabase db;
+        int oldVersion;
+        int versionTo;
         String sql = "";
-        try {
-            logUpgradeStepStart(oldVersion, versionTo);
-            
+
+        int execute (SQLiteDatabase db, int oldVersion) {
+            boolean ok = false;
+            this.db = db;
+            this.oldVersion = oldVersion;
+            try {
+                MyLog.i(this, "Database upgrading step from version " + oldVersion + " to version " + versionTo);
+                execute2();
+                ok = true;
+            } catch (Exception e) {
+                MyLog.e(this, e);
+            }
+            if (ok) {
+                MyLog.i(this, "Database upgrading step successfully upgraded database from "
+                        + oldVersion + " to version " + versionTo);
+            } else {
+                MyLog.e(this, "Database upgrading step failed to upgrade database from " + oldVersion
+                        + " to version " + versionTo
+                        + " SQL='" + sql + "'");
+            }
+            return ok ? versionTo : oldVersion;
+        }
+
+        protected abstract void execute2();
+    }
+
+    static class Convert14 extends OneStep {
+        @Override
+        protected void execute2() {
+            versionTo = 15;
             sql = "ALTER TABLE msg ADD COLUMN public BOOLEAN DEFAULT 0 NOT NULL";
             MyDatabase.execSQL(db, sql);
             sql = "UPDATE msg SET public=0";
             MyDatabase.execSQL(db, sql);
-            
-            ok = true;
-        } catch (Exception e) {
-            MyLog.e(this, e);
-        }
-        return assessUpgradeStepResult(oldVersion, versionTo, ok, sql);
-    }
-
-    /** @return Database version after the step */
-    private int assessUpgradeStepResult(int oldVersion, final int versionTo, boolean ok, String sql) {
-        logUpgrageStepResult(oldVersion, versionTo, ok, sql);
-        return ok ? versionTo : oldVersion;
-    }
-
-    private void logUpgrageStepResult(int oldVersion, final int versionTo, boolean ok, String sql) {
-        if (ok) {
-            MyLog.i(this, "Database upgrading step successfully upgraded database from "
-                    + oldVersion + " to version " + versionTo);
-        } else {
-            MyLog.e(this, "Database upgrading step failed to upgrade database from " + oldVersion
-                    + " to version " + versionTo
-                    + " SQL='" + sql + "'");
         }
     }
 
-    private void logUpgradeStepStart(int oldVersion, final int versionTo) {
-        MyLog.i(this, "Database upgrading step from version " + oldVersion + " to version " + versionTo );
-    }
-
-    private int convert15to16(SQLiteDatabase db, int oldVersion) {
-        final int versionTo = 16;
-        boolean ok = false;
-        String sql = "";
-        try {
-            logUpgradeStepStart(oldVersion, versionTo);
-
-            ok = MyAccountConverter.convert14to16(db, oldVersion) == versionTo;
+    static class Convert15 extends OneStep {
+        @Override
+        protected void execute2() {
+            versionTo = 16;
+            boolean ok = MyAccountConverter.convert14to16(db, oldVersion) == versionTo;
             if (ok) {
                 sql = "DELETE FROM Origin WHERE _ID IN(6, 7)";
                 MyDatabase.execSQL(db, sql);
             }
-        } catch (Exception e) {
-            MyLog.e(this, e);
         }
-        return assessUpgradeStepResult(oldVersion, versionTo, ok, sql);
     }
 
-    private int convert16to17(SQLiteDatabase db, int oldVersion) {
-        final int versionTo = 17;
-        boolean ok = false;
-        String sql = "";
-        try {
-            logUpgradeStepStart(oldVersion, versionTo);
-
+    static class Convert16 extends OneStep {
+        @Override
+        protected void execute2() {
+            versionTo = 17;
             File avatarsDir = MyPreferences.getDataFilesDir("avatars", null);
             if (avatarsDir.exists()) {
                 FileUtils.deleteFilesRecursively(avatarsDir);
@@ -227,7 +227,6 @@ class MyDatabaseConverter {
                     MyLog.e(this, "Couldn't delete " + avatarsDir.getAbsolutePath());
                 }
             }
-            
             sql = "DROP TABLE avatar";
             MyDatabase.execSQL(db, sql);
             sql = "CREATE TABLE download (_id INTEGER PRIMARY KEY AUTOINCREMENT,download_type INTEGER NOT NULL,user_id INTEGER,msg_id INTEGER,content_type INTEGER NOT NULL,valid_from INTEGER NOT NULL,url TEXT NOT NULL,loaded_date INTEGER,download_status INTEGER NOT NULL DEFAULT 0,file_name TEXT)";
@@ -236,7 +235,7 @@ class MyDatabaseConverter {
             MyDatabase.execSQL(db, sql);
             sql = "CREATE INDEX idx_download_msg ON download (msg_id, content_type, download_status)";
             MyDatabase.execSQL(db, sql);
-            
+
             sql = "ALTER TABLE origin RENAME TO oldorigin";
             MyDatabase.execSQL(db, sql);
             sql = "DROP INDEX idx_origin_name";
@@ -246,26 +245,19 @@ class MyDatabaseConverter {
             MyDatabase.execSQL(db, sql);
             sql = "CREATE UNIQUE INDEX idx_origin_name ON origin (origin_name)";
             MyDatabase.execSQL(db, sql);
-            sql = "INSERT INTO origin (_id, origin_type_id, origin_name, origin_url, ssl, allow_html, text_limit, short_url_length)" + 
-            " SELECT _id, origin_type_id, origin_name, host, ssl, allow_html, text_limit, short_url_length" +
+            sql = "INSERT INTO origin (_id, origin_type_id, origin_name, origin_url, ssl, allow_html, text_limit, short_url_length)" +
+                    " SELECT _id, origin_type_id, origin_name, host, ssl, allow_html, text_limit, short_url_length" +
                     " FROM oldorigin";
             MyDatabase.execSQL(db, sql);
             sql = "DROP TABLE oldorigin";
             MyDatabase.execSQL(db, sql);
-            
-            ok = true;
-        } catch (Exception e) {
-            MyLog.e(this, e);
         }
-        return assessUpgradeStepResult(oldVersion, versionTo, ok, sql);
     }
-    
-    private int convert17to18(SQLiteDatabase db, int oldVersion) {
-        final int versionTo = 18;
-        boolean ok = false;
-        String sql = "";
-        try {
-            logUpgradeStepStart(oldVersion, versionTo);
+
+    static class Convert17 extends OneStep {
+        @Override
+        protected void execute2() {
+            versionTo = 18 ;
 
             sql = "DROP INDEX IF EXISTS idx_username";
             MyDatabase.execSQL(db, sql);
@@ -277,37 +269,23 @@ class MyDatabaseConverter {
             MyDatabase.execSQL(db, sql);
             sql = "UPDATE user SET webfinger_id=username";
             MyDatabase.execSQL(db, sql);
-            
-            ok = true;
-        } catch (Exception e) {
-            MyLog.e(this, e);
         }
-        return assessUpgradeStepResult(oldVersion, versionTo, ok, sql);
     }
 
-    private int convert18to19(SQLiteDatabase db, int oldVersion) {
-        final int versionTo = 19;
-        boolean ok = false;
-        String sql = "";
-        try {
-            logUpgradeStepStart(oldVersion, versionTo);
+    static class Convert18 extends OneStep {
+        @Override
+        protected void execute2() {
+            versionTo = 19;
 
             sql = "CREATE INDEX idx_msg_sent_date ON msg (msg_sent_date)";
             MyDatabase.execSQL(db, sql);
-            
-            ok = true;
-        } catch (Exception e) {
-            MyLog.e(this, e);
         }
-        return assessUpgradeStepResult(oldVersion, versionTo, ok, sql);
     }
 
-    private int convert19to20(SQLiteDatabase db, int oldVersion) {
-        final int versionTo = 20;
-        boolean ok = false;
-        String sql = "";
-        try {
-            logUpgradeStepStart(oldVersion, versionTo);
+    static class Convert19 extends OneStep {
+        @Override
+        protected void execute2() {
+            versionTo = 20;
 
             sql = "ALTER TABLE origin ADD COLUMN ssl_mode INTEGER DEFAULT 1";
             MyDatabase.execSQL(db, sql);
@@ -319,20 +297,13 @@ class MyDatabaseConverter {
             MyDatabase.execSQL(db, sql);
             sql = "UPDATE origin SET ssl_mode=2 WHERE origin_url LIKE '%quitter.zone%'";
             MyDatabase.execSQL(db, sql);
-            
-            ok = true;
-        } catch (Exception e) {
-            MyLog.e(this, e);
         }
-        return assessUpgradeStepResult(oldVersion, versionTo, ok, sql);
     }
 
-    private int convert20to21(SQLiteDatabase db, int oldVersion) {
-        final int versionTo = 21;
-        boolean ok = false;
-        String sql = "";
-        try {
-            logUpgradeStepStart(oldVersion, versionTo);
+    static class Convert20 extends OneStep {
+        @Override
+        protected void execute2() {
+            versionTo = 21;
 
             sql = "ALTER TABLE origin ADD COLUMN mention_as_webfinger_id INTEGER DEFAULT 3";
             MyDatabase.execSQL(db, sql);
@@ -340,30 +311,34 @@ class MyDatabaseConverter {
             MyDatabase.execSQL(db, sql);
             sql = "CREATE INDEX idx_msg_in_reply_to_msg_id ON msg (in_reply_to_msg_id)";
             MyDatabase.execSQL(db, sql);
-            
-            ok = true;
-        } catch (Exception e) {
-            MyLog.e(this, e);
         }
-        return assessUpgradeStepResult(oldVersion, versionTo, ok, sql);
     }
 
-    private int convert21to22(SQLiteDatabase db, int oldVersion) {
-        final int versionTo = 22;
-        boolean ok = false;
-        String sql = "";
-        try {
-            logUpgradeStepStart(oldVersion, versionTo);
+    static class Convert21 extends OneStep {
+        @Override
+        protected void execute2() {
+            versionTo = 22;
 
             sql = "ALTER TABLE origin ADD COLUMN use_legacy_http INTEGER DEFAULT 3";
             MyDatabase.execSQL(db, sql);
             sql = "UPDATE origin SET use_legacy_http=3";
             MyDatabase.execSQL(db, sql);
-            
-            ok = true;
-        } catch (Exception e) {
-            MyLog.e(this, e);
         }
-        return assessUpgradeStepResult(oldVersion, versionTo, ok, sql);
+    }
+
+    static class Convert22 extends OneStep {
+        @Override
+        protected void execute2() {
+            versionTo = 23;
+
+            sql = "ALTER TABLE msg ADD COLUMN msg_status INTEGER NOT NULL DEFAULT 0";
+            MyDatabase.execSQL(db, sql);
+            sql = "UPDATE msg SET msg_status=0";
+            MyDatabase.execSQL(db, sql);
+            sql = "UPDATE msg SET msg_status=2 WHERE msg_created_date IS NOT NULL";
+            MyDatabase.execSQL(db, sql);
+
+
+        }
     }
 }

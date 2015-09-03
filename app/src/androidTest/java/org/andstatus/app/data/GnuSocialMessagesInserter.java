@@ -60,7 +60,7 @@ public class GnuSocialMessagesInserter extends InstrumentationTestCase {
     
     public void addConversation() throws ConnectionException {
         MbUser author1 = userFromOid("1");
-        author1.avatarUrl = "https://raw.github.com/andstatus/andstatus/master/res/drawable/splash_logo.png";
+        author1.avatarUrl = "https://raw.github.com/andstatus/andstatus/master/app/src/main/res/drawable/splash_logo.png";
         MbUser author2 = userFromOid("2");
         author2.avatarUrl = "http://png.findicons.com/files/icons/1780/black_and_orange/300/android_orange.png";
         MbUser author3 = userFromOid("3");
@@ -119,7 +119,7 @@ public class GnuSocialMessagesInserter extends InstrumentationTestCase {
         if (TextUtils.isEmpty(messageOid)) {
             messageOid = author.getUrl()  + "/" + (inReplyToMessage == null ? "note" : "comment") + "thisisfakeuri" + System.nanoTime();
         }
-        MbMessage message = MbMessage.fromOriginAndOid(origin.getId(), messageOid);
+        MbMessage message = MbMessage.fromOriginAndOid(origin.getId(), messageOid, DownloadStatus.LOADED);
         message.setBody(body + (inReplyToMessage != null ? " it" + iteration : "" ));
         message.sentDate = System.currentTimeMillis();
         message.via = "AndStatus";

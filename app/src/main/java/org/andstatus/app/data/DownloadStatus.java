@@ -19,18 +19,18 @@ package org.andstatus.app.data;
 import org.andstatus.app.util.MyLog;
 
 public enum DownloadStatus {
-    NEW(1),
     LOADED(2),
-    EXPIRED(3),
     SOFT_ERROR(4),
     HARD_ERROR(5),
     ABSENT(6),
+    SENDING(7),
     UNKNOWN(0);
 
     private static final String TAG = DownloadStatus.class.getSimpleName();
-    
+
     private long code;
-    private DownloadStatus(long codeIn) {
+
+    DownloadStatus(long codeIn) {
         code = codeIn;
     }
     
