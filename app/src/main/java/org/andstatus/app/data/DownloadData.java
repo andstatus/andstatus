@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.text.TextUtils;
 
@@ -14,9 +15,7 @@ import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
-
-import java.net.MalformedURLException;
-import java.net.URL;
+import org.andstatus.app.util.UriUtils;
 
 public class DownloadData {
     private DownloadType downloadType = DownloadType.UNKNOWN;
@@ -26,7 +25,7 @@ public class DownloadData {
     private DownloadStatus status = DownloadStatus.UNKNOWN; 
     private long rowId = 0;
     private DownloadFile fileStored = DownloadFile.getEmpty();
-    protected URL url = null;
+    protected Uri uri = null;
 
     private boolean hardError = false;
     private boolean softError = false;
@@ -35,11 +34,11 @@ public class DownloadData {
     private long loadTimeNew = 0;
     private DownloadFile fileNew = DownloadFile.getEmpty();
 
-    protected DownloadData(long userIdIn, String urlString) {
+    protected DownloadData(long userIdIn, String uriString) {
         downloadType = DownloadType.AVATAR;
         userId = userIdIn;
         contentType = MyContentType.IMAGE;
-        url = stringToUrl(urlString);
+        uri = UriUtils.fromString(uriString);
         loadOtherFields();
         fixFieldsAfterLoad();
     }
@@ -52,11 +51,11 @@ public class DownloadData {
         return dd;
     }
     
-    public static DownloadData newForMessage(long msgIdIn, MyContentType contentTypeIn, URL urlIn) {
-        return new DownloadData(msgIdIn, contentTypeIn, urlIn);
+    public static DownloadData newForMessage(long msgIdIn, MyContentType contentTypeIn, Uri uriIn) {
+        return new DownloadData(msgIdIn, contentTypeIn, uriIn);
     }
     
-    private DownloadData(long msgIdIn, MyContentType contentTypeIn, URL urlIn) {
+    private DownloadData(long msgIdIn, MyContentType contentTypeIn, Uri uriIn) {
         switch (contentTypeIn) {
         case IMAGE:
             downloadType = DownloadType.IMAGE;
@@ -72,7 +71,7 @@ public class DownloadData {
         userId = 0;
         msgId = msgIdIn;
         contentType = contentTypeIn;
-        url = urlIn;
+        uri = uriIn;
         loadOtherFields();
         fixFieldsAfterLoad();
     }
@@ -80,20 +79,7 @@ public class DownloadData {
     private DownloadData() {
         // Empty
     }
-    
-    private URL stringToUrl(String urlString) {
-        hardError = TextUtils.isEmpty(urlString);
-        URL url1 = null;
-        if (!hardError) {
-            try {
-                url1 = new URL(urlString);
-            } catch (MalformedURLException e) {
-                hardErrorLogged("Bad url='" + urlString + "'", e);
-            }
-        }
-        return url1;
-    }
-    
+
     private void loadOtherFields() {
         if (hardError) {
             return;
@@ -105,7 +91,7 @@ public class DownloadData {
                 + (msgId == 0 ? ", " + Download.MSG_ID : "")
                 + (contentType == MyContentType.UNKNOWN ? ", " + Download.CONTENT_TYPE : "")
                 + (rowId == 0 ? ", " + Download._ID : "")
-                + (url == null ? ", " + Download.URL : "")
+                + (uri == null ? ", " + Download.URI : "")
                 + " FROM " + Download.TABLE_NAME 
                 + " WHERE " + getWhereClause();
         
@@ -132,8 +118,8 @@ public class DownloadData {
                 if (rowId == 0) {
                     rowId = cursor.getLong(cursor.getColumnIndex(Download._ID));
                 }
-                if (url == null) {
-                    url = stringToUrl(cursor.getString(cursor.getColumnIndex(Download.URL)));
+                if (uri == null) {
+                    uri = UriUtils.fromString(cursor.getString(cursor.getColumnIndex(Download.URI)));
                 }
             }
         } finally {
@@ -146,16 +132,16 @@ public class DownloadData {
         if (userId != 0) {
             builder.append(Download.USER_ID + "=" + userId);
         } else if (msgId != 0) {
-            builder.append(Download.MSG_ID + "=" + msgId  + optionalUrlWhereClause());
+            builder.append(Download.MSG_ID + "=" + msgId  + optionalUriWhereClause());
         } else {
-            builder.append(Download._ID + "=" + rowId  + optionalUrlWhereClause());
+            builder.append(Download._ID + "=" + rowId  + optionalUriWhereClause());
         }
-        builder.append(optionalUrlWhereClause());
+        builder.append(optionalUriWhereClause());
         return builder.toString();
     }
 
-    private String optionalUrlWhereClause() {
-        return url != null ? " AND " + Download.URL + "=" + MyQuery.quoteIfNotQuoted(url.toExternalForm()) : "";
+    private String optionalUriWhereClause() {
+        return uri != null ? " AND " + Download.URI + "=" + MyQuery.quoteIfNotQuoted(uri.toString()) : "";
     }
 
     private void fixFieldsAfterLoad() {
@@ -187,8 +173,8 @@ public class DownloadData {
     }
 
     private String getOptionalExtension() {
-        return TextUtils.isEmpty(MyContentType.getExtension(url.toExternalForm())) ? "" : "."
-                + (MyContentType.getExtension(url.toExternalForm()));
+        return TextUtils.isEmpty(MyContentType.getExtension(uri.toString())) ? "" : "."
+                + (MyContentType.getExtension(uri.toString()));
     }
     
     public void saveToDatabase() {
@@ -226,7 +212,7 @@ public class DownloadData {
        }
        values.put(Download.CONTENT_TYPE, contentType.save());
        values.put(Download.VALID_FROM, loadTimeNew);
-       values.put(Download.URL, url.toExternalForm());
+       values.put(Download.URI, uri.toString());
        values.put(Download.DOWNLOAD_STATUS, status.save());
        values.put(Download.FILE_NAME, fileNew.getFilename());
 
@@ -234,7 +220,7 @@ public class DownloadData {
        if (rowId == -1) {
            softError = true;
        } else {
-           MyLog.v(this, "Added " + userMsgUrlToString());
+           MyLog.v(this, "Added " + userMsgUriToString());
        }
     }
 
@@ -262,14 +248,14 @@ public class DownloadData {
         if (DbUtils.updateRowWithRetry(Download.TABLE_NAME, rowId, values, 3) != 1) {
             softError = true;
         } else {
-            MyLog.v(this, "Updated " + userMsgUrlToString());
+            MyLog.v(this, "Updated " + userMsgUriToString());
         }
         if (!isError() && changeFile) {
             fileStored.delete();
         }
     }
 
-    public String userMsgUrlToString() {
+    public String userMsgUriToString() {
         StringBuilder builder = new StringBuilder();
         if (userId != 0) {
             builder.append("userId=" + userId + "; ");
@@ -277,7 +263,7 @@ public class DownloadData {
         if (msgId != 0) {
             builder.append("msgId=" + msgId + "; ");
         }
-        builder.append("url=" + (url == null ? "(null)" : url.toExternalForm()) + "; ");
+        builder.append("uri=" + (uri == null ? "(null)" : uri.toString()) + "; ");
         return builder.toString();
     }
     
@@ -292,8 +278,8 @@ public class DownloadData {
     }
 
     private void logError(String message, Exception e) {
-        errorMessage = (e == null ? "" : e.toString() + ", ") + message + "; " + userMsgUrlToString();
-        MyLog.v(this, message + "; " + userMsgUrlToString(), e);
+        errorMessage = (e == null ? "" : e.toString() + ", ") + message + "; " + userMsgUriToString();
+        MyLog.v(this, message + "; " + userMsgUriToString(), e);
     }
     
     public void deleteOtherOfThisUser() {
@@ -372,8 +358,8 @@ public class DownloadData {
         return fileNew.getFilename();
     }
 
-    public URL getUrl() {
-        return url;
+    public Uri getUri() {
+        return uri;
     }
 
     public void requestDownload() {
@@ -391,15 +377,11 @@ public class DownloadData {
         return errorMessage;
     }
 
-    public void setMessage(String errorMessage) {
-        this.errorMessage = errorMessage;
-    }
-
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
         builder.append(this.getClass().getSimpleName());
-        builder.append("; URL:" + getUrl().toExternalForm());
+        builder.append("; Uri:'" + getUri() + "'");
         if(userId != 0) {
             builder.append("; userId:" + userId);
         }

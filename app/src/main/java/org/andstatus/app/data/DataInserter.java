@@ -37,15 +37,15 @@ import org.andstatus.app.util.TriState;
 import java.util.Date;
 
 /**
- * Stores ("inserts" -  adds or updates) messages and users
- *  from Microblogging system in the database.
+ * Stores ("inserts" - adds or updates) messages and users
+ *  from a Social network into a database.
  * 
  * @author yvolk@yurivolkov.com
  */
 public class DataInserter {
     private static final String TAG = DataInserter.class.getSimpleName();
     public static final String MSG_ASSERTION_KEY = "insertOrUpdateMsg";
-    private CommandExecutionContext execContext;
+    private final CommandExecutionContext execContext;
 
     public DataInserter(MyAccount ma) {
         this(new CommandExecutionContext(CommandData.getEmpty(), ma));
@@ -84,7 +84,7 @@ public class DataInserter {
                 execContext.getResult().incrementDownloadedCount();
             }
             
-            long actorId = 0L;
+            long actorId;
             if (message.actor != null) {
                 actorId = insertOrUpdateUser(message.actor, lum);
             } else {
@@ -236,7 +236,7 @@ public class DataInserter {
             }
             
             if (MyContextHolder.get().isTestRun()) {
-                MyContextHolder.get().put(new AssersionData(MSG_ASSERTION_KEY, values));
+                MyContextHolder.get().put(new AssertionData(MSG_ASSERTION_KEY, values));
             }
             if (rowId == 0) {
                 // There was no such row so add the new one
@@ -248,7 +248,7 @@ public class DataInserter {
 
             if (isFirstTimeLoaded) {
                 for (MbAttachment attachment : message.attachments) {
-                    DownloadData dd = DownloadData.newForMessage(rowId, attachment.contentType, attachment.getUrl());
+                    DownloadData dd = DownloadData.newForMessage(rowId, attachment.contentType, attachment.getUri());
                     dd.saveToDatabase();
                     if (attachment.contentType == MyContentType.IMAGE && MyPreferences.showAttachedImages()) {
                         dd.requestDownload();
@@ -384,7 +384,7 @@ public class DataInserter {
                 values.put(MyDatabase.User.CREATED_DATE, mbUser.updatedDate);
             }
             
-            long readerId = 0L;
+            long readerId;
             if (mbUser.actor != null) {
                 readerId = insertOrUpdateUser(mbUser.actor, lum);
             } else {

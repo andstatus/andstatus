@@ -1,5 +1,6 @@
 package org.andstatus.app.data;
 
+import android.net.Uri;
 import android.os.Build;
 import android.test.InstrumentationTestCase;
 
@@ -11,7 +12,6 @@ import org.andstatus.app.util.RelativeTime;
 
 import java.io.File;
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.Date;
 
 public class DataPrunerTest extends InstrumentationTestCase  {
@@ -81,7 +81,7 @@ public class DataPrunerTest extends InstrumentationTestCase  {
     public void testPruneAttachments() throws MalformedURLException {
         DataPruner dp = new DataPruner(MyContextHolder.get());
         dp.pruneAttachments();
-        DownloadData dd = DownloadData.newForMessage(-555L, MyContentType.IMAGE, new URL("http://example.com/image.png"));
+        DownloadData dd = DownloadData.newForMessage(-555L, MyContentType.IMAGE, Uri.parse("http://example.com/image.png"));
         dd.saveToDatabase();
         assertEquals(1, dp.pruneAttachments());
         assertEquals(0, dp.pruneAttachments());

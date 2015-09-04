@@ -27,7 +27,7 @@ import net.jcip.annotations.ThreadSafe;
 
 import org.andstatus.app.ClassInApplicationPackage;
 import org.andstatus.app.account.PersistentAccounts;
-import org.andstatus.app.data.AssersionData;
+import org.andstatus.app.data.AssertionData;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyDatabaseConverterController;
 import org.andstatus.app.data.TimelineType;
@@ -218,7 +218,7 @@ public final class MyContextImpl implements MyContext {
     }
 
     @Override
-    public void put(AssersionData data) {
+    public void put(AssertionData data) {
         // Noop for this implementation
     }
 

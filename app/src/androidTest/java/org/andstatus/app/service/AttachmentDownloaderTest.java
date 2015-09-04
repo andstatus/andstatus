@@ -62,7 +62,7 @@ public class AttachmentDownloaderTest extends InstrumentationTestCase {
         long msgId = mi.addMessage(message);
         
         DownloadData dd = DownloadData.newForMessage(msgId, message.attachments.get(0).contentType, null);
-        assertEquals("Image URL stored", message.attachments.get(0).getUrl(), dd.getUrl());
+        assertEquals("Image URL stored", message.attachments.get(0).getUri(), dd.getUri());
         
         loadAndAssertStatusForRow(dd.getRowId(), DownloadStatus.ABSENT, true);
 
@@ -83,7 +83,7 @@ public class AttachmentDownloaderTest extends InstrumentationTestCase {
         in.close();
     }
 
-    private long loadAndAssertStatusForRow(long downloadRowId, DownloadStatus status, boolean mockNetworkError) throws IOException {
+    private long loadAndAssertStatusForRow(long downloadRowId, DownloadStatus status, boolean mockNetworkError) {
         FileDownloader loader = FileDownloader.newForDownloadRow(downloadRowId);
         if (mockNetworkError) {
             loader.connectionMock = new ConnectionTwitterGnuSocialMock(new ConnectionException("Mocked IO exception"));
@@ -93,19 +93,19 @@ public class AttachmentDownloaderTest extends InstrumentationTestCase {
 
         DownloadData data = DownloadData.fromRowId(downloadRowId);
         if (DownloadStatus.LOADED.equals(status)) {
-            assertFalse("Loaded " + data.getUrl(), commandData.getResult().hasError());
-            assertEquals("Loaded " + data.getUrl(), status, loader.getStatus());
+            assertFalse("Loaded " + data.getUri(), commandData.getResult().hasError());
+            assertEquals("Loaded " + data.getUri(), status, loader.getStatus());
         } else {
-            assertTrue("Error loading " + data.getUrl(), commandData.getResult().hasError());
+            assertTrue("Error loading " + data.getUri(), commandData.getResult().hasError());
         }
         
         if (DownloadStatus.LOADED.equals(status)) {
-            assertTrue("File exists " + data.getUrl(), data.getFile().exists());
+            assertTrue("File exists " + data.getUri(), data.getFile().exists());
         } else {
-            assertFalse("File doesn't exist " + data.getUrl(), data.getFile().exists());
+            assertFalse("File doesn't exist " + data.getUri(), data.getFile().exists());
         }
 
-        assertEquals("Loaded " + data.getUrl(), status, loader.getStatus());
+        assertEquals("Loaded " + data.getUri(), status, loader.getStatus());
         
         return data.getRowId();
     }

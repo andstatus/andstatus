@@ -20,6 +20,7 @@ package org.andstatus.app.account;
 import android.accounts.AccountManager;
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -54,7 +55,6 @@ import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MySettingsActivity;
-import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.msg.TimelineActivity;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnection;
@@ -159,8 +159,8 @@ public class AccountSettingsActivity extends MyActivity {
 
             updateScreen();
         }
-        if (state.authenticatiorResponse != null) {
-            message += "authenticatiorResponse; ";
+        if (state.authenticatorResponse != null) {
+            message += "authenticatorResponse; ";
         }
         MyLog.v(this, "setState from " + calledFrom +"; " + message + "intent=" + intent.toUri(0));
     }
@@ -292,7 +292,7 @@ public class AccountSettingsActivity extends MyActivity {
     private void showErrors() {
         showTextView(R.id.latest_error_label, R.string.latest_error_label, 
                 mLatestErrorMessage.length() > 0);
-        showTextView(R.id.latest_error, mLatestErrorMessage, 
+        showTextView(R.id.latest_error, mLatestErrorMessage,
                 mLatestErrorMessage.length() > 0);
     }
 
@@ -300,8 +300,8 @@ public class AccountSettingsActivity extends MyActivity {
         MyAccount ma = state.getAccount();
         TextView view = (TextView) findFramentViewById(R.id.origin_name);
         view.setText(this.getText(R.string.title_preference_origin_system)
-                                  .toString().replace("{0}", ma.getOrigin().getName())
-                                  .replace("{1}", ma.getOrigin().getOriginType().getTitle()));
+                .toString().replace("{0}", ma.getOrigin().getName())
+                .replace("{1}", ma.getOrigin().getOriginType().getTitle()));
     }
 
     private void showUsername() {
@@ -629,7 +629,7 @@ public class AccountSettingsActivity extends MyActivity {
         String message = "";
         state.actionCompleted = true;
         overrideBackActivity = true;
-        if (state.authenticatiorResponse != null) {
+        if (state.authenticatorResponse != null) {
             // We should return result back to AccountManager
             overrideBackActivity = false;
             if (state.actionSucceeded) {
@@ -639,11 +639,11 @@ public class AccountSettingsActivity extends MyActivity {
                     result.putString(AccountManager.KEY_ACCOUNT_NAME, state.getAccount().getAccountName());
                     result.putString(AccountManager.KEY_ACCOUNT_TYPE,
                             AuthenticatorService.ANDROID_ACCOUNT_TYPE);
-                    state.authenticatiorResponse.onResult(result);
-                    message += "authenticatiorResponse; account.name=" + state.getAccount().getAccountName() + "; ";
+                    state.authenticatorResponse.onResult(result);
+                    message += "authenticatorResponse; account.name=" + state.getAccount().getAccountName() + "; ";
                 }
             } else {
-                state.authenticatiorResponse.onError(AccountManager.ERROR_CODE_CANCELED, "canceled");
+                state.authenticatorResponse.onError(AccountManager.ERROR_CODE_CANCELED, "canceled");
             }
         }
         // Forget old state

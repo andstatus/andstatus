@@ -42,6 +42,6 @@ public class AvatarDownloader extends FileDownloader {
     @Override
     protected void onSuccessfulLoad() {
         data.deleteOtherOfThisUser();
-        MyLog.v(this, "Loaded avatar userId:" + data.userId + "; url:'" + data.getUrl().toExternalForm() + "'");
+        MyLog.v(this, "Loaded avatar userId:" + data.userId + "; uri:'" + data.getUri() + "'");
     }
 }

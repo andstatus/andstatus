@@ -16,6 +16,8 @@
 
 package org.andstatus.app.service;
 
+import android.net.Uri;
+
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.data.DownloadFile;
@@ -81,12 +83,13 @@ abstract class FileDownloader {
         final String method = "downloadFile";
         DownloadFile fileTemp = new DownloadFile("temp_" + data.getFilenameNew());
         try {
-            String url = data.getUrl().toExternalForm();
+            // TODO: This Uri may point to a local location
+            String uriString = data.getUri().toString();
             File file = fileTemp.getFile();
             MyAccount ma = findBestAccountForDownload();
             MyLog.v(this, "About to download " + data.toString() + "; account:" + ma.getAccountName());
             if (ma.isValidAndSucceeded()) {
-                ((connectionMock != null) ? connectionMock : ma.getConnection()).downloadFile(url, file);
+                ((connectionMock != null) ? connectionMock : getConnection(ma, data.getUri())).downloadFile(uriString, file);
             } else {
                 data.hardErrorLogged(method + ", No account to download the file", null);
             }
@@ -106,13 +109,23 @@ abstract class FileDownloader {
             data.softErrorLogged(method + ", Couldn't rename file " + fileTemp + " to " + fileNew, null);
         }
     }
-    
+
+    private Connection getConnection(MyAccount ma, Uri uri) throws ConnectionException {
+        if (uri == null || Uri.EMPTY == uri) {
+            throw new ConnectionException(ConnectionException.StatusCode.NOT_FOUND, "No Uri to download from: '" + uri + "'");
+        }
+        switch (uri.getScheme()) {
+            case "http":
+            case "https":
+                return ma.getConnection();
+            default:
+                break;
+        }
+        return new ConnectionLocal();
+    }
+
     public DownloadStatus getStatus() {
         return data.getStatus();
-    }
-    
-    public String getFilename() {
-        return data.getFilename();
     }
 
     protected abstract MyAccount findBestAccountForDownload();

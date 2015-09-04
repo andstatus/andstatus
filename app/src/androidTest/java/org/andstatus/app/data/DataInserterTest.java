@@ -24,7 +24,6 @@ import android.test.InstrumentationTestCase;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyDatabase.Msg;
 import org.andstatus.app.data.MyDatabase.MsgOfUser;
 import org.andstatus.app.data.MyDatabase.OidEnum;
@@ -87,7 +86,7 @@ public class DataInserterTest extends InstrumentationTestCase {
         TestSuite.clearAssertionData();
         long messageId = di.insertOrUpdateMsg(message);
         assertTrue("Message added", messageId != 0);
-        AssersionData data = TestSuite.getMyContextForTest().takeDataByKey(DataInserter.MSG_ASSERTION_KEY);
+        AssertionData data = TestSuite.getMyContextForTest().takeDataByKey(DataInserter.MSG_ASSERTION_KEY);
         assertFalse("Data put", data.isEmpty());
         assertEquals("Message Oid", messageOid, data.getValues()
                 .getAsString(MyDatabase.Msg.MSG_OID));
@@ -306,7 +305,7 @@ public class DataInserterTest extends InstrumentationTestCase {
 
         DownloadData dd = DownloadData.newForMessage(messageId,
                 message.attachments.get(0).contentType, null);
-        assertEquals("Image URL stored", message.attachments.get(0).getUrl(), dd.getUrl());
+        assertEquals("Image URL stored", message.attachments.get(0).getUri(), dd.getUri());
     }
 
     public void testUserNameChanged() {
@@ -327,11 +326,10 @@ public class DataInserterTest extends InstrumentationTestCase {
         assertEquals("Username didn't change", user1.getUserName(),
                 MyQuery.userIdToStringColumnValue(MyDatabase.User.USERNAME, userId1));
 
-        MbUser user1Renamed = user1;
-        user1Renamed.setUserName(user1Renamed.getUserName() + "renamed");
-        long userId1Renamed = di.insertOrUpdateUser(user1Renamed);
+        user1.setUserName(user1.getUserName() + "renamed");
+        long userId1Renamed = di.insertOrUpdateUser(user1);
         assertEquals("Same user renamed", userId1, userId1Renamed);
-        assertEquals("Same user renamed", user1Renamed.getUserName(),
+        assertEquals("Same user renamed", user1.getUserName(),
                 MyQuery.userIdToStringColumnValue(MyDatabase.User.USERNAME, userId1));
 
         MbUser user2SameOldUserName = new MessageInserter(ma).buildUserFromOid("34805"
@@ -344,7 +342,7 @@ public class DataInserterTest extends InstrumentationTestCase {
 
         MbUser user3SameNewUserName = new MessageInserter(ma).buildUserFromOid("34806"
                 + TestSuite.TESTRUN_UID);
-        user3SameNewUserName.setUserName(user1Renamed.getUserName());
+        user3SameNewUserName.setUserName(user1.getUserName());
         long userId3 = di.insertOrUpdateUser(user3SameNewUserName);
         assertTrue("User added " + user3SameNewUserName, userId3 != 0);
         assertTrue("Other user with the same user name as old name of user", userId1 != userId3);

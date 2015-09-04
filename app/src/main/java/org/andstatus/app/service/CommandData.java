@@ -21,6 +21,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import org.andstatus.app.IntentExtra;
@@ -179,8 +180,7 @@ public class CommandData implements Comparable<CommandData> {
     /**
      * @return Intent to be sent to MyService
      */
-    public Intent toIntent(Intent intentIn) {
-        Intent intent = intentIn;
+    public Intent toIntent(Intent intent) {
         if (intent == null) {
             throw new IllegalArgumentException("toIntent: input intent is null");
         }
@@ -218,18 +218,22 @@ public class CommandData implements Comparable<CommandData> {
      * @return Number of items persisted
      */
     static int saveQueue(Context context, Queue<CommandData> queue, QueueType queueType) {
-        String method = "saveQueue: ";
+        final String method = "saveQueue";
         int count = 0;
         SharedPreferences sp = MyPreferences.getSharedPreferences(queueType.getFilename());
-        sp.edit().clear().commit();
+        if (sp == null) {
+            MyLog.d(context, method + "; No shared preferences");
+            return 0;
+        }
+        sp.edit().clear().apply();
         if (!queue.isEmpty()) {
             while (!queue.isEmpty()) {
                 CommandData cd = queue.poll();
                 cd.toSharedPreferences(sp, count);
-                MyLog.v(context, method + "Command saved: " + cd.toString());
+                MyLog.v(context, method + "; Command saved: " + cd.toString());
                 count += 1;
             }
-            MyLog.d(context, method + "to '" + queueType + "', " + count + " msgs");
+            MyLog.d(context, method + " to '" + queueType + "', " + count + " msgs");
         }
         // Adding Empty command to mark the end.
         (new CommandData(CommandEnum.EMPTY, "")).toSharedPreferences(sp, count);
@@ -240,8 +244,7 @@ public class CommandData implements Comparable<CommandData> {
      * Persist the object to the SharedPreferences We're not storing all types of commands here
      * because not all commands go to the queue. SharedPreferences should not contain any previous
      * versions of the same entries (we don't store default values!)
-     * 
-     * @param sp
+     *
      * @param index Index of the preference's name to be used
      */
     private void toSharedPreferences(SharedPreferences sp, int index) {
@@ -278,42 +281,39 @@ public class CommandData implements Comparable<CommandData> {
                 break;
         }
         commandResult.saveToSharedPreferences(ed, index);
-        ed.commit();
+        ed.apply();
     }
 
     /**
      * @return Number of items loaded
      */
     static int loadQueue(Context context, Queue<CommandData> q, QueueType queueType) {
-        String method = "loadQueue: ";
+        final String method = "loadQueue";
         int count = 0;
-        if (SharedPreferencesUtil.exists(context, queueType.getFilename())) {
-            SharedPreferences sp = MyPreferences.getSharedPreferences(queueType.getFilename());
-            for (int index = 0; index < 100000; index++) {
-                CommandData cd = fromSharedPreferences(sp, index);
-                if (CommandEnum.EMPTY.equals(cd.getCommand())) {
-                    break;
-                } else if (q.contains(cd)) {
-                    MyLog.e(context, method + index + " duplicate skipped " + cd);
-                    break;
+        SharedPreferences sp = MyPreferences.getSharedPreferences(queueType.getFilename());
+        for (int index = 0; index < 100000; index++) {
+            CommandData cd = fromSharedPreferences(sp, index);
+            if (CommandEnum.EMPTY.equals(cd.getCommand())) {
+                break;
+            } else if (q.contains(cd)) {
+                MyLog.e(context, method + "; " + index + " duplicate skipped " + cd);
+                break;
+            } else {
+                if (q.offer(cd)) {
+                    MyLog.v(context, method + index + " " + cd);
+                    count++;
                 } else {
-                    if (q.offer(cd)) {
-                        MyLog.v(context, method + index + " " + cd);
-                        count++;
-                    } else {
-                        MyLog.e(context, method + index + " " + cd);
-                    }
+                    MyLog.e(context, method + index + " " + cd);
                 }
             }
-            MyLog.d(context, method + "loaded " + count + " msgs from '" + queueType + "'");
         }
+        MyLog.d(context, method + "; loaded " + count + " msgs from '" + queueType + "'");
         return count;
     }
 
     /**
      * Restore this from the SharedPreferences
      * 
-     * @param sp
      * @param index Index of the preference's name to be used
      */
     private static CommandData fromSharedPreferences(SharedPreferences sp, int index) {
@@ -598,14 +598,14 @@ public class CommandData implements Comparable<CommandData> {
     }
 
     public String share(MyContext myContext) {
-        return toUserFrindlyForm(myContext, false);
+        return toUserFriendlyForm(myContext, false);
     }
 
     public String toCommandSummary(MyContext myContext) {
-        return toUserFrindlyForm(myContext, true);
+        return toUserFriendlyForm(myContext, true);
     }
 
-    private String toUserFrindlyForm(MyContext myContext, boolean summaryOnly) {
+    private String toUserFriendlyForm(MyContext myContext, boolean summaryOnly) {
         StringBuilder builder = new StringBuilder(toShortCommandName(myContext));
         if (!summaryOnly) {
             if (mInForeground) {

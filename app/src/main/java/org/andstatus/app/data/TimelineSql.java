@@ -184,7 +184,7 @@ public class TimelineSql {
                     + MyDatabase.Download._ID + ", "
                     + MyDatabase.Download.MSG_ID + ", "
                     + MyDatabase.Download.CONTENT_TYPE + ", "
-                    + (columns.contains(MyDatabase.Download.IMAGE_URL) ? MyDatabase.Download.URL + ", " : "")
+                    + (columns.contains(MyDatabase.Download.IMAGE_URL) ? MyDatabase.Download.URI + ", " : "")
                     + MyDatabase.Download.FILE_NAME
                     + " FROM " + MyDatabase.Download.TABLE_NAME + ") AS " + ProjectionMap.ATTACHMENT_IMAGE_TABLE_ALIAS 
                     +  " ON "

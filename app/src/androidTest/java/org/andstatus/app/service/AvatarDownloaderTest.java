@@ -31,9 +31,6 @@ import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.social.ConnectionTwitterGnuSocialMock;
-import org.andstatus.app.service.FileDownloader;
-import org.andstatus.app.service.CommandData;
-import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.util.MyLog;
 
 import java.io.IOException;
@@ -54,16 +51,16 @@ public class AvatarDownloaderTest extends InstrumentationTestCase {
     public void testLoadPumpio() throws IOException {
         ma = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.CONVERSATION_ACCOUNT_NAME);
         assertTrue(TestSuite.CONVERSATION_ACCOUNT_NAME + " exists", ma.isValid());
-        loadforOneMyAccount(TestSuite.CONVERSATION_ACCOUNT_AVATAR_URL);
+        loadForOneMyAccount(TestSuite.CONVERSATION_ACCOUNT_AVATAR_URL);
     }
 
     public void testLoadBasicAuth() throws IOException {
         ma = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME);
         assertTrue(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME + " exists", ma.isValid());
-        loadforOneMyAccount(TestSuite.GNUSOCIAL_TEST_ACCOUNT_AVATAR_URL);
+        loadForOneMyAccount(TestSuite.GNUSOCIAL_TEST_ACCOUNT_AVATAR_URL);
     }
     
-    private void loadforOneMyAccount(String urlStringInitial) throws IOException {
+    private void loadForOneMyAccount(String urlStringInitial) throws IOException {
         String urlString1 = MyQuery.userIdToStringColumnValue(User.AVATAR_URL, ma.getUserId());
         assertEquals(urlStringInitial, urlString1);
         
@@ -129,11 +126,11 @@ public class AvatarDownloaderTest extends InstrumentationTestCase {
         assertTrue(data.getFile().exists());
     }
     
-    private int changeMaAvatarUrl(String urlString) throws MalformedURLException {
+    private int changeMaAvatarUrl(String urlString) {
         return changeAvatarUrl(ma, urlString);
     }
 
-    static int changeAvatarUrl(MyAccount myAccount, String urlString) throws MalformedURLException {
+    static int changeAvatarUrl(MyAccount myAccount, String urlString) {
         ContentValues values = new ContentValues();
         values.put(User.AVATAR_URL, urlString);
         return MyContextHolder.get().getDatabase().getWritableDatabase()
@@ -146,10 +143,10 @@ public class AvatarDownloaderTest extends InstrumentationTestCase {
         values.put(Download.DOWNLOAD_STATUS, status.save());
         return MyContextHolder.get().getDatabase().getWritableDatabase()
                 .update(Download.TABLE_NAME, values, Download.USER_ID + "=" + ma.getUserId() 
-                        + " AND " + Download.URL + "=" + MyQuery.quoteIfNotQuoted(url.toExternalForm()), null);
+                        + " AND " + Download.URI + "=" + MyQuery.quoteIfNotQuoted(url.toExternalForm()), null);
     }
 
-    private long loadAndAssertStatusForMa(DownloadStatus status, boolean mockNetworkError) throws IOException {
+    private long loadAndAssertStatusForMa(DownloadStatus status, boolean mockNetworkError) {
         FileDownloader loader = new AvatarDownloader(ma.getUserId());
         if (mockNetworkError) {
             loader.connectionMock = new ConnectionTwitterGnuSocialMock(new ConnectionException("Mocked IO exception"));
@@ -160,18 +157,18 @@ public class AvatarDownloaderTest extends InstrumentationTestCase {
         DownloadData data = AvatarData.newForUser(ma.getUserId());
         if (DownloadStatus.LOADED.equals(status)) {
             assertFalse("Loaded " + data, commandData.getResult().hasError());
-            assertEquals("Loaded " + data.getUrl(), status, loader.getStatus());
+            assertEquals("Loaded " + data.getUri(), status, loader.getStatus());
         } else {
-            assertTrue("Error loading " + data.getUrl(), commandData.getResult().hasError());
+            assertTrue("Error loading " + data.getUri(), commandData.getResult().hasError());
         }
         
         if (DownloadStatus.LOADED.equals(status)) {
-            assertTrue("Exists avatar " + data.getUrl(), data.getFile().exists());
+            assertTrue("Exists avatar " + data.getUri(), data.getFile().exists());
         } else {
-            assertFalse("Doesn't exist avatar " + data.getUrl(), data.getFile().exists());
+            assertFalse("Doesn't exist avatar " + data.getUri(), data.getFile().exists());
         }
 
-        assertEquals("Loaded " + data.getUrl(), status, loader.getStatus());
+        assertEquals("Loaded '" + data.getUri() + "'", status, loader.getStatus());
         
         return data.getRowId();
     }

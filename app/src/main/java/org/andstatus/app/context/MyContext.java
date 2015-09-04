@@ -20,7 +20,7 @@ import android.app.Notification;
 import android.content.Context;
 
 import org.andstatus.app.account.PersistentAccounts;
-import org.andstatus.app.data.AssersionData;
+import org.andstatus.app.data.AssertionData;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.net.http.HttpConnection;
@@ -42,7 +42,7 @@ public interface MyContext {
     MyDatabase getDatabase();
     PersistentAccounts persistentAccounts();
     PersistentOrigins persistentOrigins();
-    void put(AssersionData data);
+    void put(AssertionData data);
     void release();
     boolean isExpired();
     void setExpired();

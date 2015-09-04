@@ -33,7 +33,6 @@ import org.andstatus.app.service.CommandEnum;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
 
 public class LargeImageTest extends InstrumentationTestCase {
@@ -49,7 +48,7 @@ public class LargeImageTest extends InstrumentationTestCase {
         loadingTest(dd);
     }
 
-    private DownloadData insertMessage() throws MalformedURLException, IOException {
+    private DownloadData insertMessage() throws IOException {
         String body = "Large image attachment";
         MessageInserter mi = new MessageInserter(MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME));
         MbMessage message = mi.buildMessage(mi.buildUser(), body, null, null);
@@ -62,7 +61,7 @@ public class LargeImageTest extends InstrumentationTestCase {
         long msgId = mi.addMessage(message);
         
         DownloadData dd = DownloadData.newForMessage(msgId, message.attachments.get(0).contentType, null);
-        assertEquals("Image URL stored", message.attachments.get(0).getUrl(), dd.getUrl());
+        assertEquals("Image URL stored", message.attachments.get(0).getUri(), dd.getUri());
 
         CommandData commandData = new CommandData(CommandEnum.FETCH_AVATAR, null);
         AttachmentDownloader loader = new AttachmentDownloader(dd);
@@ -76,8 +75,8 @@ public class LargeImageTest extends InstrumentationTestCase {
         assertEquals("Requested", 1, connection.getHttpMock().getRequestsCounter());
 
         DownloadData data = DownloadData.fromRowId(dd.getRowId());
-        assertFalse("Loaded " + data.getUrl(), commandData.getResult().hasError());
-        assertTrue("File exists " + data.getUrl(), data.getFile().exists());
+        assertFalse("Loaded " + data.getUri(), commandData.getResult().hasError());
+        assertTrue("File exists " + data.getUri(), data.getFile().exists());
         return data;
     }
 

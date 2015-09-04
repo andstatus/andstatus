@@ -21,15 +21,15 @@ import android.content.ContentValues;
 /**
  * @author yvolk@yurivolkov.com
  */
-public class AssersionData {
+public class AssertionData {
     private final String key;
     private final ContentValues values;
 
-    public static AssersionData getEmpty(String keyIn) {
-        return new AssersionData(keyIn, null);
+    public static AssertionData getEmpty(String keyIn) {
+        return new AssertionData(keyIn, null);
     }
     
-    public AssersionData(String keyIn, ContentValues valuesIn) {
+    public AssertionData(String keyIn, ContentValues valuesIn) {
         key = keyIn;
         if (valuesIn == null) {
             values = new ContentValues();

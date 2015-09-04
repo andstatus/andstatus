@@ -85,16 +85,16 @@ public class ConnectionException extends IOException {
     private final boolean isHardError;
     private final URL host;
 
-    public static ConnectionException loggedHardJsonException(Object objTag, String detailMessage, Exception e, Object jso) throws ConnectionException {
+    public static ConnectionException loggedHardJsonException(Object objTag, String detailMessage, Exception e, Object jso) {
         return loggedJsonException(objTag, detailMessage, e, jso, true);
     }
     
-    public static ConnectionException loggedJsonException(Object objTag, String detailMessage, Exception e, Object jso) throws ConnectionException {
+    public static ConnectionException loggedJsonException(Object objTag, String detailMessage, Exception e, Object jso) {
         return loggedJsonException(objTag, detailMessage, e, jso, false);
     }
 
     private static ConnectionException loggedJsonException(Object objTag, String detailMessage, Exception e, Object jso, 
-            boolean isHard) throws ConnectionException {
+            boolean isHard) {
         MyLog.d(objTag, detailMessage + (e != null ? ": " + e.getMessage() : ""));
         if (jso != null) {
             if (e != null) {
@@ -105,14 +105,6 @@ public class ConnectionException extends IOException {
             MyLog.logJson(objTag, "json_exception", jso, true);
         }
         return new ConnectionException(StatusCode.OK, MyLog.objTagToString(objTag) + ": " + detailMessage, e, null, isHard);
-    }
-
-    public static ConnectionException fromStatusCodeHttp(int statusCodeHttp, final String detailMessage) {
-        return fromStatusCodeHttp(statusCodeHttp, detailMessage, null);
-    }
-    
-    public static ConnectionException fromStatusCodeHttp(int statusCodeHttp, String detailMessage, Throwable throwable) {
-        return new ConnectionException(StatusCode.fromResponseCode(statusCodeHttp), detailMessage, throwable, null, false);
     }
 
     public static ConnectionException fromStatusCode(StatusCode statusCode, final String detailMessage) {
@@ -147,8 +139,8 @@ public class ConnectionException extends IOException {
         this(StatusCode.OK, detailMessage, throwable, null, false);
     }
     
-    public ConnectionException(StatusCode statusCode2, String detailMessage, URL host2) {
-        this(statusCode2, detailMessage, null, host2, false);
+    public ConnectionException(StatusCode statusCode, String detailMessage, URL host) {
+        this(statusCode, detailMessage, null, host, false);
     }
     
     private ConnectionException(StatusCode statusCode, String detailMessage, 

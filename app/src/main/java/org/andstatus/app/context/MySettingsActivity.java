@@ -17,12 +17,15 @@
 package org.andstatus.app.context;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.MenuItem;
 
 import com.example.android.supportv7.app.AppCompatPreferenceActivity;
+
+import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
 import org.andstatus.app.msg.TimelineActivity;
 import org.andstatus.app.service.MyServiceManager;
@@ -44,6 +47,13 @@ public class MySettingsActivity extends AppCompatPreferenceActivity {
     private long mPreferencesChangedAt = MyPreferences.getPreferencesChangeTime();
     private long mInstanceId = 0;
 
+    public static void closeAllActivities(Context context) {
+        Intent intent = new Intent(context.getApplicationContext(), MySettingsActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK + Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.putExtra(IntentExtra.FINISH.key, true);
+        context.startActivity(intent);
+    }
+
     protected void onCreate(Bundle savedInstanceState) {
         MyTheme.loadTheme(this);
         super.onCreate(savedInstanceState);
@@ -57,6 +67,7 @@ public class MySettingsActivity extends AppCompatPreferenceActivity {
             mInstanceId = InstanceId.next();
         }
         logEvent("onCreate", isNew ? "" : "Reuse the same");
+        parseNewIntent(getIntent());
     }
 
     private boolean isRootScreen() {
@@ -94,8 +105,16 @@ public class MySettingsActivity extends AppCompatPreferenceActivity {
 
     @Override
     protected void onNewIntent(Intent intent) {
-        super.onNewIntent(intent);
         logEvent("onNewIntent", "");
+        super.onNewIntent(intent);
+        parseNewIntent(intent);
+    }
+
+    private void parseNewIntent(Intent intent) {
+        if (intent.getBooleanExtra(IntentExtra.FINISH.key, false)) {
+            logEvent("parseNewIntent", "finish requested");
+            finish();
+        }
     }
 
     @Override

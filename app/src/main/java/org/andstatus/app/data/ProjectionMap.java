@@ -50,7 +50,7 @@ public class ProjectionMap {
         MSG.put(Download.AVATAR_FILE_NAME, AVATAR_IMAGE_TABLE_ALIAS + "." + Download.FILE_NAME + " AS " + Download.AVATAR_FILE_NAME);
         MSG.put(Download.IMAGE_FILE_NAME, ATTACHMENT_IMAGE_TABLE_ALIAS + "." + Download.FILE_NAME + " AS " + Download.IMAGE_FILE_NAME);
         MSG.put(Download.IMAGE_ID, ATTACHMENT_IMAGE_TABLE_ALIAS + "." + Download._ID + " AS " + Download.IMAGE_ID);
-        MSG.put(Download.IMAGE_URL, ATTACHMENT_IMAGE_TABLE_ALIAS + "." + Download.URL + " AS " + Download.IMAGE_URL);
+        MSG.put(Download.IMAGE_URL, ATTACHMENT_IMAGE_TABLE_ALIAS + "." + Download.URI + " AS " + Download.IMAGE_URL);
         MSG.put(Msg.SENDER_ID, Msg.SENDER_ID);
         MSG.put(User.SENDER_NAME, User.SENDER_NAME);
         MSG.put(Msg.BODY, Msg.BODY);

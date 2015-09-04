@@ -54,7 +54,7 @@ class StateOfAccountChangeProcess {
     private String accountAction = Intent.ACTION_DEFAULT;
     boolean actionCompleted = true;
     boolean actionSucceeded = true;
-    AccountAuthenticatorResponse authenticatiorResponse = null;
+    AccountAuthenticatorResponse authenticatorResponse = null;
     MyAccount.Builder builder = null;
 
     boolean useThisState = false;
@@ -94,8 +94,8 @@ class StateOfAccountChangeProcess {
             // For a usage example see also com.android.email.activity.setup.AccountSettings.onCreate(Bundle)
 
             // Unparcel Extras!
-            state.authenticatiorResponse = extras.getParcelable(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE);
-            if (state.authenticatiorResponse != null) {
+            state.authenticatorResponse = extras.getParcelable(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE);
+            if (state.authenticatorResponse != null) {
                 state.useThisState = true;
             }
             
@@ -164,7 +164,7 @@ class StateOfAccountChangeProcess {
             bundle.putBoolean(ACTION_COMPLETED_KEY, actionCompleted);
             bundle.putBoolean(ACTION_SUCCEEDED_KEY, actionSucceeded);
             bundle.putParcelable(ACCOUNT_KEY, builder);
-            bundle.putParcelable(ACCOUNT_AUTHENTICATOR_RESPONSE_KEY, authenticatiorResponse);
+            bundle.putParcelable(ACCOUNT_AUTHENTICATOR_RESPONSE_KEY, authenticatorResponse);
             bundle.putString(REQUEST_TOKEN_KEY, requestToken);
             bundle.putString(REQUEST_SECRET_KEY, requestSecret);
             
@@ -180,7 +180,7 @@ class StateOfAccountChangeProcess {
             actionCompleted = bundle.getBoolean(ACTION_COMPLETED_KEY, true);
             actionSucceeded = bundle.getBoolean(ACTION_SUCCEEDED_KEY);
             builder = bundle.getParcelable(ACCOUNT_KEY);
-            authenticatiorResponse = bundle.getParcelable(ACCOUNT_AUTHENTICATOR_RESPONSE_KEY);
+            authenticatorResponse = bundle.getParcelable(ACCOUNT_AUTHENTICATOR_RESPONSE_KEY);
             setRequestTokenWithSecret(bundle.getString(REQUEST_TOKEN_KEY), bundle.getString(REQUEST_SECRET_KEY));
             restoredNow = true;
         }
@@ -234,7 +234,7 @@ class StateOfAccountChangeProcess {
      * Forget stored state
      */
     void forget() {
-        authenticatiorResponse = null;
+        authenticatorResponse = null;
         StateOfAccountChangeProcess.STORED_STATE.clear();
     }
 

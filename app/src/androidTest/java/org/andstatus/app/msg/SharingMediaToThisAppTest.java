@@ -14,7 +14,9 @@ import org.andstatus.app.account.AccountSelector;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.data.DownloadStatus;
+import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.service.MyServiceTestHelper;
@@ -23,7 +25,7 @@ import org.andstatus.app.util.MyLog;
 import java.util.Arrays;
 
 public class SharingMediaToThisAppTest extends ActivityInstrumentationTestCase2<TimelineActivity> {
-    MyServiceTestHelper mService = new MyServiceTestHelper();
+    final MyServiceTestHelper mService = new MyServiceTestHelper();
     MyAccount ma;
 
     public SharingMediaToThisAppTest() {
@@ -52,9 +54,9 @@ public class SharingMediaToThisAppTest extends ActivityInstrumentationTestCase2<
     
     public void testSharingMediaToThisApp() throws InterruptedException {
         final String method = "testSharingMediaToThisApp";
-        ListActivityTestHelper<TimelineActivity> helperTimelineActivity = new ListActivityTestHelper<TimelineActivity>(this, AccountSelector.class);
+        ListActivityTestHelper<TimelineActivity> helperTimelineActivity = new ListActivityTestHelper<>(this, AccountSelector.class);
         AccountSelector selector = (AccountSelector) helperTimelineActivity.waitForNextActivity(method, 15000);
-        ListActivityTestHelper<AccountSelector> helperAccountSelector = new ListActivityTestHelper<AccountSelector>(this, selector);
+        ListActivityTestHelper<AccountSelector> helperAccountSelector = new ListActivityTestHelper<>(this, selector);
         int position = helperAccountSelector.getPositionOfListItemId(ma.getUserId());
         assertTrue("Account found", position >= 0);
         helperAccountSelector.selectListPosition(method, position);
@@ -87,6 +89,12 @@ public class SharingMediaToThisAppTest extends ActivityInstrumentationTestCase2<
         assertTrue("Unsent message found: " + condition, unsentMsgId != 0);
         assertEquals("Status of unsent message", DownloadStatus.SENDING, DownloadStatus.load(
                 MyQuery.msgIdToLongColumnValue(MyDatabase.Msg.MSG_STATUS, unsentMsgId)));
+
+        DownloadData dd = DownloadData.newForMessage(unsentMsgId,
+                MyContentType.IMAGE, null);
+        MyLog.v(this, method + "; " + dd);
+        assertEquals("Image URL stored", TestSuite.LOCAL_IMAGE_TEST_URI, dd.getUri());
+
     }
     
     @Override

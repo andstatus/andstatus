@@ -52,25 +52,6 @@ public class SharedPreferencesUtil {
     }
 
     /**
-     * Does the preferences file exist?
-     */
-    public static boolean exists(Context context, String prefsFileName) {
-        boolean yes = false;
-
-        if (context == null || prefsFileName == null || prefsFileName.length() == 0) {
-            // no
-        } else {
-            try {
-                File prefFile = new File(prefsDirectory(context), prefsFileName + FILE_EXTENSION);
-                yes = prefFile.exists();
-            } catch (Exception e) {
-                MyLog.e(TAG, e);
-            }
-        }
-        return yes;
-    }
-
-    /**
      * Delete the preferences file!
      * 
      * @return Was the file deleted?

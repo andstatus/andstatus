@@ -72,7 +72,7 @@ public class CommandDataTest extends InstrumentationTestCase {
         
         
         
-        Queue<CommandData> queue = new PriorityBlockingQueue<CommandData>(100);
+        Queue<CommandData> queue = new PriorityBlockingQueue<>(100);
         queue.add(commandData);
         assertEquals(1, CommandData.saveQueue(MyContextHolder.get().context(), queue, QueueType.TEST));
         queue.clear();

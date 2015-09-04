@@ -26,6 +26,7 @@ import android.widget.TextView;
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MySettingsActivity;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.origin.PersistentOriginList;
 import org.andstatus.app.service.MyServiceManager;
@@ -69,6 +70,9 @@ public class AccountSettingsActivityTest extends ActivityInstrumentationTestCase
         openingOriginList();
         Thread.sleep(500);
         mActivity.finish();
+        Thread.sleep(500);
+        MySettingsActivity.closeAllActivities(getInstrumentation().getTargetContext());
+        Thread.sleep(500);
     }
 
     private void assertUsernameTextField(int viewId) {

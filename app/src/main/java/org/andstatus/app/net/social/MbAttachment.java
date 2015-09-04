@@ -20,12 +20,10 @@ import android.net.Uri;
 
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.util.UriUtils;
-import org.andstatus.app.util.UrlUtils;
 
 import java.net.URL;
 
 public class MbAttachment {
-    public String oid="";
     private Uri uri = null;
     public MyContentType contentType = MyContentType.UNKNOWN;
 
@@ -60,7 +58,6 @@ public class MbAttachment {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((contentType == null) ? 0 : contentType.hashCode());
-        result = prime * result + ((oid == null) ? 0 : oid.hashCode());
         result = prime * result + ((uri == null) ? 0 : uri.hashCode());
         return result;
     }
@@ -80,13 +77,6 @@ public class MbAttachment {
         if (contentType != other.contentType) {
             return false;
         }
-        if (oid == null) {
-            if (other.oid != null) {
-                return false;
-            }
-        } else if (!oid.equals(other.oid)) {
-            return false;
-        }
         if (uri == null) {
             if (other.uri != null) {
                 return false;
@@ -99,15 +89,15 @@ public class MbAttachment {
 
     @Override
     public String toString() {
-        return "MbAttachment [oid=" + oid + ", url=" + uri 
-                + ", contentType=" + contentType + "]";
+        return "MbAttachment [uri='" + uri
+                + "', contentType=" + contentType + "]";
     }
 
     public void setUrl(URL url) {
         this.uri = UriUtils.fromUrl(url);
     }
-    
-    public URL getUrl() {
-        return UrlUtils.fromUri(uri);
+
+    public Uri getUri() {
+        return uri;
     }
 }

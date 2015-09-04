@@ -402,7 +402,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
          * is newer (we may upload older information later...)
          */
         public static final String VALID_FROM = "valid_from";
-        public static final String URL = "url";
+        public static final String URI = "url";
         /**
          * TODO: Drop this column on next table update as it is not used
          * Date and time there was last attempt to load this. The attempt may be successful or not.
@@ -604,7 +604,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
                 + Download.MSG_ID + " INTEGER," 
                 + Download.CONTENT_TYPE + " INTEGER NOT NULL," 
                 + Download.VALID_FROM + " INTEGER NOT NULL,"
-                + Download.URL + " TEXT NOT NULL," 
+                + Download.URI + " TEXT NOT NULL,"
                 + Download.LOADED_DATE + " INTEGER,"
                 + Download.DOWNLOAD_STATUS + " INTEGER NOT NULL DEFAULT 0," 
                 + Download.FILE_NAME + " TEXT" 

@@ -55,7 +55,7 @@ public class AttachmentDownloader extends FileDownloader {
 
     @Override
     protected void onSuccessfulLoad() {
-        MyLog.v(this, "Loaded attachment msgId:" + data.msgId + "; url:'" + data.getUrl().toExternalForm() + "'");
+        MyLog.v(this, "Loaded attachment msgId:" + data.msgId + "; uri:'" + data.getUri() + "'");
     }
 
 }

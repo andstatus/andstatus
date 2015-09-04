@@ -20,9 +20,7 @@ import android.app.Notification;
 import android.content.Context;
 
 import org.andstatus.app.account.PersistentAccounts;
-import org.andstatus.app.context.MyContext;
-import org.andstatus.app.context.MyContextState;
-import org.andstatus.app.data.AssersionData;
+import org.andstatus.app.data.AssertionData;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.net.http.HttpConnection;
@@ -41,7 +39,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
  */
 public class MyContextForTest implements MyContext {
     private MyContext myContext;
-    private Set<AssersionData> dataSet = new CopyOnWriteArraySet<AssersionData>();
+    private Set<AssertionData> dataSet = new CopyOnWriteArraySet<AssertionData>();
     private HttpConnection httpConnection;
     private ConnectionRequired mOnline = ConnectionRequired.ANY; 
     private Map<TimelineType, Notification> notifications = new ConcurrentHashMap<TimelineType, Notification>();
@@ -125,11 +123,11 @@ public class MyContextForTest implements MyContext {
     }
 
     @Override
-    public void put(AssersionData data) {
+    public void put(AssertionData data) {
         dataSet.add(data);
     }
     
-    public Set<AssersionData> getData() {
+    public Set<AssertionData> getData() {
         return dataSet;
     }
 
@@ -138,9 +136,9 @@ public class MyContextForTest implements MyContext {
      * Returns Empty data object if not found 
      * @return
      */
-    public AssersionData takeDataByKey(String key) {
-        AssersionData dataOut = AssersionData.getEmpty(key);
-        for (AssersionData data : dataSet) {
+    public AssertionData takeDataByKey(String key) {
+        AssertionData dataOut = AssertionData.getEmpty(key);
+        for (AssertionData data : dataSet) {
             if (data.getKey().equals(key)) {
                 dataOut = data;
                 dataSet.remove(data);
