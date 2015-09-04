@@ -44,8 +44,7 @@ public class MessageSender extends AsyncTask<MessageEditorData, Void, Void> {
         DataInserter di = new DataInserter(data.getMyAccount());
         message.rowId = di.insertOrUpdateMsg(message);
 
-        //TODO: Implement
-        CommandData commandData = CommandData.updateStatus(data.getMyAccount().getAccountName(), data.messageText, data.inReplyToId, data.recipientId, data.mediaUri);
+        CommandData commandData = CommandData.updateStatus(data.getMyAccount().getAccountName(), message.rowId);
         MyServiceManager.sendForegroundCommand(commandData);
         return null;
     }

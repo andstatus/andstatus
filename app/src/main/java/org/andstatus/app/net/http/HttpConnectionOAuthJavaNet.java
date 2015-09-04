@@ -31,6 +31,7 @@ import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
 import org.andstatus.app.net.http.ConnectionException.StatusCode;
+import org.andstatus.app.util.FileUtils;
 import org.andstatus.app.util.MyLog;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -149,7 +150,7 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
 
     /** This method is not legacy HTTP */
     private void writeMedia(HttpURLConnection conn, JSONObject formParams)
-            throws ConnectionException, IOException, JSONException {
+            throws IOException, JSONException {
         Uri mediaUri = Uri.parse(formParams.getString(KEY_MEDIA_PART_URI));
         conn.setChunkedStreamingMode(0);
         conn.setRequestProperty("Content-Type", MyContentType.uri2MimeType(mediaUri, null));
@@ -172,8 +173,7 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
         }
     }
 
-    private void writeJson(HttpURLConnection conn, JSONObject formParams) throws IOException,
-            ConnectionException {
+    private void writeJson(HttpURLConnection conn, JSONObject formParams) throws IOException {
         conn.setRequestProperty("Content-Type", "application/json");
         setAuthorization(conn, getConsumer(), false);
         OutputStreamWriter writer = null;
@@ -218,7 +218,7 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
                 switch(result.getStatusCode()) {
                     case OK:
                         if (result.fileResult != null) {
-                            HttpConnectionUtils.readStreamToFile(conn.getInputStream(), result.fileResult);
+                            FileUtils.readStreamToFile(conn.getInputStream(), result.fileResult);
                         } else {
                             result.strResponse = HttpConnectionUtils.readStreamToString(conn.getInputStream());
                         }

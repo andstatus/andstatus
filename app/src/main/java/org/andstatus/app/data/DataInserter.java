@@ -28,11 +28,13 @@ import org.andstatus.app.data.MyDatabase.OidEnum;
 import org.andstatus.app.net.social.MbAttachment;
 import org.andstatus.app.net.social.MbMessage;
 import org.andstatus.app.net.social.MbUser;
+import org.andstatus.app.service.AttachmentDownloader;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandExecutionContext;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TriState;
+import org.andstatus.app.util.UriUtils;
 
 import java.util.Date;
 
@@ -67,7 +69,7 @@ public class DataInserter {
         Long rowId = messageIn.rowId;
         try {
             if (messageIn.isEmpty()) {
-                MyLog.w(TAG, funcName +", the message is empty, skipping: " + messageIn.toString());
+                MyLog.w(TAG, funcName +"; the message is empty, skipping: " + messageIn.toString());
                 return 0;
             }
             
@@ -149,8 +151,6 @@ public class DataInserter {
                 // Lookup the System's (AndStatus) id from the Originated system's id
                 rowId = MyQuery.oidToId(OidEnum.MSG_OID, execContext.getMyAccount().getOriginId(), rowOid);
             }
-            // Construct the Uri to the Msg
-            Uri msgUri = MatchedUri.getMsgUri(execContext.getMyAccount().getUserId(), rowId);
 
             long sentDateStored = 0;
             DownloadStatus statusStored = DownloadStatus.UNKNOWN;
@@ -174,8 +174,9 @@ public class DataInserter {
                     // Don't overwrite the original sender (especially the first reblogger) 
                     values.put(MyDatabase.Msg.SENDER_ID, senderId);
                 }
-
-                values.put(MyDatabase.Msg.MSG_OID, rowOid);
+                if (!TextUtils.isEmpty(rowOid)) {
+                    values.put(MyDatabase.Msg.MSG_OID, rowOid);
+                }
                 values.put(MyDatabase.Msg.ORIGIN_ID, execContext.getMyAccount().getOriginId());
                 values.put(MyDatabase.Msg.BODY, message.getBody());
             }
@@ -239,10 +240,14 @@ public class DataInserter {
                 MyContextHolder.get().put(new AssertionData(MSG_ASSERTION_KEY, values));
             }
             if (rowId == 0) {
-                // There was no such row so add the new one
-                msgUri = execContext.getContext().getContentResolver().insert(MatchedUri.getMsgUri(execContext.getMyAccount().getUserId(), 0), values);
+                Uri msgUri = execContext.getContext().getContentResolver().insert(
+                        MatchedUri.getMsgUri(execContext.getMyAccount().getUserId(), 0), values);
                 rowId = ParsedUri.fromUri(msgUri).getMessageId();
             } else {
+                if (isFirstTimeLoaded) {
+                    DownloadData.deleteAllOfThisMsg(rowId);
+                }
+                Uri msgUri = MatchedUri.getMsgUri(execContext.getMyAccount().getUserId(), rowId);
                 execContext.getContext().getContentResolver().update(msgUri, values, null, null);
             }
 
@@ -250,8 +255,12 @@ public class DataInserter {
                 for (MbAttachment attachment : message.attachments) {
                     DownloadData dd = DownloadData.newForMessage(rowId, attachment.contentType, attachment.getUri());
                     dd.saveToDatabase();
-                    if (attachment.contentType == MyContentType.IMAGE && MyPreferences.showAttachedImages()) {
-                        dd.requestDownload();
+                    if (UriUtils.isLocal(dd.getUri())) {
+                        AttachmentDownloader.load(dd.getRowId(), execContext.getCommandData());
+                    } else {
+                        if (attachment.contentType == MyContentType.IMAGE && MyPreferences.showAttachedImages()) {
+                            dd.requestDownload();
+                        }
                     }
                 }
             }

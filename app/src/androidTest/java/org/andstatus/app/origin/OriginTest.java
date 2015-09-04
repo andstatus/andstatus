@@ -6,6 +6,7 @@ import android.test.InstrumentationTestCase;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.context.UserInTimeline;
+import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MessageInserter;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyQuery;
@@ -172,7 +173,7 @@ public class OriginTest extends InstrumentationTestCase {
         String body = "Posting to Twitter " + TestSuite.TESTRUN_UID;
         String messageOid = "2578909845023" + TestSuite.TESTRUN_UID;
         long msgId = MessageInserter.addMessageForAccount(TestSuite.TWITTER_TEST_ACCOUNT_NAME,
-                body, messageOid);
+                body, messageOid, DownloadStatus.LOADED);
         assertTrue(msgId != 0);
         String userName = MyQuery.msgIdToUsername(MyDatabase.Msg.AUTHOR_ID, msgId, 
                 UserInTimeline.USERNAME);

@@ -21,6 +21,7 @@ import android.test.InstrumentationTestCase;
 
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.HtmlContentInserter;
 import org.andstatus.app.data.MessageInserter;
 import org.andstatus.app.data.MyDatabase.OidEnum;
@@ -60,7 +61,8 @@ public class MessageShareTest extends InstrumentationTestCase {
     
     public void testSharePlainText() {
         String body = "Posting as a plain Text " + TestSuite.TESTRUN_UID;
-        long msgId = MessageInserter.addMessageForAccount(TestSuite.TWITTER_TEST_ACCOUNT_NAME, body, TestSuite.PLAIN_TEXT_MESSAGE_OID);
+        long msgId = MessageInserter.addMessageForAccount(TestSuite.TWITTER_TEST_ACCOUNT_NAME, body,
+                TestSuite.PLAIN_TEXT_MESSAGE_OID, DownloadStatus.LOADED);
         MessageShare messageShare = new MessageShare(MyContextHolder.get().context(), msgId);
         Intent intent = messageShare.intentForShare();
         assertTrue(intent.getExtras().containsKey(Intent.EXTRA_TEXT));

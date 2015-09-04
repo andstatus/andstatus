@@ -18,13 +18,9 @@ package org.andstatus.app.net.http;
 
 import org.andstatus.app.data.DbUtils;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -77,24 +73,4 @@ public class HttpConnectionUtils {
         return builder.toString();
     }
 
-    public static void readStreamToFile(InputStream in, File file) throws IOException {
-        if (in == null || file == null) {
-            return;
-        }
-        byte[] buffer = new byte[BUFFER_LENGTH];
-        int count;
-        try {
-            OutputStream out = new BufferedOutputStream(new FileOutputStream(file));
-            try {
-                while ((count = in.read(buffer)) != -1) {
-                    out.write(buffer, 0, count);
-                }
-            } finally {
-                DbUtils.closeSilently(out);
-            }
-        } finally {
-            DbUtils.closeSilently(in);
-        }
-    }
-    
 }

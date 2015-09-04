@@ -23,14 +23,12 @@ import android.app.Instrumentation;
 import android.app.KeyguardManager;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager.NameNotFoundException;
 import android.net.Uri;
 import android.test.InstrumentationTestCase;
 import android.view.ViewGroup;
 import android.widget.ListView;
 
 import org.andstatus.app.HelpActivity;
-import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyContextState;
@@ -39,7 +37,6 @@ import org.andstatus.app.data.ConversationInserter;
 import org.andstatus.app.data.MessageInserter;
 import org.andstatus.app.data.OriginsAndAccountsInserter;
 import org.andstatus.app.data.GnuSocialMessagesInserter;
-import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.origin.Origin;
@@ -72,7 +69,7 @@ public class TestSuite extends TestCase {
         return getMyContextForTest().context();
     }
     
-    public static synchronized Context initialize(InstrumentationTestCase testCase) throws NameNotFoundException, ConnectionException, InterruptedException {
+    public static synchronized Context initialize(InstrumentationTestCase testCase) throws InterruptedException {
         if (initialized) {
             MyLog.d(TAG, "Already initialized");
             return context;
@@ -275,7 +272,9 @@ public class TestSuite extends TestCase {
     public static final String PUBLIC_MESSAGE_TEXT = "UniqueText" + TESTRUN_UID;
     public static final String GLOBAL_PUBLIC_MESSAGE_TEXT = "Public_in_AndStatus_" + TESTRUN_UID;
     /** See http://stackoverflow.com/questions/6602417/get-the-uri-of-an-image-stored-in-drawable */
-    public static final Uri LOCAL_IMAGE_TEST_URI = Uri.parse("android.resource://org.andstatus.app.tests/drawable/icon.png");
+    public static final Uri LOCAL_IMAGE_TEST_URI = Uri.parse("android.resource://org.andstatus.app.tests/drawable/icon");
+    public static final Uri LOCAL_IMAGE_TEST_URI2 = Uri.parse("android.resource://org.andstatus.app/drawable/splash_logo");
+    public static final Uri IMAGE1_URL = Uri.parse("https://raw.githubusercontent.com/andstatus/andstatus/master/app/src/main/res/drawable/splash_logo.png");
     
     public static String getTestOriginHost(String testOriginName) {
         String host = testOriginName.toLowerCase(Locale.US) + "." + TEST_ORIGIN_PARENT_HOST;

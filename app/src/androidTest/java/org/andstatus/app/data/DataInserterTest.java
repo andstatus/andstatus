@@ -30,8 +30,10 @@ import org.andstatus.app.data.MyDatabase.OidEnum;
 import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.social.ConnectionGnuSocialTest;
+import org.andstatus.app.net.social.MbAttachment;
 import org.andstatus.app.net.social.MbMessage;
 import org.andstatus.app.net.social.MbUser;
+import org.andstatus.app.service.AttachmentDownloaderTest;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandExecutionContext;
 import org.andstatus.app.util.SelectionAndArgs;
@@ -156,7 +158,7 @@ public class DataInserterTest extends InstrumentationTestCase {
         MbMessage message = new MessageInserter(TestSuite.getConversationMyAccount()).buildMessage(
                 author,
                 "Hello, this is a test Direct message by your namesake from http://pumpity.net",
-                null, messageOid);
+                null, messageOid, DownloadStatus.LOADED);
         message.sentDate = 13312699000L;
         message.via = "AnyOtherClient";
         message.recipient = TestSuite.getConversationMbUser();
@@ -220,8 +222,8 @@ public class DataInserterTest extends InstrumentationTestCase {
         SelectionAndArgs sa = new SelectionAndArgs();
         String sortOrder = MyDatabase.Msg.DEFAULT_SORT_ORDER;
         sa.addSelection(MyDatabase.Msg.MSG_ID + " = ?",
-                new String[] {
-                    Long.toString(messageId)
+                new String[]{
+                        Long.toString(messageId)
                 });
         String[] PROJECTION = new String[] {
                 MsgOfUser.FAVORITED,
@@ -305,7 +307,58 @@ public class DataInserterTest extends InstrumentationTestCase {
 
         DownloadData dd = DownloadData.newForMessage(messageId,
                 message.attachments.get(0).contentType, null);
-        assertEquals("Image URL stored", message.attachments.get(0).getUri(), dd.getUri());
+        assertEquals("Image URI stored", message.attachments.get(0).getUri(), dd.getUri());
+    }
+
+    public void testUnsentMessageWithAttachment() throws Exception {
+        MyAccount ma = MyContextHolder.get().persistentAccounts()
+                .findFirstSucceededMyAccountByOriginId(0);
+        MbMessage message = MbMessage.fromOriginAndOid(ma.getOriginId(), "",
+                DownloadStatus.SENDING);
+        message.actor = MbUser.fromOriginAndUserOid(ma.getOriginId(), ma.getUserOid());
+        message.sender = message.actor;
+        message.sentDate = System.currentTimeMillis();
+        final String body = "Unsent message with an attachment " + TestSuite.TESTRUN_UID;
+        message.setBody(body);
+        message.attachments.add(MbAttachment.fromUriAndContentType(TestSuite.LOCAL_IMAGE_TEST_URI,
+                MyContentType.IMAGE));
+        DataInserter di = new DataInserter(ma);
+        message.rowId = di.insertOrUpdateMsg(message);
+        assertTrue("Message added", message.rowId != 0);
+        assertEquals("Status of unsent message", DownloadStatus.SENDING, DownloadStatus.load(
+                MyQuery.msgIdToLongColumnValue(MyDatabase.Msg.MSG_STATUS, message.rowId)));
+
+        DownloadData dd = DownloadData.newForMessage(message.rowId,
+                message.attachments.get(0).contentType, null);
+        assertEquals("Image URI stored", message.attachments.get(0).getUri(), dd.getUri());
+        assertEquals("Local image immediately loaded " + dd, DownloadStatus.LOADED, dd.getStatus());
+
+        Thread.sleep(1000);
+
+        final String oid = "unsentMsgOid" + TestSuite.TESTRUN_UID;
+        MbMessage message2 = MbMessage.fromOriginAndOid(ma.getOriginId(), oid,
+                DownloadStatus.LOADED);
+        message2.actor = message.actor;
+        message2.sender = message2.actor;
+        message2.sentDate = System.currentTimeMillis();
+        final String body2 = "Unsent <b>message</b> with an attachment loaded " + TestSuite.TESTRUN_UID;
+        message2.setBody(body2);
+        message2.attachments.add(MbAttachment.fromUriAndContentType(TestSuite.IMAGE1_URL,
+                MyContentType.IMAGE));
+        message2.rowId = message.rowId;
+
+        long rowId2 = di.insertOrUpdateMsg(message2);
+        assertEquals("Row id didn't change", message.rowId, message2.rowId);
+        assertEquals("Message updated", message.rowId, rowId2);
+        assertEquals("Status of loaded message", DownloadStatus.LOADED, DownloadStatus.load(
+                MyQuery.msgIdToLongColumnValue(MyDatabase.Msg.MSG_STATUS, message2.rowId)));
+
+        DownloadData dd2 = DownloadData.newForMessage(message2.rowId,
+                message2.attachments.get(0).contentType, null);
+        assertEquals("New image URI stored", message2.attachments.get(0).getUri(), dd2.getUri());
+
+        assertEquals("Not loaded yet. " + dd2, DownloadStatus.ABSENT, dd2.getStatus());
+        AttachmentDownloaderTest.loadAndAssertStatusForRow(dd2.getRowId(), DownloadStatus.LOADED, false);
     }
 
     public void testUserNameChanged() {

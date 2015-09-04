@@ -147,7 +147,7 @@ public class ConversationInserter extends InstrumentationTestCase {
     private MbMessage buildMessage(MbUser author, String body, MbMessage inReplyToMessage, String messageOidIn) {
         return new MessageInserter(ma).buildMessage(author, body
                 + (inReplyToMessage != null ? " it" + iteration : "") + bodySuffix,
-                inReplyToMessage, messageOidIn);
+                inReplyToMessage, messageOidIn, DownloadStatus.LOADED);
     }
     
     private long addMessage(MbMessage message) {

@@ -25,6 +25,7 @@ import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.UriUtils;
 
 import java.io.File;
 
@@ -83,7 +84,6 @@ abstract class FileDownloader {
         final String method = "downloadFile";
         DownloadFile fileTemp = new DownloadFile("temp_" + data.getFilenameNew());
         try {
-            // TODO: This Uri may point to a local location
             String uriString = data.getUri().toString();
             File file = fileTemp.getFile();
             MyAccount ma = findBestAccountForDownload();
@@ -114,14 +114,11 @@ abstract class FileDownloader {
         if (uri == null || Uri.EMPTY == uri) {
             throw new ConnectionException(ConnectionException.StatusCode.NOT_FOUND, "No Uri to download from: '" + uri + "'");
         }
-        switch (uri.getScheme()) {
-            case "http":
-            case "https":
-                return ma.getConnection();
-            default:
-                break;
+        if (UriUtils.isLocal(uri)) {
+            return new ConnectionLocal();
+        } else {
+            return ma.getConnection();
         }
-        return new ConnectionLocal();
     }
 
     public DownloadStatus getStatus() {
@@ -129,4 +126,9 @@ abstract class FileDownloader {
     }
 
     protected abstract MyAccount findBestAccountForDownload();
+
+    public static void load(long downloadRowId, CommandData commandData) {
+        FileDownloader downloader = FileDownloader.newForDownloadRow(downloadRowId);
+        downloader.load(commandData);
+    }
 }

@@ -240,7 +240,7 @@ public class PersistentAccounts {
     /**
      * Return first verified MyAccount of the provided originId.
      * If there is no verified account, any account of this Origin is been returned.
-     * @param originId
+     * @param originId May be 0 to search in any Origin
      * @return Invalid account if not found
      */
     public MyAccount findFirstSucceededMyAccountByOriginId(long originId) {

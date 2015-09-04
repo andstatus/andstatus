@@ -23,6 +23,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.ParcelFileDescriptor;
+import android.text.TextUtils;
 
 import org.andstatus.app.ClassInApplicationPackage;
 
@@ -57,7 +58,11 @@ public class FileProvider extends ContentProvider {
     }
 
     public static Uri downloadFilenameToUri(String filename) {
-        return Uri.withAppendedPath(DOWNLOAD_FILE_URI, filename);
+        if (TextUtils.isEmpty(filename)) {
+            return Uri.EMPTY;
+        } else {
+            return Uri.withAppendedPath(DOWNLOAD_FILE_URI, filename);
+        }
     }
 
     public static void viewImage(Activity activity, String imageFilename) {

@@ -17,11 +17,12 @@ public class MessageForAccountTest extends InstrumentationTestCase {
     }
 
     public void testAReply() {
-        MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.CONVERSATION_ACCOUNT_NAME);
+        MyAccount ma = MyContextHolder.get().persistentAccounts()
+                .fromAccountName(TestSuite.CONVERSATION_ACCOUNT_NAME);
         assertTrue(ma.isValid());
         MessageInserter mi = new MessageInserter(ma);
         MbUser author1 = mi.getAccountMbUser();
-        MbMessage msg1 = mi.buildMessage(author1, "My testing message", null, null);
+        MbMessage msg1 = mi.buildMessage(author1, "My testing message", null, null, DownloadStatus.LOADED);
         long mgs1Id = mi.addMessage(msg1);
         
         MessageForAccount mfa = new MessageForAccount(mgs1Id, ma);
@@ -34,7 +35,8 @@ public class MessageForAccountTest extends InstrumentationTestCase {
         assertTrue(mfa.hasPrivateAccess());
         
         MbUser author2 = mi.buildUser();
-        MbMessage replyTo1 = mi.buildMessage(author2, "@" + author1.getUserName()  + " Replying to you", msg1, null);
+        MbMessage replyTo1 = mi.buildMessage(author2, "@" + author1.getUserName()
+                + " Replying to you", msg1, null, DownloadStatus.LOADED);
         replyTo1.setPublic(true);
         long replyTo1Id = mi.addMessage(replyTo1);
         
@@ -49,7 +51,8 @@ public class MessageForAccountTest extends InstrumentationTestCase {
         
         
         MbUser author3 = mi.buildUser();
-        MbMessage replyTo2 = mi.buildMessage(author3, "@" + author2.getUserName()  + " Replying to the second author", replyTo1, null);
+        MbMessage replyTo2 = mi.buildMessage(author3, "@" + author2.getUserName()
+                + " Replying to the second author", replyTo1, null, DownloadStatus.LOADED);
         replyTo2.setPublic(true);
         long replyTo2Id = mi.addMessage(replyTo2);
         

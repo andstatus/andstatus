@@ -23,17 +23,21 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 
 public class FileUtils {
     private static final String TAG = FileUtils.class.getSimpleName();
+    private static final int BUFFER_LENGTH = 4 * 1024;
 
     private FileUtils() {
         // Empty
@@ -89,7 +93,7 @@ public class FileUtils {
     public static byte[] getBytes(InputStream is) throws IOException {
         ByteArrayOutputStream bout = new ByteArrayOutputStream();
         if (is != null) {
-            byte[] readBuffer = new byte[4 * 1024];
+            byte[] readBuffer = new byte[BUFFER_LENGTH];
             try {
                 int read;
                 do {
@@ -181,4 +185,25 @@ public class FileUtils {
         }
         return file.exists();
     }
+
+    public static void readStreamToFile(InputStream in, File file) throws IOException {
+        if (in == null || file == null) {
+            return;
+        }
+        byte[] buffer = new byte[BUFFER_LENGTH];
+        int count;
+        try {
+            OutputStream out = new BufferedOutputStream(new FileOutputStream(file));
+            try {
+                while ((count = in.read(buffer)) != -1) {
+                    out.write(buffer, 0, count);
+                }
+            } finally {
+                DbUtils.closeSilently(out);
+            }
+        } finally {
+            DbUtils.closeSilently(in);
+        }
+    }
+
 }

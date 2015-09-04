@@ -101,8 +101,8 @@ public class DownloadData {
             cursor = db.rawQuery(sql, null);
             status = DownloadStatus.ABSENT;
             if (cursor.moveToNext()) {
-                status = DownloadStatus.load(cursor.getLong(0));
-                fileStored = new DownloadFile(cursor.getString(1));
+                status = DownloadStatus.load(cursor.getLong(cursor.getColumnIndex(Download.DOWNLOAD_STATUS)));
+                fileStored = new DownloadFile(cursor.getString(cursor.getColumnIndex(Download.FILE_NAME)));
                 if (downloadType == DownloadType.UNKNOWN) {
                     downloadType = DownloadType.load(cursor.getLong(cursor.getColumnIndex(Download.DOWNLOAD_TYPE)));
                 }

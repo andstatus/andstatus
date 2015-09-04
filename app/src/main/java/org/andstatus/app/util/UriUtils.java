@@ -80,4 +80,18 @@ public class UriUtils {
             MyLog.i(context,"No persistable URI permission for '" + uri + "'");
         }
     }
+
+    /**
+     * @return true for null and EMPTY also
+     */
+    public static boolean isLocal(Uri uri) {
+        switch (notNull(uri).getScheme()) {
+            case "http":
+            case "https":
+                return false;
+            default:
+                break;
+        }
+        return true;
+    }
 }

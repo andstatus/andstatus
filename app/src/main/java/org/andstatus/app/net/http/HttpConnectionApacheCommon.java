@@ -22,17 +22,14 @@ import android.text.TextUtils;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyContentType;
-import org.andstatus.app.net.http.ConnectionException.StatusCode;
 import org.andstatus.app.util.FileUtils;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpVersion;
 import org.apache.http.NameValuePair;
-import org.apache.http.ProtocolVersion;
 import org.apache.http.StatusLine;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntityHC4;
@@ -112,7 +109,7 @@ public class HttpConnectionApacheCommon {
     }
     
     private void fillSinglePartPost(HttpPostHC4 httpPost, JSONObject formParams)
-            throws ConnectionException, UnsupportedEncodingException {
+            throws UnsupportedEncodingException {
         List<NameValuePair> nvFormParams = HttpConnectionApacheCommon.jsonToNameValuePair(formParams);
         if (nvFormParams != null) {
             HttpEntity formEntity = new UrlEncodedFormEntityHC4(nvFormParams, HTTP.UTF_8);
@@ -123,7 +120,7 @@ public class HttpConnectionApacheCommon {
     /**
      * @throws ConnectionException
      */
-    static List<NameValuePair> jsonToNameValuePair(JSONObject jso) throws ConnectionException {
+    static List<NameValuePair> jsonToNameValuePair(JSONObject jso) {
         List<NameValuePair> formParams = new ArrayList<NameValuePair>();
         Iterator<String> iterator =  jso.keys();
         while (iterator.hasNext()) {
@@ -142,7 +139,7 @@ public class HttpConnectionApacheCommon {
                     MyHttpClientFactory.getHttpClient(sslMode) ;
     }
 
-    protected void getRequest(HttpReadResult result) throws ConnectionException {
+    protected void getRequest(HttpReadResult result) {
         String method = "getRequest; ";
         // See http://hc.apache.org/httpcomponents-client-ga/tutorial/html/fundamentals.html
         HttpResponse httpResponse = null;
@@ -163,7 +160,7 @@ public class HttpConnectionApacheCommon {
                         HttpEntity entity = httpResponse.getEntity();
                         if (entity != null) {
                             if (result.fileResult != null) {
-                                HttpConnectionUtils.readStreamToFile(entity.getContent(), result.fileResult);
+                                FileUtils.readStreamToFile(entity.getContent(), result.fileResult);
                             } else {
                                 result.strResponse = HttpConnectionUtils.readStreamToString(entity.getContent());
                             }
@@ -224,18 +221,5 @@ public class HttpConnectionApacheCommon {
         }
         return null;
     }
-    
-    boolean isStatusLineOk(StatusLine statusLine) {
-        if (statusLine != null) {
-            switch (ConnectionException.StatusCode.fromResponseCode(statusLine.getStatusCode())) {
-                case OK:
-                case UNKNOWN:
-                    return true;
-                default:
-                    break;
-            }
-        }
-        return false;
-    }
-    
+
 }

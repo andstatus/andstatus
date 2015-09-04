@@ -45,7 +45,7 @@ public class SharingMediaToThisAppTest extends ActivityInstrumentationTestCase2<
         
         Intent intent = new Intent(Intent.ACTION_SEND);
         intent.setType("image/png");
-        Uri mediaUri = TestSuite.LOCAL_IMAGE_TEST_URI;
+        Uri mediaUri = TestSuite.LOCAL_IMAGE_TEST_URI2;
         assertTrue(mediaUri != null);
         intent.putExtra(Intent.EXTRA_STREAM, mediaUri);
         setActivityIntent(intent);
@@ -93,7 +93,8 @@ public class SharingMediaToThisAppTest extends ActivityInstrumentationTestCase2<
         DownloadData dd = DownloadData.newForMessage(unsentMsgId,
                 MyContentType.IMAGE, null);
         MyLog.v(this, method + "; " + dd);
-        assertEquals("Image URL stored", TestSuite.LOCAL_IMAGE_TEST_URI, dd.getUri());
+        assertEquals("Image URI stored", TestSuite.LOCAL_IMAGE_TEST_URI2, dd.getUri());
+        assertEquals("Loaded '" + dd.getUri() + "'; " + dd, DownloadStatus.LOADED, dd.getStatus());
 
     }
     

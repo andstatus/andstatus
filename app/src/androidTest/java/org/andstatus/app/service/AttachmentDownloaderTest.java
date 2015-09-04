@@ -52,17 +52,14 @@ public class AttachmentDownloaderTest extends InstrumentationTestCase {
     public void testImageAttachmentLoad() throws IOException {
         String body = "A message with an image attachment";
         MessageInserter mi = new MessageInserter(ma);
-        MbMessage message = mi.buildMessage(mi.buildUser(), body, null, null);
-        message.attachments
-                .add(MbAttachment
-                        .fromUrlAndContentType(
-                                new URL(
-                                        "http://www.publicdomainpictures.net/pictures/60000/nahled/landscape-1376582205Yno.jpg"),
-                                MyContentType.IMAGE));
+        MbMessage message = mi.buildMessage(mi.buildUser(), body, null, null, DownloadStatus.LOADED);
+        message.attachments.add(MbAttachment.fromUrlAndContentType(
+                new URL("http://www.publicdomainpictures.net/pictures/60000/nahled/landscape-1376582205Yno.jpg"),
+                MyContentType.IMAGE));
         long msgId = mi.addMessage(message);
         
         DownloadData dd = DownloadData.newForMessage(msgId, message.attachments.get(0).contentType, null);
-        assertEquals("Image URL stored", message.attachments.get(0).getUri(), dd.getUri());
+        assertEquals("Image URI stored", message.attachments.get(0).getUri(), dd.getUri());
         
         loadAndAssertStatusForRow(dd.getRowId(), DownloadStatus.ABSENT, true);
 
@@ -83,7 +80,7 @@ public class AttachmentDownloaderTest extends InstrumentationTestCase {
         in.close();
     }
 
-    private long loadAndAssertStatusForRow(long downloadRowId, DownloadStatus status, boolean mockNetworkError) {
+    public static void loadAndAssertStatusForRow(long downloadRowId, DownloadStatus status, boolean mockNetworkError) {
         FileDownloader loader = FileDownloader.newForDownloadRow(downloadRowId);
         if (mockNetworkError) {
             loader.connectionMock = new ConnectionTwitterGnuSocialMock(new ConnectionException("Mocked IO exception"));
@@ -93,7 +90,7 @@ public class AttachmentDownloaderTest extends InstrumentationTestCase {
 
         DownloadData data = DownloadData.fromRowId(downloadRowId);
         if (DownloadStatus.LOADED.equals(status)) {
-            assertFalse("Loaded " + data.getUri(), commandData.getResult().hasError());
+            assertFalse("Loaded " + data.getUri() + "; " + data, commandData.getResult().hasError());
             assertEquals("Loaded " + data.getUri(), status, loader.getStatus());
         } else {
             assertTrue("Error loading " + data.getUri(), commandData.getResult().hasError());
@@ -106,8 +103,6 @@ public class AttachmentDownloaderTest extends InstrumentationTestCase {
         }
 
         assertEquals("Loaded " + data.getUri(), status, loader.getStatus());
-        
-        return data.getRowId();
     }
-    
+
 }

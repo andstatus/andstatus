@@ -24,7 +24,11 @@ import android.text.TextUtils;
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.appwidget.AppWidgets;
 import org.andstatus.app.data.DataInserter;
+import org.andstatus.app.data.DownloadData;
+import org.andstatus.app.data.DownloadFile;
+import org.andstatus.app.data.FileProvider;
 import org.andstatus.app.data.MatchedUri;
+import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.TimelineType;
@@ -54,11 +58,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                         execContext.getCommandData().getCommand() == CommandEnum.FOLLOW_USER);
                 break;
             case UPDATE_STATUS:
-                String status = execContext.getCommandData().bundle.getString(IntentExtra.MESSAGE_TEXT.key).trim();
-                long replyToId = execContext.getCommandData().bundle.getLong(IntentExtra.INREPLYTOID.key);
-                long recipientId = execContext.getCommandData().bundle.getLong(IntentExtra.RECIPIENTID.key);
-                Uri mediaUri = UriUtils.fromString(execContext.getCommandData().bundle.getString(IntentExtra.MEDIA_URI.key));
-                updateStatus(status, replyToId, recipientId, mediaUri);
+                updateStatus(execContext.getCommandData().itemId);
                 break;
             case DESTROY_STATUS:
                 destroyStatus(execContext.getCommandData().itemId);
@@ -316,21 +316,21 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         return ok;
     }
     
-    /**
-     * @param status
-     * @param replyToMsgId - Message Id
-     * @param recipientUserId !=0 for Direct messages - User Id
-     * @param mediaUri 
-     */
-    private void updateStatus(String status, long replyToMsgId, long recipientUserId, Uri mediaUri) {
+    private void updateStatus(long msgId) {
         final String method = "updateStatus";
         boolean ok = false;
         MbMessage message = null;
+        String status = MyQuery.msgIdToStringColumnValue(MyDatabase.Msg.BODY, msgId);
+        long recipientUserId = MyQuery.msgIdToLongColumnValue(MyDatabase.Msg.RECIPIENT_ID, msgId);
+        DownloadData dd = DownloadData.newForMessage(msgId, MyContentType.IMAGE, null);
+        Uri mediaUri = FileProvider.downloadFilenameToUri(dd.getFile().getFilename());
         try {
             if (MyLog.isVerboseEnabled()) {
                 MyLog.v(this, method + ", text:'" + MyLog.trimmedString(status, 40) + "'");
             }
             if (recipientUserId == 0) {
+                long replyToMsgId = MyQuery.msgIdToLongColumnValue(
+                        MyDatabase.Msg.IN_REPLY_TO_MSG_ID, msgId);
                 String replyToMsgOid = MyQuery.idToOid(OidEnum.MSG_OID, replyToMsgId, 0);
                 message = execContext.getMyAccount().getConnection()
                         .updateStatus(status.trim(), replyToMsgOid, mediaUri);
@@ -346,9 +346,10 @@ class CommandExecutorOther extends CommandExecutorStrategy{
             logConnectionException(e, method + ", text:'" + MyLog.trimmedString(status, 40) + "'");
         }
         if (ok) {
-            // The message was sent successfully
+            // The message was sent successfully, so now update unsent message
             // New User's message should be put into the user's Home timeline.
-            long msgId = new DataInserter(
+            message.rowId = msgId;
+            new DataInserter(
                     execContext.setTimelineType((recipientUserId == 0) ? TimelineType.HOME
                             : TimelineType.DIRECT)).insertOrUpdateMsg(message);
             execContext.getResult().setItemId(msgId);

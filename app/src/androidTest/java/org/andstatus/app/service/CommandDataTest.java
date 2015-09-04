@@ -39,8 +39,7 @@ public class CommandDataTest extends InstrumentationTestCase {
     public void testQueue() throws InterruptedException {
         long time0 = System.currentTimeMillis(); 
         String body = "Some text to send " + time0 + "ms";
-        CommandData commandData = CommandData.updateStatus(TestSuite.CONVERSATION_ACCOUNT_NAME, 
-                body, 0, 0, TestSuite.LOCAL_IMAGE_TEST_URI);
+        CommandData commandData = CommandData.updateStatus(TestSuite.CONVERSATION_ACCOUNT_NAME, 1);
         testQueueOneCommandData(commandData, time0);
 
         long msgId = MyQuery.oidToId(OidEnum.MSG_OID, MyContextHolder.get().persistentOrigins()
@@ -108,9 +107,9 @@ public class CommandDataTest extends InstrumentationTestCase {
     public void testPriority() {
         Queue<CommandData> queue = new PriorityBlockingQueue<CommandData>(100);
         queue.add(CommandData.searchCommand(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME, "q1"));
-        queue.add(CommandData.updateStatus("", "Test 1", 0, 0, null));
+        queue.add(CommandData.updateStatus("", 2));
         queue.add(new CommandData(CommandEnum.AUTOMATIC_UPDATE, ""));
-        queue.add(CommandData.updateStatus("", "Test 2", 0, 0, null));
+        queue.add(CommandData.updateStatus("", 3));
         queue.add(new CommandData(CommandEnum.GET_STATUS, ""));
         
         assertEquals(CommandEnum.UPDATE_STATUS, queue.poll().getCommand());

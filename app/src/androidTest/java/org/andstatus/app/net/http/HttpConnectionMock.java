@@ -19,6 +19,7 @@ package org.andstatus.app.net.http;
 import android.text.TextUtils;
 
 import org.andstatus.app.net.http.ConnectionException;
+import org.andstatus.app.util.FileUtils;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
 import org.json.JSONObject;
@@ -125,7 +126,7 @@ public class HttpConnectionMock extends HttpConnection {
         result.strResponse = responseString;
         if (result.fileResult != null && responseFileStream != null) {
             try {
-                HttpConnectionUtils.readStreamToFile(responseFileStream, result.fileResult);
+                FileUtils.readStreamToFile(responseFileStream, result.fileResult);
             } catch (IOException e) {
                 result.setException(e);
             }
@@ -164,7 +165,7 @@ public class HttpConnectionMock extends HttpConnection {
         return !TextUtils.isEmpty(password) || ( !TextUtils.isDigitsOnly(userToken) && !TextUtils.isEmpty(userSecret));
     }
 
-    public JSONObject getPostedJSONObject() throws ConnectionException {
+    public JSONObject getPostedJSONObject() {
         return results.get(results.size()-1).getFormParams();
     }
 

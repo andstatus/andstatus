@@ -22,6 +22,7 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.AttachedImageDrawable;
 import org.andstatus.app.data.DownloadData;
+import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MessageInserter;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.net.social.ConnectionTwitterGnuSocialMock;
@@ -50,8 +51,9 @@ public class LargeImageTest extends InstrumentationTestCase {
 
     private DownloadData insertMessage() throws IOException {
         String body = "Large image attachment";
-        MessageInserter mi = new MessageInserter(MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME));
-        MbMessage message = mi.buildMessage(mi.buildUser(), body, null, null);
+        MessageInserter mi = new MessageInserter(MyContextHolder.get().persistentAccounts()
+                .fromAccountName(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME));
+        MbMessage message = mi.buildMessage(mi.buildUser(), body, null, null, DownloadStatus.LOADED);
         message.attachments
                 .add(MbAttachment
                         .fromUrlAndContentType(
@@ -61,7 +63,7 @@ public class LargeImageTest extends InstrumentationTestCase {
         long msgId = mi.addMessage(message);
         
         DownloadData dd = DownloadData.newForMessage(msgId, message.attachments.get(0).contentType, null);
-        assertEquals("Image URL stored", message.attachments.get(0).getUri(), dd.getUri());
+        assertEquals("Image URI stored", message.attachments.get(0).getUri(), dd.getUri());
 
         CommandData commandData = new CommandData(CommandEnum.FETCH_AVATAR, null);
         AttachmentDownloader loader = new AttachmentDownloader(dd);

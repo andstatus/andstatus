@@ -82,16 +82,16 @@ public class MessageInserter extends InstrumentationTestCase {
         return mbUser;
     }
     
-    public MbMessage buildMessage(MbUser author, String body, MbMessage inReplyToMessage, String messageOidIn) {
+    public MbMessage buildMessage(MbUser author, String body, MbMessage inReplyToMessage, String messageOidIn, DownloadStatus messageStatus) {
         String messageOid = messageOidIn;
-        if (TextUtils.isEmpty(messageOid)) {
+        if (TextUtils.isEmpty(messageOid) && messageStatus != DownloadStatus.SENDING) {
             if (origin.getOriginType() == OriginType.PUMPIO) {
                 messageOid = author.getUrl()  + "/" + (inReplyToMessage == null ? "note" : "comment") + "/thisisfakeuri" + System.nanoTime();
             } else {
                 messageOid = String.valueOf(System.nanoTime());
             }
         }
-        MbMessage message = MbMessage.fromOriginAndOid(origin.getId(), messageOid, DownloadStatus.LOADED);
+        MbMessage message = MbMessage.fromOriginAndOid(origin.getId(), messageOid, messageStatus);
         message.setBody(body);
         message.sentDate = System.currentTimeMillis();
         message.via = "AndStatus";
@@ -148,10 +148,10 @@ public class MessageInserter extends InstrumentationTestCase {
         }
     }
     
-    public static long addMessageForAccount(String accountName, String body, String messageOid) {
+    public static long addMessageForAccount(String accountName, String body, String messageOid, DownloadStatus messageStatus) {
         MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(accountName);
         assertTrue(accountName + " exists", ma.isValid());
         MessageInserter mi = new MessageInserter(ma);
-        return mi.addMessage(mi.buildMessage(mi.buildUser(), body, null, messageOid));
+        return mi.addMessage(mi.buildMessage(mi.buildUser(), body, null, messageOid, messageStatus));
     }
 }

@@ -47,6 +47,9 @@ public class MySettingsActivity extends AppCompatPreferenceActivity {
     private long mPreferencesChangedAt = MyPreferences.getPreferencesChangeTime();
     private long mInstanceId = 0;
 
+    /**
+     * Based on http://stackoverflow.com/questions/14001963/finish-all-activities-at-a-time
+     */
     public static void closeAllActivities(Context context) {
         Intent intent = new Intent(context.getApplicationContext(), MySettingsActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK + Intent.FLAG_ACTIVITY_NEW_TASK);

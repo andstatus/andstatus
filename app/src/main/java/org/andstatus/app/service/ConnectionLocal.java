@@ -16,10 +16,16 @@
 
 package org.andstatus.app.service;
 
+import android.net.Uri;
+
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.social.ConnectionEmpty;
+import org.andstatus.app.util.FileUtils;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * Connection to local resources
@@ -27,6 +33,11 @@ import java.io.File;
 public class ConnectionLocal extends ConnectionEmpty {
     @Override
     public void downloadFile(String uri, File file) throws ConnectionException {
-        throw new ConnectionException("Not implemented, uri:'" + uri + "'");
+        try {
+            InputStream ins = MyContextHolder.get().context().getContentResolver().openInputStream(Uri.parse(uri));
+            FileUtils.readStreamToFile(ins, file);
+        } catch (IOException e) {
+            throw ConnectionException.hardConnectionException("mediaUri='" + uri + "'", e);
+        }
     }
 }
