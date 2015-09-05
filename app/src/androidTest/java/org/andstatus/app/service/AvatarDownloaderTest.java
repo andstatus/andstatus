@@ -101,7 +101,7 @@ public class AvatarDownloaderTest extends InstrumentationTestCase {
     }
 
     private void deleteMaAvatar() {
-        DownloadData data = AvatarData.newForUser(ma.getUserId());
+        DownloadData data = AvatarData.getForUser(ma.getUserId());
         assertTrue("Loaded avatar file deleted", data.getFile().delete());
     }
 
@@ -113,7 +113,7 @@ public class AvatarDownloaderTest extends InstrumentationTestCase {
         assertEquals(TestSuite.CONVERSATION_ACCOUNT_AVATAR_URL, urlString);
         
         loadAndAssertStatusForMa(DownloadStatus.LOADED, false);
-        DownloadData data = AvatarData.newForUser(ma.getUserId());
+        DownloadData data = AvatarData.getForUser(ma.getUserId());
         assertTrue("Existence of " + data.getFilename(), data.getFile().exists());
         assertTrue("Is File" + data.getFilename(), data.getFile().getFile().isFile());
 
@@ -122,7 +122,7 @@ public class AvatarDownloaderTest extends InstrumentationTestCase {
         assertFalse(avatarFile.exists());
 
         loadAndAssertStatusForMa(DownloadStatus.LOADED, false);
-        data = AvatarData.newForUser(ma.getUserId());
+        data = AvatarData.getForUser(ma.getUserId());
         assertTrue(data.getFile().exists());
     }
     
@@ -154,7 +154,7 @@ public class AvatarDownloaderTest extends InstrumentationTestCase {
         CommandData commandData = new CommandData(CommandEnum.FETCH_AVATAR, null);
         loader.load(commandData);
 
-        DownloadData data = AvatarData.newForUser(ma.getUserId());
+        DownloadData data = AvatarData.getForUser(ma.getUserId());
         if (DownloadStatus.LOADED.equals(status)) {
             assertFalse("Loaded " + data, commandData.getResult().hasError());
             assertEquals("Loaded " + data.getUri(), status, loader.getStatus());
@@ -170,6 +170,6 @@ public class AvatarDownloaderTest extends InstrumentationTestCase {
 
         assertEquals("Loaded '" + data.getUri() + "'", status, loader.getStatus());
         
-        return data.getRowId();
+        return data.getDownloadId();
     }
 }

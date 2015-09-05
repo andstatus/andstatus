@@ -16,9 +16,11 @@
 
 package org.andstatus.app.data;
 
+import android.net.Uri;
 import android.os.AsyncTask;
 
 import org.andstatus.app.data.MyDatabase.User;
+import org.andstatus.app.util.UriUtils;
 
 public class AvatarData extends DownloadData {
 
@@ -26,18 +28,24 @@ public class AvatarData extends DownloadData {
         new AsyncTask<Void, Void, Void>(){
             @Override
             protected Void doInBackground(Void... params) {
-                newForUser(userIdIn).requestDownload();  
+                getForUser(userIdIn).requestDownload();
                 return null;
             }
         }.execute();
     }
     
-    public static DownloadData newForUser(long userIdIn) {
-        return new AvatarData(userIdIn);
+    public static AvatarData getForUser(long userIdIn) {
+        Uri avatarUriNew = UriUtils.fromString(MyQuery.userIdToStringColumnValue(User.AVATAR_URL, userIdIn));
+        AvatarData data = new AvatarData(userIdIn, Uri.EMPTY);
+        if (!data.getUri().equals(avatarUriNew)) {
+            deleteAllOfThisUser(userIdIn);
+            data = new AvatarData(userIdIn, avatarUriNew);
+        }
+        return data;
     }
     
-    private AvatarData(long userIdIn) {
-        super(userIdIn, MyQuery.userIdToStringColumnValue(User.AVATAR_URL, userIdIn));
+    private AvatarData(long userIdIn, Uri avatarUriNew) {
+        super(userIdIn, 0, MyContentType.IMAGE, avatarUriNew);
     }
     
 }

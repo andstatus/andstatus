@@ -34,7 +34,7 @@ abstract class FileDownloader {
     public Connection connectionMock;
 
     static FileDownloader newForDownloadRow(long rowIdIn) {
-        DownloadData data = DownloadData.fromRowId(rowIdIn);
+        DownloadData data = DownloadData.fromId(rowIdIn);
         if (data.userId != 0) {
             return new AvatarDownloader(data);
         } else {

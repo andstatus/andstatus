@@ -27,6 +27,7 @@ public class MessageSender extends AsyncTask<MessageEditorData, Void, Void> {
         message.actor = MbUser.fromOriginAndUserOid(data.getMyAccount().getOriginId(),
                 data.getMyAccount().getUserOid());
         message.sender = message.actor;
+        message.sentDate = System.currentTimeMillis();
         message.setBody(data.messageText);
         if (data.recipientId != 0) {
             message.recipient = MbUser.fromOriginAndUserOid(data.getMyAccount().getOriginId(),
@@ -42,9 +43,9 @@ public class MessageSender extends AsyncTask<MessageEditorData, Void, Void> {
                     MyContentType.IMAGE));
         }
         DataInserter di = new DataInserter(data.getMyAccount());
-        message.rowId = di.insertOrUpdateMsg(message);
+        message.msgId = di.insertOrUpdateMsg(message);
 
-        CommandData commandData = CommandData.updateStatus(data.getMyAccount().getAccountName(), message.rowId);
+        CommandData commandData = CommandData.updateStatus(data.getMyAccount().getAccountName(), message.msgId);
         MyServiceManager.sendForegroundCommand(commandData);
         return null;
     }

@@ -90,7 +90,7 @@ public class SharingMediaToThisAppTest extends ActivityInstrumentationTestCase2<
         assertEquals("Status of unsent message", DownloadStatus.SENDING, DownloadStatus.load(
                 MyQuery.msgIdToLongColumnValue(MyDatabase.Msg.MSG_STATUS, unsentMsgId)));
 
-        DownloadData dd = DownloadData.newForMessage(unsentMsgId,
+        DownloadData dd = DownloadData.getSingleForMessage(unsentMsgId,
                 MyContentType.IMAGE, null);
         MyLog.v(this, method + "; " + dd);
         assertEquals("Image URI stored", TestSuite.LOCAL_IMAGE_TEST_URI2, dd.getUri());

@@ -66,7 +66,7 @@ public class MbMessage {
     
     // In our system
     public long originId = 0L;
-    public long rowId = 0L;
+    public long msgId = 0L;
     
     public static MbMessage fromOriginAndOid(long originId, String oid, DownloadStatus status) {
         MbMessage message = new MbMessage();
@@ -157,7 +157,7 @@ public class MbMessage {
                 ", attachments=" + attachments +
                 ", favoritedByActor=" + favoritedByActor +
                 ", originId=" + originId +
-                ", rowId=" + rowId +
+                ", msgId=" + msgId +
                 '}';
     }
 

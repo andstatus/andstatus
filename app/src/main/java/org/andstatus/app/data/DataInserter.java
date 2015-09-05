@@ -66,7 +66,7 @@ public class DataInserter {
         /**
          * Id of the message in our system, see {@link MyDatabase.Msg#MSG_ID}
          */
-        Long rowId = messageIn.rowId;
+        Long msgId = messageIn.msgId;
         try {
             if (messageIn.isEmpty()) {
                 MyLog.w(TAG, funcName +"; the message is empty, skipping: " + messageIn.toString());
@@ -147,20 +147,20 @@ public class DataInserter {
              */
             boolean isFirstTimeLoaded = true;
 
-            if (rowId == 0) {
+            if (msgId == 0) {
                 // Lookup the System's (AndStatus) id from the Originated system's id
-                rowId = MyQuery.oidToId(OidEnum.MSG_OID, execContext.getMyAccount().getOriginId(), rowOid);
+                msgId = MyQuery.oidToId(OidEnum.MSG_OID, execContext.getMyAccount().getOriginId(), rowOid);
             }
 
             long sentDateStored = 0;
             DownloadStatus statusStored = DownloadStatus.UNKNOWN;
-            if (rowId != 0) {
-                statusStored = DownloadStatus.load(MyQuery.msgIdToLongColumnValue(Msg.MSG_STATUS, rowId));
-                sentDateStored = MyQuery.msgIdToLongColumnValue(Msg.SENT_DATE, rowId);
+            if (msgId != 0) {
+                statusStored = DownloadStatus.load(MyQuery.msgIdToLongColumnValue(Msg.MSG_STATUS, msgId));
+                sentDateStored = MyQuery.msgIdToLongColumnValue(Msg.SENT_DATE, msgId);
                 isFirstTimeLoaded = (statusStored == DownloadStatus.UNKNOWN)
                         || (message.getStatus() == DownloadStatus.LOADED && statusStored != DownloadStatus.LOADED);
                 if (!isFirstTimeLoaded) {
-                  long senderIdStored = MyQuery.msgIdToLongColumnValue(Msg.SENDER_ID, rowId);
+                  long senderIdStored = MyQuery.msgIdToLongColumnValue(Msg.SENDER_ID, msgId);
                   isFirstTimeLoaded = (senderIdStored == 0);
                 }
             }
@@ -230,7 +230,7 @@ public class DataInserter {
             boolean mentioned = isMentionedAndPutInReplyToMessage(message, lum, values);
             
             if (MyLog.isVerboseEnabled()) {
-                MyLog.v(this, ((rowId==0) ? "insertMsg" : "updateMsg") 
+                MyLog.v(this, ((msgId==0) ? "insertMsg" : "updateMsg")
                         + ":" 
                         + (isFirstTimeLoaded ? " new;" : "")
                         + (isNewerThanInDatabase ? " newer, sent at " + new Date(sentDate).toString() + ";" : "") );
@@ -239,24 +239,23 @@ public class DataInserter {
             if (MyContextHolder.get().isTestRun()) {
                 MyContextHolder.get().put(new AssertionData(MSG_ASSERTION_KEY, values));
             }
-            if (rowId == 0) {
+            if (msgId == 0) {
                 Uri msgUri = execContext.getContext().getContentResolver().insert(
                         MatchedUri.getMsgUri(execContext.getMyAccount().getUserId(), 0), values);
-                rowId = ParsedUri.fromUri(msgUri).getMessageId();
+                msgId = ParsedUri.fromUri(msgUri).getMessageId();
             } else {
-                if (isFirstTimeLoaded) {
-                    DownloadData.deleteAllOfThisMsg(rowId);
-                }
-                Uri msgUri = MatchedUri.getMsgUri(execContext.getMyAccount().getUserId(), rowId);
+                Uri msgUri = MatchedUri.getMsgUri(execContext.getMyAccount().getUserId(), msgId);
                 execContext.getContext().getContentResolver().update(msgUri, values, null, null);
             }
 
             if (isFirstTimeLoaded) {
+                // TODO: Compare with new, maybe we can leave them as is
+                DownloadData.deleteAllOfThisMsg(msgId);
                 for (MbAttachment attachment : message.attachments) {
-                    DownloadData dd = DownloadData.newForMessage(rowId, attachment.contentType, attachment.getUri());
+                    DownloadData dd = DownloadData.getThisForMessage(msgId, attachment.contentType, attachment.getUri());
                     dd.saveToDatabase();
                     if (UriUtils.isLocal(dd.getUri())) {
-                        AttachmentDownloader.load(dd.getRowId(), execContext.getCommandData());
+                        AttachmentDownloader.load(dd.getDownloadId(), execContext.getCommandData());
                     } else {
                         if (attachment.contentType == MyContentType.IMAGE && MyPreferences.showAttachedImages()) {
                             dd.requestDownload();
@@ -274,16 +273,16 @@ public class DataInserter {
             }
             if (senderId != 0) {
                 // Remember all messages that we added or updated
-                lum.onNewUserMsg(new UserMsg(senderId, rowId, sentDate));
+                lum.onNewUserMsg(new UserMsg(senderId, msgId, sentDate));
             }
             if ( authorId != 0 && authorId != senderId ) {
-                lum.onNewUserMsg(new UserMsg(authorId, rowId, createdDate));
+                lum.onNewUserMsg(new UserMsg(authorId, msgId, createdDate));
             }
         } catch (Exception e) {
             MyLog.e(this, funcName, e);
         }
 
-        return rowId;
+        return msgId;
     }
 
     private boolean isMentionedAndPutInReplyToMessage(MbMessage message, LatestUserMessages lum, ContentValues values) {

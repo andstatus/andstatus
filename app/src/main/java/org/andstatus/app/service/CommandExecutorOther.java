@@ -21,11 +21,9 @@ import android.content.ContentValues;
 import android.net.Uri;
 import android.text.TextUtils;
 
-import org.andstatus.app.IntentExtra;
 import org.andstatus.app.appwidget.AppWidgets;
 import org.andstatus.app.data.DataInserter;
 import org.andstatus.app.data.DownloadData;
-import org.andstatus.app.data.DownloadFile;
 import org.andstatus.app.data.FileProvider;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyContentType;
@@ -40,7 +38,6 @@ import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.net.http.ConnectionException.StatusCode;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
-import org.andstatus.app.util.UriUtils;
 
 class CommandExecutorOther extends CommandExecutorStrategy{
     
@@ -322,8 +319,8 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         MbMessage message = null;
         String status = MyQuery.msgIdToStringColumnValue(MyDatabase.Msg.BODY, msgId);
         long recipientUserId = MyQuery.msgIdToLongColumnValue(MyDatabase.Msg.RECIPIENT_ID, msgId);
-        DownloadData dd = DownloadData.newForMessage(msgId, MyContentType.IMAGE, null);
-        Uri mediaUri = FileProvider.downloadFilenameToUri(dd.getFile().getFilename());
+        DownloadData dd = DownloadData.getSingleForMessage(msgId, MyContentType.IMAGE, Uri.EMPTY);
+        Uri mediaUri = dd.getUri().equals(Uri.EMPTY) ? Uri.EMPTY : FileProvider.downloadFilenameToUri(dd.getFile().getFilename());
         try {
             if (MyLog.isVerboseEnabled()) {
                 MyLog.v(this, method + ", text:'" + MyLog.trimmedString(status, 40) + "'");
@@ -348,7 +345,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         if (ok) {
             // The message was sent successfully, so now update unsent message
             // New User's message should be put into the user's Home timeline.
-            message.rowId = msgId;
+            message.msgId = msgId;
             new DataInserter(
                     execContext.setTimelineType((recipientUserId == 0) ? TimelineType.HOME
                             : TimelineType.DIRECT)).insertOrUpdateMsg(message);

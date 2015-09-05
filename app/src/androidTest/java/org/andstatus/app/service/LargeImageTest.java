@@ -28,9 +28,6 @@ import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.net.social.ConnectionTwitterGnuSocialMock;
 import org.andstatus.app.net.social.MbAttachment;
 import org.andstatus.app.net.social.MbMessage;
-import org.andstatus.app.service.AttachmentDownloader;
-import org.andstatus.app.service.CommandData;
-import org.andstatus.app.service.CommandEnum;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -62,7 +59,7 @@ public class LargeImageTest extends InstrumentationTestCase {
                                 MyContentType.IMAGE));
         long msgId = mi.addMessage(message);
         
-        DownloadData dd = DownloadData.newForMessage(msgId, message.attachments.get(0).contentType, null);
+        DownloadData dd = DownloadData.getSingleForMessage(msgId, message.attachments.get(0).contentType, null);
         assertEquals("Image URI stored", message.attachments.get(0).getUri(), dd.getUri());
 
         CommandData commandData = new CommandData(CommandEnum.FETCH_AVATAR, null);
@@ -76,14 +73,14 @@ public class LargeImageTest extends InstrumentationTestCase {
         inputStream.close();
         assertEquals("Requested", 1, connection.getHttpMock().getRequestsCounter());
 
-        DownloadData data = DownloadData.fromRowId(dd.getRowId());
+        DownloadData data = DownloadData.fromId(dd.getDownloadId());
         assertFalse("Loaded " + data.getUri(), commandData.getResult().hasError());
         assertTrue("File exists " + data.getUri(), data.getFile().exists());
         return data;
     }
 
     private void loadingTest(DownloadData dd) {
-        BitmapDrawable drawable = (BitmapDrawable) new AttachedImageDrawable(dd.getRowId(), dd.getFilename())
+        BitmapDrawable drawable = (BitmapDrawable) new AttachedImageDrawable(dd.getDownloadId(), dd.getFilename())
                 .getDrawable();
         int width = drawable.getIntrinsicWidth();
         assertTrue("Not wide already " + width, width < 4000 && width > 10);

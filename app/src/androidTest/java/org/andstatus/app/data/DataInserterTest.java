@@ -305,7 +305,7 @@ public class DataInserterTest extends InstrumentationTestCase {
         long messageId = di.insertOrUpdateMsg(message);
         assertTrue("Message added", messageId != 0);
 
-        DownloadData dd = DownloadData.newForMessage(messageId,
+        DownloadData dd = DownloadData.getSingleForMessage(messageId,
                 message.attachments.get(0).contentType, null);
         assertEquals("Image URI stored", message.attachments.get(0).getUri(), dd.getUri());
     }
@@ -323,12 +323,12 @@ public class DataInserterTest extends InstrumentationTestCase {
         message.attachments.add(MbAttachment.fromUriAndContentType(TestSuite.LOCAL_IMAGE_TEST_URI,
                 MyContentType.IMAGE));
         DataInserter di = new DataInserter(ma);
-        message.rowId = di.insertOrUpdateMsg(message);
-        assertTrue("Message added", message.rowId != 0);
+        message.msgId = di.insertOrUpdateMsg(message);
+        assertTrue("Message added", message.msgId != 0);
         assertEquals("Status of unsent message", DownloadStatus.SENDING, DownloadStatus.load(
-                MyQuery.msgIdToLongColumnValue(MyDatabase.Msg.MSG_STATUS, message.rowId)));
+                MyQuery.msgIdToLongColumnValue(MyDatabase.Msg.MSG_STATUS, message.msgId)));
 
-        DownloadData dd = DownloadData.newForMessage(message.rowId,
+        DownloadData dd = DownloadData.getSingleForMessage(message.msgId,
                 message.attachments.get(0).contentType, null);
         assertEquals("Image URI stored", message.attachments.get(0).getUri(), dd.getUri());
         assertEquals("Local image immediately loaded " + dd, DownloadStatus.LOADED, dd.getStatus());
@@ -345,20 +345,20 @@ public class DataInserterTest extends InstrumentationTestCase {
         message2.setBody(body2);
         message2.attachments.add(MbAttachment.fromUriAndContentType(TestSuite.IMAGE1_URL,
                 MyContentType.IMAGE));
-        message2.rowId = message.rowId;
+        message2.msgId = message.msgId;
 
         long rowId2 = di.insertOrUpdateMsg(message2);
-        assertEquals("Row id didn't change", message.rowId, message2.rowId);
-        assertEquals("Message updated", message.rowId, rowId2);
+        assertEquals("Row id didn't change", message.msgId, message2.msgId);
+        assertEquals("Message updated", message.msgId, rowId2);
         assertEquals("Status of loaded message", DownloadStatus.LOADED, DownloadStatus.load(
-                MyQuery.msgIdToLongColumnValue(MyDatabase.Msg.MSG_STATUS, message2.rowId)));
+                MyQuery.msgIdToLongColumnValue(MyDatabase.Msg.MSG_STATUS, message2.msgId)));
 
-        DownloadData dd2 = DownloadData.newForMessage(message2.rowId,
+        DownloadData dd2 = DownloadData.getSingleForMessage(message2.msgId,
                 message2.attachments.get(0).contentType, null);
         assertEquals("New image URI stored", message2.attachments.get(0).getUri(), dd2.getUri());
 
         assertEquals("Not loaded yet. " + dd2, DownloadStatus.ABSENT, dd2.getStatus());
-        AttachmentDownloaderTest.loadAndAssertStatusForRow(dd2.getRowId(), DownloadStatus.LOADED, false);
+        AttachmentDownloaderTest.loadAndAssertStatusForRow(dd2.getDownloadId(), DownloadStatus.LOADED, false);
     }
 
     public void testUserNameChanged() {

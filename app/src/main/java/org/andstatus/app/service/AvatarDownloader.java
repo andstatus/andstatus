@@ -26,7 +26,7 @@ import org.andstatus.app.util.MyLog;
 
 public class AvatarDownloader extends FileDownloader {
     public AvatarDownloader(long userIdIn) {
-        this(AvatarData.newForUser(userIdIn));
+        this(AvatarData.getForUser(userIdIn));
     }
 
     protected AvatarDownloader(DownloadData data) {

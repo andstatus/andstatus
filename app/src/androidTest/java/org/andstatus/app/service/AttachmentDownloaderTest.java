@@ -58,18 +58,18 @@ public class AttachmentDownloaderTest extends InstrumentationTestCase {
                 MyContentType.IMAGE));
         long msgId = mi.addMessage(message);
         
-        DownloadData dd = DownloadData.newForMessage(msgId, message.attachments.get(0).contentType, null);
+        DownloadData dd = DownloadData.getSingleForMessage(msgId, message.attachments.get(0).contentType, null);
         assertEquals("Image URI stored", message.attachments.get(0).getUri(), dd.getUri());
         
-        loadAndAssertStatusForRow(dd.getRowId(), DownloadStatus.ABSENT, true);
+        loadAndAssertStatusForRow(dd.getDownloadId(), DownloadStatus.ABSENT, true);
 
-        loadAndAssertStatusForRow(dd.getRowId(), DownloadStatus.LOADED, false);
+        loadAndAssertStatusForRow(dd.getDownloadId(), DownloadStatus.LOADED, false);
         
-        testFileProvider(dd.getRowId());
+        testFileProvider(dd.getDownloadId());
     }
     
     private void testFileProvider(long downloadRowId) throws IOException {
-        DownloadData data = DownloadData.fromRowId(downloadRowId);
+        DownloadData data = DownloadData.fromId(downloadRowId);
         assertTrue(data.getFilename(), data.getFile().exists());
 
         Uri uri = FileProvider.downloadFilenameToUri(data.getFile().getFilename());
@@ -88,7 +88,7 @@ public class AttachmentDownloaderTest extends InstrumentationTestCase {
         CommandData commandData = new CommandData(CommandEnum.FETCH_AVATAR, null);
         loader.load(commandData);
 
-        DownloadData data = DownloadData.fromRowId(downloadRowId);
+        DownloadData data = DownloadData.fromId(downloadRowId);
         if (DownloadStatus.LOADED.equals(status)) {
             assertFalse("Loaded " + data.getUri() + "; " + data, commandData.getResult().hasError());
             assertEquals("Loaded " + data.getUri(), status, loader.getStatus());

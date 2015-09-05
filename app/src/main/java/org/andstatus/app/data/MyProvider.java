@@ -235,7 +235,7 @@ public class MyProvider extends ContentProvider {
 
     private void optionallyLoadAvatar(long userId, ContentValues values) {
         if (MyPreferences.showAvatars() && values.containsKey(User.AVATAR_URL)) {
-            AvatarData.newForUser(userId).requestDownload();
+            AvatarData.getForUser(userId).requestDownload();
         }
     }
     

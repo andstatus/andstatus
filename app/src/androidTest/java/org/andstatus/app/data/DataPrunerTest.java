@@ -81,7 +81,7 @@ public class DataPrunerTest extends InstrumentationTestCase  {
     public void testPruneAttachments() throws MalformedURLException {
         DataPruner dp = new DataPruner(MyContextHolder.get());
         dp.pruneAttachments();
-        DownloadData dd = DownloadData.newForMessage(-555L, MyContentType.IMAGE, Uri.parse("http://example.com/image.png"));
+        DownloadData dd = DownloadData.getSingleForMessage(-555L, MyContentType.IMAGE, Uri.parse("http://example.com/image.png"));
         dd.saveToDatabase();
         assertEquals(1, dp.pruneAttachments());
         assertEquals(0, dp.pruneAttachments());
