@@ -111,7 +111,7 @@ public class MbMessage {
 
     public boolean isEmpty() {
         return this.isEmpty
-                || (TextUtils.isEmpty(oid) && (status!=DownloadStatus.SENDING || TextUtils.isEmpty(body)))
+                || (TextUtils.isEmpty(oid) && ((status!=DownloadStatus.SENDING && status!=DownloadStatus.DRAFT) || TextUtils.isEmpty(body)))
                 || originId==0;
     }
 

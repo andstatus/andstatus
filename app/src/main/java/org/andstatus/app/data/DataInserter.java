@@ -190,17 +190,21 @@ public class DataInserter {
                 // at the top of the sorted list 
                 values.put(MyDatabase.Msg.SENT_DATE, sentDate);
             }
-            
+
+            boolean isDirectMessage = false;
             if (message.recipient != null) {
                 long recipientId = insertOrUpdateUser(message.recipient, lum);
                 values.put(MyDatabase.Msg.RECIPIENT_ID, recipientId);
-                if (recipientId == execContext.getMyAccount().getUserId()) {
+                if (recipientId == execContext.getMyAccount().getUserId() ||
+                        senderId == execContext.getMyAccount().getUserId()) {
+                    isDirectMessage = true;
                     values.put(MyDatabase.MsgOfUser.DIRECTED, 1);
                     MyLog.v(this, "Message '" + message.oid + "' is Directed to " 
                             + execContext.getMyAccount().getAccountName() );
                 }
             }
-            if (execContext.getTimelineType() == TimelineType.HOME) {
+            if (execContext.getTimelineType() == TimelineType.HOME
+                    || (!isDirectMessage && senderId == execContext.getMyAccount().getUserId())) {
                 values.put(MyDatabase.MsgOfUser.SUBSCRIBED, 1);
             }
             if (!TextUtils.isEmpty(message.via)) {
@@ -258,9 +262,9 @@ public class DataInserter {
                         AttachmentDownloader.load(dd.getDownloadId(), execContext.getCommandData());
                     } else {
                         if (attachment.contentType == MyContentType.IMAGE && MyPreferences.showAttachedImages()) {
-                            dd.requestDownload();
                         }
                     }
+                    dd.requestDownload();
                 }
             }
             

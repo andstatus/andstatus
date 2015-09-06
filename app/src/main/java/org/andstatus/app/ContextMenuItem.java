@@ -49,7 +49,7 @@ public enum ContextMenuItem {
     REPLY(true) {
         @Override
         MessageEditorData executeAsync(MyAccount ma, long msgId) {
-            return new MessageEditorData(ma).setInReplyToId(msgId).addMentionsToText();
+            return MessageEditorData.newEmpty(ma).setInReplyToId(msgId).addMentionsToText();
         }
 
         @Override
@@ -61,7 +61,7 @@ public enum ContextMenuItem {
     REPLY_ALL(true) {
         @Override
         MessageEditorData executeAsync(MyAccount ma, long msgId) {
-            return new MessageEditorData(ma).setInReplyToId(msgId).setReplyAll(true).addMentionsToText();
+            return MessageEditorData.newEmpty(ma).setInReplyToId(msgId).setReplyAll(true).addMentionsToText();
         }
 
         @Override
@@ -73,7 +73,7 @@ public enum ContextMenuItem {
     DIRECT_MESSAGE(true) {
         @Override
         MessageEditorData executeAsync(MyAccount ma, long msgId) {
-            return new MessageEditorData(ma).setInReplyToId(msgId)
+            return MessageEditorData.newEmpty(ma).setInReplyToId(msgId)
                     .setRecipientId(MyQuery.msgIdToUserId(MyDatabase.Msg.AUTHOR_ID, msgId))
                     .addMentionsToText();
         }
@@ -134,7 +134,7 @@ public enum ContextMenuItem {
             if (ma.getOrigin().isHtmlContentAllowed()) {
                 body = MyHtml.fromHtml(body);
             }
-            return new MessageEditorData(ma).setMessageText(body);
+            return MessageEditorData.newEmpty(ma).setMessageText(body);
         }
 
         @Override
@@ -146,7 +146,7 @@ public enum ContextMenuItem {
     COPY_AUTHOR(true) {
         @Override
         MessageEditorData executeAsync(MyAccount ma, long msgId) {
-            return new MessageEditorData(ma).addMentionedUserToText(
+            return MessageEditorData.newEmpty(ma).addMentionedUserToText(
                     MyQuery.msgIdToUserId(MyDatabase.Msg.AUTHOR_ID, msgId));
         }
 
@@ -343,7 +343,7 @@ public enum ContextMenuItem {
             executeAsync1(menu, ma);
             return true;
         } else {
-            return executeOnUiThread(menu, new MessageEditorData(ma).setInReplyToId(menu.getMsgId()));
+            return executeOnUiThread(menu, MessageEditorData.newEmpty(ma).setInReplyToId(menu.getMsgId()));
         }
     }
     
@@ -364,11 +364,11 @@ public enum ContextMenuItem {
     }
 
     MessageEditorData executeAsync(MyAccount ma, long msgId) {
-        return new MessageEditorData(ma);
+        return MessageEditorData.newEmpty(ma);
     }
 
     MessageEditorData getUserId(MyAccount ma, long msgId, String msgUserIdColumnName) {
-        return new MessageEditorData(ma)
+        return MessageEditorData.newEmpty(ma)
                 .setRecipientId(MyQuery.msgIdToUserId(msgUserIdColumnName, msgId));
     }
 
@@ -377,10 +377,12 @@ public enum ContextMenuItem {
     }
     
     void sendCommandUser(CommandEnum command, MessageEditorData editorData) {
-        MyServiceManager.sendManualForegroundCommand( new CommandData(command, editorData.ma.getAccountName(), editorData.recipientId));
+        MyServiceManager.sendManualForegroundCommand(
+                new CommandData(command, editorData.ma.getAccountName(), editorData.recipientId));
     }
     
     void sendCommandMsg(CommandEnum command, MessageEditorData editorData) {
-        MyServiceManager.sendManualForegroundCommand( new CommandData(command, editorData.ma.getAccountName(), editorData.inReplyToId));
+        MyServiceManager.sendManualForegroundCommand(
+                new CommandData(command, editorData.ma.getAccountName(), editorData.inReplyToId));
     }
 }

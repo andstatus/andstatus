@@ -16,14 +16,16 @@
 
 package org.andstatus.app.msg;
 
-import android.content.SharedPreferences;
 import android.net.Uri;
 import android.text.TextUtils;
 
-import org.andstatus.app.IntentExtra;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.UserInTimeline;
+import org.andstatus.app.data.DownloadData;
+import org.andstatus.app.data.DownloadStatus;
+import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.util.UriUtils;
@@ -32,8 +34,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MessageEditorData {
+    public volatile long msgId = 0;
+    public DownloadStatus status = DownloadStatus.DRAFT;
     public String messageText = "";
-    Uri mediaUri = Uri.EMPTY;
+    public DownloadData image = DownloadData.EMPTY;
     /**
      * Id of the Message to which we are replying.
      *  0 - This message is not a Reply.
@@ -44,16 +48,13 @@ public class MessageEditorData {
     public long recipientId = 0;
     public MyAccount ma = MyAccount.getEmpty(MyContextHolder.get(), "");
 
-    public MessageEditorData() {
-        this(null);
+    private MessageEditorData(MyAccount myAccount) {
+        ma = myAccount;
     }
     
-    public MessageEditorData(MyAccount myAccount) {
-        if (myAccount == null) {
-            ma = MyAccount.getEmpty(MyContextHolder.get(), "");
-        } else {
-            ma = myAccount;
-        }
+    public static MessageEditorData newEmpty(MyAccount myAccount) {
+        return new MessageEditorData(
+                myAccount == null ? MyAccount.getEmpty(MyContextHolder.get(), "") : myAccount);
     }
     
     @Override
@@ -61,7 +62,7 @@ public class MessageEditorData {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((ma == null) ? 0 : ma.hashCode());
-        result = prime * result + ((mediaUri == null) ? 0 : mediaUri.hashCode());
+        result = prime * result + image.getUri().hashCode();
         result = prime * result + ((messageText == null) ? 0 : messageText.hashCode());
         result = prime * result + (int) (recipientId ^ (recipientId >>> 32));
         result = prime * result + (int) (inReplyToId ^ (inReplyToId >>> 32));
@@ -82,10 +83,7 @@ public class MessageEditorData {
                 return false;
         } else if (!ma.equals(other.ma))
             return false;
-        if (mediaUri == null) {
-            if (other.mediaUri != null)
-                return false;
-        } else if (!mediaUri.equals(other.mediaUri))
+        if (!image.getUri().equals(other.image.getUri()))
             return false;
         if (messageText == null) {
             if (other.messageText != null)
@@ -101,52 +99,40 @@ public class MessageEditorData {
 
     @Override
     public String toString() {
-        StringBuilder builder = new StringBuilder();
-        builder.append("MessageEditorData [messageText=");
-        builder.append(messageText);
-        builder.append(", mediaUri=");
-        builder.append(mediaUri);
-        builder.append(", inReplyToId=");
-        builder.append(inReplyToId);
-        builder.append(", mReplyAll=");
-        builder.append(mReplyAll);
-        builder.append(", recipientId=");
-        builder.append(recipientId);
-        builder.append(", ma=");
-        builder.append(ma);
-        builder.append("]");
-        return builder.toString();
+        return "MessageEditorData{" +
+                "msgId=" + msgId +
+                ", status=" + status +
+                ", messageText='" + messageText + '\'' +
+                ", image=" + image +
+                ", inReplyToId=" + inReplyToId +
+                ", mReplyAll=" + mReplyAll +
+                ", recipientId=" + recipientId +
+                ", ma=" + ma +
+                '}';
     }
-    
-    public void save(SharedPreferences.Editor outState) {
-        if (outState != null) {
-            outState.putString(IntentExtra.MESSAGE_TEXT.key, messageText);
-            outState.putString(IntentExtra.MEDIA_URI.key, mediaUri.toString());
-            outState.putLong(IntentExtra.INREPLYTOID.key, inReplyToId);
-            outState.putLong(IntentExtra.RECIPIENTID.key, recipientId);
-            outState.putString(IntentExtra.ACCOUNT_NAME.key, getMyAccount().getAccountName());
-        }
-    }
-    
-    static MessageEditorData load(SharedPreferences savedState) {
-        if (savedState != null 
-                && savedState.contains(IntentExtra.INREPLYTOID.key) 
-                && savedState.contains(IntentExtra.MESSAGE_TEXT.key)) {
-            MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(
-                    savedState.getString(IntentExtra.ACCOUNT_NAME.key, ""));
-            MessageEditorData data = new MessageEditorData(ma);
-            String messageText = savedState.getString(IntentExtra.MESSAGE_TEXT.key, "");
-            Uri mediaUri = UriUtils.fromString(savedState.getString(IntentExtra.MEDIA_URI.key, ""));
-            if (!TextUtils.isEmpty(messageText) || !UriUtils.isEmpty(mediaUri)) {
-                data.messageText = messageText;
-                data.mediaUri = mediaUri;
-                data.inReplyToId = savedState.getLong(IntentExtra.INREPLYTOID.key, 0);
-                data.recipientId = savedState.getLong(IntentExtra.RECIPIENTID.key, 0);
+
+    static MessageEditorData load() {
+        long msgId = MyPreferences.getLong(MyPreferences.KEY_DRAFT_MESSAGE_ID);
+        if (msgId != 0) {
+            DownloadStatus status = DownloadStatus.load(MyQuery.msgIdToLongColumnValue(MyDatabase.Msg.MSG_STATUS, msgId));
+            if (status != DownloadStatus.DRAFT) {
+                msgId = 0;
             }
-            return data;
-        } else {
-            return new MessageEditorData();
         }
+        MessageEditorData data;
+        if (msgId != 0) {
+            MyAccount ma = MyContextHolder.get().persistentAccounts().fromUserId(
+                    MyQuery.msgIdToLongColumnValue(MyDatabase.Msg.SENDER_ID, msgId));
+            data = new MessageEditorData(ma);
+            data.msgId = msgId;
+            data.messageText = MyQuery.msgIdToStringColumnValue(MyDatabase.Msg.BODY, msgId);
+            data.image = DownloadData.getSingleForMessage(msgId, MyContentType.IMAGE, Uri.EMPTY);
+            data.inReplyToId = MyQuery.msgIdToLongColumnValue(MyDatabase.Msg.IN_REPLY_TO_MSG_ID, msgId);
+            data.recipientId = MyQuery.msgIdToLongColumnValue(MyDatabase.Msg.RECIPIENT_ID, msgId);
+        } else {
+            data = new MessageEditorData(MyContextHolder.get().persistentAccounts().getCurrentAccount());
+        }
+        return data;
     }
 
     MyAccount getMyAccount() {
@@ -154,7 +140,7 @@ public class MessageEditorData {
     }
     
     boolean isEmpty() {
-        return TextUtils.isEmpty(messageText) && UriUtils.isEmpty(mediaUri);
+        return TextUtils.isEmpty(messageText) && UriUtils.isEmpty(image.getUri());
     }
 
     public MessageEditorData setMessageText(String textInitial) {
@@ -163,7 +149,7 @@ public class MessageEditorData {
     }
 
     public MessageEditorData setMediaUri(Uri mediaUri) {
-        this.mediaUri = UriUtils.notNull(mediaUri);
+        image = DownloadData.getSingleForMessage(msgId, MyContentType.IMAGE, mediaUri);
         return this;
     }
     

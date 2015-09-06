@@ -39,7 +39,7 @@ public class MessageEditorDataTest extends InstrumentationTestCase {
 
     private void assertData(MyAccount ma, long inReplyToMsgId, long inReplyToUserId, long recipientId,
             long memberUserId, boolean replyAll) {
-        MessageEditorData data = new MessageEditorData(ma)
+        MessageEditorData data = MessageEditorData.newEmpty(ma)
                 .setMediaUri(Uri.parse("http://example.com/" + TestSuite.TESTRUN_UID + "/some.png"))
                 .setInReplyToId(inReplyToMsgId)
                 .setRecipientId(recipientId)

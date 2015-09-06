@@ -18,6 +18,8 @@ import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.UriUtils;
 
 public class DownloadData {
+    public static final DownloadData EMPTY = new DownloadData();
+
     private DownloadType downloadType = DownloadType.UNKNOWN;
     public long userId = 0;
     public long msgId = 0;

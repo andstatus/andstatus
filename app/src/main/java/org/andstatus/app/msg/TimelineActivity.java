@@ -671,7 +671,7 @@ public class TimelineActivity extends MyListActivity implements MyServiceEventsL
         if (!TextUtils.isEmpty(mListParametersNew.mSearchQuery)
                 && appSearchData.getBoolean(IntentExtra.GLOBAL_SEARCH.key, false)) {
             setSyncing("Global search: " + mListParametersNew.mSearchQuery, true);
-            MyServiceManager.sendForegroundCommand(
+            MyServiceManager.sendManualForegroundCommand(
                     CommandData.searchCommand(
                             isTimelineCombined()
                             ? ""
@@ -1122,7 +1122,8 @@ public class TimelineActivity extends MyListActivity implements MyServiceEventsL
 
     private void accountToShareViaSelected(Intent data) {
         MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(data.getStringExtra(IntentExtra.ACCOUNT_NAME.key));
-        mMessageEditor.startEditingMessage(new MessageEditorData(ma).setMessageText(mTextToShareViaThisApp).setMediaUri(mMediaToShareViaThisApp));
+        // TODO:
+        mMessageEditor.startEditingSharedData(ma, mTextToShareViaThisApp, mMediaToShareViaThisApp);
     }
 
     private void attachmentSelected(Intent data) {

@@ -24,6 +24,8 @@ public enum DownloadStatus {
     HARD_ERROR(5),
     ABSENT(6),
     SENDING(7),
+    DRAFT(8),
+    DELETED(9),
     UNKNOWN(0);
 
     private static final String TAG = DownloadStatus.class.getSimpleName();

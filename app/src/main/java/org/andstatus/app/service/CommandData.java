@@ -86,16 +86,12 @@ public class CommandData implements Comparable<CommandData> {
     public static CommandData searchCommand(String accountName, String queryString) {
         CommandData commandData = new CommandData(CommandEnum.SEARCH_MESSAGE, accountName,
                 TimelineType.PUBLIC);
-        commandData.mInForeground = true;
-        commandData.mManuallyLaunched = true;
         commandData.bundle.putString(IntentExtra.SEARCH_QUERY.key, queryString);
         return commandData;
     }
 
     public static CommandData updateStatus(String accountName, long unsentMessageId) {
         CommandData commandData = new CommandData(CommandEnum.UPDATE_STATUS, accountName, unsentMessageId);
-        commandData.mInForeground = true;
-        commandData.mManuallyLaunched = true;
         putTrimmedMessageBody(commandData, unsentMessageId);
         return commandData;
     }

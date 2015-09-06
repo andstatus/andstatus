@@ -54,7 +54,6 @@ public class ConversationActivity extends LoadableListActivity implements Action
         mContextMenu = new MessageContextMenu(this);
         
         mMessageEditor.loadState();
-        mMessageEditor.updateScreen();
     }
 
     @Override

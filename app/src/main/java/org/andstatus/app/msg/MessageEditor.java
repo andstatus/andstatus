@@ -22,6 +22,7 @@ import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.TimelineType;
@@ -32,9 +33,9 @@ import org.andstatus.app.service.MyServiceManager;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -55,8 +56,6 @@ import org.andstatus.app.util.*;
  * "Enter your message here" box 
  */
 public class MessageEditor {
-    private static final String PERSISTENCE_NAME = MessageEditor.class.getSimpleName();
-
     private ActionableMessageList mMessageList;
     private android.view.ViewGroup mEditorView;
 
@@ -71,8 +70,8 @@ public class MessageEditor {
      */
     private TextView mDetails;
 
-    private MessageEditorData dataCurrent = new MessageEditorData();
-    private MessageEditorData dataLoaded = new MessageEditorData();
+    private MessageEditorData dataCurrent = MessageEditorData.newEmpty(null);
+    private MessageEditorData dataLoaded = MessageEditorData.newEmpty(null);
     
     public MessageEditor(ActionableMessageList actionableMessageList) {
         mMessageList = actionableMessageList;
@@ -117,14 +116,14 @@ public class MessageEditor {
                     public boolean onMenuItemClick(MenuItem item) {
                         MyAccount accountForButton = accountforCreateMessageButton();
                         if (accountForButton != null) {
-                            startEditingMessage(new MessageEditorData(accountForButton));
+                            startEditingMessage(MessageEditorData.newEmpty(accountForButton));
                         }
                         return false;
                     }
                 });
         MyAccount accountForButton = accountforCreateMessageButton();
         item.setVisible(!isVisible()
-                && accountForButton.isValidAndSucceeded() 
+                && accountForButton.isValidAndSucceeded()
                 && mMessageList.getTimelineType() != TimelineType.DIRECT
                 && mMessageList.getTimelineType() != TimelineType.MESSAGESTOACT);
     }
@@ -214,7 +213,7 @@ public class MessageEditor {
         mEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if (event != null && (event.isAltPressed() || 
+                if (event != null && (event.isAltPressed() ||
                         !MyPreferences.getBoolean(MyPreferences.KEY_ENTER_SENDS_MESSAGE, true))) {
                     return false;
                 }
@@ -306,7 +305,7 @@ public class MessageEditor {
                         recipientName);
             }
         }
-        if (!UriUtils.isEmpty(dataCurrent.mediaUri)) {
+        if (!UriUtils.isEmpty(dataCurrent.image.getUri())) {
             messageDetails += " (" + MyContextHolder.get().context().getText(R.string.label_with_media).toString() + ")"; 
         }
         mDetails.setText(messageDetails);
@@ -340,21 +339,14 @@ public class MessageEditor {
 			if (MyPreferences.getBoolean(MyPreferences.KEY_SENDING_MESSAGES_LOG_ENABLED, false)) {
 				MyLog.setLogToFile(true);
 			}
-            new MessageSender().execute(dataCurrent);
-            clearAndHide();
+            dataCurrent.status = DownloadStatus.SENDING;
+            save();
         }
     }
 
     private void clearAndHide() {
-        clearEditor();
-        hide();
-    }
-    
-	public void clearEditor() {
-        if (mEditText != null) {
-            mEditText.setText("");
-        }
-	    dataCurrent = new MessageEditorData(messageListAccount());
+        dataCurrent.status = DownloadStatus.DELETED;
+        save();
 	}
 
     private MyAccount messageListAccount() {
@@ -367,19 +359,30 @@ public class MessageEditor {
 	}
     
     public void saveState() {
-        SharedPreferences.Editor outState = MyPreferences.getSharedPreferences(PERSISTENCE_NAME).edit();
-        if (outState != null && mEditText != null) {
+        if (mEditText != null) {
             dataCurrent.messageText = mEditText.getText().toString();
-            dataCurrent.save(outState);
+            save();
         }
-        outState.commit();
     }
-    
+
+    public void save() {
+        new MessageEditorSaver().execute(this);
+    }
+
     public void loadState() {
-        SharedPreferences storedState = MyPreferences.getSharedPreferences(PERSISTENCE_NAME);
-        if (storedState != null) {
-            dataLoaded = MessageEditorData.load(storedState);
-        }
+        new AsyncTask<Void, Void, MessageEditorData>() {
+
+            @Override
+            protected MessageEditorData doInBackground(Void... params) {
+                return MessageEditorData.load();
+            }
+
+            @Override
+            protected void onPostExecute(MessageEditorData messageEditorData) {
+                dataLoaded = messageEditorData;
+                updateScreen();
+            }
+        }.execute();
     }
     
     public boolean isStateLoaded() {
@@ -389,7 +392,7 @@ public class MessageEditor {
     public void continueEditingLoadedState() {
         if (isStateLoaded()) {
             startEditingMessage(dataLoaded);
-            dataLoaded = new MessageEditorData(messageListAccount());
+            dataLoaded = MessageEditorData.newEmpty(messageListAccount());
         }
     }
 
@@ -423,8 +426,8 @@ public class MessageEditor {
 	}
 
     public void setMedia(Uri mediaUri) {
-        dataCurrent.mediaUri = UriUtils.notNull(mediaUri);
-        showMessageDetails();
+        dataCurrent.setMediaUri(UriUtils.notNull(mediaUri));
+        save();
     }
 
     public MessageEditorData getData() {
@@ -435,5 +438,42 @@ public class MessageEditor {
         if (isStateLoaded()) {
             continueEditingLoadedState();
         }
+    }
+
+    public void dataSaved() {
+        if (isVisible()) {
+            if (dataCurrent.status == DownloadStatus.DRAFT) {
+                dataLoaded = dataCurrent;
+                updateScreen();
+            } else {
+                dataCurrent = MessageEditorData.newEmpty(messageListAccount());
+                if (mEditText != null) {
+                    mEditText.setText("");
+                }
+                hide();
+            }
+        } else if (dataCurrent.status == DownloadStatus.DRAFT) {
+            MessageEditorData data = dataCurrent;
+            dataCurrent = MessageEditorData.newEmpty(data.getMyAccount());
+            startEditingMessage(data);
+        }
+    }
+
+    public void startEditingSharedData(final MyAccount ma, final String textToShare, final Uri mediaToShare) {
+        new AsyncTask<Void, Void, MessageEditorData>() {
+            @Override
+            protected MessageEditorData doInBackground(Void... params) {
+                MessageEditorData data = MessageEditorData.newEmpty(ma)
+                        .setMessageText(textToShare).setMediaUri(mediaToShare);
+                return data;
+            }
+
+            @Override
+            protected void onPostExecute(MessageEditorData data) {
+                dataCurrent = data;
+                save();
+            }
+
+        }.execute();
     }
 }

@@ -30,6 +30,7 @@ import org.andstatus.app.ActivityTestHelper;
 import org.andstatus.app.ListActivityTestHelper;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MatchedUri;
@@ -81,7 +82,7 @@ public class MessageEditorTest extends android.test.ActivityInstrumentationTestC
     private MessageEditorData getStaticData() {
         MyAccount ma = MyContextHolder.get().persistentAccounts()
                 .fromUserId(mActivity.getCurrentMyAccountUserId());
-        MessageEditorData data = new MessageEditorData(ma)
+        MessageEditorData data = MessageEditorData.newEmpty(ma)
                 .setMediaUri(Uri.parse("http://example.com/" + TestSuite.TESTRUN_UID + "/some.png"))
                 .setInReplyToId(
                         MyQuery.oidToId(OidEnum.MSG_OID, MyContextHolder.get()
@@ -113,9 +114,9 @@ public class MessageEditorTest extends android.test.ActivityInstrumentationTestC
     private void editingTester() throws InterruptedException {
         editingStep++;
         TestSuite.waitForListLoaded(this, mActivity, 2);
-        openEditor();
         switch (editingStep) {
             case 1:
+                openEditor();
                 editingStep1();
                 break;
             default:
@@ -123,6 +124,7 @@ public class MessageEditorTest extends android.test.ActivityInstrumentationTestC
                 editingStep = 0;
                 break;
         }
+        MyLog.v(this, "After step " + editingStep + " ended");
     }
 
     private void openEditor() throws InterruptedException {
@@ -141,6 +143,7 @@ public class MessageEditorTest extends android.test.ActivityInstrumentationTestC
 
     private void editingStep1() throws InterruptedException {
         final String method = "editingStep1";
+        MyLog.v(this, method + " started");
 
         ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<TimelineActivity>(this, mActivity);
         helper.clickMenuItem(method + " hiding editor", R.id.hideMessageButton);
@@ -151,7 +154,6 @@ public class MessageEditorTest extends android.test.ActivityInstrumentationTestC
         Runnable startEditing = new Runnable() {
             @Override
             public void run() {
-                editor.clearEditor();
                 editor.startEditingMessage(data);
             }
         };
@@ -161,10 +163,12 @@ public class MessageEditorTest extends android.test.ActivityInstrumentationTestC
         assertTrue(editorView.getVisibility() == android.view.View.VISIBLE);
 
         assertInitialText("Initial text");
+        MyLog.v(this, method + " ended");
     }
 
     private void editingStep2() throws InterruptedException {
         final String method = "editingStep2";
+        MyLog.v(this, method + " started");
         assertInitialText("Message restored");
         ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<TimelineActivity>(this, mActivity);
         View editorView = mActivity.findViewById(R.id.message_editor);
@@ -175,31 +179,21 @@ public class MessageEditorTest extends android.test.ActivityInstrumentationTestC
         helper.clickMenuItem(method + " clicker 5", R.id.createMessageButton);
         assertTrue("Editor appeared", editorView.getVisibility() == android.view.View.VISIBLE);
         assertTextCleared();
+        MyLog.v(this, method + " ended");
     }
 
     private void assertInitialText(final String description) {
         final MessageEditor editor = mActivity.getMessageEditor();
-        Runnable assertEditor = new Runnable() {
-            @Override
-            public void run() {
-                assertEquals(description, data, editor.getData());
-            }
-        };
-        getInstrumentation().runOnMainSync(assertEditor);
+        MyLog.v(this, description + " text:'" + editor.getData().messageText +"'");
+        assertEquals(description, data, editor.getData());
     }
 
     private void assertTextCleared() {
         final MessageEditor editor = mActivity.getMessageEditor();
         assertTrue("Editor is not null", editor != null);
-        Runnable assertEditor = new Runnable() {
-            @Override
-            public void run() {
-                assertEquals(new MessageEditorData(
-                        MyContextHolder.get().persistentAccounts().fromUserId(
-                                mActivity.getCurrentMyAccountUserId())), editor.getData());
-            }
-        };
-        getInstrumentation().runOnMainSync(assertEditor);
+        assertEquals(MessageEditorData.newEmpty(
+                MyContextHolder.get().persistentAccounts().fromUserId(
+                        mActivity.getCurrentMyAccountUserId())), editor.getData());
     }
 
     public void testContextMenuWhileEditing() throws InterruptedException {
