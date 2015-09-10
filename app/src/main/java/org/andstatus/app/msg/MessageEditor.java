@@ -30,6 +30,8 @@ import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
+import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.UriUtils;
 
 import android.content.Context;
 import android.content.Intent;
@@ -50,8 +52,6 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.andstatus.app.util.*;
-
 /**
  * "Enter your message here" box 
  */
@@ -70,9 +70,8 @@ public class MessageEditor {
      */
     private TextView mDetails;
 
-    private MessageEditorData dataCurrent = MessageEditorData.newEmpty(null);
-    private MessageEditorData dataLoaded = MessageEditorData.newEmpty(null);
-    
+    private MessageEditorData editorData = MessageEditorData.newEmpty(null);
+
     public MessageEditor(ActionableMessageList actionableMessageList) {
         mMessageList = actionableMessageList;
 
@@ -84,17 +83,67 @@ public class MessageEditor {
         mCharsLeftText = (TextView) mEditorView.findViewById(R.id.messageEditCharsLeftTextView);
         mDetails = (TextView) mEditorView.findViewById(R.id.messageEditDetails);
         
-        setupButtons();
+        setupEditorButtons();
         setupEditText();
         hide();
     }
 
-    private void setupButtons() {
+    private void setupEditorButtons() {
         View sendButton = mEditorView.findViewById(R.id.messageEditSendButton);
         sendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 sendMessageAndCloseEditor();
+            }
+        });
+    }
+
+    private void setupEditText() {
+        mEditText = (EditText) mEditorView.findViewById(R.id.messageBodyEditText);
+        mEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void afterTextChanged(Editable s) {
+                mCharsLeftText.setText(String.valueOf(editorData.getMyAccount().charactersLeftForMessage(s.toString())));
+            }
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                // Nothing to do
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                // Nothing to do
+            }
+        });
+
+        mEditText.setOnKeyListener(new View.OnKeyListener() {
+            @Override
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                if (event.getAction() == KeyEvent.ACTION_DOWN) {
+                    switch (keyCode) {
+                        case KeyEvent.KEYCODE_DPAD_CENTER:
+                            sendMessageAndCloseEditor();
+                            return true;
+                        default:
+                            mCharsLeftText.setText(String.valueOf(editorData.getMyAccount()
+                                    .charactersLeftForMessage(mEditText.getText().toString())));
+                            break;
+                    }
+                }
+                return false;
+            }
+        });
+
+        mEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if (event != null && (event.isAltPressed() ||
+                        !MyPreferences.getBoolean(MyPreferences.KEY_ENTER_SENDS_MESSAGE, true))) {
+                    return false;
+                }
+                sendMessageAndCloseEditor();
+                return true;
             }
         });
     }
@@ -114,25 +163,26 @@ public class MessageEditor {
                 new MenuItem.OnMenuItemClickListener() {
                     @Override
                     public boolean onMenuItemClick(MenuItem item) {
-                        MyAccount accountForButton = accountforCreateMessageButton();
+                        MyAccount accountForButton = accountForCreateMessageButton();
                         if (accountForButton != null) {
                             startEditingMessage(MessageEditorData.newEmpty(accountForButton));
                         }
                         return false;
                     }
                 });
-        MyAccount accountForButton = accountforCreateMessageButton();
+        MyAccount accountForButton = accountForCreateMessageButton();
         item.setVisible(!isVisible()
                 && accountForButton.isValidAndSucceeded()
                 && mMessageList.getTimelineType() != TimelineType.DIRECT
                 && mMessageList.getTimelineType() != TimelineType.MESSAGESTOACT);
     }
 
-    private MyAccount accountforCreateMessageButton() {
+    private MyAccount accountForCreateMessageButton() {
         if (isVisible()) {
-            return dataCurrent.getMyAccount();
+            return editorData.getMyAccount();
         } else {
-            return MyContextHolder.get().persistentAccounts().getCurrentAccount();
+            return MyContextHolder.get().persistentAccounts().fromUserId(
+                    mMessageList.getCurrentMyAccountUserId());
         }
     }
     
@@ -167,66 +217,13 @@ public class MessageEditor {
                 });
         boolean enableAttach = isVisible()
                 && MyPreferences.getBoolean(MyPreferences.KEY_ATTACH_IMAGES, true)
-                && (dataCurrent.recipientId == 0 || dataCurrent.getMyAccount().getOrigin().getOriginType()
+                && (editorData.recipientId == 0 || editorData.getMyAccount().getOrigin().getOriginType()
                         .allowAttachmentForDirectMessage());
         item.setEnabled(enableAttach);
         item.setVisible(enableAttach);
     }
-    
-    private void setupEditText() {
-        mEditText = (EditText) mEditorView.findViewById(R.id.messageBodyEditText);
-        mEditText.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void afterTextChanged(Editable s) {
-                mCharsLeftText.setText(String.valueOf(dataCurrent.getMyAccount().charactersLeftForMessage(s.toString())));
-            }
-
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-                // Nothing to do
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                // Nothing to do
-            }
-        });
-
-        mEditText.setOnKeyListener(new View.OnKeyListener() {
-            @Override
-            public boolean onKey(View v, int keyCode, KeyEvent event) {
-                if (event.getAction() == KeyEvent.ACTION_DOWN) {
-                    switch (keyCode) {
-                        case KeyEvent.KEYCODE_DPAD_CENTER:
-                            sendMessageAndCloseEditor();
-                            return true;
-                        default:
-                            mCharsLeftText.setText(String.valueOf(dataCurrent.getMyAccount()
-                                    .charactersLeftForMessage(mEditText.getText().toString())));
-                            break;
-                    }
-                }
-                return false;
-            }
-        });
-
-        mEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if (event != null && (event.isAltPressed() ||
-                        !MyPreferences.getBoolean(MyPreferences.KEY_ENTER_SENDS_MESSAGE, true))) {
-                    return false;
-                }
-                sendMessageAndCloseEditor();
-                return true;
-            }
-        });
-    }
 
     public void show() {
-        mCharsLeftText.setText(String.valueOf(dataCurrent.getMyAccount()
-                .charactersLeftForMessage(mEditText.getText().toString())));
-        
         if (!isVisible()) {
             mEditorView.setVisibility(View.VISIBLE);
             mEditText.requestFocus();
@@ -269,43 +266,54 @@ public class MessageEditor {
     public boolean isVisible() {
         return mEditorView.getVisibility() == View.VISIBLE;
     }
-    
+
+    public void startEditingSharedData(final MyAccount ma, final String textToShare, final Uri mediaToShare) {
+        MyLog.v(MessageEditorData.TAG, "startEditingSharedData " + textToShare + " uri: " + mediaToShare);
+        MessageEditorData data = MessageEditorData.newEmpty(ma).setMessageText(textToShare);
+        data.imageUriToSave = mediaToShare;
+        data.showAfterSaveOrLoad = true;
+        editorData = data;
+        save();
+    }
+
     public void startEditingMessage(MessageEditorData dataIn) {
         if (!dataIn.getMyAccount().isValid()) {
             return;
         }
-        if (dataCurrent.isEmpty() || !dataCurrent.sameContext(dataIn)) {
-            dataCurrent = dataIn;
-            mEditText.setText(dataCurrent.messageText);
-            showMessageDetails();
-        }
-        
-        if (dataCurrent.getMyAccount().getConnection().isApiSupported(ApiRoutineEnum.ACCOUNT_RATE_LIMIT_STATUS)) {
-            // Start asynchronous task that will show Rate limit status
-            MyServiceManager.sendForegroundCommand(new CommandData(CommandEnum.RATE_LIMIT_STATUS, dataCurrent.getMyAccount().getAccountName()));
-        }
-        
+        editorData = dataIn;
+        updateScreen();
         show();
+        if (editorData.getMyAccount().getConnection().isApiSupported(ApiRoutineEnum.ACCOUNT_RATE_LIMIT_STATUS)) {
+            // Start asynchronous task that will show Rate limit status
+            MyServiceManager.sendForegroundCommand(new CommandData(CommandEnum.RATE_LIMIT_STATUS, editorData.getMyAccount().getAccountName()));
+        }
+    }
+
+    public void updateScreen() {
+        mEditText.setText(editorData.messageText);
+        showMessageDetails();
+        mCharsLeftText.setText(String.valueOf(editorData.getMyAccount()
+                .charactersLeftForMessage(mEditText.getText().toString())));
     }
 
     private void showMessageDetails() {
-        String messageDetails = showAccountName() ? dataCurrent.getMyAccount().getAccountName() : "";
-        if (dataCurrent.recipientId == 0) {
-            if (dataCurrent.inReplyToId != 0) {
-                String replyToName = MyQuery.msgIdToUsername(MyDatabase.Msg.AUTHOR_ID, dataCurrent.inReplyToId, MyPreferences.userInTimeline());
+        String messageDetails = shouldShowAccountName() ? editorData.getMyAccount().getAccountName() : "";
+        if (editorData.recipientId == 0) {
+            if (editorData.inReplyToId != 0) {
+                String replyToName = MyQuery.msgIdToUsername(MyDatabase.Msg.AUTHOR_ID, editorData.inReplyToId, MyPreferences.userInTimeline());
                 messageDetails += " " + String.format(
                         MyContextHolder.get().context().getText(R.string.message_source_in_reply_to).toString(), 
                         replyToName);
             }
         } else {
-            String recipientName = MyQuery.userIdToWebfingerId(dataCurrent.recipientId);
+            String recipientName = MyQuery.userIdToWebfingerId(editorData.recipientId);
             if (!TextUtils.isEmpty(recipientName)) {
                 messageDetails += " " + String.format(
                         MyContextHolder.get().context().getText(R.string.message_source_to).toString(), 
                         recipientName);
             }
         }
-        if (!UriUtils.isEmpty(dataCurrent.image.getUri())) {
+        if (!UriUtils.isEmpty(editorData.image.getUri())) {
             messageDetails += " (" + MyContextHolder.get().context().getText(R.string.label_with_media).toString() + ")"; 
         }
         mDetails.setText(messageDetails);
@@ -316,84 +324,73 @@ public class MessageEditor {
         }
     }
     
-    private boolean showAccountName() {
-        boolean show = mMessageList.isTimelineCombined() 
+    private boolean shouldShowAccountName() {
+        boolean should = mMessageList.isTimelineCombined()
                 || mMessageList.getTimelineType() == TimelineType.USER;
-        if (!show) {
-            show = dataCurrent.getMyAccount().getUserId() != mMessageList.getCurrentMyAccountUserId();
+        if (!should) {
+            should = editorData.getMyAccount().getUserId() != mMessageList.getCurrentMyAccountUserId();
         }
-        return show;
+        return should;
     }
     
     private void sendMessageAndCloseEditor() {
-        dataCurrent.messageText = mEditText.getText().toString();
-        if (!dataCurrent.getMyAccount().isValid()) {
+        editorData.messageText = mEditText.getText().toString();
+        if (!editorData.getMyAccount().isValid()) {
             clearAndHide();
-        } else if (TextUtils.isEmpty(dataCurrent.messageText.trim())) {
+        } else if (TextUtils.isEmpty(editorData.messageText.trim())) {
             Toast.makeText(getActivity(), R.string.cannot_send_empty_message,
                     Toast.LENGTH_SHORT).show();
-        } else if (dataCurrent.getMyAccount().charactersLeftForMessage(dataCurrent.messageText) < 0) {
+        } else if (editorData.getMyAccount().charactersLeftForMessage(editorData.messageText) < 0) {
             Toast.makeText(getActivity(), R.string.message_is_too_long,
                     Toast.LENGTH_SHORT).show();
         } else {
 			if (MyPreferences.getBoolean(MyPreferences.KEY_SENDING_MESSAGES_LOG_ENABLED, false)) {
 				MyLog.setLogToFile(true);
 			}
-            dataCurrent.status = DownloadStatus.SENDING;
+            editorData.status = DownloadStatus.SENDING;
             save();
         }
     }
 
     private void clearAndHide() {
-        dataCurrent.status = DownloadStatus.DELETED;
+        editorData.status = DownloadStatus.DELETED;
         save();
 	}
 
-    private MyAccount messageListAccount() {
-        return MyContextHolder.get().persistentAccounts().fromUserId(
-                mMessageList.getCurrentMyAccountUserId());
-    }
-
-	private MyBaseListActivity getActivity() {
-		return mMessageList.getActivity();
-	}
-    
     public void saveState() {
         if (mEditText != null) {
-            dataCurrent.messageText = mEditText.getText().toString();
+            editorData.messageText = mEditText.getText().toString();
             save();
         }
     }
 
     public void save() {
+        long startedAt = MessageEditorData.saveStartedAt.get();
+        MyLog.v(MessageEditorData.TAG, "Save requested " + editorData);
+        if (!MessageEditorData.saveStartedAt.compareAndSet(0, System.currentTimeMillis())) {
+            MyLog.i(MessageEditorData.TAG, "Failed to save. Already started " + (System.currentTimeMillis() - startedAt) + "ms ago");
+            return;
+        }
         new MessageEditorSaver().execute(this);
     }
 
     public void loadState() {
+        MyLog.v(MessageEditorData.TAG, "loadState started");
         new AsyncTask<Void, Void, MessageEditorData>() {
 
             @Override
             protected MessageEditorData doInBackground(Void... params) {
+                MessageEditorData.waitTillSaveEnded();
+                MyLog.v(MessageEditorData.TAG, "loadState passed wait");
                 return MessageEditorData.load();
             }
 
             @Override
-            protected void onPostExecute(MessageEditorData messageEditorData) {
-                dataLoaded = messageEditorData;
-                updateScreen();
+            protected void onPostExecute(MessageEditorData data) {
+                data.showAfterSaveOrLoad = true;
+                dataLoadedCallback(data);
             }
         }.execute();
-    }
-    
-    public boolean isStateLoaded() {
-        return !dataLoaded.isEmpty();
-    }
-    
-    public void continueEditingLoadedState() {
-        if (isStateLoaded()) {
-            startEditingMessage(dataLoaded);
-            dataLoaded = MessageEditorData.newEmpty(messageListAccount());
-        }
     }
 
     public void onAttach() {
@@ -426,54 +423,36 @@ public class MessageEditor {
 	}
 
     public void setMedia(Uri mediaUri) {
-        dataCurrent.setMediaUri(UriUtils.notNull(mediaUri));
+        editorData.imageUriToSave = UriUtils.notNull(mediaUri);
         save();
     }
 
-    public MessageEditorData getData() {
-        return dataCurrent;
+    public void dataSavedCallback(MessageEditorData data) {
+        MessageEditorData.saveStartedAt.set(0);
+        dataLoadedCallback(data);
     }
 
-    public void updateScreen() {
-        if (isStateLoaded()) {
-            continueEditingLoadedState();
-        }
-    }
-
-    public void dataSaved() {
-        if (isVisible()) {
-            if (dataCurrent.status == DownloadStatus.DRAFT) {
-                dataLoaded = dataCurrent;
-                updateScreen();
-            } else {
-                dataCurrent = MessageEditorData.newEmpty(messageListAccount());
-                if (mEditText != null) {
-                    mEditText.setText("");
-                }
+    public void dataLoadedCallback(MessageEditorData data) {
+        editorData = data;
+        updateScreen();
+        if (editorData.status == DownloadStatus.DRAFT) {
+            if (editorData.showAfterSaveOrLoad && !editorData.isEmpty()) {
+                show();
+            } else if (editorData.isEmpty()) {
                 hide();
             }
-        } else if (dataCurrent.status == DownloadStatus.DRAFT) {
-            MessageEditorData data = dataCurrent;
-            dataCurrent = MessageEditorData.newEmpty(data.getMyAccount());
-            startEditingMessage(data);
+        } else {
+            hide();
         }
+        editorData.showAfterSaveOrLoad = false;
     }
 
-    public void startEditingSharedData(final MyAccount ma, final String textToShare, final Uri mediaToShare) {
-        new AsyncTask<Void, Void, MessageEditorData>() {
-            @Override
-            protected MessageEditorData doInBackground(Void... params) {
-                MessageEditorData data = MessageEditorData.newEmpty(ma)
-                        .setMessageText(textToShare).setMediaUri(mediaToShare);
-                return data;
-            }
-
-            @Override
-            protected void onPostExecute(MessageEditorData data) {
-                dataCurrent = data;
-                save();
-            }
-
-        }.execute();
+    private MyBaseListActivity getActivity() {
+        return mMessageList.getActivity();
     }
+
+    public MessageEditorData getData() {
+        return editorData;
+    }
+
 }

@@ -229,7 +229,6 @@ public class TimelineActivity extends MyListActivity implements MyServiceEventsL
         SharedPreferences activityState = MyPreferences.getSharedPreferences(ACTIVITY_PERSISTENCE_NAME);
         if (activityState != null) {
             if (mListParametersNew.restoreState(activityState)) {
-                mMessageEditor.loadState();
                 mContextMenu.loadState(activityState);
             }
         }
@@ -309,6 +308,7 @@ public class TimelineActivity extends MyListActivity implements MyServiceEventsL
         if (!mFinishing) {
             MyContextHolder.get().setInForeground(true);
             mServiceConnector.registerReceiver(this);
+            mMessageEditor.loadState();
         }
     }
 
@@ -329,6 +329,7 @@ public class TimelineActivity extends MyListActivity implements MyServiceEventsL
         }
         mServiceConnector.unregisterReceiver(this);
         setSyncIndicator(method, false);
+        mMessageEditor.saveState();
         saveActivityState();
         MyContextHolder.get().setInForeground(false);
     }
@@ -674,10 +675,10 @@ public class TimelineActivity extends MyListActivity implements MyServiceEventsL
             MyServiceManager.sendManualForegroundCommand(
                     CommandData.searchCommand(
                             isTimelineCombined()
-                            ? ""
+                                    ? ""
                                     : MyContextHolder.get().persistentAccounts()
                                     .getCurrentAccountName(),
-                                    mListParametersNew.mSearchQuery));
+                            mListParametersNew.mSearchQuery));
         }
     }
 
@@ -1054,7 +1055,6 @@ public class TimelineActivity extends MyListActivity implements MyServiceEventsL
     protected void saveActivityState() {
         SharedPreferences.Editor outState = MyPreferences.getSharedPreferences(ACTIVITY_PERSISTENCE_NAME).edit();
         mListParametersNew.saveState(outState);
-        mMessageEditor.saveState();
         mContextMenu.saveState(outState);
         outState.commit();
 
@@ -1069,6 +1069,7 @@ public class TimelineActivity extends MyListActivity implements MyServiceEventsL
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        MyLog.v(this, "onActivityResult; request:" + requestCode + ", result:" + (resultCode == RESULT_OK ? "ok" : "fail"));
         if (resultCode != RESULT_OK || data == null) {
             return;
         }
@@ -1122,7 +1123,6 @@ public class TimelineActivity extends MyListActivity implements MyServiceEventsL
 
     private void accountToShareViaSelected(Intent data) {
         MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(data.getStringExtra(IntentExtra.ACCOUNT_NAME.key));
-        // TODO:
         mMessageEditor.startEditingSharedData(ma, mTextToShareViaThisApp, mMediaToShareViaThisApp);
     }
 

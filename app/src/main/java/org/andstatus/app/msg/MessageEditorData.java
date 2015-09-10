@@ -28,15 +28,22 @@ import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyQuery;
+import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.UriUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class MessageEditorData {
-    public volatile long msgId = 0;
+    public static final String TAG = MessageEditorData.class.getSimpleName();
+    public static final AtomicLong saveStartedAt = new AtomicLong();
+
+    public long msgId = 0;
     public DownloadStatus status = DownloadStatus.DRAFT;
     public String messageText = "";
+    boolean showAfterSaveOrLoad = false;
+    public Uri imageUriToSave = Uri.EMPTY;
     public DownloadData image = DownloadData.EMPTY;
     /**
      * Id of the Message to which we are replying.
@@ -99,16 +106,32 @@ public class MessageEditorData {
 
     @Override
     public String toString() {
-        return "MessageEditorData{" +
-                "msgId=" + msgId +
-                ", status=" + status +
-                ", messageText='" + messageText + '\'' +
-                ", image=" + image +
-                ", inReplyToId=" + inReplyToId +
-                ", mReplyAll=" + mReplyAll +
-                ", recipientId=" + recipientId +
-                ", ma=" + ma +
-                '}';
+        StringBuilder builder = new StringBuilder();
+        if(msgId != 0) {
+            builder.append("msgId:" + msgId + ",");
+        }
+        builder.append("status:" + status + ",");
+        if(!TextUtils.isEmpty(messageText)) {
+            builder.append("text:'" + messageText + "',");
+        }
+        if(showAfterSaveOrLoad) {
+            builder.append("showAfterSaveOrLoad,");
+        }
+        if(!UriUtils.isEmpty(imageUriToSave)) {
+            builder.append("imageUriToSave:'" + imageUriToSave + "',");
+        }
+        builder.append(image.toString() + ",");
+        if(inReplyToId != 0) {
+            builder.append("inReplyToId:" + inReplyToId + ",");
+        }
+        if(mReplyAll) {
+            builder.append("ReplyAll,");
+        }
+        if(recipientId != 0) {
+            builder.append("recipientId:" + recipientId + ",");
+        }
+        builder.append(ma.toString() + ",");
+        return MyLog.formatKeyValue(this, builder.toString());
     }
 
     static MessageEditorData load() {
@@ -132,6 +155,7 @@ public class MessageEditorData {
         } else {
             data = new MessageEditorData(MyContextHolder.get().persistentAccounts().getCurrentAccount());
         }
+        MyLog.v(TAG, "Loaded " + data);
         return data;
     }
 
@@ -140,7 +164,7 @@ public class MessageEditorData {
     }
     
     boolean isEmpty() {
-        return TextUtils.isEmpty(messageText) && UriUtils.isEmpty(image.getUri());
+        return TextUtils.isEmpty(messageText) && UriUtils.isEmpty(image.getUri()) && imageUriToSave.equals(Uri.EMPTY) && msgId == 0;
     }
 
     public MessageEditorData setMessageText(String textInitial) {
@@ -246,5 +270,25 @@ public class MessageEditorData {
                 && getMyAccount().getAccountName()
                         .compareTo(dataIn.getMyAccount().getAccountName()) == 0
                 && mReplyAll == dataIn.mReplyAll;
+    }
+
+    public static void waitTillSaveEnded() {
+        for (int i=0; i<60; i++) {
+            if (saveStartedAt.get() == 0) {
+                break;
+            }
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                MyLog.ignored(TAG, e);
+                break;
+            }
+        }
+        long saveStarted = saveStartedAt.get();
+        if (saveStarted != 0 && Math.abs(System.currentTimeMillis() - saveStarted) > 60000) {
+            if (saveStartedAt.compareAndSet(saveStarted, 0)) {
+                MyLog.i(TAG, "Reset saveStartedAt");
+            }
+        }
     }
 }

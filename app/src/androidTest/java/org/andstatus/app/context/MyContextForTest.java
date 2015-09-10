@@ -40,8 +40,8 @@ import java.util.concurrent.CopyOnWriteArraySet;
 public class MyContextForTest implements MyContext {
     private MyContext myContext;
     private Set<AssertionData> dataSet = new CopyOnWriteArraySet<AssertionData>();
-    private HttpConnection httpConnection;
-    private ConnectionRequired mOnline = ConnectionRequired.ANY; 
+    private volatile HttpConnection httpConnection;
+    private volatile ConnectionRequired mOnline = ConnectionRequired.ANY;
     private Map<TimelineType, Notification> notifications = new ConcurrentHashMap<TimelineType, Notification>();
 
     public MyContextForTest setContext(MyContext myContextIn) {

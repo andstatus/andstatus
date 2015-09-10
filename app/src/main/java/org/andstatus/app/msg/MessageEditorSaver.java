@@ -22,20 +22,26 @@ import org.andstatus.app.util.MyLog;
 /**
  * Asynchronously save, delete and send a message, prepared by {@link MessageEditor}
  */
-public class MessageEditorSaver extends AsyncTask<MessageEditor, Void, Void> {
+public class MessageEditorSaver extends AsyncTask<MessageEditor, Void, MessageEditorData> {
     volatile MessageEditor editor = null;
 
     @Override
-    protected Void doInBackground(MessageEditor... params) {
+    protected MessageEditorData doInBackground(MessageEditor... params) {
         editor = params[0];
-        MyLog.v(this,"Editor is " + (editor.isVisible() ? "visible" : "hidden")
-        + "; " + editor.getData());
-        if (editor.getData().status == DownloadStatus.DELETED) {
-            deleteDraft(editor.getData());
+        MessageEditorData data = editor.getData();
+        MyLog.v(MessageEditorData.TAG, "Saver started, Editor is " + (editor.isVisible() ? "visible" : "hidden")
+        + "; " + data);
+        long msgId = 0;
+        if (data.status == DownloadStatus.DELETED) {
+            deleteDraft(data);
         } else {
-            saveOrSend(editor.getData());
+            msgId = save(data);
+            if (data.status == DownloadStatus.SENDING) {
+                CommandData commandData = CommandData.updateStatus(data.getMyAccount().getAccountName(), msgId);
+                MyServiceManager.sendManualForegroundCommand(commandData);
+            }
         }
-        return null;
+        return loadFutureData(data, msgId);
     }
 
     private void deleteDraft(MessageEditorData data) {
@@ -44,9 +50,10 @@ public class MessageEditorSaver extends AsyncTask<MessageEditor, Void, Void> {
                 .delete(MatchedUri.getMsgUri(0, data.msgId), null, null);
     }
 
-    private void saveOrSend(MessageEditorData data) {
+    private long save(MessageEditorData data) {
         MbMessage message = MbMessage.fromOriginAndOid(data.getMyAccount().getOriginId(), "",
                 data.status);
+        message.msgId = data.msgId;
         message.actor = MbUser.fromOriginAndUserOid(data.getMyAccount().getOriginId(),
                 data.getMyAccount().getUserOid());
         message.sender = message.actor;
@@ -61,25 +68,28 @@ public class MessageEditorSaver extends AsyncTask<MessageEditor, Void, Void> {
                     MyQuery.idToOid(MyDatabase.OidEnum.MSG_OID, data.inReplyToId, 0),
                     DownloadStatus.UNKNOWN);
         }
-        if (!data.image.getUri().equals(Uri.EMPTY)) {
-            message.attachments.add(MbAttachment.fromUriAndContentType(data.image.getUri(),
-                    MyContentType.IMAGE));
+        Uri imageUri = data.imageUriToSave.equals(Uri.EMPTY) ? data.image.getUri() : data.imageUriToSave;
+        if (!imageUri.equals(Uri.EMPTY)) {
+            message.attachments.add(
+                    MbAttachment.fromUriAndContentType(imageUri, MyContentType.IMAGE));
         }
         DataInserter di = new DataInserter(data.getMyAccount());
-        data.msgId = di.insertOrUpdateMsg(message);
+        return di.insertOrUpdateMsg(message);
+    }
 
-        MyPreferences.putLong(MyPreferences.KEY_DRAFT_MESSAGE_ID, data.status == DownloadStatus.DRAFT ? data.msgId : 0);
-
-        if (data.status == DownloadStatus.SENDING) {
-            CommandData commandData = CommandData.updateStatus(data.getMyAccount().getAccountName(), data.msgId);
-            MyServiceManager.sendManualForegroundCommand(commandData);
-        }
+    private MessageEditorData loadFutureData(MessageEditorData oldData, long msgId) {
+        boolean loadNew = oldData.status != DownloadStatus.DRAFT;
+        MyPreferences.putLong(MyPreferences.KEY_DRAFT_MESSAGE_ID, loadNew ? 0 : msgId);
+        MessageEditorData newData = loadNew ?
+                MessageEditorData.newEmpty(oldData.getMyAccount()) : MessageEditorData.load();
+        newData.showAfterSaveOrLoad = oldData.showAfterSaveOrLoad;
+        return newData;
     }
 
     @Override
-    protected void onPostExecute(Void aVoid) {
-        MyLog.v(this,"Completed; " + editor.getData());
-        editor.dataSaved();
+    protected void onPostExecute(MessageEditorData data) {
+        MyLog.v(MessageEditorData.TAG, "Saved; Future data: " + data);
+        editor.dataSavedCallback(data);
     }
 
 }

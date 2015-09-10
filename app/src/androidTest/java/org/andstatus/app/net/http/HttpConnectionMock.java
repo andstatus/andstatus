@@ -132,8 +132,8 @@ public class HttpConnectionMock extends HttpConnection {
             }
         }
         results.add(result);
-        MyLog.v(this, method + " num:" + results.size() + "; path:'" + result.getUrl() +"', host:'" 
-        + data.originUrl + "', instanceId:" + mInstanceId );
+        MyLog.v(this, method + " num:" + results.size() + "; path:'" + result.getUrl()
+                + "', originUrl:'" + data.originUrl + "', instanceId:" + mInstanceId );
         MyLog.v(this, Arrays.toString(Thread.currentThread().getStackTrace()));
         networkDelay();
     }

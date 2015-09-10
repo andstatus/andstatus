@@ -26,7 +26,7 @@ import java.io.File;
 public class DownloadFile {
     private final String filename;
     private final File file;
-    private static final DownloadFile EMPTY_DOWNLOAD_FILE = new DownloadFile(null);
+    public static final DownloadFile EMPTY = new DownloadFile(null);
 
     public DownloadFile(String filename) {
         this.filename = filename;
@@ -47,10 +47,6 @@ public class DownloadFile {
 
     public String getFilename() {
         return filename;
-    }
-
-    public static DownloadFile getEmpty() {
-        return EMPTY_DOWNLOAD_FILE;
     }
 
     /** returns true if the file existed and was deleted */

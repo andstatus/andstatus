@@ -16,24 +16,29 @@
 
 package org.andstatus.app.data;
 
+import android.content.Context;
+
+import org.andstatus.app.R;
 import org.andstatus.app.util.MyLog;
 
 public enum DownloadStatus {
-    LOADED(2),
-    SOFT_ERROR(4),
-    HARD_ERROR(5),
-    ABSENT(6),
-    SENDING(7),
-    DRAFT(8),
-    DELETED(9),
-    UNKNOWN(0);
+    LOADED(2, 0),
+    SOFT_ERROR(4, 0),
+    HARD_ERROR(5, 0),
+    ABSENT(6, 0),
+    SENDING(7, R.string.download_status_unsent),
+    DRAFT(8, R.string.download_status_draft),
+    DELETED(9, 0),
+    UNKNOWN(0, 0);
 
     private static final String TAG = DownloadStatus.class.getSimpleName();
 
     private long code;
+    private int titleResourceId;
 
-    DownloadStatus(long codeIn) {
+    DownloadStatus(long codeIn, int titleResourceIdIn) {
         code = codeIn;
+        titleResourceId = titleResourceIdIn;
     }
     
     public String save() {
@@ -57,4 +62,13 @@ public enum DownloadStatus {
         }
         return UNKNOWN;
     }
+
+    public CharSequence getTitle(Context context) {
+        if (titleResourceId == 0 || context == null) {
+            return this.toString();
+        } else {
+            return context.getText(titleResourceId);
+        }
+    }
+
 }

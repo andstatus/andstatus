@@ -261,6 +261,7 @@ public class TimelineSql {
         columnNames.add(MsgOfUser.FAVORITED);
         columnNames.add(Msg.SENT_DATE);
         columnNames.add(Msg.CREATED_DATE);
+        columnNames.add(Msg.MSG_STATUS);
         columnNames.add(User.LINKED_USER_ID);
         if (MyPreferences.showAvatars()) {
             columnNames.add(Msg.AUTHOR_ID);

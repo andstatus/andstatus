@@ -130,6 +130,8 @@
   <string name="dialog_title_service_unavailable">Service Unavailable</string>
   <string name="dialog_title_timeline_loading">Updating a Timeline&#8230;</string>
   <string name="discover_open_instances_title">Discover open instances</string>
+  <string name="download_status_draft">draft</string>
+  <string name="download_status_unsent">unsent</string>
   <string name="drawer_close">Close navigation drawer</string>
   <string name="drawer_open">Open navigation drawer</string>
   <string name="empty_in_parenthesis">(empty)</string>

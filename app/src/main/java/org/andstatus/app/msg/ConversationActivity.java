@@ -52,8 +52,6 @@ public class ConversationActivity extends LoadableListActivity implements Action
         mMessageEditor = new MessageEditor(this);
         mMessageEditor.hide();
         mContextMenu = new MessageContextMenu(this);
-        
-        mMessageEditor.loadState();
     }
 
     @Override
@@ -86,6 +84,12 @@ public class ConversationActivity extends LoadableListActivity implements Action
     protected void onPause() {
         super.onPause();
         mMessageEditor.saveState();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        mMessageEditor.loadState();
     }
 
     @Override

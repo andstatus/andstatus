@@ -69,6 +69,7 @@ public class ProjectionMap {
         MSG.put(MsgOfUser.REBLOG_OID, MsgOfUser.REBLOG_OID);
         MSG.put(MsgOfUser.SUBSCRIBED, MsgOfUser.SUBSCRIBED);
         MSG.put(Msg.CREATED_DATE, Msg.CREATED_DATE);
+        MSG.put(Msg.MSG_STATUS, Msg.MSG_STATUS);
         MSG.put(Msg.SENT_DATE, Msg.SENT_DATE);
         MSG.put(Msg.INS_DATE, Msg.INS_DATE);
         MSG.put(FollowingUser.AUTHOR_FOLLOWED, FollowingUser.AUTHOR_FOLLOWED);

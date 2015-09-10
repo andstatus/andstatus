@@ -66,7 +66,7 @@ public class DataInserter {
         /**
          * Id of the message in our system, see {@link MyDatabase.Msg#MSG_ID}
          */
-        Long msgId = messageIn.msgId;
+        long msgId = messageIn.msgId;
         try {
             if (messageIn.isEmpty()) {
                 MyLog.w(TAG, funcName +"; the message is empty, skipping: " + messageIn.toString());
@@ -139,33 +139,42 @@ public class DataInserter {
                 values.put(MyDatabase.Msg.AUTHOR_ID, authorId);
             }
 
-            /**
-             * Is the row first time retrieved from a Social Network?
-             * Message can already exist in this these cases:
-             * 1. There was only "a stub" stored (without a sent date and a body)
-             * 2. Message ws "unsent"
-             */
-            boolean isFirstTimeLoaded = true;
 
             if (msgId == 0) {
                 // Lookup the System's (AndStatus) id from the Originated system's id
                 msgId = MyQuery.oidToId(OidEnum.MSG_OID, execContext.getMyAccount().getOriginId(), rowOid);
             }
 
+            /**
+             * Is the row first time retrieved from a Social Network?
+             * Message can already exist in this these cases:
+             * 1. There was only "a stub" stored (without a sent date and a body)
+             * 2. Message was "unsent"
+             */
+            boolean isFirstTimeLoaded = message.getStatus() == DownloadStatus.LOADED || msgId == 0;
+            boolean isDraftUpdated = !isFirstTimeLoaded
+                    && (message.getStatus() == DownloadStatus.SENDING
+                        || message.getStatus() == DownloadStatus.DRAFT);
+
             long sentDateStored = 0;
             DownloadStatus statusStored = DownloadStatus.UNKNOWN;
             if (msgId != 0) {
                 statusStored = DownloadStatus.load(MyQuery.msgIdToLongColumnValue(Msg.MSG_STATUS, msgId));
                 sentDateStored = MyQuery.msgIdToLongColumnValue(Msg.SENT_DATE, msgId);
-                isFirstTimeLoaded = (statusStored == DownloadStatus.UNKNOWN)
-                        || (message.getStatus() == DownloadStatus.LOADED && statusStored != DownloadStatus.LOADED);
-                if (!isFirstTimeLoaded) {
-                  long senderIdStored = MyQuery.msgIdToLongColumnValue(Msg.SENDER_ID, msgId);
-                  isFirstTimeLoaded = (senderIdStored == 0);
+                if (isFirstTimeLoaded) {
+                    isFirstTimeLoaded = statusStored != DownloadStatus.LOADED;
+                    if (!isFirstTimeLoaded) {
+                        // TODO: Is this really needed?
+                        long senderIdStored = MyQuery.msgIdToLongColumnValue(Msg.SENDER_ID, msgId);
+                        isFirstTimeLoaded = (senderIdStored == 0);
+                    }
+                }
+                if (isDraftUpdated && message.getStatus() == DownloadStatus.DRAFT) {
+                    isDraftUpdated = statusStored != DownloadStatus.SENDING;
                 }
             }
 
-            if (isFirstTimeLoaded) {
+            if (isFirstTimeLoaded || isDraftUpdated) {
                 values.put(Msg.MSG_STATUS, message.getStatus().save());
                 values.put(MyDatabase.Msg.CREATED_DATE, createdDate);
                 
@@ -237,6 +246,7 @@ public class DataInserter {
                 MyLog.v(this, ((msgId==0) ? "insertMsg" : "updateMsg")
                         + ":" 
                         + (isFirstTimeLoaded ? " new;" : "")
+                        + (isDraftUpdated ? " draft updated;" : "")
                         + (isNewerThanInDatabase ? " newer, sent at " + new Date(sentDate).toString() + ";" : "") );
             }
             
@@ -252,19 +262,23 @@ public class DataInserter {
                 execContext.getContext().getContentResolver().update(msgUri, values, null, null);
             }
 
-            if (isFirstTimeLoaded) {
-                // TODO: Compare with new, maybe we can leave them as is
-                DownloadData.deleteAllOfThisMsg(msgId);
+            if (isFirstTimeLoaded || isDraftUpdated) {
+                if (isFirstTimeLoaded) {
+                    // We don't delete existing attachments during draft editing
+                    DownloadData.deleteAllOfThisMsg(msgId);
+                }
                 for (MbAttachment attachment : message.attachments) {
                     DownloadData dd = DownloadData.getThisForMessage(msgId, attachment.contentType, attachment.getUri());
                     dd.saveToDatabase();
-                    if (UriUtils.isLocal(dd.getUri())) {
-                        AttachmentDownloader.load(dd.getDownloadId(), execContext.getCommandData());
-                    } else {
-                        if (attachment.contentType == MyContentType.IMAGE && MyPreferences.showAttachedImages()) {
+                    if (dd.getStatus() != DownloadStatus.LOADED) {
+                        if (UriUtils.isLocal(dd.getUri())) {
+                            AttachmentDownloader.load(dd.getDownloadId(), execContext.getCommandData());
+                        } else {
+                            if (attachment.contentType == MyContentType.IMAGE && MyPreferences.showAttachedImages()) {
+                                dd.requestDownload();
+                            }
                         }
                     }
-                    dd.requestDownload();
                 }
             }
             

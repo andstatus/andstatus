@@ -55,7 +55,7 @@ public class MyServiceTest extends InstrumentationTestCase {
         String urlString = "http://andstatus.org/nonexistent2_avatar_" + System.currentTimeMillis() +  ".png";
         AvatarDownloaderTest.changeAvatarUrl(ma, urlString);
         
-        mService.listentedToCommand = new CommandData(CommandEnum.FETCH_AVATAR, "", TimelineType.UNKNOWN, 
+        mService.listenedCommand = new CommandData(CommandEnum.FETCH_AVATAR, "", TimelineType.UNKNOWN,
                 ma.getUserId());
 
         long startCount = mService.executionStartCount;
@@ -69,7 +69,7 @@ public class MyServiceTest extends InstrumentationTestCase {
         mService.sendListenedToCommand();
         assertFalse("Duplicated command didn't start executing",
                 mService.waitForCommandExecutionStarted(startCount + 1));
-        mService.listentedToCommand.setManuallyLaunched(true);
+        mService.listenedCommand.setManuallyLaunched(true);
         mService.sendListenedToCommand();
         assertTrue("Manually launched duplicated command started executing",
                 mService.waitForCommandExecutionStarted(startCount + 1));
@@ -81,7 +81,7 @@ public class MyServiceTest extends InstrumentationTestCase {
     public void testAutomaticUpdates() {
         MyLog.v(this, "testAutomaticUpdates started");
 
-        mService.listentedToCommand = new CommandData(CommandEnum.AUTOMATIC_UPDATE, "", TimelineType.ALL, 0);
+        mService.listenedCommand = new CommandData(CommandEnum.AUTOMATIC_UPDATE, "", TimelineType.ALL, 0);
         long startCount = mService.executionStartCount;
         long endCount = mService.executionEndCount;
         
@@ -99,7 +99,7 @@ public class MyServiceTest extends InstrumentationTestCase {
         final String method = "testHomeTimeline";
         MyLog.v(this, method + " started");
 
-        mService.listentedToCommand = new CommandData(CommandEnum.FETCH_TIMELINE, ma.getAccountName(), TimelineType.HOME, 0);
+        mService.listenedCommand = new CommandData(CommandEnum.FETCH_TIMELINE, ma.getAccountName(), TimelineType.HOME, 0);
         long startCount = mService.executionStartCount;
         long endCount = mService.executionEndCount;
 
@@ -117,7 +117,7 @@ public class MyServiceTest extends InstrumentationTestCase {
     public void testRateLimitStatus() {
         MyLog.v(this, "testRateLimitStatus started");
 
-        mService.listentedToCommand = new CommandData(CommandEnum.RATE_LIMIT_STATUS, TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME, TimelineType.ALL, 0);
+        mService.listenedCommand = new CommandData(CommandEnum.RATE_LIMIT_STATUS, TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME, TimelineType.ALL, 0);
         long startCount = mService.executionStartCount;
         long endCount = mService.executionEndCount;
 
@@ -136,7 +136,7 @@ public class MyServiceTest extends InstrumentationTestCase {
                 .putBoolean(MyPreferences.KEY_SYNC_WHILE_USING_APPLICATION, false).commit();
         CommandData cd1 = new CommandData(CommandEnum.FETCH_TIMELINE,
                 TestSuite.TWITTER_TEST_ACCOUNT_NAME, TimelineType.DIRECT, 0);
-        mService.listentedToCommand = cd1;
+        mService.listenedCommand = cd1;
 
         long startCount = mService.executionStartCount;
         long endCount = mService.executionEndCount;
@@ -151,7 +151,7 @@ public class MyServiceTest extends InstrumentationTestCase {
 
         CommandData cd2 = new CommandData(CommandEnum.FETCH_TIMELINE,
                 TestSuite.TWITTER_TEST_ACCOUNT_NAME, TimelineType.MENTIONS, 0);
-        mService.listentedToCommand = cd2;
+        mService.listenedCommand = cd2;
         mService.sendListenedToCommand();
 
         assertTrue("Service stopped", mService.waitForServiceStopped());
@@ -168,7 +168,7 @@ public class MyServiceTest extends InstrumentationTestCase {
         CommandData cd3 = new CommandData(CommandEnum.FETCH_TIMELINE,
                 TestSuite.TWITTER_TEST_ACCOUNT_NAME, TimelineType.HOME, 0)
                 .setInForeground(true);
-        mService.listentedToCommand = cd3;
+        mService.listenedCommand = cd3;
 
         startCount = mService.executionStartCount;
         endCount = mService.executionEndCount;
@@ -205,9 +205,9 @@ public class MyServiceTest extends InstrumentationTestCase {
         CommandData cdDelete = new CommandData(CommandEnum.DELETE_COMMAND,
         "", TimelineType.EVERYTHING, cd2.getId());
         cdDelete.setInForeground(true);
-        mService.listentedToCommand = cdDelete;
+        mService.listenedCommand = cdDelete;
 
-        assertEquals(cd2.getId(), mService.listentedToCommand.itemId);
+        assertEquals(cd2.getId(), mService.listenedCommand.itemId);
         
         long endCount = mService.executionEndCount;
 

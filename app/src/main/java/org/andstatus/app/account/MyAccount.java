@@ -885,7 +885,7 @@ public final class MyAccount {
                 members += "verified:" + getCredentialsVerified().name() + ",";
             }
             if (getCredentialsPresent()) {
-                members += "credentialsPresent:true,";
+                members += "credentialsPresent,";
             }
             if (connection == null) {
                 members += "connection:null,";

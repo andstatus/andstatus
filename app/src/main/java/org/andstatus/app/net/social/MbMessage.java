@@ -21,9 +21,11 @@ import android.text.TextUtils;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.util.MyHtml;
+import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -111,8 +113,10 @@ public class MbMessage {
 
     public boolean isEmpty() {
         return this.isEmpty
-                || (TextUtils.isEmpty(oid) && ((status!=DownloadStatus.SENDING && status!=DownloadStatus.DRAFT) || TextUtils.isEmpty(body)))
-                || originId==0;
+                || (TextUtils.isEmpty(oid)
+                    && ((status != DownloadStatus.SENDING && status != DownloadStatus.DRAFT)
+                        || (TextUtils.isEmpty(body) && attachments.isEmpty())))
+                || originId == 0;
     }
 
     @Override
@@ -140,25 +144,49 @@ public class MbMessage {
 
     @Override
     public String toString() {
-        return "MbMessage{" +
-                "actor=" + actor +
-                ", isEmpty=" + isEmpty +
-                ", status=" + status +
-                ", oid='" + oid + '\'' +
-                ", sentDate=" + sentDate +
-                ", sender=" + sender +
-                ", recipient=" + recipient +
-                ", body='" + body + '\'' +
-                ", rebloggedMessage=" + rebloggedMessage +
-                ", inReplyToMessage=" + inReplyToMessage +
-                ", via='" + via + '\'' +
-                ", url='" + url + '\'' +
-                ", isPublic=" + isPublic +
-                ", attachments=" + attachments +
-                ", favoritedByActor=" + favoritedByActor +
-                ", originId=" + originId +
-                ", msgId=" + msgId +
-                '}';
+        StringBuilder builder = new StringBuilder();
+        if(msgId != 0) {
+            builder.append("msgId:" + msgId + ",");
+        }
+        builder.append("status:" + status + ",");
+        if(!TextUtils.isEmpty(body)) {
+            builder.append("body:'" + body + "',");
+        }
+        if(favoritedByActor != TriState.UNKNOWN) {
+            builder.append("favorited:" + favoritedByActor + ",");
+        }
+        if(inReplyToMessage != null && !inReplyToMessage.isEmpty()) {
+            builder.append("inReplyTo:" + inReplyToMessage + ",");
+        }
+        if(rebloggedMessage != null && !rebloggedMessage.isEmpty()) {
+            builder.append("reblogged:" + rebloggedMessage + ",");
+        }
+        if(recipient != null && !recipient.isEmpty()) {
+            builder.append("recipient:" + recipient + ",");
+        }
+        if (!attachments.isEmpty()) {
+            builder.append("attachments:" + attachments + ",");
+        }
+        if(isEmpty) {
+            builder.append("isEmpty,");
+        }
+        if(isPublic) {
+            builder.append("isPublic,");
+        }
+        if(!TextUtils.isEmpty(oid)) {
+            builder.append("oid:'" + oid + "',");
+        }
+        if(!TextUtils.isEmpty(url)) {
+            builder.append("url:'" + url + "',");
+        }
+        if(!TextUtils.isEmpty(via)) {
+            builder.append("via:'" + via + "',");
+        }
+        builder.append("sender:" + sender + ",");
+        builder.append("actor:" + actor + ",");
+        builder.append("sent" + new Date(sentDate) + ",");
+        builder.append("originId:" + originId + ",");
+        return MyLog.formatKeyValue(this, builder.toString());
     }
 
 }

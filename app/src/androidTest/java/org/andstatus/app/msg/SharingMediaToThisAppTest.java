@@ -51,7 +51,13 @@ public class SharingMediaToThisAppTest extends ActivityInstrumentationTestCase2<
         setActivityIntent(intent);
         
     }
-    
+
+    @Override
+    protected void tearDown() throws Exception {
+        mService.tearDown();
+        super.tearDown();
+    }
+
     public void testSharingMediaToThisApp() throws InterruptedException {
         final String method = "testSharingMediaToThisApp";
         ListActivityTestHelper<TimelineActivity> helperTimelineActivity = new ListActivityTestHelper<>(this, AccountSelector.class);
@@ -63,26 +69,29 @@ public class SharingMediaToThisAppTest extends ActivityInstrumentationTestCase2<
         helperAccountSelector.clickListAtPosition(method, position);
         
         View editorView = getActivity().findViewById(R.id.message_editor);
-        assertTrue(editorView != null);
-        assertTrue("Editor appeared", editorView.getVisibility() == android.view.View.VISIBLE);
+        ListActivityTestHelper.waitViewIsVisible(method, editorView);
         TextView details = (TextView) editorView.findViewById(R.id.messageEditDetails);
         String textToFind = MyContextHolder.get().context().getText(R.string.label_with_media).toString();
-        assertTrue("Found text '" + textToFind + "'", details.getText().toString().contains(textToFind));
+        ListActivityTestHelper.waitTextInAView(method, details, textToFind);
 
-        final String body = "Test message with a shared image " + TestSuite.TESTRUN_UID;
+        String body = "Test message with a shared image " + TestSuite.TESTRUN_UID;
         EditText editText = (EditText) editorView.findViewById(R.id.messageBodyEditText);
         editText.requestFocus();
         TestSuite.waitForIdleSync(this);
         getInstrumentation().sendStringSync(body);
         helperTimelineActivity.clickView(method, R.id.messageEditSendButton);
+
         mService.serviceStopped = false;
         mService.waitForServiceStopped();
-        
+
+        editorView = getActivity().findViewById(R.id.message_editor);
+        ListActivityTestHelper.waitViewIsInvisible(method, editorView);
+
         String message = "Data was posted " + mService.httpConnectionMock.getPostedCounter() + " times; "
                 + Arrays.toString(mService.httpConnectionMock.getResults().toArray());
         MyLog.v(this, method + "; " + message);
         assertTrue(message, mService.httpConnectionMock.getPostedCounter() > 0);
-        assertTrue(message, mService.httpConnectionMock.substring2PostedPath("statuses/update").length() > 0 );
+        assertTrue(message, mService.httpConnectionMock.substring2PostedPath("statuses/update").length() > 0);
 
         String condition = "BODY='" + body + "'";
         long unsentMsgId = MyQuery.conditionToLongColumnValue(MyDatabase.Msg.TABLE_NAME, BaseColumns._ID, condition);
@@ -95,12 +104,5 @@ public class SharingMediaToThisAppTest extends ActivityInstrumentationTestCase2<
         MyLog.v(this, method + "; " + dd);
         assertEquals("Image URI stored", TestSuite.LOCAL_IMAGE_TEST_URI2, dd.getUri());
         assertEquals("Loaded '" + dd.getUri() + "'; " + dd, DownloadStatus.LOADED, dd.getStatus());
-
-    }
-    
-    @Override
-    protected void tearDown() throws Exception {
-        mService.tearDown();
-        super.tearDown();
     }
 }

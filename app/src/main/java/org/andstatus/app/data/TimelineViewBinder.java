@@ -113,14 +113,14 @@ public class TimelineViewBinder implements ViewBinder {
     
     private void setMessageDetails(Cursor cursor, int columnIndex, TextView view) {
         String messageDetails = RelativeTime.getDifference(view.getContext(), cursor.getLong(columnIndex));
-        int columnIndex2 = cursor.getColumnIndex(Msg.IN_REPLY_TO_MSG_ID);
-        if (columnIndex2 >= 0) {
-            long replyToMsgId = cursor.getLong(columnIndex2);
+        int ind = cursor.getColumnIndex(Msg.IN_REPLY_TO_MSG_ID);
+        if (ind >= 0) {
+            long replyToMsgId = cursor.getLong(ind);
             if (replyToMsgId != 0) {
                 String replyToName = "";
-                columnIndex2 = cursor.getColumnIndex(User.IN_REPLY_TO_NAME);
-                if (columnIndex2 >= 0) {
-                    replyToName = cursor.getString(columnIndex2);
+                ind = cursor.getColumnIndex(User.IN_REPLY_TO_NAME);
+                if (ind >= 0) {
+                    replyToName = cursor.getString(ind);
                 }
                 if (TextUtils.isEmpty(replyToName)) {
                     replyToName = "...";
@@ -130,13 +130,20 @@ public class TimelineViewBinder implements ViewBinder {
                         replyToName);
             }
         }
-        columnIndex2 = cursor.getColumnIndex(User.RECIPIENT_NAME);
-        if (columnIndex2 >= 0) {
-            String recipientName = cursor.getString(columnIndex2);
+        ind = cursor.getColumnIndex(User.RECIPIENT_NAME);
+        if (ind >= 0) {
+            String recipientName = cursor.getString(ind);
             if (!TextUtils.isEmpty(recipientName)) {
                 messageDetails += " " + String.format(
                         view.getContext().getText(R.string.message_source_to).toString(), 
                         recipientName);
+            }
+        }
+        ind = cursor.getColumnIndex(Msg.MSG_STATUS);
+        if (ind >= 0) {
+            DownloadStatus status = DownloadStatus.load(cursor.getLong(ind));
+            if (status != DownloadStatus.LOADED) {
+                messageDetails += " (" + status.getTitle(view.getContext()) + ")";
             }
         }
         view.setText(messageDetails);

@@ -323,7 +323,8 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         Uri mediaUri = dd.getUri().equals(Uri.EMPTY) ? Uri.EMPTY : FileProvider.downloadFilenameToUri(dd.getFile().getFilename());
         try {
             if (MyLog.isVerboseEnabled()) {
-                MyLog.v(this, method + ", text:'" + MyLog.trimmedString(status, 40) + "'");
+                MyLog.v(this, method + ", text:'" + MyLog.trimmedString(status, 40) + "'"
+                        + (mediaUri.equals(Uri.EMPTY) ? "" : "; uri:'" + mediaUri + "'"));
             }
             if (recipientUserId == 0) {
                 long replyToMsgId = MyQuery.msgIdToLongColumnValue(

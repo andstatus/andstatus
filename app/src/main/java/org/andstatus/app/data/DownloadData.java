@@ -26,7 +26,7 @@ public class DownloadData {
     private MyContentType contentType = MyContentType.UNKNOWN;
     private DownloadStatus status = DownloadStatus.UNKNOWN; 
     private long downloadId = 0;
-    private DownloadFile fileStored = DownloadFile.getEmpty();
+    private DownloadFile fileStored = DownloadFile.EMPTY;
     protected Uri uri = Uri.EMPTY;
 
     private boolean hardError = false;
@@ -34,7 +34,7 @@ public class DownloadData {
     private String errorMessage = "";
 
     private long loadTimeNew = 0;
-    private DownloadFile fileNew = DownloadFile.getEmpty();
+    private DownloadFile fileNew = DownloadFile.EMPTY;
 
     public static DownloadData fromId(long downloadId) {
         DownloadData dd = new DownloadData();
@@ -162,7 +162,7 @@ public class DownloadData {
             hardError = true;
         }
         if (fileStored == null) {
-            fileStored = DownloadFile.getEmpty();
+            fileStored = DownloadFile.EMPTY;
         }
         fileNew = fileStored;
         if (hardError) {
@@ -393,20 +393,21 @@ public class DownloadData {
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        builder.append(this.getClass().getSimpleName());
-        builder.append("; Uri:'" + getUri() + "'");
+        builder.append("uri:'" + getUri() + "',");
         if(userId != 0) {
-            builder.append("; userId:" + userId);
+            builder.append("userId:" + userId + ",");
         }
         if(msgId != 0) {
-            builder.append("; msgId:" + msgId);
+            builder.append("msgId:" + msgId + ",");
         }
-        builder.append("; status:" + getStatus());
+        builder.append("status:" + getStatus() + ",");
         if(!TextUtils.isEmpty(errorMessage)) {
-            builder.append("; errorMessage:'" + getMessage() + "'");
+            builder.append("errorMessage:'" + getMessage() + "',");
         }
-        
-        return builder.toString();
+        if (!fileStored.equals(DownloadFile.EMPTY)) {
+            builder.append("file:" + getFilename() + ",");
+        }
+        return MyLog.formatKeyValue(this, builder.toString());
     }
 
     public static void asyncRequestDownload(final long downloadId) {
