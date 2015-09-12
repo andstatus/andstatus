@@ -29,7 +29,7 @@ import org.andstatus.app.util.UriUtils;
 
 import java.io.File;
 
-abstract class FileDownloader {
+public abstract class FileDownloader {
     protected final DownloadData data;
     public Connection connectionMock;
 
