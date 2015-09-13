@@ -213,6 +213,7 @@
   <string name="menu_item_destroy_reblog_twitter">Undo retweet</string>
   <string name="menu_item_destroy_status">Remove message</string>
   <string name="menu_item_direct_message">Direct Message</string>
+  <string name="menu_item_edit">Edit</string>
   <string name="menu_item_favorite">Favorite</string>
   <string name="menu_item_follow_user">Follow \"%1s\"</string>
   <string name="menu_item_view_image">View image</string>

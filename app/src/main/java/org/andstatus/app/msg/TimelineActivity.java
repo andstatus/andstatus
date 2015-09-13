@@ -308,7 +308,7 @@ public class TimelineActivity extends MyListActivity implements MyServiceEventsL
         if (!mFinishing) {
             MyContextHolder.get().setInForeground(true);
             mServiceConnector.registerReceiver(this);
-            mMessageEditor.loadState();
+            mMessageEditor.loadState(0);
         }
     }
 
@@ -377,7 +377,7 @@ public class TimelineActivity extends MyListActivity implements MyServiceEventsL
     protected Dialog onCreateDialog(int id) {
         switch (id) {
             case DIALOG_ID_TIMELINE_TYPE:
-                return newTimelinetypeSelector();
+                return newTimelineTypeSelector();
             default:
                 break;
         }
@@ -385,7 +385,7 @@ public class TimelineActivity extends MyListActivity implements MyServiceEventsL
     }
 
     // TODO: Replace this with http://developer.android.com/reference/android/app/DialogFragment.html
-    private AlertDialog newTimelinetypeSelector() {
+    private AlertDialog newTimelineTypeSelector() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle(R.string.dialog_title_select_timeline);
         final TimelineTypeSelector selector = new TimelineTypeSelector(this);
@@ -591,8 +591,8 @@ public class TimelineActivity extends MyListActivity implements MyServiceEventsL
     }
 
     private String timelineTypeButtonText() {
-        CharSequence timelinename = mListParametersNew.getTimelineType().getTitle(this);
-        return timelinename + (TextUtils.isEmpty(mListParametersNew.mSearchQuery) ? "" : " *");
+        CharSequence timelineName = mListParametersNew.getTimelineType().getTitle(this);
+        return timelineName + (TextUtils.isEmpty(mListParametersNew.mSearchQuery) ? "" : " *");
     }
 
     private void updateAccountButtonText(ViewGroup mDrawerList) {
@@ -777,8 +777,8 @@ public class TimelineActivity extends MyListActivity implements MyServiceEventsL
     }
 
     static class TimelineTitle {
-        StringBuilder title = new StringBuilder();
-        StringBuilder subTitle = new StringBuilder();
+        final StringBuilder title = new StringBuilder();
+        final StringBuilder subTitle = new StringBuilder();
 
         public TimelineTitle(TimelineListParameters ta, String additionalTitleText) {
             buildTitle(ta); 
@@ -998,7 +998,7 @@ public class TimelineActivity extends MyListActivity implements MyServiceEventsL
      * Only newer messages (newer than last loaded) are being loaded from the
      * Internet, older ones are not being reloaded.
      */
-    protected void manualReload(boolean allTimelineTypes, boolean manuallyLauched) {
+    protected void manualReload(boolean allTimelineTypes, boolean manuallyLaunched) {
         MyAccount ma = MyContextHolder.get().persistentAccounts().fromUserId(mListParametersNew.myAccountUserId);
         TimelineType timelineTypeForReload = TimelineType.HOME;
         long userId = 0;
@@ -1039,7 +1039,7 @@ public class TimelineActivity extends MyListActivity implements MyServiceEventsL
         setSyncing("manualReload", true);
         MyServiceManager.sendForegroundCommand(
                 (new CommandData(CommandEnum.FETCH_TIMELINE,
-                        allAccounts ? "" : ma.getAccountName(), timelineTypeForReload, userId)).setManuallyLaunched(manuallyLauched)
+                        allAccounts ? "" : ma.getAccountName(), timelineTypeForReload, userId)).setManuallyLaunched(manuallyLaunched)
                 );
 
         if (allTimelineTypes && ma.isValid()) {
@@ -1056,7 +1056,7 @@ public class TimelineActivity extends MyListActivity implements MyServiceEventsL
         SharedPreferences.Editor outState = MyPreferences.getSharedPreferences(ACTIVITY_PERSISTENCE_NAME).edit();
         mListParametersNew.saveState(outState);
         mContextMenu.saveState(outState);
-        outState.commit();
+        outState.apply();
 
         final String CRASH_TEST_STRING = "Crash test 2015-04-10";
         if (MyLog.isVerboseEnabled() && mMessageEditor != null &&
@@ -1128,12 +1128,10 @@ public class TimelineActivity extends MyListActivity implements MyServiceEventsL
 
     private void attachmentSelected(Intent data) {
         Uri uri = UriUtils.notNull(data.getData());
-        if (!UriUtils.isEmpty(uri)) {
-            UriUtils.takePersistableUriPermission(getActivity(), uri, data.getFlags());
+        if (!UriUtils.isEmpty(uri) && mMessageEditor.isVisible()) {
             mMediaToShareViaThisApp = uri;
-            if (mMessageEditor.isVisible()) {
-                mMessageEditor.setMedia(mMediaToShareViaThisApp);
-            }
+            UriUtils.takePersistableUriPermission(getActivity(), uri, data.getFlags());
+            mMessageEditor.setMedia(mMediaToShareViaThisApp);
         }
     }
 

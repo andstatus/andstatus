@@ -24,14 +24,15 @@ import android.net.Uri;
 import android.text.TextUtils;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
 
 import org.andstatus.app.ContextMenuItem;
 import org.andstatus.app.ActivityTestHelper;
 import org.andstatus.app.ListActivityTestHelper;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyDatabase;
@@ -60,6 +61,10 @@ public class MessageEditorTest extends android.test.ActivityInstrumentationTestC
         MyLog.i(this, "setUp started");
         TestSuite.initializeWithData(this);
         MyLog.setLogToFile(true);
+
+        if (data == null) {
+            MyPreferences.putLong(MyPreferences.KEY_DRAFT_MESSAGE_ID, 0);
+        }
 
         MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.CONVERSATION_ACCOUNT_NAME);
         assertTrue(ma.isValid());
@@ -182,8 +187,10 @@ public class MessageEditorTest extends android.test.ActivityInstrumentationTestC
         MyLog.v(this, method + " ended");
     }
 
-    private void assertInitialText(final String description) {
+    private void assertInitialText(final String description) throws InterruptedException {
         final MessageEditor editor = mActivity.getMessageEditor();
+        TextView textView = (TextView) getActivity().findViewById(R.id.messageBodyEditText);
+        ListActivityTestHelper.waitTextInAView(description, textView, data.messageText);
         MyLog.v(this, description + " text:'" + editor.getData().messageText +"'");
         assertEquals(description, data, editor.getData());
     }

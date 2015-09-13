@@ -38,6 +38,7 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -52,23 +53,103 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.Date;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.atomic.AtomicReference;
+
 /**
  * "Enter your message here" box 
  */
 public class MessageEditor {
-    private ActionableMessageList mMessageList;
-    private android.view.ViewGroup mEditorView;
+    static class MyLock {
+        static final MyLock EMPTY = new MyLock(false, 0);
+        static final AtomicReference<MyLock> lock = new AtomicReference<>(MyLock.EMPTY);
+
+        final boolean isSave;
+        final long msgId;
+        long startedAt;
+
+        MyLock(boolean isSave, long msgId) {
+            this.isSave = isSave;
+            this.msgId = msgId;
+        }
+
+        boolean isEmpty() {
+            return this.equals(EMPTY);
+        }
+
+        boolean expired() {
+            return isEmpty() || Math.abs(System.currentTimeMillis() - startedAt) > 60000;
+        }
+
+        boolean decidedToContinue() {
+            boolean doContinue = true;
+            for (int i=0; i<60; i++) {
+                MyLock lockPrevious = lock.get();
+                if (lock.get().expired()) {
+                    this.startedAt = MyLog.uniqueCurrentTimeMS();
+                    if (lock.compareAndSet(lockPrevious, this)) {
+                        MyLog.v(this, "Received lock " + this + (lockPrevious.isEmpty() ? "" :
+                                (". Replaced expired " + lockPrevious)));
+                        break;
+                    }
+                } else {
+                    if(lockPrevious.isSave == isSave && lockPrevious.msgId == msgId) {
+                        MyLog.v(this, "The same operation in progress: " + lockPrevious);
+                        doContinue = false;
+                        break;
+                    }
+                }
+                try {
+                    // http://stackoverflow.com/questions/363681/generating-random-integers-in-a-range-with-java
+                    if(Build.VERSION.SDK_INT >= 21) {
+                        Thread.sleep(250 + ThreadLocalRandom.current().nextInt(0, 500));
+                    } else {
+                        Thread.sleep(500);
+                    }
+                } catch (InterruptedException e) {
+                    MyLog.v(this, "Wait interrupted", e);
+                    doContinue = false;
+                    break;
+                }
+            }
+            return doContinue;
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder builder = new StringBuilder();
+            if(isSave) {
+                builder.append("save,");
+            }
+            if(msgId != 0) {
+                builder.append("msgId:" + msgId + ",");
+            }
+            builder.append("started:" + new Date(startedAt));
+            return MyLog.formatKeyValue(this, builder.toString());
+
+        }
+
+        public void release() {
+            if (!isEmpty()) {
+                lock.compareAndSet(this, EMPTY);
+            }
+        }
+    }
+
+    private final ActionableMessageList mMessageList;
+    private final android.view.ViewGroup mEditorView;
 
     /**
      * Text to be sent
      */
     private EditText mEditText;
-    private TextView mCharsLeftText;
+    private final TextView mCharsLeftText;
 
     /**
      * Information about the message we are editing
      */
-    private TextView mDetails;
+    private final TextView mDetails;
 
     private MessageEditorData editorData = MessageEditorData.newEmpty(null);
 
@@ -270,10 +351,10 @@ public class MessageEditor {
     public void startEditingSharedData(final MyAccount ma, final String textToShare, final Uri mediaToShare) {
         MyLog.v(MessageEditorData.TAG, "startEditingSharedData " + textToShare + " uri: " + mediaToShare);
         MessageEditorData data = MessageEditorData.newEmpty(ma).setMessageText(textToShare);
-        data.imageUriToSave = mediaToShare;
+        data.setMediaUri(mediaToShare);
         data.showAfterSaveOrLoad = true;
         editorData = data;
-        save();
+        saveData();
     }
 
     public void startEditingMessage(MessageEditorData dataIn) {
@@ -313,7 +394,7 @@ public class MessageEditor {
                         recipientName);
             }
         }
-        if (!UriUtils.isEmpty(editorData.image.getUri())) {
+        if (!UriUtils.isEmpty(editorData.getMediaUri())) {
             messageDetails += " (" + MyContextHolder.get().context().getText(R.string.label_with_media).toString() + ")"; 
         }
         mDetails.setText(messageDetails);
@@ -348,49 +429,74 @@ public class MessageEditor {
 				MyLog.setLogToFile(true);
 			}
             editorData.status = DownloadStatus.SENDING;
-            save();
+            saveData();
         }
     }
 
     private void clearAndHide() {
         editorData.status = DownloadStatus.DELETED;
-        save();
+        saveData();
 	}
 
     public void saveState() {
         if (mEditText != null) {
             editorData.messageText = mEditText.getText().toString();
-            save();
+            saveData();
         }
     }
 
-    public void save() {
-        long startedAt = MessageEditorData.saveStartedAt.get();
-        MyLog.v(MessageEditorData.TAG, "Save requested " + editorData);
-        if (!MessageEditorData.saveStartedAt.compareAndSet(0, System.currentTimeMillis())) {
-            MyLog.i(MessageEditorData.TAG, "Failed to save. Already started " + (System.currentTimeMillis() - startedAt) + "ms ago");
-            return;
+    private void saveData() {
+        if (editorData.isEmpty()) {
+            dataSavedCallback(editorData);
+        } else {
+            MyLog.v(MessageEditorData.TAG, "Save requested for " + editorData);
+            new MessageEditorSaver().execute(this);
         }
-        new MessageEditorSaver().execute(this);
     }
 
-    public void loadState() {
-        MyLog.v(MessageEditorData.TAG, "loadState started");
-        new AsyncTask<Void, Void, MessageEditorData>() {
+    public void loadState(long msgId) {
+        MyLog.v(MessageEditorData.TAG, "loadState started" + (msgId == 0 ? "" : ", msgId=" + msgId));
+        new AsyncTask<Long, Void, MessageEditorData>() {
+            volatile MessageEditor.MyLock lock = MessageEditor.MyLock.EMPTY;
 
             @Override
-            protected MessageEditorData doInBackground(Void... params) {
-                MessageEditorData.waitTillSaveEnded();
-                MyLog.v(MessageEditorData.TAG, "loadState passed wait");
-                return MessageEditorData.load();
+            protected MessageEditorData doInBackground(Long... params) {
+                long msgId = params[0];
+                MyLog.v(MessageEditorData.TAG, "Load requested for " + msgId);
+                MessageEditor.MyLock potentialLock = new MessageEditor.MyLock(false, msgId);
+                if (!potentialLock.decidedToContinue()) {
+                    return MessageEditorData.newEmpty(null);
+                }
+                lock = potentialLock;
+                MyLog.v(MessageEditorData.TAG, "loadState passed wait for save");
+
+                if (msgId == 0) {
+                    msgId = MyPreferences.getLong(MyPreferences.KEY_DRAFT_MESSAGE_ID);
+                }
+                if (msgId != 0) {
+                    DownloadStatus status = DownloadStatus.load(MyQuery.msgIdToLongColumnValue(MyDatabase.Msg.MSG_STATUS, msgId));
+                    if (status != DownloadStatus.DRAFT) {
+                        msgId = 0;
+                    }
+                }
+                MyPreferences.putLong(MyPreferences.KEY_DRAFT_MESSAGE_ID, msgId);
+                return MessageEditorData.load(msgId);
+            }
+
+            @Override
+            protected void onCancelled() {
+                lock.release();
             }
 
             @Override
             protected void onPostExecute(MessageEditorData data) {
-                data.showAfterSaveOrLoad = true;
-                dataLoadedCallback(data);
+                if (!lock.isEmpty()) {
+                    data.showAfterSaveOrLoad = true;
+                    dataLoadedCallback(data);
+                    lock.release();
+                }
             }
-        }.execute();
+        }.execute(msgId);
     }
 
     public void onAttach() {
@@ -423,12 +529,11 @@ public class MessageEditor {
 	}
 
     public void setMedia(Uri mediaUri) {
-        editorData.imageUriToSave = UriUtils.notNull(mediaUri);
-        save();
+        editorData.setMediaUri(mediaUri);
+        saveData();
     }
 
     public void dataSavedCallback(MessageEditorData data) {
-        MessageEditorData.saveStartedAt.set(0);
         dataLoadedCallback(data);
     }
 
@@ -454,5 +559,4 @@ public class MessageEditor {
     public MessageEditorData getData() {
         return editorData;
     }
-
 }

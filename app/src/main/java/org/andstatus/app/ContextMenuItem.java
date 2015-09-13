@@ -58,6 +58,14 @@ public enum ContextMenuItem {
             return true;
         }
     },
+    EDIT() {
+        @Override
+        boolean executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
+            menu.messageList.getMessageEditor().saveState();
+            menu.messageList.getMessageEditor().loadState(editorData.getMsgId());
+            return true;
+        }
+    },
     REPLY_ALL(true) {
         @Override
         MessageEditorData executeAsync(MyAccount ma, long msgId) {
@@ -343,7 +351,7 @@ public enum ContextMenuItem {
             executeAsync1(menu, ma);
             return true;
         } else {
-            return executeOnUiThread(menu, MessageEditorData.newEmpty(ma).setInReplyToId(menu.getMsgId()));
+            return executeOnUiThread(menu, MessageEditorData.newEmpty(ma).setMsgId(menu.getMsgId()));
         }
     }
     
@@ -383,6 +391,6 @@ public enum ContextMenuItem {
     
     void sendCommandMsg(CommandEnum command, MessageEditorData editorData) {
         MyServiceManager.sendManualForegroundCommand(
-                new CommandData(command, editorData.ma.getAccountName(), editorData.inReplyToId));
+                new CommandData(command, editorData.ma.getAccountName(), editorData.getMsgId()));
     }
 }

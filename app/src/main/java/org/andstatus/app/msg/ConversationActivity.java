@@ -67,7 +67,7 @@ public class ConversationActivity extends LoadableListActivity implements Action
                 }
                 break;
             case ATTACH:
-                Uri uri = data != null ? UriUtils.notNull(data.getData()) : null;
+                Uri uri = data != null ? UriUtils.notNull(data.getData()) : Uri.EMPTY;
                 if (resultCode == RESULT_OK && !UriUtils.isEmpty(uri) 
                         && mMessageEditor.isVisible()) {
                     UriUtils.takePersistableUriPermission(getActivity(), uri, data.getFlags());
@@ -89,7 +89,7 @@ public class ConversationActivity extends LoadableListActivity implements Action
     @Override
     protected void onResume() {
         super.onResume();
-        mMessageEditor.loadState();
+        mMessageEditor.loadState(0);
     }
 
     @Override

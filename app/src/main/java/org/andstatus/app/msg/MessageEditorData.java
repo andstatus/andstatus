@@ -21,7 +21,6 @@ import android.text.TextUtils;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.UserInTimeline;
 import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.data.DownloadStatus;
@@ -33,18 +32,18 @@ import org.andstatus.app.util.UriUtils;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
 
 public class MessageEditorData {
     public static final String TAG = MessageEditorData.class.getSimpleName();
-    public static final AtomicLong saveStartedAt = new AtomicLong();
 
-    public long msgId = 0;
+    private long msgId = 0;
     public DownloadStatus status = DownloadStatus.DRAFT;
     public String messageText = "";
     boolean showAfterSaveOrLoad = false;
-    public Uri imageUriToSave = Uri.EMPTY;
-    public DownloadData image = DownloadData.EMPTY;
+
+    private Uri imageUriToSave = Uri.EMPTY;
+    private DownloadData image = DownloadData.EMPTY;
+
     /**
      * Id of the Message to which we are replying.
      *  0 - This message is not a Reply.
@@ -69,7 +68,7 @@ public class MessageEditorData {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((ma == null) ? 0 : ma.hashCode());
-        result = prime * result + image.getUri().hashCode();
+        result = prime * result + getMediaUri().hashCode();
         result = prime * result + ((messageText == null) ? 0 : messageText.hashCode());
         result = prime * result + (int) (recipientId ^ (recipientId >>> 32));
         result = prime * result + (int) (inReplyToId ^ (inReplyToId >>> 32));
@@ -90,7 +89,7 @@ public class MessageEditorData {
                 return false;
         } else if (!ma.equals(other.ma))
             return false;
-        if (!image.getUri().equals(other.image.getUri()))
+        if (!getMediaUri().equals(other.getMediaUri()))
             return false;
         if (messageText == null) {
             if (other.messageText != null)
@@ -120,7 +119,9 @@ public class MessageEditorData {
         if(!UriUtils.isEmpty(imageUriToSave)) {
             builder.append("imageUriToSave:'" + imageUriToSave + "',");
         }
-        builder.append(image.toString() + ",");
+        if(!UriUtils.isEmpty(image.getUri())) {
+            builder.append("image:" + image + ",");
+        }
         if(inReplyToId != 0) {
             builder.append("inReplyToId:" + inReplyToId + ",");
         }
@@ -134,14 +135,7 @@ public class MessageEditorData {
         return MyLog.formatKeyValue(this, builder.toString());
     }
 
-    static MessageEditorData load() {
-        long msgId = MyPreferences.getLong(MyPreferences.KEY_DRAFT_MESSAGE_ID);
-        if (msgId != 0) {
-            DownloadStatus status = DownloadStatus.load(MyQuery.msgIdToLongColumnValue(MyDatabase.Msg.MSG_STATUS, msgId));
-            if (status != DownloadStatus.DRAFT) {
-                msgId = 0;
-            }
-        }
+    static MessageEditorData load(Long msgId) {
         MessageEditorData data;
         if (msgId != 0) {
             MyAccount ma = MyContextHolder.get().persistentAccounts().fromUserId(
@@ -164,7 +158,7 @@ public class MessageEditorData {
     }
     
     boolean isEmpty() {
-        return TextUtils.isEmpty(messageText) && UriUtils.isEmpty(image.getUri()) && imageUriToSave.equals(Uri.EMPTY) && msgId == 0;
+        return TextUtils.isEmpty(messageText) && getMediaUri().equals(Uri.EMPTY) && msgId == 0;
     }
 
     public MessageEditorData setMessageText(String textInitial) {
@@ -173,10 +167,23 @@ public class MessageEditorData {
     }
 
     public MessageEditorData setMediaUri(Uri mediaUri) {
-        image = DownloadData.getSingleForMessage(msgId, MyContentType.IMAGE, mediaUri);
+        imageUriToSave = UriUtils.notNull(mediaUri);
         return this;
     }
-    
+
+    public Uri getMediaUri() {
+        return imageUriToSave.equals(Uri.EMPTY) ? image.getUri() : imageUriToSave;
+    }
+
+    public MessageEditorData setMsgId(long msgIdIn) {
+        msgId = msgIdIn;
+        return this;
+    }
+
+    public long getMsgId() {
+        return msgId;
+    }
+
     public MessageEditorData setInReplyToId(long msgId) {
         inReplyToId = msgId;
         return this;
@@ -270,25 +277,5 @@ public class MessageEditorData {
                 && getMyAccount().getAccountName()
                         .compareTo(dataIn.getMyAccount().getAccountName()) == 0
                 && mReplyAll == dataIn.mReplyAll;
-    }
-
-    public static void waitTillSaveEnded() {
-        for (int i=0; i<60; i++) {
-            if (saveStartedAt.get() == 0) {
-                break;
-            }
-            try {
-                Thread.sleep(500);
-            } catch (InterruptedException e) {
-                MyLog.ignored(TAG, e);
-                break;
-            }
-        }
-        long saveStarted = saveStartedAt.get();
-        if (saveStarted != 0 && Math.abs(System.currentTimeMillis() - saveStarted) > 60000) {
-            if (saveStartedAt.compareAndSet(saveStarted, 0)) {
-                MyLog.i(TAG, "Reset saveStartedAt");
-            }
-        }
     }
 }

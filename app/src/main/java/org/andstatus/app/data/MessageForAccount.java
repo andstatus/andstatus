@@ -22,9 +22,6 @@ import android.provider.BaseColumns;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.data.MyDatabase;
-import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
 
@@ -34,6 +31,7 @@ import org.andstatus.app.util.MyHtml;
  */
 public class MessageForAccount {
     public final long msgId;
+    public DownloadStatus status = DownloadStatus.UNKNOWN;
     public String bodyTrimmed = "";
     public long authorId = 0;
     public long senderId = 0;
@@ -67,10 +65,12 @@ public class MessageForAccount {
         Uri uri = MatchedUri.getTimelineItemUri(ma.getUserId(), TimelineType.MESSAGESTOACT, false, 0, msgId);
         Cursor cursor = null;
         try {
-            cursor = MyContextHolder.get().context().getContentResolver().query(uri, new String[] {
-                    BaseColumns._ID, MyDatabase.Msg.BODY, MyDatabase.Msg.SENDER_ID,
+            cursor = MyContextHolder.get().context().getContentResolver().query(uri, new String[]{
+                    BaseColumns._ID,
+                    MyDatabase.Msg.MSG_STATUS,
+                    MyDatabase.Msg.BODY, MyDatabase.Msg.SENDER_ID,
                     MyDatabase.Msg.AUTHOR_ID,
-                    MyDatabase.Msg.IN_REPLY_TO_USER_ID, 
+                    MyDatabase.Msg.IN_REPLY_TO_USER_ID,
                     MyDatabase.Msg.RECIPIENT_ID,
                     MyDatabase.MsgOfUser.SUBSCRIBED,
                     MyDatabase.MsgOfUser.FAVORITED,
@@ -80,6 +80,8 @@ public class MessageForAccount {
                     MyDatabase.Download.IMAGE_FILE_NAME
             }, null, null, null);
             if (cursor != null && cursor.moveToFirst()) {
+                status = DownloadStatus.load(
+                        cursor.getLong(cursor.getColumnIndex(MyDatabase.Msg.MSG_STATUS)));
                 authorId = cursor.getLong(cursor.getColumnIndex(MyDatabase.Msg.AUTHOR_ID));
                 senderId = cursor.getLong(cursor.getColumnIndex(MyDatabase.Msg.SENDER_ID));
                 recipientId = cursor.getLong(cursor.getColumnIndex(MyDatabase.Msg.RECIPIENT_ID));

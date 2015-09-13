@@ -34,6 +34,7 @@ import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MessageForAccount;
 import org.andstatus.app.data.MyQuery;
@@ -46,7 +47,7 @@ import org.andstatus.app.util.MyLog;
  */
 public class MessageContextMenu implements OnCreateContextMenuListener {
 
-    public ActionableMessageList messageList;
+    public final ActionableMessageList messageList;
     
     private View viewOfTheContext = null;
     /**
@@ -96,9 +97,9 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
             logMsg += "; idView.text=" + mMsgId;
             if (userIdForThisMessage == 0) {
                 TextView linkedUserId = (TextView) v.findViewById(R.id.linked_user_id);
-                String strIserId = linkedUserId.getText().toString();
-                if (!TextUtils.isEmpty(strIserId)) {
-                    userIdForThisMessage = Long.parseLong(strIserId);
+                String strUserId = linkedUserId.getText().toString();
+                if (!TextUtils.isEmpty(strUserId)) {
+                    userIdForThisMessage = Long.parseLong(strUserId);
                 }
             }
         }
@@ -108,9 +109,7 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
             return;
         }
         MyLog.v(this, logMsg);
-        MessageForAccount msg = new MessageDataForContextMenu(messageList.getActivity(),
-                userIdForThisMessage, getCurrentMyAccountUserId(), messageList.getTimelineType(),
-                mMsgId, mAccountUserIdToActAs !=0).getMsg();
+        MessageForAccount msg = getMessageForAccount(userIdForThisMessage, getCurrentMyAccountUserId());
         if (!msg.myAccount().isValid()) {
             return;
         }
@@ -120,9 +119,13 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
         int order = 0;
         // Create the Context menu
         try {
-            menu.setHeaderTitle((MyContextHolder.get().persistentAccounts().size() > 1 ? msg.myAccount().shortestUniqueAccountName() + ": " : "")
+            menu.setHeaderTitle((MyContextHolder.get().persistentAccounts().size() > 1
+                    ? msg.myAccount().shortestUniqueAccountName() + ": " : "")
                     + msg.bodyTrimmed);
 
+            if (msg.status == DownloadStatus.DRAFT) {
+                ContextMenuItem.EDIT.addTo(menu, order++, R.string.menu_item_edit);
+            }
             if (isEditorVisible()) {
                 ContextMenuItem.COPY_TEXT.addTo(menu, order++, R.string.menu_item_copy_text);
                 ContextMenuItem.COPY_AUTHOR.addTo(menu, order++, R.string.menu_item_copy_author);
@@ -241,6 +244,25 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
         } catch (Exception e) {
             MyLog.e(this, "onCreateContextMenu", e);
         }
+    }
+
+    private MessageForAccount getMessageForAccount(long userIdForThisMessage, long preferredUserId) {
+        MyAccount ma1 = MyContextHolder.get().persistentAccounts()
+                .getAccountForThisMessage(mMsgId, userIdForThisMessage,
+                        preferredUserId,
+                        false);
+        MessageForAccount msg = new MessageForAccount(mMsgId, ma1);
+        boolean forceFirstUser = mAccountUserIdToActAs !=0;
+        if (ma1.isValid() && !forceFirstUser
+                && !msg.isTiedToThisAccount()
+                && ma1.getUserId() != preferredUserId
+                && messageList.getTimelineType() != TimelineType.FOLLOWING_USER) {
+            MyAccount ma2 = MyContextHolder.get().persistentAccounts().fromUserId(preferredUserId);
+            if (ma2.isValid() && ma1.getOriginId() == ma2.getOriginId()) {
+                msg = new MessageForAccount(mMsgId, ma2);
+            }
+        }
+        return msg;
     }
 
     private boolean isEditorVisible() {

@@ -81,11 +81,11 @@ public class SharingMediaToThisAppTest extends ActivityInstrumentationTestCase2<
         getInstrumentation().sendStringSync(body);
         helperTimelineActivity.clickView(method, R.id.messageEditSendButton);
 
-        mService.serviceStopped = false;
-        mService.waitForServiceStopped();
-
         editorView = getActivity().findViewById(R.id.message_editor);
         ListActivityTestHelper.waitViewIsInvisible(method, editorView);
+
+        mService.serviceStopped = false;
+        mService.waitForServiceStopped();
 
         String message = "Data was posted " + mService.httpConnectionMock.getPostedCounter() + " times; "
                 + Arrays.toString(mService.httpConnectionMock.getResults().toArray());

@@ -24,11 +24,18 @@ import org.andstatus.app.util.MyLog;
  */
 public class MessageEditorSaver extends AsyncTask<MessageEditor, Void, MessageEditorData> {
     volatile MessageEditor editor = null;
+    volatile MessageEditor.MyLock lock = MessageEditor.MyLock.EMPTY;
 
     @Override
     protected MessageEditorData doInBackground(MessageEditor... params) {
         editor = params[0];
         MessageEditorData data = editor.getData();
+        MessageEditor.MyLock potentialLock = new MessageEditor.MyLock(true, data.getMsgId());
+        if (!potentialLock.decidedToContinue()) {
+            return data;
+        }
+        lock = potentialLock;
+
         MyLog.v(MessageEditorData.TAG, "Saver started, Editor is " + (editor.isVisible() ? "visible" : "hidden")
         + "; " + data);
         long msgId = 0;
@@ -45,15 +52,15 @@ public class MessageEditorSaver extends AsyncTask<MessageEditor, Void, MessageEd
     }
 
     private void deleteDraft(MessageEditorData data) {
-        DownloadData.deleteAllOfThisMsg(data.msgId);
+        DownloadData.deleteAllOfThisMsg(data.getMsgId());
         MyContextHolder.get().context().getContentResolver()
-                .delete(MatchedUri.getMsgUri(0, data.msgId), null, null);
+                .delete(MatchedUri.getMsgUri(0, data.getMsgId()), null, null);
     }
 
     private long save(MessageEditorData data) {
         MbMessage message = MbMessage.fromOriginAndOid(data.getMyAccount().getOriginId(), "",
                 data.status);
-        message.msgId = data.msgId;
+        message.msgId = data.getMsgId();
         message.actor = MbUser.fromOriginAndUserOid(data.getMyAccount().getOriginId(),
                 data.getMyAccount().getUserOid());
         message.sender = message.actor;
@@ -68,10 +75,9 @@ public class MessageEditorSaver extends AsyncTask<MessageEditor, Void, MessageEd
                     MyQuery.idToOid(MyDatabase.OidEnum.MSG_OID, data.inReplyToId, 0),
                     DownloadStatus.UNKNOWN);
         }
-        Uri imageUri = data.imageUriToSave.equals(Uri.EMPTY) ? data.image.getUri() : data.imageUriToSave;
-        if (!imageUri.equals(Uri.EMPTY)) {
+        if (!data.getMediaUri().equals(Uri.EMPTY)) {
             message.attachments.add(
-                    MbAttachment.fromUriAndContentType(imageUri, MyContentType.IMAGE));
+                    MbAttachment.fromUriAndContentType(data.getMediaUri(), MyContentType.IMAGE));
         }
         DataInserter di = new DataInserter(data.getMyAccount());
         return di.insertOrUpdateMsg(message);
@@ -79,17 +85,30 @@ public class MessageEditorSaver extends AsyncTask<MessageEditor, Void, MessageEd
 
     private MessageEditorData loadFutureData(MessageEditorData oldData, long msgId) {
         boolean loadNew = oldData.status != DownloadStatus.DRAFT;
-        MyPreferences.putLong(MyPreferences.KEY_DRAFT_MESSAGE_ID, loadNew ? 0 : msgId);
         MessageEditorData newData = loadNew ?
-                MessageEditorData.newEmpty(oldData.getMyAccount()) : MessageEditorData.load();
+                MessageEditorData.newEmpty(oldData.getMyAccount()) : MessageEditorData.load(msgId);
         newData.showAfterSaveOrLoad = oldData.showAfterSaveOrLoad;
+        if (newData.status == DownloadStatus.DRAFT && newData.getMsgId() != 0) {
+            MyPreferences.putLong(MyPreferences.KEY_DRAFT_MESSAGE_ID, newData.getMsgId());
+        }
         return newData;
     }
 
     @Override
+    protected void onCancelled() {
+        lock.release();
+    }
+
+    @Override
     protected void onPostExecute(MessageEditorData data) {
-        MyLog.v(MessageEditorData.TAG, "Saved; Future data: " + data);
-        editor.dataSavedCallback(data);
+        if (lock.isEmpty()) {
+            MyLog.v(MessageEditorData.TAG, "Saver skipped saving data: " + data);
+
+        } else {
+            MyLog.v(MessageEditorData.TAG, "Saved; Future data: " + data);
+            editor.dataSavedCallback(data);
+            lock.release();
+        }
     }
 
 }
