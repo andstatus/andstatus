@@ -43,15 +43,15 @@ public class CommandExecutorStrategyTest extends InstrumentationTestCase {
     protected void setUp() throws Exception {
         TestSuite.initializeWithData(this);
 
-        httpConnectionMock = new HttpConnectionMock();
-        TestSuite.setHttpConnectionMock(httpConnectionMock);
-        assertEquals("HttpConnection mocked", MyContextHolder.get().getHttpConnectionMock(), httpConnectionMock);
+        TestSuite.setHttpConnectionMockClass(HttpConnectionMock.class);
         // In order the mocked connection to have effect:
         MyContextHolder.get().persistentAccounts().initialize();
         ma = MyAccount.Builder.newOrExistingFromAccountName(
                 MyContextHolder.get(), 
                 TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME, TriState.UNKNOWN).getAccount();
         assertTrue(ma.getUserId() != 0);
+        assertTrue("HttpConnection mocked", ma.getConnection().getHttp() instanceof HttpConnectionMock);
+        httpConnectionMock = (HttpConnectionMock) ma.getConnection().getHttp();
     }
 
     public void testFetchTimeline() {
@@ -135,9 +135,12 @@ public class CommandExecutorStrategyTest extends InstrumentationTestCase {
     }
     
     public void testDiscoverOrigins() throws IOException {
-        httpConnectionMock.setResponse(RawResourceUtils.getString(this.getInstrumentation().getContext(), 
+        HttpConnectionMock http = new HttpConnectionMock();
+        http.setResponse(RawResourceUtils.getString(this.getInstrumentation().getContext(),
                 org.andstatus.app.tests.R.raw.get_open_instances));
-        CommandData commandData = new CommandData(CommandEnum.GET_OPEN_INSTANCES, "", OriginType.GNUSOCIAL.getId());
+        TestSuite.setHttpConnectionMockInstance(http);
+        CommandData commandData = new CommandData(CommandEnum.GET_OPEN_INSTANCES,
+                TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME, OriginType.GNUSOCIAL.getId());
         DiscoveredOrigins.clear();
         CommandExecutorStrategy.executeCommand(commandData, null);
         assertEquals(1, commandData.getResult().getExecutionCount());
@@ -148,7 +151,8 @@ public class CommandExecutorStrategyTest extends InstrumentationTestCase {
     
     @Override
     protected void tearDown() throws Exception {
-        TestSuite.setHttpConnectionMock(null);
+        TestSuite.setHttpConnectionMockInstance(null);
+        TestSuite.setHttpConnectionMockClass(null);
         MyContextHolder.get().persistentAccounts().initialize();
         super.tearDown();
     }

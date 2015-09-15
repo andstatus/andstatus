@@ -1,7 +1,10 @@
 package org.andstatus.app.service;
 
+import android.text.TextUtils;
+
 import junit.framework.TestCase;
 
+import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.account.MyAccountTest;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
@@ -20,22 +23,29 @@ public class MyServiceTestHelper implements MyServiceEventsListener {
     public volatile long executionEndCount = 0;
     public volatile boolean serviceStopped = false;
     
-    public void setUp() {
+    public void setUp(String accountName) {
         MyLog.i(this, "setUp started");
 
         MyServiceManager.setServiceUnavailable();
         MyServiceManager.stopService();
 
-        httpConnectionMock = new HttpConnectionMock();
-        connectionInstanceId = httpConnectionMock.getInstanceId();
-        
-        TestSuite.setHttpConnectionMock(httpConnectionMock);
-        TestCase.assertEquals("HttpConnection mocked", MyContextHolder.get().getHttpConnectionMock(),
-                httpConnectionMock);
+        boolean isSingleMockedInstance = TextUtils.isEmpty(accountName);
+        if (isSingleMockedInstance) {
+            httpConnectionMock = new HttpConnectionMock();
+            TestSuite.setHttpConnectionMockInstance(httpConnectionMock);
+        } else {
+            TestSuite.setHttpConnectionMockClass(HttpConnectionMock.class);
+        }
         TestSuite.getMyContextForTest().setOnline(ConnectionRequired.WIFI);
         MyAccountTest.fixPersistentAccounts();
         // In order for the mocked connection to have effect:
         MyContextHolder.get().persistentAccounts().initialize();
+        MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(accountName);
+        TestCase.assertTrue("HttpConnection mocked", ma.getConnection().getHttp() instanceof HttpConnectionMock);
+        if (!isSingleMockedInstance) {
+            httpConnectionMock = (HttpConnectionMock) ma.getConnection().getHttp();
+        }
+        connectionInstanceId = httpConnectionMock.getInstanceId();
 
         serviceConnector = new MyServiceEventsReceiver(this);
         serviceConnector.registerReceiver(MyContextHolder.get().context());
@@ -152,7 +162,8 @@ public class MyServiceTestHelper implements MyServiceEventsListener {
                 .putBoolean(MyPreferences.KEY_SYNC_WHILE_USING_APPLICATION, true).commit();
         
         serviceConnector.unregisterReceiver(MyContextHolder.get().context());
-        TestSuite.setHttpConnectionMock(null);
+        TestSuite.setHttpConnectionMockClass(null);
+        TestSuite.setHttpConnectionMockInstance(null);
         TestSuite.getMyContextForTest().setOnline(ConnectionRequired.ANY);
         MyContextHolder.get().persistentAccounts().initialize();
         MyLog.v(this, "tearDown ended");

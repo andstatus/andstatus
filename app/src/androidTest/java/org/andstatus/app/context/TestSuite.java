@@ -30,9 +30,6 @@ import android.widget.ListView;
 
 import org.andstatus.app.HelpActivity;
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.context.MyContextState;
-import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.ConversationInserter;
 import org.andstatus.app.data.MessageInserter;
 import org.andstatus.app.data.OriginsAndAccountsInserter;
@@ -59,10 +56,6 @@ public class TestSuite extends TestCase {
     private static volatile Context context;
     private static volatile String dataPath;
     
-    public static boolean isInitialized() {
-        return initialized;
-    }
-
     public static Context initializeWithData(InstrumentationTestCase testCase) throws Exception {
         initialize(testCase);
         ensureDataAdded();
@@ -197,14 +190,15 @@ public class TestSuite extends TestCase {
         return myContextForTest;
     }
     
-    public static void setHttpConnectionMock(HttpConnection httpConnection) {
-        getMyContextForTest().setHttpConnectionMock(httpConnection);
+    public static void setHttpConnectionMockClass(Class<? extends HttpConnection> httpConnectionMockClass) {
+        getMyContextForTest().setHttpConnectionMockClass(httpConnectionMockClass);
     }
-    
+
+    public static void setHttpConnectionMockInstance(HttpConnection httpConnectionMockInstance) {
+        getMyContextForTest().setHttpConnectionMockInstance(httpConnectionMockInstance);
+    }
+
     private static volatile boolean dataAdded = false;
-    public static boolean isDataAdded() {
-        return dataAdded;
-    }
     public static void onDataDeleted() {
         dataAdded = false;
     }
@@ -349,12 +343,8 @@ public class TestSuite extends TestCase {
     }
     
     public static boolean isScreenLocked(Context context) {
-        KeyguardManager km = (KeyguardManager) context.getSystemService(Context.KEYGUARD_SERVICE); 
-        if (km == null) {
-            return true;
-        } else {
-            return km.inKeyguardRestrictedInputMode();
-        }
+        KeyguardManager km = (KeyguardManager) context.getSystemService(Context.KEYGUARD_SERVICE);
+        return km == null || km.inKeyguardRestrictedInputMode();
     }
 
     public static boolean setAndWaitForIsInForeground(boolean isInForeground) {

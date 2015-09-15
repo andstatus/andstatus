@@ -30,7 +30,7 @@ import java.util.Queue;
 import java.util.concurrent.PriorityBlockingQueue;
 
 public class MyServiceTest extends InstrumentationTestCase {
-    private MyServiceTestHelper mService = new MyServiceTestHelper(); 
+    private final MyServiceTestHelper mService = new MyServiceTestHelper();
     private volatile MyAccount ma;
 
     @Override
@@ -39,8 +39,7 @@ public class MyServiceTest extends InstrumentationTestCase {
         MyLog.i(this, "setUp started");
         TestSuite.initializeWithData(this);
 
-        mService.setUp();
-
+        mService.setUp(null);
         ma = MyContextHolder.get().persistentAccounts()
                 .fromAccountName(TestSuite.CONVERSATION_ACCOUNT_NAME);
         assertTrue(TestSuite.CONVERSATION_ACCOUNT_NAME + " exists", ma.isValid());
@@ -108,7 +107,7 @@ public class MyServiceTest extends InstrumentationTestCase {
         assertTrue("First command started executing", mService.waitForCommandExecutionStarted(startCount));
         assertTrue("First command ended executing", mService.waitForCommandExecutionEnded(endCount));
         MyLog.v(this, method  + "; " + mService.httpConnectionMock.toString());
-        assertEquals("connection istance Id", mService.connectionInstanceId, mService.httpConnectionMock.getInstanceId());
+        assertEquals("connection instance Id", mService.connectionInstanceId, mService.httpConnectionMock.getInstanceId());
         assertEquals(mService.httpConnectionMock.toString(), 1, mService.httpConnectionMock.getRequestsCounter());
         assertTrue("Service stopped", mService.waitForServiceStopped());
         MyLog.v(this, method + " ended");
@@ -155,7 +154,7 @@ public class MyServiceTest extends InstrumentationTestCase {
         mService.sendListenedToCommand();
 
         assertTrue("Service stopped", mService.waitForServiceStopped());
-        assertEquals("No new data was posted while in foreround",
+        assertEquals("No new data was posted while in foreground",
                 mService.httpConnectionMock.getRequestsCounter(), 1);
 
         Queue<CommandData> queue = new PriorityBlockingQueue<CommandData>(100);

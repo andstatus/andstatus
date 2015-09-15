@@ -26,6 +26,7 @@ import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.origin.PersistentOrigins;
 import org.andstatus.app.service.ConnectionRequired;
+import org.andstatus.app.util.MyLog;
 
 import java.util.Locale;
 import java.util.Map;
@@ -39,20 +40,25 @@ import java.util.concurrent.CopyOnWriteArraySet;
  */
 public class MyContextForTest implements MyContext {
     private MyContext myContext;
-    private Set<AssertionData> dataSet = new CopyOnWriteArraySet<AssertionData>();
-    private volatile HttpConnection httpConnection;
+    private final Set<AssertionData> dataSet = new CopyOnWriteArraySet<>();
+    private volatile Class<? extends HttpConnection> httpConnectionMockClass = null;
+    private volatile HttpConnection httpConnectionMockInstance = null;
     private volatile ConnectionRequired mOnline = ConnectionRequired.ANY;
-    private Map<TimelineType, Notification> notifications = new ConcurrentHashMap<TimelineType, Notification>();
+    private final Map<TimelineType, Notification> notifications = new ConcurrentHashMap<>();
 
     public MyContextForTest setContext(MyContext myContextIn) {
         myContext = myContextIn;
         return this;
     }
 
-    public void setHttpConnectionMock(HttpConnection httpConnection) {
-        this.httpConnection = httpConnection;
+    public void setHttpConnectionMockClass(Class<? extends HttpConnection> httpConnectionMockClass) {
+        this.httpConnectionMockClass = httpConnectionMockClass;
     }
-    
+
+    public void setHttpConnectionMockInstance(HttpConnection httpConnectionMockInstance) {
+        this.httpConnectionMockInstance = httpConnectionMockInstance;
+    }
+
     @Override
     public MyContext newInitialized(Context context, String initializerName) {
         return new MyContextForTest().setContext(myContext.newInitialized(context, initializerName));
@@ -65,11 +71,7 @@ public class MyContextForTest implements MyContext {
 
     @Override
     public boolean initialized() {
-        if (myContext == null) {
-            return false;
-        } else {
-            return myContext.initialized();
-        }
+        return myContext != null && myContext.initialized();
     }
 
     @Override
@@ -170,7 +172,18 @@ public class MyContextForTest implements MyContext {
 
     @Override
     public HttpConnection getHttpConnectionMock() {
-        return httpConnection;
+        if (httpConnectionMockInstance != null) {
+            return httpConnectionMockInstance;
+        } else if (httpConnectionMockClass != null) {
+            try {
+                return httpConnectionMockClass.newInstance();
+            } catch (InstantiationException e) {
+                MyLog.e(this, e);
+            } catch (IllegalAccessException e) {
+                MyLog.e(this, e);
+            }
+        }
+        return null;
     }
 
     @Override
