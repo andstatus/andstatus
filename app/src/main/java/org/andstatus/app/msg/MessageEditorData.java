@@ -38,7 +38,7 @@ public class MessageEditorData {
 
     private long msgId = 0;
     public DownloadStatus status = DownloadStatus.DRAFT;
-    public String messageText = "";
+    public String body = "";
     boolean showAfterSaveOrLoad = false;
     boolean hideAfterSave = false;
 
@@ -51,7 +51,8 @@ public class MessageEditorData {
      * -1 - is non-existent id.
      */
     public long inReplyToId = 0;
-    boolean mReplyAll = false; 
+    public String inReplyToBody = "";
+    boolean replyAll = false;
     public long recipientId = 0;
     public MyAccount ma = MyAccount.getEmpty(MyContextHolder.get(), "");
 
@@ -70,7 +71,7 @@ public class MessageEditorData {
         int result = 1;
         result = prime * result + ((ma == null) ? 0 : ma.hashCode());
         result = prime * result + getMediaUri().hashCode();
-        result = prime * result + ((messageText == null) ? 0 : messageText.hashCode());
+        result = prime * result + ((body == null) ? 0 : body.hashCode());
         result = prime * result + (int) (recipientId ^ (recipientId >>> 32));
         result = prime * result + (int) (inReplyToId ^ (inReplyToId >>> 32));
         return result;
@@ -92,10 +93,10 @@ public class MessageEditorData {
             return false;
         if (!getMediaUri().equals(other.getMediaUri()))
             return false;
-        if (messageText == null) {
-            if (other.messageText != null)
+        if (body == null) {
+            if (other.body != null)
                 return false;
-        } else if (!messageText.equals(other.messageText))
+        } else if (!body.equals(other.body))
             return false;
         if (recipientId != other.recipientId)
             return false;
@@ -111,8 +112,8 @@ public class MessageEditorData {
             builder.append("msgId:" + msgId + ",");
         }
         builder.append("status:" + status + ",");
-        if(!TextUtils.isEmpty(messageText)) {
-            builder.append("text:'" + messageText + "',");
+        if(!TextUtils.isEmpty(body)) {
+            builder.append("text:'" + body + "',");
         }
         if(showAfterSaveOrLoad) {
             builder.append("showAfterSaveOrLoad,");
@@ -126,7 +127,7 @@ public class MessageEditorData {
         if(inReplyToId != 0) {
             builder.append("inReplyToId:" + inReplyToId + ",");
         }
-        if(mReplyAll) {
+        if(replyAll) {
             builder.append("ReplyAll,");
         }
         if(recipientId != 0) {
@@ -143,9 +144,10 @@ public class MessageEditorData {
                     MyQuery.msgIdToLongColumnValue(MyDatabase.Msg.SENDER_ID, msgId));
             data = new MessageEditorData(ma);
             data.msgId = msgId;
-            data.messageText = MyQuery.msgIdToStringColumnValue(MyDatabase.Msg.BODY, msgId);
+            data.body = MyQuery.msgIdToStringColumnValue(MyDatabase.Msg.BODY, msgId);
             data.image = DownloadData.getSingleForMessage(msgId, MyContentType.IMAGE, Uri.EMPTY);
             data.inReplyToId = MyQuery.msgIdToLongColumnValue(MyDatabase.Msg.IN_REPLY_TO_MSG_ID, msgId);
+            data.inReplyToBody = MyQuery.msgIdToStringColumnValue(MyDatabase.Msg.BODY, data.inReplyToId);
             data.recipientId = MyQuery.msgIdToLongColumnValue(MyDatabase.Msg.RECIPIENT_ID, msgId);
         } else {
             data = new MessageEditorData(MyContextHolder.get().persistentAccounts().getCurrentAccount());
@@ -159,11 +161,11 @@ public class MessageEditorData {
     }
     
     boolean isEmpty() {
-        return TextUtils.isEmpty(messageText) && getMediaUri().equals(Uri.EMPTY) && msgId == 0;
+        return TextUtils.isEmpty(body) && getMediaUri().equals(Uri.EMPTY) && msgId == 0;
     }
 
-    public MessageEditorData setMessageText(String textInitial) {
-        messageText = textInitial;
+    public MessageEditorData setBody(String textInitial) {
+        body = textInitial;
         return this;
     }
 
@@ -191,13 +193,13 @@ public class MessageEditorData {
     }
     
     public MessageEditorData setReplyAll(boolean replyAll) {
-        mReplyAll = replyAll;
+        this.replyAll = replyAll;
         return this;
     }
 
     public MessageEditorData addMentionsToText() {
         if (inReplyToId != 0) {
-            if (mReplyAll) {
+            if (replyAll) {
                 addConversationMembersToText();
             } else {
                 addMentionedAuthorOfMessageToText(inReplyToId);
@@ -260,10 +262,10 @@ public class MessageEditorData {
     private void addMentionedUsernameToText(String name) {
         if (!TextUtils.isEmpty(name)) {
             String messageText1 = "@" + name + " ";
-            if (!TextUtils.isEmpty(messageText)) {
-                messageText1 += messageText;
+            if (!TextUtils.isEmpty(body)) {
+                messageText1 += body;
             }
-            messageText = messageText1;
+            body = messageText1;
         }
     }
 
@@ -277,6 +279,6 @@ public class MessageEditorData {
                 && recipientId == dataIn.recipientId
                 && getMyAccount().getAccountName()
                         .compareTo(dataIn.getMyAccount().getAccountName()) == 0
-                && mReplyAll == dataIn.mReplyAll;
+                && replyAll == dataIn.replyAll;
     }
 }

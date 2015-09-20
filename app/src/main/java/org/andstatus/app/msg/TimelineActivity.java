@@ -1063,7 +1063,7 @@ public class TimelineActivity extends MyListActivity implements MyServiceEventsL
 
         final String CRASH_TEST_STRING = "Crash test 2015-04-10";
         if (MyLog.isVerboseEnabled() && mMessageEditor != null &&
-                    mMessageEditor.getData().messageText.contains(CRASH_TEST_STRING)) {
+                    mMessageEditor.getData().body.contains(CRASH_TEST_STRING)) {
             MyLog.e(this, "Initiating crash test exception");
             throw new NullPointerException("This is a test crash event");
         }

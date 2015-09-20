@@ -141,7 +141,7 @@ public enum ContextMenuItem {
             if (ma.getOrigin().isHtmlContentAllowed()) {
                 body = MyHtml.fromHtml(body);
             }
-            return MessageEditorData.newEmpty(ma).setMessageText(body);
+            return MessageEditorData.newEmpty(ma).setBody(body);
         }
 
         @Override
@@ -326,11 +326,11 @@ public enum ContextMenuItem {
     }
 
     protected void copyMessageText(MessageEditorData editorData) {
-        MyLog.v(this, "text='" + editorData.messageText + "'");
-        if (!TextUtils.isEmpty(editorData.messageText)) {
+        MyLog.v(this, "text='" + editorData.body + "'");
+        if (!TextUtils.isEmpty(editorData.body)) {
             // http://developer.android.com/guide/topics/text/copy-paste.html
             ClipboardManager clipboard = (ClipboardManager) MyContextHolder.get().context().getSystemService(Context.CLIPBOARD_SERVICE);
-            ClipData clip = ClipData.newPlainText(I18n.trimTextAt(editorData.messageText, 40), editorData.messageText);
+            ClipData clip = ClipData.newPlainText(I18n.trimTextAt(editorData.body, 40), editorData.body);
             clipboard.setPrimaryClip(clip);
             MyLog.v(this, "clip='" + clip.toString() + "'");
         }

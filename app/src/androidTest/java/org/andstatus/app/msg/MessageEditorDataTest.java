@@ -10,7 +10,6 @@ import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyDatabase.OidEnum;
 import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.msg.MessageEditorData;
 
 public class MessageEditorDataTest extends InstrumentationTestCase {
 
@@ -45,8 +44,8 @@ public class MessageEditorDataTest extends InstrumentationTestCase {
                 .setInReplyToId(inReplyToMsgId)
                 .setRecipientId(recipientId)
                 .setReplyAll(replyAll)
-                .setMessageText("Some text " + TestSuite.TESTRUN_UID);
-        assertFalse(data.toString(), data.messageText.contains("@"));
+                .setBody("Some text " + TestSuite.TESTRUN_UID);
+        assertFalse(data.toString(), data.body.contains("@"));
         data.addMentionsToText();
         assertEquals(recipientId, data.recipientId);
         assertMentionedUser(data, inReplyToUserId, true);
@@ -63,7 +62,7 @@ public class MessageEditorDataTest extends InstrumentationTestCase {
                 data.ma.getOrigin().isMentionAsWebFingerId() ? MyDatabase.User.WEBFINGER_ID
                         : MyDatabase.User.USERNAME, mentionedUserId);
         assertTrue(!TextUtils.isEmpty(expectedName));
-        boolean isMentioned = data.messageText.contains("@" + expectedName);
+        boolean isMentioned = data.body.contains("@" + expectedName);
         assertEquals(data.toString() + "; expected name:" + expectedName, isMentioned_in, isMentioned);
     }
 

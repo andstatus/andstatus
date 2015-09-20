@@ -97,7 +97,7 @@ public class MessageEditorTest extends android.test.ActivityInstrumentationTestC
                         MyQuery.oidToId(OidEnum.USER_OID, ma.getOrigin().getId(),
                                 TestSuite.CONVERSATION_MEMBER_USER_OID))
                 .addMentionsToText()
-                .setMessageText("Some text " + TestSuite.TESTRUN_UID);
+                .setBody("Some text " + TestSuite.TESTRUN_UID);
         return data;
     }
 
@@ -189,8 +189,8 @@ public class MessageEditorTest extends android.test.ActivityInstrumentationTestC
     private void assertInitialText(final String description) throws InterruptedException {
         final MessageEditor editor = mActivity.getMessageEditor();
         TextView textView = (TextView) getActivity().findViewById(R.id.messageBodyEditText);
-        ListActivityTestHelper.waitTextInAView(description, textView, data.messageText);
-        MyLog.v(this, description + " text:'" + editor.getData().messageText +"'");
+        ListActivityTestHelper.waitTextInAView(description, textView, data.body);
+        MyLog.v(this, description + " text:'" + editor.getData().body +"'");
         assertEquals(description, data, editor.getData());
     }
 

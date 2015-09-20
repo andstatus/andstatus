@@ -143,13 +143,8 @@ public class MessageEditor {
     /**
      * Text to be sent
      */
-    private EditText mEditText;
+    private EditText bodyEditText;
     private final TextView mCharsLeftText;
-
-    /**
-     * Information about the message we are editing
-     */
-    private final TextView mDetails;
 
     private MessageEditorData editorData = MessageEditorData.newEmpty(null);
 
@@ -162,8 +157,7 @@ public class MessageEditor {
         layoutParent.addView(mEditorView);
         
         mCharsLeftText = (TextView) mEditorView.findViewById(R.id.messageEditCharsLeftTextView);
-        mDetails = (TextView) mEditorView.findViewById(R.id.messageEditDetails);
-        
+
         setupEditorButtons();
         setupEditText();
         hide();
@@ -180,8 +174,8 @@ public class MessageEditor {
     }
 
     private void setupEditText() {
-        mEditText = (EditText) mEditorView.findViewById(R.id.messageBodyEditText);
-        mEditText.addTextChangedListener(new TextWatcher() {
+        bodyEditText = (EditText) mEditorView.findViewById(R.id.messageBodyEditText);
+        bodyEditText.addTextChangedListener(new TextWatcher() {
             @Override
             public void afterTextChanged(Editable s) {
                 mCharsLeftText.setText(String.valueOf(editorData.getMyAccount().charactersLeftForMessage(s.toString())));
@@ -198,7 +192,7 @@ public class MessageEditor {
             }
         });
 
-        mEditText.setOnKeyListener(new View.OnKeyListener() {
+        bodyEditText.setOnKeyListener(new View.OnKeyListener() {
             @Override
             public boolean onKey(View v, int keyCode, KeyEvent event) {
                 if (event.getAction() == KeyEvent.ACTION_DOWN) {
@@ -208,7 +202,7 @@ public class MessageEditor {
                             return true;
                         default:
                             mCharsLeftText.setText(String.valueOf(editorData.getMyAccount()
-                                    .charactersLeftForMessage(mEditText.getText().toString())));
+                                    .charactersLeftForMessage(bodyEditText.getText().toString())));
                             break;
                     }
                 }
@@ -216,7 +210,7 @@ public class MessageEditor {
             }
         });
 
-        mEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+        bodyEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (event != null && (event.isAltPressed() ||
@@ -352,7 +346,7 @@ public class MessageEditor {
     public void show() {
         if (!isVisible()) {
             mEditorView.setVisibility(View.VISIBLE);
-            mEditText.requestFocus();
+            bodyEditText.requestFocus();
             if (!isHardwareKeyboardAttached()) {
                 openSoftKeyboard();
             }
@@ -373,7 +367,7 @@ public class MessageEditor {
 
     private void openSoftKeyboard() {
         InputMethodManager inputMethodManager = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-        inputMethodManager.toggleSoftInputFromWindow(mEditText.getWindowToken(), InputMethodManager.SHOW_FORCED, 0);        
+        inputMethodManager.toggleSoftInputFromWindow(bodyEditText.getWindowToken(), InputMethodManager.SHOW_FORCED, 0);
     }
     
     public void hide() {
@@ -386,7 +380,7 @@ public class MessageEditor {
 
     private void closeSoftKeyboard() {
         InputMethodManager inputMethodManager = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-        inputMethodManager.hideSoftInputFromWindow(mEditText.getWindowToken(), 0);
+        inputMethodManager.hideSoftInputFromWindow(bodyEditText.getWindowToken(), 0);
     }
     
     public boolean isVisible() {
@@ -395,7 +389,7 @@ public class MessageEditor {
 
     public void startEditingSharedData(final MyAccount ma, final String textToShare, final Uri mediaToShare) {
         MyLog.v(MessageEditorData.TAG, "startEditingSharedData " + textToShare + " uri: " + mediaToShare);
-        MessageEditorData data = MessageEditorData.newEmpty(ma).setMessageText(textToShare);
+        MessageEditorData data = MessageEditorData.newEmpty(ma).setBody(textToShare);
         data.setMediaUri(mediaToShare);
         data.showAfterSaveOrLoad = true;
         editorData = data;
@@ -416,22 +410,22 @@ public class MessageEditor {
     }
 
     public void updateScreen() {
-        mEditText.setText(editorData.messageText);
+        bodyEditText.setText(editorData.body);
         showMessageDetails();
+        showInReplyToBody();
         mCharsLeftText.setText(String.valueOf(editorData.getMyAccount()
-                .charactersLeftForMessage(mEditText.getText().toString())));
+                .charactersLeftForMessage(bodyEditText.getText().toString())));
     }
 
     private void showMessageDetails() {
         String messageDetails = shouldShowAccountName() ? editorData.getMyAccount().getAccountName() : "";
-        if (editorData.recipientId == 0) {
-            if (editorData.inReplyToId != 0) {
-                String replyToName = MyQuery.msgIdToUsername(MyDatabase.Msg.AUTHOR_ID, editorData.inReplyToId, MyPreferences.userInTimeline());
-                messageDetails += " " + String.format(
-                        MyContextHolder.get().context().getText(R.string.message_source_in_reply_to).toString(), 
-                        replyToName);
-            }
-        } else {
+        if (editorData.inReplyToId != 0) {
+            String replyToName = MyQuery.msgIdToUsername(MyDatabase.Msg.AUTHOR_ID, editorData.inReplyToId, MyPreferences.userInTimeline());
+            messageDetails += " " + String.format(
+                    MyContextHolder.get().context().getText(R.string.message_source_in_reply_to).toString(),
+                    replyToName);
+        }
+        if (editorData.recipientId != 0) {
             String recipientName = MyQuery.userIdToWebfingerId(editorData.recipientId);
             if (!TextUtils.isEmpty(recipientName)) {
                 messageDetails += " " + String.format(
@@ -442,14 +436,16 @@ public class MessageEditor {
         if (!UriUtils.isEmpty(editorData.getMediaUri())) {
             messageDetails += " (" + MyContextHolder.get().context().getText(R.string.label_with_media).toString() + ")"; 
         }
-        mDetails.setText(messageDetails);
+
+        TextView messageDetailsTextView = (TextView) mEditorView.findViewById(R.id.messageEditDetails);
+        messageDetailsTextView.setText(messageDetails);
         if (TextUtils.isEmpty(messageDetails)) {
-            mDetails.setVisibility(View.GONE);
+            messageDetailsTextView.setVisibility(View.GONE);
         } else {
-            mDetails.setVisibility(View.VISIBLE);
+            messageDetailsTextView.setVisibility(View.VISIBLE);
         }
     }
-    
+
     private boolean shouldShowAccountName() {
         boolean should = mMessageList.isTimelineCombined()
                 || mMessageList.getTimelineType() == TimelineType.USER;
@@ -458,15 +454,25 @@ public class MessageEditor {
         }
         return should;
     }
-    
+
+    private void showInReplyToBody() {
+        TextView messageDetailsTextView = (TextView) mEditorView.findViewById(R.id.inReplyToBody);
+        messageDetailsTextView.setText(editorData.inReplyToBody);
+        if (TextUtils.isEmpty(editorData.inReplyToBody)) {
+            messageDetailsTextView.setVisibility(View.GONE);
+        } else {
+            messageDetailsTextView.setVisibility(View.VISIBLE);
+        }
+    }
+
     private void sendAndHide() {
-        editorData.messageText = mEditText.getText().toString();
+        editorData.body = bodyEditText.getText().toString();
         if (!editorData.getMyAccount().isValid()) {
             discardAndHide();
-        } else if (TextUtils.isEmpty(editorData.messageText.trim())) {
+        } else if (TextUtils.isEmpty(editorData.body.trim())) {
             Toast.makeText(getActivity(), R.string.cannot_send_empty_message,
                     Toast.LENGTH_SHORT).show();
-        } else if (editorData.getMyAccount().charactersLeftForMessage(editorData.messageText) < 0) {
+        } else if (editorData.getMyAccount().charactersLeftForMessage(editorData.body) < 0) {
             Toast.makeText(getActivity(), R.string.message_is_too_long,
                     Toast.LENGTH_SHORT).show();
         } else {
@@ -489,8 +495,8 @@ public class MessageEditor {
     }
 
     public void saveState() {
-        if (mEditText != null) {
-            editorData.messageText = mEditText.getText().toString();
+        if (bodyEditText != null) {
+            editorData.body = bodyEditText.getText().toString();
             saveData();
         }
     }

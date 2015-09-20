@@ -70,7 +70,7 @@ public class MessageEditorSaver extends AsyncTask<MessageEditor, Void, MessageEd
                 data.getMyAccount().getUserOid());
         message.sender = message.actor;
         message.sentDate = System.currentTimeMillis();
-        message.setBody(data.messageText);
+        message.setBody(data.body);
         if (data.recipientId != 0) {
             message.recipient = MbUser.fromOriginAndUserOid(data.getMyAccount().getOriginId(),
                     MyQuery.idToOid(MyDatabase.OidEnum.USER_OID, data.recipientId, 0));
