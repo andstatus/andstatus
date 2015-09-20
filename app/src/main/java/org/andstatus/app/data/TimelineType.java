@@ -19,7 +19,6 @@ package org.andstatus.app.data;
 import android.content.Context;
 
 import org.andstatus.app.R;
-import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.account.PersistentAccounts;
 import org.andstatus.app.data.MyDatabase.FollowingUser;
 import org.andstatus.app.data.MyDatabase.User;
@@ -67,7 +66,7 @@ public enum TimelineType {
      * For the selected user, the timeline includes all messages of the same origin irrespectively existence
      * of the link between the message and the User. So the User may "Act" on this message.
      */
-    MESSAGESTOACT("messages_to_act", R.string.timeline_title_home, 
+    MESSAGES_TO_ACT("messages_to_act", R.string.timeline_title_home,
             "", "", "", Connection.ApiRoutineEnum.STATUSES_HOME_TIMELINE,
             true),
     /**
@@ -86,7 +85,11 @@ public enum TimelineType {
     PUBLIC("public", R.string.timeline_title_public, 
             "", "", "", Connection.ApiRoutineEnum.PUBLIC_TIMELINE,
             true),
-    EVERYTHING("everything", R.string.timeline_title_everything, 
+    DRAFTS("drafts", R.string.timeline_title_drafts,
+            "", "", "", Connection.ApiRoutineEnum.DUMMY),
+    OUTBOX("outbox", R.string.timeline_title_outbox,
+            "", "", "", Connection.ApiRoutineEnum.DUMMY),
+    EVERYTHING("everything", R.string.timeline_title_everything,
             "", "", "", Connection.ApiRoutineEnum.DUMMY,
             true),
     /**

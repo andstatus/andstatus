@@ -174,7 +174,7 @@ public class MessageEditor {
         sendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                sendMessageAndCloseEditor();
+                sendAndHide();
             }
         });
     }
@@ -204,7 +204,7 @@ public class MessageEditor {
                 if (event.getAction() == KeyEvent.ACTION_DOWN) {
                     switch (keyCode) {
                         case KeyEvent.KEYCODE_DPAD_CENTER:
-                            sendMessageAndCloseEditor();
+                            sendAndHide();
                             return true;
                         default:
                             mCharsLeftText.setText(String.valueOf(editorData.getMyAccount()
@@ -223,39 +223,95 @@ public class MessageEditor {
                         !MyPreferences.getBoolean(MyPreferences.KEY_ENTER_SENDS_MESSAGE, true))) {
                     return false;
                 }
-                sendMessageAndCloseEditor();
+                sendAndHide();
                 return true;
             }
         });
     }
 
+    public boolean onCreateOptionsMenu(Menu menu) {
+        createCreateMessageButton(menu);
+        createAttachButton(menu);
+        createSaveDraftButton(menu);
+        createDiscardButton(menu);
+        return true;
+    }
+
+    private void createCreateMessageButton(Menu menu) {
+        MenuItem item = menu.findItem(R.id.createMessageButton);
+        if (item != null) {
+            item.setOnMenuItemClickListener(
+                    new MenuItem.OnMenuItemClickListener() {
+                        @Override
+                        public boolean onMenuItemClick(MenuItem item) {
+                            MyAccount accountForButton = accountForCreateMessageButton();
+                            if (accountForButton != null) {
+                                startEditingMessage(MessageEditorData.newEmpty(accountForButton));
+                            }
+                            return false;
+                        }
+                    });
+        }
+    }
+
+    private void createAttachButton(Menu menu) {
+        MenuItem item = menu.findItem(R.id.attach_menu_id);
+        if (item != null) {
+            item.setOnMenuItemClickListener(
+                    new MenuItem.OnMenuItemClickListener() {
+                        @Override
+                        public boolean onMenuItemClick(MenuItem item) {
+                            onAttach();
+                            return false;
+                        }
+                    });
+        }
+    }
+
+    private void createSaveDraftButton(Menu menu) {
+        MenuItem item = menu.findItem(R.id.saveDraftButton);
+        if (item != null) {
+            item.setOnMenuItemClickListener(
+                    new MenuItem.OnMenuItemClickListener() {
+                        @Override
+                        public boolean onMenuItemClick(MenuItem item) {
+                            saveAndHide();
+                            return false;
+                        }
+                    });
+        }
+    }
+
+    private void createDiscardButton(Menu menu) {
+        MenuItem item = menu.findItem(R.id.discardButton);
+        if (item != null) {
+            item.setOnMenuItemClickListener(
+                    new MenuItem.OnMenuItemClickListener() {
+                        @Override
+                        public boolean onMenuItemClick(MenuItem item) {
+                            discardAndHide();
+                            return false;
+                        }
+                    });
+        }
+    }
+
     public void onPrepareOptionsMenu(Menu menu) {
         prepareCreateMessageButton(menu);
-        prepareHideMessageButton(menu);
         prepareAttachButton(menu);
+        prepareSaveDraftButton(menu);
+        prepareDiscardButton(menu);
     }
-    
+
     private void prepareCreateMessageButton(Menu menu) {
         MenuItem item = menu.findItem(R.id.createMessageButton);
-        if (item == null) {
-            return;
+        if (item != null) {
+            MyAccount accountForButton = accountForCreateMessageButton();
+            item.setVisible(!isVisible()
+                    && accountForButton.isValidAndSucceeded()
+                    && mMessageList.getTimelineType() != TimelineType.DIRECT
+                    && mMessageList.getTimelineType() != TimelineType.MESSAGES_TO_ACT);
         }
-        item.setOnMenuItemClickListener(
-                new MenuItem.OnMenuItemClickListener() {
-                    @Override
-                    public boolean onMenuItemClick(MenuItem item) {
-                        MyAccount accountForButton = accountForCreateMessageButton();
-                        if (accountForButton != null) {
-                            startEditingMessage(MessageEditorData.newEmpty(accountForButton));
-                        }
-                        return false;
-                    }
-                });
-        MyAccount accountForButton = accountForCreateMessageButton();
-        item.setVisible(!isVisible()
-                && accountForButton.isValidAndSucceeded()
-                && mMessageList.getTimelineType() != TimelineType.DIRECT
-                && mMessageList.getTimelineType() != TimelineType.MESSAGESTOACT);
     }
 
     private MyAccount accountForCreateMessageButton() {
@@ -266,42 +322,31 @@ public class MessageEditor {
                     mMessageList.getCurrentMyAccountUserId());
         }
     }
-    
-    private void prepareHideMessageButton(Menu menu) {
-        MenuItem item = menu.findItem(R.id.hideMessageButton);
-        if (item == null) {
-            return;
-        }
-        item.setOnMenuItemClickListener(
-                new MenuItem.OnMenuItemClickListener() {
-                    @Override
-                    public boolean onMenuItemClick(MenuItem item) {
-                        clearAndHide();
-                        return false;
-                    }
-                });
-        item.setVisible(isVisible());
-    }
 
     private void prepareAttachButton(Menu menu) {
         MenuItem item = menu.findItem(R.id.attach_menu_id);
-        if (item == null) {
-            return;
+        if (item != null) {
+            boolean enableAttach = isVisible()
+                    && MyPreferences.getBoolean(MyPreferences.KEY_ATTACH_IMAGES, true)
+                    && (editorData.recipientId == 0 || editorData.getMyAccount().getOrigin().getOriginType()
+                    .allowAttachmentForDirectMessage());
+            item.setEnabled(enableAttach);
+            item.setVisible(enableAttach);
         }
-        item.setOnMenuItemClickListener(
-                new MenuItem.OnMenuItemClickListener() {
-                    @Override
-                    public boolean onMenuItemClick(MenuItem item) {
-                        onAttach();
-                        return false;
-                    }
-                });
-        boolean enableAttach = isVisible()
-                && MyPreferences.getBoolean(MyPreferences.KEY_ATTACH_IMAGES, true)
-                && (editorData.recipientId == 0 || editorData.getMyAccount().getOrigin().getOriginType()
-                        .allowAttachmentForDirectMessage());
-        item.setEnabled(enableAttach);
-        item.setVisible(enableAttach);
+    }
+
+    private void prepareSaveDraftButton(Menu menu) {
+        MenuItem item = menu.findItem(R.id.saveDraftButton);
+        if (item != null) {
+            item.setVisible(isVisible());
+        }
+    }
+
+    private void prepareDiscardButton(Menu menu) {
+        MenuItem item = menu.findItem(R.id.discardButton);
+        if (item != null) {
+            item.setVisible(isVisible());
+        }
     }
 
     public void show() {
@@ -414,10 +459,10 @@ public class MessageEditor {
         return should;
     }
     
-    private void sendMessageAndCloseEditor() {
+    private void sendAndHide() {
         editorData.messageText = mEditText.getText().toString();
         if (!editorData.getMyAccount().isValid()) {
-            clearAndHide();
+            discardAndHide();
         } else if (TextUtils.isEmpty(editorData.messageText.trim())) {
             Toast.makeText(getActivity(), R.string.cannot_send_empty_message,
                     Toast.LENGTH_SHORT).show();
@@ -433,10 +478,15 @@ public class MessageEditor {
         }
     }
 
-    private void clearAndHide() {
+    private void saveAndHide() {
+        editorData.hideAfterSave = true;
+        saveState();
+	}
+
+    private void discardAndHide() {
         editorData.status = DownloadStatus.DELETED;
         saveData();
-	}
+    }
 
     public void saveState() {
         if (mEditText != null) {
@@ -471,7 +521,7 @@ public class MessageEditor {
                 MyLog.v(MessageEditorData.TAG, "loadState passed wait for save");
 
                 if (msgId == 0) {
-                    msgId = MyPreferences.getLong(MyPreferences.KEY_DRAFT_MESSAGE_ID);
+                    msgId = MyPreferences.getLong(MyPreferences.KEY_BEING_EDITED_DRAFT_MESSAGE_ID);
                 }
                 if (msgId != 0) {
                     DownloadStatus status = DownloadStatus.load(MyQuery.msgIdToLongColumnValue(MyDatabase.Msg.MSG_STATUS, msgId));
@@ -479,7 +529,7 @@ public class MessageEditor {
                         msgId = 0;
                     }
                 }
-                MyPreferences.putLong(MyPreferences.KEY_DRAFT_MESSAGE_ID, msgId);
+                MyPreferences.putLong(MyPreferences.KEY_BEING_EDITED_DRAFT_MESSAGE_ID, msgId);
                 return MessageEditorData.load(msgId);
             }
 
@@ -543,13 +593,14 @@ public class MessageEditor {
         if (editorData.status == DownloadStatus.DRAFT) {
             if (editorData.showAfterSaveOrLoad && !editorData.isEmpty()) {
                 show();
-            } else if (editorData.isEmpty()) {
+            } else if (editorData.hideAfterSave || editorData.isEmpty()) {
                 hide();
             }
         } else {
             hide();
         }
         editorData.showAfterSaveOrLoad = false;
+        editorData.hideAfterSave = false;
     }
 
     private MyBaseListActivity getActivity() {

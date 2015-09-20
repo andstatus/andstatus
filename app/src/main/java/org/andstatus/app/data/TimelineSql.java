@@ -58,78 +58,82 @@ public class TimelineSql {
     
         Collection<String> columns = new java.util.HashSet<String>(Arrays.asList(projection));
     
-        String tables = Msg.TABLE_NAME + " AS " + ProjectionMap.MSG_TABLE_ALIAS;
+        String msgTable = Msg.TABLE_NAME;
+        String where = "";
+
         boolean linkedUserDefined = false;
         boolean authorNameDefined = false;
         String authorTableName = "";
         switch (tt) {
             case FOLLOWING_USER:
-                tables = "(SELECT " + FollowingUser.FOLLOWING_USER_ID + ", "
-                        + MyDatabase.FollowingUser.USER_FOLLOWED + ", "
+                msgTable = "(SELECT " + FollowingUser.FOLLOWING_USER_ID + ", "
                         + FollowingUser.USER_ID + " AS " + User.LINKED_USER_ID
                         + " FROM " + FollowingUser.TABLE_NAME
                         + " WHERE (" + MyDatabase.User.LINKED_USER_ID + selectedAccounts.getSql()
                         + " AND " + MyDatabase.FollowingUser.USER_FOLLOWED + "=1 )"
                         + ") as fuser";
-                String userTable = User.TABLE_NAME;
-                if (!authorNameDefined && columns.contains(MyDatabase.User.AUTHOR_NAME)) {
-                    userTable = "(SELECT "
-                            + BaseColumns._ID + ", " 
-                            + MyDatabase.User.USERNAME + " AS " + MyDatabase.User.AUTHOR_NAME
-                            + ", " + MyDatabase.User.USER_MSG_ID
-                            + " FROM " + User.TABLE_NAME + ")";
+                linkedUserDefined = true;
+                boolean defineAuthorName = !authorNameDefined && columns.contains(MyDatabase.User.AUTHOR_NAME);
+                if (defineAuthorName) {
                     authorNameDefined = true;
                     authorTableName = "u1";
                 }
-                tables += " INNER JOIN " + userTable + " as u1"
+                String userTable = "(SELECT "
+                        + BaseColumns._ID
+                        + (defineAuthorName ? ", " + MyDatabase.User.USERNAME + " AS " + MyDatabase.User.AUTHOR_NAME : "")
+                        + ", " + MyDatabase.User.USER_MSG_ID
+                        + " FROM " + User.TABLE_NAME + ")";
+                msgTable += " INNER JOIN " + userTable + " as u1"
                         + " ON (" + FollowingUser.FOLLOWING_USER_ID + "=u1." + BaseColumns._ID + ")";
-                linkedUserDefined = true;
                 /**
                  * Select only the latest message from each following User's
                  * timeline
                  */
-                tables  += " LEFT JOIN " + Msg.TABLE_NAME + " AS " + ProjectionMap.MSG_TABLE_ALIAS
-                        + " ON (" 
-                        + ProjectionMap.MSG_TABLE_ALIAS + "." + MyDatabase.Msg.SENDER_ID 
-                        + "=fuser." + MyDatabase.FollowingUser.FOLLOWING_USER_ID 
-                        + " AND " + ProjectionMap.MSG_TABLE_ALIAS + "." + BaseColumns._ID 
+                msgTable  += " LEFT JOIN " + Msg.TABLE_NAME + " AS " + ProjectionMap.MSG_TABLE_ALIAS
+                        + " ON ("
+                        + ProjectionMap.MSG_TABLE_ALIAS + "." + MyDatabase.Msg.SENDER_ID
+                        + "=fuser." + MyDatabase.FollowingUser.FOLLOWING_USER_ID
+                        + " AND " + ProjectionMap.MSG_TABLE_ALIAS + "." + BaseColumns._ID
                         + "=u1." + MyDatabase.User.USER_MSG_ID
                         + ")";
                 break;
-            case MESSAGESTOACT:
+            case MESSAGES_TO_ACT:
                 if (selectedAccounts.size() == 1) {
-                    tables = "(SELECT " + selectedAccounts.getList() + " AS " + MyDatabase.User.LINKED_USER_ID
-                            + ", * FROM " + Msg.TABLE_NAME + ") AS " + ProjectionMap.MSG_TABLE_ALIAS;
+                    msgTable = "SELECT " + selectedAccounts.getList() + " AS " + MyDatabase.User.LINKED_USER_ID
+                            + ", * FROM " + Msg.TABLE_NAME;
                     linkedUserDefined = true;
                 }
                 break;
             case PUBLIC:
-                String where = Msg.PUBLIC + "=1";
-                if (!uriParser.isCombined()) {
-                    MyAccount ma = MyContextHolder.get().persistentAccounts().fromUserId(uriParser.getAccountUserId());
-                    if (ma.isValid()) {
-                        where += " AND " + Msg.ORIGIN_ID + "=" + ma.getOriginId();
-                    }
-                }
-                tables = "(SELECT * FROM " + Msg.TABLE_NAME + " WHERE (" + where + ")) AS " + ProjectionMap.MSG_TABLE_ALIAS;
+                where = Msg.PUBLIC + "=1";
+                break;
+            case DRAFTS:
+                where = Msg.MSG_STATUS + "=" + DownloadStatus.DRAFT.save();
+                break;
+            case OUTBOX:
+                where = Msg.MSG_STATUS + "=" + DownloadStatus.SENDING.save();
                 break;
             case EVERYTHING:
-                where = "";
-                if (!uriParser.isCombined()) {
-                    MyAccount ma = MyContextHolder.get().persistentAccounts().fromUserId(uriParser.getAccountUserId());
-                    if (ma.isValid()) {
-                        where = Msg.ORIGIN_ID + "=" + ma.getOriginId();
-                    }
-                }
-                tables = "(SELECT *"
-                        + " FROM " + Msg.TABLE_NAME
-                        + (uriParser.isCombined() ? "" : " WHERE (" + where + ")")
-                        + ") AS " + ProjectionMap.MSG_TABLE_ALIAS;
-                break;
             default:
                 break;
         }
-    
+
+        String tables = msgTable;
+        if (!tables.contains(" AS " + ProjectionMap.MSG_TABLE_ALIAS)) {
+            if (tt.atOrigin() && !uriParser.isCombined()) {
+                MyAccount ma = MyContextHolder.get().persistentAccounts().fromUserId(uriParser.getAccountUserId());
+                if (ma.isValid()) {
+                    if (!TextUtils.isEmpty(where)) {
+                        where += " AND ";
+                    }
+                    where += Msg.ORIGIN_ID + "=" + ma.getOriginId();
+                }
+            }
+            tables = "(SELECT * FROM (" + msgTable + ")"
+                            + (TextUtils.isEmpty(where) ? "" : " WHERE (" + where + ")")
+                            + ") AS " + ProjectionMap.MSG_TABLE_ALIAS;
+        }
+
         if (columns.contains(MyDatabase.MsgOfUser.FAVORITED)
                 || (columns.contains(MyDatabase.User.LINKED_USER_ID) && !linkedUserDefined)
                 ) {
@@ -141,7 +145,7 @@ public class TimelineSql {
                     + "mou." + MyDatabase.MsgOfUser.MSG_ID;
             switch (tt) {
                 case FOLLOWING_USER:
-                case MESSAGESTOACT:
+                case MESSAGES_TO_ACT:
                     tbl += " AND mou." + MyDatabase.MsgOfUser.USER_ID 
                     + "=" + MyDatabase.User.LINKED_USER_ID;
                     tables += " LEFT JOIN " + tbl;

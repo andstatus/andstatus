@@ -13,7 +13,9 @@ public class TimelineTypeSelector {
             TimelineType.USER,
             TimelineType.FOLLOWING_USER,
             TimelineType.PUBLIC,
-            TimelineType.EVERYTHING
+            TimelineType.EVERYTHING,
+            TimelineType.DRAFTS,
+            TimelineType.OUTBOX
     };
     
     private Context context;

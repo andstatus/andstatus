@@ -62,7 +62,7 @@ public class MessageForAccount {
 
     private void getData() {
         // Get the record for the currently selected item
-        Uri uri = MatchedUri.getTimelineItemUri(ma.getUserId(), TimelineType.MESSAGESTOACT, false, 0, msgId);
+        Uri uri = MatchedUri.getTimelineItemUri(ma.getUserId(), TimelineType.MESSAGES_TO_ACT, false, 0, msgId);
         Cursor cursor = null;
         try {
             cursor = MyContextHolder.get().context().getContentResolver().query(uri, new String[]{
@@ -127,4 +127,9 @@ public class MessageForAccount {
     public boolean hasPrivateAccess() {
         return isRecipient || isSender;
     }
+
+    public boolean isLoaded() {
+        return status == DownloadStatus.LOADED;
+    }
+
 }

@@ -29,7 +29,6 @@ import android.view.View.OnCreateContextMenuListener;
 import android.widget.AdapterView;
 import android.widget.TextView;
 
-import org.andstatus.app.ContextMenuItem;
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
@@ -130,7 +129,7 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
                 ContextMenuItem.COPY_TEXT.addTo(menu, order++, R.string.menu_item_copy_text);
                 ContextMenuItem.COPY_AUTHOR.addTo(menu, order++, R.string.menu_item_copy_author);
             }
-            if (!msg.isDirect() && !isEditorVisible()) {
+            if (msg.isLoaded() && !msg.isDirect() && !isEditorVisible()) {
                 ContextMenuItem.REPLY.addTo(menu, order++, R.string.menu_item_reply);
                 ContextMenuItem.REPLY_ALL.addTo(menu, order++, R.string.menu_item_reply_all);
             }
@@ -146,7 +145,7 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
                         R.string.menu_item_direct_message);
             }
 
-            if (!msg.isDirect()) {
+            if (msg.isLoaded() && !msg.isDirect()) {
                 if (msg.favorited) {
                     ContextMenuItem.DESTROY_FAVORITE.addTo(menu, order++,
                             R.string.menu_item_destroy_favorite);
@@ -188,9 +187,11 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
                                 MyQuery.userIdToWebfingerId(msg.authorId)));
             }
 
-            ContextMenuItem.OPEN_MESSAGE_PERMALINK.addTo(menu, order++, R.string.menu_item_open_message_permalink);
-            ContextMenuItem.OPEN_CONVERSATION.addTo(menu, order++, R.string.menu_item_open_conversation);
-            
+            if (msg.isLoaded()) {
+                ContextMenuItem.OPEN_MESSAGE_PERMALINK.addTo(menu, order++, R.string.menu_item_open_message_permalink);
+                ContextMenuItem.OPEN_CONVERSATION.addTo(menu, order++, R.string.menu_item_open_conversation);
+            }
+
             if (msg.isSender) {
                 // This message is by current User, hence we may delete it.
                 if (msg.isDirect()) {
@@ -228,18 +229,20 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
                                     MyQuery.userIdToWebfingerId(msg.authorId)));
                 }
             }
-            switch (msg.myAccount().numberOfAccountsOfThisOrigin()) {
-                case 1:
-                    break;
-                case 2:
-                    ContextMenuItem.ACT_AS_USER.addTo(menu, order++,
-                            String.format(
-                                    getContext().getText(R.string.menu_item_act_as_user).toString(),
-                                    msg.myAccount().firstOtherAccountOfThisOrigin().shortestUniqueAccountName()));
-                    break;
-                default:
-                    ContextMenuItem.ACT_AS.addTo(menu, order++, R.string.menu_item_act_as);
-                    break;
+            if (msg.isLoaded()) {
+                switch (msg.myAccount().numberOfAccountsOfThisOrigin()) {
+                    case 1:
+                        break;
+                    case 2:
+                        ContextMenuItem.ACT_AS_USER.addTo(menu, order++,
+                                String.format(
+                                        getContext().getText(R.string.menu_item_act_as_user).toString(),
+                                        msg.myAccount().firstOtherAccountOfThisOrigin().shortestUniqueAccountName()));
+                        break;
+                    default:
+                        ContextMenuItem.ACT_AS.addTo(menu, order++, R.string.menu_item_act_as);
+                        break;
+                }
             }
         } catch (Exception e) {
             MyLog.e(this, "onCreateContextMenu", e);

@@ -104,6 +104,10 @@ public class ConversationActivity extends LoadableListActivity implements Action
 
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.conversation, menu);
+
+        if (mMessageEditor != null) {
+            mMessageEditor.onCreateOptionsMenu(menu);
+        }
         return true;
     }
 
@@ -168,7 +172,7 @@ public class ConversationActivity extends LoadableListActivity implements Action
 
     @Override
     public TimelineType getTimelineType() {
-        return TimelineType.MESSAGESTOACT;
+        return TimelineType.MESSAGES_TO_ACT;
     }
 
     @Override

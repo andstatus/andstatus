@@ -40,6 +40,7 @@ public class MessageEditorData {
     public DownloadStatus status = DownloadStatus.DRAFT;
     public String messageText = "";
     boolean showAfterSaveOrLoad = false;
+    boolean hideAfterSave = false;
 
     private Uri imageUriToSave = Uri.EMPTY;
     private DownloadData image = DownloadData.EMPTY;

@@ -55,10 +55,10 @@
   <string name="button_create_message_twitter">Tweet</string>
   <string name="button_delete">Delete</string>
   <string name="button_discard">Discard</string>
-  <string name="button_hide">Clear and Hide</string>
   <string name="button_overflow">Overflow</string>
   <string name="button_restore">Restore</string>
   <string name="button_save">Save</string>
+  <string name="button_save_draft">Save draft</string>
   <string name="button_skip">Skip</string>
   <string name="button_send">Send</string>
   <string name="cannot_send_empty_message">Cannot send empty message.</string>
@@ -369,11 +369,13 @@
   <string name="timeline_reloaded">Timeline has been reloaded.</string>
   <string name="timeline_title_all">All</string>
   <string name="timeline_title_direct_messages">Direct messages</string>
+  <string name="timeline_title_drafts">Drafts</string>
   <string name="timeline_title_everything">Everything</string>
   <string name="timeline_title_favorites">Favorites</string>
   <string name="timeline_title_following_user">Following</string>
   <string name="timeline_title_home">Home</string>
   <string name="timeline_title_mentions">Mentions</string>
+  <string name="timeline_title_outbox">Outbox</string>
   <string name="timeline_title_public">Public</string>
   <string name="timeline_title_replies">Replies</string>
   <string name="timeline_title_unknown">(Unknown timeline)</string>

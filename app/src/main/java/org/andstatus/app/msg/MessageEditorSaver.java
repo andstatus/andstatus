@@ -16,7 +16,11 @@ import org.andstatus.app.net.social.MbAttachment;
 import org.andstatus.app.net.social.MbMessage;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.service.CommandData;
+import org.andstatus.app.service.CommandEnum;
+import org.andstatus.app.service.MyServiceEvent;
+import org.andstatus.app.service.MyServiceEventsBroadcaster;
 import org.andstatus.app.service.MyServiceManager;
+import org.andstatus.app.service.MyServiceState;
 import org.andstatus.app.util.MyLog;
 
 /**
@@ -48,6 +52,7 @@ public class MessageEditorSaver extends AsyncTask<MessageEditor, Void, MessageEd
                 MyServiceManager.sendManualForegroundCommand(commandData);
             }
         }
+        broadcastDataChanged(data);
         return loadFutureData(data, msgId);
     }
 
@@ -83,13 +88,24 @@ public class MessageEditorSaver extends AsyncTask<MessageEditor, Void, MessageEd
         return di.insertOrUpdateMsg(message);
     }
 
+    private void broadcastDataChanged(MessageEditorData data) {
+        CommandData commandData = new CommandData(
+                data.status == DownloadStatus.DELETED ? CommandEnum.DESTROY_STATUS : CommandEnum.UPDATE_STATUS,
+                data.getMyAccount().getAccountName(), data.getMsgId());
+        MyServiceEventsBroadcaster.newInstance(MyContextHolder.get(), MyServiceState.UNKNOWN)
+                .setCommandData(commandData).setEvent(MyServiceEvent.AFTER_EXECUTING_COMMAND).broadcast();
+    }
+
     private MessageEditorData loadFutureData(MessageEditorData oldData, long msgId) {
-        boolean loadNew = oldData.status != DownloadStatus.DRAFT;
-        MessageEditorData newData = loadNew ?
+        boolean loadNewEmpty = oldData.status != DownloadStatus.DRAFT || oldData.hideAfterSave;
+        MessageEditorData newData = loadNewEmpty ?
                 MessageEditorData.newEmpty(oldData.getMyAccount()) : MessageEditorData.load(msgId);
         newData.showAfterSaveOrLoad = oldData.showAfterSaveOrLoad;
+        newData.hideAfterSave = oldData.hideAfterSave;
         if (newData.status == DownloadStatus.DRAFT && newData.getMsgId() != 0) {
-            MyPreferences.putLong(MyPreferences.KEY_DRAFT_MESSAGE_ID, newData.getMsgId());
+            MyPreferences.putLong(MyPreferences.KEY_BEING_EDITED_DRAFT_MESSAGE_ID, newData.getMsgId());
+        } else if ( oldData.hideAfterSave) {
+            MyPreferences.putLong(MyPreferences.KEY_BEING_EDITED_DRAFT_MESSAGE_ID, 0);
         }
         return newData;
     }

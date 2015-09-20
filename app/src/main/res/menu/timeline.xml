@@ -26,18 +26,24 @@
         android:title="@string/button_create_message">
     </item>
     <item
-        android:id="@+id/hideMessageButton"
-        android:icon="?attr/hideMessageIcon"
-        app:showAsAction="always"
-        android:title="@string/button_hide"
-        android:visible="false">
-    </item>
-    <item
         android:id="@+id/attach_menu_id"
         android:alphabeticShortcut="a"
         android:icon="?attr/attachIcon"
-        app:showAsAction="ifRoom"
+        app:showAsAction="always"
         android:title="@string/options_menu_attach"
+        android:visible="false">
+    </item>
+    <item
+        android:id="@+id/saveDraftButton"
+        android:icon="?attr/hideMessageIcon"
+        app:showAsAction="ifRoom"
+        android:title="@string/button_save_draft"
+        android:visible="false">
+    </item>
+    <item
+        android:id="@+id/discardButton"
+        app:showAsAction="never"
+        android:title="@string/button_discard"
         android:visible="false">
     </item>
     <item

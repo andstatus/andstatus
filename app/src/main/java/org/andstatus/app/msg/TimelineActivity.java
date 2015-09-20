@@ -415,6 +415,9 @@ public class TimelineActivity extends MyListActivity implements MyServiceEventsL
         super.onCreateOptionsMenu(menu);
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.timeline, menu);
+        if (mMessageEditor != null) {
+            mMessageEditor.onCreateOptionsMenu(menu);
+        }
         return true;
     }
 

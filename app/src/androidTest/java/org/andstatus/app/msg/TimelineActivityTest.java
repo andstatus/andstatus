@@ -20,7 +20,6 @@ import android.app.Activity;
 import android.content.Intent;
 import android.widget.ListView;
 
-import org.andstatus.app.ContextMenuItem;
 import org.andstatus.app.ListActivityTestHelper;
 import org.andstatus.app.R;
 import org.andstatus.app.account.AccountSelector;

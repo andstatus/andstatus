@@ -26,7 +26,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
-import org.andstatus.app.ContextMenuItem;
 import org.andstatus.app.ActivityTestHelper;
 import org.andstatus.app.ListActivityTestHelper;
 import org.andstatus.app.R;
@@ -63,7 +62,7 @@ public class MessageEditorTest extends android.test.ActivityInstrumentationTestC
         MyLog.setLogToFile(true);
 
         if (data == null) {
-            MyPreferences.putLong(MyPreferences.KEY_DRAFT_MESSAGE_ID, 0);
+            MyPreferences.putLong(MyPreferences.KEY_BEING_EDITED_DRAFT_MESSAGE_ID, 0);
         }
 
         MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.CONVERSATION_ACCOUNT_NAME);
@@ -151,7 +150,7 @@ public class MessageEditorTest extends android.test.ActivityInstrumentationTestC
         MyLog.v(this, method + " started");
 
         ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<TimelineActivity>(this, mActivity);
-        helper.clickMenuItem(method + " hiding editor", R.id.hideMessageButton);
+        helper.clickMenuItem(method + " hiding editor", R.id.saveDraftButton);
         View editorView = mActivity.findViewById(R.id.message_editor);
         assertFalse("Editor hidden again", editorView.getVisibility() == android.view.View.VISIBLE);
 
@@ -179,7 +178,7 @@ public class MessageEditorTest extends android.test.ActivityInstrumentationTestC
         View editorView = mActivity.findViewById(R.id.message_editor);
         helper.clickMenuItem(method + "; Create message cannot hide editor", R.id.createMessageButton);
         assertTrue("Create message cannot hide editor", editorView.getVisibility() == android.view.View.VISIBLE);
-        helper.clickMenuItem(method + " hide editor", R.id.hideMessageButton);
+        helper.clickMenuItem(method + " hide editor", R.id.saveDraftButton);
         assertFalse("Editor hidden again", editorView.getVisibility() == android.view.View.VISIBLE);
         helper.clickMenuItem(method + " clicker 5", R.id.createMessageButton);
         assertTrue("Editor appeared", editorView.getVisibility() == android.view.View.VISIBLE);

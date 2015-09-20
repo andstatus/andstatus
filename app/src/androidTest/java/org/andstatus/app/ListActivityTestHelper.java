@@ -30,6 +30,7 @@ import android.widget.TextView;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyQuery;
+import org.andstatus.app.msg.ContextMenuItem;
 import org.andstatus.app.util.MyLog;
 
 public class ListActivityTestHelper<T extends MyListActivity> extends InstrumentationTestCase {

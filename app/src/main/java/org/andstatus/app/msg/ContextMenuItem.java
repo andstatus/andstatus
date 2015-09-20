@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.andstatus.app;
+package org.andstatus.app.msg;
 
 import android.app.Activity;
 import android.content.ClipData;
@@ -27,6 +27,8 @@ import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import org.andstatus.app.ActivityRequestCode;
+import org.andstatus.app.MyAction;
 import org.andstatus.app.account.AccountSelector;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
@@ -35,9 +37,6 @@ import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.TimelineType;
-import org.andstatus.app.msg.MessageContextMenu;
-import org.andstatus.app.msg.MessageEditorData;
-import org.andstatus.app.msg.MessageShare;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
@@ -313,7 +312,7 @@ public enum ContextMenuItem {
         this.mIsAsync = isAsync;
     }
 
-    int getId() {
+    public int getId() {
         return Menu.FIRST + ordinal() + 1;
     }
     

@@ -355,6 +355,10 @@ public class MyProvider extends ContentProvider {
                 }
                 // Here we substitute ?-s in selection with values from selectionArgs
                 c = db.rawQuery(sql, selectionArgs);
+                if (c == null) {
+                    MyLog.e(this, "Null cursor returned");
+                    logQuery = true;
+                }
             } catch (Exception e) {
                 logQuery = true;
                 MyLog.e(this, "Database query failed", e);
