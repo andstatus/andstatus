@@ -411,14 +411,26 @@ public class MessageEditor {
 
     public void updateScreen() {
         bodyEditText.setText(editorData.body);
+        showIfNotEmpty(R.id.message_author,
+                shouldShowAccountName() ? editorData.getMyAccount().getAccountName() : "");
         showMessageDetails();
-        showInReplyToBody();
+        showIfNotEmpty(R.id.inReplyToBody, editorData.inReplyToBody);
         mCharsLeftText.setText(String.valueOf(editorData.getMyAccount()
                 .charactersLeftForMessage(bodyEditText.getText().toString())));
     }
 
+    private void showIfNotEmpty(int viewId, String value) {
+        TextView textView = (TextView) mEditorView.findViewById(viewId);
+        textView.setText(value);
+        if (TextUtils.isEmpty(value)) {
+            textView.setVisibility(View.GONE);
+        } else {
+            textView.setVisibility(View.VISIBLE);
+        }
+    }
+
     private void showMessageDetails() {
-        String messageDetails = shouldShowAccountName() ? editorData.getMyAccount().getAccountName() : "";
+        String messageDetails = "";
         if (editorData.inReplyToId != 0) {
             String replyToName = MyQuery.msgIdToUsername(MyDatabase.Msg.AUTHOR_ID, editorData.inReplyToId, MyPreferences.userInTimeline());
             messageDetails += " " + String.format(
@@ -429,21 +441,14 @@ public class MessageEditor {
             String recipientName = MyQuery.userIdToWebfingerId(editorData.recipientId);
             if (!TextUtils.isEmpty(recipientName)) {
                 messageDetails += " " + String.format(
-                        MyContextHolder.get().context().getText(R.string.message_source_to).toString(), 
+                        MyContextHolder.get().context().getText(R.string.message_source_to).toString(),
                         recipientName);
             }
         }
         if (!UriUtils.isEmpty(editorData.getMediaUri())) {
-            messageDetails += " (" + MyContextHolder.get().context().getText(R.string.label_with_media).toString() + ")"; 
+            messageDetails += " (" + MyContextHolder.get().context().getText(R.string.label_with_media).toString() + ")";
         }
-
-        TextView messageDetailsTextView = (TextView) mEditorView.findViewById(R.id.messageEditDetails);
-        messageDetailsTextView.setText(messageDetails);
-        if (TextUtils.isEmpty(messageDetails)) {
-            messageDetailsTextView.setVisibility(View.GONE);
-        } else {
-            messageDetailsTextView.setVisibility(View.VISIBLE);
-        }
+        showIfNotEmpty(R.id.messageEditDetails, messageDetails);
     }
 
     private boolean shouldShowAccountName() {
@@ -453,16 +458,6 @@ public class MessageEditor {
             should = editorData.getMyAccount().getUserId() != mMessageList.getCurrentMyAccountUserId();
         }
         return should;
-    }
-
-    private void showInReplyToBody() {
-        TextView messageDetailsTextView = (TextView) mEditorView.findViewById(R.id.inReplyToBody);
-        messageDetailsTextView.setText(editorData.inReplyToBody);
-        if (TextUtils.isEmpty(editorData.inReplyToBody)) {
-            messageDetailsTextView.setVisibility(View.GONE);
-        } else {
-            messageDetailsTextView.setVisibility(View.VISIBLE);
-        }
     }
 
     private void sendAndHide() {
