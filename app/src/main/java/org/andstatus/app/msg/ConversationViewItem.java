@@ -26,6 +26,7 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.AttachedImageDrawable;
 import org.andstatus.app.data.AvatarDrawable;
+import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyDatabase.Download;
 import org.andstatus.app.data.MyDatabase.Msg;
 import org.andstatus.app.data.MyDatabase.MsgOfUser;
@@ -51,6 +52,7 @@ public class ConversationViewItem extends ConversationItem {
     String mVia = "";
     String mInReplyToName = "";
     String mRecipientName = "";
+    DownloadStatus mStatus = DownloadStatus.UNKNOWN;
 
     AvatarDrawable mAvatarDrawable = null;
     Drawable mImageDrawable = null;
@@ -80,6 +82,7 @@ public class ConversationViewItem extends ConversationItem {
             if (ind == 0) {
                 // This is the same for all retrieved rows
                 super.load(cursor);
+                mStatus = DownloadStatus.load(cursor.getLong(cursor.getColumnIndex(Msg.MSG_STATUS)));
                 mAuthor = TimelineSql.userColumnNameToNameAtTimeline(cursor, User.AUTHOR_NAME, false);
                 mBody = cursor.getString(cursor.getColumnIndex(Msg.BODY));
                 String via = cursor.getString(cursor.getColumnIndex(Msg.VIA));

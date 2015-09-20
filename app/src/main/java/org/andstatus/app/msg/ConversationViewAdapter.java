@@ -40,6 +40,7 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.MyTheme;
 import org.andstatus.app.data.AvatarDrawable;
+import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
@@ -237,6 +238,9 @@ public class ConversationViewAdapter extends BaseAdapter {
                     + String.format(
                             context.getText(R.string.message_source_to)
                             .toString(), oMsg.mRecipientName);
+        }
+        if (oMsg.mStatus != DownloadStatus.LOADED) {
+            messageDetails += " (" + oMsg.mStatus.getTitle(context) + ")";
         }
         if (MyPreferences.getBoolean(MyPreferences.KEY_DEBUGGING_INFO_IN_UI, false)) {
             messageDetails = messageDetails + " (i" + oMsg.mIndentLevel + ",r" + oMsg.mReplyLevel + ")";
