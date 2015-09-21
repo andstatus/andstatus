@@ -82,8 +82,8 @@ public class ConversationActivity extends LoadableListActivity implements Action
 
     @Override
     protected void onPause() {
-        super.onPause();
         mMessageEditor.saveState();
+        super.onPause();
     }
 
     @Override

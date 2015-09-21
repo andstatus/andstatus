@@ -36,7 +36,9 @@ import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Stores ("inserts" - adds or updates) messages and users
@@ -263,13 +265,11 @@ public class DataInserter {
             }
 
             if (isFirstTimeLoaded || isDraftUpdated) {
-                if (isFirstTimeLoaded) {
-                    // We don't delete existing attachments during draft editing
-                    DownloadData.deleteAllOfThisMsg(msgId);
-                }
+                List<Long> downloadIds = new ArrayList<>();
                 for (MbAttachment attachment : message.attachments) {
                     DownloadData dd = DownloadData.getThisForMessage(msgId, attachment.contentType, attachment.getUri());
                     dd.saveToDatabase();
+                    downloadIds.add(dd.getDownloadId());
                     if (dd.getStatus() != DownloadStatus.LOADED) {
                         if (UriUtils.isLocal(dd.getUri())) {
                             AttachmentDownloader.load(dd.getDownloadId(), execContext.getCommandData());
@@ -280,6 +280,7 @@ public class DataInserter {
                         }
                     }
                 }
+                DownloadData.deleteOtherOfThisMsg(msgId, downloadIds);
             }
             
             if (isNewerThanInDatabase) {

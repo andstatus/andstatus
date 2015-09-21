@@ -17,6 +17,8 @@ import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.UriUtils;
 
+import java.util.List;
+
 public class DownloadData {
     public static final DownloadData EMPTY = new DownloadData();
 
@@ -350,7 +352,31 @@ public class DownloadData {
         final String method = "deleteAllOfThisMsg msgId=" + msgId;
         deleteSelected(method, Download.MSG_ID + "=" + msgId);
     }
-    
+
+    public static void deleteOtherOfThisMsg(long msgId, List<Long> downloadIds) {
+        if (msgId == 0 || downloadIds == null || downloadIds.isEmpty()) {
+            return;
+        }
+        final String method = "deleteOtherOfThisMsg msgId=" + msgId + ", rowIds:" + toSqlList(downloadIds);
+        String where = Download.MSG_ID + "=" + msgId
+                + " AND " + Download._ID + " NOT IN(" + toSqlList(downloadIds) + ")" ;
+        deleteSelected(method, where);
+    }
+
+    public static String toSqlList(List<Long> longs) {
+        if (longs == null || longs.isEmpty()) {
+            return "0";
+        }
+        String list = "";
+        for (Long theLong : longs) {
+            if (list.length() > 0) {
+                list += ",";
+            }
+            list += Long.toString(theLong);
+        }
+        return list;
+    }
+
     public DownloadFile getFile() {
         return fileStored;
     }

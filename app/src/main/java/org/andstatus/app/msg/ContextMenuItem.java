@@ -60,7 +60,6 @@ public enum ContextMenuItem {
     EDIT() {
         @Override
         boolean executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
-            menu.messageList.getMessageEditor().saveState();
             menu.messageList.getMessageEditor().loadState(editorData.getMsgId());
             return true;
         }

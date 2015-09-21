@@ -40,6 +40,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.text.Editable;
+import android.text.Html;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.KeyEvent;
@@ -400,9 +401,9 @@ public class MessageEditor {
         if (!dataIn.getMyAccount().isValid()) {
             return;
         }
+        dataIn.showAfterSaveOrLoad = true;
         editorData = dataIn;
-        updateScreen();
-        show();
+        saveData();
         if (editorData.getMyAccount().getConnection().isApiSupported(ApiRoutineEnum.ACCOUNT_RATE_LIMIT_STATUS)) {
             // Start asynchronous task that will show Rate limit status
             MyServiceManager.sendForegroundCommand(new CommandData(CommandEnum.RATE_LIMIT_STATUS, editorData.getMyAccount().getAccountName()));
@@ -421,7 +422,7 @@ public class MessageEditor {
 
     private void showIfNotEmpty(int viewId, String value) {
         TextView textView = (TextView) mEditorView.findViewById(viewId);
-        textView.setText(value);
+        textView.setText(Html.fromHtml(value));
         if (TextUtils.isEmpty(value)) {
             textView.setVisibility(View.GONE);
         } else {
@@ -506,6 +507,7 @@ public class MessageEditor {
     }
 
     public void loadState(long msgId) {
+        saveState();
         MyLog.v(MessageEditorData.TAG, "loadState started" + (msgId == 0 ? "" : ", msgId=" + msgId));
         new AsyncTask<Long, Void, MessageEditorData>() {
             volatile MessageEditor.MyLock lock = MessageEditor.MyLock.EMPTY;

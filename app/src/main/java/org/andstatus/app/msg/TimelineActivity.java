@@ -323,7 +323,6 @@ public class TimelineActivity extends MyListActivity implements MyServiceEventsL
     @Override
     protected void onPause() {
         final String method = "onPause";
-        super.onPause();
         if (MyLog.isVerboseEnabled()) {
             MyLog.v(this, method + "; instanceId=" + mInstanceId);
         }
@@ -331,6 +330,7 @@ public class TimelineActivity extends MyListActivity implements MyServiceEventsL
         setSyncIndicator(method, false);
         mMessageEditor.saveState();
         saveActivityState();
+        super.onPause();
         MyContextHolder.get().setInForeground(false);
     }
 

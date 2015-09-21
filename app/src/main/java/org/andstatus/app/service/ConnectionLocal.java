@@ -38,6 +38,8 @@ public class ConnectionLocal extends ConnectionEmpty {
             FileUtils.readStreamToFile(ins, file);
         } catch (IOException e) {
             throw ConnectionException.hardConnectionException("mediaUri='" + uri + "'", e);
+        } catch (SecurityException e) {
+            throw ConnectionException.hardConnectionException("mediaUri='" + uri + "'", e);
         }
     }
 }
