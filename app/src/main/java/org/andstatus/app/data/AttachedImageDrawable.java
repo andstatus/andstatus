@@ -32,6 +32,7 @@ import org.andstatus.app.util.MyLog;
 public class AttachedImageDrawable {
     private final long downloadRowId;
     private final DownloadFile downloadFile;
+    private Point size = null;
     
     public static Drawable drawableFromCursor(Cursor cursor) {
         int columnIndex = cursor.getColumnIndex(MyDatabase.Download.IMAGE_ID);
@@ -51,11 +52,20 @@ public class AttachedImageDrawable {
         downloadRowId = downloadRowIdIn;
         downloadFile = new DownloadFile(filename);
     }
-    
+
+    public Point getSize() {
+        if (size == null) {
+            if (downloadFile.exists()) {
+                size = getImageSize(downloadFile.getFile().getAbsolutePath());
+            }
+        }
+        return size == null ? new Point() : size;
+    }
+
     public Drawable getDrawable() {
         if (downloadFile.exists()) {
             String path = downloadFile.getFile().getAbsolutePath();
-            return drawableFromPath(this, path);
+            return drawableFromPath(this, path, getSize());
         } 
         DownloadData.asyncRequestDownload(downloadRowId);
         return null;
@@ -64,8 +74,12 @@ public class AttachedImageDrawable {
     public static final double MAX_ATTACHED_IMAGE_PART = 0.75;
 
     public static Drawable drawableFromPath(Object objTag, String path) {
+        return drawableFromPath(objTag, path, getImageSize(path));
+    }
+
+    private static Drawable drawableFromPath(Object objTag, String path, Point imageSize) {
         Bitmap bitmap = BitmapFactory
-                .decodeFile(path, calculateScaling(objTag, getImageSize(path)));
+                .decodeFile(path, calculateScaling(objTag, imageSize));
         if (MyLog.isVerboseEnabled()) {
             MyLog.v(objTag, (bitmap == null ? "Failed to load bitmap" : "Loaded bitmap " + bitmap.getWidth() + "x" + bitmap.getHeight())
                     + " '" + path + "'");

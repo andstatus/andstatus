@@ -45,6 +45,13 @@ public class DownloadFile {
         return file;
     }
 
+    public long getSize() {
+        if (exists()) {
+            return file.length();
+        }
+        return 0;
+    }
+
     public String getFilename() {
         return filename;
     }

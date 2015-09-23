@@ -16,12 +16,15 @@
 
 package org.andstatus.app.msg;
 
+import android.graphics.Point;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.text.TextUtils;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.UserInTimeline;
+import org.andstatus.app.data.AttachedImageDrawable;
 import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyContentType;
@@ -44,6 +47,9 @@ public class MessageEditorData {
 
     private Uri imageUriToSave = Uri.EMPTY;
     private DownloadData image = DownloadData.EMPTY;
+
+    private Point imageSize = new Point();
+    Drawable imageDrawable = null;
 
     /**
      * Id of the Message to which we are replying.
@@ -146,6 +152,12 @@ public class MessageEditorData {
             data.msgId = msgId;
             data.body = MyQuery.msgIdToStringColumnValue(MyDatabase.Msg.BODY, msgId);
             data.image = DownloadData.getSingleForMessage(msgId, MyContentType.IMAGE, Uri.EMPTY);
+            if (data.image.getStatus() == DownloadStatus.LOADED) {
+                AttachedImageDrawable a = new AttachedImageDrawable(data.image.getDownloadId(),
+                        data.image.getFilename());
+                data.imageDrawable = a.getDrawable();
+                data.imageSize = a.getSize();
+            }
             data.inReplyToId = MyQuery.msgIdToLongColumnValue(MyDatabase.Msg.IN_REPLY_TO_MSG_ID, msgId);
             data.inReplyToBody = MyQuery.msgIdToStringColumnValue(MyDatabase.Msg.BODY, data.inReplyToId);
             data.recipientId = MyQuery.msgIdToLongColumnValue(MyDatabase.Msg.RECIPIENT_ID, msgId);
@@ -176,6 +188,14 @@ public class MessageEditorData {
 
     public Uri getMediaUri() {
         return imageUriToSave.equals(Uri.EMPTY) ? image.getUri() : imageUriToSave;
+    }
+
+    public long getImageFileSize() {
+        return image.getFile().getSize();
+    }
+
+    public Point getImageSize() {
+        return imageSize;
     }
 
     public MessageEditorData setMsgId(long msgIdIn) {

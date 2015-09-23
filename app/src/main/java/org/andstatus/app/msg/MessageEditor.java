@@ -51,6 +51,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -418,6 +419,7 @@ public class MessageEditor {
         showIfNotEmpty(R.id.inReplyToBody, editorData.inReplyToBody);
         mCharsLeftText.setText(String.valueOf(editorData.getMyAccount()
                 .charactersLeftForMessage(bodyEditText.getText().toString())));
+        showAttachedImage();
     }
 
     private void showIfNotEmpty(int viewId, String value) {
@@ -447,7 +449,10 @@ public class MessageEditor {
             }
         }
         if (!UriUtils.isEmpty(editorData.getMediaUri())) {
-            messageDetails += " (" + MyContextHolder.get().context().getText(R.string.label_with_media).toString() + ")";
+            messageDetails += " (" + MyContextHolder.get().context().getText(R.string.label_with_media).toString()
+                    + " " + editorData.getImageSize().x + "x" + editorData.getImageSize().y
+                    + " " + editorData.getImageFileSize()/1024 + "kb" +
+                    ")";
         }
         showIfNotEmpty(R.id.messageEditDetails, messageDetails);
     }
@@ -459,6 +464,16 @@ public class MessageEditor {
             should = editorData.getMyAccount().getUserId() != mMessageList.getCurrentMyAccountUserId();
         }
         return should;
+    }
+
+    private void showAttachedImage() {
+        ImageView imageView = (ImageView) mEditorView.findViewById(R.id.attached_image);
+        if (editorData.imageDrawable == null) {
+            imageView.setVisibility(View.GONE);
+        } else {
+            imageView.setImageDrawable(editorData.imageDrawable);
+            imageView.setVisibility(View.VISIBLE);
+        }
     }
 
     private void sendAndHide() {
@@ -544,7 +559,7 @@ public class MessageEditor {
             @Override
             protected void onPostExecute(MessageEditorData data) {
                 if (!lock.isEmpty()) {
-                    data.showAfterSaveOrLoad = true;
+                    data.showAfterSaveOrLoad = !data.isEmpty();
                     dataLoadedCallback(data);
                     lock.release();
                 }
@@ -594,7 +609,7 @@ public class MessageEditor {
         editorData = data;
         updateScreen();
         if (editorData.status == DownloadStatus.DRAFT) {
-            if (editorData.showAfterSaveOrLoad && !editorData.isEmpty()) {
+            if (editorData.showAfterSaveOrLoad) {
                 show();
             } else if (editorData.hideAfterSave || editorData.isEmpty()) {
                 hide();
