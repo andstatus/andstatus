@@ -34,6 +34,13 @@
         android:visible="false">
     </item>
     <item
+        android:id="@+id/messageSendButton"
+        android:icon="?attr/sendIcon"
+        app:showAsAction="always"
+        android:title="@string/button_send"
+        android:visible="false">
+    </item>
+    <item
         android:id="@+id/saveDraftButton"
         android:icon="?attr/hideMessageIcon"
         app:showAsAction="ifRoom"

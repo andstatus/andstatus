@@ -8,6 +8,7 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import org.andstatus.app.ActivityTestHelper;
 import org.andstatus.app.ListActivityTestHelper;
 import org.andstatus.app.R;
 import org.andstatus.app.account.AccountSelector;
@@ -68,20 +69,22 @@ public class SharingMediaToThisAppTest extends ActivityInstrumentationTestCase2<
         helperAccountSelector.clickListAtPosition(method, position);
         
         View editorView = getActivity().findViewById(R.id.message_editor);
-        ListActivityTestHelper.waitViewIsVisible(method, editorView);
+        ActivityTestHelper.waitViewVisible(method, editorView);
         TextView details = (TextView) editorView.findViewById(R.id.messageEditDetails);
         String textToFind = MyContextHolder.get().context().getText(R.string.label_with_media).toString();
-        ListActivityTestHelper.waitTextInAView(method, details, textToFind);
+        ActivityTestHelper.waitTextInAView(method, details, textToFind);
 
         String body = "Test message with a shared image " + TestSuite.TESTRUN_UID;
         EditText editText = (EditText) editorView.findViewById(R.id.messageBodyEditText);
         editText.requestFocus();
         TestSuite.waitForIdleSync(this);
         getInstrumentation().sendStringSync(body);
-        helperTimelineActivity.clickView(method, R.id.messageEditSendButton);
+
+        ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<TimelineActivity>(this, getActivity());
+        helper.clickMenuItem(method, R.id.messageSendButton);
 
         editorView = getActivity().findViewById(R.id.message_editor);
-        ListActivityTestHelper.waitViewIsInvisible(method, editorView);
+        ActivityTestHelper.waitViewInvisible(method, editorView);
 
         mService.serviceStopped = false;
         mService.waitForServiceStopped();

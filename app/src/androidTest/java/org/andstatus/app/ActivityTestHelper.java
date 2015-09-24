@@ -22,6 +22,8 @@ import android.test.ActivityInstrumentationTestCase2;
 import android.test.ActivityTestCase;
 import android.test.InstrumentationTestCase;
 import android.view.Menu;
+import android.view.View;
+import android.widget.TextView;
 
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.util.MyLog;
@@ -42,6 +44,50 @@ public class ActivityTestHelper<T extends MyActivity> extends InstrumentationTes
         mTestCase = testCase;
         addMonitor(classOfActivityToMonitor);
         mActivity = testCase.getActivity();
+    }
+
+    public static boolean waitViewVisible(String method, View view) throws InterruptedException {
+        assertTrue(view != null);
+        boolean ok = false;
+        for (int i = 0; i < 20; i++) {
+            if (view.getVisibility() == View.VISIBLE) {
+                ok = true;
+                break;
+            }
+            Thread.sleep(2000);
+        }
+        MyLog.v(method, (ok ? "Visible" : "Invisible"));
+        assertTrue("View is visible", ok);
+        return ok;
+    }
+
+    public static boolean waitViewInvisible(String method, View view) throws InterruptedException {
+        assertTrue(view != null);
+        boolean ok = false;
+        for (int i = 0; i < 20; i++) {
+            if (view.getVisibility() != View.VISIBLE) {
+                ok = true;
+                break;
+            }
+            Thread.sleep(2000);
+        }
+        MyLog.v(method, (ok ? "Invisible" : "Visible"));
+        assertTrue("View is invisible", ok);
+        return ok;
+    }
+
+    public static boolean waitTextInAView(String method, TextView view, String textToFind) throws InterruptedException {
+        boolean ok = false;
+        for (int i = 0; i < 20; i++) {
+            if (view.getText().toString().contains(textToFind)) {
+                ok = true;
+                break;
+            }
+            Thread.sleep(2000);
+        }
+        MyLog.v(method, (ok ? "Found" : "Not found") + " text '" + textToFind + "'");
+        assertTrue("Found text '" + textToFind + "'", ok);
+        return ok;
     }
 
     public ActivityMonitor addMonitor(Class<? extends Activity> classOfActivity) {

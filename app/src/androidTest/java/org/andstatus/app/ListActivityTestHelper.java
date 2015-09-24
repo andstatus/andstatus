@@ -244,48 +244,4 @@ public class ListActivityTestHelper<T extends MyListActivity> extends Instrument
         TestSuite.waitForIdleSync(mInstrumentation);
     }
 
-    public static boolean waitViewIsVisible(String method, View view) throws InterruptedException {
-        assertTrue(view != null);
-        boolean ok = false;
-        for (int i = 0; i < 20; i++) {
-            if (view.getVisibility() == View.VISIBLE) {
-                ok = true;
-                break;
-            }
-            Thread.sleep(2000);
-        }
-        MyLog.v(method, (ok ? "Visible" : "Invisible"));
-        assertTrue("View is visible", ok);
-        return ok;
-    }
-
-    public static boolean waitViewIsInvisible(String method, View view) throws InterruptedException {
-        assertTrue(view != null);
-        boolean ok = false;
-        for (int i = 0; i < 20; i++) {
-            if (view.getVisibility() != View.VISIBLE) {
-                ok = true;
-                break;
-            }
-            Thread.sleep(2000);
-        }
-        MyLog.v(method, (ok ? "Invisible" : "Visible"));
-        assertTrue("View is invisible", ok);
-        return ok;
-    }
-
-    public static boolean waitTextInAView(String method, TextView view, String textToFind) throws InterruptedException {
-        boolean ok = false;
-        for (int i = 0; i < 20; i++) {
-            if (view.getText().toString().contains(textToFind)) {
-                ok = true;
-                break;
-            }
-            Thread.sleep(2000);
-        }
-        MyLog.v(method, (ok ? "Found" : "Not found") + " text '" + textToFind + "'");
-        assertTrue("Found text '" + textToFind + "'", ok);
-        return ok;
-    }
-
 }

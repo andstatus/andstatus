@@ -159,20 +159,8 @@ public class MessageEditor {
         layoutParent.addView(mEditorView);
         
         mCharsLeftText = (TextView) mEditorView.findViewById(R.id.messageEditCharsLeftTextView);
-
-        setupEditorButtons();
         setupEditText();
         hide();
-    }
-
-    private void setupEditorButtons() {
-        View sendButton = mEditorView.findViewById(R.id.messageEditSendButton);
-        sendButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                sendAndHide();
-            }
-        });
     }
 
     private void setupEditText() {
@@ -228,6 +216,7 @@ public class MessageEditor {
     public boolean onCreateOptionsMenu(Menu menu) {
         createCreateMessageButton(menu);
         createAttachButton(menu);
+        createSendButton(menu);
         createSaveDraftButton(menu);
         createDiscardButton(menu);
         return true;
@@ -258,6 +247,20 @@ public class MessageEditor {
                         @Override
                         public boolean onMenuItemClick(MenuItem item) {
                             onAttach();
+                            return false;
+                        }
+                    });
+        }
+    }
+
+    private void createSendButton(Menu menu) {
+        MenuItem item = menu.findItem(R.id.messageSendButton);
+        if (item != null) {
+            item.setOnMenuItemClickListener(
+                    new MenuItem.OnMenuItemClickListener() {
+                        @Override
+                        public boolean onMenuItemClick(MenuItem item) {
+                            sendAndHide();
                             return false;
                         }
                     });
@@ -295,6 +298,7 @@ public class MessageEditor {
     public void onPrepareOptionsMenu(Menu menu) {
         prepareCreateMessageButton(menu);
         prepareAttachButton(menu);
+        prepareSendButton(menu);
         prepareSaveDraftButton(menu);
         prepareDiscardButton(menu);
     }
@@ -328,6 +332,14 @@ public class MessageEditor {
                     .allowAttachmentForDirectMessage());
             item.setEnabled(enableAttach);
             item.setVisible(enableAttach);
+        }
+    }
+
+    private void prepareSendButton(Menu menu) {
+        MenuItem item = menu.findItem(R.id.messageSendButton);
+        if (item != null) {
+            item.setEnabled(isVisible());
+            item.setVisible(isVisible());
         }
     }
 
@@ -451,7 +463,7 @@ public class MessageEditor {
         if (!UriUtils.isEmpty(editorData.getMediaUri())) {
             messageDetails += " (" + MyContextHolder.get().context().getText(R.string.label_with_media).toString()
                     + " " + editorData.getImageSize().x + "x" + editorData.getImageSize().y
-                    + " " + editorData.getImageFileSize()/1024 + "kb" +
+                    + ", " + editorData.getImageFileSize()/1024 + "K" +
                     ")";
         }
         showIfNotEmpty(R.id.messageEditDetails, messageDetails);

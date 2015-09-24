@@ -97,7 +97,7 @@ public class MessageEditorTest extends android.test.ActivityInstrumentationTestC
                         MyQuery.oidToId(OidEnum.USER_OID, ma.getOrigin().getId(),
                                 TestSuite.CONVERSATION_MEMBER_USER_OID))
                 .addMentionsToText()
-                .setBody("Some text " + TestSuite.TESTRUN_UID);
+                .setBody("Some static text " + TestSuite.TESTRUN_UID);
         return data;
     }
 
@@ -152,7 +152,7 @@ public class MessageEditorTest extends android.test.ActivityInstrumentationTestC
         ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<TimelineActivity>(this, mActivity);
         helper.clickMenuItem(method + " hiding editor", R.id.saveDraftButton);
         View editorView = mActivity.findViewById(R.id.message_editor);
-        assertFalse("Editor hidden again", editorView.getVisibility() == android.view.View.VISIBLE);
+        ActivityTestHelper.waitViewInvisible(method, editorView);
 
         final MessageEditor editor = mActivity.getMessageEditor();
         Runnable startEditing = new Runnable() {
@@ -164,7 +164,7 @@ public class MessageEditorTest extends android.test.ActivityInstrumentationTestC
         getInstrumentation().runOnMainSync(startEditing);
         getInstrumentation().waitForIdleSync();
 
-        assertTrue(editorView.getVisibility() == android.view.View.VISIBLE);
+        ActivityTestHelper.waitViewVisible(method, editorView);
 
         assertInitialText("Initial text");
         MyLog.v(this, method + " ended");
@@ -177,19 +177,21 @@ public class MessageEditorTest extends android.test.ActivityInstrumentationTestC
         ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<TimelineActivity>(this, mActivity);
         View editorView = mActivity.findViewById(R.id.message_editor);
         helper.clickMenuItem(method + "; Create message cannot hide editor", R.id.createMessageButton);
-        assertTrue("Create message cannot hide editor", editorView.getVisibility() == android.view.View.VISIBLE);
+        ActivityTestHelper.waitViewVisible(method + "; Create message cannot hide editor", editorView);
         helper.clickMenuItem(method + " hide editor", R.id.saveDraftButton);
-        assertFalse("Editor hidden again", editorView.getVisibility() == android.view.View.VISIBLE);
+        ActivityTestHelper.waitViewInvisible(method + "; Editor is hidden again", editorView);
         helper.clickMenuItem(method + " clicker 5", R.id.createMessageButton);
-        assertTrue("Editor appeared", editorView.getVisibility() == android.view.View.VISIBLE);
+        ActivityTestHelper.waitViewVisible(method + "; Editor appeared", editorView);
         assertTextCleared();
+        helper.clickMenuItem(method + " click Discard", R.id.discardButton);
+        ActivityTestHelper.waitViewInvisible(method + "; Editor hidden after discard", editorView);
         MyLog.v(this, method + " ended");
     }
 
     private void assertInitialText(final String description) throws InterruptedException {
         final MessageEditor editor = mActivity.getMessageEditor();
         TextView textView = (TextView) getActivity().findViewById(R.id.messageBodyEditText);
-        ListActivityTestHelper.waitTextInAView(description, textView, data.body);
+        ActivityTestHelper.waitTextInAView(description, textView, data.body);
         MyLog.v(this, description + " text:'" + editor.getData().body +"'");
         assertEquals(description, data, editor.getData());
     }
