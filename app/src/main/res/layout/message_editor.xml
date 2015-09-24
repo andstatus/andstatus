@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- 
-    Copyright (c) 2013 yvolk (Yuri Volkov), http://yurivolkov.com
+    Copyright (c) 2015 yvolk (Yuri Volkov), http://yurivolkov.com
 	
 	Licensed under the Apache License, Version 2.0 (the "License");
 	you may not use this file except in compliance with the License.
@@ -14,7 +14,9 @@
 	See the License for the specific language governing permissions and
 	limitations under the License.
  -->
+<!-- On tools: namespace see http://tools.android.com/tips/layout-designtime-attributes -->
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:tools="http://schemas.android.com/tools"
     android:layout_height="wrap_content"
     android:layout_width="match_parent">
     <LinearLayout
@@ -33,19 +35,23 @@
                 android:layout_height="wrap_content"
                 style="@style/messageUsernameAppearance"
                 android:layout_alignParentLeft="true"
-                android:layout_alignParentStart="true"/>
+                android:layout_alignParentStart="true"
+                tools:text="John Doe/Loadaverage"/>
             <LinearLayout android:layout_width="wrap_content"
                           android:layout_height="wrap_content"
                           android:layout_alignParentRight="true"
                           android:layout_alignParentEnd="true">
                 <TextView android:layout_width="wrap_content"
-                          android:layout_height="wrap_content" android:text="@string/message_characters_left"
+                          android:layout_height="wrap_content"
+                          android:text="@string/message_characters_left"
                           android:paddingLeft="5dip"
                           android:paddingRight="5dip" />
                 <TextView android:layout_width="wrap_content"
-                          android:layout_height="wrap_content" android:id="@+id/messageEditCharsLeftTextView"
+                          android:layout_height="wrap_content"
+                          android:id="@+id/messageEditCharsLeftTextView"
                           android:paddingLeft="5dip"
-                          android:paddingRight="5dip" />
+                          android:paddingRight="5dip"
+                          tools:text="4789" />
             </LinearLayout>
         </RelativeLayout>
         <LinearLayout android:id="@+id/message_editor2"
@@ -79,20 +85,23 @@
             android:paddingLeft="1dp"
             android:paddingRight="1dp"
             android:scaleType="fitCenter"
-            android:contentDescription="@string/attachments"/>
+            android:contentDescription="@string/attachments"
+            tools:src="@drawable/splash_logo"/>
         <TextView
             android:id="@+id/messageEditDetails"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:paddingLeft="5dip"
             android:paddingRight="5dip"
-            style="@style/messageDetailsAppearance"/>
+            style="@style/messageDetailsAppearance"
+            tools:text="one hour ago in reply to somebody@somewhere.net (with media 1920x1080 1323kb)"/>
         <TextView
             android:id="@+id/inReplyToBody"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:paddingLeft="5dip"
             android:paddingRight="5dip"
-            style="@style/messageBodyAppearance"/>
+            style="@style/messageBodyAppearance"
+            tools:text="This is a sample body of a message we are replying to.\nThis message may be quite long..."/>
     </LinearLayout>
 </ScrollView>
