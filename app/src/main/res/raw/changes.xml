@@ -24,6 +24,34 @@
 		</subtitle>
     </header>
 
+    <release android:versionName="19.0" android:versionCode="128"
+             versionDate="2015-09-25"
+             versionTitle="Drafts, unsent messages and Message Editor enhancements">
+        <changes>
+            <change>Drafts may be saved and edited later, like in any emailing application.
+                One &quot;Clear and hide&quot; action button is replaced with two:
+                &quot;Save draft&quot; and &quot;Discard&quot;.
+            </change>
+            <change>Drafts and Unsent messages are shown with their attachments in a Home,
+                User timelines, and also in a tree of a Conversation view.
+                Plus they have their own timelines: Drafts and Outbox
+                (again, just like in an email application).
+                <a href="https://github.com/andstatus/andstatus/issues/291">#291</a>
+            </change>
+            <change>Attached images are immediately saved by AndStatus in its internal storage
+                to avoid expiration of links and errors during sending of these attachments
+                and especially, during resending after failed attempts...
+            </change>
+            <change>Layout of the Message Editor changed.
+                It's expanded to show a text of a message we are replying to.
+                Thumbnail of an attached image, its size in pixels and a file size in kilobytes
+                are shown.
+                &quot;Send&quot; button moved to an Action Bar.
+                <a href="https://github.com/andstatus/andstatus/issues/290">#290</a>,
+                <a href="https://github.com/andstatus/andstatus/issues/293">#293</a>
+            </change>
+        </changes>
+    </release>
     <release android:versionName="18.1" android:versionCode="127"
              versionDate="2015-08-15"
              versionTitle="Bug fixes and Settings improvements">
