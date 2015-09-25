@@ -24,6 +24,7 @@ import android.text.TextUtils;
 import org.andstatus.app.appwidget.AppWidgets;
 import org.andstatus.app.data.DataInserter;
 import org.andstatus.app.data.DownloadData;
+import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.FileProvider;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyContentType;
@@ -321,10 +322,15 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         long recipientUserId = MyQuery.msgIdToLongColumnValue(MyDatabase.Msg.RECIPIENT_ID, msgId);
         DownloadData dd = DownloadData.getSingleForMessage(msgId, MyContentType.IMAGE, Uri.EMPTY);
         Uri mediaUri = dd.getUri().equals(Uri.EMPTY) ? Uri.EMPTY : FileProvider.downloadFilenameToUri(dd.getFile().getFilename());
+        String msgLog = "text:'" + MyLog.trimmedString(status, 40) + "'"
+                + (mediaUri.equals(Uri.EMPTY) ? "" : "; uri:'" + mediaUri + "'");
         try {
             if (MyLog.isVerboseEnabled()) {
-                MyLog.v(this, method + ", text:'" + MyLog.trimmedString(status, 40) + "'"
-                        + (mediaUri.equals(Uri.EMPTY) ? "" : "; uri:'" + mediaUri + "'"));
+                MyLog.v(this, method + ";" + msgLog);
+            }
+            DownloadStatus statusStored = DownloadStatus.load(MyQuery.msgIdToLongColumnValue(MyDatabase.Msg.MSG_STATUS, msgId));
+            if (!statusStored.mayBeSent()) {
+                throw ConnectionException.hardConnectionException("Wrong message status: " + statusStored, null);
             }
             if (recipientUserId == 0) {
                 long replyToMsgId = MyQuery.msgIdToLongColumnValue(
@@ -341,7 +347,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
             ok = (!message.isEmpty());
             logOk(ok);
         } catch (ConnectionException e) {
-            logConnectionException(e, method + ", text:'" + MyLog.trimmedString(status, 40) + "'");
+            logConnectionException(e, method + "; " + msgLog);
         }
         if (ok) {
             // The message was sent successfully, so now update unsent message

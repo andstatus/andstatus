@@ -122,8 +122,11 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
                     ? msg.myAccount().shortestUniqueAccountName() + ": " : "")
                     + msg.bodyTrimmed);
 
-            if (msg.status == DownloadStatus.DRAFT) {
+            if (msg.status != DownloadStatus.LOADED) {
                 ContextMenuItem.EDIT.addTo(menu, order++, R.string.menu_item_edit);
+            }
+            if (msg.status.mayBeSent()) {
+                ContextMenuItem.RESEND.addTo(menu, order++, R.string.menu_item_resend);
             }
             if (isEditorVisible()) {
                 ContextMenuItem.COPY_TEXT.addTo(menu, order++, R.string.menu_item_copy_text);

@@ -71,4 +71,18 @@ public enum DownloadStatus {
         }
     }
 
+    public boolean mayBeSent() {
+        return mayBeSent(this);
+    }
+
+    private static boolean mayBeSent(DownloadStatus status) {
+        switch (status) {
+            case SENDING:
+            case HARD_ERROR:
+            case SOFT_ERROR:
+                return true;
+            default:
+                return false;
+        }
+    }
 }

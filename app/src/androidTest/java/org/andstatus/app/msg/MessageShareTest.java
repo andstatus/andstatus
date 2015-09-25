@@ -26,7 +26,6 @@ import org.andstatus.app.data.HtmlContentInserter;
 import org.andstatus.app.data.MessageInserter;
 import org.andstatus.app.data.MyDatabase.OidEnum;
 import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.msg.MessageShare;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.MyHtml;
 
@@ -45,7 +44,7 @@ public class MessageShareTest extends InstrumentationTestCase {
         assertTrue(TestSuite.CONVERSATION_ORIGIN_NAME + " exists", origin != null);
         long msgId = MyQuery.oidToId(OidEnum.MSG_OID, origin.getId(), TestSuite.HTML_MESSAGE_OID);
         assertTrue("origin=" + origin.getId() + "; oid=" + TestSuite.HTML_MESSAGE_OID, msgId != 0);
-        MessageShare messageShare = new MessageShare(MyContextHolder.get().context(), msgId);
+        MessageShare messageShare = new MessageShare(msgId);
         Intent intent = messageShare.intentForShare();
         assertTrue(intent.getExtras().containsKey(Intent.EXTRA_TEXT));
         assertTrue(
@@ -63,7 +62,7 @@ public class MessageShareTest extends InstrumentationTestCase {
         String body = "Posting as a plain Text " + TestSuite.TESTRUN_UID;
         long msgId = MessageInserter.addMessageForAccount(TestSuite.TWITTER_TEST_ACCOUNT_NAME, body,
                 TestSuite.PLAIN_TEXT_MESSAGE_OID, DownloadStatus.LOADED);
-        MessageShare messageShare = new MessageShare(MyContextHolder.get().context(), msgId);
+        MessageShare messageShare = new MessageShare(msgId);
         Intent intent = messageShare.intentForShare();
         assertTrue(intent.getExtras().containsKey(Intent.EXTRA_TEXT));
         assertTrue(

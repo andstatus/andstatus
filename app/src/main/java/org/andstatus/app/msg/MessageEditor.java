@@ -415,6 +415,7 @@ public class MessageEditor {
             return;
         }
         dataIn.showAfterSaveOrLoad = true;
+        dataIn.status = DownloadStatus.DRAFT;
         editorData = dataIn;
         saveData();
         if (editorData.getMyAccount().getConnection().isApiSupported(ApiRoutineEnum.ACCOUNT_RATE_LIMIT_STATUS)) {

@@ -74,66 +74,70 @@ public class CommandExecutorStrategyTest extends InstrumentationTestCase {
     }
 
     public void testUpdateDestroyStatus() throws IOException {
-        String body = "Some text to send " + System.currentTimeMillis() + "ms";
-        long unsentMessageId = MessageInserter.addMessageForAccount(
-                TestSuite.TWITTER_TEST_ACCOUNT_NAME, body, "", DownloadStatus.SENDING);
-
-        httpConnectionMock.setResponse(RawResourceUtils.getString(this.getInstrumentation().getContext(), 
+        CommandData commandData = getCommandDataForUnsentMessage("1");
+        httpConnectionMock.setResponse(RawResourceUtils.getString(this.getInstrumentation().getContext(),
                 org.andstatus.app.tests.R.raw.quitter_update_status_response));
-        CommandData commandData = CommandData.updateStatus(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME,
-                unsentMessageId);
         assertEquals(0, commandData.getResult().getExecutionCount());
         CommandExecutorStrategy.executeCommand(commandData, null);
         assertEquals(1, commandData.getResult().getExecutionCount());
-        assertEquals(CommandResult.INITIAL_NUMBER_OF_RETRIES - 1, commandData.getResult().getRetriesLeft());
-        assertFalse(commandData.getResult().hasSoftError());
-        assertFalse(commandData.getResult().hasHardError());
+        assertEquals(commandData.toString(), CommandResult.INITIAL_NUMBER_OF_RETRIES - 1, commandData.getResult().getRetriesLeft());
+        assertFalse(commandData.toString(), commandData.getResult().hasSoftError());
+        assertFalse(commandData.toString(), commandData.getResult().hasHardError());
         long msgId = commandData.getResult().getItemId();
         assertTrue(msgId != 0);
 
+        commandData = getCommandDataForUnsentMessage("2");
         String errorMessage = "Request was bad";
         httpConnectionMock.setException(new ConnectionException(StatusCode.UNKNOWN, errorMessage));
         CommandExecutorStrategy.executeCommand(commandData, null);
-        assertEquals(2, commandData.getResult().getExecutionCount());
-        assertEquals(CommandResult.INITIAL_NUMBER_OF_RETRIES - 2, commandData.getResult().getRetriesLeft());
-        assertTrue(commandData.getResult().hasSoftError());
-        assertFalse(commandData.getResult().hasHardError());
-        assertTrue(commandData.getResult().shouldWeRetry());
+        assertEquals(1, commandData.getResult().getExecutionCount());
+        assertEquals(CommandResult.INITIAL_NUMBER_OF_RETRIES - 1, commandData.getResult().getRetriesLeft());
+        assertTrue(commandData.toString(), commandData.getResult().hasSoftError());
+        assertFalse(commandData.toString(), commandData.getResult().hasHardError());
+        assertTrue(commandData.toString(), commandData.getResult().shouldWeRetry());
         assertTrue("Error message: '" + commandData.getResult().getMessage() + "' should contain '"
                 + errorMessage + "'", commandData.getResult().getMessage().contains(errorMessage));
         
         httpConnectionMock.setException(null);
         CommandExecutorStrategy.executeCommand(commandData, null);
-        assertEquals(3, commandData.getResult().getExecutionCount());
-        assertEquals(CommandResult.INITIAL_NUMBER_OF_RETRIES - 3, commandData.getResult().getRetriesLeft());
-        assertFalse(commandData.getResult().hasSoftError());
-        assertFalse(commandData.getResult().hasHardError());
-        assertFalse(commandData.getResult().shouldWeRetry());
+        assertEquals(commandData.toString(), 2, commandData.getResult().getExecutionCount());
+        assertEquals(commandData.toString(), CommandResult.INITIAL_NUMBER_OF_RETRIES - 2, commandData.getResult().getRetriesLeft());
+        assertFalse(commandData.toString(), commandData.getResult().hasSoftError());
+        assertFalse(commandData.toString(), commandData.getResult().hasHardError());
+        assertFalse(commandData.toString(), commandData.getResult().shouldWeRetry());
         
         errorMessage = "some text";
         httpConnectionMock.setException(new ConnectionException(StatusCode.AUTHENTICATION_ERROR, errorMessage));
         CommandExecutorStrategy.executeCommand(commandData, null);
-        assertEquals(4, commandData.getResult().getExecutionCount());
-        assertEquals(CommandResult.INITIAL_NUMBER_OF_RETRIES - 4, commandData.getResult().getRetriesLeft());
-        assertFalse(commandData.getResult().hasSoftError());
-        assertTrue(commandData.getResult().hasHardError());
-        assertFalse(commandData.getResult().shouldWeRetry());
+        assertEquals(3, commandData.getResult().getExecutionCount());
+        assertEquals(commandData.toString(), CommandResult.INITIAL_NUMBER_OF_RETRIES - 3, commandData.getResult().getRetriesLeft());
+        assertFalse(commandData.toString(), commandData.getResult().hasSoftError());
+        assertTrue(commandData.toString(), commandData.getResult().hasHardError());
+        assertFalse(commandData.toString(), commandData.getResult().shouldWeRetry());
         assertTrue("Error message: '" + commandData.getResult().getMessage() + "' should contain '"
                 + errorMessage + "'", commandData.getResult().getMessage().contains(errorMessage));
 
         httpConnectionMock.setException(null);
         commandData = new CommandData(CommandEnum.DESTROY_STATUS, TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME, msgId);
         CommandExecutorStrategy.executeCommand(commandData, null);
-        assertFalse(commandData.getResult().hasError());
+        assertFalse(commandData.toString(), commandData.getResult().hasError());
 
         final long INEXISTENT_MSG_ID = -1;
         commandData = new CommandData(CommandEnum.DESTROY_STATUS, TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME, INEXISTENT_MSG_ID);
         CommandExecutorStrategy.executeCommand(commandData, null);
-        assertFalse(commandData.getResult().hasError());
+        assertFalse(commandData.toString(), commandData.getResult().hasError());
         
         httpConnectionMock.setException(null);
     }
-    
+
+    private CommandData getCommandDataForUnsentMessage(String suffix) {
+        String body = "Some text " + suffix + " to send " + System.currentTimeMillis() + "ms";
+        long unsentMessageId = MessageInserter.addMessageForAccount(
+                TestSuite.TWITTER_TEST_ACCOUNT_NAME, body, "", DownloadStatus.SENDING);
+        return CommandData.updateStatus(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME,
+                unsentMessageId);
+    }
+
     public void testDiscoverOrigins() throws IOException {
         HttpConnectionMock http = new HttpConnectionMock();
         http.setResponse(RawResourceUtils.getString(this.getInstrumentation().getContext(),

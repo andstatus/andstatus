@@ -31,23 +31,21 @@ import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
 
 public class MessageShare {
-    private Context context;
     Origin origin;
     private long messageId;
     
-    public MessageShare(Context context, long messageId) {
-        this.context = context;
+    public MessageShare(long messageId) {
         this.messageId = messageId;
         origin = MyContextHolder.get().persistentOrigins().fromId(MyQuery.msgIdToOriginId(messageId));
         if (origin == null) {
-            MyLog.v(context, "Origin not found for messageId=" + messageId);
+            MyLog.v(this, "Origin not found for messageId=" + messageId);
         }
     }
 
     /**
      * @return true if succeeded
      */
-    public boolean share() {
+    public boolean share(Context context) {
         if (origin == null) {
             return false;
         }
@@ -64,7 +62,8 @@ public class MessageShare {
             msgBodyPlainText = MyHtml.fromHtml(msgBody);
         }
 
-        subject.append(context.getText(origin.alternativeTermForResourceId(R.string.message)));
+        subject.append(MyContextHolder.get().context()
+                .getText(origin.alternativeTermForResourceId(R.string.message)));
         subject.append(" - " + msgBodyPlainText);
         int maxlength = 80;
         if (subject.length() > maxlength) {
@@ -106,7 +105,7 @@ public class MessageShare {
     /**
      * @return true if succeeded
      */
-    public boolean openPermalink() {
+    public boolean openPermalink(Context context) {
         if (origin == null) {
             return false;
         }

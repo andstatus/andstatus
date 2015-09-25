@@ -25,7 +25,7 @@
     </header>
 
     <release android:versionName="19.0" android:versionCode="128"
-             versionDate="2015-09-25"
+             versionDate="2015-09-26"
              versionTitle="Drafts, unsent messages and Message Editor enhancements">
         <changes>
             <change>Drafts may be saved and edited later, like in any emailing application.
@@ -36,6 +36,7 @@
                 User timelines, and also in a tree of a Conversation view.
                 Plus they have their own timelines: Drafts and Outbox
                 (again, just like in an email application).
+                Unsent messages may be &quot;Resent&quot; via a Message Context menu.
                 <a href="https://github.com/andstatus/andstatus/issues/291">#291</a>
             </change>
             <change>Attached images are immediately saved by AndStatus in its internal storage

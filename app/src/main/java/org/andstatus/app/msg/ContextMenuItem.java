@@ -52,16 +52,24 @@ public enum ContextMenuItem {
         }
 
         @Override
-        boolean executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
+        void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
             menu.messageList.getMessageEditor().startEditingMessage(editorData);
-            return true;
         }
     },
     EDIT() {
         @Override
-        boolean executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
+        void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
             menu.messageList.getMessageEditor().loadState(editorData.getMsgId());
-            return true;
+        }
+    },
+    RESEND(true) {
+        @Override
+        MessageEditorData executeAsync(MyAccount maIn, long msgId) {
+            MyAccount ma = MyContextHolder.get().persistentAccounts().fromUserId(
+                    MyQuery.msgIdToLongColumnValue(MyDatabase.Msg.SENDER_ID, msgId));
+            CommandData commandData = CommandData.updateStatus(ma.getAccountName(), msgId);
+            MyServiceManager.sendManualForegroundCommand(commandData);
+            return null;
         }
     },
     REPLY_ALL(true) {
@@ -71,9 +79,8 @@ public enum ContextMenuItem {
         }
 
         @Override
-        boolean executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
+        void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
             menu.messageList.getMessageEditor().startEditingMessage(editorData);
-            return true;
         }
     },
     DIRECT_MESSAGE(true) {
@@ -85,52 +92,54 @@ public enum ContextMenuItem {
         }
 
         @Override
-        boolean executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
+        void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
             if (editorData.recipientId != 0) {
                 menu.messageList.getMessageEditor().startEditingMessage(editorData);
             }
-            return true;
         }
     },
     FAVORITE() {
         @Override
-        boolean executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
+        void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
             sendCommandMsg(CommandEnum.CREATE_FAVORITE, editorData);
-            return true;
         }
     },
     DESTROY_FAVORITE() {
         @Override
-        boolean executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
+        void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
             sendCommandMsg(CommandEnum.DESTROY_FAVORITE, editorData);
-            return true;
         }
     },
     REBLOG() {
         @Override
-        boolean executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
+        void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
             sendCommandMsg(CommandEnum.REBLOG, editorData);
-            return true;
         }
     },
     DESTROY_REBLOG() {
         @Override
-        boolean executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
+        void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
             sendCommandMsg(CommandEnum.DESTROY_REBLOG, editorData);
-            return true;
         }
     },
     DESTROY_STATUS() {
         @Override
-        boolean executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
+        void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
             sendCommandMsg(CommandEnum.DESTROY_STATUS, editorData);
-            return true;
         }
     },
-    SHARE() {
+    SHARE(true) {
+        private volatile MessageShare messageShare = null;
+
         @Override
-        boolean executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
-            return new MessageShare(menu.messageList.getActivity(), menu.getMsgId()).share();
+        MessageEditorData executeAsync(MyAccount ma, long msgId) {
+            messageShare = new MessageShare(msgId);
+            return null;
+        }
+
+        @Override
+        void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
+            messageShare.share(menu.messageList.getActivity());
         }
     },
     COPY_TEXT(true) {
@@ -144,9 +153,8 @@ public enum ContextMenuItem {
         }
 
         @Override
-        boolean executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
+        void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
             copyMessageText(editorData);
-            return true;
         }
     },
     COPY_AUTHOR(true) {
@@ -157,9 +165,8 @@ public enum ContextMenuItem {
         }
 
         @Override
-        boolean executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
+        void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
             copyMessageText(editorData);
-            return true;
         }
     },
     SENDER_MESSAGES(true) {
@@ -169,7 +176,7 @@ public enum ContextMenuItem {
         }
 
         @Override
-        boolean executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
+        void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
             if (editorData.recipientId != 0) {
                 /**
                  * We better switch to the account selected for this message in order not to
@@ -178,7 +185,6 @@ public enum ContextMenuItem {
                 MyContextHolder.get().persistentAccounts().setCurrentAccount(editorData.ma);
                 menu.switchTimelineActivity(TimelineType.USER, menu.messageList.isTimelineCombined(), editorData.recipientId);
             }
-            return true;
         }
     },
     AUTHOR_MESSAGES(true) {
@@ -187,7 +193,7 @@ public enum ContextMenuItem {
             return getUserId(ma, msgId, MyDatabase.Msg.AUTHOR_ID);
         }
 
-        boolean executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
+        void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
             if (editorData.recipientId != 0) {
                 /**
                  * We better switch to the account selected for this message in order not to
@@ -196,7 +202,6 @@ public enum ContextMenuItem {
                 MyContextHolder.get().persistentAccounts().setCurrentAccount(editorData.ma);
                 menu.switchTimelineActivity(TimelineType.USER, menu.messageList.isTimelineCombined(), editorData.recipientId);
             }
-            return true;
         }
     },
     FOLLOW_SENDER(true) {
@@ -206,9 +211,8 @@ public enum ContextMenuItem {
         }
 
         @Override
-        boolean executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
+        void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
             sendCommandUser(CommandEnum.FOLLOW_USER, editorData);
-            return true;
         }
     },
     STOP_FOLLOWING_SENDER(true) {
@@ -218,9 +222,8 @@ public enum ContextMenuItem {
         }
 
         @Override
-        boolean executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
+        void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
             sendCommandUser(CommandEnum.STOP_FOLLOWING_USER, editorData);
-            return true;
         }
     },
     FOLLOW_AUTHOR(true) {
@@ -230,9 +233,8 @@ public enum ContextMenuItem {
         }
 
         @Override
-        boolean executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
+        void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
             sendCommandUser(CommandEnum.FOLLOW_USER, editorData);
-            return true;
         }
     },
     STOP_FOLLOWING_AUTHOR(true) {
@@ -242,44 +244,48 @@ public enum ContextMenuItem {
         }
 
         @Override
-        boolean executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
+        void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
             sendCommandUser(CommandEnum.STOP_FOLLOWING_USER, editorData);
-            return true;
         }
     },
     PROFILE(),
     BLOCK(),
     ACT_AS_USER() {
         @Override
-        boolean executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
+        void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
             menu.setAccountUserIdToActAs(editorData.ma.firstOtherAccountOfThisOrigin().getUserId());
             menu.showContextMenu();
-            return true;
         }
     },
     ACT_AS() {
         @Override
-        boolean executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
+        void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
             AccountSelector.selectAccount(menu.messageList.getActivity(), editorData.ma.getOriginId(), ActivityRequestCode.SELECT_ACCOUNT_TO_ACT_AS);
-            return true;
         }
     },
-    OPEN_MESSAGE_PERMALINK() {
+    OPEN_MESSAGE_PERMALINK(true) {
+        private volatile MessageShare messageShare = null;
+
         @Override
-        boolean executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
-            return new MessageShare(menu.messageList.getActivity(), menu.getMsgId()).openPermalink();
+        MessageEditorData executeAsync(MyAccount ma, long msgId) {
+            messageShare = new MessageShare(msgId);
+            return null;
+        }
+
+        @Override
+        void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
+            messageShare.openPermalink(menu.messageList.getActivity());
         }
     },
     VIEW_IMAGE() {
         @Override
-        boolean executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
+        void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
             FileProvider.viewImage(menu.messageList.getActivity(), menu.imageFilename);
-            return true;
         }
     },
     OPEN_CONVERSATION() {
         @Override
-        boolean executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
+        void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
             Uri uri = MatchedUri.getTimelineItemUri(editorData.ma.getUserId(),
                     menu.messageList.getTimelineType(), menu.messageList.isTimelineCombined(),
                     menu.messageList.getSelectedUserId(), menu.getMsgId());
@@ -295,7 +301,6 @@ public enum ContextMenuItem {
                 }
                 menu.messageList.getActivity().startActivity(MyAction.VIEW_CONVERSATION.getIntent(uri));
             }
-            return true;
         }
     },
     NONEXISTENT(),
@@ -347,10 +352,10 @@ public enum ContextMenuItem {
         MyLog.v(this, "execute started");
         if (mIsAsync) {
             executeAsync1(menu, ma);
-            return true;
         } else {
-            return executeOnUiThread(menu, MessageEditorData.newEmpty(ma).setMsgId(menu.getMsgId()));
+            executeOnUiThread(menu, MessageEditorData.newEmpty(ma).setMsgId(menu.getMsgId()));
         }
+        return false;
     }
     
     private void executeAsync1(final MessageContextMenu menu, final MyAccount ma) {
@@ -378,8 +383,8 @@ public enum ContextMenuItem {
                 .setRecipientId(MyQuery.msgIdToUserId(msgUserIdColumnName, msgId));
     }
 
-    boolean executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
-        return false;
+    void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
+        // Empty
     }
     
     void sendCommandUser(CommandEnum command, MessageEditorData editorData) {
