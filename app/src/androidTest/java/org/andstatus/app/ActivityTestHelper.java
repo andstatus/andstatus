@@ -57,7 +57,7 @@ public class ActivityTestHelper<T extends MyActivity> extends InstrumentationTes
             Thread.sleep(2000);
         }
         MyLog.v(method, (ok ? "Visible" : "Invisible"));
-        assertTrue("View is visible", ok);
+        assertTrue(method + "; View is visible", ok);
         return ok;
     }
 
@@ -72,7 +72,7 @@ public class ActivityTestHelper<T extends MyActivity> extends InstrumentationTes
             Thread.sleep(2000);
         }
         MyLog.v(method, (ok ? "Invisible" : "Visible"));
-        assertTrue("View is invisible", ok);
+        assertTrue(method + "; View is invisible", ok);
         return ok;
     }
 

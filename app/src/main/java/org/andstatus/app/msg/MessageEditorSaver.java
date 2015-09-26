@@ -102,10 +102,10 @@ public class MessageEditorSaver extends AsyncTask<MessageEditor, Void, MessageEd
                 MessageEditorData.newEmpty(oldData.getMyAccount()) : MessageEditorData.load(msgId);
         newData.showAfterSaveOrLoad = oldData.showAfterSaveOrLoad;
         newData.hideAfterSave = oldData.hideAfterSave;
-        if (newData.status == DownloadStatus.DRAFT && newData.getMsgId() != 0) {
-            MyPreferences.putLong(MyPreferences.KEY_BEING_EDITED_DRAFT_MESSAGE_ID, newData.getMsgId());
-        } else if ( oldData.hideAfterSave) {
+        if ( oldData.hideAfterSave) {
             MyPreferences.putLong(MyPreferences.KEY_BEING_EDITED_DRAFT_MESSAGE_ID, 0);
+        } else if (newData.status == DownloadStatus.DRAFT && newData.getMsgId() != 0) {
+            MyPreferences.putLong(MyPreferences.KEY_BEING_EDITED_DRAFT_MESSAGE_ID, newData.getMsgId());
         }
         return newData;
     }

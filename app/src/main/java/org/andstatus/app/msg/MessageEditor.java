@@ -412,6 +412,11 @@ public class MessageEditor {
 
     public void startEditingMessage(MessageEditorData dataIn) {
         if (!dataIn.getMyAccount().isValid()) {
+            MyLog.v(MessageEditorData.TAG, "Not a valid account " + dataIn.getMyAccount().getAccountName());
+            return;
+        }
+        if (!dataIn.status.mayBeEdited()) {
+            MyLog.v(MessageEditorData.TAG, "Cannot be edited " + dataIn);
             return;
         }
         dataIn.showAfterSaveOrLoad = true;
@@ -504,6 +509,7 @@ public class MessageEditor {
 				MyLog.setLogToFile(true);
 			}
             editorData.status = DownloadStatus.SENDING;
+            editorData.hideAfterSave = true;
             saveData();
         }
     }
@@ -556,7 +562,8 @@ public class MessageEditor {
                 }
                 if (msgId != 0) {
                     DownloadStatus status = DownloadStatus.load(MyQuery.msgIdToLongColumnValue(MyDatabase.Msg.MSG_STATUS, msgId));
-                    if (status != DownloadStatus.DRAFT) {
+                    if (!status.mayBeEdited()) {
+                        MyLog.v(MessageEditorData.TAG, "Cannot be edited " + msgId + " state:" + status);
                         msgId = 0;
                     }
                 }

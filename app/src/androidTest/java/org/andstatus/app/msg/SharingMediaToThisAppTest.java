@@ -79,14 +79,13 @@ public class SharingMediaToThisAppTest extends ActivityInstrumentationTestCase2<
         editText.requestFocus();
         TestSuite.waitForIdleSync(this);
         getInstrumentation().sendStringSync(body);
-
-        ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<TimelineActivity>(this, getActivity());
-        helper.clickMenuItem(method, R.id.messageSendButton);
-
-        editorView = getActivity().findViewById(R.id.message_editor);
-        ActivityTestHelper.waitViewInvisible(method, editorView);
+        TestSuite.waitForIdleSync(this);
 
         mService.serviceStopped = false;
+        ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<TimelineActivity>(this, getActivity());
+        helper.clickMenuItem(method, R.id.messageSendButton);
+        ActivityTestHelper.waitViewInvisible(method, editorView);
+
         mService.waitForServiceStopped();
 
         String message = "Data was posted " + mService.httpConnectionMock.getPostedCounter() + " times; "
@@ -107,4 +106,5 @@ public class SharingMediaToThisAppTest extends ActivityInstrumentationTestCase2<
         assertEquals("Image URI stored", TestSuite.LOCAL_IMAGE_TEST_URI2, dd.getUri());
         assertEquals("Loaded '" + dd.getUri() + "'; " + dd, DownloadStatus.LOADED, dd.getStatus());
     }
+
 }

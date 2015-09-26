@@ -192,7 +192,7 @@ public class MessageEditorTest extends android.test.ActivityInstrumentationTestC
         final MessageEditor editor = mActivity.getMessageEditor();
         TextView textView = (TextView) getActivity().findViewById(R.id.messageBodyEditText);
         ActivityTestHelper.waitTextInAView(description, textView, data.body);
-        MyLog.v(this, description + " text:'" + editor.getData().body +"'");
+        MyLog.v(this, description + " text:'" + editor.getData().body + "'");
         assertEquals(description, data, editor.getData());
     }
 
@@ -247,4 +247,5 @@ public class MessageEditorTest extends android.test.ActivityInstrumentationTestC
             clip = clipboard.getPrimaryClip();
         }
     }
+
 }

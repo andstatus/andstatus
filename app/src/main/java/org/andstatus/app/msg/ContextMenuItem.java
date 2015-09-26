@@ -56,10 +56,15 @@ public enum ContextMenuItem {
             menu.messageList.getMessageEditor().startEditingMessage(editorData);
         }
     },
-    EDIT() {
+    EDIT(true) {
+        @Override
+        MessageEditorData executeAsync(MyAccount maIn, long msgId) {
+            return MessageEditorData.load(msgId);
+        }
+
         @Override
         void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
-            menu.messageList.getMessageEditor().loadState(editorData.getMsgId());
+            menu.messageList.getMessageEditor().startEditingMessage(editorData);
         }
     },
     RESEND(true) {

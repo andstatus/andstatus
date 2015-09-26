@@ -165,14 +165,6 @@ public class DataInserter {
                 sentDateStored = MyQuery.msgIdToLongColumnValue(Msg.SENT_DATE, msgId);
                 if (isFirstTimeLoaded) {
                     isFirstTimeLoaded = statusStored != DownloadStatus.LOADED;
-                    if (!isFirstTimeLoaded) {
-                        // TODO: Is this really needed?
-                        long senderIdStored = MyQuery.msgIdToLongColumnValue(Msg.SENDER_ID, msgId);
-                        isFirstTimeLoaded = (senderIdStored == 0);
-                    }
-                }
-                if (isDraftUpdated && message.getStatus() == DownloadStatus.DRAFT) {
-                    isDraftUpdated = statusStored != DownloadStatus.SENDING;
                 }
             }
 
@@ -245,8 +237,8 @@ public class DataInserter {
             boolean mentioned = isMentionedAndPutInReplyToMessage(message, lum, values);
             
             if (MyLog.isVerboseEnabled()) {
-                MyLog.v(this, ((msgId==0) ? "insertMsg" : "updateMsg")
-                        + ":" 
+                MyLog.v(this, ((msgId==0) ? "insertMsg" : "updateMsg " + msgId)
+                        + ":" + message.getStatus()
                         + (isFirstTimeLoaded ? " new;" : "")
                         + (isDraftUpdated ? " draft updated;" : "")
                         + (isNewerThanInDatabase ? " newer, sent at " + new Date(sentDate).toString() + ";" : "") );
