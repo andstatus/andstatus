@@ -1,17 +1,21 @@
-﻿AndStatus is a low traffic social networking client with tree-like threaded conversations. It supports multiple protocols, including GNU social ("StatusNet". e.g. Quitter, LoadAverage, Vinilox, etc.), Twitter and Pump.io. AndStatus combines your accounts from all networks into one Timeline and allows you reading and posting even while you are offline.
+﻿AndStatus is an Open Source low traffic social networking client with tree-like threaded conversations.
+It supports multiple protocols, including
+GNU social ("StatusNet". e.g. Quitter, LoadAverage, Vinilox, etc.), Twitter and Pump.io.
+AndStatus can combine your accounts from all networks into one Timeline,
+and it allows you to read and post even when you are offline.
 
-For Android 4.1 or higher. Open Source License.
+For Android v.4.1+ devices.
 
 Differentiating features of AndStatus:
 
-1. Many accounts in different Social networking systems. You may have several accounts in each, write/reply as any "You" and share between accounts and systems.
-2. You don't need to be online even to post your updates: not sent posts are kept (in the "retry queue") even after reboot. They will be sent when your device is Online.
+1. Many accounts in different Social networks. You may have several accounts in each, write/reply as any "You" and share between accounts and systems.
+2. You don't need to be online even to post your updates: unsent posts are kept even after reboot. They will be sent when your device is Online.
 3. Convenient tree-like "Conversation view".
-4. "Global search" allows searching public messages in all registered systems with one query.
+4. "Global search" allows to search public messages in all registered systems with one query.
 5. Tweets/messages/avatars/attached images are being synced in a background, when your device has a good connection.
 6. Cached data may be stored for years or for several days only - it's your choice.
 7. Easily backup and restore accounts and data between your devices.
 8. Free and without ads, community supported.
 
-See the Change Log for descriptions of all the features of AndStatus:
+See a Change Log for descriptions of all features of AndStatus with links to their discussions:
 http://andstatus.org/changelog.html
