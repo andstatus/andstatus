@@ -26,6 +26,9 @@
   <string name="account_settings_activity_title">Cuenta</string>
   <string name="account_settings_summary">Sicronización de frecuencia, notificaciones , etc.</string>
   <string name="action_bar_color_preference_title">Color de la barra de estado</string>
+  <string name="attach_images_summary_off">El botón \"Paperclip+\", usado para añadir imágenes a tus publicaciones, está oculto</string>
+  <string name="attach_images_summary_on">Usa el botón \"Paperclip+\" (\"Adjuntar\" en el menú del objeto) para añadir imágenes a tu mensaje. O comparte una imagen a AndStatus desde otra aplicación</string>
+  <string name="attach_images_title">Adjuntar imágenes a mis mensajes</string>
   <string name="attachments">Adjuntos</string>
   <string name="automatic">Automático</string>
   <string name="settings_action">Configuración</string>
@@ -53,7 +56,6 @@
   <string name="button_create_message_twitter">Tweet</string>
   <string name="button_delete">Borrar</string>
   <string name="button_discard">Descartar</string>
-  <string name="button_hide">Borrar y ocultar</string>
   <string name="button_overflow">Desbrodamiento</string>
   <string name="button_restore">Restaurar</string>
   <string name="button_save">Guardar</string>
@@ -88,6 +90,7 @@
   <string name="command_follow_user">Seguir a</string>
   <string name="command_stop_following_user">Dejar de seguir a</string>
   <string name="crash_dialog_text">AndStatus ha dejado de funcionar. Puedes ayudar a arreglar el problema pulsando el botón OK para enviar el error a los desarrolladores por correo.</string>
+  <string name="crash_dialog_comment_prompt">Por favor, especifica abajo tus comentarios sobre el problema. Esto puede ser de gran ayuda para solucionarlo: cuándo ocurrió y si es posible cómo reproducirlo.</string>
   <string name="created_label">Creado</string>
   <string name="custom_locale_title">Idioma de la aplicación</string>
   <string name="device_default">Predeterminado</string>
@@ -417,7 +420,7 @@
   <string name="title_preference_username">Nombre de usuario</string>
   <string name="title_preference_username_pumpio">Identificación de Webfinger</string>
   <string name="title_preference_show_avatars">Visualizar Avatares</string>
-  <string name="title_preference_show_attached_images">Mostrar imágenes adjuntas</string>
+  <string name="title_preference_show_attached_images">Descargar y mostrar imágenes adjuntas</string>
   <string name="title_preference_show_origin">Mostrar una red social en la línea temporal</string>
   <string name="title_preference_user_in_timeline">Cómo mostrar a los usuarios en la línea temporal</string>
   <string name="title_preference_verify_credentials">Volver a verificar las credenciales</string>
@@ -434,7 +437,7 @@
   <string name="unimplemented">No implementado.</string>
   <string name="use_legacy_http_protocol_title">Usar el protocolo HTTP legacy</string>
   <string name="user_in_timeline_entries_username">usuario</string>
-  <string name="user_in_timeline_entries_at_username">"@usuario"</string>
+  <string name="user_in_timeline_entries_at_username">"\@usuario"</string>
   <string name="user_in_timeline_entries_webfingerid">Identificación de Webfinger</string>
   <string name="user_in_timeline_entries_real_name">Nombre real</string>
   <string name="user_in_timeline_entries_real_name_at_username">Nombre real @usuario</string>

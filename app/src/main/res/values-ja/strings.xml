@@ -56,7 +56,6 @@
   <string name="button_create_message_twitter">ツイート</string>
   <string name="button_delete">削除</string>
   <string name="button_discard">破棄</string>
-  <string name="button_hide">消去して非表示</string>
   <string name="button_overflow">オーバーフロー</string>
   <string name="button_restore">復元</string>
   <string name="button_save">保存</string>

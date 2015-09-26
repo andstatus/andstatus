@@ -56,10 +56,10 @@
   <string name="button_create_message_twitter">Твит</string>
   <string name="button_delete">Удалить</string>
   <string name="button_discard">Отмена</string>
-  <string name="button_hide">Очистить и скрыть</string>
   <string name="button_overflow">Переполнение</string>
   <string name="button_restore">Восстановить</string>
   <string name="button_save">Сохранить</string>
+  <string name="button_save_draft">Сохранить черновик</string>
   <string name="button_skip">Пропустить</string>
   <string name="button_send">Отправить</string>
   <string name="cannot_send_empty_message">Невозможно отправить пустое сообщение.</string>
@@ -131,6 +131,8 @@
   <string name="dialog_title_service_unavailable">Сервис недоступен</string>
   <string name="dialog_title_timeline_loading">Обновление ленты времени&#8230;</string>
   <string name="discover_open_instances_title">Найти открытые серверы</string>
+  <string name="download_status_draft">черновик</string>
+  <string name="download_status_unsent">неотправлено</string>
   <string name="drawer_close">Закрыть панель навигации</string>
   <string name="drawer_open">Открыть панель навигации</string>
   <string name="empty_in_parenthesis">(пусто)</string>
@@ -212,6 +214,7 @@
   <string name="menu_item_destroy_reblog_twitter">Удалить ретвит</string>
   <string name="menu_item_destroy_status">Удалить сообщение</string>
   <string name="menu_item_direct_message">Личное сообщение</string>
+  <string name="menu_item_edit">Редактировать</string>
   <string name="menu_item_favorite">Добавить в избранное</string>
   <string name="menu_item_follow_user">Следовать за \"%1s\"</string>
   <string name="menu_item_view_image">Посмотреть картинку</string>
@@ -367,11 +370,13 @@
   <string name="timeline_reloaded">Лента времени обновлена.</string>
   <string name="timeline_title_all">Все</string>
   <string name="timeline_title_direct_messages">Личные сообщения</string>
+  <string name="timeline_title_drafts">Черновики</string>
   <string name="timeline_title_everything">Всё</string>
   <string name="timeline_title_favorites">Избранное</string>
   <string name="timeline_title_following_user">Следуем за</string>
   <string name="timeline_title_home">Дом</string>
   <string name="timeline_title_mentions">Упоминания</string>
+  <string name="timeline_title_outbox">Исходящие</string>
   <string name="timeline_title_public">Публичные</string>
   <string name="timeline_title_replies">Ответы</string>
   <string name="timeline_title_unknown">(Неизвестная Линия времени)</string>
@@ -437,7 +442,7 @@
   <string name="unimplemented">Не реализовано.</string>
   <string name="use_legacy_http_protocol_title">Использовать старый HTTP протокол</string>
   <string name="user_in_timeline_entries_username">имяпользователя</string>
-  <string name="user_in_timeline_entries_at_username">"@имяпользователя"</string>
+  <string name="user_in_timeline_entries_at_username">"\@имяпользователя"</string>
   <string name="user_in_timeline_entries_webfingerid">webFingerId</string>
   <string name="user_in_timeline_entries_real_name">Настоящее имя</string>
   <string name="user_in_timeline_entries_real_name_at_username">Настоящее имя @имяпользователя</string>

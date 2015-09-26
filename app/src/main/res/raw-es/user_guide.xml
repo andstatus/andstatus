@@ -49,10 +49,10 @@ xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../../../re
     <title>
         <p>Introducción</p>
     </title>
-    <p>Andstatus es un ligero cliente para redes sociales basadas en conversaciones ramificadas.
+    <p>Andstatus es un ligero cliente de código abierto para redes sociales basadas en conversaciones ramificadas.
 Soporta múltiples protocolos, incluyendo GNU social, Twitter y Pump.io.
-AndStatus combina las cuentas de todas tus redes sociales en una Línea temporal y permite leer y publicar incluso estando desconectado.</p>
-    <p>Hay un enlace a esta guía en la barra de acción (barra superior)&gt;Ayuda.</p>
+AndStatus combina las cuentas de todas tus redes sociales en una línea temporal y permite leer y publicar incluso estando desconectado.</p>
+    <p>Hay un enlace a esta guía en la barra de herramientas-&gt;Ayuda.</p>
     <p>Cambios en la versión, la siguiente página te permitirá ver descripciones y enlaces a discusiones sobre todas las características de AndStatus.</p>
 </section>
 <section>
@@ -66,7 +66,7 @@ AndStatus combina las cuentas de todas tus redes sociales en una Línea temporal
     <p>En el caso de que tu servidor (de GNU social) no esté en la lista, pulsa en el menú «Descubre servidores abiertos» (símbolo de la lupa) para elegir un servidor de una lista en línea mantenida por la comunidad de GNU social, o "Añadir un nuevo servidor" (símbolo «+») para añadir manualmente una cuenta nueva.</p>
     <p>Para Twitter, puedes pulsar directamente «Añadir esta cuenta».
 Para otras redes sociales se pedirá escribir tu nombre de usuario y contraseña antes de pulsar «Añadir esta cuenta».</p>
-    <p>Después de crear una cuenta, por favor, pulsa la «flecha hacia atrás» en la barra superior (barra de acción) o la tecla «Atrás» de su dispositivo.
+    <p>Después de crear una cuenta, por favor, pulsa la «flecha hacia atrás» en la barra superior (barra de herramientas) o la tecla «Atrás» de su dispositivo.
 Esta vez se abrirá la línea temporal «Inicio» y se descargarán los mensajes desde Internet.
     </p>
     <p>¡Felicidades! Por favor, lee abajo qué más puedes hacer.
@@ -89,56 +89,61 @@ Esta vez se abrirá la línea temporal «Inicio» y se descargarán los mensajes
 </section>
 <section>
     <title>
-        <p>3. Enviar y responder</p>
+        <p>3. Publicar y responder</p>
     </title>
-    <p>
+    <p>Para actualizar tu estado, pulsa el botón «Publicar» («Twittear» para Twitter).
+Se muestra como un sobre («Envelope+»).
+El editor de mensajes se abrirá en la parte inferior de la pantalla.
     </p>
-    <p>
+    <p>2. Escribe tu mensaje en el área para el texto.
     </p>
-    <p>
+    <p>3. También puedes adjuntar una imagen a tu publicación. Con el editor visible, otro botón aparecerá en la barra de herramientas: «Paperclip+».
+(El menú de "Adjuntar" puede estar oculto en el botón «Sobrante»: los tres puntos verticales).
+Pulsa en "Adjuntar" y selecciona una imagen. Después de que se adjunte exitosamente verás el texto «(con multimedia)» sobre el área del texto donde escribes tu mensaje.
     </p>
-    <p>
+    <p>Pulsa <strong>Enviar</strong> para enviar tu mensaje. Si estás desconectado, el mensaje se guardará en la cola para ser enviado automáticamente más tarde. (Usa el menú «Mensajes en cola» para ver los mensajes que no se han enviado)
     </p>
-    <p>
+    <p>Para responder, <strong>deja pulsado</strong> un mensaje y selecciona <strong>Responder</strong> del menú contextual y escribe tu respuesta abajo.
     </p>
-    <p></p>
+    <p>Para cancelar una publicación o una respuesta, simeplemente pulsa el botón «Ocultar» para ocultar el área de texto.</p>
 </section>
 <section>
     <title>
-        <p></p>
+        <p>4. Imágenes adjuntas: envío y visualización</p>
     </title>
     <section>
         <title>
-            <p></p>
+            <p>4.1. Envío de imágenes</p>
         </title>
-        <p>
+        <p>Una forma de adjuntar una imagen a una publicación está descrita en la sección previa: puedes añadir una imagen a tu mensaje mientras lo creas.
         </p>
-        <p>
+        <p>Otra forma es «Compartir» la imagen con AndStatus: aquí se empieza con la imagen en otra aplicación. Por ejemplo, si quieres hacer una foto y mandarla a una red social, haz esto:
         </p>
-        <p>
+        <p>1. Saca la foto o búscala en la galería y selecciona la imagen para verla.
         </p>
-        <p>
+        <p>2. Selecciona «Compartir» en el menú. La mayoría de aplicaciones tienen un botón en la barra de herramientas.
         </p>
-        <p>
+        <p>3. Selecciona «AndStatus» en la lista de aplicaciones con las que se pueden compartir imágenes.
         </p>
-        <p></p>
-        <p>
+        <p>4. Ya estás dentro de AndStatus. Si tienes más de una cuenta, selecciona la cuenta deseada, si no, serás inmediatamente redireccionado al editor de mensajes.</p>
+        <p>5. Ahora estás en el editor de mensajes con la imagen ya adjunta (puedes ver el texto «(con multimedia)» sobre el área del texto).
         </p>
-        <p>
+        <p>6. Escribe el texto y pulsa «Enviar». (No se permite enviar imágenes sin texto).
         </p>
     </section>
     <section>
         <title>
-            <p></p>
+            <p>4.2. Mostrar imágenes adjuntas</p>
         </title>
-        <p></p>
-        <p>
+        <p>Tenemos esos ajustes en Configuración → Adjuntos:</p>
+        <p>1. «Descargar y mostrar imágenes adjuntas». Si está inactivo, no se descargarán los adjuntos para mantener tu tráfico de datos.
         </p>
-        <p>
+        <p>Por favor, ten en cuenta que si activas esta función, las imágenes no se mostrarán inmediatamente porque AndStatus necesita algo de tiempo para descargarlas en segundo plano.
         </p>
-        <p>
+        <p>2. «Adjuntar imágenes a mis mensajes». Cuando está activo, puedes usar el botón «Paperclip+» («Adjuntar» en el menú) para añadir imágenes al mensaje.
+Cuando está inactivo, este botón está oculto.
         </p>
-        <p>.</p>
+        <p>Ver <a xlink:href="https://github.com/andstatus/andstatus/issues/288">aquí para más información</a>.</p>
     </section>
 </section>
 <section>
@@ -150,7 +155,7 @@ Esta vez se abrirá la línea temporal «Inicio» y se descargarán los mensajes
     <p>Para <strong>eliminar</strong> tu mensaje (público o privado), <strong>déjalo pulsado</strong> y selecciona <strong>Borra el mensaje</strong>.
     </p>
     <p>Los nuevos mensajes serán descargados en segundo plano si se activa <strong>«Sincronizar mientras se usa la aplicación»</strong> en los ajustes de sincronización.
-También puedes obtenerlos manualmente arrastrando la línea temporal hacia abajo o pulsando en menú de la barra de acción «Actualizar».
+También puedes obtenerlos manualmente arrastrando la línea temporal hacia abajo o pulsando en menú de la barra de herramientas «Actualizar».
     </p>
 </section>
 <section>
@@ -169,7 +174,7 @@ También puedes obtenerlos manualmente arrastrando la línea temporal hacia abaj
     </title>
     <p>La búsqueda local se hace con mensajes ya descargados de Internet. Por lo tanto está disponible incluso desconectado.
     </p>
-    <p>1. Para encontrar una palabra o frase en un mensaje,  selecciona <strong>Buscar</strong> en la barra de acción o pulsa el botón <strong>Buscar</strong> de tu dispositivo si lo tiene.
+    <p>1. Para encontrar una palabra o frase en un mensaje,  selecciona <strong>Buscar</strong> en la barra de herramientas o pulsa el botón <strong>Buscar</strong> de tu dispositivo si lo tiene.
     </p>
     <p>Si quieres que muestre los mensajes de un usuario en especial, por favor, búscalo por «NombreDeUsuario».</p>
     <p>Para ver las menciones de un usuario en especial, búscalo por «@NombreDeUsuario»
@@ -191,7 +196,7 @@ En caso de un fallo en la conexión (como que no haya una respuesta del servidor
     </p>
     <p>Por favor, ten en cuenta que la red social Pump.io no soporta todavía las búsquedas globales.
     </p>
-    <p>1. La búsqueda global de una palabra o frase se inicia usando el botón «Búsqueda global» de la barra de acción.</p>
+    <p>1. La búsqueda global de una palabra o frase se inicia usando el botón «Búsqueda global» de la barra de herramientas.</p>
     <p>2. Otro modo de buscar globalmente los mensajes del autor de un determinado mensaje es seleccionar «Mensajes de Nombre de Usuario» del menú contextual de ese mensaje.</p>
 </section>
 </body>

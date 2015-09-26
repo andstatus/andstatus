@@ -51,7 +51,6 @@
   <string name="button_create_message_twitter">Tweeter</string>
   <string name="button_delete">Supprimer </string>
   <string name="button_discard">Annuler</string>
-  <string name="button_hide">Nettoyer et cacher</string>
   <string name="button_overflow">Dépassement</string>
   <string name="button_restore">Rétablir</string>
   <string name="button_save">Enregistrer</string>

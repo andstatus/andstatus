@@ -49,9 +49,14 @@ xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../../../re
     <title>
         <p>Introdução</p>
     </title>
-    <p>O AndStatus é uma aplicação Open Source para redes sociais e que utiliza o estilo em árvore para as conversas. Tem suporte a diversos protocolos, incluindo GNU Social, Twitter  e  Pump.io. O AndStatus combina as contas de todas as redes numa cronologia e permite-lhe a leitura e publicação de itens mesmo se estiver offline.</p>
+    <p>O AndStatus é uma aplicação Open Source para redes sociais e que
+        utiliza o estilo em árvore para as conversas.
+        Tem suporte a diversos protocolos, incluindo GNU Social, Twitter  e  Pump.io. 
+        O AndStatus combina as contas de todas as redes numa cronologia e
+        permite-lhe a leitura e publicação de itens mesmo se estiver 'offline'.</p>
     <p>A ligação para este guia está disponível na barra de ação -> Ajuda.</p>
-    <p>A página seguinte permite-lhe ver a descrição e as ligações para todas as funcionalidades do AndStatus.</p>
+    <p>A página seguinte permite-lhe ver a descrição e as ligações para
+        todas as funcionalidades do AndStatus.</p>
 </section>
 <section>
     <title>
@@ -88,54 +93,76 @@ As contas Twitter, Pump.io e diversas "GNU social" (Quitter, LoadAverage e Vinil
     <title>
         <p>3. Enviar e responder</p>
     </title>
-    <p>
+    <p>1. Para poder atualizar o seu estado, toque no botão "Publicar" ("Tweet" para Twitter).
+        É parecido com um "Envelope+".
+        O editor de mensagens será aberto na margem inferior do ecrã.
     </p>
-    <p>
+    <p>2. Digite a sua mensagem na área de texto.
     </p>
-    <p>
+    <p>3. Opcionalmente, pode anexar uma mensagem à publicação. Agora, uma vez que
+        o editor de mensagens está visível, aparece outro botão na barra de ações: "Paperclip+".
+        (O item de menu "Anexar" pode estar oculto por baixo do botão "Overflow": "3 pontos verticais").
+        Toque no botão "Anexar" e selecione uma imagem. Depois de anexar a sua image, verá o texto
+        "(com multimédia)" por cima da área de texto em que está a escrever a sua mensagem.
     </p>
-    <p>
+    <p>4. Toque <strong>Enviar</strong> para enviar a sua mensagem. Se estiver 'offline', a mensagem será
+        colocada na fila para ser enviada mais tarde. (Utilize o item de menu "Comandos na fila"
+        para ver as mensagens que ainda estão na fila para serem enviadas)
     </p>
-    <p>
+    <p>Para poder responder a uma mensagem, <strong>prima</strong>
+        na mensagem, selecione  <strong>Responder</strong>
+        no menu de contexto e escreva a sua resposta.
     </p>
-    <p></p>
+    <p>Para cancelar uma publicação ou resposta, basta tocar no botão "Ocultar"
+       para ocultar a área de texto.</p>
 </section>
 <section>
     <title>
-        <p></p>
+        <p>4. Imagens anexadas: enviar e mostrar</p>
     </title>
     <section>
         <title>
-            <p></p>
+            <p>4.1. Enviar imagens</p>
         </title>
-        <p>
+        <p>Um dos métodos para anexar uma imagem a uma publicação está descrito na secção anterior:
+            anexe uma imagem à mensagem, durante a sua criação.
         </p>
-        <p>
+        <p>Outro método para enviar uma imagem é a opção "Partilhar" através do AndStatus: aqui utiliza
+            uma imagem a partir de outra aplicação. Por exemplo, você quer tirar uma foto e enviá-la
+            para uma rede social. Siga estes passos:
         </p>
-        <p>
+        <p>1. Tire a foto, localize-a na galeria e clique na miniatura da imagem para a abrir.
         </p>
-        <p>
+        <p>2. Selecione a opção de menu "Partilhar". A maioria das aplicações possuem a opção "Share"...
         </p>
-        <p>
+        <p>3. Selecione o AndStatus na lista de aplicações, que declararam a opção
+            de partilha de imagens.
         </p>
-        <p></p>
-        <p>
+        <p>4. Agora, está no AndStatus. Se possuir mais do que uma conta,
+            selecione a conta desejada. Se não o fizer, será aberta uma nova janela
+            do editor de mensagens.</p>
+        <p>5. Agora está no editor de mensagens, com a imagem já anexada
+            (e deve ver o texto "(com multimédia)" por cima da área de texto).
         </p>
-        <p>
+        <p>6. Digite o texto e toque em "Enviar". (Não pode apenas enviar a imagem, tem que escrever um texto)
         </p>
     </section>
     <section>
         <title>
-            <p></p>
+            <p>4.2 Mostrar imagens anexadas</p>
         </title>
-        <p></p>
-        <p>
+        <p>Em Definições -> Anexos, existem estas opções:</p>
+        <p>1. "Transferir e mostrar imagens anexadas". Se inativa, os anexos não são 
+            transferidos para poupar tráfego de rede.
         </p>
-        <p>
+        <p>Tenha em atenção que se a opção estiver ativa, as imagens não são mostradas imediatamente,
+            uma vez que o AndStatus necessita de algum tempo para as transferir.
         </p>
-        <p>
+        <p>2. "Anexar imagens às mensagens". Se ativa, pode utilizar o botão "Paperclip+"
+            (item de menu "Anexar") para anexar imagens às suas mensagens.
+            Se inativa, o botão "Paperclip+", utilizado para anexar as imagens estará oculto.
         </p>
-        <p>.</p>
+        <p>Consulte <a xlink:href="https://github.com/andstatus/andstatus/issues/288">aqui mais informações</a>.</p>
     </section>
 </section>
 <section>

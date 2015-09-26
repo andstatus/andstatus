@@ -52,7 +52,6 @@
   <string name="button_create_message_twitter">Tweet</string>
   <string name="button_delete">Löschen</string>
   <string name="button_discard">Verwerfen</string>
-  <string name="button_hide">Bereinigen und ausblenden</string>
   <string name="button_overflow">Überlauf</string>
   <string name="button_restore">Wiederherstellen</string>
   <string name="button_save">Speichern</string>

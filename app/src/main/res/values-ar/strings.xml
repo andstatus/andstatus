@@ -50,7 +50,6 @@
   <string name="button_create_message_twitter">تغريد</string>
   <string name="button_delete">حذف</string>
   <string name="button_discard">إلغاء</string>
-  <string name="button_hide">مسح وإخفاء</string>
   <string name="button_overflow">تجاوز السعة</string>
   <string name="button_restore">استعادة النسخة الاحتياطية</string>
   <string name="button_save">حفظ</string>
