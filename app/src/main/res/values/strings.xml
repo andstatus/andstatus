@@ -154,10 +154,13 @@
   <string name="fetch_frequency_entries_8_hours">8 hours</string>
   <string name="fetch_frequency_entries_12_hours">12 hours</string>
   <string name="fetch_frequency_entries_1_day">day</string>
+  <string name="filters_title">Filters</string>
+  <string name="filters_summary">Global filters to be applied to all messages</string>
   <string name="get_open_instances_title">Get Open Instances</string>
   <string name="header_accounts">Accounts</string>
   <string name="header_add_new_account">Add new account</string>
   <string name="header_manage_existing_accounts">Manage existing accounts</string>
+  <string name="hide_messages_based_on_keywords_title">Hide messages based on keywords</string>
   <string name="history_size_entries_500">500 messages</string>
   <string name="history_size_entries_1000">1000 messages</string>
   <string name="history_size_entries_2000">2000 messages</string>
@@ -446,4 +449,5 @@
   <string name="user_in_timeline_entries_real_name">Real name</string>
   <string name="user_in_timeline_entries_real_name_at_username">Real name @username</string>
   <string name="yes">Yes</string>
+  <string name="this_option_is_turned_off">(disabled)</string>
 </resources>

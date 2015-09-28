@@ -18,6 +18,7 @@ package org.andstatus.app.msg;
 
 import android.content.Loader;
 import android.database.Cursor;
+import android.database.MatrixCursor;
 import android.os.AsyncTask;
 import android.os.AsyncTask.Status;
 import android.text.TextUtils;
@@ -25,6 +26,7 @@ import android.text.TextUtils;
 import net.jcip.annotations.GuardedBy;
 
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.LatestTimelineItem;
 import org.andstatus.app.data.MyDatabase;
@@ -36,8 +38,10 @@ import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.MyServiceEvent;
 import org.andstatus.app.service.MyServiceEventsListener;
 import org.andstatus.app.service.MyServiceEventsReceiver;
+import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.TypedCursorValue;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -224,13 +228,14 @@ public class TimelineCursorLoader1 extends Loader<Cursor> implements MyServiceEv
             prepareQueryInBackground();
             Cursor cursor = queryDatabase();
             checkIfReloadIsNeeded(cursor);
-            return cursor;
+            return applyFilters(cursor);
         }
 
         private void markStart() {
             getParams().startTime = System.nanoTime();
             getParams().cancelled = false;
             getParams().timelineToReload = TimelineType.UNKNOWN;
+            getParams().rowsFilteredOut = 0;
             
             if (MyLog.isVerboseEnabled()) {
                 logV("markStart", (TextUtils.isEmpty(getParams().mSearchQuery) ? ""
@@ -243,9 +248,9 @@ public class TimelineCursorLoader1 extends Loader<Cursor> implements MyServiceEv
         private void prepareQueryInBackground() {
             if (getParams().mLastItemSentDate > 0) {
                 getParams().mSa.addSelection(ProjectionMap.MSG_TABLE_ALIAS + "." + MyDatabase.Msg.SENT_DATE
-                        + " >= ?",
-                        new String[] {
-                            String.valueOf(getParams().mLastItemSentDate)
+                                + " >= ?",
+                        new String[]{
+                                String.valueOf(getParams().mLastItemSentDate)
                         });
             }
         }
@@ -275,9 +280,7 @@ public class TimelineCursorLoader1 extends Loader<Cursor> implements MyServiceEv
         }
         
         private void checkIfReloadIsNeeded(Cursor cursor) {
-            if (!getParams().mLoadOneMorePage 
-                    && TextUtils.isEmpty(getParams().mSearchQuery) 
-                    && cursor != null && !cursor.isClosed() && cursor.getCount() == 0) {
+            if (noMessagesInATimeline(cursor)) {
                 switch (getParams().mTimelineType) {
                     case USER:
                         // This timeline doesn't update automatically so let's do it now if necessary
@@ -301,6 +304,62 @@ public class TimelineCursorLoader1 extends Loader<Cursor> implements MyServiceEv
                         break;
                 }
             }
+        }
+
+        private boolean noMessagesInATimeline(Cursor cursor) {
+            return !getParams().mLoadOneMorePage
+                    && TextUtils.isEmpty(getParams().mSearchQuery)
+                    && cursor != null && !cursor.isClosed() && cursor.getCount() == 0;
+        }
+
+        private Cursor applyFilters(Cursor cursor) {
+            KeywordsFilter keywordsFilter = new KeywordsFilter(
+                    MyPreferences.getString(MyPreferences.KEY_FILTER_HIDE_MESSAGES_BASED_ON_KEYWORDS, ""));
+            if (keywordsFilter.isEmpty()) {
+                if (cursor != null) {
+                    getParams().rowsLoaded = cursor.getCount();
+                }
+                return cursor;
+            }
+            long startTime = System.currentTimeMillis();
+            int rowsCount = 0;
+            int filteredOutCount = 0;
+            MatrixCursor cursorOut = new MatrixCursor(cursor.getColumnNames());
+            if (cursor != null && !cursor.isClosed()) {
+                try {
+                    int indBody = cursor.getColumnIndex(MyDatabase.Msg.BODY);
+                    if (cursor.moveToFirst()) {
+                        do {
+                            rowsCount++;
+                            Object[] row = new Object[cursor.getColumnCount()];
+                            boolean skip = false;
+                            String body = "";
+                            for (int ind = 0; ind < cursor.getColumnCount(); ind++) {
+                                row[ind] = new TypedCursorValue(cursor, ind).value;
+                                if (ind == indBody) {
+                                    body = row[ind].toString();
+                                    skip = keywordsFilter.matched(body);
+                                }
+                            }
+                            if (skip) {
+                                filteredOutCount++;
+                                if (MyLog.isVerboseEnabled()) {
+                                    MyLog.v(this, filteredOutCount + " Filtered out: " + I18n.trimTextAt(body, 40));
+                                }
+                            } else {
+                                cursorOut.addRow(row);
+                            }
+                        } while (cursor.moveToNext());
+                    }
+                } finally {
+                    cursor.close();
+                }
+            }
+            MyLog.d(this, "Filtered out " + filteredOutCount + " of " + rowsCount + " rows, "
+                    + (System.currentTimeMillis() - startTime) + "ms" );
+            getParams().rowsLoaded = rowsCount;
+            getParams().rowsFilteredOut = filteredOutCount;
+            return cursorOut;
         }
 
         @Override

@@ -32,6 +32,12 @@
     </header>
     <header
         android:fragment="org.andstatus.app.context.MySettingsFragment"
+        android:title="@string/filters_title"
+        android:summary="@string/filters_summary" >
+        <extra android:name="preferencesGroup" android:value="filters" />
+    </header>
+    <header
+        android:fragment="org.andstatus.app.context.MySettingsFragment"
         android:title="@string/title_preference_notifications"
         android:summary="@string/summary_preference_notifications" >
         <extra android:name="preferencesGroup" android:value="notifications" />

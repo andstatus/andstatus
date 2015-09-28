@@ -25,6 +25,7 @@ public enum MyPreferencesGroupsEnum {
     TIMELINE("timeline", R.string.title_timeline, R.xml.preferences_timeline),
     ATTACHMENTS("attachments", R.string.attachments, R.xml.preferences_attachments),
     SYNCING("syncing", R.string.title_preference_syncing, R.xml.preferences_syncing),
+    FILTERS("filters", R.string.filters_title, R.xml.preferences_filters),
     NOTIFICATIONS("notifications", R.string.title_preference_notifications, R.xml.preferences_notifications),
     STORAGE("storage", R.string.title_preference_storage, R.xml.preferences_storage),
     INFORMATION("information", R.string.category_title_preference_information, R.xml.preferences_information),

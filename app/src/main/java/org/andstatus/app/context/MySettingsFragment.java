@@ -26,6 +26,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.preference.CheckBoxPreference;
+import android.preference.EditTextPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
@@ -39,6 +40,7 @@ import org.andstatus.app.R;
 import org.andstatus.app.account.AccountSettingsActivity;
 import org.andstatus.app.backup.BackupActivity;
 import org.andstatus.app.backup.RestoreActivity;
+import org.andstatus.app.msg.KeywordsFilter;
 import org.andstatus.app.origin.PersistentOriginList;
 import org.andstatus.app.service.QueueViewer;
 import org.andstatus.app.util.MyLog;
@@ -102,6 +104,7 @@ public class MySettingsFragment extends PreferenceFragment implements
         showActionBarColor();
         showBackgroundColor();
         showThemeSize();
+        showFilterHideMessagesBasedOnKeywords();
     }
 
     private void showManageAccounts() {
@@ -192,6 +195,18 @@ public class MySettingsFragment extends PreferenceFragment implements
                 title = getText(R.string.label_backup);
             }
             preference.setTitle(title);
+        }
+    }
+
+    private void showFilterHideMessagesBasedOnKeywords() {
+        EditTextPreference preference = (EditTextPreference) findPreference(MyPreferences.KEY_FILTER_HIDE_MESSAGES_BASED_ON_KEYWORDS);
+        if (preference != null) {
+            KeywordsFilter filter = new KeywordsFilter(preference.getText());
+            if (filter.isEmpty()) {
+                preference.setSummary(R.string.this_option_is_turned_off);
+            } else {
+                preference.setSummary(filter.toString());
+            }
         }
     }
 
@@ -319,6 +334,9 @@ public class MySettingsFragment extends PreferenceFragment implements
                     break;
                 case MyPreferences.KEY_USER_IN_TIMELINE:
                     showAuthorInTimeline();
+                    break;
+                case MyPreferences.KEY_FILTER_HIDE_MESSAGES_BASED_ON_KEYWORDS:
+                    showFilterHideMessagesBasedOnKeywords();
                     break;
                 default:
                     break;

@@ -35,6 +35,7 @@ import org.andstatus.app.data.ParsedUri;
 import org.andstatus.app.data.TimelineSql;
 import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.data.MyDatabase.User;
+import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SelectionAndArgs;
 
 import java.util.Arrays;
@@ -73,7 +74,7 @@ public class TimelineListParameters {
 
     Uri mContentUri = null;
     boolean mIncrementallyLoadingPages = false;
-    int mRowsLimit = 0;
+    int mRowsLimit = PAGE_SIZE;
     long mLastItemSentDate = 0;
     volatile SelectionAndArgs mSa = new SelectionAndArgs();
     String mSortOrder = MyDatabase.Msg.DEFAULT_SORT_ORDER;
@@ -82,7 +83,8 @@ public class TimelineListParameters {
     volatile long startTime = 0;
     volatile boolean cancelled = false;
     volatile TimelineType timelineToReload = TimelineType.UNKNOWN;
-    
+    volatile int rowsLoaded = 0;
+    volatile int rowsFilteredOut = 0;
 
     public static TimelineListParameters clone(TimelineListParameters prev, Bundle args) {
         TimelineListParameters params = new TimelineListParameters(prev.mContext);
@@ -92,18 +94,35 @@ public class TimelineListParameters {
         params.myAccountUserId = prev.getMyAccountUserId();
         params.mSelectedUserId = prev.getSelectedUserId();
         params.mSearchQuery = prev.mSearchQuery;
+        params.mRowsLimit = prev.mRowsLimit;
 
-        boolean positionRestored = false;
-        boolean loadOneMorePage = false;
+        params.mLoadOneMorePage = loadOneMorePage(args);
         boolean reQuery = false;
+        boolean positionRestored = false;
         if (args != null) {
-            loadOneMorePage = args.getBoolean(IntentExtra.LOAD_ONE_MORE_PAGE.key);
             positionRestored = args.getBoolean(IntentExtra.POSITION_RESTORED.key);
             reQuery = args.getBoolean(IntentExtra.REQUERY.key);
-            params.mRowsLimit = args.getInt(IntentExtra.ROWS_LIMIT.key);
         }
-        params.mLoadOneMorePage = loadOneMorePage;
-        params.mIncrementallyLoadingPages = positionRestored && loadOneMorePage;
+        if (params.mRowsLimit < prev.rowsLoaded) {
+            params.mRowsLimit = prev.rowsLoaded;
+        }
+        if (params.mRowsLimit < TimelineListParameters.PAGE_SIZE) {
+            params.mRowsLimit = TimelineListParameters.PAGE_SIZE;
+        }
+        if (params.mLoadOneMorePage) {
+            String msgLog = "Loading next page";
+            if (prev.rowsLoaded > 0) {
+                msgLog += " prevRows:" + prev.rowsLoaded;
+            }
+            if (params.mLastItemSentDate > 0) {
+                params.mLastItemSentDate = 0;
+            }
+            params.mRowsLimit += TimelineListParameters.PAGE_SIZE;
+            msgLog += " rowsLimit:" + params.mRowsLimit;
+            MyLog.v(TimelineListParameters.class, msgLog);
+        }
+
+        params.mIncrementallyLoadingPages = positionRestored && params.mLoadOneMorePage;
         params.mReQuery = reQuery;
         params.mProjection = TimelineSql.getTimelineProjection();
         
@@ -111,7 +130,14 @@ public class TimelineListParameters {
         
         return params;
     }
-    
+
+    public static boolean loadOneMorePage(Bundle args) {
+        if (args != null) {
+            return args.getBoolean(IntentExtra.LOAD_ONE_MORE_PAGE.key);
+        }
+        return false;
+    }
+
     private void prepareQueryForeground(boolean positionRestored) {
         mContentUri = MatchedUri.getTimelineSearchUri(myAccountUserId, mTimelineType,
                 mTimelineCombined, mSelectedUserId, mSearchQuery);
@@ -180,11 +206,7 @@ public class TimelineListParameters {
         }
 
         if (mLastItemSentDate <= 0) {
-            int rowsLimit2 = this.mRowsLimit;
-            if (rowsLimit2 < TimelineListParameters.PAGE_SIZE) {
-                rowsLimit2 = TimelineListParameters.PAGE_SIZE;
-            }
-            mSortOrder += " LIMIT 0," + rowsLimit2;
+            mSortOrder += " LIMIT 0," + this.mRowsLimit;
         }
     }
     

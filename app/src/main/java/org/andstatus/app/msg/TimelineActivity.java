@@ -65,7 +65,6 @@ import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.TimelineSearchSuggestionsProvider;
 import org.andstatus.app.data.TimelineType;
-import org.andstatus.app.data.TimelineViewBinder;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceEvent;
@@ -80,7 +79,6 @@ import org.andstatus.app.util.UriUtils;
 import org.andstatus.app.widget.MySimpleCursorAdapter;
 import org.andstatus.app.widget.MySwipeRefreshLayout;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -101,7 +99,7 @@ public class TimelineActivity extends MyListActivity implements MyServiceEventsL
     private MySwipeRefreshLayout mSwipeRefreshLayout = null;
 
     /** Parameters of currently shown Timeline */
-    private TimelineListParameters mListParameters;
+    private TimelineListParameters mListParametersLoaded;
     private TimelineListParameters mListParametersNew;
 
     /**
@@ -147,7 +145,7 @@ public class TimelineActivity extends MyListActivity implements MyServiceEventsL
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        mListParameters = new TimelineListParameters(this);
+        mListParametersLoaded = new TimelineListParameters(this);
         mListParametersNew = new TimelineListParameters(this);
         if (mInstanceId == 0) {
             mInstanceId = InstanceId.next();
@@ -657,7 +655,7 @@ public class TimelineActivity extends MyListActivity implements MyServiceEventsL
         }
 
         if (Intent.ACTION_SEND.equals(intentNew.getAction())) {
-            shareViaThisApplication(intentNew.getStringExtra(Intent.EXTRA_SUBJECT), 
+            shareViaThisApplication(intentNew.getStringExtra(Intent.EXTRA_SUBJECT),
                     intentNew.getStringExtra(Intent.EXTRA_TEXT),
                     (Uri) intentNew.getParcelableExtra(Intent.EXTRA_STREAM));
         }
@@ -763,8 +761,8 @@ public class TimelineActivity extends MyListActivity implements MyServiceEventsL
     }
 
     private void updateTitle() {
-        new TimelineTitle(mListParameters.getTimelineType() != TimelineType.UNKNOWN ?
-                mListParameters : mListParametersNew
+        new TimelineTitle(mListParametersLoaded.getTimelineType() != TimelineType.UNKNOWN ?
+                mListParametersLoaded : mListParametersNew
                 , mRateLimitText).updateTitle(this);
     }
 
@@ -775,7 +773,7 @@ public class TimelineActivity extends MyListActivity implements MyServiceEventsL
     public void saveListPosition() {
         TimelineFragment list = getList();
         if (list != null) {
-            new TimelineListPositionStorage(getListAdapter(), list.getListView(), mListParameters).save();
+            new TimelineListPositionStorage(getListAdapter(), list.getListView(), mListParametersLoaded).save();
         }
     }
 
@@ -851,25 +849,8 @@ public class TimelineActivity extends MyListActivity implements MyServiceEventsL
         MyLog.v(this, method + (loadOneMorePage ? "loadOneMorePage" : ""));
         Bundle args = new Bundle();
         args.putBoolean(IntentExtra.LOAD_ONE_MORE_PAGE.key, loadOneMorePage);
-        args.putInt(IntentExtra.ROWS_LIMIT.key, calcRowsLimit(loadOneMorePage));
         getLoaderManager().restartLoader(LOADER_ID, args, this);
         setLoading(method, true);
-    }
-
-    private int calcRowsLimit(boolean loadOneMorePage) {
-        int nMessages = 0;
-        if (getListAdapter() != null) {
-            Cursor cursor = ((CursorAdapter) getListAdapter()).getCursor();
-            if (cursor != null && !cursor.isClosed()) {
-                nMessages = cursor.getCount();
-            }
-        }
-        if (loadOneMorePage) {
-            nMessages += TimelineListParameters.PAGE_SIZE;
-        } else if (nMessages < TimelineListParameters.PAGE_SIZE) {
-            nMessages = TimelineListParameters.PAGE_SIZE;
-        }
-        return nMessages;
     }
 
     @Override
@@ -879,7 +860,9 @@ public class TimelineActivity extends MyListActivity implements MyServiceEventsL
         MyLog.v(this, method + " #" + id);
         args.putBoolean(IntentExtra.POSITION_RESTORED.key, isPositionRestored());
 
-        TimelineListParameters params = TimelineListParameters.clone(mListParametersNew, args);
+        TimelineListParameters params = TimelineListParameters.clone(
+                TimelineListParameters.loadOneMorePage(args)
+                        ? mListParametersLoaded : mListParametersNew, args);
         Intent intent = getIntent();
         if (!params.mContentUri.equals(intent.getData())) {
             intent.setData(params.mContentUri);
@@ -960,8 +943,8 @@ public class TimelineActivity extends MyListActivity implements MyServiceEventsL
         MyLog.v(this, method + "; After changing Cursor");
         MySimpleCursorAdapter.afterSwapCursor();
 
-        mListParameters = myLoader.getParams();
-        list.restoreListPosition(mListParameters);
+        mListParametersLoaded = myLoader.getParams();
+        list.restoreListPosition(mListParametersLoaded);
 
         boolean requestNextPage = false;
         if (!myLoader.getParams().mLoadOneMorePage && myLoader.getParams().mLastItemSentDate > 0
@@ -1135,39 +1118,6 @@ public class TimelineActivity extends MyListActivity implements MyServiceEventsL
             mMediaToShareViaThisApp = uri;
             UriUtils.takePersistableUriPermission(getActivity(), uri, data.getFlags());
             mMessageEditor.setMedia(mMediaToShareViaThisApp);
-        }
-    }
-
-    private void createListAdapter(Cursor cursor) {
-        List<String> columnNames = new ArrayList<String>();
-        List<Integer> viewIds = new ArrayList<Integer>();
-        columnNames.add(MyDatabase.User.AUTHOR_NAME);
-        viewIds.add(R.id.message_author);
-        columnNames.add(MyDatabase.Msg.BODY);
-        viewIds.add(R.id.message_body);
-        columnNames.add(MyDatabase.Msg.CREATED_DATE);
-        viewIds.add(R.id.message_details);
-        columnNames.add(MyDatabase.MsgOfUser.FAVORITED);
-        viewIds.add(R.id.message_favorited);
-        columnNames.add(MyDatabase.Msg._ID);
-        viewIds.add(R.id.id);
-        int listItemLayoutId = R.layout.message_basic;
-        if (MyPreferences.showAvatars()) {
-            listItemLayoutId = R.layout.message_avatar;
-            columnNames.add(MyDatabase.Download.AVATAR_FILE_NAME);
-            viewIds.add(R.id.avatar_image);
-        }
-        if (MyPreferences.showAttachedImages()) {
-            columnNames.add(MyDatabase.Download.IMAGE_ID);
-            viewIds.add(R.id.attached_image);
-        }
-        MySimpleCursorAdapter mCursorAdapter = new MySimpleCursorAdapter(TimelineActivity.this,
-                listItemLayoutId, cursor, columnNames.toArray(new String[]{}),
-                toIntArray(viewIds), 0);
-        mCursorAdapter.setViewBinder(new TimelineViewBinder());
-
-        if (getList() != null) {
-            getList().setListAdapter(mCursorAdapter);
         }
     }
 
