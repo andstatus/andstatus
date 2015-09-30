@@ -308,7 +308,7 @@ public class TimelineActivity extends MyListActivity implements MyServiceEventsL
         if (!mFinishing) {
             MyContextHolder.get().setInForeground(true);
             mServiceConnector.registerReceiver(this);
-            mMessageEditor.loadState(0);
+            mMessageEditor.loadCurrentDraft();
         }
     }
 
@@ -328,7 +328,7 @@ public class TimelineActivity extends MyListActivity implements MyServiceEventsL
         }
         mServiceConnector.unregisterReceiver(this);
         setSyncIndicator(method, false);
-        mMessageEditor.saveState();
+        mMessageEditor.saveAsBeingEditedAndHide();
         saveActivityState();
         super.onPause();
         MyContextHolder.get().setInForeground(false);

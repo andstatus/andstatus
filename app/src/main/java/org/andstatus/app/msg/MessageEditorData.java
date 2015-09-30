@@ -42,8 +42,6 @@ public class MessageEditorData {
     private long msgId = 0;
     public DownloadStatus status = DownloadStatus.DRAFT;
     public String body = "";
-    boolean showAfterSaveOrLoad = false;
-    boolean hideAfterSave = false;
 
     private Uri imageUriToSave = Uri.EMPTY;
     private DownloadData image = DownloadData.EMPTY;
@@ -61,6 +59,10 @@ public class MessageEditorData {
     boolean replyAll = false;
     public long recipientId = 0;
     public MyAccount ma = MyAccount.getEmpty(MyContextHolder.get(), "");
+
+    // Attributes of the process
+    boolean beingEdited = false;
+    boolean hideBeforeSave = false;
 
     private MessageEditorData(MyAccount myAccount) {
         ma = myAccount;
@@ -121,8 +123,11 @@ public class MessageEditorData {
         if(!TextUtils.isEmpty(body)) {
             builder.append("text:'" + body + "',");
         }
-        if(showAfterSaveOrLoad) {
-            builder.append("showAfterSaveOrLoad,");
+        if(hideBeforeSave) {
+            builder.append("hide,");
+        }
+        if(beingEdited) {
+            builder.append("edit,");
         }
         if(!UriUtils.isEmpty(imageUriToSave)) {
             builder.append("imageUriToSave:'" + imageUriToSave + "',");
@@ -139,7 +144,7 @@ public class MessageEditorData {
         if(recipientId != 0) {
             builder.append("recipientId:" + recipientId + ",");
         }
-        builder.append(ma.toString() + ",");
+        builder.append("ma:" + ma.getAccountName() + ",");
         return MyLog.formatKeyValue(this, builder.toString());
     }
 
@@ -161,10 +166,27 @@ public class MessageEditorData {
             data.inReplyToId = MyQuery.msgIdToLongColumnValue(MyDatabase.Msg.IN_REPLY_TO_MSG_ID, msgId);
             data.inReplyToBody = MyQuery.msgIdToStringColumnValue(MyDatabase.Msg.BODY, data.inReplyToId);
             data.recipientId = MyQuery.msgIdToLongColumnValue(MyDatabase.Msg.RECIPIENT_ID, msgId);
+            MyLog.v(TAG, "Loaded " + data);
         } else {
             data = new MessageEditorData(MyContextHolder.get().persistentAccounts().getCurrentAccount());
+            MyLog.v(TAG, "Empty data");
         }
-        MyLog.v(TAG, "Loaded " + data);
+        return data;
+    }
+
+    MessageEditorData copy() {
+        MessageEditorData data = MessageEditorData.newEmpty(ma);
+        data.msgId = msgId;
+        data.status = status;
+        data.body = body;
+        data.imageUriToSave = imageUriToSave;
+        data.image = image;
+        data.imageSize = imageSize;
+        data.imageDrawable = imageDrawable;
+        data.inReplyToId = inReplyToId;
+        data.inReplyToBody = inReplyToBody;
+        data.replyAll = replyAll;
+        data.recipientId = recipientId;
         return data;
     }
 

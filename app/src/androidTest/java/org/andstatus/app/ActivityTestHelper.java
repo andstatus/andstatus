@@ -86,7 +86,7 @@ public class ActivityTestHelper<T extends MyActivity> extends InstrumentationTes
             Thread.sleep(2000);
         }
         MyLog.v(method, (ok ? "Found" : "Not found") + " text '" + textToFind + "'");
-        assertTrue("Found text '" + textToFind + "'", ok);
+        assertTrue(method + "; Found text '" + textToFind + "'", ok);
         return ok;
     }
 

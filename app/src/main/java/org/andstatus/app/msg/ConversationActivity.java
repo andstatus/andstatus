@@ -50,7 +50,6 @@ public class ConversationActivity extends LoadableListActivity implements Action
         super.onCreate(savedInstanceState);
 
         mMessageEditor = new MessageEditor(this);
-        mMessageEditor.hide();
         mContextMenu = new MessageContextMenu(this);
     }
 
@@ -82,14 +81,14 @@ public class ConversationActivity extends LoadableListActivity implements Action
 
     @Override
     protected void onPause() {
-        mMessageEditor.saveState();
+        mMessageEditor.saveAsBeingEditedAndHide();
         super.onPause();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        mMessageEditor.loadState(0);
+        mMessageEditor.loadCurrentDraft();
     }
 
     @Override
