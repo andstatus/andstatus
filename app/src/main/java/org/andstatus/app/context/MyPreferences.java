@@ -298,14 +298,14 @@ public class MyPreferences {
 	public static void putLong(String key, long value) {
         SharedPreferences sp = getDefaultSharedPreferences();
         if (sp != null) {
-            sp.edit().putLong(key, value).commit();
+            sp.edit().putLong(key, value).apply();
         }
     }
 
     public static void putBoolean(String key, boolean value) {
         SharedPreferences sp = getDefaultSharedPreferences();
         if (sp != null) {
-            sp.edit().putBoolean(key, value).commit();
+            sp.edit().putBoolean(key, value).apply();
         }
     }
 	

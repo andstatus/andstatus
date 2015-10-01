@@ -67,7 +67,11 @@ public class MessageEditorData {
     private MessageEditorData(MyAccount myAccount) {
         ma = myAccount;
     }
-    
+
+    public static MessageEditorData newEmpty() {
+        return MessageEditorData.newEmpty(null);
+    }
+
     public static MessageEditorData newEmpty(MyAccount myAccount) {
         return new MessageEditorData(
                 myAccount == null ? MyAccount.getEmpty(MyContextHolder.get(), "") : myAccount);

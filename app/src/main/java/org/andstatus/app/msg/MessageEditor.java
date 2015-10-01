@@ -148,7 +148,7 @@ public class MessageEditor {
     private EditText bodyEditText;
     private final TextView mCharsLeftText;
 
-    private MessageEditorData editorData = MessageEditorData.newEmpty(null);
+    private MessageEditorData editorData;
 
     public MessageEditor(ActionableMessageList actionableMessageList) {
         mMessageList = actionableMessageList;
@@ -385,6 +385,8 @@ public class MessageEditor {
     }
     
     public void hide() {
+        editorData = MessageEditorData.newEmpty();
+        updateScreen();
         if (isVisible()) {
             mEditorView.setVisibility(View.GONE);
             closeSoftKeyboard();
@@ -441,10 +443,11 @@ public class MessageEditor {
 
     private void showIfNotEmpty(int viewId, String value) {
         TextView textView = (TextView) mEditorView.findViewById(viewId);
-        textView.setText(Html.fromHtml(value));
         if (TextUtils.isEmpty(value)) {
+            textView.setText("");
             textView.setVisibility(View.GONE);
         } else {
+            textView.setText(Html.fromHtml(value));
             textView.setVisibility(View.VISIBLE);
         }
     }
@@ -494,7 +497,7 @@ public class MessageEditor {
     }
 
     private void sendAndHide() {
-        editorData.body = bodyEditText.getText().toString();
+        updateDataFromScreen();
         if (!editorData.getMyAccount().isValid()) {
             discardAndHide();
         } else if (TextUtils.isEmpty(editorData.body.trim())) {
@@ -514,6 +517,10 @@ public class MessageEditor {
         }
     }
 
+    private void updateDataFromScreen() {
+        editorData.body = bodyEditText.getText().toString();
+    }
+
     private void discardAndHide() {
         MessageEditorData data = editorData.copy();
         data.hideBeforeSave = true;
@@ -530,9 +537,7 @@ public class MessageEditor {
     }
 
     private void saveAndHide(boolean beingEdited) {
-        if (bodyEditText != null) {
-            editorData.body = bodyEditText.getText().toString();
-        }
+        updateDataFromScreen();
         MessageEditorData data = editorData.copy();
         data.beingEdited = beingEdited;
         data.hideBeforeSave = true;
@@ -540,8 +545,10 @@ public class MessageEditor {
     }
 
     private void saveData(MessageEditorData dataLast, MessageEditorData dataFirst) {
+        if (!dataLast.beingEdited) {
+            MyPreferences.putLong(MyPreferences.KEY_BEING_EDITED_MESSAGE_ID, 0);
+        }
         if (dataLast.hideBeforeSave) {
-            editorData = MessageEditorData.newEmpty(dataLast.getMyAccount());
             hide();
         }
         if (!dataLast.isEmpty() || (dataFirst != null && !dataFirst.isEmpty())) {
@@ -552,12 +559,12 @@ public class MessageEditor {
 
     public void loadCurrentDraft() {
         if (isVisible()) {
-            MyLog.v(MessageEditorData.TAG, "loadCurrentDraft skipped - Editor is visible");
+            MyLog.v(MessageEditorData.TAG, "loadCurrentDraft skipped: Editor is visible");
             return;
         }
         long msgId = MyPreferences.getLong(MyPreferences.KEY_BEING_EDITED_MESSAGE_ID);
         if (msgId == 0) {
-            MyLog.v(MessageEditorData.TAG, "loadCurrentDraft skipped - no current draft");
+            MyLog.v(MessageEditorData.TAG, "loadCurrentDraft: no current draft");
             return;
         }
         MyLog.v(MessageEditorData.TAG, "loadCurrentDraft started, msgId=" + msgId);
@@ -570,18 +577,20 @@ public class MessageEditor {
                 MyLog.v(MessageEditorData.TAG, "Async load requested for " + msgId);
                 MessageEditor.MyLock potentialLock = new MessageEditor.MyLock(false, msgId);
                 if (!potentialLock.decidedToContinue()) {
-                    return MessageEditorData.newEmpty(null);
+                    return MessageEditorData.newEmpty();
                 }
                 lock = potentialLock;
                 MyLog.v(MessageEditorData.TAG, "loadCurrentDraft passed wait");
 
                 DownloadStatus status = DownloadStatus.load(MyQuery.msgIdToLongColumnValue(MyDatabase.Msg.MSG_STATUS, msgId));
-                if (!status.mayBeEdited()) {
+                if (status.mayBeEdited()) {
+                    return MessageEditorData.load(msgId);
+                } else {
                     MyLog.v(MessageEditorData.TAG, "Cannot be edited " + msgId + " state:" + status);
                     msgId = 0;
                     MyPreferences.putLong(MyPreferences.KEY_BEING_EDITED_MESSAGE_ID, 0);
+                    return MessageEditorData.newEmpty();
                 }
-                return MessageEditorData.load(msgId);
             }
 
             @Override
@@ -591,16 +600,14 @@ public class MessageEditor {
 
             @Override
             protected void onPostExecute(MessageEditorData data) {
-                if (!lock.isEmpty()) {
-                    if (!data.isEmpty()) {
-                        if (isVisible()) {
-                            MyLog.v(MessageEditorData.TAG, "loaded State is not used");
-                        } else {
-                            dataLoadedCallback(data);
-                        }
+                if (!lock.isEmpty() && !data.isEmpty()) {
+                    if (isVisible()) {
+                        MyLog.v(MessageEditorData.TAG, "loadedDraft is not used: Editor is visible");
+                    } else {
+                        dataLoadedCallback(data);
                     }
-                    lock.release();
                 }
+                lock.release();
             }
         }.execute(msgId);
     }
@@ -636,6 +643,7 @@ public class MessageEditor {
 
     public void setMedia(Uri mediaUri) {
         MessageEditorData data = editorData.copy();
+        hide();
         data.beingEdited = true;
         data.setMediaUri(mediaUri);
         saveData(data, null);

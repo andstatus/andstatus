@@ -112,15 +112,12 @@ public class MessageEditorSaver extends AsyncTask<MessageEditorData, Void, Messa
     }
 
     private MessageEditorData loadFutureData(MessageEditorData oldData) {
+        MessageEditorData newData = oldData.hideBeforeSave
+                ? MessageEditorData.newEmpty()
+                : MessageEditorData.load(oldData.getMsgId());
         if (oldData.beingEdited) {
             MyPreferences.putLong(MyPreferences.KEY_BEING_EDITED_MESSAGE_ID, oldData.getMsgId());
-        } else if (oldData.getMsgId() != 0
-                && oldData.getMsgId() == MyPreferences.getLong(MyPreferences.KEY_BEING_EDITED_MESSAGE_ID)) {
-            MyPreferences.putLong(MyPreferences.KEY_BEING_EDITED_MESSAGE_ID, 0);
         }
-        MessageEditorData newData = oldData.hideBeforeSave
-                ? MessageEditorData.newEmpty(oldData.getMyAccount())
-                : MessageEditorData.load(oldData.getMsgId());
         return newData;
     }
 
