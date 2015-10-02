@@ -156,7 +156,7 @@ public class MessageEditor {
         ViewGroup layoutParent = (ViewGroup) getActivity().findViewById(R.id.myListParent);
         LayoutInflater inflater = LayoutInflater.from(getActivity());
         mEditorView = (ViewGroup) inflater.inflate(R.layout.message_editor, null);
-        layoutParent.addView(mEditorView);
+        layoutParent.addView(mEditorView, 0);
         
         mCharsLeftText = (TextView) mEditorView.findViewById(R.id.messageEditCharsLeftTextView);
         setupEditText();
