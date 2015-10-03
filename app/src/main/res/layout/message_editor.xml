@@ -26,7 +26,8 @@
         android:layout_height="wrap_content"
         android:layout_width="match_parent"
         android:visibility="visible"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:paddingTop="3dp">
         <View style="@style/Divider"/>
         <RelativeLayout android:layout_width="match_parent"
                       android:layout_height="wrap_content"

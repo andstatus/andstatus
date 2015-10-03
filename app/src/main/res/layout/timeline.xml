@@ -48,7 +48,7 @@
 		        android:id="@+id/sync_indicator"
 		        android:layout_width="match_parent"
 		        android:layout_height="wrap_content"
-		        android:layout_above="@id/message_editor"
+		        android:layout_alignParentBottom="true"
 		        android:background="?android:attr/colorBackground"
 		        android:orientation="vertical"
 		        android:paddingBottom="5dip"
