@@ -73,7 +73,7 @@ public class UnsentMessagesTest extends ActivityInstrumentationTestCase2<Timelin
                 MyQuery.msgIdToLongColumnValue(MyDatabase.Msg.MSG_STATUS, unsentMsgId)));
 
         step = "Start editing unsent message" + unsentMsgId ;
-        getActivity().getMessageEditor().loadState(unsentMsgId);
+        getActivity().getMessageEditor().startEditingMessage(MessageEditorData.load(unsentMsgId));
         ActivityTestHelper.waitViewVisible(method + "; " + step, editorView);
         TestSuite.waitForIdleSync(this);
 

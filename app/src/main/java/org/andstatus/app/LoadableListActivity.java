@@ -244,23 +244,27 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
     @Override
     public void onReceive(CommandData commandData, MyServiceEvent event) {
         if (event == MyServiceEvent.AFTER_EXECUTING_COMMAND) {
-            switch(commandData.getCommand()) {
-                case GET_STATUS:
-                case UPDATE_STATUS:
-                case CREATE_FAVORITE:
-                case DESTROY_FAVORITE:
-                case REBLOG:
-                case DESTROY_REBLOG:
-                case DESTROY_STATUS:
-                case FETCH_ATTACHMENT:
-                case FETCH_AVATAR:
-                    if (!commandData.getResult().hasError()) {
-                        showList();
-                    }
-                    break;
-                default:
-                    break;
-            }
+            onReceiveAfterExecutingCommand(commandData);
+        }
+    }
+
+    protected void onReceiveAfterExecutingCommand(CommandData commandData) {
+        switch(commandData.getCommand()) {
+            case GET_STATUS:
+            case UPDATE_STATUS:
+            case CREATE_FAVORITE:
+            case DESTROY_FAVORITE:
+            case REBLOG:
+            case DESTROY_REBLOG:
+            case DESTROY_STATUS:
+            case FETCH_ATTACHMENT:
+            case FETCH_AVATAR:
+                if (!commandData.getResult().hasError()) {
+                    showList();
+                }
+                break;
+            default:
+                break;
         }
     }
 

@@ -26,34 +26,57 @@ import org.andstatus.app.util.MyLog;
 /**
  * Asynchronously save, delete and send a message, prepared by {@link MessageEditor}
  */
-public class MessageEditorSaver extends AsyncTask<MessageEditor, Void, MessageEditorData> {
-    volatile MessageEditor editor = null;
+public class MessageEditorSaver extends AsyncTask<MessageEditorData, Void, MessageEditorData> {
+    final MessageEditor editor;
     volatile MessageEditor.MyLock lock = MessageEditor.MyLock.EMPTY;
 
+    public MessageEditorSaver(MessageEditor editor) {
+        this.editor = editor;
+    }
+
     @Override
-    protected MessageEditorData doInBackground(MessageEditor... params) {
-        editor = params[0];
-        MessageEditorData data = editor.getData();
-        MessageEditor.MyLock potentialLock = new MessageEditor.MyLock(true, data.getMsgId());
-        if (!potentialLock.decidedToContinue()) {
+    protected MessageEditorData doInBackground(MessageEditorData... params) {
+        MessageEditorData data = params[0];
+        if (!acquireLock(data)) {
             return data;
         }
-        lock = potentialLock;
+        saveDataFirst(data, params[1]);
+        if (data.isEmpty()) {
+            return MessageEditorData.newEmpty();
+        }
+        saveDataLast(data);
+        return data.hideBeforeSave ? MessageEditorData.newEmpty() : MessageEditorData.load(data.getMsgId());
+    }
 
-        MyLog.v(MessageEditorData.TAG, "Saver started, Editor is " + (editor.isVisible() ? "visible" : "hidden")
-        + "; " + data);
-        long msgId = 0;
+    private boolean acquireLock(MessageEditorData data) {
+        lock = new MessageEditor.MyLock(true, data.getMsgId());
+        return lock.decidedToContinue();
+    }
+
+    private void saveDataFirst(MessageEditorData data, MessageEditorData dataFirst) {
+        if (dataFirst != null && !dataFirst.isEmpty()
+                && (dataFirst.getMsgId() == 0 || data.getMsgId() != dataFirst.getMsgId())) {
+            MyLog.v(MessageEditorData.TAG, "Saver saving first data:" + dataFirst);
+            save(dataFirst);
+            broadcastDataChanged(dataFirst);
+        }
+    }
+
+    private void saveDataLast(MessageEditorData data) {
+        MyLog.v(MessageEditorData.TAG, "Saver saving last data:" + data);
         if (data.status == DownloadStatus.DELETED) {
             deleteDraft(data);
         } else {
-            msgId = save(data);
+            save(data);
+            if (data.beingEdited) {
+                MyPreferences.putLong(MyPreferences.KEY_BEING_EDITED_MESSAGE_ID, data.getMsgId());
+            }
             if (data.status == DownloadStatus.SENDING) {
-                CommandData commandData = CommandData.updateStatus(data.getMyAccount().getAccountName(), msgId);
+                CommandData commandData = CommandData.updateStatus(data.getMyAccount().getAccountName(), data.getMsgId());
                 MyServiceManager.sendManualForegroundCommand(commandData);
             }
         }
         broadcastDataChanged(data);
-        return loadFutureData(data, msgId);
     }
 
     private void deleteDraft(MessageEditorData data) {
@@ -62,7 +85,7 @@ public class MessageEditorSaver extends AsyncTask<MessageEditor, Void, MessageEd
                 .delete(MatchedUri.getMsgUri(0, data.getMsgId()), null, null);
     }
 
-    private long save(MessageEditorData data) {
+    private void save(MessageEditorData data) {
         MbMessage message = MbMessage.fromOriginAndOid(data.getMyAccount().getOriginId(), "",
                 data.status);
         message.msgId = data.getMsgId();
@@ -85,29 +108,18 @@ public class MessageEditorSaver extends AsyncTask<MessageEditor, Void, MessageEd
                     MbAttachment.fromUriAndContentType(data.getMediaUri(), MyContentType.IMAGE));
         }
         DataInserter di = new DataInserter(data.getMyAccount());
-        return di.insertOrUpdateMsg(message);
+        data.setMsgId(di.insertOrUpdateMsg(message));
     }
 
     private void broadcastDataChanged(MessageEditorData data) {
+        if (data.isEmpty()) {
+            return;
+        }
         CommandData commandData = new CommandData(
                 data.status == DownloadStatus.DELETED ? CommandEnum.DESTROY_STATUS : CommandEnum.UPDATE_STATUS,
                 data.getMyAccount().getAccountName(), data.getMsgId());
         MyServiceEventsBroadcaster.newInstance(MyContextHolder.get(), MyServiceState.UNKNOWN)
                 .setCommandData(commandData).setEvent(MyServiceEvent.AFTER_EXECUTING_COMMAND).broadcast();
-    }
-
-    private MessageEditorData loadFutureData(MessageEditorData oldData, long msgId) {
-        boolean loadNewEmpty = oldData.status != DownloadStatus.DRAFT || oldData.hideAfterSave;
-        MessageEditorData newData = loadNewEmpty ?
-                MessageEditorData.newEmpty(oldData.getMyAccount()) : MessageEditorData.load(msgId);
-        newData.showAfterSaveOrLoad = oldData.showAfterSaveOrLoad;
-        newData.hideAfterSave = oldData.hideAfterSave;
-        if ( oldData.hideAfterSave) {
-            MyPreferences.putLong(MyPreferences.KEY_BEING_EDITED_DRAFT_MESSAGE_ID, 0);
-        } else if (newData.status == DownloadStatus.DRAFT && newData.getMsgId() != 0) {
-            MyPreferences.putLong(MyPreferences.KEY_BEING_EDITED_DRAFT_MESSAGE_ID, newData.getMsgId());
-        }
-        return newData;
     }
 
     @Override
@@ -117,14 +129,11 @@ public class MessageEditorSaver extends AsyncTask<MessageEditor, Void, MessageEd
 
     @Override
     protected void onPostExecute(MessageEditorData data) {
-        if (lock.isEmpty()) {
-            MyLog.v(MessageEditorData.TAG, "Saver skipped saving data: " + data);
-
-        } else {
-            MyLog.v(MessageEditorData.TAG, "Saved; Future data: " + data);
-            editor.dataSavedCallback(data);
-            lock.release();
+        MyLog.v(MessageEditorData.TAG, "Saved; Future data: " + data);
+        if (!data.isEmpty()) {
+            editor.dataLoadedCallback(data);
         }
+        lock.release();
     }
 
 }

@@ -77,6 +77,7 @@
 			            style="@style/messageBodyAppearance" />
 		        </LinearLayout>
 		    </LinearLayout>
+			<include layout="@layout/message_editor" />
 	    </RelativeLayout>
 		</org.andstatus.app.widget.MySwipeRefreshLayout>    
     <include layout="@layout/navigation_drawer" />

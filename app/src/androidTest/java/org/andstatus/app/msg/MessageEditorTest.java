@@ -46,7 +46,7 @@ import org.andstatus.app.util.MyLog;
  * @author yvolk@yurivolkov.com
  */
 public class MessageEditorTest extends android.test.ActivityInstrumentationTestCase2<TimelineActivity> {
-    private static MessageEditorData data = null;
+    private MessageEditorData data = null;
     private static int editingStep = 0;
     private TimelineActivity mActivity;
 
@@ -61,8 +61,8 @@ public class MessageEditorTest extends android.test.ActivityInstrumentationTestC
         TestSuite.initializeWithData(this);
         MyLog.setLogToFile(true);
 
-        if (data == null) {
-            MyPreferences.putLong(MyPreferences.KEY_BEING_EDITED_DRAFT_MESSAGE_ID, 0);
+        if (editingStep == 0) {
+            MyPreferences.putLong(MyPreferences.KEY_BEING_EDITED_MESSAGE_ID, 0);
         }
 
         MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.CONVERSATION_ACCOUNT_NAME);
@@ -74,10 +74,7 @@ public class MessageEditorTest extends android.test.ActivityInstrumentationTestC
         setActivityIntent(intent);
 
         mActivity = getActivity();
-
-        if (data == null) {
-            data = getStaticData();
-        }
+        data = getStaticData();
 
         assertTrue("MyService is available", MyServiceManager.isServiceAvailable());
         MyLog.i(this, "setUp ended");
@@ -173,11 +170,10 @@ public class MessageEditorTest extends android.test.ActivityInstrumentationTestC
     private void editingStep2() throws InterruptedException {
         final String method = "editingStep2";
         MyLog.v(this, method + " started");
-        assertInitialText("Message restored");
         ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<TimelineActivity>(this, mActivity);
         View editorView = mActivity.findViewById(R.id.message_editor);
-        helper.clickMenuItem(method + "; Create message cannot hide editor", R.id.createMessageButton);
-        ActivityTestHelper.waitViewVisible(method + "; Create message cannot hide editor", editorView);
+        ActivityTestHelper.waitViewVisible(method + "; Restored message is visible", editorView);
+        assertInitialText("Message restored");
         helper.clickMenuItem(method + " hide editor", R.id.saveDraftButton);
         ActivityTestHelper.waitViewInvisible(method + "; Editor is hidden again", editorView);
         helper.clickMenuItem(method + " clicker 5", R.id.createMessageButton);

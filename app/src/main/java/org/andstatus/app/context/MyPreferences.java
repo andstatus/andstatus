@@ -119,7 +119,7 @@ public class MyPreferences {
     public static final String KEY_SYNC_AFTER_MESSAGE_WAS_SENT = "sync_after_message_was_sent";
     public static final String KEY_MARK_REPLIES_IN_TIMELINE = "mark_replies_in_timeline";
 
-    public static final String KEY_BEING_EDITED_DRAFT_MESSAGE_ID = "draft_message_id";
+    public static final String KEY_BEING_EDITED_MESSAGE_ID = "draft_message_id";
 
     private MyPreferences(){
         // Non instantiable
@@ -300,14 +300,14 @@ public class MyPreferences {
 	public static void putLong(String key, long value) {
         SharedPreferences sp = getDefaultSharedPreferences();
         if (sp != null) {
-            sp.edit().putLong(key, value).commit();
+            sp.edit().putLong(key, value).apply();
         }
     }
 
     public static void putBoolean(String key, boolean value) {
         SharedPreferences sp = getDefaultSharedPreferences();
         if (sp != null) {
-            sp.edit().putBoolean(key, value).commit();
+            sp.edit().putBoolean(key, value).apply();
         }
     }
 	

@@ -52,6 +52,7 @@ import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -148,19 +149,30 @@ public class MessageEditor {
     private EditText bodyEditText;
     private final TextView mCharsLeftText;
 
-    private MessageEditorData editorData = MessageEditorData.newEmpty(null);
+    private MessageEditorData editorData;
 
     public MessageEditor(ActionableMessageList actionableMessageList) {
         mMessageList = actionableMessageList;
-
-        ViewGroup layoutParent = (ViewGroup) getActivity().findViewById(R.id.myListParent);
-        LayoutInflater inflater = LayoutInflater.from(getActivity());
-        mEditorView = (ViewGroup) inflater.inflate(R.layout.message_editor, null);
-        layoutParent.addView(mEditorView);
-        
+        mEditorView = getEditorView();
         mCharsLeftText = (TextView) mEditorView.findViewById(R.id.messageEditCharsLeftTextView);
         setupEditText();
         hide();
+    }
+
+    private ViewGroup getEditorView() {
+        ViewGroup editorView = (ViewGroup) getActivity().findViewById(R.id.message_editor);
+        if (editorView == null) {
+            ViewGroup layoutParent = (ViewGroup) getActivity().findViewById(R.id.myListParent);
+            LayoutInflater inflater = LayoutInflater.from(getActivity());
+            editorView = (ViewGroup) inflater.inflate(R.layout.message_editor, null);
+
+            RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
+            editorView.setLayoutParams(layoutParams);
+            layoutParent.addView(editorView);
+        }
+        return editorView;
     }
 
     private void setupEditText() {
@@ -274,7 +286,7 @@ public class MessageEditor {
                     new MenuItem.OnMenuItemClickListener() {
                         @Override
                         public boolean onMenuItemClick(MenuItem item) {
-                            saveAndHide();
+                            saveDraft();
                             return false;
                         }
                     });
@@ -385,6 +397,8 @@ public class MessageEditor {
     }
     
     public void hide() {
+        editorData = MessageEditorData.newEmpty();
+        updateScreen();
         if (isVisible()) {
             mEditorView.setVisibility(View.GONE);
             closeSoftKeyboard();
@@ -405,27 +419,26 @@ public class MessageEditor {
         MyLog.v(MessageEditorData.TAG, "startEditingSharedData " + textToShare + " uri: " + mediaToShare);
         MessageEditorData data = MessageEditorData.newEmpty(ma).setBody(textToShare);
         data.setMediaUri(mediaToShare);
-        data.showAfterSaveOrLoad = true;
-        editorData = data;
-        saveData();
+        saveData(data, editorData);
     }
 
-    public void startEditingMessage(MessageEditorData dataIn) {
-        if (!dataIn.getMyAccount().isValid()) {
-            MyLog.v(MessageEditorData.TAG, "Not a valid account " + dataIn.getMyAccount().getAccountName());
+    public void startEditingMessage(MessageEditorData data) {
+        if (!data.getMyAccount().isValid()) {
+            MyLog.v(MessageEditorData.TAG, "Not a valid account " + data.getMyAccount().getAccountName());
             return;
         }
-        if (!dataIn.status.mayBeEdited()) {
-            MyLog.v(MessageEditorData.TAG, "Cannot be edited " + dataIn);
+        if (!data.status.mayBeEdited()) {
+            MyLog.v(MessageEditorData.TAG, "Cannot be edited " + data);
             return;
         }
-        dataIn.showAfterSaveOrLoad = true;
-        dataIn.status = DownloadStatus.DRAFT;
-        editorData = dataIn;
-        saveData();
-        if (editorData.getMyAccount().getConnection().isApiSupported(ApiRoutineEnum.ACCOUNT_RATE_LIMIT_STATUS)) {
+        data.status = DownloadStatus.DRAFT;
+        if (data.isEmpty()) {
+            dataLoadedCallback(data);
+        }
+        saveData(data, editorData);
+        if (data.getMyAccount().getConnection().isApiSupported(ApiRoutineEnum.ACCOUNT_RATE_LIMIT_STATUS)) {
             // Start asynchronous task that will show Rate limit status
-            MyServiceManager.sendForegroundCommand(new CommandData(CommandEnum.RATE_LIMIT_STATUS, editorData.getMyAccount().getAccountName()));
+            MyServiceManager.sendForegroundCommand(new CommandData(CommandEnum.RATE_LIMIT_STATUS, data.getMyAccount().getAccountName()));
         }
     }
 
@@ -442,10 +455,11 @@ public class MessageEditor {
 
     private void showIfNotEmpty(int viewId, String value) {
         TextView textView = (TextView) mEditorView.findViewById(viewId);
-        textView.setText(Html.fromHtml(value));
         if (TextUtils.isEmpty(value)) {
+            textView.setText("");
             textView.setVisibility(View.GONE);
         } else {
+            textView.setText(Html.fromHtml(value));
             textView.setVisibility(View.VISIBLE);
         }
     }
@@ -495,7 +509,7 @@ public class MessageEditor {
     }
 
     private void sendAndHide() {
-        editorData.body = bodyEditText.getText().toString();
+        updateDataFromScreen();
         if (!editorData.getMyAccount().isValid()) {
             discardAndHide();
         } else if (TextUtils.isEmpty(editorData.body.trim())) {
@@ -505,70 +519,90 @@ public class MessageEditor {
             Toast.makeText(getActivity(), R.string.message_is_too_long,
                     Toast.LENGTH_SHORT).show();
         } else {
+            MessageEditorData data = editorData.copy();
 			if (MyPreferences.getBoolean(MyPreferences.KEY_SENDING_MESSAGES_LOG_ENABLED, false)) {
 				MyLog.setLogToFile(true);
 			}
-            editorData.status = DownloadStatus.SENDING;
-            editorData.hideAfterSave = true;
-            saveData();
+            data.status = DownloadStatus.SENDING;
+            data.hideBeforeSave = true;
+            saveData(data, null);
         }
     }
 
-    private void saveAndHide() {
-        editorData.hideAfterSave = true;
-        saveState();
-	}
+    private void updateDataFromScreen() {
+        editorData.body = bodyEditText.getText().toString();
+    }
 
     private void discardAndHide() {
-        editorData.status = DownloadStatus.DELETED;
-        saveData();
+        MessageEditorData data = editorData.copy();
+        data.hideBeforeSave = true;
+        data.status = DownloadStatus.DELETED;
+        saveData(data, null);
     }
 
-    public void saveState() {
-        if (bodyEditText != null) {
-            editorData.body = bodyEditText.getText().toString();
-            saveData();
+    public void saveAsBeingEditedAndHide() {
+        saveAndHide(true);
+    }
+
+    private void saveDraft() {
+        saveAndHide(false);
+    }
+
+    private void saveAndHide(boolean beingEdited) {
+        updateDataFromScreen();
+        MessageEditorData data = editorData.copy();
+        data.beingEdited = beingEdited;
+        data.hideBeforeSave = true;
+        saveData(data, null);
+    }
+
+    private void saveData(MessageEditorData dataLast, MessageEditorData dataFirst) {
+        if (!dataLast.beingEdited) {
+            MyPreferences.putLong(MyPreferences.KEY_BEING_EDITED_MESSAGE_ID, 0);
+        }
+        if (dataLast.hideBeforeSave) {
+            hide();
+        }
+        if (!dataLast.isEmpty() || (dataFirst != null && !dataFirst.isEmpty())) {
+            MyLog.v(MessageEditorData.TAG, "Save requested for " + dataLast);
+            new MessageEditorSaver(this).execute(dataLast, dataFirst);
         }
     }
 
-    private void saveData() {
-        if (editorData.isEmpty()) {
-            dataSavedCallback(editorData);
-        } else {
-            MyLog.v(MessageEditorData.TAG, "Save requested for " + editorData);
-            new MessageEditorSaver().execute(this);
+    public void loadCurrentDraft() {
+        if (isVisible()) {
+            MyLog.v(MessageEditorData.TAG, "loadCurrentDraft skipped: Editor is visible");
+            return;
         }
-    }
-
-    public void loadState(long msgId) {
-        saveState();
-        MyLog.v(MessageEditorData.TAG, "loadState started" + (msgId == 0 ? "" : ", msgId=" + msgId));
+        long msgId = MyPreferences.getLong(MyPreferences.KEY_BEING_EDITED_MESSAGE_ID);
+        if (msgId == 0) {
+            MyLog.v(MessageEditorData.TAG, "loadCurrentDraft: no current draft");
+            return;
+        }
+        MyLog.v(MessageEditorData.TAG, "loadCurrentDraft started, msgId=" + msgId);
         new AsyncTask<Long, Void, MessageEditorData>() {
             volatile MessageEditor.MyLock lock = MessageEditor.MyLock.EMPTY;
 
             @Override
             protected MessageEditorData doInBackground(Long... params) {
                 long msgId = params[0];
-                MyLog.v(MessageEditorData.TAG, "Load requested for " + msgId);
+                MyLog.v(MessageEditorData.TAG, "Async load requested for " + msgId);
                 MessageEditor.MyLock potentialLock = new MessageEditor.MyLock(false, msgId);
                 if (!potentialLock.decidedToContinue()) {
-                    return MessageEditorData.newEmpty(null);
+                    return MessageEditorData.newEmpty();
                 }
                 lock = potentialLock;
-                MyLog.v(MessageEditorData.TAG, "loadState passed wait for save");
+                MyLog.v(MessageEditorData.TAG, "loadCurrentDraft passed wait");
 
-                if (msgId == 0) {
-                    msgId = MyPreferences.getLong(MyPreferences.KEY_BEING_EDITED_DRAFT_MESSAGE_ID);
+                DownloadStatus status = DownloadStatus.load(MyQuery.msgIdToLongColumnValue(MyDatabase.Msg.MSG_STATUS, msgId));
+                if (status.mayBeEdited()) {
+                    return MessageEditorData.load(msgId);
+                } else {
+                    MyLog.v(MessageEditorData.TAG, "Cannot be edited " + msgId + " state:" + status);
+                    msgId = 0;
+                    MyPreferences.putLong(MyPreferences.KEY_BEING_EDITED_MESSAGE_ID, 0);
+                    return MessageEditorData.newEmpty();
                 }
-                if (msgId != 0) {
-                    DownloadStatus status = DownloadStatus.load(MyQuery.msgIdToLongColumnValue(MyDatabase.Msg.MSG_STATUS, msgId));
-                    if (!status.mayBeEdited()) {
-                        MyLog.v(MessageEditorData.TAG, "Cannot be edited " + msgId + " state:" + status);
-                        msgId = 0;
-                    }
-                }
-                MyPreferences.putLong(MyPreferences.KEY_BEING_EDITED_DRAFT_MESSAGE_ID, msgId);
-                return MessageEditorData.load(msgId);
             }
 
             @Override
@@ -578,11 +612,14 @@ public class MessageEditor {
 
             @Override
             protected void onPostExecute(MessageEditorData data) {
-                if (!lock.isEmpty()) {
-                    data.showAfterSaveOrLoad = !data.isEmpty();
-                    dataLoadedCallback(data);
-                    lock.release();
+                if (!lock.isEmpty() && !data.isEmpty()) {
+                    if (isVisible()) {
+                        MyLog.v(MessageEditorData.TAG, "loadedDraft is not used: Editor is visible");
+                    } else {
+                        dataLoadedCallback(data);
+                    }
                 }
+                lock.release();
             }
         }.execute(msgId);
     }
@@ -617,28 +654,17 @@ public class MessageEditor {
 	}
 
     public void setMedia(Uri mediaUri) {
-        editorData.setMediaUri(mediaUri);
-        saveData();
-    }
-
-    public void dataSavedCallback(MessageEditorData data) {
-        dataLoadedCallback(data);
+        MessageEditorData data = editorData.copy();
+        hide();
+        data.beingEdited = true;
+        data.setMediaUri(mediaUri);
+        saveData(data, null);
     }
 
     public void dataLoadedCallback(MessageEditorData data) {
         editorData = data;
         updateScreen();
-        if (editorData.status == DownloadStatus.DRAFT) {
-            if (editorData.showAfterSaveOrLoad) {
-                show();
-            } else if (editorData.hideAfterSave || editorData.isEmpty()) {
-                hide();
-            }
-        } else {
-            hide();
-        }
-        editorData.showAfterSaveOrLoad = false;
-        editorData.hideAfterSave = false;
+        show();
     }
 
     private MyBaseListActivity getActivity() {

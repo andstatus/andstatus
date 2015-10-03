@@ -59,6 +59,7 @@
   <string name="button_overflow">Menu Overflow</string>
   <string name="button_restore">Restaurar</string>
   <string name="button_save">Guardar</string>
+  <string name="button_save_draft">Guardar rascunho</string>
   <string name="button_skip">Ignorar</string>
   <string name="button_send">Enviar</string>
   <string name="cannot_send_empty_message">Não pode enviar uma mensagem vazia.</string>
@@ -130,6 +131,8 @@
   <string name="dialog_title_service_unavailable">Serviço indisponível</string>
   <string name="dialog_title_timeline_loading">Atualizando cronologia&#8230;</string>
   <string name="discover_open_instances_title">Descobrir instâncias abertas</string>
+  <string name="download_status_draft">rascunho</string>
+  <string name="download_status_unsent">não enviada</string>
   <string name="drawer_close">Fechar painel de navegação</string>
   <string name="drawer_open">Abrir painel de navegação</string>
   <string name="empty_in_parenthesis">(vazio)</string>
@@ -211,6 +214,7 @@
   <string name="menu_item_destroy_reblog_twitter">Anular retweet</string>
   <string name="menu_item_destroy_status">Remover mensagem</string>
   <string name="menu_item_direct_message">Mensagem direta</string>
+  <string name="menu_item_edit">Editar</string>
   <string name="menu_item_favorite">Favorito</string>
   <string name="menu_item_follow_user">Seguir \"%1s\"</string>
   <string name="menu_item_view_image">Ver imagem</string>
@@ -366,11 +370,13 @@ Com suporte a GNU social, Twitter e Pump.io.</string>
   <string name="timeline_reloaded">A cronologia foi recarregada.</string>
   <string name="timeline_title_all">Todas</string>
   <string name="timeline_title_direct_messages">Mensagens diretas</string>
+  <string name="timeline_title_drafts">Rascunhos</string>
   <string name="timeline_title_everything">Tudo</string>
   <string name="timeline_title_favorites">Favoritas</string>
   <string name="timeline_title_following_user">A seguir</string>
   <string name="timeline_title_home">Home</string>
   <string name="timeline_title_mentions">Menções</string>
+  <string name="timeline_title_outbox">Caixa de saída</string>
   <string name="timeline_title_public">Públicas</string>
   <string name="timeline_title_replies">Respostas</string>
   <string name="timeline_title_unknown">(Cronologia desconhecida)</string>
