@@ -1246,7 +1246,7 @@ public class TimelineActivity extends MyListActivity implements MyServiceEventsL
         }
     }
 
-    private void onReceiveAfterExecutingCommand(CommandData commandData) {
+    protected void onReceiveAfterExecutingCommand(CommandData commandData) {
         switch (commandData.getCommand()) {
             case FETCH_TIMELINE:
             case SEARCH_MESSAGE:
@@ -1260,6 +1260,9 @@ public class TimelineActivity extends MyListActivity implements MyServiceEventsL
                             + commandData.getResult().getHourlyLimit();
                     updateTitle();
                 }
+                break;
+            case UPDATE_STATUS:
+                mMessageEditor.loadCurrentDraft();
                 break;
             default:
                 break;

@@ -37,35 +37,46 @@ public class MessageEditorSaver extends AsyncTask<MessageEditorData, Void, Messa
     @Override
     protected MessageEditorData doInBackground(MessageEditorData... params) {
         MessageEditorData data = params[0];
-        MessageEditor.MyLock potentialLock = new MessageEditor.MyLock(true, data.getMsgId());
-        if (!potentialLock.decidedToContinue()) {
+        if (!acquireLock(data)) {
             return data;
         }
-        lock = potentialLock;
+        saveDataFirst(data, params[1]);
+        if (data.isEmpty()) {
+            return MessageEditorData.newEmpty();
+        }
+        saveDataLast(data);
+        return data.hideBeforeSave ? MessageEditorData.newEmpty() : MessageEditorData.load(data.getMsgId());
+    }
 
-        MessageEditorData dataFirst = params[1];
+    private boolean acquireLock(MessageEditorData data) {
+        lock = new MessageEditor.MyLock(true, data.getMsgId());
+        return lock.decidedToContinue();
+    }
+
+    private void saveDataFirst(MessageEditorData data, MessageEditorData dataFirst) {
         if (dataFirst != null && !dataFirst.isEmpty()
                 && (dataFirst.getMsgId() == 0 || data.getMsgId() != dataFirst.getMsgId())) {
             MyLog.v(MessageEditorData.TAG, "Saver saving first data:" + dataFirst);
-            dataFirst.setMsgId(save(dataFirst));
+            save(dataFirst);
             broadcastDataChanged(dataFirst);
         }
-        if (data.isEmpty()) {
-            return data;
+    }
+
+    private void saveDataLast(MessageEditorData data) {
+        MyLog.v(MessageEditorData.TAG, "Saver saving last data:" + data);
+        if (data.status == DownloadStatus.DELETED) {
+            deleteDraft(data);
         } else {
-            MyLog.v(MessageEditorData.TAG, "Saver saving last data:" + data);
-            if (data.status == DownloadStatus.DELETED) {
-                deleteDraft(data);
-            } else {
-                data.setMsgId(save(data));
-                if (data.status == DownloadStatus.SENDING) {
-                    CommandData commandData = CommandData.updateStatus(data.getMyAccount().getAccountName(), data.getMsgId());
-                    MyServiceManager.sendManualForegroundCommand(commandData);
-                }
+            save(data);
+            if (data.beingEdited) {
+                MyPreferences.putLong(MyPreferences.KEY_BEING_EDITED_MESSAGE_ID, data.getMsgId());
             }
-            broadcastDataChanged(data);
-            return loadFutureData(data);
+            if (data.status == DownloadStatus.SENDING) {
+                CommandData commandData = CommandData.updateStatus(data.getMyAccount().getAccountName(), data.getMsgId());
+                MyServiceManager.sendManualForegroundCommand(commandData);
+            }
         }
+        broadcastDataChanged(data);
     }
 
     private void deleteDraft(MessageEditorData data) {
@@ -74,7 +85,7 @@ public class MessageEditorSaver extends AsyncTask<MessageEditorData, Void, Messa
                 .delete(MatchedUri.getMsgUri(0, data.getMsgId()), null, null);
     }
 
-    private long save(MessageEditorData data) {
+    private void save(MessageEditorData data) {
         MbMessage message = MbMessage.fromOriginAndOid(data.getMyAccount().getOriginId(), "",
                 data.status);
         message.msgId = data.getMsgId();
@@ -97,7 +108,7 @@ public class MessageEditorSaver extends AsyncTask<MessageEditorData, Void, Messa
                     MbAttachment.fromUriAndContentType(data.getMediaUri(), MyContentType.IMAGE));
         }
         DataInserter di = new DataInserter(data.getMyAccount());
-        return di.insertOrUpdateMsg(message);
+        data.setMsgId(di.insertOrUpdateMsg(message));
     }
 
     private void broadcastDataChanged(MessageEditorData data) {
@@ -109,16 +120,6 @@ public class MessageEditorSaver extends AsyncTask<MessageEditorData, Void, Messa
                 data.getMyAccount().getAccountName(), data.getMsgId());
         MyServiceEventsBroadcaster.newInstance(MyContextHolder.get(), MyServiceState.UNKNOWN)
                 .setCommandData(commandData).setEvent(MyServiceEvent.AFTER_EXECUTING_COMMAND).broadcast();
-    }
-
-    private MessageEditorData loadFutureData(MessageEditorData oldData) {
-        MessageEditorData newData = oldData.hideBeforeSave
-                ? MessageEditorData.newEmpty()
-                : MessageEditorData.load(oldData.getMsgId());
-        if (oldData.beingEdited) {
-            MyPreferences.putLong(MyPreferences.KEY_BEING_EDITED_MESSAGE_ID, oldData.getMsgId());
-        }
-        return newData;
     }
 
     @Override

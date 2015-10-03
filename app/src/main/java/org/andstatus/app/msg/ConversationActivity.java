@@ -32,6 +32,7 @@ import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.TimelineType;
+import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.QueueViewer;
 import org.andstatus.app.util.UriUtils;
 
@@ -83,6 +84,18 @@ public class ConversationActivity extends LoadableListActivity implements Action
     protected void onPause() {
         mMessageEditor.saveAsBeingEditedAndHide();
         super.onPause();
+    }
+
+    @Override
+    protected void onReceiveAfterExecutingCommand(CommandData commandData) {
+        super.onReceiveAfterExecutingCommand(commandData);
+        switch (commandData.getCommand()) {
+            case UPDATE_STATUS:
+                mMessageEditor.loadCurrentDraft();
+                break;
+            default:
+                break;
+        }
     }
 
     @Override

@@ -8,8 +8,8 @@ android {
         applicationId "org.andstatus.app"
         minSdkVersion 16
         targetSdkVersion 22
-        versionName '19.1'
-        versionCode 129
+        versionName '19.2'
+        versionCode 130
 
         testApplicationId "org.andstatus.app.tests"
         testInstrumentationRunner "android.test.InstrumentationTestRunner"
