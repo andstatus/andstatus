@@ -59,6 +59,7 @@
   <string name="button_overflow">オーバーフロー</string>
   <string name="button_restore">復元</string>
   <string name="button_save">保存</string>
+  <string name="button_save_draft">下書きを保存</string>
   <string name="button_skip">スキップ</string>
   <string name="button_send">送信</string>
   <string name="cannot_send_empty_message">空のメッセージは送信できません。</string>
@@ -130,6 +131,8 @@
   <string name="dialog_title_service_unavailable">サービスが利用できません</string>
   <string name="dialog_title_timeline_loading">タイムラインを更新しています&#8230;</string>
   <string name="discover_open_instances_title">オープンインスタンスを検出</string>
+  <string name="download_status_draft">下書き</string>
+  <string name="download_status_unsent">未送信</string>
   <string name="drawer_close">ナビゲーションドロワーを閉じる</string>
   <string name="drawer_open">ナビゲーションドロワーを開く</string>
   <string name="empty_in_parenthesis">(空)</string>
@@ -211,6 +214,7 @@
   <string name="menu_item_destroy_reblog_twitter">リツイートを元に戻す</string>
   <string name="menu_item_destroy_status">メッセージを削除</string>
   <string name="menu_item_direct_message">ダイレクトメッセージ</string>
+  <string name="menu_item_edit">編集</string>
   <string name="menu_item_favorite">お気に入り</string>
   <string name="menu_item_follow_user">\"%1s\" をフォロー</string>
   <string name="menu_item_view_image">画像を表示</string>
@@ -365,11 +369,13 @@
   <string name="timeline_reloaded">タイムラインを再読み込みしました。</string>
   <string name="timeline_title_all">すべて</string>
   <string name="timeline_title_direct_messages">ダイレクトメッセージ</string>
+  <string name="timeline_title_drafts">下書き</string>
   <string name="timeline_title_everything">すべて</string>
   <string name="timeline_title_favorites">お気に入り</string>
   <string name="timeline_title_following_user">フォロー中</string>
   <string name="timeline_title_home">ホーム</string>
   <string name="timeline_title_mentions">メンション</string>
+  <string name="timeline_title_outbox">送信トレイ</string>
   <string name="timeline_title_public">公開</string>
   <string name="timeline_title_replies">返信</string>
   <string name="timeline_title_unknown">(不明なタイムライン)</string>
@@ -418,7 +424,7 @@
   <string name="title_preference_username">ユーザー名</string>
   <string name="title_preference_username_pumpio">Webfinger ID</string>
   <string name="title_preference_show_avatars">アバターを表示</string>
-  <string name="title_preference_show_attached_images">添付画像を表示</string>
+  <string name="title_preference_show_attached_images">添付画像をダウンロードして表示</string>
   <string name="title_preference_show_origin">タイムラインにソーシャル ネットワークを表示</string>
   <string name="title_preference_user_in_timeline">タイムラインに、ユーザーを表示する方法</string>
   <string name="title_preference_verify_credentials">資格情報を再確認</string>
@@ -435,7 +441,7 @@
   <string name="unimplemented">実装されていません。</string>
   <string name="use_legacy_http_protocol_title">従来の HTTP プロトコルを使用</string>
   <string name="user_in_timeline_entries_username">ユーザー名</string>
-  <string name="user_in_timeline_entries_at_username">"@ユーザー名"</string>
+  <string name="user_in_timeline_entries_at_username">"\@ユーザー名"</string>
   <string name="user_in_timeline_entries_webfingerid">webFingerId</string>
   <string name="user_in_timeline_entries_real_name">実名</string>
   <string name="user_in_timeline_entries_real_name_at_username">実名 @ユーザー名</string>
