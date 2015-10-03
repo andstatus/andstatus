@@ -48,7 +48,7 @@
 		        android:id="@+id/sync_indicator"
 		        android:layout_width="match_parent"
 		        android:layout_height="wrap_content"
-		        android:layout_alignParentBottom="true"
+		        android:layout_above="@id/message_editor"
 		        android:background="?android:attr/colorBackground"
 		        android:orientation="vertical"
 		        android:paddingBottom="5dip"
@@ -77,6 +77,7 @@
 			            style="@style/messageBodyAppearance" />
 		        </LinearLayout>
 		    </LinearLayout>
+			<include layout="@layout/message_editor" />
 	    </RelativeLayout>
 		</org.andstatus.app.widget.MySwipeRefreshLayout>    
     <include layout="@layout/navigation_drawer" />

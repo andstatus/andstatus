@@ -52,6 +52,7 @@ import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -152,15 +153,26 @@ public class MessageEditor {
 
     public MessageEditor(ActionableMessageList actionableMessageList) {
         mMessageList = actionableMessageList;
-
-        ViewGroup layoutParent = (ViewGroup) getActivity().findViewById(R.id.myListParent);
-        LayoutInflater inflater = LayoutInflater.from(getActivity());
-        mEditorView = (ViewGroup) inflater.inflate(R.layout.message_editor, null);
-        layoutParent.addView(mEditorView, 0);
-        
+        mEditorView = getEditorView();
         mCharsLeftText = (TextView) mEditorView.findViewById(R.id.messageEditCharsLeftTextView);
         setupEditText();
         hide();
+    }
+
+    private ViewGroup getEditorView() {
+        ViewGroup editorView = (ViewGroup) getActivity().findViewById(R.id.message_editor);
+        if (editorView == null) {
+            ViewGroup layoutParent = (ViewGroup) getActivity().findViewById(R.id.myListParent);
+            LayoutInflater inflater = LayoutInflater.from(getActivity());
+            editorView = (ViewGroup) inflater.inflate(R.layout.message_editor, null);
+
+            RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
+            editorView.setLayoutParams(layoutParams);
+            layoutParent.addView(editorView);
+        }
+        return editorView;
     }
 
     private void setupEditText() {
