@@ -24,8 +24,8 @@
 		</subtitle>
     </header>
 
-    <release android:versionName="19.0" android:versionCode="128"
-             versionDate="2015-09-26"
+    <release android:versionName="19.3" android:versionCode="131"
+             versionDate="2015-10-10"
              versionTitle="Drafts, unsent messages and Message Editor enhancements">
         <changes>
             <change>Drafts may be saved and edited later, like in any emailing application.

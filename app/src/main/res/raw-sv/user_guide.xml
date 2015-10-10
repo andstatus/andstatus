@@ -72,7 +72,7 @@ xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../../../re
 </section>
 <section>
     <title>
-        <p></p>
+        <p>2. AndStatus-grunderna</p>
     </title>
     <p>
     </p>
@@ -101,11 +101,11 @@ xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../../../re
 </section>
 <section>
     <title>
-        <p></p>
+        <p>4. Bifogade bilder: skicka och visa</p>
     </title>
     <section>
         <title>
-            <p></p>
+            <p>4.1. Skicka bilder</p>
         </title>
         <p>
         </p>
@@ -125,7 +125,7 @@ xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../../../re
     </section>
     <section>
         <title>
-            <p></p>
+            <p>4.2 Visar bifogade bilder</p>
         </title>
         <p></p>
         <p>
@@ -173,7 +173,7 @@ xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../../../re
 </section>
 <section>
     <title>
-        <p></p>
+        <p>8. Global sökning</p>
     </title>
     <p>
     </p>
