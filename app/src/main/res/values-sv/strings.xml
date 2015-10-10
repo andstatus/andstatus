@@ -52,12 +52,28 @@
   <string name="button_discard">Kasta</string>
   <string name="button_restore">Återställ</string>
   <string name="button_save">Spara</string>
+  <string name="button_save_draft">Spara utkast</string>
+  <string name="button_skip">Hoppa över</string>
   <string name="button_send">Skicka</string>
   <string name="cannot_send_empty_message">Kan inte skicka ett tomt meddelande.</string>
   <string name="category_title_preference_appearance">Utseende</string>
   <string name="category_title_preference_credentials">Användarinformation</string>
   <string name="category_title_preference_information">Information</string>
   <string name="category_title_preference_settings">Inställningar</string>
+  <string name="color_black">Svart</string>
+  <string name="color_black_cat">Svart katt</string>
+  <string name="color_blue">Blå</string>
+  <string name="color_light_blue">Ljusblå</string>
+  <string name="color_material_blue">Material-blå</string>
+  <string name="color_my_blue">Min blå</string>
+  <string name="color_charcoal">Träkol</string>
+  <string name="color_grey">Grå</string>
+  <string name="color_grey_wolf">Grå varg</string>
+  <string name="color_green">Grön</string>
+  <string name="color_midnight">Midnatt</string>
+  <string name="color_night">Natt</string>
+  <string name="color_orange">Orange</string>
+  <string name="color_red">Röd</string>
   <string name="combined_timeline_on">kombinerad</string>
   <string name="combined_timeline_off_account">för</string>
   <string name="command_follow_user">Följ</string>
@@ -95,6 +111,7 @@
   <string name="dialog_title_service_unavailable">Tjänsten är inte tillgänglig</string>
   <string name="dialog_title_timeline_loading">Uppdaterar tidslinje&#8230;</string>
   <string name="discover_open_instances_title">Upptäck öppna instanser</string>
+  <string name="download_status_draft">utkast</string>
   <string name="empty_in_parenthesis">(tom)</string>
   <string name="error">Fel</string>
   <string name="error_invalid_value">Ogiltigt värde</string>
@@ -143,6 +160,8 @@
   <string name="label_backup_folder">Mapp för säkerhetskopior</string>
   <string name="label_conversation">Konversation</string>
   <string name="label_host">Värd</string>
+  <string name="label_manage_origin_systems">Hantera sociala nätverk</string>
+  <string name="label_origin_type">Typ av socialt nätverk</string>
   <string name="label_restore">Återställ app-data ifrån säkerhetskopia</string>
   <string name="label_upgrading">Uppgradering pågår. Vänta.</string>
   <string name="label_with_media">med media</string>
@@ -159,6 +178,7 @@
   <string name="menu_item_destroy_favorite">Remove Favorite</string>
   <string name="menu_item_destroy_status">Remove Tweet</string>
   <string name="menu_item_direct_message">Direktmeddelande</string>
+  <string name="menu_item_edit">Redigera</string>
   <string name="menu_item_favorite">Favorit</string>
   <string name="menu_item_follow_user">Följ \"%1s\"</string>
   <string name="menu_item_view_image">Visa bild</string>
@@ -167,6 +187,7 @@
   <string name="menu_item_reply">Svara</string>
   <string name="menu_item_reply_all">Svara alla</string>
   <string name="menu_item_reblog">Retweet</string>
+  <string name="menu_item_reblog_twitter">Retweet</string>
   <string name="menu_item_resend">Skicka igen</string>
   <string name="menu_item_share">Dela</string>
   <string name="menu_item_stop_following_user">Sluta följa \"%1s\"</string>
@@ -208,10 +229,12 @@
   <string name="options_menu_reload">Ladda om</string>
   <string name="options_menu_mentions">Omnämningar</string>
   <string name="options_menu_search">Sök</string>
+  <string name="preference_ssl_mode_title">SSL-läge och säkerhet</string>
   <string name="preference_ssl_mode_secure">Säker SSL</string>
   <string name="preference_ssl_mode_insecure">Osäker SSL</string>
   <string name="preference_ssl_mode_misconfigured">Felkonfigurerad SSL</string>
   <string name="preference_log_everything_to_file_title">Logga allt till fil</string>
+  <string name="preference_true_black_title">Sann svart bakgrund</string>
   <string name="reltime_days_ago_formats_1">igår</string>
   <string name="reltime_days_ago_formats_2">{0} dagar sedan</string>
   <string name="reltime_hours_ago_formats_1">en timme sedan</string>
@@ -250,6 +273,7 @@
   <string name="summary_preference_no_ringtone">Tyst</string>
   <string name="summary_preference_notifications_timeline_off">No notification for Tweets</string>
   <string name="summary_preference_notifications_timeline_on">You will be notified of new tweets</string>
+  <string name="summary_preference_password">Ditt lösenord i det sociala nätverket</string>
   <string name="summary_preference_show_avatars_off">User avatars will not be displayed</string>
   <string name="summary_preference_show_avatars_on">Användaravatarer kommer visas</string>
   <string name="summary_preference_ssl_off">Ingen SSL</string>
@@ -259,6 +283,7 @@
   <string name="summary_preference_storage_external_on">Lagra data i externt minne</string>
   <string name="summary_preference_theme_size">Välj textstorlek</string>
   <string name="summary_preference_user_in_timeline">Användaren kommer visas som \"{0}\"</string>
+  <string name="summary_preference_username">Ditt användarnamn i det sociala nätverket</string>
   <string name="summary_preference_vibration_off">Vibration turned off</string>
   <string name="summary_preference_vibration_on">Vibrating on incoming message</string>
   <string name="theme_color_entries_light">Ljus</string>
@@ -269,6 +294,7 @@
   <string name="timeline_reloaded">Tidslinjen har laddats om.</string>
   <string name="timeline_title_all">Alla</string>
   <string name="timeline_title_direct_messages">Meddelanden</string>
+  <string name="timeline_title_drafts">Utkast</string>
   <string name="timeline_title_everything">Allt</string>
   <string name="timeline_title_favorites">Favoriter</string>
   <string name="timeline_title_following_user">Följer</string>
@@ -298,6 +324,7 @@
   <string name="title_preference_notifications_queue">Kommandon i kön</string>
   <string name="title_preference_notifications_timeline">Notify on new Tweets</string>
   <string name="title_preference_oauth">OAuth</string>
+  <string name="title_preference_old_messages_first_in_conversation">Gamla meddelanden först i en konversationsvy</string>
   <string name="title_preference_origin_system">{0}, typ: {1}</string>
   <string name="title_preference_password">Lösenord</string>
   <string name="title_preference_report_bug">Rapportera en bugg</string>
@@ -310,7 +337,8 @@
   <string name="title_preference_username">Användarnamn</string>
   <string name="title_preference_username_pumpio">Webfinger-ID</string>
   <string name="title_preference_show_avatars">Visa avatarer</string>
-  <string name="title_preference_show_attached_images">Visa bifogade bilder</string>
+  <string name="title_preference_show_attached_images">Hämta och visa bifogade bilder</string>
+  <string name="title_preference_show_origin">Visa ett socialt nätverk i en tidslinje</string>
   <string name="title_preference_user_in_timeline">Hur man visar en användare i en tidslinje</string>
   <string name="title_preference_vibration">Vibration</string>
   <string name="title_timeline">Tidslinje</string>
@@ -319,7 +347,7 @@
   <string name="message_source_to">till %1$s</string>
   <string name="unimplemented">Ej implementerat.</string>
   <string name="user_in_timeline_entries_username">användarnamn</string>
-  <string name="user_in_timeline_entries_at_username">"@användarnamn"</string>
+  <string name="user_in_timeline_entries_at_username">"\@användarnamn"</string>
   <string name="user_in_timeline_entries_webfingerid">webFingerId</string>
   <string name="user_in_timeline_entries_real_name">Riktigt namn</string>
   <string name="user_in_timeline_entries_real_name_at_username">Riktigt namn @användarnamn</string>

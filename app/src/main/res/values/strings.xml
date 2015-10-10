@@ -200,6 +200,7 @@
   <string name="label_with_media">with media</string>
   <string name="latest_error_label">Latest error</string>
   <string name="loading">Loading&#8230;</string>
+  <string name="malformed_link">Malformed link</string>
   <string name="message">Message</string>
   <string name="message_twitter">Tweet</string>
   <string name="message_edit_hint">Enter your message here!</string>

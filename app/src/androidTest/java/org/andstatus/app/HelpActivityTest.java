@@ -24,11 +24,8 @@ import android.widget.ViewFlipper;
 
 import org.andstatus.app.context.MySettingsActivity;
 import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.msg.ConversationActivity;
-import org.andstatus.app.msg.TimelineActivity;
 
 public class HelpActivityTest extends ActivityInstrumentationTestCase2<HelpActivity> {
-    private HelpActivity mActivity;
 
     public HelpActivityTest() {
         super(HelpActivity.class);
@@ -43,15 +40,19 @@ public class HelpActivityTest extends ActivityInstrumentationTestCase2<HelpActiv
         intent.putExtra(HelpActivity.EXTRA_IS_FIRST_ACTIVITY, true);
         intent.putExtra(HelpActivity.EXTRA_HELP_PAGE_INDEX, HelpActivity.PAGE_INDEX_CHANGELOG);
         setActivityIntent(intent);
-        
-        mActivity = getActivity();
     }
-    
-    public void test() throws InterruptedException {
-        ViewFlipper mFlipper = ((ViewFlipper) mActivity.findViewById(R.id.help_flipper));
+
+    @Override
+    protected void tearDown() throws Exception {
+        MySettingsActivity.closeAllActivities(getInstrumentation().getTargetContext());
+        super.tearDown();
+    }
+
+    public void test() throws Throwable {
+        ViewFlipper mFlipper = ((ViewFlipper) getActivity().findViewById(R.id.help_flipper));
         assertTrue(mFlipper != null);
         assertEquals("At Changelog page", HelpActivity.PAGE_INDEX_CHANGELOG, mFlipper.getDisplayedChild());
-        View changeLogView = mActivity.findViewById(R.id.changelog);
+        View changeLogView = getActivity().findViewById(R.id.changelog);
         assertTrue(changeLogView != null);
         Thread.sleep(500);
 
@@ -61,4 +62,5 @@ public class HelpActivityTest extends ActivityInstrumentationTestCase2<HelpActiv
         Thread.sleep(500);
         nextActivity.finish();
     }
+
 }

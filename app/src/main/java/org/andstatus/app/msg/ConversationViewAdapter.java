@@ -22,7 +22,6 @@ import android.text.Html;
 import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
-import android.text.util.Linkify;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -44,6 +43,7 @@ import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.MyUrlSpan;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.widget.MySimpleCursorAdapter;
@@ -200,7 +200,7 @@ public class ConversationViewAdapter extends BaseAdapter {
             Spanned spanned = Html.fromHtml(oMsg.mBody);
             body.setText(spanned);
             if (!MyHtml.hasUrlSpans(spanned)) {
-                Linkify.addLinks(body, Linkify.ALL);
+                MyUrlSpan.addLinks(body);
             }
         }
     }
