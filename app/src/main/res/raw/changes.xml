@@ -24,7 +24,7 @@
 		</subtitle>
     </header>
 
-    <release android:versionName="19.3" android:versionCode="131"
+    <release android:versionName="19.4" android:versionCode="132"
              versionDate="2015-10-10"
              versionTitle="Drafts, unsent messages and Message Editor enhancements">
         <changes>
