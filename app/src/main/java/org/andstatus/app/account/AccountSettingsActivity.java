@@ -19,8 +19,8 @@ package org.andstatus.app.account;
 
 import android.accounts.AccountManager;
 import android.app.Activity;
+import android.app.Fragment;
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -114,7 +114,14 @@ public class AccountSettingsActivity extends MyActivity {
     }
     
     private View findFramentViewById(int id) {
-        return getFragmentManager().findFragmentByTag(FRAGMENT_TAG).getView().findViewById(id);
+        Fragment fragment = getFragmentManager().findFragmentByTag(FRAGMENT_TAG);
+        if (fragment != null) {
+            View view = fragment.getView();
+            if (view != null) {
+                return view.findViewById(id);
+            }
+        }
+        return null;
     }
     
     protected boolean selectOrigin() {
@@ -162,7 +169,7 @@ public class AccountSettingsActivity extends MyActivity {
         if (state.authenticatorResponse != null) {
             message += "authenticatorResponse; ";
         }
-        MyLog.v(this, "setState from " + calledFrom +"; " + message + "intent=" + intent.toUri(0));
+        MyLog.v(this, "setState from " + calledFrom + "; " + message + "intent=" + intent.toUri(0));
     }
     
     @Override
@@ -299,9 +306,11 @@ public class AccountSettingsActivity extends MyActivity {
     private void showOrigin() {
         MyAccount ma = state.getAccount();
         TextView view = (TextView) findFramentViewById(R.id.origin_name);
-        view.setText(this.getText(R.string.title_preference_origin_system)
-                .toString().replace("{0}", ma.getOrigin().getName())
-                .replace("{1}", ma.getOrigin().getOriginType().getTitle()));
+        if (view != null) {
+            view.setText(this.getText(R.string.title_preference_origin_system)
+                    .toString().replace("{0}", ma.getOrigin().getName())
+                    .replace("{1}", ma.getOrigin().getOriginType().getTitle()));
+        }
     }
 
     private void showUsername() {
@@ -310,17 +319,19 @@ public class AccountSettingsActivity extends MyActivity {
                 ma.alternativeTermForResourceId(R.string.title_preference_username),
                 state.builder.isPersistent() || ma.isUsernameNeededToStartAddingNewAccount());
         EditText usernameEditable = (EditText) findFramentViewById(R.id.username);
-        if (state.builder.isPersistent() || !ma.isUsernameNeededToStartAddingNewAccount()) {
-            usernameEditable.setVisibility(View.GONE);
-        } else {
-            usernameEditable.setVisibility(View.VISIBLE);
-            usernameEditable.setHint(ma.alternativeTermForResourceId(R.string.summary_preference_username));
-            usernameEditable.addTextChangedListener(textWatcher);
+        if (usernameEditable != null) {
+            if (state.builder.isPersistent() || !ma.isUsernameNeededToStartAddingNewAccount()) {
+                usernameEditable.setVisibility(View.GONE);
+            } else {
+                usernameEditable.setVisibility(View.VISIBLE);
+                usernameEditable.setHint(ma.alternativeTermForResourceId(R.string.summary_preference_username));
+                usernameEditable.addTextChangedListener(textWatcher);
+            }
+            if (ma.getUsername().compareTo(usernameEditable.getText().toString()) != 0) {
+                usernameEditable.setText(ma.getUsername());
+            }
+            showTextView(R.id.username_readonly, ma.getUsername(), state.builder.isPersistent());
         }
-        if (ma.getUsername().compareTo(usernameEditable.getText().toString()) != 0) {
-            usernameEditable.setText(ma.getUsername());
-        }
-        showTextView(R.id.username_readonly, ma.getUsername(), state.builder.isPersistent());
     }
 
     private TextWatcher textWatcher = new TextWatcher() {
@@ -353,12 +364,14 @@ public class AccountSettingsActivity extends MyActivity {
         }
         showTextView(R.id.password_label, labelBuilder.toString(), isNeeded);
         EditText passwordEditable = (EditText) findFramentViewById(R.id.password);
-        if (ma.getPassword().compareTo(passwordEditable.getText().toString()) != 0) {
-            passwordEditable.setText(ma.getPassword());
+        if (passwordEditable != null) {
+            if (ma.getPassword().compareTo(passwordEditable.getText().toString()) != 0) {
+                passwordEditable.setText(ma.getPassword());
+            }
+            passwordEditable.setVisibility(isNeeded ? View.VISIBLE : View.GONE);
+            passwordEditable.setEnabled(!ma.isValidAndSucceeded());
+            passwordEditable.addTextChangedListener(textWatcher);
         }
-        passwordEditable.setVisibility(isNeeded ? View.VISIBLE : View.GONE);
-        passwordEditable.setEnabled(!ma.isValidAndSucceeded());
-        passwordEditable.addTextChangedListener(textWatcher);
     }
 
     private void showAccountState() {
@@ -386,7 +399,10 @@ public class AccountSettingsActivity extends MyActivity {
                     break;
             }
         }
-        ((TextView) findFramentViewById(R.id.account_state)).setText(summary);
+        TextView state = (TextView) findFramentViewById(R.id.account_state);
+        if (state != null) {
+            state.setText(summary);
+        }
     }
     
     private void showAddAccountButton() {
@@ -399,11 +415,11 @@ public class AccountSettingsActivity extends MyActivity {
                 updateScreen();
                 MyAccount ma = state.getAccount();
                 CharSequence error = "";
-                boolean addAccountEnabled =  !ma.isUsernameNeededToStartAddingNewAccount()
+                boolean addAccountEnabled = !ma.isUsernameNeededToStartAddingNewAccount()
                         || ma.isUsernameValid();
                 if (addAccountEnabled) {
                     if (!ma.isOAuth() && !ma.getCredentialsPresent()) {
-                        addAccountEnabled =  false;
+                        addAccountEnabled = false;
                         error = getText(R.string.title_preference_password);
                     }
                 } else {
@@ -447,19 +463,21 @@ public class AccountSettingsActivity extends MyActivity {
         MyAccount ma = state.getAccount();
         boolean isDefaultAccount = ma.getAccountName().equals(MyContextHolder.get().persistentAccounts().getDefaultAccountName());
         CheckBox checkBox= (CheckBox) findFramentViewById(R.id.is_default_account);
-        checkBox.setVisibility(state.builder.isPersistent() ? View.VISIBLE : View.GONE);
-        checkBox.setEnabled(!isDefaultAccount);
-        checkBox.setChecked(isDefaultAccount);
-        checkBox.setOnCheckedChangeListener(new OnCheckedChangeListener() {
-            
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked) {
-                    MyContextHolder.get().persistentAccounts().setDefaultAccount(state.getAccount());
-                    updateScreen();
+        if (checkBox != null) {
+            checkBox.setVisibility(state.builder.isPersistent() ? View.VISIBLE : View.GONE);
+            checkBox.setEnabled(!isDefaultAccount);
+            checkBox.setChecked(isDefaultAccount);
+            checkBox.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+
+                @Override
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    if (isChecked) {
+                        MyContextHolder.get().persistentAccounts().setDefaultAccount(state.getAccount());
+                        updateScreen();
+                    }
                 }
-            }
-        });
+            });
+        }
     }
 
     private TextView showTextView(int textViewId, int textResourceId, boolean isVisible) {
@@ -469,10 +487,12 @@ public class AccountSettingsActivity extends MyActivity {
     
     private TextView showTextView(int textViewId, CharSequence text, boolean isVisible) {
         TextView textView = (TextView) findFramentViewById(textViewId);
-        if (!TextUtils.isEmpty(text)) {
-            textView.setText(text);
+        if (textView != null) {
+            if (!TextUtils.isEmpty(text)) {
+                textView.setText(text);
+            }
+            textView.setVisibility(isVisible ? View.VISIBLE : View.GONE);
         }
-        textView.setVisibility(isVisible ? View.VISIBLE : View.GONE);
         return textView;
     }
 
@@ -545,20 +565,24 @@ public class AccountSettingsActivity extends MyActivity {
     private void updateChangedFields() {
         if (!state.builder.isPersistent()) {
             EditText usernameEditable = (EditText) findFramentViewById(R.id.username);
-            String username = usernameEditable.getText().toString();
-            if (username.compareTo(state.getAccount().getUsername()) != 0) {
-                boolean isOAuth = state.getAccount().isOAuth();
-                String originName = state.getAccount().getOrigin().getName();
-                state.builder = MyAccount.Builder.newOrExistingFromAccountName(
-                        MyContextHolder.get(), 
-                        AccountName.fromOriginAndUserNames(MyContextHolder.get(), 
-                                originName, username).toString(),
-                        TriState.fromBoolean(isOAuth));
+            if (usernameEditable != null) {
+                String username = usernameEditable.getText().toString();
+                if (username.compareTo(state.getAccount().getUsername()) != 0) {
+                    boolean isOAuth = state.getAccount().isOAuth();
+                    String originName = state.getAccount().getOrigin().getName();
+                    state.builder = MyAccount.Builder.newOrExistingFromAccountName(
+                            MyContextHolder.get(),
+                            AccountName.fromOriginAndUserNames(MyContextHolder.get(),
+                                    originName, username).toString(),
+                            TriState.fromBoolean(isOAuth));
+                }
             }
         }
         EditText passwordEditable = (EditText) findFramentViewById(R.id.password);
-        if (state.getAccount().getPassword().compareTo(passwordEditable.getText().toString()) != 0) {
-            state.builder.setPassword(passwordEditable.getText().toString());
+        if (passwordEditable != null) {
+            if (state.getAccount().getPassword().compareTo(passwordEditable.getText().toString()) != 0) {
+                state.builder.setPassword(passwordEditable.getText().toString());
+            }
         }
     }
 
