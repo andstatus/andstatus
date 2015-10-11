@@ -20,4 +20,7 @@
         android:key="hide_messages_based_on_keywords"
         android:summary="@string/this_option_is_turned_off"
         android:title="@string/hide_messages_based_on_keywords_title" />
+    <org.andstatus.app.context.MultilineCheckBoxPreference
+		android:key="hide_replies_not_to_me_or_friends"
+        android:title="@string/hide_replies_not_to_me_or_friends_title" />
 </PreferenceScreen>

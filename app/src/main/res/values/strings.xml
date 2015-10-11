@@ -89,7 +89,7 @@
   <string name="combined_timeline_off_origin">at</string>
   <string name="command_follow_user">Follow</string>
   <string name="command_stop_following_user">Stop following</string>
-  <string name="crash_dialog_text">AndStatus application crashed. You may help fixing the problem. Please press Ok button to send the Crash Report to developers via email.</string>
+  <string name="crash_dialog_text">AndStatus application crashed. You can help to fix the problem. Please press Ok button to send the Crash Report to developers via email.</string>
   <string name="crash_dialog_comment_prompt">Please provide below your comments about the problem. It would be very helpful for a fix to know: when it occurred and maybe even how it could be reproduced.</string>
   <string name="created_label">Created</string>
   <string name="custom_locale_title">Application language</string>
@@ -451,4 +451,5 @@
   <string name="user_in_timeline_entries_real_name_at_username">Real name @username</string>
   <string name="yes">Yes</string>
   <string name="this_option_is_turned_off">(disabled)</string>
+  <string name="hide_replies_not_to_me_or_friends_title">Hide replies not to me or my friends from Home timeline</string>
 </resources>

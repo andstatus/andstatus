@@ -106,6 +106,7 @@ public class MyPreferences {
     public static final String KEY_VERSION_CODE_LAST = "version_code_last";
 
     public static final String KEY_FILTER_HIDE_MESSAGES_BASED_ON_KEYWORDS = "hide_messages_based_on_keywords";
+    public static final String KEY_FILTER_HIDE_REPLIES_NOT_TO_ME_OR_FRIENDS = "hide_replies_not_to_me_or_friends";
 
     public static final String KEY_NOTIFICATIONS_ENABLED = "notifications_enabled";
 	public static final String KEY_NOTIFY_OF_HOME_TIMELINE = "notifications_timeline";

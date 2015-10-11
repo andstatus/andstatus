@@ -1,6 +1,8 @@
 package org.andstatus.app.account;
 
 import android.accounts.AccountManager;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.text.TextUtils;
 
 import org.andstatus.app.account.MyAccount.Builder;
@@ -11,6 +13,8 @@ import org.andstatus.app.backup.MyBackupDescriptor;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.data.DbUtils;
+import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.util.MyLog;
 import org.json.JSONArray;
@@ -41,6 +45,7 @@ public class PersistentAccounts {
     
     private Map<String,MyAccount> mAccounts = new ConcurrentHashMap<String, MyAccount>();
     private int distinctOriginsCount = 0;
+    private volatile Set<Long> myFriends = null;
     
     private PersistentAccounts() {
     }
@@ -71,6 +76,7 @@ public class PersistentAccounts {
     public PersistentAccounts initialize(MyContext myContext) {
         defaultAccountName = getDefaultAccountName();
         mAccounts.clear();
+        myFriends = null;
         android.accounts.AccountManager am = AccountManager.get(myContext.context());
         android.accounts.Account[] aa = am.getAccountsByType( AuthenticatorService.ANDROID_ACCOUNT_TYPE );
         for (android.accounts.Account account : aa) {
@@ -440,5 +446,41 @@ public class PersistentAccounts {
             return false;
         }
         return true;
+    }
+
+    public boolean isMeOrMyFriend(long inReplyToUserId) {
+        if (isAccountUserId(inReplyToUserId)) {
+            return true;
+        }
+        if (isMyFriend(inReplyToUserId)) {
+            return true;
+        }
+        return false;
+    }
+
+    private boolean isMyFriend(long userId) {
+        if (myFriends == null) {
+            initializeMyFriends();
+        }
+        return myFriends.contains(userId);
+    }
+
+    private void initializeMyFriends() {
+        Set<Long> friends = new HashSet<>();
+        String sql = "SELECT DISTINCT " + MyDatabase.FollowingUser.FOLLOWING_USER_ID + " FROM " + MyDatabase.FollowingUser.TABLE_NAME
+                + " WHERE " + MyDatabase.FollowingUser.USER_FOLLOWED + "=1";
+        SQLiteDatabase db = MyContextHolder.get().getDatabase().getWritableDatabase();
+        Cursor cursor = null;
+        try {
+            cursor = db.rawQuery(sql, null);
+            while (cursor.moveToNext()) {
+                friends.add(cursor.getLong(0));
+            }
+        } catch (Exception e) {
+            MyLog.i(this, "SQL:'" + sql + "'", e);
+        } finally {
+            DbUtils.closeSilently(cursor);
+        }
+        myFriends = friends;
     }
 }

@@ -275,8 +275,9 @@ public class TimelineSql {
             columnNames.add(Download.IMAGE_ID);
             columnNames.add(MyDatabase.Download.IMAGE_FILE_NAME);
         }
-        if (MyPreferences.getBoolean(
-                MyPreferences.KEY_MARK_REPLIES_IN_TIMELINE, false)) {
+        if (MyPreferences.getBoolean(MyPreferences.KEY_MARK_REPLIES_IN_TIMELINE, false)
+                || MyPreferences.getBoolean(
+                MyPreferences.KEY_FILTER_HIDE_REPLIES_NOT_TO_ME_OR_FRIENDS, false)) {
             columnNames.add(Msg.IN_REPLY_TO_USER_ID);
         }
         if (MyPreferences.showOrigin()) {

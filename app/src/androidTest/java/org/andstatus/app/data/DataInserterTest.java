@@ -143,6 +143,11 @@ public class DataInserterTest extends InstrumentationTestCase {
         assertTrue("Message by user=" + somebodyId + " is in the Following timeline",
                 cursor.getCount() > 0);
         cursor.close();
+
+        MyContextHolder.get().persistentAccounts().initialize();
+        for (long id : followedIds) {
+            assertTrue("isFriend: " + id, MyContextHolder.get().persistentAccounts().isMeOrMyFriend(id));
+        }
     }
 
     public void testDirectMessageToMyAccount() throws ConnectionException {

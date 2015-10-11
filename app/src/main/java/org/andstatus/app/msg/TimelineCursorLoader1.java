@@ -315,7 +315,9 @@ public class TimelineCursorLoader1 extends Loader<Cursor> implements MyServiceEv
         private Cursor applyFilters(Cursor cursor) {
             KeywordsFilter keywordsFilter = new KeywordsFilter(
                     MyPreferences.getString(MyPreferences.KEY_FILTER_HIDE_MESSAGES_BASED_ON_KEYWORDS, ""));
-            if (keywordsFilter.isEmpty()) {
+            boolean hideRepliesNotToMeOrFriends = getParams().getTimelineType() == TimelineType.HOME
+                    && MyPreferences.getBoolean(MyPreferences.KEY_FILTER_HIDE_REPLIES_NOT_TO_ME_OR_FRIENDS, false);
+            if (keywordsFilter.isEmpty() && !hideRepliesNotToMeOrFriends) {
                 if (cursor != null) {
                     getParams().rowsLoaded = cursor.getCount();
                 }
@@ -328,17 +330,24 @@ public class TimelineCursorLoader1 extends Loader<Cursor> implements MyServiceEv
             if (cursor != null && !cursor.isClosed()) {
                 try {
                     int indBody = cursor.getColumnIndex(MyDatabase.Msg.BODY);
+                    int indInReplyToUserId = cursor.getColumnIndex(MyDatabase.Msg.IN_REPLY_TO_USER_ID);
                     if (cursor.moveToFirst()) {
                         do {
                             rowsCount++;
                             Object[] row = new Object[cursor.getColumnCount()];
                             boolean skip = false;
                             String body = "";
+                            long inReplyToUserId = 0;
                             for (int ind = 0; ind < cursor.getColumnCount(); ind++) {
                                 row[ind] = new TypedCursorValue(cursor, ind).value;
-                                if (ind == indBody) {
+                                if (ind == indBody && row[ind] != null) {
                                     body = row[ind].toString();
                                     skip = keywordsFilter.matched(body);
+                                } else if (ind == indInReplyToUserId && hideRepliesNotToMeOrFriends && row[ind] != null) {
+                                    inReplyToUserId = Long.parseLong(row[ind].toString());
+                                    if (inReplyToUserId != 0) {
+                                        skip = !MyContextHolder.get().persistentAccounts().isMeOrMyFriend(inReplyToUserId);
+                                    }
                                 }
                             }
                             if (skip) {
