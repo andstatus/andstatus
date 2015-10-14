@@ -16,6 +16,8 @@
 
 package org.andstatus.app.msg;
 
+import android.app.Activity;
+import android.app.Instrumentation;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
@@ -24,9 +26,12 @@ import android.net.Uri;
 import android.text.TextUtils;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.TextView;
 
+import org.andstatus.app.ActivityRequestCode;
 import org.andstatus.app.ActivityTestHelper;
+import org.andstatus.app.HelpActivity;
 import org.andstatus.app.ListActivityTestHelper;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
@@ -48,7 +53,6 @@ import org.andstatus.app.util.MyLog;
 public class MessageEditorTest extends android.test.ActivityInstrumentationTestCase2<TimelineActivity> {
     private MessageEditorData data = null;
     private static int editingStep = 0;
-    private TimelineActivity mActivity;
 
     public MessageEditorTest() {
         super(TimelineActivity.class);
@@ -73,7 +77,6 @@ public class MessageEditorTest extends android.test.ActivityInstrumentationTestC
                 MatchedUri.getTimelineUri(ma.getUserId(), TimelineType.HOME, false, 0));
         setActivityIntent(intent);
 
-        mActivity = getActivity();
         data = getStaticData();
 
         assertTrue("MyService is available", MyServiceManager.isServiceAvailable());
@@ -82,7 +85,7 @@ public class MessageEditorTest extends android.test.ActivityInstrumentationTestC
 
     private MessageEditorData getStaticData() {
         MyAccount ma = MyContextHolder.get().persistentAccounts()
-                .fromUserId(mActivity.getCurrentMyAccountUserId());
+                .fromUserId(getActivity().getCurrentMyAccountUserId());
         MessageEditorData data = MessageEditorData.newEmpty(ma)
                 .setMediaUri(Uri.parse("http://example.com/" + TestSuite.TESTRUN_UID + "/some.png"))
                 .setInReplyToId(
@@ -114,7 +117,7 @@ public class MessageEditorTest extends android.test.ActivityInstrumentationTestC
 
     private void editingTester() throws InterruptedException {
         editingStep++;
-        TestSuite.waitForListLoaded(this, mActivity, 2);
+        TestSuite.waitForListLoaded(this, getActivity(), 2);
         switch (editingStep) {
             case 1:
                 openEditor();
@@ -130,13 +133,13 @@ public class MessageEditorTest extends android.test.ActivityInstrumentationTestC
 
     private void openEditor() throws InterruptedException {
         final String method = "openEditor";
-        MenuItem createMessageButton = mActivity.getOptionsMenu().findItem(R.id.createMessageButton);
+        MenuItem createMessageButton = getActivity().getOptionsMenu().findItem(R.id.createMessageButton);
         assertTrue(createMessageButton != null);
-        View editorView = mActivity.findViewById(R.id.message_editor);
+        View editorView = getActivity().findViewById(R.id.message_editor);
         assertTrue(editorView != null);
         if (editorView.getVisibility() != android.view.View.VISIBLE) {
             assertTrue("Blog button is visible", createMessageButton.isVisible());
-            ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<TimelineActivity>(this, mActivity);
+            ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<TimelineActivity>(this, getActivity());
             helper.clickMenuItem(method + " opening editor", R.id.createMessageButton);
         }
         assertEquals("Editor appeared", android.view.View.VISIBLE, editorView.getVisibility());
@@ -146,12 +149,12 @@ public class MessageEditorTest extends android.test.ActivityInstrumentationTestC
         final String method = "editingStep1";
         MyLog.v(this, method + " started");
 
-        ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<TimelineActivity>(this, mActivity);
+        ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<TimelineActivity>(this, getActivity());
         helper.clickMenuItem(method + " hiding editor", R.id.saveDraftButton);
-        View editorView = mActivity.findViewById(R.id.message_editor);
+        View editorView = getActivity().findViewById(R.id.message_editor);
         ActivityTestHelper.waitViewInvisible(method, editorView);
 
-        final MessageEditor editor = mActivity.getMessageEditor();
+        final MessageEditor editor = getActivity().getMessageEditor();
         Runnable startEditing = new Runnable() {
             @Override
             public void run() {
@@ -170,8 +173,8 @@ public class MessageEditorTest extends android.test.ActivityInstrumentationTestC
     private void editingStep2() throws InterruptedException {
         final String method = "editingStep2";
         MyLog.v(this, method + " started");
-        ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<TimelineActivity>(this, mActivity);
-        View editorView = mActivity.findViewById(R.id.message_editor);
+        ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<TimelineActivity>(this, getActivity());
+        View editorView = getActivity().findViewById(R.id.message_editor);
         ActivityTestHelper.waitViewVisible(method + "; Restored message is visible", editorView);
         assertInitialText("Message restored");
         helper.clickMenuItem(method + " hide editor", R.id.saveDraftButton);
@@ -184,8 +187,54 @@ public class MessageEditorTest extends android.test.ActivityInstrumentationTestC
         MyLog.v(this, method + " ended");
     }
 
+    public void testAttachImage() throws InterruptedException {
+        final String method = "testAttachImage";
+        MyLog.v(this, method + " started");
+
+        View editorView = getActivity().findViewById(R.id.message_editor);
+        ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<>(this, getActivity());
+        helper.clickMenuItem(method + " clicker createMessageButton", R.id.createMessageButton);
+        ActivityTestHelper.waitViewVisible(method + "; Editor appeared", editorView);
+        assertTextCleared();
+
+        String body = "Message with attachment " + TestSuite.TESTRUN_UID;
+        EditText editText = (EditText) editorView.findViewById(R.id.messageBodyEditText);
+        editText.requestFocus();
+        TestSuite.waitForIdleSync(this);
+        getInstrumentation().sendStringSync(body);
+        TestSuite.waitForIdleSync(this);
+
+        getActivity().selectorActivityMock = helper;
+        helper.clickMenuItem(method + " clicker attach_menu_id", R.id.attach_menu_id);
+        assertNotNull(helper.waitForSelectorStart(method, ActivityRequestCode.ATTACH.id));
+
+        Instrumentation.ActivityMonitor activityMonitor = getInstrumentation().addMonitor(HelpActivity.class.getName(), null, false);
+
+        Intent intent = new Intent(getActivity(), HelpActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        getActivity().getApplicationContext().startActivity(intent);
+
+        Activity selectorActivity = getInstrumentation().waitForMonitorWithTimeout(activityMonitor, 15000);
+        assertTrue(selectorActivity != null);
+        ActivityTestHelper.waitViewInvisible(method, editorView);
+        Thread.sleep(4000);
+        selectorActivity.finish();
+
+        MyLog.i(method, "Callback from a selector");
+        Intent data = new Intent();
+        data.setData(Uri.parse("android.resource://org.andstatus.app/drawable/splash_logo"));
+        getActivity().onActivityResult(ActivityRequestCode.ATTACH.id, Activity.RESULT_OK, data);
+
+        ActivityTestHelper.waitViewVisible(method, editorView);
+
+        final MessageEditor editor = getActivity().getMessageEditor();
+        assertNotSame("Image attached", Uri.EMPTY, editor.getData().getMediaUri());
+
+        MyLog.v(this, method + " ended");
+    }
+
     private void assertInitialText(final String description) throws InterruptedException {
-        final MessageEditor editor = mActivity.getMessageEditor();
+        final MessageEditor editor = getActivity().getMessageEditor();
         TextView textView = (TextView) getActivity().findViewById(R.id.messageBodyEditText);
         ActivityTestHelper.waitTextInAView(description, textView, data.body);
         MyLog.v(this, description + " text:'" + editor.getData().body + "'");
@@ -193,18 +242,19 @@ public class MessageEditorTest extends android.test.ActivityInstrumentationTestC
     }
 
     private void assertTextCleared() {
-        final MessageEditor editor = mActivity.getMessageEditor();
+        final MessageEditor editor = getActivity().getMessageEditor();
         assertTrue("Editor is not null", editor != null);
         assertEquals(MessageEditorData.newEmpty(
                 MyContextHolder.get().persistentAccounts().fromUserId(
-                        mActivity.getCurrentMyAccountUserId())), editor.getData());
+                        getActivity().getCurrentMyAccountUserId())), editor.getData());
     }
 
     public void testContextMenuWhileEditing() throws InterruptedException {
         final String method = "testContextMenuWhileEditing";
-        TestSuite.waitForListLoaded(this, mActivity, 2);
+        TestSuite.waitForListLoaded(this, getActivity(), 2);
         openEditor();
-        ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<TimelineActivity>(this, ConversationActivity.class);
+        ListActivityTestHelper<TimelineActivity> helper =
+                new ListActivityTestHelper<>(this, ConversationActivity.class);
         long msgId = helper.getListItemIdOfReply();
         String logMsg = "msgId=" + msgId;
 

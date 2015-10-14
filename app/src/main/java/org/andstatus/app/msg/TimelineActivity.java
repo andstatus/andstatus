@@ -73,6 +73,7 @@ import org.andstatus.app.service.MyServiceEventsListener;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.service.MyServiceEventsReceiver;
 import org.andstatus.app.service.QueueViewer;
+import org.andstatus.app.test.SelectorActivityMock;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
@@ -139,6 +140,7 @@ public class TimelineActivity extends MyListActivity implements MyServiceEventsL
 
     DrawerLayout mDrawerLayout;
     ActionBarDrawerToggle mDrawerToggle;
+    protected volatile SelectorActivityMock selectorActivityMock;
 
     /**
      * This method is the first of the whole application to be called 
@@ -362,7 +364,7 @@ public class TimelineActivity extends MyListActivity implements MyServiceEventsL
 
     @Override
     public void finish() {
-        MyLog.v(this, "Finish requested" + (mFinishing ? ", already finishing" : "") 
+        MyLog.v(this, "Finish requested" + (mFinishing ? ", already finishing" : "")
                 + ", instanceId=" + mInstanceId);
         if (!mFinishing) {
             mFinishing = true;
@@ -1068,6 +1070,15 @@ public class TimelineActivity extends MyListActivity implements MyServiceEventsL
             throw new NullPointerException("This is a test crash event");
         }
 
+    }
+
+    @Override
+    public void startActivityForResult(Intent intent, int requestCode) {
+        if (selectorActivityMock != null) {
+            selectorActivityMock.startActivityForResult(intent, requestCode);
+        } else {
+            super.startActivityForResult(intent, requestCode);
+        }
     }
 
     @Override
