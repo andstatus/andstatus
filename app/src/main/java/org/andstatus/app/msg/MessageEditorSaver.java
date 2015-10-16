@@ -1,3 +1,19 @@
+/**
+ * Copyright (C) 2015 yvolk (Yuri Volkov), http://yurivolkov.com
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.andstatus.app.msg;
 
 import android.net.Uri;
@@ -5,16 +21,9 @@ import android.os.AsyncTask;
 
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.data.DataInserter;
 import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MatchedUri;
-import org.andstatus.app.data.MyContentType;
-import org.andstatus.app.data.MyDatabase;
-import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.net.social.MbAttachment;
-import org.andstatus.app.net.social.MbMessage;
-import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceEvent;
@@ -26,7 +35,7 @@ import org.andstatus.app.util.MyLog;
 /**
  * Asynchronously save, delete and send a message, prepared by {@link MessageEditor}
  */
-public class MessageEditorSaver extends AsyncTask<MessageEditorData, Void, MessageEditorData> {
+public class MessageEditorSaver extends AsyncTask<MessageEditorCommand, Void, MessageEditorData> {
     final MessageEditor editor;
     volatile MessageEditor.MyLock lock = MessageEditor.MyLock.EMPTY;
 
@@ -35,80 +44,56 @@ public class MessageEditorSaver extends AsyncTask<MessageEditorData, Void, Messa
     }
 
     @Override
-    protected MessageEditorData doInBackground(MessageEditorData... params) {
-        MessageEditorData data = params[0];
-        if (!acquireLock(data)) {
-            return data;
+    protected MessageEditorData doInBackground(MessageEditorCommand... params) {
+        MessageEditorCommand command = params[0];
+        if (!acquireLock(command.getCurrentMsgId())) {
+            return command.currentData;
         }
-        saveDataFirst(data, params[1]);
-        if (data.isEmpty()) {
-            return MessageEditorData.newEmpty();
+        savePreviousData(command);
+        if (!command.currentData.isValid()) {
+            command.loadCurrent();
         }
-        saveDataLast(data);
-        return data.hideBeforeSave ? MessageEditorData.newEmpty() : MessageEditorData.load(data.getMsgId());
+        saveCurrentData(command);
+        return command.showAfterSave ? MessageEditorData.load(command.currentData.getMsgId()) : MessageEditorData.INVALID;
     }
 
-    private boolean acquireLock(MessageEditorData data) {
-        lock = new MessageEditor.MyLock(true, data.getMsgId());
+    private boolean acquireLock(long msgId) {
+        lock = new MessageEditor.MyLock(true, msgId);
         return lock.decidedToContinue();
     }
 
-    private void saveDataFirst(MessageEditorData data, MessageEditorData dataFirst) {
-        if (dataFirst != null && !dataFirst.isEmpty()
-                && (dataFirst.getMsgId() == 0 || data.getMsgId() != dataFirst.getMsgId())) {
-            MyLog.v(MessageEditorData.TAG, "Saver saving first data:" + dataFirst);
-            save(dataFirst);
-            broadcastDataChanged(dataFirst);
+    private void savePreviousData(MessageEditorCommand command) {
+        if (command.needToSavePreviousData()) {
+            MyLog.v(MessageEditorData.TAG, "Saving previous data:" + command.previousData);
+            command.previousData.save(Uri.EMPTY);
+            broadcastDataChanged(command.previousData);
         }
     }
 
-    private void saveDataLast(MessageEditorData data) {
-        MyLog.v(MessageEditorData.TAG, "Saver saving last data:" + data);
-        if (data.status == DownloadStatus.DELETED) {
-            deleteDraft(data);
+    private void saveCurrentData(MessageEditorCommand command) {
+        MyLog.v(MessageEditorData.TAG, "Saving current data:" + command.currentData);
+        if (command.currentData.status == DownloadStatus.DELETED) {
+            deleteDraft(command.currentData);
         } else {
-            save(data);
-            if (data.beingEdited) {
-                MyPreferences.putLong(MyPreferences.KEY_BEING_EDITED_MESSAGE_ID, data.getMsgId());
+            command.currentData.save(command.getMediaUri());
+            if (command.beingEdited) {
+                MyPreferences.putLong(MyPreferences.KEY_BEING_EDITED_MESSAGE_ID,
+                        command.currentData.getMsgId());
             }
-            if (data.status == DownloadStatus.SENDING) {
-                CommandData commandData = CommandData.updateStatus(data.getMyAccount().getAccountName(), data.getMsgId());
+            if (command.currentData.status == DownloadStatus.SENDING) {
+                CommandData commandData = CommandData.updateStatus(
+                        command.currentData.getMyAccount().getAccountName(),
+                        command.currentData.getMsgId());
                 MyServiceManager.sendManualForegroundCommand(commandData);
             }
         }
-        broadcastDataChanged(data);
+        broadcastDataChanged(command.currentData);
     }
 
     private void deleteDraft(MessageEditorData data) {
         DownloadData.deleteAllOfThisMsg(data.getMsgId());
         MyContextHolder.get().context().getContentResolver()
                 .delete(MatchedUri.getMsgUri(0, data.getMsgId()), null, null);
-    }
-
-    private void save(MessageEditorData data) {
-        MbMessage message = MbMessage.fromOriginAndOid(data.getMyAccount().getOriginId(), "",
-                data.status);
-        message.msgId = data.getMsgId();
-        message.actor = MbUser.fromOriginAndUserOid(data.getMyAccount().getOriginId(),
-                data.getMyAccount().getUserOid());
-        message.sender = message.actor;
-        message.sentDate = System.currentTimeMillis();
-        message.setBody(data.body);
-        if (data.recipientId != 0) {
-            message.recipient = MbUser.fromOriginAndUserOid(data.getMyAccount().getOriginId(),
-                    MyQuery.idToOid(MyDatabase.OidEnum.USER_OID, data.recipientId, 0));
-        }
-        if (data.inReplyToId != 0) {
-            message.inReplyToMessage = MbMessage.fromOriginAndOid(data.getMyAccount().getOriginId(),
-                    MyQuery.idToOid(MyDatabase.OidEnum.MSG_OID, data.inReplyToId, 0),
-                    DownloadStatus.UNKNOWN);
-        }
-        if (!data.getMediaUri().equals(Uri.EMPTY)) {
-            message.attachments.add(
-                    MbAttachment.fromUriAndContentType(data.getMediaUri(), MyContentType.IMAGE));
-        }
-        DataInserter di = new DataInserter(data.getMyAccount());
-        data.setMsgId(di.insertOrUpdateMsg(message));
     }
 
     private void broadcastDataChanged(MessageEditorData data) {
@@ -130,9 +115,7 @@ public class MessageEditorSaver extends AsyncTask<MessageEditorData, Void, Messa
     @Override
     protected void onPostExecute(MessageEditorData data) {
         MyLog.v(MessageEditorData.TAG, "Saved; Future data: " + data);
-        if (!data.isEmpty()) {
-            editor.dataLoadedCallback(data);
-        }
+        editor.showData(data);
         lock.release();
     }
 

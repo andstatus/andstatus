@@ -68,10 +68,9 @@ public class ConversationActivity extends LoadableListActivity implements Action
                 break;
             case ATTACH:
                 Uri uri = data != null ? UriUtils.notNull(data.getData()) : Uri.EMPTY;
-                if (resultCode == RESULT_OK && !UriUtils.isEmpty(uri) 
-                        && mMessageEditor.isVisible()) {
+                if (resultCode == RESULT_OK && !UriUtils.isEmpty(uri)) {
                     UriUtils.takePersistableUriPermission(getActivity(), uri, data.getFlags());
-                    mMessageEditor.setMedia(uri);
+                    mMessageEditor.startEditingCurrentWithAttachedMedia(uri);
                 }
                 break;
             default:

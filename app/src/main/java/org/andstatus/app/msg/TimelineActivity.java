@@ -93,12 +93,6 @@ public class TimelineActivity extends MyListActivity implements MyServiceEventsL
     private static final int LOADER_ID = 1;
     private static final String ACTIVITY_PERSISTENCE_NAME = TimelineActivity.class.getSimpleName();
 
-    /**
-     * Visibility of the layout indicates whether Messages are being loaded into the list (asynchronously...)
-     * The layout appears at the bottom of the list of messages 
-     * when new items are being loaded into the list 
-     */
-    private LinearLayout mLoadingLayout;
     private MySwipeRefreshLayout mSwipeRefreshLayout = null;
 
     /** Parameters of currently shown Timeline */
@@ -123,7 +117,6 @@ public class TimelineActivity extends MyListActivity implements MyServiceEventsL
 
     private boolean mShowSyncIndicatorOnTimeline = false;
     private View mSyncIndicator = null;
-    private boolean mIsLoading = false;
 
     /**
      * Time when shared preferences where changed
@@ -1142,43 +1135,9 @@ public class TimelineActivity extends MyListActivity implements MyServiceEventsL
 
     private void attachmentSelected(Intent data) {
         Uri uri = UriUtils.notNull(data.getData());
-        if (!UriUtils.isEmpty(uri) && mMessageEditor.isVisible()) {
-            mMediaToShareViaThisApp = uri;
+        if (!UriUtils.isEmpty(uri)) {
             UriUtils.takePersistableUriPermission(getActivity(), uri, data.getFlags());
-            mMessageEditor.setMedia(mMediaToShareViaThisApp);
-        }
-    }
-
-    private void createListAdapter(Cursor cursor) {
-        List<String> columnNames = new ArrayList<String>();
-        List<Integer> viewIds = new ArrayList<Integer>();
-        columnNames.add(MyDatabase.User.AUTHOR_NAME);
-        viewIds.add(R.id.message_author);
-        columnNames.add(MyDatabase.Msg.BODY);
-        viewIds.add(R.id.message_body);
-        columnNames.add(MyDatabase.Msg.CREATED_DATE);
-        viewIds.add(R.id.message_details);
-        columnNames.add(MyDatabase.MsgOfUser.FAVORITED);
-        viewIds.add(R.id.message_favorited);
-        columnNames.add(MyDatabase.Msg._ID);
-        viewIds.add(R.id.id);
-        int listItemLayoutId = R.layout.message_basic;
-        if (MyPreferences.showAvatars()) {
-            listItemLayoutId = R.layout.message_avatar;
-            columnNames.add(MyDatabase.Download.AVATAR_FILE_NAME);
-            viewIds.add(R.id.avatar_image);
-        }
-        if (MyPreferences.showAttachedImages()) {
-            columnNames.add(MyDatabase.Download.IMAGE_ID);
-            viewIds.add(R.id.attached_image);
-        }
-        MySimpleCursorAdapter mCursorAdapter = new MySimpleCursorAdapter(TimelineActivity.this,
-                listItemLayoutId, cursor, columnNames.toArray(new String[]{}),
-                toIntArray(viewIds), 0);
-        mCursorAdapter.setViewBinder(new TimelineViewBinder());
-
-        if (getList() != null) {
-            getList().setListAdapter(mCursorAdapter);
+            mMessageEditor.startEditingCurrentWithAttachedMedia(uri);
         }
     }
 

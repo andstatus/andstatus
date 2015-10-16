@@ -87,7 +87,6 @@ public class MessageEditorTest extends android.test.ActivityInstrumentationTestC
         MyAccount ma = MyContextHolder.get().persistentAccounts()
                 .fromUserId(getActivity().getCurrentMyAccountUserId());
         MessageEditorData data = MessageEditorData.newEmpty(ma)
-                .setMediaUri(Uri.parse("http://example.com/" + TestSuite.TESTRUN_UID + "/some.png"))
                 .setInReplyToId(
                         MyQuery.oidToId(OidEnum.MSG_OID, MyContextHolder.get()
                                         .persistentOrigins()
@@ -207,6 +206,7 @@ public class MessageEditorTest extends android.test.ActivityInstrumentationTestC
         getActivity().selectorActivityMock = helper;
         helper.clickMenuItem(method + " clicker attach_menu_id", R.id.attach_menu_id);
         assertNotNull(helper.waitForSelectorStart(method, ActivityRequestCode.ATTACH.id));
+        getActivity().selectorActivityMock = null;
 
         Instrumentation.ActivityMonitor activityMonitor = getInstrumentation().addMonitor(HelpActivity.class.getName(), null, false);
 
@@ -222,13 +222,14 @@ public class MessageEditorTest extends android.test.ActivityInstrumentationTestC
 
         MyLog.i(method, "Callback from a selector");
         Intent data = new Intent();
-        data.setData(Uri.parse("android.resource://org.andstatus.app/drawable/splash_logo"));
+        data.setData(TestSuite.LOCAL_IMAGE_TEST_URI2);
         getActivity().onActivityResult(ActivityRequestCode.ATTACH.id, Activity.RESULT_OK, data);
 
         ActivityTestHelper.waitViewVisible(method, editorView);
 
         final MessageEditor editor = getActivity().getMessageEditor();
-        assertNotSame("Image attached", Uri.EMPTY, editor.getData().getMediaUri());
+        assertEquals("Image attached", TestSuite.LOCAL_IMAGE_TEST_URI2, editor.getData().getMediaUri());
+        assertEquals("Text is the same", body, editText.getText().toString());
 
         MyLog.v(this, method + " ended");
     }
