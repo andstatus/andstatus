@@ -59,6 +59,7 @@
   <string name="button_overflow">Desbrodamiento</string>
   <string name="button_restore">Restaurar</string>
   <string name="button_save">Guardar</string>
+  <string name="button_save_draft">Guardar borrador</string>
   <string name="button_skip">Omitir</string>
   <string name="button_send">Enviar</string>
   <string name="cannot_send_empty_message">No se puede enviar un mensaje vacío.</string>
@@ -130,6 +131,8 @@
   <string name="dialog_title_service_unavailable">Servicio no disponible</string>
   <string name="dialog_title_timeline_loading">Actualizando la línea de tiempo&#8230;</string>
   <string name="discover_open_instances_title">Descubre nodos abiertos</string>
+  <string name="download_status_draft">borrador</string>
+  <string name="download_status_unsent">sin enviar</string>
   <string name="drawer_close">Cerrar panel de navegación</string>
   <string name="drawer_open">Abrir panel de navegación</string>
   <string name="empty_in_parenthesis">(vacío)</string>
@@ -211,6 +214,7 @@
   <string name="menu_item_destroy_reblog_twitter">Deshacer retweet</string>
   <string name="menu_item_destroy_status">Borra el mensaje</string>
   <string name="menu_item_direct_message">Mensaje directo</string>
+  <string name="menu_item_edit">Editar</string>
   <string name="menu_item_favorite">Favorito</string>
   <string name="menu_item_follow_user">Seguir a \"%1s\"</string>
   <string name="menu_item_view_image">Ver imagen</string>
@@ -367,11 +371,13 @@
   <string name="timeline_reloaded">La línea de tiempo se ha vuelto a cargar.</string>
   <string name="timeline_title_all">Todo</string>
   <string name="timeline_title_direct_messages">Mensajes directos</string>
+  <string name="timeline_title_drafts">Borradores</string>
   <string name="timeline_title_everything">Todo</string>
   <string name="timeline_title_favorites">Favoritos</string>
   <string name="timeline_title_following_user">Siguiendo</string>
   <string name="timeline_title_home">Inicio</string>
   <string name="timeline_title_mentions">Menciones</string>
+  <string name="timeline_title_outbox">Bandeja de salida</string>
   <string name="timeline_title_public">Público</string>
   <string name="timeline_title_replies">Respuestas</string>
   <string name="timeline_title_unknown">(Línea temporal desconocida)</string>
