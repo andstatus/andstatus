@@ -454,7 +454,10 @@ public class MessageEditor {
     }
 
     public void updateScreen() {
-        bodyEditText.setText(editorData.body);
+        if (editorData.body != bodyEditText.getText().toString()) {
+            bodyEditText.setText(editorData.body);
+            bodyEditText.setSelection(bodyEditText.getText().toString().length());
+        }
         showIfNotEmpty(R.id.message_author,
                 shouldShowAccountName() ? editorData.getMyAccount().getAccountName() : "");
         showMessageDetails();
