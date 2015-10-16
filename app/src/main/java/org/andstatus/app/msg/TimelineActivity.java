@@ -72,6 +72,7 @@ import org.andstatus.app.service.MyServiceEventsListener;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.service.MyServiceEventsReceiver;
 import org.andstatus.app.service.QueueViewer;
+import org.andstatus.app.test.SelectorActivityMock;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
@@ -90,12 +91,6 @@ public class TimelineActivity extends MyListActivity implements MyServiceEventsL
     private static final int LOADER_ID = 1;
     private static final String ACTIVITY_PERSISTENCE_NAME = TimelineActivity.class.getSimpleName();
 
-    /**
-     * Visibility of the layout indicates whether Messages are being loaded into the list (asynchronously...)
-     * The layout appears at the bottom of the list of messages 
-     * when new items are being loaded into the list 
-     */
-    private LinearLayout mLoadingLayout;
     private MySwipeRefreshLayout mSwipeRefreshLayout = null;
 
     /** Parameters of currently shown Timeline */
@@ -120,7 +115,6 @@ public class TimelineActivity extends MyListActivity implements MyServiceEventsL
 
     private boolean mShowSyncIndicatorOnTimeline = false;
     private View mSyncIndicator = null;
-    private boolean mIsLoading = false;
 
     /**
      * Time when shared preferences where changed
@@ -137,6 +131,7 @@ public class TimelineActivity extends MyListActivity implements MyServiceEventsL
 
     DrawerLayout mDrawerLayout;
     ActionBarDrawerToggle mDrawerToggle;
+    protected volatile SelectorActivityMock selectorActivityMock;
 
     /**
      * This method is the first of the whole application to be called 
@@ -360,7 +355,7 @@ public class TimelineActivity extends MyListActivity implements MyServiceEventsL
 
     @Override
     public void finish() {
-        MyLog.v(this, "Finish requested" + (mFinishing ? ", already finishing" : "") 
+        MyLog.v(this, "Finish requested" + (mFinishing ? ", already finishing" : "")
                 + ", instanceId=" + mInstanceId);
         if (!mFinishing) {
             mFinishing = true;
@@ -1054,6 +1049,15 @@ public class TimelineActivity extends MyListActivity implements MyServiceEventsL
     }
 
     @Override
+    public void startActivityForResult(Intent intent, int requestCode) {
+        if (selectorActivityMock != null) {
+            selectorActivityMock.startActivityForResult(intent, requestCode);
+        } else {
+            super.startActivityForResult(intent, requestCode);
+        }
+    }
+
+    @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         MyLog.v(this, "onActivityResult; request:" + requestCode + ", result:" + (resultCode == RESULT_OK ? "ok" : "fail"));
         if (resultCode != RESULT_OK || data == null) {
@@ -1114,10 +1118,9 @@ public class TimelineActivity extends MyListActivity implements MyServiceEventsL
 
     private void attachmentSelected(Intent data) {
         Uri uri = UriUtils.notNull(data.getData());
-        if (!UriUtils.isEmpty(uri) && mMessageEditor.isVisible()) {
-            mMediaToShareViaThisApp = uri;
+        if (!UriUtils.isEmpty(uri)) {
             UriUtils.takePersistableUriPermission(getActivity(), uri, data.getFlags());
-            mMessageEditor.setMedia(mMediaToShareViaThisApp);
+            mMessageEditor.startEditingCurrentWithAttachedMedia(uri);
         }
     }
 

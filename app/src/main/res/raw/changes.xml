@@ -38,8 +38,8 @@
             </change>
         </changes>
     </release>
-    <release android:versionName="19.4" android:versionCode="132"
-             versionDate="2015-10-10"
+    <release android:versionName="19.5" android:versionCode="132"
+             versionDate="2015-10-17"
              versionTitle="Drafts, unsent messages and Message Editor enhancements">
         <changes>
             <change>Drafts may be saved and edited later, like in any emailing application.

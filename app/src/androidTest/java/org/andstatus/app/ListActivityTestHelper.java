@@ -120,7 +120,9 @@ public class ListActivityTestHelper<T extends MyListActivity> extends Instrument
         boolean success = false;
         int position1 = position;
         for (long attempt = 1; attempt < 4; attempt++) {
-            longClickAtPosition(methodExt, position1);
+            if (!longClickAtPosition(methodExt, position1)) {
+                break;
+            }
             if (mActivity.getPositionOfContextMenu() == position) {
                 success = true;
                 break;
@@ -144,9 +146,12 @@ public class ListActivityTestHelper<T extends MyListActivity> extends Instrument
         return success;
     }
 
-    private void longClickAtPosition(final String methodExt, final int position) throws InterruptedException {
-        final View view = getListView().getChildAt(position);
-        assertTrue("View at list position " + position + " exists", view != null);
+    private boolean longClickAtPosition(final String methodExt, final int position) throws InterruptedException {
+        final View view = getViewByPosition(position);
+        if (view == null) {
+            MyLog.i(methodExt, "View at list position " + position + " exists");
+            return false;
+        }
         mInstrumentation.runOnMainSync(new Runnable() {
             @Override
             public void run() {
@@ -155,6 +160,20 @@ public class ListActivityTestHelper<T extends MyListActivity> extends Instrument
             }
         });
         TestSuite.waitForIdleSync(mInstrumentation);
+        return true;
+    }
+
+    // See http://stackoverflow.com/questions/24811536/android-listview-get-item-view-by-position
+    public View getViewByPosition(int position) {
+        final int firstListItemPosition = getListView().getFirstVisiblePosition();
+        final int lastListItemPosition = firstListItemPosition + getListView().getChildCount() - 1;
+
+        if (position < firstListItemPosition || position > lastListItemPosition ) {
+            return getListView().getAdapter().getView(position, null, getListView());
+        } else {
+            final int childIndex = position - firstListItemPosition;
+            return getListView().getChildAt(childIndex);
+        }
     }
 
     public ListView getListView() {
@@ -202,7 +221,7 @@ public class ListActivityTestHelper<T extends MyListActivity> extends Instrument
                 long listItemId = mActivity.getListAdapter().getItemId(position);
                 MyLog.v(methodExt, method + "; on performClick, listItemId=" + listItemId);
                 getListView().performItemClick(
-                        getListView().getAdapter().getView(position, null, null),
+                        getViewByPosition(position),
                         position, listItemId);
             }
         });

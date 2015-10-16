@@ -40,7 +40,6 @@ public class MessageEditorDataTest extends InstrumentationTestCase {
             long memberUserId, boolean replyAll) {
         Uri uri = Uri.parse("http://example.com/" + TestSuite.TESTRUN_UID + "/some.png");
         MessageEditorData data = MessageEditorData.newEmpty(ma)
-                .setMediaUri(uri)
                 .setInReplyToId(inReplyToMsgId)
                 .setRecipientId(recipientId)
                 .setReplyAll(replyAll)
@@ -50,7 +49,7 @@ public class MessageEditorDataTest extends InstrumentationTestCase {
         assertEquals(recipientId, data.recipientId);
         assertMentionedUser(data, inReplyToUserId, true);
         assertMentionedUser(data, memberUserId, replyAll);
-        assertEquals(data.toString(), uri, data.getMediaUri());
+        assertEquals(data.toString(), Uri.EMPTY, data.getMediaUri());
     }
 
     private void assertMentionedUser(MessageEditorData data, long mentionedUserId,

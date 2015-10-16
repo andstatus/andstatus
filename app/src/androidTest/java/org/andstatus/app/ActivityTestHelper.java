@@ -18,6 +18,7 @@ package org.andstatus.app;
 
 import android.app.Activity;
 import android.app.Instrumentation.ActivityMonitor;
+import android.content.Intent;
 import android.test.ActivityInstrumentationTestCase2;
 import android.test.ActivityTestCase;
 import android.test.InstrumentationTestCase;
@@ -26,12 +27,16 @@ import android.view.View;
 import android.widget.TextView;
 
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.test.SelectorActivityMock;
 import org.andstatus.app.util.MyLog;
 
-public class ActivityTestHelper<T extends MyActivity> extends InstrumentationTestCase {
+public class ActivityTestHelper<T extends MyActivity> extends InstrumentationTestCase implements SelectorActivityMock {
     private InstrumentationTestCase mTestCase;
     private T mActivity;
     private ActivityMonitor activityMonitor = null;
+
+    private volatile Intent selectorIntent = null;
+    private volatile int selectorRequestCode = 0;
 
     public ActivityTestHelper(ActivityTestCase testCase, T activity) {
         super();
@@ -143,6 +148,26 @@ public class ActivityTestHelper<T extends MyActivity> extends InstrumentationTes
         }
         TestSuite.waitForIdleSync(mTestCase);
         return clicked;
+    }
+
+    public Intent waitForSelectorStart(String method, int requestCode) throws InterruptedException {
+        boolean ok = false;
+        for (int i = 0; i < 20; i++) {
+            if (selectorRequestCode == requestCode) {
+                ok = true;
+                break;
+            }
+            Thread.sleep(2000);
+        }
+        MyLog.v(method, (ok ? "Request received: " + selectorIntent.toString() : "Request wasn't received"));
+        selectorRequestCode = 0;
+        return ok ? selectorIntent : null;
+    }
+
+    @Override
+    public void startActivityForResult(Intent intent, int requestCode) {
+        selectorIntent = intent;
+        selectorRequestCode = requestCode;
     }
 
     private static class MenuItemClicker implements Runnable {

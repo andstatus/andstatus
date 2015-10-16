@@ -28,6 +28,8 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.ConversationInserter;
 import org.andstatus.app.data.MatchedUri;
+import org.andstatus.app.data.MyDatabase;
+import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
@@ -42,7 +44,6 @@ import org.andstatus.app.util.MyLog;
  * @author yvolk@yurivolkov.com
  */
 public class TimelineActivityTest extends android.test.ActivityInstrumentationTestCase2<TimelineActivity> {
-    private TimelineActivity mActivity;
 
     @Override
     protected void setUp() throws Exception {
@@ -59,9 +60,6 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
                 MatchedUri.getTimelineUri(ma.getUserId(), TimelineType.HOME, false, 0));
         setActivityIntent(intent);
         
-        mActivity = getActivity();
-
-        assertTrue("MyService is available", MyServiceManager.isServiceAvailable());
         MyLog.i(this, "setUp ended");
     }
 
@@ -77,8 +75,9 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
     
     public void testOpeningConversationActivity() throws InterruptedException {
         final String method = "testOpeningConversationActivity";
-        TestSuite.waitForListLoaded(this, mActivity, 10);
-        ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<TimelineActivity>(this, ConversationActivity.class); 
+        TestSuite.waitForListLoaded(this, getActivity(), 10);
+        assertTrue("MyService is available", MyServiceManager.isServiceAvailable());
+        ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<TimelineActivity>(this, ConversationActivity.class);
         long msgId = helper.getListItemIdOfReply();
         helper.selectListPosition(method, helper.getPositionOfListItemId(msgId));
         helper.clickListAtPosition(method, helper.getPositionOfListItemId(msgId));
@@ -88,7 +87,7 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
     }
 
     private ListView getListView() {
-        return (ListView) mActivity.findViewById(android.R.id.list);
+        return (ListView) getActivity().findViewById(android.R.id.list);
     }
 
     /** It really makes difference if we are near the end of the list or not
@@ -104,9 +103,9 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
     
     private void onePositionOnContentChange(int position0, int iterationId) throws InterruptedException, Exception {
         final String method = "testPositionOnContentChange" + iterationId;
-        TestSuite.waitForListLoaded(this, mActivity, position0 + 2);
+        TestSuite.waitForListLoaded(this, getActivity(), position0 + 2);
         
-        new ListActivityTestHelper<TimelineActivity>(this, mActivity).selectListPosition(method, position0);
+        new ListActivityTestHelper<TimelineActivity>(this, getActivity()).selectListPosition(method, position0);
         int position1 = getListView().getFirstVisiblePosition();
         long itemId = getListView().getAdapter().getItemId(position1);
         int count1 = getListView().getAdapter().getCount() - 1;
@@ -161,7 +160,7 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
     
     public void testOpeningAccountSelector() throws InterruptedException {
         final String method = "testOpeningAccountSelector";
-        TestSuite.waitForListLoaded(this, mActivity, 10);
+        TestSuite.waitForListLoaded(this, getActivity(), 10);
         ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<TimelineActivity>(this, AccountSelector.class);
         helper.clickView(method, R.id.selectAccountButton);
         Activity nextActivity = helper.waitForNextActivity(method, 15000);
@@ -172,12 +171,14 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
 
     public void testActAs() throws InterruptedException {
         final String method = "testActAs";
-        TestSuite.waitForListLoaded(this, mActivity, 2);
+        TestSuite.waitForListLoaded(this, getActivity(), 2);
         ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<TimelineActivity>(this, AccountSelector.class);
         long msgId = helper.getListItemIdOfReply();
-        helper.invokeContextMenuAction4ListItemId(method, msgId, ContextMenuItem.NONEXISTENT);
+        String logMsg = "msgId:" + msgId
+                + "; text:'" + MyQuery.msgIdToStringColumnValue(MyDatabase.Msg.BODY, msgId) + "'";
+        assertTrue(logMsg, helper.invokeContextMenuAction4ListItemId(method, msgId, ContextMenuItem.NONEXISTENT));
         long userId1 = getActivity().getContextMenu().getActorUserIdForCurrentMessage();
-        String logMsg = "msgId=" + msgId + "; userId1=" + userId1;
+        logMsg += "; userId1=" + userId1;
         assertTrue(logMsg, userId1 != 0 );
 
         helper.invokeContextMenuAction4ListItemId(method, msgId, ContextMenuItem.ACT_AS);

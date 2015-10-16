@@ -25,11 +25,15 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.UserInTimeline;
 import org.andstatus.app.data.AttachedImageDrawable;
+import org.andstatus.app.data.DataInserter;
 import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyQuery;
+import org.andstatus.app.net.social.MbAttachment;
+import org.andstatus.app.net.social.MbMessage;
+import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.UriUtils;
 
@@ -38,14 +42,13 @@ import java.util.List;
 
 public class MessageEditorData {
     public static final String TAG = MessageEditorData.class.getSimpleName();
+    public static final MessageEditorData INVALID = MessageEditorData.newEmpty(null);
 
     private long msgId = 0;
     public DownloadStatus status = DownloadStatus.DRAFT;
     public String body = "";
 
-    private Uri imageUriToSave = Uri.EMPTY;
     private DownloadData image = DownloadData.EMPTY;
-
     private Point imageSize = new Point();
     Drawable imageDrawable = null;
 
@@ -60,21 +63,12 @@ public class MessageEditorData {
     public long recipientId = 0;
     public MyAccount ma = MyAccount.getEmpty(MyContextHolder.get(), "");
 
-    // Attributes of the process
-    boolean beingEdited = false;
-    boolean hideBeforeSave = false;
-
     private MessageEditorData(MyAccount myAccount) {
-        ma = myAccount;
-    }
-
-    public static MessageEditorData newEmpty() {
-        return MessageEditorData.newEmpty(null);
+        ma = myAccount == null ? MyAccount.getEmpty(MyContextHolder.get(), "") : myAccount;
     }
 
     public static MessageEditorData newEmpty(MyAccount myAccount) {
-        return new MessageEditorData(
-                myAccount == null ? MyAccount.getEmpty(MyContextHolder.get(), "") : myAccount);
+        return new MessageEditorData(myAccount);
     }
     
     @Override
@@ -127,15 +121,6 @@ public class MessageEditorData {
         if(!TextUtils.isEmpty(body)) {
             builder.append("text:'" + body + "',");
         }
-        if(hideBeforeSave) {
-            builder.append("hide,");
-        }
-        if(beingEdited) {
-            builder.append("edit,");
-        }
-        if(!UriUtils.isEmpty(imageUriToSave)) {
-            builder.append("imageUriToSave:'" + imageUriToSave + "',");
-        }
         if(!UriUtils.isEmpty(image.getUri())) {
             builder.append("image:" + image + ",");
         }
@@ -173,25 +158,54 @@ public class MessageEditorData {
             MyLog.v(TAG, "Loaded " + data);
         } else {
             data = new MessageEditorData(MyContextHolder.get().persistentAccounts().getCurrentAccount());
-            MyLog.v(TAG, "Empty data");
+            MyLog.v(TAG, "Empty data created");
         }
         return data;
     }
 
     MessageEditorData copy() {
-        MessageEditorData data = MessageEditorData.newEmpty(ma);
-        data.msgId = msgId;
-        data.status = status;
-        data.body = body;
-        data.imageUriToSave = imageUriToSave;
-        data.image = image;
-        data.imageSize = imageSize;
-        data.imageDrawable = imageDrawable;
-        data.inReplyToId = inReplyToId;
-        data.inReplyToBody = inReplyToBody;
-        data.replyAll = replyAll;
-        data.recipientId = recipientId;
-        return data;
+        if (this.isValid()) {
+            MessageEditorData data = MessageEditorData.newEmpty(ma);
+            data.msgId = msgId;
+            data.status = status;
+            data.body = body;
+            data.image = image;
+            data.imageSize = imageSize;
+            data.imageDrawable = imageDrawable;
+            data.inReplyToId = inReplyToId;
+            data.inReplyToBody = inReplyToBody;
+            data.replyAll = replyAll;
+            data.recipientId = recipientId;
+            return data;
+        } else {
+            return INVALID;
+        }
+    }
+
+    public void save(Uri imageUriToSave) {
+        MbMessage message = MbMessage.fromOriginAndOid(getMyAccount().getOriginId(), "", status);
+        message.msgId = getMsgId();
+        message.actor = MbUser.fromOriginAndUserOid(getMyAccount().getOriginId(),
+                getMyAccount().getUserOid());
+        message.sender = message.actor;
+        message.sentDate = System.currentTimeMillis();
+        message.setBody(body);
+        if (recipientId != 0) {
+            message.recipient = MbUser.fromOriginAndUserOid(getMyAccount().getOriginId(),
+                    MyQuery.idToOid(MyDatabase.OidEnum.USER_OID, recipientId, 0));
+        }
+        if (inReplyToId != 0) {
+            message.inReplyToMessage = MbMessage.fromOriginAndOid(getMyAccount().getOriginId(),
+                    MyQuery.idToOid(MyDatabase.OidEnum.MSG_OID, inReplyToId, 0),
+                    DownloadStatus.UNKNOWN);
+        }
+        Uri mediaUri = imageUriToSave.equals(Uri.EMPTY) ? image.getUri() : imageUriToSave;
+        if (!mediaUri.equals(Uri.EMPTY)) {
+            message.attachments.add(
+                    MbAttachment.fromUriAndContentType(mediaUri, MyContentType.IMAGE));
+        }
+        DataInserter di = new DataInserter(getMyAccount());
+        setMsgId(di.insertOrUpdateMsg(message));
     }
 
     MyAccount getMyAccount() {
@@ -202,18 +216,17 @@ public class MessageEditorData {
         return TextUtils.isEmpty(body) && getMediaUri().equals(Uri.EMPTY) && msgId == 0;
     }
 
+    public boolean isValid() {
+        return this != INVALID && ma.isValid();
+    }
+
     public MessageEditorData setBody(String textInitial) {
         body = textInitial;
         return this;
     }
 
-    public MessageEditorData setMediaUri(Uri mediaUri) {
-        imageUriToSave = UriUtils.notNull(mediaUri);
-        return this;
-    }
-
     public Uri getMediaUri() {
-        return imageUriToSave.equals(Uri.EMPTY) ? image.getUri() : imageUriToSave;
+        return image.getUri();
     }
 
     public long getImageFileSize() {
@@ -318,13 +331,5 @@ public class MessageEditorData {
     public MessageEditorData setRecipientId(long userId) {
         recipientId = userId;
         return this;
-    }
-
-    public boolean sameContext(MessageEditorData dataIn) {
-        return inReplyToId == dataIn.inReplyToId
-                && recipientId == dataIn.recipientId
-                && getMyAccount().getAccountName()
-                        .compareTo(dataIn.getMyAccount().getAccountName()) == 0
-                && replyAll == dataIn.replyAll;
     }
 }
