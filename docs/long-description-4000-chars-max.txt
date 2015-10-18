@@ -1,4 +1,4 @@
-﻿AndStatus is an Open Source low traffic social networking client with tree-like threaded conversations.
+AndStatus is an Open Source low traffic social networking client with tree-like threaded conversations.
 It supports multiple protocols, including
 GNU social ("StatusNet". e.g. Quitter, LoadAverage, Vinilox, etc.), Twitter and Pump.io.
 AndStatus can combine your accounts from all networks into one Timeline,

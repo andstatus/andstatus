@@ -17,6 +17,7 @@
 
 package org.andstatus.app.data;
 
+import android.content.Context;
 import android.database.Cursor;
 import android.graphics.drawable.Drawable;
 import android.text.Html;
@@ -112,41 +113,55 @@ public class TimelineViewBinder implements ViewBinder {
     }
     
     private void setMessageDetails(Cursor cursor, int columnIndex, TextView view) {
-        String messageDetails = RelativeTime.getDifference(view.getContext(), cursor.getLong(columnIndex));
+        StringBuilder messageDetails = new StringBuilder(
+                RelativeTime.getDifference(view.getContext(), cursor.getLong(columnIndex)));
+        setInReplyTo(cursor, view.getContext(), messageDetails);
+        setRecipientName(cursor, view.getContext(), messageDetails);
+        setMessageStatus(cursor, view.getContext(), messageDetails);
+        view.setText(messageDetails.toString());
+    }
+
+    private void setInReplyTo(Cursor cursor, Context context, StringBuilder messageDetails) {
+        long replyToMsgId = 0;
         int ind = cursor.getColumnIndex(Msg.IN_REPLY_TO_MSG_ID);
         if (ind >= 0) {
-            long replyToMsgId = cursor.getLong(ind);
-            if (replyToMsgId != 0) {
-                String replyToName = "";
-                ind = cursor.getColumnIndex(User.IN_REPLY_TO_NAME);
-                if (ind >= 0) {
-                    replyToName = cursor.getString(ind);
-                }
-                if (TextUtils.isEmpty(replyToName)) {
-                    replyToName = "...";
-                }
-                messageDetails += " " + String.format(
-                        view.getContext().getText(R.string.message_source_in_reply_to).toString(), 
-                        replyToName);
-            }
+            replyToMsgId = cursor.getLong(ind);
         }
-        ind = cursor.getColumnIndex(User.RECIPIENT_NAME);
+        String replyToName = "";
+        ind = cursor.getColumnIndex(User.IN_REPLY_TO_NAME);
+        if (ind >= 0) {
+            replyToName = cursor.getString(ind);
+        }
+        if (replyToMsgId != 0 && TextUtils.isEmpty(replyToName)) {
+            replyToName = "...";
+        }
+        if (!TextUtils.isEmpty(replyToName)) {
+            messageDetails.append(" " + String.format(
+                    context.getText(R.string.message_source_in_reply_to).toString(),
+                    replyToName));
+        }
+    }
+
+    private void setRecipientName(Cursor cursor, Context context, StringBuilder messageDetails) {
+        int ind = cursor.getColumnIndex(User.RECIPIENT_NAME);
         if (ind >= 0) {
             String recipientName = cursor.getString(ind);
             if (!TextUtils.isEmpty(recipientName)) {
-                messageDetails += " " + String.format(
-                        view.getContext().getText(R.string.message_source_to).toString(), 
-                        recipientName);
+                messageDetails.append(" " + String.format(
+                        context.getText(R.string.message_source_to).toString(),
+                        recipientName));
             }
         }
-        ind = cursor.getColumnIndex(Msg.MSG_STATUS);
+    }
+
+    private void setMessageStatus(Cursor cursor, Context context, StringBuilder messageDetails) {
+        int ind = cursor.getColumnIndex(Msg.MSG_STATUS);
         if (ind >= 0) {
             DownloadStatus status = DownloadStatus.load(cursor.getLong(ind));
             if (status != DownloadStatus.LOADED) {
-                messageDetails += " (" + status.getTitle(view.getContext()) + ")";
+                messageDetails.append(" (" + status.getTitle(context) + ")");
             }
         }
-        view.setText(messageDetails);
     }
 
     private void setAvatar(Cursor cursor, int columnIndex, ImageView view) {

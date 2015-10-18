@@ -94,8 +94,6 @@ public class ConversationLoader<T extends ConversationItem> implements SyncLoade
                 if (oMsg.mInReplyToMsgId != 0) {
                     findPreviousMessagesRecursively(newOMsg(oMsg.mInReplyToMsgId,
                             oMsg.mReplyLevel - 1));
-                } else {
-                    checkInReplyToNameOf(oMsg);                    
                 }
             }
         } else if (mAllowLoadingFromInternet) {
@@ -159,16 +157,6 @@ public class ConversationLoader<T extends ConversationItem> implements SyncLoade
             added = true;
         }
         return added;
-    }
-    
-    private void checkInReplyToNameOf(T oMsg) {
-        if (oMsg.isWrongReply()) {
-            // Don't try to retrieve this message again. 
-            // It looks like such messages really exist.
-            T oMsg2 = newOMsg(0, oMsg.mReplyLevel-1);
-            oMsg2.copyFromWrongReply(oMsg);
-            addMessageToList(oMsg2);
-        }
     }
 
     private void loadFromInternet(long msgId) {
@@ -244,10 +232,6 @@ public class ConversationLoader<T extends ConversationItem> implements SyncLoade
         for (ConversationItem oMsg : mMsgs) {
             oMsg.mListOrder = mMsgs.size() - oMsg.mListOrder - 1; 
         }
-    }
-
-    public boolean ismAllowLoadingFromInternet() {
-        return mAllowLoadingFromInternet;
     }
 
     public void allowLoadingFromInternet() {

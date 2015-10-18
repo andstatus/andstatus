@@ -24,12 +24,16 @@
 		</subtitle>
     </header>
 
-    <release android:versionName="20.0" android:versionCode="133"
-             versionDate="2015-10-11"
+    <release android:versionName="20.1" android:versionCode="134"
+             versionDate="2015-10-18"
              versionTitle="Timeline filters">
         <changes>
             <change>Added &quot;Hide replies not to me or my friends from Home timeline&quot; option
-                to the new &quot;Filters&quot; settings group.
+                to the new &quot;Filters&quot; settings group.<br/>
+                New behavior on message load: If a message is not a Reply to another message,
+                AndStatus checks if the message's body starts with @username and marks it as a Reply
+                to a User with this username. So such &quot;Replies to a User&quot;
+                are also filtered by this option.
                 <a href="https://github.com/andstatus/andstatus/issues/160">#160</a>
             </change>
             <change>Added &quot;Hide messages based on keywords&quot; option. Messages,
@@ -38,7 +42,7 @@
             </change>
         </changes>
     </release>
-    <release android:versionName="19.5" android:versionCode="132"
+    <release android:versionName="19.5" android:versionCode="133"
              versionDate="2015-10-17"
              versionTitle="Drafts, unsent messages and Message Editor enhancements">
         <changes>

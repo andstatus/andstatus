@@ -125,23 +125,4 @@ public class ConversationViewItem extends ConversationItem {
             mRebloggersString += MyQuery.userIdToWebfingerId(rebloggerId);
         }
     }
-    
-    @Override
-    protected boolean isWrongReply() {
-        return mInReplyToMsgId==0 && !SharedPreferencesUtil.isEmpty(mInReplyToName);
-    }
-    
-    @Override
-    void copyFromWrongReply(ConversationItem aReply) {
-        super.copyFromWrongReply(aReply);
-        if (ConversationViewItem.class.isAssignableFrom(aReply.getClass())) {
-            mAuthor =  ((ConversationViewItem)aReply).mInReplyToName;
-            MyLog.v(this, "Message id=" + aReply.getMsgId() + " has reply to name ("
-                    + mAuthor
-                    + ") but no reply to message id");
-            mBody = "("
-                    + MyContextHolder.get().context().getText(R.string.id_of_this_message_was_not_specified)
-                    + ")";
-        }
-    }
 }

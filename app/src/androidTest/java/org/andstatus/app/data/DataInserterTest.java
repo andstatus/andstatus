@@ -407,4 +407,51 @@ public class DataInserterTest extends InstrumentationTestCase {
         assertEquals("Username stored for userId=" + userId3, user3SameNewUserName.getUserName(),
                 MyQuery.userIdToStringColumnValue(MyDatabase.User.USERNAME, userId3));
     }
+
+    public void testReplyInBody() {
+        String buddyUserName = "buddy" +  TestSuite.TESTRUN_UID + "@example.com";
+        String body = "@" + buddyUserName + " I'm replying to you in a message body."
+                + " Hope you will see this as a real reply!";
+        addOneMessage4testReplyInBody(buddyUserName, body, true);
+
+        addOneMessage4testReplyInBody(buddyUserName, "Oh, " + body, false);
+
+        body = "<a href=\"http://example.com/a\">@" + buddyUserName + "</a>, this is an HTML <i>formatted</i> message";
+        addOneMessage4testReplyInBody(buddyUserName, body, true);
+
+        buddyUserName = TestSuite.CONVERSATION_MEMBER_USERNAME;
+        body = "@" + buddyUserName + " I know you are already in our cache";
+        addOneMessage4testReplyInBody(buddyUserName, body, true);
+    }
+
+    protected long addOneMessage4testReplyInBody(String buddyUserName, String body, boolean isReply) {
+        DataInserter di = new DataInserter(TestSuite.getConversationMyAccount());
+        String username = "somebody" + TestSuite.TESTRUN_UID + "@somewhere.net";
+        String userOid = "acct:" + username;
+        MbUser somebody = MbUser.fromOriginAndUserOid(TestSuite.getConversationOriginId(), userOid);
+        somebody.setUserName(username);
+        somebody.actor = TestSuite.getConversationMbUser();
+        somebody.setUrl("https://somewhere.net/" + username);
+
+        MbMessage message = MbMessage.fromOriginAndOid(TestSuite.getConversationOriginId(),
+                String.valueOf(System.nanoTime()), DownloadStatus.LOADED);
+        message.setBody(body);
+        message.sentDate = System.currentTimeMillis();
+        message.via = "MyCoolClient";
+        message.sender = somebody;
+        message.actor = TestSuite.getConversationMbUser();
+
+        long messageId = di.insertOrUpdateMsg(message);
+        assertTrue("Message added", messageId != 0);
+        long buddyId = MyQuery.msgIdToLongColumnValue(Msg.IN_REPLY_TO_USER_ID, messageId);
+        if (isReply) {
+            assertTrue("@username at the beginning of a message body is treated as a reply body:'"
+                    + message.getBody() + "'", buddyId != 0);
+            assertEquals(buddyUserName, MyQuery.userIdToStringColumnValue(User.USERNAME, buddyId));
+        } else {
+            assertTrue("Don't treat this message as a reply:'"
+                    + message.getBody() + "'", buddyId == 0);
+        }
+        return buddyId;
+    }
 }

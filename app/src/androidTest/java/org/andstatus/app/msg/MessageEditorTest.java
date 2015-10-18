@@ -225,9 +225,15 @@ public class MessageEditorTest extends android.test.ActivityInstrumentationTestC
         data.setData(TestSuite.LOCAL_IMAGE_TEST_URI2);
         getActivity().onActivityResult(ActivityRequestCode.ATTACH.id, Activity.RESULT_OK, data);
 
-        ActivityTestHelper.waitViewVisible(method, editorView);
-
         final MessageEditor editor = getActivity().getMessageEditor();
+        for (int attempt=0; attempt < 4; attempt++) {
+            ActivityTestHelper.waitViewVisible(method, editorView);
+            // Due to a race the editor may open before this change first.
+            if (TestSuite.LOCAL_IMAGE_TEST_URI2.equals(editor.getData().getMediaUri())) {
+                break;
+            }
+            Thread.sleep(2000);
+        }
         assertEquals("Image attached", TestSuite.LOCAL_IMAGE_TEST_URI2, editor.getData().getMediaUri());
         assertEquals("Text is the same", body, editText.getText().toString());
 

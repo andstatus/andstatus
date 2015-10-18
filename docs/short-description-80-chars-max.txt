@@ -1,1 +1,1 @@
-﻿Low traffic social networking client with tree-like threaded conversations
+Low traffic social networking client with tree-like threaded conversations

@@ -70,10 +70,6 @@ public abstract class ConversationItem  implements Comparable<ConversationItem> 
         this.mMsgId = mMsgId;
     }
 
-    protected boolean isWrongReply() {
-        return false;
-    }
-
     public boolean isLoaded() {
         return mCreatedDate > 0;
     }
@@ -93,11 +89,6 @@ public abstract class ConversationItem  implements Comparable<ConversationItem> 
     @Override
     public int hashCode() {
         return Long.valueOf(getMsgId()).hashCode();
-    }
-
-    void copyFromWrongReply(ConversationItem aReply) {
-        // This allows to place the message on a Timeline correctly
-        mCreatedDate = aReply.mCreatedDate - 60000;
     }
 
     abstract String[] getProjection();

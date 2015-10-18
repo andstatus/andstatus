@@ -172,7 +172,9 @@ public class ConversationViewAdapter extends BaseAdapter {
                 layoutParams.addRule(RelativeLayout.RIGHT_OF, viewToTheLeftId);
             }
             avatarView.setLayoutParams(layoutParams);
-            avatarView.setImageDrawable(oMsg.mAvatarDrawable.getDrawable());
+            if (oMsg.mAvatarDrawable != null) {
+                avatarView.setImageDrawable(oMsg.mAvatarDrawable.getDrawable());
+            }
             indentPixels += size;
             ((ViewGroup) messageIndented.getParent()).addView(avatarView);
         }
@@ -212,20 +214,21 @@ public class ConversationViewAdapter extends BaseAdapter {
                     context.getText(R.string.message_source_from).toString(),
                     oMsg.mVia);
         }
-        if (oMsg.mInReplyToMsgId !=0) {
-            String inReplyToName = oMsg.mInReplyToName;
+        String inReplyToName = "";
+        if (!TextUtils.isEmpty(oMsg.mInReplyToName)) {
+            inReplyToName = oMsg.mInReplyToName;
             if (SharedPreferencesUtil.isEmpty(inReplyToName)) {
                 inReplyToName = "...";
             }
             messageDetails += " "
                     + String.format(
                             context.getText(R.string.message_source_in_reply_to).toString(),
-                            oMsg.mInReplyToName)
-                    + " (" + msgIdToHistoryOrder(oMsg.mInReplyToMsgId) + ")";
+                            inReplyToName)
+                    + (oMsg.mInReplyToMsgId != 0 ? " (" + msgIdToHistoryOrder(oMsg.mInReplyToMsgId) + ")" : "");
         }
         if (!SharedPreferencesUtil.isEmpty(oMsg.mRebloggersString)
                 && !oMsg.mRebloggersString.equals(oMsg.mAuthor)) {
-            if (!SharedPreferencesUtil.isEmpty(oMsg.mInReplyToName)) {
+            if (!TextUtils.isEmpty(inReplyToName)) {
                 messageDetails += ";";
             }
             messageDetails += " "

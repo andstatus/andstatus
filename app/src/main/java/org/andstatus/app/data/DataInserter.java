@@ -31,6 +31,7 @@ import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.service.AttachmentDownloader;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandExecutionContext;
+import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TriState;
@@ -298,10 +299,10 @@ public class DataInserter {
 
     private boolean isMentionedAndPutInReplyToMessage(MbMessage message, LatestUserMessages lum, ContentValues values) {
         boolean mentioned = execContext.getTimelineType() == TimelineType.MENTIONS;
+        Long inReplyToUserId = 0L;
         if (message.inReplyToMessage != null) {
             // If the Msg is a Reply to another message
             Long inReplyToMessageId = 0L;
-            Long inReplyToUserId = 0L;
             // Type of the timeline is ALL meaning that message does not belong to this timeline
             DataInserter di = new DataInserter(execContext);
             inReplyToMessageId = di.insertOrUpdateMsg(message.inReplyToMessage, lum);
@@ -313,16 +314,19 @@ public class DataInserter {
             if (inReplyToMessageId != 0) {
                 values.put(MyDatabase.Msg.IN_REPLY_TO_MSG_ID, inReplyToMessageId);
             }
-            if (inReplyToUserId != 0) {
-                values.put(MyDatabase.Msg.IN_REPLY_TO_USER_ID, inReplyToUserId);
+        } else {
+            inReplyToUserId = getReplyToUserIdInBody(message);
+        }
+        if (inReplyToUserId != 0) {
+            values.put(MyDatabase.Msg.IN_REPLY_TO_USER_ID, inReplyToUserId);
 
-                if (execContext.getMyAccount().getUserId() == inReplyToUserId) {
-                    values.put(MyDatabase.MsgOfUser.REPLIED, 1);
-                    // We count replies as Mentions 
-                    mentioned = true;
-                }
+            if (execContext.getMyAccount().getUserId() == inReplyToUserId) {
+                values.put(MyDatabase.MsgOfUser.REPLIED, 1);
+                // We count replies as Mentions
+                mentioned = true;
             }
         }
+
         // Check if current user was mentioned in the text of the message
         if (message.getBody().length() > 0 
                 && !mentioned 
@@ -333,6 +337,31 @@ public class DataInserter {
             values.put(MyDatabase.MsgOfUser.MENTIONED, 1);
         }
         return mentioned;
+    }
+
+    private long getReplyToUserIdInBody(MbMessage message) {
+        String body = MyHtml.fromHtml(message.getBody());
+        long userId = 0;
+        if (body.startsWith("@") && body.length() > 1) {
+            String validUserName = "";
+            for (int ind=2; ind<=body.length(); ind++) {
+                String userName = body.substring(1, ind);
+                if (execContext.getMyAccount().getOrigin().isUsernameValid(userName)) {
+                    validUserName = userName;
+                }
+            }
+            if (!TextUtils.isEmpty(validUserName)) {
+                userId = MyQuery.userNameToId(execContext.getMyAccount().getOrigin().getId(), validUserName);
+                if (userId == 0) {
+                    // This not fully correct ( validUserName is not Oid),
+                    // but at least allows us to create a User
+                    MbUser mbUser = MbUser.fromOriginAndUserOid(execContext.getMyAccount().getOrigin().getId(), validUserName);
+                    mbUser.setUserName(validUserName);
+                    userId = insertOrUpdateUser(mbUser);
+                }
+            }
+        }
+        return userId;
     }
 
     public long insertOrUpdateUser(MbUser user) {
