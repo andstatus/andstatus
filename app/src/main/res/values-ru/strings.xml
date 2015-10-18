@@ -155,10 +155,13 @@
   <string name="fetch_frequency_entries_8_hours">8 часов</string>
   <string name="fetch_frequency_entries_12_hours">12 часов</string>
   <string name="fetch_frequency_entries_1_day">сутки</string>
+  <string name="filters_title">Фильтры</string>
+  <string name="filters_summary">Глобальные фильтры, применяемые ко всем сообщениям</string>
   <string name="get_open_instances_title">Получить открытые серверы</string>
   <string name="header_accounts">Аккаунты (Учётные записи)</string>
   <string name="header_add_new_account">Добавить новый аккаунт</string>
   <string name="header_manage_existing_accounts">Управление существующими аккаунтами</string>
+  <string name="hide_messages_based_on_keywords_title">Скрыть сообщения, в которых есть ключевые слова</string>
   <string name="history_size_entries_500">500 сообщений</string>
   <string name="history_size_entries_1000">1000 сообщений</string>
   <string name="history_size_entries_2000">2000 сообщений</string>
@@ -198,6 +201,7 @@
   <string name="label_with_media">с медиа-контентом</string>
   <string name="latest_error_label">Последняя ошибка</string>
   <string name="loading">Загрузка&#8230;</string>
+  <string name="malformed_link">Неисправные ссылки</string>
   <string name="message">Сообщение</string>
   <string name="message_twitter">Сообщение</string>
   <string name="message_edit_hint">Что происходит?</string>
@@ -447,4 +451,6 @@
   <string name="user_in_timeline_entries_real_name">Настоящее имя</string>
   <string name="user_in_timeline_entries_real_name_at_username">Настоящее имя @имяпользователя</string>
   <string name="yes">Да</string>
+  <string name="this_option_is_turned_off">(отключено)</string>
+  <string name="hide_replies_not_to_me_or_friends_title">Скрыть ответы не мне или моим друзьям из ленты времени Дом</string>
 </resources>
