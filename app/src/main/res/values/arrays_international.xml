@@ -30,10 +30,12 @@
         <item>Arabic</item>
         <item>Catalan</item>
         <item>French</item>
+        <item>Galician</item>
         <item>German</item>
         <item>Japanese</item>
         <item>Norwegian</item>
         <item>Portuguese</item>
+        <item>Portuguese, Brazilian</item>
         <item>Russian</item>
         <item>Spanish</item>
         <item>Swedish</item>
@@ -44,10 +46,12 @@
         <item>ar</item>
         <item>ca</item>
         <item>fr</item>
+        <item>gl</item>
         <item>de</item>
         <item>ja</item>
         <item>no</item>
         <item>pt</item>
+        <item>pt-rBR</item>
         <item>ru</item>
         <item>es</item>
         <item>sv</item>

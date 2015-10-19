@@ -112,4 +112,26 @@ public class I18n {
         }
         builder.append(cs);
     }
+
+    public static String localeToLanguage(String locale) {
+        if (TextUtils.isEmpty(locale)) {
+            return "";
+        }
+        int indHyphen = locale.indexOf('-');
+        if (indHyphen < 1) {
+            return locale;
+        }
+        return locale.substring(0, indHyphen);
+    }
+
+    public static String localeToCountry(String locale) {
+        if (TextUtils.isEmpty(locale)) {
+            return "";
+        }
+        int indHyphen = locale.indexOf("-r");
+        if (indHyphen < 0) {
+            return "";
+        }
+        return locale.substring(indHyphen+2);
+    }
 }

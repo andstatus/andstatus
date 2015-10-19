@@ -32,4 +32,11 @@ public class I18nTest extends InstrumentationTestCase {
         assertEquals("", I18n.trimTextAt(text1, 0));
         assertEquals("", I18n.trimTextAt(text1, -1));
     }
+
+    public void testLocaleToLanguageAndCountry() {
+        assertEquals("pt", I18n.localeToLanguage("pt-rPT"));
+        assertEquals("PT", I18n.localeToCountry("pt-rPT"));
+        assertEquals("pt", I18n.localeToLanguage("pt"));
+        assertEquals("", I18n.localeToCountry("pt"));
+    }
 }

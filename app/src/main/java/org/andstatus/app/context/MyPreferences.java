@@ -18,6 +18,7 @@ package org.andstatus.app.context;
 
 import org.andstatus.app.R;
 import org.andstatus.app.msg.TimelineActivity;
+import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
 
 import android.annotation.TargetApi;
@@ -264,7 +265,7 @@ public class MyPreferences {
                 customizeConfig(contextWrapper, config, mDefaultLocale);
                 mLocale = null;
             } else {
-                mLocale = new Locale(strLocale);
+                mLocale = new Locale(I18n.localeToLanguage(strLocale), I18n.localeToCountry(strLocale));
                 customizeConfig(contextWrapper, config, mLocale);
             }
         }
