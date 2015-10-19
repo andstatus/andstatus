@@ -416,6 +416,17 @@ public class DataInserterTest extends InstrumentationTestCase {
 
         addOneMessage4testReplyInBody(buddyUserName, "Oh, " + body, false);
 
+        long userId1 = MyQuery.webFingerIdToId(TestSuite.getConversationMyAccount().getOriginId(), buddyUserName);
+        assertEquals("User has temp Oid", MbUser.getTempOid(buddyUserName, ""), MyQuery.idToOid(OidEnum.USER_OID, userId1, 0));
+
+        String realBuddyOid = "acc:" + buddyUserName;
+        MbUser user = MbUser.fromOriginAndUserOid(TestSuite.getConversationMyAccount().getOriginId(), realBuddyOid);
+        user.setUserName(buddyUserName);
+        DataInserter di = new DataInserter(TestSuite.getConversationMyAccount());
+        long userId2 = di.insertOrUpdateUser(user);
+        assertEquals(userId1, userId2);
+        assertEquals("TempOid replaced with real", realBuddyOid, MyQuery.idToOid(OidEnum.USER_OID, userId1, 0));
+
         body = "<a href=\"http://example.com/a\">@" + buddyUserName + "</a>, this is an HTML <i>formatted</i> message";
         addOneMessage4testReplyInBody(buddyUserName, body, true);
 

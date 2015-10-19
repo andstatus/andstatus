@@ -32,6 +32,7 @@ import java.net.URL;
  * @author yvolk@yurivolkov.com
  */
 public class MbUser {
+    public static final String WEBFINGER_ID_REGEX = "[a-zA-Z_0-9/\\.\\-\\(\\)]+@[a-zA-Z_0-9/\\.\\-\\(\\)]+";
     public String oid="";
     private String userName="";
     private String webFingerId="";
@@ -129,5 +130,22 @@ public class MbUser {
 
     public String getWebFingerId() {
         return webFingerId;
+    }
+    
+    public static boolean isWebFingerIdValid(String webFingerId) {
+        boolean ok = false;
+        if (!TextUtils.isEmpty(webFingerId)) {
+            ok = webFingerId.matches(WEBFINGER_ID_REGEX);
+        }
+        return ok;
+    }
+
+    public String getTempOid() {
+        return getTempOid(webFingerId, userName);
+    }
+
+    public static String getTempOid(String validWebFingerId, String validUserName) {
+        String userName = TextUtils.isEmpty(validWebFingerId) ? validUserName : validWebFingerId;
+        return "andstatustemp:" + userName;
     }
 }

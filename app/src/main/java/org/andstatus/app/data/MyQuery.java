@@ -40,6 +40,8 @@ import java.util.List;
 import java.util.Set;
 
 public class MyQuery {
+    static final String TAG = MyQuery.class.getSimpleName();
+
     private MyQuery() {
         // Empty
     }
@@ -438,6 +440,10 @@ public class MyQuery {
         return idToLongColumnValue(Msg.TABLE_NAME, columnName, systemId);
     }
 
+    public static long webFingerIdToId(long originId, String webFingerId) {
+        return userColumnValueToId(originId, User.WEBFINGER_ID, webFingerId);
+    }
+    
     /**
      * Lookup the User's id based on the Username in the Originating system
      * 
@@ -447,31 +453,32 @@ public class MyQuery {
      *         {@link MyDatabase.User#_ID} ), 0 if not found
      */
     public static long userNameToId(long originId, String userName) {
-        SQLiteDatabase db = MyContextHolder.get().getDatabase().getReadableDatabase();
-        return userNameToId(db, originId, userName);
+        return userColumnValueToId(originId, User.USERNAME, userName);
     }
 
-    private static long userNameToId(SQLiteDatabase db, long originId, String userName) {
+    private static long userColumnValueToId(long originId, String columnName, String columnValue) {
+        final String method = "user" + columnName + "ToId";
+        SQLiteDatabase db = MyContextHolder.get().getDatabase().getReadableDatabase();
         long id = 0;
         SQLiteStatement prog = null;
         String sql = "";
         try {
             sql = "SELECT " + BaseColumns._ID + " FROM " + User.TABLE_NAME
-                    + " WHERE " + User.ORIGIN_ID + "=" + originId + " AND " + User.USERNAME + "='"
-                    + userName + "'";
+                    + " WHERE " + User.ORIGIN_ID + "=" + originId + " AND " + columnName + "='"
+                    + columnValue + "'";
             prog = db.compileStatement(sql);
             id = prog.simpleQueryForLong();
         } catch (SQLiteDoneException e) {
-            MyLog.ignored(MyProvider.TAG, e);
+            MyLog.ignored(MyQuery.TAG, e);
             id = 0;
         } catch (Exception e) {
-            MyLog.e(MyProvider.TAG, "userNameToId", e);
+            MyLog.e(MyQuery.TAG, method + ": SQL:'" + sql + "'", e);
             id = 0;
         } finally {
             DbUtils.closeSilently(prog);
         }
         if (MyLog.isVerboseEnabled()) {
-            MyLog.v(MyProvider.TAG, "userNameToId:" + originId + "+" + userName + " -> " + id);
+            MyLog.v(MyQuery.TAG, method + ":" + originId + "+" + columnValue + " -> " + id);
         }
         return id;
     }
