@@ -1,0 +1,18 @@
+AndStatus er en sosial nettverksklient, basert på åpenkilde kode, benytter lav båndbreddeåpen og viser samtalene i en tre-struktur. Applikasjonen støtter flere protokoller inkluder
+GNU social ("StatusNet". eks. Quitter, LoadAverage, Vinilox, etc.), Twitter og Pump.io. AndStatus kan kombinere din bruker fra alle nettverkene i en og samme tidslinje/strøm,
+samt gir deg muligheten til å lese og oppdatere din status selv om du ikke har nettverkstilgang.
+
+Applikasjonen er bygget for Android v.4.1+ enheter. Åpen kilde kode lisensiert.
+
+Unike funksjoner for AndStatus:
+
+1. Du kan ha flere kontoer på forskjellige sosiale nettverk. Du kan også ha flere kontoer i ett og samme nettverk, skrive eller svare fra ditt valgte "Jeg" og dele mellom kontoer og nettverk.
+2. Du trenger ikke være online for å oppdatere din status: ikke sendte meldinger er lagret selv etter omstart av enheten.  De vil bli forsøkt sendt på nytt (lagret i en "retry kø") når din enhet er online igjen.
+3. Behagelig organiserte samtaler i en tre-lignende samtale struktur.
+4. "Globalt søk" tillater å søke offentlige meldinger i alle dine registrerte nettverk, dette ved ett og samme søk.
+5. Tweeter/meldinger/avatarer/bilder er synkronisert i bakgrunnen, når din enhet har god nettverksforbindelse.
+6. Mellomlagrede data kan være lagret for år eller for flere dager - det er ditt valg.
+7. Enkel sikkerhetskopiering og gjenopprettelse av kontoer og data mellom dine enheter.
+8. Fri/gratis og uten reklame, støttet av fellesskapet.
+
+Se endrings loggen for en beskrivelse av all ny funksjonalitet i AndStatus med lenker til diskusjonen av disse:

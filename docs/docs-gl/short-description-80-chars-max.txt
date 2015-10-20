@@ -1,0 +1,1 @@
+Cliente de redes sociais con baixo consumo de datos e con conversas ordenadas de forma ramificada

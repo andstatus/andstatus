@@ -1,0 +1,17 @@
+AndStatus é un cliente de redes sociais con baixo consumo de datos e conversas ordenadas de forma ramificada. Soporta múltiples protocolos, incluíndo GNU social ("StatusNet". ex. Quitter, LoadAverage, Vinilox, etc.), Twitter e Pump.io. AndStatus combina as súas contas de todas as redes nunha única Liña de Tempo e permítelle ler e escribir incluso cando non está conectado.
+
+Para Android 4.1 ou superior. Licenza de Código Aberto.
+
+Características diferenciais de AndStatus:
+
+1. Varias contas en diferentes sistemas de Redes sociais. Pode ter varias contas e cada unha, escribir/respostar con calquera dos "Ti" e compartir entre contas e sistemas.
+2. Non precisa estar conectado para enviar as súas actualizacións: as mensaxes gárdanse (na "cola de envío") incluso ate despois de un reinicio. Serán enviadas cando volte a estar en liña.
+3. Axeitada "Vista de conversación" en estilo ramificado.
+4. A "Busca global" permítelle buscar mensaxes públicas en todas as redes rexistradas con unha única consulta.
+5. As imaxes de chíos/mensaxes/avatares/anexos son sincronizados en segundo plano, incluso cando o dispositivo ten unha boa conexión.
+6. Os datos en memoria pódense gardar durante anos ou so días - o que vostede queira.
+7. Respaldo doado de restaurado de contas e datos entre os seus dispositivos.
+8. Gratuíto e sen anuncios, apoiado pola comunidade.
+
+Vexa o Rexistro de cambios para descripción de todas as características de AndStatus:
+http://andstatus.org/changelog.html

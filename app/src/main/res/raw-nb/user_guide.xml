@@ -1,0 +1,190 @@
+<?xml-stylesheet version='1.0' type='text/xsl' href='../raw/fb2_2_html.xsl' encoding="utf-8"?>
+<!-- 
+    Copyright (C) 2015 Yuri Volkov, yvolk@yurivolkov.com
+    
+    Translations are copyrighted by corresponding Translators.
+        
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+    
+         http://www.apache.org/licenses/LICENSE-2.0
+    
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+ -->
+<FictionBook xmlns="http://www.gribuser.ru/xml/fictionbook/2.0"
+xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../../../res-src/fb2/FictionBook.xsd">
+<description>
+    <title-info>
+        <genre>computers</genre>
+        <author>
+            <first-name>AndStatus project</first-name>
+            <last-name></last-name>
+        </author>
+        <book-title>AndStatus brukermanual</book-title>
+        <lang>no</lang>
+        <src-lang>en</src-lang>
+        <translator>
+            <nickname>Knut Erik Hollund</nickname>
+        </translator>
+    </title-info>
+    <document-info>
+        <author>
+            <nickname>AndStatus project</nickname>
+            <home-page>http://www.andstatus.org</home-page>
+            <email>andstatus@gmail.com</email>
+        </author>
+        <date>2015-08-16</date>
+        <id></id>
+        <version>2</version>
+    </document-info>
+</description>
+<body>
+<section>
+    <title>
+        <p>Introduksjon</p>
+    </title>
+    <p>AndStatus er en sosial medie klient basert på åpen kilde kode, benytter lav båndbredde og viser samtaler i en tre-lignende struktur. Klienten støtter flere protokoller, inkludert GNU social, twitter og pump.io. AndStatus kombinderer dine kontoer fra alle nettverkene i en og samme tidslinje og tillater lesing av meldingene også når du ikke har nettverksforbindelse.</p>
+    <p>Link til denne brukermanualen er tilgjengelig i menyen-&gt;Hjelp.</p>
+    <p>Endringsloggen på neste side viser beskrivelse og lenker til nye funksjoner for AndStatus.</p>
+</section>
+<section>
+    <title>
+        <p>1. Kom igang</p>
+    </title>
+    <p>Trykk på "Kom igang"-knappen nedenfor: dialogen for å legge til ny konto vil da åpnes.
+    </p>
+    <p>Først vil du bli bedt om å velge et sosialt nettverk, dette utifra en liste. Twitter, Pump.io og flere «GNU sosiale»-type systemer (Quitter, LoadAverage og Vinilox) er forhåndskonfigurert.
+    </p>
+    <p>Hvis den instansen ("GNU social"-type) du leter ikke er listet, trykk på "Oppdag åpne instanser" i menyen for å velge en instans. Dette er en liste som vedlikeholdes av GNU sosial felleskapet; eller "Legg til nytt system" manuelt før du legger til din konto.</p>
+    <p>For Twitter kan du velge "Legg til konto". For andre systemer blir du spurt om ditt brukernavn og passord, før du kan "Legge til konto".</p>
+    <p>Etter en vellykket opprettelse av konto, velg "venstre pil" på ett "Meny innslag" eller "Tilbake" knappen på din enhet. Da vil Hjemme Tidslinjen din bli åpnet og meldinger for din konto vil bli lastet ned.
+    </p>
+    <p>Gratulerer! Vennligst les nedenfor hva du kan gjøre videre.
+    </p>
+    <p>Og ikke glem å legge til AndStatus sin widget til en av dine hjemme skjermer: widgeten vil informere deg om nye meldinger og du kan benytte den for å starte AndStatus.
+    </p>
+</section>
+<section>
+    <title>
+        <p>2. Grunnleggende om AndStatus</p>
+    </title>
+    <p>Det du ser først i AndStatus (etter at min. en konto er lagt til) er din egen hjemme tidslinje.
+    </p>
+    <p>For å utføre en aksjon på en av dine meldinger <strong>hold ned</strong> inntil du ser "Kontekst menyen".
+    </p>
+    <p>Du kan <strong>klikke</strong> en melding for å få mer informasjon og for å se samtaletråden i meldingen.
+    </p>
+    <p>Åpne "Navigeringsskuffen" på venstreside og trykk gjeldene tidslinje ("Hjem"). Dette for å veksle mellom ulike visningsalternativer.
+    </p>
+</section>
+<section>
+    <title>
+        <p>3. Send og svare</p>
+    </title>
+    <p>1. For å oppdatere din status, velg "Send" knappen ("Tweet" for Twitter). Ikonet for valget ligner en "konvolutt+". Meldings editoren vil åpne nederst i skjermen.
+    </p>
+    <p>2. Skriv din melding i tekst feltet.
+    </p>
+    <p>3. Alternativt, legg til et bilde til din melding. Nå vil en meldings editor bli synlig, og en annen knapp kommer frem på menyen: "Vedlegg+". ("Vedleggs" menyen kan være skjult under en "Overflow" knapp med: "tre vertikale pumktum"). Velg denne "Vedleggs" knappen og velg et bilde. Etter at bildet er lagt til, vil du se "(med media)" ovenfor tekst feltet, idet du skriver meldingen.
+    </p>
+    <p>4. Trykk <strong>Send</strong> for å sende din melding. Er du uten nettverksforbindelse vil meldingen bli plassert i en kø og automatisk sendt senere. (Benytt "Kommandoer i kø" menyen for å se dine ventende meldinger i køen)
+    </p>
+    <p>For å svare, <strong>hold ned</strong> fingeren på en melding og velg <strong>Svar</strong> fra kontekst menyen, skriv inn ditt svar i feltet nederst.
+    </p>
+    <p>For å avbryte en meldin eller tilsvar, velger du "Skjul" knappen for å skjule tekstfeltet.</p>
+</section>
+<section>
+    <title>
+        <p>4. Vedlagt bilde: sende og vise</p>
+    </title>
+    <section>
+        <title>
+            <p>4.1. Sende bilder</p>
+        </title>
+        <p>Den første muligheten for å legge til et bilde er beskrevet i forrige sksjon: du kan legge til bilde i en melding, idet du skriver meldingen.
+        </p>
+        <p>En annen måte å legge til et bilde er å "Dele" bildet via AndStatus: her starter du fra et bilde i en annen applikasjon. F.eks. du ønsker å ta et bilde og sende det til et sosialt nettverk.
+For å gjøre dette :
+        </p>
+        <p>1. Ta bildet / finn bildet i galleriet og klikk på bildets thumbnail for åpne det.
+        </p>
+        <p>2. Velg "Del" i menyen. De fleste applikasjoner har en "Delings" knapp...
+        </p>
+        <p>3. Velg "AndStatus" i listen av applikasjoner som vises.
+        </p>
+        <p>4. Nå er du tilbake i AndStatus applikasjonen. Hvis du har mer enn en konto, velg kontoen du ønsker å benytte for å dele, hvis ike blir du sendt videre til meldingseditoren.</p>
+        <p>5. Nå er du i meldingseditoren sammen med det bildet du valgte. (Du skal se ("Vedlegg") i teksten ovenfor meldingsboksen).
+        </p>
+        <p>6. Skriv en tekst og velg "Send". (Det er ikke mulig å sende bilde uten noe tekst)
+        </p>
+    </section>
+    <section>
+        <title>
+            <p>4.2. Vise vedlagte bilder</p>
+        </title>
+        <p>Vi hra følgende innstillinger (finner de i Innstillinger->Vedlegg):</p>
+        <p>1. "Last ned og vis vedlagt bilde" valgboks. Hvis dette valget er av, så blir ikke vedlegget lastet ned. Dette for å minimere nettverkstrafikk.
+        </p>
+        <p>Vær oppmerksom på når du skrur denne funksjonalitetn på, bilder vises ikke umiddelbart, fordi AndStatus trenger litt tid på å laste ned bildet i bakgrunnen.
+        </p>
+        <p>2. "Legg til bildet i meldingen". Når valget er "på", kan du benytte "Vedleggs+" knappen ("Vedlegg" menyvalget) for å legge til bilder i meldingen. Når valget er "av", så vil vedleggende du har lagt ved bli skjult.
+        </p>
+        <p>Se <a xlink:href="https://github.com/andstatus/andstatus/issues/288">her for mer info</a>.</p>
+    </section>
+</section>
+<section>
+    <title>
+        <p>5. Direkte (private) meldinger</p>
+    </title>
+    <p>Åpne navigasjonsskuffen på venstresiden, velg nåværende tidslinje (Hjem) og velg <strong>Direkte melding</strong> fra listen.
+    </p>
+    <p>For å <strong>slette</strong> en melding (offentlig eller privat), <strong>hold ned</strong> valget og velg <strong>Slett melding</strong>.
+    </p>
+    <p>Nye meldinger er hentet til tidslinjen i bakgrunnen. Hvis du har valgt å skru på <strong>Automatisk synkronisering</strong> i Androids innstillinger - "Kontoer og synkronisering". I begge tilfellene vil du motta oppdateringer manuelt ved å benytte "Hent inn" kommandoen i menyvalget.
+    </p>
+</section>
+<section>
+    <title>
+        <p>6. Nevninger</p>
+    </title>
+    <p>Velg nåværende tidslinje i navigasjonsskuffen og velg <strong>Nevninger</strong>.
+    </p>
+    <p>Nevninger vil liste alle meldinger hvor du <strong>@username</strong> er nevnt (også alle steder hvor du er nevnt uavhengig av AndStatus konto i den kombinerte tidslinjen).
+    </p>
+</section>
+<section>
+    <title>
+        <p>7. Søk (lokalt søk)</p>
+    </title>
+    <p>Lokalt søk søker i meldinger som allerede er lastet ned til enheten. Dette betyr at søket også er tilgjengelig selv om du ikke har nettverksforbindelse.
+    </p>
+    <p>1. For å finne et ord eller tekst frase i meldingene, velg <strong>Søk</strong> på menyen eller velg <strong>Søk</strong> knappen på din enhet.
+    </p>
+    <p>Hvis du ønsker å vise meldinger for en spesifikk bruker, vennligs søk etter "brukernavnet".</p>
+    <p>For å se nevninger for en spesifikk bruker, søk etter "@username".
+    </p>
+    <p>2. For å søke raskt etter meldinger til en spesifikk bruker (opphavspersonen til en valgt medling), velg "Meldinger fra brukernavn" fra kontekst menyen i meldingen. Dette er egentlig en sortering av det glboale søket (se nedenfor).
+    </p>
+</section>
+<section>
+    <title>
+        <p>8. Globalt søk</p>
+    </title>
+    <p>Globalt søk sender en søke forespørsel direkte til det sosiale nettverkst tjener. Dette gjør at her trenger du å være tilkoblet internet for å kunne gjennomføre søket.
+    </p>
+    <p>Først blir du presentert for det lokale søket. I paralell vil AndStatus laste ned resultatet fra det sosiale nettverkets tjener, dette for den valgte konto (eller fra alle sosiale nettverk, hvis du er i tidslinjen "kombindert).
+Søke resultater blir oppdatert når klienten mottar respons fra tjenerne. Hvis du opplever en tilkoblings feilmelding (f.eks. ikkenoe respons fra en tjener) så vil du kun se resultater av det lokale søket.
+    </p>
+    <p>Vær oppmerksom på at pump.io systemet ikke støtter et globalt søk.
+    </p>
+    <p>1. Globalt søk ved bruk av ord eller fraser gjennomføres ved "Globalt søk" valget i menyen.</p>
+    <p>2. En annen måte å gjennomføre et globalt søk av meldinger til en opphavsperson er å velge meldingen og ifra kontekst menyen velge "Meldinger fra brukernavn".</p>
+</section>
+</body>
+</FictionBook>
