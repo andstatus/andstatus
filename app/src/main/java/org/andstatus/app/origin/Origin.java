@@ -138,9 +138,6 @@ public class Origin {
         boolean ok = false;
         if (!TextUtils.isEmpty(username)) {
             ok = username.matches(originType.usernameRegEx);
-            if (!ok && MyLog.isLoggable(this, MyLog.INFO)) {
-                MyLog.i(this, "The Username is not valid: \"" + username + "\" in " + name);
-            }
         }
         return ok;
     }

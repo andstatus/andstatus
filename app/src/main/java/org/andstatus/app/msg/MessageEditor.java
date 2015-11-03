@@ -149,7 +149,7 @@ public class MessageEditor {
     private EditText bodyEditText;
     private final TextView mCharsLeftText;
 
-    private MessageEditorData editorData;
+    private MessageEditorData editorData = MessageEditorData.INVALID;
 
     public MessageEditor(ActionableMessageList actionableMessageList) {
         mMessageList = actionableMessageList;
@@ -180,7 +180,9 @@ public class MessageEditor {
         bodyEditText.addTextChangedListener(new TextWatcher() {
             @Override
             public void afterTextChanged(Editable s) {
-                mCharsLeftText.setText(String.valueOf(editorData.getMyAccount().charactersLeftForMessage(s.toString())));
+                editorData.body = s.toString();
+                MyLog.v(MessageEditorData.TAG, "Body updated to '" + editorData.body + "'");
+                mCharsLeftText.setText(String.valueOf(editorData.getMyAccount().charactersLeftForMessage(editorData.body)));
             }
 
             @Override
@@ -203,8 +205,6 @@ public class MessageEditor {
                             sendAndHide();
                             return true;
                         default:
-                            mCharsLeftText.setText(String.valueOf(editorData.getMyAccount()
-                                    .charactersLeftForMessage(bodyEditText.getText().toString())));
                             break;
                     }
                 }
@@ -417,6 +417,7 @@ public class MessageEditor {
 
     public void startEditingSharedData(final MyAccount ma, final String textToShare, final Uri mediaToShare) {
         MyLog.v(MessageEditorData.TAG, "startEditingSharedData " + textToShare + " uri: " + mediaToShare);
+        updateDataFromScreen();
         MessageEditorCommand command = new MessageEditorCommand(
                 MessageEditorData.newEmpty(ma).setBody(textToShare), editorData)
                 .setMediaUri(mediaToShare);
@@ -435,6 +436,7 @@ public class MessageEditor {
             return;
         }
         data.status = DownloadStatus.DRAFT;
+        updateDataFromScreen();
         MessageEditorCommand command = new MessageEditorCommand(data, editorData);
         command.showAfterSave = true;
         command.beingEdited = true;
@@ -446,6 +448,7 @@ public class MessageEditor {
     }
 
     public void startEditingCurrentWithAttachedMedia(Uri mediaUri) {
+        updateDataFromScreen();
         MessageEditorCommand command = new MessageEditorCommand(editorData.copy());
         command.beingEdited = true;
         command.showAfterSave = true;
@@ -454,7 +457,11 @@ public class MessageEditor {
     }
 
     public void updateScreen() {
-        if (editorData.body != bodyEditText.getText().toString()) {
+        if (!editorData.body.trim().equals(bodyEditText.getText().toString().trim())) {
+            if (!TextUtils.isEmpty(bodyEditText.getText()) && !TextUtils.isEmpty(editorData.body)) {
+                MyLog.v(MessageEditorData.TAG, "Body updated '" + bodyEditText.getText()
+                + "' to '" + editorData.body + "'", new IllegalStateException());
+            }
             bodyEditText.setText(editorData.body);
             bodyEditText.setSelection(bodyEditText.getText().toString().length());
         }
@@ -463,7 +470,7 @@ public class MessageEditor {
         showMessageDetails();
         showIfNotEmpty(R.id.inReplyToBody, editorData.inReplyToBody);
         mCharsLeftText.setText(String.valueOf(editorData.getMyAccount()
-                .charactersLeftForMessage(bodyEditText.getText().toString())));
+                .charactersLeftForMessage(editorData.body)));
         showAttachedImage();
     }
 
@@ -524,7 +531,7 @@ public class MessageEditor {
 
     private void sendAndHide() {
         updateDataFromScreen();
-        if (!editorData.getMyAccount().isValid()) {
+        if (!editorData.isValid()) {
             discardAndHide();
         } else if (TextUtils.isEmpty(editorData.body.trim())) {
             Toast.makeText(getActivity(), R.string.cannot_send_empty_message,
@@ -580,8 +587,9 @@ public class MessageEditor {
     }
 
     public void loadCurrentDraft() {
-        if (isVisible()) {
-            MyLog.v(MessageEditorData.TAG, "loadCurrentDraft skipped: Editor is visible");
+        if (editorData.isValid()) {
+            MyLog.v(MessageEditorData.TAG, "loadCurrentDraft skipped: Editor data is valid");
+            show();
             return;
         }
         long msgId = MyPreferences.getLong(MyPreferences.KEY_BEING_EDITED_MESSAGE_ID);
@@ -623,8 +631,9 @@ public class MessageEditor {
             @Override
             protected void onPostExecute(MessageEditorData data) {
                 if (!lock.isEmpty() && data.isValid()) {
-                    if (isVisible()) {
-                        MyLog.v(MessageEditorData.TAG, "loadedDraft is not used: Editor is visible");
+                    if (editorData.isValid()) {
+                        MyLog.v(MessageEditorData.TAG, "Loaded draft is not used: Editor data is valid");
+                        show();
                     } else {
                         showData(data);
                     }

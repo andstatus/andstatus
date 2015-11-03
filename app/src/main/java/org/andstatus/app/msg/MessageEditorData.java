@@ -46,7 +46,7 @@ public class MessageEditorData {
 
     private long msgId = 0;
     public DownloadStatus status = DownloadStatus.DRAFT;
-    public String body = "";
+    public volatile String body = "";
 
     private DownloadData image = DownloadData.EMPTY;
     private Point imageSize = new Point();
