@@ -155,10 +155,13 @@
   <string name="fetch_frequency_entries_8_hours">8 時間</string>
   <string name="fetch_frequency_entries_12_hours">12 時間</string>
   <string name="fetch_frequency_entries_1_day">日</string>
+  <string name="filters_title">フィルター</string>
+  <string name="filters_summary">すべてのメッセージに適用するグローバル フィルター</string>
   <string name="get_open_instances_title">オープン中のインスタンスを取得</string>
   <string name="header_accounts">アカウント</string>
   <string name="header_add_new_account">新しいアカウントを追加</string>
   <string name="header_manage_existing_accounts">既存のアカウントを管理</string>
+  <string name="hide_messages_based_on_keywords_title">キーワードに基づいて、メッセージを非表示</string>
   <string name="history_size_entries_500">500 メッセージ</string>
   <string name="history_size_entries_1000">1000 メッセージ</string>
   <string name="history_size_entries_2000">2000 メッセージ</string>
@@ -198,6 +201,7 @@
   <string name="label_with_media">メディアで</string>
   <string name="latest_error_label">最新のエラー</string>
   <string name="loading">ロードしています&#8230;</string>
+  <string name="malformed_link">不正なリンク</string>
   <string name="message">メッセージ</string>
   <string name="message_twitter">ツイート</string>
   <string name="message_edit_hint">ここにメッセージを入力してください!</string>
@@ -446,4 +450,6 @@
   <string name="user_in_timeline_entries_real_name">実名</string>
   <string name="user_in_timeline_entries_real_name_at_username">実名 @ユーザー名</string>
   <string name="yes">はい</string>
+  <string name="this_option_is_turned_off">(無効)</string>
+  <string name="hide_replies_not_to_me_or_friends_title">ホーム タイムラインから、私または私の友人以外への返信を非表示</string>
 </resources>

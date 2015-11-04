@@ -1,0 +1,281 @@
+<?xml-stylesheet version='1.0' type='text/xsl' href='../raw/fb2_2_html.xsl' encoding="utf-8"?>
+<!-- 
+    Copyright (C) 2015 Yuri Volkov, yvolk@yurivolkov.com
+    
+    Translations are copyrighted by corresponding Translators.
+        
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+    
+         http://www.apache.org/licenses/LICENSE-2.0
+    
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+ -->
+<FictionBook xmlns="http://www.gribuser.ru/xml/fictionbook/2.0"
+xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../../../res-src/fb2/FictionBook.xsd">
+<description>
+    <title-info>
+        <genre>computers</genre>
+        <author>
+            <first-name>AndStatus project</first-name>
+            <last-name></last-name>
+        </author>
+        <book-title>Guía de usuario de AndStatus</book-title>
+        <lang>gl</lang>
+        <src-lang>en</src-lang>
+        <translator>
+            <nickname>Lugar para os créditos do tradutor</nickname>
+        </translator>
+    </title-info>
+    <document-info>
+        <author>
+            <nickname>AndStatus project</nickname>
+            <home-page>http://www.andstatus.org</home-page>
+            <email>andstatus@gmail.com</email>
+        </author>
+        <date>2015-08-16</date>
+        <id></id>
+        <version>2</version>
+    </document-info>
+</description>
+<body>
+<section>
+    <title>
+        <p>Introdución</p>
+    </title>
+    <p>AndStatus é un cliente de redes sociais de baixo consumo de datos e Código Aberto
+cliente con conversas en forma de árbore
+soporta múltiples protocolos, incluindo GNU social, Twitter e Pump.io.
+AndStatus combina as súas contas nunha única liña temporal
+e permítelle ler e respostar incluso mentras está fora de liña.</p>
+    <p>Unha ligazón a esta guía está dispoñible na barra de Acción bar-&gt;Help.</p>
+    <p>O rexistro de cambios na seguinte páxina permitiralle ver as descripcións
+e ligazóns a discusións sobre as características de AndStatus.</p>
+</section>
+<section>
+    <title>
+        <p>1. Comezando</p>
+    </title>
+    <p>Toque o botón "Comezando" embaixo: abrirase pantalla para engadir
+unha nova conta.
+    </p>
+    <p>Primeiro pediralle escoller unha Rede Social
+do listado.
+Twitter, Pump.io e varias tipo "GNU social" (Quitter,
+LoadAverage e Vinilox) están preconfiguradas.
+    </p>
+    <p>No caso de que a túa conta (tipo "GNU social") non esté na lista,
+toca no menú "Descubrir instancias abertas" para escoller un sistema
+de unha lista ao vivo desde internet mantida pola comunidade GNU social;
+ou "Engadir novo sistema" manualmente antes de engadir a nova conta.</p>
+    <p>Para Twitter poder pulsar "Engadir esta conta"
+inmediatamente.
+Para outros sistemas pediráseche que escribar o Usuario e Contrasinal
+antes de estar permitido "Engadir esta conta".</p>
+    <p>Despois de crear con éxito unha conta, por favor toca en "frecha esquerda"
+na "Barra de Acción"
+ou botón "Atrás" no dispositivo.
+De esta vez a Liña de Tempo de Inicio abrirase,
+e comezarán a descargarse as mensaxes de esta conta desde internet.
+    </p>
+    <p>Parabéns! Por favor le embaixo sobre qué máis pode facer.
+    </p>
+    <p>Non esqueza engadir o Widget de AndStatus a súa pantalla de inicio no 
+dispositivo:
+o widget informarao sobre as novas mensaxes e poderá utilizalo para
+iniciar
+AndStatus.
+    </p>
+</section>
+<section>
+    <title>
+        <p>2. O fundamental en AndSatus</p>
+    </title>
+    <p>Inicialmente AndStatus (despois de engadir polo menos unha conta)
+ mostra unha Liña de Tempo de Inicio.
+    </p>
+    <p>Para realizar algunha acción nunha mensaxe na lista
+vostede debe
+<strong>manter presa</strong>
+a mesma para mostrar o "Menú contextual".
+    </p>
+    <p>Debe <strong>pulsar</strong>
+a mensaxe para obter máis detalles e para ver
+a árbore da conversa a que pertence a mensaxe.
+    </p>
+    <p>Abir o "Esquema de Navegación" na esquerda e tocar no elemento de tipo
+de Liña temporal actual ("Inicio")
+para cambiar a outras vistas.
+    </p>
+</section>
+<section>
+    <title>
+        <p>3. Enviando e respostando</p>
+    </title>
+    <p>1. Para poder actualizar o seu estatus, toque o botón "Enviar" ("Chiar" para Twitter).
+É coma un "Sobre+".
+Abrirase o editor de mensaxes na parte inferior da pantalla.
+    </p>
+    <p>2. Escriba o texto da súa mensaxe na área de texto.
+    </p>
+    <p>3. De xeito opcional, anexe unha imaxe ao seu post. Agora, como o editor de mensaxe é visible,
+aparece outro botón na barra de Accións: "Clip+".
+(O menú "Anexos" podería estar oculto baixo o botón "Overflow": "tres puntos verticais").
+Toque no botón "Anexos" para escoller unha imaxe. Despois de engadir a imaxe
+verá o texto "(con medios)" enriba da área de texto, onde está a escribir a mensaxe.
+    </p>
+    <p>4. Toque <strong>Enviar</strong> para enviar a súa mensaxe. Se está fora de liña, a mensaxe porase
+na Cola para enviarse automáticamente máis tarde. (utilice o menú "Comandos na cola"
+para ver as mensaxes por enviar que están na Cola)
+    </p>
+    <p>Para respostar, <strong>manteña presa</strong>
+unha mensaxe e selecione <strong>Resposta</strong>
+para abrir o menú contextual, e escriba a resposta abaixo.
+    </p>
+    <p>Para desistir de unha resposta, simplemente toque no botón "Ocultar" para
+ocultar a área de texto.</p>
+</section>
+<section>
+    <title>
+        <p>4. Imaxes anexas: enviando e mostrando</p>
+    </title>
+    <section>
+        <title>
+            <p>4.1. Enviando imaxes</p>
+        </title>
+        <p>O primeiro xeito de anexar unha imaxe nun post é como se dixo na sección previa: pode anexar
+unha imaxe nunha mensaxe, mentras crea a mensaxe.
+        </p>
+        <p>Outro xeito de enviar unha imaxe é "Compartirla" vía AndStatus: deste xeito comeza desde unha imaxe
+en outro aplicativo. Por exemplo, pode facer unha foto e enviala a unha rede social.
+Faga esto:
+        </p>
+        <p>1. Faga unha foto / búsquea na Galería e pulse na icona da imaxe para abrila.
+        </p>
+        <p>2. Escolla "Compartir" no menú. A maioría dos aplicativos teñen unha acción "Compartir"...
+        </p>
+        <p>3. Escolla "AndStatus" na lista de aplicativos que declararon que poden
+compartir imaxes.
+        </p>
+        <p>4. Agora está en AndStatus. Se ten máis de unha conta,
+escolla a conta desexada. Se so ten unha conta irá directamente a 
+o Editor de Mensaxe.</p>
+        <p>5. Agora está no Editor de Mensaxe, coa imaxe xa anexada
+(debería ver a etiqueta "(con medios)" arriba na caixa de texto).
+        </p>
+        <p>6. Escriba calquer texto e toque "Enviar". (Non se poden enviar mesaxes sen texto)
+        </p>
+    </section>
+    <section>
+        <title>
+            <p>4.2. Mostrando as imaxes anexas</p>
+        </title>
+        <p>Temos as preferencias (en Preferencias -> Anexos):</p>
+        <p>1. Casiña de verificación "Descargar e mostrar imaxes anexas". Se non está marcada
+os anexos nin tan siquera se descargan, polo que aforra datos.
+        </p>
+        <p>Dese conta de que cando habilita esta opción, as imaxes non se mostran inmediatamente,
+xa que AndStatus precisa de un tempo para descargalas en segundo plano.
+        </p>
+        <p>2. "Anexar imaxes as miñas mensaxes". Se está "on", pode usar o botón "Clip+"
+(menú "Anexar") para anexar imaxes a súa mensaxe.
+Se está "off", o "Clip", utilizado para anexar imaxes, está oculto.
+        </p>
+        <p>Mire <a xlink:href="https://github.com/andstatus/andstatus/issues/288">aquí para máis info</a>.</p>
+    </section>
+</section>
+<section>
+    <title>
+        <p>5. Mensaxes directas (privadas)</p>
+    </title>
+    <p>Abra o Esquema de Navegación na esquerda, toque o elemento da liña de tempo actual (Inicio)
+e escolla
+<strong>Mensaxe Directa</strong>
+da lista.
+    </p>
+    <p>Para <strong>eliminar</strong>
+a súa mensaxe (pública ou privada),
+<strong>manteña presa</strong> a mesma e escolla
+<strong>Eliminar mensaxe</strong>.
+    </p>
+    <p>As novas mensaxes son obtidas en segundo plano para as liñas de tempo
+se ten activada <strong>Sincr Automática</strong>
+en "Contas e sincronización" nas preferencias do seu Android para 
+a conta de AndStatus.
+En calquer caso sempre pode ter as actualizacións de xeito manual
+utilizando o comando "Recargar" na barra de Acción.
+    </p>
+</section>
+<section>
+    <title>
+        <p>6. Mencións</p>
+    </title>
+    <p>Toque na Liña de Tempo actual no Esquema de navegación
+e escolla
+<strong>Mencións</strong>
+.
+    </p>
+    <p>Mencións listará cada mensaxe que mencione o seu 
+<strong>@username</strong>
+(ou incluso mencione todas as súas contas de AndStatus nunha
+liña de tempo "combinada").
+    </p>
+</section>
+<section>
+    <title>
+        <p>7- Buscar (busca local)</p>
+    </title>
+    <p>Busca local busca entre as mensaxes xa descargadas desde
+internet.
+Polo tanto funciona incluso fora de liña.
+    </p>
+    <p>1. Para buscar unha palabra ou frase no texto das mensaxes,
+escolla <strong>Buscar</strong>
+na barra de Acción ou  pulse o botón personalizado
+<strong>Buscar</strong> no seu dispositivo.
+    </p>
+    <p>Se desexa mostrar mensaxes de un usuario concreto,
+por favor busque por "usuario".</p>
+    <p>Para ver as mencións de un usuario concreto, busque por "@username".
+    </p>
+    <p>2. Para buscas rápidas de mensaxes de un usuario
+(un Autor ou Emisario de unha mensaxe selecionada), escolla
+"Mensaxe por Usuario" do menú contextual dunha mensaxe.
+Esto é unha tipo de Busca Global (ver abaixo).
+    </p>
+</section>
+<section>
+    <title>
+        <p>8. Busca Global</p>
+    </title>
+    <p>A función de Busca Global envía unha petición de búsca directamente
+aos servidores das Redes Sociais.
+Debido a esto precisará de unha conexión activa a internet.
+    </p>
+    <p>Primeiro, mostraránselle os resultados da busca Local.
+En paralelo, AndStatus baixa os resultados
+da rede social da conta escollida
+(ou desde todas as redes sociais, si se trata de
+unha Liña de tempo "combinada").
+Os resultados vanse actualizando mentras se reciben dos 
+servidores.
+En caso de erro na conexión
+(ex. sen resposta por parte do servidor)
+só verá os resultados da busca local.
+    </p>
+    <p>Debe saber que o sistema pump.io no soporta por agora a Busca Global.
+    </p>
+    <p>1. A Busca Global por palabra ou frase iníciase
+utilizando o elemento "Busca global" na "Barra de Acción".</p>
+    <p>2. Outro xeito de buscar globalmente mensaxes de un Autor ou Emisario
+dunha mensaxe selecionada é escoller
+"Mensaxes do Usuario" no menú contextual da mensaxe.</p>
+</section>
+</body>
+</FictionBook>
