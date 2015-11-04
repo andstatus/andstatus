@@ -24,8 +24,8 @@
 		</subtitle>
     </header>
 
-    <release android:versionName="20.2" android:versionCode="135"
-             versionDate="2015-10-19"
+    <release android:versionName="20.4" android:versionCode="137"
+             versionDate="2015-11-04"
              versionTitle="Timeline filters">
         <changes>
             <change>Added &quot;Hide replies not to me or my friends from Home timeline&quot; option
