@@ -26,7 +26,8 @@ public class MessageEditorCommand {
     private Uri imageUriToSave = Uri.EMPTY;
     boolean beingEdited = false;
     boolean showAfterSave = false;
-
+    private volatile MessageEditorLock lock = MessageEditorLock.EMPTY;
+    
     volatile MessageEditorData currentData;
     final MessageEditorData previousData;
 
@@ -42,6 +43,26 @@ public class MessageEditorCommand {
         this.previousData = previousData == null ? MessageEditorData.INVALID : previousData;
     }
 
+    public boolean acquireLock(boolean wait) {
+        if (hasLock()) {
+            return true;
+        }
+        MessageEditorLock lock1 = new MessageEditorLock(true, getCurrentMsgId());
+        if (lock1.acquire(wait)) {
+            lock = lock1;
+            return true;
+        }
+        return false;
+    }
+
+    public boolean releaseLock() {
+        return lock.release();
+    }
+
+    public boolean hasLock() {
+        return lock.acquired();
+    }
+    
     public long getCurrentMsgId() {
         if (currentData.isValid()) {
             return currentData.getMsgId();

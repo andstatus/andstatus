@@ -37,7 +37,7 @@ import org.andstatus.app.util.MyLog;
  */
 public class MessageEditorSaver extends AsyncTask<MessageEditorCommand, Void, MessageEditorData> {
     final MessageEditor editor;
-    volatile MessageEditor.MyLock lock = MessageEditor.MyLock.EMPTY;
+    volatile MessageEditorCommand command = new MessageEditorCommand(MessageEditorData.INVALID);
 
     public MessageEditorSaver(MessageEditor editor) {
         this.editor = editor;
@@ -45,24 +45,20 @@ public class MessageEditorSaver extends AsyncTask<MessageEditorCommand, Void, Me
 
     @Override
     protected MessageEditorData doInBackground(MessageEditorCommand... params) {
-        MessageEditorCommand command = params[0];
-        if (!acquireLock(command.getCurrentMsgId())) {
+        command = params[0];
+        MyLog.v(MessageEditorData.TAG, "Started: " + command);
+        if (!command.acquireLock(true)) {
             return command.currentData;
         }
-        savePreviousData(command);
+        savePreviousData();
         if (!command.currentData.isValid()) {
             command.loadCurrent();
         }
-        saveCurrentData(command);
+        saveCurrentData();
         return command.showAfterSave ? MessageEditorData.load(command.currentData.getMsgId()) : MessageEditorData.INVALID;
     }
 
-    private boolean acquireLock(long msgId) {
-        lock = new MessageEditor.MyLock(true, msgId);
-        return lock.decidedToContinue();
-    }
-
-    private void savePreviousData(MessageEditorCommand command) {
+    private void savePreviousData() {
         if (command.needToSavePreviousData()) {
             MyLog.v(MessageEditorData.TAG, "Saving previous data:" + command.previousData);
             command.previousData.save(Uri.EMPTY);
@@ -70,7 +66,7 @@ public class MessageEditorSaver extends AsyncTask<MessageEditorCommand, Void, Me
         }
     }
 
-    private void saveCurrentData(MessageEditorCommand command) {
+    private void saveCurrentData() {
         MyLog.v(MessageEditorData.TAG, "Saving current data:" + command.currentData);
         if (command.currentData.status == DownloadStatus.DELETED) {
             deleteDraft(command.currentData);
@@ -109,14 +105,22 @@ public class MessageEditorSaver extends AsyncTask<MessageEditorCommand, Void, Me
 
     @Override
     protected void onCancelled() {
-        lock.release();
+        command.releaseLock();
     }
 
     @Override
     protected void onPostExecute(MessageEditorData data) {
-        MyLog.v(MessageEditorData.TAG, "Saved; Future data: " + data);
-        editor.showData(data);
-        lock.release();
+        if (data.isValid()) {
+            if (command.hasLock()) {
+                MyLog.v(MessageEditorData.TAG, "Saved; Future data: " + data);
+                editor.showData(data);
+            } else {
+                MyLog.v(MessageEditorData.TAG, "Saved; Result skipped: no lock");
+            }
+        } else {
+            MyLog.v(MessageEditorData.TAG, "Saved; No future data");
+        }
+        command.releaseLock();
     }
 
 }

@@ -38,7 +38,6 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.text.Editable;
 import android.text.Html;
 import android.text.TextUtils;
@@ -56,89 +55,10 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.util.Date;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.atomic.AtomicReference;
-
 /**
  * "Enter your message here" box 
  */
 public class MessageEditor {
-    static class MyLock {
-        static final MyLock EMPTY = new MyLock(false, 0);
-        static final AtomicReference<MyLock> lock = new AtomicReference<>(MyLock.EMPTY);
-
-        final boolean isSave;
-        final long msgId;
-        long startedAt;
-
-        MyLock(boolean isSave, long msgId) {
-            this.isSave = isSave;
-            this.msgId = msgId;
-        }
-
-        boolean isEmpty() {
-            return this.equals(EMPTY);
-        }
-
-        boolean expired() {
-            return isEmpty() || Math.abs(System.currentTimeMillis() - startedAt) > 60000;
-        }
-
-        boolean decidedToContinue() {
-            boolean doContinue = true;
-            for (int i=0; i<60; i++) {
-                MyLock lockPrevious = lock.get();
-                if (lock.get().expired()) {
-                    this.startedAt = MyLog.uniqueCurrentTimeMS();
-                    if (lock.compareAndSet(lockPrevious, this)) {
-                        MyLog.v(this, "Received lock " + this + (lockPrevious.isEmpty() ? "" :
-                                (". Replaced expired " + lockPrevious)));
-                        break;
-                    }
-                } else {
-                    if(lockPrevious.isSave == isSave && lockPrevious.msgId == msgId) {
-                        MyLog.v(this, "The same operation in progress: " + lockPrevious);
-                        doContinue = false;
-                        break;
-                    }
-                }
-                try {
-                    // http://stackoverflow.com/questions/363681/generating-random-integers-in-a-range-with-java
-                    if(Build.VERSION.SDK_INT >= 21) {
-                        Thread.sleep(250 + ThreadLocalRandom.current().nextInt(0, 500));
-                    } else {
-                        Thread.sleep(500);
-                    }
-                } catch (InterruptedException e) {
-                    MyLog.v(this, "Wait interrupted", e);
-                    doContinue = false;
-                    break;
-                }
-            }
-            return doContinue;
-        }
-
-        @Override
-        public String toString() {
-            StringBuilder builder = new StringBuilder();
-            if(isSave) {
-                builder.append("save,");
-            }
-            if(msgId != 0) {
-                builder.append("msgId:" + msgId + ",");
-            }
-            builder.append("started:" + new Date(startedAt));
-            return MyLog.formatKeyValue(this, builder.toString());
-
-        }
-
-        public void release() {
-            if (!isEmpty()) {
-                lock.compareAndSet(this, EMPTY);
-            }
-        }
-    }
 
     private final ActionableMessageList mMessageList;
     private final android.view.ViewGroup mEditorView;
@@ -575,14 +495,18 @@ public class MessageEditor {
     }
 
     private void saveData(MessageEditorCommand command) {
+        command.acquireLock(false);
         MyPreferences.putLong(MyPreferences.KEY_BEING_EDITED_MESSAGE_ID,
                 command.beingEdited ? command.getCurrentMsgId() : 0);
         hide();
         if (!command.isEmpty()) {
             MyLog.v(MessageEditorData.TAG, "Requested: " + command);
             new MessageEditorSaver(this).execute(command);
-        } else if (command.showAfterSave) {
-            showData(command.currentData);
+        } else {
+            if (command.showAfterSave) {
+                showData(command.currentData);
+            }
+            command.releaseLock();
         }
     }
 
@@ -597,20 +521,20 @@ public class MessageEditor {
             MyLog.v(MessageEditorData.TAG, "loadCurrentDraft: no current draft");
             return;
         }
-        MyLog.v(MessageEditorData.TAG, "loadCurrentDraft started, msgId=" + msgId);
+        MyLog.v(MessageEditorData.TAG, "loadCurrentDraft requested, msgId=" + msgId);
         new AsyncTask<Long, Void, MessageEditorData>() {
-            volatile MessageEditor.MyLock lock = MessageEditor.MyLock.EMPTY;
+            volatile MessageEditorLock lock = MessageEditorLock.EMPTY;
 
             @Override
             protected MessageEditorData doInBackground(Long... params) {
                 long msgId = params[0];
-                MyLog.v(MessageEditorData.TAG, "Async load requested for " + msgId);
-                MessageEditor.MyLock potentialLock = new MessageEditor.MyLock(false, msgId);
-                if (!potentialLock.decidedToContinue()) {
+                MyLog.v(MessageEditorData.TAG, "loadCurrentDraft started, msgId=" + msgId);
+                MessageEditorLock potentialLock = new MessageEditorLock(false, msgId);
+                if (!potentialLock.acquire(true)) {
                     return MessageEditorData.INVALID;
                 }
                 lock = potentialLock;
-                MyLog.v(MessageEditorData.TAG, "loadCurrentDraft passed wait");
+                MyLog.v(MessageEditorData.TAG, "loadCurrentDraft acquired lock");
 
                 DownloadStatus status = DownloadStatus.load(MyQuery.msgIdToLongColumnValue(MyDatabase.Msg.MSG_STATUS, msgId));
                 if (status.mayBeEdited()) {
@@ -630,7 +554,7 @@ public class MessageEditor {
 
             @Override
             protected void onPostExecute(MessageEditorData data) {
-                if (!lock.isEmpty() && data.isValid()) {
+                if (lock.acquired() && data.isValid()) {
                     if (editorData.isValid()) {
                         MyLog.v(MessageEditorData.TAG, "Loaded draft is not used: Editor data is valid");
                         show();
