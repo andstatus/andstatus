@@ -253,7 +253,7 @@ public class ConversationViewAdapter extends BaseAdapter {
 
     private void setFavorited(ConversationViewItem oMsg, View messageView) {
         ImageView favorited = (ImageView) messageView.findViewById(R.id.message_favorited);
-        favorited.setImageResource(oMsg.mFavorited ? android.R.drawable.star_on : android.R.drawable.star_off);
+        favorited.setVisibility(oMsg.mFavorited ? View.VISIBLE : View.GONE );
     }
     
     private int msgIdToHistoryOrder(long msgId) {

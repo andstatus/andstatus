@@ -191,11 +191,7 @@ public class TimelineViewBinder implements ViewBinder {
     private void setFavorited(Cursor cursor, ImageView view) {
         int columnIndex = cursor.getColumnIndex(MyDatabase.MsgOfUser.FAVORITED);
         if (columnIndex >= 0) {
-            if (cursor.getInt(columnIndex) == 1) {
-                view.setImageResource(android.R.drawable.star_on);
-            } else {
-                view.setImageResource(android.R.drawable.star_off);
-            }
+            view.setVisibility(cursor.getInt(columnIndex) == 1 ? View.VISIBLE : View.GONE );
         }
     }
     
