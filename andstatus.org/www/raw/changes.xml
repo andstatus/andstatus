@@ -24,8 +24,8 @@
 		</subtitle>
     </header>
 
-    <release android:versionName="20.4" android:versionCode="137"
-             versionDate="2015-11-04"
+    <release android:versionName="20.5" android:versionCode="138"
+             versionDate="2015-11-08"
              versionTitle="Timeline filters">
         <changes>
             <change>Added &quot;Hide replies not to me or my friends from Home timeline&quot; option
@@ -40,6 +40,14 @@
                 which contain defined keywords, are hidden from all timelines.
                 <a href="https://github.com/andstatus/andstatus/issues/279">#279</a>
             </change>
+            <change><a href="https://github.com/andstatus/andstatus/issues/305">Norwegian</a>
+                and Galician translations added.
+                </change>
+            <change>A &quot;star&quot; icon was removed from a timeline for not favorited messages.
+                This will avoid confusion of users, who tried to favorite a message
+                by clicking on the star. Instead, this should be done via a message context menu
+                (tap and hold a message to open its context menu).
+                <a href="https://github.com/andstatus/andstatus/issues/308">#308</a></change>
         </changes>
     </release>
     <release android:versionName="19.5" android:versionCode="133"
