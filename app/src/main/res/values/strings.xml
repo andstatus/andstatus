@@ -161,6 +161,7 @@
   <string name="header_add_new_account">Add new account</string>
   <string name="header_manage_existing_accounts">Manage existing accounts</string>
   <string name="hide_messages_based_on_keywords_title">Hide messages based on keywords</string>
+  <string name="hide_replies_not_to_me_or_friends_title">Hide replies not to me or my friends from Home timeline</string>
   <string name="history_size_entries_500">500 messages</string>
   <string name="history_size_entries_1000">1000 messages</string>
   <string name="history_size_entries_2000">2000 messages</string>
@@ -370,6 +371,7 @@
   <string name="theme_size_entries_small">Small</string>
   <string name="theme_size_entries_standard">Standard</string>
   <string name="theme_size_entries_large">Large</string>
+  <string name="this_option_is_turned_off">(disabled)</string>
   <string name="timeline_reloaded">Timeline has been reloaded.</string>
   <string name="timeline_title_all">All</string>
   <string name="timeline_title_direct_messages">Direct messages</string>
@@ -443,13 +445,14 @@
   <string name="reblogged_by">reposted by %1$s</string>
   <string name="reblogged_by_twitter">retweeted by %1$s</string>
   <string name="unimplemented">Not implemented.</string>
+  <string name="unknown_userlist">(Unknown user list)</string>
   <string name="use_legacy_http_protocol_title">Use legacy HTTP protocol</string>
   <string name="user_in_timeline_entries_username">username</string>
   <string name="user_in_timeline_entries_at_username">"@username"</string>
   <string name="user_in_timeline_entries_webfingerid">webFingerId</string>
   <string name="user_in_timeline_entries_real_name">Real name</string>
   <string name="user_in_timeline_entries_real_name_at_username">Real name @username</string>
+  <string name="user_list">User list</string>
+  <string name="users_of_message">Users of message</string>
   <string name="yes">Yes</string>
-  <string name="this_option_is_turned_off">(disabled)</string>
-  <string name="hide_replies_not_to_me_or_friends_title">Hide replies not to me or my friends from Home timeline</string>
 </resources>

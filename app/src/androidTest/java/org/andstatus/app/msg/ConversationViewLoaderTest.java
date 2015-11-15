@@ -9,8 +9,6 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MyDatabase.OidEnum;
 import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.msg.ConversationLoader;
-import org.andstatus.app.msg.ConversationViewItem;
 import org.andstatus.app.util.MyLog;
 
 import java.util.List;
@@ -34,12 +32,12 @@ public class ConversationViewLoaderTest extends InstrumentationTestCase implemen
 
     public void testLoad() {
         Context context = MyContextHolder.get().context();
-        ConversationLoader<ConversationViewItem> loader = new ConversationLoader<ConversationViewItem>(
+        ConversationLoader<ConversationViewItem> loader = new ConversationLoader<>(
                 ConversationViewItem.class,
                 context, ma, selectedMessageId);
         progressCounter = 0;
         loader.load(this);
-        List<ConversationViewItem> list = loader.getMsgs();
+        List<ConversationViewItem> list = loader.getList();
         assertTrue("List is not empty", !list.isEmpty());
         boolean indentFound = false;
         boolean orderFound = false;

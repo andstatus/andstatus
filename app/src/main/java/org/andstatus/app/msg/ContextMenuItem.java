@@ -40,6 +40,7 @@ import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
+import org.andstatus.app.user.UserListType;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyHtml;
@@ -308,6 +309,18 @@ public enum ContextMenuItem {
             }
         }
     },
+    USERS_OF_MESSAGE() {
+        @Override
+        void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
+            Uri uri = MatchedUri.getUserListUri(editorData.ma.getUserId(),
+                    UserListType.USERS_OF_MESSAGE, menu.messageList.isTimelineCombined(),
+                    menu.getMsgId());
+            if (MyLog.isLoggable(this, MyLog.DEBUG)) {
+                MyLog.d(this, "onItemClick, startActivity=" + uri);
+            }
+            menu.messageList.getActivity().startActivity(MyAction.VIEW_USERS.getIntent(uri));
+        }
+    },
     NONEXISTENT(),
     UNKNOWN();
 
@@ -345,12 +358,12 @@ public enum ContextMenuItem {
         }
     }
 
-    public MenuItem addTo(Menu menu, int order, int titleRes) {
-        return menu.add(Menu.NONE, this.getId(), order, titleRes);
+    public void addTo(Menu menu, int order, int titleRes) {
+        menu.add(Menu.NONE, this.getId(), order, titleRes);
     }
 
-    public MenuItem addTo(Menu menu, int order, CharSequence title) {
-        return menu.add(Menu.NONE, this.getId(), order, title);
+    public void addTo(Menu menu, int order, CharSequence title) {
+        menu.add(Menu.NONE, this.getId(), order, title);
     }
     
     public boolean execute(MessageContextMenu menu, MyAccount ma) {

@@ -51,13 +51,7 @@ public class ConversationInserter extends InstrumentationTestCase {
         insertAndTestConversation();
     }
 
-    public void insertMessage(String body) throws Exception {
-        mySetup();
-        MbMessage message = buildMessage(getAuthor1(), body, null, null);
-        addMessage(message);
-    }
-    
-    private void mySetup() throws Exception {
+    private void mySetup() {
         iteration++;
         origin = MyContextHolder.get().persistentOrigins().fromName(TestSuite.CONVERSATION_ORIGIN_NAME);
         assertTrue(TestSuite.CONVERSATION_ORIGIN_NAME + " exists", origin != null);
@@ -74,7 +68,7 @@ public class ConversationInserter extends InstrumentationTestCase {
         mySetup();
     }
     
-    private void insertAndTestConversation() throws ConnectionException, MalformedURLException {
+    private void insertAndTestConversation() throws MalformedURLException {
         assertEquals("Only PumpIo supported in this test", OriginType.PUMPIO, TestSuite.CONVERSATION_ORIGIN_TYPE  );
         
         MbUser author2 = buildUserFromOid("acct:second@identi.ca");
@@ -102,7 +96,8 @@ public class ConversationInserter extends InstrumentationTestCase {
         MbMessage reply4 = buildMessage(author4, "Reply 4 to Reply 1 other author", reply1, null);
         addMessage(reply4);
         addPublicMessage(reply4, false);
-        addMessage(buildMessage(author2, "Reply 5 to Reply 4", reply4, null));
+        addMessage(buildMessage(author2, "@fourthWithoutAvatar@pump.example.com Reply 5 to Reply 4\n"
+                + "@" + TestSuite.CONVERSATION_MEMBER_USERNAME, reply4, TestSuite.CONVERSATION_MENTIONS_MESSAGE_OID));
         addMessage(buildMessage(author3, "Reply 6 to Reply 4 - the second", reply4, null));
 
         MbMessage reply7 = buildMessage(getAuthor1(), "Reply 7 to Reply 2 is about " 

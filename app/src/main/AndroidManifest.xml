@@ -114,6 +114,16 @@
 			</intent-filter>
 		</activity>
 
+        <activity android:name=".user.UserList"
+                  android:label="@string/user_list"
+                  android:parentActivityName=".msg.TimelineActivity">
+            <intent-filter>
+                <action android:name="org.andstatus.app.action.VIEW_USERS" />
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:mimeType="vnd.android.cursor.dir/org.andstatus.app.provider.user"/>
+            </intent-filter>
+        </activity>
+
         <activity android:name=".context.MySettingsActivity"
             android:label="@string/settings_activity_title"
             android:launchMode="standard"

@@ -26,6 +26,7 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.data.MyDatabase.Msg;
 import org.andstatus.app.data.MyDatabase.Origin;
 import org.andstatus.app.data.MyDatabase.User;
+import org.andstatus.app.user.UserListType;
 
 /**
  * Classifier of Uri-s, passed to our content provider
@@ -76,6 +77,7 @@ public enum MatchedUri {
     private static final String CONTENT_SEGMENT = "content";
     private static final String CONTENT_ITEM_SEGMENT = "item";
     private static final String USER_SEGMENT = "user";
+    private static final String MSG_SEGMENT = "msg";
 
     private static final String CONTENT_URI_PREFIX = "content://" + AUTHORITY + "/";
     public static final Uri MSG_CONTENT_URI = Uri.parse(CONTENT_URI_PREFIX + Msg.TABLE_NAME + "/" + CONTENT_SEGMENT);
@@ -83,7 +85,7 @@ public enum MatchedUri {
 
     private final int code;
     
-    private MatchedUri(int codeIn) {
+    MatchedUri(int codeIn) {
         code = codeIn;
     }
     
@@ -117,7 +119,7 @@ public enum MatchedUri {
         URI_MATCHER.addURI(AUTHORITY, Origin.TABLE_NAME + "/#/" + CONTENT_ITEM_SEGMENT + "/#", ORIGIN_ITEM.code);
         URI_MATCHER.addURI(AUTHORITY, Origin.TABLE_NAME + "/" + CONTENT_SEGMENT, ORIGIN.code);
         
-        URI_MATCHER.addURI(AUTHORITY, User.TABLE_NAME + "/#/" + LISTTYPE_SEGMENT + "/*/" + COMBINED_SEGMENT + "/#", USERLIST.code);
+        URI_MATCHER.addURI(AUTHORITY, User.TABLE_NAME + "/#/" + LISTTYPE_SEGMENT + "/*/" + COMBINED_SEGMENT + "/#/" + MSG_SEGMENT + "/#", USERLIST.code);
         URI_MATCHER.addURI(AUTHORITY, User.TABLE_NAME + "/#/" + CONTENT_ITEM_SEGMENT + "/#", USER_ITEM.code);
         URI_MATCHER.addURI(AUTHORITY, User.TABLE_NAME + "/#/" + CONTENT_SEGMENT, USER.code);
     }
@@ -183,12 +185,11 @@ public enum MatchedUri {
     /**
      * Build a Timeline Uri for this User / {@link MyAccount}
      * @param accountUserId {@link MyDatabase.User#USER_ID}. This user <i>may</i> be an account: {@link MyAccount#getUserId()} 
-     * @return
      */
-    public static Uri getTimelineUri(long accountUserId, TimelineType timelineType, boolean isTimelineCombined, long selectedUserId) {
+    public static Uri getTimelineUri(long accountUserId, TimelineType timelineType, boolean isListCombined, long selectedUserId) {
         Uri uri = getBaseAccountUri(accountUserId, Msg.TABLE_NAME); 
         uri = Uri.withAppendedPath(uri, LISTTYPE_SEGMENT + "/" + timelineType.save());
-        uri = Uri.withAppendedPath(uri, COMBINED_SEGMENT + "/" + (isTimelineCombined ? "1" : "0"));
+        uri = Uri.withAppendedPath(uri, COMBINED_SEGMENT + "/" + (isListCombined ? "1" : "0"));
         uri = Uri.withAppendedPath(uri,  USER_SEGMENT);
         uri = ContentUris.withAppendedId(uri, selectedUserId);
         return uri;
@@ -197,7 +198,20 @@ public enum MatchedUri {
     public static Uri getMsgUri(long accountUserId, long msgId) {
         return getContentItemUri(accountUserId, MyDatabase.Msg.TABLE_NAME, msgId);
     }
-    
+
+    /**
+     * Build a UseList Uri for this User / {@link MyAccount}
+     * @param accountUserId {@link MyDatabase.User#USER_ID}. This user <i>may</i> be an account: {@link MyAccount#getUserId()}
+     */
+    public static Uri getUserListUri(long accountUserId, UserListType userListType, boolean isListCombined, long selectedMsgId) {
+        Uri uri = getBaseAccountUri(accountUserId, User.TABLE_NAME);
+        uri = Uri.withAppendedPath(uri, LISTTYPE_SEGMENT + "/" + userListType.save());
+        uri = Uri.withAppendedPath(uri, COMBINED_SEGMENT + "/" + (isListCombined ? "1" : "0"));
+        uri = Uri.withAppendedPath(uri,  MSG_SEGMENT);
+        uri = ContentUris.withAppendedId(uri, selectedMsgId);
+        return uri;
+    }
+
     public static Uri getUserUri(long accountUserId, long userId) {
         return getContentItemUri(accountUserId, MyDatabase.User.TABLE_NAME, userId);
     }
@@ -208,7 +222,7 @@ public enum MatchedUri {
 
     /**
      * @param accountUserId userId of MyAccount or 0 if not needed
-     * @param tableName 
+     * @param tableName name in the {@link MyDatabase}
      * @param itemId ID or 0 - if the Item doesn't exist
      */
     private static Uri getContentItemUri(long accountUserId, String tableName, long itemId) {

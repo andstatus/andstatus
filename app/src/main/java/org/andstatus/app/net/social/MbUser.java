@@ -21,11 +21,16 @@ import android.text.TextUtils;
 
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.data.MyDatabase;
+import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.origin.Origin;
+import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 'Mb' stands for "Microblogging system" 
@@ -50,7 +55,8 @@ public class MbUser {
     
     // In our system
     public long originId = 0L;
-    
+    public long userId = 0L;
+
     public static MbUser fromOriginAndUserOid(long originId, String userOid) {
         MbUser user = new MbUser();
         user.originId = originId;
@@ -74,8 +80,14 @@ public class MbUser {
     public String toString() {
         String str = MbUser.class.getSimpleName();
         String members = "oid=" + oid + "; originid=" + originId;
+        if (userId != 0) {
+            members += "; id=" + userId;
+        }
         if (!TextUtils.isEmpty(userName)) {
             members += "; username=" + userName;
+        }
+        if (!TextUtils.isEmpty(webFingerId)) {
+            members += "; webFingerId=" + webFingerId;
         }
         if (!TextUtils.isEmpty(realName)) {
             members += "; realname=" + realName;
@@ -109,15 +121,33 @@ public class MbUser {
         uri = UriUtils.fromUrl(url);
         fixWebFingerId();
     }
-    
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        MbUser mbUser = (MbUser) o;
+
+        if (originId != mbUser.originId) return false;
+        if (userId != mbUser.userId) return false;
+        return oid.equals(mbUser.oid);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = oid.hashCode();
+        result = 31 * result + (int) (originId ^ (originId >>> 32));
+        result = 31 * result + (int) (userId ^ (userId >>> 32));
+        return result;
+    }
+
     private void fixWebFingerId() {
         if (TextUtils.isEmpty(userName)) {
             // Do nothing
         } else if (userName.contains("@")) {
             webFingerId = userName;
-        } else if (UriUtils.isEmpty(uri)){
-            // Do nothing
-        } else {
+        } else if (!UriUtils.isEmpty(uri)){
             MyContext myContect = MyContextHolder.get();
             if(myContect.isReady()) {
                 Origin origin = myContect.persistentOrigins().fromId(originId);
@@ -147,5 +177,64 @@ public class MbUser {
     public static String getTempOid(String validWebFingerId, String validUserName) {
         String userName = TextUtils.isEmpty(validWebFingerId) ? validUserName : validWebFingerId;
         return "andstatustemp:" + userName;
+    }
+
+    public static List<MbUser> fromBodyText(Origin origin, String textIn, boolean replyOnly) {
+        final String SEPARATORS = ", ;'=`~!#$%^&*(){}[]";
+        List<MbUser> users = new ArrayList<>();
+        String text = MyHtml.fromHtml(textIn);
+        while (!TextUtils.isEmpty(text)) {
+            int atPos = text.indexOf('@');
+            if (atPos < 0 || (atPos > 0 && replyOnly)) {
+                break;
+            }
+            String validUserName = "";
+            String validWebFingerId = "";
+            int ind=atPos+1;
+            for (; ind < text.length(); ind++) {
+                if (SEPARATORS.indexOf(text.charAt(ind)) >= 0) {
+                    break;
+                }
+                String userName = text.substring(atPos+1, ind + 1);
+                if (origin.isUsernameValid(userName)) {
+                    validUserName = userName;
+                }
+                if (isWebFingerIdValid(userName)) {
+                    validWebFingerId = userName;
+                }
+            }
+            if (ind < text.length()) {
+                text = text.substring(ind);
+            } else {
+                text = "";
+            }
+            if (TextUtils.isEmpty(validWebFingerId) && TextUtils.isEmpty(validUserName)) {
+                break;
+            }
+
+            String oid = MbUser.getTempOid(validWebFingerId, validUserName);
+            long userId = 0;
+            if (!TextUtils.isEmpty(validWebFingerId)) {
+                userId = MyQuery.webFingerIdToId(origin.getId(), validWebFingerId);
+            }
+            if (userId == 0 && !TextUtils.isEmpty(validUserName)) {
+                userId = MyQuery.userNameToId(origin.getId(), validUserName);
+            }
+            if (userId == 0 ) {
+                userId = MyQuery.oidToId(MyDatabase.OidEnum.USER_OID, origin.getId(), oid);
+            } else {
+                oid = MyQuery.idToOid(MyDatabase.OidEnum.USER_OID, userId, 0);
+            }
+            MbUser mbUser = MbUser.fromOriginAndUserOid(origin.getId(), oid);
+            mbUser.setUserName(TextUtils.isEmpty(validWebFingerId) ? validUserName : validWebFingerId);
+            mbUser.userId = userId;
+            if (!users.contains(mbUser)) {
+                users.add(mbUser);
+            }
+            if (replyOnly) {
+                break;
+            }
+        }
+        return users;
     }
 }

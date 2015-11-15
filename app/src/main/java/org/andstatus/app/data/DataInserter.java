@@ -340,34 +340,12 @@ public class DataInserter {
     }
 
     private long getReplyToUserIdInBody(MbMessage message) {
-        String body = MyHtml.fromHtml(message.getBody());
         long userId = 0;
-        if (body.startsWith("@") && body.length() > 1) {
-            String validUserName = "";
-            String validWebFingerId = "";
-            for (int ind=2; ind<=body.length(); ind++) {
-                String userName = body.substring(1, ind);
-                if (execContext.getMyAccount().getOrigin().isUsernameValid(userName)) {
-                    validUserName = userName;
-                }
-                if (MbUser.isWebFingerIdValid(userName)) {
-                    validWebFingerId = userName;
-                }
-            }
-            if (!TextUtils.isEmpty(validWebFingerId)) {
-                userId = MyQuery.webFingerIdToId(execContext.getMyAccount().getOrigin().getId(), validWebFingerId);
-            }
-            if (userId == 0 && !TextUtils.isEmpty(validUserName)) {
-                userId = MyQuery.userNameToId(execContext.getMyAccount().getOrigin().getId(), validUserName);
-            }
-            if (userId == 0 && (!TextUtils.isEmpty(validWebFingerId) || !TextUtils.isEmpty(validUserName))) {
-                String tempOid = MbUser.getTempOid(validWebFingerId, validUserName);
-                userId = MyQuery.oidToId(OidEnum.USER_OID, execContext.getMyAccount().getOrigin().getId(), tempOid);
-                if (userId == 0) {
-                    MbUser mbUser = MbUser.fromOriginAndUserOid(execContext.getMyAccount().getOrigin().getId(), tempOid);
-                    mbUser.setUserName(TextUtils.isEmpty(validWebFingerId) ? validUserName : validWebFingerId);
-                    userId = insertOrUpdateUser(mbUser);
-                }
+        List<MbUser> users = MbUser.fromBodyText(execContext.getMyAccount().getOrigin(), message.getBody(), true);
+        if (users.size() > 0) {
+            userId = users.get(0).userId;
+            if (userId == 0) {
+                userId = insertOrUpdateUser(users.get(0));
             }
         }
         return userId;

@@ -22,7 +22,7 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
+import android.test.ActivityInstrumentationTestCase2;
 import android.text.TextUtils;
 import android.view.MenuItem;
 import android.view.View;
@@ -50,7 +50,7 @@ import org.andstatus.app.util.MyLog;
  * On activity testing: http://developer.android.com/tools/testing/activity_testing.html
  * @author yvolk@yurivolkov.com
  */
-public class MessageEditorTest extends android.test.ActivityInstrumentationTestCase2<TimelineActivity> {
+public class MessageEditorTest extends ActivityInstrumentationTestCase2<TimelineActivity> {
     private MessageEditorData data = null;
     private static int editingStep = 0;
 
@@ -86,7 +86,7 @@ public class MessageEditorTest extends android.test.ActivityInstrumentationTestC
     private MessageEditorData getStaticData() {
         MyAccount ma = MyContextHolder.get().persistentAccounts()
                 .fromUserId(getActivity().getCurrentMyAccountUserId());
-        MessageEditorData data = MessageEditorData.newEmpty(ma)
+        return MessageEditorData.newEmpty(ma)
                 .setInReplyToId(
                         MyQuery.oidToId(OidEnum.MSG_OID, MyContextHolder.get()
                                         .persistentOrigins()
@@ -97,7 +97,6 @@ public class MessageEditorTest extends android.test.ActivityInstrumentationTestC
                                 TestSuite.CONVERSATION_MEMBER_USER_OID))
                 .addMentionsToText()
                 .setBody("Some static text " + TestSuite.TESTRUN_UID);
-        return data;
     }
 
     @Override
@@ -138,7 +137,7 @@ public class MessageEditorTest extends android.test.ActivityInstrumentationTestC
         assertTrue(editorView != null);
         if (editorView.getVisibility() != android.view.View.VISIBLE) {
             assertTrue("Blog button is visible", createMessageButton.isVisible());
-            ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<TimelineActivity>(this, getActivity());
+            ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<>(this, getActivity());
             helper.clickMenuItem(method + " opening editor", R.id.createMessageButton);
         }
         assertEquals("Editor appeared", android.view.View.VISIBLE, editorView.getVisibility());
@@ -148,7 +147,7 @@ public class MessageEditorTest extends android.test.ActivityInstrumentationTestC
         final String method = "editingStep1";
         MyLog.v(this, method + " started");
 
-        ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<TimelineActivity>(this, getActivity());
+        ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<>(this, getActivity());
         helper.clickMenuItem(method + " hiding editor", R.id.saveDraftButton);
         View editorView = getActivity().findViewById(R.id.message_editor);
         ActivityTestHelper.waitViewInvisible(method, editorView);
@@ -172,7 +171,7 @@ public class MessageEditorTest extends android.test.ActivityInstrumentationTestC
     private void editingStep2() throws InterruptedException {
         final String method = "editingStep2";
         MyLog.v(this, method + " started");
-        ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<TimelineActivity>(this, getActivity());
+        ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<>(this, getActivity());
         View editorView = getActivity().findViewById(R.id.message_editor);
         ActivityTestHelper.waitViewVisible(method + "; Restored message is visible", editorView);
         assertInitialText("Message restored");

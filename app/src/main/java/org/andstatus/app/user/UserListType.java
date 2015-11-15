@@ -27,11 +27,11 @@ public enum UserListType {
     /**
      * The type is unknown
      */
-    UNKNOWN("unknown", R.string.timeline_title_unknown, false),
+    UNKNOWN("unknown", R.string.unknown_userlist, false),
     /**
      * Users, related to the selected message, including mentioned users
      */
-    USERS_OF_MESSAGE("users_of_message", R.string.timeline_title_user, true);
+    USERS_OF_MESSAGE("users_of_message", R.string.users_of_message, true);
     
     /**
      * code of the enum that is used in messages
@@ -43,7 +43,7 @@ public enum UserListType {
     private final int titleResId;
     private final boolean mAtOrigin;
     
-    private UserListType(String code, int resId, boolean atOrigin) {
+    UserListType(String code, int resId, boolean atOrigin) {
         this.code = code;
         this.titleResId = resId;
         this.mAtOrigin = atOrigin;

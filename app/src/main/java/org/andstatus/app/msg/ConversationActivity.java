@@ -162,12 +162,12 @@ public class ConversationActivity extends LoadableListActivity implements Action
         if (position < 0 || position >= size() ) {
             return 0;
         } else {
-            return getConversationLoader().getMsgs().get(position).mLinkedUserId;
+            return getListLoader().getList().get(position).mLinkedUserId;
         }
     }
 
     @SuppressWarnings("unchecked")
-    private ConversationLoader<ConversationViewItem> getConversationLoader() {
+    private ConversationLoader<ConversationViewItem> getListLoader() {
         return ((ConversationLoader<ConversationViewItem>)getLoaded());
     }
     
@@ -193,13 +193,13 @@ public class ConversationActivity extends LoadableListActivity implements Action
 
     @Override
     protected SyncLoader newSyncLoader() {
-        return new ConversationLoader<ConversationViewItem>(ConversationViewItem.class,
+        return new ConversationLoader<>(ConversationViewItem.class,
                 this, getMa(), getItemId());
     }
 
     @Override
-    protected ListAdapter getAdapter() {
-        return new ConversationViewAdapter(mContextMenu, getItemId(), getConversationLoader().getMsgs());
+    protected ListAdapter getListAdapter() {
+        return new ConversationViewAdapter(mContextMenu, getItemId(), getListLoader().getList());
     }
     
     @Override

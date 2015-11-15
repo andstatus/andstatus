@@ -51,11 +51,11 @@ import org.andstatus.app.widget.MySimpleCursorAdapter;
 import java.util.List;
 
 public class ConversationViewAdapter extends BaseAdapter {
-    private MessageContextMenu contextMenu;
-    private Context context;
-    private MyAccount ma;
-    private long selectedMessageId;
-    private List<ConversationViewItem> oMsgs;
+    private final MessageContextMenu contextMenu;
+    private final Context context;
+    private final MyAccount ma;
+    private final long selectedMessageId;
+    private final List<ConversationViewItem> oMsgs;
 
     public ConversationViewAdapter(MessageContextMenu contextMenu,
             long selectedMessageId,
@@ -84,41 +84,37 @@ public class ConversationViewAdapter extends BaseAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        return oneMessageToView(oMsgs.get(position));
-    }
-    
-    private View oneMessageToView(ConversationViewItem oMsg) {
-        final String method = "oneMessageToView";
+        final String method = "getView";
+        ConversationViewItem oMsg = oMsgs.get(position);
         if (MyLog.isVerboseEnabled()) {
             MyLog.v(this, method
                     + ": msgId=" + oMsg.getMsgId()
                     + (oMsg.mAvatarDrawable != null ? ", avatar="
                             + oMsg.mAvatarDrawable : ""));
         }
-        View messageView = findMessageView();
-        messageView.setOnCreateContextMenuListener(contextMenu);
-        TextView id = (TextView) messageView.findViewById(R.id.id);
+        View view = findView();
+        view.setOnCreateContextMenuListener(contextMenu);
+        TextView id = (TextView) view.findViewById(R.id.id);
         id.setText(Long.toString(oMsg.getMsgId()));
-        TextView linkedUserId = (TextView) messageView.findViewById(R.id.linked_user_id);
+        TextView linkedUserId = (TextView) view.findViewById(R.id.linked_user_id);
         linkedUserId.setText(Long.toString(oMsg.mLinkedUserId));
 
-        setIndent(oMsg, messageView);
-        setMessageAuthor(oMsg, messageView);
-        setMessageNumber(oMsg, messageView);
-        setMessageBody(oMsg, messageView);
-        setMessageDetails(oMsg, messageView);
-        setFavorited(oMsg, messageView);
-        return messageView;
+        setIndent(oMsg, view);
+        setMessageAuthor(oMsg, view);
+        setMessageNumber(oMsg, view);
+        setMessageBody(oMsg, view);
+        setMessageDetails(oMsg, view);
+        setFavorited(oMsg, view);
+        return view;
     }
 
-    private View findMessageView() {
+    private View findView() {
         LayoutInflater inflater = LayoutInflater.from(context);
         int layoutResource = R.layout.message_conversation;
         if (!Activity.class.isAssignableFrom(context.getClass())) {
             MyLog.w(this, "Context should be from an Activity");
         }
-        View messageView = inflater.inflate(layoutResource, null);
-        return messageView;
+        return inflater.inflate(layoutResource, null);
     }
     
     private void setIndent(ConversationViewItem oMsg, View messageView) {
@@ -183,7 +179,6 @@ public class ConversationViewAdapter extends BaseAdapter {
 
     private void setMessageAuthor(ConversationViewItem oMsg, View messageView) {
         TextView author = (TextView) messageView.findViewById(R.id.message_author);
-
         author.setText(oMsg.mAuthor);
     }
 

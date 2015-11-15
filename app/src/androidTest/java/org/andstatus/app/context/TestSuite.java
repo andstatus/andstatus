@@ -117,7 +117,7 @@ public class TestSuite extends TestCase {
             .putString(MyPreferences.KEY_MIN_LOG_LEVEL, Integer.toString(MyLog.VERBOSE))
             .putBoolean(MyPreferences.KEY_SHOW_ATTACHED_IMAGES, true)
             .putBoolean(MyPreferences.KEY_ATTACH_IMAGES, true)
-            .commit();
+            .apply();
         MyLog.forget();
         assertTrue("Log level set to verbose", MyLog.isLoggable(TAG, MyLog.VERBOSE));
         MyServiceManager.setServiceUnavailable();
@@ -144,12 +144,11 @@ public class TestSuite extends TestCase {
     }
 
     public static String checkDataPath(Object objTag) {
-        String message = "";
         String dataPath2 = MyContextHolder.get().context().getDatabasePath("andstatus").getPath();
         if (dataPath.equalsIgnoreCase(dataPath2)) {
             return "ok";
         }
-        message =  (MyContextHolder.get().isReady() ? "" : "not ready; ") + dataPath2 + " instead of " + dataPath;
+        String message =  (MyContextHolder.get().isReady() ? "" : "not ready; ") + dataPath2 + " instead of " + dataPath;
         MyLog.e(objTag, message);
         return message;
     }
@@ -258,6 +257,7 @@ public class TestSuite extends TestCase {
     public static final String CONVERSATION_ENTRY_USER_OID = "acct:first@example.net";
     public static final String CONVERSATION_MEMBER_USERNAME = "third@pump.example.com";
     public static final String CONVERSATION_MEMBER_USER_OID = "acct:" + CONVERSATION_MEMBER_USERNAME;
+    public static final String CONVERSATION_MENTIONS_MESSAGE_OID = "http://identi.ca/second/comment/replywithmentions" + TESTRUN_UID;
     public static final String HTML_MESSAGE_OID = "http://identi.ca/testerofandstatus/comment/htmlfakeuri" + TESTRUN_UID;
     private static final String CONVERSATION_ACCOUNT2_USERNAME = "tester2ofandstatus@identi.ca";
     public static final String CONVERSATION_ACCOUNT2_NAME = CONVERSATION_ACCOUNT2_USERNAME + "/" + CONVERSATION_ORIGIN_NAME;

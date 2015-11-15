@@ -168,6 +168,7 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
                 }
             }
 
+            ContextMenuItem.USERS_OF_MESSAGE.addTo(menu, order++, R.string.users_of_message);
             if (messageList.getSelectedUserId() != msg.senderId) {
                 /*
                  * Messages by the Sender of this message ("User timeline" of

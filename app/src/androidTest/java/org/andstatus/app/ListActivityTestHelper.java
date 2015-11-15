@@ -25,7 +25,6 @@ import android.test.InstrumentationTestCase;
 import android.view.View;
 import android.widget.ListAdapter;
 import android.widget.ListView;
-import android.widget.TextView;
 
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MyDatabase;
@@ -33,10 +32,10 @@ import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.msg.ContextMenuItem;
 import org.andstatus.app.util.MyLog;
 
-public class ListActivityTestHelper<T extends MyListActivity> extends InstrumentationTestCase {
-    private Instrumentation mInstrumentation;
-    private T mActivity;
-    private ActivityMonitor activityMonitor = null;
+public class ListActivityTestHelper<T extends MyBaseListActivity> extends InstrumentationTestCase {
+    private final Instrumentation mInstrumentation;
+    private final T mActivity;
+    private ActivityMonitor mActivityMonitor = null;
 
     public ListActivityTestHelper(ActivityTestCase testCase, T activity) {
         this(testCase.getInstrumentation(), activity);
@@ -68,7 +67,7 @@ public class ListActivityTestHelper<T extends MyListActivity> extends Instrument
             int position = getPositionOfListItemId(listItemId);
             msg = "listItemId=" + listItemId + "; menu Item=" + menuItem + "; position=" + position + "; attempt=" + attempt;
             MyLog.v(this, msg);
-            if (getListItemIdAtPosition(position) == listItemId ) {
+            if (position >= 0 && getListItemIdAtPosition(position) == listItemId ) {
                 selectListPosition(methodExt, position);
                 if (invokeContextMenuAction(methodExt, mActivity, position, menuItem.getId())) {
                     id2 = getListItemIdAtPosition(position);
@@ -79,7 +78,7 @@ public class ListActivityTestHelper<T extends MyListActivity> extends Instrument
                         MyLog.i(methodExt, method + "; Position changed, now pointing to listItemId=" + id2 + "; " + msg);
                     }
                 }
-            };
+            }
         }
         MyLog.v(methodExt, method + " ended " + success + "; " + msg);
         TestSuite.waitForIdleSync(mInstrumentation);
@@ -113,7 +112,7 @@ public class ListActivityTestHelper<T extends MyListActivity> extends Instrument
      * Note: This method cannot be invoked on the main thread.
      * See https://github.com/google/google-authenticator-android/blob/master/tests/src/com/google/android/apps/authenticator/TestUtilities.java
      */
-    private boolean invokeContextMenuAction(final String methodExt, final MyListActivity activity,
+    private boolean invokeContextMenuAction(final String methodExt, final MyBaseListActivity activity,
                    int position, final int menuItemId) throws InterruptedException {
         final String method = "invokeContextMenuAction";
         MyLog.v(methodExt, method + " started on menuItemId=" + menuItemId + " at position=" + position);
@@ -149,7 +148,7 @@ public class ListActivityTestHelper<T extends MyListActivity> extends Instrument
     private boolean longClickAtPosition(final String methodExt, final int position) throws InterruptedException {
         final View view = getViewByPosition(position);
         if (view == null) {
-            MyLog.i(methodExt, "View at list position " + position + " exists");
+            MyLog.i(methodExt, "View at list position " + position + " doesn't exist");
             return false;
         }
         mInstrumentation.runOnMainSync(new Runnable() {
@@ -229,17 +228,16 @@ public class ListActivityTestHelper<T extends MyListActivity> extends Instrument
         TestSuite.waitForIdleSync(mInstrumentation);
     }
 
-    public ActivityMonitor addMonitor(Class<? extends Activity> classOfActivity) {
-        activityMonitor = mInstrumentation.addMonitor(classOfActivity.getName(), null, false);
-        return activityMonitor;
+    public void addMonitor(Class<? extends Activity> classOfActivity) {
+        mActivityMonitor = mInstrumentation.addMonitor(classOfActivity.getName(), null, false);
     }
     
     public Activity waitForNextActivity(String methodExt, long timeOut) throws InterruptedException {
-        Activity nextActivity = mInstrumentation.waitForMonitorWithTimeout(activityMonitor, timeOut);
+        Activity nextActivity = mInstrumentation.waitForMonitorWithTimeout(mActivityMonitor, timeOut);
         MyLog.v(methodExt, "After waitForMonitor: " + nextActivity);
         assertNotNull("Next activity is opened and captured", nextActivity);
         TestSuite.waitForListLoaded(mInstrumentation, nextActivity, 2);
-        activityMonitor = null;
+        mActivityMonitor = null;
         return nextActivity;
     }
     

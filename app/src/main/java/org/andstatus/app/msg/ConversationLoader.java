@@ -44,24 +44,24 @@ import java.util.List;
 public class ConversationLoader<T extends ConversationItem> implements SyncLoader {
     private static final int MAX_INDENT_LEVEL = 19;
     
-    private Context context;
-    private MyAccount ma;
-    private long selectedMessageId;
+    private final Context context;
+    private final MyAccount ma;
+    private final long selectedMessageId;
     private boolean mAllowLoadingFromInternet = false;
-    private ReplyLevelComparator<T> replyLevelComparator = new ReplyLevelComparator<T>();
+    private final ReplyLevelComparator<T> replyLevelComparator = new ReplyLevelComparator<>();
     private final TFactory<T> tFactory;
 
-    List<T> mMsgs = new ArrayList<T>();
+    final List<T> mMsgs = new ArrayList<>();
     LoadableListActivity.ProgressPublisher mProgress;
 
-    public List<T> getMsgs() {
+    public List<T> getList() {
         return mMsgs;
     }
 
-    List<Long> idsOfTheMessagesToFind = new ArrayList<Long>();
+    final List<Long> idsOfTheMessagesToFind = new ArrayList<>();
 
     public ConversationLoader(Class<T> tClass, Context context, MyAccount ma, long selectedMessageId) {
-        tFactory = new TFactory<T>(tClass);
+        tFactory = new TFactory<>(tClass);
         this.context = context;
         this.ma = ma;
         this.selectedMessageId = selectedMessageId;

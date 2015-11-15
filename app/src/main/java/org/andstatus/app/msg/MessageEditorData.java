@@ -106,9 +106,7 @@ public class MessageEditorData {
             return false;
         if (recipientId != other.recipientId)
             return false;
-        if (inReplyToId != other.inReplyToId)
-            return false;
-        return true;
+        return inReplyToId == other.inReplyToId;
     }
 
     @Override
@@ -271,22 +269,22 @@ public class MessageEditorData {
         if (!ma.isValid()) {
             return;
         }
-        ConversationLoader<ConversationMemberItem> loader = new ConversationLoader<ConversationMemberItem>(
+        ConversationLoader<ConversationMemberItem> loader = new ConversationLoader<>(
                 ConversationMemberItem.class,
                 MyContextHolder.get().context(), ma, inReplyToId);
         loader.load(null);
-        List<Long> mentioned = new ArrayList<Long>();
+        List<Long> mentioned = new ArrayList<>();
         mentioned.add(ma.getUserId());  // Skip an author of this message
         long authorWhomWeReply = getAuthorWhomWeReply(loader);
         mentioned.add(authorWhomWeReply);
-        for(ConversationMemberItem item : loader.getMsgs()) {
+        for(ConversationMemberItem item : loader.getList()) {
             mentionConversationMember(mentioned, item);
         }
         addMentionedUserToText(authorWhomWeReply);  // He will be mentioned first
     }
 
     private long getAuthorWhomWeReply(ConversationLoader<ConversationMemberItem> loader) {
-        for(ConversationMemberItem item : loader.getMsgs()) {
+        for(ConversationMemberItem item : loader.getList()) {
             if (item.getMsgId() == inReplyToId) {
                 return item.authorId;
             }

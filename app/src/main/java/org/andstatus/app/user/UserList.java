@@ -21,7 +21,9 @@ import android.widget.ListAdapter;
 
 import org.andstatus.app.LoadableListActivity;
 import org.andstatus.app.R;
-import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.util.I18n;
 
 /**
  *  List of users for different contexts 
@@ -29,32 +31,39 @@ import org.andstatus.app.context.MyPreferences;
  *  @author yvolk@yurivolkov.com
  */
 public class UserList extends LoadableListActivity {
-
-    protected long mSelectedMessageId = 0;
+    private UserListType mUserListType = UserListType.UNKNOWN;
+    private MyAccount ma = MyAccount.getEmpty(MyContextHolder.get(), "");
+    private long mSelectedMessageId = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         mLayoutId = R.layout.my_list_fragment;
         super.onCreate(savedInstanceState);
+        ma = MyContextHolder.get().persistentAccounts()
+                .fromUserId(getParsedUri().getAccountUserId());
+        mUserListType = getParsedUri().getUserListType();
         mSelectedMessageId = getParsedUri().getMessageId();
     }
 
     @Override
     protected SyncLoader newSyncLoader() {
-        // TODO Auto-generated method stub
-        return null;
+        return new UserListLoader(mUserListType, ma, mSelectedMessageId);
     }
 
     @Override
-    protected ListAdapter getAdapter() {
-        // TODO Auto-generated method stub
-        return null;
+    protected ListAdapter getListAdapter() {
+        return new UserListViewAdapter(this, R.layout.user, getListLoader().getList());
+    }
+
+    @SuppressWarnings("unchecked")
+    protected UserListLoader getListLoader() {
+        return (UserListLoader) getLoaded();
     }
 
     @Override
     protected CharSequence getCustomTitle() {
-        // TODO Auto-generated method stub
-        return null;
+        mSubtitle = I18n.trimTextAt(getListLoader().messageBody, 80);
+        return mUserListType.getTitle(this);
     }
 
 }

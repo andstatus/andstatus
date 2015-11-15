@@ -1,5 +1,5 @@
-/*
- * Copyright (c) 2015 yvolk (Yuri Volkov), http://yurivolkov.com
+/**
+ * Copyright (C) 2015 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,21 +14,14 @@
  * limitations under the License.
  */
 
-package org.andstatus.app;
+package org.andstatus.app.user;
 
-import android.widget.ListAdapter;
+import org.andstatus.app.LoadableListActivity;
 
-public abstract class MyBaseListActivity extends MyActivity {
+public interface ActionableUserList {
+    LoadableListActivity getActivity();
+    long getSelectedMsgId();
+    UserListType getUserListType();
+    boolean isListCombined();
 
-    private int mPositionOfContextMenu = -1;
-
-    public int getPositionOfContextMenu() {
-        return mPositionOfContextMenu;
-    }
-
-    public void setPositionOfContextMenu(int position) {
-        this.mPositionOfContextMenu = position;
-    }
-
-    protected abstract ListAdapter getListAdapter();
 }

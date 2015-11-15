@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2015 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,21 +14,20 @@
  * limitations under the License.
  */
 
-package org.andstatus.app;
+package org.andstatus.app.user;
 
-import android.widget.ListAdapter;
+import android.view.ContextMenu;
+import android.view.View;
 
-public abstract class MyBaseListActivity extends MyActivity {
+public class UserListContextMenu implements View.OnCreateContextMenuListener {
+    private final ActionableUserList userList;
 
-    private int mPositionOfContextMenu = -1;
-
-    public int getPositionOfContextMenu() {
-        return mPositionOfContextMenu;
+    public UserListContextMenu(ActionableUserList userList) {
+        this.userList = userList;
     }
 
-    public void setPositionOfContextMenu(int position) {
-        this.mPositionOfContextMenu = position;
-    }
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
 
-    protected abstract ListAdapter getListAdapter();
+    }
 }

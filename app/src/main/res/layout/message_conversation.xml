@@ -19,7 +19,8 @@
     android:id="@+id/message_wrapper"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal" >
+    android:orientation="horizontal"
+                tools:context=".msg.TimelineActivity">
 
     <View android:id="@+id/divider" style="@style/Divider"/>
     

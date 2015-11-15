@@ -67,10 +67,6 @@ public class ParsedUri {
     }
     
     public long getUserId() {
-        return getUserId(0);
-    }
-    
-    public long getUserId(long defaultValue) {
         long userId = 0;
         try {
             switch (matchedUri) {
@@ -88,7 +84,7 @@ public class ParsedUri {
         } catch (Exception e) {
             MyLog.e(this, toString(), e);
         }
-        return userId == 0 ? defaultValue : userId;        
+        return userId;
     }
     
     public TimelineType getTimelineType() {
@@ -125,20 +121,16 @@ public class ParsedUri {
         return tt;        
     }
 
-    public boolean isCombined() {
-        return isCombined(false);
-    }
-    
     /**
      * @return Is the timeline/userlist combined. false for URIs that don't contain such information
      */
-    public boolean isCombined(boolean defaultValue) {
-        boolean isCombined = defaultValue;
+    public boolean isCombined() {
+        boolean isCombined = false;
         try {
             switch (getTimelineType()) {
             case USER:
                 if (MyContextHolder.get().persistentAccounts().isAccountUserId(getUserId())) {
-                    isCombined = ( (Long.parseLong(uri.getPathSegments().get(5)) == 0) ? false : true);
+                    isCombined = Long.parseLong(uri.getPathSegments().get(5)) != 0;
                 } else {
                     isCombined = true;
                 }
@@ -148,7 +140,8 @@ public class ParsedUri {
                     case TIMELINE:
                     case TIMELINE_SEARCH:
                     case TIMELINE_ITEM:
-                        isCombined = ( (Long.parseLong(uri.getPathSegments().get(5)) == 0) ? false : true);
+                    case USERLIST:
+                        isCombined = Long.parseLong(uri.getPathSegments().get(5)) != 0;
                         break;
                     default:
                         break;
@@ -170,6 +163,9 @@ public class ParsedUri {
                     break;
                 case MSG_ITEM:
                     messageId = Long.parseLong(uri.getPathSegments().get(3));
+                    break;
+                case USERLIST:
+                    messageId = Long.parseLong(uri.getPathSegments().get(7));
                     break;
                 default:
                     break;
@@ -200,13 +196,16 @@ public class ParsedUri {
     }
 
     public long getItemId() {
-        if (getUserListType() == UserListType.UNKNOWN) {
-            if (getTimelineType() == TimelineType.UNKNOWN) {
-                return 0;
-            }
-            return getMessageId();
-        } else {
-            return getUserId();
+        switch (getUserListType()) {
+            case USERS_OF_MESSAGE:
+                return getMessageId();
+            default:
+                switch (getTimelineType()) {
+                    case UNKNOWN:
+                        return 0;
+                    default:
+                        return getMessageId();
+                }
         }
     }
 }

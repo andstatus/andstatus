@@ -46,7 +46,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentLeft="true"
-                style="@style/messageUsernameAppearance" />
+                style="@style/messageUsernameAppearance"
+                tools:text="author@some.domain"/>
 
         </RelativeLayout>
 
@@ -54,7 +55,8 @@
             android:id="@+id/message_body"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            style="@style/messageBodyAppearance" />
+            style="@style/messageBodyAppearance"
+            tools:text="This is a sample message body, which is long enough to fill more than one line on a phone"/>
 
         <org.andstatus.app.AttachedImageView
             android:id="@+id/attached_image"
@@ -73,7 +75,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_alignParentLeft="true"
-                style="@style/messageDetailsAppearance" />
+                style="@style/messageDetailsAppearance"
+                tools:text="sent 5 minutes ago from AndStatus"/>
 
             <ImageView
                 android:id="@+id/message_favorited"
@@ -106,6 +109,7 @@
         android:paddingTop="2dp"
         android:paddingLeft="1dp"
         android:paddingRight="1dp"
-        android:scaleType="fitCenter" />
+        android:scaleType="fitCenter"
+        tools:src="@drawable/icon"/>
 
 </RelativeLayout>

@@ -20,9 +20,9 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.AsyncTask.Status;
 import android.os.Bundle;
+import android.support.v7.app.ActionBar;
 import android.text.TextUtils;
 import android.view.MenuItem;
-import android.widget.ListAdapter;
 import android.widget.ListView;
 
 import net.jcip.annotations.GuardedBy;
@@ -67,7 +67,9 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
     @GuardedBy("loaderLock")
     private AsyncLoader mWorkingLoader = mCompletedLoader;
     private boolean mIsPaused = false;
-    
+
+    protected CharSequence mSubtitle = "";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -91,7 +93,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
     }
     
     protected void showList() {
-        MyLog.v(this, "showList, instanceId=" + mInstanceId);
+        MyLog.v(this, "showList, instanceId=" + mInstanceId + ", itemId=" + mItemId);
         synchronized (loaderLock) {
             if (mItemId != 0 && mWorkingLoader.getStatus() != Status.RUNNING) {
                 /* On passing the same info twice (Generic parameter + Class) read here:
@@ -180,14 +182,12 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
                 firstListPosition = ind;
             }
         }
-        list.setAdapter(getAdapter());
+        list.setAdapter(getListAdapter());
         if (firstListPosition >= 0) {
             list.setSelectionFromTop(firstListPosition, 0);
         }
     }
 
-    protected abstract ListAdapter getAdapter();
-    
     private AsyncLoader updateCompletedLoader() {
         synchronized(loaderLock) {
             mCompletedLoader = mWorkingLoader;
@@ -196,7 +196,11 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
     }
     
     protected void updateTitle(String progress) {
-        StringBuilder title = new StringBuilder(getTitle());
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar == null) {
+            return;
+        }
+        StringBuilder title = new StringBuilder(getCustomTitle());
         if (ma.isValid()) {
             I18n.appendWithSpace(title, "/ " + ma.getOrigin().getName());
         } else {
@@ -205,10 +209,13 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
         if (!TextUtils.isEmpty(progress)) {
             I18n.appendWithSpace(title, progress);
         }
-        getSupportActionBar().setTitle(title.toString());
+        actionBar.setTitle(title.toString());
+        actionBar.setSubtitle(mSubtitle);
     }
 
-    abstract protected CharSequence getCustomTitle();
+    protected CharSequence getCustomTitle() {
+        return getTitle();
+    }
     
     protected int size() {
         synchronized(loaderLock) {
