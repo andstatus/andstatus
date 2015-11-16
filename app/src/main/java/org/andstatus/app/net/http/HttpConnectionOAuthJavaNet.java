@@ -109,7 +109,7 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
     }
 
     @Override
-    public OAuthProvider getProvider() {
+    public OAuthProvider getProvider() throws ConnectionException {
         OAuthProvider provider = null;
         provider = new DefaultOAuthProvider(getApiUrl(ApiRoutineEnum.OAUTH_REQUEST_TOKEN),
                 getApiUrl(ApiRoutineEnum.OAUTH_ACCESS_TOKEN), getApiUrl(ApiRoutineEnum.OAUTH_AUTHORIZE));

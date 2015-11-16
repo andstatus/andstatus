@@ -30,5 +30,5 @@ public interface OAuthConsumerAndProvider {
     /**
      * @return OAuth Provider for this connection
      */
-    OAuthProvider getProvider();
+    OAuthProvider getProvider() throws ConnectionException;
 }

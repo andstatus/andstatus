@@ -50,20 +50,13 @@ public class HttpReadResult {
     boolean redirected = false;
 
     public HttpReadResult(String urlIn) throws ConnectionException {
-        this (urlIn, (File) null);
+        this (urlIn, null);
     }
 
     public HttpReadResult(String urlIn, File file) throws ConnectionException {
         urlInitial = urlIn;
         fileResult = file;
         setUrl(urlIn);
-    }
-
-    public HttpReadResult(String urlIn, JSONObject formParamsIn) throws ConnectionException {
-        this(urlIn);
-        if (formParamsIn != null) {
-            formParams = formParamsIn;
-        }
     }
 
     public final void setUrl(String urlIn) throws ConnectionException {

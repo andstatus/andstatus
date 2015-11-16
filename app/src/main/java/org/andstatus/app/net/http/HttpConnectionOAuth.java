@@ -64,7 +64,7 @@ abstract class HttpConnectionOAuth extends HttpConnection implements OAuthConsum
         return yes;
     }
 
-    protected String getApiUrl(ApiRoutineEnum routine) {
+    protected String getApiUrl(ApiRoutineEnum routine) throws ConnectionException {
         String url;
         switch(routine) {
             case OAUTH_ACCESS_TOKEN:

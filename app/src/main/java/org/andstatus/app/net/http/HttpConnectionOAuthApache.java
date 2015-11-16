@@ -40,7 +40,7 @@ public class HttpConnectionOAuthApache extends HttpConnectionOAuth implements Ht
     }  
 
     @Override
-    public OAuthProvider getProvider() {
+    public OAuthProvider getProvider() throws ConnectionException {
         CommonsHttpOAuthProvider provider = null;
         provider = new CommonsHttpOAuthProvider(getApiUrl(ApiRoutineEnum.OAUTH_REQUEST_TOKEN),
                 getApiUrl(ApiRoutineEnum.OAUTH_ACCESS_TOKEN), getApiUrl(ApiRoutineEnum.OAUTH_AUTHORIZE));

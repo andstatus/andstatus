@@ -45,15 +45,20 @@ public abstract class HttpConnection {
     public static final Uri CALLBACK_URI = Uri.parse("http://oauth-redirect.andstatus.org");
  
     public void registerClient(String path) throws ConnectionException {
-        // Empty
+        // Do nothing in default in the Base implementation
     }
     
     public void setConnectionData(HttpConnectionData data) {
         this.data = data;
     }  
     
-    public String pathToUrlString(String path) {
-        return UrlUtils.pathToUrlString(data.originUrl, path);
+    public String pathToUrlString(String path) throws ConnectionException {
+        String urlString = UrlUtils.pathToUrlString(data.originUrl, path);
+        if (TextUtils.isEmpty(urlString)) {
+            throw ConnectionException.hardConnectionException("URL is unknown. System URL:'"
+                    + data.originUrl + "', path:'" + path + "'", null);
+        }
+        return urlString;
     }
     
     public final JSONObject postRequest(String path) throws ConnectionException {
@@ -190,19 +195,5 @@ public abstract class HttpConnection {
             MyLog.e(this, e);
         }
         return null;
-    }
-
-    public URL pathToUrl(String path) throws ConnectionException {
-        return stringToUrl(pathToUrlString(path));
-    }
-
-    protected URL stringToUrl(String strUrl) throws ConnectionException {
-        URL url = null;
-        try {
-            url = new URL(strUrl);
-        } catch (MalformedURLException e) {
-            throw new ConnectionException("Url: " + strUrl, e);
-        }
-        return url;
     }
 }

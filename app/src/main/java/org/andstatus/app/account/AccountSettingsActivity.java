@@ -861,16 +861,10 @@ public class AccountSettingsActivity extends MyActivity {
                 AccountSettingsActivity.this.startActivity(i);
 
                 requestSucceeded = true;
-            } catch (OAuthMessageSignerException e) {
-                message = e.getMessage();
-                MyLog.e(this, e);
-            } catch (OAuthNotAuthorizedException e) {
-                message = e.getMessage();
-                MyLog.e(this, e);
-            } catch (OAuthExpectationFailedException e) {
-                message = e.getMessage();
-                MyLog.e(this, e);
-            } catch (OAuthCommunicationException e) {
+            } catch (OAuthMessageSignerException | OAuthNotAuthorizedException
+                    | OAuthExpectationFailedException
+                    | OAuthCommunicationException
+                    | ConnectionException e) {
                 message = e.getMessage();
                 MyLog.e(this, e);
             }
@@ -998,7 +992,8 @@ public class AccountSettingsActivity extends MyActivity {
                             authenticated = true;
                         }
                     } catch (OAuthMessageSignerException | OAuthNotAuthorizedException
-                            | OAuthExpectationFailedException | OAuthCommunicationException e) {
+                            | OAuthExpectationFailedException | OAuthCommunicationException
+                            | ConnectionException e) {
                         message = e.getMessage();
                         MyLog.e(this, e);
                     } finally {

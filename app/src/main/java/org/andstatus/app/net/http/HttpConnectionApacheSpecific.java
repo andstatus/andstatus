@@ -28,7 +28,6 @@ import java.io.IOException;
  */
 public interface HttpConnectionApacheSpecific {
     void httpApachePostRequest(HttpPostHC4 httpPost, HttpReadResult result) throws ConnectionException;
-    String pathToUrlString(String path);
     HttpResponse httpApacheGetResponse(HttpGet httpGet) throws IOException;
     void httpApacheSetAuthorization(HttpGet httpGet) throws IOException;
     SslModeEnum getSslMode();

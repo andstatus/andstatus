@@ -104,11 +104,11 @@ public final class UrlUtils {
     }
     
     public static String pathToUrlString(URL originUrl, String path) {
-        if (path.contains("://")) {
+        if (path != null && path.contains("://")) {
             return path;
         } else {
             try {
-                return  new URL(originUrl, path).toExternalForm();
+                return new URL(originUrl, path).toExternalForm();
             } catch (MalformedURLException e) {
                 MyLog.d(TAG, "pathToUrl", e);
                 return "";
