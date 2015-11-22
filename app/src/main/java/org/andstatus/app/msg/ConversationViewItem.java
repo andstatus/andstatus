@@ -57,10 +57,6 @@ public class ConversationViewItem extends ConversationItem {
     AvatarDrawable mAvatarDrawable = null;
     Drawable mImageDrawable = null;
 
-    public ConversationViewItem() {
-        // Empty
-    }
-    
     @Override
     String[] getProjection() {
         return TimelineSql.getConversationProjection();        
@@ -72,7 +68,7 @@ public class ConversationViewItem extends ConversationItem {
          * IDs of all known senders of this message except for the Author
          * These "senders" reblogged the message
          */
-        Set<Long> rebloggers = new HashSet<Long>();
+        Set<Long> rebloggers = new HashSet<>();
         int ind=0;
         do {
             long senderId = cursor.getLong(cursor.getColumnIndex(Msg.SENDER_ID));
@@ -117,7 +113,13 @@ public class ConversationViewItem extends ConversationItem {
             
             ind++;
         } while (cursor.moveToNext());
-    
+
+        for (long rebloggerId : MyQuery.getRebloggers(getMsgId())) {
+            if (!rebloggers.contains(rebloggerId)) {
+                rebloggers.add(rebloggerId);
+            }
+        }
+
         for (long rebloggerId : rebloggers) {
             if (!TextUtils.isEmpty(mRebloggersString)) {
                 mRebloggersString += ", ";

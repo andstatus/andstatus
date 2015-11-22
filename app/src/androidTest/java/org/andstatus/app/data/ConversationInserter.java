@@ -23,22 +23,19 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MyDatabase.Msg;
-import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.social.MbAttachment;
 import org.andstatus.app.net.social.MbMessage;
 import org.andstatus.app.net.social.MbUser;
-import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.GregorianCalendar;
 
 public class ConversationInserter extends InstrumentationTestCase {
     private static volatile int iteration = 0;
 
-    private MbUser accountMbUser;
     private MyAccount ma;
-    private Origin origin;
     private String bodySuffix = "";
 
     public void insertConversation(String bodySuffixIn) throws Exception {
@@ -53,12 +50,8 @@ public class ConversationInserter extends InstrumentationTestCase {
 
     private void mySetup() {
         iteration++;
-        origin = MyContextHolder.get().persistentOrigins().fromName(TestSuite.CONVERSATION_ORIGIN_NAME);
-        assertTrue(TestSuite.CONVERSATION_ORIGIN_NAME + " exists", origin != null);
-        ma = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.CONVERSATION_ACCOUNT_NAME); 
+        ma = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.CONVERSATION_ACCOUNT_NAME);
         assertTrue(TestSuite.CONVERSATION_ACCOUNT_NAME + " exists", ma.isValid());
-        accountMbUser = buildUserFromOid(TestSuite.CONVERSATION_ACCOUNT_USER_OID);
-        accountMbUser.avatarUrl = TestSuite.CONVERSATION_ACCOUNT_AVATAR_URL;
     }
     
     @Override
@@ -74,6 +67,10 @@ public class ConversationInserter extends InstrumentationTestCase {
         MbUser author2 = buildUserFromOid("acct:second@identi.ca");
         author2.avatarUrl = "http://png.findicons.com/files/icons/1780/black_and_orange/300/android_orange.png";
         MbUser author3 = buildUserFromOid(TestSuite.CONVERSATION_MEMBER_USER_OID);
+        author3.realName = "John Smith";
+        author3.homepage = "http://johnsmith.com/welcome";
+        author3.createdDate = new GregorianCalendar(2011,5,12).getTimeInMillis();
+        author3.description = "I am an ordinary guy, interested in computer science";
         author3.avatarUrl = "http://www.large-icons.com/stock-icons/free-large-android/48x48/happy-robot.gif";
         MbUser author4 = buildUserFromOid("acct:fourthWithoutAvatar@pump.example.com");
         
@@ -96,8 +93,19 @@ public class ConversationInserter extends InstrumentationTestCase {
         MbMessage reply4 = buildMessage(author4, "Reply 4 to Reply 1 other author", reply1, null);
         addMessage(reply4);
         addPublicMessage(reply4, false);
-        addMessage(buildMessage(author2, "@fourthWithoutAvatar@pump.example.com Reply 5 to Reply 4\n"
-                + "@" + TestSuite.CONVERSATION_MEMBER_USERNAME, reply4, TestSuite.CONVERSATION_MENTIONS_MESSAGE_OID));
+
+        final String BODY_OF_MENTIONS_MESSAGE = "@fourthWithoutAvatar@pump.example.com Reply 5 to Reply 4\n"
+                + "@" + TestSuite.CONVERSATION_MEMBER_USERNAME
+                + " @unknownUser@example.com";
+        MbMessage reply5 = buildMessage(author2, BODY_OF_MENTIONS_MESSAGE, reply4, TestSuite.CONVERSATION_MENTIONS_MESSAGE_OID);
+        addMessage(reply5);
+
+        MbUser reblogger1 = buildUserFromOid("acct:reblogger@identi.ca");
+        reblogger1.avatarUrl = "http://www.avatarsdb.com/avatars/cow_face.jpg";
+        MbMessage reblog1 = buildMessage(reblogger1, BODY_OF_MENTIONS_MESSAGE, null, null);
+        reblog1.rebloggedMessage = reply5;
+        addMessage(reblog1);
+
         addMessage(buildMessage(author3, "Reply 6 to Reply 4 - the second", reply4, null));
 
         MbMessage reply7 = buildMessage(getAuthor1(), "Reply 7 to Reply 2 is about " 

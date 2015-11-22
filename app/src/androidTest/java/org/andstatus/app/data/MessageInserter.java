@@ -108,14 +108,16 @@ public class MessageInserter extends InstrumentationTestCase {
         return message;
     }
     
-    public long addMessage(MbMessage message) {
+    public long addMessage(MbMessage messageIn) {
         TimelineType tt = TimelineType.HOME;
-        if (message.isPublic() ) {
+        if (messageIn.isPublic() ) {
             tt = TimelineType.PUBLIC;
         }
         DataInserter di = new DataInserter(new CommandExecutionContext(CommandData.getEmpty(), ma).setTimelineType(tt));
-        long messageId = di.insertOrUpdateMsg(message);
-        assertTrue( "Message added " + message.oid, messageId != 0);
+        long messageId = di.insertOrUpdateMsg(messageIn);
+        assertTrue( "Message added " + messageIn.oid, messageId != 0);
+
+        MbMessage message = messageIn.rebloggedMessage == null ? messageIn : messageIn.rebloggedMessage;
 
         String permalink = origin.messagePermalink(messageId);
         URL urlPermalink = UrlUtils.fromString(permalink); 
@@ -130,13 +132,21 @@ public class MessageInserter extends InstrumentationTestCase {
         if (message.favoritedByActor == TriState.TRUE) {
             long msgIdFromMsgOfUser = MyQuery.conditionToLongColumnValue(MyDatabase.MsgOfUser.TABLE_NAME, MyDatabase.MsgOfUser.MSG_ID, 
                     "t." + MyDatabase.MsgOfUser.MSG_ID + "=" + messageId);
-            assertEquals("msgofuser found for msgId=" + messageId, messageId, msgIdFromMsgOfUser);
+            assertEquals("msgOfUser found for msgId=" + messageId, messageId, msgIdFromMsgOfUser);
             
             long userIdFromMsgOfUser = MyQuery.conditionToLongColumnValue(MyDatabase.MsgOfUser.TABLE_NAME, MyDatabase.MsgOfUser.MSG_ID, 
                     "t." + MyDatabase.MsgOfUser.USER_ID + "=" + ma.getUserId());
             assertEquals("userId found for msgId=" + messageId, ma.getUserId(), userIdFromMsgOfUser);
         }
-        
+
+        if (messageIn.rebloggedMessage != null) {
+            long rebloggerId = MyQuery.conditionToLongColumnValue(MyDatabase.MsgOfUser.TABLE_NAME,
+                    MyDatabase.MsgOfUser.USER_ID,
+                    "t." + MyDatabase.MsgOfUser.MSG_ID + "=" + messageId
+            + " AND t." + MyDatabase.MsgOfUser.REBLOGGED + "=1" );
+            assertTrue("Reblogger found for msgId=" + messageId, rebloggerId != 0);
+        }
+
         return messageId;
     }
 

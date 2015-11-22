@@ -53,11 +53,11 @@ public class MyQuery {
      * @param valuesOut  may be null
      * @return 1 for true, 0 for false and 2 for "not present" 
      */
-    protected static int moveBooleanKey(String key, ContentValues valuesIn, ContentValues valuesOut) {
+    protected static int moveBooleanKey(String key, String sourceSuffix, ContentValues valuesIn, ContentValues valuesOut) {
         int ret = 2;
-        if (valuesIn != null && valuesIn.containsKey(key)) {
-            ret = SharedPreferencesUtil.isTrueAsInt(valuesIn.get(key));
-            valuesIn.remove(key);
+        if (valuesIn != null && valuesIn.containsKey(key + sourceSuffix)) {
+            ret = SharedPreferencesUtil.isTrueAsInt(valuesIn.get(key + sourceSuffix));
+            valuesIn.remove(key + sourceSuffix);
             if (valuesOut != null) {
                 valuesOut.put(key, ret);
             }
@@ -70,19 +70,35 @@ public class MyQuery {
      * @param key
      * @param valuesIn
      * @param valuesOut  may be null
-     * @return 1 for not empty, 0 for empty and 2 for "not present" 
      */
-    static int moveStringKey(String key, ContentValues valuesIn, ContentValues valuesOut) {
-        int ret = 2;
-        if (valuesIn != null && valuesIn.containsKey(key)) {
-            String value = valuesIn.getAsString(key);
-            ret = SharedPreferencesUtil.isEmpty(value) ? 0 : 1;
-            valuesIn.remove(key);
+    static void moveStringKey(String key, String sourceSuffix, ContentValues valuesIn, ContentValues valuesOut) {
+        if (valuesIn != null && valuesIn.containsKey(key + sourceSuffix)) {
+            String value = valuesIn.getAsString(key + sourceSuffix);
+            valuesIn.remove(key + sourceSuffix);
             if (valuesOut != null) {
                 valuesOut.put(key, value);
             }
         }
-        return ret;
+    }
+
+    /**
+     * Move String value of the key from valuesIn to valuesOut and remove it from valuesIn
+     * @param key
+     * @param valuesIn
+     * @param valuesOut  may be null
+     * @return Key value, 0 if not found
+     */
+    static long moveLongKey(String key, String sourceSuffix, ContentValues valuesIn, ContentValues valuesOut) {
+        long keyValue = 0;
+        if (valuesIn != null && valuesIn.containsKey(key + sourceSuffix)) {
+            Long value = valuesIn.getAsLong(key + sourceSuffix);
+            keyValue = value == null ? 0 : value;
+            valuesIn.remove(key + sourceSuffix);
+            if (valuesOut != null) {
+                valuesOut.put(key, value);
+            }
+        }
+        return keyValue;
     }
 
     static String userNameField(UserInTimeline userInTimeline) {
@@ -488,7 +504,7 @@ public class MyQuery {
      * @return IDs, the set is empty if no friends
      */
     public static Set<Long> getIdsOfUsersFollowedBy(long userId) {
-        Set<Long> friends = new HashSet<Long>();
+        Set<Long> friends = new HashSet<>();
         String where = MyDatabase.FollowingUser.USER_ID + "=" + userId
                 + " AND " + MyDatabase.FollowingUser.USER_FOLLOWED + "=1";
         String sql = "SELECT " + MyDatabase.FollowingUser.FOLLOWING_USER_ID 
@@ -512,7 +528,7 @@ public class MyQuery {
      * Newest replies are the first
      */
     public static List<Long> getReplyIds(long msgId) {
-        List<Long> replies = new ArrayList<Long>();
+        List<Long> replies = new ArrayList<>();
         String sql = "SELECT " + MyDatabase.Msg._ID 
                 + " FROM " + Msg.TABLE_NAME 
                 + " WHERE " + MyDatabase.Msg.IN_REPLY_TO_MSG_ID + "=" + msgId
@@ -530,5 +546,24 @@ public class MyQuery {
         }
         return replies;
     }
-    
+
+    public static List<Long> getRebloggers(long msgId) {
+        List<Long> rebloggers = new ArrayList<>();
+        String sql = "SELECT " + MsgOfUser.USER_ID
+                + " FROM " + MsgOfUser.TABLE_NAME
+                + " WHERE " + MsgOfUser.MSG_ID + "=" + msgId
+                + " AND " + MsgOfUser.REBLOGGED + "=1";
+
+        SQLiteDatabase db = MyContextHolder.get().getDatabase().getWritableDatabase();
+        Cursor c = null;
+        try {
+            c = db.rawQuery(sql, null);
+            while (c.moveToNext()) {
+                rebloggers.add(c.getLong(0));
+            }
+        } finally {
+            DbUtils.closeSilently(c);
+        }
+        return rebloggers;
+    }
 }

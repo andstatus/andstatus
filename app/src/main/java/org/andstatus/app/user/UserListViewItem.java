@@ -16,12 +16,22 @@
 
 package org.andstatus.app.user;
 
+import android.graphics.drawable.Drawable;
+import android.net.Uri;
+
+import org.andstatus.app.data.AvatarDrawable;
 import org.andstatus.app.net.social.MbUser;
 
 public class UserListViewItem {
+    boolean populated = false;
     private final long mUserId;
     private final long mOriginId;
-    final String mUserName;
+    String mUserName;
+    String mRealName;
+    Uri mUri = Uri.EMPTY;
+    String mDescription = "";
+    String mHomepage = "";
+    AvatarDrawable mAvatarDrawable = null;
 
     @Override
     public boolean equals(Object o) {
@@ -31,8 +41,7 @@ public class UserListViewItem {
         UserListViewItem that = (UserListViewItem) o;
 
         if (mUserId != that.mUserId) return false;
-        if (mOriginId != that.mOriginId) return false;
-        return mUserName.equals(that.mUserName);
+        return mOriginId == that.mOriginId && mUserName.equals(that.mUserName);
 
     }
 
@@ -57,6 +66,13 @@ public class UserListViewItem {
 
     public long getUserId() {
         return mUserId;
+    }
+
+    public Drawable getAvatar() {
+        if (mAvatarDrawable == null) {
+            return AvatarDrawable.getDefaultDrawable();
+        }
+        return mAvatarDrawable.getDrawable();
     }
 
     @Override

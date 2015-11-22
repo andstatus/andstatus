@@ -18,8 +18,7 @@ package org.andstatus.app.msg;
 
 import android.app.Activity;
 import android.content.Context;
-import android.text.Html;
-import android.text.Spanned;
+import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
@@ -41,7 +40,6 @@ import org.andstatus.app.context.MyTheme;
 import org.andstatus.app.data.AvatarDrawable;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.util.InstanceId;
-import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyUrlSpan;
 import org.andstatus.app.util.RelativeTime;
@@ -125,8 +123,9 @@ public class ConversationViewAdapter extends BaseAdapter {
 
         LinearLayout messageIndented = (LinearLayout) messageView.findViewById(R.id.message_indented);
         if (oMsg.getMsgId() == selectedMessageId  && oMsgs.size() > 1) {
-            MySimpleCursorAdapter.setBackgroundCompat(messageIndented, context.getResources().getDrawable(
-                    MyTheme.isThemeLight() ? R.drawable.current_message_background_light : R.drawable.current_message_background));
+            messageIndented.setBackgroundResource(MyTheme.isThemeLight()
+                    ? R.drawable.current_message_background_light
+                    : R.drawable.current_message_background);
         }
 
         AttachedImageView imageView = (AttachedImageView) messageView.findViewById(R.id.attached_image);
@@ -194,11 +193,7 @@ public class ConversationViewAdapter extends BaseAdapter {
             body.setMovementMethod(LinkMovementMethod.getInstance());                
             body.setFocusable(true);
             body.setFocusableInTouchMode(true);
-            Spanned spanned = Html.fromHtml(oMsg.mBody);
-            body.setText(spanned);
-            if (!MyHtml.hasUrlSpans(spanned)) {
-                MyUrlSpan.addLinks(body);
-            }
+            MyUrlSpan.showText(body, oMsg.mBody, true);
         }
     }
 

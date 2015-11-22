@@ -18,6 +18,7 @@ package org.andstatus.app.data;
 
 import android.content.ContentValues;
 import android.net.Uri;
+import android.provider.BaseColumns;
 import android.text.TextUtils;
 
 import org.andstatus.app.account.MyAccount;
@@ -108,21 +109,27 @@ public class DataInserter {
             
             // Author
             long authorId = senderId;
+
             // Is this a reblog?
             if (message.rebloggedMessage != null) {
                 if (message.rebloggedMessage.sender != null) {
                     // Author of that message
                     authorId = insertOrUpdateUser(message.rebloggedMessage.sender, lum);
                 }
-
-                if (senderId !=0 && execContext.getMyAccount().getUserId() == senderId) {
-                    // Msg was reblogged by current User (he is the Sender)
-                    values.put(MyDatabase.MsgOfUser.REBLOGGED, 1);
-
+                if (senderId !=0) {
+                    if (senderId != execContext.getMyAccount().getUserId()) {
+                        values.put(MyDatabase.MsgOfUser.USER_ID
+                                + MyDatabase.MsgOfUser.SUFFIX_FOR_OTHER_USER, senderId);
+                    }
+                    values.put(MyDatabase.MsgOfUser.REBLOGGED
+                            + (senderId == execContext.getMyAccount().getUserId() ? ""
+                            : MyDatabase.MsgOfUser.SUFFIX_FOR_OTHER_USER), 1);
                     // Remember original id of the reblog message
                     // We will need it to "undo reblog" for our reblog
                     if (!SharedPreferencesUtil.isEmpty(rowOid)) {
-                        values.put(MyDatabase.MsgOfUser.REBLOG_OID, rowOid);
+                        values.put(MyDatabase.MsgOfUser.REBLOG_OID
+                                + (senderId == execContext.getMyAccount().getUserId() ? ""
+                                : MyDatabase.MsgOfUser.SUFFIX_FOR_OTHER_USER), rowOid);
                     }
                 }
 
@@ -275,7 +282,7 @@ public class DataInserter {
                 }
                 DownloadData.deleteOtherOfThisMsg(msgId, downloadIds);
             }
-            
+
             if (isNewerThanInDatabase) {
                 // This message is newer than already stored in our database, so count it!
                 execContext.getResult().incrementMessagesCount(execContext.getTimelineType());

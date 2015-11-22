@@ -43,16 +43,25 @@ class MsgOfUserValues {
      * @return
      */
     public static MsgOfUserValues valueOf(long userId, ContentValues values) {
+        return valueOf(userId, "", values);
+    }
+
+    public static MsgOfUserValues valuesOfOtherUser(ContentValues values) {
+        long userId = MyQuery.moveLongKey(MsgOfUser.USER_ID, MsgOfUser.SUFFIX_FOR_OTHER_USER, values, null);
+        return valueOf(userId, MsgOfUser.SUFFIX_FOR_OTHER_USER, values);
+    }
+
+    private static MsgOfUserValues valueOf(long userId, String sourceSuffix, ContentValues values) {
         MsgOfUserValues userValues = new MsgOfUserValues(userId);
         userValues.setMsgId(values.getAsLong(BaseColumns._ID));
-        MyQuery.moveBooleanKey(MsgOfUser.SUBSCRIBED, values, userValues.contentValues);
-        MyQuery.moveBooleanKey(MsgOfUser.FAVORITED, values, userValues.contentValues);
-        MyQuery.moveBooleanKey(MsgOfUser.REBLOGGED, values, userValues.contentValues);
+        MyQuery.moveBooleanKey(MsgOfUser.SUBSCRIBED, sourceSuffix, values, userValues.contentValues);
+        MyQuery.moveBooleanKey(MsgOfUser.FAVORITED, sourceSuffix, values, userValues.contentValues);
+        MyQuery.moveBooleanKey(MsgOfUser.REBLOGGED, sourceSuffix, values, userValues.contentValues);
         // The value is String!
-        MyQuery.moveStringKey(MsgOfUser.REBLOG_OID, values, userValues.contentValues);
-        MyQuery.moveBooleanKey(MsgOfUser.MENTIONED, values, userValues.contentValues);
-        MyQuery.moveBooleanKey(MsgOfUser.REPLIED, values, userValues.contentValues);
-        MyQuery.moveBooleanKey(MsgOfUser.DIRECTED, values, userValues.contentValues);
+        MyQuery.moveStringKey(MsgOfUser.REBLOG_OID, sourceSuffix, values, userValues.contentValues);
+        MyQuery.moveBooleanKey(MsgOfUser.MENTIONED, sourceSuffix, values, userValues.contentValues);
+        MyQuery.moveBooleanKey(MsgOfUser.REPLIED, sourceSuffix, values, userValues.contentValues);
+        MyQuery.moveBooleanKey(MsgOfUser.DIRECTED, sourceSuffix, values, userValues.contentValues);
         return userValues;
     }
 

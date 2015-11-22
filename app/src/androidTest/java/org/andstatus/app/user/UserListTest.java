@@ -29,6 +29,7 @@ import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.msg.ContextMenuItem;
 import org.andstatus.app.msg.TimelineActivity;
+import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.util.MyLog;
 
 import java.util.List;
@@ -61,8 +62,12 @@ public class UserListTest extends ActivityInstrumentationTestCase2<TimelineActiv
         ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<>(this, UserList.class);
         long msgId = MyQuery.oidToId(MyDatabase.OidEnum.MSG_OID, TestSuite.getConversationOriginId(),
                 TestSuite.CONVERSATION_MENTIONS_MESSAGE_OID);
-        String logMsg = "msgId:" + msgId
-                + "; text:'" + MyQuery.msgIdToStringColumnValue(MyDatabase.Msg.BODY, msgId) + "'";
+        String body = MyQuery.msgIdToStringColumnValue(MyDatabase.Msg.BODY, msgId);
+        String logMsg = "msgId:" + msgId + "; text:'" + body + "'";
+
+        List<MbUser> users = MbUser.fromBodyText(TestSuite.getConversationMyAccount().getOrigin(), body, false);
+        assertEquals(logMsg, 3, users.size());
+        assertEquals(logMsg, "unknownUser@example.com", users.get(2).getUserName());
 
         assertTrue("Invoked Context menu for " + logMsg, helper.invokeContextMenuAction4ListItemId(method, msgId, ContextMenuItem.USERS_OF_MESSAGE));
 
@@ -70,7 +75,7 @@ public class UserListTest extends ActivityInstrumentationTestCase2<TimelineActiv
         TestSuite.waitForListLoaded(this, userList, 1);
 
         List<UserListViewItem> listItems = userList.getListLoader().getList();
-        assertEquals(listItems.toString(), 3, listItems.size());
+        assertEquals(listItems.toString(), 5, listItems.size());
 
         ListActivityTestHelper<UserList> userListHelper = new ListActivityTestHelper<>(this, userList);
         userListHelper.clickListAtPosition(method, userListHelper.getPositionOfListItemId(listItems.get(2).getUserId()));

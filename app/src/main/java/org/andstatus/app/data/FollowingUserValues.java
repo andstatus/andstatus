@@ -43,7 +43,7 @@ public class FollowingUserValues {
      */
     public static FollowingUserValues valueOf(long userId, long followingUserId, ContentValues values) {
         FollowingUserValues userValues = new FollowingUserValues(userId, followingUserId);
-        MyQuery.moveBooleanKey(FollowingUser.USER_FOLLOWED, values, userValues.contentValues);
+        MyQuery.moveBooleanKey(FollowingUser.USER_FOLLOWED, "", values, userValues.contentValues);
         return userValues;
     }
     

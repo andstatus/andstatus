@@ -189,7 +189,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
          */
         public static final String MSG_ID =  Msg.MSG_ID;
         public static final String USER_ID = User.USER_ID;
-        
+
         /**
          * The message is in the User's Home timeline
          * i.e. it corresponds to the TIMELINE_TYPE = TIMELINE_TYPE_HOME
@@ -224,6 +224,9 @@ public final class MyDatabase extends SQLiteOpenHelper  {
          * This is Direct message which was sent by (Sender) or to (Recipient) this User
          */
         public static final String DIRECTED = "directed";
+
+        /** It's not in a database, for passing data only */
+        public static final String SUFFIX_FOR_OTHER_USER = "_other";
     }
 
     /**

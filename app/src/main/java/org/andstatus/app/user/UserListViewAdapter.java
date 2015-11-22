@@ -18,26 +18,32 @@ package org.andstatus.app.user;
 
 import android.app.Activity;
 import android.content.Context;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.andstatus.app.R;
+import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.MyUrlSpan;
 
 import java.util.List;
 
-public class UserListViewAdapter extends BaseAdapter {
+class UserListViewAdapter extends BaseAdapter {
     private final Context context;
-    final int listItemLayoutId;
+    private final int listItemLayoutId;
     private final List<UserListViewItem> oUsers;
+    private final boolean showAvatars;
 
     public UserListViewAdapter(Context context, int listItemLayoutId, List<UserListViewItem> oUsers) {
         this.context = context;
         this.listItemLayoutId = listItemLayoutId;
         this.oUsers = oUsers;
+        showAvatars = MyPreferences.showAvatars();
     }
 
     @Override
@@ -60,13 +66,15 @@ public class UserListViewAdapter extends BaseAdapter {
         View view = convertView == null ? newView() : convertView;
         UserListViewItem item = oUsers.get(position);
         ((TextView) view.findViewById(R.id.id)).setText(Long.toString(item.getUserId()));
-        setUsername(item, view);
+        MyUrlSpan.showText(view, R.id.username, item.mUserName + " ("
+                + (TextUtils.isEmpty(item.mRealName) ? " ? " : item.mRealName) + ")", false);
+        if (showAvatars) {
+            showAvatar(item, view);
+        }
+        MyUrlSpan.showText(view, R.id.homepage, item.mHomepage, true);
+        MyUrlSpan.showText(view, R.id.description, item.mDescription, false);
+        MyUrlSpan.showText(view, R.id.uri, item.mUri.toString(), true);
         return view;
-    }
-
-    private void setUsername(UserListViewItem item, View view) {
-        TextView userName = (TextView) view.findViewById(R.id.username);
-        userName.setText(item.mUserName);
     }
 
     private View newView() {
@@ -75,5 +83,10 @@ public class UserListViewAdapter extends BaseAdapter {
             MyLog.w(this, "Context should be from an Activity");
         }
         return inflater.inflate(listItemLayoutId, null);
+    }
+
+    private void showAvatar(UserListViewItem item, View view) {
+        ImageView avatar = (ImageView) view.findViewById(R.id.avatar_image);
+        avatar.setImageDrawable(item.getAvatar());
     }
 }

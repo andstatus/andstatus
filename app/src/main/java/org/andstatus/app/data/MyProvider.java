@@ -74,7 +74,7 @@ public class MyProvider extends ContentProvider {
     @Override
     public int delete(Uri uri, String selection, String[] selectionArgs) {
         SQLiteDatabase db = MyContextHolder.get().getDatabase().getWritableDatabase();
-        int count = 0;
+        int count;
         ParsedUri uriParser = ParsedUri.fromUri(uri);
         switch (uriParser.matched()) {
             case MSG:
@@ -144,6 +144,7 @@ public class MyProvider extends ContentProvider {
 
         ContentValues values;
         MsgOfUserValues msgOfUserValues = new MsgOfUserValues(0);
+        MsgOfUserValues otherUserValues = new MsgOfUserValues(0);
         FollowingUserValues followingUserValues = null;
         long accountUserId = 0;
         
@@ -182,6 +183,7 @@ public class MyProvider extends ContentProvider {
                     values.put(Msg.INS_DATE, now);
                     
                     msgOfUserValues = MsgOfUserValues.valueOf(accountUserId, values);
+                    otherUserValues = MsgOfUserValues.valuesOfOtherUser(values);
                     break;
                     
                 case ORIGIN_ITEM:
@@ -208,6 +210,8 @@ public class MyProvider extends ContentProvider {
             
             msgOfUserValues.setMsgId(rowId);
             msgOfUserValues.insert(db);
+            otherUserValues.setMsgId(rowId);
+            otherUserValues.insert(db);
 
             if (followingUserValues != null) {
                 followingUserValues.followingUserId =  rowId;
@@ -302,7 +306,7 @@ public class MyProvider extends ContentProvider {
 
             case USER:
             case USERLIST:
-                qb.setTables(User.TABLE_NAME);
+                qb.setTables(UserListSql.tablesForList(uri, projection));
                 qb.setProjectionMap(ProjectionMap.USER);
                 break;
 
@@ -406,7 +410,7 @@ public class MyProvider extends ContentProvider {
         SQLiteDatabase db = MyContextHolder.get().getDatabase().getWritableDatabase();
         int count = 0;
         ParsedUri uriParser = ParsedUri.fromUri(uri);
-        long accountUserId = 0;
+        long accountUserId;
         switch (uriParser.matched()) {
             case MSG:
                 count = db.update(Msg.TABLE_NAME, values, selection, selectionArgs);
@@ -417,12 +421,15 @@ public class MyProvider extends ContentProvider {
                 long rowId = uriParser.getMessageId();
                 MsgOfUserValues msgOfUserValues = MsgOfUserValues.valueOf(accountUserId, values);
                 msgOfUserValues.setMsgId(rowId);
+                MsgOfUserValues otherUserValues = MsgOfUserValues.valuesOfOtherUser(values);
+                otherUserValues.setMsgId(rowId);
                 if (values.size() > 0) {
                     count = db.update(Msg.TABLE_NAME, values, BaseColumns._ID + "=" + rowId
                             + (!TextUtils.isEmpty(selection) ? " AND (" + selection + ')' : ""),
                             selectionArgs);
                 }
                 count += msgOfUserValues.update(db);
+                otherUserValues.update(db);
                 break;
 
             case USER:

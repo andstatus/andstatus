@@ -223,7 +223,7 @@ public class ConnectionPumpio extends Connection {
     
     protected String toHtmlIfAllowed(String message) {
         return MyContextHolder.get().persistentOrigins().isHtmlContentAllowed(data.getOriginId()) ?
-            MyHtml.htmLify(message) : message;
+            MyHtml.htmlify(message) : message;
     }
 
     String oidToObjectType(String oid) {

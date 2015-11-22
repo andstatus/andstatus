@@ -16,8 +16,10 @@
 
 package org.andstatus.app.data;
 
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
@@ -42,12 +44,13 @@ public class AvatarDrawable {
         MyLog.v(AvatarDrawable.class, "Loading default avatar");
         Context context = MyContextHolder.get().context();
         if (context != null) {
-            avatar = context.getResources().getDrawable(lightTheme ? R.drawable.ic_action_user_light : R.drawable.ic_action_user);
+            avatar = getDrawableCompat(context,
+                    lightTheme ? R.drawable.ic_action_user_light : R.drawable.ic_action_user);
         }
         return avatar;
     }
 
-    public Drawable getDefaultDrawable() {
+    public static Drawable getDefaultDrawable() {
         return MyTheme.isThemeLight() ? DEFAULT_AVATAR_LIGHT : DEFAULT_AVATAR;
     }
     
@@ -62,5 +65,14 @@ public class AvatarDrawable {
     @Override
     public String toString() {
         return "AvatarDrawable [userId=" + userId + ", " + downloadFile + "]";
+    }
+
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    private static Drawable getDrawableCompat(Context context, int drawableId) {
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)  {
+            return context.getTheme().getDrawable(drawableId);
+        } else {
+            return context.getResources().getDrawable(drawableId);
+        }
     }
 }

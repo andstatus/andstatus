@@ -79,7 +79,7 @@ public class MbUser {
     @Override
     public String toString() {
         String str = MbUser.class.getSimpleName();
-        String members = "oid=" + oid + "; originid=" + originId;
+        String members = "oid=" + oid + "; originId=" + originId;
         if (userId != 0) {
             members += "; id=" + userId;
         }
@@ -90,7 +90,7 @@ public class MbUser {
             members += "; webFingerId=" + webFingerId;
         }
         if (!TextUtils.isEmpty(realName)) {
-            members += "; realname=" + realName;
+            members += "; realName=" + realName;
         }
         if (latestMessage != null) {
             members += "; latest message present";

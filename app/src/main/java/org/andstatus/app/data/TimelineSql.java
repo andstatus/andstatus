@@ -48,7 +48,7 @@ public class TimelineSql {
     /**
      * @param uri the same as uri for
      *            {@link MyProvider#query(Uri, String[], String, String[], String)}
-     * @param projection
+     * @param projection Projection
      * @return String for {@link SQLiteQueryBuilder#setTables(String)}
      */
     static String tablesForTimeline(Uri uri, String[] projection) {
@@ -56,7 +56,7 @@ public class TimelineSql {
         TimelineType tt = uriParser.getTimelineType();
         SelectedUserIds selectedAccounts = new SelectedUserIds(uriParser.isCombined(), uriParser.getAccountUserId());
     
-        Collection<String> columns = new java.util.HashSet<String>(Arrays.asList(projection));
+        Collection<String> columns = new java.util.HashSet<>(Arrays.asList(projection));
     
         String msgTable = Msg.TABLE_NAME;
         String where = "";
@@ -71,9 +71,9 @@ public class TimelineSql {
                         + " FROM " + FollowingUser.TABLE_NAME
                         + " WHERE (" + MyDatabase.User.LINKED_USER_ID + selectedAccounts.getSql()
                         + " AND " + MyDatabase.FollowingUser.USER_FOLLOWED + "=1 )"
-                        + ") as fuser";
+                        + ") as fUser";
                 linkedUserDefined = true;
-                boolean defineAuthorName = !authorNameDefined && columns.contains(MyDatabase.User.AUTHOR_NAME);
+                boolean defineAuthorName = columns.contains(MyDatabase.User.AUTHOR_NAME);
                 if (defineAuthorName) {
                     authorNameDefined = true;
                     authorTableName = "u1";
@@ -92,7 +92,7 @@ public class TimelineSql {
                 msgTable  += " LEFT JOIN " + Msg.TABLE_NAME + " AS " + ProjectionMap.MSG_TABLE_ALIAS
                         + " ON ("
                         + ProjectionMap.MSG_TABLE_ALIAS + "." + MyDatabase.Msg.SENDER_ID
-                        + "=fuser." + MyDatabase.FollowingUser.FOLLOWING_USER_ID
+                        + "=fUser." + MyDatabase.FollowingUser.FOLLOWING_USER_ID
                         + " AND " + ProjectionMap.MSG_TABLE_ALIAS + "." + BaseColumns._ID
                         + "=u1." + MyDatabase.User.USER_MSG_ID
                         + ")";
@@ -178,9 +178,9 @@ public class TimelineSql {
                     + MyDatabase.Download.FILE_NAME
                     + " FROM " + MyDatabase.Download.TABLE_NAME + ") AS " + ProjectionMap.AVATAR_IMAGE_TABLE_ALIAS 
                     + " ON "
-                    + "av." + Download.DOWNLOAD_STATUS 
+                    + ProjectionMap.AVATAR_IMAGE_TABLE_ALIAS + "." + Download.DOWNLOAD_STATUS
                     + "=" + DownloadStatus.LOADED.save() + " AND " 
-                    + "av." + MyDatabase.Download.USER_ID 
+                    + ProjectionMap.AVATAR_IMAGE_TABLE_ALIAS + "." + MyDatabase.Download.USER_ID
                     + "=" + authorTableName + "." + BaseColumns._ID;
         }
         if (columns.contains(MyDatabase.Download.IMAGE_FILE_NAME)) {
@@ -207,9 +207,9 @@ public class TimelineSql {
         if (columns.contains(MyDatabase.User.IN_REPLY_TO_NAME)) {
             tables = "(" + tables + ") LEFT OUTER JOIN (SELECT " + BaseColumns._ID + ", "
                     + TimelineSql.userNameField() + " AS " + MyDatabase.User.IN_REPLY_TO_NAME
-                    + " FROM " + User.TABLE_NAME + ") AS prevauthor ON "
+                    + " FROM " + User.TABLE_NAME + ") AS prevAuthor ON "
                     + ProjectionMap.MSG_TABLE_ALIAS + "." + MyDatabase.Msg.IN_REPLY_TO_USER_ID
-                    + "=prevauthor." + BaseColumns._ID;
+                    + "=prevAuthor." + BaseColumns._ID;
         }
         if (columns.contains(MyDatabase.User.RECIPIENT_NAME)) {
             tables = "(" + tables + ") LEFT OUTER JOIN (SELECT " + BaseColumns._ID + ", "
@@ -224,11 +224,11 @@ public class TimelineSql {
                     + MyDatabase.FollowingUser.FOLLOWING_USER_ID + ", "
                     + MyDatabase.FollowingUser.USER_FOLLOWED + " AS "
                     + MyDatabase.FollowingUser.AUTHOR_FOLLOWED
-                    + " FROM " + FollowingUser.TABLE_NAME + ") AS followingauthor ON ("
-                    + "followingauthor." + MyDatabase.FollowingUser.USER_ID + "=" + MyDatabase.User.LINKED_USER_ID
+                    + " FROM " + FollowingUser.TABLE_NAME + ") AS followingAuthor ON ("
+                    + "followingAuthor." + MyDatabase.FollowingUser.USER_ID + "=" + MyDatabase.User.LINKED_USER_ID
                     + " AND "
                     + ProjectionMap.MSG_TABLE_ALIAS + "." + MyDatabase.Msg.AUTHOR_ID
-                    + "=followingauthor." + MyDatabase.FollowingUser.FOLLOWING_USER_ID
+                    + "=followingAuthor." + MyDatabase.FollowingUser.FOLLOWING_USER_ID
                     + ")";
         }
         if (columns.contains(MyDatabase.FollowingUser.SENDER_FOLLOWED)) {
@@ -237,11 +237,11 @@ public class TimelineSql {
                     + MyDatabase.FollowingUser.FOLLOWING_USER_ID + ", "
                     + MyDatabase.FollowingUser.USER_FOLLOWED + " AS "
                     + MyDatabase.FollowingUser.SENDER_FOLLOWED
-                    + " FROM " + FollowingUser.TABLE_NAME + ") AS followingsender ON ("
-                    + "followingsender." + MyDatabase.FollowingUser.USER_ID + "=" + MyDatabase.User.LINKED_USER_ID
+                    + " FROM " + FollowingUser.TABLE_NAME + ") AS followingSender ON ("
+                    + "followingSender." + MyDatabase.FollowingUser.USER_ID + "=" + MyDatabase.User.LINKED_USER_ID
                     + " AND "
                     + ProjectionMap.MSG_TABLE_ALIAS + "." + MyDatabase.Msg.SENDER_ID
-                    + "=followingsender." + MyDatabase.FollowingUser.FOLLOWING_USER_ID
+                    + "=followingSender." + MyDatabase.FollowingUser.FOLLOWING_USER_ID
                     + ")";
         }
         return tables;
@@ -255,7 +255,7 @@ public class TimelineSql {
     }
 
     private static List<String> getBaseProjection() {
-        List<String> columnNames = new ArrayList<String>();
+        List<String> columnNames = new ArrayList<>();
         columnNames.add(Msg._ID);
         columnNames.add(User.AUTHOR_NAME);
         columnNames.add(Msg.BODY);
@@ -327,7 +327,7 @@ public class TimelineSql {
         return userName;
     }
 
-    public static String userNameField() {
+    private static String userNameField() {
         UserInTimeline userInTimeline = MyPreferences.userInTimeline();
         return MyQuery.userNameField(userInTimeline);
     }

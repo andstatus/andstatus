@@ -31,8 +31,8 @@ public class MyHtmlTest extends InstrumentationTestCase {
     public void testHtmlify() {
         String string1 = "This message\nhas newline";
         String string2 = "This message<br />has newline";
-        assertEquals(string2, MyHtml.htmLify(string1));
-        assertEquals(string2, MyHtml.htmLify(string2));
+        assertEquals(string2, MyHtml.htmlify(string1));
+        assertEquals(string2, MyHtml.htmlify(string2));
     }
 
     public void testHasHtmlMarkup() {

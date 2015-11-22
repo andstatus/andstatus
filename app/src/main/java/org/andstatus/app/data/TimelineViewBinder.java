@@ -31,6 +31,7 @@ import org.andstatus.app.R;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.MyDatabase.Msg;
 import org.andstatus.app.data.MyDatabase.User;
+import org.andstatus.app.util.MyUrlSpan;
 import org.andstatus.app.util.RelativeTime;
 
 /**
@@ -95,21 +96,19 @@ public class TimelineViewBinder implements ViewBinder {
     }
 
     private void setMessageId(Cursor cursor, int columnIndex, TextView view) {
+        String id = null;
         if (columnIndex >= 0) {
-            String id = cursor.getString(columnIndex);
-            if (id != null) {
-                view.setText(id);
-            }
+            id = cursor.getString(columnIndex);
         }
+        view.setText(TextUtils.isEmpty(id) ? "0" : id);
     }
 
     private void setMessageBody(Cursor cursor, int columnIndex, TextView view) {
+        String body = null;
         if (columnIndex >= 0) {
-            String body = cursor.getString(columnIndex);
-            if (body != null) {
-                view.setText(Html.fromHtml(body));
-            }
+            body = cursor.getString(columnIndex);
         }
+        MyUrlSpan.showText(view, body, false);
     }
     
     private void setMessageDetails(Cursor cursor, int columnIndex, TextView view) {
@@ -136,7 +135,7 @@ public class TimelineViewBinder implements ViewBinder {
             replyToName = "...";
         }
         if (!TextUtils.isEmpty(replyToName)) {
-            messageDetails.append(" " + String.format(
+            messageDetails.append(" ").append(String.format(
                     context.getText(R.string.message_source_in_reply_to).toString(),
                     replyToName));
         }
@@ -159,7 +158,7 @@ public class TimelineViewBinder implements ViewBinder {
         if (ind >= 0) {
             DownloadStatus status = DownloadStatus.load(cursor.getLong(ind));
             if (status != DownloadStatus.LOADED) {
-                messageDetails.append(" (" + status.getTitle(context) + ")");
+                messageDetails.append(" (").append(status.getTitle(context)).append(")");
             }
         }
     }

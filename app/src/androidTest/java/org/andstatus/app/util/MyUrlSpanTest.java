@@ -52,8 +52,7 @@ public class MyUrlSpanTest extends ActivityInstrumentationTestCase2<HelpActivity
                         + " and this "
                         + "feed://radio.example.org/archives.xml"
                         + " two links";
-                textView.setText(malformed);
-                MyUrlSpan.addLinks(textView);
+                MyUrlSpan.showText(textView, malformed, true);
                 SpannableString spannable=(SpannableString)textView.getText();
                 URLSpan[] spans= spannable.getSpans(0, spannable.length(), URLSpan.class);
                 for (URLSpan span : spans) {

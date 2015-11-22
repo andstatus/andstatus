@@ -24,6 +24,7 @@ import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.util.I18n;
+import org.andstatus.app.util.MyHtml;
 
 /**
  *  List of users for different contexts 
@@ -34,6 +35,7 @@ public class UserList extends LoadableListActivity {
     private UserListType mUserListType = UserListType.UNKNOWN;
     private MyAccount ma = MyAccount.getEmpty(MyContextHolder.get(), "");
     private long mSelectedMessageId = 0;
+    private boolean mIsListCombined = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,11 +45,12 @@ public class UserList extends LoadableListActivity {
                 .fromUserId(getParsedUri().getAccountUserId());
         mUserListType = getParsedUri().getUserListType();
         mSelectedMessageId = getParsedUri().getMessageId();
+        mIsListCombined = getParsedUri().isCombined();
     }
 
     @Override
     protected SyncLoader newSyncLoader() {
-        return new UserListLoader(mUserListType, ma, mSelectedMessageId);
+        return new UserListLoader(mUserListType, ma, mSelectedMessageId, mIsListCombined);
     }
 
     @Override
@@ -62,7 +65,7 @@ public class UserList extends LoadableListActivity {
 
     @Override
     protected CharSequence getCustomTitle() {
-        mSubtitle = I18n.trimTextAt(getListLoader().messageBody, 80);
+        mSubtitle = I18n.trimTextAt(MyHtml.fromHtml(getListLoader().messageBody), 80);
         return mUserListType.getTitle(this);
     }
 

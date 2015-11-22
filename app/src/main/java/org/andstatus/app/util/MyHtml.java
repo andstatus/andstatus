@@ -26,18 +26,19 @@ public class MyHtml {
         // Empty
     }
 
-    public static String htmLify(String messageIn) {
+    public static String htmlify(String messageIn) {
         return messageIn.replaceAll("(\r\n|\n)", "<br />");
     }
 
-    private static String NEWLINE_SEARCH = "\n";
-    private static String NEWLINE_REPLACE = "\n";
+    /** Strips HTML markup from the String */
     public static String fromHtml(String text) {
         if (TextUtils.isEmpty(text)) {
             return "";
         } else if ( MyHtml.hasHtmlMarkup(text)) {
             String text2 = text.trim();
             text2 = Html.fromHtml(text2).toString().trim();
+            String NEWLINE_SEARCH = "\n";
+            String NEWLINE_REPLACE = "\n";
             text2 = text2.replaceAll(NEWLINE_SEARCH + "\\s*" + NEWLINE_SEARCH, NEWLINE_REPLACE);
             if (text2.endsWith(NEWLINE_REPLACE)) {
                 text2 = text2.substring(0, text2.length() - NEWLINE_REPLACE.length());
@@ -58,12 +59,4 @@ public class MyHtml {
         return has; 
     }
 
-    public static boolean hasUrlSpans (Spanned spanned) {
-        boolean has = false;
-        if (spanned != null){
-            URLSpan[] spans = spanned.getSpans(0, spanned.length(), URLSpan.class);
-            has = spans != null && spans.length > 0;
-        }
-        return has; 
-    }
 }

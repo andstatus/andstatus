@@ -37,7 +37,7 @@ public class ProjectionMap {
      * Projection map for the {@link MyDatabase.Msg} table
      * @see android.database.sqlite.SQLiteQueryBuilder#setProjectionMap
      */
-    static final Map<String, String> MSG = new HashMap<String, String>();
+    static final Map<String, String> MSG = new HashMap<>();
     static {
         MSG.put(BaseColumns._ID, MSG_TABLE_ALIAS + "." + BaseColumns._ID + " AS " + BaseColumns._ID);
         MSG.put(Msg.MSG_ID, MSG_TABLE_ALIAS + "." + BaseColumns._ID + " AS " + Msg.MSG_ID);
@@ -79,14 +79,19 @@ public class ProjectionMap {
     /**
      * Projection map for the {@link MyDatabase.User} table
      */
-    static final Map<String, String> USER = new HashMap<String, String>();
+    static final Map<String, String> USER = new HashMap<>();
     static {
         USER.put(BaseColumns._ID, User.TABLE_NAME + "." + BaseColumns._ID + " AS " + BaseColumns._ID);
         USER.put(User.USER_ID, User.TABLE_NAME + "." + BaseColumns._ID + " AS " + User.USER_ID);
         USER.put(User.USER_OID, User.USER_OID);
         USER.put(User.ORIGIN_ID, User.ORIGIN_ID);
         USER.put(User.USERNAME, User.USERNAME);
+        USER.put(User.REAL_NAME, User.REAL_NAME);
+        USER.put(User.DESCRIPTION, User.DESCRIPTION);
+        USER.put(User.WEBFINGER_ID, User.WEBFINGER_ID);
+        USER.put(User.HOMEPAGE, User.HOMEPAGE);
         USER.put(User.AVATAR_URL, User.AVATAR_URL);
+        USER.put(Download.AVATAR_FILE_NAME, AVATAR_IMAGE_TABLE_ALIAS + "." + Download.FILE_NAME + " AS " + Download.AVATAR_FILE_NAME);
         USER.put(User.URL, User.URL);
         USER.put(User.CREATED_DATE, User.CREATED_DATE);
         USER.put(User.INS_DATE, User.INS_DATE);

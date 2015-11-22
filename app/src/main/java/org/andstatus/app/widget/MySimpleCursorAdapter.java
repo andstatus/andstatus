@@ -19,7 +19,7 @@ package org.andstatus.app.widget;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.StaleDataException;
-import android.graphics.drawable.Drawable;
+import android.support.annotation.NonNull;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.SimpleCursorAdapter;
@@ -32,11 +32,13 @@ import org.andstatus.app.data.MyDatabase.Msg;
 import org.andstatus.app.util.MyLog;
 
 public class MySimpleCursorAdapter extends SimpleCursorAdapter {
-    private Context context;
-    private int layout;
-    private Cursor mCursor;
-    
-    private static ThreadLocal<Boolean> ignoreGetItemId = new ThreadLocal<Boolean>() {
+    private final Context context;
+    private final int layout;
+    private final Cursor mCursor;
+    private final boolean markReplies = MyPreferences.getBoolean(
+            MyPreferences.KEY_MARK_REPLIES_IN_TIMELINE, false);
+
+    private static final ThreadLocal<Boolean> ignoreGetItemId = new ThreadLocal<Boolean>() {
         @Override
         protected Boolean initialValue() {
             return false;
@@ -70,32 +72,32 @@ public class MySimpleCursorAdapter extends SimpleCursorAdapter {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         View view = null;
-        if (mCursor == null) {
-            // Do nothing
-        } else if (mCursor.isClosed()) {
-            MyLog.w(this,
-                    MyLog.getStackTrace(new IllegalStateException("getView, pos=" + position
-                            + " Closed cursor")));
-        } else {
-            try {
-                view = super.getView(position, convertView, parent);
-            } catch (IllegalStateException e) {
+        if (mCursor != null) {
+            if (mCursor.isClosed()) {
                 MyLog.w(this,
                         MyLog.getStackTrace(new IllegalStateException("getView, pos=" + position
-                                + " Caused java.lang.IllegalStateException")), e);
-            } catch (StaleDataException e) {
-                MyLog.w(this,
-                        MyLog.getStackTrace(new IllegalStateException("getView, pos=" + position
-                                + " Caused StaleDataException")), e);
+                                + " Closed cursor")));
+            } else {
+                try {
+                    view = super.getView(position, convertView, parent);
+                } catch (IllegalStateException e) {
+                    MyLog.w(this,
+                            MyLog.getStackTrace(new IllegalStateException("getView, pos=" + position
+                                    + " Caused java.lang.IllegalStateException")), e);
+                } catch (StaleDataException e) {
+                    MyLog.w(this,
+                            MyLog.getStackTrace(new IllegalStateException("getView, pos=" + position
+                                    + " Caused StaleDataException")), e);
+                }
             }
         }
         if (view == null) {
-            view = getEmptyView();
+            view = newEmptyView();
         }
         return view;
     }
 
-    private View getEmptyView() {
+    private View newEmptyView() {
         return View.inflate(context, layout, null); 
     }
 
@@ -107,29 +109,21 @@ public class MySimpleCursorAdapter extends SimpleCursorAdapter {
         mCursor = c;
     }
 
-    private boolean markReplies = MyPreferences.getBoolean(
-            MyPreferences.KEY_MARK_REPLIES_IN_TIMELINE, false);
-    
-
     @Override
     protected void onContentChanged() {
         // Ignore at this level. Will be handled elsewhere...
     }
 
     @Override
-    public void bindView(View view, Context context, Cursor cursor) {
-        if (!markReplies || !markReply(view, context, cursor)) {
-            setBackgroundCompat(view, null);
+    public void bindView(@NonNull View view, Context context, @NonNull Cursor cursor) {
+        if (!markReplies || !markReply(view, cursor)) {
+            view.setBackgroundResource(0);
             view.setPadding(0, 0, 0, 0);
         }
         super.bindView(view, context, cursor);
     }
 
-    public static void setBackgroundCompat(View view, Drawable drawable) {
-        view.setBackground(drawable); 
-    }
-
-    private boolean markReply(View view, Context context, Cursor cursor) {
+    private boolean markReply(View view, Cursor cursor) {
         boolean backgroundSet = false;
         int columnIndex2 = cursor.getColumnIndex(Msg.IN_REPLY_TO_USER_ID);
         if (columnIndex2 >= 0) {
@@ -137,9 +131,9 @@ public class MySimpleCursorAdapter extends SimpleCursorAdapter {
             if (MyContextHolder.get().persistentAccounts().fromUserId(replyToUserId).isValid()) {
                 // For some reason, referring to the style drawable doesn't work
                 // (to "?attr:replyBackground" )
-                setBackgroundCompat(view, context.getResources().getDrawable(
-                        MyTheme.isThemeLight() ? R.drawable.reply_timeline_background_light
-                                : R.drawable.reply_timeline_background));
+                view.setBackgroundResource(MyTheme.isThemeLight()
+                        ? R.drawable.reply_timeline_background_light
+                        : R.drawable.reply_timeline_background);
                 backgroundSet = true;
             }
         }
