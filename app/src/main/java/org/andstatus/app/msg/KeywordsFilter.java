@@ -29,7 +29,7 @@ public class KeywordsFilter {
         if (TextUtils.isEmpty(rawKeywords)) {
             return;
         }
-        for (String item0 : rawKeywords.split("[, ]")) {
+        for (String item0 : rawKeywords.toLowerCase().split("[, ]")) {
             String item = item0.trim();
             if (!TextUtils.isEmpty(item) && !keywords.contains(item)) {
                 keywords.add(item);
