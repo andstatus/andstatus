@@ -22,26 +22,30 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class KeywordsFilter {
-    private final List<String> keywords;
+    private final List<String> keywordsToFilter;
+    private final List<String> keywordsRaw;
 
-    public KeywordsFilter(String rawKeywords) {
-        keywords = new ArrayList<>();
-        if (TextUtils.isEmpty(rawKeywords)) {
+    public KeywordsFilter(String keywordsIn) {
+        keywordsToFilter = new ArrayList<>();
+        keywordsRaw = new ArrayList<>();       
+        if (TextUtils.isEmpty(keywordsIn)) {
             return;
         }
-        for (String item0 : rawKeywords.toLowerCase().split("[, ]")) {
-            String item = item0.trim();
-            if (!TextUtils.isEmpty(item) && !keywords.contains(item)) {
-                keywords.add(item);
+        for (String itemRaw : keywordsIn.split("[, ]")) {
+            itemRaw = itemRaw.trim();
+            String item = itemRaw.toLowerCase();
+            if (!TextUtils.isEmpty(item) && !keywordsToFilter.contains(item)) {
+                keywordsToFilter.add(item);
+                keywordsRaw.add(itemRaw);
             }
         }
     }
 
     public boolean matched(String s) {
-        if (keywords.isEmpty() || TextUtils.isEmpty(s)) {
+        if (keywordsToFilter.isEmpty() || TextUtils.isEmpty(s)) {
             return false;
         }
-        for (String keyword : keywords) {
+        for (String keyword : keywordsToFilter) {
             if (s.contains(keyword)) {
                 return true;
             }
@@ -50,13 +54,13 @@ public class KeywordsFilter {
     }
 
     public boolean isEmpty() {
-        return keywords.isEmpty();
+        return keywordsToFilter.isEmpty();
     }
 
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        for (String keyword : keywords) {
+        for (String keyword : keywordsRaw) {
             if (builder.length() > 0) {
                 builder.append(", ");
             }

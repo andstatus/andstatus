@@ -318,8 +318,11 @@ public class TimelineCursorLoader1 extends Loader<Cursor> implements MyServiceEv
                     MyPreferences.getString(MyPreferences.KEY_FILTER_HIDE_MESSAGES_BASED_ON_KEYWORDS, ""));
             boolean hideRepliesNotToMeOrFriends = getParams().getTimelineType() == TimelineType.HOME
                     && MyPreferences.getBoolean(MyPreferences.KEY_FILTER_HIDE_REPLIES_NOT_TO_ME_OR_FRIENDS, false);
+            String searchQuery = TextUtils.isEmpty(getParams().mSearchQuery) ? "" 
+                : getParams().mSearchQuery.toLowerCase();
+            
             if (keywordsFilter.isEmpty() && !hideRepliesNotToMeOrFriends
-                    && TextUtils.isEmpty(getParams().mSearchQuery)) {
+                    && TextUtils.isEmpty(searchQuery)) {
                 if (cursor != null) {
                     getParams().rowsLoaded = cursor.getCount();
                 }
@@ -345,8 +348,8 @@ public class TimelineCursorLoader1 extends Loader<Cursor> implements MyServiceEv
                                 if (ind == indBody && row[ind] != null) {
                                     body = MyHtml.fromHtml(row[ind].toString()).toLowerCase();
                                     skip = keywordsFilter.matched(body);
-                                    if (!skip && !TextUtils.isEmpty(getParams().mSearchQuery)) {
-                                        skip = !body.contains(getParams().mSearchQuery);
+                                    if (!skip && !TextUtils.isEmpty(searchQuery)) {
+                                        skip = !body.contains(searchQuery);
                                     }
                                 } else if (ind == indInReplyToUserId && hideRepliesNotToMeOrFriends && row[ind] != null) {
                                     inReplyToUserId = Long.parseLong(row[ind].toString());
