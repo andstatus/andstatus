@@ -32,7 +32,7 @@ public class MbUserTest extends InstrumentationTestCase {
         TestSuite.initializeWithData(this);
     }
 
-    public void test() {
+    public void testFromBodyText() {
         Origin origin = MyContextHolder.get().persistentOrigins().fromName(TestSuite.GNUSOCIAL_TEST_ORIGIN_NAME);
         String webFingerId3 = "anotherUser@somedomain.org";
         String body = "@" + TestSuite.GNUSOCIAL_TEST_ACCOUNT_USERNAME + " @" + TestSuite.GNUSOCIAL_TEST_ACCOUNT2_USERNAME
@@ -44,5 +44,21 @@ public class MbUserTest extends InstrumentationTestCase {
         assertEquals(msgLog, TestSuite.GNUSOCIAL_TEST_ACCOUNT_USERNAME, users.get(0).getUserName());
         assertEquals(msgLog, TestSuite.GNUSOCIAL_TEST_ACCOUNT2_USERNAME, users.get(1).getUserName());
         assertEquals(msgLog, webFingerId3, users.get(2).getWebFingerId());
+    }
+
+    public void testIsWebFingerIdValid() {
+        checkWebFingerId("", false);
+        checkWebFingerId("someUser.", false);
+        checkWebFingerId("someUser ", false);
+        checkWebFingerId("some.user", false);
+        checkWebFingerId("some.user@example.com", true);
+        checkWebFingerId("t131t@identi.ca/PumpIo", false);
+        checkWebFingerId("some@example.com.", false);
+        checkWebFingerId("some@user", true);
+    }
+
+    private void checkWebFingerId(String userName, boolean valid) {
+        assertEquals("Username '" + userName + "' " + (valid ? "is valid" : "invalid"), valid,
+                MbUser.isWebFingerIdValid(userName));
     }
 }

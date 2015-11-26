@@ -48,7 +48,7 @@ public enum OriginType {
 
     private static final String BASIC_PATH_DEFAULT = "api";
     private static final String OAUTH_PATH_DEFAULT = "oauth";
-    private static final String USERNAME_REGEX_DEFAULT = "[a-zA-Z_0-9/\\.\\-\\(\\)]+";
+    private static final String USERNAME_REGEX_DEFAULT = "[a-zA-Z_0-9]+([/\\.\\-\\(\\)]*[a-zA-Z_0-9]+)*";
     public static final OriginType ORIGIN_TYPE_DEFAULT = TWITTER;
     public static final int TEXT_LIMIT_MAXIMUM = 5000;
 
@@ -131,7 +131,7 @@ public enum OriginType {
                 canSetUrlOfOrigin = false;
                 shouldSetNewUsernameManuallyIfOAuth = true;
                 shouldSetNewUsernameManuallyNoOAuth = false;
-                usernameRegEx = "[a-zA-Z_0-9/\\.\\-\\(\\)]+@[a-zA-Z_0-9/\\.\\-\\(\\)]+";
+                usernameRegEx = USERNAME_REGEX_DEFAULT + "@" + USERNAME_REGEX_DEFAULT;
                 // This is not a hard limit, just for convenience
                 textLimitDefault = TEXT_LIMIT_MAXIMUM;
                 basicPath = BASIC_PATH_DEFAULT;

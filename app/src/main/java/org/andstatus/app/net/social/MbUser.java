@@ -37,7 +37,8 @@ import java.util.List;
  * @author yvolk@yurivolkov.com
  */
 public class MbUser {
-    public static final String WEBFINGER_ID_REGEX = "[a-zA-Z_0-9/\\.\\-\\(\\)]+@[a-zA-Z_0-9/\\.\\-\\(\\)]+";
+    private static final String USERNAME_REGEX = "[a-zA-Z_0-9]+([\\.\\-]*[a-zA-Z_0-9]+)*";
+    public static final String WEBFINGER_ID_REGEX = USERNAME_REGEX + "@" + USERNAME_REGEX;
     public String oid="";
     private String userName="";
     private String webFingerId="";

@@ -204,4 +204,29 @@ public class OriginTest extends InstrumentationTestCase {
     private void checkOneHost(String out, String in, boolean ssl) {
         assertEquals(out, new Origin.Builder(OriginType.GNUSOCIAL).setHostOrUrl(in).setSsl(ssl).build().getUrl().toExternalForm());
     }
+
+    public void testUsernameIsValid() {
+        Origin origin = MyContextHolder.get().persistentOrigins().fromName(TestSuite.GNUSOCIAL_TEST_ORIGIN_NAME);
+        checkUsernameIsValid(origin, "", false);
+        checkUsernameIsValid(origin, "someUser.", false);
+        checkUsernameIsValid(origin, "someUser ", false);
+        checkUsernameIsValid(origin, "some.user", true);
+        checkUsernameIsValid(origin, "some.user/GnuSocial", true);
+        checkUsernameIsValid(origin, "some@user", false);
+
+        origin = MyContextHolder.get().persistentOrigins().fromName(TestSuite.PUMPIO_ORIGIN_NAME);
+        checkUsernameIsValid(origin, "", false);
+        checkUsernameIsValid(origin, "someUser.", false);
+        checkUsernameIsValid(origin, "someUser ", false);
+        checkUsernameIsValid(origin, "some.user", false);
+        checkUsernameIsValid(origin, "some.user@example.com", true);
+        checkUsernameIsValid(origin, "t131t@identi.ca/PumpIo", true);
+        checkUsernameIsValid(origin, "some@example.com.", false);
+        checkUsernameIsValid(origin, "some@user", true);
+    }
+
+    private void checkUsernameIsValid(Origin origin, String userName, boolean valid) {
+        assertEquals("Username '" + userName + "' " + (valid ? "is valid" : "invalid"), valid,
+                origin.isUsernameValid(userName));
+    }
 }
