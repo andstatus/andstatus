@@ -156,6 +156,7 @@
   <string name="fetch_frequency_entries_1_day">day</string>
   <string name="filters_title">Filters</string>
   <string name="filters_summary">Global filters to be applied to all messages</string>
+  <string name="followed_by">Followed by</string>
   <string name="get_open_instances_title">Get Open Instances</string>
   <string name="header_accounts">Accounts</string>
   <string name="header_add_new_account">Add new account</string>

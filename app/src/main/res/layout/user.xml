@@ -45,12 +45,18 @@
             tools:text="I am an ordinary guy, interested in computer science"/>
 
         <TextView
-            android:id="@+id/uri"
+            android:id="@+id/profile_url"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             style="@style/messageBodyAppearance"
             tools:text="http://mysite.org/user35/profile"/>
 
+        <TextView
+            android:id="@+id/followed_by"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/messageDetailsAppearance"
+            tools:text="Followed by andstatus, yvolk"/>
     </LinearLayout>
 
     <ImageView

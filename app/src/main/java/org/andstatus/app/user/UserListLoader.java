@@ -141,6 +141,7 @@ public class UserListLoader implements SyncLoader {
         item.mbUser.realName = DbUtils.getNotNullStringColumn(c, MyDatabase.User.REAL_NAME);
         item.mbUser.setHomepage(DbUtils.getNotNullStringColumn(c, MyDatabase.User.HOMEPAGE));
         item.mbUser.setDescription(DbUtils.getNotNullStringColumn(c, MyDatabase.User.DESCRIPTION));
+        item.myFollowers = MyQuery.getMyFollowersOf(userId);
         if (MyPreferences.showAvatars()) {
             item.mAvatarDrawable = new AvatarDrawable(item.getUserId(),
                     DbUtils.getNotNullStringColumn(c, MyDatabase.Download.AVATAR_FILE_NAME));

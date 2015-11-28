@@ -22,6 +22,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteDoneException;
 import android.database.sqlite.SQLiteStatement;
 import android.provider.BaseColumns;
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import org.andstatus.app.context.MyContextHolder;
@@ -500,28 +501,51 @@ public class MyQuery {
     }
 
     /**
-     * Following users' Id's (Friends of the specified User) stored in the database
-     * @return IDs, the set is empty if no friends
+     * Following users' IDs (Friends of the specified User) stored in the database
      */
+    @NonNull
     public static Set<Long> getIdsOfUsersFollowedBy(long userId) {
-        Set<Long> friends = new HashSet<>();
         String where = MyDatabase.FollowingUser.USER_ID + "=" + userId
                 + " AND " + MyDatabase.FollowingUser.USER_FOLLOWED + "=1";
         String sql = "SELECT " + MyDatabase.FollowingUser.FOLLOWING_USER_ID 
                 + " FROM " + FollowingUser.TABLE_NAME 
                 + " WHERE " + where;
-        
+
+        return getLongs(sql);
+    }
+
+    @NonNull
+    private static Set<Long> getLongs(String sql) {
+        Set<Long> ids = new HashSet<>();
         SQLiteDatabase db = MyContextHolder.get().getDatabase().getWritableDatabase();
         Cursor c = null;
         try {
             c = db.rawQuery(sql, null);
             while (c.moveToNext()) {
-                friends.add(c.getLong(0));
+                ids.add(c.getLong(0));
             }
         } finally {
             DbUtils.closeSilently(c);
         }
-        return friends;
+        return ids;
+    }
+
+    /**
+     * IDs of MyAccounts' userIDs, who follow the specified User
+     */
+    @NonNull
+    public static Set<Long> getMyFollowersOf(long userId) {
+        SelectedUserIds selectedAccounts = new SelectedUserIds(true,
+                MyContextHolder.get().persistentAccounts().getCurrentAccountUserId());
+
+        String where = MyDatabase.FollowingUser.USER_ID + selectedAccounts.getSql()
+                + " AND " + MyDatabase.FollowingUser.FOLLOWING_USER_ID + "=" + userId
+                + " AND " + MyDatabase.FollowingUser.USER_FOLLOWED + "=1";
+        String sql = "SELECT " + FollowingUser.USER_ID
+                + " FROM " + FollowingUser.TABLE_NAME
+                + " WHERE " + where;
+
+        return getLongs(sql);
     }
 
     /**

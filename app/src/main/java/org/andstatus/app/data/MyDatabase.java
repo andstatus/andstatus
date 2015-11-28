@@ -359,7 +359,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
     }
 
     /**
-     * Following users for the {@link FollowingUser#USER_ID}. 
+     * Users, whom the {@link FollowingUser#USER_ID} is following
      * I.e. this is a list of user IDs for every user the specified 
      * (by {@link FollowingUser#USER_ID}) user is following (otherwise known as their "friends"). 
      */
@@ -367,8 +367,14 @@ public final class MyDatabase extends SQLiteOpenHelper  {
         public static final String TABLE_NAME = FollowingUser.class.getSimpleName().toLowerCase(Locale.US);
         private FollowingUser() {
         }
-        
+
+        /**
+         * Who is following
+         */
         public static final String USER_ID = User.USER_ID;
+        /**
+         * Friend by {@link #USER_ID} (is followed by {@link #USER_ID})
+         */
         public static final String FOLLOWING_USER_ID = "following_user_id";
         /**
          * two state (1/0) flag showing if {@link FollowingUser#USER_ID} is following {@link FollowingUser#FOLLOWING_USER_ID}

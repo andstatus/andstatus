@@ -27,6 +27,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.andstatus.app.R;
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.UserInTimeline;
 import org.andstatus.app.util.MyLog;
@@ -79,7 +80,8 @@ class UserListViewAdapter extends BaseAdapter {
         }
         MyUrlSpan.showText(view, R.id.homepage, item.mbUser.getHomepage(), true);
         MyUrlSpan.showText(view, R.id.description, item.mbUser.getDescription(), false);
-        MyUrlSpan.showText(view, R.id.uri, item.mbUser.getProfileUrl().toString(), true);
+        MyUrlSpan.showText(view, R.id.profile_url, item.mbUser.getProfileUrl().toString(), true);
+        showMyFollowers(view, item);
         return view;
     }
 
@@ -94,5 +96,22 @@ class UserListViewAdapter extends BaseAdapter {
     private void showAvatar(UserListViewItem item, View view) {
         ImageView avatar = (ImageView) view.findViewById(R.id.avatar_image);
         avatar.setImageDrawable(item.getAvatar());
+    }
+
+    private void showMyFollowers(View view, UserListViewItem item) {
+        StringBuilder builder = new StringBuilder();
+        if (!item.myFollowers.isEmpty()) {
+            int count = 0;
+            builder.append(context.getText(R.string.followed_by));
+            for (long userId : item.myFollowers) {
+                if (count == 0) {
+                    builder.append(" ");
+                } else {
+                    builder.append(", ");
+                }
+                builder.append(MyContextHolder.get().persistentAccounts().fromUserId(userId).getAccountName());
+            }
+        }
+        MyUrlSpan.showText(view, R.id.followed_by, builder.toString(), false);
     }
 }

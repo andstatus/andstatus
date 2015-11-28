@@ -24,10 +24,14 @@ import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.origin.Origin;
 
+import java.util.HashSet;
+import java.util.Set;
+
 public class UserListViewItem {
     boolean populated = false;
     final MbUser mbUser;
     AvatarDrawable mAvatarDrawable = null;
+    Set<Long> myFollowers = new HashSet<>();
 
     @Override
     public boolean equals(Object o) {
