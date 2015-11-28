@@ -28,6 +28,7 @@ import android.widget.TextView;
 
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.context.UserInTimeline;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyUrlSpan;
 
@@ -38,6 +39,8 @@ class UserListViewAdapter extends BaseAdapter {
     private final int listItemLayoutId;
     private final List<UserListViewItem> oUsers;
     private final boolean showAvatars;
+    private final boolean showWebFingerId =
+            MyPreferences.userInTimeline().equals(UserInTimeline.WEBFINGER_ID);
 
     public UserListViewAdapter(Context context, int listItemLayoutId, List<UserListViewItem> oUsers) {
         this.context = context;
@@ -66,14 +69,17 @@ class UserListViewAdapter extends BaseAdapter {
         View view = convertView == null ? newView() : convertView;
         UserListViewItem item = oUsers.get(position);
         ((TextView) view.findViewById(R.id.id)).setText(Long.toString(item.getUserId()));
-        MyUrlSpan.showText(view, R.id.username, item.mUserName + " ("
-                + (TextUtils.isEmpty(item.mRealName) ? " ? " : item.mRealName) + ")", false);
+        MyUrlSpan.showText(view, R.id.username,
+                (showWebFingerId && !TextUtils.isEmpty(item.mbUser.getWebFingerId()) ?
+                        item.mbUser.getWebFingerId() : item.mbUser.getUserName())
+                + " (" + (TextUtils.isEmpty(item.mbUser.realName) ? " ? " : item.mbUser.realName) + ")",
+                false);
         if (showAvatars) {
             showAvatar(item, view);
         }
-        MyUrlSpan.showText(view, R.id.homepage, item.mHomepage, true);
-        MyUrlSpan.showText(view, R.id.description, item.mDescription, false);
-        MyUrlSpan.showText(view, R.id.uri, item.mUri.toString(), true);
+        MyUrlSpan.showText(view, R.id.homepage, item.mbUser.getHomepage(), true);
+        MyUrlSpan.showText(view, R.id.description, item.mbUser.getDescription(), false);
+        MyUrlSpan.showText(view, R.id.uri, item.mbUser.getProfileUrl().toString(), true);
         return view;
     }
 

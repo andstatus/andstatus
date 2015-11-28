@@ -174,7 +174,7 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitter1p0 {
     protected MbUser userFromJson(JSONObject jso) throws ConnectionException {
         MbUser mbUser = super.userFromJson(jso);
         if (jso != null) {
-            mbUser.setUrl(jso.optString("statusnet_profile_url"));
+            mbUser.setProfileUrl(jso.optString("statusnet_profile_url"));
         }
         return mbUser;
     }

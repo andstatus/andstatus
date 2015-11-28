@@ -80,7 +80,7 @@ public class ConnectionGnuSocialTest extends InstrumentationTestCase {
         assertEquals("Sender's oid", "114973", mbMessage.sender.oid);
         assertEquals("Sender's username", "mmn", mbMessage.sender.getUserName());
         assertEquals("Sender's Display name", "mmn", mbMessage.sender.realName);
-        assertEquals("Sender's URL", "https://social.umeahackerspace.se/mmn", mbMessage.sender.getUrl());
+        assertEquals("Sender's URL", "https://social.umeahackerspace.se/mmn", mbMessage.sender.getProfileUrl());
         assertEquals("Sender's WebFinger ID", "mmn@social.umeahackerspace.se", mbMessage.sender.getWebFingerId());
     }
 
@@ -119,6 +119,9 @@ public class ConnectionGnuSocialTest extends InstrumentationTestCase {
             msg.oid += "_" + TestSuite.TESTRUN_UID;
         }
         assertNotNull("message returned", msg);
+        assertEquals("Author", "mcscx", msg.sender.getUserName());
+        assertEquals("null Homepage (url) should be treated as blank", "", msg.sender.getHomepage());
+
         assertEquals("has attachment", msg.attachments.size(), 1);
         MbAttachment attachment = MbAttachment.fromUrlAndContentType(new URL(
                 "https://quitter.se/file/mcscx-20131110T222250-427wlgn.png")

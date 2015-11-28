@@ -210,19 +210,22 @@ public class OriginTest extends InstrumentationTestCase {
         checkUsernameIsValid(origin, "", false);
         checkUsernameIsValid(origin, "someUser.", false);
         checkUsernameIsValid(origin, "someUser ", false);
+        checkUsernameIsValid(origin, "someUser", true);
         checkUsernameIsValid(origin, "some.user", true);
-        checkUsernameIsValid(origin, "some.user/GnuSocial", true);
+        checkUsernameIsValid(origin, "some.user/GnuSocial", false);
         checkUsernameIsValid(origin, "some@user", false);
 
         origin = MyContextHolder.get().persistentOrigins().fromName(TestSuite.PUMPIO_ORIGIN_NAME);
         checkUsernameIsValid(origin, "", false);
         checkUsernameIsValid(origin, "someUser.", false);
         checkUsernameIsValid(origin, "someUser ", false);
+        checkUsernameIsValid(origin, "someUser", false);
         checkUsernameIsValid(origin, "some.user", false);
         checkUsernameIsValid(origin, "some.user@example.com", true);
-        checkUsernameIsValid(origin, "t131t@identi.ca/PumpIo", true);
+        checkUsernameIsValid(origin, "t131t@identi.ca/PumpIo", false);
         checkUsernameIsValid(origin, "some@example.com.", false);
-        checkUsernameIsValid(origin, "some@user", true);
+        checkUsernameIsValid(origin, "some@example.com", true);
+        checkUsernameIsValid(origin, "some@user", false);
     }
 
     private void checkUsernameIsValid(Origin origin, String userName, boolean valid) {

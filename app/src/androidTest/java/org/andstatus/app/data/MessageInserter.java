@@ -30,7 +30,6 @@ import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandExecutionContext;
-import org.andstatus.app.util.SelectionAndArgs;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UrlUtils;
 
@@ -71,7 +70,7 @@ public class MessageInserter extends InstrumentationTestCase {
         if (origin.getOriginType() == OriginType.PUMPIO) {
             ConnectionPumpio connection = new ConnectionPumpio();
             mbUser.setUserName(connection.userOidToUsername(userOid));
-            mbUser.setUrl("http://" + connection.usernameToHost(mbUser.getUserName()) + "/"
+            mbUser.setProfileUrl("http://" + connection.usernameToHost(mbUser.getUserName()) + "/"
                     + connection.usernameToNickname(mbUser.getUserName()));
         } else {
             mbUser.setUserName("userOf" + origin.getName() + userOid);
@@ -86,7 +85,7 @@ public class MessageInserter extends InstrumentationTestCase {
         String messageOid = messageOidIn;
         if (TextUtils.isEmpty(messageOid) && messageStatus != DownloadStatus.SENDING) {
             if (origin.getOriginType() == OriginType.PUMPIO) {
-                messageOid = author.getUrl()  + "/" + (inReplyToMessage == null ? "note" : "comment") + "/thisisfakeuri" + System.nanoTime();
+                messageOid = author.getProfileUrl()  + "/" + (inReplyToMessage == null ? "note" : "comment") + "/thisisfakeuri" + System.nanoTime();
             } else {
                 messageOid = String.valueOf(System.nanoTime());
             }

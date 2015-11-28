@@ -3,7 +3,6 @@ package org.andstatus.app.user;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.BaseColumns;
-import android.text.TextUtils;
 
 import org.andstatus.app.LoadableListActivity;
 import org.andstatus.app.LoadableListActivity.ProgressPublisher;
@@ -11,7 +10,6 @@ import org.andstatus.app.LoadableListActivity.SyncLoader;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.context.UserInTimeline;
 import org.andstatus.app.data.AvatarDrawable;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MatchedUri;
@@ -21,7 +19,6 @@ import org.andstatus.app.data.UserListSql;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.UriUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -65,13 +62,12 @@ public class UserListLoader implements SyncLoader {
                 addFromMessageRow();
                 break;
             default:
-                addUserToList(new UserListViewItem(0L, mOriginOfSelectedMessage.getId(),
-                        "Unknown list type: " + mUserListType));
+                addUserToList(UserListViewItem.getEmpty("Unknown list type: " + mUserListType));
                 break;
         }
         MyLog.v(this, "Loaded " + size() + " items");
         if (mItems.isEmpty()) {
-            addUserToList(new UserListViewItem(0L, mOriginOfSelectedMessage.getId(), "..."));
+            addUserToList(UserListViewItem.getEmpty("..."));
         }
         populateFields();
     }
@@ -90,23 +86,7 @@ public class UserListLoader implements SyncLoader {
     }
 
     private void addUserIdToList(Origin origin, long userId) {
-        if (userId == 0 || containsUserId(userId)) {
-            return;
-        }
-        String userName = MyQuery.userIdToName(userId, UserInTimeline.USERNAME);
-        if (TextUtils.isEmpty(userName)) {
-            userName = "?? id=" + userId;
-        }
-        addUserToList(new UserListViewItem(userId, origin.getId(), userName));
-    }
-
-    private boolean containsUserId(long userId) {
-        for (UserListViewItem item : mItems) {
-            if (item.getUserId() == userId) {
-                return true;
-            }
-        }
-        return false;
+        addUserToList(UserListViewItem.fromUserId(origin, userId));
     }
 
     private void addUsersFromMessageBody() {
@@ -124,7 +104,7 @@ public class UserListLoader implements SyncLoader {
     }
 
     private void addUserToList(UserListViewItem oUser) {
-        if (!mItems.contains(oUser)) {
+        if (!oUser.isEmpty() && !mItems.contains(oUser)) {
             mItems.add(oUser);
             if (mProgress != null) {
                 mProgress.publish(Integer.toString(size()));
@@ -155,14 +135,15 @@ public class UserListLoader implements SyncLoader {
             return;
         }
         item.populated = true;
-        item.mUserName = c.getString(c.getColumnIndex(MyDatabase.User.USERNAME));
-        item.mRealName = c.getString(c.getColumnIndex(MyDatabase.User.REAL_NAME));
-        item.mHomepage = c.getString(c.getColumnIndex(MyDatabase.User.HOMEPAGE));
-        item.mDescription = c.getString(c.getColumnIndex(MyDatabase.User.DESCRIPTION));
-        item.mUri = UriUtils.fromString(c.getString(c.getColumnIndex(MyDatabase.User.URL)));
+        item.mbUser.setUserName(DbUtils.getNotNullStringColumn(c, MyDatabase.User.USERNAME));
+        item.mbUser.setProfileUrl(DbUtils.getNotNullStringColumn(c, MyDatabase.User.URL));
+        item.mbUser.setWebFingerId(DbUtils.getNotNullStringColumn(c, MyDatabase.User.WEBFINGER_ID));
+        item.mbUser.realName = DbUtils.getNotNullStringColumn(c, MyDatabase.User.REAL_NAME);
+        item.mbUser.setHomepage(DbUtils.getNotNullStringColumn(c, MyDatabase.User.HOMEPAGE));
+        item.mbUser.setDescription(DbUtils.getNotNullStringColumn(c, MyDatabase.User.DESCRIPTION));
         if (MyPreferences.showAvatars()) {
             item.mAvatarDrawable = new AvatarDrawable(item.getUserId(),
-                    c.getString(c.getColumnIndex(MyDatabase.Download.AVATAR_FILE_NAME)));
+                    DbUtils.getNotNullStringColumn(c, MyDatabase.Download.AVATAR_FILE_NAME));
         }
     }
 

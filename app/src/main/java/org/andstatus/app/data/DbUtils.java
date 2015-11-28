@@ -144,4 +144,16 @@ public final class DbUtils {
             MyLog.w(TAG, MyLog.getStackTrace(new IllegalArgumentException(detailMessage)));
         }
     }
+
+    public static String getNotNullStringColumn(Cursor cursor, String columnName) {
+        String value = "";
+        int columnIndex = cursor.getColumnIndex(columnName);
+        if (columnIndex >= 0) {
+            String value2 = cursor.getString(columnIndex);
+            if (!TextUtils.isEmpty(value2)) {
+                value = value2;
+            }
+        }
+        return value;
+    }
 }

@@ -126,9 +126,9 @@ public class ConnectionPumpio extends Connection {
                 user.avatarUrl = image.optString("url");
             }
         }
-        user.description = jso.optString("summary");
-        user.homepage = jso.optString("url");
-        user.setUrl(jso.optString("url"));
+        user.setDescription(jso.optString("summary"));
+        user.setHomepage(jso.optString("url"));
+        user.setProfileUrl(jso.optString("url"));
         user.updatedDate = dateFromJson(jso, "updated");
         return user;
     }

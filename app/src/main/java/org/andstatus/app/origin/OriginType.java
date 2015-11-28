@@ -25,6 +25,7 @@ import org.andstatus.app.net.http.HttpConnectionOAuthApache;
 import org.andstatus.app.net.http.HttpConnectionOAuthJavaNet;
 import org.andstatus.app.net.social.Connection.ApiEnum;
 import org.andstatus.app.net.social.ConnectionTwitterGnuSocial;
+import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UrlUtils;
 
@@ -48,7 +49,7 @@ public enum OriginType {
 
     private static final String BASIC_PATH_DEFAULT = "api";
     private static final String OAUTH_PATH_DEFAULT = "oauth";
-    private static final String USERNAME_REGEX_DEFAULT = "[a-zA-Z_0-9]+([/\\.\\-\\(\\)]*[a-zA-Z_0-9]+)*";
+    private static final String USERNAME_REGEX_DEFAULT = "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*$";
     public static final OriginType ORIGIN_TYPE_DEFAULT = TWITTER;
     public static final int TEXT_LIMIT_MAXIMUM = 5000;
 
@@ -131,7 +132,7 @@ public enum OriginType {
                 canSetUrlOfOrigin = false;
                 shouldSetNewUsernameManuallyIfOAuth = true;
                 shouldSetNewUsernameManuallyNoOAuth = false;
-                usernameRegEx = USERNAME_REGEX_DEFAULT + "@" + USERNAME_REGEX_DEFAULT;
+                usernameRegEx = MbUser.WEBFINGER_ID_REGEX;
                 // This is not a hard limit, just for convenience
                 textLimitDefault = TEXT_LIMIT_MAXIMUM;
                 basicPath = BASIC_PATH_DEFAULT;

@@ -107,7 +107,7 @@ public class GnuSocialMessagesInserter extends InstrumentationTestCase {
         String userName = "user" + userOid;
         MbUser mbUser = MbUser.fromOriginAndUserOid(origin.getId(), userOid);
         mbUser.setUserName(userName);
-        mbUser.setUrl(origin.getUrl());
+        mbUser.setProfileUrl(origin.getUrl());
         if (accountMbUser != null) {
             mbUser.actor = accountMbUser;
         }
@@ -117,7 +117,7 @@ public class GnuSocialMessagesInserter extends InstrumentationTestCase {
     private MbMessage buildMessage(MbUser author, String body, MbMessage inReplyToMessage, String messageOidIn) {
         String messageOid = messageOidIn;
         if (TextUtils.isEmpty(messageOid)) {
-            messageOid = author.getUrl()  + "/" + (inReplyToMessage == null ? "note" : "comment") + "thisisfakeuri" + System.nanoTime();
+            messageOid = author.getProfileUrl()  + "/" + (inReplyToMessage == null ? "note" : "comment") + "thisisfakeuri" + System.nanoTime();
         }
         MbMessage message = MbMessage.fromOriginAndOid(origin.getId(), messageOid, DownloadStatus.LOADED);
         message.setBody(body + (inReplyToMessage != null ? " it" + iteration : "" ));

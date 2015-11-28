@@ -17,20 +17,16 @@
 package org.andstatus.app.user;
 
 import android.graphics.drawable.Drawable;
-import android.net.Uri;
 
 import org.andstatus.app.data.AvatarDrawable;
+import org.andstatus.app.data.MyDatabase;
+import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.net.social.MbUser;
+import org.andstatus.app.origin.Origin;
 
 public class UserListViewItem {
     boolean populated = false;
-    private final long mUserId;
-    private final long mOriginId;
-    String mUserName;
-    String mRealName;
-    Uri mUri = Uri.EMPTY;
-    String mDescription = "";
-    String mHomepage = "";
+    final MbUser mbUser;
     AvatarDrawable mAvatarDrawable = null;
 
     @Override
@@ -39,33 +35,40 @@ public class UserListViewItem {
         if (o == null || getClass() != o.getClass()) return false;
 
         UserListViewItem that = (UserListViewItem) o;
-
-        if (mUserId != that.mUserId) return false;
-        return mOriginId == that.mOriginId && mUserName.equals(that.mUserName);
-
+        return mbUser.equals(that.mbUser);
     }
 
     @Override
     public int hashCode() {
-        int result = (int) (mUserId ^ (mUserId >>> 32));
-        result = 31 * result + (int) (mOriginId ^ (mOriginId >>> 32));
-        result = 31 * result + mUserName.hashCode();
-        return result;
+        return mbUser.hashCode();
+    }
+
+    private UserListViewItem(MbUser mbUser) {
+        this.mbUser = mbUser;
+    }
+
+    public static UserListViewItem getEmpty(String description) {
+        MbUser mbUser = MbUser.getEmpty();
+        mbUser.setDescription(description);
+        return fromMbUser(mbUser);
+    }
+
+    public static UserListViewItem fromUserId(Origin origin, long userId) {
+        MbUser mbUser = MbUser.getEmpty();
+        if (userId != 0) {
+            mbUser = MbUser.fromOriginAndUserOid(origin.getId(),
+                    MyQuery.idToOid(MyDatabase.OidEnum.USER_OID, userId, 0));
+            mbUser.userId = userId;
+        }
+        return fromMbUser(mbUser);
     }
 
     public static UserListViewItem fromMbUser(MbUser mbUser) {
-        return new UserListViewItem(mbUser.userId, mbUser.originId,
-                mbUser.getUserName());
-    }
-
-    public UserListViewItem(long userId, long originId, String userName) {
-        mUserId = userId;
-        mOriginId = originId;
-        mUserName = userName;
+        return new UserListViewItem(mbUser);
     }
 
     public long getUserId() {
-        return mUserId;
+        return mbUser.userId;
     }
 
     public Drawable getAvatar() {
@@ -78,8 +81,11 @@ public class UserListViewItem {
     @Override
     public String toString() {
         return "UserListViewItem{" +
-                "userId=" + mUserId +
-                ", userName='" + mUserName + '\'' +
+                mbUser +
                 '}';
+    }
+
+    public boolean isEmpty() {
+        return mbUser.isEmpty();
     }
 }

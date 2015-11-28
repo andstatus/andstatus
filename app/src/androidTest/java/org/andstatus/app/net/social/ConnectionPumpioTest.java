@@ -165,10 +165,10 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         ind++;
         assertEquals("User", MbTimelineItem.ItemType.USER, timeline.get(ind).getType());
         mbUser = timeline.get(ind).mbUser;
-        assertEquals("Url of the actor", "https://identi.ca/t131t", mbUser.actor.getUrl());
+        assertEquals("Url of the actor", "https://identi.ca/t131t", mbUser.actor.getProfileUrl());
         assertEquals("WebFinger ID", "t131t@identi.ca", mbUser.actor.getWebFingerId());
         assertEquals("Following", TriState.TRUE, mbUser.followedByActor);
-        assertEquals("Url of the user", "https://fmrl.me/grdryn", mbUser.getUrl());
+        assertEquals("Url of the user", "https://fmrl.me/grdryn", mbUser.getProfileUrl());
 
         ind++;
         mbMessage = timeline.get(ind).mbMessage;
@@ -201,7 +201,7 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         int size = 5;
         assertEquals("Response for t131t", size, users.size());
 
-        assertEquals("Does the Pope shit in the woods?", users.get(1).description);
+        assertEquals("Does the Pope shit in the woods?", users.get(1).getDescription());
         assertEquals("gitorious@identi.ca", users.get(2).getUserName());
         assertEquals("acct:ken@coding.example", users.get(3).oid);
         assertEquals("Yuri Volkov", users.get(4).realName);

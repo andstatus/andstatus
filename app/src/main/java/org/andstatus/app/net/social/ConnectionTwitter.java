@@ -332,11 +332,11 @@ public abstract class ConnectionTwitter extends Connection {
         user.setUserName(userName);
         user.realName = jso.optString("name");
         if (!SharedPreferencesUtil.isEmpty(user.realName)) {
-            user.setUrl(data.getOriginUrl());
+            user.setProfileUrl(data.getOriginUrl());
         }
         user.avatarUrl = jso.optString("profile_image_url");
-        user.description = jso.optString("description");
-        user.homepage = jso.optString("url");
+        user.setDescription(jso.optString("description"));
+        user.setHomepage(jso.optString("url"));
         user.createdDate = dateFromJson(jso, "created_at");
         if (!jso.isNull("following")) {
             user.followedByActor = TriState.fromBoolean(jso.optBoolean("following"));

@@ -39,7 +39,7 @@ public class UriUtils {
 
     /** returns not null */
     public static Uri fromString(String strUri) {
-        return TextUtils.isEmpty(strUri) ? Uri.EMPTY : Uri.parse(strUri.trim());
+        return SharedPreferencesUtil.isEmpty(strUri) ? Uri.EMPTY : Uri.parse(strUri.trim());
     }
 
     public static Uri notNull(Uri uri) {

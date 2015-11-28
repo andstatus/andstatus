@@ -65,7 +65,7 @@ public class DataInserterTest extends InstrumentationTestCase {
         somebody.setUserName(username);
         somebody.actor = TestSuite.getConversationMbUser();
         somebody.followedByActor = TriState.FALSE;
-        somebody.setUrl("http://identi.ca/somebody");
+        somebody.setProfileUrl("http://identi.ca/somebody");
         di.insertOrUpdateUser(somebody);
 
         long somebodyId = MyQuery.oidToId(OidEnum.USER_OID, TestSuite.getConversationOriginId(),
@@ -111,7 +111,7 @@ public class DataInserterTest extends InstrumentationTestCase {
         long senderId = MyQuery.msgIdToLongColumnValue(Msg.SENDER_ID, messageId);
         assertEquals("Sender of the message", somebodyId, senderId);
         url = MyQuery.userIdToStringColumnValue(User.URL, senderId);
-        assertEquals("Url of the sender " + somebody.getUserName(), somebody.getUrl(), url);
+        assertEquals("Url of the sender " + somebody.getUserName(), somebody.getProfileUrl(), url);
 
         Uri contentUri = MatchedUri.getTimelineUri(
                 TestSuite.getConversationMyAccount().getUserId(), TimelineType.FOLLOWING_USER,
@@ -442,7 +442,7 @@ public class DataInserterTest extends InstrumentationTestCase {
         MbUser somebody = MbUser.fromOriginAndUserOid(TestSuite.getConversationOriginId(), userOid);
         somebody.setUserName(username);
         somebody.actor = TestSuite.getConversationMbUser();
-        somebody.setUrl("https://somewhere.net/" + username);
+        somebody.setProfileUrl("https://somewhere.net/" + username);
 
         MbMessage message = MbMessage.fromOriginAndOid(TestSuite.getConversationOriginId(),
                 String.valueOf(System.nanoTime()), DownloadStatus.LOADED);

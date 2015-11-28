@@ -25,6 +25,7 @@ import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.MyHtml;
+import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
 
@@ -37,15 +38,15 @@ import java.util.List;
  * @author yvolk@yurivolkov.com
  */
 public class MbUser {
-    private static final String USERNAME_REGEX = "[a-zA-Z_0-9]+([\\.\\-]*[a-zA-Z_0-9]+)*";
-    public static final String WEBFINGER_ID_REGEX = USERNAME_REGEX + "@" + USERNAME_REGEX;
+    // RegEx from http://www.mkyong.com/regular-expressions/how-to-validate-email-address-with-regular-expression/
+    public static final String WEBFINGER_ID_REGEX = "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
     public String oid="";
     private String userName="";
     private String webFingerId="";
     public String realName="";
     public String avatarUrl="";
-    public String description="";
-    public String homepage="";
+    private String description="";
+    private String homepage="";
     private Uri uri = Uri.EMPTY;
     public long createdDate = 0;
     public long updatedDate = 0;
@@ -61,7 +62,7 @@ public class MbUser {
     public static MbUser fromOriginAndUserOid(long originId, String userOid) {
         MbUser user = new MbUser();
         user.originId = originId;
-        user.oid = userOid;
+        user.oid = TextUtils.isEmpty(userOid) ? "" : userOid;
         return user;
     }
     
@@ -74,7 +75,8 @@ public class MbUser {
     }
     
     public boolean isEmpty() {
-        return TextUtils.isEmpty(oid) || originId==0;
+        return originId==0 || (userId == 0 && TextUtils.isEmpty(oid)
+                && TextUtils.isEmpty(webFingerId) && TextUtils.isEmpty(userName));
     }
 
     @Override
@@ -104,21 +106,21 @@ public class MbUser {
     }
 
     public MbUser setUserName(String userName) {
-        this.userName = userName;
+        this.userName = TextUtils.isEmpty(userName) ? "" : userName.trim();
         fixWebFingerId();
         return this;
     }
 
-    public String getUrl() {
+    public String getProfileUrl() {
         return uri.toString();
     }
 
-    public void setUrl(String url) {
+    public void setProfileUrl(String url) {
         this.uri = UriUtils.fromString(url);
         fixWebFingerId();
     }
 
-    public void setUrl(URL url) {
+    public void setProfileUrl(URL url) {
         uri = UriUtils.fromUrl(url);
         fixWebFingerId();
     }
@@ -128,11 +130,18 @@ public class MbUser {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        MbUser mbUser = (MbUser) o;
-
-        if (originId != mbUser.originId) return false;
-        if (userId != mbUser.userId) return false;
-        return oid.equals(mbUser.oid);
+        MbUser that = (MbUser) o;
+        if (originId != that.originId) return false;
+        if (userId != 0 || that.userId != 0) {
+            return userId == that.userId;
+        }
+        if (!TextUtils.isEmpty(oid) || !TextUtils.isEmpty(that.oid)) {
+            return oid.equals(that.oid);
+        }
+        if (!TextUtils.isEmpty(getWebFingerId()) || !TextUtils.isEmpty(that.getWebFingerId())) {
+            return getWebFingerId().equals(that.getWebFingerId());
+        }
+        return getUserName().equals(that.getUserName());
     }
 
     @Override
@@ -140,6 +149,15 @@ public class MbUser {
         int result = oid.hashCode();
         result = 31 * result + (int) (originId ^ (originId >>> 32));
         result = 31 * result + (int) (userId ^ (userId >>> 32));
+        if (userId == 0) {
+            result = 31 * result + oid.hashCode();
+            if (TextUtils.isEmpty(oid)) {
+                result = 31 * result + getWebFingerId().hashCode();
+                if (TextUtils.isEmpty(getWebFingerId())) {
+                    result = 31 * result + getUserName().hashCode();
+                }
+            }
+        }
         return result;
     }
 
@@ -147,15 +165,21 @@ public class MbUser {
         if (TextUtils.isEmpty(userName)) {
             // Do nothing
         } else if (userName.contains("@")) {
-            webFingerId = userName;
+            setWebFingerId(userName);
         } else if (!UriUtils.isEmpty(uri)){
-            MyContext myContect = MyContextHolder.get();
-            if(myContect.isReady()) {
-                Origin origin = myContect.persistentOrigins().fromId(originId);
-                webFingerId = userName + "@" + origin.fixUriforPermalink(uri).getHost();
+            MyContext myContext = MyContextHolder.get();
+            if(myContext.isReady()) {
+                Origin origin = myContext.persistentOrigins().fromId(originId);
+                setWebFingerId(userName + "@" + origin.fixUriforPermalink(uri).getHost());
             } else {
-                webFingerId = userName + "@" + uri.getHost();
+                setWebFingerId(webFingerId = userName + "@" + uri.getHost());
             }
+        }
+    }
+
+    public void setWebFingerId(String webFingerId) {
+        if (isWebFingerIdValid(webFingerId)) {
+            this.webFingerId = webFingerId;
         }
     }
 
@@ -181,7 +205,7 @@ public class MbUser {
     }
 
     public static List<MbUser> fromBodyText(Origin origin, String textIn, boolean replyOnly) {
-        final String SEPARATORS = ", ;'=`~!#$%^&*(){}[]";
+        final String SEPARATORS = ", ;'=`~!#$%^&*(){}[]/";
         List<MbUser> users = new ArrayList<>();
         String text = MyHtml.fromHtml(textIn);
         while (!TextUtils.isEmpty(text)) {
@@ -227,7 +251,8 @@ public class MbUser {
                 oid = MyQuery.idToOid(MyDatabase.OidEnum.USER_OID, userId, 0);
             }
             MbUser mbUser = MbUser.fromOriginAndUserOid(origin.getId(), oid);
-            mbUser.setUserName(TextUtils.isEmpty(validWebFingerId) ? validUserName : validWebFingerId);
+            mbUser.setWebFingerId(validWebFingerId);
+            mbUser.setUserName(validUserName);
             mbUser.userId = userId;
             if (!users.contains(mbUser)) {
                 users.add(mbUser);
@@ -237,5 +262,25 @@ public class MbUser {
             }
         }
         return users;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        if (!SharedPreferencesUtil.isEmpty(description)) {
+            this.description = description;
+        }
+    }
+
+    public String getHomepage() {
+        return homepage;
+    }
+
+    public void setHomepage(String homepage) {
+        if (!SharedPreferencesUtil.isEmpty(homepage)) {
+            this.homepage = homepage;
+        }
     }
 }

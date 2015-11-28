@@ -18,7 +18,6 @@ package org.andstatus.app.data;
 
 import android.content.ContentValues;
 import android.net.Uri;
-import android.provider.BaseColumns;
 import android.text.TextUtils;
 
 import org.andstatus.app.account.MyAccount;
@@ -32,7 +31,6 @@ import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.service.AttachmentDownloader;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandExecutionContext;
-import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TriState;
@@ -417,14 +415,14 @@ public class DataInserter {
             if (!SharedPreferencesUtil.isEmpty(mbUser.avatarUrl)) {
                 values.put(MyDatabase.User.AVATAR_URL, mbUser.avatarUrl);
             }
-            if (!SharedPreferencesUtil.isEmpty(mbUser.description)) {
-                values.put(MyDatabase.User.DESCRIPTION, mbUser.description);
+            if (!SharedPreferencesUtil.isEmpty(mbUser.getDescription())) {
+                values.put(MyDatabase.User.DESCRIPTION, mbUser.getDescription());
             }
-            if (!SharedPreferencesUtil.isEmpty(mbUser.homepage)) {
-                values.put(MyDatabase.User.HOMEPAGE, mbUser.homepage);
+            if (!SharedPreferencesUtil.isEmpty(mbUser.getHomepage())) {
+                values.put(MyDatabase.User.HOMEPAGE, mbUser.getHomepage());
             }
-            if (!SharedPreferencesUtil.isEmpty(mbUser.getUrl())) {
-                values.put(MyDatabase.User.URL, mbUser.getUrl());
+            if (!SharedPreferencesUtil.isEmpty(mbUser.getProfileUrl())) {
+                values.put(MyDatabase.User.URL, mbUser.getProfileUrl());
             }
             if (mbUser.createdDate > 0) {
                 values.put(MyDatabase.User.CREATED_DATE, mbUser.createdDate);

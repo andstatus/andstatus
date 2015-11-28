@@ -68,9 +68,9 @@ public class ConversationInserter extends InstrumentationTestCase {
         author2.avatarUrl = "http://png.findicons.com/files/icons/1780/black_and_orange/300/android_orange.png";
         MbUser author3 = buildUserFromOid(TestSuite.CONVERSATION_MEMBER_USER_OID);
         author3.realName = "John Smith";
-        author3.homepage = "http://johnsmith.com/welcome";
+        author3.setHomepage("http://johnsmith.com/welcome");
         author3.createdDate = new GregorianCalendar(2011,5,12).getTimeInMillis();
-        author3.description = "I am an ordinary guy, interested in computer science";
+        author3.setDescription("I am an ordinary guy, interested in computer science");
         author3.avatarUrl = "http://www.large-icons.com/stock-icons/free-large-android/48x48/happy-robot.gif";
         MbUser author4 = buildUserFromOid("acct:fourthWithoutAvatar@pump.example.com");
         
