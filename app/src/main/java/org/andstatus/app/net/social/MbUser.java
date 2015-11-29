@@ -186,7 +186,24 @@ public class MbUser {
     public String getWebFingerId() {
         return webFingerId;
     }
-    
+
+    public String getNamePreferablyWebFingerId() {
+        String name = getWebFingerId();
+        if (TextUtils.isEmpty(name)) {
+            name = getUserName();
+        }
+        if (TextUtils.isEmpty(name)) {
+            name = realName;
+        }
+        if (TextUtils.isEmpty(name) && !TextUtils.isEmpty(oid)) {
+            name = "oid: " + oid;
+        }
+        if (TextUtils.isEmpty(name)) {
+            name = "id: " + userId;
+        }
+        return name;
+    }
+
     public static boolean isWebFingerIdValid(String webFingerId) {
         boolean ok = false;
         if (!TextUtils.isEmpty(webFingerId)) {

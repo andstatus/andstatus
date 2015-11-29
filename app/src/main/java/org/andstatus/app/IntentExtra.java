@@ -53,6 +53,7 @@ public enum IntentExtra{
      * Account name, see {@link MyAccount#getAccountName()}
      */
     ACCOUNT_NAME("ACCOUNT_NAME"),
+    USER_NAME("USER_NAME"),
     ORIGIN_NAME("ORIGIN_NAME"),
     ORIGIN_ID("ORIGIN_ID"),
     /**

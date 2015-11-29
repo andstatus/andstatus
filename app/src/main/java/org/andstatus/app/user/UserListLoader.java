@@ -18,6 +18,8 @@ import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.UserListSql;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.origin.Origin;
+import org.andstatus.app.service.CommandData;
+import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
 
 import java.util.ArrayList;
@@ -30,6 +32,7 @@ public class UserListLoader implements SyncLoader {
     private final Origin mOriginOfSelectedMessage;
     private final boolean mIsListCombined;
     final String messageBody;
+    private boolean mAllowLoadingFromInternet = false;
 
     public List<UserListViewItem> getList() {
         return mItems;
@@ -50,7 +53,7 @@ public class UserListLoader implements SyncLoader {
 
     @Override
     public void allowLoadingFromInternet() {
-        // TODO:
+        mAllowLoadingFromInternet = true;
     }
 
     @Override
@@ -106,10 +109,19 @@ public class UserListLoader implements SyncLoader {
     private void addUserToList(UserListViewItem oUser) {
         if (!oUser.isEmpty() && !mItems.contains(oUser)) {
             mItems.add(oUser);
+            if (oUser.mbUser.userId == 0 && mAllowLoadingFromInternet) {
+                loadFromInternet(oUser);
+            }
             if (mProgress != null) {
                 mProgress.publish(Integer.toString(size()));
             }
         }
+    }
+
+    private void loadFromInternet(UserListViewItem oUser) {
+        MyLog.v(this, "User " + oUser + " will be loaded from the Internet");
+        MyServiceManager.sendForegroundCommand(CommandData.getUser(ma.getAccountName(),
+                oUser.getUserId(), oUser.mbUser.getUserName()));
     }
 
     private void populateFields() {

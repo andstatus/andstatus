@@ -96,6 +96,12 @@ public class CommandData implements Comparable<CommandData> {
         return commandData;
     }
 
+    public static CommandData getUser(String accountName, long userId, String userName) {
+        CommandData commandData = new CommandData(CommandEnum.GET_USER, accountName, userId);
+        commandData.bundle.putString(IntentExtra.USER_NAME.key, userName);
+        return commandData;
+    }
+
     public static CommandData forOneExecStep(CommandExecutionContext execContext) {
         CommandData commandData = CommandData.fromIntent(
                 execContext.getCommandData().toIntent(new Intent()),
@@ -251,6 +257,9 @@ public class CommandData implements Comparable<CommandData> {
             case SEARCH_MESSAGE:
                 ed.putString(IntentExtra.SEARCH_QUERY.key + si, getSearchQuery());
                 break;
+            case GET_USER:
+                ed.putString(IntentExtra.USER_NAME.key + si, getUserName());
+                break;
             default:
                 break;
         }
@@ -315,6 +324,10 @@ public class CommandData implements Comparable<CommandData> {
             case SEARCH_MESSAGE:
                 commandData.bundle.putString(IntentExtra.SEARCH_QUERY.key,
                         sp.getString(IntentExtra.SEARCH_QUERY.key + si, ""));
+                break;
+            case GET_USER:
+                commandData.bundle.putString(IntentExtra.USER_NAME.key,
+                        sp.getString(IntentExtra.USER_NAME.key + si, ""));
                 break;
             default:
                 break;
@@ -396,6 +409,10 @@ public class CommandData implements Comparable<CommandData> {
         return getExtraText(IntentExtra.SEARCH_QUERY);
     }
 
+    public String getUserName() {
+        return getExtraText(IntentExtra.USER_NAME);
+    }
+
     private String getExtraText(IntentExtra intentExtra) {
         String value = "";
         if (bundle.containsKey(intentExtra.key)) {
@@ -467,8 +484,16 @@ public class CommandData implements Comparable<CommandData> {
                 break;
             case SEARCH_MESSAGE:
                 builder.append("\"");
-                builder.append(I18n.trimTextAt(getSearchQuery(), 40));
+                builder.append(getSearchQuery());
                 builder.append("\",");
+                break;
+            case GET_USER:
+                String userName = getUserName();
+                if (!TextUtils.isEmpty(userName)) {
+                    builder.append("\"");
+                    builder.append(userName);
+                    builder.append("\",");
+                }
                 break;
             default:
                 break;
@@ -615,10 +640,18 @@ public class CommandData implements Comparable<CommandData> {
                 I18n.appendWithSpace(builder, MyQuery.userIdToWebfingerId(itemId));
                 break;
             case SEARCH_MESSAGE:
-                I18n.appendWithSpace(builder, "\"");
+                I18n.appendWithSpace(builder, " \"");
                 builder.append(trimConditionally(getSearchQuery(), summaryOnly));
                 builder.append("\"");
                 appendAccountName(myContext, builder);
+                break;
+            case GET_USER:
+                String userName = getUserName();
+                if (!TextUtils.isEmpty(userName)) {
+                    builder.append(" \"");
+                    builder.append(userName);
+                    builder.append("\"");
+                }
                 break;
             default:
                 appendAccountName(myContext, builder);

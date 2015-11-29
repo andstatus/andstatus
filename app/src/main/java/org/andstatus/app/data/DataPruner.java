@@ -150,7 +150,7 @@ public class DataPruner {
         setDataPrunedNow();
         if (MyLog.isVerboseEnabled()) {
             MyLog.v(this,
-                    method + " " + (pruned ? "succeded" : "failed") + "; History time=" + maxDays + " days; deleted " + nDeletedTime
+                    method + " " + (pruned ? "succeeded" : "failed") + "; History time=" + maxDays + " days; deleted " + nDeletedTime
                     + " , before " + new Date(latestTimestamp).toString());
             MyLog.v(this, method + "; History size=" + maxSize + " messages; deleted "
                     + nDeletedSize + " of " + nTweets + " messages, before " + new Date(latestTimestampSize).toString());

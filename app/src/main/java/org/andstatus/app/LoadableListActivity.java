@@ -271,6 +271,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
     protected void onReceiveAfterExecutingCommand(CommandData commandData) {
         switch(commandData.getCommand()) {
             case GET_STATUS:
+            case GET_USER:
             case UPDATE_STATUS:
             case CREATE_FAVORITE:
             case DESTROY_FAVORITE:

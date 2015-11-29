@@ -52,7 +52,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 break;
             case FOLLOW_USER:
             case STOP_FOLLOWING_USER:
-                followOrStopFollowingUser(execContext.getCommandData().itemId, 
+                followOrStopFollowingUser(execContext.getCommandData().itemId,
                         execContext.getCommandData().getCommand() == CommandEnum.FOLLOW_USER);
                 break;
             case UPDATE_STATUS:
@@ -66,6 +66,9 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 break;
             case GET_STATUS:
                 getStatus();
+                break;
+            case GET_USER:
+                getUser(execContext.getCommandData().itemId, execContext.getCommandData().getUserName());
                 break;
             case REBLOG:
                 reblog(execContext.getCommandData().itemId);
@@ -86,6 +89,30 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 MyLog.e(this, "Unexpected command here " + execContext.getCommandData());
                 break;
         }
+    }
+
+    private void getUser(long userId, String userName) {
+        boolean ok = false;
+        String oid = MyQuery.idToOid(OidEnum.USER_OID, userId, 0);
+        String msgLog = "Get user oid=" + oid + ", userName='" + userName + "'";
+        MbUser user = null;
+        boolean errorLogged = false;
+        if (oid.length() > 0 || !TextUtils.isEmpty(userName)) {
+            try {
+                user = execContext.getMyAccount().getConnection().getUser(oid, userName);
+                ok = !user.isEmpty();
+            } catch (ConnectionException e) {
+                errorLogged = true;
+                logConnectionException(e, msgLog);
+            }
+        } else {
+            MyLog.e(this, msgLog + "; userId not found: " + userId);
+        }
+        if (ok) {
+            new DataInserter(execContext).insertOrUpdateUser(user);
+        }
+        logOk(ok || !errorLogged);
+        MyLog.d(this, (msgLog + (ok ? " succeeded" : " failed") ));
     }
 
     /**
@@ -155,7 +182,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         }
         logOk(ok || !errorLogged);
         MyLog.d(this, (create ? "Creating" : "Destroying") + " favorite "
-                + (ok ? "succeded" : "failed") + ", id=" + msgId);
+                + (ok ? "succeeded" : "failed") + ", id=" + msgId);
     }
 
     /**
@@ -204,7 +231,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         }
         logOk(ok || !errorLogged);
         MyLog.d(this, (follow ? "Follow" : "Stop following") + " User "
-                + (ok ? "succeded" : "failed") + ", id=" + userId);
+                + (ok ? "succeeded" : "failed") + ", id=" + userId);
     }
     
     /**
@@ -240,7 +267,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 MyLog.e(this, "Error destroying status locally", e);
             }
         }
-        MyLog.d(this, "Destroying status " + (ok ? "succeded" : "failed") + ", id=" + msgId);
+        MyLog.d(this, "Destroying status " + (ok ? "succeeded" : "failed") + ", id=" + msgId);
     }
 
 
@@ -275,7 +302,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 MyLog.e(this, "Error destroying reblog locally", e);
             }
         }
-        MyLog.d(this, "Destroying reblog " + (ok ? "succeded" : "failed") + ", id=" + msgId);
+        MyLog.d(this, "Destroying reblog " + (ok ? "succeeded" : "failed") + ", id=" + msgId);
     }
 
     private void getStatus() {
@@ -300,7 +327,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
             }
             logConnectionException(e, "getStatus " + oid);
         }
-        MyLog.d(this, "getStatus " + (ok ? "succeded" : "failed") + ", id=" + execContext.getCommandData().itemId);
+        MyLog.d(this, "getStatus " + (ok ? "succeeded" : "failed") + ", id=" + execContext.getCommandData().itemId);
     }
 
     private boolean addMessageToLocalStorage(MbMessage message) {

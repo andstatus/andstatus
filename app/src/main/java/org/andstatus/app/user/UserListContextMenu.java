@@ -17,6 +17,7 @@
 package org.andstatus.app.user;
 
 import android.app.Activity;
+import android.text.TextUtils;
 import android.view.ContextMenu;
 import android.view.MenuItem;
 import android.view.View;
@@ -47,21 +48,22 @@ public class UserListContextMenu implements View.OnCreateContextMenuListener {
         int order = 0;
         try {
             menu.setHeaderTitle(mViewItem.mbUser.getUserName());
-
-            if (mViewItem.mbUser.userId != 0) {
+            if (mViewItem.mbUser.userId == 0 || TextUtils.isEmpty(mViewItem.mbUser.oid)) {
+                UserListContextMenuItem.GET_USER.addTo(menu, order++, R.string.get_user);
+            } else {
                 UserListContextMenuItem.USER_MESSAGES.addTo(menu, order++,
                         String.format(getActivity().getText(R.string.menu_item_user_messages).toString(),
-                                mViewItem.mbUser.getWebFingerId()));
+                                mViewItem.mbUser.getNamePreferablyWebFingerId()));
                 if (mViewItem.userIsFollowedBy(MyContextHolder.get().persistentAccounts().getCurrentAccount())) {
                     UserListContextMenuItem.STOP_FOLLOWING.addTo(menu, order++,
                             String.format(
                                     getActivity().getText(R.string.menu_item_stop_following_user).toString(),
-                                    mViewItem.mbUser.getWebFingerId()));
+                                    mViewItem.mbUser.getNamePreferablyWebFingerId()));
                 } else {
                     UserListContextMenuItem.FOLLOW.addTo(menu, order++,
                             String.format(
                                     getActivity().getText(R.string.menu_item_follow_user).toString(),
-                                    mViewItem.mbUser.getWebFingerId()));
+                                    mViewItem.mbUser.getNamePreferablyWebFingerId()));
                 }
             }
         } catch (Exception e) {
@@ -91,7 +93,7 @@ public class UserListContextMenu implements View.OnCreateContextMenuListener {
         if (ma.isValid()) {
             UserListContextMenuItem contextMenuItem = UserListContextMenuItem.fromId(item.getItemId());
             MyLog.v(this, "onContextItemSelected: " + contextMenuItem + "; actor="
-                    + ma.getAccountName() + "; user=" + getViewItem().mbUser.getWebFingerId());
+                    + ma.getAccountName() + "; user=" + getViewItem().mbUser.getNamePreferablyWebFingerId());
             return contextMenuItem.execute(this, ma);
         } else {
             return false;

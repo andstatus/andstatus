@@ -34,6 +34,14 @@ import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
 
 public enum UserListContextMenuItem {
+    GET_USER() {
+        @Override
+        void executeOnUiThread(UserListContextMenu menu, MyAccount ma) {
+            CommandData commandData = CommandData.getUser(ma.getAccountName(),
+                    menu.getViewItem().getUserId(), menu.getViewItem().mbUser.getUserName());
+            MyServiceManager.sendManualForegroundCommand(commandData);
+        }
+    },
     DIRECT_MESSAGE() {
         @Override
         void executeOnUiThread(UserListContextMenu menu, MyAccount ma) {
@@ -129,7 +137,7 @@ public enum UserListContextMenuItem {
         new AsyncTask<Void, Void, Void>(){
             @Override
             protected Void doInBackground(Void... params) {
-                MyLog.v(this, "execute async started. " + menu.getViewItem().mbUser.getWebFingerId());
+                MyLog.v(this, "execute async started. " + menu.getViewItem().mbUser.getNamePreferablyWebFingerId());
                 executeAsync(menu, ma);
                 return null;
             }
