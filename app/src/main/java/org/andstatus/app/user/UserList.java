@@ -17,6 +17,7 @@
 package org.andstatus.app.user;
 
 import android.os.Bundle;
+import android.view.MenuItem;
 import android.widget.ListAdapter;
 
 import org.andstatus.app.LoadableListActivity;
@@ -54,7 +55,16 @@ public class UserList extends LoadableListActivity {
     }
 
     @Override
-    protected ListAdapter getListAdapter() {
+    public boolean onContextItemSelected(MenuItem item) {
+        UserListViewAdapter adapter = (UserListViewAdapter) getListAdapter();
+        if (adapter != null) {
+            adapter.onContextItemSelected(item);
+        }
+        return super.onContextItemSelected(item);
+    }
+
+    @Override
+    protected ListAdapter newListAdapter() {
         return new UserListViewAdapter(this, R.layout.user, getListLoader().getList());
     }
 

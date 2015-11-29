@@ -249,7 +249,7 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
                 }
             }
         } catch (Exception e) {
-            MyLog.e(this, "onCreateContextMenu", e);
+            MyLog.e(this, method, e);
         }
     }
 

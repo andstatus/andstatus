@@ -355,10 +355,11 @@ public abstract class Connection {
     /**
      * Get information about the specified User
      * @param userId
+     * @param userName
      * @return User object
      * @throws ConnectionException
      */
-    public abstract MbUser getUser(String userId) throws ConnectionException;
+    public abstract MbUser getUser(String userId, String userName) throws ConnectionException;
     
     protected final String fixSinceId(String sinceId) {
         String out = "";

@@ -23,6 +23,7 @@ import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.text.TextUtils;
 import android.view.MenuItem;
+import android.widget.ListAdapter;
 import android.widget.ListView;
 
 import net.jcip.annotations.GuardedBy;
@@ -171,7 +172,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
     private void onContentLoaderCompleted() {
         AsyncLoader loader = updateCompletedLoader();
         updateTitle("");
-        ListView list = (ListView) findViewById(android.R.id.list);
+        ListView list = getListView();
         long itemIdOfListPosition = mItemId;
         if (list.getChildCount() > 1) {
             itemIdOfListPosition = list.getAdapter().getItemId(list.getFirstVisiblePosition());
@@ -182,10 +183,21 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
                 firstListPosition = ind;
             }
         }
-        list.setAdapter(getListAdapter());
+        list.setAdapter(newListAdapter());
         if (firstListPosition >= 0) {
             list.setSelectionFromTop(firstListPosition, 0);
         }
+    }
+
+    protected abstract ListAdapter newListAdapter();
+
+    @Override
+    public ListAdapter getListAdapter() {
+        return getListView().getAdapter();
+    }
+
+    protected ListView getListView() {
+        return (ListView) findViewById(android.R.id.list);
     }
 
     private AsyncLoader updateCompletedLoader() {

@@ -18,6 +18,7 @@ package org.andstatus.app.user;
 
 import android.graphics.drawable.Drawable;
 
+import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.data.AvatarDrawable;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyQuery;
@@ -91,5 +92,9 @@ public class UserListViewItem {
 
     public boolean isEmpty() {
         return mbUser.isEmpty();
+    }
+
+    public boolean userIsFollowedBy(MyAccount ma) {
+        return myFollowers.contains(ma.getUserId());
     }
 }

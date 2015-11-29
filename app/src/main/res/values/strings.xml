@@ -158,6 +158,7 @@
   <string name="filters_summary">Global filters to be applied to all messages</string>
   <string name="followed_by">Followed by</string>
   <string name="get_open_instances_title">Get Open Instances</string>
+  <string name="get_user">Get User information</string>
   <string name="header_accounts">Accounts</string>
   <string name="header_add_new_account">Add new account</string>
   <string name="header_manage_existing_accounts">Manage existing accounts</string>

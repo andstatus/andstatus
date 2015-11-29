@@ -16,18 +16,106 @@
 
 package org.andstatus.app.user;
 
+import android.app.Activity;
 import android.view.ContextMenu;
+import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
+
+import org.andstatus.app.LoadableListActivity;
+import org.andstatus.app.R;
+import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.util.MyLog;
 
 public class UserListContextMenu implements View.OnCreateContextMenuListener {
-    private final ActionableUserList userList;
+    private final LoadableListActivity userList;
+    private long mAccountUserIdToActAs;
+    private View viewOfTheContext = null;
+    private UserListViewItem mViewItem = UserListViewItem.getEmpty("");
 
-    public UserListContextMenu(ActionableUserList userList) {
+    public UserListContextMenu(LoadableListActivity userList) {
         this.userList = userList;
+        mAccountUserIdToActAs = userList.getMa().getUserId();
     }
 
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+        final String method = "onCreateContextMenu";
+        viewOfTheContext = v;
+        mViewItem = ((UserListViewAdapter) userList.getListAdapter()).getUserListViewItem(idFromView(v));
 
+        int order = 0;
+        try {
+            menu.setHeaderTitle(mViewItem.mbUser.getUserName());
+
+            if (mViewItem.mbUser.userId != 0) {
+                UserListContextMenuItem.USER_MESSAGES.addTo(menu, order++,
+                        String.format(getActivity().getText(R.string.menu_item_user_messages).toString(),
+                                mViewItem.mbUser.getWebFingerId()));
+                if (mViewItem.userIsFollowedBy(MyContextHolder.get().persistentAccounts().getCurrentAccount())) {
+                    UserListContextMenuItem.STOP_FOLLOWING.addTo(menu, order++,
+                            String.format(
+                                    getActivity().getText(R.string.menu_item_stop_following_user).toString(),
+                                    mViewItem.mbUser.getWebFingerId()));
+                } else {
+                    UserListContextMenuItem.FOLLOW.addTo(menu, order++,
+                            String.format(
+                                    getActivity().getText(R.string.menu_item_follow_user).toString(),
+                                    mViewItem.mbUser.getWebFingerId()));
+                }
+            }
+        } catch (Exception e) {
+            MyLog.e(this, method, e);
+        }
+
+    }
+
+    public void showContextMenu() {
+        if (viewOfTheContext != null) {
+            viewOfTheContext.post(new Runnable() {
+
+                @Override
+                public void run() {
+                    try {
+                        viewOfTheContext.showContextMenu();
+                    } catch (NullPointerException e) {
+                        MyLog.d(this, "on showContextMenu; " + (viewOfTheContext != null ? "viewOfTheContext is not null" : ""), e);
+                    }
+                }
+            });
+        }
+    }
+
+    public boolean onContextItemSelected(MenuItem item) {
+        MyAccount ma = MyContextHolder.get().persistentAccounts().fromUserId(mAccountUserIdToActAs);
+        if (ma.isValid()) {
+            UserListContextMenuItem contextMenuItem = UserListContextMenuItem.fromId(item.getItemId());
+            MyLog.v(this, "onContextItemSelected: " + contextMenuItem + "; actor="
+                    + ma.getAccountName() + "; user=" + getViewItem().mbUser.getWebFingerId());
+            return contextMenuItem.execute(this, ma);
+        } else {
+            return false;
+        }
+    }
+
+    protected Activity getActivity() {
+        return userList;
+    }
+
+    public void setAccountUserIdToActAs(long accountUserIdToActAs) {
+        mAccountUserIdToActAs = accountUserIdToActAs;
+    }
+
+    public UserListViewItem getViewItem() {
+        return mViewItem;
+    }
+
+    protected long idFromView(View view) {
+        TextView id = (TextView) view.findViewById(R.id.id);
+        if (id == null) {
+            return 0;
+        }
+        return Long.parseLong(id.getText().toString());
     }
 }

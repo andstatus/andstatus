@@ -42,7 +42,8 @@ public class MyListActivity extends MyBaseListActivity {
         return getList().getListView();
     }
 
-    protected ListAdapter getListAdapter() {
+    @Override
+    public ListAdapter getListAdapter() {
         if (getList() != null) {
             return getList().getListAdapter();
         }

@@ -258,23 +258,29 @@ public class ConnectionPumpio extends Connection {
     }
 
     ConnectionAndUrl getConnectionAndUrl(ApiRoutineEnum apiRoutine, String userId) throws ConnectionException {
+        if (TextUtils.isEmpty(userId)) {
+            throw new IllegalArgumentException(apiRoutine + ": userId is required");
+        }
+        return  getConnectionAndUrlForUsername(apiRoutine, userOidToUsername(userId));
+    }
+
+    ConnectionAndUrl getConnectionAndUrlForUsername(ApiRoutineEnum apiRoutine, String username) throws ConnectionException {
         ConnectionAndUrl conu = new ConnectionAndUrl();
         conu.url = this.getApiPath(apiRoutine);
         if (TextUtils.isEmpty(conu.url)) {
             throw new ConnectionException(StatusCode.UNSUPPORTED_API, "The API is not supported yet: " + apiRoutine);
         }
-        if (TextUtils.isEmpty(userId)) {
-            throw new IllegalArgumentException(apiRoutine + ": userId is required");
+        if (TextUtils.isEmpty(username)) {
+            throw new IllegalArgumentException(apiRoutine + ": userName is required");
         }
-        String username = userOidToUsername(userId);
         String nickname = usernameToNickname(username);
         if (TextUtils.isEmpty(nickname)) {
-            throw new IllegalArgumentException(apiRoutine + ": wrong userId=" + userId);
+            throw new IllegalArgumentException(apiRoutine + ": wrong userName=" + username);
         }
         String host = usernameToHost(username);
         conu.httpConnection = http;
         if (TextUtils.isEmpty(host)) {
-            throw new IllegalArgumentException(apiRoutine + ": host is empty for the userId=" + userId);
+            throw new IllegalArgumentException(apiRoutine + ": host is empty for the userName=" + username);
         } else if (http.data.originUrl == null || host.compareToIgnoreCase(http.data.originUrl.getHost()) != 0) {
             MyLog.v(this, "Requesting data from the host: " + host);
             HttpConnectionData connectionData1 = http.data.clone();
@@ -292,7 +298,7 @@ public class ConnectionPumpio extends Connection {
         conu.url = conu.url.replace("%nickname%", nickname);
         return conu;
     }
-    
+
     static class ConnectionAndUrl {
         String url;
         HttpConnection httpConnection;
@@ -617,11 +623,12 @@ public class ConnectionPumpio extends Connection {
     }
     
     @Override
-    public MbUser getUser(String userId) throws ConnectionException {
-        ConnectionAndUrl conu = getConnectionAndUrl(ApiRoutineEnum.GET_USER, userId);
+    public MbUser getUser(String userId, String userName) throws ConnectionException {
+        ConnectionAndUrl conu = getConnectionAndUrlForUsername(ApiRoutineEnum.GET_USER,
+                TextUtils.isEmpty(userId) ? userName : userOidToUsername(userId));
         JSONObject jso = conu.httpConnection.getRequest(conu.url);
         MbUser mbUser = userFromJson(jso);
-        MyLog.v(this, "getUser '" + userId + "' " + mbUser.realName);
+        MyLog.v(this, "getUser '" + (TextUtils.isEmpty(userId) ? userName : userId) + "' " + mbUser.realName);
         return mbUser;
     }
 }

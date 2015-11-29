@@ -397,10 +397,14 @@ public abstract class ConnectionTwitter extends Connection {
      *      href="https://dev.twitter.com/docs/api/1.1/get/users/show">GET users/show</a>
      */
     @Override
-    public MbUser getUser(String userId) throws ConnectionException {
+    public MbUser getUser(String userId, String userName) throws ConnectionException {
         Uri sUri = Uri.parse(getApiPath(ApiRoutineEnum.GET_USER));
         Uri.Builder builder = sUri.buildUpon();
-        builder.appendQueryParameter("user_id", userId);
+        if (TextUtils.isEmpty(userId)) {
+            builder.appendQueryParameter("screen_name", userName);
+        } else {
+            builder.appendQueryParameter("user_id", userId);
+        }
         JSONObject jso = http.getRequest(builder.build().toString());
         return userFromJson(jso);
     }

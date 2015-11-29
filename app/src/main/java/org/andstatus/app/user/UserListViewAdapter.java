@@ -17,15 +17,16 @@
 package org.andstatus.app.user;
 
 import android.app.Activity;
-import android.content.Context;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import org.andstatus.app.LoadableListActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
@@ -36,18 +37,29 @@ import org.andstatus.app.util.MyUrlSpan;
 import java.util.List;
 
 class UserListViewAdapter extends BaseAdapter {
-    private final Context context;
+    private final LoadableListActivity userList;
     private final int listItemLayoutId;
     private final List<UserListViewItem> oUsers;
     private final boolean showAvatars;
     private final boolean showWebFingerId =
             MyPreferences.userInTimeline().equals(UserInTimeline.WEBFINGER_ID);
+    private final UserListContextMenu contextMenu;
 
-    public UserListViewAdapter(Context context, int listItemLayoutId, List<UserListViewItem> oUsers) {
-        this.context = context;
+    public UserListViewAdapter(LoadableListActivity activity, int listItemLayoutId, List<UserListViewItem> oUsers) {
+        this.userList = activity;
         this.listItemLayoutId = listItemLayoutId;
         this.oUsers = oUsers;
         showAvatars = MyPreferences.showAvatars();
+        contextMenu = new UserListContextMenu(activity);
+    }
+
+    public UserListViewItem getUserListViewItem(long userId) {
+        for (UserListViewItem viewItem : oUsers) {
+            if (viewItem.getUserId() == userId) {
+                return viewItem;
+            }
+        }
+        return UserListViewItem.getEmpty("");
     }
 
     @Override
@@ -68,6 +80,7 @@ class UserListViewAdapter extends BaseAdapter {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         View view = convertView == null ? newView() : convertView;
+        view.setOnCreateContextMenuListener(contextMenu);
         UserListViewItem item = oUsers.get(position);
         ((TextView) view.findViewById(R.id.id)).setText(Long.toString(item.getUserId()));
         MyUrlSpan.showText(view, R.id.username,
@@ -86,8 +99,8 @@ class UserListViewAdapter extends BaseAdapter {
     }
 
     private View newView() {
-        LayoutInflater inflater = LayoutInflater.from(context);
-        if (!Activity.class.isAssignableFrom(context.getClass())) {
+        LayoutInflater inflater = LayoutInflater.from(userList);
+        if (!Activity.class.isAssignableFrom(userList.getClass())) {
             MyLog.w(this, "Context should be from an Activity");
         }
         return inflater.inflate(listItemLayoutId, null);
@@ -102,7 +115,7 @@ class UserListViewAdapter extends BaseAdapter {
         StringBuilder builder = new StringBuilder();
         if (!item.myFollowers.isEmpty()) {
             int count = 0;
-            builder.append(context.getText(R.string.followed_by));
+            builder.append(userList.getText(R.string.followed_by));
             for (long userId : item.myFollowers) {
                 if (count == 0) {
                     builder.append(" ");
@@ -113,5 +126,9 @@ class UserListViewAdapter extends BaseAdapter {
             }
         }
         MyUrlSpan.showText(view, R.id.followed_by, builder.toString(), false);
+    }
+
+    public boolean onContextItemSelected(MenuItem item) {
+        return contextMenu.onContextItemSelected(item);
     }
 }

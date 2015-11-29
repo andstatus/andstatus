@@ -102,7 +102,7 @@ class TimelineDownloaderFollowing extends TimelineDownloader {
                 try {
                     // Download the Users's info + optionally his latest message
                     if (friendId == 0 || execContext.getMyAccount().getConnection().userObjectHasMessage()) {
-                        MbUser mbUser = execContext.getMyAccount().getConnection().getUser(followedUserOid);
+                        MbUser mbUser = execContext.getMyAccount().getConnection().getUser(followedUserOid, null);
                         friendId = di.insertOrUpdateUser(mbUser, lum);
                         msgId = MyQuery.userIdToLongColumnValue(User.USER_MSG_ID, friendId);
                     } 

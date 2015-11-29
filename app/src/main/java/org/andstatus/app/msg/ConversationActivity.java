@@ -198,7 +198,7 @@ public class ConversationActivity extends LoadableListActivity implements Action
     }
 
     @Override
-    protected ListAdapter getListAdapter() {
+    protected ListAdapter newListAdapter() {
         return new ConversationViewAdapter(mContextMenu, getItemId(), getListLoader().getList());
     }
     

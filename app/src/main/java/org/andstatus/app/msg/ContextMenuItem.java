@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2013-2105 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2013-2015 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.text.TextUtils;
 import android.view.Menu;
-import android.view.MenuItem;
 
 import org.andstatus.app.ActivityRequestCode;
 import org.andstatus.app.MyAction;

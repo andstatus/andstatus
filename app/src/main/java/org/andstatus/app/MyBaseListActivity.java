@@ -30,5 +30,5 @@ public abstract class MyBaseListActivity extends MyActivity {
         this.mPositionOfContextMenu = position;
     }
 
-    protected abstract ListAdapter getListAdapter();
+    public abstract ListAdapter getListAdapter();
 }

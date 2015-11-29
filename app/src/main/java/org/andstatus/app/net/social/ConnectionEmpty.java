@@ -93,7 +93,7 @@ public class ConnectionEmpty extends Connection {
     }
 
     @Override
-    public MbUser getUser(String userId) throws ConnectionException {
+    public MbUser getUser(String userId, String userName) throws ConnectionException {
         return MbUser.getEmpty();
     }
 
