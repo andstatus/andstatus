@@ -37,6 +37,7 @@ public class UserList extends LoadableListActivity {
     private MyAccount ma = MyAccount.getEmpty(MyContextHolder.get(), "");
     private long mSelectedMessageId = 0;
     private boolean mIsListCombined = false;
+    private UserListContextMenu contextMenu = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,6 +48,7 @@ public class UserList extends LoadableListActivity {
         mUserListType = getParsedUri().getUserListType();
         mSelectedMessageId = getParsedUri().getMessageId();
         mIsListCombined = getParsedUri().isCombined();
+        contextMenu = new UserListContextMenu(this);
     }
 
     @Override
@@ -56,16 +58,15 @@ public class UserList extends LoadableListActivity {
 
     @Override
     public boolean onContextItemSelected(MenuItem item) {
-        UserListViewAdapter adapter = (UserListViewAdapter) getListAdapter();
-        if (adapter != null) {
-            adapter.onContextItemSelected(item);
+        if (contextMenu != null) {
+            contextMenu.onContextItemSelected(item);
         }
         return super.onContextItemSelected(item);
     }
 
     @Override
     protected ListAdapter newListAdapter() {
-        return new UserListViewAdapter(this, R.layout.user, getListLoader().getList());
+        return new UserListViewAdapter(contextMenu, R.layout.user, getListLoader().getList());
     }
 
     @SuppressWarnings("unchecked")

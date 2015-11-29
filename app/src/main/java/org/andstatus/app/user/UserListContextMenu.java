@@ -20,7 +20,6 @@ import android.app.Activity;
 import android.view.ContextMenu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.TextView;
 
 import org.andstatus.app.LoadableListActivity;
 import org.andstatus.app.R;
@@ -29,21 +28,21 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.util.MyLog;
 
 public class UserListContextMenu implements View.OnCreateContextMenuListener {
-    private final LoadableListActivity userList;
+    private final LoadableListActivity listActivity;
     private long mAccountUserIdToActAs;
     private View viewOfTheContext = null;
     private UserListViewItem mViewItem = UserListViewItem.getEmpty("");
 
-    public UserListContextMenu(LoadableListActivity userList) {
-        this.userList = userList;
-        mAccountUserIdToActAs = userList.getMa().getUserId();
+    public UserListContextMenu(LoadableListActivity listActivity) {
+        this.listActivity = listActivity;
+        mAccountUserIdToActAs = listActivity.getMa().getUserId();
     }
 
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
         final String method = "onCreateContextMenu";
         viewOfTheContext = v;
-        mViewItem = ((UserListViewAdapter) userList.getListAdapter()).getUserListViewItem(idFromView(v));
+        mViewItem = (UserListViewItem) listActivity.getListAdapter().getItem(v);
 
         int order = 0;
         try {
@@ -100,7 +99,7 @@ public class UserListContextMenu implements View.OnCreateContextMenuListener {
     }
 
     protected Activity getActivity() {
-        return userList;
+        return listActivity;
     }
 
     public void setAccountUserIdToActAs(long accountUserIdToActAs) {
@@ -109,13 +108,5 @@ public class UserListContextMenu implements View.OnCreateContextMenuListener {
 
     public UserListViewItem getViewItem() {
         return mViewItem;
-    }
-
-    protected long idFromView(View view) {
-        TextView id = (TextView) view.findViewById(R.id.id);
-        if (id == null) {
-            return 0;
-        }
-        return Long.parseLong(id.getText().toString());
     }
 }

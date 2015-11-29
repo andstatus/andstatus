@@ -16,28 +16,22 @@
 
 package org.andstatus.app.user;
 
-import android.app.Activity;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
 import android.widget.ImageView;
-import android.widget.TextView;
 
-import org.andstatus.app.LoadableListActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.UserInTimeline;
-import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyUrlSpan;
+import org.andstatus.app.widget.MyBaseAdapter;
 
 import java.util.List;
 
-class UserListViewAdapter extends BaseAdapter {
-    private final LoadableListActivity userList;
+class UserListViewAdapter extends MyBaseAdapter {
     private final int listItemLayoutId;
     private final List<UserListViewItem> oUsers;
     private final boolean showAvatars;
@@ -45,21 +39,11 @@ class UserListViewAdapter extends BaseAdapter {
             MyPreferences.userInTimeline().equals(UserInTimeline.WEBFINGER_ID);
     private final UserListContextMenu contextMenu;
 
-    public UserListViewAdapter(LoadableListActivity activity, int listItemLayoutId, List<UserListViewItem> oUsers) {
-        this.userList = activity;
+    public UserListViewAdapter(UserListContextMenu contextMenu, int listItemLayoutId, List<UserListViewItem> oUsers) {
         this.listItemLayoutId = listItemLayoutId;
         this.oUsers = oUsers;
         showAvatars = MyPreferences.showAvatars();
-        contextMenu = new UserListContextMenu(activity);
-    }
-
-    public UserListViewItem getUserListViewItem(long userId) {
-        for (UserListViewItem viewItem : oUsers) {
-            if (viewItem.getUserId() == userId) {
-                return viewItem;
-            }
-        }
-        return UserListViewItem.getEmpty("");
+        this.contextMenu = contextMenu;
     }
 
     @Override
@@ -69,7 +53,10 @@ class UserListViewAdapter extends BaseAdapter {
 
     @Override
     public Object getItem(int position) {
-        return oUsers.get(position);
+        if (position >= 0 && position < getCount()) {
+            return oUsers.get(position);
+        }
+        return UserListViewItem.getEmpty("");
     }
 
     @Override
@@ -81,8 +68,8 @@ class UserListViewAdapter extends BaseAdapter {
     public View getView(int position, View convertView, ViewGroup parent) {
         View view = convertView == null ? newView() : convertView;
         view.setOnCreateContextMenuListener(contextMenu);
+        setPosition(view, position);
         UserListViewItem item = oUsers.get(position);
-        ((TextView) view.findViewById(R.id.id)).setText(Long.toString(item.getUserId()));
         MyUrlSpan.showText(view, R.id.username,
                 (showWebFingerId && !TextUtils.isEmpty(item.mbUser.getWebFingerId()) ?
                         item.mbUser.getWebFingerId() : item.mbUser.getUserName())
@@ -99,11 +86,7 @@ class UserListViewAdapter extends BaseAdapter {
     }
 
     private View newView() {
-        LayoutInflater inflater = LayoutInflater.from(userList);
-        if (!Activity.class.isAssignableFrom(userList.getClass())) {
-            MyLog.w(this, "Context should be from an Activity");
-        }
-        return inflater.inflate(listItemLayoutId, null);
+        return LayoutInflater.from(contextMenu.getActivity()).inflate(listItemLayoutId, null);
     }
 
     private void showAvatar(UserListViewItem item, View view) {
@@ -115,7 +98,7 @@ class UserListViewAdapter extends BaseAdapter {
         StringBuilder builder = new StringBuilder();
         if (!item.myFollowers.isEmpty()) {
             int count = 0;
-            builder.append(userList.getText(R.string.followed_by));
+            builder.append(contextMenu.getActivity().getText(R.string.followed_by));
             for (long userId : item.myFollowers) {
                 if (count == 0) {
                     builder.append(" ");
@@ -126,9 +109,5 @@ class UserListViewAdapter extends BaseAdapter {
             }
         }
         MyUrlSpan.showText(view, R.id.followed_by, builder.toString(), false);
-    }
-
-    public boolean onContextItemSelected(MenuItem item) {
-        return contextMenu.onContextItemSelected(item);
     }
 }

@@ -39,6 +39,7 @@ import org.andstatus.app.service.MyServiceEventsReceiver;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.widget.MyBaseAdapter;
 
 /**
  * List, loaded asynchronously. Updated by MyService
@@ -192,8 +193,8 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
     protected abstract ListAdapter newListAdapter();
 
     @Override
-    public ListAdapter getListAdapter() {
-        return getListView().getAdapter();
+    public MyBaseAdapter getListAdapter() {
+        return (MyBaseAdapter) getListView().getAdapter();
     }
 
     protected ListView getListView() {
