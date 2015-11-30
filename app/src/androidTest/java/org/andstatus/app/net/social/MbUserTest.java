@@ -32,7 +32,7 @@ public class MbUserTest extends InstrumentationTestCase {
         TestSuite.initializeWithData(this);
     }
 
-    public void testFromBodyText() {
+    public void testFromBodyText1() {
         Origin origin = MyContextHolder.get().persistentOrigins().fromName(TestSuite.GNUSOCIAL_TEST_ORIGIN_NAME);
         String webFingerId2 = "anotherUser@somedomain.org";
         String shortUsername3 = "shortusername";
@@ -47,6 +47,24 @@ public class MbUserTest extends InstrumentationTestCase {
         assertEquals(msgLog, TestSuite.GNUSOCIAL_TEST_ACCOUNT2_USERNAME, users.get(1).getUserName());
         assertEquals(msgLog, webFingerId2, users.get(2).getWebFingerId());
         assertEquals(msgLog, shortUsername3, users.get(3).getUserName());
+    }
+
+    public void testFromBodyText2() {
+        final String USERNAME1 = "FontSelinstin";
+        final String SKIPPED_USERNAME2 = "rocuhdjekrt";
+        final String SKIPPED_USERNAME3 = "kauiwoeieurt";
+        final String USERNAME4 = "djjerekwerwewer";
+
+        Origin origin = MyContextHolder.get().persistentOrigins().fromName(TestSuite.TWITTER_TEST_ORIGIN_NAME);
+        String body = "Starting post @ #ThisIsTagofsome-event-and entertainment"
+                + " by @" + USERNAME1 + " @@" + SKIPPED_USERNAME2 + " @#" + SKIPPED_USERNAME3
+                + " &amp; @" + USERNAME4
+                + " https://t.co/djkdfeowefPh";
+        List<MbUser> users = MbUser.fromBodyText(origin, body, false);
+        String msgLog = body + " -> " + users;
+        assertEquals(msgLog, 2, users.size());
+        assertEquals(msgLog, USERNAME1, users.get(0).getUserName());
+        assertEquals(msgLog, USERNAME4, users.get(1).getUserName());
     }
 
     public void testIsWebFingerIdValid() {

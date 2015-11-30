@@ -250,32 +250,30 @@ public class MbUser {
             } else {
                 text = "";
             }
-            if (TextUtils.isEmpty(validWebFingerId) && TextUtils.isEmpty(validUserName)) {
-                break;
-            }
-
-            String oid = MbUser.getTempOid(validWebFingerId, validUserName);
-            long userId = 0;
-            if (!TextUtils.isEmpty(validWebFingerId)) {
-                userId = MyQuery.webFingerIdToId(origin.getId(), validWebFingerId);
-            }
-            if (userId == 0 && !TextUtils.isEmpty(validUserName)) {
-                userId = MyQuery.userNameToId(origin.getId(), validUserName);
-            }
-            if (userId == 0 ) {
-                userId = MyQuery.oidToId(MyDatabase.OidEnum.USER_OID, origin.getId(), oid);
-            } else {
-                oid = MyQuery.idToOid(MyDatabase.OidEnum.USER_OID, userId, 0);
-            }
-            MbUser mbUser = MbUser.fromOriginAndUserOid(origin.getId(), oid);
-            mbUser.setWebFingerId(validWebFingerId);
-            mbUser.setUserName(validUserName);
-            mbUser.userId = userId;
-            if (!users.contains(mbUser)) {
-                users.add(mbUser);
-            }
-            if (replyOnly) {
-                break;
+            if (!TextUtils.isEmpty(validWebFingerId) || !TextUtils.isEmpty(validUserName)) {
+                String oid = MbUser.getTempOid(validWebFingerId, validUserName);
+                long userId = 0;
+                if (!TextUtils.isEmpty(validWebFingerId)) {
+                    userId = MyQuery.webFingerIdToId(origin.getId(), validWebFingerId);
+                }
+                if (userId == 0 && !TextUtils.isEmpty(validUserName)) {
+                    userId = MyQuery.userNameToId(origin.getId(), validUserName);
+                }
+                if (userId == 0 ) {
+                    userId = MyQuery.oidToId(MyDatabase.OidEnum.USER_OID, origin.getId(), oid);
+                } else {
+                    oid = MyQuery.idToOid(MyDatabase.OidEnum.USER_OID, userId, 0);
+                }
+                MbUser mbUser = MbUser.fromOriginAndUserOid(origin.getId(), oid);
+                mbUser.setWebFingerId(validWebFingerId);
+                mbUser.setUserName(validUserName);
+                mbUser.userId = userId;
+                if (!users.contains(mbUser)) {
+                    users.add(mbUser);
+                }
+                if (replyOnly) {
+                    break;
+                }
             }
         }
         return users;
