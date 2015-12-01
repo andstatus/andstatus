@@ -337,6 +337,8 @@ public abstract class ConnectionTwitter extends Connection {
         user.avatarUrl = jso.optString("profile_image_url");
         user.setDescription(jso.optString("description"));
         user.setHomepage(jso.optString("url"));
+        // Hack for twitter.com
+        user.setProfileUrl(http.pathToUrlString("/").replace("/api.", "/") + userName);
         user.createdDate = dateFromJson(jso, "created_at");
         if (!jso.isNull("following")) {
             user.followedByActor = TriState.fromBoolean(jso.optBoolean("following"));

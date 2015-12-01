@@ -48,9 +48,7 @@ public class UserListContextMenu implements View.OnCreateContextMenuListener {
         int order = 0;
         try {
             menu.setHeaderTitle(mViewItem.mbUser.getUserName());
-            if (mViewItem.mbUser.userId == 0 || TextUtils.isEmpty(mViewItem.mbUser.oid)) {
-                UserListContextMenuItem.GET_USER.addTo(menu, order++, R.string.get_user);
-            } else {
+            if (mViewItem.mbUser.userId != 0 && TextUtils.isEmpty(mViewItem.mbUser.oid)) {
                 UserListContextMenuItem.USER_MESSAGES.addTo(menu, order++,
                         String.format(getActivity().getText(R.string.menu_item_user_messages).toString(),
                                 mViewItem.mbUser.getNamePreferablyWebFingerId()));
@@ -66,6 +64,7 @@ public class UserListContextMenu implements View.OnCreateContextMenuListener {
                                     mViewItem.mbUser.getNamePreferablyWebFingerId()));
                 }
             }
+            UserListContextMenuItem.GET_USER.addTo(menu, order++, R.string.get_user);
         } catch (Exception e) {
             MyLog.e(this, method, e);
         }

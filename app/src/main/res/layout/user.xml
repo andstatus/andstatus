@@ -29,13 +29,13 @@
             android:layout_height="wrap_content"
             style="@style/messageUsernameAppearance"
             tools:text="user35@some.domain (John Smith)"/>
-
+        
         <TextView
-            android:id="@+id/homepage"
+            android:id="@+id/profile_url"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             style="@style/messageBodyAppearance"
-            tools:text="http://andstatus.org/"/>
+            tools:text="http://mysite.org/user35/profile"/>
 
         <TextView
             android:id="@+id/description"
@@ -45,11 +45,11 @@
             tools:text="I am an ordinary guy, interested in computer science"/>
 
         <TextView
-            android:id="@+id/profile_url"
+            android:id="@+id/homepage"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             style="@style/messageBodyAppearance"
-            tools:text="http://mysite.org/user35/profile"/>
+            tools:text="http://andstatus.org/"/>
 
         <TextView
             android:id="@+id/followed_by"
