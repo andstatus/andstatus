@@ -79,6 +79,7 @@ public class ConnectionTwitterTest extends InstrumentationTestCase {
         assertEquals("Number of items in the Timeline", size, timeline.size());
 
         int ind = 0;
+        String hostName = TestSuite.getTestOriginHost(TestSuite.TWITTER_TEST_ORIGIN_NAME).replace("api.", "");
         assertEquals("Posting message", MbTimelineItem.ItemType.MESSAGE, timeline.get(ind).getType());
         MbMessage mbMessage = timeline.get(ind).mbMessage;
         assertTrue("Favorited", mbMessage.favoritedByActor.toBoolean(false));
@@ -86,7 +87,8 @@ public class ConnectionTwitterTest extends InstrumentationTestCase {
         assertEquals("Author's oid", "221452291", mbMessage.sender.oid);
         assertEquals("Author's username", "Know", mbMessage.sender.getUserName());
         assertEquals("Author's Display name", "Just so you Know", mbMessage.sender.realName);
-        assertEquals("WebFinger ID", "Know@" + TestSuite.getTestOriginHost(TestSuite.TWITTER_TEST_ORIGIN_NAME).replace("api.", ""), mbMessage.sender.getWebFingerId());
+        assertEquals("WebFinger ID", "Know@" + hostName, mbMessage.sender.getWebFingerId());
+        assertEquals("Profile Url", "https://" + hostName + "/Know", mbMessage.sender.getProfileUrl());
 
         ind++;
         mbMessage = timeline.get(ind).mbMessage;
