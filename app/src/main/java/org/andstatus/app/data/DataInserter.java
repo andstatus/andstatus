@@ -372,23 +372,13 @@ public class DataInserter {
             return 0;
         }
         
-        String userOid = mbUser.oid;
         long originId = mbUser.originId;
-        long userId = 0L;
-        if (!SharedPreferencesUtil.isEmpty(userOid)) {
-            // Lookup the System's (AndStatus) id from the Originated system's id
-            userId = MyQuery.oidToId(OidEnum.USER_OID, originId, userOid);
-        }
+        long userId = mbUser.lookupUserId();
+        String userOid = (userId == 0 && !mbUser.isOidReal()) ? mbUser.getTempOid() : mbUser.oid;
         try {
             ContentValues values = new ContentValues();
-            if (userId == 0) {
-                userId = MyQuery.oidToId(OidEnum.USER_OID, originId, mbUser.getTempOid());
-                if (userId == 0 && mbUser.hasAltTempOid()) {
-                    userId = MyQuery.oidToId(OidEnum.USER_OID, originId, mbUser.getAltTempOid());
-                }
-                if (userId != 0) {
-                    values.put(MyDatabase.User.USER_OID, userOid);
-                }
+            if (userId == 0 || mbUser.isOidReal()) {
+                values.put(MyDatabase.User.USER_OID, userOid);
             }
 
             String userName = mbUser.getUserName();
@@ -453,7 +443,6 @@ public class DataInserter {
             Uri userUri = MatchedUri.getUserUri(execContext.getMyAccount().getUserId(), userId);
             if (userId == 0) {
                 // There was no such row so add new one
-                values.put(MyDatabase.User.USER_OID, userOid);
                 values.put(MyDatabase.User.ORIGIN_ID, originId);
                 userId = ParsedUri.fromUri(
                         execContext.getContext().getContentResolver().insert(userUri, values))

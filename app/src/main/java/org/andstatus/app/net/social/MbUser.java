@@ -48,7 +48,7 @@ public class MbUser {
     public String avatarUrl="";
     private String description="";
     private String homepage="";
-    private Uri uri = Uri.EMPTY;
+    private Uri profileUri = Uri.EMPTY;
     public long createdDate = 0;
     public long updatedDate = 0;
     public MbMessage latestMessage = null;    
@@ -57,22 +57,21 @@ public class MbUser {
     public TriState followedByActor = TriState.UNKNOWN;
     
     // In our system
-    public long originId = 0L;
+    public final long originId;
     public long userId = 0L;
 
     public static MbUser fromOriginAndUserOid(long originId, String userOid) {
-        MbUser user = new MbUser();
-        user.originId = originId;
+        MbUser user = new MbUser(originId);
         user.oid = TextUtils.isEmpty(userOid) ? "" : userOid;
         return user;
     }
     
     public static MbUser getEmpty() {
-        return new MbUser();
+        return new MbUser(0L);
     }
     
-    private MbUser() {
-        // Empty
+    private MbUser(long originId) {
+        this.originId = originId;
     }
     
     public boolean isEmpty() {
@@ -85,7 +84,7 @@ public class MbUser {
     }
 
     public static boolean isOidReal(String oid) {
-        return !TextUtils.isEmpty(oid) && !oid.startsWith(TEMP_OID_PREFIX);
+        return !SharedPreferencesUtil.isEmpty(oid) && !oid.startsWith(TEMP_OID_PREFIX);
     }
 
     @Override
@@ -121,16 +120,16 @@ public class MbUser {
     }
 
     public String getProfileUrl() {
-        return uri.toString();
+        return profileUri.toString();
     }
 
     public void setProfileUrl(String url) {
-        this.uri = UriUtils.fromString(url);
+        this.profileUri = UriUtils.fromString(url);
         fixWebFingerId();
     }
 
     public void setProfileUrl(URL url) {
-        uri = UriUtils.fromUrl(url);
+        profileUri = UriUtils.fromUrl(url);
         fixWebFingerId();
     }
 
@@ -175,13 +174,13 @@ public class MbUser {
             // Do nothing
         } else if (userName.contains("@")) {
             setWebFingerId(userName);
-        } else if (!UriUtils.isEmpty(uri)){
+        } else if (!UriUtils.isEmpty(profileUri)){
             MyContext myContext = MyContextHolder.get();
             if(myContext.isReady()) {
                 Origin origin = myContext.persistentOrigins().fromId(originId);
-                setWebFingerId(userName + "@" + origin.fixUriforPermalink(uri).getHost());
+                setWebFingerId(userName + "@" + origin.fixUriforPermalink(profileUri).getHost());
             } else {
-                setWebFingerId(webFingerId = userName + "@" + uri.getHost());
+                setWebFingerId(webFingerId = userName + "@" + profileUri.getHost());
             }
         }
     }
@@ -213,12 +212,41 @@ public class MbUser {
         return name;
     }
 
+    public boolean isWebFingerIdValid() {
+        return  isWebFingerIdValid(webFingerId);
+    }
+
     public static boolean isWebFingerIdValid(String webFingerId) {
         boolean ok = false;
         if (!TextUtils.isEmpty(webFingerId)) {
             ok = webFingerId.matches(WEBFINGER_ID_REGEX);
         }
         return ok;
+    }
+
+    /**
+     * Lookup the System's (AndStatus) id from the Originated system's id
+     * @return userId
+     */
+    public long lookupUserId() {
+        if (userId == 0) {
+            if (isOidReal()) {
+                userId = MyQuery.oidToId(MyDatabase.OidEnum.USER_OID, originId, oid);
+            }
+        }
+        if (userId == 0 && isWebFingerIdValid()) {
+            userId = MyQuery.webFingerIdToId(originId, webFingerId);
+        }
+        if (userId == 0 && !isWebFingerIdValid() && !TextUtils.isEmpty(userName)) {
+            userId = MyQuery.userNameToId(originId, webFingerId);
+        }
+        if (userId == 0) {
+            userId = MyQuery.oidToId(MyDatabase.OidEnum.USER_OID, originId, getTempOid());
+        }
+        if (userId == 0 && hasAltTempOid()) {
+            userId = MyQuery.oidToId(MyDatabase.OidEnum.USER_OID, originId, getAltTempOid());
+        }
+        return userId;
     }
 
     public boolean hasAltTempOid() {
@@ -267,24 +295,11 @@ public class MbUser {
             } else {
                 text = "";
             }
-            if (!TextUtils.isEmpty(validWebFingerId) || !TextUtils.isEmpty(validUserName)) {
-                String oid = MbUser.getTempOid(validWebFingerId, validUserName);
-                long userId = 0;
-                if (!TextUtils.isEmpty(validWebFingerId)) {
-                    userId = MyQuery.webFingerIdToId(origin.getId(), validWebFingerId);
-                }
-                if (userId == 0 && !TextUtils.isEmpty(validUserName)) {
-                    userId = MyQuery.userNameToId(origin.getId(), validUserName);
-                }
-                if (userId == 0 ) {
-                    userId = MyQuery.oidToId(MyDatabase.OidEnum.USER_OID, origin.getId(), oid);
-                } else {
-                    oid = MyQuery.idToOid(MyDatabase.OidEnum.USER_OID, userId, 0);
-                }
-                MbUser mbUser = MbUser.fromOriginAndUserOid(origin.getId(), oid);
+            if (MbUser.isWebFingerIdValid(validWebFingerId) || !TextUtils.isEmpty(validUserName)) {
+                MbUser mbUser = MbUser.fromOriginAndUserOid(origin.getId(), "");
                 mbUser.setWebFingerId(validWebFingerId);
                 mbUser.setUserName(validUserName);
-                mbUser.userId = userId;
+                mbUser.lookupUserId();
                 if (!users.contains(mbUser)) {
                     users.add(mbUser);
                 }
