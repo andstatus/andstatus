@@ -402,13 +402,15 @@ public abstract class ConnectionTwitter extends Connection {
     public MbUser getUser(String userId, String userName) throws ConnectionException {
         Uri sUri = Uri.parse(getApiPath(ApiRoutineEnum.GET_USER));
         Uri.Builder builder = sUri.buildUpon();
-        if (TextUtils.isEmpty(userId)) {
-            builder.appendQueryParameter("screen_name", userName);
-        } else {
+        if (MbUser.isOidReal(userId)) {
             builder.appendQueryParameter("user_id", userId);
+        } else {
+            builder.appendQueryParameter("screen_name", userName);
         }
         JSONObject jso = http.getRequest(builder.build().toString());
-        return userFromJson(jso);
+        MbUser mbUser = userFromJson(jso);
+        MyLog.v(this, "getUser oid='" + userId + "', userName='" + userName + "' -> " + mbUser.realName);
+        return mbUser;
     }
     
     @Override

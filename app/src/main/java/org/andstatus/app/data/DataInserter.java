@@ -383,6 +383,9 @@ public class DataInserter {
             ContentValues values = new ContentValues();
             if (userId == 0) {
                 userId = MyQuery.oidToId(OidEnum.USER_OID, originId, mbUser.getTempOid());
+                if (userId == 0 && mbUser.hasAltTempOid()) {
+                    userId = MyQuery.oidToId(OidEnum.USER_OID, originId, mbUser.getAltTempOid());
+                }
                 if (userId != 0) {
                     values.put(MyDatabase.User.USER_OID, userOid);
                 }

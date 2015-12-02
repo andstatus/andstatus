@@ -40,6 +40,7 @@ import java.util.List;
 public class MbUser {
     // RegEx from http://www.mkyong.com/regular-expressions/how-to-validate-email-address-with-regular-expression/
     public static final String WEBFINGER_ID_REGEX = "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
+    private static final String TEMP_OID_PREFIX = "andstatustemp:";
     public String oid="";
     private String userName="";
     private String webFingerId="";
@@ -75,8 +76,16 @@ public class MbUser {
     }
     
     public boolean isEmpty() {
-        return originId==0 || (userId == 0 && TextUtils.isEmpty(oid)
+        return originId==0 || (userId == 0 && !isOidReal(oid)
                 && TextUtils.isEmpty(webFingerId) && TextUtils.isEmpty(userName));
+    }
+
+    public boolean isOidReal() {
+        return isOidReal(oid);
+    }
+
+    public static boolean isOidReal(String oid) {
+        return !TextUtils.isEmpty(oid) && !oid.startsWith(TEMP_OID_PREFIX);
     }
 
     @Override
@@ -212,13 +221,21 @@ public class MbUser {
         return ok;
     }
 
+    public boolean hasAltTempOid() {
+        return !getTempOid().equals(getAltTempOid()) && !TextUtils.isEmpty(userName);
+    }
+
     public String getTempOid() {
         return getTempOid(webFingerId, userName);
     }
 
-    public static String getTempOid(String validWebFingerId, String validUserName) {
-        String userName = TextUtils.isEmpty(validWebFingerId) ? validUserName : validWebFingerId;
-        return "andstatustemp:" + userName;
+    public String getAltTempOid() {
+        return getTempOid("", userName);
+    }
+
+    public static String getTempOid(String webFingerId, String validUserName) {
+        String oid = isWebFingerIdValid(webFingerId) ? webFingerId : validUserName;
+        return TEMP_OID_PREFIX + oid;
     }
 
     public static List<MbUser> fromBodyText(Origin origin, String textIn, boolean replyOnly) {

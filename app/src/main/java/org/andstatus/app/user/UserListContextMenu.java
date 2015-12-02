@@ -26,6 +26,7 @@ import org.andstatus.app.LoadableListActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.util.MyLog;
 
 public class UserListContextMenu implements View.OnCreateContextMenuListener {
@@ -48,7 +49,7 @@ public class UserListContextMenu implements View.OnCreateContextMenuListener {
         int order = 0;
         try {
             menu.setHeaderTitle(mViewItem.mbUser.getUserName());
-            if (mViewItem.mbUser.userId != 0 && !TextUtils.isEmpty(mViewItem.mbUser.oid)) {
+            if (mViewItem.mbUser.userId != 0 && MbUser.isOidReal(mViewItem.mbUser.oid)) {
                 UserListContextMenuItem.USER_MESSAGES.addTo(menu, order++,
                         String.format(getActivity().getText(R.string.menu_item_user_messages).toString(),
                                 mViewItem.mbUser.getNamePreferablyWebFingerId()));

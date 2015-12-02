@@ -64,6 +64,9 @@ public class MbUserTest extends InstrumentationTestCase {
         String msgLog = body + " -> " + users;
         assertEquals(msgLog, 2, users.size());
         assertEquals(msgLog, USERNAME1, users.get(0).getUserName());
+        assertFalse(msgLog, users.get(0).isOidReal());
+        assertFalse(msgLog, users.get(0).hasAltTempOid());
+
         assertEquals(msgLog, USERNAME4, users.get(1).getUserName());
     }
 
