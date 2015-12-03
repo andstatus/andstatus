@@ -65,7 +65,7 @@ public class UserListTest extends ActivityInstrumentationTestCase2<TimelineActiv
         String body = MyQuery.msgIdToStringColumnValue(MyDatabase.Msg.BODY, msgId);
         String logMsg = "msgId:" + msgId + "; text:'" + body + "'";
 
-        List<MbUser> users = MbUser.fromBodyText(TestSuite.getConversationMyAccount().getOrigin(), body, false);
+        List<MbUser> users = MbUser.fromOriginAndUserOid(TestSuite.getConversationMyAccount().getOriginId(), "").fromBodyText(body, false);
         assertEquals(logMsg, 3, users.size());
         assertEquals(logMsg, "unknownUser@example.com", users.get(2).getUserName());
 

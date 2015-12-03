@@ -103,33 +103,20 @@ public class VerifyCredentialsTest extends InstrumentationTestCase {
         long userId = builder.getAccount().getUserId();
         assertTrue("Account " + mbUser.getUserName() + " has UserId", userId != 0);
         assertEquals("Account UserOid", builder.getAccount().getUserOid(), mbUser.oid);
-        assertEquals("User in the database for id=" + userId, 
+        assertEquals("User in the database for id=" + userId,
                 mbUser.oid,
                 MyQuery.idToOid(OidEnum.USER_OID, userId, 0));
 
         String msgOid = "383296535213002752";
-        Uri contentUri = MatchedUri.MSG_CONTENT_URI;
-        SelectionAndArgs sa = new SelectionAndArgs();
-        String sortOrder = MyDatabase.Msg.DEFAULT_SORT_ORDER;
-        sa.addSelection(MyDatabase.Msg.SENDER_ID + " = ? AND " 
-        + MyDatabase.Msg.MSG_OID + " = ?",
-                new String[] {
-                        Long.toString(userId), msgOid 
-                });
-        String[] PROJECTION = new String[] {
-            Msg.MSG_ID,
-            };
-        Cursor cursor = context.getContentResolver().query(contentUri, PROJECTION, sa.selection, sa.selectionArgs, sortOrder);
-        assertTrue("Cursor returned", cursor != null);
-        assertTrue("Message by " + mbUser.getUserName() + " found", cursor.getCount() > 0);
-        cursor.moveToFirst();
-        long messageId = cursor.getLong(0);
-        cursor.close();
+        long msgId = MyQuery.oidToId(OidEnum.MSG_OID, origin.getId(), msgOid) ;
+        assertTrue("Message found", msgId !=0);
+        long userIdM = MyQuery.msgIdToUserId(Msg.AUTHOR_ID, msgId);
+        assertEquals("Message is by " + mbUser.getUserName() + " found", userId, userIdM);
 
         assertEquals("Message permalink at twitter",
                 "https://" + origin.fixUriforPermalink(UriUtils.fromUrl(origin.getUrl())).getHost()
                         + "/"
                         + builder.getAccount().getUsername() + "/status/" + msgOid,
-                origin.messagePermalink(messageId));
+                origin.messagePermalink(msgId));
     }
 }

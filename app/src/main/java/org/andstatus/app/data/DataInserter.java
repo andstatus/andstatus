@@ -60,10 +60,10 @@ public class DataInserter {
     }
     
     public long insertOrUpdateMsg(MbMessage message, LatestUserMessages lum) {
-        return insertOrUpdateMsgBySender(message, lum, 0);
+        return insertOrUpdateMsgInner(message, lum, true);
     }
     
-    private long insertOrUpdateMsgBySender(MbMessage messageIn, LatestUserMessages lum, long senderIdIn) {
+    private long insertOrUpdateMsgInner(MbMessage messageIn, LatestUserMessages lum, boolean updateSender) {
         final String funcName = "Inserting/updating msg";
         /**
          * Id of the message in our system, see {@link MyDatabase.Msg#MSG_ID}
@@ -96,11 +96,9 @@ public class DataInserter {
             }
             
             // Sender
-            long senderId = 0L;
-            if (message.sender != null) {
+            long senderId = message.sender == null ? 0L : message.sender.userId;
+            if (updateSender) {
                 senderId = insertOrUpdateUser(message.sender, lum);
-            } else if (senderIdIn != 0) {
-                senderId = senderIdIn;
             }
 
             String rowOid = message.oid;
@@ -346,7 +344,14 @@ public class DataInserter {
 
     private long getReplyToUserIdInBody(MbMessage message) {
         long userId = 0;
-        List<MbUser> users = MbUser.fromBodyText(execContext.getMyAccount().getOrigin(), message.getBody(), true);
+        MbUser author = message.sender;
+        if (author == null) {
+            author = message.actor;
+        }
+        if (author == null) {
+            author = MbUser.fromOriginAndUserOid(message.originId, "");
+        }
+        List<MbUser> users = author.fromBodyText(message.getBody(), true);
         if (users.size() > 0) {
             userId = users.get(0).userId;
             if (userId == 0) {
@@ -367,7 +372,7 @@ public class DataInserter {
      * @return userId
      */
     public long insertOrUpdateUser(MbUser mbUser, LatestUserMessages lum) {
-        if (mbUser.isEmpty()) {
+        if (mbUser == null || mbUser.isEmpty()) {
             MyLog.v(this, "insertUser - mbUser is empty");
             return 0;
         }
@@ -450,9 +455,13 @@ public class DataInserter {
             } else if (values.size() > 0) {
                 execContext.getContext().getContentResolver().update(userUri, values, null, null);
             }
+            mbUser.userId = userId;
             if (mbUser.latestMessage != null) {
-                // This message doesn't have a sender!
-                insertOrUpdateMsgBySender(mbUser.latestMessage, lum, userId);
+                if (mbUser.latestMessage.sender == null) {
+                    // This message doesn't have a sender!
+                    mbUser.latestMessage.sender = mbUser;
+                }
+                insertOrUpdateMsgInner(mbUser.latestMessage, lum, false);
             }
             
         } catch (Exception e) {

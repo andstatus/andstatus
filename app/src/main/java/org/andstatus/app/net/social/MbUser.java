@@ -143,7 +143,7 @@ public class MbUser {
         if (userId != 0 || that.userId != 0) {
             return userId == that.userId;
         }
-        if (!TextUtils.isEmpty(oid) || !TextUtils.isEmpty(that.oid)) {
+        if (isOidReal(oid) || isOidReal(that.oid)) {
             return oid.equals(that.oid);
         }
         if (!TextUtils.isEmpty(getWebFingerId()) || !TextUtils.isEmpty(that.getWebFingerId())) {
@@ -158,8 +158,9 @@ public class MbUser {
         result = 31 * result + (int) (originId ^ (originId >>> 32));
         result = 31 * result + (int) (userId ^ (userId >>> 32));
         if (userId == 0) {
-            result = 31 * result + oid.hashCode();
-            if (TextUtils.isEmpty(oid)) {
+            if (isOidReal(oid)) {
+                result = 31 * result + oid.hashCode();
+            } else {
                 result = 31 * result + getWebFingerId().hashCode();
                 if (TextUtils.isEmpty(getWebFingerId())) {
                     result = 31 * result + getUserName().hashCode();
@@ -238,7 +239,7 @@ public class MbUser {
             userId = MyQuery.webFingerIdToId(originId, webFingerId);
         }
         if (userId == 0 && !isWebFingerIdValid() && !TextUtils.isEmpty(userName)) {
-            userId = MyQuery.userNameToId(originId, webFingerId);
+            userId = MyQuery.userNameToId(originId, userName);
         }
         if (userId == 0) {
             userId = MyQuery.oidToId(MyDatabase.OidEnum.USER_OID, originId, getTempOid());
@@ -266,8 +267,9 @@ public class MbUser {
         return TEMP_OID_PREFIX + oid;
     }
 
-    public static List<MbUser> fromBodyText(Origin origin, String textIn, boolean replyOnly) {
+    public List<MbUser> fromBodyText(String textIn, boolean replyOnly) {
         final String SEPARATORS = ", ;'=`~!#$%^&*(){}[]/";
+        Origin origin = MyContextHolder.get().persistentOrigins().fromId(originId);
         List<MbUser> users = new ArrayList<>();
         String text = MyHtml.fromHtml(textIn);
         while (!TextUtils.isEmpty(text)) {
@@ -297,6 +299,13 @@ public class MbUser {
             }
             if (MbUser.isWebFingerIdValid(validWebFingerId) || !TextUtils.isEmpty(validUserName)) {
                 MbUser mbUser = MbUser.fromOriginAndUserOid(origin.getId(), "");
+                if (!MbUser.isWebFingerIdValid(validWebFingerId)) {
+                    // Try a host of the Author first
+                    mbUser.userId = MyQuery.webFingerIdToId(origin.getId(), validUserName + "@" + getHost());
+                    if (mbUser.userId != 0) {
+                        validWebFingerId = validUserName + "@" + getHost();
+                    }
+                }
                 mbUser.setWebFingerId(validWebFingerId);
                 mbUser.setUserName(validUserName);
                 mbUser.lookupUserId();
@@ -311,6 +320,17 @@ public class MbUser {
         return users;
     }
 
+    public String getHost() {
+        int pos = getWebFingerId().indexOf('@');
+        if (pos >= 0) {
+            return getWebFingerId().substring(pos + 1);
+        }
+        if (!TextUtils.isEmpty(profileUri.getHost())) {
+            return profileUri.getHost();
+        }
+        return "";
+    }
+    
     public String getDescription() {
         return description;
     }

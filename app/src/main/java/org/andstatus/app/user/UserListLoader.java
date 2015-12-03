@@ -76,25 +76,27 @@ public class UserListLoader implements SyncLoader {
     }
 
     private void addFromMessageRow() {
-        addUserIdToList(mOriginOfSelectedMessage,
-                MyQuery.msgIdToLongColumnValue(MyDatabase.Msg.AUTHOR_ID, mSelectedMessageId));
+        MbUser author = addUserIdToList(mOriginOfSelectedMessage,
+                MyQuery.msgIdToLongColumnValue(MyDatabase.Msg.AUTHOR_ID, mSelectedMessageId)).mbUser;
         addUserIdToList(mOriginOfSelectedMessage,
                 MyQuery.msgIdToLongColumnValue(MyDatabase.Msg.SENDER_ID, mSelectedMessageId));
         addUserIdToList(mOriginOfSelectedMessage,
                 MyQuery.msgIdToLongColumnValue(MyDatabase.Msg.IN_REPLY_TO_USER_ID, mSelectedMessageId));
         addUserIdToList(mOriginOfSelectedMessage,
                 MyQuery.msgIdToLongColumnValue(MyDatabase.Msg.RECIPIENT_ID, mSelectedMessageId));
-        addUsersFromMessageBody();
+        addUsersFromMessageBody(author);
         addRebloggers();
     }
 
-    private void addUserIdToList(Origin origin, long userId) {
-        addUserToList(UserListViewItem.fromUserId(origin, userId));
+    private UserListViewItem addUserIdToList(Origin origin, long userId) {
+        UserListViewItem viewItem = UserListViewItem.fromUserId(origin, userId);
+        addUserToList(viewItem);
+        return viewItem;
     }
 
-    private void addUsersFromMessageBody() {
-        List<MbUser> users = MbUser.fromBodyText(mOriginOfSelectedMessage,
-                MyQuery.msgIdToStringColumnValue(MyDatabase.Msg.BODY, mSelectedMessageId), false);
+    private void addUsersFromMessageBody(MbUser author) {
+        List<MbUser> users = author.fromBodyText( 
+            MyQuery.msgIdToStringColumnValue(MyDatabase.Msg.BODY, mSelectedMessageId), false);
         for (MbUser mbUser: users) {
             addUserToList(UserListViewItem.fromMbUser(mbUser));
         }

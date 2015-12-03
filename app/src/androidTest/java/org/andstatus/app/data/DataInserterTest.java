@@ -371,6 +371,7 @@ public class DataInserterTest extends InstrumentationTestCase {
         String username = "peter" + TestSuite.TESTRUN_UID;
         MbUser user1 = new MessageInserter(ma).buildUserFromOid("34804" + TestSuite.TESTRUN_UID);
         user1.setUserName(username);
+        user1.setProfileUrl("https://" + TestSuite.GNUSOCIAL_TEST_ORIGIN_NAME + ".example.com/");
         
         DataInserter di = new DataInserter(ma);
         long userId1 = di.insertOrUpdateUser(user1);
@@ -401,9 +402,10 @@ public class DataInserterTest extends InstrumentationTestCase {
         MbUser user3SameNewUserName = new MessageInserter(ma).buildUserFromOid("34806"
                 + TestSuite.TESTRUN_UID);
         user3SameNewUserName.setUserName(user1.getUserName());
+        user3SameNewUserName.setProfileUrl("https://" + TestSuite.GNUSOCIAL_TEST_ORIGIN_NAME + ".other.example.com/");
         long userId3 = di.insertOrUpdateUser(user3SameNewUserName);
         assertTrue("User added " + user3SameNewUserName, userId3 != 0);
-        assertTrue("Other user with the same user name as old name of user", userId1 != userId3);
+        assertTrue("Other user with the same user name as the new name of user1, but different WebFingerId", userId1 != userId3);
         assertEquals("Username stored for userId=" + userId3, user3SameNewUserName.getUserName(),
                 MyQuery.userIdToStringColumnValue(MyDatabase.User.USERNAME, userId3));
     }

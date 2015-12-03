@@ -40,7 +40,7 @@ public class MbUserTest extends InstrumentationTestCase {
                 + " Please take this into account\n@" + webFingerId2
                 + " @" + TestSuite.GNUSOCIAL_TEST_ACCOUNT2_USERNAME
                 + " And let me mention: @" + shortUsername3;
-        List<MbUser> users = MbUser.fromBodyText(origin, body, false);
+        List<MbUser> users = MbUser.fromOriginAndUserOid(origin.getId(), "").fromBodyText(body, false);
         String msgLog = body + " -> " + users;
         assertEquals(msgLog, 4, users.size());
         assertEquals(msgLog, TestSuite.GNUSOCIAL_TEST_ACCOUNT_USERNAME, users.get(0).getUserName());
@@ -60,7 +60,7 @@ public class MbUserTest extends InstrumentationTestCase {
                 + " by @" + USERNAME1 + " @@" + SKIPPED_USERNAME2 + " @#" + SKIPPED_USERNAME3
                 + " &amp; @" + USERNAME4
                 + " https://t.co/djkdfeowefPh";
-        List<MbUser> users = MbUser.fromBodyText(origin, body, false);
+        List<MbUser> users = MbUser.fromOriginAndUserOid(origin.getId(), "").fromBodyText(body, false);
         String msgLog = body + " -> " + users;
         assertEquals(msgLog, 2, users.size());
         assertEquals(msgLog, USERNAME1, users.get(0).getUserName());

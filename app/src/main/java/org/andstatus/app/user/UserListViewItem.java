@@ -64,6 +64,7 @@ public class UserListViewItem {
             mbUser = MbUser.fromOriginAndUserOid(origin.getId(),
                     MyQuery.idToOid(MyDatabase.OidEnum.USER_OID, userId, 0));
             mbUser.userId = userId;
+            mbUser.setWebFingerId(MyQuery.userIdToWebfingerId(userId));
         }
         return fromMbUser(mbUser);
     }
