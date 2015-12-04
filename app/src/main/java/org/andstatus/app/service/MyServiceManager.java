@@ -116,7 +116,11 @@ public class MyServiceManager extends BroadcastReceiver {
         if (commandData != null) {
             serviceIntent = commandData.toIntent(serviceIntent);
         }
-        MyContextHolder.get().context().startService(serviceIntent);
+        try {
+            MyContextHolder.get().context().startService(serviceIntent);
+        } catch ( NullPointerException e) {
+            MyLog.e(TAG, "Starting MyService", e);
+        }
     }
 
     /**
