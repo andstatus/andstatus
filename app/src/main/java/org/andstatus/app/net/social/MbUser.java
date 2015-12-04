@@ -302,6 +302,11 @@ public class MbUser {
                 if (!MbUser.isWebFingerIdValid(validWebFingerId)) {
                     // Try a host of the Author first
                     mbUser.userId = MyQuery.webFingerIdToId(origin.getId(), validUserName + "@" + getHost());
+                    if (mbUser.userId == 0) {
+                        // Next try host of this Social network
+                        mbUser.userId = MyQuery.webFingerIdToId(origin.getId(), validUserName 
+                            + "@" + origin.getUrl().getHost());
+                    }
                     if (mbUser.userId != 0) {
                         validWebFingerId = validUserName + "@" + getHost();
                     }

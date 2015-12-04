@@ -19,11 +19,36 @@
         <title>AndStatus Change Log</title>
         <subtitle>List of changes in releases of AndStatus</subtitle>
         <subtitle>
-			For more information on the application please read the 
+            Download the latest release from 
+            <a href="https://play.google.com/store/apps/details?id=org.andstatus.app" target="_blank">Google Play</a>.
+			Read more about the application at
   				<a href="https://github.com/andstatus/andstatus/wiki">AndStatus Wiki</a>.
 		</subtitle>
     </header>
 
+    <release android:versionName="21.0" android:versionCode="139"
+        versionDate="2015-12-04"
+        versionTitle="Users of message">
+        <changes>
+            <change>With this release AndStatus opens a new view for exploration of social
+                networks: a &quot;User List&quot;.<br/>
+                For years, a &quot;Timeline&quot;, holding list of messages (posts, tweets...),
+                was the only representation of Social networks in AndStatus. Most of information about
+                members of these networks was hidden. Now we do have a list, where Users 
+                and information about them is the main content.<br/>
+                As with Timelines, there will be different kinds of &quot;User Lists&quot;.
+                &quot;Users of message&quot; is the first: it can be opened via a message's 
+                context menu, and it shows a list, containing not only an Author, a User whom
+                the message was addressed to, and rebloggers. It also lists all users mentioned
+                in a body of the message.<br/>
+                But the main point here is that you can act on these users via new context menu: 
+                see their profiles in the Internet, 
+                visit their Homepages, follow and stop following them. More actions will be
+                added based on your feedback. Read more and discuss at
+                <a href="https://github.com/andstatus/andstatus/issues/309">#309</a>.
+            </change>
+        </changes>
+    </release>
     <release android:versionName="20.5" android:versionCode="138"
              versionDate="2015-11-08"
              versionTitle="Timeline filters">
