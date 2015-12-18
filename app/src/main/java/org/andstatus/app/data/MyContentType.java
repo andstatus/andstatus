@@ -116,8 +116,10 @@ public enum MyContentType {
             if( TextUtils.isEmpty(extension)) {
                 return mimeType;
             } 
-            if ("jpg.jpeg.png.gif".contains(extension)) {
+            if ("png.gif".contains(extension)) {
                 mimeType = "image/" + extension;
+            } else if ("jpg.jpeg".contains(extension)) {
+		    mimeType = "image/jpeg";
             } else if ("txt.html.htm".contains(extension)) {
                 mimeType = "text/" + extension;
             }
