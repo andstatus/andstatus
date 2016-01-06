@@ -16,10 +16,11 @@
  -->
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
 				  android:title="@string/filters_title">
-    <EditTextPreference
+    <org.andstatus.app.context.MultilineEditTextPreference
         android:key="hide_messages_based_on_keywords"
         android:summary="@string/this_option_is_turned_off"
-        android:title="@string/hide_messages_based_on_keywords_title" />
+        android:title="@string/hide_messages_based_on_keywords_title"
+		android:dialogMessage="@string/hide_messages_based_on_keywords_dialog_message"/>
     <org.andstatus.app.context.MultilineCheckBoxPreference
 		android:key="hide_replies_not_to_me_or_friends"
         android:title="@string/hide_replies_not_to_me_or_friends_title" />

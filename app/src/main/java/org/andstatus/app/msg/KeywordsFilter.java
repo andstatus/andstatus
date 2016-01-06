@@ -16,29 +16,75 @@
 
 package org.andstatus.app.msg;
 
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class KeywordsFilter {
-    private final List<String> keywordsToFilter;
+    final List<String> keywordsToFilter;
     private final List<String> keywordsRaw;
+    private static final char DOUBLE_QUOTE = '"';
 
     public KeywordsFilter(String keywordsIn) {
-        keywordsToFilter = new ArrayList<>();
-        keywordsRaw = new ArrayList<>();       
-        if (TextUtils.isEmpty(keywordsIn)) {
-            return;
+        keywordsRaw = parseFilterString(keywordsIn);
+        keywordsToFilter = rawToActual(keywordsRaw);
+    }
+
+    @NonNull
+    private List<String> parseFilterString(String text) {
+        List<String> keywords = new ArrayList<>();
+        if (TextUtils.isEmpty(text)) {
+            return keywords;
         }
-        for (String itemRaw : keywordsIn.split("[, ]")) {
-            itemRaw = itemRaw.trim();
-            String item = itemRaw.toLowerCase();
-            if (!TextUtils.isEmpty(item) && !keywordsToFilter.contains(item)) {
-                keywordsToFilter.add(item);
-                keywordsRaw.add(itemRaw);
+        boolean inQuote = false;
+        for (int atPos = 0; atPos < text.length();) {
+            int separatorInd = inQuote ? nextQuote(text, atPos) : nextSeparatorInd(text, atPos);
+            if (atPos > separatorInd) {
+                break;
+            }
+            String item = text.substring(atPos, separatorInd);
+            if (!TextUtils.isEmpty(item) && !keywords.contains(item)) {
+                keywords.add(item);
+            }
+            if (separatorInd < text.length() && text.charAt(separatorInd) == '"') {
+                inQuote = !inQuote;
+            }
+            atPos = separatorInd + 1;
+        }
+        return keywords;
+    }
+
+    private int nextQuote(String text, int atPos) {
+        for (int ind=atPos; ind < text.length(); ind++) {
+            if (DOUBLE_QUOTE == text.charAt(ind)) {
+                return ind;
             }
         }
+        return text.length();
+    }
+
+    private int nextSeparatorInd(String text, int atPos) {
+        final String SEPARATORS = ", " + DOUBLE_QUOTE;
+        for (int ind=atPos; ind < text.length(); ind++) {
+            if (SEPARATORS.indexOf(text.charAt(ind)) >= 0) {
+                return ind;
+            }
+        }
+        return text.length();
+    }
+
+    @NonNull
+    private List<String> rawToActual(List<String> keywordsRaw) {
+        List<String> keywords = new ArrayList<>();
+        for (String itemRaw : keywordsRaw) {
+            String item = itemRaw.toLowerCase();
+            if (!TextUtils.isEmpty(item) && !keywords.contains(item)) {
+                keywords.add(item);
+            }
+        }
+        return keywords;
     }
 
     public boolean matched(String s) {
