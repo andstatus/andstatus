@@ -22,9 +22,9 @@ import android.text.TextUtils;
  * Add selection and it's argument (for query...)
  */
 public final class SelectionAndArgs {
-  public String selection;
-  public String[] selectionArgs;
-  public int nArgs;
+  public volatile String selection;
+  public volatile String[] selectionArgs;
+  public volatile int nArgs;
   
   public SelectionAndArgs() {
       clear();

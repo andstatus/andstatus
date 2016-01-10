@@ -19,8 +19,8 @@ package org.andstatus.app.service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import org.andstatus.app.IntentExtra;
@@ -150,7 +150,7 @@ public class CommandData implements Comparable<CommandData> {
                     commandData = new CommandData(
                             bundle.getLong(IntentExtra.COMMAND_ID.key, 0),
                             command, accountName2, timelineType2,
-                            bundle.getLong(IntentExtra.ITEMID.key));
+                            bundle.getLong(IntentExtra.ITEM_ID.key));
                     commandData.bundle = bundle;
                     commandData.mInForeground = commandData.bundle
                             .getBoolean(IntentExtra.IN_FOREGROUND.key);
@@ -185,7 +185,7 @@ public class CommandData implements Comparable<CommandData> {
             bundle.putString(IntentExtra.TIMELINE_TYPE.key, timelineType.save());
         }
         if (itemId != 0) {
-            bundle.putLong(IntentExtra.ITEMID.key, itemId);
+            bundle.putLong(IntentExtra.ITEM_ID.key, itemId);
         }
         bundle.putBoolean(IntentExtra.IN_FOREGROUND.key, mInForeground);
         bundle.putBoolean(IntentExtra.MANUALLY_LAUNCHED.key, mManuallyLaunched);
@@ -244,7 +244,7 @@ public class CommandData implements Comparable<CommandData> {
         ed.putString(IntentExtra.COMMAND.key + si, command.save());
         ed.putString(IntentExtra.ACCOUNT_NAME.key + si, getAccountName());
         ed.putString(IntentExtra.TIMELINE_TYPE.key + si, timelineType.save());
-        ed.putLong(IntentExtra.ITEMID.key + si, itemId);
+        ed.putLong(IntentExtra.ITEM_ID.key + si, itemId);
         ed.putBoolean(IntentExtra.IN_FOREGROUND.key + si, mInForeground);
         ed.putBoolean(IntentExtra.MANUALLY_LAUNCHED.key + si, mManuallyLaunched);
         ed.putBoolean(IntentExtra.IS_STEP.key + si, mIsStep);
@@ -311,7 +311,7 @@ public class CommandData implements Comparable<CommandData> {
                 command,
                 sp.getString(IntentExtra.ACCOUNT_NAME.key + si, ""),
                 TimelineType.load(sp.getString(IntentExtra.TIMELINE_TYPE.key + si, "")),
-                sp.getLong(IntentExtra.ITEMID.key + si, 0));
+                sp.getLong(IntentExtra.ITEM_ID.key + si, 0));
         commandData.bundle.putBoolean(IntentExtra.IN_FOREGROUND.key,
                 sp.getBoolean(IntentExtra.IN_FOREGROUND.key + si, false));
 
@@ -542,7 +542,7 @@ public class CommandData implements Comparable<CommandData> {
     }
 
     @Override
-    public int compareTo(CommandData another) {
+    public int compareTo(@NonNull CommandData another) {
         int greater = 0;
         if (another != null && another.priority != this.priority) {
             greater = this.priority > another.priority ? 1 : -1;

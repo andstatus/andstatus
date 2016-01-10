@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2014-2015 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,13 +18,11 @@ package org.andstatus.app.msg;
 
 import android.app.Activity;
 import android.content.Context;
-import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -39,16 +37,15 @@ import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.MyTheme;
 import org.andstatus.app.data.AvatarDrawable;
 import org.andstatus.app.data.DownloadStatus;
-import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyUrlSpan;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.SharedPreferencesUtil;
-import org.andstatus.app.widget.MySimpleCursorAdapter;
+import org.andstatus.app.widget.MyBaseAdapter;
 
 import java.util.List;
 
-public class ConversationViewAdapter extends BaseAdapter {
+public class ConversationViewAdapter extends MyBaseAdapter {
     private final MessageContextMenu contextMenu;
     private final Context context;
     private final MyAccount ma;
@@ -88,14 +85,11 @@ public class ConversationViewAdapter extends BaseAdapter {
             MyLog.v(this, method
                     + ": msgId=" + oMsg.getMsgId()
                     + (oMsg.mAvatarDrawable != null ? ", avatar="
-                            + oMsg.mAvatarDrawable : ""));
+                    + oMsg.mAvatarDrawable : ""));
         }
-        View view = findView();
+        View view = convertView == null ? newView() : convertView;
         view.setOnCreateContextMenuListener(contextMenu);
-        TextView id = (TextView) view.findViewById(R.id.id);
-        id.setText(Long.toString(oMsg.getMsgId()));
-        TextView linkedUserId = (TextView) view.findViewById(R.id.linked_user_id);
-        linkedUserId.setText(Long.toString(oMsg.mLinkedUserId));
+        setPosition(view, position);
 
         setIndent(oMsg, view);
         setMessageAuthor(oMsg, view);
@@ -106,7 +100,7 @@ public class ConversationViewAdapter extends BaseAdapter {
         return view;
     }
 
-    private View findView() {
+    private View newView() {
         LayoutInflater inflater = LayoutInflater.from(context);
         int layoutResource = R.layout.message_conversation;
         if (!Activity.class.isAssignableFrom(context.getClass())) {
@@ -126,6 +120,8 @@ public class ConversationViewAdapter extends BaseAdapter {
             messageIndented.setBackgroundResource(MyTheme.isThemeLight()
                     ? R.drawable.current_message_background_light
                     : R.drawable.current_message_background);
+        } else {
+            messageIndented.setBackgroundResource(0);
         }
 
         AttachedImageView imageView = (AttachedImageView) messageView.findViewById(R.id.attached_image);
@@ -138,42 +134,66 @@ public class ConversationViewAdapter extends BaseAdapter {
         
         int viewToTheLeftId = 0;
         if (oMsg.mIndentLevel > 0) {
-            View divider = messageView.findViewById(R.id.divider);
-            RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 1);
-            layoutParams.leftMargin = indentPixels - 4;
-            divider.setLayoutParams(layoutParams);
-            
-            if (MyLog.isVerboseEnabled()) {
-                MyLog.v(this,"density=" + displayDensity);
-            }
-            ImageView indentView = new ConversationIndentImageView(context, messageIndented, indentPixels);
-            indentView.setId(InstanceId.generateViewId());
-            viewToTheLeftId = indentView.getId();
-            ((ViewGroup) messageIndented.getParent()).addView(indentView);
+            viewToTheLeftId = R.id.indent_image;
         }
+        View divider = messageView.findViewById(R.id.divider);
+        RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 1);
+        layoutParams.leftMargin = indentPixels > 3 ? indentPixels - 4 : 0;
+        divider.setLayoutParams(layoutParams);
+
+        if (MyLog.isVerboseEnabled()) {
+            MyLog.v(this,"density=" + displayDensity);
+        }
+        setIndentView(messageIndented, indentPixels);
 
         if (MyPreferences.showAvatars()) {
-            ImageView avatarView = new ImageView(context);
-            int size = Math.round(AvatarDrawable.AVATAR_SIZE_DIP * displayDensity);
-            avatarView.setScaleType(ScaleType.FIT_CENTER);
-            RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(size, size);
-            layoutParams.topMargin = 3;
-            if (oMsg.mIndentLevel > 0) {
-                layoutParams.leftMargin = 1;
-            }
-            if (viewToTheLeftId == 0) {
-                layoutParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT, RelativeLayout.TRUE);
-            } else {
-                layoutParams.addRule(RelativeLayout.RIGHT_OF, viewToTheLeftId);
-            }
-            avatarView.setLayoutParams(layoutParams);
-            if (oMsg.mAvatarDrawable != null) {
-                avatarView.setImageDrawable(oMsg.mAvatarDrawable.getDrawable());
-            }
-            indentPixels += size;
-            ((ViewGroup) messageIndented.getParent()).addView(avatarView);
+            indentPixels = setAvatar(oMsg, messageIndented, viewToTheLeftId, displayDensity, indentPixels);
         }
         messageIndented.setPadding(indentPixels + 6, 2, 6, 2);
+    }
+
+    private void setIndentView(LinearLayout messageIndented, int indentPixels) {
+        ViewGroup parentView = ((ViewGroup) messageIndented.getParent());
+        ImageView oldView = (ImageView) parentView.findViewById(R.id.indent_image);
+        if (oldView != null) {
+            parentView.removeView(oldView);
+        }
+        if (indentPixels > 0) {
+            ImageView indentView = new ConversationIndentImageView(context, messageIndented, indentPixels);
+            indentView.setId(R.id.indent_image);
+            parentView.addView(indentView, 0);
+        }
+    }
+
+    private int setAvatar(ConversationViewItem oMsg, LinearLayout messageIndented, int viewToTheLeftId, float displayDensity, int indentPixels) {
+        ViewGroup parentView = ((ViewGroup) messageIndented.getParent());
+        ImageView avatarView = (ImageView) parentView.findViewById(R.id.avatar_image);
+        boolean newView = avatarView == null;
+        if (newView) {
+            avatarView = new ImageView(context);
+            avatarView.setId(R.id.avatar_image);
+        }
+        int size = Math.round(AvatarDrawable.AVATAR_SIZE_DIP * displayDensity);
+        avatarView.setScaleType(ScaleType.FIT_CENTER);
+        RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(size, size);
+        layoutParams.topMargin = 3;
+        if (oMsg.mIndentLevel > 0) {
+            layoutParams.leftMargin = 1;
+        }
+        if (viewToTheLeftId == 0) {
+            layoutParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT, RelativeLayout.TRUE);
+        } else {
+            layoutParams.addRule(RelativeLayout.RIGHT_OF, viewToTheLeftId);
+        }
+        avatarView.setLayoutParams(layoutParams);
+        if (oMsg.mAvatarDrawable != null) {
+            avatarView.setImageDrawable(oMsg.mAvatarDrawable.getDrawable());
+        }
+        indentPixels += size;
+        if (newView) {
+            parentView.addView(avatarView);
+        }
+        return indentPixels;
     }
 
     private void setMessageAuthor(ConversationViewItem oMsg, View messageView) {

@@ -19,64 +19,37 @@ package org.andstatus.app.widget;
 import android.content.Context;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.AttributeSet;
-import android.view.View;
 
-import org.andstatus.app.MyListActivity;
 import org.andstatus.app.util.MyLog;
 
 /**
  * See http://stackoverflow.com/questions/24658428/swiperefreshlayout-webview-when-scroll-position-is-at-top
   */
 public class MySwipeRefreshLayout extends SwipeRefreshLayout {
-    private CanChildScrollUpCallback mCanChildScrollUpCallback;
-    private MyListActivity mListActivity;
-    
+    private CanSwipeRefreshScrollUpCallback mCanSwipeRefreshScrollUpCallback;
+
     public MySwipeRefreshLayout(Context context) {
         this(context, null);
     }
     
     public MySwipeRefreshLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
-        if (MyListActivity.class.isInstance(context)) {
-            mListActivity = (MyListActivity) context;
-            MyLog.v(this, "Created for " + MyLog.objTagToString(mListActivity));
+        if (CanSwipeRefreshScrollUpCallback.class.isAssignableFrom(context.getClass())) {
+            mCanSwipeRefreshScrollUpCallback = (CanSwipeRefreshScrollUpCallback) context;
+            MyLog.v(this, "Created for " + MyLog.objTagToString(mCanSwipeRefreshScrollUpCallback));
         }
     }
 
-    public void setCanChildScrollUpCallback(CanChildScrollUpCallback canChildScrollUpCallback) {
-        mCanChildScrollUpCallback = canChildScrollUpCallback;
-    }
-
-    public static interface CanChildScrollUpCallback {
-        public boolean canSwipeRefreshChildScrollUp();
+    public interface CanSwipeRefreshScrollUpCallback {
+        boolean canSwipeRefreshChildScrollUp();
     }
 
     @Override
     public boolean canChildScrollUp() {
-        if (mCanChildScrollUpCallback != null) {
-            return mCanChildScrollUpCallback.canSwipeRefreshChildScrollUp();
-        }
-        if (mListActivity != null) {
-            return canListActivityListScrollUp();
+        if (mCanSwipeRefreshScrollUpCallback != null) {
+            return mCanSwipeRefreshScrollUpCallback.canSwipeRefreshChildScrollUp();
         }
         return super.canChildScrollUp();
     }    
-    
-    private boolean canListActivityListScrollUp() {
-        boolean can = true;
-        try {
-            // See http://stackoverflow.com/questions/3014089/maintain-save-restore-scroll-position-when-returning-to-a-listview/3035521#3035521
-            int index = mListActivity.getListView().getFirstVisiblePosition();
-            if (index == 0) {
-                View v = mListActivity.getListView().getChildAt(0);
-                int top = (v == null) ? 0 : (v.getTop() - mListActivity.getListView().getPaddingTop());
-                can = top < 0;
-            }
-        } catch (java.lang.IllegalStateException e) {
-            MyLog.v(this, e);
-            can = false;
-        }
-        return can;
-    }
-    
+
 }

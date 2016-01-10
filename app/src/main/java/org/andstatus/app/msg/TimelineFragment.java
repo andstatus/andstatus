@@ -22,7 +22,6 @@ import android.database.MatrixCursor;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
@@ -48,9 +47,6 @@ import java.util.List;
  */
 public class TimelineFragment extends ListFragment implements
         OnScrollListener, OnItemClickListener {
-    private static final int DIALOG_ID_TIMELINE_TYPE = 9;
-    private static final int LOADER_ID = 1;
-    private static final String ACTIVITY_PERSISTENCE_NAME = TimelineFragment.class.getSimpleName();
 
     private TimelineActivity mTimeline;
 
@@ -147,14 +143,14 @@ public class TimelineFragment extends ListFragment implements
     @Override
     public void onItemClick(AdapterView<?> adapterView, final View view, final int position, final long id) {
         if (mTimeline != null) {
-            mTimeline.onItemClick(adapterView, view, position, id);
+            mTimeline.onItemClick(view);
         }
     }
 
     @Override
     public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount,
             int totalItemCount) {
-        if (mTimeline != null && mPositionRestored && !isLoading()) {
+        if (mTimeline != null) {
             mTimeline.onScroll(view, firstVisibleItem, visibleItemCount, totalItemCount);
         }
     }
@@ -175,8 +171,8 @@ public class TimelineFragment extends ListFragment implements
     }
 
     private void createListAdapter(Cursor cursor) {
-        List<String> columnNames = new ArrayList<String>();
-        List<Integer> viewIds = new ArrayList<Integer>();
+        List<String> columnNames = new ArrayList<>();
+        List<Integer> viewIds = new ArrayList<>();
         columnNames.add(User.AUTHOR_NAME);
         viewIds.add(R.id.message_author);
         columnNames.add(MyDatabase.Msg.BODY);
@@ -198,7 +194,7 @@ public class TimelineFragment extends ListFragment implements
             viewIds.add(R.id.attached_image);
         }
         MySimpleCursorAdapter mCursorAdapter = new MySimpleCursorAdapter(mTimeline,
-                listItemLayoutId, cursor, columnNames.toArray(new String[]{}),
+                listItemLayoutId, cursor, columnNames.toArray(new String[columnNames.size()]),
                 toIntArray(viewIds), 0);
         mCursorAdapter.setViewBinder(new TimelineViewBinder());
 
@@ -230,10 +226,6 @@ public class TimelineFragment extends ListFragment implements
             MyLog.v(this, source + " set isLoading to " + isLoading);
             mLoadingLayout.setVisibility(isLoading ? View.VISIBLE : View.INVISIBLE);
         }
-    }
-
-    protected void restoreListPosition(TimelineListParameters mListParameters) {
-        mPositionRestored = new TimelineListPositionStorage(getListAdapter(), getListView(), mListParameters).restoreListPosition();
     }
 
     public boolean isPositionRestored() {

@@ -18,8 +18,8 @@ package org.andstatus.app;
 
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
-import android.widget.AdapterView;
 import android.widget.ListAdapter;
+import android.widget.ListView;
 
 /**
  * Support library doesn't have ListActivity, so we recreated it using Fragments here
@@ -34,11 +34,13 @@ public class MyListActivity extends MyBaseListActivity {
         super.onCreate(savedInstanceState);
     }
 
+    @Override
     protected void setListAdapter(ListAdapter adapter) {
         getList().setListAdapter(adapter);
     }
 
-    public AdapterView getListView() {
+    @Override
+    public ListView getListView() {
         return getList().getListView();
     }
 
@@ -50,7 +52,7 @@ public class MyListActivity extends MyBaseListActivity {
         return null;
     }
 
-    protected ListFragment getList() {
+    private ListFragment getList() {
         if (mList == null) {
             mList = (ListFragment) getSupportFragmentManager().findFragmentById(R.id.myListParent);
         }

@@ -16,13 +16,11 @@
 
 package org.andstatus.app.context;
 
-import org.andstatus.app.R;
 import org.andstatus.app.msg.TimelineActivity;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
 
 import android.annotation.TargetApi;
-import android.app.Activity;
 import android.app.backup.BackupManager;
 import android.content.Context;
 import android.content.ContextWrapper;
@@ -31,12 +29,10 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Configuration;
-import android.graphics.Color;
 import android.os.Build;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
-import android.view.View;
 
 import java.io.File;
 import java.util.Locale;
@@ -127,11 +123,7 @@ public class MyPreferences {
         // Non instantiable
     }
     
-    private static volatile boolean defaultSharedPreferencesLocked = false;
     public static SharedPreferences getDefaultSharedPreferences() {
-        if (defaultSharedPreferencesLocked) {
-            return null;
-        }
         Context context = MyContextHolder.get().context();
         if (context == null) {
             MyLog.e(TAG, "getDefaultSharedPreferences - Was not initialized yet");
@@ -144,14 +136,6 @@ public class MyPreferences {
         }
     }
 
-    public static void lockDefaultSharedPreferences() {
-        defaultSharedPreferencesLocked = true;
-    }
-
-    public static void unlockDefaultSharedPreferences() {
-        defaultSharedPreferencesLocked = false;
-    }
-    
     public static boolean shouldSetDefaultValues() {
         SharedPreferences sp = getSharedPreferences(PreferenceManager.KEY_HAS_SET_DEFAULT_VALUES);
         if (sp == null) {
@@ -219,10 +203,10 @@ public class MyPreferences {
         return longValue;
     }
     
-    private static final long CONNNECTION_TIMEOUT_DEFAULT_SECONDS = 30;
+    private static final long CONNECTION_TIMEOUT_DEFAULT_SECONDS = 30;
     public static int getConnectionTimeoutMs() {
         return (int) java.util.concurrent.TimeUnit.SECONDS.toMillis(getLongStoredAsString(
-                KEY_CONNECTION_TIMEOUT_SECONDS, CONNNECTION_TIMEOUT_DEFAULT_SECONDS));
+                KEY_CONNECTION_TIMEOUT_SECONDS, CONNECTION_TIMEOUT_DEFAULT_SECONDS));
     }
     
     /**
@@ -249,7 +233,7 @@ public class MyPreferences {
         if (locale == null) {
             locale = mDefaultLocale;
         }
-        return  locale == null ? true : (locale.getLanguage().isEmpty() ? true : locale.getLanguage().startsWith("en")); 
+        return  locale == null || locale.getLanguage().isEmpty() || locale.getLanguage().startsWith("en");
     }
     
     private static volatile Locale mLocale = null;
@@ -357,7 +341,6 @@ public class MyPreferences {
 
     public static File getDataFilesDir(String type, Boolean forcedUseExternalStorage, boolean logged) {
         final String method = "getDataFilesDir";
-        boolean logEnabled = false;
         File dir = null;
         StringBuilder textToLog = new StringBuilder();
         MyContext myContext = MyContextHolder.get();
@@ -384,6 +367,7 @@ public class MyPreferences {
             }
             if (dir != null && !dir.exists()) {
                 try {
+                    //noinspection ResultOfMethodCallIgnored
                     dir.mkdirs();
                 } catch (Exception e) {
                     if (logged) {
@@ -395,10 +379,6 @@ public class MyPreferences {
                         dir = null;
                     }
                 }
-            }
-            if (logged && logEnabled && MyLog.isVerboseEnabled()) {
-                MyLog.v(TAG, method + "; " + (isStorageExternal(forcedUseExternalStorage) ? "External" : "Internal")
-                        + " path: '" + ((dir == null) ? "(null)" : dir) + "'");
             }
         }
         if (logged && textToLog.length() > 0) {
@@ -425,13 +405,8 @@ public class MyPreferences {
     }
     
     public static boolean isStorageExternal(Boolean forcedUseExternalStorage) {
-        boolean useExternalStorage = false;
-        if (forcedUseExternalStorage == null) {
-            useExternalStorage = getBoolean(KEY_USE_EXTERNAL_STORAGE, false); 
-        } else {
-            useExternalStorage  = forcedUseExternalStorage;
-        }
-        return useExternalStorage;
+        return forcedUseExternalStorage == null ? getBoolean(KEY_USE_EXTERNAL_STORAGE, false)
+                : forcedUseExternalStorage;
     }
 
     public static boolean isSyncWhileUsingApplicationEnabled() {
@@ -451,7 +426,6 @@ public class MyPreferences {
      * Extends {@link android.content.ContextWrapper#getDatabasePath(java.lang.String)}
      * @param name The name of the database for which you would like to get its path.
      * @param forcedUseExternalStorage if not null, use this value instead of stored in preferences as {@link #KEY_USE_EXTERNAL_STORAGE}
-     * @return
      */
     public static File getDatabasePath(String name, Boolean forcedUseExternalStorage) {
         File dbDir = getDataFilesDir(DIRECTORY_DATABASES, forcedUseExternalStorage);
@@ -470,10 +444,7 @@ public class MyPreferences {
     }
 
     /**
-     * @param context
-     * @param update
      * @return true if we opened previous version
-     * @throws NameNotFoundException
      */
     public static boolean checkAndUpdateLastOpenedAppVersion(Context context, boolean update) {
         boolean changed = false;

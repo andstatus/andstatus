@@ -18,7 +18,6 @@ package org.andstatus.app.user;
 
 import android.os.Bundle;
 import android.view.MenuItem;
-import android.widget.ListAdapter;
 
 import org.andstatus.app.LoadableListActivity;
 import org.andstatus.app.R;
@@ -26,6 +25,7 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
+import org.andstatus.app.widget.MyBaseAdapter;
 
 /**
  *  List of users for different contexts 
@@ -52,7 +52,7 @@ public class UserList extends LoadableListActivity {
     }
 
     @Override
-    protected SyncLoader newSyncLoader() {
+    protected SyncLoader newSyncLoader(Bundle args) {
         return new UserListLoader(mUserListType, ma, mSelectedMessageId, mIsListCombined);
     }
 
@@ -65,7 +65,7 @@ public class UserList extends LoadableListActivity {
     }
 
     @Override
-    protected ListAdapter newListAdapter() {
+    protected MyBaseAdapter newListAdapter() {
         return new UserListViewAdapter(contextMenu, R.layout.user, getListLoader().getList());
     }
 

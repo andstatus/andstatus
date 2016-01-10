@@ -33,13 +33,7 @@
 		    android:layout_height="match_parent"
 		    android:orientation="vertical" >
 
-            <fragment
-                android:id="@+id/myListParent"
-                android:name="org.andstatus.app.msg.TimelineFragment"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical"
-				tools:layout="@layout/my_list_fragment"/>
+			<include layout="@layout/my_list_fragment" />
 
 		    <!-- On setting background see:
 		     http://stackoverflow.com/questions/11914547/setting-a-view-background-based-on-theme-attribute-crash-the-app -->

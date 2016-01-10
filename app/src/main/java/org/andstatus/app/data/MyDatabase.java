@@ -170,7 +170,8 @@ public final class MyDatabase extends SQLiteOpenHelper  {
          */
         public static final String MSG_ID =  "msg_id";
         
-        public static final String DEFAULT_SORT_ORDER = SENT_DATE + " DESC";
+        public static final String DESC_SORT_ORDER = SENT_DATE + " DESC";
+        public static final String ASC_SORT_ORDER = SENT_DATE + " ASC";
     }
     
     /**
@@ -339,11 +340,6 @@ public final class MyDatabase extends SQLiteOpenHelper  {
          */
         public static final String LINKED_USER_ID = "linked_user_id";
         /**
-         * Alias for the {@link User}'s primary key used to refer to MyAccount 
-         * (e.g. in a case we need to query a Timeline for particular MyAccount (e.g. for current MyAccount) 
-         */
-        public static final String ACCOUNT_ID =  "account_id";
-        /**
          * Derived from {@link Msg#SENDER_ID}
          * TODO: Whether this (and other similar...) is {@link #USERNAME} or {@link #REAL_NAME}, depends on settings 
          */
@@ -478,17 +474,16 @@ public final class MyDatabase extends SQLiteOpenHelper  {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 
-    private ThreadLocal<Boolean> onUpgradeTriggered = new ThreadLocal<Boolean>();
+    private final ThreadLocal<Boolean> onUpgradeTriggered = new ThreadLocal<>();
     public MyContextState checkState() {
         if (MyDatabaseConverterController.isUpgradeError()) {
             return MyContextState.ERROR;
         }
         MyContextState state = MyContextState.ERROR;
-        SQLiteDatabase db = null;
         try {
             onUpgradeTriggered.set(false);
             if (MyPreferences.isDataAvailable()) {
-                db = getReadableDatabase();
+                SQLiteDatabase db = getReadableDatabase();
                 if (onUpgradeTriggered.get() || MyDatabaseConverterController.isUpgrading()) {
                     state = MyContextState.UPGRADING;
                 } else {

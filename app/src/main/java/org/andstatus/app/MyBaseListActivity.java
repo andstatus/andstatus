@@ -16,11 +16,17 @@
 
 package org.andstatus.app;
 
+import android.view.View;
 import android.widget.ListAdapter;
+import android.widget.ListView;
 
-public abstract class MyBaseListActivity extends MyActivity {
+import org.andstatus.app.util.MyLog;
+import org.andstatus.app.widget.MySwipeRefreshLayout;
+
+public abstract class MyBaseListActivity extends MyActivity implements MySwipeRefreshLayout.CanSwipeRefreshScrollUpCallback {
 
     private int mPositionOfContextMenu = -1;
+    private ListAdapter mAdapter = null;
 
     public int getPositionOfContextMenu() {
         return mPositionOfContextMenu;
@@ -30,5 +36,35 @@ public abstract class MyBaseListActivity extends MyActivity {
         this.mPositionOfContextMenu = position;
     }
 
-    public abstract ListAdapter getListAdapter();
+    protected void setListAdapter(ListAdapter adapter) {
+        mAdapter = adapter;
+        getListView().setAdapter(mAdapter);
+    }
+
+    public ListAdapter getListAdapter() {
+        return mAdapter;
+    }
+
+    public ListView getListView() {
+        return (ListView) findViewById(android.R.id.list);
+    }
+
+    @Override
+    public boolean canSwipeRefreshChildScrollUp() {
+        boolean can = true;
+        try {
+            // See http://stackoverflow.com/questions/3014089/maintain-save-restore-scroll-position-when-returning-to-a-listview/3035521#3035521
+            int index = getListView().getFirstVisiblePosition();
+            if (index == 0) {
+                View v = getListView().getChildAt(0);
+                int top = (v == null) ? 0 : (v.getTop() - getListView().getPaddingTop());
+                can = top < 0;
+            }
+        } catch (java.lang.IllegalStateException e) {
+            MyLog.v(this, e);
+            can = false;
+        }
+        return can;
+    }
+
 }

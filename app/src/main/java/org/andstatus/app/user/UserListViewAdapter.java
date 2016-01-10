@@ -32,36 +32,35 @@ import org.andstatus.app.widget.MyBaseAdapter;
 import java.util.List;
 
 class UserListViewAdapter extends MyBaseAdapter {
+    private final UserListContextMenu contextMenu;
     private final int listItemLayoutId;
-    private final List<UserListViewItem> oUsers;
-    private final boolean showAvatars;
+    private final List<UserListViewItem> items;
+    private final boolean showAvatars = MyPreferences.showAvatars();
     private final boolean showWebFingerId =
             MyPreferences.userInTimeline().equals(UserInTimeline.WEBFINGER_ID);
-    private final UserListContextMenu contextMenu;
 
-    public UserListViewAdapter(UserListContextMenu contextMenu, int listItemLayoutId, List<UserListViewItem> oUsers) {
-        this.listItemLayoutId = listItemLayoutId;
-        this.oUsers = oUsers;
-        showAvatars = MyPreferences.showAvatars();
+    public UserListViewAdapter(UserListContextMenu contextMenu, int listItemLayoutId, List<UserListViewItem> items) {
         this.contextMenu = contextMenu;
+        this.listItemLayoutId = listItemLayoutId;
+        this.items = items;
     }
 
     @Override
     public int getCount() {
-        return oUsers.size();
+        return items.size();
     }
 
     @Override
     public Object getItem(int position) {
         if (position >= 0 && position < getCount()) {
-            return oUsers.get(position);
+            return items.get(position);
         }
         return UserListViewItem.getEmpty("");
     }
 
     @Override
     public long getItemId(int position) {
-        return oUsers.get(position).getUserId();
+        return items.get(position).getUserId();
     }
 
     @Override
@@ -69,7 +68,7 @@ class UserListViewAdapter extends MyBaseAdapter {
         View view = convertView == null ? newView() : convertView;
         view.setOnCreateContextMenuListener(contextMenu);
         setPosition(view, position);
-        UserListViewItem item = oUsers.get(position);
+        UserListViewItem item = items.get(position);
         MyUrlSpan.showText(view, R.id.username,
                 (showWebFingerId && !TextUtils.isEmpty(item.mbUser.getWebFingerId()) ?
                         item.mbUser.getWebFingerId() : item.mbUser.getUserName())
@@ -80,7 +79,7 @@ class UserListViewAdapter extends MyBaseAdapter {
         }
         MyUrlSpan.showText(view, R.id.homepage, item.mbUser.getHomepage(), true);
         MyUrlSpan.showText(view, R.id.description, item.mbUser.getDescription(), false);
-        MyUrlSpan.showText(view, R.id.profile_url, item.mbUser.getProfileUrl().toString(), true);
+        MyUrlSpan.showText(view, R.id.profile_url, item.mbUser.getProfileUrl(), true);
         showMyFollowers(view, item);
         return view;
     }
@@ -106,6 +105,7 @@ class UserListViewAdapter extends MyBaseAdapter {
                     builder.append(", ");
                 }
                 builder.append(MyContextHolder.get().persistentAccounts().fromUserId(userId).getAccountName());
+                count++;
             }
         }
         MyUrlSpan.showText(view, R.id.followed_by, builder.toString(), false);

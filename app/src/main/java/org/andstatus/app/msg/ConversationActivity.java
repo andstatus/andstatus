@@ -22,12 +22,10 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.widget.ListAdapter;
 
 import org.andstatus.app.ActivityRequestCode;
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.LoadableListActivity;
-import org.andstatus.app.MyBaseListActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
@@ -35,6 +33,7 @@ import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.QueueViewer;
 import org.andstatus.app.util.UriUtils;
+import org.andstatus.app.widget.MyBaseAdapter;
 
 /**
  * One selected message and, optionally, the whole conversation
@@ -67,10 +66,12 @@ public class ConversationActivity extends LoadableListActivity implements Action
                 }
                 break;
             case ATTACH:
-                Uri uri = data != null ? UriUtils.notNull(data.getData()) : Uri.EMPTY;
-                if (resultCode == RESULT_OK && !UriUtils.isEmpty(uri)) {
-                    UriUtils.takePersistableUriPermission(getActivity(), uri, data.getFlags());
-                    mMessageEditor.startEditingCurrentWithAttachedMedia(uri);
+                if (resultCode == RESULT_OK && data != null) {
+                    Uri uri = UriUtils.notNull(data.getData());
+                    if (!UriUtils.isEmpty(uri)) {
+                        UriUtils.takePersistableUriPermission(getActivity(), uri, data.getFlags());
+                        mMessageEditor.startEditingCurrentWithAttachedMedia(uri);
+                    }
                 }
                 break;
             default:
@@ -143,7 +144,7 @@ public class ConversationActivity extends LoadableListActivity implements Action
     }
     
     @Override
-    public MyBaseListActivity getActivity() {
+    public LoadableListActivity getActivity() {
         return this;
     }
 
@@ -153,17 +154,8 @@ public class ConversationActivity extends LoadableListActivity implements Action
     }
 
     @Override
-    public void onMessageEditorVisibilityChange(boolean isVisible) {
+    public void onMessageEditorVisibilityChange() {
         invalidateOptionsMenu();
-    }
-    
-    @Override
-    public long getLinkedUserIdFromCursor(int position) {
-        if (position < 0 || position >= size() ) {
-            return 0;
-        } else {
-            return getListLoader().getList().get(position).mLinkedUserId;
-        }
     }
 
     @SuppressWarnings("unchecked")
@@ -192,16 +184,16 @@ public class ConversationActivity extends LoadableListActivity implements Action
     }
 
     @Override
-    protected SyncLoader newSyncLoader() {
+    protected SyncLoader newSyncLoader(Bundle args) {
         return new ConversationLoader<>(ConversationViewItem.class,
                 this, getMa(), getItemId());
     }
 
     @Override
-    protected ListAdapter newListAdapter() {
+    protected MyBaseAdapter newListAdapter() {
         return new ConversationViewAdapter(mContextMenu, getItemId(), getListLoader().getList());
     }
-    
+
     @Override
     protected CharSequence getCustomTitle() {
         return getText(size() > 1 ? R.string.label_conversation

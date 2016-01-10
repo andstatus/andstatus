@@ -274,7 +274,7 @@ public class MessageEditorData {
                 MyContextHolder.get().context(), ma, inReplyToId);
         loader.load(null);
         List<Long> mentioned = new ArrayList<>();
-        mentioned.add(ma.getUserId());  // Skip an author of this message
+        mentioned.add(ma.getUserId());  // Skip an authorName of this message
         long authorWhomWeReply = getAuthorWhomWeReply(loader);
         mentioned.add(authorWhomWeReply);
         for(ConversationMemberItem item : loader.getList()) {

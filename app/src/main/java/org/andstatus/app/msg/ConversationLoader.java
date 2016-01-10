@@ -243,12 +243,4 @@ public class ConversationLoader<T extends ConversationItem> implements SyncLoade
         return mMsgs.size();
     }
 
-    @Override
-    public long getId(int location) {
-        if (location < size()) {
-            return mMsgs.get(location).getMsgId();
-        }
-        return 0;
-    }
-    
 }

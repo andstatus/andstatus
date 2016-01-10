@@ -22,8 +22,11 @@
     android:orientation="horizontal"
                 tools:context=".msg.TimelineActivity">
 
+    <ImageView android:id="@+id/indent_image" android:visibility="gone"
+               android:layout_height="wrap_content" android:layout_width="wrap_content" />
+
     <View android:id="@+id/divider" style="@style/Divider"/>
-    
+
     <LinearLayout
         android:id="@+id/message_indented"
         android:layout_width="match_parent"
@@ -90,15 +93,9 @@
                 android:layout_centerVertical="true"
                 android:src="@android:drawable/star_on" />
         </RelativeLayout>
-        
-        <TextView
-            android:id="@+id/id"
-            android:layout_width="0dip"
-            android:layout_height="wrap_content"
-            android:visibility="gone" />
 
         <TextView
-            android:id="@+id/linked_user_id"
+            android:id="@+id/position"
             android:layout_width="0dip"
             android:layout_height="wrap_content"
             android:visibility="gone" />

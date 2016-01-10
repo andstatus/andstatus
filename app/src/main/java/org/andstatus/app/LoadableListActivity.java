@@ -23,7 +23,6 @@ import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.text.TextUtils;
 import android.view.MenuItem;
-import android.widget.ListAdapter;
 import android.widget.ListView;
 
 import net.jcip.annotations.GuardedBy;
@@ -93,16 +92,13 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
     protected ParsedUri getParsedUri() {
         return mParsedUri;
     }
-    
-    protected void showList() {
+
+    protected void showList(Bundle args) {
         MyLog.v(this, "showList, instanceId=" + mInstanceId + ", itemId=" + mItemId);
         synchronized (loaderLock) {
-            if (mItemId != 0 && mWorkingLoader.getStatus() != Status.RUNNING) {
-                /* On passing the same info twice (Generic parameter + Class) read here:
-                 * http://codereview.stackexchange.com/questions/51084/generic-callback-object-but-i-need-the-type-parameter-inside-methods
-                 */
+            if (mWorkingLoader.getStatus() != Status.RUNNING) {
                 mWorkingLoader = new AsyncLoader();
-                mWorkingLoader.execute();
+                mWorkingLoader.execute(args);
             }
         }
     }
@@ -111,34 +107,33 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
         void allowLoadingFromInternet();
         void load(ProgressPublisher publisher);
         int size();
-        long getId(int location);
     }
     
     public interface ProgressPublisher {
         void publish(String progress);
     }
     
-    protected abstract SyncLoader newSyncLoader();
+    protected abstract SyncLoader newSyncLoader(Bundle args);
     
-    private class AsyncLoader extends AsyncTask<Void, String, SyncLoader> implements LoadableListActivity.ProgressPublisher {
+    private class AsyncLoader extends AsyncTask<Bundle, String, SyncLoader> implements LoadableListActivity.ProgressPublisher {
         private volatile long timeStarted = 0;
         private volatile long timeLoaded = 0;
         private volatile long timeCompleted = 0;
-        private SyncLoader mSyncLoader = newSyncLoader();
+        private SyncLoader mSyncLoader = null;
 
         SyncLoader getSyncLoader() {
-            return mSyncLoader;
+            return mSyncLoader == null ? newSyncLoader(null) : mSyncLoader;
         }
 
         @Override
-        protected SyncLoader doInBackground(Void... params) {
+        protected SyncLoader doInBackground(Bundle... params) {
             timeStarted = System.currentTimeMillis();
             publishProgress("...");
-            SyncLoader loader = newSyncLoader();
+            SyncLoader loader = newSyncLoader(params[0]);
             if (ma.isValidAndSucceeded()) {
                 loader.allowLoadingFromInternet();
-                loader.load(this);
             }
+            loader.load(this);
             timeLoaded = System.currentTimeMillis();
             return loader;
         }
@@ -158,7 +153,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
             try {
                 if (!mIsPaused) {
                     mSyncLoader = loader;
-                    onContentLoaderCompleted();
+                    onLoadFinished();
                 }
             } catch (Exception e) {
                 MyLog.i(this,"on Recreating view", e);
@@ -169,42 +164,33 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
             + (timeCompleted - timeLoaded) + "ms in the foreground");
         }
     }
-    
-    private void onContentLoaderCompleted() {
-        AsyncLoader loader = updateCompletedLoader();
+
+    public void onLoadFinished() {
+        updateCompletedLoader();
         updateTitle("");
         ListView list = getListView();
         long itemIdOfListPosition = mItemId;
         if (list.getChildCount() > 1) {
             itemIdOfListPosition = list.getAdapter().getItemId(list.getFirstVisiblePosition());
         }
-        int firstListPosition = -1;
-        for (int ind = 0; ind < loader.getSyncLoader().size(); ind++) {
-            if (loader.getSyncLoader().getId(ind) == itemIdOfListPosition) {
-                firstListPosition = ind;
-            }
-        }
-        list.setAdapter(newListAdapter());
+        setListAdapter(newListAdapter());
+        int firstListPosition = getListAdapter().getPositionById(itemIdOfListPosition);
         if (firstListPosition >= 0) {
             list.setSelectionFromTop(firstListPosition, 0);
+            getListAdapter().setPositionRestored(true);
         }
     }
 
-    protected abstract ListAdapter newListAdapter();
+    protected abstract MyBaseAdapter newListAdapter();
 
     @Override
     public MyBaseAdapter getListAdapter() {
-        return (MyBaseAdapter) getListView().getAdapter();
+        return (MyBaseAdapter) super.getListAdapter();
     }
 
-    protected ListView getListView() {
-        return (ListView) findViewById(android.R.id.list);
-    }
-
-    private AsyncLoader updateCompletedLoader() {
+    private void updateCompletedLoader() {
         synchronized(loaderLock) {
             mCompletedLoader = mWorkingLoader;
-            return mWorkingLoader;
         }
     }
     
@@ -249,7 +235,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
         myServiceReceiver.registerReceiver(this);
         MyContextHolder.get().setInForeground(true);
         if (size() == 0) {
-            showList();
+            showList(null);
         }
     }
 
@@ -281,7 +267,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
             case FETCH_ATTACHMENT:
             case FETCH_AVATAR:
                 if (!commandData.getResult().hasError()) {
-                    showList();
+                    showList(null);
                 }
                 break;
             default:
@@ -293,7 +279,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.reload_menu_item:
-                showList();
+                showList(null);
                 break;
             default:
                 break;
@@ -307,5 +293,9 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
 
     public MyAccount getMa() {
         return ma;
+    }
+
+    public boolean isPositionRestored() {
+        return getListAdapter() != null && getListAdapter().isPositionRestored();
     }
 }

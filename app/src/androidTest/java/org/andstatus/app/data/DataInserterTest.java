@@ -117,7 +117,7 @@ public class DataInserterTest extends InstrumentationTestCase {
                 TestSuite.getConversationMyAccount().getUserId(), TimelineType.FOLLOWING_USER,
                 false, 0);
         SelectionAndArgs sa = new SelectionAndArgs();
-        String sortOrder = MyDatabase.Msg.DEFAULT_SORT_ORDER;
+        String sortOrder = MyDatabase.Msg.DESC_SORT_ORDER;
         sa.addSelection(MyDatabase.FollowingUser.FOLLOWING_USER_ID + " = ?",
                 new String[] {
                     Long.toString(somebodyId)
@@ -173,7 +173,7 @@ public class DataInserterTest extends InstrumentationTestCase {
         Uri contentUri = MatchedUri.getTimelineUri(
                 TestSuite.getConversationMyAccount().getUserId(), TimelineType.HOME, false, 0);
         SelectionAndArgs sa = new SelectionAndArgs();
-        String sortOrder = MyDatabase.Msg.DEFAULT_SORT_ORDER;
+        String sortOrder = MyDatabase.Msg.DESC_SORT_ORDER;
         sa.addSelection(MyDatabase.Msg.MSG_ID + " = ?",
                 new String[] {
                     Long.toString(messageId)
@@ -225,7 +225,7 @@ public class DataInserterTest extends InstrumentationTestCase {
         Uri contentUri = MatchedUri.getTimelineUri(
                 TestSuite.getConversationMyAccount().getUserId(), TimelineType.HOME, false, 0);
         SelectionAndArgs sa = new SelectionAndArgs();
-        String sortOrder = MyDatabase.Msg.DEFAULT_SORT_ORDER;
+        String sortOrder = MyDatabase.Msg.DESC_SORT_ORDER;
         sa.addSelection(MyDatabase.Msg.MSG_ID + " = ?",
                 new String[]{
                         Long.toString(messageId)
@@ -272,7 +272,7 @@ public class DataInserterTest extends InstrumentationTestCase {
         Uri contentUri = MatchedUri.getTimelineUri(
                 TestSuite.getConversationMyAccount().getUserId(), TimelineType.HOME, false, 0);
         SelectionAndArgs sa = new SelectionAndArgs();
-        String sortOrder = MyDatabase.Msg.DEFAULT_SORT_ORDER;
+        String sortOrder = MyDatabase.Msg.DESC_SORT_ORDER;
         sa.addSelection(MyDatabase.Msg.MSG_ID + " = ?",
                 new String[] {
                     Long.toString(messageId)
@@ -437,7 +437,7 @@ public class DataInserterTest extends InstrumentationTestCase {
         addOneMessage4testReplyInBody(buddyUserName, body, true);
     }
 
-    protected long addOneMessage4testReplyInBody(String buddyUserName, String body, boolean isReply) {
+    protected void addOneMessage4testReplyInBody(String buddyUserName, String body, boolean isReply) {
         DataInserter di = new DataInserter(TestSuite.getConversationMyAccount());
         String username = "somebody" + TestSuite.TESTRUN_UID + "@somewhere.net";
         String userOid = "acct:" + username;
@@ -465,6 +465,5 @@ public class DataInserterTest extends InstrumentationTestCase {
             assertTrue("Don't treat this message as a reply:'"
                     + message.getBody() + "'", buddyId == 0);
         }
-        return buddyId;
     }
 }

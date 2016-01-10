@@ -24,11 +24,13 @@ import org.andstatus.app.R;
 
 public abstract class MyBaseAdapter extends BaseAdapter {
 
+    private boolean positionRestored = false;
+
     public Object getItem(View view) {
         return getItem(getPosition(view));
     }
 
-    protected int getPosition(View view) {
+    public int getPosition(View view) {
         TextView positionView = getPositionView(view);
         if (positionView == null) {
             return -1;
@@ -45,5 +47,24 @@ public abstract class MyBaseAdapter extends BaseAdapter {
         if (positionView != null) {
             positionView.setText(Integer.toString(position));
         }
+    }
+
+    public int getPositionById(long itemId) {
+        if (itemId != 0) {
+            for (int position = 0; position < getCount(); position++) {
+                if (getItemId(position) == itemId) {
+                    return position;
+                }
+            }
+        }
+        return -1;
+    }
+
+    public void setPositionRestored(boolean positionRestored) {
+        this.positionRestored = positionRestored;
+    }
+
+    public boolean isPositionRestored() {
+        return positionRestored;
     }
 }

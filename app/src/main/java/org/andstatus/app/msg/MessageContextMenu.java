@@ -27,7 +27,6 @@ import android.view.ContextMenu.ContextMenuInfo;
 import android.view.View;
 import android.view.View.OnCreateContextMenuListener;
 import android.widget.AdapterView;
-import android.widget.TextView;
 
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
@@ -39,12 +38,13 @@ import org.andstatus.app.data.MessageForAccount;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.widget.MyBaseAdapter;
 
 /**
  * Context menu and corresponding actions on messages from the list 
  * @author yvolk@yurivolkov.com
  */
-public class MessageContextMenu implements OnCreateContextMenuListener {
+public class MessageContextMenu implements OnCreateContextMenuListener, View.OnClickListener {
 
     public final ActionableMessageList messageList;
     
@@ -72,41 +72,32 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
         final String method = "onCreateContextMenu";
         long userIdForThisMessage = mAccountUserIdToActAs;
         viewOfTheContext = v;
+        mMsgId = 0;
         String logMsg = method;
-        if (menuInfo != null) {
-            AdapterView.AdapterContextMenuInfo info;
-            try {
-                info = (AdapterView.AdapterContextMenuInfo) menuInfo;
-            } catch (ClassCastException e) {
-                MyLog.e(this, method + "; bad menuInfo", e);
-                return;
-            }
-
-            mMsgId = info.id;
-            logMsg += "; info.id=" + mMsgId + "; position=" + info.position;
-            messageList.getActivity().setPositionOfContextMenu(info.position);
+        messageList.getActivity().setPositionOfContextMenu(-1);
+        MyBaseAdapter adapter = messageList.getActivity().getListAdapter();
+        int position = adapter.getPosition(v);
+        if (position < 0) {
+            return;
+        }
+        Object oViewItem = adapter.getItem(position);
+        // TODO: Extract superclass
+        if (TimelineViewItem.class.isAssignableFrom(oViewItem.getClass())) {
+            TimelineViewItem viewItem = (TimelineViewItem) oViewItem;
+            mMsgId = viewItem.msgId;
+            logMsg += "; id=" + mMsgId;
             if (userIdForThisMessage == 0) {
-                userIdForThisMessage = messageList.getLinkedUserIdFromCursor(info.position);
+                userIdForThisMessage = viewItem.linkedUserId;
             }
-
         } else {
-            messageList.getActivity().setPositionOfContextMenu(-1);
-            TextView id = (TextView) v.findViewById(R.id.id);
-            mMsgId = Long.parseLong(id.getText().toString());
-            logMsg += "; idView.text=" + mMsgId;
+            ConversationViewItem viewItem = (ConversationViewItem) oViewItem;
+            mMsgId = viewItem.getMsgId();
+            logMsg += "; id=" + mMsgId;
             if (userIdForThisMessage == 0) {
-                TextView linkedUserId = (TextView) v.findViewById(R.id.linked_user_id);
-                String strUserId = linkedUserId.getText().toString();
-                if (!TextUtils.isEmpty(strUserId)) {
-                    userIdForThisMessage = Long.parseLong(strUserId);
-                }
+                userIdForThisMessage = viewItem.mLinkedUserId;
             }
         }
         mActorUserIdForCurrentMessage = 0;
-        if (mMsgId <= 0) {
-            mMsgId = 0;
-            return;
-        }
         MyLog.v(this, logMsg);
         MessageForAccount msg = getMessageForAccount(userIdForThisMessage, getCurrentMyAccountUserId());
         if (!msg.myAccount().isValid()) {
@@ -284,7 +275,7 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
         return messageList.getActivity();
     }
     
-    public boolean onContextItemSelected(MenuItem item) {
+    public void onContextItemSelected(MenuItem item) {
         AdapterView.AdapterContextMenuInfo info;
         String msgInfo = "";
         try {
@@ -296,20 +287,18 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
             }
         } catch (ClassCastException e) {
             MyLog.e(this, "bad menuInfo", e);
-            return false;
+            return;
         }
         if (mMsgId == 0) {
             MyLog.e(this, "message id == 0");
-            return false;
+            return;
         }
 
         MyAccount ma = MyContextHolder.get().persistentAccounts().fromUserId(mActorUserIdForCurrentMessage);
         if (ma.isValid()) {
             ContextMenuItem contextMenuItem = ContextMenuItem.fromId(item.getItemId());
             MyLog.v(this, "onContextItemSelected: " + contextMenuItem + "; actor=" + ma.getAccountName() + "; msgId=" + mMsgId + msgInfo);
-            return contextMenuItem.execute(this, ma);
-        } else {
-            return false;
+            contextMenuItem.execute(this, ma);
         }
     }
 
@@ -349,14 +338,14 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
     
     public void loadState(SharedPreferences savedInstanceState) {
         if (savedInstanceState != null 
-                && savedInstanceState.contains(IntentExtra.ITEMID.key)) {
-            mMsgId = savedInstanceState.getLong(IntentExtra.ITEMID.key, 0);
+                && savedInstanceState.contains(IntentExtra.ITEM_ID.key)) {
+            mMsgId = savedInstanceState.getLong(IntentExtra.ITEM_ID.key, 0);
         }
     }
 
     public void saveState(Editor outState) {
         if (outState != null) {
-            outState.putLong(IntentExtra.ITEMID.key, mMsgId);
+            outState.putLong(IntentExtra.ITEM_ID.key, mMsgId);
         }
     }
 
@@ -372,4 +361,10 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
         return mActorUserIdForCurrentMessage;
     }
 
+    @Override
+    public void onClick(View v) {
+        if (TimelineActivity.class.isAssignableFrom(messageList.getClass())) {
+            ((TimelineActivity) messageList).onItemClick(v);
+        }
+    }
 }

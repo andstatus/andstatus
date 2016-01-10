@@ -195,12 +195,4 @@ public class UserListLoader implements SyncLoader {
     public int size() {
         return mItems.size();
     }
-
-    @Override
-    public long getId(int location) {
-        if (location < size()) {
-            return mItems.get(location).getUserId();
-        }
-        return 0;
-    }
 }

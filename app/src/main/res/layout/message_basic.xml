@@ -15,7 +15,6 @@
 	limitations under the License.
 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
@@ -36,7 +35,6 @@
             android:id="@+id/message_author"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
             style="@style/messageUsernameAppearance" />
     </LinearLayout>
 
@@ -73,15 +71,9 @@
             android:layout_centerVertical="true"
             android:src="@android:drawable/star_on" />
     </RelativeLayout>
-    
-    <TextView
-        android:id="@+id/id"
-        android:layout_width="0dip"
-        android:layout_height="wrap_content"
-        android:visibility="gone" />
 
     <TextView
-        android:id="@+id/linked_user_id"
+        android:id="@+id/position"
         android:layout_width="0dip"
         android:layout_height="wrap_content"
         android:visibility="gone" />

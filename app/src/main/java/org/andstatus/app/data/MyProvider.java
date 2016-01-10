@@ -26,6 +26,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.provider.BaseColumns;
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import org.andstatus.app.context.MyContextHolder;
@@ -61,7 +62,7 @@ public class MyProvider extends ContentProvider {
      * <a href="http://stackoverflow.com/questions/5351669/why-use-contentprovider-gettype-to-get-mime-type">Why use ContentProvider.getType() to get MIME type</a>
      */
     @Override
-    public String getType(Uri uri) {
+    public String getType(@NonNull Uri uri) {
         return MatchedUri.fromUri(uri).getMimeType();
     }
 
@@ -72,7 +73,7 @@ public class MyProvider extends ContentProvider {
      *      java.lang.String, java.lang.String[])
      */
     @Override
-    public int delete(Uri uri, String selection, String[] selectionArgs) {
+    public int delete(@NonNull Uri uri, String selection, String[] selectionArgs) {
         SQLiteDatabase db = MyContextHolder.get().getDatabase().getWritableDatabase();
         int count;
         ParsedUri uriParser = ParsedUri.fromUri(uri);
@@ -140,7 +141,7 @@ public class MyProvider extends ContentProvider {
      *      android.content.ContentValues)
      */
     @Override
-    public Uri insert(Uri uri, ContentValues initialValues) {
+    public Uri insert(@NonNull Uri uri, ContentValues initialValues) {
 
         ContentValues values;
         MsgOfUserValues msgOfUserValues = new MsgOfUserValues(0);
@@ -251,7 +252,7 @@ public class MyProvider extends ContentProvider {
      *      java.lang.String)
      */
     @Override
-    public Cursor query(Uri uri, String[] projection, String selectionIn, String[] selectionArgsIn,
+    public Cursor query(@NonNull Uri uri, String[] projection, String selectionIn, String[] selectionArgsIn,
             String sortOrder) {
         SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
         boolean built = false;
@@ -327,7 +328,7 @@ public class MyProvider extends ContentProvider {
                 case TIMELINE:
                 case TIMELINE_ITEM:
                 case TIMELINE_SEARCH:
-                    orderBy = Msg.DEFAULT_SORT_ORDER;
+                    orderBy = Msg.DESC_SORT_ORDER;
                     break;
 
                 case MSG_COUNT:
@@ -406,7 +407,7 @@ public class MyProvider extends ContentProvider {
      * Update objects (one or several records) in the database
      */
     @Override
-    public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
+    public int update(@NonNull Uri uri, ContentValues values, String selection, String[] selectionArgs) {
         SQLiteDatabase db = MyContextHolder.get().getDatabase().getWritableDatabase();
         int count = 0;
         ParsedUri uriParser = ParsedUri.fromUri(uri);

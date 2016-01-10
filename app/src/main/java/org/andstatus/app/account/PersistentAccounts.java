@@ -43,7 +43,7 @@ public class PersistentAccounts {
      */
     private volatile String currentAccountName = "";
     
-    private Map<String,MyAccount> mAccounts = new ConcurrentHashMap<String, MyAccount>();
+    private final Map<String,MyAccount> mAccounts = new ConcurrentHashMap<>();
     private int distinctOriginsCount = 0;
     private volatile Set<Long> myFriends = null;
     
@@ -101,7 +101,7 @@ public class PersistentAccounts {
     }
     
     private void calculateDistinctOriginsCount() {
-        Set<Long> originIds = new HashSet<Long>();
+        Set<Long> originIds = new HashSet<>();
         for (MyAccount ma : mAccounts.values()) {
             originIds.add(ma.getOriginId());
         }
@@ -267,16 +267,21 @@ public class PersistentAccounts {
         }
         return ma;
     }
-    
+
+    /** Should not be called from UI thread */
+    public MyAccount getAccountForThisMessage(long messageId, long firstUserId,
+                                              long preferredUserId, boolean succeededOnly) {
+        return getAccountForThisMessage(MyQuery.msgIdToOriginId(messageId), messageId, firstUserId, preferredUserId, succeededOnly);
+    }
+
     /**
      * Find MyAccount, which may be linked to this message. 
      * First try two supplied user IDs, then try any other existing account
      * @return Invalid account if nothing suitable found
      */
-    public MyAccount getAccountForThisMessage(long messageId, long firstUserId, 
+    public MyAccount getAccountForThisMessage(long originId, long messageId, long firstUserId,
             long preferredUserId, boolean succeededOnly)  {
         final String method = "getAccountForThisMessage";
-        long originId = MyQuery.msgIdToOriginId(messageId);
         MyAccount ma = null;
         if (originId != 0) {
             ma = fromUserId(firstUserId);
@@ -307,7 +312,7 @@ public class PersistentAccounts {
         if (accountFits(oldMa, originId, succeededOnly) || !accountFits(newMa, originId, false)) {
             return oldMa;
         }
-        if ((oldMa == null || !oldMa.isValid()) && ( newMa != null && newMa.isValid())) {
+        if ((oldMa == null || !oldMa.isValid()) && newMa.isValid()) {
             return newMa;
         }
         return oldMa;
@@ -452,10 +457,7 @@ public class PersistentAccounts {
         if (isAccountUserId(inReplyToUserId)) {
             return true;
         }
-        if (isMyFriend(inReplyToUserId)) {
-            return true;
-        }
-        return false;
+        return isMyFriend(inReplyToUserId);
     }
 
     private boolean isMyFriend(long userId) {

@@ -60,7 +60,6 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> extends Instru
     public boolean invokeContextMenuAction4ListItemId(String methodExt, long listItemId, ContextMenuItem menuItem) throws InterruptedException {
         final String method = "invokeContextMenuAction4ListItemId";
         boolean success = false;
-        long id2 = listItemId;
         String msg = "";
         for (long attempt = 1; attempt < 4; attempt++) {
             TestSuite.waitForIdleSync(mInstrumentation);
@@ -70,7 +69,7 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> extends Instru
             if (position >= 0 && getListItemIdAtPosition(position) == listItemId ) {
                 selectListPosition(methodExt, position);
                 if (invokeContextMenuAction(methodExt, mActivity, position, menuItem.getId())) {
-                    id2 = getListItemIdAtPosition(position);
+                    long id2 = getListItemIdAtPosition(position);
                     if (id2 == listItemId) {
                         success = true;
                         break;
@@ -92,12 +91,11 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> extends Instru
             @Override
             public void run() {
                 int position = positionIn;
-                ListAdapter la = getListView().getAdapter();
-                if (la.getCount() <= position) {
-                    position = la.getCount() - 1;
+                if (getListAdapter().getCount() <= position) {
+                    position = getListAdapter().getCount() - 1;
                 }
                 MyLog.v(methodExt, method + " on setSelection " + position
-                        + " of " + (la.getCount() - 1));
+                        + " of " + (getListAdapter().getCount() - 1));
                 getListView().setSelectionFromTop(position, 0);
             }
         });
@@ -168,7 +166,7 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> extends Instru
         final int lastListItemPosition = firstListItemPosition + getListView().getChildCount() - 1;
 
         if (position < firstListItemPosition || position > lastListItemPosition ) {
-            return getListView().getAdapter().getView(position, null, getListView());
+            return getListAdapter().getView(position, null, getListView());
         } else {
             final int childIndex = position - firstListItemPosition;
             return getListView().getChildAt(childIndex);
@@ -176,13 +174,13 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> extends Instru
     }
 
     public ListView getListView() {
-        return (ListView) mActivity.findViewById(android.R.id.list);
+        return mActivity.getListView();
     }
 
     public long getListItemIdOfReply() {
         long idOut = -1;
-        for (int ind = 0; ind < getListView().getCount(); ind++) {
-            long itemId = getListView().getAdapter().getItemId(ind);
+        for (int ind = 0; ind < getListAdapter().getCount(); ind++) {
+            long itemId = getListAdapter().getItemId(ind);
             if (MyQuery.msgIdToLongColumnValue(MyDatabase.Msg.IN_REPLY_TO_MSG_ID, itemId) != 0) {
                 idOut = itemId;
                 break;
@@ -193,8 +191,8 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> extends Instru
 
     public int getPositionOfListItemId(long itemId) {
         int position = -1;
-        for (int ind = 0; ind < getListView().getCount(); ind++) {
-            if (itemId == getListView().getAdapter().getItemId(ind)) {
+        for (int ind = 0; ind < getListAdapter().getCount(); ind++) {
+            if (itemId == getListAdapter().getItemId(ind)) {
                 position = ind; 
                 break;
             }
@@ -204,12 +202,16 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> extends Instru
 
     public long getListItemIdAtPosition(int position) {
         long itemId = 0;
-        if(position >= 0 && position < getListView().getCount()) {
-            itemId = getListView().getAdapter().getItemId(position);
+        if(position >= 0 && position < getListAdapter().getCount()) {
+            itemId = getListAdapter().getItemId(position);
         }
         return itemId;
     }
-    
+
+    private ListAdapter getListAdapter() {
+        return mActivity.getListAdapter();
+    }
+
     public void clickListAtPosition(final String methodExt, final int position) throws InterruptedException {
         final String method = "clickListAtPosition";
         mInstrumentation.runOnMainSync(new Runnable() {
@@ -217,7 +219,7 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> extends Instru
             // http://stackoverflow.com/questions/8094268/android-listview-performitemclick
             @Override
             public void run() {
-                long listItemId = mActivity.getListAdapter().getItemId(position);
+                long listItemId = getListAdapter().getItemId(position);
                 MyLog.v(methodExt, method + "; on performClick, listItemId=" + listItemId);
                 getListView().performItemClick(
                         getViewByPosition(position),

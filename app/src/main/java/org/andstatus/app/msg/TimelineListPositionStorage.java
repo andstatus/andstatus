@@ -17,10 +17,7 @@
 package org.andstatus.app.msg;
 
 import android.content.SharedPreferences;
-import android.database.Cursor;
 import android.text.TextUtils;
-import android.widget.CursorAdapter;
-import android.widget.ListAdapter;
 import android.widget.ListView;
 
 import org.andstatus.app.context.MyPreferences;
@@ -28,6 +25,7 @@ import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.msg.TimelineActivity.TimelineTitle;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.widget.MyBaseAdapter;
 
 import java.util.Date;
 
@@ -41,62 +39,52 @@ import java.util.Date;
 class TimelineListPositionStorage {
     private static final String KEY_PREFIX = "timeline_position_";
 
-    private CursorAdapter mAdapter;
-    private ListView mListView;
-    private TimelineListParameters mListParameters;    
-    
-    private long mUserId = 0;
+    private final TimelineAdapter mAdapter;
+    private final ListView mListView;
+    private final TimelineListParameters mListParameters;
+
     /**
      * SharePreferences to use for storage 
      */
-    private SharedPreferences sp = MyPreferences.getDefaultSharedPreferences();
+    private final SharedPreferences sp = MyPreferences.getDefaultSharedPreferences();
     private String keyFirstVisibleItemId = "";
     private String keyLastRetrievedItemSentDate = "";
     private String keyQueryString = "";
-    private String queryString;
+    private final String queryString;
     
-    TimelineListPositionStorage(ListAdapter listAdapter, ListView listView, TimelineListParameters listParameters) {
-        this.mAdapter = (CursorAdapter) listAdapter;
+    TimelineListPositionStorage(MyBaseAdapter listAdapter, ListView listView, TimelineListParameters listParameters) {
+        this.mAdapter = (TimelineAdapter) listAdapter;
         this.mListView = listView;
         this.mListParameters = listParameters;
         
-        queryString = listParameters.mSearchQuery; 
+        queryString = listParameters.mSearchQuery;
+        long userId = 0;
         if (listParameters.mTimelineType == TimelineType.USER) {
-            mUserId = listParameters.mSelectedUserId;
+            userId = listParameters.mSelectedUserId;
         } else if (!listParameters.mTimelineCombined) {
-            mUserId = listParameters.myAccountUserId;
+            userId = listParameters.myAccountUserId;
         }
         keyFirstVisibleItemId = KEY_PREFIX
                 + listParameters.mTimelineType.save()
-                + "_user" + Long.toString(mUserId)
+                + "_user" + Long.toString(userId)
                 + (TextUtils.isEmpty(queryString) ? "" : "_search");
         keyLastRetrievedItemSentDate = keyFirstVisibleItemId + "_last";
-        keyQueryString = keyFirstVisibleItemId + "_querystring";
+        keyQueryString = keyFirstVisibleItemId + "_query_string";
     }
 
-    /**  @return true for success */
-    boolean save() {
+    void save() {
         if (mListView == null) {
-            return false;
+            return;
         }
         final String method = "saveListPosition";
-        CursorAdapter la = mAdapter;
+        TimelineAdapter la = mAdapter;
         if (la == null) {
             MyLog.v(this, method + " skipped: no ListAdapter");
-            return false;
+            return;
         }
         if (mListParameters.isEmpty()) {
             MyLog.v(this, method + " skipped: no listParameters");
-            return false;
-        }
-        Cursor cursor = la.getCursor(); 
-        if (la.getCursor() == null) {
-            MyLog.v(this, method + " skipped: cursor is null");
-            return false;
-        }
-        if (la.getCursor() == null || la.getCursor().isClosed()) {
-            MyLog.v(this, method + " skipped: cursor is closed");
-            return false;
+            return;
         }
 
         int firstVisiblePosition = mListView.getFirstVisiblePosition();
@@ -117,30 +105,26 @@ class TimelineListPositionStorage {
             if (lastPosition >= itemCount) {
                 lastPosition = itemCount - 1;
             }
-            if (cursor.moveToPosition(lastPosition)) {
-                lastItemSentDate = cursor.getLong(cursor.getColumnIndex(MyDatabase.Msg.SENT_DATE));
-            }
+            lastItemSentDate = la.getItem(lastPosition).sentDate;
         }
 
         if (firstVisibleItemId <= 0) {
             MyLog.v(this, method + " failed: no visible items for " + new TimelineTitle(mListParameters, "").toString());
-            return false;
         } else {
             put(firstVisibleItemId, lastItemSentDate);
 
             if (MyLog.isVerboseEnabled()) {
                 MyLog.v(this, method + " succeeded key=" + keyFirstVisibleItemId + ", id="
-                        + firstVisibleItemId + ", pos=" + firstVisiblePosition + ", lastdate="
-                        + new Date(lastItemSentDate).toString() + ", lastpos=" + lastPosition);
+                        + firstVisibleItemId + ", pos=" + firstVisiblePosition + ", lastDate="
+                        + new Date(lastItemSentDate).toString() + ", lastPos=" + lastPosition);
             }
         }
-        return true;
     }
     
     void put(long firstVisibleItemId, long lastRetrievedSentDate) {
         sp.edit().putLong(keyFirstVisibleItemId, firstVisibleItemId)
         .putLong(keyLastRetrievedItemSentDate, lastRetrievedSentDate)
-        .putString(keyQueryString, queryString).commit();
+        .putString(keyQueryString, queryString).apply();
     }
 
     private static final long NOT_FOUND_IN_LIST_POSITION_STORAGE = -4;
@@ -170,7 +154,7 @@ class TimelineListPositionStorage {
     
     void clear() {
         sp.edit().remove(keyFirstVisibleItemId).remove(keyLastRetrievedItemSentDate)
-                .remove(keyQueryString).commit();
+                .remove(keyQueryString).apply();
         if (MyLog.isVerboseEnabled()) {
             MyLog.v(this, "Position forgot key=" + keyFirstVisibleItemId);
         }
@@ -259,7 +243,7 @@ class TimelineListPositionStorage {
         if (MyLog.isVerboseEnabled()) {
             MyLog.v(this, "item count: " + itemCount);
         }
-        for (listPos = 0; !itemFound && (listPos < itemCount); listPos++) {
+        for (listPos = 0; listPos < itemCount; listPos++) {
             long itemId = mListView.getItemIdAtPosition(listPos);
             if (itemId == searchedId) {
                 itemFound = true;

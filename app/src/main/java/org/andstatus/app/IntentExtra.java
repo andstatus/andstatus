@@ -18,7 +18,6 @@ package org.andstatus.app;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.appwidget.MyAppWidgetProvider;
-import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.ParsedUri;
 import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.service.MyService;
@@ -37,7 +36,7 @@ public enum IntentExtra{
     /**
      * Command parameter: long - ID of the Tweet (or Msg) / User / Origin
      */
-    ITEMID("ITEMID"),
+    ITEM_ID("ITEM_ID"),
     COMMAND_RESULT("COMMAND_RESULT"),
     /**
      * {@link MyServiceState}
@@ -64,11 +63,11 @@ public enum IntentExtra{
     /**
      * Reply to
      */
-    INREPLYTOID("INREPLYTOID"),
+    IN_REPLY_TO_ID("IN_REPLY_TO_ID"),
     /**
      * Recipient of a Direct message
      */
-    RECIPIENTID("RECIPIENTID"),
+    RECIPIENT_ID("RECIPIENT_ID"),
     SEARCH_QUERY("SEARCH_QUERY"),
     /**
      * boolean. "true" means search in Internet, i.e. sending requests to Microblogging systems  
@@ -77,11 +76,11 @@ public enum IntentExtra{
     /**
      * Selected User. E.g. the User whose messages we are seeing  
      */
-    SELECTED_USERID("SELECTEDUSERID"),
+    SELECTED_USER_ID("SELECTED_USER_ID"),
     /**
      * Number of new tweets. Value is integer
      */
-    NUMTWEETS("NUMTWEETS"),
+    NUM_TWEETS("NUM_TWEETS"),
 
     /** See {@link ParsedUri} */
     TIMELINE_URI("TIMELINE_URI"),
@@ -97,7 +96,7 @@ public enum IntentExtra{
     TIMELINE_IS_COMBINED("TIMELINE_IS_COMBINED"),
     ROWS_LIMIT("ROWS_LIMIT"),
     POSITION_RESTORED("POSITION_RESTORED"),
-    LOAD_ONE_MORE_PAGE("LOAD_ONE_MORE_PAGE"),
+    WHICH_PAGE("WHICH_PAGE"),
     REQUERY("REQUERY"),
     
     COMMAND_ID("COMMAND_ID"),
@@ -117,16 +116,7 @@ public enum IntentExtra{
     UNKNOWN("UNKNOWN");
     
     public final String key;
-    private IntentExtra(String keySuffix) {
+    IntentExtra(String keySuffix) {
         key = ClassInApplicationPackage.PACKAGE_NAME + "." + keySuffix;
     }
-
-    public static IntentExtra fromKey(String key) {
-        for (IntentExtra item : IntentExtra.values()) {
-            if (item.key.contentEquals(key)) {
-                return item;
-            }
-        }
-        return UNKNOWN;
-    }        
 }

@@ -16,27 +16,24 @@
 
 package org.andstatus.app.origin;
 
-import android.app.ListActivity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.provider.BaseColumns;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
-import android.widget.BaseAdapter;
 import android.widget.ListAdapter;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
 import org.andstatus.app.ActivityRequestCode;
 import org.andstatus.app.IntentExtra;
-import org.andstatus.app.MyActivity;
 import org.andstatus.app.MyListActivity;
 import org.andstatus.app.R;
+import org.andstatus.app.account.MySimpleAdapter;
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.service.MyServiceEventsListener;
 import org.andstatus.app.util.MyLog;
 
 import java.util.ArrayList;
@@ -53,7 +50,7 @@ public abstract class OriginList extends MyListActivity {
     protected static final String KEY_VISIBLE_NAME = "visible_name";
     protected static final String KEY_NAME = "name";
     
-    private final List<Map<String, String>> data = new ArrayList<Map<String, String>>();
+    private final List<Map<String, String>> data = new ArrayList<>();
     protected boolean addEnabled = false;
     
     @Override
@@ -61,7 +58,7 @@ public abstract class OriginList extends MyListActivity {
         mLayoutId = getLayoutResourceId();
         super.onCreate(savedInstanceState);
 
-        ListAdapter adapter = new SimpleAdapter(this, 
+        ListAdapter adapter = new MySimpleAdapter(this,
                 data, 
                 R.layout.origin_list_item, 
                 new String[] {KEY_VISIBLE_NAME, KEY_NAME}, 
@@ -80,8 +77,6 @@ public abstract class OriginList extends MyListActivity {
     /**
      * Change the Activity according to the new intent. This procedure is done
      * both {@link #onCreate(Bundle)} and {@link #onNewIntent(Intent)}
-     * 
-     * @param intentNew
      */
     private void processNewIntent(Intent intentNew) {
         String action = intentNew.getAction();
@@ -112,10 +107,11 @@ public abstract class OriginList extends MyListActivity {
 
     protected final void fillData(List<Map<String, String>> data) {
         for (Origin origin : getOrigins()) {
-            Map<String, String> map = new HashMap<String, String>();
+            Map<String, String> map = new HashMap<>();
             String visibleName = origin.getName();
             map.put(KEY_VISIBLE_NAME, visibleName);
             map.put(KEY_NAME, origin.getName());
+            map.put(BaseColumns._ID, Long.toString(origin.getId()));
             data.add(map);
         }
     }

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2015 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import android.os.Bundle;
 import android.text.TextUtils;
 
 import org.andstatus.app.IntentExtra;
+import org.andstatus.app.data.ProjectionMap;
 import org.andstatus.app.data.SelectedUserIds;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyDatabase;
@@ -45,13 +46,13 @@ public class TimelineListParameters {
     final Context mContext;
     
     LoaderManager.LoaderCallbacks<Cursor> mLoaderCallbacks = null;
-    
+
     /**
      * Msg are being loaded into the list starting from one page. More Msg
      * are being loaded in a case User scrolls down to the end of list.
      */
     static final int PAGE_SIZE = 100;
-    
+
     TimelineType mTimelineType = TimelineType.UNKNOWN;
     /** Combined Timeline shows messages from all accounts */
     boolean mTimelineCombined = false;
@@ -68,23 +69,23 @@ public class TimelineListParameters {
      */
     String mSearchQuery = "";
 
-    boolean mLoadOneMorePage = false;
+    WhichTimelinePage whichPage = WhichTimelinePage.SAME;
     boolean mReQuery = false;
     String[] mProjection;
 
     Uri mContentUri = null;
-    boolean mIncrementallyLoadingPages = false;
-    int mRowsLimit = PAGE_SIZE;
-    long mLastItemSentDate = 0;
-    volatile SelectionAndArgs mSa = new SelectionAndArgs();
-    String mSortOrder = MyDatabase.Msg.DEFAULT_SORT_ORDER;
-    
-    // Execution state / data:
+    long minSentDate = 0;
+    long maxSentDate = 0;
+    final SelectionAndArgs mSa = new SelectionAndArgs();
+
+    // Execution state / loaded data:
     volatile long startTime = 0;
+    volatile long endTime = 0;
     volatile boolean cancelled = false;
     volatile TimelineType timelineToReload = TimelineType.UNKNOWN;
     volatile int rowsLoaded = 0;
-    volatile int rowsFilteredOut = 0;
+    volatile long minSentDateLoaded = 0;
+    volatile long maxSentDateLoaded = 0;
 
     public static TimelineListParameters clone(TimelineListParameters prev, Bundle args) {
         TimelineListParameters params = new TimelineListParameters(prev.mContext);
@@ -94,35 +95,30 @@ public class TimelineListParameters {
         params.myAccountUserId = prev.getMyAccountUserId();
         params.mSelectedUserId = prev.getSelectedUserId();
         params.mSearchQuery = prev.mSearchQuery;
-        params.mRowsLimit = prev.mRowsLimit;
 
-        params.mLoadOneMorePage = loadOneMorePage(args);
+        params.whichPage = whichPage(args);
         boolean reQuery = false;
         boolean positionRestored = false;
         if (args != null) {
             positionRestored = args.getBoolean(IntentExtra.POSITION_RESTORED.key);
             reQuery = args.getBoolean(IntentExtra.REQUERY.key);
         }
-        if (params.mRowsLimit < prev.rowsLoaded) {
-            params.mRowsLimit = prev.rowsLoaded;
+        String msgLog = "Loading " + params.whichPage.title + " page";
+        switch (params.whichPage) {
+            case OLDER:
+                params.maxSentDate = prev.minSentDateLoaded;
+                break;
+            case YOUNGER:
+                params.minSentDate = prev.maxSentDateLoaded;
+                break;
+            case SAME:
+            default:
+                params.minSentDate = prev.minSentDateLoaded;
+                params.maxSentDate = prev.maxSentDateLoaded;
+                break;
         }
-        if (params.mRowsLimit < TimelineListParameters.PAGE_SIZE) {
-            params.mRowsLimit = TimelineListParameters.PAGE_SIZE;
-        }
-        if (params.mLoadOneMorePage) {
-            String msgLog = "Loading next page";
-            if (prev.rowsLoaded > 0) {
-                msgLog += " prevRows:" + prev.rowsLoaded;
-            }
-            if (params.mLastItemSentDate > 0) {
-                params.mLastItemSentDate = 0;
-            }
-            params.mRowsLimit += TimelineListParameters.PAGE_SIZE;
-            msgLog += " rowsLimit:" + params.mRowsLimit;
-            MyLog.v(TimelineListParameters.class, msgLog);
-        }
+        MyLog.v(TimelineListParameters.class, msgLog);
 
-        params.mIncrementallyLoadingPages = positionRestored && params.mLoadOneMorePage;
         params.mReQuery = reQuery;
         params.mProjection = TimelineSql.getTimelineProjection();
         
@@ -131,11 +127,11 @@ public class TimelineListParameters {
         return params;
     }
 
-    public static boolean loadOneMorePage(Bundle args) {
+    public static WhichTimelinePage whichPage(Bundle args) {
         if (args != null) {
-            return args.getBoolean(IntentExtra.LOAD_ONE_MORE_PAGE.key);
+            return WhichTimelinePage.load(args.getString(IntentExtra.WHICH_PAGE.key));
         }
-        return false;
+        return WhichTimelinePage.SAME;
     }
 
     private void prepareQueryForeground(boolean positionRestored) {
@@ -199,17 +195,37 @@ public class TimelineListParameters {
             }
         }
 
-        if (!positionRestored) {
+        if (!positionRestored && minSentDate == 0 && maxSentDate == 0) {
             // We have to ensure that saved position will be
             // loaded from database into the list
-            mLastItemSentDate = new TimelineListPositionStorage(null, null, this).getLastRetrievedSentDate();
+            minSentDate = new TimelineListPositionStorage(null, null, this).getLastRetrievedSentDate();
         }
 
-        if (mLastItemSentDate <= 0) {
-            mSortOrder += " LIMIT 0," + this.mRowsLimit;
+        if (minSentDate > 0) {
+            mSa.addSelection(ProjectionMap.MSG_TABLE_ALIAS + "." + MyDatabase.Msg.SENT_DATE
+                            + " >= ?",
+                    new String[]{
+                            String.valueOf(minSentDate)
+                    });
+        }
+        if (maxSentDate > 0) {
+            mSa.addSelection(ProjectionMap.MSG_TABLE_ALIAS + "." + MyDatabase.Msg.SENT_DATE
+                            + " <= ?",
+                    new String[]{
+                            String.valueOf(maxSentDate)
+                    });
         }
     }
-    
+
+    public String getSortOrderAndLimit() {
+        return (isSortOrderAscending() ? MyDatabase.Msg.ASC_SORT_ORDER : MyDatabase.Msg.DESC_SORT_ORDER)
+                + (minSentDate > 0 && maxSentDate > 0 ? "" : " LIMIT " + PAGE_SIZE);
+    }
+
+    public boolean isSortOrderAscending() {
+        return maxSentDate == 0 && minSentDate > 0;
+    }
+
     public TimelineListParameters(Context context) {
         this.mContext = context;
     }
@@ -220,15 +236,22 @@ public class TimelineListParameters {
     
     @Override
     public String toString() {
-        return "TimelineListParameters [loaderCallbacks=" + mLoaderCallbacks + ", loadOneMorePage="
-                + mLoadOneMorePage + ", reQuery=" + mReQuery + ", timelineType=" + mTimelineType
-                + ", timelineCombined=" + mTimelineCombined + ", myAccountUserId=" + myAccountUserId
-                + ", selectedUserId=" + mSelectedUserId + ", projection="
-                + Arrays.toString(mProjection) + ", searchQuery=" + mSearchQuery + ", contentUri="
-                + mContentUri + ", incrementallyLoadingPages=" + mIncrementallyLoadingPages
-                + ", rowsLimit=" + mRowsLimit + ", lastSentDate=" + new Date(mLastItemSentDate).toString() + ", sa=" + mSa
-                + ", sortOrder=" + mSortOrder + ", startTime=" + startTime + ", cancelled="
-                + cancelled + ", timelineToReload=" + timelineToReload + "]";
+        return "TimelineListParameters [loaderCallbacks=" + mLoaderCallbacks
+                + ", page=" + whichPage.title
+                + ", reQuery=" + mReQuery
+                + ", timeline=" + mTimelineType
+                + (mTimelineCombined ? ", combined" : "")
+                + ", myAccountUserId=" + myAccountUserId
+                + ", selectedUserId=" + mSelectedUserId
+                + ", projection=" + Arrays.toString(mProjection)
+                + ", searchQuery=" + mSearchQuery + ", contentUri="
+                + mContentUri
+                + (minSentDate > 0 ? ", minSentDate=" + new Date(minSentDate).toString() : "")
+                + (maxSentDate > 0 ? ", maxSentDate=" + new Date(maxSentDate).toString() : "")
+                + ", sa=" + mSa
+                + ", sortOrder=" + getSortOrderAndLimit() + ", startTime=" + startTime
+                + (cancelled ? ", cancelled" : "")
+                + ", timelineToReload=" + timelineToReload + "]";
     }
 
     public TimelineType getTimelineType() {
@@ -263,15 +286,13 @@ public class TimelineListParameters {
         return parseUri(Uri.parse(savedInstanceState.getString(IntentExtra.TIMELINE_URI.key,"")));
     }
     
-    /** @return true if parsed successfully */
-    boolean parseIntentData(Intent intentNew) {
+    void parseIntentData(Intent intentNew) {
         if (!parseUri(intentNew.getData())) {
-            return false;
+            return;
         }
         if (TextUtils.isEmpty(mSearchQuery)) {
             mSearchQuery = notNullString(intentNew.getStringExtra(SearchManager.QUERY));
         }
-        return true;
     }
 
     /** @return true if parsed successfully */
@@ -295,5 +316,13 @@ public class TimelineListParameters {
     public static String notNullString(String string) {
         return string == null ? "" : string;
     }
-    
+
+    public void rememberSentDateLoaded(long sentDate) {
+        if (minSentDateLoaded == 0 || minSentDateLoaded > sentDate) {
+            minSentDateLoaded = sentDate;
+        }
+        if (maxSentDateLoaded == 0 || maxSentDateLoaded < sentDate) {
+            maxSentDateLoaded = sentDate;
+        }
+    }
 }

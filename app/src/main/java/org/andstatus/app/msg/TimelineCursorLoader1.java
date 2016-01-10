@@ -18,31 +18,19 @@ package org.andstatus.app.msg;
 
 import android.content.Loader;
 import android.database.Cursor;
-import android.database.MatrixCursor;
 import android.os.AsyncTask;
 import android.os.AsyncTask.Status;
-import android.text.TextUtils;
 
 import net.jcip.annotations.GuardedBy;
 
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.data.LatestTimelineItem;
-import org.andstatus.app.data.MyDatabase;
-import org.andstatus.app.data.MyDatabase.User;
-import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.data.ProjectionMap;
-import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.MyServiceEvent;
 import org.andstatus.app.service.MyServiceEventsListener;
 import org.andstatus.app.service.MyServiceEventsReceiver;
-import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.InstanceId;
-import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.TypedCursorValue;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -51,8 +39,8 @@ public class TimelineCursorLoader1 extends Loader<Cursor> implements MyServiceEv
     private final TimelineListParameters mParams;
     private Cursor mCursor = null;
 
-    private long instanceId = InstanceId.next();
-    private MyServiceEventsReceiver serviceConnector;
+    private final long instanceId = InstanceId.next();
+    private final MyServiceEventsReceiver serviceConnector;
 
     private final Object asyncLoaderLock = new Object();
     @GuardedBy("asyncLoaderLock")
@@ -221,196 +209,33 @@ public class TimelineCursorLoader1 extends Loader<Cursor> implements MyServiceEv
     /**
      * @author yvolk@yurivolkov.com
      */
-    private class AsyncLoader extends AsyncTask<Void, Void, Cursor> {
-        
+    private class AsyncLoader extends AsyncTask<Void, Void, Void> {
+        volatile TimelineLoader loader;
+
         @Override
-        protected Cursor doInBackground(Void... voidParams) {
-            markStart();
-            prepareQueryInBackground();
-            Cursor cursor = queryDatabase();
-            checkIfReloadIsNeeded(cursor);
-            return applyFilters(cursor);
-        }
-
-        private void markStart() {
-            getParams().startTime = System.nanoTime();
-            getParams().cancelled = false;
-            getParams().timelineToReload = TimelineType.UNKNOWN;
-            getParams().rowsFilteredOut = 0;
-            
-            if (MyLog.isVerboseEnabled()) {
-                logV("markStart", (TextUtils.isEmpty(getParams().mSearchQuery) ? ""
-                        : "queryString=\"" + getParams().mSearchQuery + "\"; ")
-                        + getParams().mTimelineType
-                        + "; isCombined=" + (getParams().mTimelineCombined ? "yes" : "no"));
-            }
-        }
-        
-        private void prepareQueryInBackground() {
-            if (getParams().mLastItemSentDate > 0) {
-                getParams().mSa.addSelection(ProjectionMap.MSG_TABLE_ALIAS + "." + MyDatabase.Msg.SENT_DATE
-                                + " >= ?",
-                        new String[]{
-                                String.valueOf(getParams().mLastItemSentDate)
-                        });
-            }
-        }
-
-        private Cursor queryDatabase() {
-            final String method = "queryDatabase";
-            Cursor cursor = null;
-            for (int attempt = 0; attempt < 3 && !isCancelled(); attempt++) {
-                try {
-                    cursor = MyContextHolder.get().context().getContentResolver()
-                            .query(getParams().mContentUri, getParams().mProjection, getParams().mSa.selection,
-                                    getParams().mSa.selectionArgs, getParams().mSortOrder);
-                    break;
-                } catch (IllegalStateException e) {
-                    logD(method, "Attempt " + attempt + " to prepare cursor", e);
-                    DbUtils.closeSilently(cursor);
-                    try {
-                        Thread.sleep(500);
-                    } catch (InterruptedException e2) {
-                        logD(method, "Attempt " + attempt + " to prepare cursor was interrupted",
-                                e2);
-                        break;
-                    }
-                }
-            }
-            return cursor;
-        }
-        
-        private void checkIfReloadIsNeeded(Cursor cursor) {
-            if (noMessagesInATimeline(cursor)) {
-                switch (getParams().mTimelineType) {
-                    case USER:
-                        // This timeline doesn't update automatically so let's do it now if necessary
-                        LatestTimelineItem latestTimelineItem = new LatestTimelineItem(getParams().mTimelineType, getParams().mSelectedUserId);
-                        if (latestTimelineItem.isTimeToAutoUpdate()) {
-                            getParams().timelineToReload = getParams().mTimelineType;
-                        }
-                        break;
-                    case FOLLOWING_USER:
-                        // This timeline doesn't update automatically so let's do it now if necessary
-                        latestTimelineItem = new LatestTimelineItem(getParams().mTimelineType, getParams().myAccountUserId);
-                        if (latestTimelineItem.isTimeToAutoUpdate()) {
-                            getParams().timelineToReload = getParams().mTimelineType;
-                        }
-                        break;
-                    default:
-                        if ( MyQuery.userIdToLongColumnValue(User.HOME_TIMELINE_DATE, getParams().myAccountUserId) == 0) {
-                            // This is supposed to be a one time task.
-                            getParams().timelineToReload = TimelineType.ALL;
-                        } 
-                        break;
-                }
-            }
-        }
-
-        private boolean noMessagesInATimeline(Cursor cursor) {
-            return !getParams().mLoadOneMorePage
-                    && TextUtils.isEmpty(getParams().mSearchQuery)
-                    && cursor != null && !cursor.isClosed() && cursor.getCount() == 0;
-        }
-
-        private Cursor applyFilters(Cursor cursor) {
-            KeywordsFilter keywordsFilter = new KeywordsFilter(
-                    MyPreferences.getString(MyPreferences.KEY_FILTER_HIDE_MESSAGES_BASED_ON_KEYWORDS, ""));
-            boolean hideRepliesNotToMeOrFriends = getParams().getTimelineType() == TimelineType.HOME
-                    && MyPreferences.getBoolean(MyPreferences.KEY_FILTER_HIDE_REPLIES_NOT_TO_ME_OR_FRIENDS, false);
-            String searchQuery = TextUtils.isEmpty(getParams().mSearchQuery) ? "" 
-                : getParams().mSearchQuery.toLowerCase();
-            
-            if (keywordsFilter.isEmpty() && !hideRepliesNotToMeOrFriends
-                    && TextUtils.isEmpty(searchQuery)) {
-                if (cursor != null) {
-                    getParams().rowsLoaded = cursor.getCount();
-                }
-                return cursor;
-            }
-            long startTime = System.currentTimeMillis();
-            int rowsCount = 0;
-            int filteredOutCount = 0;
-            MatrixCursor cursorOut = new MatrixCursor(cursor.getColumnNames());
-            if (cursor != null && !cursor.isClosed()) {
-                try {
-                    int indBody = cursor.getColumnIndex(MyDatabase.Msg.BODY);
-                    int indInReplyToUserId = cursor.getColumnIndex(MyDatabase.Msg.IN_REPLY_TO_USER_ID);
-                    if (cursor.moveToFirst()) {
-                        do {
-                            rowsCount++;
-                            Object[] row = new Object[cursor.getColumnCount()];
-                            boolean skip = false;
-                            String body = "";
-                            long inReplyToUserId = 0;
-                            for (int ind = 0; ind < cursor.getColumnCount(); ind++) {
-                                row[ind] = new TypedCursorValue(cursor, ind).value;
-                                if (ind == indBody && row[ind] != null) {
-                                    body = MyHtml.fromHtml(row[ind].toString()).toLowerCase();
-                                    skip = keywordsFilter.matched(body);
-                                    if (!skip && !TextUtils.isEmpty(searchQuery)) {
-                                        skip = !body.contains(searchQuery);
-                                    }
-                                } else if (ind == indInReplyToUserId && hideRepliesNotToMeOrFriends && row[ind] != null) {
-                                    inReplyToUserId = Long.parseLong(row[ind].toString());
-                                    if (inReplyToUserId != 0) {
-                                        skip = !MyContextHolder.get().persistentAccounts().isMeOrMyFriend(inReplyToUserId);
-                                    }
-                                }
-                            }
-                            if (skip) {
-                                filteredOutCount++;
-                                if (MyLog.isVerboseEnabled()) {
-                                    MyLog.v(this, filteredOutCount + " Filtered out: " + I18n.trimTextAt(body, 40));
-                                }
-                            } else {
-                                cursorOut.addRow(row);
-                            }
-                        } while (cursor.moveToNext());
-                    }
-                } finally {
-                    cursor.close();
-                }
-            }
-            MyLog.d(this, "Filtered out " + filteredOutCount + " of " + rowsCount + " rows, "
-                    + (System.currentTimeMillis() - startTime) + "ms" );
-            getParams().rowsLoaded = rowsCount;
-            getParams().rowsFilteredOut = filteredOutCount;
-            return cursorOut;
+        protected Void doInBackground(Void... voidParams) {
+            loader = new TimelineLoader(getParams());
+            loader.allowLoadingFromInternet();
+            loader.load(null);
+            return null;
         }
 
         @Override
-        protected void onPostExecute(Cursor result) {
-            singleEnd(result);
+        protected void onPostExecute(Void result) {
+            singleEnd(loader);
         }
 
         @Override
-        protected void onCancelled(Cursor result) {
+        protected void onCancelled(Void result) {
             getParams().cancelled = true;
-            singleEnd(null);
+            singleEnd(loader);
         }
 
-        private void singleEnd(Cursor result) {
-            logExecutionStats(result);
-            TimelineCursorLoader1.this.deliverResultsAndClean(result);
-        }
-        
-        private void logExecutionStats(Cursor cursor) {
-            if (MyLog.isVerboseEnabled()) {
-                StringBuilder text = new StringBuilder(getParams().cancelled ? "cancelled" : "ended");
-                if (!getParams().cancelled) {
-                    String cursorInfo;
-                    if (cursor == null) {
-                        cursorInfo = "cursor is null";
-                    } else if (cursor.isClosed()) {
-                        cursorInfo = "cursor is Closed";
-                    } else {
-                        cursorInfo = cursor.getCount() + " rows";
-                    }
-                    text.append(", " + cursorInfo);
-                }
-                text.append(", " + java.util.concurrent.TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - getParams().startTime) + " ms");
-                logV("stats", text.toString());
+        private void singleEnd(TimelineLoader result) {
+            if (result != null) {
+                result.logExecutionStats();
+                // TODO delete this class after its function replication
+                // TimelineCursorLoader1.this.deliverResultsAndClean(result.cursorLoaded);
             }
         }
     }

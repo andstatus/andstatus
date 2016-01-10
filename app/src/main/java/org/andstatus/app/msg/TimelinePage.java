@@ -1,5 +1,5 @@
-/**
- * Copyright (C) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
+/*
+ * Copyright (c) 2015 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,19 +16,17 @@
 
 package org.andstatus.app.msg;
 
-import org.andstatus.app.LoadableListActivity;
-import org.andstatus.app.data.TimelineType;
+import java.util.List;
 
 /**
- * Activity should implement this interface in order to use {@link MessageContextMenu} 
  * @author yvolk@yurivolkov.com
  */
-public interface ActionableMessageList {
-    LoadableListActivity getActivity();
-    MessageEditor getMessageEditor();
-    void onMessageEditorVisibilityChange();
-    long getCurrentMyAccountUserId();
-    long getSelectedUserId();
-    TimelineType getTimelineType();
-    boolean isTimelineCombined();
+public class TimelinePage {
+    final List<TimelineViewItem> items;
+    final TimelineListParameters parameters;
+
+    public TimelinePage(List<TimelineViewItem> items, TimelineListParameters parameters) {
+        this.items = items;
+        this.parameters = parameters;
+    }
 }

@@ -145,13 +145,12 @@ public class MessageEditor {
         });
     }
 
-    public boolean onCreateOptionsMenu(Menu menu) {
+    public void onCreateOptionsMenu(Menu menu) {
         createCreateMessageButton(menu);
         createAttachButton(menu);
         createSendButton(menu);
         createSaveDraftButton(menu);
         createDiscardButton(menu);
-        return true;
     }
 
     private void createCreateMessageButton(Menu menu) {
@@ -296,7 +295,7 @@ public class MessageEditor {
             if (!isHardwareKeyboardAttached()) {
                 openSoftKeyboard();
             }
-            mMessageList.onMessageEditorVisibilityChange(true);
+            mMessageList.onMessageEditorVisibilityChange();
         }
     }
     
@@ -322,7 +321,7 @@ public class MessageEditor {
         if (isVisible()) {
             mEditorView.setVisibility(View.GONE);
             closeSoftKeyboard();
-            mMessageList.onMessageEditorVisibilityChange(false);
+            mMessageList.onMessageEditorVisibilityChange();
         }
     }
 
@@ -541,7 +540,6 @@ public class MessageEditor {
                     return MessageEditorData.load(msgId);
                 } else {
                     MyLog.v(MessageEditorData.TAG, "Cannot be edited " + msgId + " state:" + status);
-                    msgId = 0;
                     MyPreferences.putLong(MyPreferences.KEY_BEING_EDITED_MESSAGE_ID, 0);
                     return MessageEditorData.INVALID;
                 }
