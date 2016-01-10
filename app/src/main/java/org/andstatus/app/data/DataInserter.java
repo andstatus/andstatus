@@ -25,6 +25,7 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.MyDatabase.Msg;
 import org.andstatus.app.data.MyDatabase.OidEnum;
+import org.andstatus.app.msg.KeywordsFilter;
 import org.andstatus.app.net.social.MbAttachment;
 import org.andstatus.app.net.social.MbMessage;
 import org.andstatus.app.net.social.MbUser;
@@ -50,6 +51,8 @@ public class DataInserter {
     private static final String TAG = DataInserter.class.getSimpleName();
     public static final String MSG_ASSERTION_KEY = "insertOrUpdateMsg";
     private final CommandExecutionContext execContext;
+    KeywordsFilter keywordsFilter = new KeywordsFilter(
+            MyPreferences.getString(MyPreferences.KEY_FILTER_HIDE_MESSAGES_BASED_ON_KEYWORDS, ""));
 
     public DataInserter(MyAccount ma) {
         this(new CommandExecutionContext(CommandData.getEmpty(), ma));
@@ -85,7 +88,9 @@ public class DataInserter {
             long createdDate = 0;
             if (sentDate > 0) {
                 createdDate = sentDate;
-                execContext.getResult().incrementDownloadedCount();
+                if (!keywordsFilter.matched(message.getBody())) {
+                    execContext.getResult().incrementDownloadedCount();
+                }
             }
             
             long actorId;
@@ -279,7 +284,7 @@ public class DataInserter {
                 DownloadData.deleteOtherOfThisMsg(msgId, downloadIds);
             }
 
-            if (isNewerThanInDatabase) {
+            if (isNewerThanInDatabase && !keywordsFilter.matched(message.getBody())) {
                 // This message is newer than already stored in our database, so count it!
                 execContext.getResult().incrementMessagesCount(execContext.getTimelineType());
                 if (mentioned) {

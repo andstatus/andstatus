@@ -33,7 +33,7 @@
             <change>Existing &quot;Hide messages based on keywords&quot; option
                 extended and now it's &quot;Hide messages based on keywords <b>or exact phrases</b>&quot;.
                 Messages, which contain defined keywords or exact phrases, are hidden
-                from all timelines.
+                from all timelines. Notifications for hidden messages are not shown.
                 <a href="https://github.com/andstatus/andstatus/issues/321">#321</a>
             </change>
         </changes>
