@@ -74,9 +74,9 @@ public class MessageContextMenu implements OnCreateContextMenuListener, View.OnC
         viewOfTheContext = v;
         mMsgId = 0;
         String logMsg = method;
-        messageList.getActivity().setPositionOfContextMenu(-1);
         MyBaseAdapter adapter = messageList.getActivity().getListAdapter();
         int position = adapter.getPosition(v);
+        messageList.getActivity().setPositionOfContextMenu(position);
         if (position < 0) {
             return;
         }

@@ -30,6 +30,11 @@
         versionDate="2016-01-XX"
         versionTitle="...">
         <changes>
+            <change>Maximum number of messages, shown in a Timeline at a time, restricted to several
+                hundreds. This change should prevent performance degradation for users
+                who receive thousands of new messages daily.
+                <a href="https://github.com/andstatus/andstatus/issues/313">#313</a>
+            </change>
             <change>Existing &quot;Hide messages based on keywords&quot; option
                 extended and now it's &quot;Hide messages based on keywords <b>or exact phrases</b>&quot;.
                 Messages, which contain defined keywords or exact phrases, are hidden

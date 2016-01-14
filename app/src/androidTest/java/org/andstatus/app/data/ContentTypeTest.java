@@ -11,12 +11,12 @@ public class ContentTypeTest extends InstrumentationTestCase {
         assertEquals("image/png", contentType.getMimeType());
         contentType = ContentType.create("image/png");
         assertEquals("image/png", contentType.getMimeType());
-        contentType = ContentType.parse("image/jpg");
-        assertEquals("image/jpg", contentType.getMimeType());
+        contentType = ContentType.parse("image/jpeg");
+        assertEquals("image/jpeg", contentType.getMimeType());
     }
 
     public void testMyContentType() {
         assertEquals("image/png", MyContentType.uri2MimeType(TestSuite.IMAGE1_URL, null));
-        assertEquals("image/jpg", MyContentType.filename2MimeType("http://www.publicdomainpictures.net/pictures/100000/nahled/autumn-tree-in-a-park.jpg", null));
+        assertEquals("image/jpeg", MyContentType.filename2MimeType("http://www.publicdomainpictures.net/pictures/100000/nahled/autumn-tree-in-a-park.jpg", null));
     }
 }
