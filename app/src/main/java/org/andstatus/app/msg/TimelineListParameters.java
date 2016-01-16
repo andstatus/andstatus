@@ -69,8 +69,7 @@ public class TimelineListParameters {
      */
     String mSearchQuery = "";
 
-    WhichTimelinePage whichPage = WhichTimelinePage.SAME;
-    boolean mReQuery = false;
+    WhichTimelinePage whichPage = WhichTimelinePage.NEW;
     String[] mProjection;
 
     Uri mContentUri = null;
@@ -87,8 +86,9 @@ public class TimelineListParameters {
     volatile long minSentDateLoaded = 0;
     volatile long maxSentDateLoaded = 0;
 
-    public static TimelineListParameters clone(TimelineListParameters prev, Bundle args) {
+    public static TimelineListParameters clone(TimelineListParameters prev, WhichTimelinePage whichPage) {
         TimelineListParameters params = new TimelineListParameters(prev.mContext);
+        params.whichPage = whichPage;
         params.mLoaderCallbacks = prev.mLoaderCallbacks;
         params.mTimelineType = prev.getTimelineType();
         params.mTimelineCombined = prev.isTimelineCombined();
@@ -96,35 +96,46 @@ public class TimelineListParameters {
         params.mSelectedUserId = prev.getSelectedUserId();
         params.mSearchQuery = prev.mSearchQuery;
 
-        params.whichPage = whichPage(args);
-        boolean reQuery = false;
-        boolean positionRestored = false;
-        if (args != null) {
-            positionRestored = args.getBoolean(IntentExtra.POSITION_RESTORED.key);
-            reQuery = args.getBoolean(IntentExtra.REQUERY.key);
-        }
         String msgLog = "Loading " + params.whichPage.title + " page";
         switch (params.whichPage) {
             case OLDER:
-                params.maxSentDate = prev.minSentDateLoaded;
+                if (prev.mayHaveOlderPage()) {
+                    params.maxSentDate = prev.minSentDateLoaded;
+                } else {
+                    params.maxSentDate = prev.maxSentDate;
+                }
                 break;
             case YOUNGER:
-                params.minSentDate = prev.maxSentDateLoaded;
+                if (prev.mayHaveYoungerPage()) {
+                    params.minSentDate = prev.maxSentDateLoaded;
+                } else {
+                    params.minSentDate = prev.minSentDate;
+                }
                 break;
             case SAME:
+                params.minSentDate = prev.minSentDate;
+                params.maxSentDate = prev.maxSentDate;
+                break;
+            case NEW:
             default:
-                params.minSentDate = prev.minSentDateLoaded;
-                params.maxSentDate = prev.maxSentDateLoaded;
+                params.minSentDate = new TimelineListPositionStorage(null, null, params).getLastRetrievedSentDate();
                 break;
         }
         MyLog.v(TimelineListParameters.class, msgLog);
 
-        params.mReQuery = reQuery;
         params.mProjection = TimelineSql.getTimelineProjection();
         
-        params.prepareQueryForeground(positionRestored);
+        params.prepareQueryForeground();
         
         return params;
+    }
+
+    public boolean mayHaveYoungerPage() {
+        return maxSentDate > 0 || rowsLoaded == PAGE_SIZE;
+    }
+
+    public boolean mayHaveOlderPage() {
+        return minSentDate > 0 || rowsLoaded == PAGE_SIZE;
     }
 
     public static WhichTimelinePage whichPage(Bundle args) {
@@ -134,7 +145,7 @@ public class TimelineListParameters {
         return WhichTimelinePage.SAME;
     }
 
-    private void prepareQueryForeground(boolean positionRestored) {
+    private void prepareQueryForeground() {
         mContentUri = MatchedUri.getTimelineSearchUri(myAccountUserId, mTimelineType,
                 mTimelineCombined, mSelectedUserId, mSearchQuery);
 
@@ -195,12 +206,6 @@ public class TimelineListParameters {
             }
         }
 
-        if (!positionRestored && minSentDate == 0 && maxSentDate == 0) {
-            // We have to ensure that saved position will be
-            // loaded from database into the list
-            minSentDate = new TimelineListPositionStorage(null, null, this).getLastRetrievedSentDate();
-        }
-
         if (minSentDate > 0) {
             mSa.addSelection(ProjectionMap.MSG_TABLE_ALIAS + "." + MyDatabase.Msg.SENT_DATE
                             + " >= ?",
@@ -236,22 +241,22 @@ public class TimelineListParameters {
     
     @Override
     public String toString() {
-        return "TimelineListParameters [loaderCallbacks=" + mLoaderCallbacks
+        return MyLog.formatKeyValue(this, "loaderCallbacks=" + mLoaderCallbacks
                 + ", page=" + whichPage.title
-                + ", reQuery=" + mReQuery
                 + ", timeline=" + mTimelineType
                 + (mTimelineCombined ? ", combined" : "")
                 + ", myAccountUserId=" + myAccountUserId
                 + ", selectedUserId=" + mSelectedUserId
                 + ", projection=" + Arrays.toString(mProjection)
-                + ", searchQuery=" + mSearchQuery + ", contentUri="
-                + mContentUri
+                + (TextUtils.isEmpty(mSearchQuery) ? "" : ", searchQuery=" + mSearchQuery)
+                + ", contentUri=" + mContentUri
                 + (minSentDate > 0 ? ", minSentDate=" + new Date(minSentDate).toString() : "")
                 + (maxSentDate > 0 ? ", maxSentDate=" + new Date(maxSentDate).toString() : "")
-                + ", sa=" + mSa
-                + ", sortOrder=" + getSortOrderAndLimit() + ", startTime=" + startTime
+                + (mSa.isEmpty() ? "" : ", sa=" + mSa)
+                + ", sortOrder=" + getSortOrderAndLimit()
+                + ", startTime=" + startTime
                 + (cancelled ? ", cancelled" : "")
-                + ", timelineToReload=" + timelineToReload + "]";
+                + (timelineToReload == TimelineType.UNKNOWN ? "" : ", timelineToReload=" + timelineToReload));
     }
 
     public TimelineType getTimelineType() {

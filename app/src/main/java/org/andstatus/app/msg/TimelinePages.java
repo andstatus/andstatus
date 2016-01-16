@@ -69,14 +69,15 @@ public class TimelinePages {
                 list.add(0, page);
                 break;
             default:
-                if (list.size() < 2) {
+                if (page.parameters.whichPage == WhichTimelinePage.NEW || list.size() < 2) {
                     list.clear();
                     list.add(page);
                 } else {
                     int found = -1;
                     for (int ind = 0; ind < list.size(); ind++) {
                         TimelinePage p = list.get(ind);
-                        if (p.parameters.mContentUri.equals(page.parameters.mContentUri)) {
+                        if (p.parameters.maxSentDate == page.parameters.maxSentDate
+                                && p.parameters.minSentDate == page.parameters.minSentDate) {
                             found = ind;
                             break;
                         }
@@ -100,6 +101,11 @@ public class TimelinePages {
             return;
         }
         TimelinePage ePage = list.get(indExistingPage);
+        if (page.parameters.maxSentDate >= ePage.parameters.maxSentDate) {
+            MyLog.v(this, "Previous younger page removed");
+            list.remove(indExistingPage);
+            return;
+        }
         long edgeDate =  ePage.parameters.minSentDateLoaded;
         List<TimelineViewItem> toRemove = new ArrayList<>();
         for (int ind = 0; ind < page.items.size(); ind++) {
@@ -136,7 +142,12 @@ public class TimelinePages {
             return;
         }
         TimelinePage ePage = list.get(indExistingPage);
-        long edgeDate = page.parameters.maxSentDateLoaded;
+        if (page.parameters.minSentDate <= ePage.parameters.minSentDate) {
+            MyLog.v(this, "Previous older page removed");
+            list.remove(indExistingPage);
+            return;
+        }
+        long edgeDate = ePage.parameters.maxSentDateLoaded;
         List<TimelineViewItem> toRemove = new ArrayList<>();
         for (int ind = page.items.size() - 1; ind >= 0; ind--) {
             TimelineViewItem item = page.items.get(ind);
@@ -185,12 +196,10 @@ public class TimelinePages {
     }
 
     public boolean mayHaveYoungerPage() {
-        return list.size() == 0 || list.get(0).parameters.maxSentDate > 0
-                || list.get(0).parameters.rowsLoaded == TimelineListParameters.PAGE_SIZE;
+        return list.size() == 0 || list.get(0).parameters.mayHaveYoungerPage();
     }
 
     public boolean mayHaveOlderPage() {
-        return list.size() == 0 || list.get(list.size() - 1).parameters.minSentDate > 0
-                || list.get(list.size() - 1).parameters.rowsLoaded == TimelineListParameters.PAGE_SIZE;
+        return list.size() == 0 || list.get(list.size() - 1).parameters.mayHaveOlderPage();
     }
 }

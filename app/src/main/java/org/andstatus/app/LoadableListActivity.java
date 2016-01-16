@@ -103,6 +103,12 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
         }
     }
 
+    public boolean isLoadingS() {
+        synchronized (loaderLock) {
+            return mWorkingLoader.getStatus() == Status.RUNNING;
+        }
+    }
+
     public interface SyncLoader {
         void allowLoadingFromInternet();
         void load(ProgressPublisher publisher);
@@ -160,7 +166,9 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
             }
             timeCompleted = System.currentTimeMillis();
             long timeTotal = timeCompleted - timeStarted;
-            MyLog.v(this, "Async load completed, " + mSyncLoader.size() + " items, " + timeTotal + "ms total, " 
+            MyLog.v(this, "Async load completed, "
+                    + (mSyncLoader == null ? "?" : mSyncLoader.size()) + " items, "
+                    + timeTotal + "ms total, "
             + (timeCompleted - timeLoaded) + "ms in the foreground");
         }
     }

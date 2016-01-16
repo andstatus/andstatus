@@ -21,11 +21,15 @@ import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
 
 import org.andstatus.app.R;
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.AttachedImageDrawable;
 import org.andstatus.app.data.AvatarDrawable;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyDatabase;
+import org.andstatus.app.util.I18n;
+import org.andstatus.app.util.MyHtml;
+import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
 
 /**
@@ -149,5 +153,11 @@ public class TimelineViewItem {
         if (msgStatus != DownloadStatus.LOADED) {
             messageDetails.append(" (").append(msgStatus.getTitle(context)).append(")");
         }
+    }
+
+    @Override
+    public String toString() {
+        return MyLog.formatKeyValue(this, I18n.trimTextAt(MyHtml.fromHtml(body), 40) + ","
+                + getDetails(MyContextHolder.get().context()));
     }
 }

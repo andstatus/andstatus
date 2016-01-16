@@ -18,46 +18,57 @@ package org.andstatus.app.util;
 
 import android.text.TextUtils;
 
+import java.util.Arrays;
+
 /**
  * Add selection and it's argument (for query...)
  */
 public final class SelectionAndArgs {
-  public volatile String selection;
-  public volatile String[] selectionArgs;
-  public volatile int nArgs;
-  
-  public SelectionAndArgs() {
-      clear();
-  }
-  
-  public void clear() {
-      selection = "";
-      selectionArgs = new String[] {};
-      nArgs = 0;
-  }
+    public volatile String selection;
+    public volatile String[] selectionArgs;
+    public volatile int nArgs;
 
-  public int addSelection(String selection_in) {
-      return addSelection(selection_in, null);
-  }
-  
-  public int addSelection(String selectionAdd, String[] selectionArgsAdd) {
-      int nArgsAdd = selectionArgsAdd == null ? 0 : selectionArgsAdd.length;
-      if (!TextUtils.isEmpty(selectionAdd)) {
-          if (selection.length() == 0) {
-              selection = selectionAdd;
-          } else {
-              selection = "(" + selection + ") AND (" + selectionAdd + ")";
-          }
-      }
-      if (nArgsAdd > 0) {
-          String[] selectionArgs2 = new String[nArgs + nArgsAdd];
-          System.arraycopy(selectionArgs, 0, selectionArgs2, 0, nArgs);
-          System.arraycopy(selectionArgsAdd, 0, selectionArgs2, nArgs, nArgsAdd);
-          selectionArgs = selectionArgs2;
-          
-          nArgs += nArgsAdd;
-      }
-      return nArgs;
-  }
+    public SelectionAndArgs() {
+        clear();
+    }
+
+    public void clear() {
+        selection = "";
+        selectionArgs = new String[] {};
+        nArgs = 0;
+    }
+
+    public int addSelection(String selection_in) {
+        return addSelection(selection_in, null);
+    }
+
+    public int addSelection(String selectionAdd, String[] selectionArgsAdd) {
+        int nArgsAdd = selectionArgsAdd == null ? 0 : selectionArgsAdd.length;
+        if (!TextUtils.isEmpty(selectionAdd)) {
+            if (selection.length() == 0) {
+                selection = selectionAdd;
+            } else {
+                selection = "(" + selection + ") AND (" + selectionAdd + ")";
+            }
+        }
+        if (nArgsAdd > 0) {
+            String[] selectionArgs2 = new String[nArgs + nArgsAdd];
+            System.arraycopy(selectionArgs, 0, selectionArgs2, 0, nArgs);
+            System.arraycopy(selectionArgsAdd, 0, selectionArgs2, nArgs, nArgsAdd);
+            selectionArgs = selectionArgs2;
+
+            nArgs += nArgsAdd;
+        }
+        return nArgs;
+    }
+
+    public boolean isEmpty() {
+        return nArgs == 0;
+    }
+
+    @Override
+    public String toString() {
+        return MyLog.formatKeyValue(this, selection + ", args:" + Arrays.toString(selectionArgs));
+    }
 
 }

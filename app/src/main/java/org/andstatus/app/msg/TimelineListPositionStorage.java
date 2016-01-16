@@ -52,8 +52,8 @@ class TimelineListPositionStorage {
     private String keyQueryString = "";
     private final String queryString;
     
-    TimelineListPositionStorage(MyBaseAdapter listAdapter, ListView listView, TimelineListParameters listParameters) {
-        this.mAdapter = (TimelineAdapter) listAdapter;
+    TimelineListPositionStorage(TimelineAdapter listAdapter, ListView listView, TimelineListParameters listParameters) {
+        this.mAdapter = listAdapter;
         this.mListView = listView;
         this.mListParameters = listParameters;
         
@@ -73,20 +73,13 @@ class TimelineListPositionStorage {
     }
 
     void save() {
-        if (mListView == null) {
-            return;
-        }
         final String method = "saveListPosition";
+        if (mListView == null || mAdapter == null
+                || mListParameters == null || mListParameters.isEmpty()) {
+            MyLog.v(this, method + ": skipped");
+            return;
+        }
         TimelineAdapter la = mAdapter;
-        if (la == null) {
-            MyLog.v(this, method + " skipped: no ListAdapter");
-            return;
-        }
-        if (mListParameters.isEmpty()) {
-            MyLog.v(this, method + " skipped: no listParameters");
-            return;
-        }
-
         int firstVisiblePosition = mListView.getFirstVisiblePosition();
         // Don't count a footer
         int itemCount = la.getCount() - 1;
@@ -163,7 +156,7 @@ class TimelineListPositionStorage {
     /**
      * Restore (First visible item) position saved for this user and for this type of timeline
      */
-    public boolean restoreListPosition() {
+    public boolean restore() {
         if (mListView == null) {
             return false;
         }

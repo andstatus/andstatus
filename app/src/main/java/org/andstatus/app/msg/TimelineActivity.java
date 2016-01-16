@@ -32,7 +32,6 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -40,7 +39,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.CheckBox;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.andstatus.app.ActivityRequestCode;
@@ -114,15 +112,6 @@ public class TimelineActivity extends LoadableListActivity implements
 
     private String mRateLimitText = "";
 
-    /**
-     * Visibility of the layout indicates whether Messages are being loaded into the list (asynchronously...)
-     * The layout appears at the bottom of the list of messages
-     * when new items are being loaded into the list
-     */
-    private LinearLayout mLoadingLayout;
-
-    private boolean mIsLoading = false;
-
     DrawerLayout mDrawerLayout;
     ActionBarDrawerToggle mDrawerToggle;
     protected volatile SelectorActivityMock selectorActivityMock;
@@ -159,8 +148,6 @@ public class TimelineActivity extends LoadableListActivity implements
             return;
         }
 
-        LayoutInflater inflater = LayoutInflater.from(this);
-        mLoadingLayout = (LinearLayout) inflater.inflate(R.layout.item_loading, null);
         mListParametersNew.myAccountUserId = MyContextHolder.get().persistentAccounts().getCurrentAccountUserId();
         mServiceConnector = new MyServiceEventsReceiver(this);
 
@@ -180,7 +167,7 @@ public class TimelineActivity extends LoadableListActivity implements
         }
 
         updateScreen();
-        queryListData(WhichTimelinePage.SAME);
+        queryListData(WhichTimelinePage.NEW);
     }
 
     @Override
@@ -330,14 +317,14 @@ public class TimelineActivity extends LoadableListActivity implements
             MyLog.v(this, method + "; instanceId=" + mInstanceId);
         }
         mServiceConnector.unregisterReceiver(this);
-        setSyncIndicator(method, false);
+        hideSyncIndicator(method);
         mMessageEditor.saveAsBeingEditedAndHide();
         saveActivityState();
         super.onPause();
 
         if (isPositionRestored()) {
             getListView().setFastScrollEnabled(false);
-            if (!isLoading()) {
+            if (!isLoadingS()) {
                 saveListPosition();
             }
             getListAdapter().setPositionRestored(false);
@@ -346,7 +333,27 @@ public class TimelineActivity extends LoadableListActivity implements
         MyContextHolder.get().setInForeground(false);
     }
 
-    private void setSyncIndicator(String source, boolean isVisible) {
+    private void showLoadingIndicator() {
+        final String method = "showLoading";
+        if (mSyncIndicator.getVisibility() != View.VISIBLE) {
+            ((TextView) findViewById(R.id.sync_text)).setText(getText(R.string.loading));
+            showHideSyncIndicator(method, true);
+        }
+    }
+
+    private void hideSyncIndicatorIfNotLoading(String source) {
+        showHideSyncIndicator(source, isLoadingS());
+    }
+
+    private void hideSyncIndicator(String source) {
+        showHideSyncIndicator(source, false);
+    }
+
+    private void showHideSyncIndicator(String source, boolean isVisibleIn) {
+        boolean isVisible = isVisibleIn;
+        if (isVisible) {
+            isVisible = !getMessageEditor().isVisible();
+        }
         if (isVisible ? (mSyncIndicator.getVisibility() != View.VISIBLE) : ((mSyncIndicator.getVisibility() == View.VISIBLE))) {
             MyLog.v(this, source + " set Sync indicator to " + isVisible);
             mSyncIndicator.setVisibility(isVisible ? View.VISIBLE : View.GONE);
@@ -379,18 +386,21 @@ public class TimelineActivity extends LoadableListActivity implements
         if (!mFinishing) {
             mFinishing = true;
         }
-        savePositionOnUiThread();
+        saveListPosition();
         super.finish();
     }
 
-    // That advice doesn't fit here:
-    // see http://stackoverflow.com/questions/5996885/how-to-wait-for-android-runonuithread-to-be-finished
-    protected void savePositionOnUiThread() {
+    /**
+     * May be executed on any thread
+     * That advice doesn't fit here:
+     * see http://stackoverflow.com/questions/5996885/how-to-wait-for-android-runonuithread-to-be-finished
+     */
+    protected void saveListPosition() {
         Runnable runnable = new Runnable() {
             @Override
             public void run() {
                 if (isPositionRestored()) {
-                    saveListPosition();
+                    new TimelineListPositionStorage(getListAdapter(), getListView(), mListParametersLoaded).save();
                 }
             }
         };
@@ -627,7 +637,7 @@ public class TimelineActivity extends LoadableListActivity implements
         MyContextHolder.initialize(this, this);
         parseNewIntent(intent);
         updateScreen();
-        queryListData(WhichTimelinePage.SAME);
+        queryListData(WhichTimelinePage.NEW);
     }
 
     private void parseNewIntent(Intent intentNew) {
@@ -673,7 +683,7 @@ public class TimelineActivity extends LoadableListActivity implements
         mListParametersNew.mSearchQuery = TimelineListParameters.notNullString(intentNew.getStringExtra(SearchManager.QUERY));
         if (!TextUtils.isEmpty(mListParametersNew.mSearchQuery)
                 && appSearchData.getBoolean(IntentExtra.GLOBAL_SEARCH.key, false)) {
-            setSyncing("Global search: " + mListParametersNew.mSearchQuery, true);
+            setRefreshing("Global search: " + mListParametersNew.mSearchQuery, true);
             MyServiceManager.sendManualForegroundCommand(
                     CommandData.searchCommand(
                             isTimelineCombined()
@@ -771,10 +781,6 @@ public class TimelineActivity extends LoadableListActivity implements
         return mContextMenu;
     }
 
-    public void saveListPosition() {
-        new TimelineListPositionStorage(getListAdapter(), getListView(), mListParametersLoaded).save();
-    }
-
     static class TimelineTitle {
         final StringBuilder title = new StringBuilder();
         final StringBuilder subTitle = new StringBuilder();
@@ -836,29 +842,26 @@ public class TimelineActivity extends LoadableListActivity implements
      * messages with this data
      * This is done asynchronously.
      * This method should be called from UI thread only.
-     * 
-     * @param whichPage true - load one more page of messages, false - reload the same page
      */
     protected void queryListData(WhichTimelinePage whichPage) {
         final String method = "queryListData";
-        MyLog.v(this, method + " " + whichPage);
-        Bundle args = new Bundle();
-        args.putString(IntentExtra.WHICH_PAGE.key, whichPage.save());
-        showList(args);
-        setLoading(method, true);
+        if (!isLoadingS()) {
+            saveListPosition();
+            MyLog.v(this, method + " " + whichPage);
+            Bundle args = new Bundle();
+            args.putString(IntentExtra.WHICH_PAGE.key, whichPage.save());
+            showList(args);
+            showLoadingIndicator();
+        }
     }
 
     @Override
     protected SyncLoader newSyncLoader(Bundle argsIn) {
         final String method = "newSyncLoader";
-        Bundle args = argsIn == null ? new Bundle() : argsIn;
-        MyLog.v(this, method);
-        args.putBoolean(IntentExtra.POSITION_RESTORED.key, isPositionRestored());
-
+        WhichTimelinePage whichPage = TimelineListParameters.whichPage(argsIn);
         TimelineListParameters params = TimelineListParameters.clone(
-                mListParametersLoaded == null ? new TimelineListParameters(this)
-                : (TimelineListParameters.whichPage(args) == WhichTimelinePage.SAME
-                        ? mListParametersNew : mListParametersLoaded), args);
+                getPrevParametersFor(whichPage), whichPage);
+        MyLog.v(this, method + ": " + params);
         Intent intent = getIntent();
         if (!params.mContentUri.equals(intent.getData())) {
             intent.setData(params.mContentUri);
@@ -867,9 +870,29 @@ public class TimelineActivity extends LoadableListActivity implements
         return new TimelineLoader(params);
     }
 
+    private TimelineListParameters getPrevParametersFor(WhichTimelinePage whichPage) {
+        TimelineAdapter adapter = getListAdapter();
+        if (whichPage == WhichTimelinePage.NEW
+                || whichPage == WhichTimelinePage.SAME && mListParametersLoaded == null
+                || adapter == null
+                || adapter.getPages().getCount() == 0) {
+            return mListParametersNew == null ? new TimelineListParameters(this)
+                    : mListParametersNew;
+        }
+        switch (whichPage) {
+            case SAME:
+                return mListParametersLoaded;
+            case OLDER:
+                return adapter.getPages().list.get(adapter.getPages().list.size()-1).parameters;
+            case YOUNGER:
+            default:
+                return adapter.getPages().list.get(0).parameters;
+        }
+    }
+
     protected void restoreListPosition(TimelineListParameters mListParameters) {
         getListAdapter().setPositionRestored(
-                new TimelineListPositionStorage(getListAdapter(), getListView(), mListParameters).restoreListPosition());
+                new TimelineListPositionStorage(getListAdapter(), getListView(), mListParameters).restore());
     }
 
     private void saveSearchQuery() {
@@ -906,13 +929,15 @@ public class TimelineActivity extends LoadableListActivity implements
             }
         }
         if (anotherPageToRequest == WhichTimelinePage.SAME) {
-            launchReloadIfNeeded(myLoader.getParams().timelineToReload);
+            if (myLoader.getParams().rowsLoaded == 0) {
+                launchReloadIfNeeded(myLoader.getParams().timelineToReload);
+            }
         } else {
             MyLog.v(this, method + "; Nothing loaded, requesting " + anotherPageToRequest + " page...");
             queryListData(anotherPageToRequest);
         }
 
-        setLoading(method, false);
+        hideSyncIndicator(method);
         updateScreen();
         clearNotifications();
     }
@@ -973,7 +998,7 @@ public class TimelineActivity extends LoadableListActivity implements
             return;
         }
 
-        setSyncing("manualReload", true);
+        setRefreshing("manualReload", true);
         MyServiceManager.sendForegroundCommand(
                 (new CommandData(CommandEnum.FETCH_TIMELINE,
                         allAccounts ? "" : ma.getAccountName(), timelineTypeForReload, userId)).setManuallyLaunched(manuallyLaunched)
@@ -1090,8 +1115,8 @@ public class TimelineActivity extends LoadableListActivity implements
                 onReceiveAfterExecutingCommand(commandData);
                 break;
             case ON_STOP:
-                setSyncing("onReceive STOP", false);
-                setSyncIndicator("onReceive STOP", false);
+                setRefreshing("onReceive STOP", false);
+                hideSyncIndicatorIfNotLoading("onReceive STOP");
                 break;
             default:
                 break;
@@ -1104,7 +1129,7 @@ public class TimelineActivity extends LoadableListActivity implements
                 || mMessageEditor.isVisible()) {
             return;
         }
-        setSyncIndicator("Before " + commandData.getCommand(), true);
+        showHideSyncIndicator("Before " + commandData.getCommand(), true);
         new AsyncTask<CommandData, Void, String>() {
 
             @Override
@@ -1114,8 +1139,7 @@ public class TimelineActivity extends LoadableListActivity implements
 
             @Override
             protected void onPostExecute(String result) {
-                String syncMessage = getText(R.string.title_preference_syncing) + ": "
-                        + result;
+                String syncMessage = getText(R.string.title_preference_syncing) + ": " + result;
                 ((TextView) findViewById(R.id.sync_text)).setText(syncMessage);
                 MyLog.v(this, syncMessage);
             }
@@ -1161,7 +1185,7 @@ public class TimelineActivity extends LoadableListActivity implements
             case FETCH_TIMELINE:
             case SEARCH_MESSAGE:
                 if (commandData.isInForeground() && !commandData.isStep()) {
-                    setSyncing("After executing " + commandData.getCommand(), false);
+                    setRefreshing("After executing " + commandData.getCommand(), false);
                 }
                 break;
             case RATE_LIMIT_STATUS:
@@ -1177,31 +1201,71 @@ public class TimelineActivity extends LoadableListActivity implements
             default:
                 break;
         }
+        if (isYoungestPageRefreshNeeded(commandData)) {
+            queryListData(WhichTimelinePage.NEW);
+        }
         if (mShowSyncIndicatorOnTimeline
                 && isCommandToShowInSyncIndicator(commandData.getCommand())) {
             ((TextView) findViewById(R.id.sync_text)).setText("");
         }
     }
 
-    protected boolean isLoading() {
-        return mIsLoading;
-    }
-
-    protected void setLoading(String source, boolean isLoading) {
-        if (isLoading() != isLoading && !isFinishing()) {
-            mIsLoading = isLoading;
-            MyLog.v(this, source + " set isLoading to " + isLoading);
-            mLoadingLayout.setVisibility(isLoading ? View.VISIBLE : View.INVISIBLE);
-        }
-    }
-
-    private void setSyncing(String source, boolean isSyncing) {
+    private void setRefreshing(String source, boolean isRefreshing) {
         if (mSwipeRefreshLayout != null 
-                && mSwipeRefreshLayout.isRefreshing() != isSyncing 
+                && mSwipeRefreshLayout.isRefreshing() != isRefreshing
                 && !isFinishing()) {
-            MyLog.v(this, source + " set Syncing to " + isSyncing);
-             mSwipeRefreshLayout.setRefreshing(isSyncing);
+            MyLog.v(this, source + " set Syncing to " + isRefreshing);
+             mSwipeRefreshLayout.setRefreshing(isRefreshing);
         }
+    }
+
+    public boolean isYoungestPageRefreshNeeded(CommandData commandData) {
+        boolean changed = false;
+        switch (commandData.getCommand()) {
+            case AUTOMATIC_UPDATE:
+            case FETCH_TIMELINE:
+                if (mListParametersLoaded == null
+                        || mListParametersLoaded.getTimelineType() != commandData.getTimelineType()) {
+                    break;
+                }
+            case GET_STATUS:
+            case SEARCH_MESSAGE:
+                if (commandData.getResult().getDownloadedCount() > 0) {
+                    changed = true;
+                }
+                break;
+            case CREATE_FAVORITE:
+            case DESTROY_FAVORITE:
+            case DESTROY_REBLOG:
+            case DESTROY_STATUS:
+            case FETCH_ATTACHMENT:
+            case FETCH_AVATAR:
+            case REBLOG:
+            case UPDATE_STATUS:
+                if (!commandData.getResult().hasError()) {
+                    changed = true;
+                }
+                break;
+            default:
+                break;
+        }
+        if (changed) {
+            TimelineAdapter adapter = getListAdapter();
+            if (adapter == null || adapter.getPages().mayHaveYoungerPage()) {
+                // Show updates only if we are on the top of a timeline
+                changed = false;
+            }
+        }
+        if (changed && isLoadingS()) {
+            if (MyLog.isVerboseEnabled()) {
+                MyLog.v(this, "Ignoring content change while loading, " + commandData.toString());
+            }
+            changed = false;
+        }
+        if (changed && MyLog.isVerboseEnabled()) {
+            MyLog.v(this, "Content changed, " + commandData.toString());
+        }
+        return changed;
     }
 
     @Override
@@ -1216,7 +1280,7 @@ public class TimelineActivity extends LoadableListActivity implements
 
     @Override
     public void onMessageEditorVisibilityChange() {
-        setSyncIndicator("onMessageEditorVisibilityChange", false);
+        hideSyncIndicatorIfNotLoading("onMessageEditorVisibilityChange");
         invalidateOptionsMenu();
     }
     

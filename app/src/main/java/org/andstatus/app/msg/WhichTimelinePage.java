@@ -22,9 +22,10 @@ import org.andstatus.app.util.MyLog;
  * @author yvolk@yurivolkov.com
  */
 public enum WhichTimelinePage {
-    YOUNGER(1, "younger"),
-    SAME(2, "same"),
-    OLDER(3, "older");
+    NEW(1, "new"),
+    YOUNGER(2, "younger"),
+    SAME(3, "same"),
+    OLDER(4, "older");
 
     private static final String TAG = WhichTimelinePage.class.getSimpleName();
     private final long code;
