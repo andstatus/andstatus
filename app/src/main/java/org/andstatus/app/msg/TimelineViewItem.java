@@ -27,6 +27,7 @@ import org.andstatus.app.data.AttachedImageDrawable;
 import org.andstatus.app.data.AvatarDrawable;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyDatabase;
+import org.andstatus.app.data.TimelineSql;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
@@ -71,7 +72,8 @@ public class TimelineViewItem {
     public static TimelineViewItem fromCursorRow(Cursor cursor) {
         TimelineViewItem item = new TimelineViewItem();
         item.msgId = getLong(cursor, MyDatabase.Msg._ID);
-        item.authorName = getString(cursor, MyDatabase.User.AUTHOR_NAME);
+        item.authorName = TimelineSql.userColumnIndexToNameAtTimeline(cursor,
+                cursor.getColumnIndex(MyDatabase.User.AUTHOR_NAME), MyPreferences.showOrigin());
         item.body = getString(cursor, MyDatabase.Msg.BODY);
         item.inReplyToMsgId = getLong(cursor, MyDatabase.Msg.IN_REPLY_TO_MSG_ID);
         item.inReplyToName = getString(cursor, MyDatabase.User.IN_REPLY_TO_NAME);
