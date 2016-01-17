@@ -136,11 +136,11 @@ public class TimelineListParameters {
     }
 
     public boolean mayHaveYoungerPage() {
-        return maxSentDate > 0 || rowsLoaded == PAGE_SIZE;
+        return maxSentDate > 0 || minSentDate > 0 && rowsLoaded == PAGE_SIZE;
     }
 
     public boolean mayHaveOlderPage() {
-        return minSentDate > 0 || rowsLoaded == PAGE_SIZE;
+        return minSentDate > 0 || maxSentDate == 0 || rowsLoaded == PAGE_SIZE;
     }
 
     private void prepareQueryForeground() {

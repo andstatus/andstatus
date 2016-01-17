@@ -30,7 +30,7 @@ import org.andstatus.app.widget.MyBaseAdapter;
 /**
  * @author yvolk@yurivolkov.com
  */
-public class TimelineAdapter extends MyBaseAdapter {
+public class TimelineAdapter extends MyBaseAdapter implements View.OnClickListener {
     private final MessageContextMenu contextMenu;
     private final int listItemLayoutId;
     private final TimelinePages pages;
@@ -71,7 +71,7 @@ public class TimelineAdapter extends MyBaseAdapter {
     public View getView(int position, View convertView, ViewGroup parent) {
         View view = convertView == null ? newView() : convertView;
         view.setOnCreateContextMenuListener(contextMenu);
-        view.setOnClickListener(contextMenu);
+        view.setOnClickListener(this);
         setPosition(view, position);
         TimelineViewItem item = getItem(position);
         MyUrlSpan.showText(view, R.id.message_author, item.authorName, false);
@@ -112,5 +112,13 @@ public class TimelineAdapter extends MyBaseAdapter {
     @Override
     public String toString() {
         return MyLog.formatKeyValue(this, pages);
+    }
+
+    @Override
+    public void onClick(View v) {
+        TimelineViewItem item = getItem(v);
+        if (TimelineActivity.class.isAssignableFrom(contextMenu.messageList.getClass())) {
+            ((TimelineActivity) contextMenu.messageList).onItemClick(item);
+        }
     }
 }

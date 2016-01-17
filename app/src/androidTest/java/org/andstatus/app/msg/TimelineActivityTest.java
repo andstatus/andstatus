@@ -103,23 +103,36 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
     
     private void onePositionOnContentChange(int position0, int iterationId) throws InterruptedException, Exception {
         final String method = "testPositionOnContentChange" + iterationId;
+        TestSuite.waitForListLoaded(this, getActivity(), 1);
+        getInstrumentation().runOnMainSync(new Runnable() {
+            @Override
+            public void run() {
+                getActivity().queryListData(WhichTimelinePage.YOUNGEST);
+            }
+        });
         TestSuite.waitForListLoaded(this, getActivity(), position0 + 2);
-        
+
         new ListActivityTestHelper<TimelineActivity>(this, getActivity()).selectListPosition(method, position0);
         int position1 = getListView().getFirstVisiblePosition();
+        long maxDateLoaded1 = getActivity().getListAdapter().getItem(0).sentDate;
+        long updatedAt1 = getActivity().getListAdapter().getPages().updatedAt;
         long itemId = getListView().getAdapter().getItemId(position1);
-        int count1 = getListView().getAdapter().getCount() - 1;
+        int count1 = getListView().getAdapter().getCount();
 
         new ConversationInserter().insertConversation("p" + iterationId);
         broadcastCommandExecuted();
+        long updatedAt2 = 0;
+        long maxDateLoaded2 = 0;
         int count2 = 0;
         int position2 = 0;
         int position2Any = -1;
         boolean found = false;
         for (int attempt = 0; attempt < 6; attempt++) {
             TestSuite.waitForIdleSync(this);
-            count2 = getListView().getAdapter().getCount() - 1;
-            if (count2 > count1) {
+            count2 = getListView().getAdapter().getCount();
+            updatedAt2 = getActivity().getListAdapter().getPages().updatedAt;
+            maxDateLoaded2 = getActivity().getListAdapter().getItem(0).sentDate;
+            if (updatedAt2 > updatedAt1) {
                 position2 = getListView().getFirstVisiblePosition();
                 for (int ind = 0; ind < count2; ind++) {
                     if (itemId == getListView().getAdapter().getItemId(ind)) {
@@ -145,10 +158,11 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
         String logText = method +  " The item id=" + itemId + " was " + (found ? "" : " not") + " found. "
                 + "position1=" + position1 + " of " + count1
                 + "; position2=" + position2 + " of " + count2
-                + ((position2Any >=0) ? " foundAt=" + position2Any : "");
+                + ((position2Any >=0) ? " foundAt=" + position2Any : "")
+                + ", updated in " + (updatedAt2 - updatedAt1) + "ms";
         MyLog.v(this, logText);
         assertTrue(logText, found);
-        assertTrue("More items loaded; " + logText, count2 > count1);
+        assertTrue("Newer items loaded; " + logText, maxDateLoaded2 > maxDateLoaded1);
     }
 
     private void broadcastCommandExecuted() {
@@ -179,7 +193,7 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
         assertTrue(logMsg, helper.invokeContextMenuAction4ListItemId(method, msgId, ContextMenuItem.NONEXISTENT));
         long userId1 = getActivity().getContextMenu().getActorUserIdForCurrentMessage();
         logMsg += "; userId1=" + userId1;
-        assertTrue(logMsg, userId1 != 0 );
+        assertTrue(logMsg, userId1 != 0);
 
         helper.invokeContextMenuAction4ListItemId(method, msgId, ContextMenuItem.ACT_AS);
 
@@ -187,11 +201,15 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
         TestSuite.waitForListLoaded(this, accountSelector, 3);
         ListActivityTestHelper<AccountSelector> asHelper = new ListActivityTestHelper<AccountSelector>(this, accountSelector);
         MyAccount ma = MyContextHolder.get().persistentAccounts().fromUserId(userId1);
-        asHelper.clickListAtPosition(method, asHelper.getPositionOfListItemId(ma.firstOtherAccountOfThisOrigin().getUserId()));
+        MyAccount ma2 = ma.firstOtherAccountOfThisOrigin();
+        logMsg += ", user1:" + ma.getAccountName() + ", user2:" + ma2.getAccountName();
+        assertNotSame(logMsg, ma, ma2);
+        asHelper.clickListAtPosition(method, asHelper.getPositionOfListItemId(ma2.getUserId()));
         Thread.sleep(500);
 
-        long userId2 = getActivity().getContextMenu().getActorUserIdForCurrentMessage();
-        logMsg += "; userId2=" + userId2;
-        assertTrue(logMsg, userId1 != userId2 );
+        long userId3 = getActivity().getContextMenu().getActorUserIdForCurrentMessage();
+        MyAccount ma3 = MyContextHolder.get().persistentAccounts().fromUserId(userId3);
+        logMsg += ", userId2Actual:" + ma3.getAccountName();
+        assertEquals(logMsg, ma2.getUserId(), userId3);
     }
 }

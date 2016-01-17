@@ -31,7 +31,6 @@ import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.data.MyDatabase.Msg;
-import org.andstatus.app.msg.TimelineActivity;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
 

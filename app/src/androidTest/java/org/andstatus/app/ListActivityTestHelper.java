@@ -117,7 +117,7 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> extends Instru
         boolean success = false;
         int position1 = position;
         for (long attempt = 1; attempt < 4; attempt++) {
-            if (!longClickAtPosition(methodExt, position1)) {
+            if (!longClickListAtPosition(methodExt, position1)) {
                 break;
             }
             if (mActivity.getPositionOfContextMenu() == position) {
@@ -143,17 +143,17 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> extends Instru
         return success;
     }
 
-    private boolean longClickAtPosition(final String methodExt, final int position) throws InterruptedException {
-        final View view = getViewByPosition(position);
-        if (view == null) {
+    private boolean longClickListAtPosition(final String methodExt, final int position) throws InterruptedException {
+        final View viewToClick = getViewByPosition(position);
+        if (viewToClick == null) {
             MyLog.i(methodExt, "View at list position " + position + " doesn't exist");
             return false;
         }
         mInstrumentation.runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                MyLog.v(methodExt, "performLongClick on " + view + " at position " + position);
-                view.performLongClick();
+                MyLog.v(methodExt, "performLongClick on " + viewToClick + " at position " + position);
+                viewToClick.performLongClick();
             }
         });
         TestSuite.waitForIdleSync(mInstrumentation);
@@ -162,15 +162,19 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> extends Instru
 
     // See http://stackoverflow.com/questions/24811536/android-listview-get-item-view-by-position
     public View getViewByPosition(int position) {
+        final String method = "getViewByPosition";
         final int firstListItemPosition = getListView().getFirstVisiblePosition();
         final int lastListItemPosition = firstListItemPosition + getListView().getChildCount() - 1;
-
+        View view;
         if (position < firstListItemPosition || position > lastListItemPosition ) {
-            return getListAdapter().getView(position, null, getListView());
+            view = getListAdapter().getView(position, null, getListView());
         } else {
             final int childIndex = position - firstListItemPosition;
-            return getListView().getChildAt(childIndex);
+            view = getListView().getChildAt(childIndex);
         }
+        MyLog.v(this, method + ": pos:" + position + ", first:" + firstListItemPosition
+                + ", last:" + lastListItemPosition + ", view:" + view);
+        return view;
     }
 
     public ListView getListView() {
@@ -215,19 +219,24 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> extends Instru
 
     public void clickListAtPosition(final String methodExt, final int position) throws InterruptedException {
         final String method = "clickListAtPosition";
+        final View viewToClick = getViewByPosition(position);
+        final long listItemId = getListAdapter().getItemId(position);
+        final String msgLog = method + "; id:" + listItemId + ", position:" + position + ", view:" + viewToClick;
         mInstrumentation.runOnMainSync(new Runnable() {
-            // See
-            // http://stackoverflow.com/questions/8094268/android-listview-performitemclick
             @Override
             public void run() {
-                long listItemId = getListAdapter().getItemId(position);
-                MyLog.v(methodExt, method + "; on performClick, listItemId=" + listItemId);
+                MyLog.v(methodExt, "onPerformClick " + msgLog);
+
+                // One of the two should work
+                viewToClick.performClick();
                 getListView().performItemClick(
-                        getViewByPosition(position),
+                        viewToClick,
                         position, listItemId);
+
+                MyLog.v(methodExt, "afterClick " + msgLog);
             }
         });
-        MyLog.v(methodExt, method + " ended");
+        MyLog.v(methodExt, method + " ended, " + msgLog);
         TestSuite.waitForIdleSync(mInstrumentation);
     }
 

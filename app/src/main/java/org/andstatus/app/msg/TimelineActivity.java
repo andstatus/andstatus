@@ -542,14 +542,13 @@ public class TimelineActivity extends LoadableListActivity implements
         startActivity(intent);
     }
 
-    public void onItemClick(final View view) {
-        TimelineViewItem item = getListAdapter().getItem(view);
+    public void onItemClick(TimelineViewItem item) {
         MyAccount ma = MyContextHolder.get().persistentAccounts().getAccountForThisMessage(item.originId,
                 item.msgId, item.linkedUserId,
                 mListParametersNew.myAccountUserId, false);
         if (MyLog.isVerboseEnabled()) {
             MyLog.v(this,
-                    "onItemClick, view=" + view
+                    "onItemClick, " + item
                             + "; " + item
                             + " account=" + ma.getAccountName());
         }
@@ -1205,7 +1204,7 @@ public class TimelineActivity extends LoadableListActivity implements
                 break;
         }
         if (isYoungestPageRefreshNeeded(commandData)) {
-            queryListData(WhichTimelinePage.NEW);
+            queryListData(WhichTimelinePage.YOUNGEST);
         }
         if (mShowSyncIndicatorOnTimeline
                 && isCommandToShowInSyncIndicator(commandData.getCommand())) {

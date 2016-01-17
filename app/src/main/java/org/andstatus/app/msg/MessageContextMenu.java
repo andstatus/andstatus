@@ -44,7 +44,7 @@ import org.andstatus.app.widget.MyBaseAdapter;
  * Context menu and corresponding actions on messages from the list 
  * @author yvolk@yurivolkov.com
  */
-public class MessageContextMenu implements OnCreateContextMenuListener, View.OnClickListener {
+public class MessageContextMenu implements OnCreateContextMenuListener {
 
     public final ActionableMessageList messageList;
     
@@ -359,12 +359,5 @@ public class MessageContextMenu implements OnCreateContextMenuListener, View.OnC
 
     public long getActorUserIdForCurrentMessage() {
         return mActorUserIdForCurrentMessage;
-    }
-
-    @Override
-    public void onClick(View v) {
-        if (TimelineActivity.class.isAssignableFrom(messageList.getClass())) {
-            ((TimelineActivity) messageList).onItemClick(v);
-        }
     }
 }

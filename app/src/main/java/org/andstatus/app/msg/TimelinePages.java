@@ -27,6 +27,7 @@ import java.util.List;
 public class TimelinePages {
     private static final int MAX_PAGES_COUNT = 5;
     final List<TimelinePage> list;
+    final long updatedAt = MyLog.uniqueCurrentTimeMS();
 
     public TimelinePages(TimelinePages oldPages, TimelinePage thisPage) {
         this.list = isSameTimeline(oldPages, thisPage) ? oldPages.list : new ArrayList<TimelinePage>();
