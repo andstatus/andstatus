@@ -23,6 +23,7 @@ import android.widget.ImageView;
 
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyUrlSpan;
 import org.andstatus.app.widget.MyBaseAdapter;
 
@@ -44,7 +45,7 @@ public class TimelineAdapter extends MyBaseAdapter {
 
     @Override
     public int getCount() {
-        return pages.getCount();
+        return pages.getItemsCount();
     }
 
     @Override
@@ -106,5 +107,10 @@ public class TimelineAdapter extends MyBaseAdapter {
     private void showFavorited(TimelineViewItem item, View view) {
         View favorited = view.findViewById(R.id.message_favorited);
         favorited.setVisibility(item.favorited ? View.VISIBLE : View.GONE );
+    }
+
+    @Override
+    public String toString() {
+        return MyLog.formatKeyValue(this, pages);
     }
 }

@@ -324,7 +324,7 @@ public class TimelineActivity extends LoadableListActivity implements
 
         if (isPositionRestored()) {
             getListView().setFastScrollEnabled(false);
-            if (!isLoadingS()) {
+            if (!isLoading()) {
                 saveListPosition();
             }
             getListAdapter().setPositionRestored(false);
@@ -342,7 +342,7 @@ public class TimelineActivity extends LoadableListActivity implements
     }
 
     private void hideSyncIndicatorIfNotLoading(String source) {
-        showHideSyncIndicator(source, isLoadingS());
+        showHideSyncIndicator(source, isLoading());
     }
 
     private void hideSyncIndicator(String source) {
@@ -845,12 +845,10 @@ public class TimelineActivity extends LoadableListActivity implements
      */
     protected void queryListData(WhichTimelinePage whichPage) {
         final String method = "queryListData";
-        if (!isLoadingS()) {
+        if (!isLoading()) {
             saveListPosition();
             MyLog.v(this, method + " " + whichPage);
-            Bundle args = new Bundle();
-            args.putString(IntentExtra.WHICH_PAGE.key, whichPage.save());
-            showList(args);
+            showList(whichPage.save(new Bundle()));
             showLoadingIndicator();
         }
     }
@@ -858,24 +856,27 @@ public class TimelineActivity extends LoadableListActivity implements
     @Override
     protected SyncLoader newSyncLoader(Bundle argsIn) {
         final String method = "newSyncLoader";
-        WhichTimelinePage whichPage = TimelineListParameters.whichPage(argsIn);
+        WhichTimelinePage whichPage = WhichTimelinePage.load(argsIn);
         TimelineListParameters params = TimelineListParameters.clone(
                 getPrevParametersFor(whichPage), whichPage);
-        MyLog.v(this, method + ": " + params);
-        Intent intent = getIntent();
-        if (!params.mContentUri.equals(intent.getData())) {
-            intent.setData(params.mContentUri);
+        if (whichPage != WhichTimelinePage.EMPTY) {
+            MyLog.v(this, method + ": " + params);
+            Intent intent = getIntent();
+            if (!params.mContentUri.equals(intent.getData())) {
+                intent.setData(params.mContentUri);
+            }
+            saveSearchQuery();
         }
-        saveSearchQuery();
         return new TimelineLoader(params);
     }
 
     private TimelineListParameters getPrevParametersFor(WhichTimelinePage whichPage) {
         TimelineAdapter adapter = getListAdapter();
         if (whichPage == WhichTimelinePage.NEW
+                || whichPage == WhichTimelinePage.EMPTY
                 || whichPage == WhichTimelinePage.SAME && mListParametersLoaded == null
                 || adapter == null
-                || adapter.getPages().getCount() == 0) {
+                || adapter.getPages().getItemsCount() == 0) {
             return mListParametersNew == null ? new TimelineListParameters(this)
                     : mListParametersNew;
         }
@@ -919,22 +920,24 @@ public class TimelineActivity extends LoadableListActivity implements
             restoreListPosition(mListParametersLoaded);
         }
 
-        WhichTimelinePage anotherPageToRequest = WhichTimelinePage.SAME;
         if (myLoader.size() == 0) {
+            WhichTimelinePage anotherPageToRequest = WhichTimelinePage.SAME;
             TimelineAdapter adapter = getListAdapter();
-            if (adapter.getPages().mayHaveOlderPage()) {
-                anotherPageToRequest = WhichTimelinePage.OLDER;
-            } else if (adapter.getPages().mayHaveYoungerPage()) {
+            if (adapter.getPages().mayHaveYoungerPage()) {
                 anotherPageToRequest = WhichTimelinePage.YOUNGER;
+            } else if (adapter.getPages().mayHaveOlderPage()) {
+                anotherPageToRequest = WhichTimelinePage.OLDER;
+            } else if (mListParametersLoaded.whichPage != WhichTimelinePage.YOUNGEST) {
+                anotherPageToRequest = WhichTimelinePage.YOUNGEST;
+            } else {
+                if (mListParametersLoaded.rowsLoaded == 0) {
+                    launchReloadIfNeeded(mListParametersLoaded.timelineToReload);
+                }
             }
-        }
-        if (anotherPageToRequest == WhichTimelinePage.SAME) {
-            if (myLoader.getParams().rowsLoaded == 0) {
-                launchReloadIfNeeded(myLoader.getParams().timelineToReload);
+            if (anotherPageToRequest != WhichTimelinePage.SAME) {
+                MyLog.v(this, method + "; Nothing loaded, requesting " + anotherPageToRequest + " page...");
+                queryListData(anotherPageToRequest);
             }
-        } else {
-            MyLog.v(this, method + "; Nothing loaded, requesting " + anotherPageToRequest + " page...");
-            queryListData(anotherPageToRequest);
         }
 
         hideSyncIndicator(method);
@@ -1256,7 +1259,7 @@ public class TimelineActivity extends LoadableListActivity implements
                 changed = false;
             }
         }
-        if (changed && isLoadingS()) {
+        if (changed && isLoading()) {
             if (MyLog.isVerboseEnabled()) {
                 MyLog.v(this, "Ignoring content change while loading, " + commandData.toString());
             }

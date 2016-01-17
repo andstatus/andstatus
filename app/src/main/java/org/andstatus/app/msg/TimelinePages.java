@@ -101,7 +101,7 @@ public class TimelinePages {
             return;
         }
         TimelinePage ePage = list.get(indExistingPage);
-        if (page.parameters.maxSentDate >= ePage.parameters.maxSentDate) {
+        if (ePage.parameters.maxSentDate > 0 && page.parameters.maxSentDate >= ePage.parameters.maxSentDate) {
             MyLog.v(this, "Previous younger page removed");
             list.remove(indExistingPage);
             return;
@@ -173,7 +173,7 @@ public class TimelinePages {
         page.items.removeAll(toRemove);
     }
 
-    public int getCount() {
+    public int getItemsCount() {
         int count = 0;
         for (TimelinePage page : list) {
             count += page.items.size();
@@ -201,5 +201,14 @@ public class TimelinePages {
 
     public boolean mayHaveOlderPage() {
         return list.size() == 0 || list.get(list.size() - 1).parameters.mayHaveOlderPage();
+    }
+
+    @Override
+    public String toString() {
+        String s = "pagesCount:" + list.size() + ", itemsCount:" + getItemsCount() + ",";
+        for (TimelinePage page : list) {
+            s += "\nPage count:" + page.items.size() + ", items: " + page.parameters + ",";
+        }
+        return MyLog.formatKeyValue(this, s );
     }
 }

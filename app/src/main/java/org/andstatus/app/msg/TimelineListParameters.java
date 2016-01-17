@@ -24,7 +24,6 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.Bundle;
 import android.text.TextUtils;
 
 import org.andstatus.app.IntentExtra;
@@ -39,7 +38,6 @@ import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SelectionAndArgs;
 
-import java.util.Arrays;
 import java.util.Date;
 
 public class TimelineListParameters {
@@ -89,6 +87,13 @@ public class TimelineListParameters {
     public static TimelineListParameters clone(TimelineListParameters prev, WhichTimelinePage whichPage) {
         TimelineListParameters params = new TimelineListParameters(prev.mContext);
         params.whichPage = whichPage;
+        if (whichPage != WhichTimelinePage.EMPTY) {
+            enrichNonEmptyParameters(params, prev);
+        }
+        return params;
+    }
+
+    private static void enrichNonEmptyParameters(TimelineListParameters params, TimelineListParameters prev) {
         params.mLoaderCallbacks = prev.mLoaderCallbacks;
         params.mTimelineType = prev.getTimelineType();
         params.mTimelineCombined = prev.isTimelineCombined();
@@ -116,6 +121,8 @@ public class TimelineListParameters {
                 params.minSentDate = prev.minSentDate;
                 params.maxSentDate = prev.maxSentDate;
                 break;
+            case YOUNGEST:
+                break;
             case NEW:
             default:
                 params.minSentDate = new TimelineListPositionStorage(null, null, params).getLastRetrievedSentDate();
@@ -124,10 +131,8 @@ public class TimelineListParameters {
         MyLog.v(TimelineListParameters.class, msgLog);
 
         params.mProjection = TimelineSql.getTimelineProjection();
-        
+
         params.prepareQueryForeground();
-        
-        return params;
     }
 
     public boolean mayHaveYoungerPage() {
@@ -136,13 +141,6 @@ public class TimelineListParameters {
 
     public boolean mayHaveOlderPage() {
         return minSentDate > 0 || rowsLoaded == PAGE_SIZE;
-    }
-
-    public static WhichTimelinePage whichPage(Bundle args) {
-        if (args != null) {
-            return WhichTimelinePage.load(args.getString(IntentExtra.WHICH_PAGE.key));
-        }
-        return WhichTimelinePage.SAME;
     }
 
     private void prepareQueryForeground() {
@@ -241,13 +239,13 @@ public class TimelineListParameters {
     
     @Override
     public String toString() {
-        return MyLog.formatKeyValue(this, "loaderCallbacks=" + mLoaderCallbacks
-                + ", page=" + whichPage.title
-                + ", timeline=" + mTimelineType
+        return MyLog.formatKeyValue(this,
+                "which=" + whichPage.title
+                + ", " + mTimelineType
                 + (mTimelineCombined ? ", combined" : "")
                 + ", myAccountUserId=" + myAccountUserId
-                + ", selectedUserId=" + mSelectedUserId
-                + ", projection=" + Arrays.toString(mProjection)
+                + (mSelectedUserId == 0 ? "" : ", selectedUserId=" + mSelectedUserId)
+            //    + ", projection=" + Arrays.toString(mProjection)
                 + (TextUtils.isEmpty(mSearchQuery) ? "" : ", searchQuery=" + mSearchQuery)
                 + ", contentUri=" + mContentUri
                 + (minSentDate > 0 ? ", minSentDate=" + new Date(minSentDate).toString() : "")
@@ -256,7 +254,9 @@ public class TimelineListParameters {
                 + ", sortOrder=" + getSortOrderAndLimit()
                 + ", startTime=" + startTime
                 + (cancelled ? ", cancelled" : "")
-                + (timelineToReload == TimelineType.UNKNOWN ? "" : ", timelineToReload=" + timelineToReload));
+                + (timelineToReload == TimelineType.UNKNOWN ? "" : ", timelineToReload=" + timelineToReload)
+                + (mLoaderCallbacks == null ? "" : ", loaderCallbacks=" + mLoaderCallbacks)
+        );
     }
 
     public TimelineType getTimelineType() {

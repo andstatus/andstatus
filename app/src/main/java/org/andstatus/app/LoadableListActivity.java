@@ -67,6 +67,9 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
     private AsyncLoader mCompletedLoader = new AsyncLoader();
     @GuardedBy("loaderLock")
     private AsyncLoader mWorkingLoader = mCompletedLoader;
+    @GuardedBy("loaderLock")
+    private boolean loaderIsWorking = false;
+
     private boolean mIsPaused = false;
 
     protected CharSequence mSubtitle = "";
@@ -94,18 +97,27 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
     }
 
     protected void showList(Bundle args) {
-        MyLog.v(this, "showList, instanceId=" + mInstanceId + ", itemId=" + mItemId);
+        String msgLog = "showList, instanceId=" + mInstanceId + ", itemId=" + mItemId;
+        MyLog.v(this, "Started " + msgLog);
         synchronized (loaderLock) {
-            if (mWorkingLoader.getStatus() != Status.RUNNING) {
+            if (loaderIsWorking && mWorkingLoader.getStatus() == Status.FINISHED) {
+                msgLog += ", loader was finished";
+                loaderIsWorking = false;
+            }
+            if (loaderIsWorking) {
+                msgLog = "Ignored " + msgLog + ", LoaderStatus:" + mWorkingLoader.getStatus();
+            } else {
                 mWorkingLoader = new AsyncLoader();
+                loaderIsWorking = true;
                 mWorkingLoader.execute(args);
             }
         }
+        MyLog.v(this, "Ended " + msgLog);
     }
 
-    public boolean isLoadingS() {
+    public boolean isLoading() {
         synchronized (loaderLock) {
-            return mWorkingLoader.getStatus() == Status.RUNNING;
+            return loaderIsWorking;
         }
     }
 
@@ -155,6 +167,19 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
         }
 
         @Override
+        protected void onCancelled(SyncLoader syncLoader) {
+            onEnd();
+        }
+
+        private void onEnd() {
+            synchronized (loaderLock) {
+                if (mWorkingLoader == this) {
+                    loaderIsWorking = false;
+                }
+            }
+        }
+
+        @Override
         protected void onPostExecute(SyncLoader loader) {
             try {
                 if (!mIsPaused) {
@@ -170,6 +195,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
                     + (mSyncLoader == null ? "?" : mSyncLoader.size()) + " items, "
                     + timeTotal + "ms total, "
             + (timeCompleted - timeLoaded) + "ms in the foreground");
+            onEnd();
         }
     }
 

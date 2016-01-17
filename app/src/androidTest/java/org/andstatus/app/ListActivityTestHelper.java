@@ -178,7 +178,7 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> extends Instru
     }
 
     public long getListItemIdOfReply() {
-        long idOut = -1;
+        long idOut = 0;
         for (int ind = 0; ind < getListAdapter().getCount(); ind++) {
             long itemId = getListAdapter().getItemId(ind);
             if (MyQuery.msgIdToLongColumnValue(MyDatabase.Msg.IN_REPLY_TO_MSG_ID, itemId) != 0) {
@@ -186,6 +186,7 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> extends Instru
                 break;
             }
         }
+        assertTrue("getListItemIdOfReply in " + getListAdapter(), idOut > 0);
         return idOut;
     }
 

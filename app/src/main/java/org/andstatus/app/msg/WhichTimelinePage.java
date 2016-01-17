@@ -16,6 +16,9 @@
 
 package org.andstatus.app.msg;
 
+import android.os.Bundle;
+
+import org.andstatus.app.IntentExtra;
 import org.andstatus.app.util.MyLog;
 
 /**
@@ -24,8 +27,10 @@ import org.andstatus.app.util.MyLog;
 public enum WhichTimelinePage {
     NEW(1, "new"),
     YOUNGER(2, "younger"),
-    SAME(3, "same"),
-    OLDER(4, "older");
+    YOUNGEST(3, "youngest"),
+    SAME(4, "same"),
+    OLDER(5, "older"),
+    EMPTY(6, "empty");
 
     private static final String TAG = WhichTimelinePage.class.getSimpleName();
     private final long code;
@@ -34,6 +39,11 @@ public enum WhichTimelinePage {
     WhichTimelinePage(long code, String title) {
         this.code = code;
         this.title = title;
+    }
+
+    public Bundle save(Bundle bundle) {
+        bundle.putString(IntentExtra.WHICH_PAGE.key, save());
+        return bundle;
     }
 
     public String save() {
@@ -48,15 +58,23 @@ public enum WhichTimelinePage {
                 MyLog.v(TAG, "Error converting '" + strCode + "'", e);
             }
         }
-        return SAME;
+        return EMPTY;
     }
 
-    public static WhichTimelinePage load( long code) {
+    public static WhichTimelinePage load(long code) {
         for(WhichTimelinePage val : values()) {
             if (val.code == code) {
                 return val;
             }
         }
-        return SAME;
+        return EMPTY;
     }
+
+    public static WhichTimelinePage load(Bundle args) {
+        if (args != null) {
+            return WhichTimelinePage.load(args.getString(IntentExtra.WHICH_PAGE.key));
+        }
+        return EMPTY;
+    }
+
 }

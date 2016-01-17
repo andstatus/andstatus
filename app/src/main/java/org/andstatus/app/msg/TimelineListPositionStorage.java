@@ -136,13 +136,13 @@ class TimelineListPositionStorage {
                         keyQueryString, "")) == 0;
     }
 
-    /** Valid data position value is > 0 */
+    /** @return 0 if not found */
     long getLastRetrievedSentDate() {
-        long savedItemId = NOT_FOUND_IN_LIST_POSITION_STORAGE;
+        long date = 0;
         if (isThisPositionStored()) {
-            savedItemId = sp.getLong(keyLastRetrievedItemSentDate, NOT_FOUND_IN_SHARED_PREFERENCES);
+            date = sp.getLong(keyLastRetrievedItemSentDate, 0);
         }
-        return savedItemId;
+        return date;
     }
     
     void clear() {
@@ -174,11 +174,13 @@ class TimelineListPositionStorage {
                 loaded = true;
             } else {
                 // There is no stored position
-                if (TextUtils.isEmpty(mListParameters.mSearchQuery)) {
-                    scrollPos = mListView.getCount() - 2;
-                } else {
+                if (mListParameters.whichPage == WhichTimelinePage.YOUNGEST
+                        || !TextUtils.isEmpty(mListParameters.mSearchQuery)
+                        || mListView.getCount() > 2) {
                     // In search mode start from the most recent message!
                     scrollPos = 0;
+                } else {
+                    scrollPos = mListView.getCount() - 2;
                 }
                 if (scrollPos >= 0) {
                     setSelectionAtBottom(scrollPos);

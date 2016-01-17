@@ -53,9 +53,11 @@ public class TimelineLoader implements LoadableListActivity.SyncLoader {
     @Override
     public void load(LoadableListActivity.ProgressPublisher publisher) {
         markStart();
-        Cursor cursor = queryDatabase();
-        checkIfReloadIsNeeded(cursor);
-        setPageLoaded(pageFromCursor(cursor));
+        if (params.whichPage != WhichTimelinePage.EMPTY) {
+            Cursor cursor = queryDatabase();
+            checkIfReloadIsNeeded(cursor);
+            setPageLoaded(pageFromCursor(cursor));
+        }
         getParams().endTime = System.nanoTime();
         logExecutionStats();
     }
