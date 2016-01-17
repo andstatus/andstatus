@@ -18,10 +18,10 @@ package org.andstatus.app.net.http;
 
 import android.text.TextUtils;
 
-import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.util.FileUtils;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.UrlUtils;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -85,7 +85,15 @@ public class HttpConnectionMock extends HttpConnection {
     public void setException(ConnectionException exception) {
         this.exception = exception;
     }
-    
+
+    @Override
+    public String pathToUrlString(String path) throws ConnectionException {
+        if (data.originUrl == null) {
+            data.originUrl = UrlUtils.buildUrl("mocked.example.com", true);
+        }
+        return super.pathToUrlString(path);
+    }
+
     @Override
     protected void postRequest(HttpReadResult result) throws ConnectionException {
         onRequest("postRequestWithObject", result);

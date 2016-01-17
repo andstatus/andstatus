@@ -110,7 +110,7 @@ public final class UrlUtils {
             try {
                 return new URL(originUrl, path).toExternalForm();
             } catch (MalformedURLException e) {
-                MyLog.d(TAG, "pathToUrl", e);
+                MyLog.d(TAG, "pathToUrlString, originUrl:'" + originUrl + "', path:'" + path + "'", e);
                 return "";
             }
         }
