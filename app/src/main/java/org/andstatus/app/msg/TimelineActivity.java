@@ -323,7 +323,6 @@ public class TimelineActivity extends LoadableListActivity implements
         super.onPause();
 
         if (isPositionRestored()) {
-            getListView().setFastScrollEnabled(false);
             if (!isLoading()) {
                 saveListPosition();
             }
@@ -576,17 +575,7 @@ public class TimelineActivity extends LoadableListActivity implements
 
     @Override
     public void onScrollStateChanged(AbsListView view, int scrollState) {
-        switch (scrollState) {
-            case AbsListView.OnScrollListener.SCROLL_STATE_IDLE:
-                break;
-            case AbsListView.OnScrollListener.SCROLL_STATE_TOUCH_SCROLL:
-                break;
-            case AbsListView.OnScrollListener.SCROLL_STATE_FLING:
-                getListView().setFastScrollEnabled(true);
-                break;
-            default:
-                break;
-        }
+        // Empty
     }
 
     @Override
