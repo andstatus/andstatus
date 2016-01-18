@@ -767,13 +767,14 @@ public class TimelineActivity extends LoadableListActivity implements
         MyServiceManager.setServiceAvailable();
         invalidateOptionsMenu();
         mMessageEditor.updateScreen();
-        updateTitle();
+        updateTitle(mRateLimitText);
     }
 
-    private void updateTitle() {
-        new TimelineTitle(mListParametersLoaded.getTimelineType() != TimelineType.UNKNOWN ?
-                mListParametersLoaded : mListParametersNew
-                , mRateLimitText).updateTitle(this);
+    @Override
+    protected void updateTitle(String additionalTitleText) {
+        new TimelineTitle(mListParametersLoaded.getTimelineType() == TimelineType.UNKNOWN ?
+                mListParametersNew : mListParametersLoaded,
+                additionalTitleText).updateTitle(this);
     }
 
     MessageContextMenu getContextMenu() {
@@ -1194,7 +1195,7 @@ public class TimelineActivity extends LoadableListActivity implements
                 if (commandData.getResult().getHourlyLimit() > 0) {
                     mRateLimitText = commandData.getResult().getRemainingHits() + "/"
                             + commandData.getResult().getHourlyLimit();
-                    updateTitle();
+                    updateTitle(mRateLimitText);
                 }
                 break;
             case UPDATE_STATUS:
