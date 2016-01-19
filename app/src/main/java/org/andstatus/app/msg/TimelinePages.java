@@ -59,8 +59,12 @@ public class TimelinePages {
     }
 
     private void addThisPage(TimelinePage page) {
-        // TODO: check if loaded messages duplicate messages in adjacent pages
         switch (page.parameters.whichPage) {
+            case NEW:
+            case YOUNGEST:
+                list.clear();
+                list.add(page);
+                break;
             case OLDER:
                 removeDuplicatesWithYounger(page, list.size() - 1);
                 list.add(page);
@@ -70,7 +74,7 @@ public class TimelinePages {
                 list.add(0, page);
                 break;
             default:
-                if (page.parameters.whichPage == WhichTimelinePage.NEW || list.size() < 2) {
+                if (list.size() < 2) {
                     list.clear();
                     list.add(page);
                 } else {

@@ -49,7 +49,7 @@ import android.widget.ViewFlipper;
 public class HelpActivity extends MyActivity implements SwipeInterface {
 
     // Constants
-    public static final String TAG = "HelpActivity";
+    public static final String TAG = HelpActivity.class.getSimpleName();
 
     /**
      * integer - Index of Help screen to show first

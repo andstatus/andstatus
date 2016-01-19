@@ -228,7 +228,12 @@ public class TimelineActivity extends LoadableListActivity implements
      * View.OnClickListener
      */
     public void onGoToTheTopButtonClick(View item) {
-        queryListData(WhichTimelinePage.YOUNGEST);
+        TimelineAdapter adapter = getListAdapter();
+        if (adapter == null || adapter.getPages().mayHaveYoungerPage()) {
+            queryListData(WhichTimelinePage.YOUNGEST);
+        } else {
+            TimelineListPositionStorage.setPosition(getListView(), 0);
+        }
         closeDrawer();
     }
 
@@ -844,7 +849,7 @@ public class TimelineActivity extends LoadableListActivity implements
         final String method = "queryListData";
         if (!isLoading()) {
             saveListPosition();
-            MyLog.v(this, method + " " + whichPage);
+            MyLog.v(this, method + "; " + whichPage);
             showList(whichPage.save(new Bundle()));
             showLoadingIndicator();
         }
@@ -888,11 +893,6 @@ public class TimelineActivity extends LoadableListActivity implements
         }
     }
 
-    protected void restoreListPosition(TimelineListParameters mListParameters) {
-        getListAdapter().setPositionRestored(
-                new TimelineListPositionStorage(getListAdapter(), getListView(), mListParameters).restore());
-    }
-
     private void saveSearchQuery() {
         if (!TextUtils.isEmpty(mListParametersNew.mSearchQuery)) {
             // Record the query string in the recent queries
@@ -913,8 +913,12 @@ public class TimelineActivity extends LoadableListActivity implements
 
         TimelineLoader myLoader = (TimelineLoader) getLoaded();
         mListParametersLoaded = myLoader.getParams();
-        if (!isPositionRestored()) {
-            restoreListPosition(mListParametersLoaded);
+        if (mListParametersLoaded.whichPage == WhichTimelinePage.YOUNGEST) {
+            TimelineListPositionStorage.setPosition(getListView(), 0);
+            getListAdapter().setPositionRestored(true);
+        } else if (!isPositionRestored()) {
+            new TimelineListPositionStorage(getListAdapter(), getListView(), mListParametersLoaded)
+                    .restore();
         }
 
         if (myLoader.size() == 0) {

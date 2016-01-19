@@ -25,7 +25,6 @@ import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.msg.TimelineActivity.TimelineTitle;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.widget.MyBaseAdapter;
 
 import java.util.Date;
 
@@ -37,6 +36,7 @@ import java.util.Date;
  * @author yvolk@yurivolkov.com
  */
 class TimelineListPositionStorage {
+    public static final String TAG = TimelineListPositionStorage.class.getSimpleName();
     private static final String KEY_PREFIX = "timeline_position_";
 
     private final TimelineAdapter mAdapter;
@@ -74,15 +74,13 @@ class TimelineListPositionStorage {
 
     void save() {
         final String method = "saveListPosition";
-        if (mListView == null || mAdapter == null
-                || mListParameters == null || mListParameters.isEmpty()) {
+        if (mListView == null || mAdapter == null || mListParameters.isEmpty()) {
             MyLog.v(this, method + ": skipped");
             return;
         }
         TimelineAdapter la = mAdapter;
         int firstVisiblePosition = mListView.getFirstVisiblePosition();
-        // Don't count a footer
-        int itemCount = la.getCount() - 1;
+        int itemCount = la.getCount();
         if (firstVisiblePosition >= itemCount) {
             firstVisiblePosition = itemCount - 1;
         }
@@ -156,21 +154,21 @@ class TimelineListPositionStorage {
     /**
      * Restore (First visible item) position saved for this user and for this type of timeline
      */
-    public boolean restore() {
+    public void restore() {
         if (mListView == null) {
-            return false;
+            return;
         }
         final String method = "restoreListPosition";
         boolean loaded = false;
-        int scrollPos = -1;
+        int position = -1;
         long firstItemId = -3;
         try {
             firstItemId = getFirstVisibleItemId();
             if (firstItemId > 0) {
-                scrollPos = listPosForId(firstItemId);
+                position = getPositionById(firstItemId);
             }
-            if (scrollPos >= 0) {
-                mListView.setSelectionFromTop(scrollPos, 0);
+            if (position >= 0) {
+                mListView.setSelectionFromTop(position, 0);
                 loaded = true;
             } else {
                 // There is no stored position
@@ -178,12 +176,12 @@ class TimelineListPositionStorage {
                         || !TextUtils.isEmpty(mListParameters.mSearchQuery)
                         || mListView.getCount() > 2) {
                     // In search mode start from the most recent message!
-                    scrollPos = 0;
+                    position = 0;
                 } else {
-                    scrollPos = mListView.getCount() - 2;
+                    position = mListView.getCount() - 2;
                 }
-                if (scrollPos >= 0) {
-                    setSelectionAtBottom(scrollPos);
+                if (position >= 0) {
+                    setPosition(mListView, position);
                 }
             }
         } catch (Exception e) {
@@ -191,64 +189,40 @@ class TimelineListPositionStorage {
         }
         if (loaded) {
             if (MyLog.isVerboseEnabled()) {
-                MyLog.v(this, method + " succeeded key=" + keyFirstVisibleItemId + ", id="
-                        + firstItemId +"; index=" + scrollPos);
+                MyLog.v(this, method + "; succeeded key=" + keyFirstVisibleItemId + ", id="
+                        + firstItemId +"; index=" + position);
             }
         } else {
             if (MyLog.isVerboseEnabled()) {
-                MyLog.v(this, method + " failed key=" + keyFirstVisibleItemId + ", id="
+                MyLog.v(this, method + "; failed key=" + keyFirstVisibleItemId + ", id="
                         + firstItemId);
             }
             clear();
         }
-        return true;
+        mAdapter.setPositionRestored(true);
     }
 
-    private void setSelectionAtBottom(int scrollPos) {
-        if (mListView == null) {
+    public static void setPosition(ListView listView, int position) {
+        if (listView == null) {
             return;
         }
-        if (MyLog.isVerboseEnabled()) {
-            MyLog.v(this, "setSelectionAtBottom, 1");
-        }
-        int viewHeight = mListView.getHeight();
+        int viewHeight = listView.getHeight();
         int childHeight;
         childHeight = 30;
         int y = viewHeight - childHeight;
         if (MyLog.isVerboseEnabled()) {
-            MyLog.v(this, "set position of last item to " + y + "px");
+            MyLog.v(TAG, "Set position of " + position + " item to " + y + "px");
         }
-        mListView.setSelectionFromTop(scrollPos, y);
+        listView.setSelectionFromTop(position, y);
     }
 
     /**
-     * Returns the position of the item with the given ID.
-     * 
-     * @param searchedId the ID of the item whose position in the list is to be
-     *            returned.
      * @return the position in the list or -1 if the item was not found
      */
-    private int listPosForId(long searchedId) {
-        if (mListView == null) {
+    private int getPositionById(long itemId) {
+        if (mAdapter == null) {
             return -1;
         }
-        int listPos;
-        boolean itemFound = false;
-        int itemCount = mListView.getCount();
-        if (MyLog.isVerboseEnabled()) {
-            MyLog.v(this, "item count: " + itemCount);
-        }
-        for (listPos = 0; listPos < itemCount; listPos++) {
-            long itemId = mListView.getItemIdAtPosition(listPos);
-            if (itemId == searchedId) {
-                itemFound = true;
-                break;
-            }
-        }
-
-        if (!itemFound) {
-            listPos = -1;
-        }
-        return listPos;
+        return mAdapter.getPositionById(itemId);
     }
 }
