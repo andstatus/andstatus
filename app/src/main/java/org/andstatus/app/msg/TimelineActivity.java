@@ -227,6 +227,14 @@ public class TimelineActivity extends LoadableListActivity implements
     /**
      * View.OnClickListener
      */
+    public void onGoToTheTopButtonClick(View item) {
+        queryListData(WhichTimelinePage.YOUNGEST);
+        closeDrawer();
+    }
+
+    /**
+     * View.OnClickListener
+     */
     public void onCombinedTimelineToggleClick(View item) {
         closeDrawer();
         boolean on = !isTimelineCombined();

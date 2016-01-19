@@ -1,12 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/navigation_drawer"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:id="@+id/navigation_drawer"
     android:layout_width="240dp"
     android:layout_height="match_parent"
     android:layout_gravity="start"
     android:background="?android:attr/colorBackground"
     android:choiceMode="singleChoice"
-    android:orientation="vertical" >
+    android:orientation="vertical"
+              tools:context=".msg.TimelineActivity">
+
+    <TextView
+        android:id="@+id/goToTheTopButton"
+        style="@style/drawerListItem"
+        android:onClick="onGoToTheTopButtonClick"
+        android:text="@string/go_to_the_top_title" />
+
+    <View style="@style/Divider"/>
 
     <CheckBox
         android:id="@+id/combinedTimelineToggle"
