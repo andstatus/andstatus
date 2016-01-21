@@ -30,6 +30,7 @@ import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.msg.TimelineActivity;
+import org.andstatus.app.msg.WhichTimelinePage;
 import org.andstatus.app.service.CommandResult;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
@@ -139,6 +140,7 @@ public class AddedMessagesNotifier {
                 MatchedUri.getTimelineUri(0, timelineType, myContext.persistentAccounts().size() > 1, 0),
                 "rnd/" + android.os.SystemClock.elapsedRealtime()
                 ));
+        intent.putExtra(IntentExtra.WHICH_PAGE.key, WhichTimelinePage.YOUNGEST.save());
         PendingIntent pendingIntent = PendingIntent.getActivity(myContext.context(), timelineType.hashCode(),
                 intent, PendingIntent.FLAG_UPDATE_CURRENT);
         builder.setContentIntent(pendingIntent);

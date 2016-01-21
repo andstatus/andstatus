@@ -184,7 +184,8 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
             try {
                 if (!mIsPaused) {
                     mSyncLoader = loader;
-                    onLoadFinished();
+                    updateCompletedLoader();
+                    onLoadFinished(true);
                 }
             } catch (Exception e) {
                 MyLog.i(this,"on Recreating view", e);
@@ -199,19 +200,22 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
         }
     }
 
-    public void onLoadFinished() {
-        updateCompletedLoader();
+    public void onLoadFinished(boolean restorePosition) {
         updateTitle("");
-        ListView list = getListView();
-        long itemIdOfListPosition = mItemId;
-        if (list.getChildCount() > 1) {
-            itemIdOfListPosition = list.getAdapter().getItemId(list.getFirstVisiblePosition());
-        }
-        setListAdapter(newListAdapter());
-        int firstListPosition = getListAdapter().getPositionById(itemIdOfListPosition);
-        if (firstListPosition >= 0) {
-            list.setSelectionFromTop(firstListPosition, 0);
-            getListAdapter().setPositionRestored(true);
+        if (restorePosition) {
+            ListView list = getListView();
+            long itemIdOfListPosition = mItemId;
+            if (list.getChildCount() > 1) {
+                itemIdOfListPosition = list.getAdapter().getItemId(list.getFirstVisiblePosition());
+            }
+            setListAdapter(newListAdapter());
+            int firstListPosition = getListAdapter().getPositionById(itemIdOfListPosition);
+            if (firstListPosition >= 0) {
+                list.setSelectionFromTop(firstListPosition, 0);
+                getListAdapter().setPositionRestored(true);
+            }
+        } else {
+            setListAdapter(newListAdapter());
         }
     }
 

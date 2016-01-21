@@ -376,6 +376,12 @@
   <string name="theme_size_entries_standard">Standard</string>
   <string name="theme_size_entries_large">Large</string>
   <string name="this_option_is_turned_off">(disabled)</string>
+  <string name="timeline_page_new">new</string>
+  <string name="timeline_page_younger">younger</string>
+  <string name="timeline_page_youngest">youngest</string>
+  <string name="timeline_page_the_same">the same</string>
+  <string name="timeline_page_older">older</string>
+  <string name="timeline_page_empty">empty</string>
   <string name="timeline_reloaded">Timeline has been reloaded.</string>
   <string name="timeline_title_all">All</string>
   <string name="timeline_title_direct_messages">Direct messages</string>

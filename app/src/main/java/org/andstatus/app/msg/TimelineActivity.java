@@ -167,7 +167,7 @@ public class TimelineActivity extends LoadableListActivity implements
         }
 
         updateScreen();
-        queryListData(WhichTimelinePage.NEW);
+        queryListData(mListParametersNew.whichPage);
     }
 
     @Override
@@ -348,7 +348,7 @@ public class TimelineActivity extends LoadableListActivity implements
     private void showLoadingIndicator() {
         final String method = "showLoading";
         if (mSyncIndicator.getVisibility() != View.VISIBLE) {
-            ((TextView) findViewById(R.id.sync_text)).setText(getText(R.string.loading));
+            ((TextView) findViewById(R.id.sync_text)).setText(getText(R.string.loading) + " " + mListParametersNew.getSummary());
             showHideSyncIndicator(method, true);
         }
     }
@@ -638,7 +638,7 @@ public class TimelineActivity extends LoadableListActivity implements
         MyContextHolder.initialize(this, this);
         parseNewIntent(intent);
         updateScreen();
-        queryListData(WhichTimelinePage.NEW);
+        queryListData(mListParametersNew.whichPage);
     }
 
     private void parseNewIntent(Intent intentNew) {
@@ -649,6 +649,8 @@ public class TimelineActivity extends LoadableListActivity implements
         mListParametersNew.setTimelineType(TimelineType.UNKNOWN);
         mListParametersNew.myAccountUserId = MyContextHolder.get().persistentAccounts().getCurrentAccountUserId();
         mListParametersNew.mSelectedUserId = 0;
+        mListParametersNew.whichPage = WhichTimelinePage.load(
+                intentNew.getStringExtra(IntentExtra.WHICH_PAGE.key), WhichTimelinePage.NEW);
         parseAppSearchData(intentNew);
         if (mListParametersNew.getTimelineType() == TimelineType.UNKNOWN) {
             mListParametersNew.parseIntentData(intentNew);
@@ -847,21 +849,21 @@ public class TimelineActivity extends LoadableListActivity implements
      */
     protected void queryListData(WhichTimelinePage whichPage) {
         final String method = "queryListData";
+        mListParametersNew = TimelineListParameters.clone(
+                getPrevParametersFor(whichPage), whichPage);
         if (!isLoading()) {
             saveListPosition();
-            MyLog.v(this, method + "; " + whichPage);
-            showList(whichPage.save(new Bundle()));
+            MyLog.v(this, method + "; " + mListParametersNew.getSummary());
             showLoadingIndicator();
+            showList(null);
         }
     }
 
     @Override
     protected SyncLoader newSyncLoader(Bundle argsIn) {
         final String method = "newSyncLoader";
-        WhichTimelinePage whichPage = WhichTimelinePage.load(argsIn);
-        TimelineListParameters params = TimelineListParameters.clone(
-                getPrevParametersFor(whichPage), whichPage);
-        if (whichPage != WhichTimelinePage.EMPTY) {
+        TimelineListParameters params = mListParametersNew;
+        if (params.whichPage != WhichTimelinePage.EMPTY) {
             MyLog.v(this, method + ": " + params);
             Intent intent = getIntent();
             if (!params.mContentUri.equals(intent.getData())) {
@@ -874,9 +876,11 @@ public class TimelineActivity extends LoadableListActivity implements
 
     private TimelineListParameters getPrevParametersFor(WhichTimelinePage whichPage) {
         TimelineAdapter adapter = getListAdapter();
-        if (whichPage == WhichTimelinePage.NEW
+        if (mListParametersLoaded == null
+                || whichPage == WhichTimelinePage.NEW
+                || whichPage == WhichTimelinePage.YOUNGEST
                 || whichPage == WhichTimelinePage.EMPTY
-                || whichPage == WhichTimelinePage.SAME && mListParametersLoaded == null
+                || whichPage == WhichTimelinePage.SAME
                 || adapter == null
                 || adapter.getPages().getItemsCount() == 0) {
             return mListParametersNew == null ? new TimelineListParameters(this)
@@ -906,13 +910,16 @@ public class TimelineActivity extends LoadableListActivity implements
     }
 
     @Override
-    public void onLoadFinished() {
-        final String method = "onLoadFinished"; 
-        MyLog.v(this, method);
-        super.onLoadFinished();
-
+    public void onLoadFinished(boolean restorePosition_in) {
+        final String method = "onLoadFinished";
         TimelineLoader myLoader = (TimelineLoader) getLoaded();
         mListParametersLoaded = myLoader.getParams();
+        MyLog.v(this, method + "; " + mListParametersLoaded.getSummary());
+        boolean restorePosition = restorePosition_in && isPositionRestored()
+                && mListParametersLoaded.whichPage != WhichTimelinePage.YOUNGEST;
+
+        super.onLoadFinished(restorePosition);
+
         if (mListParametersLoaded.whichPage == WhichTimelinePage.YOUNGEST) {
             TimelineListPositionStorage.setPosition(getListView(), 0);
             getListAdapter().setPositionRestored(true);
@@ -921,29 +928,35 @@ public class TimelineActivity extends LoadableListActivity implements
                     .restore();
         }
 
-        if (myLoader.size() == 0) {
-            WhichTimelinePage anotherPageToRequest = WhichTimelinePage.SAME;
+        WhichTimelinePage anotherPageToRequest = WhichTimelinePage.EMPTY;
+        String requestReason = "";
+        if (mListParametersLoaded.equals(mListParametersNew)) {
             TimelineAdapter adapter = getListAdapter();
-            if (adapter.getPages().mayHaveYoungerPage()) {
-                anotherPageToRequest = WhichTimelinePage.YOUNGER;
-            } else if (adapter.getPages().mayHaveOlderPage()) {
-                anotherPageToRequest = WhichTimelinePage.OLDER;
-            } else if (mListParametersLoaded.whichPage != WhichTimelinePage.YOUNGEST) {
-                anotherPageToRequest = WhichTimelinePage.YOUNGEST;
-            } else {
-                if (mListParametersLoaded.rowsLoaded == 0) {
+            if ( adapter.getCount() == 0) {
+                requestReason = "Nothing loaded";
+                if (adapter.getPages().mayHaveYoungerPage()) {
+                    anotherPageToRequest = WhichTimelinePage.YOUNGER;
+                } else if (adapter.getPages().mayHaveOlderPage()) {
+                    anotherPageToRequest = WhichTimelinePage.OLDER;
+                } else if (mListParametersLoaded.whichPage != WhichTimelinePage.YOUNGEST) {
+                    anotherPageToRequest = WhichTimelinePage.YOUNGEST;
+                } else if (mListParametersLoaded.rowsLoaded == 0) {
                     launchReloadIfNeeded(mListParametersLoaded.timelineToReload);
                 }
             }
-            if (anotherPageToRequest != WhichTimelinePage.SAME) {
-                MyLog.v(this, method + "; Nothing loaded, requesting " + anotherPageToRequest + " page...");
-                queryListData(anotherPageToRequest);
-            }
+        } else {
+            anotherPageToRequest = mListParametersNew.whichPage;
+            requestReason = "Parameters changed";
         }
-
         hideSyncIndicator(method);
         updateScreen();
         clearNotifications();
+        if (anotherPageToRequest != WhichTimelinePage.EMPTY) {
+            mListParametersNew.whichPage = anotherPageToRequest;
+            MyLog.v(this, method + "; " + requestReason
+                    + ", requesting " + mListParametersNew.getSummary());
+            queryListData(anotherPageToRequest);
+        }
     }
 
     private void launchReloadIfNeeded(TimelineType timelineToReload) {
@@ -1205,8 +1218,8 @@ public class TimelineActivity extends LoadableListActivity implements
             default:
                 break;
         }
-        if (isYoungestPageRefreshNeeded(commandData)) {
-            queryListData(WhichTimelinePage.YOUNGEST);
+        if (mayBePageRefreshNeeded(commandData)) {
+            refreshPageAfterExecutingCommand(commandData);
         }
         if (mShowSyncIndicatorOnTimeline
                 && isCommandToShowInSyncIndicator(commandData.getCommand())) {
@@ -1223,8 +1236,8 @@ public class TimelineActivity extends LoadableListActivity implements
         }
     }
 
-    public boolean isYoungestPageRefreshNeeded(CommandData commandData) {
-        boolean changed = false;
+    public boolean mayBePageRefreshNeeded(CommandData commandData) {
+        boolean needed = false;
         switch (commandData.getCommand()) {
             case AUTOMATIC_UPDATE:
             case FETCH_TIMELINE:
@@ -1235,7 +1248,7 @@ public class TimelineActivity extends LoadableListActivity implements
             case GET_STATUS:
             case SEARCH_MESSAGE:
                 if (commandData.getResult().getDownloadedCount() > 0) {
-                    changed = true;
+                    needed = true;
                 }
                 break;
             case CREATE_FAVORITE:
@@ -1247,29 +1260,37 @@ public class TimelineActivity extends LoadableListActivity implements
             case REBLOG:
             case UPDATE_STATUS:
                 if (!commandData.getResult().hasError()) {
-                    changed = true;
+                    needed = true;
                 }
                 break;
             default:
                 break;
         }
-        if (changed) {
-            TimelineAdapter adapter = getListAdapter();
-            if (adapter == null || adapter.getPages().mayHaveYoungerPage()) {
-                // Show updates only if we are on the top of a timeline
-                changed = false;
-            }
+        return needed;
+    }
+
+    public void refreshPageAfterExecutingCommand(CommandData commandData) {
+        boolean refresh = false;
+        WhichTimelinePage whichPage = WhichTimelinePage.YOUNGEST;
+        TimelineAdapter adapter = getListAdapter();
+        if (adapter == null || adapter.getPages().mayHaveYoungerPage()) {
+            // Show updates only if we are on the top of a timeline
+            refresh = false;
+        } else {
+            whichPage = WhichTimelinePage.SAME;
+            mListParametersNew = adapter.getPages().list.get(0).parameters;
         }
-        if (changed && isLoading()) {
+        if (refresh && isLoading()) {
             if (MyLog.isVerboseEnabled()) {
-                MyLog.v(this, "Ignoring content change while loading, " + commandData.toString());
+                MyLog.v(this, "Ignoring content change while loading, "
+                        + commandData.toCommandSummary(MyContextHolder.get()));
             }
-            changed = false;
+            refresh = false;
         }
-        if (changed && MyLog.isVerboseEnabled()) {
-            MyLog.v(this, "Content changed, " + commandData.toString());
+        if (refresh && MyLog.isVerboseEnabled()) {
+            MyLog.v(this, "Content changed, " + commandData.toCommandSummary(MyContextHolder.get()));
         }
-        return changed;
+        queryListData(whichPage);
     }
 
     @Override

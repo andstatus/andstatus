@@ -16,29 +16,31 @@
 
 package org.andstatus.app.msg;
 
+import android.content.Context;
 import android.os.Bundle;
 
 import org.andstatus.app.IntentExtra;
+import org.andstatus.app.R;
 import org.andstatus.app.util.MyLog;
 
 /**
  * @author yvolk@yurivolkov.com
  */
 public enum WhichTimelinePage {
-    NEW(1, "new"),
-    YOUNGER(2, "younger"),
-    YOUNGEST(3, "youngest"),
-    SAME(4, "same"),
-    OLDER(5, "older"),
-    EMPTY(6, "empty");
+    NEW(1, R.string.timeline_page_new),
+    YOUNGER(2, R.string.timeline_page_younger),
+    YOUNGEST(3, R.string.timeline_page_youngest),
+    SAME(4, R.string.timeline_page_the_same),
+    OLDER(5, R.string.timeline_page_older),
+    EMPTY(6, R.string.timeline_page_empty);
 
     private static final String TAG = WhichTimelinePage.class.getSimpleName();
     private final long code;
-    public final String title;
+    private final int titleResId;
 
-    WhichTimelinePage(long code, String title) {
+    WhichTimelinePage(long code, int titleResId) {
         this.code = code;
-        this.title = title;
+        this.titleResId = titleResId;
     }
 
     public Bundle save(Bundle bundle) {
@@ -50,7 +52,7 @@ public enum WhichTimelinePage {
         return Long.toString(code);
     }
 
-    public static WhichTimelinePage load(String strCode) {
+    public static WhichTimelinePage load(String strCode, WhichTimelinePage defaultPage) {
         if (strCode != null) {
             try {
                 return load(Long.parseLong(strCode));
@@ -58,7 +60,7 @@ public enum WhichTimelinePage {
                 MyLog.v(TAG, "Error converting '" + strCode + "'", e);
             }
         }
-        return EMPTY;
+        return defaultPage;
     }
 
     public static WhichTimelinePage load(long code) {
@@ -72,9 +74,16 @@ public enum WhichTimelinePage {
 
     public static WhichTimelinePage load(Bundle args) {
         if (args != null) {
-            return WhichTimelinePage.load(args.getString(IntentExtra.WHICH_PAGE.key));
+            return WhichTimelinePage.load(args.getString(IntentExtra.WHICH_PAGE.key), EMPTY);
         }
         return EMPTY;
     }
 
+    public CharSequence getTitle(Context context) {
+        if (titleResId == 0 || context == null) {
+            return this.name();
+        } else {
+            return context.getText(titleResId);
+        }
+    }
 }

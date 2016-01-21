@@ -27,6 +27,7 @@ import android.net.Uri;
 import android.text.TextUtils;
 
 import org.andstatus.app.IntentExtra;
+import org.andstatus.app.R;
 import org.andstatus.app.data.ProjectionMap;
 import org.andstatus.app.data.SelectedUserIds;
 import org.andstatus.app.data.MatchedUri;
@@ -101,7 +102,7 @@ public class TimelineListParameters {
         params.mSelectedUserId = prev.getSelectedUserId();
         params.mSearchQuery = prev.mSearchQuery;
 
-        String msgLog = "Loading " + params.whichPage.title + " page";
+        String msgLog = "Loading " + params.getSummary();
         switch (params.whichPage) {
             case OLDER:
                 if (prev.mayHaveOlderPage()) {
@@ -240,9 +241,7 @@ public class TimelineListParameters {
     @Override
     public String toString() {
         return MyLog.formatKeyValue(this,
-                "which=" + whichPage.title
-                + ", " + mTimelineType
-                + (mTimelineCombined ? ", combined" : "")
+                getSummary()
                 + ", myAccountUserId=" + myAccountUserId
                 + (mSelectedUserId == 0 ? "" : ", selectedUserId=" + mSelectedUserId)
             //    + ", projection=" + Arrays.toString(mProjection)
@@ -286,7 +285,36 @@ public class TimelineListParameters {
     public void saveState(Editor outState) {
         outState.putString(IntentExtra.TIMELINE_URI.key, getTimelineUri(false).toString());
     }
-    
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        TimelineListParameters that = (TimelineListParameters) o;
+
+        if (mTimelineCombined != that.mTimelineCombined) return false;
+        if (myAccountUserId != that.myAccountUserId) return false;
+        if (mSelectedUserId != that.mSelectedUserId) return false;
+        if (minSentDate != that.minSentDate) return false;
+        if (maxSentDate != that.maxSentDate) return false;
+        if (mTimelineType != that.mTimelineType) return false;
+        return !(mSearchQuery != null ? !mSearchQuery.equals(that.mSearchQuery) : that.mSearchQuery != null);
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = mTimelineType.hashCode();
+        result = 31 * result + (mTimelineCombined ? 1 : 0);
+        result = 31 * result + (int) (myAccountUserId ^ (myAccountUserId >>> 32));
+        result = 31 * result + (int) (mSelectedUserId ^ (mSelectedUserId >>> 32));
+        result = 31 * result + (mSearchQuery != null ? mSearchQuery.hashCode() : 0);
+        result = 31 * result + (int) (minSentDate ^ (minSentDate >>> 32));
+        result = 31 * result + (int) (maxSentDate ^ (maxSentDate >>> 32));
+        return result;
+    }
+
     boolean restoreState(SharedPreferences savedInstanceState) {
         return parseUri(Uri.parse(savedInstanceState.getString(IntentExtra.TIMELINE_URI.key,"")));
     }
@@ -329,5 +357,12 @@ public class TimelineListParameters {
         if (maxSentDateLoaded == 0 || maxSentDateLoaded < sentDate) {
             maxSentDateLoaded = sentDate;
         }
+    }
+
+    public String getSummary() {
+        return whichPage.getTitle(mContext) + " " + getTimelineType().getTitle(mContext)
+                + (mTimelineCombined ? ", "
+                + (mContext == null ? "combined" : mContext.getText(R.string.combined_timeline_on))
+                : "");
     }
 }
