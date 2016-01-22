@@ -81,9 +81,12 @@ public class TimelineActivity extends LoadableListActivity implements
 
     private MySwipeRefreshLayout mSwipeRefreshLayout = null;
 
+    /** Parameters for the next page request, not necessarily requested already */
+    private TimelineListParameters mListParametersNew;
+    /** Last parameters, requested to load. Thread safe. They are taken by a Loader at some time */
+    private volatile TimelineListParameters mListParametersToLoad;
     /** Parameters of currently shown Timeline */
     private TimelineListParameters mListParametersLoaded;
-    private TimelineListParameters mListParametersNew;
 
     /**
      * For testing purposes
@@ -848,21 +851,33 @@ public class TimelineActivity extends LoadableListActivity implements
      * This method should be called from UI thread only.
      */
     protected void queryListData(WhichTimelinePage whichPage) {
+        queryListData(TimelineListParameters.clone(getPrevParametersFor(whichPage), whichPage));
+    }
+
+    protected void queryListData(TimelineListParameters params) {
         final String method = "queryListData";
-        mListParametersNew = TimelineListParameters.clone(
-                getPrevParametersFor(whichPage), whichPage);
-        if (!isLoading()) {
-            saveListPosition();
-            MyLog.v(this, method + "; " + mListParametersNew.getSummary());
-            showLoadingIndicator();
-            showList(null);
+        boolean isDifferentRequest = !params.equals(mListParametersToLoad);
+        if (isDifferentRequest)  {
+            mListParametersToLoad = params;
+            if (isLoading()) {
+                if(MyLog.isVerboseEnabled()) {
+                    MyLog.v(this, method + "; different while loading " + params.getSummary());
+                }
+            } else {
+                MyLog.v(this, method + "; requesting " + params.getSummary());
+                saveListPosition();
+                showLoadingIndicator();
+                showList(null);
+            }
+        } else if(MyLog.isVerboseEnabled()) {
+            MyLog.v(this, method + "; ignored duplicated " + params.getSummary());
         }
     }
 
     @Override
     protected SyncLoader newSyncLoader(Bundle argsIn) {
         final String method = "newSyncLoader";
-        TimelineListParameters params = mListParametersNew;
+        TimelineListParameters params = mListParametersToLoad;
         if (params.whichPage != WhichTimelinePage.EMPTY) {
             MyLog.v(this, method + ": " + params);
             Intent intent = getIntent();
@@ -887,6 +902,7 @@ public class TimelineActivity extends LoadableListActivity implements
                     : mListParametersNew;
         }
         switch (whichPage) {
+            // TODO: decide what SAME is... and fix here
             case SAME:
                 return mListParametersLoaded;
             case OLDER:
@@ -928,12 +944,12 @@ public class TimelineActivity extends LoadableListActivity implements
                     .restore();
         }
 
+        TimelineListParameters anotherParams = mListParametersToLoad;
+        boolean parametersChanged = anotherParams != null && !mListParametersLoaded.equals(anotherParams);
         WhichTimelinePage anotherPageToRequest = WhichTimelinePage.EMPTY;
-        String requestReason = "";
-        if (mListParametersLoaded.equals(mListParametersNew)) {
+        if (!parametersChanged) {
             TimelineAdapter adapter = getListAdapter();
             if ( adapter.getCount() == 0) {
-                requestReason = "Nothing loaded";
                 if (adapter.getPages().mayHaveYoungerPage()) {
                     anotherPageToRequest = WhichTimelinePage.YOUNGER;
                 } else if (adapter.getPages().mayHaveOlderPage()) {
@@ -944,17 +960,15 @@ public class TimelineActivity extends LoadableListActivity implements
                     launchReloadIfNeeded(mListParametersLoaded.timelineToReload);
                 }
             }
-        } else {
-            anotherPageToRequest = mListParametersNew.whichPage;
-            requestReason = "Parameters changed";
         }
         hideSyncIndicator(method);
         updateScreen();
         clearNotifications();
-        if (anotherPageToRequest != WhichTimelinePage.EMPTY) {
-            mListParametersNew.whichPage = anotherPageToRequest;
-            MyLog.v(this, method + "; " + requestReason
-                    + ", requesting " + mListParametersNew.getSummary());
+        if (parametersChanged) {
+            MyLog.v(this, method + "; parameters changed, requesting " + anotherParams.getSummary());
+            queryListData(anotherParams);
+        } else if (anotherPageToRequest != WhichTimelinePage.EMPTY) {
+            MyLog.v(this, method + "; Nothing loaded, requesting " + anotherPageToRequest);
             queryListData(anotherPageToRequest);
         }
     }
