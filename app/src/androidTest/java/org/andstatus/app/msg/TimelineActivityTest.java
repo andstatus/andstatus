@@ -22,6 +22,7 @@ import android.widget.ListView;
 
 import org.andstatus.app.ListActivityTestHelper;
 import org.andstatus.app.R;
+import org.andstatus.app.WhichPage;
 import org.andstatus.app.account.AccountSelector;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
@@ -107,7 +108,7 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
         getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                getActivity().queryListData(WhichTimelinePage.YOUNGEST);
+                getActivity().showList(WhichPage.TOP);
             }
         });
         TestSuite.waitForListLoaded(this, getActivity(), position0 + 2);

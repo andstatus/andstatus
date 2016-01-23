@@ -17,9 +17,11 @@
 package org.andstatus.app.msg;
 
 import android.database.Cursor;
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import org.andstatus.app.LoadableListActivity;
+import org.andstatus.app.WhichPage;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.LatestTimelineItem;
@@ -41,7 +43,7 @@ public class TimelineLoader implements LoadableListActivity.SyncLoader {
     private volatile TimelinePage pageLoaded = null;
     private final long instanceId = InstanceId.next();
 
-    public TimelineLoader(TimelineListParameters params) {
+    public TimelineLoader(@NonNull TimelineListParameters params) {
         this.params = params;
     }
 
@@ -53,7 +55,7 @@ public class TimelineLoader implements LoadableListActivity.SyncLoader {
     @Override
     public void load(LoadableListActivity.ProgressPublisher publisher) {
         markStart();
-        if (params.whichPage != WhichTimelinePage.EMPTY) {
+        if (params.whichPage != WhichPage.EMPTY) {
             Cursor cursor = queryDatabase();
             checkIfReloadIsNeeded(cursor);
             setPageLoaded(pageFromCursor(cursor));
@@ -131,7 +133,7 @@ public class TimelineLoader implements LoadableListActivity.SyncLoader {
     }
 
     private boolean noMessagesInATimeline(Cursor cursor) {
-        return getParams().whichPage == WhichTimelinePage.SAME
+        return getParams().whichPage.isYoungest()
                 && TextUtils.isEmpty(getParams().mSearchQuery)
                 && cursor != null && !cursor.isClosed() && cursor.getCount() == 0;
     }
@@ -227,5 +229,10 @@ public class TimelineLoader implements LoadableListActivity.SyncLoader {
 
     void setPageLoaded(TimelinePage pageLoaded) {
         this.pageLoaded = pageLoaded;
+    }
+
+    @Override
+    public String toString() {
+        return MyLog.formatKeyValue(this, getParams().toString());
     }
 }

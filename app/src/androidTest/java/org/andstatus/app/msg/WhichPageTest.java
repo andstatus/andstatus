@@ -20,27 +20,31 @@ import android.os.Bundle;
 import android.test.InstrumentationTestCase;
 
 import org.andstatus.app.IntentExtra;
+import org.andstatus.app.WhichPage;
 
 /**
  * @author yvolk@yurivolkov.com
  */
-public class WhichTimelinePageTest extends InstrumentationTestCase {
+public class WhichPageTest extends InstrumentationTestCase {
 
     public void testSaveLoad() {
-        assertOne(WhichTimelinePage.SAME);
-        assertOne(WhichTimelinePage.NEW);
-        assertOne(WhichTimelinePage.YOUNGER);
+        assertOne(WhichPage.SAME);
+        assertOne(WhichPage.NEW);
+        assertOne(WhichPage.YOUNGER);
+        assertOne(WhichPage.YOUNGEST);
+        assertOne(WhichPage.OLDER);
+        assertOne(WhichPage.EMPTY);
 
         Bundle args = null;
-        assertEquals(WhichTimelinePage.EMPTY, WhichTimelinePage.load(args));
+        assertEquals(WhichPage.EMPTY, WhichPage.load(args));
         args = new Bundle();
-        assertEquals(WhichTimelinePage.EMPTY, WhichTimelinePage.load(args));
+        assertEquals(WhichPage.EMPTY, WhichPage.load(args));
         args.putString(IntentExtra.WHICH_PAGE.key, "234");
-        assertEquals(WhichTimelinePage.EMPTY, WhichTimelinePage.load(args));
+        assertEquals(WhichPage.EMPTY, WhichPage.load(args));
     }
 
-    private void assertOne(WhichTimelinePage whichPage) {
-        Bundle args = whichPage.save(new Bundle());
-        assertEquals(whichPage, WhichTimelinePage.load(args));
+    private void assertOne(WhichPage whichPage) {
+        Bundle args = whichPage.toBundle();
+        assertEquals(whichPage, WhichPage.load(args));
     }
 }

@@ -48,7 +48,7 @@ class TimelineListPositionStorage {
      */
     private final SharedPreferences sp = MyPreferences.getDefaultSharedPreferences();
     private String keyFirstVisibleItemId = "";
-    private String keyLastRetrievedItemSentDate = "";
+    private String keyMinSentDate = "";
     private String keyQueryString = "";
     private final String queryString;
     
@@ -68,7 +68,7 @@ class TimelineListPositionStorage {
                 + listParameters.mTimelineType.save()
                 + "_user" + Long.toString(userId)
                 + (TextUtils.isEmpty(queryString) ? "" : "_search");
-        keyLastRetrievedItemSentDate = keyFirstVisibleItemId + "_last";
+        keyMinSentDate = keyFirstVisibleItemId + "_last";
         keyQueryString = keyFirstVisibleItemId + "_query_string";
     }
 
@@ -86,35 +86,35 @@ class TimelineListPositionStorage {
         }
         long firstVisibleItemId = 0;
         int lastPosition = -1;
-        long lastItemSentDate = System.currentTimeMillis();
+        long minSentDate = 0;
         if (firstVisiblePosition >= 0) {
             firstVisibleItemId = la.getItemId(firstVisiblePosition);
             MyLog.v(this, method + " firstVisiblePos:" + firstVisiblePosition + " of " + itemCount
                     + "; itemId:" + firstVisibleItemId);
-            // We will load one more "page of messages" below (older) current top item
-            lastPosition = firstVisiblePosition + TimelineListParameters.PAGE_SIZE;
+            // We will load half of "page of messages" below (older) current top item
+            lastPosition = firstVisiblePosition + TimelineListParameters.PAGE_SIZE / 2;
             if (lastPosition >= itemCount) {
                 lastPosition = itemCount - 1;
             }
-            lastItemSentDate = la.getItem(lastPosition).sentDate;
+            minSentDate = la.getItem(lastPosition).sentDate;
         }
 
         if (firstVisibleItemId <= 0) {
             MyLog.v(this, method + " failed: no visible items for " + new TimelineTitle(mListParameters, "").toString());
         } else {
-            put(firstVisibleItemId, lastItemSentDate);
+            put(firstVisibleItemId, minSentDate);
 
             if (MyLog.isVerboseEnabled()) {
                 MyLog.v(this, method + " succeeded key=" + keyFirstVisibleItemId + ", id="
                         + firstVisibleItemId + ", pos=" + firstVisiblePosition + ", lastDate="
-                        + new Date(lastItemSentDate).toString() + ", lastPos=" + lastPosition);
+                        + new Date(minSentDate).toString() + ", lastPos=" + lastPosition);
             }
         }
     }
     
-    void put(long firstVisibleItemId, long lastRetrievedSentDate) {
+    void put(long firstVisibleItemId, long minSentDate) {
         sp.edit().putLong(keyFirstVisibleItemId, firstVisibleItemId)
-        .putLong(keyLastRetrievedItemSentDate, lastRetrievedSentDate)
+        .putLong(keyMinSentDate, minSentDate)
         .putString(keyQueryString, queryString).apply();
     }
 
@@ -135,16 +135,16 @@ class TimelineListPositionStorage {
     }
 
     /** @return 0 if not found */
-    long getLastRetrievedSentDate() {
+    long getMinSentDate() {
         long date = 0;
         if (isThisPositionStored()) {
-            date = sp.getLong(keyLastRetrievedItemSentDate, 0);
+            date = sp.getLong(keyMinSentDate, 0);
         }
         return date;
     }
     
     void clear() {
-        sp.edit().remove(keyFirstVisibleItemId).remove(keyLastRetrievedItemSentDate)
+        sp.edit().remove(keyFirstVisibleItemId).remove(keyMinSentDate)
                 .remove(keyQueryString).apply();
         if (MyLog.isVerboseEnabled()) {
             MyLog.v(this, "Position forgot key=" + keyFirstVisibleItemId);
@@ -152,13 +152,13 @@ class TimelineListPositionStorage {
     }
     
     /**
-     * Restore (First visible item) position saved for this user and for this type of timeline
+     * Restore (the first visible item) position saved for this timeline
      */
     public void restore() {
         if (mListView == null) {
             return;
         }
-        final String method = "restoreListPosition";
+        final String method = "restore";
         boolean loaded = false;
         int position = -1;
         long firstItemId = -3;
@@ -172,13 +172,14 @@ class TimelineListPositionStorage {
                 loaded = true;
             } else {
                 // There is no stored position
-                if (mListParameters.whichPage == WhichTimelinePage.YOUNGEST
+                if (mListParameters.whichPage.isYoungest()
                         || !TextUtils.isEmpty(mListParameters.mSearchQuery)
-                        || mListView.getCount() > 2) {
+                        || mListView.getCount() < 10) {
                     // In search mode start from the most recent message!
                     position = 0;
                 } else {
-                    position = mListView.getCount() - 2;
+                    position = mListView.getCount() - 10;
+
                 }
                 if (position >= 0) {
                     setPosition(mListView, position);

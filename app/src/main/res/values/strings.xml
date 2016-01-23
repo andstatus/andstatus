@@ -204,7 +204,7 @@
   <string name="label_upgrading">Upgrade is in progress. Please wait.</string>
   <string name="label_with_media">with media</string>
   <string name="latest_error_label">Latest error</string>
-  <string name="loading">Loading&#8230;</string>
+  <string name="loading">Loading</string>
   <string name="malformed_link">Malformed link</string>
   <string name="message">Message</string>
   <string name="message_twitter">Tweet</string>
@@ -275,6 +275,13 @@
   <string name="options_menu_mentions">Mentions</string>
   <string name="options_menu_search">Search</string>
   <string name="origin_settings_action">Social network</string>
+  <string name="page_empty">empty</string>
+  <string name="page_new">new</string>
+  <string name="page_older">older</string>
+  <string name="page_the_same">the same</string>
+  <string name="page_top_of">top of</string>
+  <string name="page_younger">younger</string>
+  <string name="page_youngest">youngest</string>
   <string name="preference_ssl_mode_title">SSL mode and security</string>
   <string name="preference_ssl_mode_secure_summary">You are safe: only secure SSL connections allowed</string>
   <string name="preference_ssl_mode_insecure_summary">Warning: Your connections are not secure. Please tell your server administrator to fix this and then return to a Secure mode</string>
@@ -376,12 +383,6 @@
   <string name="theme_size_entries_standard">Standard</string>
   <string name="theme_size_entries_large">Large</string>
   <string name="this_option_is_turned_off">(disabled)</string>
-  <string name="timeline_page_new">new</string>
-  <string name="timeline_page_younger">younger</string>
-  <string name="timeline_page_youngest">youngest</string>
-  <string name="timeline_page_the_same">the same</string>
-  <string name="timeline_page_older">older</string>
-  <string name="timeline_page_empty">empty</string>
   <string name="timeline_reloaded">Timeline has been reloaded.</string>
   <string name="timeline_title_all">All</string>
   <string name="timeline_title_direct_messages">Direct messages</string>

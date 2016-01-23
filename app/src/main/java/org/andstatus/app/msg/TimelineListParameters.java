@@ -28,6 +28,7 @@ import android.text.TextUtils;
 
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
+import org.andstatus.app.WhichPage;
 import org.andstatus.app.data.ProjectionMap;
 import org.andstatus.app.data.SelectedUserIds;
 import org.andstatus.app.data.MatchedUri;
@@ -68,7 +69,7 @@ public class TimelineListParameters {
      */
     String mSearchQuery = "";
 
-    WhichTimelinePage whichPage = WhichTimelinePage.NEW;
+    WhichPage whichPage = WhichPage.EMPTY;
     String[] mProjection;
 
     Uri mContentUri = null;
@@ -85,10 +86,10 @@ public class TimelineListParameters {
     volatile long minSentDateLoaded = 0;
     volatile long maxSentDateLoaded = 0;
 
-    public static TimelineListParameters clone(TimelineListParameters prev, WhichTimelinePage whichPage) {
+    public static TimelineListParameters clone(TimelineListParameters prev, WhichPage whichPage) {
         TimelineListParameters params = new TimelineListParameters(prev.mContext);
         params.whichPage = whichPage;
-        if (whichPage != WhichTimelinePage.EMPTY) {
+        if (whichPage != WhichPage.EMPTY) {
             enrichNonEmptyParameters(params, prev);
         }
         return params;
@@ -102,7 +103,7 @@ public class TimelineListParameters {
         params.mSelectedUserId = prev.getSelectedUserId();
         params.mSearchQuery = prev.mSearchQuery;
 
-        String msgLog = "Loading " + params.getSummary();
+        String msgLog = "Constructing " + params.getSummary();
         switch (params.whichPage) {
             case OLDER:
                 if (prev.mayHaveOlderPage()) {
@@ -122,11 +123,11 @@ public class TimelineListParameters {
                 params.minSentDate = prev.minSentDate;
                 params.maxSentDate = prev.maxSentDate;
                 break;
-            case YOUNGEST:
-                break;
             case NEW:
             default:
-                params.minSentDate = new TimelineListPositionStorage(null, null, params).getLastRetrievedSentDate();
+                params.minSentDate = new TimelineListPositionStorage(null, null, params).getMinSentDate();
+            case TOP:
+            case YOUNGEST:
                 break;
         }
         MyLog.v(TimelineListParameters.class, msgLog);

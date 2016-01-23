@@ -14,33 +14,36 @@
  * limitations under the License.
  */
 
-package org.andstatus.app.msg;
+package org.andstatus.app;
 
 import android.content.Context;
 import android.os.Bundle;
 
-import org.andstatus.app.IntentExtra;
-import org.andstatus.app.R;
 import org.andstatus.app.util.MyLog;
 
 /**
  * @author yvolk@yurivolkov.com
  */
-public enum WhichTimelinePage {
-    NEW(1, R.string.timeline_page_new),
-    YOUNGER(2, R.string.timeline_page_younger),
-    YOUNGEST(3, R.string.timeline_page_youngest),
-    SAME(4, R.string.timeline_page_the_same),
-    OLDER(5, R.string.timeline_page_older),
-    EMPTY(6, R.string.timeline_page_empty);
+public enum WhichPage {
+    NEW(1, R.string.page_new),
+    YOUNGER(2, R.string.page_younger),
+    YOUNGEST(3, R.string.page_youngest),
+    TOP(4, R.string.page_top_of),
+    SAME(5, R.string.page_the_same),
+    OLDER(6, R.string.page_older),
+    EMPTY(7, R.string.page_empty);
 
-    private static final String TAG = WhichTimelinePage.class.getSimpleName();
+    private static final String TAG = WhichPage.class.getSimpleName();
     private final long code;
     private final int titleResId;
 
-    WhichTimelinePage(long code, int titleResId) {
+    WhichPage(long code, int titleResId) {
         this.code = code;
         this.titleResId = titleResId;
+    }
+
+    public Bundle toBundle() {
+        return save(new Bundle());
     }
 
     public Bundle save(Bundle bundle) {
@@ -52,7 +55,7 @@ public enum WhichTimelinePage {
         return Long.toString(code);
     }
 
-    public static WhichTimelinePage load(String strCode, WhichTimelinePage defaultPage) {
+    public static WhichPage load(String strCode, WhichPage defaultPage) {
         if (strCode != null) {
             try {
                 return load(Long.parseLong(strCode));
@@ -63,8 +66,8 @@ public enum WhichTimelinePage {
         return defaultPage;
     }
 
-    public static WhichTimelinePage load(long code) {
-        for(WhichTimelinePage val : values()) {
+    public static WhichPage load(long code) {
+        for(WhichPage val : values()) {
             if (val.code == code) {
                 return val;
             }
@@ -72,9 +75,9 @@ public enum WhichTimelinePage {
         return EMPTY;
     }
 
-    public static WhichTimelinePage load(Bundle args) {
+    public static WhichPage load(Bundle args) {
         if (args != null) {
-            return WhichTimelinePage.load(args.getString(IntentExtra.WHICH_PAGE.key), EMPTY);
+            return WhichPage.load(args.getString(IntentExtra.WHICH_PAGE.key), EMPTY);
         }
         return EMPTY;
     }
@@ -84,6 +87,16 @@ public enum WhichTimelinePage {
             return this.name();
         } else {
             return context.getText(titleResId);
+        }
+    }
+
+    public boolean isYoungest() {
+        switch (this) {
+            case TOP:
+            case YOUNGEST:
+                return true;
+            default :
+                return false;
         }
     }
 }

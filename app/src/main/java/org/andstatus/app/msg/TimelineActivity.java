@@ -47,6 +47,7 @@ import org.andstatus.app.IntentExtra;
 import org.andstatus.app.LoadableListActivity;
 import org.andstatus.app.MyAction;
 import org.andstatus.app.R;
+import org.andstatus.app.WhichPage;
 import org.andstatus.app.account.AccountSelector;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
@@ -78,6 +79,7 @@ public class TimelineActivity extends LoadableListActivity implements
         ActionableMessageList, AbsListView.OnScrollListener {
     private static final int DIALOG_ID_TIMELINE_TYPE = 9;
     private static final String ACTIVITY_PERSISTENCE_NAME = TimelineActivity.class.getSimpleName();
+    public static final char HORIZONTAL_ELLIPSIS = '\u2026';
 
     private MySwipeRefreshLayout mSwipeRefreshLayout = null;
 
@@ -170,7 +172,7 @@ public class TimelineActivity extends LoadableListActivity implements
         }
 
         updateScreen();
-        queryListData(mListParametersNew.whichPage);
+        showList(mListParametersNew.whichPage);
     }
 
     @Override
@@ -233,7 +235,7 @@ public class TimelineActivity extends LoadableListActivity implements
     public void onGoToTheTopButtonClick(View item) {
         TimelineAdapter adapter = getListAdapter();
         if (adapter == null || adapter.getPages().mayHaveYoungerPage()) {
-            queryListData(WhichTimelinePage.YOUNGEST);
+            showList(WhichPage.TOP);
         } else {
             TimelineListPositionStorage.setPosition(getListView(), 0);
         }
@@ -337,21 +339,14 @@ public class TimelineActivity extends LoadableListActivity implements
         mMessageEditor.saveAsBeingEditedAndHide();
         saveActivityState();
         super.onPause();
-
-        if (isPositionRestored()) {
-            if (!isLoading()) {
-                saveListPosition();
-            }
-            getListAdapter().setPositionRestored(false);
-        }
-
         MyContextHolder.get().setInForeground(false);
     }
 
     private void showLoadingIndicator() {
         final String method = "showLoading";
         if (mSyncIndicator.getVisibility() != View.VISIBLE) {
-            ((TextView) findViewById(R.id.sync_text)).setText(getText(R.string.loading) + " " + mListParametersNew.getSummary());
+            ((TextView) findViewById(R.id.sync_text)).setText(getText(R.string.loading) + " "
+                    + mListParametersToLoad.getSummary() + HORIZONTAL_ELLIPSIS);
             showHideSyncIndicator(method, true);
         }
     }
@@ -411,15 +406,15 @@ public class TimelineActivity extends LoadableListActivity implements
      * see http://stackoverflow.com/questions/5996885/how-to-wait-for-android-runonuithread-to-be-finished
      */
     protected void saveListPosition() {
-        Runnable runnable = new Runnable() {
-            @Override
-            public void run() {
-                if (isPositionRestored()) {
-                    new TimelineListPositionStorage(getListAdapter(), getListView(), mListParametersLoaded).save();
-                }
-            }
-        };
-        runOnUiThread(runnable);
+        if (isPositionRestored()) {
+            Runnable runnable = new Runnable() {
+                @Override
+                public void run() {
+                        new TimelineListPositionStorage(getListAdapter(), getListView(), mListParametersLoaded).save();
+                    }
+            };
+            runOnUiThread(runnable);
+        }
     }
 
     @Override
@@ -597,12 +592,23 @@ public class TimelineActivity extends LoadableListActivity implements
     @Override
     public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount,
                          int totalItemCount) {
-        // Idea from http://stackoverflow.com/questions/1080811/android-endless-list
-        boolean loadMore = (visibleItemCount > 0) && (firstVisibleItem > 0)
-                && (firstVisibleItem + visibleItemCount >= totalItemCount);
-        if (loadMore && getListAdapter().getPages().mayHaveOlderPage()) {
-            MyLog.d(this, "Start Loading older items, rows=" + totalItemCount);
-            queryListData(WhichTimelinePage.OLDER);
+        TimelineAdapter adapter = getListAdapter();
+        if (adapter != null) {
+            if (firstVisibleItem == 0) {
+                View v = getListView().getChildAt(0);
+                int offset = (v == null) ? 0 : v.getTop();
+                if (offset == 0 && adapter.getPages().mayHaveYoungerPage()) {
+                    showList(WhichPage.YOUNGER);
+                }
+            } else {
+                // Idea from http://stackoverflow.com/questions/1080811/android-endless-list
+                if ((visibleItemCount > 0)
+                        && (firstVisibleItem + visibleItemCount >= totalItemCount - 1)
+                        && adapter.getPages().mayHaveOlderPage()) {
+                    MyLog.d(this, "Start Loading older items, rows=" + totalItemCount);
+                    showList(WhichPage.OLDER);
+                }
+            }
         }
     }
 
@@ -641,7 +647,7 @@ public class TimelineActivity extends LoadableListActivity implements
         MyContextHolder.initialize(this, this);
         parseNewIntent(intent);
         updateScreen();
-        queryListData(mListParametersNew.whichPage);
+        showList(mListParametersNew.whichPage);
     }
 
     private void parseNewIntent(Intent intentNew) {
@@ -652,8 +658,8 @@ public class TimelineActivity extends LoadableListActivity implements
         mListParametersNew.setTimelineType(TimelineType.UNKNOWN);
         mListParametersNew.myAccountUserId = MyContextHolder.get().persistentAccounts().getCurrentAccountUserId();
         mListParametersNew.mSelectedUserId = 0;
-        mListParametersNew.whichPage = WhichTimelinePage.load(
-                intentNew.getStringExtra(IntentExtra.WHICH_PAGE.key), WhichTimelinePage.NEW);
+        mListParametersNew.whichPage = WhichPage.load(
+                intentNew.getStringExtra(IntentExtra.WHICH_PAGE.key), WhichPage.NEW);
         parseAppSearchData(intentNew);
         if (mListParametersNew.getTimelineType() == TimelineType.UNKNOWN) {
             mListParametersNew.parseIntentData(intentNew);
@@ -844,41 +850,66 @@ public class TimelineActivity extends LoadableListActivity implements
         }
     }
 
+    @Override
+    protected void showList(WhichPage whichPage) {
+        showList(TimelineListParameters.clone(getReferenceParametersFor(whichPage), whichPage));
+    }
+
+    private TimelineListParameters getReferenceParametersFor(WhichPage whichPage) {
+        TimelineAdapter adapter = getListAdapter();
+        switch (whichPage) {
+            case OLDER:
+                if (adapter != null && adapter.getPages().getItemsCount() > 0) {
+                    return adapter.getPages().list.get(adapter.getPages().list.size()-1).parameters;
+                }
+            case YOUNGER:
+                if (adapter != null && adapter.getPages().getItemsCount() > 0) {
+                    return adapter.getPages().list.get(0).parameters;
+                }
+            default:
+                if (mListParametersNew != null) {
+                    return mListParametersNew;
+                }
+            case EMPTY:
+                return new TimelineListParameters(this);
+        }
+    }
+
     /**
      * Prepare a query to the ContentProvider (to the database) and load the visible List of
      * messages with this data
      * This is done asynchronously.
      * This method should be called from UI thread only.
      */
-    protected void queryListData(WhichTimelinePage whichPage) {
-        queryListData(TimelineListParameters.clone(getPrevParametersFor(whichPage), whichPage));
-    }
-
-    protected void queryListData(TimelineListParameters params) {
-        final String method = "queryListData";
+    protected void showList(TimelineListParameters params) {
+        final String method = "showList";
         boolean isDifferentRequest = !params.equals(mListParametersToLoad);
-        if (isDifferentRequest)  {
+        if (isDifferentRequest) {
             mListParametersToLoad = params;
-            if (isLoading()) {
-                if(MyLog.isVerboseEnabled()) {
+        }
+        if (isLoading()) {
+            if(MyLog.isVerboseEnabled()) {
+                if (isDifferentRequest) {
                     MyLog.v(this, method + "; different while loading " + params.getSummary());
+                } else {
+                    MyLog.v(this, method + "; ignored duplicated " + params.getSummary());
                 }
-            } else {
-                MyLog.v(this, method + "; requesting " + params.getSummary());
-                saveListPosition();
-                showLoadingIndicator();
-                showList(null);
             }
-        } else if(MyLog.isVerboseEnabled()) {
-            MyLog.v(this, method + "; ignored duplicated " + params.getSummary());
+        } else {
+            MyLog.v(this, method + "; requesting " + (isDifferentRequest ? "" : "duplicated ")
+                    + params.getSummary());
+            saveListPosition();
+            showLoadingIndicator();
+            super.showList(mListParametersToLoad.whichPage.toBundle());
         }
     }
 
     @Override
     protected SyncLoader newSyncLoader(Bundle argsIn) {
         final String method = "newSyncLoader";
-        TimelineListParameters params = mListParametersToLoad;
-        if (params.whichPage != WhichTimelinePage.EMPTY) {
+        TimelineListParameters params = mListParametersToLoad == null ?
+                new TimelineListParameters(this) : mListParametersToLoad;
+        if (params.whichPage != WhichPage.EMPTY) {
             MyLog.v(this, method + ": " + params);
             Intent intent = getIntent();
             if (!params.mContentUri.equals(intent.getData())) {
@@ -887,30 +918,6 @@ public class TimelineActivity extends LoadableListActivity implements
             saveSearchQuery();
         }
         return new TimelineLoader(params);
-    }
-
-    private TimelineListParameters getPrevParametersFor(WhichTimelinePage whichPage) {
-        TimelineAdapter adapter = getListAdapter();
-        if (mListParametersLoaded == null
-                || whichPage == WhichTimelinePage.NEW
-                || whichPage == WhichTimelinePage.YOUNGEST
-                || whichPage == WhichTimelinePage.EMPTY
-                || whichPage == WhichTimelinePage.SAME
-                || adapter == null
-                || adapter.getPages().getItemsCount() == 0) {
-            return mListParametersNew == null ? new TimelineListParameters(this)
-                    : mListParametersNew;
-        }
-        switch (whichPage) {
-            // TODO: decide what SAME is... and fix here
-            case SAME:
-                return mListParametersLoaded;
-            case OLDER:
-                return adapter.getPages().list.get(adapter.getPages().list.size()-1).parameters;
-            case YOUNGER:
-            default:
-                return adapter.getPages().list.get(0).parameters;
-        }
     }
 
     private void saveSearchQuery() {
@@ -931,31 +938,34 @@ public class TimelineActivity extends LoadableListActivity implements
         TimelineLoader myLoader = (TimelineLoader) getLoaded();
         mListParametersLoaded = myLoader.getParams();
         MyLog.v(this, method + "; " + mListParametersLoaded.getSummary());
+
+        // TODO start: Move this inside superclass
         boolean restorePosition = restorePosition_in && isPositionRestored()
-                && mListParametersLoaded.whichPage != WhichTimelinePage.YOUNGEST;
-
+                && mListParametersLoaded.whichPage != WhichPage.TOP;
         super.onLoadFinished(restorePosition);
-
-        if (mListParametersLoaded.whichPage == WhichTimelinePage.YOUNGEST) {
+        if (mListParametersLoaded.whichPage == WhichPage.TOP) {
             TimelineListPositionStorage.setPosition(getListView(), 0);
             getListAdapter().setPositionRestored(true);
-        } else if (!isPositionRestored()) {
+        }
+        // TODO end: Move this inside superclass
+
+        if (!isPositionRestored()) {
             new TimelineListPositionStorage(getListAdapter(), getListView(), mListParametersLoaded)
                     .restore();
         }
 
         TimelineListParameters anotherParams = mListParametersToLoad;
         boolean parametersChanged = anotherParams != null && !mListParametersLoaded.equals(anotherParams);
-        WhichTimelinePage anotherPageToRequest = WhichTimelinePage.EMPTY;
+        WhichPage anotherPageToRequest = WhichPage.EMPTY;
         if (!parametersChanged) {
             TimelineAdapter adapter = getListAdapter();
             if ( adapter.getCount() == 0) {
                 if (adapter.getPages().mayHaveYoungerPage()) {
-                    anotherPageToRequest = WhichTimelinePage.YOUNGER;
+                    anotherPageToRequest = WhichPage.YOUNGER;
                 } else if (adapter.getPages().mayHaveOlderPage()) {
-                    anotherPageToRequest = WhichTimelinePage.OLDER;
-                } else if (mListParametersLoaded.whichPage != WhichTimelinePage.YOUNGEST) {
-                    anotherPageToRequest = WhichTimelinePage.YOUNGEST;
+                    anotherPageToRequest = WhichPage.OLDER;
+                } else if (!mListParametersLoaded.whichPage.isYoungest()) {
+                    anotherPageToRequest = WhichPage.YOUNGEST;
                 } else if (mListParametersLoaded.rowsLoaded == 0) {
                     launchReloadIfNeeded(mListParametersLoaded.timelineToReload);
                 }
@@ -966,10 +976,10 @@ public class TimelineActivity extends LoadableListActivity implements
         clearNotifications();
         if (parametersChanged) {
             MyLog.v(this, method + "; parameters changed, requesting " + anotherParams.getSummary());
-            queryListData(anotherParams);
-        } else if (anotherPageToRequest != WhichTimelinePage.EMPTY) {
+            showList(anotherParams);
+        } else if (anotherPageToRequest != WhichPage.EMPTY) {
             MyLog.v(this, method + "; Nothing loaded, requesting " + anotherPageToRequest);
-            queryListData(anotherPageToRequest);
+            showList(anotherPageToRequest);
         }
     }
 
@@ -1046,6 +1056,8 @@ public class TimelineActivity extends LoadableListActivity implements
     }
 
     protected void saveActivityState() {
+        saveListPosition();
+
         SharedPreferences.Editor outState = MyPreferences.getSharedPreferences(ACTIVITY_PERSISTENCE_NAME).edit();
         mListParametersNew.saveState(outState);
         mContextMenu.saveState(outState);
@@ -1057,7 +1069,6 @@ public class TimelineActivity extends LoadableListActivity implements
             MyLog.e(this, "Initiating crash test exception");
             throw new NullPointerException("This is a test crash event");
         }
-
     }
 
     @Override
@@ -1205,12 +1216,12 @@ public class TimelineActivity extends LoadableListActivity implements
             return true;
         }
         if (getListAdapter().getPages().mayHaveYoungerPage()) {
-            queryListData(WhichTimelinePage.YOUNGER);
             return true;
         }
         return false;
     }
 
+    @Override
     protected void onReceiveAfterExecutingCommand(CommandData commandData) {
         switch (commandData.getCommand()) {
             case FETCH_TIMELINE:
@@ -1284,15 +1295,11 @@ public class TimelineActivity extends LoadableListActivity implements
     }
 
     public void refreshPageAfterExecutingCommand(CommandData commandData) {
-        boolean refresh = false;
-        WhichTimelinePage whichPage = WhichTimelinePage.YOUNGEST;
+        boolean refresh = true;
         TimelineAdapter adapter = getListAdapter();
         if (adapter == null || adapter.getPages().mayHaveYoungerPage()) {
-            // Show updates only if we are on the top of a timeline
+            // Show updates only if we already show the youngest page
             refresh = false;
-        } else {
-            whichPage = WhichTimelinePage.SAME;
-            mListParametersNew = adapter.getPages().list.get(0).parameters;
         }
         if (refresh && isLoading()) {
             if (MyLog.isVerboseEnabled()) {
@@ -1304,7 +1311,9 @@ public class TimelineActivity extends LoadableListActivity implements
         if (refresh && MyLog.isVerboseEnabled()) {
             MyLog.v(this, "Content changed, " + commandData.toCommandSummary(MyContextHolder.get()));
         }
-        queryListData(whichPage);
+        if (refresh) {
+            showList(WhichPage.TOP);
+        }
     }
 
     @Override

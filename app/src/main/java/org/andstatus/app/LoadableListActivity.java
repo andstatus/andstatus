@@ -50,11 +50,6 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
     ParsedUri mParsedUri = ParsedUri.fromUri(Uri.EMPTY);
 
     /**
-     * Id of current list item, which is sort of a "center" of the list view
-     */
-    private long mItemId = 0;
-
-    /**
      * We use this to request additional items (from Internet)
      */
     private MyAccount ma = MyAccount.getEmpty(MyContextHolder.get(), "");
@@ -73,6 +68,10 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
     private boolean mIsPaused = false;
 
     protected CharSequence mSubtitle = "";
+    /**
+     * Id of current list item, which is sort of a "center" of the list view
+     */
+    protected long centralItemId = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -89,23 +88,29 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
 
         mParsedUri = ParsedUri.fromUri(getIntent().getData());
         ma = MyContextHolder.get().persistentAccounts().fromUserId(getParsedUri().getAccountUserId());
-        mItemId = getParsedUri().getItemId();
+        centralItemId = getParsedUri().getItemId();
     }
 
     protected ParsedUri getParsedUri() {
         return mParsedUri;
     }
 
+    protected void showList(WhichPage whichPage) {
+        showList(whichPage.toBundle());
+    }
+
     protected void showList(Bundle args) {
-        String msgLog = "showList, instanceId=" + mInstanceId + ", itemId=" + mItemId;
+        String msgLog = "showList, instanceId=" + mInstanceId
+                + ", " + WhichPage.load(args) + " page"
+                + (centralItemId == 0 ? "" : ", center:" + centralItemId);
         MyLog.v(this, "Started " + msgLog);
         synchronized (loaderLock) {
             if (loaderIsWorking && mWorkingLoader.getStatus() == Status.FINISHED) {
-                msgLog += ", loader was finished";
+                msgLog += ", " + mWorkingLoader;
                 loaderIsWorking = false;
             }
             if (loaderIsWorking) {
-                msgLog = "Ignored " + msgLog + ", LoaderStatus:" + mWorkingLoader.getStatus();
+                msgLog = "Ignored " + msgLog + ", " + mWorkingLoader;
             } else {
                 mWorkingLoader = new AsyncLoader();
                 loaderIsWorking = true;
@@ -198,13 +203,20 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
             + (timeCompleted - timeLoaded) + "ms in the foreground");
             onEnd();
         }
+
+        @Override
+        public String toString() {
+            return MyLog.objTagToString(this) + "; " + this.getStatus()
+                    + ", " + (mSyncLoader == null ? "" : mSyncLoader);
+        }
     }
 
     public void onLoadFinished(boolean restorePosition) {
         updateTitle("");
         if (restorePosition) {
             ListView list = getListView();
-            long itemIdOfListPosition = mItemId;
+            // TODO: for a finer position restore see http://stackoverflow.com/questions/3014089/maintain-save-restore-scroll-position-when-returning-to-a-listview?rq=1
+            long itemIdOfListPosition = centralItemId;
             if (list.getChildCount() > 1) {
                 itemIdOfListPosition = list.getAdapter().getItemId(list.getFirstVisiblePosition());
             }
@@ -240,8 +252,8 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
         StringBuilder title = new StringBuilder(getCustomTitle());
         if (ma.isValid()) {
             I18n.appendWithSpace(title, "/ " + ma.getOrigin().getName());
-        } else {
-            I18n.appendWithSpace(title, "/ ? (" + mItemId + ")");
+        } else if (centralItemId != 0) {
+            I18n.appendWithSpace(title, "/ ? (" + centralItemId + ")");
         }
         if (!TextUtils.isEmpty(progress)) {
             I18n.appendWithSpace(title, progress);
@@ -273,7 +285,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
         myServiceReceiver.registerReceiver(this);
         MyContextHolder.get().setInForeground(true);
         if (size() == 0) {
-            showList(null);
+            showList(WhichPage.SAME);
         }
     }
 
@@ -305,7 +317,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
             case FETCH_ATTACHMENT:
             case FETCH_AVATAR:
                 if (!commandData.getResult().hasError()) {
-                    showList(null);
+                    showList(WhichPage.YOUNGEST);
                 }
                 break;
             default:
@@ -317,16 +329,12 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.reload_menu_item:
-                showList(null);
+                showList(WhichPage.YOUNGEST);
                 break;
             default:
                 break;
         }
         return super.onOptionsItemSelected(item);
-    }
-
-    public long getItemId() {
-        return mItemId;
     }
 
     public MyAccount getMa() {

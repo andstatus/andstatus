@@ -24,7 +24,7 @@ import org.andstatus.app.R;
 
 public abstract class MyBaseAdapter extends BaseAdapter {
 
-    private boolean positionRestored = false;
+    private volatile boolean positionRestored = false;
 
     public Object getItem(View view) {
         return getItem(getPosition(view));

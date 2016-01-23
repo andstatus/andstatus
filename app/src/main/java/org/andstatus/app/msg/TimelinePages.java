@@ -16,6 +16,7 @@
 
 package org.andstatus.app.msg;
 
+import org.andstatus.app.WhichPage;
 import org.andstatus.app.util.MyLog;
 
 import java.util.ArrayList;
@@ -39,7 +40,7 @@ public class TimelinePages {
 
     private void dropExcessivePage(TimelinePage lastLoadedPage) {
         if (list.size() > MAX_PAGES_COUNT) {
-            if (lastLoadedPage.parameters.whichPage == WhichTimelinePage.YOUNGER) {
+            if (lastLoadedPage.parameters.whichPage == WhichPage.YOUNGER) {
                 list.remove(list.size() - 1);
             } else {
                 list.remove(0);
@@ -61,6 +62,7 @@ public class TimelinePages {
     private void addThisPage(TimelinePage page) {
         switch (page.parameters.whichPage) {
             case NEW:
+            case TOP:
             case YOUNGEST:
                 list.clear();
                 list.add(page);

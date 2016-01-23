@@ -186,12 +186,12 @@ public class ConversationActivity extends LoadableListActivity implements Action
     @Override
     protected SyncLoader newSyncLoader(Bundle args) {
         return new ConversationLoader<>(ConversationViewItem.class,
-                this, getMa(), getItemId());
+                this, getMa(), centralItemId);
     }
 
     @Override
     protected MyBaseAdapter newListAdapter() {
-        return new ConversationViewAdapter(mContextMenu, getItemId(), getListLoader().getList());
+        return new ConversationViewAdapter(mContextMenu, centralItemId, getListLoader().getList());
     }
 
     @Override
