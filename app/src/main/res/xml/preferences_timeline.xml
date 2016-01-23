@@ -16,7 +16,14 @@
  -->
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
 				  android:title="@string/title_timeline">
-        <org.andstatus.app.context.MultilineListPreference android:key="user_in_timeline"
+    <org.andstatus.app.context.MultilineListPreference android:key="default_timeline"
+        android:entries="@array/timeline_type_entries"
+        android:entryValues="@array/timeline_type_values"
+        android:defaultValue="home"
+        android:title="@string/default_timeline_title"
+        android:summary="@string/default_timeline_summary"
+        android:dialogTitle="@string/dialog_title_select_timeline" />
+    <org.andstatus.app.context.MultilineListPreference android:key="user_in_timeline"
         android:entries="@array/user_in_timeline_entries"
         android:entryValues="@array/user_in_timeline_values"
         android:defaultValue="3"

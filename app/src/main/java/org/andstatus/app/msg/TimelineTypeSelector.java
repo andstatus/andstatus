@@ -2,6 +2,7 @@ package org.andstatus.app.msg;
 
 import android.content.Context;
 
+import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.TimelineType;
 
 public class TimelineTypeSelector {
@@ -42,7 +43,7 @@ public class TimelineTypeSelector {
     }
 
     public static TimelineType selectableType(TimelineType typeSelected) {
-        TimelineType typeSelectable = TimelineType.HOME;
+        TimelineType typeSelectable = getDefault();
         for (TimelineType type : timelineTypes) {
             if (type == typeSelected) {
                 typeSelectable = typeSelected;
@@ -50,5 +51,9 @@ public class TimelineTypeSelector {
             }
         }
         return typeSelectable;
+    }
+
+    public static TimelineType getDefault() {
+        return TimelineType.load(MyPreferences.getString(MyPreferences.KEY_DEFAULT_TIMELINE, TimelineType.HOME.save()));
     }
 }

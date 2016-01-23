@@ -677,7 +677,9 @@ public class TimelineActivity extends LoadableListActivity implements
         }
         if (mListParametersNew.getTimelineType() == TimelineType.UNKNOWN) {
             /* Set default values */
-            mListParametersNew.setTimelineType(TimelineType.HOME);
+            mListParametersNew.setTimelineType(TimelineTypeSelector.getDefault());
+            mListParametersNew.setTimelineCombined(
+                    MyPreferences.getBoolean(MyPreferences.KEY_TIMELINE_IS_COMBINED, false));
             mListParametersNew.mSearchQuery = "";
         }
         if (mListParametersNew.getTimelineType() == TimelineType.USER) {

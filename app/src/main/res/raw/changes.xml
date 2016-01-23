@@ -33,8 +33,8 @@
             <change>Maximum number of messages, shown in a Timeline at a time, is restricted
                 to several hundreds. This change should prevent performance degradation for users
                 who receive thousands of new messages daily.<br/>
-                Now AndStatus loads not more than 100 messages (a &quot;page&quot;) at a time
-                and keeps in its memory not more than 5 pages.
+                Now AndStatus loads not more than 100 messages (a &quot;page&quot;) at a time,
+                and it keeps in its memory not more than 5 pages at a time.
                 When a User scrolls in any direction and new pages are loaded,
                 farther pages are discarded.
                 <a href="https://github.com/andstatus/andstatus/issues/313">#313</a>
@@ -54,9 +54,14 @@
             <change>Added &quot;Refresh timeline automatically&quot; option to Settings-&gt;Timeline.
                 Turning this setting off may give a noticeable performance increase for users,
                 who have many new messages in their timelines and frequent updates.
-                This setting allows to have Syncing while using AndStatus enabled and don't have
-                too often timeline refreshes.
+                This setting allows to have &quot;Syncing while using AndStatus&quot; enabled
+                and don't wait too often for a timeline refresh.
                 <a href="https://github.com/andstatus/andstatus/issues/310">#310</a>
+            </change>
+            <change>Added &quot;Default timeline&quot; option to Settings-&gt;Timeline.
+                This timeline is shown, when a Launcher opens AndStatus; or when a User clicks
+                on AndStatus widget, and there are no new messages.
+                <a href="https://github.com/andstatus/andstatus/issues/236">#236</a>
             </change>
             <change>Existing &quot;Hide messages based on keywords&quot; option
                 extended and now it's

@@ -106,6 +106,8 @@
   <string name="dialog_summary_sending_message">Please wait while message is being sent.</string>
   <string name="dialog_summary_service_unavailable">Twitter is currently over capacity. Please try again later.</string>
   <string name="dialog_summary_timeline_loading">Please wait while the timeline is being refreshed. This may take several minutes depending on your connection.</string>
+  <string name="default_timeline_title">Default timeline</string>
+  <string name="default_timeline_summary">Timeline that will be opened by a Launcher: \"{0}\"</string>
   <string name="dialog_title_acquiring_an_access_token">Acquiring an Access token</string>
   <string name="dialog_title_acquiring_a_request_token">Acquiring a request token</string>
   <string name="dialog_title_authentication_failed">Authentication Failed</string>

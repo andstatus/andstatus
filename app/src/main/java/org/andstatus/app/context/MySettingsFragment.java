@@ -105,6 +105,7 @@ public class MySettingsFragment extends PreferenceFragment implements
         showBackgroundColor();
         showThemeSize();
         showFilterHideMessagesBasedOnKeywords();
+        showDefaultTimeline();
     }
 
     private void showManageAccounts() {
@@ -234,6 +235,10 @@ public class MySettingsFragment extends PreferenceFragment implements
         showListPreference(MyPreferences.KEY_ACTION_BAR_COLOR);
     }
 
+    private void showDefaultTimeline() {
+        SharedPreferencesUtil.showListPreference(this, MyPreferences.KEY_DEFAULT_TIMELINE, R.array.timeline_type_values, R.array.timeline_type_entries, R.string.default_timeline_summary);
+    }
+
     private void showListPreference(String key) {
         ListPreference preference = (ListPreference) findPreference(key);
         if (preference != null) {
@@ -337,6 +342,9 @@ public class MySettingsFragment extends PreferenceFragment implements
                     break;
                 case MyPreferences.KEY_FILTER_HIDE_MESSAGES_BASED_ON_KEYWORDS:
                     showFilterHideMessagesBasedOnKeywords();
+                    break;
+                case MyPreferences.KEY_DEFAULT_TIMELINE:
+                    showDefaultTimeline();
                     break;
                 default:
                     break;

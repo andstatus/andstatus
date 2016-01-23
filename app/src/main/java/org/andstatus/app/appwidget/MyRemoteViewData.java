@@ -11,9 +11,11 @@ import android.text.format.Time;
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.msg.TimelineActivity;
+import org.andstatus.app.msg.TimelineTypeSelector;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
@@ -139,25 +141,30 @@ class MyRemoteViewData {
      *  Open the timeline, which has new messages, or default to the "Home" timeline
      */
     private PendingIntent getOnClickIntent(Context context, MyAppWidgetData widgetData) {
-        Intent intent;
-        TimelineType timeLineType = TimelineType.HOME;
-        intent = new Intent(context, TimelineActivity.class);
+        TimelineType timeLineType = TimelineType.UNKNOWN;
         if (widgetData.numDirectMessages > 0) {
             timeLineType = TimelineType.DIRECT;
-        } else {
-            if (widgetData.numMentions > 0) {
+        } else if (widgetData.numMentions > 0) {
                 timeLineType = TimelineType.MENTIONS;
-            }
+        } else if (widgetData.numHomeTimeline > 0) {
+            timeLineType = TimelineType.HOME;
         }
-        // There are more than one account,
-        // so turn Combined timeline on in order to show all the new messages.
-        boolean isTimelineCombined = MyContextHolder.get().persistentAccounts().size() > 1;
+        boolean isTimelineCombined;
+        if (timeLineType == TimelineType.UNKNOWN) {
+            timeLineType = TimelineTypeSelector.getDefault();
+            isTimelineCombined = MyPreferences.getBoolean(MyPreferences.KEY_TIMELINE_IS_COMBINED, false);
+        } else {
+            // There are more than one account,
+            // so turn Combined timeline on in order to show all the new messages.
+            isTimelineCombined = MyContextHolder.get().persistentAccounts().size() > 1;
+        }
 
         // TODO: We don't mention exact MyAccount in the intent 
         // On the other hand the Widget is not Account aware yet also,
         //   so for now this is correct.
         long myAccountId = MyContextHolder.get().persistentAccounts().getCurrentAccountUserId();
-        
+
+        Intent intent = new Intent(context, TimelineActivity.class);
         // "rnd" is necessary to actually bring Extra to the target intent
         // see http://stackoverflow.com/questions/1198558/how-to-send-parameters-from-a-notification-click-to-an-activity
         intent.setData(Uri.withAppendedPath(MatchedUri.getTimelineUri(

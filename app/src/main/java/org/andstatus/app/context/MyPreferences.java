@@ -45,7 +45,8 @@ public class MyPreferences {
     private static final String TAG = MyPreferences.class.getSimpleName();
 
     public static final String KEY_USER_IN_TIMELINE = "user_in_timeline";
-    
+    public static final String KEY_DEFAULT_TIMELINE = "default_timeline";
+
     public static final String KEY_HISTORY_SIZE = "history_size";
     public static final String KEY_HISTORY_TIME = "history_time";
     /**
