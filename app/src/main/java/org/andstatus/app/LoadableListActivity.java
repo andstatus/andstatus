@@ -328,7 +328,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.reload_menu_item:
+            case R.id.sync_menu_item:
                 showList(WhichPage.YOUNGEST);
                 break;
             default:

@@ -27,7 +27,7 @@
     </header>
 
     <release android:versionName="22.0" android:versionCode="140"
-        versionDate="2016-01-XX"
+        versionDate="2016-01-23"
         versionTitle="Timeline loading and navigation improvements">
         <changes>
             <change>Maximum number of messages, shown in a Timeline at a time, is restricted
@@ -49,6 +49,13 @@
                 Existing &quot;Reload&quot; button (in an Action Bar) renamed to
                 &quot;Sync with Internet&quot; in order to clearly distinguish Refresh, which
                 doesn't use Internet connection, from Syncing.
+                <a href="https://github.com/andstatus/andstatus/issues/310">#310</a>
+            </change>
+            <change>Added &quot;Refresh timeline automatically&quot; option to Settings-&gt;Timeline.
+                Turning this setting off may give a noticeable performance increase for users,
+                who have many new messages in their timelines and frequent updates.
+                This setting allows to have Syncing while using AndStatus enabled and don't have
+                too often timeline refreshes.
                 <a href="https://github.com/andstatus/andstatus/issues/310">#310</a>
             </change>
             <change>Existing &quot;Hide messages based on keywords&quot; option

@@ -68,7 +68,7 @@
         android:title="@string/options_menu_search">
     </item>
     <item
-        android:id="@+id/reload_menu_item"
+        android:id="@+id/sync_menu_item"
         android:alphabeticShortcut="r"
         android:icon="?attr/reloadIcon"
         app:showAsAction="ifRoom"

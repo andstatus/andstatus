@@ -72,7 +72,7 @@ public class TimelineLoader implements LoadableListActivity.SyncLoader {
     void markStart() {
         getParams().startTime = System.nanoTime();
         getParams().cancelled = false;
-        getParams().timelineToReload = TimelineType.UNKNOWN;
+        getParams().timelineToSync = TimelineType.UNKNOWN;
 
         if (MyLog.isVerboseEnabled()) {
             logV("markStart", (TextUtils.isEmpty(getParams().mSearchQuery) ? ""
@@ -112,20 +112,20 @@ public class TimelineLoader implements LoadableListActivity.SyncLoader {
                     // This timeline doesn't update automatically so let's do it now if necessary
                     LatestTimelineItem latestTimelineItem = new LatestTimelineItem(getParams().mTimelineType, getParams().mSelectedUserId);
                     if (latestTimelineItem.isTimeToAutoUpdate()) {
-                        getParams().timelineToReload = getParams().mTimelineType;
+                        getParams().timelineToSync = getParams().mTimelineType;
                     }
                     break;
                 case FOLLOWING_USER:
                     // This timeline doesn't update automatically so let's do it now if necessary
                     latestTimelineItem = new LatestTimelineItem(getParams().mTimelineType, getParams().myAccountUserId);
                     if (latestTimelineItem.isTimeToAutoUpdate()) {
-                        getParams().timelineToReload = getParams().mTimelineType;
+                        getParams().timelineToSync = getParams().mTimelineType;
                     }
                     break;
                 default:
                     if ( MyQuery.userIdToLongColumnValue(MyDatabase.User.HOME_TIMELINE_DATE, getParams().myAccountUserId) == 0) {
                         // This is supposed to be a one time task.
-                        getParams().timelineToReload = TimelineType.ALL;
+                        getParams().timelineToSync = TimelineType.ALL;
                     }
                     break;
             }

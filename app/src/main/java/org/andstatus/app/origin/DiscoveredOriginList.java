@@ -38,7 +38,7 @@ public class DiscoveredOriginList extends OriginList implements MyServiceEventsL
         initializeSwipeRefresh();
         if (DiscoveredOrigins.get().isEmpty()) {
             mSwipeRefreshLayout.setRefreshing(true);
-            manualReload();
+            manualSync();
         }
     }
 
@@ -47,7 +47,7 @@ public class DiscoveredOriginList extends OriginList implements MyServiceEventsL
         mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                manualReload();
+                manualSync();
             }
         });
     }
@@ -56,7 +56,7 @@ public class DiscoveredOriginList extends OriginList implements MyServiceEventsL
         return DiscoveredOrigins.get();
     }
 
-    private void manualReload() {
+    private void manualSync() {
         MyServiceManager.setServiceAvailable();
         MyServiceManager.sendForegroundCommand(new CommandData(CommandEnum.GET_OPEN_INSTANCES,
                 "", OriginType.GNUSOCIAL.getId()));
@@ -97,8 +97,8 @@ public class DiscoveredOriginList extends OriginList implements MyServiceEventsL
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.reload_menu_item:
-                manualReload();
+            case R.id.sync_menu_item:
+                manualSync();
                 break;
             default:
                 break;

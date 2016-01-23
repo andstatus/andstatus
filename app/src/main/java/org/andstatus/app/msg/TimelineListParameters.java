@@ -81,7 +81,7 @@ public class TimelineListParameters {
     volatile long startTime = 0;
     volatile long endTime = 0;
     volatile boolean cancelled = false;
-    volatile TimelineType timelineToReload = TimelineType.UNKNOWN;
+    volatile TimelineType timelineToSync = TimelineType.UNKNOWN;
     volatile int rowsLoaded = 0;
     volatile long minSentDateLoaded = 0;
     volatile long maxSentDateLoaded = 0;
@@ -254,7 +254,7 @@ public class TimelineListParameters {
                 + ", sortOrder=" + getSortOrderAndLimit()
                 + ", startTime=" + startTime
                 + (cancelled ? ", cancelled" : "")
-                + (timelineToReload == TimelineType.UNKNOWN ? "" : ", timelineToReload=" + timelineToReload)
+                + (timelineToSync == TimelineType.UNKNOWN ? "" : ", timelineToSync=" + timelineToSync)
                 + (mLoaderCallbacks == null ? "" : ", loaderCallbacks=" + mLoaderCallbacks)
         );
     }

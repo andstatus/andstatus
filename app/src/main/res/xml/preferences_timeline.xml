@@ -40,4 +40,7 @@
     <org.andstatus.app.context.MultilineCheckBoxPreference android:key="enter_sends_message"
         android:title="@string/title_preference_enter_sends_message"
         android:defaultValue="true" />
+    <org.andstatus.app.context.MultilineCheckBoxPreference android:key="refresh_timeline_automatically"
+        android:title="@string/refresh_timeline_automatically_title"
+        android:defaultValue="true" />
 </PreferenceScreen>

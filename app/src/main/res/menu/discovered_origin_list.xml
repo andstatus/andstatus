@@ -17,7 +17,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
       xmlns:app="http://schemas.android.com/apk/res-auto" >
     <item
-        android:id="@+id/reload_menu_item"
+        android:id="@+id/sync_menu_item"
         android:alphabeticShortcut="r"
         android:icon="?attr/reloadIcon"
         app:showAsAction="ifRoom"
