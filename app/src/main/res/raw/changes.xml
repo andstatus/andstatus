@@ -28,11 +28,15 @@
 
     <release android:versionName="22.0" android:versionCode="140"
         versionDate="2016-01-XX"
-        versionTitle="...">
+        versionTitle="Timeline loading and navigation improvements">
         <changes>
-            <change>Maximum number of messages, shown in a Timeline at a time, restricted to several
-                hundreds. This change should prevent performance degradation for users
-                who receive thousands of new messages daily.
+            <change>Maximum number of messages, shown in a Timeline at a time, is restricted
+                to several hundreds. This change should prevent performance degradation for users
+                who receive thousands of new messages daily.<br/>
+                Now AndStatus loads not more than 100 messages (a &quot;page&quot;) at a time
+                and keeps in its memory not more than 5 pages.
+                When a User scrolls in any direction and new pages are loaded,
+                farther pages are discarded.
                 <a href="https://github.com/andstatus/andstatus/issues/313">#313</a>
             </change>
             <change>Added &quot;Go to the top&quot; button to the Timeline Navigation drawer.
@@ -40,7 +44,8 @@
                 <a href="https://github.com/andstatus/andstatus/issues/255">#255</a>
             </change>
             <change>Existing &quot;Hide messages based on keywords&quot; option
-                extended and now it's &quot;Hide messages based on keywords <b>or exact phrases</b>&quot;.
+                extended and now it's
+                &quot;Hide messages based on keywords <b>or exact phrases</b>&quot;.
                 Messages, which contain defined keywords or exact phrases, are hidden
                 from all timelines. Notifications for hidden messages are not shown.
                 <a href="https://github.com/andstatus/andstatus/issues/321">#321</a>
