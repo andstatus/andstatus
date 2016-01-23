@@ -284,7 +284,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
         super.onResume();
         myServiceReceiver.registerReceiver(this);
         MyContextHolder.get().setInForeground(true);
-        if (size() == 0) {
+        if (size() == 0 && !isLoading()) {
             showList(WhichPage.SAME);
         }
     }

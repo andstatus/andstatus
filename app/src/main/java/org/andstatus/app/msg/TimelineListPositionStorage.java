@@ -101,6 +101,7 @@ class TimelineListPositionStorage {
 
         if (firstVisibleItemId <= 0) {
             MyLog.v(this, method + " failed: no visible items for " + new TimelineTitle(mListParameters, "").toString());
+            clear();
         } else {
             put(firstVisibleItemId, minSentDate);
 
