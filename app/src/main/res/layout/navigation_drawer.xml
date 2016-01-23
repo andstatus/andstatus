@@ -8,13 +8,22 @@
     android:background="?android:attr/colorBackground"
     android:choiceMode="singleChoice"
     android:orientation="vertical"
-              tools:context=".msg.TimelineActivity">
+    tools:context=".msg.TimelineActivity"
+    tools:theme="@style/Theme.AndStatus.FullyDefined" >
 
     <TextView
         android:id="@+id/goToTheTopButton"
         style="@style/drawerListItem"
         android:onClick="onGoToTheTopButtonClick"
         android:text="@string/go_to_the_top_title" />
+
+    <View style="@style/Divider"/>
+
+    <TextView
+        android:id="@+id/refreshButton"
+        style="@style/drawerListItem"
+        android:onClick="onRefreshButtonClick"
+        android:text="@string/refresh_title" />
 
     <View style="@style/Divider"/>
 

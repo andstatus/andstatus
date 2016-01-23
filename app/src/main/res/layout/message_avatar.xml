@@ -20,7 +20,8 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
-    tools:context=".TimelineActivity" >
+    tools:context=".TimelineActivity"
+    tools:theme="@style/Theme.AndStatus.FullyDefined" >
 
     <View android:id="@+id/divider" style="@style/Divider"/>
 

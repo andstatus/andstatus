@@ -271,7 +271,7 @@
   <string name="options_menu_home_timeline_cond">Home</string>
   <string name="options_menu_global_search">Global search</string>
   <string name="options_menu_help">Help</string>
-  <string name="options_menu_reload">Reload</string>
+  <string name="options_menu_reload">Reload from Internet</string>
   <string name="options_menu_mentions">Mentions</string>
   <string name="options_menu_search">Search</string>
   <string name="origin_settings_action">Social network</string>
@@ -466,4 +466,5 @@
   <string name="user_list">User list</string>
   <string name="users_of_message">Users of message</string>
   <string name="yes">Yes</string>
+  <string name="refresh_title">Refresh</string>
 </resources>

@@ -233,13 +233,21 @@ public class TimelineActivity extends LoadableListActivity implements
      * View.OnClickListener
      */
     public void onGoToTheTopButtonClick(View item) {
+        closeDrawer();
         TimelineAdapter adapter = getListAdapter();
         if (adapter == null || adapter.getPages().mayHaveYoungerPage()) {
             showList(WhichPage.TOP);
         } else {
             TimelineListPositionStorage.setPosition(getListView(), 0);
         }
+    }
+
+    /**
+     * View.OnClickListener
+     */
+    public void onRefreshButtonClick(View item) {
         closeDrawer();
+        showList(WhichPage.NEW);
     }
 
     /**
