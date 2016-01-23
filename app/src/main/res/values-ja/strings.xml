@@ -267,7 +267,7 @@
   <string name="options_menu_home_timeline_cond">ホーム</string>
   <string name="options_menu_global_search">グローバル検索</string>
   <string name="options_menu_help">ヘルプ</string>
-  <string name="options_menu_reload">再読み込み</string>
+  <string name="options_menu_sync">再読み込み</string>
   <string name="options_menu_mentions">メンション</string>
   <string name="options_menu_search">検索</string>
   <string name="origin_settings_action">ソーシャル ネットワーク</string>

@@ -47,7 +47,8 @@
                 It reloads currently visible page, including avatars and attachments,
                 from a local database.<br/>
                 Existing &quot;Reload&quot; button (in an Action Bar) renamed to
-                &quot;Reload from Internet&quot; in order to clearly distinguish Refresh from Reload.
+                &quot;Sync with Internet&quot; in order to clearly distinguish Refresh, which
+                doesn't use Internet connection, from Syncing.
                 <a href="https://github.com/andstatus/andstatus/issues/310">#310</a>
             </change>
             <change>Existing &quot;Hide messages based on keywords&quot; option

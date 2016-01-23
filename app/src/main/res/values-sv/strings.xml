@@ -226,7 +226,7 @@
   <string name="options_menu_home_timeline_cond">Vänner</string>
   <string name="options_menu_global_search">Global sök</string>
   <string name="options_menu_help">Hjälp</string>
-  <string name="options_menu_reload">Ladda om</string>
+  <string name="options_menu_sync">Ladda om</string>
   <string name="options_menu_mentions">Omnämningar</string>
   <string name="options_menu_search">Sök</string>
   <string name="preference_ssl_mode_title">SSL-läge och säkerhet</string>

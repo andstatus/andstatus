@@ -267,7 +267,7 @@
   <string name="options_menu_home_timeline_cond">Дом</string>
   <string name="options_menu_global_search">Глобальный поиск</string>
   <string name="options_menu_help">Помощь</string>
-  <string name="options_menu_reload">Загрузка</string>
+  <string name="options_menu_sync">Синхронизировать с Интернетом</string>
   <string name="options_menu_mentions">Упоминания</string>
   <string name="options_menu_search">Поиск</string>
   <string name="origin_settings_action">Социальная сеть</string>

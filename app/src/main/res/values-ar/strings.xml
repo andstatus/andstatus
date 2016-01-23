@@ -231,7 +231,7 @@
   <string name="options_menu_home_timeline_cond">الرئيسة</string>
   <string name="options_menu_global_search">بحث عام</string>
   <string name="options_menu_help">مساعدة</string>
-  <string name="options_menu_reload">إعادة التحميل</string>
+  <string name="options_menu_sync">إعادة التحميل</string>
   <string name="options_menu_mentions">الإشارات</string>
   <string name="options_menu_search">بحث</string>
   <string name="origin_settings_action">موقع اجتماعي</string>

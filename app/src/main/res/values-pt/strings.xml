@@ -263,7 +263,7 @@
   <string name="options_menu_home_timeline_cond">Home</string>
   <string name="options_menu_global_search">Procura global</string>
   <string name="options_menu_help">Ajuda</string>
-  <string name="options_menu_reload">Recarregar</string>
+  <string name="options_menu_sync">Recarregar</string>
   <string name="options_menu_mentions">Menções</string>
   <string name="options_menu_search">Procura</string>
   <string name="origin_settings_action">Rede social</string>

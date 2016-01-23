@@ -236,7 +236,7 @@
   <string name="options_menu_home_timeline_cond">Accueil</string>
   <string name="options_menu_global_search">Recherche globale</string>
   <string name="options_menu_help">Aide</string>
-  <string name="options_menu_reload">Rafraîchir</string>
+  <string name="options_menu_sync">Rafraîchir</string>
   <string name="options_menu_mentions">Mentions</string>
   <string name="options_menu_search">Rechercher</string>
   <string name="origin_settings_action">Réseau social</string>

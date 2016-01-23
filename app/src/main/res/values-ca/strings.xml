@@ -171,7 +171,7 @@
   <string name="options_menu_home_timeline_cond">Inici</string>
   <string name="options_menu_global_search">Cerca global</string>
   <string name="options_menu_help">Ajuda</string>
-  <string name="options_menu_reload">Torna a carregar</string>
+  <string name="options_menu_sync">Torna a carregar</string>
   <string name="options_menu_mentions">Mencions</string>
   <string name="options_menu_search">Cerca</string>
   <string name="preference_ssl_mode_title">Mode SSL i seguretat</string>

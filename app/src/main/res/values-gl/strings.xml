@@ -267,7 +267,7 @@
   <string name="options_menu_home_timeline_cond">Inicio</string>
   <string name="options_menu_global_search">Busca global</string>
   <string name="options_menu_help">Axuda</string>
-  <string name="options_menu_reload">Recargar</string>
+  <string name="options_menu_sync">Recargar</string>
   <string name="options_menu_mentions">Mencións</string>
   <string name="options_menu_search">Buscar</string>
   <string name="origin_settings_action">Rede social</string>

@@ -267,7 +267,7 @@
   <string name="options_menu_home_timeline_cond">Hjem</string>
   <string name="options_menu_global_search">Globalt søk</string>
   <string name="options_menu_help">Hjelp</string>
-  <string name="options_menu_reload">Last på nytt</string>
+  <string name="options_menu_sync">Last på nytt</string>
   <string name="options_menu_mentions">Nevner</string>
   <string name="options_menu_search">Søk</string>
   <string name="origin_settings_action">Sosiale nettverk</string>

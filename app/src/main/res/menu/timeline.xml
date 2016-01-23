@@ -72,7 +72,7 @@
         android:alphabeticShortcut="r"
         android:icon="?attr/reloadIcon"
         app:showAsAction="ifRoom"
-        android:title="@string/options_menu_reload">
+        android:title="@string/options_menu_sync">
     </item>
     <item
         android:id="@+id/commands_queue_id"

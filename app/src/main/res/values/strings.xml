@@ -187,7 +187,7 @@
   <string name="history_time_entries_10years">10 years</string>
   <string name="id_of_this_message_was_not_specified">Id of this message was not specified</string>
   <string name="in_combined_global_search_label">Include in \"Global Search\" while in Combined Timeline</string>
-  <string name="in_combined_public_reload_label">Include in \"Reload\" while in Combined Public Timeline</string>
+  <string name="in_combined_public_reload_label">Include in \"Syncing\" while in Combined Public Timeline</string>
   <string name="label_accountselector">Select an Account</string>
   <string name="label_allow_html_content">Allow HTML content</string>
   <string name="label_backup">Backup application data to SD card</string>
@@ -271,7 +271,7 @@
   <string name="options_menu_home_timeline_cond">Home</string>
   <string name="options_menu_global_search">Global search</string>
   <string name="options_menu_help">Help</string>
-  <string name="options_menu_reload">Reload from Internet</string>
+  <string name="options_menu_sync">Sync with Internet</string>
   <string name="options_menu_mentions">Mentions</string>
   <string name="options_menu_search">Search</string>
   <string name="origin_settings_action">Social network</string>

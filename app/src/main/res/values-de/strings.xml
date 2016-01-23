@@ -237,7 +237,7 @@
   <string name="options_menu_home_timeline_cond">Start</string>
   <string name="options_menu_global_search">Globale Suche</string>
   <string name="options_menu_help">Hilfe</string>
-  <string name="options_menu_reload">Neu laden</string>
+  <string name="options_menu_sync">Neu laden</string>
   <string name="options_menu_mentions">Erwähnungen</string>
   <string name="options_menu_search">Suche</string>
   <string name="origin_settings_action">Soziales Netzwerk</string>
