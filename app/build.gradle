@@ -8,12 +8,12 @@ android {
         applicationId "org.andstatus.app"
         minSdkVersion 16
         targetSdkVersion 22
-        versionName '22.2'
-        versionCode 142
+        versionName "22.3"
+        versionCode 143
 
         testApplicationId "org.andstatus.app.tests"
         testInstrumentationRunner "android.test.InstrumentationTestRunner"
-        project.ext.set("archivesBaseName", "AndStatus-$versionName");
+        project.ext.set("archivesBaseName", "AndStatus-$versionName".toString());
     }
 
     buildTypes {
