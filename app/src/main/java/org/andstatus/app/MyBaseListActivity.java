@@ -16,6 +16,7 @@
 
 package org.andstatus.app;
 
+import android.support.annotation.Nullable;
 import android.view.View;
 import android.widget.ListAdapter;
 import android.widget.ListView;
@@ -41,6 +42,7 @@ public abstract class MyBaseListActivity extends MyActivity implements MySwipeRe
         getListView().setAdapter(mAdapter);
     }
 
+    @Nullable
     public ListAdapter getListAdapter() {
         return mAdapter;
     }

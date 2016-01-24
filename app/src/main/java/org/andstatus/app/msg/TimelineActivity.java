@@ -1244,7 +1244,7 @@ public class TimelineActivity extends LoadableListActivity implements
         if (super.canSwipeRefreshChildScrollUp()) {
             return true;
         }
-        if (getListAdapter().getPages().mayHaveYoungerPage()) {
+        if (getListAdapter() == null || getListAdapter().getPages().mayHaveYoungerPage()) {
             return true;
         }
         return false;
