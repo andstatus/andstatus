@@ -26,7 +26,7 @@
 		</subtitle>
     </header>
 
-    <release android:versionName="22.1" android:versionCode="141"
+    <release android:versionName="22.2" android:versionCode="142"
         versionDate="2016-01-24"
         versionTitle="Timeline loading and navigation improvements">
         <changes>

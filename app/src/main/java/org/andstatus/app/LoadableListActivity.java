@@ -89,10 +89,6 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
         mParsedUri = ParsedUri.fromUri(getIntent().getData());
         ma = MyContextHolder.get().persistentAccounts().fromUserId(getParsedUri().getAccountUserId());
         centralItemId = getParsedUri().getItemId();
-
-        if (centralItemId != 0) {
-            showList(WhichPage.SAME);
-        }
     }
 
     protected ParsedUri getParsedUri() {

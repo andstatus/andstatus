@@ -21,6 +21,7 @@ import android.view.MenuItem;
 
 import org.andstatus.app.LoadableListActivity;
 import org.andstatus.app.R;
+import org.andstatus.app.WhichPage;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.util.I18n;
@@ -34,7 +35,6 @@ import org.andstatus.app.widget.MyBaseAdapter;
  */
 public class UserList extends LoadableListActivity {
     private UserListType mUserListType = UserListType.UNKNOWN;
-    private MyAccount ma = MyAccount.getEmpty(MyContextHolder.get(), "");
     private long mSelectedMessageId = 0;
     private boolean mIsListCombined = false;
     private UserListContextMenu contextMenu = null;
@@ -43,17 +43,18 @@ public class UserList extends LoadableListActivity {
     protected void onCreate(Bundle savedInstanceState) {
         mLayoutId = R.layout.my_list_fragment;
         super.onCreate(savedInstanceState);
-        ma = MyContextHolder.get().persistentAccounts()
-                .fromUserId(getParsedUri().getAccountUserId());
+
         mUserListType = getParsedUri().getUserListType();
         mSelectedMessageId = getParsedUri().getMessageId();
         mIsListCombined = getParsedUri().isCombined();
         contextMenu = new UserListContextMenu(this);
+
+        showList(WhichPage.NEW);
     }
 
     @Override
     protected SyncLoader newSyncLoader(Bundle args) {
-        return new UserListLoader(mUserListType, ma, mSelectedMessageId, mIsListCombined);
+        return new UserListLoader(mUserListType, getMa(), mSelectedMessageId, mIsListCombined);
     }
 
     @Override

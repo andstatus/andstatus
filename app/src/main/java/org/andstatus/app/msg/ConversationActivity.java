@@ -27,6 +27,7 @@ import org.andstatus.app.ActivityRequestCode;
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.LoadableListActivity;
 import org.andstatus.app.R;
+import org.andstatus.app.WhichPage;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.TimelineType;
@@ -51,6 +52,8 @@ public class ConversationActivity extends LoadableListActivity implements Action
 
         mMessageEditor = new MessageEditor(this);
         mContextMenu = new MessageContextMenu(this);
+
+        showList(WhichPage.NEW);
     }
 
     @Override
