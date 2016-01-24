@@ -237,7 +237,7 @@ public class MyLog {
         String tag = objTagToString(objTag);
         int i = 0;
         if (isLoggable(tag, IGNORED)) {
-            i = Log.v(tag, "", tr);
+            i = Log.i(tag, "", tr);
         }
         return i;
     }
