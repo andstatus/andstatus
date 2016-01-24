@@ -89,6 +89,10 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
         mParsedUri = ParsedUri.fromUri(getIntent().getData());
         ma = MyContextHolder.get().persistentAccounts().fromUserId(getParsedUri().getAccountUserId());
         centralItemId = getParsedUri().getItemId();
+
+        if (centralItemId != 0) {
+            showList(WhichPage.SAME);
+        }
     }
 
     protected ParsedUri getParsedUri() {
@@ -284,9 +288,6 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
         super.onResume();
         myServiceReceiver.registerReceiver(this);
         MyContextHolder.get().setInForeground(true);
-        if (size() == 0 && !isLoading()) {
-            showList(WhichPage.SAME);
-        }
     }
 
     @Override
@@ -305,8 +306,27 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
     }
 
     protected void onReceiveAfterExecutingCommand(CommandData commandData) {
+        if (isRefreshNeededAfterExecuting(commandData)
+                && isAutoRefreshAllowedAfterExecuting(commandData)) {
+            if (MyLog.isVerboseEnabled()) {
+                MyLog.v(this, "Content changed after "
+                        + commandData.toCommandSummary(MyContextHolder.get()));
+            }
+            showList(WhichPage.YOUNGEST);
+        }
+    }
+
+    /**
+     * @return true if needed, false means "don't know"
+     */
+    protected boolean isRefreshNeededAfterExecuting(CommandData commandData) {
+        boolean needed = false;
         switch(commandData.getCommand()) {
             case GET_STATUS:
+                if (commandData.getResult().getDownloadedCount() > 0) {
+                    needed = true;
+                }
+                break;
             case GET_USER:
             case UPDATE_STATUS:
             case CREATE_FAVORITE:
@@ -317,12 +337,27 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
             case FETCH_ATTACHMENT:
             case FETCH_AVATAR:
                 if (!commandData.getResult().hasError()) {
-                    showList(WhichPage.YOUNGEST);
+                    needed = true;
                 }
-                break;
             default:
                 break;
         }
+        return needed;
+    }
+
+    /**
+     * @return false if not allowed, true means "don't know"
+     */
+    protected boolean isAutoRefreshAllowedAfterExecuting(CommandData commandData) {
+        boolean allowed = true;
+        if (isLoading()) {
+            if (MyLog.isVerboseEnabled()) {
+                MyLog.v(this, "Ignoring content change while loading, "
+                        + commandData.toCommandSummary(MyContextHolder.get()));
+            }
+            allowed = false;
+        }
+        return allowed;
     }
 
     @Override

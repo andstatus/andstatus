@@ -61,9 +61,15 @@ public class TimelinePages {
 
     private void addThisPage(TimelinePage page) {
         switch (page.parameters.whichPage) {
+            case YOUNGEST:
+                if (!mayHaveYoungerPage()) {
+                    removeDuplicatesWithOlder(page, 1);
+                    list.remove(0);
+                    list.add(0, page);
+                    break;
+                }
             case NEW:
             case TOP:
-            case YOUNGEST:
                 list.clear();
                 list.add(page);
                 break;

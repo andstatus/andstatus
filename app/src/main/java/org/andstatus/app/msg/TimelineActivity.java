@@ -79,7 +79,7 @@ public class TimelineActivity extends LoadableListActivity implements
         ActionableMessageList, AbsListView.OnScrollListener {
     private static final int DIALOG_ID_TIMELINE_TYPE = 9;
     private static final String ACTIVITY_PERSISTENCE_NAME = TimelineActivity.class.getSimpleName();
-    public static final char HORIZONTAL_ELLIPSIS = '\u2026';
+    public static final String HORIZONTAL_ELLIPSIS = "\u2026";
 
     private MySwipeRefreshLayout mSwipeLayout = null;
 
@@ -869,9 +869,7 @@ public class TimelineActivity extends LoadableListActivity implements
     protected void showList(TimelineListParameters params) {
         final String method = "showList";
         boolean isDifferentRequest = !params.equals(mListParametersToLoad);
-        if (isDifferentRequest) {
-            mListParametersToLoad = params;
-        }
+        mListParametersToLoad = params;
         if (isLoading()) {
             if(MyLog.isVerboseEnabled()) {
                 if (isDifferentRequest) {
@@ -1139,7 +1137,9 @@ public class TimelineActivity extends LoadableListActivity implements
     public void onReceive(CommandData commandData, MyServiceEvent event) {
         switch (event) {
             case BEFORE_EXECUTING_COMMAND:
-                showSyncing(commandData);
+                if (isCommandToShowInSyncIndicator(commandData)) {
+                    showSyncing(commandData);
+                }
                 break;
             case AFTER_EXECUTING_COMMAND:
                 onReceiveAfterExecutingCommand(commandData);
@@ -1153,11 +1153,6 @@ public class TimelineActivity extends LoadableListActivity implements
     }
     
     private void showSyncing(final CommandData commandData) {
-        if (!mShowSyncIndicatorOnTimeline
-                || !isCommandToShowInSyncIndicator(commandData)
-                || mMessageEditor.isVisible()) {
-            return;
-        }
         new AsyncTask<CommandData, Void, String>() {
 
             @Override
@@ -1175,7 +1170,7 @@ public class TimelineActivity extends LoadableListActivity implements
     }
 
     private void showSyncing(String source, CharSequence text) {
-        if (!mShowSyncIndicatorOnTimeline) {
+        if (!mShowSyncIndicatorOnTimeline || mMessageEditor.isVisible()) {
             return;
         }
         syncingText = text;
@@ -1196,7 +1191,7 @@ public class TimelineActivity extends LoadableListActivity implements
             case STOP_FOLLOWING_USER:
             case REBLOG:
             case DESTROY_REBLOG:
-                return commandData.isInForeground();
+                return true;
             default:
                 return false;
         }
@@ -1272,15 +1267,14 @@ public class TimelineActivity extends LoadableListActivity implements
                 break;
         }
         if (mShowSyncIndicatorOnTimeline && isCommandToShowInSyncIndicator(commandData)) {
-            hideSyncing("After executing " + commandData.getCommand());
+            showSyncing("After executing " + commandData.getCommand(), HORIZONTAL_ELLIPSIS);
         }
-        if (mayBePageRefreshNeeded(commandData)) {
-            refreshPageAfterExecutingCommand(commandData);
-        }
+        super.onReceiveAfterExecutingCommand(commandData);
     }
 
-    public boolean mayBePageRefreshNeeded(CommandData commandData) {
-        boolean needed = false;
+    @Override
+    public boolean isRefreshNeededAfterExecuting(CommandData commandData) {
+        boolean needed = super.isRefreshNeededAfterExecuting(commandData);
         switch (commandData.getCommand()) {
             case AUTOMATIC_UPDATE:
             case FETCH_TIMELINE:
@@ -1288,51 +1282,29 @@ public class TimelineActivity extends LoadableListActivity implements
                         || mListParametersLoaded.getTimelineType() != commandData.getTimelineType()) {
                     break;
                 }
-            case GET_STATUS:
             case SEARCH_MESSAGE:
                 if (commandData.getResult().getDownloadedCount() > 0) {
-                    needed = true;
-                }
-                break;
-            case CREATE_FAVORITE:
-            case DESTROY_FAVORITE:
-            case DESTROY_REBLOG:
-            case DESTROY_STATUS:
-            case FETCH_ATTACHMENT:
-            case FETCH_AVATAR:
-            case REBLOG:
-            case UPDATE_STATUS:
-                if (!commandData.getResult().hasError()) {
                     needed = true;
                 }
                 break;
             default:
                 break;
         }
-        return needed
-                && MyPreferences.getBoolean(MyPreferences.KEY_REFRESH_TIMELINE_AUTOMATICALLY, true);
+        return needed;
     }
 
-    public void refreshPageAfterExecutingCommand(CommandData commandData) {
-        boolean refresh = true;
-        TimelineAdapter adapter = getListAdapter();
-        if (adapter == null || adapter.getPages().mayHaveYoungerPage()) {
-            // Show updates only if we already show the youngest page
-            refresh = false;
-        }
-        if (refresh && isLoading()) {
-            if (MyLog.isVerboseEnabled()) {
-                MyLog.v(this, "Ignoring content change while loading, "
-                        + commandData.toCommandSummary(MyContextHolder.get()));
+    @Override
+    protected boolean isAutoRefreshAllowedAfterExecuting(CommandData commandData) {
+        boolean allowed = super.isAutoRefreshAllowedAfterExecuting(commandData)
+                && MyPreferences.getBoolean(MyPreferences.KEY_REFRESH_TIMELINE_AUTOMATICALLY, true);
+        if (allowed) {
+            TimelineAdapter adapter = getListAdapter();
+            if (adapter == null || adapter.getPages().mayHaveYoungerPage()) {
+                // Update a list only if we already show the youngest page
+                allowed = false;
             }
-            refresh = false;
         }
-        if (refresh && MyLog.isVerboseEnabled()) {
-            MyLog.v(this, "Content changed, " + commandData.toCommandSummary(MyContextHolder.get()));
-        }
-        if (refresh) {
-            showList(WhichPage.TOP);
-        }
+        return allowed;
     }
 
     @Override

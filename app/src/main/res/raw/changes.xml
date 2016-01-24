@@ -26,8 +26,8 @@
 		</subtitle>
     </header>
 
-    <release android:versionName="22.0" android:versionCode="140"
-        versionDate="2016-01-23"
+    <release android:versionName="22.1" android:versionCode="141"
+        versionDate="2016-01-24"
         versionTitle="Timeline loading and navigation improvements">
         <changes>
             <change>Maximum number of messages, shown in a Timeline at a time, is restricted
