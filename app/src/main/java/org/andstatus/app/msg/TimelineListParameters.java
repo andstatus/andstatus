@@ -236,7 +236,7 @@ public class TimelineListParameters {
     }
 
     public boolean isEmpty() {
-        return mTimelineType == TimelineType.UNKNOWN;
+        return mTimelineType == TimelineType.UNKNOWN || whichPage == WhichPage.EMPTY;
     }
     
     @Override

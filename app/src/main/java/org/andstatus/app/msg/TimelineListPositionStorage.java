@@ -74,7 +74,7 @@ class TimelineListPositionStorage {
 
     void save() {
         final String method = "saveListPosition";
-        if (mListView == null || mAdapter == null || mListParameters.isEmpty()) {
+        if (mListView == null || mAdapter == null || mListParameters.isEmpty() || mAdapter.getCount() == 0) {
             MyLog.v(this, method + ": skipped");
             return;
         }
@@ -156,10 +156,11 @@ class TimelineListPositionStorage {
      * Restore (the first visible item) position saved for this timeline
      */
     public void restore() {
-        if (mListView == null) {
+        final String method = "restore";
+        if (mListView == null || mAdapter == null || mListParameters.isEmpty() || mAdapter.getCount() == 0) {
+            MyLog.v(this, method + ": skipped");
             return;
         }
-        final String method = "restore";
         boolean loaded = false;
         int position = -1;
         long firstItemId = -3;

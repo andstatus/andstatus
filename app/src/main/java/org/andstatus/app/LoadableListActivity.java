@@ -105,11 +105,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
                 + (centralItemId == 0 ? "" : ", center:" + centralItemId);
         MyLog.v(this, "Started " + msgLog);
         synchronized (loaderLock) {
-            if (loaderIsWorking && mWorkingLoader.getStatus() == Status.FINISHED) {
-                msgLog += ", " + mWorkingLoader;
-                loaderIsWorking = false;
-            }
-            if (loaderIsWorking) {
+            if (isLoading()) {
                 msgLog = "Ignored " + msgLog + ", " + mWorkingLoader;
             } else {
                 mWorkingLoader = new AsyncLoader();
@@ -121,9 +117,18 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
     }
 
     public boolean isLoading() {
+        boolean reset = false;
         synchronized (loaderLock) {
-            return loaderIsWorking;
+            if (loaderIsWorking && mWorkingLoader.getStatus() == Status.FINISHED) {
+                reset = true;
+                loaderIsWorking = false;
+            }
         }
+        if (reset) {
+            MyLog.d(this, "WorkingLoader finished but didn't reset loaderIsWorking flag "
+                    + mWorkingLoader);
+        }
+        return loaderIsWorking;
     }
 
     public interface SyncLoader {
@@ -173,10 +178,10 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
 
         @Override
         protected void onCancelled(SyncLoader syncLoader) {
-            onEnd();
+            resetIsWorkingFlag();
         }
 
-        private void onEnd() {
+        private void resetIsWorkingFlag() {
             synchronized (loaderLock) {
                 if (mWorkingLoader == this) {
                     loaderIsWorking = false;
@@ -186,22 +191,22 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
 
         @Override
         protected void onPostExecute(SyncLoader loader) {
+            timeCompleted = System.currentTimeMillis();
+            mSyncLoader = loader;
+            updateCompletedLoader();
+            resetIsWorkingFlag();
             try {
                 if (!mIsPaused) {
-                    mSyncLoader = loader;
-                    updateCompletedLoader();
                     onLoadFinished(true);
                 }
             } catch (Exception e) {
-                MyLog.i(this,"on Recreating view", e);
+                MyLog.d(this,"onPostExecute", e);
             }
-            timeCompleted = System.currentTimeMillis();
             long timeTotal = timeCompleted - timeStarted;
-            MyLog.v(this, "Async load completed, "
+            MyLog.v(this, "Load completed, "
                     + (mSyncLoader == null ? "?" : mSyncLoader.size()) + " items, "
                     + timeTotal + "ms total, "
-            + (timeCompleted - timeLoaded) + "ms in the foreground");
-            onEnd();
+                    + (timeCompleted - timeLoaded) + "ms on UI thread");
         }
 
         @Override

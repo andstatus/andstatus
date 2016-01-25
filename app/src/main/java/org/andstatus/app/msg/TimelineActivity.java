@@ -868,6 +868,10 @@ public class TimelineActivity extends LoadableListActivity implements
      */
     protected void showList(TimelineListParameters params) {
         final String method = "showList";
+        if (params.isEmpty()) {
+            MyLog.v(this, method + "; ignored empty request");
+            return;
+        }
         boolean isDifferentRequest = !params.equals(mListParametersToLoad);
         mListParametersToLoad = params;
         if (isLoading()) {
@@ -875,11 +879,11 @@ public class TimelineActivity extends LoadableListActivity implements
                 if (isDifferentRequest) {
                     MyLog.v(this, method + "; different while loading " + params.getSummary());
                 } else {
-                    MyLog.v(this, method + "; ignored duplicated " + params.getSummary());
+                    MyLog.v(this, method + "; ignored duplicating " + params.getSummary());
                 }
             }
         } else {
-            MyLog.v(this, method + "; requesting " + (isDifferentRequest ? "" : "duplicated ")
+            MyLog.v(this, method + "; requesting " + (isDifferentRequest ? "" : "duplicating ")
                     + params.getSummary());
             saveListPosition();
             showLoading(method, getText(R.string.loading) + " "
