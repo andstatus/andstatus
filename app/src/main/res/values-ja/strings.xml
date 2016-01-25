@@ -107,6 +107,8 @@
   <string name="dialog_summary_sending_message">メッセージが送信されるまでお待ちください。</string>
   <string name="dialog_summary_service_unavailable">Twitter は現在容量を超過しました。後でもう一度やり直してください。</string>
   <string name="dialog_summary_timeline_loading">タイムラインが更新されるまでお待ちください。接続状況によって数分かかることがあります。</string>
+  <string name="default_timeline_title">デフォルトのタイムライン</string>
+  <string name="default_timeline_summary">ランチャーで開かれるタイムライン: \"{0}\"</string>
   <string name="dialog_title_acquiring_an_access_token">アクセス トークンの取得中</string>
   <string name="dialog_title_acquiring_a_request_token">リクエスト トークンの取得中</string>
   <string name="dialog_title_authentication_failed">認証に失敗しました</string>
@@ -157,11 +159,16 @@
   <string name="fetch_frequency_entries_1_day">日</string>
   <string name="filters_title">フィルター</string>
   <string name="filters_summary">すべてのメッセージに適用するグローバル フィルター</string>
+  <string name="followed_by">フォローしました</string>
   <string name="get_open_instances_title">オープン中のインスタンスを取得</string>
+  <string name="get_user">ユーザー情報を取得</string>
+  <string name="go_to_the_top_title">トップに戻る</string>
   <string name="header_accounts">アカウント</string>
   <string name="header_add_new_account">新しいアカウントを追加</string>
   <string name="header_manage_existing_accounts">既存のアカウントを管理</string>
-  <string name="hide_messages_based_on_keywords_title">キーワードに基づいて、メッセージを非表示</string>
+  <string name="hide_messages_based_on_keywords_title">キーワードまたはフレーズに基づいてメッセージを非表示</string>
+  <string name="hide_messages_based_on_keywords_dialog_message">スペースで複数のキーワードを分離します。フレーズは二重引用符で囲みます。例:\nキーワード \"exact phrase\"</string>
+  <string name="hide_replies_not_to_me_or_friends_title">ホーム タイムラインから、私または私の友人以外への返信を非表示</string>
   <string name="history_size_entries_500">500 メッセージ</string>
   <string name="history_size_entries_1000">1000 メッセージ</string>
   <string name="history_size_entries_2000">2000 メッセージ</string>
@@ -183,7 +190,7 @@
   <string name="history_time_entries_10years">10 年</string>
   <string name="id_of_this_message_was_not_specified">このメッセージの ID は指定されませんでした</string>
   <string name="in_combined_global_search_label">\"グローバル検索\" にまとめたタイムラインを含める</string>
-  <string name="in_combined_public_reload_label">\"再読み込み\" にまとめた公開のタイムラインを含める</string>
+  <string name="in_combined_public_reload_label">公開タイムラインを結合中は \"同期\" に含める</string>
   <string name="label_accountselector">アカウントを選択してください</string>
   <string name="label_allow_html_content">HTML コンテンツを許可する</string>
   <string name="label_backup">SD カードにアプリケーション データをバックアップ</string>
@@ -200,7 +207,7 @@
   <string name="label_upgrading">アップグレードを実行中です。お待ちください。</string>
   <string name="label_with_media">メディアで</string>
   <string name="latest_error_label">最新のエラー</string>
-  <string name="loading">ロードしています&#8230;</string>
+  <string name="loading">読み込み中</string>
   <string name="malformed_link">不正なリンク</string>
   <string name="message">メッセージ</string>
   <string name="message_twitter">ツイート</string>
@@ -267,10 +274,17 @@
   <string name="options_menu_home_timeline_cond">ホーム</string>
   <string name="options_menu_global_search">グローバル検索</string>
   <string name="options_menu_help">ヘルプ</string>
-  <string name="options_menu_sync">再読み込み</string>
+  <string name="options_menu_sync">インターネットと同期</string>
   <string name="options_menu_mentions">メンション</string>
   <string name="options_menu_search">検索</string>
   <string name="origin_settings_action">ソーシャル ネットワーク</string>
+  <string name="page_empty">空</string>
+  <string name="page_new">新しい</string>
+  <string name="page_older">古い</string>
+  <string name="page_the_same">同じ</string>
+  <string name="page_top_of">トップ</string>
+  <string name="page_younger">若い</string>
+  <string name="page_youngest">最も若い</string>
   <string name="preference_ssl_mode_title">SSL モードとセキュリティ</string>
   <string name="preference_ssl_mode_secure_summary">安全: セキュリティで保護された SSL 接続のみ許可されます</string>
   <string name="preference_ssl_mode_insecure_summary">警告: あなたの接続はセキュリティで保護されません。この問題を解決するには、サーバー管理者に連絡してください。その後で、セキュリティで保護されたモードに戻ります</string>
@@ -286,6 +300,8 @@
   <string name="preference_notification_icon_alternative_on">アイコンとして丸</string>
   <string name="preference_true_black_title">真黒の背景</string>
   <string name="preference_use_kitkat_media_chooser_title">添付ファイルを選択するモダンインターフェイス</string>
+  <string name="refresh_title">更新</string>
+  <string name="refresh_timeline_automatically_title">タイムラインを自動的に更新します</string>
   <string name="reltime_days_ago_formats_1">昨日</string>
   <string name="reltime_days_ago_formats_2">{0} 日前</string>
   <string name="reltime_hours_ago_formats_1">1 時間前</string>
@@ -370,6 +386,7 @@
   <string name="theme_size_entries_small">小</string>
   <string name="theme_size_entries_standard">標準</string>
   <string name="theme_size_entries_large">大</string>
+  <string name="this_option_is_turned_off">(無効)</string>
   <string name="timeline_reloaded">タイムラインを再読み込みしました。</string>
   <string name="timeline_title_all">すべて</string>
   <string name="timeline_title_direct_messages">ダイレクトメッセージ</string>
@@ -443,13 +460,14 @@
   <string name="reblogged_by">%1$s が再投稿</string>
   <string name="reblogged_by_twitter">%1$s がリツイート</string>
   <string name="unimplemented">実装されていません。</string>
+  <string name="unknown_userlist">(不明なユーザー リスト)</string>
   <string name="use_legacy_http_protocol_title">従来の HTTP プロトコルを使用</string>
   <string name="user_in_timeline_entries_username">ユーザー名</string>
   <string name="user_in_timeline_entries_at_username">"\@ユーザー名"</string>
   <string name="user_in_timeline_entries_webfingerid">webFingerId</string>
   <string name="user_in_timeline_entries_real_name">実名</string>
   <string name="user_in_timeline_entries_real_name_at_username">実名 @ユーザー名</string>
+  <string name="user_list">ユーザーリスト</string>
+  <string name="users_of_message">メッセージのユーザー</string>
   <string name="yes">はい</string>
-  <string name="this_option_is_turned_off">(無効)</string>
-  <string name="hide_replies_not_to_me_or_friends_title">ホーム タイムラインから、私または私の友人以外への返信を非表示</string>
 </resources>

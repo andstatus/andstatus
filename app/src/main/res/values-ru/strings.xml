@@ -107,6 +107,8 @@
   <string name="dialog_summary_sending_message">Пожалуйста подождите завершения отправки сообщения.</string>
   <string name="dialog_summary_service_unavailable">Сервис микроблогов сейчас перегружен. Пожалуйста, попробуйте обратиться позже.</string>
   <string name="dialog_summary_timeline_loading">Подождите завершения обновления ленты времени. Эта процедура может занять несколько минут, в зависимости от качества соединения.</string>
+  <string name="default_timeline_title">Лента времени по умолчанию</string>
+  <string name="default_timeline_summary">Лента времени, которая будет открыта при запуске приложения: \"{0}\"</string>
   <string name="dialog_title_acquiring_an_access_token">Получаем токен доступа</string>
   <string name="dialog_title_acquiring_a_request_token">Получаем токен запроса</string>
   <string name="dialog_title_authentication_failed">Аутентификация (проверка имени пользователя и пароля) завершилась неудачей</string>
@@ -157,11 +159,16 @@
   <string name="fetch_frequency_entries_1_day">сутки</string>
   <string name="filters_title">Фильтры</string>
   <string name="filters_summary">Глобальные фильтры, применяемые ко всем сообщениям</string>
+  <string name="followed_by">Следуют</string>
   <string name="get_open_instances_title">Получить открытые серверы</string>
+  <string name="get_user">Получить информацию о пользователе</string>
+  <string name="go_to_the_top_title">Наверх</string>
   <string name="header_accounts">Аккаунты (Учётные записи)</string>
   <string name="header_add_new_account">Добавить новый аккаунт</string>
   <string name="header_manage_existing_accounts">Управление существующими аккаунтами</string>
-  <string name="hide_messages_based_on_keywords_title">Скрыть сообщения, в которых есть ключевые слова</string>
+  <string name="hide_messages_based_on_keywords_title">Скрыть сообщения, в которых есть ключевые слова или точные фразы</string>
+  <string name="hide_messages_based_on_keywords_dialog_message">Разделяйте слова пробелами. Помещайте фразы в двойные кавычки, например:\n слово \"Точная фраза\"</string>
+  <string name="hide_replies_not_to_me_or_friends_title">Скрыть ответы не мне или моим друзьям из ленты времени Дом</string>
   <string name="history_size_entries_500">500 сообщений</string>
   <string name="history_size_entries_1000">1000 сообщений</string>
   <string name="history_size_entries_2000">2000 сообщений</string>
@@ -183,7 +190,7 @@
   <string name="history_time_entries_10years">10 лет</string>
   <string name="id_of_this_message_was_not_specified">Идентификатор этого сообщения не был указан</string>
   <string name="in_combined_global_search_label">Включить в \"Глобальный поиск\" в Объединённой Линии Времени</string>
-  <string name="in_combined_public_reload_label">Включить в \"Загрузку\" в Объединённой Линии Времени</string>
+  <string name="in_combined_public_reload_label">Включить в \"Синхронизацию\" в Объединённой Линии Времени</string>
   <string name="label_accountselector">Выберите аккаунт</string>
   <string name="label_allow_html_content">Разрешить HTML форматирование</string>
   <string name="label_backup">Сохранить данные приложения на SD карту</string>
@@ -200,7 +207,7 @@
   <string name="label_upgrading">Идёт обновление приложения. Пожалуйста подождите.</string>
   <string name="label_with_media">с медиа-контентом</string>
   <string name="latest_error_label">Последняя ошибка</string>
-  <string name="loading">Загрузка&#8230;</string>
+  <string name="loading">Загрузка</string>
   <string name="malformed_link">Неисправные ссылки</string>
   <string name="message">Сообщение</string>
   <string name="message_twitter">Сообщение</string>
@@ -271,6 +278,13 @@
   <string name="options_menu_mentions">Упоминания</string>
   <string name="options_menu_search">Поиск</string>
   <string name="origin_settings_action">Социальная сеть</string>
+  <string name="page_empty">пусто</string>
+  <string name="page_new">новый</string>
+  <string name="page_older">старший</string>
+  <string name="page_the_same">тот же</string>
+  <string name="page_top_of">верх</string>
+  <string name="page_younger">моложе</string>
+  <string name="page_youngest">самый молодой</string>
   <string name="preference_ssl_mode_title">Режим SSL и безопасность</string>
   <string name="preference_ssl_mode_secure_summary">Вы в безопасности: разрешены только правильно настроенные SSL соединения</string>
   <string name="preference_ssl_mode_insecure_summary">Предупреждение: Ваши соединения не являются безопасными. Пожалуйста, попросите Вашего Администратора сервера это исправить, а затем вернитесь в безопасный режим</string>
@@ -286,6 +300,8 @@
   <string name="preference_notification_icon_alternative_on">Иконка в виде круга</string>
   <string name="preference_true_black_title">Черный фон</string>
   <string name="preference_use_kitkat_media_chooser_title">Используйте средства выбора изображений KitKat</string>
+  <string name="refresh_title">Обновить</string>
+  <string name="refresh_timeline_automatically_title">Обновлять Ленту времени автоматически</string>
   <string name="reltime_days_ago_formats_1">вчера</string>
   <string name="reltime_days_ago_formats_2">{0} день назад</string>
   <string name="reltime_hours_ago_formats_1">час назад</string>
@@ -371,6 +387,7 @@
   <string name="theme_size_entries_small">Малый</string>
   <string name="theme_size_entries_standard">Средний</string>
   <string name="theme_size_entries_large">Большой</string>
+  <string name="this_option_is_turned_off">(отключено)</string>
   <string name="timeline_reloaded">Лента времени обновлена.</string>
   <string name="timeline_title_all">Все</string>
   <string name="timeline_title_direct_messages">Личные сообщения</string>
@@ -444,13 +461,14 @@
   <string name="reblogged_by">пересказано %1$s</string>
   <string name="reblogged_by_twitter">ретвитнуто %1$s</string>
   <string name="unimplemented">Не реализовано.</string>
+  <string name="unknown_userlist">(Неизвестный список пользователей)</string>
   <string name="use_legacy_http_protocol_title">Использовать старый HTTP протокол</string>
   <string name="user_in_timeline_entries_username">имяпользователя</string>
   <string name="user_in_timeline_entries_at_username">"\@имяпользователя"</string>
   <string name="user_in_timeline_entries_webfingerid">webFingerId</string>
   <string name="user_in_timeline_entries_real_name">Настоящее имя</string>
   <string name="user_in_timeline_entries_real_name_at_username">Настоящее имя @имяпользователя</string>
+  <string name="user_list">Список пользователей</string>
+  <string name="users_of_message">Пользователи сообщения</string>
   <string name="yes">Да</string>
-  <string name="this_option_is_turned_off">(отключено)</string>
-  <string name="hide_replies_not_to_me_or_friends_title">Скрыть ответы не мне или моим друзьям из ленты времени Дом</string>
 </resources>

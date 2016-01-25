@@ -11,7 +11,8 @@ and it allows you to read and post even when you are offline.
 For Android OS version 4.1 or higher.
 Under Free/Libre and Open Source License.
 
-For more information please read the [https://github.com/andstatus/andstatus/wiki AndStatus Wiki]. 
+For more information please read the [https://github.com/andstatus/andstatus/wiki AndStatus Wiki].
+See the [http://andstatus.org/changelog.html Change Log] for descriptions of all features of AndStatus and their discussion.
 
 == Download ==
 

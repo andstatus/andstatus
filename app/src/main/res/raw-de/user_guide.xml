@@ -49,7 +49,7 @@ xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../../../re
     <title>
         <p>Einleitung</p>
     </title>
-    <p>AndStatus ist ein Open Source Client für soziale Netzwerke, der Unterhaltungen per Diskussionsstrang in Baumstruktur ermöglicht.
+    <p>AndStatus ist ein sparsamer Open Source Client für soziale Netzwerke, der Unterhaltungen per Diskussionsstrang in Baumstruktur ermöglicht.
 Unterstützt werden unterschiedliche Protokolle, inklusive GNU social, Twitter und Pump.io.
 AndStatus kombiniert deine Konten aller Netzwerke in eine Timeline und ermöglicht Lesen sowie Posting auch offline.</p>
     <p>Link zu dieser Anleitung ist in der Menüleiste-&gt;Hilfe enthalten.</p>
