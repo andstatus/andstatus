@@ -142,7 +142,7 @@ public class TimelineListParameters {
     }
 
     public boolean mayHaveOlderPage() {
-        return minSentDate > 0 || maxSentDate == 0 || rowsLoaded == PAGE_SIZE;
+        return minSentDate > 0 || maxSentDate > 0 && rowsLoaded == PAGE_SIZE;
     }
 
     private void prepareQueryForeground() {
@@ -252,7 +252,7 @@ public class TimelineListParameters {
                 + (maxSentDate > 0 ? ", maxSentDate=" + new Date(maxSentDate).toString() : "")
                 + (mSa.isEmpty() ? "" : ", sa=" + mSa)
                 + ", sortOrder=" + getSortOrderAndLimit()
-                + ", startTime=" + startTime
+                + (startTime > 0 ? ", startTime=" + startTime : "")
                 + (cancelled ? ", cancelled" : "")
                 + (timelineToSync == TimelineType.UNKNOWN ? "" : ", timelineToSync=" + timelineToSync)
                 + (mLoaderCallbacks == null ? "" : ", loaderCallbacks=" + mLoaderCallbacks)
