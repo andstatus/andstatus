@@ -29,14 +29,14 @@ import android.text.TextUtils;
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
 import org.andstatus.app.WhichPage;
-import org.andstatus.app.data.ProjectionMap;
-import org.andstatus.app.data.SelectedUserIds;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyDatabase;
+import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.data.ParsedUri;
+import org.andstatus.app.data.ProjectionMap;
+import org.andstatus.app.data.SelectedUserIds;
 import org.andstatus.app.data.TimelineSql;
 import org.andstatus.app.data.TimelineType;
-import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SelectionAndArgs;
 
