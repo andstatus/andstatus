@@ -16,8 +16,6 @@
 
 package org.andstatus.app.data;
 
-import java.util.Arrays;
-
 import android.content.ContentProvider;
 import android.content.ContentValues;
 import android.database.Cursor;
@@ -36,6 +34,8 @@ import org.andstatus.app.data.MyDatabase.MsgOfUser;
 import org.andstatus.app.data.MyDatabase.Origin;
 import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.util.MyLog;
+
+import java.util.Arrays;
 
 /**
  * Database provider for the MyDatabase database.

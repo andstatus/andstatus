@@ -1,12 +1,9 @@
 package org.andstatus.app.context;
 
-import android.os.Bundle;
-import android.preference.CheckBoxPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.test.ActivityInstrumentationTestCase2;
 
-import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.service.MyServiceManager;
 
 public class MySettingsActivityTest extends ActivityInstrumentationTestCase2<MySettingsActivity> {

@@ -16,17 +16,17 @@
  */
 package org.andstatus.app.service;
 
-import org.andstatus.app.IntentExtra;
-import org.andstatus.app.MyAction;
-import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.util.InstanceId;
-import org.andstatus.app.util.MyLog;
-
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
 import net.jcip.annotations.GuardedBy;
+
+import org.andstatus.app.IntentExtra;
+import org.andstatus.app.MyAction;
+import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.util.InstanceId;
+import org.andstatus.app.util.MyLog;
 
 /**
  * This receiver starts and stops {@link MyService} and also queries its state.

@@ -20,8 +20,8 @@ import android.os.AsyncTask;
 import android.os.AsyncTask.Status;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.TextView;
 import android.view.View.OnClickListener;
+import android.widget.TextView;
 
 import org.andstatus.app.MyActivity;
 import org.andstatus.app.R;

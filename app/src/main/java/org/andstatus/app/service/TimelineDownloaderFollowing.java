@@ -30,11 +30,11 @@ import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.net.http.ConnectionException;
+import org.andstatus.app.net.http.ConnectionException.StatusCode;
+import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
 import org.andstatus.app.net.social.MbTimelineItem;
 import org.andstatus.app.net.social.MbTimelineItem.ItemType;
 import org.andstatus.app.net.social.MbUser;
-import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
-import org.andstatus.app.net.http.ConnectionException.StatusCode;
 import org.andstatus.app.net.social.TimelinePosition;
 import org.andstatus.app.util.MyLog;
 

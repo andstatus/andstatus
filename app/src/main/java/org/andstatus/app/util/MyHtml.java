@@ -17,9 +17,7 @@
 package org.andstatus.app.util;
 
 import android.text.Html;
-import android.text.Spanned;
 import android.text.TextUtils;
-import android.text.style.URLSpan;
 
 public class MyHtml {
     private MyHtml() {

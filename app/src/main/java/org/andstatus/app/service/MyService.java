@@ -16,22 +16,6 @@
 
 package org.andstatus.app.service;
 
-import java.util.Queue;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.PriorityBlockingQueue;
-import java.util.concurrent.atomic.AtomicLong;
-
-import org.andstatus.app.MyAction;
-import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.data.TimelineType;
-import org.andstatus.app.notification.CommandsQueueNotifier;
-import org.andstatus.app.util.InstanceId;
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.RelativeTime;
-import org.andstatus.app.util.TriState;
-import org.andstatus.app.appwidget.AppWidgets;
-
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -44,7 +28,22 @@ import android.os.PowerManager;
 
 import net.jcip.annotations.GuardedBy;
 
+import org.andstatus.app.MyAction;
+import org.andstatus.app.appwidget.AppWidgets;
+import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.data.TimelineType;
+import org.andstatus.app.notification.CommandsQueueNotifier;
+import org.andstatus.app.util.InstanceId;
+import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.RelativeTime;
+import org.andstatus.app.util.TriState;
+
+import java.util.Queue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * This service asynchronously executes commands, mostly related to communication

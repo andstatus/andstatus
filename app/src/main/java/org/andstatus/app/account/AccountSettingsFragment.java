@@ -27,7 +27,6 @@ import android.view.ViewGroup;
 
 import org.andstatus.app.ActivityRequestCode;
 import org.andstatus.app.R;
-import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.util.MyLog;
 
 public class AccountSettingsFragment extends Fragment {

@@ -30,14 +30,13 @@ import org.andstatus.app.data.MyDatabase.Msg;
 import org.andstatus.app.data.MyDatabase.MsgOfUser;
 import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.SelectionAndArgs;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
-import org.andstatus.app.util.*;
 
 /**
  * Clean database from outdated information

@@ -16,23 +16,6 @@
 
 package org.andstatus.app.msg;
 
-import org.andstatus.app.ActivityRequestCode;
-import org.andstatus.app.MyBaseListActivity;
-import org.andstatus.app.R;
-import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.data.DownloadStatus;
-import org.andstatus.app.data.MyDatabase;
-import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.data.TimelineType;
-import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
-import org.andstatus.app.service.CommandData;
-import org.andstatus.app.service.CommandEnum;
-import org.andstatus.app.service.MyServiceManager;
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.UriUtils;
-
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
@@ -54,6 +37,23 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import org.andstatus.app.ActivityRequestCode;
+import org.andstatus.app.MyBaseListActivity;
+import org.andstatus.app.R;
+import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.data.DownloadStatus;
+import org.andstatus.app.data.MyDatabase;
+import org.andstatus.app.data.MyQuery;
+import org.andstatus.app.data.TimelineType;
+import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
+import org.andstatus.app.service.CommandData;
+import org.andstatus.app.service.CommandEnum;
+import org.andstatus.app.service.MyServiceManager;
+import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.UriUtils;
 
 /**
  * "Enter your message here" box 

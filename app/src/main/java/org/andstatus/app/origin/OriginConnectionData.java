@@ -19,10 +19,10 @@ package org.andstatus.app.origin;
 import org.andstatus.app.account.AccountDataReader;
 import org.andstatus.app.account.AccountDataReaderEmpty;
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.net.social.ConnectionEmpty;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.net.http.HttpConnectionEmpty;
 import org.andstatus.app.net.http.SslModeEnum;
+import org.andstatus.app.net.social.ConnectionEmpty;
 import org.andstatus.app.util.TriState;
 
 import java.net.URL;

@@ -41,8 +41,8 @@ import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.user.UserListType;
 import org.andstatus.app.util.I18n;
-import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyHtml;
+import org.andstatus.app.util.MyLog;
 
 public enum ContextMenuItem {
     REPLY(true) {

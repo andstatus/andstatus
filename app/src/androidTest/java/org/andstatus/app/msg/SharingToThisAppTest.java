@@ -2,8 +2,6 @@ package org.andstatus.app.msg;
 
 import android.test.InstrumentationTestCase;
 
-import org.andstatus.app.msg.TimelineActivity;
-
 public class SharingToThisAppTest extends InstrumentationTestCase {
     public void testInputSharedContent() {
         String part1 = "This is a long a long post";

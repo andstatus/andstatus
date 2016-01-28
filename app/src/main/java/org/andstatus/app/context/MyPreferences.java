@@ -16,10 +16,6 @@
 
 package org.andstatus.app.context;
 
-import org.andstatus.app.msg.TimelineActivity;
-import org.andstatus.app.util.I18n;
-import org.andstatus.app.util.MyLog;
-
 import android.annotation.TargetApi;
 import android.app.backup.BackupManager;
 import android.content.Context;
@@ -33,6 +29,10 @@ import android.os.Build;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
+
+import org.andstatus.app.msg.TimelineActivity;
+import org.andstatus.app.util.I18n;
+import org.andstatus.app.util.MyLog;
 
 import java.io.File;
 import java.util.Locale;

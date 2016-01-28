@@ -16,6 +16,13 @@
 
 package org.andstatus.app.util;
 
+import android.content.SharedPreferences;
+import android.text.TextUtils;
+import android.text.format.DateFormat;
+import android.util.Log;
+
+import net.jcip.annotations.GuardedBy;
+
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
@@ -34,13 +41,6 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicLong;
-
-import android.content.SharedPreferences;
-import android.text.TextUtils;
-import android.text.format.DateFormat;
-import android.util.Log;
-
-import net.jcip.annotations.GuardedBy;
 
 /**
  * There is a need to turn debug (and maybe even verbose) logging on and off

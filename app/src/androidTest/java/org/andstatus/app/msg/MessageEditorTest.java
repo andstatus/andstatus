@@ -40,9 +40,9 @@ import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyDatabase;
+import org.andstatus.app.data.MyDatabase.OidEnum;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.TimelineType;
-import org.andstatus.app.data.MyDatabase.OidEnum;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
 

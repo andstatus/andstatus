@@ -17,7 +17,6 @@
 package org.andstatus.app.user;
 
 import android.app.Activity;
-import android.text.TextUtils;
 import android.view.ContextMenu;
 import android.view.MenuItem;
 import android.view.View;

@@ -20,12 +20,11 @@ package org.andstatus.app.data;
 import android.content.Context;
 import android.database.Cursor;
 import android.graphics.drawable.Drawable;
-import android.text.Html;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.SimpleCursorAdapter.ViewBinder;
+import android.widget.TextView;
 
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyPreferences;

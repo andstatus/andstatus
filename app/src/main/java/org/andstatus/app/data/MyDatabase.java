@@ -16,6 +16,11 @@
 
 package org.andstatus.app.data;
 
+import android.content.Context;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
+import android.provider.BaseColumns;
+
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextState;
 import org.andstatus.app.context.MyPreferences;
@@ -26,11 +31,6 @@ import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
 
 import java.util.Locale;
-
-import android.content.Context;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
-import android.provider.BaseColumns;
 
 /**
  * Database definitions and helper class.

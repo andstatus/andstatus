@@ -4,8 +4,6 @@ import android.content.Context;
 import android.provider.BaseColumns;
 import android.widget.SimpleAdapter;
 
-import org.andstatus.app.util.MyLog;
-
 import java.util.List;
 import java.util.Map;
 

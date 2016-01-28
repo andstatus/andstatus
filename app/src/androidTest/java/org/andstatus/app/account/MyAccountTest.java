@@ -18,7 +18,6 @@ package org.andstatus.app.account;
 
 import android.test.InstrumentationTestCase;
 
-import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;

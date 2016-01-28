@@ -25,6 +25,8 @@ import android.content.Context;
 import android.content.SyncResult;
 import android.os.Bundle;
 
+import net.jcip.annotations.GuardedBy;
+
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.TimelineType;
@@ -33,11 +35,9 @@ import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyService;
 import org.andstatus.app.service.MyServiceEvent;
 import org.andstatus.app.service.MyServiceEventsListener;
-import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.service.MyServiceEventsReceiver;
+import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
-
-import net.jcip.annotations.GuardedBy;
 
 public class SyncAdapter extends AbstractThreadedSyncAdapter implements MyServiceEventsListener {
 

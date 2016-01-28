@@ -16,8 +16,6 @@
 
 package org.andstatus.app.context;
 
-import junit.framework.TestCase;
-
 import android.app.Activity;
 import android.app.Instrumentation;
 import android.app.KeyguardManager;
@@ -28,12 +26,14 @@ import android.test.InstrumentationTestCase;
 import android.view.ViewGroup;
 import android.widget.ListView;
 
+import junit.framework.TestCase;
+
 import org.andstatus.app.HelpActivity;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.data.ConversationInserter;
+import org.andstatus.app.data.GnuSocialMessagesInserter;
 import org.andstatus.app.data.MessageInserter;
 import org.andstatus.app.data.OriginsAndAccountsInserter;
-import org.andstatus.app.data.GnuSocialMessagesInserter;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.origin.Origin;

@@ -29,14 +29,14 @@ import org.andstatus.app.data.FileProvider;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.data.MyDatabase;
+import org.andstatus.app.data.MyDatabase.OidEnum;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.TimelineType;
-import org.andstatus.app.data.MyDatabase.OidEnum;
 import org.andstatus.app.net.http.ConnectionException;
+import org.andstatus.app.net.http.ConnectionException.StatusCode;
 import org.andstatus.app.net.social.MbMessage;
 import org.andstatus.app.net.social.MbRateLimitStatus;
 import org.andstatus.app.net.social.MbUser;
-import org.andstatus.app.net.http.ConnectionException.StatusCode;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
 

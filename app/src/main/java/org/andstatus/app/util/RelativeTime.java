@@ -16,12 +16,12 @@
 
 package org.andstatus.app.util;
 
-import java.util.Calendar;
-import java.util.Date;
+import android.content.Context;
 
 import org.andstatus.app.R;
 
-import android.content.Context;
+import java.util.Calendar;
+import java.util.Date;
 
 /**
  * 

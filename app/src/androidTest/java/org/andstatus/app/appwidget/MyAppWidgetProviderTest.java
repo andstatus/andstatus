@@ -16,7 +16,9 @@
 
 package org.andstatus.app.appwidget;
 
+import android.test.InstrumentationTestCase;
 import android.text.format.DateFormat;
+import android.text.format.DateUtils;
 import android.text.format.Time;
 
 import org.andstatus.app.context.MyContext;
@@ -26,9 +28,6 @@ import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.service.CommandResult;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
-
-import android.text.format.DateUtils;
-import android.test.InstrumentationTestCase;
 
 import java.util.Calendar;
 import java.util.Date;

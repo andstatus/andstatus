@@ -25,8 +25,8 @@ import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceEvent;
 import org.andstatus.app.service.MyServiceEventsListener;
-import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.service.MyServiceEventsReceiver;
+import org.andstatus.app.service.MyServiceManager;
 
 public class DiscoveredOriginList extends OriginList implements MyServiceEventsListener {
     MyServiceEventsReceiver mServiceConnector = new MyServiceEventsReceiver(this);

@@ -10,9 +10,9 @@ import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MessageInserter;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.net.social.MbConfig;
 import org.andstatus.app.net.http.OAuthClientKeysTest;
 import org.andstatus.app.net.http.SslModeEnum;
+import org.andstatus.app.net.social.MbConfig;
 import org.andstatus.app.origin.Origin.Builder;
 import org.andstatus.app.util.UrlUtils;
 

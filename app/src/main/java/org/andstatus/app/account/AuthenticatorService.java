@@ -16,10 +16,6 @@
 
 package org.andstatus.app.account;
 
-import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.util.MyLog;
-
 import android.accounts.AbstractAccountAuthenticator;
 import android.accounts.Account;
 import android.accounts.AccountAuthenticatorResponse;
@@ -30,6 +26,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.IBinder;
+
+import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.util.MyLog;
 
 /**
  * A very basic authenticator service for POP/IMAP.  At the moment, it has no UI hooks.  When called

@@ -19,7 +19,6 @@ package org.andstatus.app.net.http;
 import android.text.TextUtils;
 
 import org.andstatus.app.account.AccountDataWriter;
-import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
 import org.andstatus.app.util.MyLog;
 import org.json.JSONException;

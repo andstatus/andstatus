@@ -24,8 +24,8 @@ import android.preference.ListPreference;
 import android.preference.PreferenceFragment;
 import android.text.TextUtils;
 
-import java.io.IOException;
 import java.io.File;
+import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Map.Entry;
 
