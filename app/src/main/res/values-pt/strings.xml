@@ -21,7 +21,7 @@
 	See the License for the specific language governing permissions and
 	limitations under the License.
  -->
-<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+<resources>
   <string name="account_settings_action">Definições da conta AndStatus</string>
   <string name="account_settings_activity_title">Conta</string>
   <string name="account_settings_summary">Sincronização, notificações e mais</string>
