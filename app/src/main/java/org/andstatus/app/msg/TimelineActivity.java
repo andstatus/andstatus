@@ -65,7 +65,6 @@ import org.andstatus.app.service.MyServiceEventsReceiver;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.service.QueueViewer;
 import org.andstatus.app.test.SelectorActivityMock;
-import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.UriUtils;
@@ -302,7 +301,7 @@ public class TimelineActivity extends LoadableListActivity implements
         final String method = "onSearchRequested";
         Bundle appSearchData = new Bundle();
         appSearchData.putString(IntentExtra.TIMELINE_URI.key, 
-                mListParametersNew.getTimelineUri(appGlobalSearch).toString());
+                mListParametersNew.toTimelineUri(appGlobalSearch).toString());
         appSearchData.putBoolean(IntentExtra.GLOBAL_SEARCH.key, appGlobalSearch);
         MyLog.v(this, method + ": " + appSearchData);
         startSearch(null, false, appSearchData, false);
@@ -604,17 +603,8 @@ public class TimelineActivity extends LoadableListActivity implements
 
     private void updateAccountButtonText(ViewGroup mDrawerList) {
         TextView selectAccountButton = (TextView) mDrawerList.findViewById(R.id.selectAccountButton);
-        String accountButtonText = buildAccountButtonText(mListParametersNew.myAccountUserId);
+        String accountButtonText = mListParametersNew.toAccountButtonText();
         selectAccountButton.setText(accountButtonText);
-    }
-
-    public static String buildAccountButtonText(long myAccountUserId) {
-        MyAccount ma = MyContextHolder.get().persistentAccounts().fromUserId(myAccountUserId);
-        String accountButtonText = ma.shortestUniqueAccountName();
-        if (!ma.isValidAndSucceeded()) {
-            accountButtonText = "(" + accountButtonText + ")";
-        }
-        return accountButtonText;
     }
 
     @Override
@@ -783,49 +773,19 @@ public class TimelineActivity extends LoadableListActivity implements
     }
 
     static class TimelineTitle {
-        final StringBuilder title = new StringBuilder();
-        final StringBuilder subTitle = new StringBuilder();
+        private final TimelineListParameters ta;
+        private final String additionalTitleText;
 
         public TimelineTitle(TimelineListParameters ta, String additionalTitleText) {
-            buildTitle(ta); 
-            buildSubtitle(ta, additionalTitleText);
-        }
-
-        private void buildTitle(TimelineListParameters ta) {
-            I18n.appendWithSpace(title, ta.getTimelineType().getTitle(ta.mContext));
-            if (!TextUtils.isEmpty(ta.mSearchQuery)) {
-                I18n.appendWithSpace(title, "'" + ta.mSearchQuery + "'");
-            }
-            if (ta.getTimelineType() == TimelineType.USER
-                    && !(ta.isTimelineCombined()
-                            && MyContextHolder.get().persistentAccounts()
-                            .fromUserId(ta.getSelectedUserId()).isValid())) {
-                I18n.appendWithSpace(title, MyQuery.userIdToWebfingerId(ta.getSelectedUserId()));
-            }
-            if (ta.isTimelineCombined()) {
-                I18n.appendWithSpace(title, ta.mContext.getText(R.string.combined_timeline_on));
-            }
-        }
-
-        private void buildSubtitle(TimelineListParameters ta, String additionalTitleText) {
-            if (!ta.isTimelineCombined()) {
-                I18n.appendWithSpace(subTitle, ta.getTimelineType()
-                        .getPrepositionForNotCombinedTimeline(ta.mContext));
-                if (ta.getTimelineType().atOrigin()) {
-                    I18n.appendWithSpace(subTitle, MyContextHolder.get().persistentAccounts()
-                            .fromUserId(ta.getMyAccountUserId()).getOrigin().getName()
-                            + ";");
-                }
-            }
-            I18n.appendWithSpace(subTitle, buildAccountButtonText(ta.getMyAccountUserId()));
-            I18n.appendWithSpace(subTitle, additionalTitleText);
+            this.ta = ta;
+            this.additionalTitleText = additionalTitleText;
         }
 
         private void updateTitle(AppCompatActivity activity) {
             ActionBar actionBar = activity.getSupportActionBar();
             if (actionBar != null) {
-                actionBar.setTitle(title);
-                actionBar.setSubtitle(subTitle);
+                actionBar.setTitle(ta.toTimelineTitle());
+                actionBar.setSubtitle(ta.toTimelineSubtitle(additionalTitleText));
             }
             if (MyLog.isVerboseEnabled()) {
                 MyLog.v(activity, "Title: " + toString());
@@ -834,7 +794,7 @@ public class TimelineActivity extends LoadableListActivity implements
 
         @Override
         public String toString() {
-            return title + "; " + subTitle;
+            return ta.toTimelineTitleAndSubtitle(additionalTitleText);
         }
     }
 
@@ -880,17 +840,17 @@ public class TimelineActivity extends LoadableListActivity implements
         if (isLoading()) {
             if(MyLog.isVerboseEnabled()) {
                 if (isDifferentRequest) {
-                    MyLog.v(this, method + "; different while loading " + params.getSummary());
+                    MyLog.v(this, method + "; different while loading " + params.toSummary());
                 } else {
-                    MyLog.v(this, method + "; ignored duplicating " + params.getSummary());
+                    MyLog.v(this, method + "; ignored duplicating " + params.toSummary());
                 }
             }
         } else {
             MyLog.v(this, method + "; requesting " + (isDifferentRequest ? "" : "duplicating ")
-                    + params.getSummary());
+                    + params.toSummary());
             saveListPosition();
             showLoading(method, getText(R.string.loading) + " "
-                    + mListParametersToLoad.getSummary() + HORIZONTAL_ELLIPSIS);
+                    + mListParametersToLoad.toSummary() + HORIZONTAL_ELLIPSIS);
             super.showList(mListParametersToLoad.whichPage.toBundle());
         }
     }
@@ -928,7 +888,7 @@ public class TimelineActivity extends LoadableListActivity implements
         final String method = "onLoadFinished";
         TimelineLoader myLoader = (TimelineLoader) getLoaded();
         mListParametersLoaded = myLoader.getParams();
-        MyLog.v(this, method + "; " + mListParametersLoaded.getSummary());
+        MyLog.v(this, method + "; " + mListParametersLoaded.toSummary());
 
         // TODO start: Move this inside superclass
         boolean restorePosition = restorePosition_in && isPositionRestored()
@@ -966,7 +926,7 @@ public class TimelineActivity extends LoadableListActivity implements
         updateScreen();
         clearNotifications();
         if (parametersChanged) {
-            MyLog.v(this, method + "; parameters changed, requesting " + anotherParams.getSummary());
+            MyLog.v(this, method + "; parameters changed, requesting " + anotherParams.toSummary());
             showList(anotherParams);
         } else if (anotherPageToRequest != WhichPage.EMPTY) {
             MyLog.v(this, method + "; Nothing loaded, requesting " + anotherPageToRequest);

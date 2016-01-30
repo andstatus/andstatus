@@ -32,7 +32,7 @@ import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.TimelineType;
-import org.andstatus.app.msg.TimelineActivity;
+import org.andstatus.app.msg.TimelineListParameters;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
@@ -631,7 +631,7 @@ public class CommandData implements Comparable<CommandData> {
                         I18n.appendWithSpace(builder, "('" + accountName + "' ?)");
                     } else {
                         I18n.appendWithSpace(builder,
-                                TimelineActivity.buildAccountButtonText(ma.getUserId()));
+                                TimelineListParameters.toAccountButtonText(ma.getUserId()));
                     }
                 }
                 break;

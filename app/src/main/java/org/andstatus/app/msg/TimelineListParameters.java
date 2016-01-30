@@ -30,6 +30,8 @@ import android.text.TextUtils;
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
 import org.andstatus.app.WhichPage;
+import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyDatabase.User;
@@ -38,6 +40,7 @@ import org.andstatus.app.data.ProjectionMap;
 import org.andstatus.app.data.SelectedUserIds;
 import org.andstatus.app.data.TimelineSql;
 import org.andstatus.app.data.TimelineType;
+import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SelectionAndArgs;
 
@@ -64,6 +67,7 @@ public class TimelineListParameters {
      * So it's never == 0 for the {@link TimelineType#USER} timeline
      */
     long mSelectedUserId = 0;
+
     /**
      * The string is not empty if this timeline is filtered using query string
      * ("Mentions" are not counted here because they have separate TimelineType)
@@ -86,6 +90,7 @@ public class TimelineListParameters {
     volatile int rowsLoaded = 0;
     volatile long minSentDateLoaded = 0;
     volatile long maxSentDateLoaded = 0;
+    volatile String selectedUserWebFingerId = "";
 
     public static TimelineListParameters clone(TimelineListParameters prev, WhichPage whichPage) {
         TimelineListParameters params = new TimelineListParameters(prev.mContext);
@@ -104,7 +109,7 @@ public class TimelineListParameters {
         params.mSelectedUserId = prev.getSelectedUserId();
         params.mSearchQuery = prev.mSearchQuery;
 
-        String msgLog = "Constructing " + params.getSummary();
+        String msgLog = "Constructing " + params.toSummary();
         switch (params.whichPage) {
             case OLDER:
                 if (prev.mayHaveOlderPage()) {
@@ -136,6 +141,19 @@ public class TimelineListParameters {
         params.mProjection = TimelineSql.getTimelineProjection();
 
         params.prepareQueryForeground();
+    }
+
+    public String toAccountButtonText() {
+        return toAccountButtonText(myAccountUserId);
+    }
+
+    public static String toAccountButtonText(long myAccountUserId) {
+        MyAccount ma = MyContextHolder.get().persistentAccounts().fromUserId(myAccountUserId);
+        String accountButtonText = ma.shortestUniqueAccountName();
+        if (!ma.isValidAndSucceeded()) {
+            accountButtonText = "(" + accountButtonText + ")";
+        }
+        return accountButtonText;
     }
 
     public boolean mayHaveYoungerPage() {
@@ -243,11 +261,10 @@ public class TimelineListParameters {
     @Override
     public String toString() {
         return MyLog.formatKeyValue(this,
-                getSummary()
+                toSummary()
                 + ", myAccountUserId=" + myAccountUserId
                 + (mSelectedUserId == 0 ? "" : ", selectedUserId=" + mSelectedUserId)
             //    + ", projection=" + Arrays.toString(mProjection)
-                + (TextUtils.isEmpty(mSearchQuery) ? "" : ", searchQuery=" + mSearchQuery)
                 + ", contentUri=" + mContentUri
                 + (minSentDate > 0 ? ", minSentDate=" + new Date(minSentDate).toString() : "")
                 + (maxSentDate > 0 ? ", maxSentDate=" + new Date(maxSentDate).toString() : "")
@@ -285,7 +302,7 @@ public class TimelineListParameters {
     }
 
     public void saveState(Editor outState) {
-        outState.putString(IntentExtra.TIMELINE_URI.key, getTimelineUri(false).toString());
+        outState.putString(IntentExtra.TIMELINE_URI.key, toTimelineUri(false).toString());
     }
 
     @Override
@@ -345,11 +362,60 @@ public class TimelineListParameters {
         return true;
     }
     
-    Uri getTimelineUri(boolean globalSearch) {
+    Uri toTimelineUri(boolean globalSearch) {
         return MatchedUri.getTimelineSearchUri(myAccountUserId, globalSearch ? TimelineType.EVERYTHING
                 : getTimelineType(), isTimelineCombined(), getSelectedUserId(), mSearchQuery);
     }
-    
+
+    public String toSummary() {
+        return whichPage.getTitle(mContext) + " " + toTimelineTitleAndSubtitle();
+    }
+
+    public String toTimelineTitleAndSubtitle() {
+        return toTimelineTitleAndSubtitle("");
+    }
+
+    public String toTimelineTitleAndSubtitle(String additionalTitleText) {
+        return toTimelineTitle() + "; " + toTimelineSubtitle(additionalTitleText);
+    }
+
+    public String toTimelineTitle() {
+        StringBuilder title = new StringBuilder();
+        I18n.appendWithSpace(title, getTimelineType().getTitle(mContext));
+        if (!TextUtils.isEmpty(mSearchQuery)) {
+            I18n.appendWithSpace(title, "'" + mSearchQuery + "'");
+        }
+        if (getTimelineType() == TimelineType.USER
+                && !(isTimelineCombined()
+                && MyContextHolder.get() != null
+                && MyContextHolder.get().persistentAccounts() != null
+                && MyContextHolder.get().persistentAccounts()
+                .fromUserId(getSelectedUserId()).isValid())) {
+            I18n.appendWithSpace(title, selectedUserWebFingerId);
+        }
+        if (isTimelineCombined()) {
+            I18n.appendWithSpace(title,
+                    mContext == null ? "combined" : mContext.getText(R.string.combined_timeline_on));
+        }
+        return title.toString();
+    }
+
+    public String toTimelineSubtitle(String additionalTitleText) {
+        final StringBuilder subTitle = new StringBuilder();
+        if (!isTimelineCombined()) {
+            I18n.appendWithSpace(subTitle, getTimelineType()
+                    .getPrepositionForNotCombinedTimeline(mContext));
+            if (getTimelineType().atOrigin()) {
+                I18n.appendWithSpace(subTitle, MyContextHolder.get().persistentAccounts()
+                        .fromUserId(getMyAccountUserId()).getOrigin().getName()
+                        + ";");
+            }
+        }
+        I18n.appendWithSpace(subTitle, toAccountButtonText());
+        I18n.appendWithSpace(subTitle, additionalTitleText);
+        return subTitle.toString();
+    }
+
     public static String notNullString(String string) {
         return string == null ? "" : string;
     }
@@ -361,12 +427,5 @@ public class TimelineListParameters {
         if (maxSentDateLoaded == 0 || maxSentDateLoaded < sentDate) {
             maxSentDateLoaded = sentDate;
         }
-    }
-
-    public String getSummary() {
-        return whichPage.getTitle(mContext) + " " + getTimelineType().getTitle(mContext)
-                + (mTimelineCombined ? ", "
-                + (mContext == null ? "combined" : mContext.getText(R.string.combined_timeline_on))
-                : "");
     }
 }

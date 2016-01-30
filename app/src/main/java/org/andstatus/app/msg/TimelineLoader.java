@@ -60,7 +60,7 @@ public class TimelineLoader implements LoadableListActivity.SyncLoader {
             checkIfReloadIsNeeded(cursor);
             setPageLoaded(pageFromCursor(cursor));
         }
-        getParams().endTime = System.nanoTime();
+        params.endTime = System.nanoTime();
         logExecutionStats();
     }
 
@@ -70,15 +70,15 @@ public class TimelineLoader implements LoadableListActivity.SyncLoader {
     }
 
     void markStart() {
-        getParams().startTime = System.nanoTime();
-        getParams().cancelled = false;
-        getParams().timelineToSync = TimelineType.UNKNOWN;
-
+        params.startTime = System.nanoTime();
+        params.cancelled = false;
+        params.timelineToSync = TimelineType.UNKNOWN;
+        if (params.getSelectedUserId() != 0) {
+            params.selectedUserWebFingerId =
+                    MyQuery.userIdToWebfingerId(params.getSelectedUserId());
+        }
         if (MyLog.isVerboseEnabled()) {
-            logV("markStart", (TextUtils.isEmpty(getParams().mSearchQuery) ? ""
-                    : "queryString=\"" + getParams().mSearchQuery + "\"; ")
-                    + getParams().mTimelineType
-                    + "; isCombined=" + (getParams().mTimelineCombined ? "yes" : "no"));
+            logV("markStart", params.toTimelineTitleAndSubtitle());
         }
     }
 

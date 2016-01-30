@@ -23,7 +23,6 @@ import android.widget.ListView;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.TimelineType;
-import org.andstatus.app.msg.TimelineActivity.TimelineTitle;
 import org.andstatus.app.util.MyLog;
 
 import java.util.Date;
@@ -100,7 +99,8 @@ class TimelineListPositionStorage {
         }
 
         if (firstVisibleItemId <= 0) {
-            MyLog.v(this, method + " failed: no visible items for " + new TimelineTitle(mListParameters, "").toString());
+            MyLog.v(this, method + " failed: no visible items for "
+                    + mListParameters.toTimelineTitleAndSubtitle());
             clear();
         } else {
             put(firstVisibleItemId, minSentDate);
