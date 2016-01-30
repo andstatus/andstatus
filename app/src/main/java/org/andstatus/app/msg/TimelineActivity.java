@@ -228,6 +228,9 @@ public class TimelineActivity extends LoadableListActivity implements
             if (mListParametersNew.restoreState(activityState)) {
                 mContextMenu.loadState(activityState);
             }
+            if (MyLog.isVerboseEnabled()) {
+                MyLog.v(this, "restoreActivityState; " + activityState.getAll() + "; " + mListParametersNew);
+            }
         }
     }
 
@@ -1049,6 +1052,7 @@ public class TimelineActivity extends LoadableListActivity implements
         saveListPosition();
 
         SharedPreferences.Editor outState = MyPreferences.getSharedPreferences(ACTIVITY_PERSISTENCE_NAME).edit();
+        outState.clear();
         mListParametersNew.saveState(outState);
         mContextMenu.saveState(outState);
         outState.apply();

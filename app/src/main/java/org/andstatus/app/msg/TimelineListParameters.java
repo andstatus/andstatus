@@ -24,6 +24,7 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.database.Cursor;
 import android.net.Uri;
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import org.andstatus.app.IntentExtra;
@@ -316,7 +317,8 @@ public class TimelineListParameters {
         return result;
     }
 
-    boolean restoreState(SharedPreferences savedInstanceState) {
+    boolean restoreState(@NonNull SharedPreferences savedInstanceState) {
+        whichPage = WhichPage.NEW;
         return parseUri(Uri.parse(savedInstanceState.getString(IntentExtra.TIMELINE_URI.key,"")));
     }
     
@@ -337,6 +339,7 @@ public class TimelineListParameters {
             return false;
         }
         setTimelineCombined(parsedUri.isCombined());
+        myAccountUserId = parsedUri.getAccountUserId();
         mSelectedUserId = parsedUri.getUserId();
         mSearchQuery = parsedUri.getSearchQuery();
         return true;
