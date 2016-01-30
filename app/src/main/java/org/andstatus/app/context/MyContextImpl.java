@@ -81,33 +81,33 @@ public final class MyContextImpl implements MyContext {
     @Override
     public MyContext newInitialized(Context context, String initializerName) {
         final String method = "newInitialized";
-        MyContextImpl newMyContext = getCreator(context, initializerName);
-        if ( newMyContext.mContext != null) {
+        MyContextImpl myContext = newNotInitialized(context, initializerName);
+        if ( myContext.mContext != null) {
             MyLog.v(TAG, method + " Starting initialization by " + initializerName);
             tryToSetExternalStorageOnFirstLaunch();
-            newMyContext.mPreferencesChangeTime = MyPreferences.getPreferencesChangeTime();
-            MyDatabase newDb = new MyDatabase(newMyContext.mContext);
+            myContext.mPreferencesChangeTime = MyPreferences.getPreferencesChangeTime();
+            MyDatabase newDb = new MyDatabase(myContext.mContext);
             try {
-                newMyContext.mState = newDb.checkState();
-                switch (newMyContext.mState) {
+                myContext.mState = newDb.checkState();
+                switch (myContext.mState) {
                     case READY:
-                            newMyContext.mDb = newDb;
-                            newMyContext.mPersistentOrigins.initialize(newMyContext);
-                            newMyContext.mPersistentAccounts.initialize(newMyContext);
+                            myContext.mDb = newDb;
+                            myContext.mPersistentOrigins.initialize(myContext);
+                            myContext.mPersistentAccounts.initialize(myContext);
                         break;
                     default: 
                         break;
                 }
             } catch (SQLiteException e) {
                 MyLog.e(TAG, method + " Error", e);
-                newMyContext.mState = MyContextState.ERROR;
+                myContext.mState = MyContextState.ERROR;
                 newDb.close();
-                newMyContext.mDb = null;
+                myContext.mDb = null;
             }
         }
 
         MyLog.v(this, toString());
-        return newMyContext;
+        return myContext;
     }
     
     private void tryToSetExternalStorageOnFirstLaunch() {
@@ -128,14 +128,14 @@ public final class MyContextImpl implements MyContext {
 
     @Override
     public MyContext newCreator(Context context, String initializerName) {
-        MyContextImpl newMyContext = getCreator(context, initializerName);
-        MyLog.v(this, "newCreator by " + newMyContext.mInitializedBy 
-                + (newMyContext.mContext == null ? "" : " context: " + newMyContext.mContext.getClass().getName()));
-        return newMyContext;
+        MyContextImpl myContext = newNotInitialized(context, initializerName);
+        MyLog.v(this, "newCreator by " + myContext.mInitializedBy
+                + (myContext.mContext == null ? "" : " context: " + myContext.mContext.getClass().getName()));
+        return myContext;
     }
 
-    private MyContextImpl getCreator(Context context, String initializerName) {
-        MyContextImpl newMyContext = getEmpty();
+    private MyContextImpl newNotInitialized(Context context, String initializerName) {
+        MyContextImpl newMyContext = newEmpty();
         newMyContext.mInitializedBy = initializerName;
         if (context != null) {
             Context contextToUse = context.getApplicationContext();
@@ -155,7 +155,7 @@ public final class MyContextImpl implements MyContext {
         return newMyContext;
     }
     
-    public static MyContextImpl getEmpty() {
+    public static MyContextImpl newEmpty() {
         MyContextImpl myContext = new MyContextImpl();
         myContext.mPersistentAccounts = PersistentAccounts.getEmpty();
         myContext.mPersistentOrigins = PersistentOrigins.getEmpty();

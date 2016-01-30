@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               xmlns:tools="http://schemas.android.com/tools"
-              android:id="@+id/navigation_drawer"
+    tools:context=".msg.TimelineActivity"
+    tools:theme="@style/Theme.AndStatus.FullyDefined"
+    android:id="@+id/navigation_drawer"
     android:layout_width="240dp"
     android:layout_height="match_parent"
     android:layout_gravity="start"
     android:background="?android:attr/colorBackground"
     android:choiceMode="singleChoice"
-    android:orientation="vertical"
-    tools:context=".msg.TimelineActivity"
-    tools:theme="@style/Theme.AndStatus.FullyDefined" >
+    android:orientation="vertical" >
 
     <TextView
         android:id="@+id/goToTheTopButton"

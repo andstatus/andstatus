@@ -18,6 +18,7 @@ package org.andstatus.app.context;
 
 import android.app.Activity;
 import android.content.Context;
+import android.support.annotation.NonNull;
 
 import net.jcip.annotations.GuardedBy;
 import net.jcip.annotations.ThreadSafe;
@@ -39,7 +40,7 @@ public final class MyContextHolder {
 
     private static final Object CONTEXT_LOCK = new Object();
     @GuardedBy("CONTEXT_LOCK")
-    private static volatile MyContext myContextCreator = MyContextImpl.getEmpty();
+    private static volatile MyContext myContextCreator = MyContextImpl.newEmpty();
     @GuardedBy("CONTEXT_LOCK")
     private static volatile MyContext myInitializedContext = null;
     @GuardedBy("CONTEXT_LOCK")
@@ -51,6 +52,7 @@ public final class MyContextHolder {
     /**
      * Immediately get currently available context, even if it's empty
      */
+    @NonNull
     public static MyContext get() {
         MyContext myContext = myInitializedContext;
         if (myContext == null) {
@@ -225,7 +227,7 @@ public final class MyContextHolder {
         String initializerName = MyLog.objTagToString(initializedBy) ;
         if (myContextCreator.context() == null) {
             if (context == null) {
-                throw new IllegalStateException("MyContextHolder: context is unknown yet, called by " + initializerName);
+                throw new IllegalStateException(TAG + ": context is unknown yet, called by " + initializerName);
             }
             synchronized (CONTEXT_LOCK) {
                 // This allows to refer to the context 
@@ -233,7 +235,7 @@ public final class MyContextHolder {
                 myContextCreator = myContextCreator.newCreator(context, initializerName); 
             }
             if (myContextCreator.context() == null) {
-                throw new IllegalStateException("MyContextHolder: no compatible context, called by " + initializerName);
+                throw new IllegalStateException(TAG + ": no compatible context, called by " + initializerName);
             }
         }
     }

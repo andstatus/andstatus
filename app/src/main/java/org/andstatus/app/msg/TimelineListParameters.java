@@ -387,8 +387,6 @@ public class TimelineListParameters {
         }
         if (getTimelineType() == TimelineType.USER
                 && !(isTimelineCombined()
-                && MyContextHolder.get() != null
-                && MyContextHolder.get().persistentAccounts() != null
                 && MyContextHolder.get().persistentAccounts()
                 .fromUserId(getSelectedUserId()).isValid())) {
             I18n.appendWithSpace(title, selectedUserWebFingerId);

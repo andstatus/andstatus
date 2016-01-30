@@ -18,6 +18,7 @@ package org.andstatus.app.context;
 
 import android.app.Notification;
 import android.content.Context;
+import android.support.annotation.NonNull;
 
 import org.andstatus.app.account.PersistentAccounts;
 import org.andstatus.app.data.AssertionData;
@@ -40,6 +41,7 @@ public interface MyContext {
     String initializedBy();
     long preferencesChangeTime();
     MyDatabase getDatabase();
+    @NonNull
     PersistentAccounts persistentAccounts();
     PersistentOrigins persistentOrigins();
     void put(AssertionData data);
