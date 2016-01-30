@@ -22,7 +22,9 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import org.andstatus.app.R;
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.context.MyTheme;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyUrlSpan;
 import org.andstatus.app.widget.MyBaseAdapter;
@@ -35,6 +37,8 @@ public class TimelineAdapter extends MyBaseAdapter implements View.OnClickListen
     private final int listItemLayoutId;
     private final TimelinePages pages;
     private final boolean showAvatars = MyPreferences.showAvatars();
+    private final boolean markReplies = MyPreferences.getBoolean(
+            MyPreferences.KEY_MARK_REPLIES_IN_TIMELINE, false);
 
     public TimelineAdapter(MessageContextMenu contextMenu, int listItemLayoutId,
                            TimelineAdapter oldAdapter, TimelinePage loadedPage) {
@@ -82,6 +86,9 @@ public class TimelineAdapter extends MyBaseAdapter implements View.OnClickListen
         }
         showAttachedImage(item, view);
         showFavorited(item, view);
+        if (markReplies) {
+            showMarkReplies(item, view);
+        }
         return view;
     }
 
@@ -107,6 +114,20 @@ public class TimelineAdapter extends MyBaseAdapter implements View.OnClickListen
     private void showFavorited(TimelineViewItem item, View view) {
         View favorited = view.findViewById(R.id.message_favorited);
         favorited.setVisibility(item.favorited ? View.VISIBLE : View.GONE );
+    }
+
+    private void showMarkReplies(TimelineViewItem item, View view) {
+        if (item.inReplyToUserId != 0 && MyContextHolder.get().persistentAccounts().
+                fromUserId(item.inReplyToUserId).isValid()) {
+            // For some reason, referring to the style drawable doesn't work
+            // (to "?attr:replyBackground" )
+            view.setBackgroundResource(MyTheme.isThemeLight()
+                    ? R.drawable.reply_timeline_background_light
+                    : R.drawable.reply_timeline_background);
+        } else {
+            view.setBackgroundResource(0);
+            view.setPadding(0, 0, 0, 0);
+        }
     }
 
     @Override
