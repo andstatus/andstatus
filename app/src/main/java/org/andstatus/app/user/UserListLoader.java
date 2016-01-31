@@ -16,7 +16,6 @@ import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.UserListSql;
-import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.MyServiceManager;
@@ -26,13 +25,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class UserListLoader implements SyncLoader {
-    private final UserListType mUserListType;
-    private final MyAccount ma;
-    private final long mSelectedMessageId;
-    private final Origin mOriginOfSelectedMessage;
-    private final boolean mIsListCombined;
-    final String messageBody;
-    private boolean mAllowLoadingFromInternet = false;
+    protected final UserListType mUserListType;
+    protected final MyAccount ma;
+    protected final boolean mIsListCombined;
+    protected boolean mAllowLoadingFromInternet = false;
+    protected final long mCentralItemId;
 
     public List<UserListViewItem> getList() {
         return mItems;
@@ -41,14 +38,11 @@ public class UserListLoader implements SyncLoader {
     private final List<UserListViewItem> mItems = new ArrayList<>();
     private LoadableListActivity.ProgressPublisher mProgress;
 
-    public UserListLoader(UserListType userListType, MyAccount ma, long selectedMessageId, boolean isListCombined) {
+    public UserListLoader(UserListType userListType, MyAccount ma, long centralItemId, boolean isListCombined) {
         mUserListType = userListType;
         this.ma = ma;
-        mSelectedMessageId = selectedMessageId;
-        messageBody = MyQuery.msgIdToStringColumnValue(MyDatabase.Msg.BODY, mSelectedMessageId);
-        mOriginOfSelectedMessage = MyContextHolder.get().persistentOrigins().fromId(
-                MyQuery.msgIdToOriginId(mSelectedMessageId));
         mIsListCombined = isListCombined;
+        mCentralItemId = centralItemId;
     }
 
     @Override
@@ -57,58 +51,33 @@ public class UserListLoader implements SyncLoader {
     }
 
     @Override
-    public void load(ProgressPublisher publisher) {
+    public final void load(ProgressPublisher publisher) {
         mProgress = publisher;
 
-        switch (mUserListType) {
-            case USERS_OF_MESSAGE:
-                addFromMessageRow();
-                break;
-            default:
-                addUserToList(UserListViewItem.getEmpty("Unknown list type: " + mUserListType));
-                break;
-        }
+        loadInternal();
+
         MyLog.v(this, "Loaded " + size() + " items");
         if (mItems.isEmpty()) {
-            addUserToList(UserListViewItem.getEmpty("..."));
+            addEmptyItem("...");
         }
-        populateFields();
+        populateItems();
     }
 
-    private void addFromMessageRow() {
-        MbUser author = addUserIdToList(mOriginOfSelectedMessage,
-                MyQuery.msgIdToLongColumnValue(MyDatabase.Msg.AUTHOR_ID, mSelectedMessageId)).mbUser;
-        addUserIdToList(mOriginOfSelectedMessage,
-                MyQuery.msgIdToLongColumnValue(MyDatabase.Msg.SENDER_ID, mSelectedMessageId));
-        addUserIdToList(mOriginOfSelectedMessage,
-                MyQuery.msgIdToLongColumnValue(MyDatabase.Msg.IN_REPLY_TO_USER_ID, mSelectedMessageId));
-        addUserIdToList(mOriginOfSelectedMessage,
-                MyQuery.msgIdToLongColumnValue(MyDatabase.Msg.RECIPIENT_ID, mSelectedMessageId));
-        addUsersFromMessageBody(author);
-        addRebloggers();
+    protected void loadInternal() {
+        addEmptyItem("Not implemented " + toString());
     }
 
-    private UserListViewItem addUserIdToList(Origin origin, long userId) {
+    protected void addEmptyItem(String description) {
+        getList().add(UserListViewItem.getEmpty(description));
+    }
+
+    protected UserListViewItem addUserIdToList(Origin origin, long userId) {
         UserListViewItem viewItem = UserListViewItem.fromUserId(origin, userId);
         addUserToList(viewItem);
         return viewItem;
     }
 
-    private void addUsersFromMessageBody(MbUser author) {
-        List<MbUser> users = author.fromBodyText( 
-            MyQuery.msgIdToStringColumnValue(MyDatabase.Msg.BODY, mSelectedMessageId), false);
-        for (MbUser mbUser: users) {
-            addUserToList(UserListViewItem.fromMbUser(mbUser));
-        }
-    }
-
-    private void addRebloggers() {
-        for (long rebloggerId : MyQuery.getRebloggers(mSelectedMessageId)) {
-            addUserIdToList(mOriginOfSelectedMessage, rebloggerId);
-        }
-    }
-
-    private void addUserToList(UserListViewItem oUser) {
+    protected void addUserToList(UserListViewItem oUser) {
         if (!oUser.isEmpty() && !mItems.contains(oUser)) {
             mItems.add(oUser);
             if (oUser.mbUser.userId == 0 && mAllowLoadingFromInternet) {
@@ -126,8 +95,8 @@ public class UserListLoader implements SyncLoader {
                 oUser.getUserId(), oUser.mbUser.getUserName()));
     }
 
-    private void populateFields() {
-        Uri mContentUri = MatchedUri.getUserListUri(ma.getUserId(), mUserListType, mIsListCombined, mSelectedMessageId);
+    protected void populateItems() {
+        Uri mContentUri = MatchedUri.getUserListUri(ma.getUserId(), mUserListType, mIsListCombined, mCentralItemId);
         Cursor c = null;
         try {
             c = MyContextHolder.get().context().getContentResolver()
@@ -143,10 +112,12 @@ public class UserListLoader implements SyncLoader {
     }
 
     private void populateItem(Cursor c) {
-        long userId = c.getLong(c.getColumnIndex(BaseColumns._ID));
+        long userId = DbUtils.getLongColumn(c, BaseColumns._ID);
         UserListViewItem item = getById(userId);
         if (item == null) {
-            return;
+            Origin origin = MyContextHolder.get().persistentOrigins().fromId(
+                    DbUtils.getLongColumn(c, MyDatabase.User.ORIGIN_ID));
+            item = addUserIdToList(origin, userId);
         }
         item.populated = true;
         item.mbUser.setUserName(DbUtils.getNotNullStringColumn(c, MyDatabase.User.USERNAME));
@@ -171,7 +142,7 @@ public class UserListLoader implements SyncLoader {
         return null;
     }
 
-    private String getSqlUserIds() {
+    protected String getSqlUserIds() {
         StringBuilder sb = new StringBuilder();
         int size = 0;
         for (UserListViewItem item : mItems) {
@@ -195,4 +166,16 @@ public class UserListLoader implements SyncLoader {
     public int size() {
         return mItems.size();
     }
+
+    protected String getTitle() {
+        return mUserListType.toString();
+    }
+
+    @Override
+    public String toString() {
+        return mUserListType.toString()
+                + "; central=" + mCentralItemId
+                + "; " + super.toString();
+    }
+
 }

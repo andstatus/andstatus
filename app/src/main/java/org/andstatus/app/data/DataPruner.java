@@ -82,7 +82,7 @@ public class DataPruner {
                 + " FROM " + User.TABLE_NAME + " AS userf"
                 + " INNER JOIN " + FollowingUser.TABLE_NAME 
                 + " ON" 
-                + " userf." + User._ID + "=" + FollowingUser.TABLE_NAME + "." + FollowingUser.FOLLOWING_USER_ID
+                + " userf." + User._ID + "=" + FollowingUser.TABLE_NAME + "." + FollowingUser.FOLLOWED_USER_ID
                 + " AND " + FollowingUser.TABLE_NAME + "." + FollowingUser.USER_FOLLOWED + "=1"
                 + ")";
 

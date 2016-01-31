@@ -371,9 +371,9 @@ public final class MyDatabase extends SQLiteOpenHelper  {
         /**
          * Friend by {@link #USER_ID} (is followed by {@link #USER_ID})
          */
-        public static final String FOLLOWING_USER_ID = "following_user_id";
+        public static final String FOLLOWED_USER_ID = "following_user_id";
         /**
-         * two state (1/0) flag showing if {@link FollowingUser#USER_ID} is following {@link FollowingUser#FOLLOWING_USER_ID}
+         * two state (1/0) flag showing if {@link FollowingUser#USER_ID} is following {@link FollowingUser#FOLLOWED_USER_ID}
          */
         public static final String USER_FOLLOWED = "user_followed";
         
@@ -596,9 +596,9 @@ public final class MyDatabase extends SQLiteOpenHelper  {
 
         execSQL(db, "CREATE TABLE " + FollowingUser.TABLE_NAME + " (" 
                 + FollowingUser.USER_ID + " INTEGER NOT NULL," 
-                + FollowingUser.FOLLOWING_USER_ID + " INTEGER NOT NULL," 
+                + FollowingUser.FOLLOWED_USER_ID + " INTEGER NOT NULL,"
                 + FollowingUser.USER_FOLLOWED + " BOOLEAN DEFAULT 1 NOT NULL," 
-                + " CONSTRAINT pk_followinguser PRIMARY KEY (" + FollowingUser.USER_ID + " ASC, " + FollowingUser.FOLLOWING_USER_ID + " ASC)"
+                + " CONSTRAINT pk_followinguser PRIMARY KEY (" + FollowingUser.USER_ID + " ASC, " + FollowingUser.FOLLOWED_USER_ID + " ASC)"
                 + ")");
 
         execSQL(db, "CREATE TABLE " + Download.TABLE_NAME + " (" 

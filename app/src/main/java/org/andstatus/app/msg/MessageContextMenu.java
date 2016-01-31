@@ -119,10 +119,35 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
             if (msg.status.mayBeSent()) {
                 ContextMenuItem.RESEND.addTo(menu, order++, R.string.menu_item_resend);
             }
+
             if (isEditorVisible()) {
                 ContextMenuItem.COPY_TEXT.addTo(menu, order++, R.string.menu_item_copy_text);
                 ContextMenuItem.COPY_AUTHOR.addTo(menu, order++, R.string.menu_item_copy_author);
             }
+
+            ContextMenuItem.USERS_OF_MESSAGE.addTo(menu, order++, R.string.users_of_message);
+            if (messageList.getSelectedUserId() != msg.senderId) {
+                /*
+                 * Messages by the Sender of this message ("User timeline" of
+                 * that user)
+                 */
+                ContextMenuItem.SENDER_MESSAGES.addTo(menu, order++,
+                        String.format(
+                                getContext().getText(R.string.menu_item_user_messages).toString(),
+                                MyQuery.userIdToWebfingerId(msg.senderId)));
+            }
+
+            if (messageList.getSelectedUserId() != msg.authorId && msg.senderId != msg.authorId) {
+                /*
+                 * Messages by the Author of this message ("User timeline" of
+                 * that user)
+                 */
+                ContextMenuItem.AUTHOR_MESSAGES.addTo(menu, order++,
+                        String.format(
+                                getContext().getText(R.string.menu_item_user_messages).toString(),
+                                MyQuery.userIdToWebfingerId(msg.authorId)));
+            }
+
             if (msg.isLoaded() && !msg.isDirect() && !isEditorVisible()) {
                 ContextMenuItem.REPLY.addTo(menu, order++, R.string.menu_item_reply);
                 ContextMenuItem.REPLY_ALL.addTo(menu, order++, R.string.menu_item_reply_all);
@@ -157,29 +182,6 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
                                 msg.myAccount().alternativeTermForResourceId(R.string.menu_item_reblog));
                     }
                 }
-            }
-
-            ContextMenuItem.USERS_OF_MESSAGE.addTo(menu, order++, R.string.users_of_message);
-            if (messageList.getSelectedUserId() != msg.senderId) {
-                /*
-                 * Messages by the Sender of this message ("User timeline" of
-                 * that user)
-                 */
-                ContextMenuItem.SENDER_MESSAGES.addTo(menu, order++,
-                        String.format(
-                                getContext().getText(R.string.menu_item_user_messages).toString(),
-                                MyQuery.userIdToWebfingerId(msg.senderId)));
-            }
-
-            if (messageList.getSelectedUserId() != msg.authorId && msg.senderId != msg.authorId) {
-                /*
-                 * Messages by the Author of this message ("User timeline" of
-                 * that user)
-                 */
-                ContextMenuItem.AUTHOR_MESSAGES.addTo(menu, order++,
-                        String.format(
-                                getContext().getText(R.string.menu_item_user_messages).toString(),
-                                MyQuery.userIdToWebfingerId(msg.authorId)));
             }
 
             if (msg.isLoaded()) {

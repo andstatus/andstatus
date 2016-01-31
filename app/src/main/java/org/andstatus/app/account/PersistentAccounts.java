@@ -469,7 +469,7 @@ public class PersistentAccounts {
 
     private void initializeMyFriends() {
         Set<Long> friends = new HashSet<>();
-        String sql = "SELECT DISTINCT " + MyDatabase.FollowingUser.FOLLOWING_USER_ID + " FROM " + MyDatabase.FollowingUser.TABLE_NAME
+        String sql = "SELECT DISTINCT " + MyDatabase.FollowingUser.FOLLOWED_USER_ID + " FROM " + MyDatabase.FollowingUser.TABLE_NAME
                 + " WHERE " + MyDatabase.FollowingUser.USER_FOLLOWED + "=1";
         SQLiteDatabase db = MyContextHolder.get().getDatabase().getWritableDatabase();
         Cursor cursor = null;

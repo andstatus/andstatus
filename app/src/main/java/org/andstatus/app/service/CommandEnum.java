@@ -62,6 +62,7 @@ public enum CommandEnum {
     GET_USER("get-user", R.string.get_user, -5, ConnectionRequired.ONLINE),
     FOLLOW_USER("follow-user", R.string.command_follow_user, 0, ConnectionRequired.ONLINE),
     STOP_FOLLOWING_USER("stop-following-user", R.string.command_stop_following_user, 0, ConnectionRequired.ONLINE),
+    GET_FOLLOWERS("get-followers", R.string.get_followers, -5, ConnectionRequired.ONLINE),
 
     /**
      * This command is for sending both public and direct messages

@@ -77,7 +77,7 @@ public enum MatchedUri {
     private static final String CONTENT_SEGMENT = "content";
     private static final String CONTENT_ITEM_SEGMENT = "item";
     private static final String USER_SEGMENT = "user";
-    private static final String MSG_SEGMENT = "msg";
+    private static final String CENTRAL_ITEM_SEGMENT = "cnt";
 
     private static final String CONTENT_URI_PREFIX = "content://" + AUTHORITY + "/";
     public static final Uri MSG_CONTENT_URI = Uri.parse(CONTENT_URI_PREFIX + Msg.TABLE_NAME + "/" + CONTENT_SEGMENT);
@@ -119,7 +119,7 @@ public enum MatchedUri {
         URI_MATCHER.addURI(AUTHORITY, Origin.TABLE_NAME + "/#/" + CONTENT_ITEM_SEGMENT + "/#", ORIGIN_ITEM.code);
         URI_MATCHER.addURI(AUTHORITY, Origin.TABLE_NAME + "/" + CONTENT_SEGMENT, ORIGIN.code);
         
-        URI_MATCHER.addURI(AUTHORITY, User.TABLE_NAME + "/#/" + LISTTYPE_SEGMENT + "/*/" + COMBINED_SEGMENT + "/#/" + MSG_SEGMENT + "/#", USERLIST.code);
+        URI_MATCHER.addURI(AUTHORITY, User.TABLE_NAME + "/#/" + LISTTYPE_SEGMENT + "/*/" + COMBINED_SEGMENT + "/#/" + CENTRAL_ITEM_SEGMENT + "/#", USERLIST.code);
         URI_MATCHER.addURI(AUTHORITY, User.TABLE_NAME + "/#/" + CONTENT_ITEM_SEGMENT + "/#", USER_ITEM.code);
         URI_MATCHER.addURI(AUTHORITY, User.TABLE_NAME + "/#/" + CONTENT_SEGMENT, USER.code);
     }
@@ -203,12 +203,12 @@ public enum MatchedUri {
      * Build a UseList Uri for this User / {@link MyAccount}
      * @param accountUserId {@link MyDatabase.User#USER_ID}. This user <i>may</i> be an account: {@link MyAccount#getUserId()}
      */
-    public static Uri getUserListUri(long accountUserId, UserListType userListType, boolean isListCombined, long selectedMsgId) {
+    public static Uri getUserListUri(long accountUserId, UserListType userListType, boolean isListCombined, long centralItemId) {
         Uri uri = getBaseAccountUri(accountUserId, User.TABLE_NAME);
         uri = Uri.withAppendedPath(uri, LISTTYPE_SEGMENT + "/" + userListType.save());
         uri = Uri.withAppendedPath(uri, COMBINED_SEGMENT + "/" + (isListCombined ? "1" : "0"));
-        uri = Uri.withAppendedPath(uri,  MSG_SEGMENT);
-        uri = ContentUris.withAppendedId(uri, selectedMsgId);
+        uri = Uri.withAppendedPath(uri, CENTRAL_ITEM_SEGMENT);
+        uri = ContentUris.withAppendedId(uri, centralItemId);
         return uri;
     }
 

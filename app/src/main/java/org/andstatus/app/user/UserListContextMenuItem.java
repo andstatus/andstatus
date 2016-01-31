@@ -17,10 +17,12 @@
 package org.andstatus.app.user;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.view.Menu;
 
 import org.andstatus.app.ActivityRequestCode;
+import org.andstatus.app.MyAction;
 import org.andstatus.app.account.AccountSelector;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
@@ -87,6 +89,18 @@ public enum UserListContextMenuItem {
         @Override
         void executeOnUiThread(UserListContextMenu menu, MyAccount ma) {
             AccountSelector.selectAccount(menu.getActivity(), ma.getOriginId(), ActivityRequestCode.SELECT_ACCOUNT_TO_ACT_AS);
+        }
+    },
+    FOLLOWERS() {
+        @Override
+        void executeOnUiThread(UserListContextMenu menu, MyAccount ma) {
+            Uri uri = MatchedUri.getUserListUri(ma.getUserId(),
+                    UserListType.FOLLOWERS, false,
+                    menu.getViewItem().getUserId());
+            if (MyLog.isVerboseEnabled()) {
+                MyLog.d(this, "onItemClick, startActivity=" + uri);
+            }
+            menu.getActivity().startActivity(MyAction.VIEW_USERS.getIntent(uri));
         }
     },
     NONEXISTENT(),

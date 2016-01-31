@@ -33,7 +33,6 @@ import org.andstatus.app.widget.MyBaseAdapter;
  */
 public class UserList extends LoadableListActivity {
     private UserListType mUserListType = UserListType.UNKNOWN;
-    private long mSelectedMessageId = 0;
     private boolean mIsListCombined = false;
     private UserListContextMenu contextMenu = null;
 
@@ -43,7 +42,6 @@ public class UserList extends LoadableListActivity {
         super.onCreate(savedInstanceState);
 
         mUserListType = getParsedUri().getUserListType();
-        mSelectedMessageId = getParsedUri().getMessageId();
         mIsListCombined = getParsedUri().isCombined();
         contextMenu = new UserListContextMenu(this);
 
@@ -52,7 +50,14 @@ public class UserList extends LoadableListActivity {
 
     @Override
     protected SyncLoader newSyncLoader(Bundle args) {
-        return new UserListLoader(mUserListType, getMa(), mSelectedMessageId, mIsListCombined);
+        switch (mUserListType) {
+            case USERS_OF_MESSAGE:
+                return new UsersOfMessageListLoader(mUserListType, getMa(), getParsedUri().getItemId(), mIsListCombined);
+            case FOLLOWERS:
+                return new FollowersListLoader(mUserListType, getMa(), getParsedUri().getItemId(), mIsListCombined);
+            default:
+                return new UserListLoader(mUserListType, getMa(), getParsedUri().getItemId(), mIsListCombined);
+        }
     }
 
     @Override
@@ -75,7 +80,7 @@ public class UserList extends LoadableListActivity {
 
     @Override
     protected CharSequence getCustomTitle() {
-        mSubtitle = I18n.trimTextAt(MyHtml.fromHtml(getListLoader().messageBody), 80);
+        mSubtitle = I18n.trimTextAt(MyHtml.fromHtml(getListLoader().getTitle()), 80);
         return mUserListType.getTitle(this);
     }
 

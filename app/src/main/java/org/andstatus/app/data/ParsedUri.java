@@ -78,6 +78,11 @@ public class ParsedUri {
                 case USER_ITEM:
                     userId = Long.parseLong(uri.getPathSegments().get(3));
                     break;
+                case USERLIST:
+                    if (getUserListType() == UserListType.FOLLOWERS) {
+                        userId = getItemId();
+                    }
+                    break;
                 default:
                     break;
             }
@@ -165,7 +170,9 @@ public class ParsedUri {
                     messageId = Long.parseLong(uri.getPathSegments().get(3));
                     break;
                 case USERLIST:
-                    messageId = Long.parseLong(uri.getPathSegments().get(7));
+                    if (getUserListType() == UserListType.USERS_OF_MESSAGE) {
+                        messageId = getItemId();
+                    }
                     break;
                 default:
                     break;
@@ -197,15 +204,15 @@ public class ParsedUri {
 
     public long getItemId() {
         switch (getUserListType()) {
-            case USERS_OF_MESSAGE:
-                return getMessageId();
-            default:
+            case UNKNOWN:
                 switch (getTimelineType()) {
                     case UNKNOWN:
                         return 0;
                     default:
                         return getMessageId();
                 }
+            default:
+                return Long.parseLong(uri.getPathSegments().get(7));
         }
     }
 }

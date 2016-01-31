@@ -86,6 +86,7 @@ public abstract class Connection {
         GET_FRIENDS, 
         /** List of Users' IDs */
         GET_FRIENDS_IDS,
+        GET_FOLLOWERS,
         GET_OPEN_INSTANCES,
         GET_USER,
         POST_MESSAGE,
@@ -273,7 +274,11 @@ public abstract class Connection {
     public List<String> getIdsOfUsersFollowedBy(String userId) throws ConnectionException {
         throw ConnectionException.fromStatusCode(StatusCode.UNSUPPORTED_API, "getIdsOfUsersFollowedBy for userOid=" + userId);
     }
-    
+
+    public List<String> getIdsOfUsersFollowing(String userId) throws ConnectionException {
+        throw ConnectionException.fromStatusCode(StatusCode.UNSUPPORTED_API, "getIdsOfUsersFollowing userOid=" + userId);
+    }
+
     /**
      * Returns a single status, specified by the id parameter below.
      * The status's author will be returned inline.

@@ -88,7 +88,7 @@ public class FollowingUserValues {
     private void tryToUpdate(SQLiteDatabase db, boolean followed) {
         // TODO: create universal dExists method...
         String where = MyDatabase.FollowingUser.USER_ID + "=" + userId
-                + " AND " + MyDatabase.FollowingUser.FOLLOWING_USER_ID + "=" + followingUserId;
+                + " AND " + MyDatabase.FollowingUser.FOLLOWED_USER_ID + "=" + followingUserId;
         String sql = "SELECT * FROM " + FollowingUser.TABLE_NAME + " WHERE " + where;
 
         Cursor cursor = null;
@@ -108,7 +108,7 @@ public class FollowingUserValues {
             ContentValues cv = new ContentValues(contentValues);
             // Add Key fields
             cv.put(FollowingUser.USER_ID, userId);
-            cv.put(FollowingUser.FOLLOWING_USER_ID, followingUserId);
+            cv.put(FollowingUser.FOLLOWED_USER_ID, followingUserId);
             
             db.insert(FollowingUser.TABLE_NAME, null, cv);
         }

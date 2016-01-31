@@ -507,7 +507,7 @@ public class MyQuery {
     public static Set<Long> getIdsOfUsersFollowedBy(long userId) {
         String where = MyDatabase.FollowingUser.USER_ID + "=" + userId
                 + " AND " + MyDatabase.FollowingUser.USER_FOLLOWED + "=1";
-        String sql = "SELECT " + MyDatabase.FollowingUser.FOLLOWING_USER_ID 
+        String sql = "SELECT " + MyDatabase.FollowingUser.FOLLOWED_USER_ID
                 + " FROM " + FollowingUser.TABLE_NAME 
                 + " WHERE " + where;
 
@@ -539,7 +539,7 @@ public class MyQuery {
                 MyContextHolder.get().persistentAccounts().getCurrentAccountUserId());
 
         String where = MyDatabase.FollowingUser.USER_ID + selectedAccounts.getSql()
-                + " AND " + MyDatabase.FollowingUser.FOLLOWING_USER_ID + "=" + userId
+                + " AND " + MyDatabase.FollowingUser.FOLLOWED_USER_ID + "=" + userId
                 + " AND " + MyDatabase.FollowingUser.USER_FOLLOWED + "=1";
         String sql = "SELECT " + FollowingUser.USER_ID
                 + " FROM " + FollowingUser.TABLE_NAME

@@ -66,7 +66,7 @@ public class TimelineSql {
         String authorTableName = "";
         switch (tt) {
             case FOLLOWING_USER:
-                msgTable = "(SELECT " + FollowingUser.FOLLOWING_USER_ID + ", "
+                msgTable = "(SELECT " + FollowingUser.FOLLOWED_USER_ID + ", "
                         + FollowingUser.USER_ID + " AS " + User.LINKED_USER_ID
                         + " FROM " + FollowingUser.TABLE_NAME
                         + " WHERE (" + MyDatabase.User.LINKED_USER_ID + selectedAccounts.getSql()
@@ -84,7 +84,7 @@ public class TimelineSql {
                         + ", " + MyDatabase.User.USER_MSG_ID
                         + " FROM " + User.TABLE_NAME + ")";
                 msgTable += " INNER JOIN " + userTable + " as u1"
-                        + " ON (" + FollowingUser.FOLLOWING_USER_ID + "=u1." + BaseColumns._ID + ")";
+                        + " ON (" + FollowingUser.FOLLOWED_USER_ID + "=u1." + BaseColumns._ID + ")";
                 /**
                  * Select only the latest message from each following User's
                  * timeline
@@ -92,7 +92,7 @@ public class TimelineSql {
                 msgTable  += " LEFT JOIN " + Msg.TABLE_NAME + " AS " + ProjectionMap.MSG_TABLE_ALIAS
                         + " ON ("
                         + ProjectionMap.MSG_TABLE_ALIAS + "." + MyDatabase.Msg.SENDER_ID
-                        + "=fUser." + MyDatabase.FollowingUser.FOLLOWING_USER_ID
+                        + "=fUser." + MyDatabase.FollowingUser.FOLLOWED_USER_ID
                         + " AND " + ProjectionMap.MSG_TABLE_ALIAS + "." + BaseColumns._ID
                         + "=u1." + MyDatabase.User.USER_MSG_ID
                         + ")";
@@ -221,27 +221,27 @@ public class TimelineSql {
         if (columns.contains(MyDatabase.FollowingUser.AUTHOR_FOLLOWED)) {
             tables = "(" + tables + ") LEFT OUTER JOIN (SELECT "
                     + MyDatabase.FollowingUser.USER_ID + ", "
-                    + MyDatabase.FollowingUser.FOLLOWING_USER_ID + ", "
+                    + MyDatabase.FollowingUser.FOLLOWED_USER_ID + ", "
                     + MyDatabase.FollowingUser.USER_FOLLOWED + " AS "
                     + MyDatabase.FollowingUser.AUTHOR_FOLLOWED
                     + " FROM " + FollowingUser.TABLE_NAME + ") AS followingAuthor ON ("
                     + "followingAuthor." + MyDatabase.FollowingUser.USER_ID + "=" + MyDatabase.User.LINKED_USER_ID
                     + " AND "
                     + ProjectionMap.MSG_TABLE_ALIAS + "." + MyDatabase.Msg.AUTHOR_ID
-                    + "=followingAuthor." + MyDatabase.FollowingUser.FOLLOWING_USER_ID
+                    + "=followingAuthor." + MyDatabase.FollowingUser.FOLLOWED_USER_ID
                     + ")";
         }
         if (columns.contains(MyDatabase.FollowingUser.SENDER_FOLLOWED)) {
             tables = "(" + tables + ") LEFT OUTER JOIN (SELECT "
                     + MyDatabase.FollowingUser.USER_ID + ", "
-                    + MyDatabase.FollowingUser.FOLLOWING_USER_ID + ", "
+                    + MyDatabase.FollowingUser.FOLLOWED_USER_ID + ", "
                     + MyDatabase.FollowingUser.USER_FOLLOWED + " AS "
                     + MyDatabase.FollowingUser.SENDER_FOLLOWED
                     + " FROM " + FollowingUser.TABLE_NAME + ") AS followingSender ON ("
                     + "followingSender." + MyDatabase.FollowingUser.USER_ID + "=" + MyDatabase.User.LINKED_USER_ID
                     + " AND "
                     + ProjectionMap.MSG_TABLE_ALIAS + "." + MyDatabase.Msg.SENDER_ID
-                    + "=followingSender." + MyDatabase.FollowingUser.FOLLOWING_USER_ID
+                    + "=followingSender." + MyDatabase.FollowingUser.FOLLOWED_USER_ID
                     + ")";
         }
         return tables;

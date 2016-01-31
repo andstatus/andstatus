@@ -159,6 +159,9 @@
   <string name="filters_title">Filters</string>
   <string name="filters_summary">Global filters to be applied to all messages</string>
   <string name="followed_by">Followed by</string>
+  <string name="followers">Followers</string>
+  <string name="followers_of">Followers of \"%1s\"</string>
+  <string name="get_followers">Get followers</string>
   <string name="get_open_instances_title">Get Open Instances</string>
   <string name="get_user">Get User information</string>
   <string name="go_to_the_top_title">Go to the Top</string>

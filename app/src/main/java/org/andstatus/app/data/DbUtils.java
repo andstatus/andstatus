@@ -21,6 +21,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteStatement;
 import android.provider.BaseColumns;
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import org.andstatus.app.context.MyContextHolder;
@@ -145,6 +146,7 @@ public final class DbUtils {
         }
     }
 
+    @NonNull
     public static String getNotNullStringColumn(Cursor cursor, String columnName) {
         String value = "";
         int columnIndex = cursor.getColumnIndex(columnName);
@@ -152,6 +154,19 @@ public final class DbUtils {
             String value2 = cursor.getString(columnIndex);
             if (!TextUtils.isEmpty(value2)) {
                 value = value2;
+            }
+        }
+        return value;
+    }
+
+    public static long getLongColumn(Cursor cursor, String columnName) {
+        long value = 0;
+        int columnIndex = cursor.getColumnIndex(columnName);
+        if (columnIndex >= 0) {
+            try {
+                value = cursor.getLong(columnIndex);
+            } catch (Exception e){
+                MyLog.d(TAG, "Getting column " + columnName, e);
             }
         }
         return value;

@@ -79,6 +79,10 @@ public class MbUser {
                 && TextUtils.isEmpty(webFingerId) && TextUtils.isEmpty(userName));
     }
 
+    public boolean isIdentified() {
+        return userId != 0 && isOidReal();
+    }
+
     public boolean isOidReal() {
         return isOidReal(oid);
     }

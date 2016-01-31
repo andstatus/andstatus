@@ -118,7 +118,7 @@ public class DataInserterTest extends InstrumentationTestCase {
                 false, 0);
         SelectionAndArgs sa = new SelectionAndArgs();
         String sortOrder = MyDatabase.Msg.DESC_SORT_ORDER;
-        sa.addSelection(MyDatabase.FollowingUser.FOLLOWING_USER_ID + " = ?",
+        sa.addSelection(MyDatabase.FollowingUser.FOLLOWED_USER_ID + " = ?",
                 new String[] {
                     Long.toString(somebodyId)
                 });
