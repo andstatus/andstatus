@@ -20,6 +20,7 @@ import org.andstatus.app.util.UriUtils;
 import java.util.List;
 
 public class DownloadData {
+    private static final String TAG = DownloadData.class.getSimpleName();
     public static final DownloadData EMPTY = new DownloadData();
 
     private DownloadType downloadType = DownloadType.UNKNOWN;
@@ -100,7 +101,12 @@ public class DownloadData {
                 + " FROM " + Download.TABLE_NAME 
                 + " WHERE " + getWhereClause();
         
-        SQLiteDatabase db = MyContextHolder.get().getDatabase().getWritableDatabase();
+        SQLiteDatabase db = MyContextHolder.get().getDatabase();
+        if (db == null) {
+            MyLog.v(this, "Database is null");
+            softError = true;
+            return;
+        }
         Cursor cursor = null;
         try {
             cursor = db.rawQuery(sql, null);
@@ -320,7 +326,11 @@ public class DownloadData {
         int rowsDeleted = 0;
         boolean done = false;
         for (int pass=0; !done && pass<3; pass++) {
-            SQLiteDatabase db = MyContextHolder.get().getDatabase().getWritableDatabase();
+            SQLiteDatabase db = MyContextHolder.get().getDatabase();
+            if (db == null) {
+                MyLog.v(TAG, "Database is null");
+                return;
+            }
             Cursor cursor = null;
             try {
                 cursor = db.rawQuery(sql, null);

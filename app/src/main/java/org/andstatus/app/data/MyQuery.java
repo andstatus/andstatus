@@ -129,7 +129,7 @@ public class MyQuery {
         return oidToId(null, oidEnum, originId, oid);
     }
 
-    static long oidToId(MyDatabase myDatabase, MyDatabase.OidEnum oidEnum, long originId, String oid) {
+    static long oidToId(SQLiteDatabase database, MyDatabase.OidEnum oidEnum, long originId, String oid) {
         if (TextUtils.isEmpty(oid)) {
             return 0;
         }
@@ -151,20 +151,19 @@ public class MyQuery {
             default:
                 throw new IllegalArgumentException(msgLog + "; Unknown oidEnum");
         }
-        return sqlToLong(myDatabase, msgLog, sql);
+        return sqlToLong(database, msgLog, sql);
     }
 
-    private static long sqlToLong(MyDatabase myDatabaseIn, String msgLog, String sql) {
-        MyDatabase myDatabase = myDatabaseIn == null ? MyContextHolder.get().getDatabase() : myDatabaseIn ;
-        if (myDatabase == null) {
-            MyLog.v(MyProvider.TAG, msgLog + "; MyDatabase is null");
+    private static long sqlToLong(SQLiteDatabase databaseIn, String msgLog, String sql) {
+        SQLiteDatabase db = databaseIn == null ? MyContextHolder.get().getDatabase() : databaseIn;
+        if (db == null) {
+            MyLog.v(MyProvider.TAG, msgLog + "; database is null");
             return 0;
         }
         String msgLogSql = msgLog + "; sql='" + sql +"'";
         long value = 0;
         SQLiteStatement statement = null;
         try {
-            SQLiteDatabase db = myDatabase.getReadableDatabase();
             statement = db.compileStatement(sql);
             value = statement.simpleQueryForLong();
             if ((value == 1 || value == 388)
@@ -218,12 +217,11 @@ public class MyQuery {
      *         {@link MyDatabase.Msg#MSG_OID} empty string in case of an error
      */
     public static String idToOid(OidEnum oe, long entityId, long rebloggerUserId) {
-        MyDatabase myDb = MyContextHolder.get().getDatabase();
-        if (myDb == null) {
-            MyLog.v(MyProvider.TAG, "idToOid: MyDatabase is null, oe=" + oe + " id=" + entityId);
+        SQLiteDatabase db = MyContextHolder.get().getDatabase();
+        if (db == null) {
+            MyLog.v(MyProvider.TAG, "idToOid: database is null, oe=" + oe + " id=" + entityId);
             return "";
         } else {
-            SQLiteDatabase db = myDb.getReadableDatabase();
             return idToOid(db, oe, entityId, rebloggerUserId);
         }
     }
@@ -295,6 +293,7 @@ public class MyQuery {
     }
 
     public static String msgIdToUsername(String userIdColumnName, long messageId, UserInTimeline userInTimeline) {
+        final String method = "msgIdToUsername";
         String userName = "";
         if (messageId != 0) {
             SQLiteStatement prog = null;
@@ -309,22 +308,26 @@ public class MyQuery {
                             + Msg.TABLE_NAME + "." + userIdColumnName + "=" + User.TABLE_NAME + "." + BaseColumns._ID
                             + " WHERE " + Msg.TABLE_NAME + "." + BaseColumns._ID + "=" + messageId;
                 } else {
-                    throw new IllegalArgumentException("msgIdToUsername; Unknown name \"" + userIdColumnName + "\"");
+                    throw new IllegalArgumentException( method + "; Unknown name \"" + userIdColumnName + "\"");
                 }
-                SQLiteDatabase db = MyContextHolder.get().getDatabase().getReadableDatabase();
+                SQLiteDatabase db = MyContextHolder.get().getDatabase();
+                if (db == null) {
+                    MyLog.v(TAG, method + "; Database is null");
+                    return "";
+                }
                 prog = db.compileStatement(sql);
                 userName = prog.simpleQueryForString();
             } catch (SQLiteDoneException e) {
                 MyLog.ignored(MyProvider.TAG, e);
                 userName = "";
             } catch (Exception e) {
-                MyLog.e(MyProvider.TAG, "msgIdToUsername", e);
+                MyLog.e(MyProvider.TAG, method, e);
                 userName = "";
             } finally {
                 DbUtils.closeSilently(prog);
             }
             if (MyLog.isVerboseEnabled()) {
-                MyLog.v(MyProvider.TAG, "msgIdTo" + userIdColumnName + ": " + messageId + " -> " + userName );
+                MyLog.v(MyProvider.TAG, method + "; " + userIdColumnName + ": " + messageId + " -> " + userName );
             }
         }
         return userName;
@@ -406,7 +409,11 @@ public class MyQuery {
                 sql = "SELECT t." + columnName
                         + " FROM " + tableName + " AS t"
                         + " WHERE t._id=" + systemId;
-                SQLiteDatabase db = MyContextHolder.get().getDatabase().getReadableDatabase();
+                SQLiteDatabase db = MyContextHolder.get().getDatabase();
+                if (db == null) {
+                    MyLog.v(TAG, method + "; Database is null");
+                    return "";
+                }
                 prog = db.compileStatement(sql);
                 columnValue = prog.simpleQueryForString();
             } catch (SQLiteDoneException e) {
@@ -475,7 +482,11 @@ public class MyQuery {
 
     private static long userColumnValueToId(long originId, String columnName, String columnValue) {
         final String method = "user" + columnName + "ToId";
-        SQLiteDatabase db = MyContextHolder.get().getDatabase().getReadableDatabase();
+        SQLiteDatabase db = MyContextHolder.get().getDatabase();
+        if (db == null) {
+            MyLog.v(TAG, method + "; Database is null");
+            return 0;
+        }
         long id = 0;
         SQLiteStatement prog = null;
         String sql = "";
@@ -517,7 +528,11 @@ public class MyQuery {
     @NonNull
     private static Set<Long> getLongs(String sql) {
         Set<Long> ids = new HashSet<>();
-        SQLiteDatabase db = MyContextHolder.get().getDatabase().getWritableDatabase();
+        SQLiteDatabase db = MyContextHolder.get().getDatabase();
+        if (db == null) {
+            MyLog.v(TAG, "getLongs; Database is null");
+            return ids;
+        }
         Cursor c = null;
         try {
             c = db.rawQuery(sql, null);
@@ -558,7 +573,11 @@ public class MyQuery {
                 + " WHERE " + MyDatabase.Msg.IN_REPLY_TO_MSG_ID + "=" + msgId
                 + " ORDER BY " + Msg.CREATED_DATE + " DESC";
         
-        SQLiteDatabase db = MyContextHolder.get().getDatabase().getWritableDatabase();
+        SQLiteDatabase db = MyContextHolder.get().getDatabase();
+        if (db == null) {
+            MyLog.v(TAG, "getReplyIds; Database is null");
+            return replies;
+        }
         Cursor c = null;
         try {
             c = db.rawQuery(sql, null);
@@ -578,7 +597,11 @@ public class MyQuery {
                 + " WHERE " + MsgOfUser.MSG_ID + "=" + msgId
                 + " AND " + MsgOfUser.REBLOGGED + "=1";
 
-        SQLiteDatabase db = MyContextHolder.get().getDatabase().getWritableDatabase();
+        SQLiteDatabase db = MyContextHolder.get().getDatabase();
+        if (db == null) {
+            MyLog.v(TAG, "getRebloggers; Database is null");
+            return rebloggers;
+        }
         Cursor c = null;
         try {
             c = db.rawQuery(sql, null);

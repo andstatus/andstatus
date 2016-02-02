@@ -19,6 +19,7 @@ package org.andstatus.app.context;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.content.Context;
+import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -50,11 +51,11 @@ import java.util.Locale;
 public final class MyContextImpl implements MyContext {
     private static final String TAG = MyContextImpl.class.getSimpleName();
 
-    private MyContextState mState = MyContextState.EMPTY;
+    private volatile MyContextState mState = MyContextState.EMPTY;
     /**
      * Single context object for which we will request SharedPreferences
      */
-    private Context mContext = null;
+    private volatile Context mContext = null;
     /**
      * Name of the object that initialized the class
      */
@@ -62,10 +63,10 @@ public final class MyContextImpl implements MyContext {
     /**
      * When preferences, loaded into this class, were changed
      */
-    private long mPreferencesChangeTime = 0;
-    private MyDatabase mDb;
-    private PersistentAccounts mPersistentAccounts;
-    private PersistentOrigins mPersistentOrigins;
+    private volatile long mPreferencesChangeTime = 0;
+    private volatile MyDatabase mDb;
+    private final PersistentAccounts mPersistentAccounts = PersistentAccounts.getEmpty();
+    private final PersistentOrigins mPersistentOrigins = PersistentOrigins.getEmpty();
     
     private volatile boolean mExpired = false;
 
@@ -156,10 +157,7 @@ public final class MyContextImpl implements MyContext {
     }
     
     public static MyContextImpl newEmpty() {
-        MyContextImpl myContext = new MyContextImpl();
-        myContext.mPersistentAccounts = PersistentAccounts.getEmpty();
-        myContext.mPersistentOrigins = PersistentOrigins.getEmpty();
-        return myContext;
+        return new MyContextImpl();
     }
 
     @Override
@@ -193,8 +191,22 @@ public final class MyContextImpl implements MyContext {
     }
     
     @Override
-    public MyDatabase getDatabase() {
+    public MyDatabase getMyDatabase() {
         return mDb;
+    }
+
+    @Override
+    public SQLiteDatabase getDatabase() {
+        if (mDb == null) {
+            return null;
+        }
+        SQLiteDatabase db = null;
+        try {
+            db = mDb.getWritableDatabase();
+        } catch (Exception e) {
+            MyLog.e(this, "getDatabase", e);
+        }
+        return db;
     }
 
     @Override

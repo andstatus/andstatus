@@ -177,7 +177,12 @@ public class LatestTimelineItem {
             sql = "UPDATE " + User.TABLE_NAME + " SET " + sql 
                     + " WHERE " + BaseColumns._ID + "=" + userId;
 
-            SQLiteDatabase db = MyContextHolder.get().getDatabase().getReadableDatabase();
+            SQLiteDatabase db = MyContextHolder.get().getDatabase();
+            if (db == null) {
+                MyLog.v(this, "Database is null");
+                return;
+            }
+
             db.execSQL(sql);
             
             timelineDateChanged = false;

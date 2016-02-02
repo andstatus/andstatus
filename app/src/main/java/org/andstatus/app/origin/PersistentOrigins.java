@@ -41,7 +41,7 @@ public class PersistentOrigins {
     }
     
     public PersistentOrigins initialize(MyContext myContext) {
-        return initialize(myContext.getDatabase().getWritableDatabase());
+        return initialize(myContext.getDatabase());
     }
     
     public PersistentOrigins initialize(SQLiteDatabase db) {

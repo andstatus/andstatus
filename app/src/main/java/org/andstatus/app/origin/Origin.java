@@ -18,6 +18,7 @@ package org.andstatus.app.origin;
 
 import android.content.ContentValues;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.provider.BaseColumns;
 import android.text.SpannableString;
@@ -273,10 +274,15 @@ public class Origin {
     public boolean hasChildren() {
         long count = 0;
         Cursor cursor = null;
+        SQLiteDatabase db = MyContextHolder.get().getDatabase();
+        if (db == null) {
+            MyLog.v(this, "hasChildren; Database is null");
+            return false;
+        }
         try {
             String sql = "SELECT Count(*) FROM " + MyDatabase.Msg.TABLE_NAME + " WHERE "
                     + MyDatabase.Msg.ORIGIN_ID + "=" + id;
-            cursor = MyContextHolder.get().getDatabase().getWritableDatabase().rawQuery(sql, null);
+            cursor = db.rawQuery(sql, null);
             if (cursor.moveToNext()) {
                 count = cursor.getLong(0);
             }
@@ -284,7 +290,7 @@ public class Origin {
             if (count == 0) {
                 sql = "SELECT Count(*) FROM " + MyDatabase.User.TABLE_NAME + " WHERE "
                         + MyDatabase.User.ORIGIN_ID + "=" + id;
-                cursor = MyContextHolder.get().getDatabase().getWritableDatabase().rawQuery(sql, null);
+                cursor = db.rawQuery(sql, null);
                 if (cursor.moveToNext()) {
                     count = cursor.getLong(0);
                 }
@@ -543,10 +549,15 @@ public class Origin {
         public boolean delete() {
             boolean deleted = false;
             if (!origin.hasChildren()) {
+                SQLiteDatabase db = MyContextHolder.get().getDatabase();
+                if (db == null) {
+                    MyLog.v(this, "delete; Database is null");
+                    return false;
+                }
                 try {
                     String sql = "DELETE FROM " + MyDatabase.Origin.TABLE_NAME + " WHERE "
                             + BaseColumns._ID + "=" + origin.id;
-                    MyContextHolder.get().getDatabase().getWritableDatabase().execSQL(sql);
+                    db.execSQL(sql);
                     deleted = true;
                 } catch (Exception e) {
                     MyLog.e(this, "Error deleting Origin", e);

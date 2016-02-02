@@ -252,10 +252,9 @@ public class MyBackupAgent extends BackupAgent {
 
         MyServiceManager.setServiceUnavailable();
         MyServiceManager.stopService();
-        MyDatabase db = MyContextHolder.get().getDatabase();
+        MyDatabase db = MyContextHolder.get().getMyDatabase();
         if (db != null) {
             db.close();
-            db = null;
         }
     }
     

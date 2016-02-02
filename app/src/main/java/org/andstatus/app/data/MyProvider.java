@@ -74,7 +74,11 @@ public class MyProvider extends ContentProvider {
      */
     @Override
     public int delete(@NonNull Uri uri, String selection, String[] selectionArgs) {
-        SQLiteDatabase db = MyContextHolder.get().getDatabase().getWritableDatabase();
+        SQLiteDatabase db = MyContextHolder.get().getDatabase();
+        if (db == null) {
+            MyLog.v(this, "delete; Database is null");
+            return 0;
+        }
         int count;
         ParsedUri uriParser = ParsedUri.fromUri(uri);
         switch (uriParser.matched()) {
@@ -153,7 +157,11 @@ public class MyProvider extends ContentProvider {
         Uri newUri = null;
         try {
             Long now = System.currentTimeMillis();
-            SQLiteDatabase db = MyContextHolder.get().getDatabase().getWritableDatabase();
+            SQLiteDatabase db = MyContextHolder.get().getDatabase();
+            if (db == null) {
+                MyLog.v(this, "insert; Database is null");
+                return null;
+            }
 
             String table;
 
@@ -351,7 +359,7 @@ public class MyProvider extends ContentProvider {
         Cursor c = null;
         if (MyContextHolder.get().isReady()) {
             // Get the database and run the query
-            SQLiteDatabase db = MyContextHolder.get().getDatabase().getReadableDatabase();
+            SQLiteDatabase db = MyContextHolder.get().getDatabase();
             boolean logQuery = MyLog.isVerboseEnabled();
             try {
                 if (sql.length() == 0) {
@@ -408,7 +416,11 @@ public class MyProvider extends ContentProvider {
      */
     @Override
     public int update(@NonNull Uri uri, ContentValues values, String selection, String[] selectionArgs) {
-        SQLiteDatabase db = MyContextHolder.get().getDatabase().getWritableDatabase();
+        SQLiteDatabase db = MyContextHolder.get().getDatabase();
+        if (db == null) {
+            MyLog.v(this, "update; Database is null");
+            return 0;
+        }
         int count = 0;
         ParsedUri uriParser = ParsedUri.fromUri(uri);
         long accountUserId;

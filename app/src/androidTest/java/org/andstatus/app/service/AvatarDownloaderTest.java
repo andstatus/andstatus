@@ -133,7 +133,7 @@ public class AvatarDownloaderTest extends InstrumentationTestCase {
     static int changeAvatarUrl(MyAccount myAccount, String urlString) {
         ContentValues values = new ContentValues();
         values.put(User.AVATAR_URL, urlString);
-        return MyContextHolder.get().getDatabase().getWritableDatabase()
+        return MyContextHolder.get().getDatabase()
                 .update(User.TABLE_NAME, values, User._ID + "=" + myAccount.getUserId(), null);
     }
 
@@ -141,7 +141,7 @@ public class AvatarDownloaderTest extends InstrumentationTestCase {
         URL url = new URL(urlString); 
         ContentValues values = new ContentValues();
         values.put(Download.DOWNLOAD_STATUS, status.save());
-        return MyContextHolder.get().getDatabase().getWritableDatabase()
+        return MyContextHolder.get().getDatabase()
                 .update(Download.TABLE_NAME, values, Download.USER_ID + "=" + ma.getUserId() 
                         + " AND " + Download.URI + "=" + MyQuery.quoteIfNotQuoted(url.toExternalForm()), null);
     }

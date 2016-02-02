@@ -25,6 +25,7 @@ import net.jcip.annotations.ThreadSafe;
 
 import org.andstatus.app.data.MyDatabaseConverterController;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.RelativeTime;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -63,10 +64,9 @@ public final class MyContextHolder {
     
     /**
      * This is mainly for mocking / testing
-     * @param myContextNew Should not be null
      * @return previous MyContext
      */
-    public static MyContext replaceCreator(MyContext myContextNew) {
+    public static MyContext replaceCreator(@NonNull MyContext myContextNew) {
         if (myContextNew == null) {
             throw new IllegalArgumentException("replace: myContext_new should not be null");
         }
@@ -95,15 +95,13 @@ public final class MyContextHolder {
     }
 
     public static long initializeDuringUpgrade(Context context, Object initializedBy) {
-        if (get().initialized() && didPreferencesChange()) {
+        if (get().initialized() && isConfigChanged()) {
             synchronized(CONTEXT_LOCK) {
-                if (get().initialized() && didPreferencesChange()) {
+                if (get().initialized() && isConfigChanged()) {
                     long preferencesChangeTimeLast = MyPreferences.getPreferencesChangeTime() ;
                     if (get().preferencesChangeTime() != preferencesChangeTimeLast) {
                         MyLog.v(TAG, "Preferences changed "
-                                + java.util.concurrent.TimeUnit.MILLISECONDS
-                                        .toSeconds(java.lang.System.currentTimeMillis()
-                                                - preferencesChangeTimeLast)
+                                + RelativeTime.secondsAgo(preferencesChangeTimeLast)
                                 + " seconds ago, refreshing...");
                         get().setExpired();
                     }
@@ -125,7 +123,7 @@ public final class MyContextHolder {
         }
     }
 
-    public static boolean didPreferencesChange() {
+    public static boolean isConfigChanged() {
         return get().preferencesChangeTime() != MyPreferences.getPreferencesChangeTime();
     }
     
@@ -135,10 +133,7 @@ public final class MyContextHolder {
     public static MyContext getBlocking(Context context, Object calledBy) throws InterruptedException {
         MyContext myContext =  myInitializedContext;
         while (myContext == null || !myContext.initialized() || myContext.isExpired()) {
-            MyFutureTaskExpirable<MyContext> myFutureContextCopy = null;
-            synchronized (CONTEXT_LOCK) {
-                myFutureContextCopy = myFutureContext;
-            }
+            MyFutureTaskExpirable<MyContext> myFutureContextCopy = myFutureContext;
             if (myFutureContextCopy == null || myFutureContextCopy.isExpired()) {
                 myContext = createMyFutureContext(context, calledBy, myContext);
             } else {
@@ -186,13 +181,7 @@ public final class MyContextHolder {
         MyContext myContextOut = myContextIn;
         try {
             MyLog.v(TAG, method + " may block at Future.get: " + callerName);
-            
-            MyFutureTaskExpirable<MyContext> myFutureContextCopy = null;
-            synchronized (CONTEXT_LOCK) {
-                myFutureContextCopy = myFutureContext;
-            }
-            myContextOut = myFutureContextCopy.get();
-            
+            myContextOut = myFutureContext.get();
             MyLog.v(TAG, method + " passed Future.get: " + callerName);
             synchronized (CONTEXT_LOCK) {
                 if (myFutureContext == null || myFutureContext.isExpired()) {
@@ -225,17 +214,17 @@ public final class MyContextHolder {
      */
     public static void storeContextIfNotPresent(Context context, Object initializedBy) {
         String initializerName = MyLog.objTagToString(initializedBy) ;
-        if (myContextCreator.context() == null) {
-            if (context == null) {
-                throw new IllegalStateException(TAG + ": context is unknown yet, called by " + initializerName);
-            }
-            synchronized (CONTEXT_LOCK) {
-                // This allows to refer to the context 
-                // even before myInitializedContext is initialized
-                myContextCreator = myContextCreator.newCreator(context, initializerName); 
-            }
+        synchronized(CONTEXT_LOCK) {
             if (myContextCreator.context() == null) {
-                throw new IllegalStateException(TAG + ": no compatible context, called by " + initializerName);
+                if (context == null) {
+                    throw new IllegalStateException(TAG + ": context is unknown yet, called by " + initializerName);
+                }
+                // This allows to refer to the context
+                // even before myInitializedContext is initialized
+                myContextCreator = myContextCreator.newCreator(context, initializerName);
+                if (myContextCreator.context() == null) {
+                    throw new IllegalStateException(TAG + ": no compatible context, called by " + initializerName);
+                }
             }
         }
     }

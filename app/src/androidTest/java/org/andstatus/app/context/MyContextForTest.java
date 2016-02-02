@@ -18,6 +18,7 @@ package org.andstatus.app.context;
 
 import android.app.Notification;
 import android.content.Context;
+import android.database.sqlite.SQLiteDatabase;
 
 import org.andstatus.app.account.PersistentAccounts;
 import org.andstatus.app.data.AssertionData;
@@ -109,7 +110,12 @@ public class MyContextForTest implements MyContext {
     }
 
     @Override
-    public MyDatabase getDatabase() {
+    public MyDatabase getMyDatabase() {
+        return myContext.getMyDatabase();
+    }
+
+    @Override
+    public SQLiteDatabase getDatabase() {
         return myContext.getDatabase();
     }
 

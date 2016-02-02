@@ -18,6 +18,7 @@ package org.andstatus.app.context;
 
 import android.app.Notification;
 import android.content.Context;
+import android.database.sqlite.SQLiteDatabase;
 import android.support.annotation.NonNull;
 
 import org.andstatus.app.account.PersistentAccounts;
@@ -40,7 +41,8 @@ public interface MyContext {
     Context context();
     String initializedBy();
     long preferencesChangeTime();
-    MyDatabase getDatabase();
+    MyDatabase getMyDatabase();
+    SQLiteDatabase getDatabase();
     @NonNull
     PersistentAccounts persistentAccounts();
     PersistentOrigins persistentOrigins();

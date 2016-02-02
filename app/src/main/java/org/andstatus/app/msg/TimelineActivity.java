@@ -65,7 +65,6 @@ import org.andstatus.app.service.MyServiceEventsReceiver;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.service.QueueViewer;
 import org.andstatus.app.test.SelectorActivityMock;
-import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.UriUtils;
 import org.andstatus.app.widget.MyBaseAdapter;
@@ -89,10 +88,6 @@ public class TimelineActivity extends LoadableListActivity implements
     /** Parameters of currently shown Timeline */
     private TimelineListParameters mListParametersLoaded;
 
-    /**
-     * For testing purposes
-     */
-    private long mInstanceId = 0;
     MyServiceEventsReceiver mServiceConnector;
 
     /**
@@ -104,11 +99,6 @@ public class TimelineActivity extends LoadableListActivity implements
     private View mTextualSyncIndicator = null;
     private CharSequence syncingText = "";
     private CharSequence loadingText = "";
-
-    /**
-     * Time when shared preferences where changed
-     */
-    private long mPreferencesChangeTime = 0;
 
     private MessageContextMenu mContextMenu;
     private MessageEditor mMessageEditor;
@@ -131,24 +121,11 @@ public class TimelineActivity extends LoadableListActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         mListParametersLoaded = new TimelineListParameters(this);
         mListParametersNew = new TimelineListParameters(this);
-        if (mInstanceId == 0) {
-            mInstanceId = InstanceId.next();
-        } else {
-            MyLog.d(this, "onCreate reusing the same instanceId=" + mInstanceId);
-        }
-
-        mPreferencesChangeTime = MyContextHolder.initialize(this, this);
-        mShowSyncIndicatorOnTimeline = MyPreferences.getBoolean(
-                MyPreferences.KEY_SYNC_INDICATOR_ON_TIMELINE, true);
-
-        if (MyLog.isLoggable(this, MyLog.DEBUG)) {
-            MyLog.d(this, "onCreate instanceId=" + mInstanceId 
-                    + " , preferencesChangeTime=" + mPreferencesChangeTime
-                    + (MyContextHolder.get().isReady() ? "" : ", MyContext is not ready")
-                    );
-        }
         mLayoutId = R.layout.timeline;
         super.onCreate(savedInstanceState);
+
+        mShowSyncIndicatorOnTimeline = MyPreferences.getBoolean(
+                MyPreferences.KEY_SYNC_INDICATOR_ON_TIMELINE, true);
 
         if (HelpActivity.startFromActivity(this)) {
             return;
@@ -314,9 +291,8 @@ public class TimelineActivity extends LoadableListActivity implements
         MyLog.v(this, method + ", instanceId=" + mInstanceId);
         if (!mFinishing) {
             if (MyContextHolder.get().persistentAccounts().getCurrentAccount().isValid()) {
-                long preferencesChangeTimeNew = MyContextHolder.initialize(this, this);
-                if (preferencesChangeTimeNew != mPreferencesChangeTime) {
-                    MyLog.v(this, method + "; Restarting this Activity to apply all new changes of preferences");
+                if (isConfigChanged()) {
+                    MyLog.v(this, method + "; Restarting this Activity to apply all new changes of configuration");
                     finish();
                     mContextMenu.switchTimelineActivity(mListParametersNew.getTimelineType(), mListParametersNew.isTimelineCombined(), mListParametersNew.mSelectedUserId);
                 }

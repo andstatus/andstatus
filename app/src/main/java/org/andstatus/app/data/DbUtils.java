@@ -18,6 +18,7 @@ package org.andstatus.app.data;
 
 import android.content.ContentValues;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteStatement;
 import android.provider.BaseColumns;
@@ -49,10 +50,14 @@ public final class DbUtils {
     public static long addRowWithRetry(String tableName, ContentValues values, int nRetries) {
         String method = "addRowWithRetry";
         long rowId = -1;
+        SQLiteDatabase db = MyContextHolder.get().getDatabase();
+        if (db == null) {
+            MyLog.v(TAG, method + "; Database is null");
+            return 0;
+        }
         for (int pass = 0; pass < nRetries; pass++) {
             try {
-                rowId = MyContextHolder.get().getDatabase().getReadableDatabase()
-                        .insert(tableName, null, values);
+                rowId = db.insert(tableName, null, values);
                 if (rowId != -1) {
                     break;
                 }
@@ -78,10 +83,14 @@ public final class DbUtils {
     public static int updateRowWithRetry(String tableName, long rowId, ContentValues values, int nRetries) {
         String method = "updateRowWithRetry";
         int rowsUpdated = 0;
+        SQLiteDatabase db = MyContextHolder.get().getDatabase();
+        if (db == null) {
+            MyLog.v(TAG, method + "; Database is null");
+            return 0;
+        }
         for (int pass=0; pass<nRetries; pass++) {
             try {
-                rowsUpdated = MyContextHolder.get().getDatabase().getReadableDatabase()
-                        .update(tableName, values, BaseColumns._ID + "=" + Long.toString(rowId), null);
+                rowsUpdated = db.update(tableName, values, BaseColumns._ID + "=" + Long.toString(rowId), null);
                 break;
             } catch (SQLiteException e) {
                 MyLog.i(method, " Database is locked, pass=" + pass, e);

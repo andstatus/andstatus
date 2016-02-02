@@ -38,6 +38,7 @@ import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.widget.MyBaseAdapter;
 
 /**
@@ -46,7 +47,6 @@ import org.andstatus.app.widget.MyBaseAdapter;
  * @author yvolk@yurivolkov.com
  */
 public abstract class LoadableListActivity extends MyBaseListActivity implements MyServiceEventsListener {
-
     ParsedUri mParsedUri = ParsedUri.fromUri(Uri.EMPTY);
 
     /**
@@ -54,7 +54,9 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
      */
     private MyAccount ma = MyAccount.getEmpty(MyContextHolder.get(), "");
 
-    private long mInstanceId;
+    protected final long mInstanceId = InstanceId.next();
+    private long configChangeTime = 0;
+    private boolean configChanged = false;
     MyServiceEventsReceiver myServiceReceiver;
 
     private final Object loaderLock = new Object();
@@ -77,12 +79,15 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (mInstanceId == 0) {
-            mInstanceId = InstanceId.next();
-            MyLog.v(this, "onCreate instanceId=" + mInstanceId);
-        } else {
-            MyLog.v(this, "onCreate reuse the same instanceId=" + mInstanceId);
+        configChangeTime = MyContextHolder.initialize(this, this);
+        if (MyLog.isLoggable(this, MyLog.DEBUG)) {
+            MyLog.d(this, "onCreate instanceId=" + mInstanceId
+                            + " , config changed " + RelativeTime.secondsAgo(configChangeTime)
+                            + " seconds ago"
+                            + (MyContextHolder.get().isReady() ? "" : ", MyContext is not ready")
+            );
         }
+
         MyServiceManager.setServiceAvailable();
         myServiceReceiver = new MyServiceEventsReceiver(this);
 
@@ -129,6 +134,10 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
                     + mWorkingLoader);
         }
         return loaderIsWorking;
+    }
+
+    protected boolean isConfigChanged() {
+        return configChanged;
     }
 
     public interface SyncLoader {
@@ -287,6 +296,10 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
     protected void onResume() {
         mIsPaused = false;
         super.onResume();
+        long configChangeTimeNew = MyContextHolder.initialize(this, this);
+        if (configChangeTimeNew != configChangeTime) {
+            configChanged = true;
+        }
         myServiceReceiver.registerReceiver(this);
         MyContextHolder.get().setInForeground(true);
     }

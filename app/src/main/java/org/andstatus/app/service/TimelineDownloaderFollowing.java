@@ -89,7 +89,11 @@ class TimelineDownloaderFollowing extends TimelineDownloader {
         }
         // Old list of followed users
         Set<Long> followedIdsOld = MyQuery.getIdsOfUsersFollowedBy(execContext.getTimelineUserId());
-        SQLiteDatabase db = MyContextHolder.get().getDatabase().getWritableDatabase();
+        SQLiteDatabase db = MyContextHolder.get().getDatabase();
+        if (db == null) {
+            MyLog.v(this, "Database is null");
+            return;
+        }
         for (String followedUserOid : followedUsersOids) {
             long friendId = MyQuery.oidToId(MyDatabase.OidEnum.USER_OID, execContext.getMyAccount().getOriginId(), followedUserOid);
             long msgId = 0;

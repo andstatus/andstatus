@@ -165,7 +165,11 @@ public class DataPruner {
                 + "SELECT * FROM " + Msg.TABLE_NAME 
                 + " WHERE " + Msg.TABLE_NAME + "." + Msg._ID + "=" + Download.MSG_ID 
                 + ")";
-        SQLiteDatabase db = MyContextHolder.get().getDatabase().getWritableDatabase();
+        SQLiteDatabase db = MyContextHolder.get().getDatabase();
+        if (db == null) {
+            MyLog.v(this, method + "; Database is null");
+            return 0;
+        }
         long nDeleted = 0;
         List<Long> list = new ArrayList<Long>();
         Cursor cursor = null;

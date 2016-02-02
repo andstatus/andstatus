@@ -135,7 +135,7 @@ public class OriginsAndAccountsInserter extends InstrumentationTestCase {
         long userId = ma.getUserId();
         assertTrue("Account " + mbUser.getUserName() + " has UserId", userId != 0);
         assertEquals("Account UserOid", ma.getUserOid(), mbUser.oid);
-        String oid = MyQuery.idToOid(myContext.getDatabase().getReadableDatabase(), OidEnum.USER_OID, userId, 0);
+        String oid = MyQuery.idToOid(myContext.getDatabase(), OidEnum.USER_OID, userId, 0);
         if (TextUtils.isEmpty(oid)) {
             String message = "Couldn't find a User in the database for id=" + userId + " oid=" + mbUser.oid;
             MyLog.v(this, message);
@@ -143,7 +143,7 @@ public class OriginsAndAccountsInserter extends InstrumentationTestCase {
         }
         assertEquals("User in the database for id=" + userId, 
                 mbUser.oid,
-                MyQuery.idToOid(myContext.getDatabase().getReadableDatabase(), OidEnum.USER_OID, userId, 0));
+                MyQuery.idToOid(myContext.getDatabase(), OidEnum.USER_OID, userId, 0));
         assertEquals("Account name", mbUser.getUserName() + "/" + origin.getName(), ma.getAccountName());
         MyLog.v(this, ma.getAccountName() + " added, id=" + ma.getUserId());
         return ma;

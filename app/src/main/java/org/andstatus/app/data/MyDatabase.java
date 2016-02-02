@@ -483,7 +483,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
         try {
             onUpgradeTriggered.set(false);
             if (MyPreferences.isDataAvailable()) {
-                SQLiteDatabase db = getReadableDatabase();
+                SQLiteDatabase db = getWritableDatabase();
                 if (onUpgradeTriggered.get() || MyDatabaseConverterController.isUpgrading()) {
                     state = MyContextState.UPGRADING;
                 } else {

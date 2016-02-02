@@ -108,7 +108,7 @@ public class MyBackupAgentTest extends InstrumentationTestCase {
         MyServiceManager.setServiceUnavailable();
         deleteAccounts();
         Context context = MyContextHolder.get().context();
-        MyContextHolder.get().getDatabase().close();
+        MyContextHolder.get().getMyDatabase().close();
         MyContextHolder.release();
         deleteFiles(context, false);
         deleteFiles(context, true);
