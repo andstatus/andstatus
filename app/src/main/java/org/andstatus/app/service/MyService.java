@@ -34,6 +34,7 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.notification.CommandsQueueNotifier;
+import org.andstatus.app.util.AsyncTaskLauncher;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
@@ -42,7 +43,6 @@ import org.andstatus.app.util.TriState;
 import java.util.Queue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.PriorityBlockingQueue;
-import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -191,8 +191,8 @@ public class MyService extends Service {
             }
         }
         if (commandData2 != null) {
-            MyLog.i(this,"Couldn't add command while stopping "
-            + commandData2);
+            MyLog.i(this, "Couldn't add command while stopping "
+                    + commandData2);
         }
     }
 
@@ -226,7 +226,7 @@ public class MyService extends Service {
         mMainCommandQueue.clear();
         mRetryCommandQueue.clear();
         mErrorCommandQueue.clear();
-        MyLog.v(this,"Queues cleared");
+        MyLog.v(this, "Queues cleared");
     }
     
     public void deleteCommand(CommandData commandData) {
@@ -271,10 +271,7 @@ public class MyService extends Service {
             }
             if (mHeartBeat == null) {
                 mHeartBeat = new HeartBeat();
-                try {
-                    mHeartBeat.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-                } catch (RejectedExecutionException e) {
-                    MyLog.w(this, "Launching new HeartBeat", e);
+                if (!AsyncTaskLauncher.execute(this, mHeartBeat, false)) {
                     mHeartBeat = null;
                 }
             }
@@ -412,7 +409,7 @@ public class MyService extends Service {
                 logMessageBuilder.append(" Adding and starting new Executor " + mExecutor);
                 mExecutorStartedAt = System.currentTimeMillis();
                 mExecutorEndedAt = 0;
-                mExecutor.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                AsyncTaskLauncher.execute(this, mExecutor);
             }
         }
         if (logMessageBuilder.length() > 0) {

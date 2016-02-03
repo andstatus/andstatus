@@ -40,6 +40,7 @@ import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.user.UserListType;
+import org.andstatus.app.util.AsyncTaskLauncher;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
@@ -323,6 +324,7 @@ public enum ContextMenuItem {
     NONEXISTENT(),
     UNKNOWN();
 
+    private static final String TAG = ContextMenuItem.class.getSimpleName();
     private final boolean mIsAsync;
 
     ContextMenuItem() {
@@ -376,19 +378,26 @@ public enum ContextMenuItem {
     }
     
     private void executeAsync1(final MessageContextMenu menu, final MyAccount ma) {
-        new AsyncTask<Void, Void, MessageEditorData>(){
-            @Override
-            protected MessageEditorData doInBackground(Void... params) {
-                MyLog.v(ContextMenuItem.this, "execute async started. msgId=" + menu.getMsgId());
-                return executeAsync(ma, menu.getMsgId());
-            }
+        AsyncTaskLauncher.execute(TAG,
+                new AsyncTask<Void, Void, MessageEditorData>() {
+                    @Override
+                    protected MessageEditorData doInBackground(Void... params) {
+                        MyLog.v(ContextMenuItem.this, "execute async started. msgId=" + menu.getMsgId());
+                        return executeAsync(ma, menu.getMsgId());
+                    }
 
-            @Override
-            protected void onPostExecute(MessageEditorData editorData) {
-                MyLog.v(ContextMenuItem.this, "execute async ended");
-                executeOnUiThread(menu, editorData);
-            }
-        }.execute();
+                    @Override
+                    protected void onPostExecute(MessageEditorData editorData) {
+                        MyLog.v(ContextMenuItem.this, "execute async ended");
+                        executeOnUiThread(menu, editorData);
+                    }
+
+                    @Override
+                    public String toString() {
+                        return TAG + "; " + super.toString();
+                    }
+                }
+        );
     }
 
     MessageEditorData executeAsync(MyAccount ma, long msgId) {

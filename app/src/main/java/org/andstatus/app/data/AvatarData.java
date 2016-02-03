@@ -20,18 +20,27 @@ import android.net.Uri;
 import android.os.AsyncTask;
 
 import org.andstatus.app.data.MyDatabase.User;
+import org.andstatus.app.util.AsyncTaskLauncher;
 import org.andstatus.app.util.UriUtils;
 
 public class AvatarData extends DownloadData {
+    public static final String TAG = AvatarData.class.getSimpleName();
 
     public static void asyncRequestDownload(final long userIdIn) {
-        new AsyncTask<Void, Void, Void>(){
-            @Override
-            protected Void doInBackground(Void... params) {
-                getForUser(userIdIn).requestDownload();
-                return null;
-            }
-        }.execute();
+        AsyncTaskLauncher.execute(TAG,
+                new AsyncTask<Void, Void, Void>() {
+                    @Override
+                    protected Void doInBackground(Void... params) {
+                        getForUser(userIdIn).requestDownload();
+                        return null;
+                    }
+
+                    @Override
+                    public String toString() {
+                        return TAG + "; " + super.toString();
+                    }
+                }
+        );
     }
     
     public static AvatarData getForUser(long userIdIn) {

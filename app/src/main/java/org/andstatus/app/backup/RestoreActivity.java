@@ -26,6 +26,7 @@ import android.widget.TextView;
 import org.andstatus.app.MyActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.util.AsyncTaskLauncher;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SimpleFileDialog;
 
@@ -47,7 +48,7 @@ public class RestoreActivity extends MyActivity {
                 if (asyncTask == null || asyncTask.getStatus() != Status.RUNNING) {
                     resetProgress();
                     asyncTask = new RestoreTask();
-                    asyncTask.execute(backupFile);
+                    new AsyncTaskLauncher<File>().execute(this, asyncTask, true, backupFile);
                 }
             }
         });

@@ -33,6 +33,7 @@ import org.andstatus.app.msg.TimelineTypeSelector;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
+import org.andstatus.app.util.AsyncTaskLauncher;
 import org.andstatus.app.util.MyLog;
 
 public enum UserListContextMenuItem {
@@ -107,6 +108,7 @@ public enum UserListContextMenuItem {
     UNKNOWN();
 
     private final boolean mIsAsync;
+    private static final String TAG = UserListContextMenuItem.class.getSimpleName();
 
     UserListContextMenuItem() {
         this(false);
@@ -148,20 +150,28 @@ public enum UserListContextMenuItem {
     }
     
     private void executeAsync1(final UserListContextMenu menu, final MyAccount ma) {
-        new AsyncTask<Void, Void, Void>(){
-            @Override
-            protected Void doInBackground(Void... params) {
-                MyLog.v(this, "execute async started. " + menu.getViewItem().mbUser.getNamePreferablyWebFingerId());
-                executeAsync(menu, ma);
-                return null;
-            }
+        AsyncTaskLauncher.execute(TAG,
+                new AsyncTask<Void, Void, Void>() {
+                    @Override
+                    protected Void doInBackground(Void... params) {
+                        MyLog.v(this, "execute async started. "
+                                + menu.getViewItem().mbUser.getNamePreferablyWebFingerId());
+                        executeAsync(menu, ma);
+                        return null;
+                    }
 
-            @Override
-            protected void onPostExecute(Void v) {
-                MyLog.v(this, "execute async ended");
-                executeOnUiThread(menu, ma);
-            }
-        }.execute();
+                    @Override
+                    protected void onPostExecute(Void v) {
+                        MyLog.v(this, "execute async ended");
+                        executeOnUiThread(menu, ma);
+                    }
+
+                    @Override
+                    public String toString() {
+                        return TAG + "; " + super.toString();
+                    }
+                }
+        );
     }
 
     void executeAsync(UserListContextMenu menu, MyAccount ma) {

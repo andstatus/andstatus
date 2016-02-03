@@ -13,6 +13,7 @@ import org.andstatus.app.data.MyDatabase.Download;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
+import org.andstatus.app.util.AsyncTaskLauncher;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.UriUtils;
@@ -447,12 +448,19 @@ public class DownloadData {
     }
 
     public static void asyncRequestDownload(final long downloadId) {
-        new AsyncTask<Void, Void, Void>(){
-            @Override
-            protected Void doInBackground(Void... params) {
-                DownloadData.fromId(downloadId).requestDownload();
-                return null;
-            }
-        }.execute();
+        AsyncTaskLauncher.execute(TAG,
+                new AsyncTask<Void, Void, Void>() {
+                    @Override
+                    protected Void doInBackground(Void... params) {
+                        DownloadData.fromId(downloadId).requestDownload();
+                        return null;
+                    }
+
+                    @Override
+                    public String toString() {
+                        return TAG + "; " + super.toString();
+                    }
+                }
+        );
     }
 }

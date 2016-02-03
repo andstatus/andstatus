@@ -24,6 +24,7 @@ import net.jcip.annotations.GuardedBy;
 
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.util.AsyncTaskLauncher;
 import org.andstatus.app.util.MyLog;
 
 public class MyDatabaseConverterController {
@@ -93,8 +94,8 @@ public class MyDatabaseConverterController {
         return !skip;
     }
 
-    private static void doUpgrade(Activity upgradeRequestorIn) {
-        new AsyncUpgrade().execute(upgradeRequestorIn);
+    private static void doUpgrade(Activity upgradeRequestor) {
+        new AsyncTaskLauncher<Activity>().execute(TAG, new AsyncUpgrade(), true, upgradeRequestor);
     }
     
     private static class AsyncUpgrade extends AsyncTask<Activity, Void, Void> {

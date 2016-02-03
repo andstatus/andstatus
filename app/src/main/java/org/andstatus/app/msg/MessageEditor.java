@@ -52,6 +52,7 @@ import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
+import org.andstatus.app.util.AsyncTaskLauncher;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.UriUtils;
 
@@ -500,7 +501,8 @@ public class MessageEditor {
         hide();
         if (!command.isEmpty()) {
             MyLog.v(MessageEditorData.TAG, "Requested: " + command);
-            new MessageEditorSaver(this).execute(command);
+            new AsyncTaskLauncher<MessageEditorCommand>().execute(this,
+                    new MessageEditorSaver(this), true, command);
         } else {
             if (command.showAfterSave) {
                 showData(command.currentData);
@@ -521,48 +523,55 @@ public class MessageEditor {
             return;
         }
         MyLog.v(MessageEditorData.TAG, "loadCurrentDraft requested, msgId=" + msgId);
-        new AsyncTask<Long, Void, MessageEditorData>() {
-            volatile MessageEditorLock lock = MessageEditorLock.EMPTY;
+        new AsyncTaskLauncher<Long>().execute(this,
+                new AsyncTask<Long, Void, MessageEditorData>() {
+                    volatile MessageEditorLock lock = MessageEditorLock.EMPTY;
 
-            @Override
-            protected MessageEditorData doInBackground(Long... params) {
-                long msgId = params[0];
-                MyLog.v(MessageEditorData.TAG, "loadCurrentDraft started, msgId=" + msgId);
-                MessageEditorLock potentialLock = new MessageEditorLock(false, msgId);
-                if (!potentialLock.acquire(true)) {
-                    return MessageEditorData.INVALID;
-                }
-                lock = potentialLock;
-                MyLog.v(MessageEditorData.TAG, "loadCurrentDraft acquired lock");
+                    @Override
+                    protected MessageEditorData doInBackground(Long... params) {
+                        long msgId = params[0];
+                        MyLog.v(MessageEditorData.TAG, "loadCurrentDraft started, msgId=" + msgId);
+                        MessageEditorLock potentialLock = new MessageEditorLock(false, msgId);
+                        if (!potentialLock.acquire(true)) {
+                            return MessageEditorData.INVALID;
+                        }
+                        lock = potentialLock;
+                        MyLog.v(MessageEditorData.TAG, "loadCurrentDraft acquired lock");
 
-                DownloadStatus status = DownloadStatus.load(MyQuery.msgIdToLongColumnValue(MyDatabase.Msg.MSG_STATUS, msgId));
-                if (status.mayBeEdited()) {
-                    return MessageEditorData.load(msgId);
-                } else {
-                    MyLog.v(MessageEditorData.TAG, "Cannot be edited " + msgId + " state:" + status);
-                    MyPreferences.putLong(MyPreferences.KEY_BEING_EDITED_MESSAGE_ID, 0);
-                    return MessageEditorData.INVALID;
-                }
-            }
+                        DownloadStatus status = DownloadStatus.load(MyQuery.msgIdToLongColumnValue(MyDatabase.Msg.MSG_STATUS, msgId));
+                        if (status.mayBeEdited()) {
+                            return MessageEditorData.load(msgId);
+                        } else {
+                            MyLog.v(MessageEditorData.TAG, "Cannot be edited " + msgId + " state:" + status);
+                            MyPreferences.putLong(MyPreferences.KEY_BEING_EDITED_MESSAGE_ID, 0);
+                            return MessageEditorData.INVALID;
+                        }
+                    }
 
-            @Override
-            protected void onCancelled() {
-                lock.release();
-            }
+                    @Override
+                    protected void onCancelled() {
+                        lock.release();
+                    }
 
-            @Override
-            protected void onPostExecute(MessageEditorData data) {
-                if (lock.acquired() && data.isValid()) {
-                    if (editorData.isValid()) {
-                        MyLog.v(MessageEditorData.TAG, "Loaded draft is not used: Editor data is valid");
-                        show();
-                    } else {
-                        showData(data);
+                    @Override
+                    protected void onPostExecute(MessageEditorData data) {
+                        if (lock.acquired() && data.isValid()) {
+                            if (editorData.isValid()) {
+                                MyLog.v(MessageEditorData.TAG, "Loaded draft is not used: Editor data is valid");
+                                show();
+                            } else {
+                                showData(data);
+                            }
+                        }
+                        lock.release();
+                    }
+
+                    @Override
+                    public String toString() {
+                        return "MessageEditor#loadCurrentDraft; " + super.toString();
                     }
                 }
-                lock.release();
-            }
-        }.execute(msgId);
+                , true, msgId);
     }
 
     public void onAttach() {

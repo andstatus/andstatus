@@ -30,6 +30,7 @@ import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.TimelineSearchSuggestionsProvider;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.service.MyServiceState;
+import org.andstatus.app.util.AsyncTaskLauncher;
 import org.andstatus.app.util.DialogFactory;
 import org.andstatus.app.util.MyLog;
 
@@ -66,7 +67,7 @@ public class StorageSwitch {
     void move() {
         MyServiceManager.setServiceUnavailable();
         if (MyServiceManager.getServiceState() == MyServiceState.STOPPED) {
-            new MoveDataBetweenStoragesTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            AsyncTaskLauncher.execute(this, new MoveDataBetweenStoragesTask());
         } else {
             MyServiceManager.stopService();
             Toast.makeText(parentActivity.getActivity(),

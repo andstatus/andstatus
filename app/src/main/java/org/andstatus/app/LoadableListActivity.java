@@ -35,6 +35,7 @@ import org.andstatus.app.service.MyServiceEvent;
 import org.andstatus.app.service.MyServiceEventsListener;
 import org.andstatus.app.service.MyServiceEventsReceiver;
 import org.andstatus.app.service.MyServiceManager;
+import org.andstatus.app.util.AsyncTaskLauncher;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
@@ -115,7 +116,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
             } else {
                 mWorkingLoader = new AsyncLoader();
                 loaderIsWorking = true;
-                mWorkingLoader.execute(args);
+                new AsyncTaskLauncher<Bundle>().execute(this, mWorkingLoader, true, args);
             }
         }
         MyLog.v(this, "Ended " + msgLog);
@@ -153,7 +154,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
     protected abstract SyncLoader newSyncLoader(Bundle args);
     
     private class AsyncLoader extends AsyncTask<Bundle, String, SyncLoader> implements LoadableListActivity.ProgressPublisher {
-        private volatile long timeStarted = 0;
+        private volatile long timeStarted = System.currentTimeMillis();
         private volatile long timeLoaded = 0;
         private volatile long timeCompleted = 0;
         private SyncLoader mSyncLoader = null;
@@ -221,6 +222,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
         @Override
         public String toString() {
             return MyLog.objTagToString(this) + "; " + this.getStatus()
+                    + ", since=" + RelativeTime.secondsAgo(timeStarted)
                     + ", " + (mSyncLoader == null ? "" : mSyncLoader);
         }
     }

@@ -32,6 +32,7 @@ import org.andstatus.app.R;
 import org.andstatus.app.account.MySimpleAdapter;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.TimelineType;
+import org.andstatus.app.util.AsyncTaskLauncher;
 import org.andstatus.app.util.MyLog;
 
 import java.util.ArrayList;
@@ -169,11 +170,11 @@ public class QueueViewer extends MyListActivity implements MyServiceEventsListen
 
     private void sortList(List<QueueData> data) {
         java.util.Collections.sort(data, new Comparator<QueueData>() {
-                @Override
-                public int compare(QueueData lhs, QueueData rhs) {
-                    return -longCompare(lhs.commandData.getCreatedDate(), rhs.commandData.getCreatedDate());
-                }
-            });
+            @Override
+            public int compare(QueueData lhs, QueueData rhs) {
+                return -longCompare(lhs.commandData.getCreatedDate(), rhs.commandData.getCreatedDate());
+            }
+        });
     }
 
     // TODO: Replace with Long.compare for API >= 19
@@ -186,11 +187,20 @@ public class QueueViewer extends MyListActivity implements MyServiceEventsListen
         loadQueue(listData, QueueType.CURRENT);
         loadQueue(listData, QueueType.RETRY);
         loadQueue(listData, QueueType.ERROR);
+        if (MyLog.isVerboseEnabled()) {
+            showThreadPoolInfo(listData);
+        }
         return listData;
     }
 
+    private void showThreadPoolInfo(List<QueueData> listData) {
+        CommandData commandData = new CommandData(CommandEnum.EMPTY, "");
+        commandData.getResult().setMessage(AsyncTaskLauncher.threadPoolInfo());
+        listData.add(QueueData.getNew(QueueType.TEST, commandData));
+    }
+
     private void loadQueue(List<QueueData> listData, QueueType queueType) {
-        Queue<CommandData> queue = new PriorityBlockingQueue<CommandData>(100);
+        Queue<CommandData> queue = new PriorityBlockingQueue<>(100);
         CommandData.loadQueue(this, queue, queueType);
         for (CommandData commandData : queue) {
             listData.add(QueueData.getNew(queueType, commandData));

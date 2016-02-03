@@ -65,6 +65,7 @@ import org.andstatus.app.service.MyServiceEventsReceiver;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.service.QueueViewer;
 import org.andstatus.app.test.SelectorActivityMock;
+import org.andstatus.app.util.AsyncTaskLauncher;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.UriUtils;
 import org.andstatus.app.widget.MyBaseAdapter;
@@ -1097,20 +1098,27 @@ public class TimelineActivity extends LoadableListActivity implements
     }
     
     private void showSyncing(final CommandData commandData) {
-        new AsyncTask<CommandData, Void, String>() {
+        new AsyncTaskLauncher<CommandData>().execute(this,
+                new AsyncTask<CommandData, Void, String>() {
 
-            @Override
-            protected String doInBackground(CommandData... commandData) {
-                return commandData[0].toCommandSummary(MyContextHolder.get());
-            }
+                    @Override
+                    protected String doInBackground(CommandData... commandData) {
+                        return commandData[0].toCommandSummary(MyContextHolder.get());
+                    }
 
-            @Override
-            protected void onPostExecute(String result) {
-                showSyncing("Show " + commandData.getCommand(),
-                        getText(R.string.title_preference_syncing) + ": " + result);
-            }
+                    @Override
+                    protected void onPostExecute(String result) {
+                        showSyncing("Show " + commandData.getCommand(),
+                                getText(R.string.title_preference_syncing) + ": " + result);
+                    }
 
-        }.execute(commandData);
+                    @Override
+                    public String toString() {
+                        return "ShowSyncing " + super.toString();
+                    }
+
+                }
+                , true, commandData);
     }
 
     private void showSyncing(String source, CharSequence text) {
