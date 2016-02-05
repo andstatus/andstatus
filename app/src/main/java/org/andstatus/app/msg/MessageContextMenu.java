@@ -200,32 +200,6 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
                 }
             }
 
-            if (!msg.isSender) {
-                if (msg.senderFollowed) {
-                    ContextMenuItem.STOP_FOLLOWING_SENDER.addTo(menu, order++,
-                            String.format(
-                                    getContext().getText(R.string.menu_item_stop_following_user).toString(),
-                                    MyQuery.userIdToWebfingerId(msg.senderId)));
-                } else {
-                    ContextMenuItem.FOLLOW_SENDER.addTo(menu, order++,
-                            String.format(
-                                    getContext().getText(R.string.menu_item_follow_user).toString(),
-                                    MyQuery.userIdToWebfingerId(msg.senderId)));
-                }
-            }
-            if (!msg.isAuthor && (msg.authorId != msg.senderId)) {
-                if (msg.authorFollowed) {
-                    ContextMenuItem.STOP_FOLLOWING_AUTHOR.addTo(menu, order++,
-                            String.format(
-                                    getContext().getText(R.string.menu_item_stop_following_user).toString(),
-                                    MyQuery.userIdToWebfingerId(msg.authorId)));
-                } else {
-                    ContextMenuItem.FOLLOW_AUTHOR.addTo(menu, order++,
-                            String.format(
-                                    getContext().getText(R.string.menu_item_follow_user).toString(),
-                                    MyQuery.userIdToWebfingerId(msg.authorId)));
-                }
-            }
             if (msg.isLoaded()) {
                 switch (msg.myAccount().numberOfAccountsOfThisOrigin()) {
                     case 1:

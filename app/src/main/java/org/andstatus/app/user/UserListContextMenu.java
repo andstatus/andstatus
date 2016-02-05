@@ -52,10 +52,12 @@ public class UserListContextMenu implements View.OnCreateContextMenuListener {
                 UserListContextMenuItem.USER_MESSAGES.addTo(menu, order++,
                         String.format(getActivity().getText(R.string.menu_item_user_messages).toString(),
                                 mViewItem.mbUser.getNamePreferablyWebFingerId()));
+                /** TODO: implement
                 UserListContextMenuItem.FOLLOWERS.addTo(menu, order++,
                         String.format(
                                 getActivity().getText(R.string.followers_of).toString(),
                                 mViewItem.mbUser.getNamePreferablyWebFingerId()));
+                */
                 if (mViewItem.userIsFollowedBy(MyContextHolder.get().persistentAccounts().getCurrentAccount())) {
                     UserListContextMenuItem.STOP_FOLLOWING.addTo(menu, order++,
                             String.format(
