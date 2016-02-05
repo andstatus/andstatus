@@ -328,7 +328,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
                 MyLog.v(this, "Content changed after "
                         + commandData.toCommandSummary(MyContextHolder.get()));
             }
-            showList(WhichPage.YOUNGEST);
+            showList(WhichPage.NEW);
         }
     }
 
@@ -380,7 +380,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.sync_menu_item:
-                showList(WhichPage.YOUNGEST);
+                showList(WhichPage.NEW);
                 break;
             default:
                 break;
