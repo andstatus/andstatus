@@ -21,8 +21,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.os.AsyncTask;
-import android.os.AsyncTask.Status;
 import android.os.IBinder;
 import android.os.PowerManager;
 
@@ -34,7 +32,8 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.notification.CommandsQueueNotifier;
-import org.andstatus.app.util.AsyncTaskLauncher;
+import org.andstatus.app.os.AsyncTaskLauncher;
+import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
@@ -393,7 +392,7 @@ public class MyService extends Service {
         final String method = "startExecutor";
         StringBuilder logMessageBuilder = new StringBuilder();
         synchronized(executorLock) {
-            if ( mExecutor != null && (mExecutor.getStatus() != Status.RUNNING)) {
+            if ( mExecutor != null && !mExecutor.needsBackgroundWork()) {
                 removeExecutor(logMessageBuilder);
             }
             if ( mExecutor != null && !isExecutorReallyWorkingNow()) {
@@ -405,11 +404,15 @@ public class MyService extends Service {
             } else {
                 // For now let's have only ONE working thread 
                 // (it seems there is some problem in parallel execution...)
-                mExecutor = new QueueExecutor();
-                logMessageBuilder.append(" Adding and starting new Executor " + mExecutor);
-                mExecutorStartedAt = System.currentTimeMillis();
-                mExecutorEndedAt = 0;
-                AsyncTaskLauncher.execute(this, mExecutor);
+                QueueExecutor newExecutor = new QueueExecutor();
+                logMessageBuilder.append(" Adding and starting new Executor " + newExecutor);
+                if (AsyncTaskLauncher.execute(this, newExecutor)) {
+                    mExecutor = newExecutor;
+                    mExecutorStartedAt = System.currentTimeMillis();
+                    mExecutorEndedAt = 0;
+                } else {
+                    logMessageBuilder.append(" New executor was not added");
+                }
             }
         }
         if (logMessageBuilder.length() > 0) {
@@ -422,7 +425,7 @@ public class MyService extends Service {
             if (mExecutor == null) {
                 return;
             }
-            if (mExecutor.getStatus() == Status.RUNNING) {
+            if (mExecutor.needsBackgroundWork()) {
                 logMessageBuilder.append(" Cancelling and");
                 mExecutor.cancel(true);
             }
@@ -604,13 +607,14 @@ public class MyService extends Service {
         }
     }
     
-    private class QueueExecutor extends AsyncTask<Void, Void, Boolean> implements CommandExecutorParent {
+    private class QueueExecutor extends MyAsyncTask<Void, Void, Boolean> implements CommandExecutorParent {
         private volatile CommandData currentlyExecuting = null;
         private volatile long currentlyExecutingSince = 0;
         private static final long DELAY_AFTER_EXECUTOR_ENDED_SECONDS = 1;
-        
+        private static final long MAX_EXECUTION_TIME_SECONDS = 60;
+
         @Override
-        protected Boolean doInBackground(Void... arg0) {
+        protected Boolean doInBackground2(Void... arg0) {
             MyLog.d(this, "Started, " + mMainCommandQueue.size() + " commands to process");
             String breakReason = "";
             do {
@@ -620,6 +624,10 @@ public class MyService extends Service {
                 }
                 if (isCancelled()) {
                     breakReason = "Cancelled";
+                    break;
+                }
+                if (RelativeTime.secondsAgo(backgroundStartedAt) > MAX_EXECUTION_TIME_SECONDS) {
+                    breakReason = "Executed too long";
                     break;
                 }
                 synchronized (executorLock) {
@@ -845,6 +853,7 @@ public class MyService extends Service {
             if (isStopping()) {
                 sb.append("stopping,");
             }
+            sb.append(super.toString());
             return MyLog.formatKeyValue(this, sb.toString());
         }
         
@@ -855,7 +864,7 @@ public class MyService extends Service {
                             DELAY_AFTER_EXECUTOR_ENDED_SECONDS);
                 }
             }
-            if (getStatus() != Status.RUNNING
+            if ( !needsBackgroundWork()
                     || currentlyExecuting == null
                     || RelativeTime.moreSecondsAgoThan(currentlyExecutingSince,
                             MAX_COMMAND_EXECUTION_SECONDS)) {
@@ -865,15 +874,14 @@ public class MyService extends Service {
         }
     }
     
-    private class HeartBeat extends AsyncTask<Void, Long, Void> {
+    private class HeartBeat extends MyAsyncTask<Void, Long, Void> {
         private static final long HEARTBEAT_PERIOD_SECONDS = 11;
         private final long mInstanceId = InstanceId.next();
-        private final long workingSince = MyLog.uniqueCurrentTimeMS();
-        private volatile long previousBeat = workingSince;
+        private volatile long previousBeat = createdAt;
         private volatile long mIteration = 0;
 
         @Override
-        protected Void doInBackground(Void... arg0) {
+        protected Void doInBackground2(Void... arg0) {
             MyLog.v(this, "Started instance " + mInstanceId);
             String breakReason = "";
             for (long iteration = 1; iteration < 10000; iteration++) {
@@ -925,7 +933,7 @@ public class MyService extends Service {
             builder.append("HeartBeat [id=");
             builder.append(mInstanceId);
             builder.append(", since=");
-            builder.append(RelativeTime.secondsAgo(workingSince));
+            builder.append(RelativeTime.secondsAgo(createdAt));
             builder.append("sec, iteration=");
             builder.append(mIteration);
             builder.append("]");
@@ -933,7 +941,7 @@ public class MyService extends Service {
         }
         
         public boolean isReallyWorking() {
-            if (getStatus() != Status.RUNNING
+            if ( !needsBackgroundWork()
                     || RelativeTime.moreSecondsAgoThan(previousBeat,
                             HEARTBEAT_PERIOD_SECONDS + 3)) {
                 return false;

@@ -17,10 +17,10 @@
 package org.andstatus.app.data;
 
 import android.net.Uri;
-import android.os.AsyncTask;
 
 import org.andstatus.app.data.MyDatabase.User;
-import org.andstatus.app.util.AsyncTaskLauncher;
+import org.andstatus.app.os.AsyncTaskLauncher;
+import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.util.UriUtils;
 
 public class AvatarData extends DownloadData {
@@ -28,16 +28,11 @@ public class AvatarData extends DownloadData {
 
     public static void asyncRequestDownload(final long userIdIn) {
         AsyncTaskLauncher.execute(TAG,
-                new AsyncTask<Void, Void, Void>() {
+                new MyAsyncTask<Void, Void, Void>(TAG + userIdIn) {
                     @Override
-                    protected Void doInBackground(Void... params) {
+                    protected Void doInBackground2(Void... params) {
                         getForUser(userIdIn).requestDownload();
                         return null;
-                    }
-
-                    @Override
-                    public String toString() {
-                        return TAG + "; " + super.toString();
                     }
                 }
         );

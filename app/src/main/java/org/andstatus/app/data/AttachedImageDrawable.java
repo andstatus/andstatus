@@ -66,8 +66,13 @@ public class AttachedImageDrawable {
         if (downloadFile.exists()) {
             String path = downloadFile.getFile().getAbsolutePath();
             return drawableFromPath(this, path, getSize());
-        } 
-        DownloadData.asyncRequestDownload(downloadRowId);
+        }
+        if (downloadRowId == 0) {
+            // TODO: Why we get here?
+            MyLog.d(this, "rowId=0; " + downloadFile);
+        } else {
+            DownloadData.asyncRequestDownload(downloadRowId);
+        }
         return null;
     }
 

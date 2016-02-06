@@ -18,7 +18,6 @@ package org.andstatus.app.context;
 
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.os.AsyncTask;
 import android.widget.Toast;
 
 import net.jcip.annotations.GuardedBy;
@@ -28,9 +27,10 @@ import org.andstatus.app.R;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.TimelineSearchSuggestionsProvider;
+import org.andstatus.app.os.AsyncTaskLauncher;
+import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.service.MyServiceState;
-import org.andstatus.app.util.AsyncTaskLauncher;
 import org.andstatus.app.util.DialogFactory;
 import org.andstatus.app.util.MyLog;
 
@@ -107,7 +107,7 @@ public class StorageSwitch {
      * 
      * @author yvolk@yurivolkov.com
      */
-    private class MoveDataBetweenStoragesTask extends AsyncTask<Void, Void, TaskResult> {
+    private class MoveDataBetweenStoragesTask extends MyAsyncTask<Void, Void, TaskResult> {
         private ProgressDialog dlg;
 
         @Override
@@ -121,7 +121,7 @@ public class StorageSwitch {
         }
 
         @Override
-        protected TaskResult doInBackground(Void... params) {
+        protected TaskResult doInBackground2(Void... params) {
             TaskResult result = new TaskResult();
             if (!checkAndSetDataBeingMoved()) {
                 return result;

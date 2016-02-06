@@ -20,7 +20,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.text.Editable;
 import android.text.Html;
 import android.text.TextUtils;
@@ -49,10 +48,11 @@ import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
+import org.andstatus.app.os.AsyncTaskLauncher;
+import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
-import org.andstatus.app.util.AsyncTaskLauncher;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.UriUtils;
 
@@ -524,11 +524,11 @@ public class MessageEditor {
         }
         MyLog.v(MessageEditorData.TAG, "loadCurrentDraft requested, msgId=" + msgId);
         new AsyncTaskLauncher<Long>().execute(this,
-                new AsyncTask<Long, Void, MessageEditorData>() {
+                new MyAsyncTask<Long, Void, MessageEditorData>(MessageEditor.this.toString()) {
                     volatile MessageEditorLock lock = MessageEditorLock.EMPTY;
 
                     @Override
-                    protected MessageEditorData doInBackground(Long... params) {
+                    protected MessageEditorData doInBackground2(Long... params) {
                         long msgId = params[0];
                         MyLog.v(MessageEditorData.TAG, "loadCurrentDraft started, msgId=" + msgId);
                         MessageEditorLock potentialLock = new MessageEditorLock(false, msgId);
@@ -538,7 +538,8 @@ public class MessageEditor {
                         lock = potentialLock;
                         MyLog.v(MessageEditorData.TAG, "loadCurrentDraft acquired lock");
 
-                        DownloadStatus status = DownloadStatus.load(MyQuery.msgIdToLongColumnValue(MyDatabase.Msg.MSG_STATUS, msgId));
+                        DownloadStatus status = DownloadStatus.load(
+                                MyQuery.msgIdToLongColumnValue(MyDatabase.Msg.MSG_STATUS, msgId));
                         if (status.mayBeEdited()) {
                             return MessageEditorData.load(msgId);
                         } else {
@@ -564,11 +565,6 @@ public class MessageEditor {
                             }
                         }
                         lock.release();
-                    }
-
-                    @Override
-                    public String toString() {
-                        return "MessageEditor#loadCurrentDraft; " + super.toString();
                     }
                 }
                 , true, msgId);

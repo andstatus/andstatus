@@ -23,7 +23,6 @@ import android.app.Fragment;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextUtils;
@@ -54,9 +53,10 @@ import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.PersistentOriginList;
+import org.andstatus.app.os.AsyncTaskLauncher;
+import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.service.MyServiceState;
-import org.andstatus.app.util.AsyncTaskLauncher;
 import org.andstatus.app.util.DialogFactory;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
@@ -707,7 +707,7 @@ public class AccountSettingsActivity extends MyActivity {
      * Step 1 of 3 of the OAuth Authentication
      * Needed in case we don't have the AndStatus Client keys for the Microblogging system
      */
-    private class OAuthRegisterClientTask extends AsyncTask<Void, Void, JSONObject> {
+    private class OAuthRegisterClientTask extends MyAsyncTask<Void, Void, JSONObject> {
         private ProgressDialog dlg;
 
         @Override
@@ -722,7 +722,7 @@ public class AccountSettingsActivity extends MyActivity {
         }
 
         @Override
-        protected JSONObject doInBackground(Void... arg0) {
+        protected JSONObject doInBackground2(Void... arg0) {
             JSONObject jso = null;
 
             boolean requestSucceeded = false;
@@ -812,7 +812,7 @@ public class AccountSettingsActivity extends MyActivity {
      *         this code from OAuthActivity here in order to be able to show
      *         ProgressDialog and to get rid of any "Black blank screens"
      */
-    private class OAuthAcquireRequestTokenTask extends AsyncTask<Void, Void, JSONObject> {
+    private class OAuthAcquireRequestTokenTask extends MyAsyncTask<Void, Void, JSONObject> {
         private ProgressDialog dlg;
 
         @Override
@@ -828,7 +828,7 @@ public class AccountSettingsActivity extends MyActivity {
         }
 
         @Override
-        protected JSONObject doInBackground(Void... arg0) {
+        protected JSONObject doInBackground2(Void... arg0) {
             JSONObject jso = null;
 
             boolean requestSucceeded = false;
@@ -930,7 +930,7 @@ public class AccountSettingsActivity extends MyActivity {
      *         this code from OAuthActivity here in order to be able to show
      *         ProgressDialog and to get rid of any "Black blank screens"
      */
-    private class OAuthAcquireAccessTokenTask extends AsyncTask<Uri, Void, JSONObject> {
+    private class OAuthAcquireAccessTokenTask extends MyAsyncTask<Uri, Void, JSONObject> {
         private ProgressDialog dlg;
 
         @Override
@@ -946,7 +946,7 @@ public class AccountSettingsActivity extends MyActivity {
         }
 
         @Override
-        protected JSONObject doInBackground(Uri... uris) {
+        protected JSONObject doInBackground2(Uri... uris) {
             JSONObject jso = null;
 
             String message = "";
@@ -1052,7 +1052,7 @@ public class AccountSettingsActivity extends MyActivity {
      * Assuming we already have credentials to verify, verify them
      * @author yvolk@yurivolkov.com
      */
-    private class VerifyCredentialsTask extends AsyncTask<Void, Void, JSONObject> {
+    private class VerifyCredentialsTask extends MyAsyncTask<Void, Void, JSONObject> {
         private ProgressDialog dlg;
         private boolean skip = false;
 
@@ -1077,7 +1077,7 @@ public class AccountSettingsActivity extends MyActivity {
         }
 
         @Override
-        protected JSONObject doInBackground(Void... arg0) {
+        protected JSONObject doInBackground2(Void... arg0) {
             JSONObject jso = null;
 
             int what = MSG_NONE;

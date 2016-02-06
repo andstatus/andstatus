@@ -16,7 +16,6 @@
 
 package org.andstatus.app.backup;
 
-import android.os.AsyncTask;
 import android.os.AsyncTask.Status;
 import android.os.Bundle;
 import android.view.View;
@@ -26,7 +25,8 @@ import android.widget.TextView;
 import org.andstatus.app.MyActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.util.AsyncTaskLauncher;
+import org.andstatus.app.os.AsyncTaskLauncher;
+import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SimpleFileDialog;
 
@@ -47,7 +47,7 @@ public class BackupActivity extends MyActivity {
         findViewById(R.id.button_backup).setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (asyncTask == null || asyncTask.getStatus() != Status.RUNNING) {
+                if (asyncTask == null || !asyncTask.needsBackgroundWork()) {
                     resetProgress();
                     asyncTask = new BackupTask();
                     new AsyncTaskLauncher<File>().execute(this, asyncTask, true, backupFolder);
@@ -87,11 +87,11 @@ public class BackupActivity extends MyActivity {
         this.backupFolder = backupFolder;
     }
     
-    private class BackupTask extends AsyncTask<File, String, Boolean> {
+    private class BackupTask extends MyAsyncTask<File, String, Boolean> {
         Boolean success = false;
         
         @Override
-        protected Boolean doInBackground(File... params) {
+        protected Boolean doInBackground2(File... params) {
             MyBackupManager.backupInteractively(params[0], new ProgressLogger.ProgressCallback() {
                 
                 @Override

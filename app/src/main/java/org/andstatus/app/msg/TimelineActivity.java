@@ -23,7 +23,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.SearchRecentSuggestions;
 import android.support.v4.widget.DrawerLayout;
@@ -58,6 +57,8 @@ import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.TimelineSearchSuggestionsProvider;
 import org.andstatus.app.data.TimelineType;
+import org.andstatus.app.os.AsyncTaskLauncher;
+import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceEvent;
@@ -65,7 +66,6 @@ import org.andstatus.app.service.MyServiceEventsReceiver;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.service.QueueViewer;
 import org.andstatus.app.test.SelectorActivityMock;
-import org.andstatus.app.util.AsyncTaskLauncher;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.UriUtils;
 import org.andstatus.app.widget.MyBaseAdapter;
@@ -1099,10 +1099,10 @@ public class TimelineActivity extends LoadableListActivity implements
     
     private void showSyncing(final CommandData commandData) {
         new AsyncTaskLauncher<CommandData>().execute(this,
-                new AsyncTask<CommandData, Void, String>() {
+                new MyAsyncTask<CommandData, Void, String>("ShowSyncing" + mInstanceId) {
 
                     @Override
-                    protected String doInBackground(CommandData... commandData) {
+                    protected String doInBackground2(CommandData... commandData) {
                         return commandData[0].toCommandSummary(MyContextHolder.get());
                     }
 

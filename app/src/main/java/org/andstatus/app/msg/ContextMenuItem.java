@@ -22,7 +22,6 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.text.TextUtils;
 import android.view.Menu;
 
@@ -36,11 +35,12 @@ import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.TimelineType;
+import org.andstatus.app.os.AsyncTaskLauncher;
+import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.user.UserListType;
-import org.andstatus.app.util.AsyncTaskLauncher;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
@@ -199,6 +199,7 @@ public enum ContextMenuItem {
             return getUserId(ma, msgId, MyDatabase.Msg.AUTHOR_ID);
         }
 
+        @Override
         void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
             if (editorData.recipientId != 0) {
                 /**
@@ -379,9 +380,9 @@ public enum ContextMenuItem {
     
     private void executeAsync1(final MessageContextMenu menu, final MyAccount ma) {
         AsyncTaskLauncher.execute(TAG,
-                new AsyncTask<Void, Void, MessageEditorData>() {
+                new MyAsyncTask<Void, Void, MessageEditorData>(TAG + name()) {
                     @Override
-                    protected MessageEditorData doInBackground(Void... params) {
+                    protected MessageEditorData doInBackground2(Void... params) {
                         MyLog.v(ContextMenuItem.this, "execute async started. msgId=" + menu.getMsgId());
                         return executeAsync(ma, menu.getMsgId());
                     }
@@ -390,11 +391,6 @@ public enum ContextMenuItem {
                     protected void onPostExecute(MessageEditorData editorData) {
                         MyLog.v(ContextMenuItem.this, "execute async ended");
                         executeOnUiThread(menu, editorData);
-                    }
-
-                    @Override
-                    public String toString() {
-                        return TAG + "; " + super.toString();
                     }
                 }
         );

@@ -30,10 +30,11 @@ import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.msg.TimelineActivity;
 import org.andstatus.app.msg.TimelineTypeSelector;
+import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
-import org.andstatus.app.util.AsyncTaskLauncher;
+import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.util.MyLog;
 
 public enum UserListContextMenuItem {
@@ -151,9 +152,9 @@ public enum UserListContextMenuItem {
     
     private void executeAsync1(final UserListContextMenu menu, final MyAccount ma) {
         AsyncTaskLauncher.execute(TAG,
-                new AsyncTask<Void, Void, Void>() {
+                new MyAsyncTask<Void, Void, Void>(TAG + name()) {
                     @Override
-                    protected Void doInBackground(Void... params) {
+                    protected Void doInBackground2(Void... params) {
                         MyLog.v(this, "execute async started. "
                                 + menu.getViewItem().mbUser.getNamePreferablyWebFingerId());
                         executeAsync(menu, ma);

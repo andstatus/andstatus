@@ -18,13 +18,13 @@ package org.andstatus.app.data;
 
 import android.app.Activity;
 import android.database.sqlite.SQLiteDatabase;
-import android.os.AsyncTask;
 
 import net.jcip.annotations.GuardedBy;
 
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.util.AsyncTaskLauncher;
+import org.andstatus.app.os.AsyncTaskLauncher;
+import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.util.MyLog;
 
 public class MyDatabaseConverterController {
@@ -98,10 +98,10 @@ public class MyDatabaseConverterController {
         new AsyncTaskLauncher<Activity>().execute(TAG, new AsyncUpgrade(), true, upgradeRequestor);
     }
     
-    private static class AsyncUpgrade extends AsyncTask<Activity, Void, Void> {
+    private static class AsyncUpgrade extends MyAsyncTask<Activity, Void, Void> {
 
         @Override
-        protected Void doInBackground(Activity... activity) {
+        protected Void doInBackground2(Activity... activity) {
             boolean success = false;
             try {
                 synchronized(UPGRADE_LOCK) {

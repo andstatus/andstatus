@@ -205,30 +205,41 @@ public class DataPruner {
         final String method = "pruneLogs";
         long latestTimestamp = System.currentTimeMillis() 
                 - java.util.concurrent.TimeUnit.DAYS.toMillis(maxDaysToKeep);
-        long count = 0;
+        long deletedCount = 0;
         File dir = MyLog.getLogDir(true);
         if (dir == null) {
-            return count;
+            return deletedCount;
         }
+        long errorCount = 0;
+        long skippedCount = 0;
         for (String filename : dir.list()) {
             File file = new File(dir, filename);
             if (file.isFile() && (file.lastModified() < latestTimestamp)) {
                 if (file.delete()) {
-                    count++;
-                    MyLog.v(this, method + "; deleted " + file.getName());
+                    deletedCount++;
+                    if (deletedCount < 10 && MyLog.isVerboseEnabled()) {
+                        MyLog.v(this, method + "; deleted: " + file.getName());
+                    }
                 } else {
-                    MyLog.v(this, method + " couldn't delete: " + file.getAbsolutePath());
+                    errorCount++;
+                    if (errorCount < 10 && MyLog.isVerboseEnabled()) {
+                        MyLog.v(this, method + "; couldn't delete: " + file.getAbsolutePath());
+                    }
                 }
             } else {
-                MyLog.v(this, method + "; skipped " + file.getName() + ", modified " + new Date(file.lastModified()).toString());
+                skippedCount++;
+                if (skippedCount < 10 && MyLog.isVerboseEnabled()) {
+                    MyLog.v(this, method + "; skipped: " + file.getName() + ", modified " + new Date(file.lastModified()).toString());
+                }
             }
         }
         if (MyLog.isVerboseEnabled()) {
             MyLog.v(this,
-                    method + "; deleted " + count
-                    + " files, before " + new Date(latestTimestamp).toString());
+                    method + "; deleted " + deletedCount
+                    + " files, before " + new Date(latestTimestamp).toString()
+                    + ", skipped " + skippedCount + ", couldn't delete " + errorCount);
         }
-        return count;
+        return deletedCount;
     }
 
     /**

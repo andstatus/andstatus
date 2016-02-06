@@ -17,7 +17,6 @@
 package org.andstatus.app;
 
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.AsyncTask.Status;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
@@ -30,12 +29,13 @@ import net.jcip.annotations.GuardedBy;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.ParsedUri;
+import org.andstatus.app.os.AsyncTaskLauncher;
+import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.MyServiceEvent;
 import org.andstatus.app.service.MyServiceEventsListener;
 import org.andstatus.app.service.MyServiceEventsReceiver;
 import org.andstatus.app.service.MyServiceManager;
-import org.andstatus.app.util.AsyncTaskLauncher;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
@@ -114,9 +114,11 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
             if (isLoading()) {
                 msgLog = "Ignored " + msgLog + ", " + mWorkingLoader;
             } else {
-                mWorkingLoader = new AsyncLoader();
-                loaderIsWorking = true;
-                new AsyncTaskLauncher<Bundle>().execute(this, mWorkingLoader, true, args);
+                AsyncLoader newLoader = new AsyncLoader(MyLog.objTagToString(this) + mInstanceId);
+                if (new AsyncTaskLauncher<Bundle>().execute(this, newLoader, true, args)) {
+                    mWorkingLoader = newLoader;
+                    loaderIsWorking = true;
+                }
             }
         }
         MyLog.v(this, "Ended " + msgLog);
@@ -125,7 +127,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
     public boolean isLoading() {
         boolean reset = false;
         synchronized (loaderLock) {
-            if (loaderIsWorking && mWorkingLoader.getStatus() == Status.FINISHED) {
+            if (loaderIsWorking && !mWorkingLoader.needsBackgroundWork()) {
                 reset = true;
                 loaderIsWorking = false;
             }
@@ -153,26 +155,29 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
     
     protected abstract SyncLoader newSyncLoader(Bundle args);
     
-    private class AsyncLoader extends AsyncTask<Bundle, String, SyncLoader> implements LoadableListActivity.ProgressPublisher {
-        private volatile long timeStarted = System.currentTimeMillis();
-        private volatile long timeLoaded = 0;
-        private volatile long timeCompleted = 0;
+    private class AsyncLoader extends MyAsyncTask<Bundle, String, SyncLoader> implements LoadableListActivity.ProgressPublisher {
         private SyncLoader mSyncLoader = null;
+
+        public AsyncLoader(String taskId) {
+            super(taskId);
+        }
+
+        public AsyncLoader() {
+            super();
+        }
 
         SyncLoader getSyncLoader() {
             return mSyncLoader == null ? newSyncLoader(null) : mSyncLoader;
         }
 
         @Override
-        protected SyncLoader doInBackground(Bundle... params) {
-            timeStarted = System.currentTimeMillis();
+        protected SyncLoader doInBackground2(Bundle... params) {
             publishProgress("...");
             SyncLoader loader = newSyncLoader(params[0]);
             if (ma.isValidAndSucceeded()) {
                 loader.allowLoadingFromInternet();
             }
             loader.load(this);
-            timeLoaded = System.currentTimeMillis();
             return loader;
         }
 
@@ -201,7 +206,6 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
 
         @Override
         protected void onPostExecute(SyncLoader loader) {
-            timeCompleted = System.currentTimeMillis();
             mSyncLoader = loader;
             updateCompletedLoader();
             resetIsWorkingFlag();
@@ -212,18 +216,17 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
             } catch (Exception e) {
                 MyLog.d(this,"onPostExecute", e);
             }
-            long timeTotal = timeCompleted - timeStarted;
+            long endedAt = System.currentTimeMillis();
+            long timeTotal = endedAt - createdAt;
             MyLog.v(this, "Load completed, "
                     + (mSyncLoader == null ? "?" : mSyncLoader.size()) + " items, "
                     + timeTotal + "ms total, "
-                    + (timeCompleted - timeLoaded) + "ms on UI thread");
+                    + (endedAt - backgroundEndedAt) + "ms on UI thread");
         }
 
         @Override
         public String toString() {
-            return MyLog.objTagToString(this) + "; " + this.getStatus()
-                    + ", since=" + RelativeTime.secondsAgo(timeStarted)
-                    + ", " + (mSyncLoader == null ? "" : mSyncLoader);
+            return super.toString() + (mSyncLoader == null ? "" : "; " + mSyncLoader);
         }
     }
 

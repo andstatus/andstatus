@@ -5,15 +5,15 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.text.TextUtils;
 
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.MyDatabase.Download;
+import org.andstatus.app.os.AsyncTaskLauncher;
+import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
-import org.andstatus.app.util.AsyncTaskLauncher;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.UriUtils;
@@ -449,16 +449,11 @@ public class DownloadData {
 
     public static void asyncRequestDownload(final long downloadId) {
         AsyncTaskLauncher.execute(TAG,
-                new AsyncTask<Void, Void, Void>() {
+                new MyAsyncTask<Void, Void, Void>(TAG + downloadId) {
                     @Override
-                    protected Void doInBackground(Void... params) {
+                    protected Void doInBackground2(Void... params) {
                         DownloadData.fromId(downloadId).requestDownload();
                         return null;
-                    }
-
-                    @Override
-                    public String toString() {
-                        return TAG + "; " + super.toString();
                     }
                 }
         );

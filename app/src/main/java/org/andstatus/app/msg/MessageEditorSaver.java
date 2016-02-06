@@ -17,13 +17,13 @@
 package org.andstatus.app.msg;
 
 import android.net.Uri;
-import android.os.AsyncTask;
 
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MatchedUri;
+import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceEvent;
@@ -35,7 +35,7 @@ import org.andstatus.app.util.MyLog;
 /**
  * Asynchronously save, delete and send a message, prepared by {@link MessageEditor}
  */
-public class MessageEditorSaver extends AsyncTask<MessageEditorCommand, Void, MessageEditorData> {
+public class MessageEditorSaver extends MyAsyncTask<MessageEditorCommand, Void, MessageEditorData> {
     final MessageEditor editor;
     volatile MessageEditorCommand command = new MessageEditorCommand(MessageEditorData.INVALID);
 
@@ -44,7 +44,7 @@ public class MessageEditorSaver extends AsyncTask<MessageEditorCommand, Void, Me
     }
 
     @Override
-    protected MessageEditorData doInBackground(MessageEditorCommand... params) {
+    protected MessageEditorData doInBackground2(MessageEditorCommand... params) {
         command = params[0];
         MyLog.v(MessageEditorData.TAG, "Started: " + command);
         if (!command.acquireLock(true)) {
