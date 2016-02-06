@@ -73,11 +73,7 @@ public class MyService extends Service {
     private final Object executorLock = new Object();
     @GuardedBy("executorLock")
     private QueueExecutor mExecutor = null;
-    @GuardedBy("executorLock")
-    private long mExecutorStartedAt = 0;
-    @GuardedBy("executorLock")
-    private long mExecutorEndedAt = 0;
-    
+
     private final Object heartBeatLock = new Object();
     @GuardedBy("heartBeatLock")
     private HeartBeat mHeartBeat = null;
@@ -380,7 +376,7 @@ public class MyService extends Service {
     private void startExecution() {
         acquireWakeLock();
         try {
-            startExecutor();
+            ensureExecutorStarted();
         } catch (Exception e) {
             MyLog.i(this, "Couldn't startExecutor", e);
             couldStopExecutor(true);
@@ -388,11 +384,12 @@ public class MyService extends Service {
         }
     }
     
-    private void startExecutor() {
-        final String method = "startExecutor";
+    private void ensureExecutorStarted() {
+        final String method = "ensureExecutorStarted";
         StringBuilder logMessageBuilder = new StringBuilder();
         synchronized(executorLock) {
             if ( mExecutor != null && !mExecutor.needsBackgroundWork()) {
+                logMessageBuilder.append(" Removing used Executor " + mExecutor);
                 removeExecutor(logMessageBuilder);
             }
             if ( mExecutor != null && !isExecutorReallyWorkingNow()) {
@@ -408,8 +405,6 @@ public class MyService extends Service {
                 logMessageBuilder.append(" Adding and starting new Executor " + newExecutor);
                 if (AsyncTaskLauncher.execute(this, newExecutor)) {
                     mExecutor = newExecutor;
-                    mExecutorStartedAt = System.currentTimeMillis();
-                    mExecutorEndedAt = 0;
                 } else {
                     logMessageBuilder.append(" New executor was not added");
                 }
@@ -431,8 +426,6 @@ public class MyService extends Service {
             }
             logMessageBuilder.append(" Removing Executor " + mExecutor);
             mExecutor = null;
-            mExecutorStartedAt = 0;
-            mExecutorEndedAt = 0;
         }
     }
 
@@ -478,7 +471,7 @@ public class MyService extends Service {
     
     private boolean isExecutorReallyWorkingNow() {
         synchronized(executorLock) {
-          return mExecutor != null && mExecutorStartedAt != 0 && mExecutor.isReallyWorking();
+          return mExecutor != null && mExecutor.needsBackgroundWork() && mExecutor.isReallyWorking();
         }        
     }
     
@@ -566,7 +559,7 @@ public class MyService extends Service {
         StringBuilder logMessageBuilder = new StringBuilder();
         boolean could = true;
         synchronized(executorLock) {
-            if (mExecutor == null || mExecutorStartedAt == 0) {
+            if (mExecutor == null || !mExecutor.needsBackgroundWork()) {
                 // Ok
             } else if ( mExecutor.isReallyWorking() ) {
                 if (forceNow) {
@@ -810,9 +803,6 @@ public class MyService extends Service {
         }
 
         private void onEndedExecution(String method) {
-            synchronized(executorLock) {
-                mExecutorEndedAt = System.currentTimeMillis();
-            }
             MyLog.v(this, method);
             currentlyExecuting = null;
             currentlyExecutingSince = 0;
@@ -828,41 +818,21 @@ public class MyService extends Service {
         @Override
         public String toString() {
             StringBuilder sb = new StringBuilder(64);
-            long executorStartedAt2 = 0;
-            long executorEndedAt2 = 0;
-            synchronized(executorLock) {
-                executorStartedAt2 = mExecutorStartedAt;
-                executorEndedAt2 = mExecutorEndedAt;
-            }
-            if (executorStartedAt2 > 0) {
-                sb.append("started:" + RelativeTime.getDifference(getBaseContext(), executorStartedAt2) + ",");
-            } else {
-                sb.append("not started,");
-            }
             if (currentlyExecuting != null && currentlyExecutingSince > 0) {
-                sb.append("currentlyExecuting:" + currentlyExecuting + ",");
-                sb.append("since:" + RelativeTime.getDifference(getBaseContext(), currentlyExecutingSince) + ",");
-            }
-            if (executorEndedAt2 != 0) {
-                sb.append("ended:" + RelativeTime.getDifference(getBaseContext(), executorEndedAt2) + ",");
-            }
-            sb.append("status:" + getStatus() + ",");
-            if (isCancelled()) {
-                sb.append("cancelled,");
+                sb.append("currentlyExecuting: " + currentlyExecuting + ", ");
+                sb.append("since: " + RelativeTime.getDifference(getBaseContext(), currentlyExecutingSince) + ", ");
             }
             if (isStopping()) {
-                sb.append("stopping,");
+                sb.append("stopping, ");
             }
             sb.append(super.toString());
             return MyLog.formatKeyValue(this, sb.toString());
         }
         
         boolean isReallyWorking() {
-            synchronized (executorLock) {
-                if (mExecutorEndedAt > 0) {
-                    return !RelativeTime.moreSecondsAgoThan(mExecutorEndedAt,
-                            DELAY_AFTER_EXECUTOR_ENDED_SECONDS);
-                }
+            if (backgroundEndedAt > 0) {
+                return !RelativeTime.moreSecondsAgoThan(backgroundEndedAt,
+                        DELAY_AFTER_EXECUTOR_ENDED_SECONDS);
             }
             if ( !needsBackgroundWork()
                     || currentlyExecuting == null
@@ -923,7 +893,12 @@ public class MyService extends Service {
         protected void onProgressUpdate(Long... values) {
             mIteration = values[0];
             previousBeat = MyLog.uniqueCurrentTimeMS();
-            MyLog.v(this, "onProgressUpdate; " + this);
+            if (MyLog.isVerboseEnabled()) {
+                MyLog.v(this, "onProgressUpdate; " + this);
+                if (RelativeTime.moreSecondsAgoThan(createdAt, QueueExecutor.MAX_EXECUTION_TIME_SECONDS)) {
+                    MyLog.v(this, AsyncTaskLauncher.threadPoolInfo());
+                }
+            }
             startStopExecution();
         }
 

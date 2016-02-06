@@ -93,27 +93,33 @@ public class AsyncTaskLauncher<Params> {
         long pendingCount = 0;
         long queuedCount = 0;
         long runningCount = 0;
+        long finishingCount = 0;
         long finishedCount = 0;
         long otherCount = 0;
         for (MyAsyncTask<?, ?, ?> launched : launchedTasks) {
             switch (launched.getStatus()) {
+                case PENDING:
+                    pendingCount++;
+                    builder.append("P " + pendingCount + ". " + launched.toString() + "\n");
+                    break;
                 case RUNNING:
                     if (launched.backgroundStartedAt == 0) {
                         queuedCount++;
                         builder.append("Q " + queuedCount + ". " + launched.toString() + "\n");
-                    } else {
+                    } else if (launched.backgroundEndedAt == 0) {
                         runningCount++;
                         builder.append("R " + runningCount + ". " + launched.toString() + "\n");
+                    } else {
+                        finishingCount++;
+                        builder.append("F " + finishingCount + ". " + launched.toString() + "\n");
                     }
-                    break;
-                case PENDING:
-                    pendingCount++;
                     break;
                 case FINISHED:
                     finishedCount++;
                     break;
                 default:
                     otherCount++;
+                    builder.append("O " + otherCount + ". " + launched.toString() + "\n");
                     break;
             }
         }
@@ -126,6 +132,9 @@ public class AsyncTaskLauncher<Params> {
             builder.append("; queued: " + queuedCount);
         }
         builder.append("; running: " + runningCount);
+        if (finishingCount > 0) {
+            builder.append("; finishing: " + finishingCount);
+        }
         if (finishedCount > 0) {
             builder.append("; just finished: " + finishedCount);
         }

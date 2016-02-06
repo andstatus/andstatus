@@ -96,22 +96,35 @@ public abstract class MyAsyncTask<Params, Progress, Result> extends AsyncTask<Pa
     }
 
     private String stateSummary() {
-        if (getStatus() != Status.RUNNING) {
-            return getStatus().name();
+        String summary = "";
+        switch (getStatus()) {
+            case PENDING:
+                summary = "PENDING " + RelativeTime.secondsAgo(createdAt) + "sec ago";
+                break;
+            case FINISHED:
+                if (backgroundEndedAt == 0) {
+                    summary = "FINISHED, but didn't complete";
+                } else {
+                    summary = "FINISHED " + RelativeTime.secondsAgo(backgroundEndedAt) + "sec ago";
+                }
+                break;
+            default:
+                if (backgroundStartedAt == 0) {
+                    summary = "QUEUED " + RelativeTime.secondsAgo(createdAt) + "sec ago";
+                } else if (backgroundEndedAt == 0) {
+                    summary = "RUNNING " + RelativeTime.secondsAgo(backgroundStartedAt) + "sec";
+                } else {
+                    summary = "FINISHING " +  RelativeTime.secondsAgo(backgroundEndedAt) + "sec ago";
+                }
+                break;
         }
-        if (backgroundStartedAt == 0) {
-            return "QUEUED";
+        if (isCancelled()) {
+            summary += ", cancelled";
         }
-        if (backgroundEndedAt == 0) {
-            return "RUNNING " + RelativeTime.secondsAgo(backgroundStartedAt) + "sec";
-        }
-        return "FINISHING";
+        return summary;
     }
 
     public boolean needsBackgroundWork() {
-        if (isCancelled()) {
-            return false;
-        }
         switch (getStatus()) {
             case PENDING:
                 return true;
