@@ -261,7 +261,7 @@ public class MessageEditorTest extends ActivityInstrumentationTestCase2<Timeline
         openEditor();
         ListActivityTestHelper<TimelineActivity> helper =
                 new ListActivityTestHelper<>(this, ConversationActivity.class);
-        long msgId = helper.getListItemIdOfReply();
+        long msgId = helper.getListItemIdOfLoadedReply();
         String logMsg = "msgId=" + msgId;
 
         String body = MyQuery.msgIdToStringColumnValue(MyDatabase.Msg.BODY, msgId);

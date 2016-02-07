@@ -66,7 +66,9 @@ import org.andstatus.app.service.MyServiceEventsReceiver;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.service.QueueViewer;
 import org.andstatus.app.test.SelectorActivityMock;
+import org.andstatus.app.util.BundleUtils;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
 import org.andstatus.app.widget.MyBaseAdapter;
 import org.andstatus.app.widget.MySwipeRefreshLayout;
@@ -777,7 +779,12 @@ public class TimelineActivity extends LoadableListActivity implements
 
     @Override
     protected void showList(WhichPage whichPage) {
-        showList(TimelineListParameters.clone(getReferenceParametersFor(whichPage), whichPage));
+        showList(whichPage, TriState.FALSE);
+    }
+
+    protected void showList(WhichPage whichPage, TriState chainedRequest) {
+        showList(TimelineListParameters.clone(getReferenceParametersFor(whichPage), whichPage),
+                chainedRequest);
     }
 
     private TimelineListParameters getReferenceParametersFor(WhichPage whichPage) {
@@ -806,7 +813,7 @@ public class TimelineActivity extends LoadableListActivity implements
      * This is done asynchronously.
      * This method should be called from UI thread only.
      */
-    protected void showList(TimelineListParameters params) {
+    protected void showList(TimelineListParameters params, TriState chainedRequest) {
         final String method = "showList";
         if (params.isEmpty()) {
             MyLog.v(this, method + "; ignored empty request");
@@ -814,7 +821,7 @@ public class TimelineActivity extends LoadableListActivity implements
         }
         boolean isDifferentRequest = !params.equals(mListParametersToLoad);
         mListParametersToLoad = params;
-        if (isLoading()) {
+        if (isLoading() && chainedRequest != TriState.TRUE) {
             if(MyLog.isVerboseEnabled()) {
                 if (isDifferentRequest) {
                     MyLog.v(this, method + "; different while loading " + params.toSummary());
@@ -823,19 +830,24 @@ public class TimelineActivity extends LoadableListActivity implements
                 }
             }
         } else {
-            MyLog.v(this, method + "; requesting " + (isDifferentRequest ? "" : "duplicating ")
+            MyLog.v(this, method
+                    + (chainedRequest == TriState.TRUE ? "; chained" : "")
+                    + "; requesting " + (isDifferentRequest ? "" : "duplicating ")
                     + params.toSummary());
             saveListPosition();
             showLoading(method, getText(R.string.loading) + " "
                     + mListParametersToLoad.toSummary() + HORIZONTAL_ELLIPSIS);
-            super.showList(mListParametersToLoad.whichPage.toBundle());
+            super.showList(chainedRequest.toBundle(mListParametersToLoad.whichPage.toBundle(),
+                    IntentExtra.CHAINED_REQUEST.key));
         }
     }
 
     @Override
-    protected SyncLoader newSyncLoader(Bundle argsIn) {
+    protected SyncLoader newSyncLoader(Bundle args) {
         final String method = "newSyncLoader";
-        TimelineListParameters params = mListParametersToLoad == null ?
+        WhichPage whichPage = WhichPage.load(args);
+        TimelineListParameters params = mListParametersToLoad == null
+                || whichPage == WhichPage.EMPTY ?
                 new TimelineListParameters(this) : mListParametersToLoad;
         if (params.whichPage != WhichPage.EMPTY) {
             MyLog.v(this, method + ": " + params);
@@ -845,7 +857,7 @@ public class TimelineActivity extends LoadableListActivity implements
             }
             saveSearchQuery();
         }
-        return new TimelineLoader(params);
+        return new TimelineLoader(params, BundleUtils.fromBundle(args, IntentExtra.INSTANCE_ID.key));
     }
 
     private void saveSearchQuery() {
@@ -903,11 +915,11 @@ public class TimelineActivity extends LoadableListActivity implements
         updateScreen();
         clearNotifications();
         if (parametersChanged) {
-            MyLog.v(this, method + "; parameters changed, requesting " + anotherParams.toSummary());
-            showList(anotherParams);
+            MyLog.v(this, method + "; Parameters changed, requesting " + anotherParams.toSummary());
+            showList(anotherParams, TriState.TRUE);
         } else if (anotherPageToRequest != WhichPage.EMPTY) {
             MyLog.v(this, method + "; Nothing loaded, requesting " + anotherPageToRequest);
-            showList(anotherPageToRequest);
+            showList(anotherPageToRequest, TriState.TRUE);
         }
     }
 

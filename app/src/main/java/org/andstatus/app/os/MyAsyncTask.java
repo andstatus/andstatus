@@ -19,8 +19,11 @@ package org.andstatus.app.os;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 
+import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
+
+import java.util.concurrent.ThreadPoolExecutor;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -28,9 +31,20 @@ import org.andstatus.app.util.RelativeTime;
 public abstract class MyAsyncTask<Params, Progress, Result> extends AsyncTask<Params, Progress, Result> {
     private final String taskId;
     protected final long createdAt = MyLog.uniqueCurrentTimeMS();
+    protected final long instanceId = InstanceId.next();
     protected volatile long backgroundStartedAt;
     protected volatile long backgroundEndedAt;
     private boolean singleInstance = true;
+
+    {   // For single core processors
+        if (ThreadPoolExecutor.class.isAssignableFrom(THREAD_POOL_EXECUTOR.getClass())) {
+            ThreadPoolExecutor executor = (ThreadPoolExecutor) THREAD_POOL_EXECUTOR;
+            if (executor.getCorePoolSize() < 3) {
+                executor.setCorePoolSize(3);
+                executor.setMaximumPoolSize(4);
+            }
+        }
+    }
 
     public boolean isSingleInstance() {
         return singleInstance;
@@ -92,7 +106,7 @@ public abstract class MyAsyncTask<Params, Progress, Result> extends AsyncTask<Pa
         return taskId
                 + "; age " + RelativeTime.secondsAgo(createdAt) + "sec"
                 + "; " + stateSummary()
-                + "; " + super.toString();
+                + "; instanceId=" + instanceId + "; " + super.toString();
     }
 
     private String stateSummary() {

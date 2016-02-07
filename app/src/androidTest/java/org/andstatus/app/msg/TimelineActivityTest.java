@@ -79,7 +79,7 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
         TestSuite.waitForListLoaded(this, getActivity(), 10);
         assertTrue("MyService is available", MyServiceManager.isServiceAvailable());
         ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<TimelineActivity>(this, ConversationActivity.class);
-        long msgId = helper.getListItemIdOfReply();
+        long msgId = helper.getListItemIdOfLoadedReply();
         helper.selectListPosition(method, helper.getPositionOfListItemId(msgId));
         helper.clickListAtPosition(method, helper.getPositionOfListItemId(msgId));
         Activity nextActivity = helper.waitForNextActivity(method, 40000);
@@ -188,7 +188,7 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
         final String method = "testActAs";
         TestSuite.waitForListLoaded(this, getActivity(), 2);
         ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<TimelineActivity>(this, AccountSelector.class);
-        long msgId = helper.getListItemIdOfReply();
+        long msgId = helper.getListItemIdOfLoadedReply();
         String logMsg = "msgId:" + msgId
                 + "; text:'" + MyQuery.msgIdToStringColumnValue(MyDatabase.Msg.BODY, msgId) + "'";
         assertTrue(logMsg, helper.invokeContextMenuAction4ListItemId(method, msgId, ContextMenuItem.NONEXISTENT));

@@ -846,13 +846,12 @@ public class MyService extends Service {
     
     private class HeartBeat extends MyAsyncTask<Void, Long, Void> {
         private static final long HEARTBEAT_PERIOD_SECONDS = 11;
-        private final long mInstanceId = InstanceId.next();
         private volatile long previousBeat = createdAt;
         private volatile long mIteration = 0;
 
         @Override
         protected Void doInBackground2(Void... arg0) {
-            MyLog.v(this, "Started instance " + mInstanceId);
+            MyLog.v(this, "Started instance " + instanceId);
             String breakReason = "";
             for (long iteration = 1; iteration < 10000; iteration++) {
                 try {
@@ -895,24 +894,17 @@ public class MyService extends Service {
             previousBeat = MyLog.uniqueCurrentTimeMS();
             if (MyLog.isVerboseEnabled()) {
                 MyLog.v(this, "onProgressUpdate; " + this);
-                if (RelativeTime.moreSecondsAgoThan(createdAt, QueueExecutor.MAX_EXECUTION_TIME_SECONDS)) {
-                    MyLog.v(this, AsyncTaskLauncher.threadPoolInfo());
-                }
+            }
+            if (MyLog.isDebugEnabled() && RelativeTime.moreSecondsAgoThan(createdAt,
+                    QueueExecutor.MAX_EXECUTION_TIME_SECONDS)) {
+                MyLog.d(this, AsyncTaskLauncher.threadPoolInfo());
             }
             startStopExecution();
         }
 
         @Override
         public String toString() {
-            StringBuilder builder = new StringBuilder();
-            builder.append("HeartBeat [id=");
-            builder.append(mInstanceId);
-            builder.append(", since=");
-            builder.append(RelativeTime.secondsAgo(createdAt));
-            builder.append("sec, iteration=");
-            builder.append(mIteration);
-            builder.append("]");
-            return builder.toString();
+            return "HeartBeat " + mIteration + "; " + super.toString();
         }
         
         public boolean isReallyWorking() {

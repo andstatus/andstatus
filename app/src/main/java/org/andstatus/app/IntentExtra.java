@@ -37,6 +37,7 @@ public enum IntentExtra{
      * Command parameter: long - ID of the Tweet (or Msg) / User / Origin
      */
     ITEM_ID("ITEM_ID"),
+    INSTANCE_ID("INSTANCE_ID"),
     COMMAND_RESULT("COMMAND_RESULT"),
     /**
      * {@link MyServiceState}
@@ -111,7 +112,8 @@ public enum IntentExtra{
     IN_FOREGROUND("IN_FOREGROUND"),
     MANUALLY_LAUNCHED("MANUALLY_LAUNCHED"),
     IS_STEP("IS_STEP"),
-    
+    CHAINED_REQUEST("CHAINED_REQUEST"),
+
     UNKNOWN("UNKNOWN");
     
     public final String key;

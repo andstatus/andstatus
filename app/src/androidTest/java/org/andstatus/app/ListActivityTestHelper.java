@@ -27,6 +27,7 @@ import android.widget.ListAdapter;
 import android.widget.ListView;
 
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.msg.ContextMenuItem;
@@ -181,13 +182,16 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> extends Instru
         return mActivity.getListView();
     }
 
-    public long getListItemIdOfReply() {
+    public long getListItemIdOfLoadedReply() {
         long idOut = 0;
         for (int ind = 0; ind < getListAdapter().getCount(); ind++) {
             long itemId = getListAdapter().getItemId(ind);
             if (MyQuery.msgIdToLongColumnValue(MyDatabase.Msg.IN_REPLY_TO_MSG_ID, itemId) != 0) {
-                idOut = itemId;
-                break;
+                if (DownloadStatus.load(MyQuery.msgIdToStringColumnValue(MyDatabase.Msg.MSG_STATUS,
+                        itemId)) == DownloadStatus.LOADED) {
+                    idOut = itemId;
+                    break;
+                }
             }
         }
         assertTrue("getListItemIdOfReply in " + getListAdapter(), idOut > 0);

@@ -16,6 +16,8 @@
 
 package org.andstatus.app.util;
 
+import android.os.Bundle;
+
 public enum TriState {
     TRUE(2),
     FALSE(1),
@@ -34,6 +36,10 @@ public enum TriState {
             }
         }
         return UNKNOWN;
+    }
+
+    public static TriState fromBundle(Bundle bundle, String key) {
+        return fromId(BundleUtils.fromBundle(bundle, key, UNKNOWN.id));
     }
 
     public Long getId() {
@@ -57,7 +63,7 @@ public enum TriState {
     
     @Override
     public String toString() {
-        return "SSL mode:" + this.name();
+        return "TriState:" + this.name();
     }
     
     public boolean toBoolean(boolean defaultValue) {
@@ -77,5 +83,14 @@ public enum TriState {
         } else {
             return FALSE;
         }
+    }
+
+    public Bundle toBundle(String key) {
+        return toBundle(new Bundle(), key);
+    }
+
+    public Bundle toBundle(Bundle bundle, String key) {
+        bundle.putLong(key, id);
+        return bundle;
     }
 }

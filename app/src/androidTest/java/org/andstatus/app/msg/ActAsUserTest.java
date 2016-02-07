@@ -58,7 +58,7 @@ public class ActAsUserTest extends android.test.ActivityInstrumentationTestCase2
         final String method = "testActAsUser";
         TestSuite.waitForListLoaded(this, mActivity, 2);
         ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<TimelineActivity>(this, ConversationActivity.class);
-        long msgId = helper.getListItemIdOfReply();
+        long msgId = helper.getListItemIdOfLoadedReply();
         String logMsg = "msgId=" + msgId;
 
         helper.invokeContextMenuAction4ListItemId(method, msgId, ContextMenuItem.NONEXISTENT);

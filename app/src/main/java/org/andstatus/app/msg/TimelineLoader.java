@@ -41,10 +41,11 @@ import java.util.ArrayList;
 public class TimelineLoader implements LoadableListActivity.SyncLoader {
     private final TimelineListParameters params;
     private volatile TimelinePage pageLoaded = null;
-    private final long instanceId = InstanceId.next();
+    private final long instanceId;
 
-    public TimelineLoader(@NonNull TimelineListParameters params) {
+    public TimelineLoader(@NonNull TimelineListParameters params, long instanceId) {
         this.params = params;
+        this.instanceId = instanceId;
     }
 
     @Override

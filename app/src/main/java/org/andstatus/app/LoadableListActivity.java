@@ -22,6 +22,7 @@ import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.text.TextUtils;
 import android.view.MenuItem;
+import android.widget.ListAdapter;
 import android.widget.ListView;
 
 import net.jcip.annotations.GuardedBy;
@@ -36,10 +37,12 @@ import org.andstatus.app.service.MyServiceEvent;
 import org.andstatus.app.service.MyServiceEventsListener;
 import org.andstatus.app.service.MyServiceEventsReceiver;
 import org.andstatus.app.service.MyServiceManager;
+import org.andstatus.app.util.BundleUtils;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
+import org.andstatus.app.util.TriState;
 import org.andstatus.app.widget.MyBaseAdapter;
 
 /**
@@ -81,7 +84,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
         super.onCreate(savedInstanceState);
 
         configChangeTime = MyContextHolder.initialize(this, this);
-        if (MyLog.isLoggable(this, MyLog.DEBUG)) {
+        if (MyLog.isDebugEnabled()) {
             MyLog.d(this, "onCreate instanceId=" + mInstanceId
                             + " , config changed " + RelativeTime.secondsAgo(configChangeTime)
                             + " seconds ago"
@@ -106,28 +109,35 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
     }
 
     protected void showList(Bundle args) {
+        WhichPage whichPage = WhichPage.load(args);
+        TriState chainedRequest = TriState.fromBundle(args, IntentExtra.CHAINED_REQUEST.key);
         String msgLog = "showList, instanceId=" + mInstanceId
-                + ", " + WhichPage.load(args) + " page"
+                + (chainedRequest == TriState.TRUE ? ", chained" : "")
+                + ", " + whichPage + " page"
                 + (centralItemId == 0 ? "" : ", center:" + centralItemId);
-        MyLog.v(this, "Started " + msgLog);
-        synchronized (loaderLock) {
-            if (isLoading()) {
-                msgLog = "Ignored " + msgLog + ", " + mWorkingLoader;
-            } else {
-                AsyncLoader newLoader = new AsyncLoader(MyLog.objTagToString(this) + mInstanceId);
-                if (new AsyncTaskLauncher<Bundle>().execute(this, newLoader, true, args)) {
-                    mWorkingLoader = newLoader;
-                    loaderIsWorking = true;
+        if (whichPage == WhichPage.EMPTY) {
+            MyLog.v(this, "Ignored Empty page request: " + msgLog);
+        } else {
+            MyLog.v(this, "Started " + msgLog);
+            synchronized (loaderLock) {
+                if (isLoading() && chainedRequest != TriState.TRUE) {
+                    msgLog = "Ignored " + msgLog + ", " + mWorkingLoader;
+                } else {
+                    AsyncLoader newLoader = new AsyncLoader(MyLog.objTagToString(this) + mInstanceId);
+                    if (new AsyncTaskLauncher<Bundle>().execute(this, newLoader, true, args)) {
+                        mWorkingLoader = newLoader;
+                        loaderIsWorking = true;
+                    }
                 }
             }
+            MyLog.v(this, "Ended " + msgLog);
         }
-        MyLog.v(this, "Ended " + msgLog);
     }
 
     public boolean isLoading() {
         boolean reset = false;
         synchronized (loaderLock) {
-            if (loaderIsWorking && !mWorkingLoader.needsBackgroundWork()) {
+            if (loaderIsWorking && mWorkingLoader.getStatus() == Status.FINISHED) {
                 reset = true;
                 loaderIsWorking = false;
             }
@@ -173,7 +183,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
         @Override
         protected SyncLoader doInBackground2(Bundle... params) {
             publishProgress("...");
-            SyncLoader loader = newSyncLoader(params[0]);
+            SyncLoader loader = newSyncLoader(BundleUtils.toBundle(params[0], IntentExtra.INSTANCE_ID.key, instanceId));
             if (ma.isValidAndSucceeded()) {
                 loader.allowLoadingFromInternet();
             }
@@ -208,7 +218,6 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
         protected void onPostExecute(SyncLoader loader) {
             mSyncLoader = loader;
             updateCompletedLoader();
-            resetIsWorkingFlag();
             try {
                 if (!mIsPaused) {
                     onLoadFinished(true);
@@ -218,10 +227,11 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
             }
             long endedAt = System.currentTimeMillis();
             long timeTotal = endedAt - createdAt;
-            MyLog.v(this, "Load completed, "
+            MyLog.v(this, String.valueOf(instanceId) + " Load completed, "
                     + (mSyncLoader == null ? "?" : mSyncLoader.size()) + " items, "
                     + timeTotal + "ms total, "
                     + (endedAt - backgroundEndedAt) + "ms on UI thread");
+            resetIsWorkingFlag();
         }
 
         @Override
@@ -286,9 +296,8 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
     }
     
     protected int size() {
-        synchronized(loaderLock) {
-            return getLoaded().size();
-        }
+        ListAdapter adapter = getListAdapter();
+        return adapter == null ? 0 : adapter.getCount();
     }
 
     protected SyncLoader getLoaded() {
@@ -307,6 +316,9 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
         }
         myServiceReceiver.registerReceiver(this);
         MyContextHolder.get().setInForeground(true);
+        if (size() == 0 && !isLoading()) {
+            showList(WhichPage.NEW);
+        }
     }
 
     @Override
