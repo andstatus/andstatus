@@ -40,6 +40,7 @@ public class MessageEditorSaver extends MyAsyncTask<MessageEditorCommand, Void, 
     volatile MessageEditorCommand command = new MessageEditorCommand(MessageEditorData.INVALID);
 
     public MessageEditorSaver(MessageEditor editor) {
+        super(PoolEnum.QUICK_UI);
         this.editor = editor;
     }
 

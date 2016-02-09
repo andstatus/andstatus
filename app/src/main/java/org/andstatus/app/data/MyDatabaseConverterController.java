@@ -100,6 +100,10 @@ public class MyDatabaseConverterController {
     
     private static class AsyncUpgrade extends MyAsyncTask<Activity, Void, Void> {
 
+        public AsyncUpgrade() {
+            super(PoolEnum.LONG_UI);
+        }
+
         @Override
         protected Void doInBackground2(Activity... activity) {
             boolean success = false;

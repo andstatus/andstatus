@@ -873,16 +873,16 @@ public class TimelineActivity extends LoadableListActivity implements
     }
 
     @Override
-    public void onLoadFinished(boolean restorePosition_in) {
+    public void onLoadFinished(boolean keepCurrentPosition_in) {
         final String method = "onLoadFinished";
         TimelineLoader myLoader = (TimelineLoader) getLoaded();
         mListParametersLoaded = myLoader.getParams();
         MyLog.v(this, method + "; " + mListParametersLoaded.toSummary());
 
         // TODO start: Move this inside superclass
-        boolean restorePosition = restorePosition_in && isPositionRestored()
+        boolean keepCurrentPosition = keepCurrentPosition_in && isPositionRestored()
                 && mListParametersLoaded.whichPage != WhichPage.TOP;
-        super.onLoadFinished(restorePosition);
+        super.onLoadFinished(keepCurrentPosition);
         if (mListParametersLoaded.whichPage == WhichPage.TOP) {
             TimelineListPositionStorage.setPosition(getListView(), 0);
             getListAdapter().setPositionRestored(true);

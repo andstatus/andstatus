@@ -53,7 +53,7 @@ public class AsyncTaskLauncher<Params> {
             if (asyncTask.isSingleInstance() && foundUnfinished(asyncTask)) {
                 skippedCount.incrementAndGet();
             } else {
-                asyncTask.executeOnExecutor(MyAsyncTask.THREAD_POOL_EXECUTOR, params);
+                asyncTask.executeOnExecutor(asyncTask.pool.getPool(), params);
                 launchedTasks.add(asyncTask);
                 launchedCount.incrementAndGet();
                 launched = true;
@@ -90,7 +90,11 @@ public class AsyncTaskLauncher<Params> {
     }
 
     public static String threadPoolInfo() {
-        return MyAsyncTask.THREAD_POOL_EXECUTOR.toString() + " \n" + getLaunchedTasksInfo();
+        StringBuilder builder = new StringBuilder(getLaunchedTasksInfo());
+        for (MyAsyncTask.PoolEnum pool : MyAsyncTask.PoolEnum.values()) {
+            builder.append("\n" + pool.name() + ": " + pool.getPool().toString());
+        }
+        return builder.toString();
     }
 
     private static String getLaunchedTasksInfo() {

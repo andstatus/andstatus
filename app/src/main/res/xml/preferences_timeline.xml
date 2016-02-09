@@ -49,5 +49,6 @@
         android:defaultValue="true" />
     <org.andstatus.app.context.MultilineCheckBoxPreference android:key="refresh_timeline_automatically"
         android:title="@string/refresh_timeline_automatically_title"
+        android:summary="@string/refresh_timeline_automatically_summary"
         android:defaultValue="true" />
 </PreferenceScreen>

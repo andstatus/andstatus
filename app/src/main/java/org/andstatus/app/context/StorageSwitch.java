@@ -110,6 +110,10 @@ public class StorageSwitch {
     private class MoveDataBetweenStoragesTask extends MyAsyncTask<Void, Void, TaskResult> {
         private ProgressDialog dlg;
 
+        public MoveDataBetweenStoragesTask() {
+            super(PoolEnum.LONG_UI);
+        }
+
         @Override
         protected void onPreExecute() {
             // indeterminate duration, not cancelable

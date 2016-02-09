@@ -72,9 +72,9 @@ class TimelineListPositionStorage {
     }
 
     void save() {
-        final String method = "saveListPosition";
+        final String method = "save";
         if (mListView == null || mAdapter == null || mListParameters.isEmpty() || mAdapter.getCount() == 0) {
-            MyLog.v(this, method + ": skipped");
+            MyLog.v(this, method + "; skipped");
             return;
         }
         TimelineAdapter la = mAdapter;
@@ -88,7 +88,7 @@ class TimelineListPositionStorage {
         long minSentDate = 0;
         if (firstVisiblePosition >= 0) {
             firstVisibleItemId = la.getItemId(firstVisiblePosition);
-            MyLog.v(this, method + " firstVisiblePos:" + firstVisiblePosition + " of " + itemCount
+            MyLog.v(this, method + "; firstVisiblePos:" + firstVisiblePosition + " of " + itemCount
                     + "; itemId:" + firstVisibleItemId);
             // We will load half of "page of messages" below (older) current top item
             lastPosition = firstVisiblePosition + TimelineListParameters.PAGE_SIZE / 2;
@@ -99,18 +99,24 @@ class TimelineListPositionStorage {
         }
 
         if (firstVisibleItemId <= 0) {
-            MyLog.v(this, method + " failed: no visible items for "
-                    + mListParameters.toTimelineTitleAndSubtitle());
             clear();
         } else {
             put(firstVisibleItemId, minSentDate);
-
-            if (MyLog.isVerboseEnabled()) {
-                MyLog.v(this, method + " succeeded key=" + keyFirstVisibleItemId + ", id="
-                        + firstVisibleItemId + ", pos=" + firstVisiblePosition + ", lastDate="
-                        + new Date(minSentDate).toString() + ", lastPos=" + lastPosition);
+        }
+        if (MyLog.isVerboseEnabled()) {
+            String msgLog = " key=" + keyFirstVisibleItemId
+                    + (TextUtils.isEmpty(queryString) ? "" : ", q='" + queryString + "'")
+                    + ", id=" + firstVisibleItemId + " at pos=" + firstVisiblePosition
+                    + ", minDate=" + ( minSentDate == 0 ? "0" : new Date(minSentDate).toString())
+                    + " at pos=" + lastPosition + " of " + itemCount;
+            if (firstVisibleItemId <= 0) {
+                MyLog.v(this, method + "; failed " + msgLog
+                        + "\n no visible items for " + mListParameters.toTimelineTitleAndSubtitle());
+            } else {
+                MyLog.v(this, method + "; succeeded " + msgLog);
             }
         }
+
     }
     
     void put(long firstVisibleItemId, long minSentDate) {
@@ -121,7 +127,7 @@ class TimelineListPositionStorage {
 
     private static final long NOT_FOUND_IN_LIST_POSITION_STORAGE = -4;
     private static final long NOT_FOUND_IN_SHARED_PREFERENCES = -1;
-    /** Valid data position value is > 0 */
+    /** Valid id is > 0 */
     long getFirstVisibleItemId() {
         long savedItemId = NOT_FOUND_IN_LIST_POSITION_STORAGE;
         if (isThisPositionStored()) {
@@ -158,10 +164,10 @@ class TimelineListPositionStorage {
     public void restore() {
         final String method = "restore";
         if (mListView == null || mAdapter == null || mListParameters.isEmpty() || mAdapter.getCount() == 0) {
-            MyLog.v(this, method + ": skipped");
+            MyLog.v(this, method + "; skipped");
             return;
         }
-        boolean loaded = false;
+        boolean restored = false;
         int position = -1;
         long firstItemId = -3;
         try {
@@ -171,7 +177,7 @@ class TimelineListPositionStorage {
             }
             if (position >= 0) {
                 mListView.setSelectionFromTop(position, 0);
-                loaded = true;
+                restored = true;
             } else {
                 // There is no stored position
                 if (mListParameters.whichPage.isYoungest()
@@ -190,16 +196,14 @@ class TimelineListPositionStorage {
         } catch (Exception e) {
             MyLog.v(this, method, e);
         }
-        if (loaded) {
-            if (MyLog.isVerboseEnabled()) {
-                MyLog.v(this, method + "; succeeded key=" + keyFirstVisibleItemId + ", id="
-                        + firstItemId +"; index=" + position);
-            }
-        } else {
-            if (MyLog.isVerboseEnabled()) {
-                MyLog.v(this, method + "; failed key=" + keyFirstVisibleItemId + ", id="
-                        + firstItemId);
-            }
+        if (MyLog.isVerboseEnabled()) {
+            MyLog.v(this, method + "; " + (restored ? "succeeded" : "failed" )
+                    + " key=" + keyFirstVisibleItemId
+                    + (TextUtils.isEmpty(queryString) ? "" : ", q='" + queryString + "'")
+                    + ", id=" + firstItemId + " at pos=" + position
+                    + " of " + mListView.getCount());
+        }
+        if (!restored) {
             clear();
         }
         mAdapter.setPositionRestored(true);
@@ -210,8 +214,7 @@ class TimelineListPositionStorage {
             return;
         }
         int viewHeight = listView.getHeight();
-        int childHeight;
-        childHeight = 30;
+        int childHeight = 30;
         int y = viewHeight - childHeight;
         if (MyLog.isVerboseEnabled()) {
             MyLog.v(TAG, "Set position of " + position + " item to " + y + "px");

@@ -240,9 +240,10 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
         }
     }
 
-    public void onLoadFinished(boolean restorePosition) {
+    public void onLoadFinished(boolean keepCurrentPosition) {
         updateTitle("");
-        if (restorePosition) {
+        boolean positionRestored = false;
+        if (keepCurrentPosition) {
             ListView list = getListView();
             // TODO: for a finer position restore see http://stackoverflow.com/questions/3014089/maintain-save-restore-scroll-position-when-returning-to-a-listview?rq=1
             long itemIdOfListPosition = centralItemId;
@@ -253,11 +254,12 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
             int firstListPosition = getListAdapter().getPositionById(itemIdOfListPosition);
             if (firstListPosition >= 0) {
                 list.setSelectionFromTop(firstListPosition, 0);
-                getListAdapter().setPositionRestored(true);
+                positionRestored = true;
             }
         } else {
             setListAdapter(newListAdapter());
         }
+        getListAdapter().setPositionRestored(positionRestored);
     }
 
     protected abstract MyBaseAdapter newListAdapter();

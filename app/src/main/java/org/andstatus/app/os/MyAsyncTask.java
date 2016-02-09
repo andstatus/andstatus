@@ -150,6 +150,7 @@ public abstract class MyAsyncTask<Params, Progress, Result> extends AsyncTask<Pa
     @Override
     public String toString() {
         return taskId
+                + " on " + pool.name()
                 + "; age " + RelativeTime.secondsAgo(createdAt) + "sec"
                 + "; " + stateSummary()
                 + "; instanceId=" + instanceId + "; " + super.toString();
