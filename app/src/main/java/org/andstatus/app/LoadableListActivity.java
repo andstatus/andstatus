@@ -169,7 +169,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
         private SyncLoader mSyncLoader = null;
 
         public AsyncLoader(String taskId) {
-            super(taskId);
+            super(taskId, PoolEnum.LONG_UI);
         }
 
         public AsyncLoader() {

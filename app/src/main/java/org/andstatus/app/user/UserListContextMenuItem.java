@@ -152,7 +152,7 @@ public enum UserListContextMenuItem {
     
     private void executeAsync1(final UserListContextMenu menu, final MyAccount ma) {
         AsyncTaskLauncher.execute(TAG,
-                new MyAsyncTask<Void, Void, Void>(TAG + name()) {
+                new MyAsyncTask<Void, Void, Void>(TAG + name(), MyAsyncTask.PoolEnum.QUICK_UI) {
                     @Override
                     protected Void doInBackground2(Void... params) {
                         MyLog.v(this, "execute async started. "

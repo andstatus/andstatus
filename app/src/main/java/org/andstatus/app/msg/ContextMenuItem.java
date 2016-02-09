@@ -380,7 +380,7 @@ public enum ContextMenuItem {
     
     private void executeAsync1(final MessageContextMenu menu, final MyAccount ma) {
         AsyncTaskLauncher.execute(TAG,
-                new MyAsyncTask<Void, Void, MessageEditorData>(TAG + name()) {
+                new MyAsyncTask<Void, Void, MessageEditorData>(TAG + name(), MyAsyncTask.PoolEnum.QUICK_UI) {
                     @Override
                     protected MessageEditorData doInBackground2(Void... params) {
                         MyLog.v(ContextMenuItem.this, "execute async started. msgId=" + menu.getMsgId());

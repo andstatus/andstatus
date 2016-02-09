@@ -28,7 +28,7 @@ public class AvatarData extends DownloadData {
 
     public static void asyncRequestDownload(final long userIdIn) {
         AsyncTaskLauncher.execute(TAG,
-                new MyAsyncTask<Void, Void, Void>(TAG + userIdIn) {
+                new MyAsyncTask<Void, Void, Void>(TAG + userIdIn, MyAsyncTask.PoolEnum.FILE_DOWNLOAD) {
                     @Override
                     protected Void doInBackground2(Void... params) {
                         getForUser(userIdIn).requestDownload();

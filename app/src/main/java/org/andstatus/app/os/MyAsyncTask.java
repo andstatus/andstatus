@@ -23,7 +23,10 @@ import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
 
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -46,6 +49,43 @@ public abstract class MyAsyncTask<Params, Progress, Result> extends AsyncTask<Pa
         }
     }
 
+
+    public enum PoolEnum {
+        SYNC,
+        FILE_DOWNLOAD,
+        QUICK_UI,
+        LONG_UI;
+
+        ThreadPoolExecutor getPool() {
+            switch (this) {
+                case QUICK_UI:
+                    return QUICK_UI_POOL_EXECUTOR;
+                case LONG_UI:
+                    return LONG_UI_POOL_EXECUTOR;
+                case FILE_DOWNLOAD:
+                    return FILE_DOWNLOAD_EXECUTOR;
+                default:
+                    return (ThreadPoolExecutor) MyAsyncTask.THREAD_POOL_EXECUTOR;
+            }
+        }
+    }
+
+    private static final BlockingQueue<Runnable> QUICK_UI_WORK_QUEUE =
+            new LinkedBlockingQueue<Runnable>(128);
+    private static final ThreadPoolExecutor QUICK_UI_POOL_EXECUTOR
+            = new ThreadPoolExecutor(1, 2, 1, TimeUnit.SECONDS, QUICK_UI_WORK_QUEUE);
+
+    private static final BlockingQueue<Runnable> LONG_UI_WORK_QUEUE =
+            new LinkedBlockingQueue<Runnable>(128);
+    private static final ThreadPoolExecutor LONG_UI_POOL_EXECUTOR
+            = new ThreadPoolExecutor(1, 2, 1, TimeUnit.SECONDS, LONG_UI_WORK_QUEUE);
+
+    private static final BlockingQueue<Runnable> FILE_DOWNLOAD_QUEUE =
+            new LinkedBlockingQueue<Runnable>(128);
+    private static final ThreadPoolExecutor FILE_DOWNLOAD_EXECUTOR
+            = new ThreadPoolExecutor(1, 2, 1, TimeUnit.SECONDS, FILE_DOWNLOAD_QUEUE);
+
+    public final PoolEnum pool;
     public boolean isSingleInstance() {
         return singleInstance;
     }
@@ -55,11 +95,17 @@ public abstract class MyAsyncTask<Params, Progress, Result> extends AsyncTask<Pa
     }
 
     public MyAsyncTask() {
-        this.taskId = this.getClass().getName();
+        this (PoolEnum.SYNC);
     }
 
-    public MyAsyncTask(@NonNull String taskId) {
+    public MyAsyncTask(PoolEnum pool) {
+        this.taskId = this.getClass().getName();
+        this.pool = pool;
+    }
+
+    public MyAsyncTask(@NonNull String taskId, PoolEnum pool) {
         this.taskId = taskId;
+        this.pool = pool;
     }
 
     @Override
