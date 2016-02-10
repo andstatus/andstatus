@@ -60,8 +60,8 @@ public class AsyncTaskLauncher<Params> {
             }
             removeFinishedTasks();
         } catch (RejectedExecutionException e) {
-            String msgLog = "Launching task:\n" + asyncTask.toString()
-                    + "\nOn pool:\n" + threadPoolInfo();
+            String msgLog = "Launching the task:\n" + asyncTask.toString()
+                    + "\n" + threadPoolInfo();
             MyLog.w(objTag, msgLog, e);
             if (throwOnFail) {
                 throw new RejectedExecutionException(MyLog.objTagToString(objTag) + "; "
@@ -90,15 +90,16 @@ public class AsyncTaskLauncher<Params> {
     }
 
     public static String threadPoolInfo() {
-        StringBuilder builder = new StringBuilder(getLaunchedTasksInfo());
+        StringBuilder builder = getLaunchedTasksInfo();
+        builder.append("\nThread pools:");
         for (MyAsyncTask.PoolEnum pool : MyAsyncTask.PoolEnum.values()) {
             builder.append("\n" + pool.name() + ": " + pool.getPool().toString());
         }
         return builder.toString();
     }
 
-    private static String getLaunchedTasksInfo() {
-        StringBuilder builder = new StringBuilder("Queued and Running tasks:\n");
+    private static StringBuilder getLaunchedTasksInfo() {
+        StringBuilder builder = new StringBuilder("\n");
         long pendingCount = 0;
         long queuedCount = 0;
         long runningCount = 0;
@@ -132,24 +133,26 @@ public class AsyncTaskLauncher<Params> {
                     break;
             }
         }
-        builder.append("Skipped: " + skippedCount.get() + ". ");
-        builder.append("Total launched: " + launchedCount.get());
+        StringBuilder builder2 = new StringBuilder("Tasks:\n");
+        builder2.append("Total launched: " + launchedCount.get());
         if (pendingCount > 0) {
-            builder.append("; pending: " + pendingCount);
+            builder2.append("; pending: " + pendingCount);
         }
         if (queuedCount > 0) {
-            builder.append("; queued: " + queuedCount);
+            builder2.append("; queued: " + queuedCount);
         }
-        builder.append("; running: " + runningCount);
+        builder2.append("; running: " + runningCount);
         if (finishingCount > 0) {
-            builder.append("; finishing: " + finishingCount);
+            builder2.append("; finishing: " + finishingCount);
         }
         if (finishedCount > 0) {
-            builder.append("; just finished: " + finishedCount);
+            builder2.append("; just finished: " + finishedCount);
         }
         if (otherCount > 0) {
-            builder.append("; other: " + otherCount);
+            builder2.append("; other: " + otherCount);
         }
-        return builder.toString();
+        builder2.append(". Skipped: " + skippedCount.get());
+        builder2.append(builder);        
+        return builder2;
     }
 }

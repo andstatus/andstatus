@@ -184,12 +184,10 @@ public class QueueViewer extends MyListActivity implements MyServiceEventsListen
     
     private List<QueueData> newListData() {
         List<QueueData> listData = new ArrayList<QueueData>();
+        showThreadPoolInfo(listData);
         loadQueue(listData, QueueType.CURRENT);
         loadQueue(listData, QueueType.RETRY);
         loadQueue(listData, QueueType.ERROR);
-        if (MyLog.isVerboseEnabled()) {
-            showThreadPoolInfo(listData);
-        }
         return listData;
     }
 
