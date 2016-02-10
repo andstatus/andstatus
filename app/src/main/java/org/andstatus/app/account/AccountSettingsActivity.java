@@ -710,6 +710,10 @@ public class AccountSettingsActivity extends MyActivity {
     private class OAuthRegisterClientTask extends MyAsyncTask<Void, Void, JSONObject> {
         private ProgressDialog dlg;
 
+        public OAuthRegisterClientTask() {
+            super(PoolEnum.LONG_UI);
+        }
+
         @Override
         protected void onPreExecute() {
             dlg = ProgressDialog.show(AccountSettingsActivity.this,
@@ -814,6 +818,10 @@ public class AccountSettingsActivity extends MyActivity {
      */
     private class OAuthAcquireRequestTokenTask extends MyAsyncTask<Void, Void, JSONObject> {
         private ProgressDialog dlg;
+
+        public OAuthAcquireRequestTokenTask() {
+            super(PoolEnum.LONG_UI);
+        }
 
         @Override
         protected void onPreExecute() {
@@ -932,6 +940,10 @@ public class AccountSettingsActivity extends MyActivity {
      */
     private class OAuthAcquireAccessTokenTask extends MyAsyncTask<Uri, Void, JSONObject> {
         private ProgressDialog dlg;
+
+        public OAuthAcquireAccessTokenTask() {
+            super(PoolEnum.LONG_UI);
+        }
 
         @Override
         protected void onPreExecute() {
@@ -1055,6 +1067,10 @@ public class AccountSettingsActivity extends MyActivity {
     private class VerifyCredentialsTask extends MyAsyncTask<Void, Void, JSONObject> {
         private ProgressDialog dlg;
         private boolean skip = false;
+
+        public VerifyCredentialsTask() {
+            super(PoolEnum.LONG_UI);
+        }
 
         @Override
         protected void onPreExecute() {

@@ -102,7 +102,11 @@ public class RestoreActivity extends MyActivity {
     
     private class RestoreTask extends MyAsyncTask<File, String, Boolean> {
         Boolean success = false;
-        
+
+        public RestoreTask() {
+            super(PoolEnum.LONG_UI);
+        }
+
         @Override
         protected Boolean doInBackground2(File... params) {
             MyBackupManager.restoreInteractively(params[0], new ProgressLogger.ProgressCallback() {

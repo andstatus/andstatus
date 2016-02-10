@@ -19,9 +19,7 @@ package org.andstatus.app.os;
 import org.andstatus.app.util.MyLog;
 
 import java.util.Queue;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.Executor;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -32,9 +30,65 @@ import java.util.concurrent.atomic.AtomicLong;
  * @author yvolk@yurivolkov.com
  */
 public class AsyncTaskLauncher<Params> {
+    private static final String TAG = AsyncTaskLauncher.class.getSimpleName();
+
     private static final AtomicLong launchedCount = new AtomicLong();
     private static final AtomicLong skippedCount = new AtomicLong();
     private static final Queue<MyAsyncTask<?, ?, ?>> launchedTasks = new ConcurrentLinkedQueue<>();
+
+    private static volatile ThreadPoolExecutor SYNC_POOL_EXECUTOR = null;
+    private static volatile ThreadPoolExecutor QUICK_UI_POOL_EXECUTOR = null;
+    private static volatile ThreadPoolExecutor LONG_UI_POOL_EXECUTOR = null;
+    private static volatile ThreadPoolExecutor FILE_DOWNLOAD_EXECUTOR = null;
+
+    private static ThreadPoolExecutor getExecutor(MyAsyncTask.PoolEnum pool) {
+        ThreadPoolExecutor executor;
+        switch (pool) {
+            case QUICK_UI:
+                executor = QUICK_UI_POOL_EXECUTOR;
+                break;
+            case LONG_UI:
+                executor = LONG_UI_POOL_EXECUTOR;
+                break;
+            case FILE_DOWNLOAD:
+                executor = FILE_DOWNLOAD_EXECUTOR;
+                break;
+            case SYNC:
+                executor = SYNC_POOL_EXECUTOR;
+                break;
+            default:
+                return (ThreadPoolExecutor) MyAsyncTask.THREAD_POOL_EXECUTOR;
+        }
+        if (executor != null && executor.isShutdown()) {
+            if (executor.isTerminating()) {
+                MyLog.v(TAG, "Pool " + pool.name() + " isTerminating. Applying shutdownNow: "
+                        + executor );
+                executor.shutdownNow();
+            }
+            removePoolTasks(pool);
+            executor = null;
+        }
+        if (executor == null) {
+            MyLog.v(TAG, "Creating pool " + pool.name());
+            executor = new ThreadPoolExecutor(pool.corePoolSize, pool.corePoolSize + 1,
+                    1, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(128));
+            switch (pool) {
+                case QUICK_UI:
+                    QUICK_UI_POOL_EXECUTOR = executor;
+                    break;
+                case LONG_UI:
+                    LONG_UI_POOL_EXECUTOR = executor;
+                    break;
+                case FILE_DOWNLOAD:
+                    FILE_DOWNLOAD_EXECUTOR = executor;
+                    break;
+                case SYNC:
+                    SYNC_POOL_EXECUTOR = executor;
+                    break;
+            }
+        }
+        return executor;
+    }
 
     public static boolean execute(Object objTag, MyAsyncTask<Void, ?, ?> asyncTask) {
         return execute(objTag, asyncTask, true);
@@ -53,7 +107,7 @@ public class AsyncTaskLauncher<Params> {
             if (asyncTask.isSingleInstance() && foundUnfinished(asyncTask)) {
                 skippedCount.incrementAndGet();
             } else {
-                asyncTask.executeOnExecutor(asyncTask.pool.getPool(), params);
+                asyncTask.executeOnExecutor(getExecutor(asyncTask.pool), params);
                 launchedTasks.add(asyncTask);
                 launchedCount.incrementAndGet();
                 launched = true;
@@ -81,9 +135,26 @@ public class AsyncTaskLauncher<Params> {
         return false;
     }
 
-    public static void removeFinishedTasks() {
+    private static void removeFinishedTasks() {
+        long count = 0;
         for (MyAsyncTask<?, ?, ?> launched : launchedTasks) {
             if (launched.getStatus() == MyAsyncTask.Status.FINISHED) {
+                if (MyLog.isVerboseEnabled()) {
+                    MyLog.v(TAG, Long.toString(++count) + ". Removing finished " + launched);
+                }
+                launchedTasks.remove(launched);
+            }
+        }
+    }
+
+    private static void removePoolTasks(MyAsyncTask.PoolEnum pool) {
+        MyLog.v(TAG, "Removing tasks for pool " + pool.name());
+        long count = 0;
+        for (MyAsyncTask<?, ?, ?> launched : launchedTasks) {
+            if (launched.pool == pool) {
+                if (MyLog.isVerboseEnabled()) {
+                    MyLog.v(TAG, Long.toString(++count) + ". " + launched);
+                }
                 launchedTasks.remove(launched);
             }
         }
@@ -93,7 +164,7 @@ public class AsyncTaskLauncher<Params> {
         StringBuilder builder = getLaunchedTasksInfo();
         builder.append("\nThread pools:");
         for (MyAsyncTask.PoolEnum pool : MyAsyncTask.PoolEnum.values()) {
-            builder.append("\n" + pool.name() + ": " + pool.getPool().toString());
+            builder.append("\n" + pool.name() + ": " + getExecutor(pool).toString());
         }
         return builder.toString();
     }
@@ -154,5 +225,20 @@ public class AsyncTaskLauncher<Params> {
         builder2.append(". Skipped: " + skippedCount.get());
         builder2.append(builder);        
         return builder2;
+    }
+
+    public static void shutdownExecutor(MyAsyncTask.PoolEnum pool) {
+        if (pool == MyAsyncTask.PoolEnum.DEFAULT)  {
+            throw new IllegalArgumentException("Attempt to shut down default thread pool");
+        }
+        getExecutor(pool).shutdown();
+    }
+
+    public static void forget() {
+        MyLog.v(TAG, "forget");
+        for (MyAsyncTask.PoolEnum pool : MyAsyncTask.PoolEnum.values()) {
+            shutdownExecutor(pool);
+            removePoolTasks(pool);
+        }
     }
 }

@@ -173,7 +173,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
         }
 
         public AsyncLoader() {
-            super();
+            super(PoolEnum.LONG_UI);
         }
 
         SyncLoader getSyncLoader() {

@@ -1111,8 +1111,7 @@ public class TimelineActivity extends LoadableListActivity implements
     
     private void showSyncing(final CommandData commandData) {
         new AsyncTaskLauncher<CommandData>().execute(this,
-                new MyAsyncTask<CommandData, Void, String>("ShowSyncing" + mInstanceId,
-                        MyAsyncTask.PoolEnum.QUICK_UI) {
+                new MyAsyncTask<CommandData, Void, String>("ShowSyncing" + mInstanceId, MyAsyncTask.PoolEnum.QUICK_UI) {
 
                     @Override
                     protected String doInBackground2(CommandData... commandData) {

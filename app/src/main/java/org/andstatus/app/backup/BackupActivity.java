@@ -89,7 +89,11 @@ public class BackupActivity extends MyActivity {
     
     private class BackupTask extends MyAsyncTask<File, String, Boolean> {
         Boolean success = false;
-        
+
+        public BackupTask() {
+            super(PoolEnum.LONG_UI);
+        }
+
         @Override
         protected Boolean doInBackground2(File... params) {
             MyBackupManager.backupInteractively(params[0], new ProgressLogger.ProgressCallback() {

@@ -34,7 +34,6 @@ import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.notification.CommandsQueueNotifier;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
-import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.TriState;
@@ -393,7 +392,7 @@ public class MyService extends Service {
                 removeExecutor(logMessageBuilder);
             }
             if ( mExecutor != null && !isExecutorReallyWorkingNow()) {
-                logMessageBuilder.append(" Killing stalled Executor " + mExecutor);
+                logMessageBuilder.append(" Cancelling stalled Executor " + mExecutor);
                 removeExecutor(logMessageBuilder);
             }
             if (mExecutor != null) {
@@ -548,6 +547,7 @@ public class MyService extends Service {
                 mHeartBeat = null;
             }
         }
+        AsyncTaskLauncher.shutdownExecutor(MyAsyncTask.PoolEnum.SYNC);
         releaseWakeLock();
         stopSelfResult(latestProcessedStartId);
         CommandsQueueNotifier.newInstance(MyContextHolder.get()).update(
@@ -605,6 +605,10 @@ public class MyService extends Service {
         private volatile long currentlyExecutingSince = 0;
         private static final long DELAY_AFTER_EXECUTOR_ENDED_SECONDS = 1;
         private static final long MAX_EXECUTION_TIME_SECONDS = 60;
+
+        public QueueExecutor() {
+            super(PoolEnum.SYNC);
+        }
 
         @Override
         protected Boolean doInBackground2(Void... arg0) {
@@ -848,6 +852,10 @@ public class MyService extends Service {
         private static final long HEARTBEAT_PERIOD_SECONDS = 11;
         private volatile long previousBeat = createdAt;
         private volatile long mIteration = 0;
+
+        public HeartBeat() {
+            super(PoolEnum.SYNC);
+        }
 
         @Override
         protected Void doInBackground2(Void... arg0) {

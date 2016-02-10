@@ -524,8 +524,7 @@ public class MessageEditor {
         }
         MyLog.v(MessageEditorData.TAG, "loadCurrentDraft requested, msgId=" + msgId);
         new AsyncTaskLauncher<Long>().execute(this,
-                new MyAsyncTask<Long, Void, MessageEditorData>(MessageEditor.this.toString(),
-                        MyAsyncTask.PoolEnum.QUICK_UI) {
+                new MyAsyncTask<Long, Void, MessageEditorData>(MessageEditor.this.toString(), MyAsyncTask.PoolEnum.QUICK_UI) {
                     volatile MessageEditorLock lock = MessageEditorLock.EMPTY;
 
                     @Override

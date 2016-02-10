@@ -35,6 +35,7 @@ import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.net.http.TlsSniSocketFactory;
 import org.andstatus.app.origin.PersistentOrigins;
+import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.service.ConnectionRequired;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
@@ -215,8 +216,9 @@ public final class MyContextImpl implements MyContext {
      * and reading Inet, I decided NOT to db.close here.
      */
     public void release() {
-        MyLog.forget();
         TlsSniSocketFactory.forget();
+        AsyncTaskLauncher.forget();
+        MyLog.forget();
     }
 
     @Override

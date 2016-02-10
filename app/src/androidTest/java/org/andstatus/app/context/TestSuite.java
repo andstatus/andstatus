@@ -38,6 +38,7 @@ import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
+import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
 
@@ -118,6 +119,7 @@ public class TestSuite extends TestCase {
             .putBoolean(MyPreferences.KEY_SHOW_ATTACHED_IMAGES, true)
             .putBoolean(MyPreferences.KEY_ATTACH_IMAGES, true)
             .apply();
+        AsyncTaskLauncher.forget();
         MyLog.forget();
         assertTrue("Log level set to verbose", MyLog.isLoggable(TAG, MyLog.VERBOSE));
         MyServiceManager.setServiceUnavailable();
