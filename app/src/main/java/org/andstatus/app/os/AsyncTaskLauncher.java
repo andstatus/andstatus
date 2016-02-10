@@ -228,10 +228,9 @@ public class AsyncTaskLauncher<Params> {
     }
 
     public static void shutdownExecutor(MyAsyncTask.PoolEnum pool) {
-        if (pool == MyAsyncTask.PoolEnum.DEFAULT)  {
-            throw new IllegalArgumentException("Attempt to shut down default thread pool");
+        if (pool != MyAsyncTask.PoolEnum.DEFAULT)  {
+            getExecutor(pool).shutdown();
         }
-        getExecutor(pool).shutdown();
     }
 
     public static void forget() {
