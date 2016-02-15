@@ -34,7 +34,7 @@ class CommandExecutorAllOrigins extends CommandExecutorStrategy {
                 case FETCH_TIMELINE:
                     if (execContext.getCommandData().getTimelineType() == TimelineType.PUBLIC &&
                             !origin.isInCombinedPublicReload()) {
-                        MyLog.v(this, "Origin '" + origin.getName() + "' skipped from pulic timeline reload");
+                        MyLog.v(this, "Origin '" + origin.getName() + "' skipped from public timeline reload");
                         continue;
                     }
                     break;

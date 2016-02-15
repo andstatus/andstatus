@@ -99,7 +99,7 @@ public class AccountSelector extends MyListActivity {
             map.put(KEY_CREDENTIALS_VERIFIED,
                     ma.isValidAndSucceeded() ? ""
                             : ma.getCredentialsVerified().name().substring(0, 1));
-            map.put(KEY_SYNC_AUTO, ma.getSyncAutomatically() ? "" : getText(R.string.off).toString());
+            map.put(KEY_SYNC_AUTO, ma.isSyncedAutomatically() ? "" : getText(R.string.off).toString());
             map.put(BaseColumns._ID, Long.toString(ma.getUserId()));
             map.put(KEY_TYPE, TYPE_ACCOUNT);
             list.add(map);

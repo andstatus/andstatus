@@ -983,7 +983,7 @@ public final class MyAccount {
         return hashCode() == other.hashCode();
     }
 
-    public boolean getSyncAutomatically() {
+    public boolean isSyncedAutomatically() {
         return mSyncAutomatically;
     }
 }

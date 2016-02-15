@@ -268,6 +268,15 @@ public class PersistentAccounts {
         return ma;
     }
 
+    public boolean hasSyncedAutomatically() {
+        for (MyAccount ma : mAccounts.values()) {
+            if (ma.isValidAndSucceeded() && ma.isSyncedAutomatically()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /** Should not be called from UI thread */
     public MyAccount getAccountForThisMessage(long messageId, long firstUserId,
                                               long preferredUserId, boolean succeededOnly) {

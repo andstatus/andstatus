@@ -28,11 +28,16 @@ public class CommandExecutorAllAccounts extends CommandExecutorStrategy {
 
     @Override
     public void execute() {
+        boolean hasSyncedAutomatically = MyContextHolder.get().persistentAccounts().hasSyncedAutomatically();
         for (MyAccount ma : MyContextHolder.get().persistentAccounts().collection()) {
             if ( !ma.isValidAndSucceeded()) {
-                MyLog.v(this, "Account '" + ma.getAccountName() + "' skipped as no valid authenticated account");
+                MyLog.v(this, "Account '" + ma.getAccountName() + "' skipped as invalid authenticated account");
                 continue;
-            } 
+            }
+            if (hasSyncedAutomatically && !ma.isSyncedAutomatically()) {
+                MyLog.v(this, "Account '" + ma.getAccountName() + "' skipped as it is not synced automatically");
+                continue;
+            }
             execContext.setMyAccount(ma);
             CommandExecutorStrategy.executeStep(execContext, this);
             if (isStopping()) {
