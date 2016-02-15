@@ -107,6 +107,8 @@
   <string name="dialog_summary_sending_message">Por favor aguarde pelo envio da mensagem.</string>
   <string name="dialog_summary_service_unavailable">Neste momento, o Twitter está sobrecarregado. Por favor tente mais tarde.</string>
   <string name="dialog_summary_timeline_loading">Por favor aguarde pela atualização da cronologia. Esta operação poderá ser demorada, tendo em conta o seu tipo de ligação.</string>
+  <string name="default_timeline_title">Cronologia padrão</string>
+  <string name="default_timeline_summary">A cronologia que será aberta pelo \'launcher\': \"{0}\"</string>
   <string name="dialog_title_acquiring_an_access_token">Obtendo um \"token\" de acesso</string>
   <string name="dialog_title_acquiring_a_request_token">Obtendo um \"token\" de pedido</string>
   <string name="dialog_title_authentication_failed">Falha de autenticação</string>
@@ -160,9 +162,12 @@
   <string name="followed_by">Seguido por</string>
   <string name="get_open_instances_title">Obter instâncias abertas</string>
   <string name="get_user">Obter informações do utilizador</string>
+  <string name="go_to_the_top_title">Ir para o topo</string>
   <string name="header_accounts">Contas</string>
   <string name="header_add_new_account">Adicionar nova conta</string>
   <string name="header_manage_existing_accounts">Gerir contas existentes</string>
+  <string name="hide_messages_based_on_keywords_title">Ocultar mensagens tendo por base palavras-chave ou frases</string>
+  <string name="hide_messages_based_on_keywords_dialog_message">Separe as palavras-chave com espaços. Coloque as frases com aspas\nExemplo: palavra-chave \"frase\"</string>
   <string name="hide_replies_not_to_me_or_friends_title">Ocultar da cronologia as respostas não dirigidas a mim ou aos meus amigos</string>
   <string name="history_size_entries_500">500 mensagens</string>
   <string name="history_size_entries_1000">1 000 mensagens</string>
@@ -185,6 +190,7 @@
   <string name="history_time_entries_10years">10 anos</string>
   <string name="id_of_this_message_was_not_specified">A ID desta mensagem não foi especificada</string>
   <string name="in_combined_global_search_label">Incluir na \"Procura global\" ao utilizar a cronologia combinada</string>
+  <string name="in_combined_public_reload_label">Incluir na \"Sincronização\" durante a cronologia pública combinada</string>
   <string name="label_accountselector">Selecione uma conta</string>
   <string name="label_allow_html_content">Permitir conteúdo HTML</string>
   <string name="label_backup">Copiar dados da aplicação para o cartão SD</string>
@@ -201,6 +207,7 @@
   <string name="label_upgrading">Atualização em curso. Por favor aguarde.</string>
   <string name="label_with_media">com multimédia</string>
   <string name="latest_error_label">Último erro</string>
+  <string name="loading">A carregar</string>
   <string name="malformed_link">Ligação incorreta</string>
   <string name="message">Mensagem</string>
   <string name="message_twitter">Tweet</string>
@@ -267,9 +274,17 @@
   <string name="options_menu_home_timeline_cond">Home</string>
   <string name="options_menu_global_search">Procura global</string>
   <string name="options_menu_help">Ajuda</string>
+  <string name="options_menu_sync">Sincronizar com a Internet</string>
   <string name="options_menu_mentions">Menções</string>
   <string name="options_menu_search">Procura</string>
   <string name="origin_settings_action">Rede social</string>
+  <string name="page_empty">vazia</string>
+  <string name="page_new">nova</string>
+  <string name="page_older">antiga</string>
+  <string name="page_the_same">igual</string>
+  <string name="page_top_of">topo de</string>
+  <string name="page_younger">recente</string>
+  <string name="page_youngest">ainda mais recente</string>
   <string name="preference_ssl_mode_title">Modo SSL e segurança</string>
   <string name="preference_ssl_mode_secure_summary">Protegido: apenas são permitidas ligações SSL seguras</string>
   <string name="preference_ssl_mode_insecure_summary">Aviso: as suas ligação não são seguras. Por favor informe o administrador do servidor que deve corrigir este problema e retorne para o modo seguro</string>
@@ -285,6 +300,8 @@
   <string name="preference_notification_icon_alternative_on">Ícone como círculo</string>
   <string name="preference_true_black_title">Cor de fundo escura</string>
   <string name="preference_use_kitkat_media_chooser_title">Interface moderna para selecionar um anexo</string>
+  <string name="refresh_title">Recarregar</string>
+  <string name="refresh_timeline_automatically_title">Atualizar cronologia automaticamente</string>
   <string name="reltime_days_ago_formats_1">ontem</string>
   <string name="reltime_days_ago_formats_2">{0} dias atrás</string>
   <string name="reltime_hours_ago_formats_1">uma hora atrás</string>

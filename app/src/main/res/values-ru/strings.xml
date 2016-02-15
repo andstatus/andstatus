@@ -160,6 +160,9 @@
   <string name="filters_title">Фильтры</string>
   <string name="filters_summary">Глобальные фильтры, применяемые ко всем сообщениям</string>
   <string name="followed_by">Следуют</string>
+  <string name="followers">Фолловеры</string>
+  <string name="followers_of">Фолловеры \"%1s\"</string>
+  <string name="get_followers">Получить список фолловеров</string>
   <string name="get_open_instances_title">Получить открытые серверы</string>
   <string name="get_user">Получить информацию о пользователе</string>
   <string name="go_to_the_top_title">Наверх</string>
@@ -300,8 +303,9 @@
   <string name="preference_notification_icon_alternative_on">Иконка в виде круга</string>
   <string name="preference_true_black_title">Черный фон</string>
   <string name="preference_use_kitkat_media_chooser_title">Используйте средства выбора изображений KitKat</string>
-  <string name="refresh_title">Обновить</string>
+  <string name="refresh_title">Обновить из кэша</string>
   <string name="refresh_timeline_automatically_title">Обновлять Ленту времени автоматически</string>
+  <string name="refresh_timeline_automatically_summary">Лента времени обновляется из локального кэша. Доступ к Интернету не требуется.</string>
   <string name="reltime_days_ago_formats_1">вчера</string>
   <string name="reltime_days_ago_formats_2">{0} день назад</string>
   <string name="reltime_hours_ago_formats_1">час назад</string>
