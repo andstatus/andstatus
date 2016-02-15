@@ -231,7 +231,12 @@ public class TimelineActivity extends LoadableListActivity implements
      */
     public void onRefreshButtonClick(View item) {
         closeDrawer();
-        showList(WhichPage.NEW);
+        TimelineAdapter adapter = getListAdapter();
+        if (adapter == null || adapter.getPages().mayHaveYoungerPage()) {
+            showList(WhichPage.NEW);
+        } else {
+            showList(WhichPage.TOP);
+        }
     }
 
     /**
@@ -557,20 +562,21 @@ public class TimelineActivity extends LoadableListActivity implements
                          int totalItemCount) {
         TimelineAdapter adapter = getListAdapter();
         if (adapter != null) {
+            boolean up = false;
             if (firstVisibleItem == 0) {
                 View v = getListView().getChildAt(0);
                 int offset = (v == null) ? 0 : v.getTop();
-                if (offset == 0 && adapter.getPages().mayHaveYoungerPage()) {
+                up = offset == 0;
+                if (up && adapter.getPages().mayHaveYoungerPage()) {
                     showList(WhichPage.YOUNGER);
                 }
-            } else {
-                // Idea from http://stackoverflow.com/questions/1080811/android-endless-list
-                if ((visibleItemCount > 0)
-                        && (firstVisibleItem + visibleItemCount >= totalItemCount - 1)
-                        && adapter.getPages().mayHaveOlderPage()) {
-                    MyLog.d(this, "Start Loading older items, rows=" + totalItemCount);
-                    showList(WhichPage.OLDER);
-                }
+            }
+            // Idea from http://stackoverflow.com/questions/1080811/android-endless-list
+            if ( !up && (visibleItemCount > 0)
+                    && (firstVisibleItem + visibleItemCount >= totalItemCount - 1)
+                    && adapter.getPages().mayHaveOlderPage()) {
+                MyLog.d(this, "Start Loading older items, rows=" + totalItemCount);
+                showList(WhichPage.OLDER);
             }
         }
     }
@@ -783,6 +789,7 @@ public class TimelineActivity extends LoadableListActivity implements
     }
 
     protected void showList(WhichPage whichPage, TriState chainedRequest) {
+        saveListPosition();
         showList(TimelineListParameters.clone(getReferenceParametersFor(whichPage), whichPage),
                 chainedRequest);
     }

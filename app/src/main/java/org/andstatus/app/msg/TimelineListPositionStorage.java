@@ -90,8 +90,7 @@ class TimelineListPositionStorage {
             firstVisibleItemId = la.getItemId(firstVisiblePosition);
             MyLog.v(this, method + "; firstVisiblePos:" + firstVisiblePosition + " of " + itemCount
                     + "; itemId:" + firstVisibleItemId);
-            // We will load half of "page of messages" below (older) current top item
-            lastPosition = firstVisiblePosition + TimelineListParameters.PAGE_SIZE / 2;
+            lastPosition = mListView.getLastVisiblePosition() + 1;
             if (lastPosition >= itemCount) {
                 lastPosition = itemCount - 1;
             }
@@ -107,7 +106,7 @@ class TimelineListPositionStorage {
             String msgLog = " key=" + keyFirstVisibleItemId
                     + (TextUtils.isEmpty(queryString) ? "" : ", q='" + queryString + "'")
                     + ", id=" + firstVisibleItemId + " at pos=" + firstVisiblePosition
-                    + ", minDate=" + ( minSentDate == 0 ? "0" : new Date(minSentDate).toString())
+                    + ", minDate=" + minSentDate
                     + " at pos=" + lastPosition + " of " + itemCount;
             if (firstVisibleItemId <= 0) {
                 MyLog.v(this, method + "; failed " + msgLog

@@ -197,13 +197,8 @@ public class TimelineLoader implements LoadableListActivity.SyncLoader {
         if (MyLog.isVerboseEnabled()) {
             StringBuilder text = new StringBuilder(getParams().cancelled ? "cancelled" : "ended");
             if (!getParams().cancelled) {
-                String cursorInfo;
-                if (getPageLoaded() == null) {
-                    cursorInfo = "page is null";
-                } else {
-                    cursorInfo = getPageLoaded().items.size() + " rows";
-                }
-                text.append(", " + cursorInfo);
+                text.append(", " + getPageLoaded().items.size() + " rows");
+                text.append(", dates from " + getPageLoaded().parameters.minSentDateLoaded + " to " + getPageLoaded().parameters.maxSentDateLoaded);
             }
             text.append(", " + java.util.concurrent.TimeUnit.NANOSECONDS.toMillis(getParams().endTime - getParams().startTime) + " ms");
             logV("stats", text.toString());
@@ -221,6 +216,7 @@ public class TimelineLoader implements LoadableListActivity.SyncLoader {
         }
     }
 
+    @NonNull
     TimelinePage getPageLoaded() {
         if (pageLoaded == null) {
             return new TimelinePage(new ArrayList<TimelineViewItem>(), getParams());
