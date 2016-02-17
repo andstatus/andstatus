@@ -161,6 +161,9 @@
   <string name="filters_title">Filter</string>
   <string name="filters_summary">Globale Filter, die auf alle Nachrichten angewendet werden</string>
   <string name="followed_by">Wird gefolgt von</string>
+  <string name="followers">Abonnenten</string>
+  <string name="followers_of">Abonnenten von \"%1s\"</string>
+  <string name="get_followers">Erhalte Abonnenten</string>
   <string name="get_open_instances_title">Öffentliche Server</string>
   <string name="get_user">Nutzerinfos abrufen</string>
   <string name="go_to_the_top_title">Gehe nach Oben</string>
@@ -301,8 +304,9 @@
   <string name="preference_notification_icon_alternative_on">Symbol als Kreis</string>
   <string name="preference_true_black_title">Rein schwarzer Hintergrund</string>
   <string name="preference_use_kitkat_media_chooser_title">KitKat Medienauswahl verwenden</string>
-  <string name="refresh_title">Aktualisieren</string>
+  <string name="refresh_title">Aus Cache aktualisieren</string>
   <string name="refresh_timeline_automatically_title">Timeline automatisch aktualisieren</string>
+  <string name="refresh_timeline_automatically_summary">Timeline wird aus einem lokalen Cache aktualisiert. Kein Internetzugang ist erforderlich.</string>
   <string name="reltime_days_ago_formats_1">Gestern</string>
   <string name="reltime_days_ago_formats_2">vor {0} Tagen</string>
   <string name="reltime_hours_ago_formats_1">vor einer Stunde</string>

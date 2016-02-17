@@ -160,6 +160,9 @@
   <string name="filters_title">フィルター</string>
   <string name="filters_summary">すべてのメッセージに適用するグローバル フィルター</string>
   <string name="followed_by">フォローしました</string>
+  <string name="followers">フォロワー</string>
+  <string name="followers_of">\"%1s\" のフォロワー</string>
+  <string name="get_followers">フォロワーを取得</string>
   <string name="get_open_instances_title">オープン中のインスタンスを取得</string>
   <string name="get_user">ユーザー情報を取得</string>
   <string name="go_to_the_top_title">トップに戻る</string>
@@ -300,8 +303,9 @@
   <string name="preference_notification_icon_alternative_on">アイコンとして丸</string>
   <string name="preference_true_black_title">真黒の背景</string>
   <string name="preference_use_kitkat_media_chooser_title">添付ファイルを選択するモダンインターフェイス</string>
-  <string name="refresh_title">更新</string>
+  <string name="refresh_title">キャッシュから更新</string>
   <string name="refresh_timeline_automatically_title">タイムラインを自動的に更新します</string>
+  <string name="refresh_timeline_automatically_summary">タイムラインはローカル キャッシュから更新されます。インターネット アクセスは必要ありません。</string>
   <string name="reltime_days_ago_formats_1">昨日</string>
   <string name="reltime_days_ago_formats_2">{0} 日前</string>
   <string name="reltime_hours_ago_formats_1">1 時間前</string>

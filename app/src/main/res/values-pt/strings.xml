@@ -160,6 +160,9 @@
   <string name="filters_title">Filtros</string>
   <string name="filters_summary">Filtros globais a aplicar em todas as mensagens</string>
   <string name="followed_by">Seguido por</string>
+  <string name="followers">Seguidores</string>
+  <string name="followers_of">Seguidores de \"%1s\"</string>
+  <string name="get_followers">Obter seguidores</string>
   <string name="get_open_instances_title">Obter instâncias abertas</string>
   <string name="get_user">Obter informações do utilizador</string>
   <string name="go_to_the_top_title">Ir para o topo</string>
@@ -300,8 +303,9 @@
   <string name="preference_notification_icon_alternative_on">Ícone como círculo</string>
   <string name="preference_true_black_title">Cor de fundo escura</string>
   <string name="preference_use_kitkat_media_chooser_title">Interface moderna para selecionar um anexo</string>
-  <string name="refresh_title">Recarregar</string>
+  <string name="refresh_title">Recarregar da cache</string>
   <string name="refresh_timeline_automatically_title">Atualizar cronologia automaticamente</string>
+  <string name="refresh_timeline_automatically_summary">A cronologia será atualizada a partir da cache. Mão será necessário aceder à Internet.</string>
   <string name="reltime_days_ago_formats_1">ontem</string>
   <string name="reltime_days_ago_formats_2">{0} dias atrás</string>
   <string name="reltime_hours_ago_formats_1">uma hora atrás</string>
