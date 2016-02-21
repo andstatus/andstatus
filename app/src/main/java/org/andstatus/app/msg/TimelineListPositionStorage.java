@@ -90,7 +90,7 @@ class TimelineListPositionStorage {
             firstVisibleItemId = la.getItemId(firstVisiblePosition);
             MyLog.v(this, method + "; firstVisiblePos:" + firstVisiblePosition + " of " + itemCount
                     + "; itemId:" + firstVisibleItemId);
-            lastPosition = mListView.getLastVisiblePosition() + 1;
+            lastPosition = mListView.getLastVisiblePosition() + 10;
             if (lastPosition >= itemCount) {
                 lastPosition = itemCount - 1;
             }
