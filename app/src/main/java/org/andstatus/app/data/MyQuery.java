@@ -382,10 +382,12 @@ public class MyQuery {
         return columnValue;
     }
 
+    @NonNull
     public static String msgIdToStringColumnValue(String columnName, long systemId) {
         return idToStringColumnValue(Msg.TABLE_NAME, columnName, systemId);
     }
 
+    @NonNull
     public static String userIdToStringColumnValue(String columnName, long systemId) {
         return idToStringColumnValue(User.TABLE_NAME, columnName, systemId);
     }
@@ -397,6 +399,7 @@ public class MyQuery {
      * @param systemId tableName._id
      * @return not null; "" in a case not found or error or systemId==0
      */
+    @NonNull
     private static String idToStringColumnValue(String tableName, String columnName, long systemId) {
         String method = "idToStringColumnValue";
         String columnValue = "";

@@ -18,6 +18,7 @@ package org.andstatus.app.msg;
 
 import android.database.Cursor;
 
+import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyDatabase.Msg;
 
 import java.util.ArrayList;
@@ -39,7 +40,7 @@ public class ConversationMemberItem extends ConversationItem {
     @Override
     void load(Cursor cursor) {
         super.load(cursor);
-        authorId = cursor.getLong(cursor.getColumnIndex(Msg.AUTHOR_ID));
+        authorId = DbUtils.getLong(cursor, Msg.AUTHOR_ID);
     }
 
     @Override

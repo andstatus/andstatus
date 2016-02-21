@@ -20,6 +20,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.provider.BaseColumns;
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import org.andstatus.app.account.MyAccount;
@@ -297,10 +298,12 @@ public class TimelineSql {
         return columnNames.toArray(new String[]{});
     }
 
+    @NonNull
     public static String userColumnNameToNameAtTimeline(Cursor cursor, String columnName, boolean showOrigin) {
         return userColumnIndexToNameAtTimeline(cursor, cursor.getColumnIndex(columnName), showOrigin);
     }
-    
+
+    @NonNull
     public static String userColumnIndexToNameAtTimeline(Cursor cursor, int columnIndex, boolean showOrigin) {
         String userName = "";
         if (columnIndex >= 0) {
@@ -310,16 +313,15 @@ public class TimelineSql {
             }
         }
         if (showOrigin) {
-            int originIdColumn = cursor.getColumnIndex(Msg.ORIGIN_ID);
-            if (originIdColumn >= 0) {
-                Origin origin = MyContextHolder.get().persistentOrigins().fromId(cursor.getLong(originIdColumn));
-                if (origin != null) {
-                    userName += " / " + origin.getName();
-                    if (origin.getOriginType() == OriginType.GNUSOCIAL && MyPreferences.getBoolean(MyPreferences.KEY_DEBUGGING_INFO_IN_UI, false)) {
-                        int authorIdColumn = cursor.getColumnIndex(Msg.AUTHOR_ID);
-                        if (authorIdColumn >= 0) {
-                            userName += " id:" + MyQuery.idToOid(OidEnum.USER_OID, cursor.getLong(authorIdColumn), 0);
-                        }
+            long originId = DbUtils.getLong(cursor, Msg.ORIGIN_ID);
+            if (originId != 0) {
+                Origin origin = MyContextHolder.get().persistentOrigins().fromId(originId);
+                userName += " / " + origin.getName();
+                if (origin.getOriginType() == OriginType.GNUSOCIAL &&
+                        MyPreferences.getBoolean(MyPreferences.KEY_DEBUGGING_INFO_IN_UI, false)) {
+                    long authorId = DbUtils.getLong(cursor, Msg.AUTHOR_ID);
+                    if (authorId != 0) {
+                        userName += " id:" + MyQuery.idToOid(OidEnum.USER_OID, authorId, 0);
                     }
                 }
             }

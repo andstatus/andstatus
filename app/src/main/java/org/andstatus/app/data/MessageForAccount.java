@@ -80,29 +80,22 @@ public class MessageForAccount {
                     MyDatabase.Download.IMAGE_FILE_NAME
             }, null, null, null);
             if (cursor != null && cursor.moveToFirst()) {
-                status = DownloadStatus.load(
-                        cursor.getLong(cursor.getColumnIndex(MyDatabase.Msg.MSG_STATUS)));
-                authorId = cursor.getLong(cursor.getColumnIndex(MyDatabase.Msg.AUTHOR_ID));
-                senderId = cursor.getLong(cursor.getColumnIndex(MyDatabase.Msg.SENDER_ID));
-                recipientId = cursor.getLong(cursor.getColumnIndex(MyDatabase.Msg.RECIPIENT_ID));
-                int columnIndex = cursor.getColumnIndex(MyDatabase.Download.IMAGE_FILE_NAME);
-                if (columnIndex >= 0) {
-                    imageFilename = cursor.getString(columnIndex);
-                }
-                bodyTrimmed = I18n.trimTextAt(
-                                MyHtml.fromHtml(cursor.getString(cursor
-                                        .getColumnIndex(MyDatabase.Msg.BODY))), 40).toString();
-                inReplyToUserId = cursor.getLong(cursor.getColumnIndex(MyDatabase.Msg.IN_REPLY_TO_USER_ID));
+                status = DownloadStatus.load(DbUtils.getLong(cursor, MyDatabase.Msg.MSG_STATUS));
+                authorId = DbUtils.getLong(cursor, MyDatabase.Msg.AUTHOR_ID);
+                senderId = DbUtils.getLong(cursor, MyDatabase.Msg.SENDER_ID);
+                recipientId = DbUtils.getLong(cursor, MyDatabase.Msg.RECIPIENT_ID);
+                imageFilename = DbUtils.getString(cursor, MyDatabase.Download.IMAGE_FILE_NAME);
+                bodyTrimmed = I18n.trimTextAt(MyHtml.fromHtml(
+                        DbUtils.getString(cursor, MyDatabase.Msg.BODY)), 40).toString();
+                inReplyToUserId = DbUtils.getLong(cursor, MyDatabase.Msg.IN_REPLY_TO_USER_ID);
                 mayBePrivate = (recipientId != 0) || (inReplyToUserId != 0);
                 
                 isRecipient = (userId == recipientId) || (userId == inReplyToUserId);
-                isSubscribed = cursor.getInt(cursor.getColumnIndex(MyDatabase.MsgOfUser.SUBSCRIBED)) == 1;
-                favorited = cursor.getInt(cursor.getColumnIndex(MyDatabase.MsgOfUser.FAVORITED)) == 1;
-                reblogged = cursor.getInt(cursor.getColumnIndex(MyDatabase.MsgOfUser.REBLOGGED)) == 1;
-                senderFollowed = cursor.getInt(cursor
-                        .getColumnIndex(MyDatabase.FollowingUser.SENDER_FOLLOWED)) == 1;
-                authorFollowed = cursor.getInt(cursor
-                        .getColumnIndex(MyDatabase.FollowingUser.AUTHOR_FOLLOWED)) == 1;
+                isSubscribed = DbUtils.getBoolean(cursor, MyDatabase.MsgOfUser.SUBSCRIBED);
+                favorited = DbUtils.getBoolean(cursor, MyDatabase.MsgOfUser.FAVORITED);
+                reblogged = DbUtils.getBoolean(cursor, MyDatabase.MsgOfUser.REBLOGGED);
+                senderFollowed = DbUtils.getBoolean(cursor, MyDatabase.FollowingUser.SENDER_FOLLOWED);
+                authorFollowed = DbUtils.getBoolean(cursor, MyDatabase.FollowingUser.AUTHOR_FOLLOWED);
                 isSender = (userId == senderId);
                 isAuthor = (userId == authorId);
             }

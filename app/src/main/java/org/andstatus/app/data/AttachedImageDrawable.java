@@ -35,16 +35,13 @@ public class AttachedImageDrawable {
     private Point size = null;
     
     public static Drawable drawableFromCursor(Cursor cursor) {
-        int columnIndex = cursor.getColumnIndex(MyDatabase.Download.IMAGE_ID);
-        Long imageRowId = null;
-        if (columnIndex >= 0) {
-            imageRowId = cursor.getLong(columnIndex);
-        }
-        if (imageRowId == null || imageRowId == 0L) {
+        long imageRowId = DbUtils.getLong(cursor, MyDatabase.Download.IMAGE_ID);
+        if (imageRowId == 0) {
             return null;
         } else {
-            return new AttachedImageDrawable(imageRowId, cursor.getString(cursor
-                    .getColumnIndex(MyDatabase.Download.IMAGE_FILE_NAME))).getDrawable();
+            return new AttachedImageDrawable(imageRowId,
+                    DbUtils.getString(cursor,
+                            MyDatabase.Download.IMAGE_FILE_NAME)).getDrawable();
         }
     }
     

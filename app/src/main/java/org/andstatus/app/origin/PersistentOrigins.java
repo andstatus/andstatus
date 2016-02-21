@@ -18,6 +18,7 @@ package org.andstatus.app.origin;
 
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import org.andstatus.app.context.MyContext;
@@ -69,6 +70,7 @@ public class PersistentOrigins {
     /**
      * @return Origin of UNKNOWN type if not found
      */
+    @NonNull
     public Origin fromId(long originId) {
         for (Origin origin : mOrigins.values()) {
             if (origin.id == originId) {

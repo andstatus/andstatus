@@ -156,10 +156,14 @@ public final class DbUtils {
     }
 
     @NonNull
-    public static String getNotNullStringColumn(Cursor cursor, String columnName) {
+    public static String getString(Cursor cursor, String columnName) {
+        return cursor == null ? "" : getString(cursor, cursor.getColumnIndex(columnName));
+    }
+
+    @NonNull
+    public static String getString(Cursor cursor, int columnIndex) {
         String value = "";
-        int columnIndex = cursor.getColumnIndex(columnName);
-        if (columnIndex >= 0) {
+        if (cursor != null && columnIndex >= 0) {
             String value2 = cursor.getString(columnIndex);
             if (!TextUtils.isEmpty(value2)) {
                 value = value2;
@@ -168,14 +172,37 @@ public final class DbUtils {
         return value;
     }
 
-    public static long getLongColumn(Cursor cursor, String columnName) {
+    public static boolean getBoolean(Cursor cursor, String columnName) {
+        return getInt(cursor, columnName) == 1;
+    }
+
+    public static long getLong(Cursor cursor, String columnName) {
+        if (cursor == null) {
+            return 0;
+        }
         long value = 0;
         int columnIndex = cursor.getColumnIndex(columnName);
         if (columnIndex >= 0) {
             try {
                 value = cursor.getLong(columnIndex);
             } catch (Exception e){
-                MyLog.d(TAG, "Getting column " + columnName, e);
+                MyLog.d(TAG, "getLong column " + columnName, e);
+            }
+        }
+        return value;
+    }
+
+    public static int getInt(Cursor cursor, String columnName) {
+        if (cursor == null) {
+            return 0;
+        }
+        int value = 0;
+        int columnIndex = cursor.getColumnIndex(columnName);
+        if (columnIndex >= 0) {
+            try {
+                value = cursor.getInt(columnIndex);
+            } catch (Exception e){
+                MyLog.d(TAG, "getInt column " + columnName, e);
             }
         }
         return value;

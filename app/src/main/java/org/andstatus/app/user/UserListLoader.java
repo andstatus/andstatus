@@ -112,24 +112,24 @@ public class UserListLoader implements SyncLoader {
     }
 
     private void populateItem(Cursor c) {
-        long userId = DbUtils.getLongColumn(c, BaseColumns._ID);
+        long userId = DbUtils.getLong(c, BaseColumns._ID);
         UserListViewItem item = getById(userId);
         if (item == null) {
             Origin origin = MyContextHolder.get().persistentOrigins().fromId(
-                    DbUtils.getLongColumn(c, MyDatabase.User.ORIGIN_ID));
+                    DbUtils.getLong(c, MyDatabase.User.ORIGIN_ID));
             item = addUserIdToList(origin, userId);
         }
         item.populated = true;
-        item.mbUser.setUserName(DbUtils.getNotNullStringColumn(c, MyDatabase.User.USERNAME));
-        item.mbUser.setProfileUrl(DbUtils.getNotNullStringColumn(c, MyDatabase.User.URL));
-        item.mbUser.setWebFingerId(DbUtils.getNotNullStringColumn(c, MyDatabase.User.WEBFINGER_ID));
-        item.mbUser.realName = DbUtils.getNotNullStringColumn(c, MyDatabase.User.REAL_NAME);
-        item.mbUser.setHomepage(DbUtils.getNotNullStringColumn(c, MyDatabase.User.HOMEPAGE));
-        item.mbUser.setDescription(DbUtils.getNotNullStringColumn(c, MyDatabase.User.DESCRIPTION));
+        item.mbUser.setUserName(DbUtils.getString(c, MyDatabase.User.USERNAME));
+        item.mbUser.setProfileUrl(DbUtils.getString(c, MyDatabase.User.URL));
+        item.mbUser.setWebFingerId(DbUtils.getString(c, MyDatabase.User.WEBFINGER_ID));
+        item.mbUser.realName = DbUtils.getString(c, MyDatabase.User.REAL_NAME);
+        item.mbUser.setHomepage(DbUtils.getString(c, MyDatabase.User.HOMEPAGE));
+        item.mbUser.setDescription(DbUtils.getString(c, MyDatabase.User.DESCRIPTION));
         item.myFollowers = MyQuery.getMyFollowersOf(userId);
         if (MyPreferences.showAvatars()) {
             item.mAvatarDrawable = new AvatarDrawable(item.getUserId(),
-                    DbUtils.getNotNullStringColumn(c, MyDatabase.Download.AVATAR_FILE_NAME));
+                    DbUtils.getString(c, MyDatabase.Download.AVATAR_FILE_NAME));
         }
     }
 

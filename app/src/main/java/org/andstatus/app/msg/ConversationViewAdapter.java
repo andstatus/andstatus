@@ -207,14 +207,8 @@ public class ConversationViewAdapter extends MyBaseAdapter {
     }
 
     private void setMessageBody(ConversationViewItem oMsg, View messageView) {
-        if (!TextUtils.isEmpty(oMsg.mBody)) {
-            TextView body = (TextView) messageView.findViewById(R.id.message_body);
-            body.setLinksClickable(true);
-            body.setMovementMethod(LinkMovementMethod.getInstance());                
-            body.setFocusable(true);
-            body.setFocusableInTouchMode(true);
-            MyUrlSpan.showText(body, oMsg.mBody, true);
-        }
+        TextView body = (TextView) messageView.findViewById(R.id.message_body);
+        MyUrlSpan.showText(body, oMsg.mBody, true);
     }
 
     private void setMessageDetails(ConversationViewItem oMsg, View messageView) {

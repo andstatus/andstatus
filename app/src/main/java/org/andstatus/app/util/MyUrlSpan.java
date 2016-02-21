@@ -24,6 +24,8 @@ import android.text.Html;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.TextUtils;
+import android.text.method.ArrowKeyMovementMethod;
+import android.text.method.LinkMovementMethod;
 import android.text.style.URLSpan;
 import android.text.util.Linkify;
 import android.view.View;
@@ -37,6 +39,9 @@ import org.andstatus.app.context.MyContextHolder;
  * see https://github.com/andstatus/andstatus/issues/300
  * Based on http://commonsware.com/blog/2013/10/23/linkify-autolink-need-custom-urlspan.html  */
 public class MyUrlSpan extends URLSpan {
+
+    public static final String SOFT_HYPHEN = "\u00AD";
+
     private MyUrlSpan(String url) {
         super(url);
     }
@@ -73,12 +78,24 @@ public class MyUrlSpan extends URLSpan {
                 textView.setVisibility(View.GONE);
             }
         } else {
+            if (linkify) {
+                textView.setFocusable(true);
+                textView.setFocusableInTouchMode(true);
+                textView.setLinksClickable(true);
+                textView.setMovementMethod(LinkMovementMethod.getInstance());
+            }
+            // Android 6 bug, see https://github.com/andstatus/andstatus/issues/334
+            // Setting setMovementMethod to not null causes a crash if text is SOFT_HYPHEN only:
+            if (text.contains(SOFT_HYPHEN)) {
+                text = text.replace(SOFT_HYPHEN, "-");
+            }
             Spanned spanned = Html.fromHtml(text);
             textView.setText(spanned);
             if (linkify && !hasUrlSpans(spanned)) {
                 Linkify.addLinks(textView, Linkify.ALL);
                 fixUrlSpans(textView);
             }
+
             if (textView.getVisibility() != View.VISIBLE) {
                 textView.setVisibility(View.VISIBLE);
             }

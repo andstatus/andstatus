@@ -28,6 +28,7 @@ import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.MyTheme;
+import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyDatabase.Msg;
 import org.andstatus.app.util.MyLog;
 
@@ -125,17 +126,15 @@ public class MySimpleCursorAdapter extends SimpleCursorAdapter {
 
     private boolean markReply(View view, Cursor cursor) {
         boolean backgroundSet = false;
-        int columnIndex2 = cursor.getColumnIndex(Msg.IN_REPLY_TO_USER_ID);
-        if (columnIndex2 >= 0) {
-            long replyToUserId = cursor.getLong(columnIndex2);
-            if (MyContextHolder.get().persistentAccounts().fromUserId(replyToUserId).isValid()) {
-                // For some reason, referring to the style drawable doesn't work
-                // (to "?attr:replyBackground" )
-                view.setBackgroundResource(MyTheme.isThemeLight()
-                        ? R.drawable.reply_timeline_background_light
-                        : R.drawable.reply_timeline_background);
-                backgroundSet = true;
-            }
+        long replyToUserId = DbUtils.getLong(cursor, Msg.IN_REPLY_TO_USER_ID);
+        if (replyToUserId != 0 &&
+                MyContextHolder.get().persistentAccounts().fromUserId(replyToUserId).isValid()) {
+            // For some reason, referring to the style drawable doesn't work
+            // (to "?attr:replyBackground" )
+            view.setBackgroundResource(MyTheme.isThemeLight()
+                    ? R.drawable.reply_timeline_background_light
+                    : R.drawable.reply_timeline_background);
+            backgroundSet = true;
         }
         return backgroundSet;
     }

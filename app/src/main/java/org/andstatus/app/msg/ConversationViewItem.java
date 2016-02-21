@@ -24,6 +24,7 @@ import android.text.TextUtils;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.AttachedImageDrawable;
 import org.andstatus.app.data.AvatarDrawable;
+import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyDatabase.Download;
 import org.andstatus.app.data.MyDatabase.Msg;
@@ -67,22 +68,23 @@ public class ConversationViewItem extends ConversationItem {
         Set<Long> rebloggers = new HashSet<>();
         int ind=0;
         do {
-            long senderId = cursor.getLong(cursor.getColumnIndex(Msg.SENDER_ID));
-            long authorId = cursor.getLong(cursor.getColumnIndex(Msg.AUTHOR_ID));
-            long linkedUserId = cursor.getLong(cursor.getColumnIndex(User.LINKED_USER_ID));
+            long senderId = DbUtils.getLong(cursor, Msg.SENDER_ID);
+            long authorId = DbUtils.getLong(cursor, Msg.AUTHOR_ID);
+            long linkedUserId = DbUtils.getLong(cursor, User.LINKED_USER_ID);
     
             if (ind == 0) {
                 // This is the same for all retrieved rows
                 super.load(cursor);
-                mStatus = DownloadStatus.load(cursor.getLong(cursor.getColumnIndex(Msg.MSG_STATUS)));
+                mStatus = DownloadStatus.load(DbUtils.getLong(cursor, Msg.MSG_STATUS));
                 mAuthor = TimelineSql.userColumnNameToNameAtTimeline(cursor, User.AUTHOR_NAME, false);
-                mBody = cursor.getString(cursor.getColumnIndex(Msg.BODY));
-                String via = cursor.getString(cursor.getColumnIndex(Msg.VIA));
+                mBody = DbUtils.getString(cursor, Msg.BODY);
+                String via = DbUtils.getString(cursor, Msg.VIA);
                 if (!TextUtils.isEmpty(via)) {
                     mVia = Html.fromHtml(via).toString().trim();
                 }
                 if (MyPreferences.showAvatars()) {
-                    mAvatarDrawable = new AvatarDrawable(authorId, cursor.getString(cursor.getColumnIndex(Download.AVATAR_FILE_NAME)));
+                    mAvatarDrawable = new AvatarDrawable(authorId,
+                            DbUtils.getString(cursor, Download.AVATAR_FILE_NAME));
                 }
                 if (MyPreferences.showAttachedImages()) {
                     mImageDrawable = AttachedImageDrawable.drawableFromCursor(cursor);
@@ -98,11 +100,11 @@ public class ConversationViewItem extends ConversationItem {
                 if (mLinkedUserId == 0) {
                     mLinkedUserId = linkedUserId;
                 }
-                if (cursor.getInt(cursor.getColumnIndex(MsgOfUser.REBLOGGED)) == 1
+                if (DbUtils.getInt(cursor, MsgOfUser.REBLOGGED) == 1
                         && linkedUserId != authorId) {
                     rebloggers.add(linkedUserId);
                 }
-                if (cursor.getInt(cursor.getColumnIndex(MsgOfUser.FAVORITED)) == 1) {
+                if (DbUtils.getInt(cursor, MsgOfUser.FAVORITED) == 1) {
                     mFavorited = true;
                 }
             }

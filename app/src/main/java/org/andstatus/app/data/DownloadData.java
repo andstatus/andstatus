@@ -113,25 +113,25 @@ public class DownloadData {
             cursor = db.rawQuery(sql, null);
             status = DownloadStatus.ABSENT;
             if (cursor.moveToNext()) {
-                status = DownloadStatus.load(cursor.getLong(cursor.getColumnIndex(Download.DOWNLOAD_STATUS)));
-                fileStored = new DownloadFile(cursor.getString(cursor.getColumnIndex(Download.FILE_NAME)));
+                status = DownloadStatus.load(DbUtils.getLong(cursor, Download.DOWNLOAD_STATUS));
+                fileStored = new DownloadFile(DbUtils.getString(cursor, Download.FILE_NAME));
                 if (downloadType == DownloadType.UNKNOWN) {
-                    downloadType = DownloadType.load(cursor.getLong(cursor.getColumnIndex(Download.DOWNLOAD_TYPE)));
+                    downloadType = DownloadType.load(DbUtils.getLong(cursor, Download.DOWNLOAD_TYPE));
                 }
                 if (userId == 0) {
-                    userId = cursor.getLong(cursor.getColumnIndex(Download.USER_ID));
+                    userId = DbUtils.getLong(cursor, Download.USER_ID);
                 }
                 if (msgId == 0) {
-                    msgId = cursor.getLong(cursor.getColumnIndex(Download.MSG_ID));
+                    msgId = DbUtils.getLong(cursor, Download.MSG_ID);
                 }
                 if (contentType == MyContentType.UNKNOWN) {
-                    contentType = MyContentType.load(cursor.getLong(cursor.getColumnIndex(Download.CONTENT_TYPE)));
+                    contentType = MyContentType.load(DbUtils.getLong(cursor, Download.CONTENT_TYPE));
                 }
                 if (downloadId == 0) {
-                    downloadId = cursor.getLong(cursor.getColumnIndex(Download._ID));
+                    downloadId = DbUtils.getLong(cursor, Download._ID);
                 }
                 if (uri.equals(Uri.EMPTY)) {
-                    uri = UriUtils.fromString(cursor.getString(cursor.getColumnIndex(Download.URI)));
+                    uri = UriUtils.fromString(DbUtils.getString(cursor, Download.URI));
                 }
             }
         } finally {

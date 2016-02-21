@@ -360,33 +360,32 @@ public class Origin {
         /**
          * Loading persistent Origin
          */
-        public Builder(Cursor c) {
-            OriginType originType1 = OriginType.fromId(c.getLong(c
-                    .getColumnIndex(MyDatabase.Origin.ORIGIN_TYPE_ID)));
+        public Builder(Cursor cursor) {
+            OriginType originType1 = OriginType.fromId(
+                    DbUtils.getLong(cursor, MyDatabase.Origin.ORIGIN_TYPE_ID));
             origin = getEmpty(originType1);
 
-            origin.id = c.getLong(c.getColumnIndex(MyDatabase.Origin._ID));
-            origin.name = c.getString(c.getColumnIndex(MyDatabase.Origin.ORIGIN_NAME));
-            setHostOrUrl(c.getString(c.getColumnIndex(MyDatabase.Origin.ORIGIN_URL)));
-            setSsl(c.getInt(c.getColumnIndex(MyDatabase.Origin.SSL)) != 0);
-            setSslMode(SslModeEnum.fromId(c.getLong(c.getColumnIndex(MyDatabase.Origin.SSL_MODE))));
+            origin.id = DbUtils.getLong(cursor, MyDatabase.Origin._ID);
+            origin.name = DbUtils.getString(cursor, MyDatabase.Origin.ORIGIN_NAME);
+            setHostOrUrl(DbUtils.getString(cursor, MyDatabase.Origin.ORIGIN_URL));
+            setSsl(DbUtils.getBoolean(cursor, MyDatabase.Origin.SSL));
+            setSslMode(SslModeEnum.fromId(DbUtils.getLong(cursor, MyDatabase.Origin.SSL_MODE)));
             
-            origin.allowHtml = (c.getInt(c.getColumnIndex(MyDatabase.Origin.ALLOW_HTML)) != 0);
+            origin.allowHtml = DbUtils.getBoolean(cursor, MyDatabase.Origin.ALLOW_HTML);
             if (originType1.shortUrlLengthDefault == 0) {
-                origin.shortUrlLength = c.getInt(c
-                        .getColumnIndex(MyDatabase.Origin.SHORT_URL_LENGTH));
+                origin.shortUrlLength = DbUtils.getInt(cursor, MyDatabase.Origin.SHORT_URL_LENGTH);
             }
             if (originType1.textLimitDefault == 0) {
-                setTextLimit(c.getInt(c.getColumnIndex(MyDatabase.Origin.TEXT_LIMIT)));
+                setTextLimit(DbUtils.getInt(cursor, MyDatabase.Origin.TEXT_LIMIT));
             }
-            origin.inCombinedGlobalSearch = (c.getInt(c
-                    .getColumnIndex(MyDatabase.Origin.IN_COMBINED_GLOBAL_SEARCH)) != 0);
-            origin.inCombinedPublicReload = (c.getInt(c
-                    .getColumnIndex(MyDatabase.Origin.IN_COMBINED_PUBLIC_RELOAD)) != 0);
-            setMentionAsWebFingerId(TriState.fromId(c.getLong(c
-                    .getColumnIndex(MyDatabase.Origin.MENTION_AS_WEBFINGER_ID))));
-            setUseLegacyHttpProtocol(TriState.fromId(c.getLong(c
-                    .getColumnIndex(MyDatabase.Origin.USE_LEGACY_HTTP))));
+            origin.inCombinedGlobalSearch = DbUtils.getBoolean(cursor,
+                    MyDatabase.Origin.IN_COMBINED_GLOBAL_SEARCH);
+            origin.inCombinedPublicReload = DbUtils.getBoolean(cursor,
+                    MyDatabase.Origin.IN_COMBINED_PUBLIC_RELOAD);
+            setMentionAsWebFingerId(TriState.fromId(DbUtils.getLong(cursor,
+                    MyDatabase.Origin.MENTION_AS_WEBFINGER_ID)));
+            setUseLegacyHttpProtocol(TriState.fromId(DbUtils.getLong(cursor,
+                    MyDatabase.Origin.USE_LEGACY_HTTP)));
         }
 
         protected void setTextLimit(int textLimit) {

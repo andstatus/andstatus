@@ -25,6 +25,7 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.AttachedImageDrawable;
 import org.andstatus.app.data.AvatarDrawable;
+import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.TimelineSql;
@@ -71,48 +72,31 @@ public class TimelineViewItem {
 
     public static TimelineViewItem fromCursorRow(Cursor cursor) {
         TimelineViewItem item = new TimelineViewItem();
-        item.msgId = getLong(cursor, MyDatabase.Msg._ID);
+        item.msgId = DbUtils.getLong(cursor, MyDatabase.Msg._ID);
         item.authorName = TimelineSql.userColumnIndexToNameAtTimeline(cursor,
                 cursor.getColumnIndex(MyDatabase.User.AUTHOR_NAME), MyPreferences.showOrigin());
-        item.body = getString(cursor, MyDatabase.Msg.BODY);
-        item.inReplyToMsgId = getLong(cursor, MyDatabase.Msg.IN_REPLY_TO_MSG_ID);
-        item.inReplyToName = getString(cursor, MyDatabase.User.IN_REPLY_TO_NAME);
-        item.recipientName = getString(cursor, MyDatabase.User.RECIPIENT_NAME);
-        item.favorited = getLong(cursor, MyDatabase.MsgOfUser.FAVORITED) == 1;
-        item.sentDate = getLong(cursor, MyDatabase.Msg.SENT_DATE);
-        item.createdDate = getLong(cursor, MyDatabase.Msg.CREATED_DATE);
-        item.msgStatus = DownloadStatus.load(getLong(cursor, MyDatabase.Msg.MSG_STATUS));
-        item.linkedUserId = getLong(cursor, MyDatabase.User.LINKED_USER_ID);
-        item.authorId = getLong(cursor, MyDatabase.Msg.AUTHOR_ID);
+        item.body = DbUtils.getString(cursor, MyDatabase.Msg.BODY);
+        item.inReplyToMsgId = DbUtils.getLong(cursor, MyDatabase.Msg.IN_REPLY_TO_MSG_ID);
+        item.inReplyToName = DbUtils.getString(cursor, MyDatabase.User.IN_REPLY_TO_NAME);
+        item.recipientName = DbUtils.getString(cursor, MyDatabase.User.RECIPIENT_NAME);
+        item.favorited = DbUtils.getLong(cursor, MyDatabase.MsgOfUser.FAVORITED) == 1;
+        item.sentDate = DbUtils.getLong(cursor, MyDatabase.Msg.SENT_DATE);
+        item.createdDate = DbUtils.getLong(cursor, MyDatabase.Msg.CREATED_DATE);
+        item.msgStatus = DownloadStatus.load(DbUtils.getLong(cursor, MyDatabase.Msg.MSG_STATUS));
+        item.linkedUserId = DbUtils.getLong(cursor, MyDatabase.User.LINKED_USER_ID);
+        item.authorId = DbUtils.getLong(cursor, MyDatabase.Msg.AUTHOR_ID);
         if (MyPreferences.showAvatars()) {
-            item.avatarFilename = getString(cursor, MyDatabase.Download.AVATAR_FILE_NAME);
+            item.avatarFilename = DbUtils.getString(cursor, MyDatabase.Download.AVATAR_FILE_NAME);
             item.avatarDrawable = new AvatarDrawable(item.authorId, item.avatarFilename);
         }
         if (MyPreferences.showAttachedImages()) {
-            item.attachedImageRowId = getLong(cursor, MyDatabase.Download.IMAGE_ID);
-            item.attachedImageFilename = getString(cursor, MyDatabase.Download.IMAGE_FILE_NAME);
+            item.attachedImageRowId = DbUtils.getLong(cursor, MyDatabase.Download.IMAGE_ID);
+            item.attachedImageFilename = DbUtils.getString(cursor, MyDatabase.Download.IMAGE_FILE_NAME);
             item.attachedImageDrawable = new AttachedImageDrawable(item.attachedImageRowId, item.attachedImageFilename);
         }
-        item.inReplyToUserId = getLong(cursor, MyDatabase.Msg.IN_REPLY_TO_USER_ID);
-        item.originId = getLong(cursor, MyDatabase.Msg.ORIGIN_ID);
+        item.inReplyToUserId = DbUtils.getLong(cursor, MyDatabase.Msg.IN_REPLY_TO_USER_ID);
+        item.originId = DbUtils.getLong(cursor, MyDatabase.Msg.ORIGIN_ID);
         return item;
-    }
-
-    private static long getLong(Cursor cursor, String columnName) {
-        int columnIndex = cursor.getColumnIndex(columnName);
-        if (columnIndex < 0) {
-            return 0;
-        }
-        return cursor.getLong(columnIndex);
-    }
-
-    private static String getString(Cursor cursor, String columnName) {
-        int columnIndex = cursor.getColumnIndex(columnName);
-        if (columnIndex < 0) {
-            return "";
-        }
-        String value = cursor.getString(columnIndex);
-        return value == null ? "" : value;
     }
 
     public Drawable getAvatar() {
