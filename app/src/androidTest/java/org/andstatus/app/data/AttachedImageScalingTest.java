@@ -15,26 +15,28 @@ public class AttachedImageScalingTest extends InstrumentationTestCase {
     }
     
     public void testScaling() {
+        MyImageCache.initialize(MyContextHolder.get().context());
         Point display = AttachedImageDrawable.getDisplaySize(MyContextHolder.get().context());
-        BitmapFactory.Options options = MyImageCache.calculateScaling(this, display);
+        MyBitmapCache cache = MyImageCache.attachedImagesCache;
+        BitmapFactory.Options options = cache.calculateScaling(this, display);
         assertEquals(2, options.inSampleSize);
         Point imageSize = new Point(display.x * 2, display.y * 2);
-        options = MyImageCache.calculateScaling(this, imageSize);
+        options = cache.calculateScaling(this, imageSize);
         assertEquals(4, options.inSampleSize);
         imageSize = new Point(display.x + display.x / 2, display.y + display.y / 2);
-        options = MyImageCache.calculateScaling(this, imageSize);
+        options = cache.calculateScaling(this, imageSize);
         assertEquals(2, options.inSampleSize);
         imageSize = new Point(display.x * 3, display.y);
-        options = MyImageCache.calculateScaling(this, imageSize);
+        options = cache.calculateScaling(this, imageSize);
         assertEquals(4, options.inSampleSize);
         imageSize = new Point(display.x, display.y * 3);
-        options = MyImageCache.calculateScaling(this, imageSize);
+        options = cache.calculateScaling(this, imageSize);
         assertEquals(4, options.inSampleSize);
         imageSize = new Point(display.x / 2, display.y);
-        options = MyImageCache.calculateScaling(this, imageSize);
+        options = cache.calculateScaling(this, imageSize);
         assertEquals(2, options.inSampleSize);
         imageSize = new Point(display.x, display.y / 2);
-        options = MyImageCache.calculateScaling(this, imageSize);
+        options = cache.calculateScaling(this, imageSize);
         assertTrue(options.inSampleSize < 2);
     }
 

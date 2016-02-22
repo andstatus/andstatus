@@ -37,6 +37,7 @@ import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.MyTheme;
 import org.andstatus.app.data.AvatarDrawable;
 import org.andstatus.app.data.DownloadStatus;
+import org.andstatus.app.data.MyImageCache;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyUrlSpan;
 import org.andstatus.app.util.RelativeTime;
@@ -147,7 +148,7 @@ public class ConversationViewAdapter extends MyBaseAdapter {
         setIndentView(messageIndented, indentPixels);
 
         if (MyPreferences.showAvatars()) {
-            indentPixels = setAvatar(oMsg, messageIndented, viewToTheLeftId, displayDensity, indentPixels);
+            indentPixels = setAvatar(oMsg, messageIndented, viewToTheLeftId, indentPixels);
         }
         messageIndented.setPadding(indentPixels + 6, 2, 6, 2);
     }
@@ -165,7 +166,7 @@ public class ConversationViewAdapter extends MyBaseAdapter {
         }
     }
 
-    private int setAvatar(ConversationViewItem oMsg, LinearLayout messageIndented, int viewToTheLeftId, float displayDensity, int indentPixels) {
+    private int setAvatar(ConversationViewItem oMsg, LinearLayout messageIndented, int viewToTheLeftId, int indentPixels) {
         ViewGroup parentView = ((ViewGroup) messageIndented.getParent());
         ImageView avatarView = (ImageView) parentView.findViewById(R.id.avatar_image);
         boolean newView = avatarView == null;
@@ -173,7 +174,7 @@ public class ConversationViewAdapter extends MyBaseAdapter {
             avatarView = new ImageView(context);
             avatarView.setId(R.id.avatar_image);
         }
-        int size = Math.round(AvatarDrawable.AVATAR_SIZE_DIP * displayDensity);
+        int size = MyImageCache.getAvatarWidthPixels();
         avatarView.setScaleType(ScaleType.FIT_CENTER);
         RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(size, size);
         layoutParams.topMargin = 3;

@@ -31,6 +31,7 @@ import org.andstatus.app.account.PersistentAccounts;
 import org.andstatus.app.data.AssertionData;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyDatabaseConverterController;
+import org.andstatus.app.data.MyImageCache;
 import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.net.http.TlsSniSocketFactory;
@@ -96,6 +97,7 @@ public final class MyContextImpl implements MyContext {
                             myContext.mDb = newDb;
                             myContext.mPersistentOrigins.initialize(myContext);
                             myContext.mPersistentAccounts.initialize(myContext);
+                            MyImageCache.initialize(myContext.context());
                         break;
                     default: 
                         break;
@@ -213,7 +215,7 @@ public final class MyContextImpl implements MyContext {
     @Override
     /**
      * 2013-12-09 After getting the error "java.lang.IllegalStateException: attempt to re-open an already-closed object: SQLiteDatabase"
-     * and reading Inet, I decided NOT to db.close here.
+     * and reading Internet, I decided NOT to db.close here.
      */
     public void release() {
         TlsSniSocketFactory.forget();

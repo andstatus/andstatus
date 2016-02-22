@@ -16,9 +16,16 @@
 
 package org.andstatus.app.data;
 
+import android.app.ActivityManager;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Point;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.os.Build;
+import android.support.annotation.Nullable;
+import android.text.TextUtils;
 import android.util.LruCache;
 
 import org.andstatus.app.context.MyContextHolder;
@@ -28,49 +35,96 @@ import org.andstatus.app.util.MyLog;
  * @author yvolk@yurivolkov.com
  */
 public class MyImageCache {
-    private static final LruCache<String, Point> boundsCash = new LruCache<>(1000);
-    // On usage read http://developer.android.com/reference/android/util/LruCache.html
-    private static final LruCache<String, Bitmap> bitmapCache = new LruCache(1024 * 1024 * 4) {
-        protected int sizeOf(String key, Bitmap value) {
-            return value.getByteCount();
-        }};
+    private static final LruCache<String, Point> boundsCache = new LruCache<>(1000);
+    private static final MyBitmapCache avatarsCache = new MyBitmapCache("Avatars", 500, 1024 * 1024);
+    private static final float ATTACHED_IMAGES_CACHE_PART_OF_TOTAL_MEMORY = 0.1f;
+    static final MyBitmapCache attachedImagesCache = new MyBitmapCache("Attached images", 3000, 1024 * 1024 * 40);
+
+    private  MyImageCache() {
+        // Empty
+    }
+
+    public static void initialize(Context context) {
+        attachedImagesCache.evictAll();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            attachedImagesCache.resize(Math.round(
+                    ATTACHED_IMAGES_CACHE_PART_OF_TOTAL_MEMORY * getTotalMemory(context)
+            ));
+        }
+        Point displaySize = AttachedImageDrawable.getDisplaySize(context);
+        attachedImagesCache.setMaxBounds(displaySize.x,
+                (int) (AttachedImageDrawable.MAX_ATTACHED_IMAGE_PART * displaySize.y));
+
+        avatarsCache.evictAll();
+        float displayDensity = context.getResources().getDisplayMetrics().density;
+        int avatarSize = Math.round(AvatarDrawable.AVATAR_SIZE_DIP * displayDensity);
+        avatarsCache.setMaxBounds(avatarSize, avatarSize);
+    }
+
+    private static long getTotalMemory(Context context) {
+        ActivityManager actManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+        ActivityManager.MemoryInfo memInfo = new ActivityManager.MemoryInfo();
+        actManager.getMemoryInfo(memInfo);
+        return memInfo.totalMem;
+    }
 
     public static Point getImageSize(String path) {
-        Point bounds = boundsCash.get(path);
+        if (TextUtils.isEmpty(path)) {
+            return new Point(0, 0);
+        }
+        Point bounds = boundsCache.get(path);
         if (bounds == null) {
             BitmapFactory.Options options = new BitmapFactory.Options();
             options.inJustDecodeBounds = true;
             BitmapFactory.decodeFile(path, options);
             bounds = new Point(options.outWidth, options.outHeight);
-            boundsCash.put(path, bounds);
+            boundsCache.put(path, bounds);
         }
         return bounds;
     }
 
-    static Bitmap getBitmap(Object objTag, String path, Point imageSize) {
-        Bitmap bitmap = bitmapCache.get(path);
-        if (bitmap == null) {
-            bitmap = BitmapFactory
-                    .decodeFile(path, calculateScaling(objTag, imageSize));
-            if (bitmap != null) {
-                bitmapCache.put(path, bitmap);
-            }
+    @Nullable
+    public static Drawable getAvatarDrawable(Object objTag, String path) {
+        if (TextUtils.isEmpty(path)) {
+            return null;
         }
-        return bitmap;
+        Point imageSize = getImageSize(path);
+        Bitmap bitmap = avatarsCache.getBitmap(objTag, path, imageSize);
+        if (MyLog.isVerboseEnabled()) {
+            MyLog.v(objTag, (bitmap == null ? "Failed to load avatar's bitmap"
+                    : "Loaded avatar's bitmap " + bitmap.getWidth() + "x" + bitmap.getHeight())
+                    + " '" + path + "'");
+        }
+        if (bitmap == null) {
+            return null;
+        }
+        return new BitmapDrawable(MyContextHolder.get().context().getResources(), bitmap);
     }
 
-    static BitmapFactory.Options calculateScaling(Object objTag,
-            Point imageSize) {
-        BitmapFactory.Options options2 = new BitmapFactory.Options();
-        Point displaySize = AttachedImageDrawable.getDisplaySize(MyContextHolder.get().context());
-        while (imageSize.y > (int) (AttachedImageDrawable.MAX_ATTACHED_IMAGE_PART * displaySize.y) || imageSize.x > displaySize.x) {
-            options2.inSampleSize = (options2.inSampleSize < 2) ? 2 : options2.inSampleSize * 2;
-            displaySize.set(displaySize.x * 2, displaySize.y * 2);
+    public static int getAvatarWidthPixels() {
+        return avatarsCache.getMaxBitmapWidth();
+    }
+
+    public static Drawable getAttachedImageDrawable(Object objTag, String path, Point imageSize) {
+        if (TextUtils.isEmpty(path)) {
+            return null;
         }
-        if (options2.inSampleSize > 1 && MyLog.isVerboseEnabled()) {
-            MyLog.v(objTag, "Large bitmap " + imageSize.x + "x" + imageSize.y
-                    + " scaling by " + options2.inSampleSize + " times");
+        Bitmap bitmap = attachedImagesCache.getBitmap(objTag, path, imageSize);
+        if (MyLog.isVerboseEnabled()) {
+            MyLog.v(objTag, (bitmap == null ? "Failed to load bitmap" : "Loaded bitmap " + bitmap.getWidth() + "x" + bitmap.getHeight())
+                    + " '" + path + "'");
         }
-        return options2;
+        if (bitmap == null) {
+            return null;
+        }
+        return new BitmapDrawable(MyContextHolder.get().context().getResources(), bitmap);
+    }
+
+    public static String getCacheInfo() {
+        StringBuilder builder = new StringBuilder("ImageCaches:\n");
+        builder.append("Bounds size:" + boundsCache.size() + " items, " + boundsCache.toString() + "\n");
+        builder.append(avatarsCache.getInfo() + "\n");
+        builder.append(attachedImagesCache.getInfo() + "\n");
+        return builder.toString();
     }
 }

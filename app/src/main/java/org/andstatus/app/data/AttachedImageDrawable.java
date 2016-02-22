@@ -18,14 +18,11 @@ package org.andstatus.app.data;
 
 import android.content.Context;
 import android.database.Cursor;
-import android.graphics.Bitmap;
 import android.graphics.Point;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.view.Display;
 import android.view.WindowManager;
 
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.util.MyLog;
 
 public class AttachedImageDrawable {
@@ -61,7 +58,7 @@ public class AttachedImageDrawable {
     public Drawable getDrawable() {
         if (downloadFile.exists()) {
             String path = downloadFile.getFile().getAbsolutePath();
-            return drawableFromPath(this, path, getSize());
+            return MyImageCache.getAttachedImageDrawable(this, path, getSize());
         }
         if (downloadRowId == 0) {
             // TODO: Why we get here?
@@ -73,22 +70,6 @@ public class AttachedImageDrawable {
     }
 
     public static final double MAX_ATTACHED_IMAGE_PART = 0.75;
-
-    public static Drawable drawableFromPath(Object objTag, String path) {
-        return drawableFromPath(objTag, path, MyImageCache.getImageSize(path));
-    }
-
-    private static Drawable drawableFromPath(Object objTag, String path, Point imageSize) {
-        Bitmap bitmap = MyImageCache.getBitmap(objTag, path, imageSize);
-        if (MyLog.isVerboseEnabled()) {
-            MyLog.v(objTag, (bitmap == null ? "Failed to load bitmap" : "Loaded bitmap " + bitmap.getWidth() + "x" + bitmap.getHeight())
-                    + " '" + path + "'");
-        }
-        if (bitmap == null) {
-            return null;
-        }
-        return new BitmapDrawable(MyContextHolder.get().context().getResources(), bitmap);
-    }
 
     @Override
     public String toString() {
