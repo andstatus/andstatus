@@ -19,7 +19,6 @@ package org.andstatus.app.data;
 import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Point;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -53,7 +52,7 @@ public class AttachedImageDrawable {
     public Point getSize() {
         if (size == null) {
             if (downloadFile.exists()) {
-                size = getImageSize(downloadFile.getFile().getAbsolutePath());
+                size = MyImageCache.getImageSize(downloadFile.getFile().getAbsolutePath());
             }
         }
         return size == null ? new Point() : size;
@@ -76,12 +75,11 @@ public class AttachedImageDrawable {
     public static final double MAX_ATTACHED_IMAGE_PART = 0.75;
 
     public static Drawable drawableFromPath(Object objTag, String path) {
-        return drawableFromPath(objTag, path, getImageSize(path));
+        return drawableFromPath(objTag, path, MyImageCache.getImageSize(path));
     }
 
     private static Drawable drawableFromPath(Object objTag, String path, Point imageSize) {
-        Bitmap bitmap = BitmapFactory
-                .decodeFile(path, calculateScaling(objTag, imageSize));
+        Bitmap bitmap = MyImageCache.getBitmap(objTag, path, imageSize);
         if (MyLog.isVerboseEnabled()) {
             MyLog.v(objTag, (bitmap == null ? "Failed to load bitmap" : "Loaded bitmap " + bitmap.getWidth() + "x" + bitmap.getHeight())
                     + " '" + path + "'");
@@ -90,28 +88,6 @@ public class AttachedImageDrawable {
             return null;
         }
         return new BitmapDrawable(MyContextHolder.get().context().getResources(), bitmap);
-    }
-
-    private static Point getImageSize(String path) {
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inJustDecodeBounds = true;
-        BitmapFactory.decodeFile(path, options);
-        return new Point(options.outWidth, options.outHeight);
-    }
-
-    static BitmapFactory.Options calculateScaling(Object objTag,
-            Point imageSize) {
-        BitmapFactory.Options options2 = new BitmapFactory.Options();
-        Point displaySize = getDisplaySize(MyContextHolder.get().context());
-        while (imageSize.y > (int) (MAX_ATTACHED_IMAGE_PART * displaySize.y) || imageSize.x > displaySize.x) {
-            options2.inSampleSize = (options2.inSampleSize < 2) ? 2 : options2.inSampleSize * 2;
-            displaySize.set(displaySize.x * 2, displaySize.y * 2);
-        }
-        if (options2.inSampleSize > 1 && MyLog.isVerboseEnabled()) {
-            MyLog.v(objTag, "Large bitmap " + imageSize.x + "x" + imageSize.y
-                    + " scaling by " + options2.inSampleSize + " times");
-        }
-        return options2;
     }
 
     @Override
