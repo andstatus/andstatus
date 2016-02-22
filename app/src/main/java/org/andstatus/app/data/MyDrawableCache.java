@@ -19,8 +19,12 @@ package org.andstatus.app.data;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Point;
+import android.graphics.drawable.BitmapDrawable;
+import android.support.annotation.Nullable;
+import android.text.TextUtils;
 import android.util.LruCache;
 
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.util.MyLog;
 
 import java.util.concurrent.atomic.AtomicLong;
@@ -29,7 +33,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * @author yvolk@yurivolkov.com
  * On LruCache usage read http://developer.android.com/reference/android/util/LruCache.html
  */
-public class MyBitmapCache extends LruCache<String, Bitmap> {
+public class MyDrawableCache extends LruCache<String, BitmapDrawable> {
     final String name;
     private volatile int maxCacheSize;
     private volatile int maxBitmapHeight;
@@ -43,7 +47,7 @@ public class MyBitmapCache extends LruCache<String, Bitmap> {
         super.resize(maxSize);
     }
 
-    public MyBitmapCache(String name, int maxBitmapHeightWidth, int maxCacheSize) {
+    public MyDrawableCache(String name, int maxBitmapHeightWidth, int maxCacheSize) {
         super(maxCacheSize);
         this.name = name;
         this.setMaxBounds(maxBitmapHeightWidth, maxBitmapHeightWidth);
@@ -51,23 +55,47 @@ public class MyBitmapCache extends LruCache<String, Bitmap> {
     }
 
     @Override
-    protected int sizeOf(String key, Bitmap value) {
-        return value.getByteCount();
+    protected int sizeOf(String key, BitmapDrawable value) {
+        return value.getBitmap().getByteCount();
     }
 
-    Bitmap getBitmap(Object objTag, String path, Point imageSize) {
-        Bitmap bitmap = get(path);
-        if (bitmap != null) {
+    @Nullable
+    BitmapDrawable getDrawable(Object objTag, String path) {
+        if (TextUtils.isEmpty(path)) {
+            return null;
+        }
+        BitmapDrawable drawable = get(path);
+        if (drawable != null) {
             hits.incrementAndGet();
         } else {
             misses.incrementAndGet();
-            bitmap = BitmapFactory
-                    .decodeFile(path, calculateScaling(objTag, imageSize));
+            Bitmap bitmap = BitmapFactory
+                    .decodeFile(path, calculateScaling(objTag, getImageSize(path)));
+            if (MyLog.isVerboseEnabled()) {
+                MyLog.v(objTag, (bitmap == null ? "Failed to load " + name + "'s bitmap"
+                        : "Loaded " + name + "'s bitmap " + bitmap.getWidth()
+                        + "x" + bitmap.getHeight()) + " '" + path + "'");
+            }
             if (bitmap != null) {
-                put(path, bitmap);
+                drawable = new BitmapDrawable(MyContextHolder.get().context().getResources(), bitmap);
+                put(path, drawable);
             }
         }
-        return bitmap;
+        return drawable;
+    }
+
+    public static Point getImageSize(String path) {
+        if (!TextUtils.isEmpty(path)) {
+            try {
+                BitmapFactory.Options options = new BitmapFactory.Options();
+                options.inJustDecodeBounds = true;
+                BitmapFactory.decodeFile(path, options);
+                return new Point(options.outWidth, options.outHeight);
+            } catch (Exception e) {
+                MyLog.d("getImageSize", "path:'" + path + "'", e);
+            }
+        }
+        return new Point(0, 0);
     }
 
     BitmapFactory.Options calculateScaling(Object objTag, Point imageSize) {

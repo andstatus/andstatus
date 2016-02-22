@@ -47,10 +47,8 @@ public class AttachedImageDrawable {
     }
 
     public Point getSize() {
-        if (size == null) {
-            if (downloadFile.exists()) {
-                size = MyImageCache.getImageSize(downloadFile.getFile().getAbsolutePath());
-            }
+        if (size == null && downloadFile.exists()) {
+            size = MyImageCache.getImageSize(downloadFile.getFile().getAbsolutePath());
         }
         return size == null ? new Point() : size;
     }
@@ -58,7 +56,7 @@ public class AttachedImageDrawable {
     public Drawable getDrawable() {
         if (downloadFile.exists()) {
             String path = downloadFile.getFile().getAbsolutePath();
-            return MyImageCache.getAttachedImageDrawable(this, path, getSize());
+            return MyImageCache.getAttachedImageDrawable(this, path);
         }
         if (downloadRowId == 0) {
             // TODO: Why we get here?

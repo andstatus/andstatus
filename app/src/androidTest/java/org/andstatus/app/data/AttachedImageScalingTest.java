@@ -17,7 +17,7 @@ public class AttachedImageScalingTest extends InstrumentationTestCase {
     public void testScaling() {
         MyImageCache.initialize(MyContextHolder.get().context());
         Point display = AttachedImageDrawable.getDisplaySize(MyContextHolder.get().context());
-        MyBitmapCache cache = MyImageCache.attachedImagesCache;
+        MyDrawableCache cache = MyImageCache.attachedImagesCache;
         BitmapFactory.Options options = cache.calculateScaling(this, display);
         assertEquals(2, options.inSampleSize);
         Point imageSize = new Point(display.x * 2, display.y * 2);

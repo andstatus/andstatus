@@ -18,27 +18,21 @@ package org.andstatus.app.data;
 
 import android.app.ActivityManager;
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Point;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.text.TextUtils;
-import android.util.LruCache;
-
-import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.util.MyLog;
 
 /**
  * @author yvolk@yurivolkov.com
  */
 public class MyImageCache {
-    private static final LruCache<String, Point> boundsCache = new LruCache<>(1000);
-    private static final MyBitmapCache avatarsCache = new MyBitmapCache("Avatars", 500, 1024 * 1024);
+    private static final MyDrawableCache avatarsCache =
+            new MyDrawableCache("Avatars", 1000, 1024 * 1024);
     private static final float ATTACHED_IMAGES_CACHE_PART_OF_TOTAL_MEMORY = 0.1f;
-    static final MyBitmapCache attachedImagesCache = new MyBitmapCache("Attached images", 3000, 1024 * 1024 * 40);
+    static final MyDrawableCache attachedImagesCache =
+            new MyDrawableCache("Attached images", 5000, 1024 * 1024 * 40);
 
     private  MyImageCache() {
         // Empty
@@ -68,61 +62,26 @@ public class MyImageCache {
         return memInfo.totalMem;
     }
 
+    @NonNull
     public static Point getImageSize(String path) {
-        if (TextUtils.isEmpty(path)) {
-            return new Point(0, 0);
-        }
-        Point bounds = boundsCache.get(path);
-        if (bounds == null) {
-            BitmapFactory.Options options = new BitmapFactory.Options();
-            options.inJustDecodeBounds = true;
-            BitmapFactory.decodeFile(path, options);
-            bounds = new Point(options.outWidth, options.outHeight);
-            boundsCache.put(path, bounds);
-        }
-        return bounds;
+        return MyDrawableCache.getImageSize(path);
     }
 
     @Nullable
     public static Drawable getAvatarDrawable(Object objTag, String path) {
-        if (TextUtils.isEmpty(path)) {
-            return null;
-        }
-        Point imageSize = getImageSize(path);
-        Bitmap bitmap = avatarsCache.getBitmap(objTag, path, imageSize);
-        if (MyLog.isVerboseEnabled()) {
-            MyLog.v(objTag, (bitmap == null ? "Failed to load avatar's bitmap"
-                    : "Loaded avatar's bitmap " + bitmap.getWidth() + "x" + bitmap.getHeight())
-                    + " '" + path + "'");
-        }
-        if (bitmap == null) {
-            return null;
-        }
-        return new BitmapDrawable(MyContextHolder.get().context().getResources(), bitmap);
+        return avatarsCache.getDrawable(objTag, path);
     }
 
     public static int getAvatarWidthPixels() {
         return avatarsCache.getMaxBitmapWidth();
     }
 
-    public static Drawable getAttachedImageDrawable(Object objTag, String path, Point imageSize) {
-        if (TextUtils.isEmpty(path)) {
-            return null;
-        }
-        Bitmap bitmap = attachedImagesCache.getBitmap(objTag, path, imageSize);
-        if (MyLog.isVerboseEnabled()) {
-            MyLog.v(objTag, (bitmap == null ? "Failed to load bitmap" : "Loaded bitmap " + bitmap.getWidth() + "x" + bitmap.getHeight())
-                    + " '" + path + "'");
-        }
-        if (bitmap == null) {
-            return null;
-        }
-        return new BitmapDrawable(MyContextHolder.get().context().getResources(), bitmap);
+    public static Drawable getAttachedImageDrawable(Object objTag, String path) {
+        return attachedImagesCache.getDrawable(objTag, path);
     }
 
     public static String getCacheInfo() {
         StringBuilder builder = new StringBuilder("ImageCaches:\n");
-        builder.append("Bounds size:" + boundsCache.size() + " items, " + boundsCache.toString() + "\n");
         builder.append(avatarsCache.getInfo() + "\n");
         builder.append(attachedImagesCache.getInfo() + "\n");
         return builder.toString();
