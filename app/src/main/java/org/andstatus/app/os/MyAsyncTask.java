@@ -19,11 +19,10 @@ package org.andstatus.app.os;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 
+import org.andstatus.app.data.MyImageCache;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
-
-import java.util.concurrent.ThreadPoolExecutor;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -78,6 +77,11 @@ public abstract class MyAsyncTask<Params, Progress, Result> extends AsyncTask<Pa
             } else {
                 return doInBackground2(params);
             }
+        } catch (Throwable e) {
+            String msgLog = MyImageCache.getCacheInfo() + "\n "
+                    + AsyncTaskLauncher.threadPoolInfo();
+            MyLog.e(this, msgLog, e);
+            throw new IllegalStateException(msgLog, e);
         } finally {
             backgroundEndedAt = System.currentTimeMillis();
         }
@@ -110,8 +114,7 @@ public abstract class MyAsyncTask<Params, Progress, Result> extends AsyncTask<Pa
 
     @Override
     public String toString() {
-        return taskId
-                + " on " + pool.name()
+        return taskId + " on " + pool.name()
                 + "; age " + RelativeTime.secondsAgo(createdAt) + "sec"
                 + "; " + stateSummary()
                 + "; instanceId=" + instanceId + "; " + super.toString();

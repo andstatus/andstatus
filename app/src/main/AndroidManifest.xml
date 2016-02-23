@@ -65,6 +65,11 @@
 		<service android:name="org.andstatus.app.service.MyService"
 		    android:exported="false" />
 
+        <service
+            android:name="org.acra.sender.SenderService"
+            android:exported="false"
+            android:process=":acra" />
+
 		<receiver android:name="org.andstatus.app.service.MyServiceManager" 
 		    android:exported="true">
             <intent-filter>

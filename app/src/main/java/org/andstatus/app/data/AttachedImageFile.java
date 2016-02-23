@@ -32,6 +32,8 @@ import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.util.MyLog;
 
 public class AttachedImageFile {
+    private static final String TAG = AttachedImageFile.class.getSimpleName();
+
     private final long downloadRowId;
     private final DownloadFile downloadFile;
     private Point size = null;
@@ -120,7 +122,7 @@ public class AttachedImageFile {
     private void setImageDrawableAsync(final ActionableMessageList messageList,
                                        final ImageView imageView, final String path) {
         AsyncTaskLauncher.execute(this,
-                new MyAsyncTask<Void, Void, Drawable>(MyAsyncTask.PoolEnum.QUICK_UI) {
+                new MyAsyncTask<Void, Void, Drawable>(TAG + downloadRowId, MyAsyncTask.PoolEnum.QUICK_UI) {
                     @Override
                     protected Drawable doInBackground2(Void... params) {
                         return MyImageCache.getAttachedImageDrawable(this, path);

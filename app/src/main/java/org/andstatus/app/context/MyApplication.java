@@ -46,6 +46,7 @@ public class MyApplication extends Application {
         MyLog.v(this, "onCreate started");
         MyContextHolder.storeContextIfNotPresent(this, this);
         MyPreferences.setLocale(this);
+
         ACRA.init(this);
     }
 

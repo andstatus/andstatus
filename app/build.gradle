@@ -8,8 +8,8 @@ android {
         applicationId "org.andstatus.app"
         minSdkVersion 16
         targetSdkVersion 22
-        versionName "22.16"
-        versionCode 156
+        versionName "22.17"
+        versionCode 157
 
         testApplicationId "org.andstatus.app.tests"
         testInstrumentationRunner "android.test.InstrumentationTestRunner"
@@ -41,7 +41,7 @@ configurations {
 dependencies {
     compile 'com.github.stephenc.jcip:jcip-annotations:1.0-1' // http://stephenc.github.io/jcip-annotations/dependency-info.html
     compile 'com.android.support:appcompat-v7:22.2.1'
-    compile 'ch.acra:acra:4.6.2'    // https://github.com/ACRA/acra/wiki/AdvancedUsage
+    compile 'ch.acra:acra:4.8.2'    // https://github.com/ACRA/acra/wiki/AdvancedUsage
     compile 'org.apache.httpcomponents:httpclient-android:4.3.5.1' // https://hc.apache.org/httpcomponents-client-4.3.x/android-port.html
 	
 	/* Don't use these dependencies for now, because AIDE doesn't support exclusion 

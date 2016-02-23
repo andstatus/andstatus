@@ -31,7 +31,7 @@ import android.view.WindowManager;
  * @author yvolk@yurivolkov.com
  */
 public class MyImageCache {
-    private static final int ATTACHED_IMAGES_CACHE_SIZE_DEFAULT = 1024 * 1024 * 40;
+    private static final int ATTACHED_IMAGES_CACHE_SIZE_DEFAULT = 1024 * 1024 * 20;
     private static final float ATTACHED_IMAGES_CACHE_PART_OF_TOTAL_MEMORY = 0.1f;
     static final MyDrawableCache attachedImagesCache =
             new MyDrawableCache("Attached images", 5000, ATTACHED_IMAGES_CACHE_SIZE_DEFAULT);
