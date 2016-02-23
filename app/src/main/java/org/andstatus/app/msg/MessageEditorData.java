@@ -24,7 +24,7 @@ import android.text.TextUtils;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.UserInTimeline;
-import org.andstatus.app.data.AttachedImageDrawable;
+import org.andstatus.app.data.AttachedImageFile;
 import org.andstatus.app.data.DataInserter;
 import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.data.DownloadStatus;
@@ -145,7 +145,7 @@ public class MessageEditorData {
             data.body = MyQuery.msgIdToStringColumnValue(MyDatabase.Msg.BODY, msgId);
             data.image = DownloadData.getSingleForMessage(msgId, MyContentType.IMAGE, Uri.EMPTY);
             if (data.image.getStatus() == DownloadStatus.LOADED) {
-                AttachedImageDrawable a = new AttachedImageDrawable(data.image.getDownloadId(),
+                AttachedImageFile a = new AttachedImageFile(data.image.getDownloadId(),
                         data.image.getFilename());
                 data.imageDrawable = a.getDrawable();
                 data.imageSize = a.getSize();

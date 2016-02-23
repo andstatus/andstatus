@@ -23,16 +23,22 @@ import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.view.Display;
+import android.view.WindowManager;
 
 /**
  * @author yvolk@yurivolkov.com
  */
 public class MyImageCache {
-    private static final MyDrawableCache avatarsCache =
-            new MyDrawableCache("Avatars", 1000, 1024 * 1024);
+    private static final int ATTACHED_IMAGES_CACHE_SIZE_DEFAULT = 1024 * 1024 * 40;
     private static final float ATTACHED_IMAGES_CACHE_PART_OF_TOTAL_MEMORY = 0.1f;
     static final MyDrawableCache attachedImagesCache =
-            new MyDrawableCache("Attached images", 5000, 1024 * 1024 * 40);
+            new MyDrawableCache("Attached images", 5000, ATTACHED_IMAGES_CACHE_SIZE_DEFAULT);
+
+    private static final float AVATARS_CACHE_PART_OF_ATTACHED = 0.2f;
+    private static final MyDrawableCache avatarsCache =
+            new MyDrawableCache("Avatars", 1000,
+                    Math.round(ATTACHED_IMAGES_CACHE_SIZE_DEFAULT * AVATARS_CACHE_PART_OF_ATTACHED));
 
     private  MyImageCache() {
         // Empty
@@ -40,18 +46,23 @@ public class MyImageCache {
 
     public static void initialize(Context context) {
         attachedImagesCache.evictAll();
+        int attachedImageCacheSize = Math.round(
+                ATTACHED_IMAGES_CACHE_PART_OF_TOTAL_MEMORY * getTotalMemory(context));
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            attachedImagesCache.resize(Math.round(
-                    ATTACHED_IMAGES_CACHE_PART_OF_TOTAL_MEMORY * getTotalMemory(context)
-            ));
+            attachedImagesCache.resize(attachedImageCacheSize);
         }
-        Point displaySize = AttachedImageDrawable.getDisplaySize(context);
+        Point displaySize = getDisplaySize(context);
         attachedImagesCache.setMaxBounds(displaySize.x,
-                (int) (AttachedImageDrawable.MAX_ATTACHED_IMAGE_PART * displaySize.y));
+                (int) (AttachedImageFile.MAX_ATTACHED_IMAGE_PART * displaySize.y));
 
         avatarsCache.evictAll();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            int avatarsCacheSize = Math.round(
+                    AVATARS_CACHE_PART_OF_ATTACHED * attachedImageCacheSize);
+            avatarsCache.resize(avatarsCacheSize);
+        }
         float displayDensity = context.getResources().getDisplayMetrics().density;
-        int avatarSize = Math.round(AvatarDrawable.AVATAR_SIZE_DIP * displayDensity);
+        int avatarSize = Math.round(AvatarFile.AVATAR_SIZE_DIP * displayDensity);
         avatarsCache.setMaxBounds(avatarSize, avatarSize);
     }
 
@@ -85,5 +96,15 @@ public class MyImageCache {
         builder.append(avatarsCache.getInfo() + "\n");
         builder.append(attachedImagesCache.getInfo() + "\n");
         return builder.toString();
+    }
+
+    /**
+     * See http://stackoverflow.com/questions/1016896/how-to-get-screen-dimensions
+     */
+    public static Point getDisplaySize(Context context) {
+        Display display = ((WindowManager) context.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
+        return size;
     }
 }

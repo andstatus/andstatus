@@ -19,7 +19,6 @@ package org.andstatus.app.user;
 import android.graphics.drawable.Drawable;
 
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.data.AvatarDrawable;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.net.social.MbUser;
@@ -31,7 +30,7 @@ import java.util.Set;
 public class UserListViewItem {
     boolean populated = false;
     final MbUser mbUser;
-    AvatarDrawable mAvatarDrawable = null;
+    Drawable avatarDrawable = null;
     Set<Long> myFollowers = new HashSet<>();
 
     @Override
@@ -78,10 +77,7 @@ public class UserListViewItem {
     }
 
     public Drawable getAvatar() {
-        if (mAvatarDrawable == null) {
-            return AvatarDrawable.getDefaultDrawable();
-        }
-        return mAvatarDrawable.getDrawable();
+        return avatarDrawable;
     }
 
     @Override

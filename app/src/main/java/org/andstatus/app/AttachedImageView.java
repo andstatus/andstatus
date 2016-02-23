@@ -21,7 +21,8 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.widget.ImageView;
 
-import org.andstatus.app.data.AttachedImageDrawable;
+import org.andstatus.app.data.AttachedImageFile;
+import org.andstatus.app.data.MyImageCache;
 import org.andstatus.app.util.MyLog;
 
 /**
@@ -66,8 +67,8 @@ public class AttachedImageView extends ImageView {
             height = MAX_HEIGHT;
             mode = MeasureSpec.AT_MOST;
         }
-        if (height > AttachedImageDrawable.MAX_ATTACHED_IMAGE_PART * getDisplayHeight()) {
-            height = (int) Math.floor(AttachedImageDrawable.MAX_ATTACHED_IMAGE_PART
+        if (height > AttachedImageFile.MAX_ATTACHED_IMAGE_PART * getDisplayHeight()) {
+            height = (int) Math.floor(AttachedImageFile.MAX_ATTACHED_IMAGE_PART
                     * getDisplayHeight());
         }
         getLayoutParams().height = height;
@@ -79,7 +80,7 @@ public class AttachedImageView extends ImageView {
     }
     
     public int getDisplayHeight() {
-        return AttachedImageDrawable.getDisplaySize(getContext()).y;
+        return MyImageCache.getDisplaySize(getContext()).y;
     }
 
     private float getDrawableHeightToWidthRatio() {

@@ -19,7 +19,6 @@ package org.andstatus.app.msg;
 import android.app.Activity;
 import android.content.Context;
 import android.text.TextUtils;
-import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -35,7 +34,6 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.MyTheme;
-import org.andstatus.app.data.AvatarDrawable;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyImageCache;
 import org.andstatus.app.util.MyLog;
@@ -83,10 +81,7 @@ public class ConversationViewAdapter extends MyBaseAdapter {
         final String method = "getView";
         ConversationViewItem oMsg = oMsgs.get(position);
         if (MyLog.isVerboseEnabled()) {
-            MyLog.v(this, method
-                    + ": msgId=" + oMsg.getMsgId()
-                    + (oMsg.mAvatarDrawable != null ? ", avatar="
-                    + oMsg.mAvatarDrawable : ""));
+            MyLog.v(this, method + ": msgId:" + oMsg.getMsgId() + ", author:" + oMsg.mAuthor);
         }
         View view = convertView == null ? newView() : convertView;
         view.setOnCreateContextMenuListener(contextMenu);
@@ -188,7 +183,7 @@ public class ConversationViewAdapter extends MyBaseAdapter {
         }
         avatarView.setLayoutParams(layoutParams);
         if (oMsg.mAvatarDrawable != null) {
-            avatarView.setImageDrawable(oMsg.mAvatarDrawable.getDrawable());
+            avatarView.setImageDrawable(oMsg.mAvatarDrawable);
         }
         indentPixels += size;
         if (newView) {

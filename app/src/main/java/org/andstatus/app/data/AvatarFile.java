@@ -18,15 +18,18 @@ package org.andstatus.app.data;
 
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.database.Cursor;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
+import android.support.annotation.NonNull;
 
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.MyTheme;
 import org.andstatus.app.util.MyLog;
 
-public class AvatarDrawable {
+public class AvatarFile {
     private final long userId;
     private final DownloadFile downloadFile;
     public static final int AVATAR_SIZE_DIP = 48;
@@ -34,14 +37,14 @@ public class AvatarDrawable {
     private static final Drawable DEFAULT_AVATAR = loadDefaultAvatar(false);
     private static final Drawable DEFAULT_AVATAR_LIGHT = loadDefaultAvatar(true);
     
-    public AvatarDrawable(long userIdIn, String filename) {
+    public AvatarFile(long userIdIn, String filename) {
         userId = userIdIn;
         downloadFile = new DownloadFile(filename);
     }
     
     private static Drawable loadDefaultAvatar(boolean lightTheme) {
         Drawable avatar = null;
-        MyLog.v(AvatarDrawable.class, "Loading default avatar");
+        MyLog.v(AvatarFile.class, "Loading default avatar");
         Context context = MyContextHolder.get().context();
         if (context != null) {
             avatar = getDrawableCompat(context,
@@ -53,7 +56,21 @@ public class AvatarDrawable {
     public static Drawable getDefaultDrawable() {
         return MyTheme.isThemeLight() ? DEFAULT_AVATAR_LIGHT : DEFAULT_AVATAR;
     }
-    
+
+    @NonNull
+    public static Drawable getDrawable(long authorId, Cursor cursor) {
+        Drawable drawable = null;
+        if (MyPreferences.showAvatars()) {
+            String avatarFilename = DbUtils.getString(cursor, MyDatabase.Download.AVATAR_FILE_NAME);
+            AvatarFile avatarFile = new AvatarFile(authorId, avatarFilename);
+            drawable = avatarFile.getDrawable();
+        }
+        if (drawable == null) {
+            drawable = getDefaultDrawable();
+        }
+        return drawable;
+    }
+
     public Drawable getDrawable() {
         if (downloadFile.exists()) {
             return MyImageCache.getAvatarDrawable(this, downloadFile.getFile().getAbsolutePath());
@@ -64,7 +81,7 @@ public class AvatarDrawable {
 
     @Override
     public String toString() {
-        return "AvatarDrawable [userId=" + userId + ", " + downloadFile + "]";
+        return "AvatarFile [userId=" + userId + ", " + downloadFile + "]";
     }
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)

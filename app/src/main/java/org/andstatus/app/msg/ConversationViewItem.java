@@ -22,11 +22,10 @@ import android.text.Html;
 import android.text.TextUtils;
 
 import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.data.AttachedImageDrawable;
-import org.andstatus.app.data.AvatarDrawable;
+import org.andstatus.app.data.AttachedImageFile;
+import org.andstatus.app.data.AvatarFile;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.DownloadStatus;
-import org.andstatus.app.data.MyDatabase.Download;
 import org.andstatus.app.data.MyDatabase.Msg;
 import org.andstatus.app.data.MyDatabase.MsgOfUser;
 import org.andstatus.app.data.MyDatabase.User;
@@ -51,7 +50,7 @@ public class ConversationViewItem extends ConversationItem {
     String mRecipientName = "";
     DownloadStatus mStatus = DownloadStatus.UNKNOWN;
 
-    AvatarDrawable mAvatarDrawable = null;
+    Drawable mAvatarDrawable = null;
     Drawable mImageDrawable = null;
 
     @Override
@@ -82,12 +81,9 @@ public class ConversationViewItem extends ConversationItem {
                 if (!TextUtils.isEmpty(via)) {
                     mVia = Html.fromHtml(via).toString().trim();
                 }
-                if (MyPreferences.showAvatars()) {
-                    mAvatarDrawable = new AvatarDrawable(authorId,
-                            DbUtils.getString(cursor, Download.AVATAR_FILE_NAME));
-                }
+                mAvatarDrawable = AvatarFile.getDrawable(authorId, cursor);
                 if (MyPreferences.showAttachedImages()) {
-                    mImageDrawable = AttachedImageDrawable.drawableFromCursor(cursor);
+                    mImageDrawable = AttachedImageFile.drawableFromCursor(cursor);
                 }
                 mInReplyToName = TimelineSql.userColumnNameToNameAtTimeline(cursor, User.IN_REPLY_TO_NAME, false);
                 mRecipientName = TimelineSql.userColumnNameToNameAtTimeline(cursor, User.RECIPIENT_NAME, false);

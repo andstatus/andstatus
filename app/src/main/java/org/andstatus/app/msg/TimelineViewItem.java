@@ -23,8 +23,8 @@ import android.text.TextUtils;
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.data.AttachedImageDrawable;
-import org.andstatus.app.data.AvatarDrawable;
+import org.andstatus.app.data.AttachedImageFile;
+import org.andstatus.app.data.AvatarFile;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyDatabase;
@@ -46,7 +46,6 @@ public class TimelineViewItem {
 
     String authorName = "";
     long authorId = 0;
-    String avatarFilename = "";
 
     String recipientName = "";
 
@@ -60,11 +59,11 @@ public class TimelineViewItem {
     long attachedImageRowId = 0;
     String attachedImageFilename = "";
 
-    AttachedImageDrawable attachedImageDrawable = null;
+    AttachedImageFile attachedImageFile = null;
     long linkedUserId = 0;
 
     private final static TimelineViewItem EMPTY = new TimelineViewItem();
-    private AvatarDrawable avatarDrawable = null;
+    private Drawable avatarDrawable = null;
 
     public static TimelineViewItem getEmpty() {
         return EMPTY;
@@ -85,14 +84,11 @@ public class TimelineViewItem {
         item.msgStatus = DownloadStatus.load(DbUtils.getLong(cursor, MyDatabase.Msg.MSG_STATUS));
         item.linkedUserId = DbUtils.getLong(cursor, MyDatabase.User.LINKED_USER_ID);
         item.authorId = DbUtils.getLong(cursor, MyDatabase.Msg.AUTHOR_ID);
-        if (MyPreferences.showAvatars()) {
-            item.avatarFilename = DbUtils.getString(cursor, MyDatabase.Download.AVATAR_FILE_NAME);
-            item.avatarDrawable = new AvatarDrawable(item.authorId, item.avatarFilename);
-        }
+        item.avatarDrawable = AvatarFile.getDrawable(item.authorId, cursor);
         if (MyPreferences.showAttachedImages()) {
             item.attachedImageRowId = DbUtils.getLong(cursor, MyDatabase.Download.IMAGE_ID);
             item.attachedImageFilename = DbUtils.getString(cursor, MyDatabase.Download.IMAGE_FILE_NAME);
-            item.attachedImageDrawable = new AttachedImageDrawable(item.attachedImageRowId, item.attachedImageFilename);
+            item.attachedImageFile = new AttachedImageFile(item.attachedImageRowId, item.attachedImageFilename);
         }
         item.inReplyToUserId = DbUtils.getLong(cursor, MyDatabase.Msg.IN_REPLY_TO_USER_ID);
         item.originId = DbUtils.getLong(cursor, MyDatabase.Msg.ORIGIN_ID);
@@ -100,11 +96,11 @@ public class TimelineViewItem {
     }
 
     public Drawable getAvatar() {
-        return avatarDrawable == null ? AvatarDrawable.getDefaultDrawable() : avatarDrawable.getDrawable();
+        return avatarDrawable;
     }
 
     public Drawable getAttachedImage() {
-        return attachedImageDrawable == null ? null : attachedImageDrawable.getDrawable();
+        return attachedImageFile == null ? null : attachedImageFile.getDrawable();
     }
 
     public String getDetails(Context context) {

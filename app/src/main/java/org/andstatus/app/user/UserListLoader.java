@@ -9,8 +9,7 @@ import org.andstatus.app.LoadableListActivity.ProgressPublisher;
 import org.andstatus.app.LoadableListActivity.SyncLoader;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.data.AvatarDrawable;
+import org.andstatus.app.data.AvatarFile;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyDatabase;
@@ -111,26 +110,23 @@ public class UserListLoader implements SyncLoader {
         }
     }
 
-    private void populateItem(Cursor c) {
-        long userId = DbUtils.getLong(c, BaseColumns._ID);
+    private void populateItem(Cursor cursor) {
+        long userId = DbUtils.getLong(cursor, BaseColumns._ID);
         UserListViewItem item = getById(userId);
         if (item == null) {
             Origin origin = MyContextHolder.get().persistentOrigins().fromId(
-                    DbUtils.getLong(c, MyDatabase.User.ORIGIN_ID));
+                    DbUtils.getLong(cursor, MyDatabase.User.ORIGIN_ID));
             item = addUserIdToList(origin, userId);
         }
         item.populated = true;
-        item.mbUser.setUserName(DbUtils.getString(c, MyDatabase.User.USERNAME));
-        item.mbUser.setProfileUrl(DbUtils.getString(c, MyDatabase.User.URL));
-        item.mbUser.setWebFingerId(DbUtils.getString(c, MyDatabase.User.WEBFINGER_ID));
-        item.mbUser.realName = DbUtils.getString(c, MyDatabase.User.REAL_NAME);
-        item.mbUser.setHomepage(DbUtils.getString(c, MyDatabase.User.HOMEPAGE));
-        item.mbUser.setDescription(DbUtils.getString(c, MyDatabase.User.DESCRIPTION));
+        item.mbUser.setUserName(DbUtils.getString(cursor, MyDatabase.User.USERNAME));
+        item.mbUser.setProfileUrl(DbUtils.getString(cursor, MyDatabase.User.URL));
+        item.mbUser.setWebFingerId(DbUtils.getString(cursor, MyDatabase.User.WEBFINGER_ID));
+        item.mbUser.realName = DbUtils.getString(cursor, MyDatabase.User.REAL_NAME);
+        item.mbUser.setHomepage(DbUtils.getString(cursor, MyDatabase.User.HOMEPAGE));
+        item.mbUser.setDescription(DbUtils.getString(cursor, MyDatabase.User.DESCRIPTION));
         item.myFollowers = MyQuery.getMyFollowersOf(userId);
-        if (MyPreferences.showAvatars()) {
-            item.mAvatarDrawable = new AvatarDrawable(item.getUserId(),
-                    DbUtils.getString(c, MyDatabase.Download.AVATAR_FILE_NAME));
-        }
+        item.avatarDrawable = AvatarFile.getDrawable(item.getUserId(), cursor);
     }
 
     private UserListViewItem getById(long userId) {

@@ -20,7 +20,7 @@ import android.test.InstrumentationTestCase;
 
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.data.AttachedImageDrawable;
+import org.andstatus.app.data.AttachedImageFile;
 import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MessageInserter;
@@ -80,7 +80,7 @@ public class LargeImageTest extends InstrumentationTestCase {
     }
 
     private void loadingTest(DownloadData dd) {
-        BitmapDrawable drawable = (BitmapDrawable) new AttachedImageDrawable(dd.getDownloadId(), dd.getFilename())
+        BitmapDrawable drawable = (BitmapDrawable) new AttachedImageFile(dd.getDownloadId(), dd.getFilename())
                 .getDrawable();
         int width = drawable.getIntrinsicWidth();
         assertTrue("Not wide already " + width, width < 4000 && width > 10);

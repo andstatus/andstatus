@@ -16,16 +16,13 @@
 
 package org.andstatus.app.data;
 
-import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Point;
 import android.graphics.drawable.Drawable;
-import android.view.Display;
-import android.view.WindowManager;
 
 import org.andstatus.app.util.MyLog;
 
-public class AttachedImageDrawable {
+public class AttachedImageFile {
     private final long downloadRowId;
     private final DownloadFile downloadFile;
     private Point size = null;
@@ -35,13 +32,13 @@ public class AttachedImageDrawable {
         if (imageRowId == 0) {
             return null;
         } else {
-            return new AttachedImageDrawable(imageRowId,
+            return new AttachedImageFile(imageRowId,
                     DbUtils.getString(cursor,
                             MyDatabase.Download.IMAGE_FILE_NAME)).getDrawable();
         }
     }
     
-    public AttachedImageDrawable(long downloadRowIdIn, String filename) {
+    public AttachedImageFile(long downloadRowIdIn, String filename) {
         downloadRowId = downloadRowIdIn;
         downloadFile = new DownloadFile(filename);
     }
@@ -74,13 +71,4 @@ public class AttachedImageDrawable {
         return MyLog.objTagToString(this) + " [rowId=" + downloadRowId + ", " + downloadFile + "]";
     }
 
-    /**
-     * See http://stackoverflow.com/questions/1016896/how-to-get-screen-dimensions
-     */
-    public static Point getDisplaySize(Context context) {
-        Display display = ((WindowManager) context.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
-        Point size = new Point();
-        display.getSize(size);
-        return size;
-    }
 }
