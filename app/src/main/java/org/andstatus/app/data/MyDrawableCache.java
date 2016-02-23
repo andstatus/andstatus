@@ -60,7 +60,17 @@ public class MyDrawableCache extends LruCache<String, BitmapDrawable> {
     }
 
     @Nullable
+    BitmapDrawable getCachedDrawable(Object objTag, String path) {
+        return getDrawable(objTag, path, true);
+    }
+
+    @Nullable
     BitmapDrawable getDrawable(Object objTag, String path) {
+        return getDrawable(objTag, path, false);
+    }
+
+    @Nullable
+    private BitmapDrawable getDrawable(Object objTag, String path, boolean fromCacheOnly) {
         if (TextUtils.isEmpty(path)) {
             return null;
         }
@@ -69,19 +79,27 @@ public class MyDrawableCache extends LruCache<String, BitmapDrawable> {
             hits.incrementAndGet();
         } else {
             misses.incrementAndGet();
-            Bitmap bitmap = BitmapFactory
-                    .decodeFile(path, calculateScaling(objTag, getImageSize(path)));
-            if (MyLog.isVerboseEnabled()) {
-                MyLog.v(objTag, (bitmap == null ? "Failed to load " + name + "'s bitmap"
-                        : "Loaded " + name + "'s bitmap " + bitmap.getWidth()
-                        + "x" + bitmap.getHeight()) + " '" + path + "'");
-            }
-            if (bitmap != null) {
-                drawable = new BitmapDrawable(MyContextHolder.get().context().getResources(), bitmap);
-                put(path, drawable);
+            if (!fromCacheOnly) {
+                Bitmap bitmap = loadBitmap(objTag, path);
+                if (bitmap != null) {
+                    drawable = new BitmapDrawable(MyContextHolder.get().context().getResources(), bitmap);
+                    put(path, drawable);
+                }
             }
         }
         return drawable;
+    }
+
+    @Nullable
+    private Bitmap loadBitmap(Object objTag, String path) {
+        Bitmap bitmap = BitmapFactory
+                .decodeFile(path, calculateScaling(objTag, getImageSize(path)));
+        if (MyLog.isVerboseEnabled()) {
+            MyLog.v(objTag, (bitmap == null ? "Failed to load " + name + "'s bitmap"
+                    : "Loaded " + name + "'s bitmap " + bitmap.getWidth()
+                    + "x" + bitmap.getHeight()) + " '" + path + "'");
+        }
+        return bitmap;
     }
 
     public static Point getImageSize(String path) {

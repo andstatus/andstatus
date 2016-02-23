@@ -37,6 +37,7 @@ public class TimelineAdapter extends MyBaseAdapter implements View.OnClickListen
     private final int listItemLayoutId;
     private final TimelinePages pages;
     private final boolean showAvatars = MyPreferences.showAvatars();
+    private final boolean showAttachedImages = MyPreferences.showAttachedImages();
     private final boolean markReplies = MyPreferences.getBoolean(
             MyPreferences.KEY_MARK_REPLIES_IN_TIMELINE, false);
 
@@ -84,7 +85,9 @@ public class TimelineAdapter extends MyBaseAdapter implements View.OnClickListen
         if (showAvatars) {
             showAvatar(item, view);
         }
-        showAttachedImage(item, view);
+        if (showAttachedImages) {
+            showAttachedImage(item, view);
+        }
         showFavorited(item, view);
         if (markReplies) {
             showMarkReplies(item, view);
@@ -102,13 +105,8 @@ public class TimelineAdapter extends MyBaseAdapter implements View.OnClickListen
     }
 
     private void showAttachedImage(TimelineViewItem item, View view) {
-        ImageView imageView = (ImageView) view.findViewById(R.id.attached_image);
-        if (item.getAttachedImage() != null) {
-            imageView.setVisibility(View.VISIBLE);
-            imageView.setImageDrawable(item.getAttachedImage());
-        } else {
-            imageView.setVisibility(View.GONE);
-        }
+        item.getAttachedImageFile().showAttachedImage(contextMenu.messageList,
+                (ImageView) view.findViewById(R.id.attached_image));
     }
 
     private void showFavorited(TimelineViewItem item, View view) {

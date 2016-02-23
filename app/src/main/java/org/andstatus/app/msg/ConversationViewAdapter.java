@@ -28,7 +28,6 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import org.andstatus.app.AttachedImageView;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
@@ -120,14 +119,9 @@ public class ConversationViewAdapter extends MyBaseAdapter {
             messageIndented.setBackgroundResource(0);
         }
 
-        AttachedImageView imageView = (AttachedImageView) messageView.findViewById(R.id.attached_image);
-        if (oMsg.mImageDrawable != null) {
-            imageView.setImageDrawable(oMsg.mImageDrawable);
-            imageView.setVisibility(View.VISIBLE);
-        } else {
-            imageView.setVisibility(View.GONE);
-        }
-        
+        oMsg.mImageFile.showAttachedImage(contextMenu.messageList,
+                (ImageView) messageView.findViewById(R.id.attached_image));
+
         int viewToTheLeftId = 0;
         if (oMsg.mIndentLevel > 0) {
             viewToTheLeftId = R.id.indent_image;

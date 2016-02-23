@@ -81,7 +81,7 @@ public class LargeImageTest extends InstrumentationTestCase {
 
     private void loadingTest(DownloadData dd) {
         BitmapDrawable drawable = (BitmapDrawable) new AttachedImageFile(dd.getDownloadId(), dd.getFilename())
-                .getDrawable();
+                .getDrawableSync();
         int width = drawable.getIntrinsicWidth();
         assertTrue("Not wide already " + width, width < 4000 && width > 10);
         int height = drawable.getIntrinsicHeight();

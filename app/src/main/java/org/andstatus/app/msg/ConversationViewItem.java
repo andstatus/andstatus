@@ -51,7 +51,7 @@ public class ConversationViewItem extends ConversationItem {
     DownloadStatus mStatus = DownloadStatus.UNKNOWN;
 
     Drawable mAvatarDrawable = null;
-    Drawable mImageDrawable = null;
+    AttachedImageFile mImageFile = AttachedImageFile.EMPTY;
 
     @Override
     String[] getProjection() {
@@ -83,7 +83,7 @@ public class ConversationViewItem extends ConversationItem {
                 }
                 mAvatarDrawable = AvatarFile.getDrawable(authorId, cursor);
                 if (MyPreferences.showAttachedImages()) {
-                    mImageDrawable = AttachedImageFile.drawableFromCursor(cursor);
+                    mImageFile = AttachedImageFile.fromCursor(cursor);
                 }
                 mInReplyToName = TimelineSql.userColumnNameToNameAtTimeline(cursor, User.IN_REPLY_TO_NAME, false);
                 mRecipientName = TimelineSql.userColumnNameToNameAtTimeline(cursor, User.RECIPIENT_NAME, false);

@@ -31,4 +31,5 @@ public interface ActionableMessageList {
     long getSelectedUserId();
     TimelineType getTimelineType();
     boolean isTimelineCombined();
+    boolean isPaused();
 }

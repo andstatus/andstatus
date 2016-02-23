@@ -145,10 +145,10 @@ public class MessageEditorData {
             data.body = MyQuery.msgIdToStringColumnValue(MyDatabase.Msg.BODY, msgId);
             data.image = DownloadData.getSingleForMessage(msgId, MyContentType.IMAGE, Uri.EMPTY);
             if (data.image.getStatus() == DownloadStatus.LOADED) {
-                AttachedImageFile a = new AttachedImageFile(data.image.getDownloadId(),
+                AttachedImageFile imageFile = new AttachedImageFile(data.image.getDownloadId(),
                         data.image.getFilename());
-                data.imageDrawable = a.getDrawable();
-                data.imageSize = a.getSize();
+                data.imageSize = imageFile.getSize();
+                data.imageDrawable = imageFile.getDrawableSync();
             }
             data.inReplyToId = MyQuery.msgIdToLongColumnValue(MyDatabase.Msg.IN_REPLY_TO_MSG_ID, msgId);
             data.inReplyToBody = MyQuery.msgIdToStringColumnValue(MyDatabase.Msg.BODY, data.inReplyToId);

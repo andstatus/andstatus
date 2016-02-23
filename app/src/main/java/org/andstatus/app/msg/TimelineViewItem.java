@@ -56,10 +56,7 @@ public class TimelineViewItem {
     String body = "";
     boolean favorited = false;
 
-    long attachedImageRowId = 0;
-    String attachedImageFilename = "";
-
-    AttachedImageFile attachedImageFile = null;
+    AttachedImageFile attachedImageFile = AttachedImageFile.EMPTY;
     long linkedUserId = 0;
 
     private final static TimelineViewItem EMPTY = new TimelineViewItem();
@@ -86,9 +83,9 @@ public class TimelineViewItem {
         item.authorId = DbUtils.getLong(cursor, MyDatabase.Msg.AUTHOR_ID);
         item.avatarDrawable = AvatarFile.getDrawable(item.authorId, cursor);
         if (MyPreferences.showAttachedImages()) {
-            item.attachedImageRowId = DbUtils.getLong(cursor, MyDatabase.Download.IMAGE_ID);
-            item.attachedImageFilename = DbUtils.getString(cursor, MyDatabase.Download.IMAGE_FILE_NAME);
-            item.attachedImageFile = new AttachedImageFile(item.attachedImageRowId, item.attachedImageFilename);
+            item.attachedImageFile = new AttachedImageFile(
+                    DbUtils.getLong(cursor, MyDatabase.Download.IMAGE_ID),
+                    DbUtils.getString(cursor, MyDatabase.Download.IMAGE_FILE_NAME));
         }
         item.inReplyToUserId = DbUtils.getLong(cursor, MyDatabase.Msg.IN_REPLY_TO_USER_ID);
         item.originId = DbUtils.getLong(cursor, MyDatabase.Msg.ORIGIN_ID);
@@ -99,8 +96,8 @@ public class TimelineViewItem {
         return avatarDrawable;
     }
 
-    public Drawable getAttachedImage() {
-        return attachedImageFile == null ? null : attachedImageFile.getDrawable();
+    public AttachedImageFile getAttachedImageFile() {
+        return attachedImageFile;
     }
 
     public String getDetails(Context context) {

@@ -87,6 +87,10 @@ public class MyImageCache {
         return avatarsCache.getMaxBitmapWidth();
     }
 
+    public static Drawable getCachedAttachedImageDrawable(Object objTag, String path) {
+        return attachedImagesCache.getCachedDrawable(objTag, path);
+    }
+
     public static Drawable getAttachedImageDrawable(Object objTag, String path) {
         return attachedImagesCache.getDrawable(objTag, path);
     }

@@ -97,7 +97,7 @@ public class AsyncTaskLauncher<Params> {
     public static boolean execute(Object objTag, MyAsyncTask<Void, ?, ?> asyncTask,
                                   boolean throwOnFail) {
         AsyncTaskLauncher<Void> launcher = new AsyncTaskLauncher<>();
-        return launcher.execute(objTag, asyncTask, throwOnFail, null);
+        return launcher.execute(objTag, asyncTask, throwOnFail, (Void) null);
     }
 
     public boolean execute(Object objTag, MyAsyncTask<Params, ?, ?> asyncTask,

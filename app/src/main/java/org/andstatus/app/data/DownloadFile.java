@@ -16,6 +16,7 @@
 
 package org.andstatus.app.data;
 
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import org.andstatus.app.context.MyPreferences;
@@ -37,12 +38,21 @@ public class DownloadFile {
         }
     }
 
+    public boolean isEmpty() {
+        return file == null;
+    }
+
     public boolean exists() {
-        return file != null && file.exists() && file.isFile();
+        return !isEmpty() && file.exists() && file.isFile();
     }
     
     public File getFile() {
         return file;
+    }
+
+    @NonNull
+    public String getFilePath() {
+        return file == null ? "" : file.getAbsolutePath();
     }
 
     public long getSize() {

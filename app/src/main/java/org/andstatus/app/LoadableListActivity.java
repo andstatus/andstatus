@@ -219,7 +219,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
             mSyncLoader = loader;
             updateCompletedLoader();
             try {
-                if (!mIsPaused) {
+                if (!isPaused()) {
                     onLoadFinished(true);
                 }
             } catch (Exception e) {
@@ -238,6 +238,10 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
         public String toString() {
             return super.toString() + (mSyncLoader == null ? "" : "; " + mSyncLoader);
         }
+    }
+
+    public boolean isPaused() {
+        return mIsPaused;
     }
 
     public void onLoadFinished(boolean keepCurrentPosition) {
