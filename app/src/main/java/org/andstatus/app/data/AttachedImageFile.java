@@ -16,6 +16,7 @@
 
 package org.andstatus.app.data;
 
+import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Point;
 import android.graphics.drawable.Drawable;
@@ -23,6 +24,8 @@ import android.support.annotation.NonNull;
 import android.view.View;
 import android.widget.ImageView;
 
+import org.andstatus.app.R;
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.msg.ActionableMessageList;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
@@ -33,6 +36,17 @@ public class AttachedImageFile {
     private final DownloadFile downloadFile;
     private Point size = null;
     public static final AttachedImageFile EMPTY = new AttachedImageFile(0, null);
+    private static final Drawable BLANK_DRAWABLE = loadBlankDrawable();
+
+    private static Drawable loadBlankDrawable() {
+        Drawable drawable = null;
+        MyLog.v(AvatarFile.class, "Loading blank image");
+        Context context = MyContextHolder.get().context();
+        if (context != null) {
+            drawable = MyImageCache.getDrawableCompat(context, R.drawable.blank_image);
+        }
+        return drawable;
+    }
 
     public static AttachedImageFile fromCursor(Cursor cursor) {
         return new AttachedImageFile(
@@ -88,7 +102,8 @@ public class AttachedImageFile {
                 imageView.setVisibility(View.VISIBLE);
                 imageView.setImageDrawable(drawable);
             } else {
-                imageView.setVisibility(View.GONE);
+                imageView.setVisibility(View.VISIBLE);
+                imageView.setImageDrawable(BLANK_DRAWABLE);
                 setImageDrawableAsync(messageList, imageView, downloadFile.getFilePath());
             }
         } else {

@@ -16,11 +16,9 @@
 
 package org.andstatus.app.data;
 
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.database.Cursor;
 import android.graphics.drawable.Drawable;
-import android.os.Build;
 import android.support.annotation.NonNull;
 
 import org.andstatus.app.R;
@@ -47,7 +45,7 @@ public class AvatarFile {
         MyLog.v(AvatarFile.class, "Loading default avatar");
         Context context = MyContextHolder.get().context();
         if (context != null) {
-            avatar = getDrawableCompat(context,
+            avatar = MyImageCache.getDrawableCompat(context,
                     lightTheme ? R.drawable.ic_action_user_light : R.drawable.ic_action_user);
         }
         return avatar;
@@ -84,12 +82,4 @@ public class AvatarFile {
         return "AvatarFile [userId=" + userId + ", " + downloadFile + "]";
     }
 
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    private static Drawable getDrawableCompat(Context context, int drawableId) {
-        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)  {
-            return context.getTheme().getDrawable(drawableId);
-        } else {
-            return context.getResources().getDrawable(drawableId);
-        }
-    }
 }

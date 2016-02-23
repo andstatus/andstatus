@@ -16,6 +16,7 @@
 
 package org.andstatus.app.data;
 
+import android.annotation.TargetApi;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.graphics.Point;
@@ -110,5 +111,14 @@ public class MyImageCache {
         Point size = new Point();
         display.getSize(size);
         return size;
+    }
+
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    public static Drawable getDrawableCompat(Context context, int drawableId) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)  {
+            return context.getTheme().getDrawable(drawableId);
+        } else {
+            return context.getResources().getDrawable(drawableId);
+        }
     }
 }

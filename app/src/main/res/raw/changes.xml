@@ -26,6 +26,18 @@
 		</subtitle>
     </header>
 
+    <release android:versionName="22.16" android:versionCode="156"
+             versionDate="2016-02-23"
+             versionTitle="Timeline loading and navigation improvements - part2">
+        <changes>
+            <change>In order to make timeline scrolling smoother all avatars and attachments are
+                loaded in a background now. Special in-memory cache introduced to further improve
+                responsiveness. Statistics of caches and async loaders is shown in
+                &quot;Commands in a queue&quot;.
+                <a href="https://github.com/andstatus/andstatus/issues/303">#303</a>
+            </change>
+        </changes>
+    </release>
     <release android:versionName="22.14" android:versionCode="154"
         versionDate="2016-02-17"
         versionTitle="Timeline loading and navigation improvements">
