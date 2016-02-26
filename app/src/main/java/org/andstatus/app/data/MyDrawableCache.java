@@ -83,7 +83,9 @@ public class MyDrawableCache extends LruCache<String, BitmapDrawable> {
                 Bitmap bitmap = loadBitmap(objTag, path);
                 if (bitmap != null) {
                     drawable = new BitmapDrawable(MyContextHolder.get().context().getResources(), bitmap);
-                    put(path, drawable);
+                    if (maxCacheSize > 0) {
+                        put(path, drawable);
+                    }
                 }
             }
         }

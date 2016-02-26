@@ -27,19 +27,21 @@ import android.support.annotation.Nullable;
 import android.view.Display;
 import android.view.WindowManager;
 
+import org.andstatus.app.context.MyContextHolder;
+
 /**
  * @author yvolk@yurivolkov.com
  */
 public class MyImageCache {
-    private static final int ATTACHED_IMAGES_CACHE_SIZE_DEFAULT = 1024 * 1024 * 20;
-    private static final float ATTACHED_IMAGES_CACHE_PART_OF_TOTAL_MEMORY = 0.1f;
+    private static final int ATTACHED_IMAGES_CACHE_SIZE_MINIMUM = 1024 * 1024 * 20;
+    private static final float ATTACHED_IMAGES_CACHE_PART_OF_AVAILABLE_MEMORY = 0.15f;
     static final MyDrawableCache attachedImagesCache =
-            new MyDrawableCache("Attached images", 5000, ATTACHED_IMAGES_CACHE_SIZE_DEFAULT);
+            new MyDrawableCache("Attached images", 5000, ATTACHED_IMAGES_CACHE_SIZE_MINIMUM);
 
-    private static final float AVATARS_CACHE_PART_OF_ATTACHED = 0.2f;
+    private static final float AVATARS_CACHE_PART_OF_ATTACHED = 0.1f;
     private static final MyDrawableCache avatarsCache =
             new MyDrawableCache("Avatars", 1000,
-                    Math.round(ATTACHED_IMAGES_CACHE_SIZE_DEFAULT * AVATARS_CACHE_PART_OF_ATTACHED));
+                    Math.round(ATTACHED_IMAGES_CACHE_SIZE_MINIMUM * AVATARS_CACHE_PART_OF_ATTACHED));
 
     private  MyImageCache() {
         // Empty
@@ -47,8 +49,7 @@ public class MyImageCache {
 
     public static void initialize(Context context) {
         attachedImagesCache.evictAll();
-        int attachedImageCacheSize = Math.round(
-                ATTACHED_IMAGES_CACHE_PART_OF_TOTAL_MEMORY * getTotalMemory(context));
+        int attachedImageCacheSize = calcAttachedImagesCacheSize(context);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             attachedImagesCache.resize(attachedImageCacheSize);
         }
@@ -67,11 +68,24 @@ public class MyImageCache {
         avatarsCache.setMaxBounds(avatarSize, avatarSize);
     }
 
-    private static long getTotalMemory(Context context) {
-        ActivityManager actManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+    private static int calcAttachedImagesCacheSize(Context context) {
+        ActivityManager.MemoryInfo memInfo = getMemoryInfo(context);
+        int size = Math.round(
+                ATTACHED_IMAGES_CACHE_PART_OF_AVAILABLE_MEMORY * memInfo.availMem);
+        if (size < ATTACHED_IMAGES_CACHE_SIZE_MINIMUM) {
+            size = 0;
+        }
+        return size;
+    }
+
+    @NonNull
+    private static ActivityManager.MemoryInfo getMemoryInfo(Context context) {
         ActivityManager.MemoryInfo memInfo = new ActivityManager.MemoryInfo();
-        actManager.getMemoryInfo(memInfo);
-        return memInfo.totalMem;
+        if (context != null) {
+            ActivityManager actManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+            actManager.getMemoryInfo(memInfo);
+        }
+        return memInfo;
     }
 
     @NonNull
@@ -100,6 +114,8 @@ public class MyImageCache {
         StringBuilder builder = new StringBuilder("ImageCaches:\n");
         builder.append(avatarsCache.getInfo() + "\n");
         builder.append(attachedImagesCache.getInfo() + "\n");
+        ActivityManager.MemoryInfo memInfo = getMemoryInfo(MyContextHolder.get().context());
+        builder.append("Memory: available " + memInfo.availMem + " of " + memInfo.totalMem + "\n");
         return builder.toString();
     }
 
