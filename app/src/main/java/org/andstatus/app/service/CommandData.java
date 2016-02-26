@@ -30,6 +30,7 @@ import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.MyDatabase;
+import org.andstatus.app.data.MyImageCache;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.msg.TimelineListParameters;
@@ -207,25 +208,34 @@ public class CommandData implements Comparable<CommandData> {
      * @return Number of items persisted
      */
     static int saveQueue(Context context, Queue<CommandData> queue, QueueType queueType) {
-        final String method = "saveQueue";
+        final String method = "saveQueue-to-" + queueType;
         int count = 0;
-        SharedPreferences sp = MyPreferences.getSharedPreferences(queueType.getFilename());
-        if (sp == null) {
-            MyLog.d(context, method + "; No shared preferences");
-            return 0;
-        }
-        sp.edit().clear().apply();
-        if (!queue.isEmpty()) {
-            while (!queue.isEmpty()) {
-                CommandData cd = queue.poll();
-                cd.toSharedPreferences(sp, count);
-                MyLog.v(context, method + "; Command saved: " + cd.toString());
-                count += 1;
+        try {
+            SharedPreferences sp = MyPreferences.getSharedPreferences(queueType.getFilename());
+            if (sp == null) {
+                MyLog.d(context, method + "; No shared preferences");
+                return 0;
             }
-            MyLog.d(context, method + " to '" + queueType + "', " + count + " msgs");
+            SharedPreferences.Editor editor = sp.edit();
+            editor.clear();
+            if (!queue.isEmpty()) {
+                while (!queue.isEmpty()) {
+                    CommandData cd = queue.poll();
+                    cd.toSharedPreferences(editor, count);
+                    MyLog.v(context, method + "; Command saved: " + cd.toString());
+                    count += 1;
+                }
+                MyLog.d(context, method + "; " + count + " msgs");
+            }
+            // Adding Empty command to mark the end.
+            (new CommandData(CommandEnum.EMPTY, "")).toSharedPreferences(editor, count);
+            editor.commit();
+        } catch (Throwable e) {
+            String msgLog = method + "; " + count + " of " + queue.size() + " messages saved. \n"
+                    + MyImageCache.getCacheInfo() + "\n";
+            MyLog.e(context, msgLog, e);
+            throw new IllegalStateException(msgLog, e);
         }
-        // Adding Empty command to mark the end.
-        (new CommandData(CommandEnum.EMPTY, "")).toSharedPreferences(sp, count);
         return count;
     }
 
@@ -236,10 +246,9 @@ public class CommandData implements Comparable<CommandData> {
      *
      * @param index Index of the preference's name to be used
      */
-    private void toSharedPreferences(SharedPreferences sp, int index) {
+    private void toSharedPreferences(SharedPreferences.Editor ed, int index) {
         String si = Integer.toString(index);
 
-        android.content.SharedPreferences.Editor ed = sp.edit();
         ed.putLong(IntentExtra.COMMAND_ID.key + si, id);
         ed.putString(IntentExtra.COMMAND.key + si, command.save());
         ed.putString(IntentExtra.ACCOUNT_NAME.key + si, getAccountName());
@@ -264,7 +273,6 @@ public class CommandData implements Comparable<CommandData> {
                 break;
         }
         commandResult.saveToSharedPreferences(ed, index);
-        ed.apply();
     }
 
     /**
