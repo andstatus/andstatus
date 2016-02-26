@@ -34,11 +34,11 @@ import org.andstatus.app.context.MyContextHolder;
  */
 public class MyImageCache {
     private static final int ATTACHED_IMAGES_CACHE_SIZE_MINIMUM = 1024 * 1024 * 20;
-    private static final float ATTACHED_IMAGES_CACHE_PART_OF_AVAILABLE_MEMORY = 0.15f;
+    private static final float ATTACHED_IMAGES_CACHE_PART_OF_AVAILABLE_MEMORY = 0.1f;
     static final MyDrawableCache attachedImagesCache =
             new MyDrawableCache("Attached images", 5000, ATTACHED_IMAGES_CACHE_SIZE_MINIMUM);
 
-    private static final float AVATARS_CACHE_PART_OF_ATTACHED = 0.1f;
+    private static final float AVATARS_CACHE_PART_OF_ATTACHED = 0.2f;
     private static final MyDrawableCache avatarsCache =
             new MyDrawableCache("Avatars", 1000,
                     Math.round(ATTACHED_IMAGES_CACHE_SIZE_MINIMUM * AVATARS_CACHE_PART_OF_ATTACHED));
