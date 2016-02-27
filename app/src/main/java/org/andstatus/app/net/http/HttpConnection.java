@@ -51,14 +51,13 @@ public abstract class HttpConnection {
     }  
     
     public String pathToUrlString(String path) throws ConnectionException {
-        String urlString = UrlUtils.pathToUrlString(data.originUrl, path);
-        if (TextUtils.isEmpty(urlString)) {
-            throw ConnectionException.hardConnectionException("URL is unknown. System URL:'"
-                    + data.originUrl + "', path:'" + path + "'", null);
-        }
-        return urlString;
+        return UrlUtils.pathToUrlString(data.originUrl, path, errorOnInvalidUrls());
     }
-    
+
+    public boolean errorOnInvalidUrls() {
+        return true;
+    }
+
     public final JSONObject postRequest(String path) throws ConnectionException {
         return postRequest(path, null);
     }

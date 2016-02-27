@@ -16,6 +16,7 @@
 
 package org.andstatus.app.data;
 
+import android.support.annotation.Nullable;
 import android.test.InstrumentationTestCase;
 import android.text.TextUtils;
 
@@ -48,7 +49,8 @@ public class GnuSocialMessagesInserter extends InstrumentationTestCase {
         assertTrue(TestSuite.GNUSOCIAL_TEST_ORIGIN_NAME + " exists", origin != null);
         ma = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME); 
         assertTrue(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME + " exists", ma.isValid());
-        accountMbUser = userFromOid(TestSuite.GNUSOCIAL_TEST_ACCOUNT_USER_OID);
+        accountMbUser = userFromOidAndAvatar(TestSuite.GNUSOCIAL_TEST_ACCOUNT_USER_OID,
+                TestSuite.GNUSOCIAL_TEST_ACCOUNT_AVATAR_URL);
     }
     
     @Override
@@ -59,14 +61,14 @@ public class GnuSocialMessagesInserter extends InstrumentationTestCase {
     }
     
     public void addConversation() throws ConnectionException {
-        MbUser author1 = userFromOid("1");
-        author1.avatarUrl = "https://raw.github.com/andstatus/andstatus/master/app/src/main/res/drawable/splash_logo.png";
-        MbUser author2 = userFromOid("2");
-        author2.avatarUrl = "http://png.findicons.com/files/icons/1780/black_and_orange/300/android_orange.png";
-        MbUser author3 = userFromOid("3");
-        author3.avatarUrl = "http://www.large-icons.com/stock-icons/free-large-android/48x48/happy-robot.gif";
-        MbUser author4 = userFromOid("4");
-        
+        MbUser author1 = userFromOidAndAvatar("1",
+                "https://raw.github.com/andstatus/andstatus/master/app/src/main/res/drawable/splash_logo.png");
+        MbUser author2 = userFromOidAndAvatar("2",
+                "http://png.findicons.com/files/icons/1780/black_and_orange/300/android_orange.png");
+        MbUser author3 = userFromOidAndAvatar("3",
+                "http://www.large-icons.com/stock-icons/free-large-android/48x48/happy-robot.gif");
+        MbUser author4 = userFromOidAndAvatar("4", "");
+
         MbMessage minus1 = buildMessage(author2, "Older one message", null, null);
         MbMessage selected = buildMessage(author1, "Selected message", minus1, TestSuite.CONVERSATION_ENTRY_MESSAGE_OID);
         MbMessage reply1 = buildMessage(author3, "Reply 1 to selected", selected, null);
@@ -103,10 +105,13 @@ public class GnuSocialMessagesInserter extends InstrumentationTestCase {
         assertTrue("Message is " + (isPublic ? "public" : "private" )+ ": " + message.getBody(), (isPublic == ( storedPublic != 0)));
     }
 
-    private MbUser userFromOid(String userOid) {
+    private MbUser userFromOidAndAvatar(String userOid,@Nullable String avatarUrl) {
         String userName = "user" + userOid;
         MbUser mbUser = MbUser.fromOriginAndUserOid(origin.getId(), userOid);
         mbUser.setUserName(userName);
+        if (avatarUrl != null) {
+            mbUser.avatarUrl = avatarUrl;
+        }
         mbUser.setProfileUrl(origin.getUrl());
         if (accountMbUser != null) {
             mbUser.actor = accountMbUser;

@@ -86,7 +86,7 @@ public class ConnectionTwitterTest extends InstrumentationTestCase {
         assertEquals("Actor", connectionData.getAccountUserOid(), mbMessage.actor.oid);
         assertEquals("Author's oid", "221452291", mbMessage.sender.oid);
         assertEquals("Author's username", "Know", mbMessage.sender.getUserName());
-        assertEquals("Author's Display name", "Just so you Know", mbMessage.sender.realName);
+        assertEquals("Author's Display name", "Just so you Know", mbMessage.sender.getRealName());
         assertEquals("WebFinger ID", "Know@" + hostName, mbMessage.sender.getWebFingerId());
 
         assertEquals("Sender's profile URL", "https://" + hostName + "/Know", mbMessage.sender.getProfileUrl());

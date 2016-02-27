@@ -43,6 +43,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
      * This is used to check (and upgrade if necessary) 
      * existing database after application update.
      *
+     * v.24 2016-02-27 app.v.23 several attributes added to User, https://github.com/andstatus/andstatus/issues/320
      * v.23 2015-09-02 app.v.19 msg_status added for Unsent messages
      * v.22 2015-04-04 app.v.17 use_legacy_http added to Origin
      * v.21 2015-03-14 app.v.16 mention_as_webfinger_id added to Origin, 
@@ -58,13 +59,12 @@ public final class MyDatabase extends SQLiteOpenHelper  {
      * v.12 2013-08-30 Adapting for Pump.Io
      * v.11 2013-05-18 FollowingUser table added. User table extended with a column
      *      to store the date the list of Following users was loaded.
-     * v.10 2013-03-23 User table extended with columns
-     *      to store information on timelines loaded.
+     * v.10 2013-03-23 User table extended with columns to store information on timelines loaded.
      * v.9  2012-02-26 Totally new database design using table joins.
      *      All messages are in the same table. 
      *      Allows to have multiple User Accounts in different Originating systems (twitter.com etc. ) 
      */
-    public static final int DATABASE_VERSION = 23;
+    public static final int DATABASE_VERSION = 24;
     public static final String DATABASE_NAME = "andstatus.sqlite";
 
     /**
@@ -246,7 +246,6 @@ public final class MyDatabase extends SQLiteOpenHelper  {
 
         /**
          * ID of the originating (source) system (twitter.com, identi.ca, ... ) where the row was created
-         * 2012-02-26 Currently defaults to the "1" since we have only one system (twitter.com) yet
          */
         public static final String ORIGIN_ID =  Msg.ORIGIN_ID;
         /**
@@ -254,35 +253,33 @@ public final class MyDatabase extends SQLiteOpenHelper  {
          * The id is not unique for this table, because we have IDs from different systems in one column.
          */
         public static final String USER_OID = "user_oid";
-        /**
-         * This is called "screen_name" in Twitter API
-         */
+        /** This is called "screen_name" in Twitter API */
         public static final String USERNAME = "username";
-        /**
-         * It looks like an email address with your nickname then "@" then your server
-         */
+        /** It looks like an email address with your nickname then "@" then your server */
         public static final String WEBFINGER_ID = "webfinger_id";
-        /**
-         * This is called "name" in Twitter API
-         */
+        /** This is called "name" in Twitter API */
         public static final String REAL_NAME = "real_name";
-        /**
-         * The latest url of the avatar 
-         */
+        /** Location string */
+        public static final String LOCATION = "location";
+        /** The latest url of the avatar */
         public static final String AVATAR_URL = "avatar_url";
-        /**
-         * User's description
-         */
+        /** User's description / "About myself" */
         public static final String DESCRIPTION = "user_description";
-        /**
-         * User's web home page
-         */
+        /** URL of User's web home page */
         public static final String HOMEPAGE = "homepage";
         /**
+         * User's profile URL
          * A link to the representation of the resource. Currently this is simply URL to the HTML 
          * representation of the resource (its "permalink") 
          */
-        public static final String URL = "url";
+        public static final String PROFILE_URL = "profile_url";
+        public static final String BANNER_URL = "banner_url";
+
+        public static final String MSG_COUNT = "msg_count";
+        public static final String FAVORITES_COUNT = "favorited_count";
+        public static final String FOLLOWING_COUNT = "following_count";
+        public static final String FOLLOWERS_COUNT = "followers_count";
+
         /**
          * Date and time when the row was created in the originating system.
          * We store it as long returned by {@link Connection#dateFromJson}.
@@ -290,9 +287,8 @@ public final class MyDatabase extends SQLiteOpenHelper  {
          * (And maybe there is no such User in the originating system...)
          */
         public static final String CREATED_DATE = "user_created_date";
-        /**
-         * Date and time the row was inserted into this database
-         */
+        public static final String UPDATED_DATE = "user_updated_date";
+        /** Date and time the row was inserted into this database */
         public static final String INS_DATE = "user_ins_date";
         
         /**
@@ -314,11 +310,13 @@ public final class MyDatabase extends SQLiteOpenHelper  {
         public static final String USER_TIMELINE_POSITION = "user_timeline_position";
         public static final String USER_TIMELINE_ITEM_DATE = "user_timeline_item_date";
         public static final String USER_TIMELINE_DATE = "user_timeline_date";
+
         /**
          * For the list ("collection") of following users 
          * we store only the date-time of the last retrieval of the list 
          */
         public static final String FOLLOWING_USER_DATE = "following_user_date";
+        public static final String FOLLOWERS_USER_DATE = "followers_user_date";
         /**
          * Id of the latest message where this User was a Sender or an Author
          */
@@ -331,13 +329,9 @@ public final class MyDatabase extends SQLiteOpenHelper  {
         /*
          * Derived columns (they are not stored in this table but are result of joins)
          */
-        /**
-         * Alias for the primary key
-         */
+        /** Alias for the primary key */
         public static final String USER_ID = "user_id";
-        /**
-         * Alias used in a timeline to distinguish messages for different users
-         */
+        /** Alias used in a timeline to distinguish messages for different users */
         public static final String LINKED_USER_ID = "linked_user_id";
         /**
          * Derived from {@link Msg#SENDER_ID}
@@ -562,12 +556,19 @@ public final class MyDatabase extends SQLiteOpenHelper  {
                 + User.USER_OID + " TEXT," 
                 + User.USERNAME + " TEXT NOT NULL," 
                 + User.WEBFINGER_ID + " TEXT NOT NULL," 
-                + User.REAL_NAME + " TEXT," 
-                + User.AVATAR_URL + " TEXT," 
-                + User.DESCRIPTION + " TEXT," 
-                + User.HOMEPAGE + " TEXT," 
-                + User.URL + " TEXT," 
+                + User.REAL_NAME + " TEXT,"
+                + User.LOCATION + " TEXT,"
+                + User.DESCRIPTION + " TEXT,"
+                + User.AVATAR_URL + " TEXT,"
+                + User.BANNER_URL + " TEXT,"
+                + User.HOMEPAGE + " TEXT,"
+                + User.PROFILE_URL + " TEXT,"
+                + User.MSG_COUNT + " INTEGER DEFAULT 0 NOT NULL,"
+                + User.FAVORITES_COUNT + " INTEGER DEFAULT 0 NOT NULL,"
+                + User.FOLLOWING_COUNT + " INTEGER DEFAULT 0 NOT NULL,"
+                + User.FOLLOWERS_COUNT + " INTEGER DEFAULT 0 NOT NULL,"
                 + User.CREATED_DATE + " INTEGER,"
+                + User.UPDATED_DATE + " INTEGER,"
                 + User.INS_DATE + " INTEGER NOT NULL,"
                 + User.HOME_TIMELINE_POSITION + " TEXT DEFAULT '' NOT NULL," 
                 + User.HOME_TIMELINE_ITEM_DATE + " INTEGER DEFAULT 0 NOT NULL," 
@@ -584,8 +585,9 @@ public final class MyDatabase extends SQLiteOpenHelper  {
                 + User.USER_TIMELINE_POSITION + " TEXT DEFAULT '' NOT NULL," 
                 + User.USER_TIMELINE_ITEM_DATE + " INTEGER DEFAULT 0 NOT NULL," 
                 + User.USER_TIMELINE_DATE + " INTEGER DEFAULT 0 NOT NULL," 
-                + User.FOLLOWING_USER_DATE + " INTEGER DEFAULT 0 NOT NULL," 
-                + User.USER_MSG_ID + " INTEGER DEFAULT 0 NOT NULL," 
+                + User.FOLLOWING_USER_DATE + " INTEGER DEFAULT 0 NOT NULL,"
+                + User.FOLLOWERS_USER_DATE + " INTEGER DEFAULT 0 NOT NULL,"
+                + User.USER_MSG_ID + " INTEGER DEFAULT 0 NOT NULL,"
                 + User.USER_MSG_DATE + " INTEGER DEFAULT 0 NOT NULL" 
                 + ")");
 

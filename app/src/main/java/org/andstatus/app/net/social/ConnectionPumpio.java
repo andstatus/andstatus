@@ -120,13 +120,13 @@ public class ConnectionPumpio extends Connection {
         user.actor = MbUser.fromOriginAndUserOid(data.getOriginId(), data.getAccountUserOid());
         user.setUserName(userOidToUsername(oid));
         user.oid = oid;
-        user.realName = jso.optString("displayName");
+        user.setRealName(jso.optString("displayName"));
         user.avatarUrl = JsonUtils.optStringInside(jso, "image", "url");
         user.location = JsonUtils.optStringInside(jso, "location", "displayName");
         user.setDescription(jso.optString("summary"));
         user.setHomepage(jso.optString("url"));
         user.setProfileUrl(jso.optString("url"));
-        user.updatedDate = dateFromJson(jso, "updated");
+        user.setUpdatedDate(dateFromJson(jso, "updated"));
         return user;
     }
 
@@ -625,7 +625,7 @@ public class ConnectionPumpio extends Connection {
                 MbUser.isOidReal(userId) ? userOidToUsername(userId) : userName);
         JSONObject jso = conu.httpConnection.getRequest(conu.url);
         MbUser mbUser = userFromJson(jso);
-        MyLog.v(this, "getUser oid='" + userId + "', userName='" + userName + "' -> " + mbUser.realName);
+        MyLog.v(this, "getUser oid='" + userId + "', userName='" + userName + "' -> " + mbUser.getRealName());
         return mbUser;
     }
 }

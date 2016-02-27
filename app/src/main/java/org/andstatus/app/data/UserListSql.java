@@ -79,7 +79,7 @@ public class UserListSql {
         columnNames.add(User.HOMEPAGE);
         columnNames.add(User.ORIGIN_ID);
         columnNames.add(User.REAL_NAME);
-        columnNames.add(User.URL);
+        columnNames.add(User.PROFILE_URL);
         columnNames.add(User.USER_OID);
         columnNames.add(User.USERNAME);
         columnNames.add(User.WEBFINGER_ID);

@@ -331,8 +331,8 @@ public abstract class ConnectionTwitter extends Connection {
         MbUser user = MbUser.fromOriginAndUserOid(data.getOriginId(), oid);
         user.actor = MbUser.fromOriginAndUserOid(data.getOriginId(), data.getAccountUserOid());
         user.setUserName(userName);
-        user.realName = jso.optString("name");
-        if (!SharedPreferencesUtil.isEmpty(user.realName)) {
+        user.setRealName(jso.optString("name"));
+        if (!SharedPreferencesUtil.isEmpty(user.getRealName())) {
             user.setProfileUrl(data.getOriginUrl());
         }
         user.location = jso.optString("location");
@@ -347,7 +347,7 @@ public abstract class ConnectionTwitter extends Connection {
         user.favoritesCount = jso.optLong("favourites_count");
         user.followingCount = jso.optLong("friends_count");
         user.followersCount = jso.optLong("followers_count");
-        user.createdDate = dateFromJson(jso, "created_at");
+        user.setCreatedDate(dateFromJson(jso, "created_at"));
         if (!jso.isNull("following")) {
             user.followedByActor = TriState.fromBoolean(jso.optBoolean("following"));
         }
@@ -417,7 +417,7 @@ public abstract class ConnectionTwitter extends Connection {
         }
         JSONObject jso = http.getRequest(builder.build().toString());
         MbUser mbUser = userFromJson(jso);
-        MyLog.v(this, "getUser oid='" + userId + "', userName='" + userName + "' -> " + mbUser.realName);
+        MyLog.v(this, "getUser oid='" + userId + "', userName='" + userName + "' -> " + mbUser.getRealName());
         return mbUser;
     }
     

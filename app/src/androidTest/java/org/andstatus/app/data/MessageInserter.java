@@ -30,6 +30,7 @@ import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandExecutionContext;
+import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UrlUtils;
 
@@ -45,7 +46,7 @@ public class MessageInserter extends InstrumentationTestCase {
         assertTrue(ma != null);
         origin = MyContextHolder.get().persistentOrigins().fromId(ma.getOriginId());
         assertTrue("Origin for " + ma.getAccountName() + " exists", origin != null);
-        accountMbUser = buildUserFromOid(ma.getUserOid());
+        accountMbUser = buildUserFromOid(ma.getUserOid(), true);
     }
 
     public MbUser getAccountMbUser() {
@@ -66,21 +67,45 @@ public class MessageInserter extends InstrumentationTestCase {
     }
     
     public final MbUser buildUserFromOid(String userOid) {
+        return  buildUserFromOid(userOid, false);
+    }
+
+    public final MbUser buildUserFromOid(String userOid, boolean partial) {
         MbUser mbUser = MbUser.fromOriginAndUserOid(origin.getId(), userOid);
+        String username;
+        String profileUrl;
         if (origin.getOriginType() == OriginType.PUMPIO) {
             ConnectionPumpio connection = new ConnectionPumpio();
-            mbUser.setUserName(connection.userOidToUsername(userOid));
-            mbUser.setProfileUrl("http://" + connection.usernameToHost(mbUser.getUserName()) + "/"
-                    + connection.usernameToNickname(mbUser.getUserName()));
+            username = connection.userOidToUsername(userOid);
+            profileUrl = "http://" + connection.usernameToHost(username) + "/"
+                    + connection.usernameToNickname(username);
         } else {
-            mbUser.setUserName("userOf" + origin.getName() + userOid);
+            username = "userOf" + origin.getName() + userOid;
+            profileUrl = "https://" + TestSuite.GNUSOCIAL_TEST_ORIGIN_NAME
+                    + ".example.com/profiles/" + username;
         }
+        if (!partial) {
+            mbUser.setUserName(username);
+        }
+        mbUser.setProfileUrl(profileUrl);
+        mbUser.setRealName("Real " + username);
+        mbUser.setDescription("This is about " + username);
+        mbUser.setHomepage("https://example.com/home/" + username + "/start/");
+        mbUser.location = "Faraway " + TestSuite.TESTRUN_UID;
+        mbUser.avatarUrl = mbUser.getHomepage() + "avatar.jpg";
+        mbUser.bannerUrl = mbUser.getHomepage() + "banner.png";
+        long rand = InstanceId.next();
+        mbUser.msgCount = rand * 2 + 3;
+        mbUser.favoritesCount = rand + 11;
+        mbUser.followingCount = rand + 17;
+        mbUser.followersCount = rand;
+
         if (accountMbUser != null) {
             mbUser.actor = accountMbUser;
         }
         return mbUser;
     }
-    
+
     public MbMessage buildMessage(MbUser author, String body, MbMessage inReplyToMessage, String messageOidIn, DownloadStatus messageStatus) {
         String messageOid = messageOidIn;
         if (TextUtils.isEmpty(messageOid) && messageStatus != DownloadStatus.SENDING) {
@@ -120,7 +145,8 @@ public class MessageInserter extends InstrumentationTestCase {
 
         String permalink = origin.messagePermalink(messageId);
         URL urlPermalink = UrlUtils.fromString(permalink); 
-        assertTrue("Message permalink is a valid URL '" + permalink + "', " + message.toString(),  urlPermalink != null);
+        assertTrue("Message permalink is a valid URL '" + permalink + "',\n" + message.toString()
+                + "\n author: " + message.sender.toString(), urlPermalink != null);
         if (origin.getUrl() != null && origin.getOriginType() != OriginType.TWITTER) {
             assertEquals("Message permalink has the same host as origin, " + message.toString(), origin.getUrl().getHost(), urlPermalink.getHost());
         }

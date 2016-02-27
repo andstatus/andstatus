@@ -72,7 +72,7 @@ class UserListViewAdapter extends MyBaseAdapter {
         MyUrlSpan.showText(view, R.id.username,
                 (showWebFingerId && !TextUtils.isEmpty(item.mbUser.getWebFingerId()) ?
                         item.mbUser.getWebFingerId() : item.mbUser.getUserName())
-                + " (" + (TextUtils.isEmpty(item.mbUser.realName) ? " ? " : item.mbUser.realName) + ")",
+                + " (" + (TextUtils.isEmpty(item.mbUser.getRealName()) ? " ? " : item.mbUser.getRealName()) + ")",
                 false);
         if (showAvatars) {
             showAvatar(item, view);

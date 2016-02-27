@@ -377,13 +377,21 @@ public class DataInserter {
      * @return userId
      */
     public long insertOrUpdateUser(MbUser mbUser, LatestUserMessages lum) {
+        final String method = "insertOrUpdateUser";
         if (mbUser == null || mbUser.isEmpty()) {
-            MyLog.v(this, "insertUser - mbUser is empty");
+            MyLog.v(this, method + "; mbUser is empty");
             return 0;
         }
         
-        long originId = mbUser.originId;
         long userId = mbUser.lookupUserId();
+        if (userId != 0 && mbUser.isPartiallyDefined()) {
+            if (MyLog.isVerboseEnabled()) {
+                MyLog.v(this, method + "; Skipping partially defined: " + mbUser.toString());
+            }
+            return userId;
+        }
+
+        long originId = mbUser.originId;
         String userOid = (userId == 0 && !mbUser.isOidReal()) ? mbUser.getTempOid() : mbUser.oid;
         try {
             ContentValues values = new ContentValues();
@@ -391,30 +399,24 @@ public class DataInserter {
                 values.put(MyDatabase.User.USER_OID, userOid);
             }
 
+            // Substitute required empty values with some temporary for a new entry only!
             String userName = mbUser.getUserName();
-            if (userId == 0 && SharedPreferencesUtil.isEmpty(userName)) {
+            if (SharedPreferencesUtil.isEmpty(userName)) {
                 userName = "id:" + userOid;
             }
-            if (!SharedPreferencesUtil.isEmpty(userName)) {
-                values.put(MyDatabase.User.USERNAME, userName);
-            }
-
+            values.put(MyDatabase.User.USERNAME, userName);
             String webFingerId = mbUser.getWebFingerId();
-            if (userId == 0 && SharedPreferencesUtil.isEmpty(webFingerId)) {
+            if (SharedPreferencesUtil.isEmpty(webFingerId)) {
                 webFingerId = userName;
             }
-            if (!SharedPreferencesUtil.isEmpty(webFingerId)) {
-                values.put(MyDatabase.User.WEBFINGER_ID, webFingerId);
-            }
-            
-            String realName = mbUser.realName;
-            if (userId == 0 && SharedPreferencesUtil.isEmpty(realName)) {
+            values.put(MyDatabase.User.WEBFINGER_ID, webFingerId);
+            String realName = mbUser.getRealName();
+            if (SharedPreferencesUtil.isEmpty(realName)) {
                 realName = userName;
             }
-            if (!SharedPreferencesUtil.isEmpty(realName)) {
-                values.put(MyDatabase.User.REAL_NAME, realName);
-            }
-            
+            values.put(MyDatabase.User.REAL_NAME, realName);
+            // Enf of required attributes
+
             if (!SharedPreferencesUtil.isEmpty(mbUser.avatarUrl)) {
                 values.put(MyDatabase.User.AVATAR_URL, mbUser.avatarUrl);
             }
@@ -425,14 +427,33 @@ public class DataInserter {
                 values.put(MyDatabase.User.HOMEPAGE, mbUser.getHomepage());
             }
             if (!SharedPreferencesUtil.isEmpty(mbUser.getProfileUrl())) {
-                values.put(MyDatabase.User.URL, mbUser.getProfileUrl());
+                values.put(MyDatabase.User.PROFILE_URL, mbUser.getProfileUrl());
             }
-            if (mbUser.createdDate > 0) {
-                values.put(MyDatabase.User.CREATED_DATE, mbUser.createdDate);
-            } else if ( userId == 0 && mbUser.updatedDate > 0) {
-                values.put(MyDatabase.User.CREATED_DATE, mbUser.updatedDate);
+            if (!SharedPreferencesUtil.isEmpty(mbUser.bannerUrl)) {
+                values.put(MyDatabase.User.BANNER_URL, mbUser.bannerUrl);
             }
-            
+            if (!SharedPreferencesUtil.isEmpty(mbUser.location)) {
+                values.put(MyDatabase.User.LOCATION, mbUser.location);
+            }
+            if (mbUser.msgCount > 0) {
+                values.put(MyDatabase.User.MSG_COUNT, mbUser.msgCount);
+            }
+            if (mbUser.favoritesCount > 0) {
+                values.put(MyDatabase.User.FAVORITES_COUNT, mbUser.favoritesCount);
+            }
+            if (mbUser.followingCount > 0) {
+                values.put(MyDatabase.User.FOLLOWING_COUNT, mbUser.followingCount);
+            }
+            if (mbUser.followersCount > 0) {
+                values.put(MyDatabase.User.FOLLOWERS_COUNT, mbUser.followersCount);
+            }
+            if (mbUser.getCreatedDate() > 0) {
+                values.put(MyDatabase.User.CREATED_DATE, mbUser.getCreatedDate());
+            }
+            if (mbUser.getUpdatedDate() > 0) {
+                values.put(MyDatabase.User.UPDATED_DATE, mbUser.getUpdatedDate());
+            }
+
             long readerId;
             if (mbUser.actor != null) {
                 readerId = insertOrUpdateUser(mbUser.actor, lum);
@@ -444,7 +465,7 @@ public class DataInserter {
                 values.put(MyDatabase.FollowingUser.USER_FOLLOWED,
                         mbUser.followedByActor.toBoolean(false));
                 MyLog.v(this,
-                        "User '" + userName + "' is "
+                        "User '" + mbUser.getUserName() + "' is "
                                 + (mbUser.followedByActor.toBoolean(false) ? "" : "not ")
                                 + "followed by " + execContext.getMyAccount().getAccountName());
             }

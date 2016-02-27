@@ -73,7 +73,12 @@ public class HttpConnectionMock extends HttpConnection {
     public HttpConnectionMock() {
         MyLog.v(this, "Created, instanceId:" + mInstanceId);
     }
-    
+
+    @Override
+    public boolean errorOnInvalidUrls() {
+        return false;
+    }
+
     public void setResponse(String responseString) {
         this.responseString = responseString;
     }

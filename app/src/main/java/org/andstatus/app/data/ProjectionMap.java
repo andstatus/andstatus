@@ -92,7 +92,7 @@ public class ProjectionMap {
         USER.put(User.HOMEPAGE, User.HOMEPAGE);
         USER.put(User.AVATAR_URL, User.AVATAR_URL);
         USER.put(Download.AVATAR_FILE_NAME, AVATAR_IMAGE_TABLE_ALIAS + "." + Download.FILE_NAME + " AS " + Download.AVATAR_FILE_NAME);
-        USER.put(User.URL, User.URL);
+        USER.put(User.PROFILE_URL, User.PROFILE_URL);
         USER.put(User.CREATED_DATE, User.CREATED_DATE);
         USER.put(User.INS_DATE, User.INS_DATE);
         

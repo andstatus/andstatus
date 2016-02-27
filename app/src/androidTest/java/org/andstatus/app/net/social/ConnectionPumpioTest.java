@@ -139,12 +139,12 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
     public void testGetTimeline() throws IOException {
         String sinceId = originUrl.toExternalForm() + "/activity/frefq3232sf";
 
-        String jso = RawResourceUtils.getString(this.getInstrumentation().getContext(), 
+        String jso = RawResourceUtils.getString(this.getInstrumentation().getContext(),
                 org.andstatus.app.tests.R.raw.user_t131t_inbox);
         httpConnectionMock.setResponse(jso);
         
-        List<MbTimelineItem> timeline = connection.getTimeline(ApiRoutineEnum.STATUSES_HOME_TIMELINE, 
-                new TimelinePosition(sinceId) , 20, "acct:t131t@" + originUrl.getHost());
+        List<MbTimelineItem> timeline = connection.getTimeline(ApiRoutineEnum.STATUSES_HOME_TIMELINE,
+                new TimelinePosition(sinceId), 20, "acct:t131t@" + originUrl.getHost());
         assertNotNull("timeline returned", timeline);
         int size = 6;
         assertEquals("Number of items in the Timeline", size, timeline.size());
@@ -156,7 +156,7 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         assertEquals("Message sent date: " + mbMessage.sentDate, TestSuite.utcTime(2013, Calendar.SEPTEMBER, 13, 1, 8, 32).getTime(), mbMessage.sentDate);
         assertEquals("Sender's oid", "acct:jpope@io.jpope.org", mbMessage.sender.oid);
         assertEquals("Sender's username", "jpope@io.jpope.org", mbMessage.sender.getUserName());
-        assertEquals("Sender's Display name", "jpope", mbMessage.sender.realName);
+        assertEquals("Sender's Display name", "jpope", mbMessage.sender.getRealName());
         assertEquals("Sender's profile image URL", "https://io.jpope.org/uploads/jpope/2013/7/8/LPyLPw_thumb.png", mbMessage.sender.avatarUrl);
         assertEquals("Sender's profile URL", "https://io.jpope.org/jpope", mbMessage.sender.getProfileUrl());
         assertEquals("Sender's Homepage", "https://io.jpope.org/jpope", mbMessage.sender.getHomepage());
@@ -167,6 +167,8 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         assertEquals("Following (friends) count", 0, mbMessage.sender.followingCount);
         assertEquals("Followers count", 0, mbMessage.sender.followersCount);
         assertEquals("Location", "/dev/null", mbMessage.sender.location);
+        assertEquals("Created at", 0, mbMessage.sender.getCreatedDate());
+        assertEquals("Updated at", connection.parseDate("2013-09-12T17:10:44Z"), mbMessage.sender.getUpdatedDate());
 
         ind++;
         assertEquals("Other User", MbTimelineItem.ItemType.USER, timeline.get(ind).getType());
@@ -217,7 +219,7 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         assertEquals("Does the Pope shit in the woods?", users.get(1).getDescription());
         assertEquals("gitorious@identi.ca", users.get(2).getUserName());
         assertEquals("acct:ken@coding.example", users.get(3).oid);
-        assertEquals("Yuri Volkov", users.get(4).realName);
+        assertEquals("Yuri Volkov", users.get(4).getRealName());
     }
     
     public void testUpdateStatus() throws ConnectionException, JSONException {

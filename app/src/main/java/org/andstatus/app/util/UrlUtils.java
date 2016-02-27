@@ -19,6 +19,7 @@ package org.andstatus.app.util;
 import android.net.Uri;
 import android.text.TextUtils;
 
+import org.andstatus.app.net.http.ConnectionException;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -103,17 +104,31 @@ public final class UrlUtils {
         return hostOrUrl.replaceAll(" ","").toLowerCase(Locale.ENGLISH);
     }
     
-    public static String pathToUrlString(URL originUrl, String path) {
-        if (path != null && path.contains("://")) {
-            return path;
-        } else {
-            try {
-                return new URL(originUrl, path).toExternalForm();
-            } catch (MalformedURLException e) {
-                MyLog.d(TAG, "pathToUrlString, originUrl:'" + originUrl + "', path:'" + path + "'", e);
-                return "";
+    public static String pathToUrlString(URL originUrl, String path, boolean throwOnInvalid)
+            throws ConnectionException {
+        URL url = null;
+        try {
+            if (path != null && path.contains("://")) {
+                url = new URL(path);
+            } else {
+                url = new URL(originUrl, path);
             }
+        } catch (MalformedURLException e) {
+            MyLog.d(TAG, "pathToUrlString, originUrl:'" + originUrl + "', path:'" + path + "'", e);
         }
+        if (url== null) {
+            if (throwOnInvalid) {
+                throw ConnectionException.hardConnectionException("URL is unknown. System URL:'"
+                        + originUrl + "', path:'" + path + "'", null);
+            }
+            return "";
+        }
+        if (throwOnInvalid && (url.getHost().equals("example.com")
+                || url.getHost().endsWith(".example.com"))) {
+            throw ConnectionException.fromStatusCode(ConnectionException.StatusCode.NOT_FOUND,
+                    "URL: '" + url.toExternalForm() + "'");
+        }
+        return url.toExternalForm();
     }
     
 }

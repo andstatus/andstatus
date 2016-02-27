@@ -110,7 +110,7 @@ public class DataInserterTest extends InstrumentationTestCase {
         assertEquals("Url of the message", message.url, url);
         long senderId = MyQuery.msgIdToLongColumnValue(Msg.SENDER_ID, messageId);
         assertEquals("Sender of the message", somebodyId, senderId);
-        url = MyQuery.userIdToStringColumnValue(User.URL, senderId);
+        url = MyQuery.userIdToStringColumnValue(User.PROFILE_URL, senderId);
         assertEquals("Url of the sender " + somebody.getUserName(), somebody.getProfileUrl(), url);
 
         Uri contentUri = MatchedUri.getTimelineUri(
@@ -175,8 +175,8 @@ public class DataInserterTest extends InstrumentationTestCase {
         SelectionAndArgs sa = new SelectionAndArgs();
         String sortOrder = MyDatabase.Msg.DESC_SORT_ORDER;
         sa.addSelection(MyDatabase.Msg.MSG_ID + " = ?",
-                new String[] {
-                    Long.toString(messageId)
+                new String[]{
+                        Long.toString(messageId)
                 });
         String[] PROJECTION = new String[] {
                 Msg.RECIPIENT_ID,
@@ -380,10 +380,15 @@ public class DataInserterTest extends InstrumentationTestCase {
                 MyQuery.userIdToStringColumnValue(MyDatabase.User.USERNAME, userId1));
 
         MbUser user1partial = MbUser.fromOriginAndUserOid(user1.originId, user1.oid);
+        assertTrue("Partially defined", user1partial.isPartiallyDefined());
         long userId1partial = di.insertOrUpdateUser(user1partial);
         assertEquals("Same user", userId1, userId1partial);
-        assertEquals("Username didn't change", user1.getUserName(),
+        assertEquals("Partially defined user shouldn't change Username", user1.getUserName(),
                 MyQuery.userIdToStringColumnValue(MyDatabase.User.USERNAME, userId1));
+        assertEquals("Partially defined user shouldn't change WebfingerId", user1.getWebFingerId(),
+                MyQuery.userIdToStringColumnValue(User.WEBFINGER_ID, userId1));
+        assertEquals("Partially defined user shouldn't change Real name", user1.getRealName(),
+                MyQuery.userIdToStringColumnValue(User.REAL_NAME, userId1));
 
         user1.setUserName(user1.getUserName() + "renamed");
         long userId1Renamed = di.insertOrUpdateUser(user1);
@@ -408,6 +413,48 @@ public class DataInserterTest extends InstrumentationTestCase {
         assertTrue("Other user with the same user name as the new name of user1, but different WebFingerId", userId1 != userId3);
         assertEquals("Username stored for userId=" + userId3, user3SameNewUserName.getUserName(),
                 MyQuery.userIdToStringColumnValue(MyDatabase.User.USERNAME, userId3));
+    }
+
+    public void testInsertUser() {
+        MyAccount ma = TestSuite.getMyContextForTest().persistentAccounts()
+                .fromAccountName(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME);
+        MbUser user = new MessageInserter(ma).buildUserFromOid("34807" + TestSuite.TESTRUN_UID);
+
+        DataInserter di = new DataInserter(ma);
+        long id = di.insertOrUpdateUser(user);
+        assertTrue("User added", id != 0);
+        assertEquals("Username", user.getUserName(),
+                MyQuery.userIdToStringColumnValue(MyDatabase.User.USERNAME, id));
+        assertEquals("oid", user.oid,
+                MyQuery.userIdToStringColumnValue(User.USER_OID, id));
+        assertEquals("Display name", user.getRealName(),
+                MyQuery.userIdToStringColumnValue(User.REAL_NAME, id));
+        assertEquals("Location", user.location,
+                MyQuery.userIdToStringColumnValue(User.LOCATION, id));
+        assertEquals("profile image URL", user.avatarUrl,
+                MyQuery.userIdToStringColumnValue(User.AVATAR_URL, id));
+        assertEquals("profile URL", user.getProfileUrl(),
+                MyQuery.userIdToStringColumnValue(User.PROFILE_URL, id));
+        assertEquals("Banner URL", user.bannerUrl,
+                MyQuery.userIdToStringColumnValue(User.BANNER_URL, id));
+        assertEquals("Homepage", user.getHomepage(),
+                MyQuery.userIdToStringColumnValue(User.HOMEPAGE, id));
+        assertEquals("WebFinger ID", user.getWebFingerId(),
+                MyQuery.userIdToStringColumnValue(User.WEBFINGER_ID, id));
+        assertEquals("Description", user.getDescription(),
+                MyQuery.userIdToStringColumnValue(User.DESCRIPTION, id));
+        assertEquals("Messages count", user.msgCount,
+                MyQuery.userIdToLongColumnValue(User.MSG_COUNT, id));
+        assertEquals("Favorites count", user.favoritesCount,
+                MyQuery.userIdToLongColumnValue(User.FAVORITES_COUNT, id));
+        assertEquals("Following (friends) count", user.followingCount,
+                MyQuery.userIdToLongColumnValue(User.FOLLOWING_COUNT, id));
+        assertEquals("Followers count", user.followersCount,
+                MyQuery.userIdToLongColumnValue(User.FOLLOWERS_COUNT, id));
+        assertEquals("Created at", user.getCreatedDate(),
+                MyQuery.userIdToLongColumnValue(User.CREATED_DATE, id));
+        assertEquals("Created at", user.getUpdatedDate(),
+                MyQuery.userIdToLongColumnValue(User.UPDATED_DATE, id));
     }
 
     public void testReplyInBody() {

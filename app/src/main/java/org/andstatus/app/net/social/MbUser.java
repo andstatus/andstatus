@@ -44,14 +44,14 @@ public class MbUser {
     public String oid="";
     private String userName="";
     private String webFingerId="";
-    public String realName="";
+    private String realName="";
     public String avatarUrl="";
     public String bannerUrl = "";
     private String description="";
     private String homepage="";
     private Uri profileUri = Uri.EMPTY;
-    public long createdDate = 0;
-    public long updatedDate = 0;
+    private long createdDate = 0;
+    private long updatedDate = 0;
     public long msgCount = 0;
     public long favoritesCount = 0;
     public long followingCount = 0;
@@ -86,6 +86,11 @@ public class MbUser {
                 && TextUtils.isEmpty(webFingerId) && TextUtils.isEmpty(userName));
     }
 
+    public boolean isPartiallyDefined() {
+        return originId==0 || !isOidReal(oid) || TextUtils.isEmpty(webFingerId)
+                || TextUtils.isEmpty(userName);
+    }
+
     public boolean isIdentified() {
         return userId != 0 && isOidReal();
     }
@@ -114,6 +119,9 @@ public class MbUser {
         if (!TextUtils.isEmpty(realName)) {
             members += "; realName=" + realName;
         }
+        if (!Uri.EMPTY.equals(profileUri)) {
+            members += "; profileUri=" + profileUri.toString();
+        }
         if (latestMessage != null) {
             members += "; latest message present";
         }
@@ -125,7 +133,7 @@ public class MbUser {
     }
 
     public MbUser setUserName(String userName) {
-        this.userName = TextUtils.isEmpty(userName) ? "" : userName.trim();
+        this.userName = SharedPreferencesUtil.isEmpty(userName) ? "" : userName.trim();
         fixWebFingerId();
         return this;
     }
@@ -365,5 +373,31 @@ public class MbUser {
         if (!SharedPreferencesUtil.isEmpty(homepage)) {
             this.homepage = homepage;
         }
+    }
+
+    public String getRealName() {
+        return realName;
+    }
+
+    public void setRealName(String realName) {
+        if (!SharedPreferencesUtil.isEmpty(realName)) {
+            this.realName = realName;
+        }
+    }
+
+    public long getCreatedDate() {
+        return createdDate;
+    }
+
+    public void setCreatedDate(long createdDate) {
+        this.createdDate = createdDate;
+    }
+
+    public long getUpdatedDate() {
+        return updatedDate;
+    }
+
+    public void setUpdatedDate(long updatedDate) {
+        this.updatedDate = updatedDate;
     }
 }

@@ -120,9 +120,9 @@ public class UserListLoader implements SyncLoader {
         }
         item.populated = true;
         item.mbUser.setUserName(DbUtils.getString(cursor, MyDatabase.User.USERNAME));
-        item.mbUser.setProfileUrl(DbUtils.getString(cursor, MyDatabase.User.URL));
+        item.mbUser.setProfileUrl(DbUtils.getString(cursor, MyDatabase.User.PROFILE_URL));
         item.mbUser.setWebFingerId(DbUtils.getString(cursor, MyDatabase.User.WEBFINGER_ID));
-        item.mbUser.realName = DbUtils.getString(cursor, MyDatabase.User.REAL_NAME);
+        item.mbUser.setRealName(DbUtils.getString(cursor, MyDatabase.User.REAL_NAME));
         item.mbUser.setHomepage(DbUtils.getString(cursor, MyDatabase.User.HOMEPAGE));
         item.mbUser.setDescription(DbUtils.getString(cursor, MyDatabase.User.DESCRIPTION));
         item.myFollowers = MyQuery.getMyFollowersOf(userId);

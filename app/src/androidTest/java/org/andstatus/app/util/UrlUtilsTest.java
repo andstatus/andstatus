@@ -18,11 +18,13 @@ package org.andstatus.app.util;
 
 import android.test.InstrumentationTestCase;
 
+import org.andstatus.app.net.http.ConnectionException;
+
 import java.net.URL;
 
 public class UrlUtilsTest extends InstrumentationTestCase {
 
-    public void testHostOnly() {
+    public void testHostOnly() throws ConnectionException {
         String host = "example.com";
         boolean isUrl = false;
         assertHostOnly("example.com", host, isUrl);
@@ -32,7 +34,7 @@ public class UrlUtilsTest extends InstrumentationTestCase {
         assertHostOnly("http://example.com", host, isUrl);
     }
 
-    private void assertHostOnly(String hostOrUrl, String host, boolean isUrl) {
+    private void assertHostOnly(String hostOrUrl, String host, boolean isUrl) throws ConnectionException {
         boolean isSsl = true;
         assertEquals(isUrl, !UrlUtils.hostIsValid(hostOrUrl));
         URL url = UrlUtils.fromString(hostOrUrl);
@@ -42,7 +44,7 @@ public class UrlUtilsTest extends InstrumentationTestCase {
         String strUrl = "https://" + host;
         assertEquals(strUrl, url.toExternalForm());
         String path = "somepath/somewhere.json";
-        assertEquals(strUrl + "/" + path, UrlUtils.pathToUrlString(url, path));
+        assertEquals(strUrl + "/" + path, UrlUtils.pathToUrlString(url, path, false));
         assertTrue(UrlUtils.isHostOnly(url));
         isSsl = false;
         url = UrlUtils.buildUrl(hostOrUrl, isSsl);
@@ -88,7 +90,7 @@ public class UrlUtilsTest extends InstrumentationTestCase {
         }
     }
 
-    public void testPathToUrl() {
+    public void testPathToUrl() throws ConnectionException {
         String strUrl = "https://username:password@host.org:8080/directory/";
         String path = "somepath/somewhere.json";
         boolean addSlash = false;
@@ -100,10 +102,10 @@ public class UrlUtilsTest extends InstrumentationTestCase {
         assertPath2Url(strUrl, path, addSlash);
     }
 
-    private void assertPath2Url(String strUrl, String path, boolean addSlash) {
+    private void assertPath2Url(String strUrl, String path, boolean addSlash) throws ConnectionException {
         boolean isSsl = true;
         URL url1 = UrlUtils.buildUrl(strUrl, isSsl);
-        String strUrl2 = UrlUtils.pathToUrlString(url1, path);
+        String strUrl2 = UrlUtils.pathToUrlString(url1, path, false);
         assertEquals(strUrl + (addSlash ? "/" : "") + path, strUrl2);
     }
 }
