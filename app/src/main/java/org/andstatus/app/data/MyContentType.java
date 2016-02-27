@@ -76,20 +76,36 @@ public enum MyContentType {
         }
         return UNKNOWN;
     }
-    
+
+    public static MyContentType fromUri(Uri uri, MyContentType defaultValue) {
+        MyContentType val = defaultValue == null ? UNKNOWN : defaultValue;
+        if (uri != null) {
+            val = fromPath(uri.getPath(), val);
+        }
+        return val;
+    }
+
     public static MyContentType fromUrl(URL url, MyContentType defaultValue) {
         MyContentType val = defaultValue == null ? UNKNOWN : defaultValue;
         if (url != null) {
-            String extension = MyContentType.getExtension(url.getPath());
+            val = fromPath(url.getPath(), val);
+        }
+        return val;
+    }
+
+    public static MyContentType fromPath(String path, MyContentType defaultValue) {
+        MyContentType val = defaultValue == null ? UNKNOWN : defaultValue;
+        if (!TextUtils.isEmpty(path)) {
+            String extension = MyContentType.getExtension(path);
             if( TextUtils.isEmpty(extension)) {
                 return val;
-            } 
+            }
             if ("jpg.jpeg.png.gif".contains(extension)) {
                 val = IMAGE;
             } else if ("txt.html.htm".contains(extension)) {
                 val = TEXT;
             }
-        } 
+        }
         return val;
     }
 

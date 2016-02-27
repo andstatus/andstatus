@@ -21,6 +21,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
+import android.support.annotation.NonNull;
+import android.text.TextUtils;
+
+import org.json.JSONObject;
 
 import java.net.URL;
 
@@ -30,6 +34,15 @@ public class UriUtils {
         // Empty
     }
 
+    @NonNull
+    public static Uri fromAlternativeTags(JSONObject jso, String tag1, String tag2) {
+        Uri uri = fromJson(jso, tag1);
+        if (isEmpty(uri)) {
+            uri = fromJson(jso, tag2);
+        }
+        return uri;
+    }
+
     /**
      * @return true for null also
      */
@@ -37,16 +50,25 @@ public class UriUtils {
         return Uri.EMPTY.equals(notNull(uri));
     }
 
-    /** returns not null */
+    @NonNull
+    public static Uri fromJson(JSONObject jso, String urlTag) {
+        if (jso != null && !TextUtils.isEmpty(urlTag) && jso.has(urlTag)) {
+            return fromString(jso.optString(urlTag));
+        }
+        return Uri.EMPTY;
+    }
+
+    @NonNull
     public static Uri fromString(String strUri) {
         return SharedPreferencesUtil.isEmpty(strUri) ? Uri.EMPTY : Uri.parse(strUri.trim());
     }
 
+    @NonNull
     public static Uri notNull(Uri uri) {
         return uri == null ? Uri.EMPTY : uri;
     }
 
-    /** returns not null */
+    @NonNull
     public static Uri fromUrl(URL url) {
         if (url == null) {
             return Uri.EMPTY;
@@ -97,4 +119,5 @@ public class UriUtils {
         }
         return true;
     }
+
 }

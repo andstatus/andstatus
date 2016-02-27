@@ -24,6 +24,7 @@ import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TriState;
+import org.andstatus.app.util.UriUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -334,11 +335,18 @@ public abstract class ConnectionTwitter extends Connection {
         if (!SharedPreferencesUtil.isEmpty(user.realName)) {
             user.setProfileUrl(data.getOriginUrl());
         }
-        user.avatarUrl = jso.optString("profile_image_url");
+        user.location = jso.optString("location");
+        user.avatarUrl = UriUtils.fromAlternativeTags(jso,
+                "profile_image_url_https", "profile_image_url").toString();
+        user.bannerUrl = UriUtils.fromJson(jso, "profile_banner_url").toString();
         user.setDescription(jso.optString("description"));
         user.setHomepage(jso.optString("url"));
         // Hack for twitter.com
         user.setProfileUrl(http.pathToUrlString("/").replace("/api.", "/") + userName);
+        user.msgCount = jso.optLong("statuses_count");
+        user.favoritesCount = jso.optLong("favourites_count");
+        user.followingCount = jso.optLong("friends_count");
+        user.followersCount = jso.optLong("followers_count");
         user.createdDate = dateFromJson(jso, "created_at");
         if (!jso.isNull("following")) {
             user.followedByActor = TriState.fromBoolean(jso.optBoolean("following"));

@@ -27,6 +27,7 @@ import org.andstatus.app.net.http.ConnectionException.StatusCode;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.net.http.HttpConnectionData;
 import org.andstatus.app.origin.OriginConnectionData;
+import org.andstatus.app.util.JsonUtils;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
@@ -120,19 +121,15 @@ public class ConnectionPumpio extends Connection {
         user.setUserName(userOidToUsername(oid));
         user.oid = oid;
         user.realName = jso.optString("displayName");
-        if (jso.has("image")) {
-            JSONObject image = jso.optJSONObject("image");
-            if (image != null) {
-                user.avatarUrl = image.optString("url");
-            }
-        }
+        user.avatarUrl = JsonUtils.optStringInside(jso, "image", "url");
+        user.location = JsonUtils.optStringInside(jso, "location", "displayName");
         user.setDescription(jso.optString("summary"));
         user.setHomepage(jso.optString("url"));
         user.setProfileUrl(jso.optString("url"));
         user.updatedDate = dateFromJson(jso, "updated");
         return user;
     }
-    
+
     private final DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ", Locale.GERMANY);
     /**
      * Simple solution based on:

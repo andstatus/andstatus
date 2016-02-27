@@ -154,6 +154,19 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         MbMessage mbMessage = timeline.get(ind).mbMessage;
         assertTrue("Message body: '" + mbMessage.getBody() + "'", mbMessage.getBody().contains("Fantastic wheel stand"));
         assertEquals("Message sent date: " + mbMessage.sentDate, TestSuite.utcTime(2013, Calendar.SEPTEMBER, 13, 1, 8, 32).getTime(), mbMessage.sentDate);
+        assertEquals("Sender's oid", "acct:jpope@io.jpope.org", mbMessage.sender.oid);
+        assertEquals("Sender's username", "jpope@io.jpope.org", mbMessage.sender.getUserName());
+        assertEquals("Sender's Display name", "jpope", mbMessage.sender.realName);
+        assertEquals("Sender's profile image URL", "https://io.jpope.org/uploads/jpope/2013/7/8/LPyLPw_thumb.png", mbMessage.sender.avatarUrl);
+        assertEquals("Sender's profile URL", "https://io.jpope.org/jpope", mbMessage.sender.getProfileUrl());
+        assertEquals("Sender's Homepage", "https://io.jpope.org/jpope", mbMessage.sender.getHomepage());
+        assertEquals("Sender's WebFinger ID", "jpope@io.jpope.org", mbMessage.sender.getWebFingerId());
+        assertEquals("Description", "Does the Pope shit in the woods?", mbMessage.sender.getDescription());
+        assertEquals("Messages count", 0, mbMessage.sender.msgCount);
+        assertEquals("Favorites count", 0, mbMessage.sender.favoritesCount);
+        assertEquals("Following (friends) count", 0, mbMessage.sender.followingCount);
+        assertEquals("Followers count", 0, mbMessage.sender.followersCount);
+        assertEquals("Location", "/dev/null", mbMessage.sender.location);
 
         ind++;
         assertEquals("Other User", MbTimelineItem.ItemType.USER, timeline.get(ind).getType());

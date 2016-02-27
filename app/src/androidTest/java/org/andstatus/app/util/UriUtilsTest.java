@@ -19,6 +19,9 @@ package org.andstatus.app.util;
 import android.net.Uri;
 import android.test.InstrumentationTestCase;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 public class UriUtilsTest extends InstrumentationTestCase {
     public void testIsEmpty() {
         assertTrue(UriUtils.isEmpty(null));
@@ -40,4 +43,19 @@ public class UriUtilsTest extends InstrumentationTestCase {
         Uri uri = Uri.parse("http://some.org/");
         assertEquals(UriUtils.notNull(uri), uri);
     }
+
+    public void testFromJson() throws JSONException {
+        JSONObject jso = new JSONObject(
+            "{\"profile_image_url\":\"http://a0.twimg.com/profile_images/36_normal.jpeg\",\n"
+            + "\"profile_image_url_https\":\"https://si0.twimg.com/profile_images/37_normal.jpeg\"}");
+        Uri uri = UriUtils.fromAlternativeTags(jso, "profile_image_url_https", "profile_image_url");
+        assertEquals("https://si0.twimg.com/profile_images/37_normal.jpeg", uri.toString());
+
+        uri = UriUtils.fromAlternativeTags(jso, "profile_image_url", "profile_image_url_https");
+        assertEquals("http://a0.twimg.com/profile_images/36_normal.jpeg", uri.toString());
+
+        uri = UriUtils.fromAlternativeTags(jso, "unknown1", "unknown2");
+        assertEquals("", uri.toString());
+    }
+
 }

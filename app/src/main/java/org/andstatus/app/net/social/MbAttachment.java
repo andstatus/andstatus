@@ -41,7 +41,7 @@ public class MbAttachment {
             throw new IllegalArgumentException("MyContentType is null");
         }
         attachment.uri = uriIn;
-        attachment.contentType = contentTypeIn;
+        attachment.contentType = MyContentType.fromUri(uriIn, contentTypeIn);
         return attachment;
     }
 

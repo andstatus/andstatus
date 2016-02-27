@@ -46,12 +46,19 @@ public class MbUser {
     private String webFingerId="";
     public String realName="";
     public String avatarUrl="";
+    public String bannerUrl = "";
     private String description="";
     private String homepage="";
     private Uri profileUri = Uri.EMPTY;
     public long createdDate = 0;
     public long updatedDate = 0;
-    public MbMessage latestMessage = null;    
+    public long msgCount = 0;
+    public long favoritesCount = 0;
+    public long followingCount = 0;
+    public long followersCount = 0;
+    public String location = "";
+
+    public MbMessage latestMessage = null;
 
     public MbUser actor = null;
     public TriState followedByActor = TriState.UNKNOWN;
