@@ -43,7 +43,6 @@ import java.io.IOException;
 public class MyBackupAgent extends BackupAgent {
     public static final String DATABASE_KEY = "database";
     public static final String SHARED_PREFERENCES_KEY = "shared_preferences";
-    public static final String SHARED_PREFERENCES_FILENAME = "shared_preferences";
 
     private MyBackupDescriptor backupDescriptor = null;
 

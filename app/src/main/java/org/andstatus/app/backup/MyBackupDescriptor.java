@@ -41,7 +41,10 @@ public class MyBackupDescriptor {
     private static final Object TAG = MyBackupDescriptor.class;
     
     static final int BACKUP_SCHEMA_VERSION_UNKNOWN = -1;
-    static final int BACKUP_SCHEMA_VERSION = 3;
+    /**
+     * v.4 2016-02-28 app.v.23 database schema changed
+     */
+    static final int BACKUP_SCHEMA_VERSION = 4;
     static final String KEY_ACCOUNTS_COUNT = "accounts_count";
     static final String KEY_CREATED_DATE = "created_date";
     static final String KEY_BACKUP_SCHEMA_VERSION = "backup_schema_version";
