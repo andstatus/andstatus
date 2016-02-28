@@ -82,18 +82,28 @@ public class ProjectionMap {
     static final Map<String, String> USER = new HashMap<>();
     static {
         USER.put(BaseColumns._ID, User.TABLE_NAME + "." + BaseColumns._ID + " AS " + BaseColumns._ID);
+        USER.put(User.ORIGIN_ID, User.ORIGIN_ID);
         USER.put(User.USER_ID, User.TABLE_NAME + "." + BaseColumns._ID + " AS " + User.USER_ID);
         USER.put(User.USER_OID, User.USER_OID);
-        USER.put(User.ORIGIN_ID, User.ORIGIN_ID);
         USER.put(User.USERNAME, User.USERNAME);
+        USER.put(User.WEBFINGER_ID, User.WEBFINGER_ID);
         USER.put(User.REAL_NAME, User.REAL_NAME);
         USER.put(User.DESCRIPTION, User.DESCRIPTION);
-        USER.put(User.WEBFINGER_ID, User.WEBFINGER_ID);
+        USER.put(User.LOCATION, User.LOCATION);
+
+        USER.put(User.PROFILE_URL, User.PROFILE_URL);
         USER.put(User.HOMEPAGE, User.HOMEPAGE);
         USER.put(User.AVATAR_URL, User.AVATAR_URL);
         USER.put(Download.AVATAR_FILE_NAME, AVATAR_IMAGE_TABLE_ALIAS + "." + Download.FILE_NAME + " AS " + Download.AVATAR_FILE_NAME);
-        USER.put(User.PROFILE_URL, User.PROFILE_URL);
+        USER.put(User.BANNER_URL, User.BANNER_URL);
+
+        USER.put(User.MSG_COUNT, User.MSG_COUNT);
+        USER.put(User.FAVORITES_COUNT, User.FAVORITES_COUNT);
+        USER.put(User.FOLLOWING_COUNT, User.FOLLOWING_COUNT);
+        USER.put(User.FOLLOWERS_COUNT, User.FOLLOWERS_COUNT);
+
         USER.put(User.CREATED_DATE, User.CREATED_DATE);
+        USER.put(User.UPDATED_DATE, User.UPDATED_DATE);
         USER.put(User.INS_DATE, User.INS_DATE);
         
         USER.put(User.HOME_TIMELINE_POSITION, User.HOME_TIMELINE_POSITION);

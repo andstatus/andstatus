@@ -84,23 +84,22 @@ public class ConnectionTwitterTest extends InstrumentationTestCase {
         MbMessage mbMessage = timeline.get(ind).mbMessage;
         assertTrue("Favorited", mbMessage.favoritedByActor.toBoolean(false));
         assertEquals("Actor", connectionData.getAccountUserOid(), mbMessage.actor.oid);
-        assertEquals("Author's oid", "221452291", mbMessage.sender.oid);
-        assertEquals("Author's username", "Know", mbMessage.sender.getUserName());
-        assertEquals("Author's Display name", "Just so you Know", mbMessage.sender.getRealName());
+        assertEquals("Oid", "221452291", mbMessage.sender.oid);
+        assertEquals("Username", "Know", mbMessage.sender.getUserName());
         assertEquals("WebFinger ID", "Know@" + hostName, mbMessage.sender.getWebFingerId());
-
-        assertEquals("Sender's profile URL", "https://" + hostName + "/Know", mbMessage.sender.getProfileUrl());
-        assertEquals("Sender's Homepage", "http://t.co/4TzphfU9qt", mbMessage.sender.getHomepage());
-
-        assertEquals("Sender's profile image URL", "https://si0.twimg.com/profile_images/378800000411110038/a8b7eced4dc43374e7ae21112ff749b6_normal.jpeg", mbMessage.sender.avatarUrl);
-        assertEquals("Sender's profile banner URL", "https://pbs.twimg.com/profile_banners/221452291/1377270845", mbMessage.sender.bannerUrl);
+        assertEquals("Display name", "Just so you Know", mbMessage.sender.getRealName());
         assertEquals("Description", "Unimportant facts you'll never need to know. Legally responsible publisher: @FUN", mbMessage.sender.getDescription());
+        assertEquals("Location", "Library of Congress", mbMessage.sender.location);
+        assertEquals("Profile URL", "https://" + hostName + "/Know", mbMessage.sender.getProfileUrl());
+        assertEquals("Homepage", "http://t.co/4TzphfU9qt", mbMessage.sender.getHomepage());
+        assertEquals("Avatar URL", "https://si0.twimg.com/profile_images/378800000411110038/a8b7eced4dc43374e7ae21112ff749b6_normal.jpeg", mbMessage.sender.avatarUrl);
+        assertEquals("Banner URL", "https://pbs.twimg.com/profile_banners/221452291/1377270845", mbMessage.sender.bannerUrl);
         assertEquals("Messages count", 1592, mbMessage.sender.msgCount);
         assertEquals("Favorites count", 163, mbMessage.sender.favoritesCount);
         assertEquals("Following (friends) count", 151, mbMessage.sender.followingCount);
         assertEquals("Followers count", 1878136, mbMessage.sender.followersCount);
-        assertEquals("Location", "Library of Congress", mbMessage.sender.location);
-
+        assertEquals("Created at", connection.parseDate("Tue Nov 30 18:17:25 +0000 2010"), mbMessage.sender.getCreatedDate());
+        assertEquals("Updated at", 0, mbMessage.sender.getUpdatedDate());
 
         ind++;
         mbMessage = timeline.get(ind).mbMessage;

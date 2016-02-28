@@ -60,19 +60,20 @@ public class ConnectionGnuSocialTest extends InstrumentationTestCase {
         assertEquals("Posting message", MbTimelineItem.ItemType.MESSAGE, timeline.get(ind).getType());
         MbMessage mbMessage = timeline.get(ind).mbMessage;
         assertTrue("Favorited", mbMessage.favoritedByActor.toBoolean(false));
-        assertEquals("Sender's oid", "116387", mbMessage.sender.oid);
-        assertEquals("Sender's username", "aru", mbMessage.sender.getUserName());
-        assertEquals("Sender's Display name", "aru", mbMessage.sender.getRealName());
-        assertEquals("Sender's profile image URL", "http://quitter.se/avatar/116387-48-20140609172839.png", mbMessage.sender.avatarUrl);
-        assertEquals("Sender's profile URL", "https://status.vinilox.eu/aru", mbMessage.sender.getProfileUrl());
-        assertEquals("Sender's Homepage", "", mbMessage.sender.getHomepage());
-        assertEquals("Sender's WebFinger ID", "aru@status.vinilox.eu", mbMessage.sender.getWebFingerId());
+        assertEquals("Oid", "116387", mbMessage.sender.oid);
+        assertEquals("Username", "aru", mbMessage.sender.getUserName());
+        assertEquals("WebFinger ID", "aru@status.vinilox.eu", mbMessage.sender.getWebFingerId());
+        assertEquals("Display name", "aru", mbMessage.sender.getRealName());
         assertEquals("Description", "Manjaro user, student of physics and metalhead. Excuse my english ( ͡° ͜ʖ ͡°)", mbMessage.sender.getDescription());
+        assertEquals("Location", "Spain", mbMessage.sender.location);
+        assertEquals("Profile URL", "https://status.vinilox.eu/aru", mbMessage.sender.getProfileUrl());
+        assertEquals("Homepage", "", mbMessage.sender.getHomepage());
+        assertEquals("Avatar URL", "http://quitter.se/avatar/116387-48-20140609172839.png", mbMessage.sender.avatarUrl);
+        assertEquals("Banner URL", "", mbMessage.sender.bannerUrl);
         assertEquals("Messages count", 523, mbMessage.sender.msgCount);
         assertEquals("Favorites count", 11, mbMessage.sender.favoritesCount);
         assertEquals("Following (friends) count", 23, mbMessage.sender.followingCount);
         assertEquals("Followers count", 21, mbMessage.sender.followersCount);
-        assertEquals("Location", "Spain", mbMessage.sender.location);
         assertEquals("Created at", connection.parseDate("Sun Feb 09 22:33:42 +0100 2014"), mbMessage.sender.getCreatedDate());
         assertEquals("Updated at", 0, mbMessage.sender.getUpdatedDate());
 
@@ -86,29 +87,31 @@ public class ConnectionGnuSocialTest extends InstrumentationTestCase {
         assertFalse("Is not Favorited", mbMessage.favoritedByActor.toBoolean(true));
         String startsWith = "@<span class=\"vcard\">";
         assertEquals("Body of this message starts with", startsWith, mbMessage.getBody().substring(0, startsWith.length()));
-        assertEquals("Sender's username", "andstatus", mbMessage.sender.getUserName());
-        assertEquals("Sender's Display name", "AndStatus@quitter.se", mbMessage.sender.getRealName());
-        assertEquals("Sender's profile banner URL", "https://quitter.se/file/3fd65c6088ea02dc3a5ded9798a865a8ff5425b13878da35ad894cd084d015fc.png", mbMessage.sender.bannerUrl);
+        assertEquals("Username", "andstatus", mbMessage.sender.getUserName());
+        assertEquals("Display name", "AndStatus@quitter.se", mbMessage.sender.getRealName());
+        assertEquals("Banner URL", "https://quitter.se/file/3fd65c6088ea02dc3a5ded9798a865a8ff5425b13878da35ad894cd084d015fc.png", mbMessage.sender.bannerUrl);
 
         ind++;
         mbMessage = timeline.get(ind).mbMessage;
         assertTrue("Message is public", mbMessage.isPublic());
         assertFalse("Not Favorited", mbMessage.favoritedByActor.toBoolean(false));
         assertEquals("Actor", accountUserOid, mbMessage.actor.oid);
-        assertEquals("Sender's oid", "114973", mbMessage.sender.oid);
-        assertEquals("Sender's username", "mmn", mbMessage.sender.getUserName());
-        assertEquals("Sender's Display name", "mmn", mbMessage.sender.getRealName());
-        assertEquals("Sender's Profile URL", "https://social.umeahackerspace.se/mmn", mbMessage.sender.getProfileUrl());
-        assertEquals("Sender's Homepage", "http://blog.mmn-o.se/", mbMessage.sender.getHomepage());
-        assertEquals("Sender's profile image URL", "http://quitter.se/avatar/114973-48-20140702161520.jpeg", mbMessage.sender.avatarUrl);
-        assertEquals("Sender's profile banner URL", "", mbMessage.sender.bannerUrl);
-        assertEquals("Sender's WebFinger ID", "mmn@social.umeahackerspace.se", mbMessage.sender.getWebFingerId());
+        assertEquals("Oid", "114973", mbMessage.sender.oid);
+        assertEquals("Username", "mmn", mbMessage.sender.getUserName());
+        assertEquals("WebFinger ID", "mmn@social.umeahackerspace.se", mbMessage.sender.getWebFingerId());
+        assertEquals("Display name", "mmn", mbMessage.sender.getRealName());
         assertEquals("Description", "", mbMessage.sender.getDescription());
+        assertEquals("Location", "Umeå, Sweden", mbMessage.sender.location);
+        assertEquals("Profile URL", "https://social.umeahackerspace.se/mmn", mbMessage.sender.getProfileUrl());
+        assertEquals("Homepage", "http://blog.mmn-o.se/", mbMessage.sender.getHomepage());
+        assertEquals("Avatar URL", "http://quitter.se/avatar/114973-48-20140702161520.jpeg", mbMessage.sender.avatarUrl);
+        assertEquals("Banner URL", "", mbMessage.sender.bannerUrl);
         assertEquals("Messages count", 1889, mbMessage.sender.msgCount);
         assertEquals("Favorites count", 31, mbMessage.sender.favoritesCount);
         assertEquals("Following (friends) count", 17, mbMessage.sender.followingCount);
         assertEquals("Followers count", 31, mbMessage.sender.followersCount);
-        assertEquals("Location", "Umeå, Sweden", mbMessage.sender.location);
+        assertEquals("Created at", connection.parseDate("Wed Aug 14 10:05:28 +0200 2013"), mbMessage.sender.getCreatedDate());
+        assertEquals("Updated at", 0, mbMessage.sender.getUpdatedDate());
     }
 
     public void testSearch() throws IOException {

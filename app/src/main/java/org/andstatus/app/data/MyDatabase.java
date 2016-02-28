@@ -259,20 +259,20 @@ public final class MyDatabase extends SQLiteOpenHelper  {
         public static final String WEBFINGER_ID = "webfinger_id";
         /** This is called "name" in Twitter API */
         public static final String REAL_NAME = "real_name";
-        /** Location string */
-        public static final String LOCATION = "location";
-        /** The latest url of the avatar */
-        public static final String AVATAR_URL = "avatar_url";
         /** User's description / "About myself" */
         public static final String DESCRIPTION = "user_description";
-        /** URL of User's web home page */
-        public static final String HOMEPAGE = "homepage";
+        /** Location string */
+        public static final String LOCATION = "location";
         /**
          * User's profile URL
-         * A link to the representation of the resource. Currently this is simply URL to the HTML 
-         * representation of the resource (its "permalink") 
+         * A link to the representation of the resource. Currently this is simply URL to the HTML
+         * representation of the resource (its "permalink")
          */
         public static final String PROFILE_URL = "profile_url";
+        /** URL of User's web home page */
+        public static final String HOMEPAGE = "homepage";
+        /** The latest url of the avatar */
+        public static final String AVATAR_URL = "avatar_url";
         public static final String BANNER_URL = "banner_url";
 
         public static final String MSG_COUNT = "msg_count";
@@ -557,12 +557,12 @@ public final class MyDatabase extends SQLiteOpenHelper  {
                 + User.USERNAME + " TEXT NOT NULL," 
                 + User.WEBFINGER_ID + " TEXT NOT NULL," 
                 + User.REAL_NAME + " TEXT,"
-                + User.LOCATION + " TEXT,"
                 + User.DESCRIPTION + " TEXT,"
+                + User.LOCATION + " TEXT,"
+                + User.PROFILE_URL + " TEXT,"
+                + User.HOMEPAGE + " TEXT,"
                 + User.AVATAR_URL + " TEXT,"
                 + User.BANNER_URL + " TEXT,"
-                + User.HOMEPAGE + " TEXT,"
-                + User.PROFILE_URL + " TEXT,"
                 + User.MSG_COUNT + " INTEGER DEFAULT 0 NOT NULL,"
                 + User.FAVORITES_COUNT + " INTEGER DEFAULT 0 NOT NULL,"
                 + User.FOLLOWING_COUNT + " INTEGER DEFAULT 0 NOT NULL,"

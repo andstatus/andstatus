@@ -41,28 +41,31 @@ public class MbUser {
     // RegEx from http://www.mkyong.com/regular-expressions/how-to-validate-email-address-with-regular-expression/
     public static final String WEBFINGER_ID_REGEX = "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
     private static final String TEMP_OID_PREFIX = "andstatustemp:";
-    public String oid="";
-    private String userName="";
-    private String webFingerId="";
-    private String realName="";
-    public String avatarUrl="";
-    public String bannerUrl = "";
-    private String description="";
-    private String homepage="";
+    public String oid = "";
+    private String userName = "";
+    private String webFingerId = "";
+    private String realName = "";
+    private String description = "";
+    public String location = "";
+
     private Uri profileUri = Uri.EMPTY;
-    private long createdDate = 0;
-    private long updatedDate = 0;
+    private String homepage = "";
+    public String avatarUrl = "";
+    public String bannerUrl = "";
+
     public long msgCount = 0;
     public long favoritesCount = 0;
     public long followingCount = 0;
     public long followersCount = 0;
-    public String location = "";
+
+    private long createdDate = 0;
+    private long updatedDate = 0;
 
     public MbMessage latestMessage = null;
 
     public MbUser actor = null;
     public TriState followedByActor = TriState.UNKNOWN;
-    
+
     // In our system
     public final long originId;
     public long userId = 0L;

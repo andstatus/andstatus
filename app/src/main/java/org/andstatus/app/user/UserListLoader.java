@@ -15,6 +15,7 @@ import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.UserListSql;
+import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.MyServiceManager;
@@ -118,15 +119,29 @@ public class UserListLoader implements SyncLoader {
                     DbUtils.getLong(cursor, MyDatabase.User.ORIGIN_ID));
             item = addUserIdToList(origin, userId);
         }
-        item.populated = true;
-        item.mbUser.setUserName(DbUtils.getString(cursor, MyDatabase.User.USERNAME));
-        item.mbUser.setProfileUrl(DbUtils.getString(cursor, MyDatabase.User.PROFILE_URL));
-        item.mbUser.setWebFingerId(DbUtils.getString(cursor, MyDatabase.User.WEBFINGER_ID));
-        item.mbUser.setRealName(DbUtils.getString(cursor, MyDatabase.User.REAL_NAME));
-        item.mbUser.setHomepage(DbUtils.getString(cursor, MyDatabase.User.HOMEPAGE));
-        item.mbUser.setDescription(DbUtils.getString(cursor, MyDatabase.User.DESCRIPTION));
+        MbUser user = item.mbUser;
+        user.oid = DbUtils.getString(cursor, MyDatabase.User.USER_OID);
+        user.setUserName(DbUtils.getString(cursor, MyDatabase.User.USERNAME));
+        user.setWebFingerId(DbUtils.getString(cursor, MyDatabase.User.WEBFINGER_ID));
+        user.setRealName(DbUtils.getString(cursor, MyDatabase.User.REAL_NAME));
+        user.setDescription(DbUtils.getString(cursor, MyDatabase.User.DESCRIPTION));
+        user.location = DbUtils.getString(cursor, MyDatabase.User.LOCATION);
+
+        user.setProfileUrl(DbUtils.getString(cursor, MyDatabase.User.PROFILE_URL));
+        user.setHomepage(DbUtils.getString(cursor, MyDatabase.User.HOMEPAGE));
+
+        user.msgCount = DbUtils.getLong(cursor, MyDatabase.User.MSG_COUNT);
+        user.favoritesCount = DbUtils.getLong(cursor, MyDatabase.User.FAVORITES_COUNT);
+        user.followingCount = DbUtils.getLong(cursor, MyDatabase.User.FOLLOWING_COUNT);
+        user.followersCount = DbUtils.getLong(cursor, MyDatabase.User.FOLLOWERS_COUNT);
+
+        user.setCreatedDate(DbUtils.getLong(cursor, MyDatabase.User.CREATED_DATE));
+        user.setUpdatedDate(DbUtils.getLong(cursor, MyDatabase.User.UPDATED_DATE));
+
         item.myFollowers = MyQuery.getMyFollowersOf(userId);
         item.avatarDrawable = AvatarFile.getDrawable(item.getUserId(), cursor);
+
+        item.populated = true;
     }
 
     private UserListViewItem getById(long userId) {

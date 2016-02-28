@@ -23,6 +23,7 @@ import org.andstatus.app.ListActivityTestHelper;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.data.ConversationInserter;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyQuery;
@@ -77,9 +78,44 @@ public class UserListTest extends ActivityInstrumentationTestCase2<TimelineActiv
         List<UserListViewItem> listItems = userList.getListLoader().getList();
         assertEquals(listItems.toString(), 5, listItems.size());
 
+        MbUser userE = ConversationInserter.users.get(TestSuite.CONVERSATION_MEMBER_USER_OID);
+        assertTrue("Found " + TestSuite.CONVERSATION_MEMBER_USER_OID + " cached ", userE != null);
+        MbUser userA = getByUserOid(listItems, TestSuite.CONVERSATION_MEMBER_USER_OID);
+        assertTrue("Found " + TestSuite.CONVERSATION_MEMBER_USER_OID + ", " + logMsg, userA != null);
+        compareAttributes(userE, userA, true);
+
         ListActivityTestHelper<UserList> userListHelper = new ListActivityTestHelper<>(this, userList);
         userListHelper.clickListAtPosition(method, userListHelper.getPositionOfListItemId(listItems.get(2).getUserId()));
         Thread.sleep(500);
     }
 
+    private void compareAttributes(MbUser expected, MbUser actual, boolean forUserList) {
+        assertEquals("Oid", expected.oid, actual.oid);
+        assertEquals("Username", expected.getUserName(), actual.getUserName());
+        assertEquals("WebFinger ID", expected.getWebFingerId(), actual.getWebFingerId());
+        assertEquals("Display name", expected.getRealName(), actual.getRealName());
+        assertEquals("Description", expected.getDescription(), actual.getDescription());
+        assertEquals("Location", expected.location, actual.location);
+        assertEquals("Profile URL", expected.getProfileUrl(), actual.getProfileUrl());
+        assertEquals("Homepage", expected.getHomepage(), actual.getHomepage());
+        if (!forUserList) {
+            assertEquals("Avatar URL", expected.avatarUrl, actual.avatarUrl);
+            assertEquals("Banner URL", expected.bannerUrl, actual.bannerUrl);
+        }
+        assertEquals("Messages count", expected.msgCount, actual.msgCount);
+        assertEquals("Favorites count", expected.favoritesCount, actual.favoritesCount);
+        assertEquals("Following (friends) count", expected.followingCount, actual.followingCount);
+        assertEquals("Followers count", expected.followersCount, actual.followersCount);
+        assertEquals("Created at", expected.getCreatedDate(), actual.getCreatedDate());
+        assertEquals("Updated at", expected.getUpdatedDate(), actual.getUpdatedDate());
+    }
+
+    private MbUser getByUserOid(List<UserListViewItem> listItems, String oid) {
+        for (UserListViewItem item : listItems) {
+            if (item.mbUser.oid.equals(oid)) {
+                return item.mbUser;
+            }
+        }
+        return null;
+    }
 }

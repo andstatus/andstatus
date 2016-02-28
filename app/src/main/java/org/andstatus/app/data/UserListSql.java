@@ -65,7 +65,7 @@ public class UserListSql {
     }
 
     /**
-     * Table columns to use for the messages content
+     * Table columns to use for a User item content
      */
     public static String[] getListProjection() {
         return getBaseProjection().toArray(new String[]{});
@@ -74,18 +74,27 @@ public class UserListSql {
     private static List<String> getBaseProjection() {
         List<String> columnNames = new ArrayList<>();
         columnNames.add(User._ID);
-        columnNames.add(User.CREATED_DATE);
-        columnNames.add(User.DESCRIPTION);
-        columnNames.add(User.HOMEPAGE);
-        columnNames.add(User.ORIGIN_ID);
-        columnNames.add(User.REAL_NAME);
-        columnNames.add(User.PROFILE_URL);
         columnNames.add(User.USER_OID);
         columnNames.add(User.USERNAME);
         columnNames.add(User.WEBFINGER_ID);
+        columnNames.add(User.REAL_NAME);
+        columnNames.add(User.DESCRIPTION);
+        columnNames.add(User.LOCATION);
+
+        columnNames.add(User.PROFILE_URL);
+        columnNames.add(User.HOMEPAGE);
         if (MyPreferences.showAvatars()) {
             columnNames.add(Download.AVATAR_FILE_NAME);
         }
+
+        columnNames.add(User.MSG_COUNT);
+        columnNames.add(User.FAVORITES_COUNT);
+        columnNames.add(User.FOLLOWING_COUNT);
+        columnNames.add(User.FOLLOWERS_COUNT);
+
+        columnNames.add(User.CREATED_DATE);
+        columnNames.add(User.UPDATED_DATE);
+        columnNames.add(User.ORIGIN_ID);
         return columnNames;
     }
 

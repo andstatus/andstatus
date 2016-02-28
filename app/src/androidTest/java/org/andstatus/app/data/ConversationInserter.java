@@ -31,9 +31,12 @@ import org.andstatus.app.origin.OriginType;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.GregorianCalendar;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ConversationInserter extends InstrumentationTestCase {
     private static volatile int iteration = 0;
+    public static final Map<String, MbUser> users = new ConcurrentHashMap<>();
 
     private MyAccount ma;
     private String bodySuffix = "";
@@ -66,12 +69,15 @@ public class ConversationInserter extends InstrumentationTestCase {
         
         MbUser author2 = buildUserFromOid("acct:second@identi.ca");
         author2.avatarUrl = "http://png.findicons.com/files/icons/1780/black_and_orange/300/android_orange.png";
+
         MbUser author3 = buildUserFromOid(TestSuite.CONVERSATION_MEMBER_USER_OID);
         author3.setRealName("John Smith");
         author3.setHomepage("http://johnsmith.com/welcome");
         author3.setCreatedDate(new GregorianCalendar(2011,5,12).getTimeInMillis());
         author3.setDescription("I am an ordinary guy, interested in computer science");
         author3.avatarUrl = "http://www.large-icons.com/stock-icons/free-large-android/48x48/happy-robot.gif";
+        users.put(author3.oid, author3);
+
         MbUser author4 = buildUserFromOid("acct:fourthWithoutAvatar@pump.example.com");
         
         MbMessage minus1 = buildMessage(author2, "Older one message", null, null);
