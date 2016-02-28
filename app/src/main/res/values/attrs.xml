@@ -52,5 +52,10 @@
         <attr name="reloadIcon" format="reference" />
         <attr name="replyBackground" format="reference" />
         <attr name="sendIcon" format="reference" />
+
+		<attr name="msgCountIcon" format="reference" />
+		<attr name="followingCountIcon" format="reference" />
+		<attr name="followersCountIcon" format="reference" />
+		<attr name="favoriteIcon" format="reference" />
     </declare-styleable>
 </resources>

@@ -38,6 +38,10 @@
         <item name="reloadIcon">@drawable/ic_action_refresh</item>
         <item name="replyBackground">@drawable/reply_timeline_background</item>
         <item name="sendIcon">@drawable/ic_action_send_now</item>
+        <item name="msgCountIcon">@drawable/ic_message_white_24dp</item>
+        <item name="followingCountIcon">@drawable/ic_person_white_24dp</item>
+        <item name="followersCountIcon">@drawable/ic_people_white_24dp</item>
+        <item name="favoriteIcon">@drawable/ic_favorite_white_24dp</item>
     </style>
     <style name="Theme.AndStatus.DeviceDefault" parent="Theme.AndStatus.Base"/>
     <style name="Theme.AndStatus.Dark" parent="Theme.AndStatus.Base">
@@ -63,10 +67,26 @@
         <item name="reloadIcon">@drawable/ic_action_refresh_light</item>
         <item name="replyBackground">@drawable/reply_timeline_background_light</item>
         <item name="sendIcon">@drawable/ic_action_send_now_light</item>
+        <item name="msgCountIcon">@drawable/ic_message_black_24dp</item>
+        <item name="followingCountIcon">@drawable/ic_person_black_24dp</item>
+        <item name="followersCountIcon">@drawable/ic_people_black_24dp</item>
+        <item name="favoriteIcon">@drawable/ic_favorite_black_24dp</item>
     </style>
 
     <!-- The theme has all attributes included and should be used in preview for Android tools -->
     <style name="Theme.AndStatus.FullyDefined" parent="Theme.AndStatus.Base">
+        <item name="messageUsernameTextAppearance">?android:attr/textAppearanceSmall</item>
+        <item name="messageUsernameColor">?android:attr/textColorSecondary</item>
+
+        <item name="messageBodyTextAppearance">?android:attr/textAppearanceMedium</item>
+        <item name="messageBodyColor">?android:attr/textColorPrimaryNoDisable</item>
+
+        <item name="messageDetailsTextAppearance">?android:attr/textAppearanceSmall</item>
+        <item name="messageDetailsColor">?android:attr/textColorTertiary</item>
+
+        <item name="sectionHeaderStyle">@style/sectionHeader</item>
+    </style>
+    <style name="Theme.AndStatus.FullyDefinedLight" parent="Theme.AndStatus.Light">
         <item name="messageUsernameTextAppearance">?android:attr/textAppearanceSmall</item>
         <item name="messageUsernameColor">?android:attr/textColorSecondary</item>
 

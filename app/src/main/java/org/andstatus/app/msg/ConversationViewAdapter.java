@@ -112,9 +112,9 @@ public class ConversationViewAdapter extends MyBaseAdapter {
 
         LinearLayout messageIndented = (LinearLayout) messageView.findViewById(R.id.message_indented);
         if (oMsg.getMsgId() == selectedMessageId  && oMsgs.size() > 1) {
-            messageIndented.setBackgroundResource(MyTheme.isThemeLight()
-                    ? R.drawable.current_message_background_light
-                    : R.drawable.current_message_background);
+            messageIndented.setBackground(MyImageCache.getStyledDrawable(
+                    R.drawable.current_message_background_light,
+                    R.drawable.current_message_background));
         } else {
             messageIndented.setBackgroundResource(0);
         }

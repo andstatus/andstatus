@@ -24,7 +24,7 @@ import android.widget.ImageView;
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.context.MyTheme;
+import org.andstatus.app.data.MyImageCache;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyUrlSpan;
 import org.andstatus.app.widget.MyBaseAdapter;
@@ -119,9 +119,9 @@ public class TimelineAdapter extends MyBaseAdapter implements View.OnClickListen
                 fromUserId(item.inReplyToUserId).isValid()) {
             // For some reason, referring to the style drawable doesn't work
             // (to "?attr:replyBackground" )
-            view.setBackgroundResource(MyTheme.isThemeLight()
-                    ? R.drawable.reply_timeline_background_light
-                    : R.drawable.reply_timeline_background);
+            view.setBackground( MyImageCache.getStyledDrawable(
+                    R.drawable.reply_timeline_background_light,
+                    R.drawable.reply_timeline_background));
         } else {
             view.setBackgroundResource(0);
             view.setPadding(0, 0, 0, 0);

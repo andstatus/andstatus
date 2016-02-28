@@ -118,5 +118,4 @@ public class MyTheme {
             view.setBackgroundColor(color);
         }
     }
-
 }

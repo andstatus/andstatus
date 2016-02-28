@@ -79,9 +79,21 @@ class UserListViewAdapter extends MyBaseAdapter {
         }
         MyUrlSpan.showText(view, R.id.homepage, item.mbUser.getHomepage(), true);
         MyUrlSpan.showText(view, R.id.description, item.mbUser.getDescription(), false);
+        MyUrlSpan.showText(view, R.id.location, item.mbUser.location, false);
         MyUrlSpan.showText(view, R.id.profile_url, item.mbUser.getProfileUrl(), true);
+
+        showCounter(view, R.id.msg_count, item.mbUser.msgCount);
+        showCounter(view, R.id.favorites_count, item.mbUser.favoritesCount);
+        showCounter(view, R.id.following_count, item.mbUser.followingCount);
+        showCounter(view, R.id.followers_count, item.mbUser.followersCount);
+
+        MyUrlSpan.showText(view, R.id.location, item.mbUser.location, false);
         showMyFollowers(view, item);
         return view;
+    }
+
+    public static void showCounter(View parentView, int viewId, long counter) {
+        MyUrlSpan.showText(parentView, viewId, counter <= 0 ? "-" : String.valueOf(counter) , false);
     }
 
     private View newView() {

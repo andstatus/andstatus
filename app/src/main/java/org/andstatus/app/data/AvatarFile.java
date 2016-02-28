@@ -32,27 +32,13 @@ public class AvatarFile {
     private final DownloadFile downloadFile;
     public static final int AVATAR_SIZE_DIP = 48;
     
-    private static final Drawable DEFAULT_AVATAR = loadDefaultAvatar(false);
-    private static final Drawable DEFAULT_AVATAR_LIGHT = loadDefaultAvatar(true);
-    
     public AvatarFile(long userIdIn, String filename) {
         userId = userIdIn;
         downloadFile = new DownloadFile(filename);
     }
-    
-    private static Drawable loadDefaultAvatar(boolean lightTheme) {
-        Drawable avatar = null;
-        MyLog.v(AvatarFile.class, "Loading default avatar");
-        Context context = MyContextHolder.get().context();
-        if (context != null) {
-            avatar = MyImageCache.getDrawableCompat(context,
-                    lightTheme ? R.drawable.ic_action_user_light : R.drawable.ic_action_user);
-        }
-        return avatar;
-    }
 
     public static Drawable getDefaultDrawable() {
-        return MyTheme.isThemeLight() ? DEFAULT_AVATAR_LIGHT : DEFAULT_AVATAR;
+        return MyImageCache.getStyledDrawable(R.drawable.ic_action_user_light, R.drawable.ic_action_user);
     }
 
     @NonNull

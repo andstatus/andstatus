@@ -20,6 +20,7 @@ import android.annotation.TargetApi;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.graphics.Point;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.support.annotation.NonNull;
@@ -28,6 +29,10 @@ import android.view.Display;
 import android.view.WindowManager;
 
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MyTheme;
+
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -66,6 +71,8 @@ public class MyImageCache {
         float displayDensity = context.getResources().getDisplayMetrics().density;
         int avatarSize = Math.round(AvatarFile.AVATAR_SIZE_DIP * displayDensity);
         avatarsCache.setMaxBounds(avatarSize, avatarSize);
+
+        styledDrawables.clear();
     }
 
     private static int calcAttachedImagesCacheSize(Context context) {
@@ -114,6 +121,7 @@ public class MyImageCache {
         StringBuilder builder = new StringBuilder("ImageCaches:\n");
         builder.append(avatarsCache.getInfo() + "\n");
         builder.append(attachedImagesCache.getInfo() + "\n");
+        builder.append("Styled drawables: " + styledDrawables.size() + "\n");
         ActivityManager.MemoryInfo memInfo = getMemoryInfo(MyContextHolder.get().context());
         builder.append("Memory: available " + memInfo.availMem + " of " + memInfo.totalMem + "\n");
         return builder.toString();
@@ -137,4 +145,22 @@ public class MyImageCache {
             return context.getResources().getDrawable(drawableId);
         }
     }
+
+    private static final Map<Integer, Drawable[]> styledDrawables = new ConcurrentHashMap<>();
+    public static Drawable getStyledDrawable(int resourceIdLight, int resourceId) {
+        Drawable[] styledDrawable = styledDrawables.get(resourceId);
+        if (styledDrawable == null) {
+            Context context = MyContextHolder.get().context();
+            if (context != null) {
+                Drawable drawable = getDrawableCompat(context, resourceId);
+                Drawable drawableLight = getDrawableCompat(context, resourceIdLight);
+                styledDrawable = new Drawable[]{drawable, drawableLight};
+                styledDrawables.put(resourceId, styledDrawable);
+            } else {
+                return new BitmapDrawable();
+            }
+        }
+        return styledDrawable[MyTheme.isThemeLight() ? 1 : 0];
+    }
+
 }

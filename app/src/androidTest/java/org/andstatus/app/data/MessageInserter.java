@@ -91,7 +91,7 @@ public class MessageInserter extends InstrumentationTestCase {
         mbUser.setRealName("Real " + username);
         mbUser.setDescription("This is about " + username);
         mbUser.setHomepage("https://example.com/home/" + username + "/start/");
-        mbUser.location = "Faraway " + TestSuite.TESTRUN_UID;
+        mbUser.location = "Faraway place #" + TestSuite.TESTRUN_UID;
         mbUser.avatarUrl = mbUser.getHomepage() + "avatar.jpg";
         mbUser.bannerUrl = mbUser.getHomepage() + "banner.png";
         long rand = InstanceId.next();
