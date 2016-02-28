@@ -591,7 +591,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
                 + User.USER_MSG_DATE + " INTEGER DEFAULT 0 NOT NULL" 
                 + ")");
 
-        execSQL(db, "CREATE UNIQUE INDEX idx_user_origin ON " + User.TABLE_NAME + " (" 
+        execSQL(db, "CREATE UNIQUE INDEX idx_user_origin ON " + User.TABLE_NAME + " ("
                 + User.ORIGIN_ID + ", "
                 + User.USER_OID  
                 + ")");

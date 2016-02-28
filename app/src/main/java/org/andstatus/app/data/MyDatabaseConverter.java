@@ -38,16 +38,21 @@ class MyDatabaseConverter {
 
     protected boolean execute(UpgradeParams params) {
         boolean success = false;
-        activity = params.upgradeRequestor; 
+        activity = params.upgradeRequestor;
+        String msgLog = "";
+        long endTime = 0;
         try {
             upgradeStarted();
             convertAll(params.db, params.oldVersion, params.newVersion);
             success = true;
+            endTime = java.lang.System.currentTimeMillis();
         } catch (ApplicationUpgradeException e) {
+            endTime = java.lang.System.currentTimeMillis();
             closeProgressDialog();
-            showProgressDialog(e.getMessage());
+            msgLog = e.getMessage();
+            showProgressDialog(msgLog);
             MyLog.ignored(this, e);
-            mySleepWithLogging(5000);
+            mySleepWithLogging(30000);
         } finally {
             mySleepWithLogging(1000);
             upgradeEnded();
@@ -56,15 +61,15 @@ class MyDatabaseConverter {
                 mySleepWithLogging(500);
             }
         }
-        long endTime = java.lang.System.currentTimeMillis();
         if (success) {
             MyLog.w(this, "Upgrade successfully completed in "
                     + java.util.concurrent.TimeUnit.MILLISECONDS.toSeconds(endTime - startTime)
                     + " seconds");
         } else {
-            MyLog.e(this, "Upgrade failed in "
-                    + java.util.concurrent.TimeUnit.MILLISECONDS.toSeconds(endTime - startTime) 
-                    + " seconds");
+            String msgLog2 = "Upgrade failed in "
+                    + java.util.concurrent.TimeUnit.MILLISECONDS.toSeconds(endTime - startTime)
+                    + " seconds";
+            MyLog.e(this, msgLog2);
         }
         return success;
     }
@@ -113,11 +118,12 @@ class MyDatabaseConverter {
             MyLog.d(this, "upgradeEnded", e);
         }
     }
-    
+
     private void convertAll(SQLiteDatabase db, int oldVersion, int newVersion) throws ApplicationUpgradeException {
         int currentVersion = oldVersion;
         MyLog.i(this, "Upgrading database from version " + oldVersion + " to version " + newVersion);
         boolean converterNotFound = false;
+        String lastError = "?";
         OneStep oneStep;
         do {
             oneStep = null;
@@ -127,7 +133,9 @@ class MyDatabaseConverter {
                 oneStep = (OneStep) clazz.newInstance();
                 currentVersion = oneStep.execute(db, currentVersion);
                 if (currentVersion == prevVersion) {
-                    MyLog.e(this, "Stuck at version " + prevVersion);
+                    lastError = oneStep.getLastError();
+                    MyLog.e(this, "Stuck at version " + prevVersion + "\n"
+                            + "Error: " + lastError);
                     oneStep = null;
                 }
             } catch (ClassNotFoundException e) {
@@ -145,7 +153,7 @@ class MyDatabaseConverter {
             }
         } while (oneStep != null && currentVersion < newVersion);
 
-        if ( currentVersion == newVersion) {
+        if (currentVersion == newVersion) {
             MyLog.i(this, "Successfully upgraded database from version " + oldVersion + " to version "
                     + newVersion + ".");
         } else {
@@ -156,7 +164,9 @@ class MyDatabaseConverter {
                 msgLog = "Error upgrading database";
             }
             msgLog += " from version " + oldVersion + " to version "
-                    + newVersion + ". Current database version=" + currentVersion;
+                    + newVersion + ". Current database version=" + currentVersion
+                    + " \n" + "Error: " + lastError;
+
             MyLog.e(this, msgLog);
             throw new ApplicationUpgradeException(msgLog);
         }
@@ -167,6 +177,7 @@ class MyDatabaseConverter {
         int oldVersion;
         int versionTo;
         String sql = "";
+        protected String lastError = "?";
 
         int execute (SQLiteDatabase db, int oldVersion) {
             boolean ok = false;
@@ -177,6 +188,7 @@ class MyDatabaseConverter {
                 execute2();
                 ok = true;
             } catch (Exception e) {
+                lastError = e.getMessage();
                 MyLog.e(this, e);
             }
             if (ok) {
@@ -185,12 +197,17 @@ class MyDatabaseConverter {
             } else {
                 MyLog.e(this, "Database upgrading step failed to upgrade database from " + oldVersion
                         + " to version " + versionTo
-                        + " SQL='" + sql + "'");
+                        + " SQL='" + sql + "'"
+                        + " Error: " + lastError);
             }
             return ok ? versionTo : oldVersion;
         }
 
         protected abstract void execute2();
+
+        public String getLastError() {
+            return lastError;
+        }
     }
 
     static class Convert14 extends OneStep {
@@ -347,18 +364,17 @@ class MyDatabaseConverter {
         protected void execute2() {
             versionTo = 24;
 
-            sql = "UPDATE user SET user_created_date = 0 WHERE user_created_date IS NULL";
-            MyDatabase.execSQL(db, sql);
-            sql = "DROP INDEX idx_user_origin";
-            MyDatabase.execSQL(db, sql);
-            sql = "ALTER TABLE user RENAME TO olduser";
+            sql = "DROP TABLE IF EXISTS newuser";
             MyDatabase.execSQL(db, sql);
 
-            sql = "CREATE TABLE user (_id INTEGER PRIMARY KEY AUTOINCREMENT,origin_id INTEGER NOT NULL,user_oid TEXT,username TEXT NOT NULL,webfinger_id TEXT NOT NULL,real_name TEXT,user_description TEXT,location TEXT,profile_url TEXT,homepage TEXT,avatar_url TEXT,banner_url TEXT,msg_count INTEGER DEFAULT 0 NOT NULL,favorited_count INTEGER DEFAULT 0 NOT NULL,following_count INTEGER DEFAULT 0 NOT NULL,followers_count INTEGER DEFAULT 0 NOT NULL,user_created_date INTEGER,user_updated_date INTEGER,user_ins_date INTEGER NOT NULL,home_timeline_position TEXT DEFAULT '' NOT NULL,home_timeline_item_date INTEGER DEFAULT 0 NOT NULL,home_timeline_date INTEGER DEFAULT 0 NOT NULL,favorites_timeline_position TEXT DEFAULT '' NOT NULL,favorites_timeline_item_date INTEGER DEFAULT 0 NOT NULL,favorites_timeline_date INTEGER DEFAULT 0 NOT NULL,direct_timeline_position TEXT DEFAULT '' NOT NULL,direct_timeline_item_date INTEGER DEFAULT 0 NOT NULL,direct_timeline_date INTEGER DEFAULT 0 NOT NULL,mentions_timeline_position TEXT DEFAULT '' NOT NULL,mentions_timeline_item_date INTEGER DEFAULT 0 NOT NULL,mentions_timeline_date INTEGER DEFAULT 0 NOT NULL,user_timeline_position TEXT DEFAULT '' NOT NULL,user_timeline_item_date INTEGER DEFAULT 0 NOT NULL,user_timeline_date INTEGER DEFAULT 0 NOT NULL,following_user_date INTEGER DEFAULT 0 NOT NULL,followers_user_date INTEGER DEFAULT 0 NOT NULL,user_msg_id INTEGER DEFAULT 0 NOT NULL,user_msg_date INTEGER DEFAULT 0 NOT NULL)";
+            sql = "UPDATE user SET user_created_date = 0 WHERE user_created_date IS NULL";
             MyDatabase.execSQL(db, sql);
-            sql = "CREATE UNIQUE INDEX idx_user_origin ON user (origin_id, user_oid)";
+            sql = "UPDATE user SET user_oid = ('andstatustemp:' || _id) WHERE user_oid IS NULL";
             MyDatabase.execSQL(db, sql);
-            sql = "INSERT INTO user (" +
+
+            sql = "CREATE TABLE newuser (_id INTEGER PRIMARY KEY AUTOINCREMENT,origin_id INTEGER NOT NULL,user_oid TEXT,username TEXT NOT NULL,webfinger_id TEXT NOT NULL,real_name TEXT,user_description TEXT,location TEXT,profile_url TEXT,homepage TEXT,avatar_url TEXT,banner_url TEXT,msg_count INTEGER DEFAULT 0 NOT NULL,favorited_count INTEGER DEFAULT 0 NOT NULL,following_count INTEGER DEFAULT 0 NOT NULL,followers_count INTEGER DEFAULT 0 NOT NULL,user_created_date INTEGER,user_updated_date INTEGER,user_ins_date INTEGER NOT NULL,home_timeline_position TEXT DEFAULT '' NOT NULL,home_timeline_item_date INTEGER DEFAULT 0 NOT NULL,home_timeline_date INTEGER DEFAULT 0 NOT NULL,favorites_timeline_position TEXT DEFAULT '' NOT NULL,favorites_timeline_item_date INTEGER DEFAULT 0 NOT NULL,favorites_timeline_date INTEGER DEFAULT 0 NOT NULL,direct_timeline_position TEXT DEFAULT '' NOT NULL,direct_timeline_item_date INTEGER DEFAULT 0 NOT NULL,direct_timeline_date INTEGER DEFAULT 0 NOT NULL,mentions_timeline_position TEXT DEFAULT '' NOT NULL,mentions_timeline_item_date INTEGER DEFAULT 0 NOT NULL,mentions_timeline_date INTEGER DEFAULT 0 NOT NULL,user_timeline_position TEXT DEFAULT '' NOT NULL,user_timeline_item_date INTEGER DEFAULT 0 NOT NULL,user_timeline_date INTEGER DEFAULT 0 NOT NULL,following_user_date INTEGER DEFAULT 0 NOT NULL,followers_user_date INTEGER DEFAULT 0 NOT NULL,user_msg_id INTEGER DEFAULT 0 NOT NULL,user_msg_date INTEGER DEFAULT 0 NOT NULL)";
+            MyDatabase.execSQL(db, sql);
+            sql = "INSERT INTO newuser (" +
                     " _id, origin_id, user_oid, username, webfinger_id, real_name, user_description, location," +
                     " profile_url, homepage, avatar_url, banner_url," +
                     " msg_count, favorited_count, following_count, followers_count," +
@@ -366,17 +382,30 @@ class MyDatabaseConverter {
                     " home_timeline_position, home_timeline_item_date, home_timeline_date, favorites_timeline_position, favorites_timeline_item_date, favorites_timeline_date, direct_timeline_position, direct_timeline_item_date, direct_timeline_date, mentions_timeline_position, mentions_timeline_item_date, mentions_timeline_date, user_timeline_position, user_timeline_item_date, user_timeline_date," +
                     " following_user_date, followers_user_date, user_msg_id, user_msg_date" +
                     ") SELECT " +
-                    " FROM olduser" +
                     " _id, origin_id, user_oid, username, webfinger_id, real_name, user_description, NULL," +
                     " url,         homepage, avatar_url, NULL," +
                     "         0,               0,               0,               0," +
                     " user_created_date,                 0, user_ins_date," +
                     " home_timeline_position, home_timeline_item_date, home_timeline_date, favorites_timeline_position, favorites_timeline_item_date, favorites_timeline_date, direct_timeline_position, direct_timeline_item_date, direct_timeline_date, mentions_timeline_position, mentions_timeline_item_date, mentions_timeline_date, user_timeline_position, user_timeline_item_date, user_timeline_date," +
-                    " following_user_date,                   0, user_msg_id, user_msg_date";
-            MyDatabase.execSQL(db, sql);
-            sql = "DROP TABLE olduser";
+                    " following_user_date,                   0, user_msg_id, user_msg_date" +
+                    " FROM user";
             MyDatabase.execSQL(db, sql);
 
+            sql = "DROP INDEX idx_user_origin";
+            MyDatabase.execSQL(db, sql);
+            sql = "DROP TABLE user";
+            MyDatabase.execSQL(db, sql);
+
+            sql = "ALTER TABLE newuser RENAME TO user";
+            MyDatabase.execSQL(db, sql);
+            try {
+                sql = "CREATE UNIQUE INDEX idx_user_origin ON user (origin_id, user_oid)";
+                MyDatabase.execSQL(db, sql);
+            } catch (Exception e) {
+                MyLog.e(this, "Couldn't create unique constraint");
+                sql = "CREATE INDEX idx_user_origin ON user (origin_id, user_oid)";
+                MyDatabase.execSQL(db, sql);
+            }
         }
     }
 }
