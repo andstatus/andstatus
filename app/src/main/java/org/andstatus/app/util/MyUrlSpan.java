@@ -24,7 +24,6 @@ import android.text.Html;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.TextUtils;
-import android.text.method.ArrowKeyMovementMethod;
 import android.text.method.LinkMovementMethod;
 import android.text.style.URLSpan;
 import android.text.util.Linkify;
@@ -93,8 +92,8 @@ public class MyUrlSpan extends URLSpan {
             textView.setText(spanned);
             if (linkify && !hasUrlSpans(spanned)) {
                 Linkify.addLinks(textView, Linkify.ALL);
-                fixUrlSpans(textView);
             }
+            fixUrlSpans(textView);
 
             if (textView.getVisibility() != View.VISIBLE) {
                 textView.setVisibility(View.VISIBLE);
