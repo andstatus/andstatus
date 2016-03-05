@@ -27,7 +27,7 @@
     </header>
 
     <release android:versionName="23.01" android:versionCode="160"
-             versionDate="2016-02-28"
+             versionDate="2016-03-05"
              versionTitle="Additional User info shown in a 'Users of message' view">
         <changes>
             <change>Added five new User's attributes to User Lists:<br/>
