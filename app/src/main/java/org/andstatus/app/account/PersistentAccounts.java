@@ -3,6 +3,7 @@ package org.andstatus.app.account;
 import android.accounts.AccountManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import org.andstatus.app.account.MyAccount.Builder;
@@ -182,6 +183,7 @@ public class PersistentAccounts {
      * As a side effect the function changes current account if old value is not valid.
      * @return Invalid account if no persistent accounts exist
      */
+    @NonNull
     public MyAccount getCurrentAccount() {
         MyAccount ma = fromAccountName(currentAccountName);
         if (ma.isValid()) {
@@ -192,8 +194,13 @@ public class PersistentAccounts {
         if (!ma.isValid()) {
             defaultAccountName = "";
         }
-        if (!ma.isValid() && !mAccounts.isEmpty()) {
-            ma = mAccounts.values().iterator().next();
+        if (!ma.isValid()) {
+            for (MyAccount myAccount : mAccounts.values()) {
+                if (myAccount.isValid()) {
+                    ma = myAccount;
+                    break;
+                }
+            }
         }
         if (ma.isValid()) {
             // Correct Current and Default Accounts if needed
@@ -215,7 +222,7 @@ public class PersistentAccounts {
     }
     
     /**
-     * @return 0 if no current account
+     * @return 0 if no valid persistent accounts exist
      */
     public long getCurrentAccountUserId() {
         return getCurrentAccount().getUserId();

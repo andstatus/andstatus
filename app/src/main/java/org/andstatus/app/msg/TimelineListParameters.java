@@ -43,6 +43,7 @@ import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SelectionAndArgs;
+import org.andstatus.app.util.UriUtils;
 
 import java.util.Date;
 
@@ -154,6 +155,10 @@ public class TimelineListParameters {
             accountButtonText = "(" + accountButtonText + ")";
         }
         return accountButtonText;
+    }
+
+    public boolean isLoaded() {
+        return endTime > 0;
     }
 
     public boolean mayHaveYoungerPage() {
@@ -350,9 +355,16 @@ public class TimelineListParameters {
 
     /** @return true if parsed successfully */
     boolean parseUri(Uri uri) {
+        if (UriUtils.isEmpty(uri)) {
+            return false;
+        }
         ParsedUri parsedUri = ParsedUri.fromUri(uri);
         setTimelineType(parsedUri.getTimelineType());
-        if (getTimelineType() == TimelineType.UNKNOWN) {
+        if (getTimelineType() == TimelineType.UNKNOWN ||
+                parsedUri.getAccountUserId() == 0) {
+            MyLog.e(this,"parseUri; uri:" + uri
+                    + ", " + getTimelineType()
+                    + ", accountId:" + parsedUri.getAccountUserId() );
             return false;
         }
         setTimelineCombined(parsedUri.isCombined());

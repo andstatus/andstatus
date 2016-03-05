@@ -664,8 +664,7 @@ public final class MyAccount {
      * @return count
      */
     public String shortestUniqueAccountName() {
-        String uniqueName = "?";
-        uniqueName = getAccountName();
+        String uniqueName = getAccountName();
 
         boolean found = false;
         String possiblyUnique = getUsername();
