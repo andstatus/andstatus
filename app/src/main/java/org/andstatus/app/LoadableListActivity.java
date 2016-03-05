@@ -19,6 +19,7 @@ package org.andstatus.app;
 import android.net.Uri;
 import android.os.AsyncTask.Status;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.app.ActionBar;
 import android.text.TextUtils;
 import android.view.MenuItem;
@@ -70,6 +71,9 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
     private AsyncLoader mWorkingLoader = mCompletedLoader;
     @GuardedBy("loaderLock")
     private boolean loaderIsWorking = false;
+
+    long lastLoadedAt = 0;
+    private static final long NO_AUTO_REFRESH_AFTER_LOAD_SECONDS = 10;
 
     private boolean mIsPaused = false;
 
@@ -277,6 +281,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
         synchronized(loaderLock) {
             mCompletedLoader = mWorkingLoader;
         }
+        lastLoadedAt = System.currentTimeMillis();
     }
     
     protected void updateTitle(String progress) {
@@ -306,6 +311,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
         return adapter == null ? 0 : adapter.getCount();
     }
 
+    @NonNull
     protected SyncLoader getLoaded() {
         synchronized(loaderLock) {
             return mCompletedLoader.getSyncLoader();
@@ -391,6 +397,12 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
             if (MyLog.isVerboseEnabled()) {
                 MyLog.v(this, "Ignoring content change while loading, "
                         + commandData.toCommandSummary(MyContextHolder.get()));
+            }
+            allowed = false;
+        } else if (!commandData.isInForeground() &&
+                !RelativeTime.moreSecondsAgoThan(lastLoadedAt, NO_AUTO_REFRESH_AFTER_LOAD_SECONDS)) {
+            if (MyLog.isVerboseEnabled()) {
+                MyLog.v(this, "Ignoring background content change - loaded recently");
             }
             allowed = false;
         }
