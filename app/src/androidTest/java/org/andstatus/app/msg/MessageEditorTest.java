@@ -234,7 +234,7 @@ public class MessageEditorTest extends ActivityInstrumentationTestCase2<Timeline
             Thread.sleep(2000);
         }
         assertEquals("Image attached", TestSuite.LOCAL_IMAGE_TEST_URI2, editor.getData().getMediaUri());
-        assertEquals("Text is the same", body, editText.getText().toString());
+        assertEquals("Text is the same", body, editText.getText().toString().trim());
 
         MyLog.v(this, method + " ended");
     }

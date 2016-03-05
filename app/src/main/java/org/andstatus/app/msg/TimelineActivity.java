@@ -65,6 +65,7 @@ import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceEvent;
 import org.andstatus.app.service.MyServiceEventsReceiver;
 import org.andstatus.app.service.MyServiceManager;
+import org.andstatus.app.service.MyServiceState;
 import org.andstatus.app.service.QueueViewer;
 import org.andstatus.app.test.SelectorActivityMock;
 import org.andstatus.app.util.BundleUtils;
@@ -1246,8 +1247,12 @@ public class TimelineActivity extends LoadableListActivity implements
             default:
                 break;
         }
-        if (mShowSyncIndicatorOnTimeline && isCommandToShowInSyncIndicator(commandData)) {
-            showSyncing("After executing " + commandData.getCommand(), HORIZONTAL_ELLIPSIS);
+        if (!TextUtils.isEmpty(syncingText)) {
+            if (MyServiceManager.getServiceState() != MyServiceState.RUNNING) {
+                hideSyncing("Service is not running");
+            } else if (isCommandToShowInSyncIndicator(commandData)) {
+                showSyncing("After executing " + commandData.getCommand(), HORIZONTAL_ELLIPSIS);
+            }
         }
         super.onReceiveAfterExecutingCommand(commandData);
     }

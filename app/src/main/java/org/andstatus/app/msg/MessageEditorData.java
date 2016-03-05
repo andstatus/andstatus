@@ -19,6 +19,7 @@ package org.andstatus.app.msg;
 import android.graphics.Point;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import org.andstatus.app.account.MyAccount;
@@ -46,6 +47,7 @@ public class MessageEditorData {
 
     private long msgId = 0;
     public DownloadStatus status = DownloadStatus.DRAFT;
+    @NonNull
     public volatile String body = "";
 
     private DownloadData image = DownloadData.EMPTY;
@@ -77,7 +79,7 @@ public class MessageEditorData {
         int result = 1;
         result = prime * result + ((ma == null) ? 0 : ma.hashCode());
         result = prime * result + getMediaUri().hashCode();
-        result = prime * result + ((body == null) ? 0 : body.hashCode());
+        result = prime * result + body.hashCode();
         result = prime * result + (int) (recipientId ^ (recipientId >>> 32));
         result = prime * result + (int) (inReplyToId ^ (inReplyToId >>> 32));
         return result;
@@ -99,10 +101,7 @@ public class MessageEditorData {
             return false;
         if (!getMediaUri().equals(other.getMediaUri()))
             return false;
-        if (body == null) {
-            if (other.body != null)
-                return false;
-        } else if (!body.equals(other.body))
+        if (!body.equals(other.body))
             return false;
         if (recipientId != other.recipientId)
             return false;
@@ -142,7 +141,7 @@ public class MessageEditorData {
                     MyQuery.msgIdToLongColumnValue(MyDatabase.Msg.SENDER_ID, msgId));
             data = new MessageEditorData(ma);
             data.msgId = msgId;
-            data.body = MyQuery.msgIdToStringColumnValue(MyDatabase.Msg.BODY, msgId);
+            data.setBody(MyQuery.msgIdToStringColumnValue(MyDatabase.Msg.BODY, msgId));
             data.image = DownloadData.getSingleForMessage(msgId, MyContentType.IMAGE, Uri.EMPTY);
             if (data.image.getStatus() == DownloadStatus.LOADED) {
                 AttachedImageFile imageFile = new AttachedImageFile(data.image.getDownloadId(),
@@ -166,7 +165,7 @@ public class MessageEditorData {
             MessageEditorData data = MessageEditorData.newEmpty(ma);
             data.msgId = msgId;
             data.status = status;
-            data.body = body;
+            data.setBody(body);
             data.image = image;
             data.imageSize = imageSize;
             data.imageDrawable = imageDrawable;
@@ -218,8 +217,8 @@ public class MessageEditorData {
         return this != INVALID && ma.isValid();
     }
 
-    public MessageEditorData setBody(String textInitial) {
-        body = textInitial;
+    public MessageEditorData setBody(String bodyIn) {
+        body = bodyIn == null ? "" : bodyIn.trim();
         return this;
     }
 
@@ -322,7 +321,7 @@ public class MessageEditorData {
             if (!TextUtils.isEmpty(body)) {
                 messageText1 += body;
             }
-            body = messageText1;
+            setBody(messageText1);
         }
     }
 

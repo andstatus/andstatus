@@ -101,7 +101,7 @@ public class MessageEditor {
         bodyEditText.addTextChangedListener(new TextWatcher() {
             @Override
             public void afterTextChanged(Editable s) {
-                editorData.body = s.toString();
+                editorData.setBody(s.toString());
                 MyLog.v(MessageEditorData.TAG, "Body updated to '" + editorData.body + "'");
                 mCharsLeftText.setText(String.valueOf(editorData.getMyAccount().charactersLeftForMessage(editorData.body)));
             }
@@ -474,7 +474,7 @@ public class MessageEditor {
     }
 
     private void updateDataFromScreen() {
-        editorData.body = bodyEditText.getText().toString().trim();
+        editorData.setBody(bodyEditText.getText().toString());
     }
 
     private void discardAndHide() {
