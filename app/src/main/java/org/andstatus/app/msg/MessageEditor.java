@@ -377,12 +377,16 @@ public class MessageEditor {
     }
 
     public void updateScreen() {
-        if (!editorData.body.trim().equals(bodyEditText.getText().toString().trim())) {
-            if (!TextUtils.isEmpty(bodyEditText.getText()) && !TextUtils.isEmpty(editorData.body)) {
-                MyLog.v(MessageEditorData.TAG, "Body updated '" + bodyEditText.getText()
-                + "' to '" + editorData.body + "'", new IllegalStateException());
+        String body = editorData.body.trim();
+        if (!body.equals(bodyEditText.getText().toString().trim())) {
+            if (!TextUtils.isEmpty(body)) {
+                body += " ";
             }
-            bodyEditText.setText(editorData.body);
+            if (!TextUtils.isEmpty(bodyEditText.getText()) && !TextUtils.isEmpty(body)) {
+                MyLog.v(MessageEditorData.TAG, "Body updated '" + bodyEditText.getText()
+                + "' to '" + body + "'", new IllegalStateException());
+            }
+            bodyEditText.setText(body);
             bodyEditText.setSelection(bodyEditText.getText().toString().length());
         }
         showIfNotEmpty(R.id.message_author,
@@ -390,7 +394,7 @@ public class MessageEditor {
         showMessageDetails();
         showIfNotEmpty(R.id.inReplyToBody, editorData.inReplyToBody);
         mCharsLeftText.setText(String.valueOf(editorData.getMyAccount()
-                .charactersLeftForMessage(editorData.body)));
+                .charactersLeftForMessage(body)));
         showAttachedImage();
     }
 
@@ -470,7 +474,7 @@ public class MessageEditor {
     }
 
     private void updateDataFromScreen() {
-        editorData.body = bodyEditText.getText().toString();
+        editorData.body = bodyEditText.getText().toString().trim();
     }
 
     private void discardAndHide() {
