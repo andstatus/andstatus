@@ -56,7 +56,7 @@ public class TimelineListParameters {
      * Msg are being loaded into the list starting from one page. More Msg
      * are being loaded in a case User scrolls down to the end of list.
      */
-    static final int PAGE_SIZE = 100;
+    static final int PAGE_SIZE = 200;
 
     TimelineType mTimelineType = TimelineType.UNKNOWN;
     /** Combined Timeline shows messages from all accounts */
@@ -162,11 +162,13 @@ public class TimelineListParameters {
     }
 
     public boolean mayHaveYoungerPage() {
-        return maxSentDate > 0 || minSentDate > 0 && rowsLoaded == PAGE_SIZE;
+        return maxSentDate > 0 ||
+                (minSentDate > 0 && rowsLoaded > 0 && minSentDate < maxSentDateLoaded);
     }
 
     public boolean mayHaveOlderPage() {
-        return minSentDate > 0 || maxSentDate > 0 && rowsLoaded == PAGE_SIZE;
+        return minSentDate > 0 ||
+                (maxSentDate > 0 && rowsLoaded > 0 && maxSentDate > minSentDateLoaded);
     }
 
     private void prepareQueryForeground() {
