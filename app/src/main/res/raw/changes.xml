@@ -26,7 +26,7 @@
 		</subtitle>
     </header>
 
-    <release android:versionName="23.00" android:versionCode="159"
+    <release android:versionName="23.01" android:versionCode="160"
              versionDate="2016-02-28"
              versionTitle="Additional User info shown in a 'Users of message' view">
         <changes>
@@ -35,6 +35,11 @@
                 numbers of posts, following (friends), followers and favorited posts.
                 <a href="https://github.com/andstatus/andstatus/issues/320">#320</a>
             </change>
+            <change>In the message editor one space is appended to non-empty message
+                to save one click on Space key for a User.</change>
+            <change>Fixed <a href="https://github.com/andstatus/andstatus/issues/344">#344</a>
+                Opening AndStatus from Notification Gives "()" Account.</change>
+            <change>Avoiding auto refreshing a timeline too often.</change>
         </changes>
     </release>
     <release android:versionName="22.18" android:versionCode="158"
