@@ -132,6 +132,9 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
                     if (new AsyncTaskLauncher<Bundle>().execute(this, newLoader, true, args)) {
                         mWorkingLoader = newLoader;
                         loaderIsWorking = true;
+                        msgLog = "Launched, " + msgLog;
+                    } else {
+                        msgLog = "Couldn't launch, " + msgLog;
                     }
                 }
             }

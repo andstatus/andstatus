@@ -799,7 +799,6 @@ public class TimelineActivity extends LoadableListActivity implements
     }
 
     protected void showList(WhichPage whichPage, TriState chainedRequest) {
-        saveListPosition();
         showList(TimelineListParameters.clone(getReferenceParametersFor(whichPage), whichPage),
                 chainedRequest);
     }
