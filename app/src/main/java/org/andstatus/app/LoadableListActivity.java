@@ -23,6 +23,7 @@ import android.support.annotation.NonNull;
 import android.support.v7.app.ActionBar;
 import android.text.TextUtils;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 
@@ -255,19 +256,35 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
             ListView list = getListView();
             // TODO: for a finer position restore see http://stackoverflow.com/questions/3014089/maintain-save-restore-scroll-position-when-returning-to-a-listview?rq=1
             long itemIdOfListPosition = centralItemId;
-            if (list.getChildCount() > 1) {
-                itemIdOfListPosition = list.getAdapter().getItemId(list.getFirstVisiblePosition());
+            int y = 0;
+            if (list.getChildCount() > 0) {
+                int firstVisiblePosition = list.getFirstVisiblePosition();
+                itemIdOfListPosition = list.getAdapter().getItemId(firstVisiblePosition);
+                y = getYOfPosition(list, getListAdapter(), firstVisiblePosition);
             }
             setListAdapter(newListAdapter());
             int firstListPosition = getListAdapter().getPositionById(itemIdOfListPosition);
             if (firstListPosition >= 0) {
-                list.setSelectionFromTop(firstListPosition, 0);
+                list.setSelectionFromTop(firstListPosition, y);
                 positionRestored = true;
             }
         } else {
             setListAdapter(newListAdapter());
         }
         getListAdapter().setPositionRestored(positionRestored);
+    }
+
+    public static int getYOfPosition(ListView list, MyBaseAdapter myBaseAdapter, int position) {
+        int y = 0;
+        int zeroChildPosition = myBaseAdapter.getPosition(list.getChildAt(0));
+        if (position - zeroChildPosition != 0) {
+            MyLog.v("getYOfPosition", "pos:" + position + ", zeroChildPos:" + zeroChildPosition);
+        }
+        View viewOfPosition = list.getChildAt(position - zeroChildPosition);
+        if (viewOfPosition != null) {
+            y  = viewOfPosition.getTop() - list.getPaddingTop();
+        }
+        return y;
     }
 
     protected abstract MyBaseAdapter newListAdapter();

@@ -132,7 +132,7 @@ public class TimelineListParameters {
                 break;
             case NEW:
             default:
-                params.minSentDate = new TimelineListPositionStorage(null, null, params).getMinSentDate();
+                params.minSentDate = (new TimelineListPositionStorage(null, null, params)).getTLPosition().minSentDate;
             case TOP:
             case YOUNGEST:
                 break;

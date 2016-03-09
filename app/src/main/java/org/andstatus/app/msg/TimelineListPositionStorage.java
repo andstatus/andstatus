@@ -20,12 +20,11 @@ import android.content.SharedPreferences;
 import android.text.TextUtils;
 import android.widget.ListView;
 
+import org.andstatus.app.LoadableListActivity;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.util.MyLog;
-
-import java.util.Date;
 
 /**
  * Determines where to save / retrieve position in the list
@@ -37,6 +36,7 @@ import java.util.Date;
 class TimelineListPositionStorage {
     public static final String TAG = TimelineListPositionStorage.class.getSimpleName();
     private static final String KEY_PREFIX = "timeline_position_";
+    private static final int NOT_STORED = -1;
 
     private final TimelineAdapter mAdapter;
     private final ListView mListView;
@@ -47,10 +47,18 @@ class TimelineListPositionStorage {
      */
     private final SharedPreferences sp = MyPreferences.getDefaultSharedPreferences();
     private String keyFirstVisibleItemId = "";
+    private String keyFirstVisibleItemY = "";
     private String keyMinSentDate = "";
     private String keyQueryString = "";
     private final String queryString;
-    
+
+    static class TLPosition {
+        long firstVisibleItemId = NOT_STORED;
+        long minSentDate = NOT_STORED;
+        int y = NOT_STORED;
+        String queryString = "";
+    }
+
     TimelineListPositionStorage(TimelineAdapter listAdapter, ListView listView, TimelineListParameters listParameters) {
         this.mAdapter = listAdapter;
         this.mListView = listView;
@@ -67,6 +75,7 @@ class TimelineListPositionStorage {
                 + listParameters.mTimelineType.save()
                 + "_user" + Long.toString(userId)
                 + (TextUtils.isEmpty(queryString) ? "" : "_search");
+        keyFirstVisibleItemY = keyFirstVisibleItemId + "_y";
         keyMinSentDate = keyFirstVisibleItemId + "_last";
         keyQueryString = keyFirstVisibleItemId + "_query_string";
     }
@@ -86,10 +95,12 @@ class TimelineListPositionStorage {
         long firstVisibleItemId = 0;
         int lastPosition = -1;
         long minSentDate = 0;
+        int y = 0;
         if (firstVisiblePosition >= 0) {
             firstVisibleItemId = la.getItemId(firstVisiblePosition);
+            y = LoadableListActivity.getYOfPosition(mListView, la, firstVisiblePosition);
             MyLog.v(this, method + "; firstVisiblePos:" + firstVisiblePosition + " of " + itemCount
-                    + "; itemId:" + firstVisibleItemId);
+                    + ", id:" + firstVisibleItemId + ", y:" + y);
             lastPosition = mListView.getLastVisiblePosition() + 10;
             if (lastPosition >= itemCount) {
                 lastPosition = itemCount - 1;
@@ -100,12 +111,14 @@ class TimelineListPositionStorage {
         if (firstVisibleItemId <= 0) {
             clear();
         } else {
-            put(firstVisibleItemId, minSentDate);
+            saveTLPosition(firstVisibleItemId, minSentDate, y);
         }
         if (MyLog.isVerboseEnabled()) {
             String msgLog = " key=" + keyFirstVisibleItemId
                     + (TextUtils.isEmpty(queryString) ? "" : ", q='" + queryString + "'")
-                    + ", id=" + firstVisibleItemId + " at pos=" + firstVisiblePosition
+                    + ", id:" + firstVisibleItemId
+                    + ", y:" + y
+                    + " at pos=" + firstVisiblePosition
                     + ", minDate=" + minSentDate
                     + " at pos=" + lastPosition + " of " + itemCount;
             if (firstVisibleItemId <= 0) {
@@ -118,39 +131,29 @@ class TimelineListPositionStorage {
 
     }
     
-    void put(long firstVisibleItemId, long minSentDate) {
+    private void saveTLPosition(long firstVisibleItemId, long minSentDate, int y) {
         sp.edit().putLong(keyFirstVisibleItemId, firstVisibleItemId)
-        .putLong(keyMinSentDate, minSentDate)
-        .putString(keyQueryString, queryString).apply();
+            .putInt(keyFirstVisibleItemY, y)
+            .putLong(keyMinSentDate, minSentDate)
+            .putString(keyQueryString, queryString).apply();
     }
 
-    private static final long NOT_FOUND_IN_LIST_POSITION_STORAGE = -4;
-    private static final long NOT_FOUND_IN_SHARED_PREFERENCES = -1;
-    /** Valid id is > 0 */
-    long getFirstVisibleItemId() {
-        long savedItemId = NOT_FOUND_IN_LIST_POSITION_STORAGE;
-        if (isThisPositionStored()) {
-            savedItemId = sp.getLong(keyFirstVisibleItemId, NOT_FOUND_IN_SHARED_PREFERENCES);
+    public TLPosition getTLPosition() {
+        TLPosition tlPosition = new TLPosition();
+        String queryString1 = sp.getString(keyQueryString, "");
+        if (queryString.equals(queryString1)) {
+            tlPosition.firstVisibleItemId = sp.getLong(keyFirstVisibleItemId, NOT_STORED);
+            tlPosition.y = sp.getInt(keyFirstVisibleItemY, NOT_STORED);
+            tlPosition.minSentDate = sp.getLong(keyMinSentDate, NOT_STORED);
+            tlPosition.queryString = queryString1;
         }
-        return savedItemId;
-    }
-    
-    private boolean isThisPositionStored() {
-        return queryString.compareTo(sp.getString(
-                        keyQueryString, "")) == 0;
+        return tlPosition;
     }
 
-    /** @return 0 if not found */
-    long getMinSentDate() {
-        long date = 0;
-        if (isThisPositionStored()) {
-            date = sp.getLong(keyMinSentDate, 0);
-        }
-        return date;
-    }
-    
     void clear() {
-        sp.edit().remove(keyFirstVisibleItemId).remove(keyMinSentDate)
+        sp.edit().remove(keyFirstVisibleItemId)
+                .remove(keyFirstVisibleItemY)
+                .remove(keyMinSentDate)
                 .remove(keyQueryString).apply();
         if (MyLog.isVerboseEnabled()) {
             MyLog.v(this, "Position forgot key=" + keyFirstVisibleItemId);
@@ -168,14 +171,13 @@ class TimelineListPositionStorage {
         }
         boolean restored = false;
         int position = -1;
-        long firstItemId = -3;
+        TLPosition tlPosition = getTLPosition();
         try {
-            firstItemId = getFirstVisibleItemId();
-            if (firstItemId > 0) {
-                position = getPositionById(firstItemId);
+            if (tlPosition.firstVisibleItemId > 0) {
+                position = getPositionById(tlPosition.firstVisibleItemId);
             }
             if (position >= 0) {
-                mListView.setSelectionFromTop(position, 0);
+                mListView.setSelectionFromTop(position, tlPosition.y);
                 restored = true;
             } else {
                 // There is no stored position
@@ -199,8 +201,8 @@ class TimelineListPositionStorage {
             MyLog.v(this, method + "; " + (restored ? "succeeded" : "failed" )
                     + " key=" + keyFirstVisibleItemId
                     + (TextUtils.isEmpty(queryString) ? "" : ", q='" + queryString + "'")
-                    + ", id=" + firstItemId + " at pos=" + position
-                    + " of " + mListView.getCount());
+                    + ", id:" + tlPosition.firstVisibleItemId + ", y:" + tlPosition.y
+                    + ", at pos=" + position + " of " + mListView.getCount());
         }
         if (!restored) {
             clear();
@@ -216,7 +218,7 @@ class TimelineListPositionStorage {
         int childHeight = 30;
         int y = viewHeight - childHeight;
         if (MyLog.isVerboseEnabled()) {
-            MyLog.v(TAG, "Set position of " + position + " item to " + y + "px");
+            MyLog.v(TAG, "Set position of " + position + " item to " + y + " px");
         }
         listView.setSelectionFromTop(position, y);
     }
