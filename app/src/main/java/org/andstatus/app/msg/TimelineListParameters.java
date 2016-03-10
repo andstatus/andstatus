@@ -20,10 +20,9 @@ import android.app.LoaderManager;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.content.SharedPreferences.Editor;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
@@ -308,7 +307,7 @@ public class TimelineListParameters {
         return myAccountUserId;
     }
 
-    public void saveState(Editor outState) {
+    public void saveState(Bundle outState) {
         outState.putString(IntentExtra.TIMELINE_URI.key, toTimelineUri(false).toString());
     }
 
@@ -341,7 +340,7 @@ public class TimelineListParameters {
         return result;
     }
 
-    boolean restoreState(@NonNull SharedPreferences savedInstanceState) {
+    boolean restoreState(@NonNull Bundle savedInstanceState) {
         whichPage = WhichPage.NEW;
         return parseUri(Uri.parse(savedInstanceState.getString(IntentExtra.TIMELINE_URI.key,"")));
     }

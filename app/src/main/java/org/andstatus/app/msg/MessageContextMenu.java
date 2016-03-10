@@ -18,8 +18,7 @@ package org.andstatus.app.msg;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.content.SharedPreferences.Editor;
+import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
@@ -312,17 +311,15 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
         }
     }
     
-    public void loadState(SharedPreferences savedInstanceState) {
+    public void loadState(Bundle savedInstanceState) {
         if (savedInstanceState != null 
-                && savedInstanceState.contains(IntentExtra.ITEM_ID.key)) {
+                && savedInstanceState.containsKey(IntentExtra.ITEM_ID.key)) {
             mMsgId = savedInstanceState.getLong(IntentExtra.ITEM_ID.key, 0);
         }
     }
 
-    public void saveState(Editor outState) {
-        if (outState != null) {
-            outState.putLong(IntentExtra.ITEM_ID.key, mMsgId);
-        }
+    public void saveState(Bundle outState) {
+        outState.putLong(IntentExtra.ITEM_ID.key, mMsgId);
     }
 
     public long getMsgId() {

@@ -53,6 +53,10 @@ import org.andstatus.app.widget.MyBaseAdapter;
  * @author yvolk@yurivolkov.com
  */
 public abstract class LoadableListActivity extends MyBaseListActivity implements MyServiceEventsListener {
+    /**
+     * We are going to finish/restart this Activity (e.g. onResume or even onCreate)
+     */
+    protected volatile boolean mFinishing = false;
     ParsedUri mParsedUri = ParsedUri.fromUri(Uri.EMPTY);
 
     /**
@@ -340,17 +344,30 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
     
     @Override
     protected void onResume() {
+        String method = "onResume";
         mIsPaused = false;
         super.onResume();
-        long configChangeTimeNew = MyContextHolder.initialize(this, this);
-        if (configChangeTimeNew != configChangeTime) {
-            configChanged = true;
+        MyLog.v(this, method + ", instanceId=" + mInstanceId
+                + (mFinishing ? ", finishing" : "") );
+        if (!mFinishing) {
+            long configChangeTimeNew = MyContextHolder.initialize(this, this);
+            if (configChangeTimeNew != configChangeTime) {
+                configChanged = true;
+            }
+            myServiceReceiver.registerReceiver(this);
+            MyContextHolder.get().setInForeground(true);
+            if (size() == 0 && !isLoading()) {
+                showList(WhichPage.NEW);
+            }
         }
-        myServiceReceiver.registerReceiver(this);
-        MyContextHolder.get().setInForeground(true);
-        if (size() == 0 && !isLoading()) {
-            showList(WhichPage.NEW);
+    }
+
+    @Override
+    public void onContentChanged() {
+        if (MyLog.isLoggable(this, MyLog.DEBUG)) {
+            MyLog.d(this, "onContentChanged started");
         }
+        super.onContentChanged();
     }
 
     @Override
@@ -427,6 +444,25 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
             allowed = false;
         }
         return allowed;
+    }
+
+    @Override
+    public void finish() {
+        MyLog.v(this, "Finish requested" + (mFinishing ? ", already finishing" : "")
+                + ", instanceId=" + mInstanceId);
+        if (!mFinishing) {
+            mFinishing = true;
+        }
+        super.finish();
+    }
+
+    @Override
+    public void onDestroy() {
+        MyLog.v(this, "onDestroy, instanceId=" + mInstanceId);
+        if (myServiceReceiver != null) {
+            myServiceReceiver.unregisterReceiver(this);
+        }
+        super.onDestroy();
     }
 
     @Override

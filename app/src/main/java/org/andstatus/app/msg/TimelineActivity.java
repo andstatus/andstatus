@@ -21,7 +21,6 @@ import android.app.Dialog;
 import android.app.SearchManager;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.SearchRecentSuggestions;
@@ -92,13 +91,6 @@ public class TimelineActivity extends LoadableListActivity implements
     private volatile TimelineListParameters paramsToLoad;
     private TimelineListParameters paramsLoaded;
 
-    MyServiceEventsReceiver mServiceConnector;
-
-    /**
-     * We are going to finish/restart this Activity (e.g. onResume or even onCreate)
-     */
-    private volatile boolean mFinishing = false;
-
     private boolean mShowSyncIndicatorOnTimeline = false;
     private View mTextualSyncIndicator = null;
     private CharSequence syncingText = "";
@@ -134,7 +126,6 @@ public class TimelineActivity extends LoadableListActivity implements
         }
 
         paramsNew.myAccountUserId = MyContextHolder.get().persistentAccounts().getCurrentAccountUserId();
-        mServiceConnector = new MyServiceEventsReceiver(this);
 
         mTextualSyncIndicator = findViewById(R.id.sync_indicator);
         mContextMenu = new MessageContextMenu(this);
@@ -142,12 +133,12 @@ public class TimelineActivity extends LoadableListActivity implements
 
         initializeSwipeLayout();
 
-        restoreActivityState();
-        
         initializeDrawer();
         getListView().setOnScrollListener(this);
 
-        if (savedInstanceState == null) {
+        if (savedInstanceState != null) {
+            restoreActivityState(savedInstanceState);
+        } else {
             parseNewIntent(getIntent());
         }
 
@@ -200,16 +191,13 @@ public class TimelineActivity extends LoadableListActivity implements
         getSupportActionBar().setHomeButtonEnabled(true);
     }
 
-    private void restoreActivityState() {
-        SharedPreferences activityState = MyPreferences.getSharedPreferences(ACTIVITY_PERSISTENCE_NAME);
-        if (activityState != null) {
-            if (paramsNew.restoreState(activityState)) {
-                mContextMenu.loadState(activityState);
+    private void restoreActivityState(@NonNull Bundle savedInstanceState) {
+            if (paramsNew.restoreState(savedInstanceState)) {
+                mContextMenu.loadState(savedInstanceState);
             }
             if (MyLog.isVerboseEnabled()) {
-                MyLog.v(this, "restoreActivityState; " + activityState.getAll() + "; " + paramsNew);
+                MyLog.v(this, "restoreActivityState; " + paramsNew);
             }
-        }
     }
 
     /**
@@ -295,7 +283,6 @@ public class TimelineActivity extends LoadableListActivity implements
     protected void onResume() {
         String method = "onResume";
         super.onResume();
-        MyLog.v(this, method + ", instanceId=" + mInstanceId);
         if (!mFinishing) {
             if (MyContextHolder.get().persistentAccounts().getCurrentAccount().isValid()) {
                 if (isConfigChanged()) {
@@ -309,18 +296,8 @@ public class TimelineActivity extends LoadableListActivity implements
             }
         }
         if (!mFinishing) {
-            MyContextHolder.get().setInForeground(true);
-            mServiceConnector.registerReceiver(this);
             mMessageEditor.loadCurrentDraft();
         }
-    }
-
-    @Override
-    public void onContentChanged() {
-        if (MyLog.isLoggable(this, MyLog.DEBUG)) {
-            MyLog.d(this, "onContentChanged started");
-        }
-        super.onContentChanged();
     }
 
     @Override
@@ -329,13 +306,12 @@ public class TimelineActivity extends LoadableListActivity implements
         if (MyLog.isVerboseEnabled()) {
             MyLog.v(this, method + "; instanceId=" + mInstanceId);
         }
-        mServiceConnector.unregisterReceiver(this);
         hideLoading(method);
         hideSyncing(method);
         mMessageEditor.saveAsBeingEditedAndHide();
-        saveActivityState();
+        saveListPosition();
+        crashTest();
         super.onPause();
-        MyContextHolder.get().setInForeground(false);
     }
 
     /**
@@ -346,25 +322,6 @@ public class TimelineActivity extends LoadableListActivity implements
         MyServiceManager.sendForegroundCommand(new CommandData(CommandEnum.NOTIFY_CLEAR,
                 MyContextHolder.get().persistentAccounts()
                         .fromUserId(paramsNew.myAccountUserId).getAccountName()));
-    }
-
-    @Override
-    public void onDestroy() {
-        MyLog.v(this, "onDestroy, instanceId=" + mInstanceId);
-        if (mServiceConnector != null) {
-            mServiceConnector.unregisterReceiver(this);
-        }
-        super.onDestroy();
-    }
-
-    @Override
-    public void finish() {
-        MyLog.v(this, "Finish requested" + (mFinishing ? ", already finishing" : "")
-                + ", instanceId=" + mInstanceId);
-        if (!mFinishing) {
-            mFinishing = true;
-        }
-        super.finish();
     }
 
     /**
@@ -1013,15 +970,14 @@ public class TimelineActivity extends LoadableListActivity implements
         startActivity(new Intent(this, MySettingsActivity.class));
     }
 
-    protected void saveActivityState() {
-        saveListPosition();
-
-        SharedPreferences.Editor outState = MyPreferences.getSharedPreferences(ACTIVITY_PERSISTENCE_NAME).edit();
-        outState.clear();
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
         paramsNew.saveState(outState);
         mContextMenu.saveState(outState);
-        outState.apply();
+    }
 
+    protected void crashTest() {
         final String CRASH_TEST_STRING = "Crash test 2015-04-10";
         if (MyLog.isVerboseEnabled() && mMessageEditor != null &&
                     mMessageEditor.getData().body.contains(CRASH_TEST_STRING)) {
