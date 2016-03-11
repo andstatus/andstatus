@@ -45,7 +45,7 @@ public class UserList extends LoadableListActivity {
         mIsListCombined = getParsedUri().isCombined();
         contextMenu = new UserListContextMenu(this);
 
-        showList(WhichPage.NEW);
+        showList(WhichPage.CURRENT);
     }
 
     @Override

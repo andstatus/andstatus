@@ -78,9 +78,12 @@ public class TimelineListParameters {
     String[] mProjection;
 
     Uri mContentUri = null;
-    long minSentDate = 0;
     long maxSentDate = 0;
-    final SelectionAndArgs mSa = new SelectionAndArgs();
+
+    // These params are updated just before page loading
+    volatile long minSentDate = 0;
+    volatile SelectionAndArgs selectionAndArgs = new SelectionAndArgs();
+    volatile String sortOrderAndLimit = "";
 
     // Execution state / loaded data:
     volatile long startTime = 0;
@@ -125,22 +128,18 @@ public class TimelineListParameters {
                     params.minSentDate = prev.minSentDate;
                 }
                 break;
-            case SAME:
-                params.minSentDate = prev.minSentDate;
-                params.maxSentDate = prev.maxSentDate;
-                break;
-            case NEW:
             default:
-                params.minSentDate = (new TimelineListPositionStorage(null, null, params)).getTLPosition().minSentDate;
-            case TOP:
-            case YOUNGEST:
                 break;
         }
         MyLog.v(TimelineListParameters.class, msgLog);
 
         params.mProjection = TimelineSql.getTimelineProjection();
+        params.mContentUri = params.buildContentUri();
+    }
 
-        params.prepareQueryForeground();
+    private Uri buildContentUri() {
+        return MatchedUri.getTimelineSearchUri(myAccountUserId, mTimelineType,
+                mTimelineCombined, mSelectedUserId, mSearchQuery);
     }
 
     public String toAccountButtonText() {
@@ -166,90 +165,9 @@ public class TimelineListParameters {
     }
 
     public boolean mayHaveOlderPage() {
-        return minSentDate > 0 ||
+        return whichPage.equals(WhichPage.CURRENT) ||
+                minSentDate > 0 ||
                 (maxSentDate > 0 && rowsLoaded > 0 && maxSentDate > minSentDateLoaded);
-    }
-
-    private void prepareQueryForeground() {
-        mContentUri = MatchedUri.getTimelineSearchUri(myAccountUserId, mTimelineType,
-                mTimelineCombined, mSelectedUserId, mSearchQuery);
-
-        if (mSa.nArgs == 0) {
-            // In fact this is needed every time you want to load
-            // next page of messages
-
-            /* TODO: Other conditions... */
-            mSa.clear();
-
-            // TODO: Move these selections to the {@link MyProvider} ?!
-            switch (getTimelineType()) {
-                case HOME:
-                    // In the Home of the combined timeline we see ALL loaded
-                    // messages, even those that we downloaded
-                    // not as Home timeline of any Account
-                    if (!isTimelineCombined()) {
-                        mSa.addSelection(MyDatabase.MsgOfUser.SUBSCRIBED + " = ?", new String[] {
-                                "1"
-                        });
-                    }
-                    break;
-                case MENTIONS:
-                    mSa.addSelection(MyDatabase.MsgOfUser.MENTIONED + " = ?", new String[] {
-                            "1"
-                    });
-                    /*
-                     * We already figured this out and set {@link MyDatabase.MsgOfUser.MENTIONED}:
-                     * sa.addSelection(MyDatabase.Msg.BODY + " LIKE ?" ...
-                     */
-                    break;
-                case FAVORITES:
-                    mSa.addSelection(MyDatabase.MsgOfUser.FAVORITED + " = ?", new String[] {
-                            "1"
-                    });
-                    break;
-                case DIRECT:
-                    mSa.addSelection(MyDatabase.MsgOfUser.DIRECTED + " = ?", new String[] {
-                            "1"
-                    });
-                    break;
-                case USER:
-                    SelectedUserIds userIds = new SelectedUserIds(isTimelineCombined(), getSelectedUserId());
-                    // Reblogs are included also
-                    mSa.addSelection(MyDatabase.Msg.AUTHOR_ID + " " + userIds.getSql()
-                            + " OR "
-                            + MyDatabase.Msg.SENDER_ID + " " + userIds.getSql()
-                            + " OR " 
-                            + "("
-                            + User.LINKED_USER_ID + " " + userIds.getSql()
-                            + " AND "
-                            + MyDatabase.MsgOfUser.REBLOGGED + " = 1"
-                            + ")",
-                            null);
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        if (minSentDate > 0) {
-            mSa.addSelection(ProjectionMap.MSG_TABLE_ALIAS + "." + MyDatabase.Msg.SENT_DATE
-                            + " >= ?",
-                    new String[]{
-                            String.valueOf(minSentDate)
-                    });
-        }
-        if (maxSentDate > 0) {
-            mSa.addSelection(ProjectionMap.MSG_TABLE_ALIAS + "." + MyDatabase.Msg.SENT_DATE
-                            + " <= ?",
-                    new String[]{
-                            String.valueOf(maxSentDate)
-                    });
-        }
-    }
-
-    public String getSortOrderAndLimit() {
-        return (isSortOrderAscending() ? MyDatabase.Msg.ASC_SORT_ORDER : MyDatabase.Msg.DESC_SORT_ORDER)
-                + (minSentDate > 0 && maxSentDate > 0 ? "" : " LIMIT " + PAGE_SIZE);
     }
 
     public boolean isSortOrderAscending() {
@@ -274,8 +192,8 @@ public class TimelineListParameters {
                 + ", contentUri=" + mContentUri
                 + (minSentDate > 0 ? ", minSentDate=" + new Date(minSentDate).toString() : "")
                 + (maxSentDate > 0 ? ", maxSentDate=" + new Date(maxSentDate).toString() : "")
-                + (mSa.isEmpty() ? "" : ", sa=" + mSa)
-                + ", sortOrder=" + getSortOrderAndLimit()
+                + (selectionAndArgs.isEmpty() ? "" : ", sa=" + selectionAndArgs)
+                + (TextUtils.isEmpty(sortOrderAndLimit) ? "" : ", sortOrder=" + sortOrderAndLimit)
                 + (startTime > 0 ? ", startTime=" + startTime : "")
                 + (cancelled ? ", cancelled" : "")
                 + (timelineToSync == TimelineType.UNKNOWN ? "" : ", timelineToSync=" + timelineToSync)
@@ -321,11 +239,14 @@ public class TimelineListParameters {
         if (mTimelineCombined != that.mTimelineCombined) return false;
         if (myAccountUserId != that.myAccountUserId) return false;
         if (mSelectedUserId != that.mSelectedUserId) return false;
-        if (minSentDate != that.minSentDate) return false;
+        if (!whichPage.equals(WhichPage.CURRENT) && !that.whichPage.equals(WhichPage.CURRENT)) {
+            if (minSentDate != that.minSentDate) return false;
+        } else if (whichPage.equals(WhichPage.CURRENT) || that.whichPage.equals(WhichPage.CURRENT)) {
+            return false;
+        }
         if (maxSentDate != that.maxSentDate) return false;
         if (mTimelineType != that.mTimelineType) return false;
         return !(mSearchQuery != null ? !mSearchQuery.equals(that.mSearchQuery) : that.mSearchQuery != null);
-
     }
 
     @Override
@@ -335,13 +256,19 @@ public class TimelineListParameters {
         result = 31 * result + (int) (myAccountUserId ^ (myAccountUserId >>> 32));
         result = 31 * result + (int) (mSelectedUserId ^ (mSelectedUserId >>> 32));
         result = 31 * result + (mSearchQuery != null ? mSearchQuery.hashCode() : 0);
-        result = 31 * result + (int) (minSentDate ^ (minSentDate >>> 32));
+        if (whichPage.equals(WhichPage.CURRENT)) {
+            result = 31 * result + (-1 ^ (-1 >>> 32));
+        } else {
+            result = 31 * result + (int) (minSentDate ^ (minSentDate >>> 32));
+        }
         result = 31 * result + (int) (maxSentDate ^ (maxSentDate >>> 32));
         return result;
     }
 
     boolean restoreState(@NonNull Bundle savedInstanceState) {
-        whichPage = WhichPage.NEW;
+        whichPage = WhichPage.CURRENT;
+        minSentDate = 0;
+        maxSentDate = 0;
         return parseUri(Uri.parse(savedInstanceState.getString(IntentExtra.TIMELINE_URI.key,"")));
     }
     
@@ -438,5 +365,97 @@ public class TimelineListParameters {
         if (maxSentDateLoaded == 0 || maxSentDateLoaded < sentDate) {
             maxSentDateLoaded = sentDate;
         }
+    }
+
+    private void prepareQueryParameters() {
+        switch (whichPage) {
+            case CURRENT:
+                minSentDate = (new TimelineListPositionStorage(null, null, this)).getTLPosition().minSentDate;
+                break;
+            default:
+                break;
+        }
+        sortOrderAndLimit = buildSortOrderAndLimit();
+        selectionAndArgs = buildSelectionAndArgs();
+    }
+
+    private String buildSortOrderAndLimit() {
+        return (isSortOrderAscending() ? MyDatabase.Msg.ASC_SORT_ORDER : MyDatabase.Msg.DESC_SORT_ORDER)
+                + (minSentDate > 0 && maxSentDate > 0 ? "" : " LIMIT " + PAGE_SIZE);
+    }
+
+    private SelectionAndArgs buildSelectionAndArgs() {
+        SelectionAndArgs sa = new SelectionAndArgs();
+
+        // TODO: Move these selections to the {@link MyProvider} ?!
+        switch (getTimelineType()) {
+            case HOME:
+                // In the Home of the combined timeline we see ALL loaded
+                // messages, even those that we downloaded
+                // not as Home timeline of any Account
+                if (!isTimelineCombined()) {
+                    sa.addSelection(MyDatabase.MsgOfUser.SUBSCRIBED + " = ?", new String[] {
+                            "1"
+                    });
+                }
+                break;
+            case MENTIONS:
+                sa.addSelection(MyDatabase.MsgOfUser.MENTIONED + " = ?", new String[] {
+                        "1"
+                });
+                /*
+                 * We already figured this out and set {@link MyDatabase.MsgOfUser.MENTIONED}:
+                 * sa.addSelection(MyDatabase.Msg.BODY + " LIKE ?" ...
+                 */
+                break;
+            case FAVORITES:
+                sa.addSelection(MyDatabase.MsgOfUser.FAVORITED + " = ?", new String[] {
+                        "1"
+                });
+                break;
+            case DIRECT:
+                sa.addSelection(MyDatabase.MsgOfUser.DIRECTED + " = ?", new String[] {
+                        "1"
+                });
+                break;
+            case USER:
+                SelectedUserIds userIds = new SelectedUserIds(isTimelineCombined(), getSelectedUserId());
+                // Reblogs are included also
+                sa.addSelection(MyDatabase.Msg.AUTHOR_ID + " " + userIds.getSql()
+                                + " OR "
+                                + MyDatabase.Msg.SENDER_ID + " " + userIds.getSql()
+                                + " OR "
+                                + "("
+                                + User.LINKED_USER_ID + " " + userIds.getSql()
+                                + " AND "
+                                + MyDatabase.MsgOfUser.REBLOGGED + " = 1"
+                                + ")",
+                        null);
+                break;
+            default:
+                break;
+        }
+
+        if (minSentDate > 0) {
+            sa.addSelection(ProjectionMap.MSG_TABLE_ALIAS + "." + MyDatabase.Msg.SENT_DATE
+                            + " >= ?",
+                    new String[]{
+                            String.valueOf(minSentDate)
+                    });
+        }
+        if (maxSentDate > 0) {
+            sa.addSelection(ProjectionMap.MSG_TABLE_ALIAS + "." + MyDatabase.Msg.SENT_DATE
+                            + " <= ?",
+                    new String[]{
+                            String.valueOf(maxSentDate)
+                    });
+        }
+        return sa;
+    }
+
+    Cursor queryDatabase() {
+        prepareQueryParameters();
+        return mContext.getContentResolver().query(mContentUri, mProjection,
+                selectionAndArgs.selection, selectionAndArgs.selectionArgs, sortOrderAndLimit);
     }
 }

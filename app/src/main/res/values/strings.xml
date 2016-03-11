@@ -280,6 +280,7 @@
   <string name="options_menu_mentions">Mentions</string>
   <string name="options_menu_search">Search</string>
   <string name="origin_settings_action">Social network</string>
+  <string name="page_current">current</string>
   <string name="page_empty">empty</string>
   <string name="page_new">new</string>
   <string name="page_older">older</string>

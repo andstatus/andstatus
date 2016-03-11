@@ -28,8 +28,7 @@ import org.andstatus.app.WhichPage;
 public class WhichPageTest extends InstrumentationTestCase {
 
     public void testSaveLoad() {
-        assertOne(WhichPage.SAME);
-        assertOne(WhichPage.NEW);
+        assertOne(WhichPage.CURRENT);
         assertOne(WhichPage.YOUNGER);
         assertOne(WhichPage.YOUNGEST);
         assertOne(WhichPage.OLDER);

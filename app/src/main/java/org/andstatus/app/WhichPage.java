@@ -25,11 +25,10 @@ import org.andstatus.app.util.MyLog;
  * @author yvolk@yurivolkov.com
  */
 public enum WhichPage {
-    NEW(1, R.string.page_new),
+    CURRENT(1, R.string.page_current),
     YOUNGER(2, R.string.page_younger),
     YOUNGEST(3, R.string.page_youngest),
     TOP(4, R.string.page_top_of),
-    SAME(5, R.string.page_the_same),
     OLDER(6, R.string.page_older),
     EMPTY(7, R.string.page_empty);
 

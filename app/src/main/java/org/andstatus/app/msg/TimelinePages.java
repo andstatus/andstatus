@@ -68,7 +68,7 @@ public class TimelinePages {
                     list.add(0, page);
                     break;
                 }
-            case NEW:
+            case CURRENT:
             case TOP:
                 list.clear();
                 list.add(page);

@@ -29,7 +29,6 @@ import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.util.I18n;
-import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
 
@@ -88,9 +87,7 @@ public class TimelineLoader implements LoadableListActivity.SyncLoader {
         Cursor cursor = null;
         for (int attempt = 0; attempt < 3 && !getParams().cancelled; attempt++) {
             try {
-                cursor = MyContextHolder.get().context().getContentResolver()
-                        .query(getParams().mContentUri, getParams().mProjection, getParams().mSa.selection,
-                                getParams().mSa.selectionArgs, getParams().getSortOrderAndLimit());
+                cursor = getParams().queryDatabase();
                 break;
             } catch (IllegalStateException e) {
                 logD(method, "Attempt " + attempt + " to prepare cursor", e);

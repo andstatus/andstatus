@@ -357,7 +357,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
             myServiceReceiver.registerReceiver(this);
             MyContextHolder.get().setInForeground(true);
             if (size() == 0 && !isLoading()) {
-                showList(WhichPage.NEW);
+                showList(WhichPage.CURRENT);
             }
         }
     }
@@ -392,7 +392,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
                 MyLog.v(this, "Content changed after "
                         + commandData.toCommandSummary(MyContextHolder.get()));
             }
-            showList(WhichPage.NEW);
+            showList(WhichPage.CURRENT);
         }
     }
 
@@ -469,7 +469,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.sync_menu_item:
-                showList(WhichPage.NEW);
+                showList(WhichPage.CURRENT);
                 break;
             default:
                 break;

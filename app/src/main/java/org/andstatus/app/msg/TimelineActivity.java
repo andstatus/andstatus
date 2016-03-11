@@ -62,7 +62,6 @@ import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceEvent;
-import org.andstatus.app.service.MyServiceEventsReceiver;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.service.MyServiceState;
 import org.andstatus.app.service.QueueViewer;
@@ -220,7 +219,7 @@ public class TimelineActivity extends LoadableListActivity implements
         closeDrawer();
         TimelineAdapter adapter = getListAdapter();
         if (adapter == null || adapter.getPages().mayHaveYoungerPage()) {
-            showList(WhichPage.NEW);
+            showList(WhichPage.CURRENT);
         } else {
             showList(WhichPage.TOP);
         }
@@ -576,7 +575,7 @@ public class TimelineActivity extends LoadableListActivity implements
         paramsNew.myAccountUserId = MyContextHolder.get().persistentAccounts().getCurrentAccountUserId();
         paramsNew.mSelectedUserId = 0;
         paramsNew.whichPage = WhichPage.load(
-                intentNew.getStringExtra(IntentExtra.WHICH_PAGE.key), WhichPage.NEW);
+                intentNew.getStringExtra(IntentExtra.WHICH_PAGE.key), WhichPage.CURRENT);
         parseAppSearchData(intentNew);
         if (paramsNew.getTimelineType() == TimelineType.UNKNOWN) {
             paramsNew.parseIntentData(intentNew);

@@ -53,7 +53,7 @@ public class ConversationActivity extends LoadableListActivity implements Action
         mMessageEditor = new MessageEditor(this);
         mContextMenu = new MessageContextMenu(this);
 
-        showList(WhichPage.NEW);
+        showList(WhichPage.CURRENT);
     }
 
     @Override
