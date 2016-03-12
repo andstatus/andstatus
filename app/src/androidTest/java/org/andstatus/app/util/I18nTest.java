@@ -39,4 +39,14 @@ public class I18nTest extends InstrumentationTestCase {
         assertEquals("pt", I18n.localeToLanguage("pt"));
         assertEquals("", I18n.localeToCountry("pt"));
     }
+
+    public void testFormatBytes() {
+        assertEquals("0", I18n.formatBytes(0));
+        assertEquals("1B", I18n.formatBytes(1));
+        assertEquals("9837B", I18n.formatBytes(9837));
+        assertEquals("11KB", I18n.formatBytes(11286));
+        assertEquals("18MB", I18n.formatBytes(19112286));
+        assertEquals("33MB", I18n.formatBytes(34578432L));
+        assertEquals("70GB", I18n.formatBytes(75334578432L));
+    }
 }

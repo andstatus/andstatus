@@ -25,6 +25,7 @@ import android.text.TextUtils;
 import android.util.LruCache;
 
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
 
 import java.io.File;
@@ -148,9 +149,9 @@ public class MyDrawableCache extends LruCache<String, BitmapDrawable> {
 
     public String getInfo() {
         StringBuilder builder = new StringBuilder(name);
-        builder.append(" size:" + size() + " of " + maxCacheSize + " bytes");
+        builder.append(" size: " + I18n.formatBytes(size()) + " of " + I18n.formatBytes(maxCacheSize));
         if (!brokenBitmaps.isEmpty()) {
-            builder.append(", broken:" + brokenBitmaps.size());
+            builder.append(", broken: " + brokenBitmaps.size());
         }
         long accesses = hits.get() + misses.get();
         builder.append(", hits:" + hits.get() + ", misses:" + misses.get()

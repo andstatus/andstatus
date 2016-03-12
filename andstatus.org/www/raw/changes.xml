@@ -35,9 +35,10 @@
                 As a result, timeline scrolling became smoother.
                 <a href="https://github.com/andstatus/andstatus/issues/342">#342</a>
             </change>
-            <change>Implemented procedure, which fixes User duplication in a local database.
-                The fixing procedure starts automatically after completion
-                of &quot;Backup application data to SD card&quot;.
+            <change>Implemented &quot;Check users&quot; procedure, which fixes User duplication
+                in a local database. This procedure starts automatically after completion
+                of &quot;Backup application data to SD card&quot;, so a User always has a chance
+                to restore previous data in a case of a problem.
                 <a href="https://github.com/andstatus/andstatus/issues/348">#348</a>
             </change>
         </changes>

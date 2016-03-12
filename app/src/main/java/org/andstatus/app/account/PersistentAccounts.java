@@ -17,6 +17,7 @@ import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyQuery;
+import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -404,7 +405,7 @@ public class PersistentAccounts {
     public long onRestore(MyBackupDataInput data, MyBackupDescriptor newDescriptor) throws IOException {
         long restoredCount = 0;
         final String method = "onRestore";
-        MyLog.i(this, method + "; started, " + data.getDataSize() + " bytes");
+        MyLog.i(this, method + "; started, " + I18n.formatBytes(data.getDataSize()));
         byte[] bytes = new byte[data.getDataSize()];
         int bytesRead = data.readEntityData(bytes, 0, bytes.length);
         try {

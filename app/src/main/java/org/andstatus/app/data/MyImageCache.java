@@ -30,6 +30,7 @@ import android.view.WindowManager;
 
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyTheme;
+import org.andstatus.app.util.I18n;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -123,7 +124,7 @@ public class MyImageCache {
         builder.append(attachedImagesCache.getInfo() + "\n");
         builder.append("Styled drawables: " + styledDrawables.size() + "\n");
         ActivityManager.MemoryInfo memInfo = getMemoryInfo(MyContextHolder.get().context());
-        builder.append("Memory: available " + memInfo.availMem + " of " + memInfo.totalMem + "\n");
+        builder.append("Memory: available " + I18n.formatBytes(memInfo.availMem) + " of " + I18n.formatBytes(memInfo.totalMem) + "\n");
         return builder.toString();
     }
 

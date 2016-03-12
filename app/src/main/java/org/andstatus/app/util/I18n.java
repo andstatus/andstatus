@@ -134,4 +134,23 @@ public class I18n {
         }
         return locale.substring(indHyphen+2);
     }
+
+    public static String formatBytes(long bytes) {
+        if (bytes == 0) {
+            return "0";
+        }
+        if (bytes < 10000) {
+            return Long.toString(bytes) + "B";
+        }
+        long kB = Math.round(1.0 * bytes / 1024);
+        if (kB < 10000) {
+            return Long.toString(kB) + "KB";
+        }
+        long mB = Math.round(1.0 * kB / 1024);
+        if (mB < 10000) {
+            return Long.toString(mB) + "MB";
+        }
+        long gB = Math.round(1.0 * mB / 1024);
+        return Long.toString(gB) + "GB";
+    }
 }
