@@ -27,6 +27,9 @@ import android.util.LruCache;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.util.MyLog;
 
+import java.io.File;
+import java.util.Set;
+import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -34,12 +37,14 @@ import java.util.concurrent.atomic.AtomicLong;
  * On LruCache usage read http://developer.android.com/reference/android/util/LruCache.html
  */
 public class MyDrawableCache extends LruCache<String, BitmapDrawable> {
+    public final static BitmapDrawable BROKEN = new BitmapDrawable();
     final String name;
     private volatile int maxCacheSize;
     private volatile int maxBitmapHeight;
     private volatile int maxBitmapWidth;
     final AtomicLong hits = new AtomicLong();
     final AtomicLong misses = new AtomicLong();
+    final Set<String> brokenBitmaps = new ConcurrentSkipListSet<>();
 
     @Override
     public void resize(int maxSize) {
@@ -77,6 +82,11 @@ public class MyDrawableCache extends LruCache<String, BitmapDrawable> {
         BitmapDrawable drawable = get(path);
         if (drawable != null) {
             hits.incrementAndGet();
+        } else if (brokenBitmaps.contains(path)) {
+            hits.incrementAndGet();
+            drawable = BROKEN;
+        } else if (!(new File(path)).exists()) {
+            misses.incrementAndGet();
         } else {
             misses.incrementAndGet();
             if (!fromCacheOnly) {
@@ -86,6 +96,8 @@ public class MyDrawableCache extends LruCache<String, BitmapDrawable> {
                     if (maxCacheSize > 0) {
                         put(path, drawable);
                     }
+                } else {
+                    brokenBitmaps.add(path);
                 }
             }
         }
@@ -137,6 +149,9 @@ public class MyDrawableCache extends LruCache<String, BitmapDrawable> {
     public String getInfo() {
         StringBuilder builder = new StringBuilder(name);
         builder.append(" size:" + size() + " of " + maxCacheSize + " bytes");
+        if (!brokenBitmaps.isEmpty()) {
+            builder.append(", broken:" + brokenBitmaps.size());
+        }
         long accesses = hits.get() + misses.get();
         builder.append(", hits:" + hits.get() + ", misses:" + misses.get()
                 + (accesses == 0 ? "" : ", hitRate:" + hits.get() * 100 / accesses + "%"));

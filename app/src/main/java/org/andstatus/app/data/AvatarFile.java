@@ -55,11 +55,17 @@ public class AvatarFile {
         return drawable;
     }
 
+    @NonNull
     public Drawable getDrawable() {
-        if (downloadFile.exists()) {
-            return MyImageCache.getAvatarDrawable(this, downloadFile.getFilePath());
-        } 
-        AvatarData.asyncRequestDownload(userId);
+        Drawable drawable = MyImageCache.getAvatarDrawable(this, downloadFile.getFilePath());
+        if (drawable == MyDrawableCache.BROKEN) {
+            return getDefaultDrawable();
+        } else if (drawable != null) {
+            return drawable;
+        }
+        if (!downloadFile.exists()) {
+            AvatarData.asyncRequestDownload(userId);
+        }
         return getDefaultDrawable();
     }
 

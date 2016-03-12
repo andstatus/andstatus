@@ -98,16 +98,21 @@ public class AttachedImageFile {
         }
         if (isEmpty()) {
             imageView.setVisibility(View.GONE);
-        } else if (downloadFile.exists()) {
-            Drawable drawable = getDrawableFromCache();
-            if (drawable != null) {
-                imageView.setVisibility(View.VISIBLE);
-                imageView.setImageDrawable(drawable);
-            } else {
-                imageView.setVisibility(View.VISIBLE);
-                imageView.setImageDrawable(BLANK_DRAWABLE);
-                setImageDrawableAsync(messageList, imageView, downloadFile.getFilePath());
-            }
+            return;
+        }
+        Drawable drawable = getDrawableFromCache();
+        if (drawable == MyDrawableCache.BROKEN) {
+            imageView.setVisibility(View.GONE);
+            return;
+        } else if (drawable != null) {
+            imageView.setVisibility(View.VISIBLE);
+            imageView.setImageDrawable(drawable);
+            return;
+        }
+        if (downloadFile.exists()) {
+            imageView.setVisibility(View.VISIBLE);
+            imageView.setImageDrawable(BLANK_DRAWABLE);
+            setImageDrawableAsync(messageList, imageView, downloadFile.getFilePath());
         } else {
             imageView.setVisibility(View.GONE);
             if (downloadRowId == 0) {
@@ -144,11 +149,9 @@ public class AttachedImageFile {
                             return;
                         }
                         if (drawable == null) {
-                            imageView.setVisibility(View.GONE);
                             MyLog.v(this, "Failed to load attached image: " + path);
                         } else {
                             try {
-                                imageView.setVisibility(View.VISIBLE);
                                 imageView.setImageDrawable(drawable);
                                 MyLog.v(this, "Attached image loaded: " + path);
                             } catch (Exception e) {
