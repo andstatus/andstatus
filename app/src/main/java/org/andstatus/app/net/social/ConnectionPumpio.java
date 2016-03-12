@@ -119,7 +119,6 @@ public class ConnectionPumpio extends Connection {
         MbUser user = MbUser.fromOriginAndUserOid(data.getOriginId(), oid);
         user.actor = MbUser.fromOriginAndUserOid(data.getOriginId(), data.getAccountUserOid());
         user.setUserName(userOidToUsername(oid));
-        user.oid = oid;
         user.setRealName(jso.optString("displayName"));
         user.avatarUrl = JsonUtils.optStringInside(jso, "image", "url");
         user.location = JsonUtils.optStringInside(jso, "location", "displayName");

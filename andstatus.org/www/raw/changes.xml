@@ -35,6 +35,11 @@
                 As a result, timeline scrolling became smoother.
                 <a href="https://github.com/andstatus/andstatus/issues/342">#342</a>
             </change>
+            <change>Implemented procedure, which fixes User duplication in a local database.
+                The fixing procedure starts automatically after completion
+                of &quot;Backup application data to SD card&quot;.
+                <a href="https://github.com/andstatus/andstatus/issues/348">#348</a>
+            </change>
         </changes>
     </release>
     <release android:versionName="23.01" android:versionCode="160"

@@ -37,7 +37,7 @@ import java.util.List;
  * 'Mb' stands for "Microblogging system" 
  * @author yvolk@yurivolkov.com
  */
-public class MbUser {
+public class MbUser implements Comparable<MbUser> {
     // RegEx from http://www.mkyong.com/regular-expressions/how-to-validate-email-address-with-regular-expression/
     public static final String WEBFINGER_ID_REGEX = "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
     private static final String TEMP_OID_PREFIX = "andstatustemp:";
@@ -402,5 +402,19 @@ public class MbUser {
 
     public void setUpdatedDate(long updatedDate) {
         this.updatedDate = updatedDate;
+    }
+
+    @Override
+    public int compareTo(MbUser another) {
+        if (userId != 0 && another.userId != 0) {
+            if (userId == another.userId) {
+                return 0;
+            }
+            return originId > another.originId ? 1 : -1;
+        }
+        if (originId != another.originId) {
+            return originId > another.originId ? 1 : -1;
+        }
+        return oid.compareTo(another.oid);
     }
 }

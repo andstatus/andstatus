@@ -27,6 +27,7 @@ import org.andstatus.app.account.PersistentAccounts;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DataPruner;
+import org.andstatus.app.data.MyDataChecker;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.TimelineSearchSuggestionsProvider;
 import org.andstatus.app.service.MyServiceManager;
@@ -107,6 +108,9 @@ public class MyBackupAgent extends BackupAgent {
                 doBackup(data);
                 backupDescriptor.save();
                 MyLog.v(this, method + "; newState: " + backupDescriptor.toString());
+                if (backupDescriptor.saved()) {
+                    new MyDataChecker(MyContextHolder.get(), backupDescriptor.getLogger()).fixData();
+                }
                 if (isServiceAvailableStored) {
                     MyServiceManager.setServiceAvailable();
                 }
