@@ -61,7 +61,9 @@ public class AttachedImageView extends ImageView {
         final String method = "onMeasure";
         int refWidthPixels = referencedView.getMeasuredWidth();
         int height = (int) Math.floor(refWidthPixels * getDrawableHeightToWidthRatio());
-        MyLog.v(this, method + "; refWidth=" + refWidthPixels + ", height=" + height + ", widthSpec=" + MeasureSpec.toString(widthMeasureSpec));
+        if (MyLog.isVerboseEnabled()) {
+            MyLog.v(this, method + "; refWidth=" + refWidthPixels + ", height=" + height + ", widthSpec=" + MeasureSpec.toString(widthMeasureSpec));
+        }
         int mode = MeasureSpec.EXACTLY;
         if (height == 0) {
             height = MAX_HEIGHT;
