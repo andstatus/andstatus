@@ -76,7 +76,7 @@ class TimelineDownloaderFollowing extends TimelineDownloader {
         DataInserter di = new DataInserter(execContext);
         if (execContext.getMyAccount().getConnection().isApiSupported(ApiRoutineEnum.GET_FRIENDS)) {
             followedUsers = execContext.getMyAccount().getConnection().getUsersFollowedBy(userOid);
-            followedUsersOids = new ArrayList<String>();
+            followedUsersOids = new ArrayList<>();
             for (MbUser followedUser : followedUsers) {
                 followedUsersOids.add(followedUser.oid);
                 di.insertOrUpdateUser(followedUser, lum);

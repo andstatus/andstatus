@@ -216,6 +216,7 @@ public class MyQuery {
      * @return - oid in Originated system (i.e. in the table, e.g.
      *         {@link MyDatabase.Msg#MSG_OID} empty string in case of an error
      */
+    @NonNull
     public static String idToOid(OidEnum oe, long entityId, long rebloggerUserId) {
         SQLiteDatabase db = MyContextHolder.get().getDatabase();
         if (db == null) {
@@ -235,6 +236,7 @@ public class MyQuery {
      * @return - oid in Originated system (i.e. in the table, e.g.
      *         {@link MyDatabase.Msg#MSG_OID} empty string in case of an error
      */
+    @NonNull
     static String idToOid(SQLiteDatabase db, OidEnum oe, long entityId, long rebloggerUserId) {
         String method = "idToOid";
         String oid = "";

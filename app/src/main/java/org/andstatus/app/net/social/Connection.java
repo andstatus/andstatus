@@ -18,6 +18,7 @@
 package org.andstatus.app.net.social;
 
 import android.net.Uri;
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import org.andstatus.app.account.AccountDataWriter;
@@ -87,6 +88,7 @@ public abstract class Connection {
         /** List of Users' IDs */
         GET_FRIENDS_IDS,
         GET_FOLLOWERS,
+        GET_FOLLOWERS_IDS,
         GET_OPEN_INSTANCES,
         GET_USER,
         POST_MESSAGE,
@@ -275,8 +277,13 @@ public abstract class Connection {
         throw ConnectionException.fromStatusCode(StatusCode.UNSUPPORTED_API, "getIdsOfUsersFollowedBy for userOid=" + userId);
     }
 
+    @NonNull
     public List<String> getIdsOfUsersFollowing(String userId) throws ConnectionException {
         throw ConnectionException.fromStatusCode(StatusCode.UNSUPPORTED_API, "getIdsOfUsersFollowing userOid=" + userId);
+    }
+
+    public List<MbUser> getUsersFollowing(String userId) throws ConnectionException {
+        throw ConnectionException.fromStatusCode(StatusCode.UNSUPPORTED_API, "getUsersFollowing userOid=" + userId);
     }
 
     /**

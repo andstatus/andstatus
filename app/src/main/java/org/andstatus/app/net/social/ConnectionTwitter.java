@@ -63,6 +63,9 @@ public abstract class ConnectionTwitter extends Connection {
             case DESTROY_FAVORITE:
                 url = "favorites/destroy/";
                 break;
+            case GET_FOLLOWERS_IDS:
+                url = "followers/ids" + EXTENSION;
+                break;
             case FOLLOW_USER:
                 url = "friendships/create" + EXTENSION;
                 break;
@@ -151,7 +154,30 @@ public abstract class ConnectionTwitter extends Connection {
         Uri sUri = Uri.parse(getApiPath(ApiRoutineEnum.GET_FRIENDS_IDS));
         Uri.Builder builder = sUri.buildUpon();
         builder.appendQueryParameter("user_id", userId);
-        List<String> list = new ArrayList<String>();
+        List<String> list = new ArrayList<>();
+        JSONArray jArr = getRequestArrayInObject(builder.build().toString(), "ids");
+        try {
+            for (int index = 0; jArr != null && index < jArr.length(); index++) {
+                list.add(jArr.getString(index));
+            }
+        } catch (JSONException e) {
+            throw ConnectionException.loggedJsonException(this, method, e, jArr);
+        }
+        return list;
+    }
+
+    /**
+     * Returns a cursored collection of user IDs for every user following the specified user.
+     * @see <a
+     *      href="https://dev.twitter.com/rest/reference/get/followers/ids">GET followers/ids</a>
+     */
+    @Override
+    public List<String> getIdsOfUsersFollowing(String userId) throws ConnectionException {
+        String method = "getIdsOfUsersFollowedBy";
+        Uri sUri = Uri.parse(getApiPath(ApiRoutineEnum.GET_FOLLOWERS_IDS));
+        Uri.Builder builder = sUri.buildUpon();
+        builder.appendQueryParameter("user_id", userId);
+        List<String> list = new ArrayList<>();
         JSONArray jArr = getRequestArrayInObject(builder.build().toString(), "ids");
         try {
             for (int index = 0; jArr != null && index < jArr.length(); index++) {

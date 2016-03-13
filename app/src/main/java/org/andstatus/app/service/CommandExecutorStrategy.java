@@ -107,6 +107,9 @@ class CommandExecutorStrategy implements CommandExecutorParent {
                         case SEARCH_MESSAGE:
                             strategy = new CommandExecutorSearch();
                             break;
+                        case GET_FOLLOWERS:
+                            strategy = new CommandExecutorFollowers();
+                            break;
                         default:
                             strategy = new CommandExecutorOther();
                             break;
