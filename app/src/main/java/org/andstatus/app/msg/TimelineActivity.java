@@ -381,8 +381,7 @@ public class TimelineActivity extends LoadableListActivity implements
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         super.onCreateOptionsMenu(menu);
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.timeline, menu);
+        getMenuInflater().inflate(R.menu.timeline, menu);
         if (mMessageEditor != null) {
             mMessageEditor.onCreateOptionsMenu(menu);
         }

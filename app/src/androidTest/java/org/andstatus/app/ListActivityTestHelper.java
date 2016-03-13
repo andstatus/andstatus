@@ -30,7 +30,7 @@ import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.msg.ContextMenuItem;
+import org.andstatus.app.msg.MessageListContextMenuItem;
 import org.andstatus.app.util.MyLog;
 
 public class ListActivityTestHelper<T extends MyBaseListActivity> extends InstrumentationTestCase {
@@ -168,7 +168,12 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> extends Instru
         final int lastListItemPosition = firstListItemPosition + getListView().getChildCount() - 1;
         View view;
         if (position < firstListItemPosition || position > lastListItemPosition ) {
-            view = getListAdapter().getView(position, null, getListView());
+            if (position < 0 || getListAdapter() == null
+                    || getListAdapter().getCount() < position + 1) {
+                view = null;
+            } else {
+                view = getListAdapter().getView(position, null, getListView());
+            }
         } else {
             final int childIndex = position - firstListItemPosition;
             view = getListView().getChildAt(childIndex);

@@ -26,6 +26,7 @@ import android.text.TextUtils;
 import android.view.Menu;
 
 import org.andstatus.app.ActivityRequestCode;
+import org.andstatus.app.ContextMenuItem;
 import org.andstatus.app.MyAction;
 import org.andstatus.app.account.AccountSelector;
 import org.andstatus.app.account.MyAccount;
@@ -45,7 +46,7 @@ import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
 
-public enum ContextMenuItem {
+public enum MessageListContextMenuItem implements ContextMenuItem {
     REPLY(true) {
         @Override
         MessageEditorData executeAsync(MyAccount ma, long msgId) {
@@ -145,7 +146,7 @@ public enum ContextMenuItem {
 
         @Override
         void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
-            messageShare.share(menu.messageList.getActivity());
+            messageShare.share(menu.getActivity());
         }
     },
     COPY_TEXT(true) {
@@ -267,7 +268,7 @@ public enum ContextMenuItem {
     ACT_AS() {
         @Override
         void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
-            AccountSelector.selectAccount(menu.messageList.getActivity(), editorData.ma.getOriginId(), ActivityRequestCode.SELECT_ACCOUNT_TO_ACT_AS);
+            AccountSelector.selectAccount(menu.getActivity(), editorData.ma.getOriginId(), ActivityRequestCode.SELECT_ACCOUNT_TO_ACT_AS);
         }
     },
     OPEN_MESSAGE_PERMALINK(true) {
@@ -281,13 +282,13 @@ public enum ContextMenuItem {
 
         @Override
         void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
-            messageShare.openPermalink(menu.messageList.getActivity());
+            messageShare.openPermalink(menu.getActivity());
         }
     },
     VIEW_IMAGE() {
         @Override
         void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
-            FileProvider.viewImage(menu.messageList.getActivity(), menu.imageFilename);
+            FileProvider.viewImage(menu.getActivity(), menu.imageFilename);
         }
     },
     OPEN_CONVERSATION() {
@@ -296,17 +297,17 @@ public enum ContextMenuItem {
             Uri uri = MatchedUri.getTimelineItemUri(editorData.ma.getUserId(),
                     menu.messageList.getTimelineType(), menu.messageList.isTimelineCombined(),
                     menu.messageList.getSelectedUserId(), menu.getMsgId());
-            String action = menu.messageList.getActivity().getIntent().getAction();
+            String action = menu.getActivity().getIntent().getAction();
             if (Intent.ACTION_PICK.equals(action) || Intent.ACTION_GET_CONTENT.equals(action)) {
                 if (MyLog.isLoggable(this, MyLog.DEBUG)) {
                     MyLog.d(this, "onItemClick, setData=" + uri);
                 }
-                menu.messageList.getActivity().setResult(Activity.RESULT_OK, new Intent().setData(uri));
+                menu.getActivity().setResult(Activity.RESULT_OK, new Intent().setData(uri));
             } else {
                 if (MyLog.isLoggable(this, MyLog.DEBUG)) {
                     MyLog.d(this, "onItemClick, startActivity=" + uri);
                 }
-                menu.messageList.getActivity().startActivity(MyAction.VIEW_CONVERSATION.getIntent(uri));
+                menu.getActivity().startActivity(MyAction.VIEW_CONVERSATION.getIntent(uri));
             }
         }
     },
@@ -319,29 +320,30 @@ public enum ContextMenuItem {
             if (MyLog.isLoggable(this, MyLog.DEBUG)) {
                 MyLog.d(this, "onItemClick, startActivity=" + uri);
             }
-            menu.messageList.getActivity().startActivity(MyAction.VIEW_USERS.getIntent(uri));
+            menu.getActivity().startActivity(MyAction.VIEW_USERS.getIntent(uri));
         }
     },
     NONEXISTENT(),
     UNKNOWN();
 
-    private static final String TAG = ContextMenuItem.class.getSimpleName();
+    private static final String TAG = MessageListContextMenuItem.class.getSimpleName();
     private final boolean mIsAsync;
 
-    ContextMenuItem() {
+    MessageListContextMenuItem() {
         this(false);
     }
 
-    ContextMenuItem(boolean isAsync) {
+    MessageListContextMenuItem(boolean isAsync) {
         this.mIsAsync = isAsync;
     }
 
+    @Override
     public int getId() {
         return Menu.FIRST + ordinal() + 1;
     }
     
-    public static ContextMenuItem fromId(int id) {
-        for (ContextMenuItem item : ContextMenuItem.values()) {
+    public static MessageListContextMenuItem fromId(int id) {
+        for (MessageListContextMenuItem item : MessageListContextMenuItem.values()) {
             if (item.getId() == id) {
                 return item;
             }
@@ -383,13 +385,13 @@ public enum ContextMenuItem {
                 new MyAsyncTask<Void, Void, MessageEditorData>(TAG + name(), MyAsyncTask.PoolEnum.QUICK_UI) {
                     @Override
                     protected MessageEditorData doInBackground2(Void... params) {
-                        MyLog.v(ContextMenuItem.this, "execute async started. msgId=" + menu.getMsgId());
+                        MyLog.v(MessageListContextMenuItem.this, "execute async started. msgId=" + menu.getMsgId());
                         return executeAsync(ma, menu.getMsgId());
                     }
 
                     @Override
                     protected void onPostExecute(MessageEditorData editorData) {
-                        MyLog.v(ContextMenuItem.this, "execute async ended");
+                        MyLog.v(MessageListContextMenuItem.this, "execute async ended");
                         executeOnUiThread(menu, editorData);
                     }
                 }

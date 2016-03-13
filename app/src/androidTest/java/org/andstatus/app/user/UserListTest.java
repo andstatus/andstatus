@@ -28,7 +28,7 @@ import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.TimelineType;
-import org.andstatus.app.msg.ContextMenuItem;
+import org.andstatus.app.msg.MessageListContextMenuItem;
 import org.andstatus.app.msg.TimelineActivity;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.util.MyLog;
@@ -70,7 +70,7 @@ public class UserListTest extends ActivityInstrumentationTestCase2<TimelineActiv
         assertEquals(logMsg, 3, users.size());
         assertEquals(logMsg, "unknownUser@example.com", users.get(2).getUserName());
 
-        assertTrue("Invoked Context menu for " + logMsg, helper.invokeContextMenuAction4ListItemId(method, msgId, ContextMenuItem.USERS_OF_MESSAGE));
+        assertTrue("Invoked Context menu for " + logMsg, helper.invokeContextMenuAction4ListItemId(method, msgId, MessageListContextMenuItem.USERS_OF_MESSAGE));
 
         UserList userList = (UserList) helper.waitForNextActivity(method, 15000);
         TestSuite.waitForListLoaded(this, userList, 1);
@@ -110,7 +110,7 @@ public class UserListTest extends ActivityInstrumentationTestCase2<TimelineActiv
         assertEquals("Updated at", expected.getUpdatedDate(), actual.getUpdatedDate());
     }
 
-    private MbUser getByUserOid(List<UserListViewItem> listItems, String oid) {
+    static MbUser getByUserOid(List<UserListViewItem> listItems, String oid) {
         for (UserListViewItem item : listItems) {
             if (item.mbUser.oid.equals(oid)) {
                 return item.mbUser;

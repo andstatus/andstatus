@@ -81,7 +81,7 @@ public class TimelineAdapter extends MyBaseAdapter implements View.OnClickListen
         TimelineViewItem item = getItem(position);
         MyUrlSpan.showText(view, R.id.message_author, item.authorName, false);
         MyUrlSpan.showText(view, R.id.message_body, item.body, false);
-        MyUrlSpan.showText(view, R.id.message_details, item.getDetails(contextMenu.getContext()), false);
+        MyUrlSpan.showText(view, R.id.message_details, item.getDetails(contextMenu.getActivity()), false);
         if (showAvatars) {
             showAvatar(item, view);
         }
@@ -96,7 +96,7 @@ public class TimelineAdapter extends MyBaseAdapter implements View.OnClickListen
     }
 
     private View newView() {
-        return LayoutInflater.from(contextMenu.messageList.getActivity()).inflate(listItemLayoutId, null);
+        return LayoutInflater.from(contextMenu.getActivity()).inflate(listItemLayoutId, null);
     }
 
     private void showAvatar(TimelineViewItem item, View view) {

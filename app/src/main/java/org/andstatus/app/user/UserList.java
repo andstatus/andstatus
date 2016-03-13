@@ -21,7 +21,6 @@ import android.view.MenuItem;
 
 import org.andstatus.app.LoadableListActivity;
 import org.andstatus.app.R;
-import org.andstatus.app.WhichPage;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.widget.MyBaseAdapter;
@@ -32,31 +31,30 @@ import org.andstatus.app.widget.MyBaseAdapter;
  *  @author yvolk@yurivolkov.com
  */
 public class UserList extends LoadableListActivity {
-    private UserListType mUserListType = UserListType.UNKNOWN;
-    private boolean mIsListCombined = false;
+    protected UserListType mUserListType = UserListType.UNKNOWN;
+    protected boolean mIsListCombined = false;
     private UserListContextMenu contextMenu = null;
+
+    public UserList() {
+        mLayoutId = R.layout.my_list_fragment;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        mLayoutId = R.layout.my_list_fragment;
         super.onCreate(savedInstanceState);
 
         mUserListType = getParsedUri().getUserListType();
         mIsListCombined = getParsedUri().isCombined();
         contextMenu = new UserListContextMenu(this);
-
-        showList(WhichPage.CURRENT);
     }
 
     @Override
     protected SyncLoader newSyncLoader(Bundle args) {
         switch (mUserListType) {
             case USERS_OF_MESSAGE:
-                return new UsersOfMessageListLoader(mUserListType, getMa(), getParsedUri().getItemId(), mIsListCombined);
-            case FOLLOWERS:
-                return new FollowersListLoader(mUserListType, getMa(), getParsedUri().getItemId(), mIsListCombined);
+                return new UsersOfMessageListLoader(mUserListType, getMa(), centralItemId, mIsListCombined);
             default:
-                return new UserListLoader(mUserListType, getMa(), getParsedUri().getItemId(), mIsListCombined);
+                return new UserListLoader(mUserListType, getMa(), centralItemId, mIsListCombined);
         }
     }
 

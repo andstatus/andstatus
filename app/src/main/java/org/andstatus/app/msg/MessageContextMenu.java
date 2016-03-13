@@ -24,10 +24,10 @@ import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.View.OnCreateContextMenuListener;
 import android.widget.AdapterView;
 
 import org.andstatus.app.IntentExtra;
+import org.andstatus.app.MyContextMenu;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
@@ -37,17 +37,15 @@ import org.andstatus.app.data.MessageForAccount;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.widget.MyBaseAdapter;
 
 /**
  * Context menu and corresponding actions on messages from the list 
  * @author yvolk@yurivolkov.com
  */
-public class MessageContextMenu implements OnCreateContextMenuListener {
+public class MessageContextMenu extends MyContextMenu {
 
     public final ActionableMessageList messageList;
     
-    private View viewOfTheContext = null;
     /**
      * Id of the Message that was selected (clicked, or whose context menu item
      * was selected) TODO: clicked, restore position...
@@ -61,25 +59,145 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
     public String imageFilename = null;
 
     private long mAccountUserIdToActAs;
+    private MessageForAccount msg;
 
     public MessageContextMenu(ActionableMessageList actionableMessageList) {
+        super(actionableMessageList.getActivity());
         messageList = actionableMessageList;
     }
 
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
         final String method = "onCreateContextMenu";
-        long userIdForThisMessage = mAccountUserIdToActAs;
-        viewOfTheContext = v;
-        mMsgId = 0;
-        String logMsg = method;
-        MyBaseAdapter adapter = messageList.getActivity().getListAdapter();
-        int position = adapter.getPosition(v);
-        messageList.getActivity().setPositionOfContextMenu(position);
-        if (position < 0) {
+        super.onCreateContextMenu(menu, v, menuInfo);
+        if (msg == null) {
             return;
         }
-        Object oViewItem = adapter.getItem(position);
+
+        int order = 0;
+        try {
+            menu.setHeaderTitle((MyContextHolder.get().persistentAccounts().size() > 1
+                    ? msg.myAccount().shortestUniqueAccountName() + ": " : "")
+                    + msg.bodyTrimmed);
+
+            if (msg.status != DownloadStatus.LOADED) {
+                MessageListContextMenuItem.EDIT.addTo(menu, order++, R.string.menu_item_edit);
+            }
+            if (msg.status.mayBeSent()) {
+                MessageListContextMenuItem.RESEND.addTo(menu, order++, R.string.menu_item_resend);
+            }
+
+            if (isEditorVisible()) {
+                MessageListContextMenuItem.COPY_TEXT.addTo(menu, order++, R.string.menu_item_copy_text);
+                MessageListContextMenuItem.COPY_AUTHOR.addTo(menu, order++, R.string.menu_item_copy_author);
+            }
+
+            MessageListContextMenuItem.USERS_OF_MESSAGE.addTo(menu, order++, R.string.users_of_message);
+            if (messageList.getSelectedUserId() != msg.senderId) {
+                /*
+                 * Messages by the Sender of this message ("User timeline" of
+                 * that user)
+                 */
+                MessageListContextMenuItem.SENDER_MESSAGES.addTo(menu, order++,
+                        String.format(
+                                getActivity().getText(R.string.menu_item_user_messages).toString(),
+                                MyQuery.userIdToWebfingerId(msg.senderId)));
+            }
+
+            if (messageList.getSelectedUserId() != msg.authorId && msg.senderId != msg.authorId) {
+                /*
+                 * Messages by the Author of this message ("User timeline" of
+                 * that user)
+                 */
+                MessageListContextMenuItem.AUTHOR_MESSAGES.addTo(menu, order++,
+                        String.format(
+                                getActivity().getText(R.string.menu_item_user_messages).toString(),
+                                MyQuery.userIdToWebfingerId(msg.authorId)));
+            }
+
+            if (msg.isLoaded() && !msg.isDirect() && !isEditorVisible()) {
+                MessageListContextMenuItem.REPLY.addTo(menu, order++, R.string.menu_item_reply);
+                MessageListContextMenuItem.REPLY_ALL.addTo(menu, order++, R.string.menu_item_reply_all);
+            }
+            MessageListContextMenuItem.SHARE.addTo(menu, order++, R.string.menu_item_share);
+            if (!TextUtils.isEmpty(msg.imageFilename)) {
+                imageFilename = msg.imageFilename;
+                MessageListContextMenuItem.VIEW_IMAGE.addTo(menu, order++, R.string.menu_item_view_image);
+            }
+
+            if (!isEditorVisible()) {
+                // TODO: Only if he follows me?
+                MessageListContextMenuItem.DIRECT_MESSAGE.addTo(menu, order++,
+                        R.string.menu_item_direct_message);
+            }
+
+            if (msg.isLoaded() && !msg.isDirect()) {
+                if (msg.favorited) {
+                    MessageListContextMenuItem.DESTROY_FAVORITE.addTo(menu, order++,
+                            R.string.menu_item_destroy_favorite);
+                } else {
+                    MessageListContextMenuItem.FAVORITE.addTo(menu, order++,
+                            R.string.menu_item_favorite);
+                }
+                if (msg.reblogged) {
+                    MessageListContextMenuItem.DESTROY_REBLOG.addTo(menu, order++,
+                            msg.myAccount().alternativeTermForResourceId(R.string.menu_item_destroy_reblog));
+                } else {
+                    // Don't allow a User to reblog himself
+                    if (mActorUserIdForCurrentMessage != msg.senderId) {
+                        MessageListContextMenuItem.REBLOG.addTo(menu, order++,
+                                msg.myAccount().alternativeTermForResourceId(R.string.menu_item_reblog));
+                    }
+                }
+            }
+
+            if (msg.isLoaded()) {
+                MessageListContextMenuItem.OPEN_MESSAGE_PERMALINK.addTo(menu, order++, R.string.menu_item_open_message_permalink);
+                MessageListContextMenuItem.OPEN_CONVERSATION.addTo(menu, order++, R.string.menu_item_open_conversation);
+            }
+
+            if (msg.isSender) {
+                // This message is by current User, hence we may delete it.
+                if (msg.isDirect()) {
+                    // This is a Direct Message
+                    // TODO: Delete Direct message
+                } else if (!msg.reblogged) {
+                    MessageListContextMenuItem.DESTROY_STATUS.addTo(menu, order++,
+                            R.string.menu_item_destroy_status);
+                }
+            }
+
+            if (msg.isLoaded()) {
+                switch (msg.myAccount().numberOfAccountsOfThisOrigin()) {
+                    case 1:
+                        break;
+                    case 2:
+                        MessageListContextMenuItem.ACT_AS_USER.addTo(menu, order++,
+                                String.format(
+                                        getActivity().getText(R.string.menu_item_act_as_user).toString(),
+                                        msg.myAccount().firstOtherAccountOfThisOrigin().shortestUniqueAccountName()));
+                        break;
+                    default:
+                        MessageListContextMenuItem.ACT_AS.addTo(menu, order++, R.string.menu_item_act_as);
+                        break;
+                }
+            }
+        } catch (Exception e) {
+            MyLog.e(this, method, e);
+        }
+    }
+
+    protected void saveContextOfSelectedItem(View v) {
+        final String method = "saveContextOfSelectedItem";
+        mMsgId = 0;
+        msg = null;
+        super.saveContextOfSelectedItem(v);
+        if (oViewItem == null) {
+            return;
+        }
+
+        long userIdForThisMessage = mAccountUserIdToActAs;
+        String logMsg = method;
         // TODO: Extract superclass
         if (TimelineViewItem.class.isAssignableFrom(oViewItem.getClass())) {
             TimelineViewItem viewItem = (TimelineViewItem) oViewItem;
@@ -98,125 +216,14 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
         }
         mActorUserIdForCurrentMessage = 0;
         MyLog.v(this, logMsg);
-        MessageForAccount msg = getMessageForAccount(userIdForThisMessage, getCurrentMyAccountUserId());
-        if (!msg.myAccount().isValid()) {
+
+        MessageForAccount msg2 = getMessageForAccount(userIdForThisMessage, getCurrentMyAccountUserId());
+        if (!msg2.myAccount().isValid()) {
             return;
         }
+        msg = msg2;
         mActorUserIdForCurrentMessage = msg.myAccount().getUserId();
         mAccountUserIdToActAs = 0;
-
-        int order = 0;
-        // Create the Context menu
-        try {
-            menu.setHeaderTitle((MyContextHolder.get().persistentAccounts().size() > 1
-                    ? msg.myAccount().shortestUniqueAccountName() + ": " : "")
-                    + msg.bodyTrimmed);
-
-            if (msg.status != DownloadStatus.LOADED) {
-                ContextMenuItem.EDIT.addTo(menu, order++, R.string.menu_item_edit);
-            }
-            if (msg.status.mayBeSent()) {
-                ContextMenuItem.RESEND.addTo(menu, order++, R.string.menu_item_resend);
-            }
-
-            if (isEditorVisible()) {
-                ContextMenuItem.COPY_TEXT.addTo(menu, order++, R.string.menu_item_copy_text);
-                ContextMenuItem.COPY_AUTHOR.addTo(menu, order++, R.string.menu_item_copy_author);
-            }
-
-            ContextMenuItem.USERS_OF_MESSAGE.addTo(menu, order++, R.string.users_of_message);
-            if (messageList.getSelectedUserId() != msg.senderId) {
-                /*
-                 * Messages by the Sender of this message ("User timeline" of
-                 * that user)
-                 */
-                ContextMenuItem.SENDER_MESSAGES.addTo(menu, order++,
-                        String.format(
-                                getContext().getText(R.string.menu_item_user_messages).toString(),
-                                MyQuery.userIdToWebfingerId(msg.senderId)));
-            }
-
-            if (messageList.getSelectedUserId() != msg.authorId && msg.senderId != msg.authorId) {
-                /*
-                 * Messages by the Author of this message ("User timeline" of
-                 * that user)
-                 */
-                ContextMenuItem.AUTHOR_MESSAGES.addTo(menu, order++,
-                        String.format(
-                                getContext().getText(R.string.menu_item_user_messages).toString(),
-                                MyQuery.userIdToWebfingerId(msg.authorId)));
-            }
-
-            if (msg.isLoaded() && !msg.isDirect() && !isEditorVisible()) {
-                ContextMenuItem.REPLY.addTo(menu, order++, R.string.menu_item_reply);
-                ContextMenuItem.REPLY_ALL.addTo(menu, order++, R.string.menu_item_reply_all);
-            }
-            ContextMenuItem.SHARE.addTo(menu, order++, R.string.menu_item_share);
-            if (!TextUtils.isEmpty(msg.imageFilename)) {
-                imageFilename = msg.imageFilename;
-                ContextMenuItem.VIEW_IMAGE.addTo(menu, order++, R.string.menu_item_view_image);
-            }
-
-            if (!isEditorVisible()) {
-                // TODO: Only if he follows me?
-                ContextMenuItem.DIRECT_MESSAGE.addTo(menu, order++,
-                        R.string.menu_item_direct_message);
-            }
-
-            if (msg.isLoaded() && !msg.isDirect()) {
-                if (msg.favorited) {
-                    ContextMenuItem.DESTROY_FAVORITE.addTo(menu, order++,
-                            R.string.menu_item_destroy_favorite);
-                } else {
-                    ContextMenuItem.FAVORITE.addTo(menu, order++,
-                            R.string.menu_item_favorite);
-                }
-                if (msg.reblogged) {
-                    ContextMenuItem.DESTROY_REBLOG.addTo(menu, order++,
-                            msg.myAccount().alternativeTermForResourceId(R.string.menu_item_destroy_reblog));
-                } else {
-                    // Don't allow a User to reblog himself
-                    if (mActorUserIdForCurrentMessage != msg.senderId) {
-                        ContextMenuItem.REBLOG.addTo(menu, order++,
-                                msg.myAccount().alternativeTermForResourceId(R.string.menu_item_reblog));
-                    }
-                }
-            }
-
-            if (msg.isLoaded()) {
-                ContextMenuItem.OPEN_MESSAGE_PERMALINK.addTo(menu, order++, R.string.menu_item_open_message_permalink);
-                ContextMenuItem.OPEN_CONVERSATION.addTo(menu, order++, R.string.menu_item_open_conversation);
-            }
-
-            if (msg.isSender) {
-                // This message is by current User, hence we may delete it.
-                if (msg.isDirect()) {
-                    // This is a Direct Message
-                    // TODO: Delete Direct message
-                } else if (!msg.reblogged) {
-                    ContextMenuItem.DESTROY_STATUS.addTo(menu, order++,
-                            R.string.menu_item_destroy_status);
-                }
-            }
-
-            if (msg.isLoaded()) {
-                switch (msg.myAccount().numberOfAccountsOfThisOrigin()) {
-                    case 1:
-                        break;
-                    case 2:
-                        ContextMenuItem.ACT_AS_USER.addTo(menu, order++,
-                                String.format(
-                                        getContext().getText(R.string.menu_item_act_as_user).toString(),
-                                        msg.myAccount().firstOtherAccountOfThisOrigin().shortestUniqueAccountName()));
-                        break;
-                    default:
-                        ContextMenuItem.ACT_AS.addTo(menu, order++, R.string.menu_item_act_as);
-                        break;
-                }
-            }
-        } catch (Exception e) {
-            MyLog.e(this, method, e);
-        }
     }
 
     private MessageForAccount getMessageForAccount(long userIdForThisMessage, long preferredUserId) {
@@ -246,10 +253,6 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
         return messageList.getCurrentMyAccountUserId();
     }
 
-    protected Context getContext() {
-        return messageList.getActivity();
-    }
-    
     public void onContextItemSelected(MenuItem item) {
         AdapterView.AdapterContextMenuInfo info;
         String msgInfo = "";
@@ -271,7 +274,7 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
 
         MyAccount ma = MyContextHolder.get().persistentAccounts().fromUserId(mActorUserIdForCurrentMessage);
         if (ma.isValid()) {
-            ContextMenuItem contextMenuItem = ContextMenuItem.fromId(item.getItemId());
+            MessageListContextMenuItem contextMenuItem = MessageListContextMenuItem.fromId(item.getItemId());
             MyLog.v(this, "onContextItemSelected: " + contextMenuItem + "; actor=" + ma.getAccountName() + "; msgId=" + mMsgId + msgInfo);
             contextMenuItem.execute(this, ma);
         }
@@ -286,31 +289,15 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
         }
         
         // Actually we use one Activity for all timelines...
-        intent = new Intent(getContext(), TimelineActivity.class);
+        intent = new Intent(getActivity(), TimelineActivity.class);
         intent.setData(MatchedUri.getTimelineUri(MyContextHolder.get().persistentAccounts()
                 .getCurrentAccountUserId(), TimelineTypeSelector.selectableType(timelineType),
                 isTimelineCombined, selectedUserId));
         // We don't use Intent.ACTION_SEARCH action anywhere, so there is no need it setting it.
         // - we're analyzing query instead!
-        messageList.getActivity().startActivity(intent);
+        getActivity().startActivity(intent);
     }
 
-    public void showContextMenu() {
-        if (viewOfTheContext != null) {
-            viewOfTheContext.post(new Runnable() {
-
-                @Override
-                public void run() {
-                    try {
-                        viewOfTheContext.showContextMenu();
-                    } catch (NullPointerException e) {
-                        MyLog.d(this, "on showContextMenu; " + (viewOfTheContext != null ? "viewOfTheContext is not null" : ""), e);
-                    }
-                }
-            });                    
-        }
-    }
-    
     public void loadState(Bundle savedInstanceState) {
         if (savedInstanceState != null 
                 && savedInstanceState.containsKey(IntentExtra.ITEM_ID.key)) {

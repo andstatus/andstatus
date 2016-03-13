@@ -191,12 +191,12 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
         long msgId = helper.getListItemIdOfLoadedReply();
         String logMsg = "msgId:" + msgId
                 + "; text:'" + MyQuery.msgIdToStringColumnValue(MyDatabase.Msg.BODY, msgId) + "'";
-        assertTrue(logMsg, helper.invokeContextMenuAction4ListItemId(method, msgId, ContextMenuItem.NONEXISTENT));
+        assertTrue(logMsg, helper.invokeContextMenuAction4ListItemId(method, msgId, MessageListContextMenuItem.NONEXISTENT));
         long userId1 = getActivity().getContextMenu().getActorUserIdForCurrentMessage();
         logMsg += "; userId1=" + userId1;
         assertTrue(logMsg, userId1 != 0);
 
-        helper.invokeContextMenuAction4ListItemId(method, msgId, ContextMenuItem.ACT_AS);
+        helper.invokeContextMenuAction4ListItemId(method, msgId, MessageListContextMenuItem.ACT_AS);
 
         AccountSelector accountSelector = (AccountSelector) helper.waitForNextActivity(method, 15000);
         TestSuite.waitForListLoaded(this, accountSelector, 3);

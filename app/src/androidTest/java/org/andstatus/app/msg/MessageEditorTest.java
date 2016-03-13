@@ -265,10 +265,10 @@ public class MessageEditorTest extends ActivityInstrumentationTestCase2<Timeline
         String logMsg = "msgId=" + msgId;
 
         String body = MyQuery.msgIdToStringColumnValue(MyDatabase.Msg.BODY, msgId);
-        helper.invokeContextMenuAction4ListItemId(method, msgId, ContextMenuItem.COPY_TEXT);
+        helper.invokeContextMenuAction4ListItemId(method, msgId, MessageListContextMenuItem.COPY_TEXT);
         assertEquals(logMsg, body, getClipboardText(method));
 
-        helper.invokeContextMenuAction4ListItemId(method, msgId, ContextMenuItem.COPY_AUTHOR);
+        helper.invokeContextMenuAction4ListItemId(method, msgId, MessageListContextMenuItem.COPY_AUTHOR);
         String text = getClipboardText(method);
         assertTrue(logMsg + "; Text: '" + text + "'", text.startsWith("@") && text.lastIndexOf("@") > 1);
     }

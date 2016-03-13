@@ -54,7 +54,7 @@ public class ConversationViewAdapter extends MyBaseAdapter {
             long selectedMessageId,
             List<ConversationViewItem> oMsgs) {
         this.contextMenu = contextMenu;
-        this.context = this.contextMenu.getContext();
+        this.context = this.contextMenu.getActivity();
         this.ma = MyContextHolder.get().persistentAccounts().fromUserId(this.contextMenu.getCurrentMyAccountUserId());
         this.selectedMessageId = selectedMessageId;
         this.oMsgs = oMsgs;

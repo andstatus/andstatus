@@ -16,34 +16,33 @@
 
 package org.andstatus.app.user;
 
-import android.app.Activity;
 import android.view.ContextMenu;
 import android.view.MenuItem;
 import android.view.View;
 
 import org.andstatus.app.LoadableListActivity;
+import org.andstatus.app.MyContextMenu;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.util.MyLog;
 
-public class UserListContextMenu implements View.OnCreateContextMenuListener {
-    private final LoadableListActivity listActivity;
+public class UserListContextMenu extends MyContextMenu {
     private long mAccountUserIdToActAs;
-    private View viewOfTheContext = null;
     private UserListViewItem mViewItem = UserListViewItem.getEmpty("");
 
     public UserListContextMenu(LoadableListActivity listActivity) {
-        this.listActivity = listActivity;
+        super(listActivity);
         mAccountUserIdToActAs = listActivity.getMa().getUserId();
     }
 
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
         final String method = "onCreateContextMenu";
-        viewOfTheContext = v;
-        mViewItem = (UserListViewItem) listActivity.getListAdapter().getItem(v);
+        super.onCreateContextMenu(menu, v, menuInfo);
+        if (getViewItem() == null) {
+            return;
+        }
 
         int order = 0;
         try {
@@ -52,12 +51,10 @@ public class UserListContextMenu implements View.OnCreateContextMenuListener {
                 UserListContextMenuItem.USER_MESSAGES.addTo(menu, order++,
                         String.format(getActivity().getText(R.string.menu_item_user_messages).toString(),
                                 mViewItem.mbUser.getNamePreferablyWebFingerId()));
-                /** TODO: implement
                 UserListContextMenuItem.FOLLOWERS.addTo(menu, order++,
                         String.format(
                                 getActivity().getText(R.string.followers_of).toString(),
                                 mViewItem.mbUser.getNamePreferablyWebFingerId()));
-                */
                 if (mViewItem.userIsFollowedBy(MyContextHolder.get().persistentAccounts().getCurrentAccount())) {
                     UserListContextMenuItem.STOP_FOLLOWING.addTo(menu, order++,
                             String.format(
@@ -77,22 +74,6 @@ public class UserListContextMenu implements View.OnCreateContextMenuListener {
 
     }
 
-    public void showContextMenu() {
-        if (viewOfTheContext != null) {
-            viewOfTheContext.post(new Runnable() {
-
-                @Override
-                public void run() {
-                    try {
-                        viewOfTheContext.showContextMenu();
-                    } catch (NullPointerException e) {
-                        MyLog.d(this, "on showContextMenu; " + (viewOfTheContext != null ? "viewOfTheContext is not null" : ""), e);
-                    }
-                }
-            });
-        }
-    }
-
     public boolean onContextItemSelected(MenuItem item) {
         MyAccount ma = MyContextHolder.get().persistentAccounts().fromUserId(mAccountUserIdToActAs);
         if (ma.isValid()) {
@@ -103,10 +84,6 @@ public class UserListContextMenu implements View.OnCreateContextMenuListener {
         } else {
             return false;
         }
-    }
-
-    protected Activity getActivity() {
-        return listActivity;
     }
 
     public void setAccountUserIdToActAs(long accountUserIdToActAs) {

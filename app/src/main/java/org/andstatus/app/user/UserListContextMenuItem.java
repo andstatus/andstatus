@@ -18,10 +18,10 @@ package org.andstatus.app.user;
 
 import android.content.Intent;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.view.Menu;
 
 import org.andstatus.app.ActivityRequestCode;
+import org.andstatus.app.ContextMenuItem;
 import org.andstatus.app.MyAction;
 import org.andstatus.app.account.AccountSelector;
 import org.andstatus.app.account.MyAccount;
@@ -30,14 +30,14 @@ import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.msg.TimelineActivity;
 import org.andstatus.app.msg.TimelineTypeSelector;
+import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
-import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.util.MyLog;
 
-public enum UserListContextMenuItem {
+public enum UserListContextMenuItem implements ContextMenuItem {
     GET_USER() {
         @Override
         void executeOnUiThread(UserListContextMenu menu, MyAccount ma) {
@@ -102,7 +102,7 @@ public enum UserListContextMenuItem {
             if (MyLog.isVerboseEnabled()) {
                 MyLog.d(this, "onItemClick, startActivity=" + uri);
             }
-            menu.getActivity().startActivity(MyAction.VIEW_USERS.getIntent(uri));
+            menu.getActivity().startActivity(MyAction.VIEW_FOLLOWERS.getIntent(uri));
         }
     },
     NONEXISTENT(),
@@ -119,6 +119,7 @@ public enum UserListContextMenuItem {
         this.mIsAsync = isAsync;
     }
 
+    @Override
     public int getId() {
         return Menu.FIRST + ordinal() + 1;
     }

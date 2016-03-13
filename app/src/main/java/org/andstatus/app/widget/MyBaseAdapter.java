@@ -30,6 +30,7 @@ public abstract class MyBaseAdapter extends BaseAdapter {
         return getItem(getPosition(view));
     }
 
+    /** @return -1 if not found */
     public int getPosition(View view) {
         TextView positionView = getPositionView(view);
         if (positionView == null) {

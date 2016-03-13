@@ -20,6 +20,7 @@ import android.net.Uri;
 import android.os.AsyncTask.Status;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v7.app.ActionBar;
 import android.text.TextUtils;
 import android.view.MenuItem;
@@ -62,7 +63,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
     /**
      * We use this to request additional items (from Internet)
      */
-    private MyAccount ma = MyAccount.getEmpty(MyContextHolder.get(), "");
+    protected MyAccount ma = MyAccount.getEmpty(MyContextHolder.get(), "");
 
     protected final long mInstanceId = InstanceId.next();
     private long configChangeTime = 0;
@@ -164,6 +165,21 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
     protected boolean isConfigChanged() {
         return configChanged;
     }
+
+    /** @return selectedItem */
+    @Nullable
+    public Object saveContextOfSelectedItem(View v) {
+        int position = -1;
+        if (getListAdapter() != null) {
+            position = getListAdapter().getPosition(v);
+        }
+        setPositionOfContextMenu(position);
+        if (position >= 0) {
+            return getListAdapter().getItem(position);
+        }
+        return null;
+    }
+
 
     public interface SyncLoader {
         void allowLoadingFromInternet();
