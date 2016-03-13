@@ -27,6 +27,7 @@ import org.andstatus.app.net.social.MbAttachment;
 import org.andstatus.app.net.social.MbMessage;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.origin.OriginType;
+import org.andstatus.app.util.TriState;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -83,6 +84,8 @@ public class ConversationInserter extends InstrumentationTestCase {
         MbMessage minus1 = buildMessage(author2, "Older one message", null, null);
         MbMessage selected = buildMessage(getAuthor1(), "Selected message", minus1, TestSuite.CONVERSATION_ENTRY_MESSAGE_OID);
         MbMessage reply1 = buildMessage(author3, "Reply 1 to selected", selected, null);
+        reply1.sender.followedByActor = TriState.TRUE;
+
         MbMessage reply2 = buildMessage(author2, "Reply 2 to selected is public", selected, null);
         addPublicMessage(reply2, true);
         MbMessage reply3 = buildMessage(getAuthor1(), "Reply 3 to selected by the same author", selected, null);
@@ -128,9 +131,19 @@ public class ConversationInserter extends InstrumentationTestCase {
                                         "http://www.publicdomainpictures.net/pictures/100000/nahled/autumn-tree-in-a-park.jpg"),
                                 MyContentType.IMAGE));
         addMessage(reply9);
-        
-        MbMessage reply10 = buildMessage(author3, "Reply 10 to Reply 8", reply8, null);
-        addMessage(reply10);
+
+        // Message downloaded by another account
+        MyAccount acc2 = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.CONVERSATION_ACCOUNT2_NAME);
+        MbUser actorOld = author3.actor;
+        author3.actor = users.get(TestSuite.CONVERSATION_ACCOUNT2_USER_OID);
+        author3.followedByActor = TriState.TRUE;
+        MbMessage reply10 = buildMessage(acc2, author3, "Reply 10 to Reply 8", reply8, null);
+        assertEquals("Another account as a message actor", reply10.actor.oid, TestSuite.CONVERSATION_ACCOUNT2_USER_OID);
+        assertEquals("Another account as a sender actor", reply10.sender.actor.oid, TestSuite.CONVERSATION_ACCOUNT2_USER_OID);
+        MessageInserter.addMessage(acc2, reply10);
+        author3.followedByActor = TriState.UNKNOWN;
+        author3.actor = actorOld;
+
         MbMessage reply11 = buildMessage(author2, "Reply 11 to Reply 7, " + TestSuite.GLOBAL_PUBLIC_MESSAGE_TEXT + " text", reply7, null);
         addPublicMessage(reply11, true);
     }
@@ -154,12 +167,16 @@ public class ConversationInserter extends InstrumentationTestCase {
     }
     
     private MbMessage buildMessage(MbUser author, String body, MbMessage inReplyToMessage, String messageOidIn) {
+        return buildMessage(ma, author, body, inReplyToMessage, messageOidIn);
+    }
+
+    private MbMessage buildMessage(MyAccount ma, MbUser author, String body, MbMessage inReplyToMessage, String messageOidIn) {
         return new MessageInserter(ma).buildMessage(author, body
-                + (inReplyToMessage != null ? " it" + iteration : "") + bodySuffix,
+                        + (inReplyToMessage != null ? " it" + iteration : "") + bodySuffix,
                 inReplyToMessage, messageOidIn, DownloadStatus.LOADED);
     }
-    
+
     private long addMessage(MbMessage message) {
-        return new MessageInserter(ma).addMessage(message);
+        return MessageInserter.addMessage(ma, message);
     }
 }

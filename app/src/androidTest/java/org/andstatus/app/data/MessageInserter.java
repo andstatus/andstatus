@@ -131,7 +131,11 @@ public class MessageInserter extends InstrumentationTestCase {
         }
         return message;
     }
-    
+
+    public static long addMessage(MyAccount ma, MbMessage message) {
+        return new MessageInserter(ma).addMessage(message);
+    }
+
     public long addMessage(MbMessage messageIn) {
         TimelineType tt = TimelineType.HOME;
         if (messageIn.isPublic() ) {

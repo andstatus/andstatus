@@ -74,9 +74,10 @@ public class UserListWorkTest extends ActivityInstrumentationTestCase2<UserList>
         FollowersList userList = (FollowersList) helper.waitForNextActivity(method, 15000);
         TestSuite.waitForListLoaded(this, userList, 1);
 
+        List<UserListViewItem> followersItems = userList.getListLoader().getList();
         ListActivityTestHelper<FollowersList> followersHelper = new ListActivityTestHelper<>(this, userList);
         followersHelper.clickListAtPosition(method,
-                followersHelper.getPositionOfListItemId(listItems.get(0).getUserId()));
+                followersHelper.getPositionOfListItemId(followersItems.get(0).getUserId()));
         Thread.sleep(500);
     }
 }

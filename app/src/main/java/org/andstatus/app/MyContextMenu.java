@@ -19,15 +19,18 @@ package org.andstatus.app;
 import android.view.ContextMenu;
 import android.view.View;
 
+import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.util.MyLog;
 
 /**
  * @author yvolk@yurivolkov.com
  */
 public class MyContextMenu implements View.OnCreateContextMenuListener {
+    protected final LoadableListActivity listActivity;
     protected View viewOfTheContext = null;
     protected Object oViewItem = null;
-    protected final LoadableListActivity listActivity;
+    protected long otherAccountUserIdToActAs = 0;
 
     public MyContextMenu(LoadableListActivity listActivity) {
         this.listActivity = listActivity;
@@ -39,6 +42,9 @@ public class MyContextMenu implements View.OnCreateContextMenuListener {
     }
 
     protected void saveContextOfSelectedItem(View v) {
+        if (viewOfTheContext != v) {
+            otherAccountUserIdToActAs = 0;
+        }
         viewOfTheContext = v;
         oViewItem = listActivity.saveContextOfSelectedItem(v);
     }
@@ -61,5 +67,15 @@ public class MyContextMenu implements View.OnCreateContextMenuListener {
                 }
             });
         }
+    }
+
+    public void setAccountUserIdToActAs(long accountUserIdToActAs) {
+        this.otherAccountUserIdToActAs = accountUserIdToActAs;
+    }
+
+    public MyAccount getMyAccountToActAs() {
+        return otherAccountUserIdToActAs == 0 ?
+                MyContextHolder.get().persistentAccounts().getCurrentAccount() :
+                MyContextHolder.get().persistentAccounts().fromUserId(otherAccountUserIdToActAs);
     }
 }

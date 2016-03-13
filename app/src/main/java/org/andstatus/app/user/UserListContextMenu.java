@@ -28,12 +28,9 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.util.MyLog;
 
 public class UserListContextMenu extends MyContextMenu {
-    private long mAccountUserIdToActAs;
-    private UserListViewItem mViewItem = UserListViewItem.getEmpty("");
 
     public UserListContextMenu(LoadableListActivity listActivity) {
         super(listActivity);
-        mAccountUserIdToActAs = listActivity.getMa().getUserId();
     }
 
     @Override
@@ -46,25 +43,25 @@ public class UserListContextMenu extends MyContextMenu {
 
         int order = 0;
         try {
-            menu.setHeaderTitle(mViewItem.mbUser.getUserName());
-            if (mViewItem.mbUser.isIdentified()) {
+            menu.setHeaderTitle(getViewItem().mbUser.getUserName());
+            if (getViewItem().mbUser.isIdentified()) {
                 UserListContextMenuItem.USER_MESSAGES.addTo(menu, order++,
                         String.format(getActivity().getText(R.string.menu_item_user_messages).toString(),
-                                mViewItem.mbUser.getNamePreferablyWebFingerId()));
+                                getViewItem().mbUser.getNamePreferablyWebFingerId()));
                 UserListContextMenuItem.FOLLOWERS.addTo(menu, order++,
                         String.format(
                                 getActivity().getText(R.string.followers_of).toString(),
-                                mViewItem.mbUser.getNamePreferablyWebFingerId()));
-                if (mViewItem.userIsFollowedBy(MyContextHolder.get().persistentAccounts().getCurrentAccount())) {
+                                getViewItem().mbUser.getNamePreferablyWebFingerId()));
+                if (getViewItem().userIsFollowedBy(MyContextHolder.get().persistentAccounts().getCurrentAccount())) {
                     UserListContextMenuItem.STOP_FOLLOWING.addTo(menu, order++,
                             String.format(
                                     getActivity().getText(R.string.menu_item_stop_following_user).toString(),
-                                    mViewItem.mbUser.getNamePreferablyWebFingerId()));
+                                    getViewItem().mbUser.getNamePreferablyWebFingerId()));
                 } else {
                     UserListContextMenuItem.FOLLOW.addTo(menu, order++,
                             String.format(
                                     getActivity().getText(R.string.menu_item_follow_user).toString(),
-                                    mViewItem.mbUser.getNamePreferablyWebFingerId()));
+                                    getViewItem().mbUser.getNamePreferablyWebFingerId()));
                 }
             }
             UserListContextMenuItem.GET_USER.addTo(menu, order++, R.string.get_user);
@@ -75,7 +72,7 @@ public class UserListContextMenu extends MyContextMenu {
     }
 
     public boolean onContextItemSelected(MenuItem item) {
-        MyAccount ma = MyContextHolder.get().persistentAccounts().fromUserId(mAccountUserIdToActAs);
+        MyAccount ma = getMyAccountToActAs();
         if (ma.isValid()) {
             UserListContextMenuItem contextMenuItem = UserListContextMenuItem.fromId(item.getItemId());
             MyLog.v(this, "onContextItemSelected: " + contextMenuItem + "; actor="
@@ -86,11 +83,11 @@ public class UserListContextMenu extends MyContextMenu {
         }
     }
 
-    public void setAccountUserIdToActAs(long accountUserIdToActAs) {
-        mAccountUserIdToActAs = accountUserIdToActAs;
+    public UserListViewItem getViewItem() {
+        if (oViewItem == null) {
+            return UserListViewItem.getEmpty("");
+        }
+        return (UserListViewItem) oViewItem;
     }
 
-    public UserListViewItem getViewItem() {
-        return mViewItem;
-    }
 }

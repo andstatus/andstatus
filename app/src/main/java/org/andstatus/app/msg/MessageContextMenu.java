@@ -16,7 +16,6 @@
 
 package org.andstatus.app.msg;
 
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -58,7 +57,6 @@ public class MessageContextMenu extends MyContextMenu {
     private long mActorUserIdForCurrentMessage = 0;
     public String imageFilename = null;
 
-    private long mAccountUserIdToActAs;
     private MessageForAccount msg;
 
     public MessageContextMenu(ActionableMessageList actionableMessageList) {
@@ -196,7 +194,7 @@ public class MessageContextMenu extends MyContextMenu {
             return;
         }
 
-        long userIdForThisMessage = mAccountUserIdToActAs;
+        long userIdForThisMessage = otherAccountUserIdToActAs;
         String logMsg = method;
         // TODO: Extract superclass
         if (TimelineViewItem.class.isAssignableFrom(oViewItem.getClass())) {
@@ -223,7 +221,6 @@ public class MessageContextMenu extends MyContextMenu {
         }
         msg = msg2;
         mActorUserIdForCurrentMessage = msg.myAccount().getUserId();
-        mAccountUserIdToActAs = 0;
     }
 
     private MessageForAccount getMessageForAccount(long userIdForThisMessage, long preferredUserId) {
@@ -232,7 +229,7 @@ public class MessageContextMenu extends MyContextMenu {
                         preferredUserId,
                         false);
         MessageForAccount msg = new MessageForAccount(mMsgId, ma1);
-        boolean forceFirstUser = mAccountUserIdToActAs !=0;
+        boolean forceFirstUser = otherAccountUserIdToActAs !=0;
         if (ma1.isValid() && !forceFirstUser
                 && !msg.isTiedToThisAccount()
                 && ma1.getUserId() != preferredUserId
@@ -311,10 +308,6 @@ public class MessageContextMenu extends MyContextMenu {
 
     public long getMsgId() {
         return mMsgId;
-    }
-
-    public void setAccountUserIdToActAs(long accountUserIdToActAs) {
-        this.mAccountUserIdToActAs = accountUserIdToActAs;
     }
 
     public long getActorUserIdForCurrentMessage() {
