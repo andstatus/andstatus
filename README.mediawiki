@@ -15,6 +15,6 @@ For more information please read the [https://github.com/andstatus/andstatus/wik
 See the [http://andstatus.org/changelog.html Change Log] for descriptions of all features of AndStatus and their discussion.
 
 {|
-|[https://play.google.com/store/apps/details?id=org.andstatus.app [[/andstatus/andstatus/wiki/images/get-it-on-google-play.png|alt=Get it on Google Play]]]
-|[https://f-droid.org/repository/browse/?fdid=org.andstatus.app [[/andstatus/andstatus/wiki/images/get-it-on-fdroid.png|alt=Get it on F-Droid]]]
+|[https://play.google.com/store/apps/details?id=org.andstatus.app [[images/get-it-on-google-play.png|alt=Get it on Google Play]]]
+|[https://f-droid.org/repository/browse/?fdid=org.andstatus.app [[images/get-it-on-fdroid.png|alt=Get it on F-Droid]]]
 |}
