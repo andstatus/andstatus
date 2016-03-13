@@ -16,9 +16,13 @@
 
 package org.andstatus.app.service;
 
+import android.database.sqlite.SQLiteDatabase;
 import android.text.TextUtils;
 
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DataInserter;
+import org.andstatus.app.data.FollowingUserValues;
+import org.andstatus.app.data.LatestUserMessages;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.net.http.ConnectionException;
@@ -26,14 +30,16 @@ import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.util.MyLog;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author yvolk@yurivolkov.com
  */
 public class CommandExecutorFollowers extends CommandExecutorStrategy {
     long userId = 0;
-    String oid = "";
+    String userOid = "";
 
     @Override
     void execute() {
@@ -41,20 +47,19 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
         if (!lookupUser()) {
             return;
         }
-        if (execContext.getMyAccount().getConnection().isApiSupported(Connection.ApiRoutineEnum.GET_FOLLOWERS_IDS)) {
-            getFollowersByIds();
-        } else {
+        try {
             getFollowers();
+        } catch (ConnectionException e) {
+            logConnectionException(e, "Getting followers for id:" + userId);
         }
-
     }
 
     private boolean lookupUser() {
         final String method = "getFollowers";
         boolean ok = true;
         userId = execContext.getCommandData().itemId;
-        oid = MyQuery.idToOid(MyDatabase.OidEnum.USER_OID, userId, 0);
-        if (TextUtils.isEmpty(oid)) {
+        userOid = MyQuery.idToOid(MyDatabase.OidEnum.USER_OID, userId, 0);
+        if (TextUtils.isEmpty(userOid)) {
             ok = false;
             execContext.getResult().incrementParseExceptions();
             MyLog.e(this, method + "; userOid not found for ID: " + userId);
@@ -62,53 +67,83 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
         return ok;
     }
 
-    private void getFollowersByIds() {
-        final String method = "getFollowersByIds";
-        boolean ok = false;
-        List<String> ids = null;
-        boolean errorLogged = false;
-        long counter = 0;
-        try {
-            ids = execContext.getMyAccount().getConnection().getIdsOfUsersFollowing(oid);
-            ok = true;
-        } catch (ConnectionException e) {
-            errorLogged = true;
-            logConnectionException(e, method + "; " + oid);
-        }
-        if (ok) {
-            for (String followerOid : ids) {
-                long id = MyQuery.oidToId(MyDatabase.OidEnum.USER_OID,
-                        execContext.getMyAccount().getOriginId(), followerOid);
-                counter++;
-                MyLog.v(this, method + "; " + counter + ". " + "User oid=" + followerOid + ", id=" + id
-                        + " is following id=" + userId);
-                //new DataInserter(execContext).insertOrUpdateUser(user);
-            }
-        }
-        logOk(ok || !errorLogged);
-        MyLog.d(this, method + (ok ? "succeeded" : "failed")
-                + ", " + counter + " followers, id=" + userId);
-    }
-
-    private void getFollowers() {
+    private void getFollowers() throws ConnectionException {
         final String method = "getFollowers";
         boolean ok = false;
-        List<MbUser> users = null;
         boolean errorLogged = false;
-        try {
-            users = execContext.getMyAccount().getConnection().getUsersFollowing(oid);
-            ok = !users.isEmpty();
-        } catch (ConnectionException e) {
-            errorLogged = true;
-            logConnectionException(e, method + "; " + oid);
+
+        List<String> userOidsNew = new ArrayList<>();
+        LatestUserMessages lum = new LatestUserMessages();
+
+        DataInserter di = new DataInserter(execContext);
+        if (execContext.getMyAccount().getConnection()
+                .isApiSupported(Connection.ApiRoutineEnum.GET_FOLLOWERS)) {
+            List<MbUser> usersNew =
+                    execContext.getMyAccount().getConnection().getUsersFollowing(userOid);
+            for (MbUser user : usersNew) {
+                userOidsNew.add(user.oid);
+                di.insertOrUpdateUser(user, lum);
+            }
+        } else if (execContext.getMyAccount().getConnection()
+                .isApiSupported(Connection.ApiRoutineEnum.GET_FOLLOWERS_IDS)) {
+            userOidsNew = execContext.getMyAccount().getConnection().getIdsOfUsersFollowing(userOid);
+        } else {
+            throw new ConnectionException(ConnectionException.StatusCode.UNSUPPORTED_API,
+                    Connection.ApiRoutineEnum.GET_FOLLOWERS
+                    + " and " + Connection.ApiRoutineEnum.GET_FOLLOWERS_IDS);
         }
-        if (ok) {
-            for (MbUser user : users) {
-                new DataInserter(execContext).insertOrUpdateUser(user);
+        Set<Long> userIdsOld = MyQuery.getIdsOfUsersFollowing(userId);
+
+        SQLiteDatabase db = MyContextHolder.get().getDatabase();
+        if (db == null) {
+            MyLog.v(this, "Database is null");
+            return;
+        }
+        for (String userOidNew : userOidsNew) {
+            long userIdNew = MyQuery.oidToId(MyDatabase.OidEnum.USER_OID,
+                    execContext.getMyAccount().getOriginId(), userOidNew);
+            long msgId = 0;
+            if (userIdNew != 0) {
+                msgId = MyQuery.userIdToLongColumnValue(MyDatabase.User.USER_MSG_ID, userIdNew);
+            }
+            // The User doesn't have any messages sent, so let's download the latest
+            if (msgId == 0) {
+                try {
+                    // Download the Users's info + optionally his latest message
+                    if (userIdNew == 0 || execContext.getMyAccount().getConnection().userObjectHasMessage()) {
+                        MbUser mbUser = execContext.getMyAccount().getConnection().getUser(userOidNew, null);
+                        userIdNew = di.insertOrUpdateUser(mbUser, lum);
+                        msgId = MyQuery.userIdToLongColumnValue(MyDatabase.User.USER_MSG_ID, userIdNew);
+                    }
+                    if (userIdNew != 0 && msgId == 0) {
+                        di.downloadOneMessageBy(userOidNew, lum);
+                    }
+                } catch (ConnectionException e) {
+                    MyLog.i(this, "Failed to download the User object or his message for oid=" + userOidNew, e);
+                }
+            }
+            if (userIdNew != 0) {
+                userIdsOld.remove(userIdNew);
+                FollowingUserValues fu = new FollowingUserValues(execContext.getTimelineUserId(), userIdNew);
+                fu.setFollowed(true);
+                fu.update(db);
+            }
+            if (logSoftErrorIfStopping()) {
+                return;
             }
         }
-        logOk(ok || !errorLogged);
-        MyLog.d(this, method + (ok ? "succeeded" : "failed") + ", id=" + userId);
-    }
 
+        lum.save();
+
+        // Now let's remove "following" information for all users left in the Set:
+        for (long notFollowingId : userIdsOld) {
+            FollowingUserValues fu = new FollowingUserValues(notFollowingId, userId);
+            fu.setFollowed(false);
+            fu.update(db);
+        }
+
+        logOk(ok || !errorLogged);
+        MyLog.d(this, method + (ok ? "succeeded" : "failed")
+                + ", " + userOidsNew  + " followers, id=" + userId);
+    }
 }

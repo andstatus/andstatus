@@ -516,9 +516,16 @@ public class MyQuery {
         return id;
     }
 
-    /**
-     * Following users' IDs (Friends of the specified User) stored in the database
-     */
+    @NonNull
+    public static Set<Long> getIdsOfUsersFollowing(long userId) {
+        String where = MyDatabase.FollowingUser.FOLLOWED_USER_ID + "=" + userId
+                + " AND " + MyDatabase.FollowingUser.USER_FOLLOWED + "=1";
+        String sql = "SELECT " + MyDatabase.FollowingUser.USER_ID
+                + " FROM " + FollowingUser.TABLE_NAME
+                + " WHERE " + where;
+        return getLongs(sql);
+    }
+
     @NonNull
     public static Set<Long> getIdsOfUsersFollowedBy(long userId) {
         String where = MyDatabase.FollowingUser.USER_ID + "=" + userId
@@ -526,7 +533,6 @@ public class MyQuery {
         String sql = "SELECT " + MyDatabase.FollowingUser.FOLLOWED_USER_ID
                 + " FROM " + FollowingUser.TABLE_NAME 
                 + " WHERE " + where;
-
         return getLongs(sql);
     }
 

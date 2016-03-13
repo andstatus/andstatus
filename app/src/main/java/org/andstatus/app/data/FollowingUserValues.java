@@ -31,25 +31,25 @@ import org.andstatus.app.util.SharedPreferencesUtil;
  */
 public class FollowingUserValues {
     public long userId;
-    public long followingUserId;
+    public long followedUserId;
     private ContentValues contentValues = new ContentValues();
 
     /**
      * Move all keys that belong to {@link FollowingUser} table from values to the newly created ContentValues.
      * @param userId - first part of key
-     * @param followingUserId - second part of key
+     * @param followedUserId - second part of key
      * @param values - all other fields (currently only 1)
      * @return
      */
-    public static FollowingUserValues valueOf(long userId, long followingUserId, ContentValues values) {
-        FollowingUserValues userValues = new FollowingUserValues(userId, followingUserId);
+    public static FollowingUserValues valueOf(long userId, long followedUserId, ContentValues values) {
+        FollowingUserValues userValues = new FollowingUserValues(userId, followedUserId);
         MyQuery.moveBooleanKey(FollowingUser.USER_FOLLOWED, "", values, userValues.contentValues);
         return userValues;
     }
     
-    public FollowingUserValues(long userId, long followingUserId) {
+    public FollowingUserValues(long userId, long followedUserId) {
         this.userId = userId;
-        this.followingUserId = followingUserId;
+        this.followedUserId = followedUserId;
     }
     
     /**
@@ -64,7 +64,7 @@ public class FollowingUserValues {
      */
     public void update(SQLiteDatabase db) {
         boolean followed = false;
-        if (userId != 0 && followingUserId != 0 && contentValues.containsKey(FollowingUser.USER_FOLLOWED)) {
+        if (userId != 0 && followedUserId != 0 && contentValues.containsKey(FollowingUser.USER_FOLLOWED)) {
             followed = SharedPreferencesUtil.isTrue(contentValues.get(FollowingUser.USER_FOLLOWED));
         } else {
             // Don't change anything as there is no information
@@ -88,7 +88,7 @@ public class FollowingUserValues {
     private void tryToUpdate(SQLiteDatabase db, boolean followed) {
         // TODO: create universal dExists method...
         String where = MyDatabase.FollowingUser.USER_ID + "=" + userId
-                + " AND " + MyDatabase.FollowingUser.FOLLOWED_USER_ID + "=" + followingUserId;
+                + " AND " + MyDatabase.FollowingUser.FOLLOWED_USER_ID + "=" + followedUserId;
         String sql = "SELECT * FROM " + FollowingUser.TABLE_NAME + " WHERE " + where;
 
         Cursor cursor = null;
@@ -108,7 +108,7 @@ public class FollowingUserValues {
             ContentValues cv = new ContentValues(contentValues);
             // Add Key fields
             cv.put(FollowingUser.USER_ID, userId);
-            cv.put(FollowingUser.FOLLOWED_USER_ID, followingUserId);
+            cv.put(FollowingUser.FOLLOWED_USER_ID, followedUserId);
             
             db.insert(FollowingUser.TABLE_NAME, null, cv);
         }

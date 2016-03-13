@@ -73,7 +73,7 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitter1p0 {
         Uri sUri = Uri.parse(getApiPath(ApiRoutineEnum.GET_FRIENDS_IDS));
         Uri.Builder builder = sUri.buildUpon();
         builder.appendQueryParameter("user_id", userId);
-        List<String> list = new ArrayList<String>();
+        List<String> list = new ArrayList<>();
         JSONArray jArr = http.getRequestAsArray(builder.build().toString());
         try {
             for (int index = 0; index < jArr.length(); index++) {
@@ -81,6 +81,23 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitter1p0 {
             }
         } catch (JSONException e) {
             throw ConnectionException.loggedJsonException(this, "Parsing friendsIds", e, null);
+        }
+        return list;
+    }
+
+    @Override
+    public List<String> getIdsOfUsersFollowing(String userId) throws ConnectionException {
+        Uri sUri = Uri.parse(getApiPath(ApiRoutineEnum.GET_FOLLOWERS_IDS));
+        Uri.Builder builder = sUri.buildUpon();
+        builder.appendQueryParameter("user_id", userId);
+        List<String> list = new ArrayList<>();
+        JSONArray jArr = http.getRequestAsArray(builder.build().toString());
+        try {
+            for (int index = 0; index < jArr.length(); index++) {
+                list.add(jArr.getString(index));
+            }
+        } catch (JSONException e) {
+            throw ConnectionException.loggedJsonException(this, "Parsing followersIds", e, null);
         }
         return list;
     }

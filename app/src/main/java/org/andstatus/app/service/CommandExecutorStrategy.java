@@ -46,6 +46,17 @@ class CommandExecutorStrategy implements CommandExecutorParent {
         MyLog.d(strategy, "Launching " + strategy.execContext);
     }
 
+    public boolean logSoftErrorIfStopping() {
+        if (isStopping()) {
+            if ( !execContext.getResult().hasError()) {
+                execContext.getResult().incrementNumIoExceptions();
+                execContext.getResult().setMessage("Service is stopping");
+            }
+            return true;
+        }
+        return false;
+    }
+
     private static void logEnd(CommandExecutorStrategy strategy) {
         MyLog.d(strategy, "Executed " + strategy.execContext);
         if (strategy.execContext.getCommandData().getCommand() == CommandEnum.UPDATE_STATUS) {

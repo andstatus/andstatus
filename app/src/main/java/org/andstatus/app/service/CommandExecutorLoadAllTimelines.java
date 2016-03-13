@@ -27,7 +27,7 @@ class CommandExecutorLoadAllTimelines extends CommandExecutorStrategy {
     @Override
     void execute() {
         for (TimelineType timelineType : getTimelines()) {
-            if (isStopping()) {
+            if (logSoftErrorIfStopping()) {
                 break;
             }
             execContext.setTimelineType(timelineType);
@@ -36,7 +36,7 @@ class CommandExecutorLoadAllTimelines extends CommandExecutorStrategy {
         if (!execContext.getResult().hasError() && !isStopping()) {
             new DataPruner(execContext.getMyContext()).prune();
         }
-        if (!execContext.getResult().hasError() || execContext.getResult().getDownloadedCount() > 0) {
+        if (execContext.getResult().getDownloadedCount() > 0) {
             MyLog.v(this, "Notifying of timeline changes");
 
             notifyViaWidgets();

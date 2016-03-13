@@ -26,9 +26,12 @@ import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.MyDatabase.Msg;
 import org.andstatus.app.data.MyDatabase.OidEnum;
 import org.andstatus.app.msg.KeywordsFilter;
+import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.social.MbAttachment;
 import org.andstatus.app.net.social.MbMessage;
+import org.andstatus.app.net.social.MbTimelineItem;
 import org.andstatus.app.net.social.MbUser;
+import org.andstatus.app.net.social.TimelinePosition;
 import org.andstatus.app.service.AttachmentDownloader;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandExecutionContext;
@@ -503,4 +506,17 @@ public class DataInserter {
         lum.save();
         return rowId;
     }
+
+    public void downloadOneMessageBy(String userOid, LatestUserMessages lum) throws ConnectionException {
+        execContext.setTimelineType(TimelineType.USER);
+        List<MbTimelineItem> messages = execContext.getMyAccount().getConnection().getTimeline(
+                execContext.getTimelineType().getConnectionApiRoutine(), TimelinePosition.getEmpty(), 1, userOid);
+        for (MbTimelineItem item : messages) {
+            if (item.getType() == MbTimelineItem.ItemType.MESSAGE) {
+                insertOrUpdateMsg(item.mbMessage, lum);
+                break;
+            }
+        }
+    }
+
 }

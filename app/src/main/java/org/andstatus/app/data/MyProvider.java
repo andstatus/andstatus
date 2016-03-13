@@ -223,7 +223,7 @@ public class MyProvider extends ContentProvider {
             otherUserValues.insert(db);
 
             if (followingUserValues != null) {
-                followingUserValues.followingUserId =  rowId;
+                followingUserValues.followedUserId =  rowId;
                 followingUserValues.update(db);
             }
 

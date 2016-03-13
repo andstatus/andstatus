@@ -40,11 +40,7 @@ public class CommandExecutorAllAccounts extends CommandExecutorStrategy {
             }
             execContext.setMyAccount(ma);
             CommandExecutorStrategy.executeStep(execContext, this);
-            if (isStopping()) {
-                if ( !execContext.getResult().hasError()) {
-                    execContext.getResult().incrementNumIoExceptions();
-                    execContext.getResult().setMessage("Service is stopping");
-                }
+            if (logSoftErrorIfStopping()) {
                 break;
             }
         }
