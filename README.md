@@ -14,5 +14,4 @@ Under Free/Libre and Open Source License.
 For more information please read the [AndStatus Wiki](https://github.com/andstatus/andstatus/wiki).
 See the [Change Log](http://andstatus.org/changelog.html) for descriptions of all features of AndStatus and their discussion.
 
-[![Get it on Google Play](https://github.com/andstatus/andstatus/wiki/images/get-it-on-google-play.png)](https://play.google.com/store/apps/details?id=org.andstatus.app)
-[![Get it on F-Droid](https://github.com/andstatus/andstatus/wiki/images/get-it-on-fdroid.png)](https://f-droid.org/repository/browse/?fdid=org.andstatus.app)
+| [![Get it on Google Play](https://github.com/andstatus/andstatus/wiki/images/get-it-on-google-play.png)](https://play.google.com/store/apps/details?id=org.andstatus.app) | [![Get it on F-Droid](https://github.com/andstatus/andstatus/wiki/images/get-it-on-fdroid.png)](https://f-droid.org/repository/browse/?fdid=org.andstatus.app) |
