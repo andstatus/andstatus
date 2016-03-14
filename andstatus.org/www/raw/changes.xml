@@ -26,25 +26,8 @@
 		</subtitle>
     </header>
 
-    <release android:versionName="23.02" android:versionCode="161"
-             versionDate="2016-03-12"
-             versionTitle="Precise timeline position">
-        <changes>
-            <change>Timeline position keeping improved. Now app stores exact scroll position
-                inside a message, not a message number only as before.
-                As a result, timeline scrolling became smoother.
-                <a href="https://github.com/andstatus/andstatus/issues/342">#342</a>
-            </change>
-            <change>Implemented &quot;Check users&quot; procedure, which fixes User duplication
-                in a local database. This procedure starts automatically after completion
-                of &quot;Backup application data to SD card&quot;, so a User always has a chance
-                to restore previous data in a case of a problem.
-                <a href="https://github.com/andstatus/andstatus/issues/348">#348</a>
-            </change>
-        </changes>
-    </release>
-    <release android:versionName="23.01" android:versionCode="160"
-             versionDate="2016-03-05"
+    <release android:versionName="23.03" android:versionCode="162"
+             versionDate="2016-03-13"
              versionTitle="Additional User info shown in a 'Users of message' view">
         <changes>
             <change>Added five new User's attributes to User Lists:<br/>
@@ -57,6 +40,17 @@
             <change>Fixed <a href="https://github.com/andstatus/andstatus/issues/344">#344</a>
                 Opening AndStatus from Notification Gives "()" Account.</change>
             <change>Avoid auto refreshing of a timeline too often.</change>
+            <change>Timeline position keeping improved. Now app stores exact scroll position
+                inside a message, not a message number only as before.
+                As a result, timeline scrolling became smoother.
+                <a href="https://github.com/andstatus/andstatus/issues/342">#342</a>
+            </change>
+            <change>Implemented &quot;Check users&quot; procedure, which fixes User duplication
+                in a local database. This procedure starts automatically after completion
+                of &quot;Backup application data to SD card&quot;, so a User always has a chance
+                to restore previous data in a case of a problem.
+                <a href="https://github.com/andstatus/andstatus/issues/348">#348</a>
+            </change>
         </changes>
     </release>
     <release android:versionName="22.18" android:versionCode="158"
