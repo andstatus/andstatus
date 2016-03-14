@@ -93,7 +93,7 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
                     + " and " + Connection.ApiRoutineEnum.GET_FOLLOWERS_IDS);
         }
         Set<Long> userIdsOld = MyQuery.getIdsOfUsersFollowing(userId);
-
+		execContext.getResult().incrementDownloadedCount();
         SQLiteDatabase db = MyContextHolder.get().getDatabase();
         if (db == null) {
             MyLog.v(this, "Database is null");
@@ -124,7 +124,7 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
             }
             if (userIdNew != 0) {
                 userIdsOld.remove(userIdNew);
-                FollowingUserValues fu = new FollowingUserValues(execContext.getTimelineUserId(), userIdNew);
+                FollowingUserValues fu = new FollowingUserValues(userIdNew, userId);
                 fu.setFollowed(true);
                 fu.update(db);
             }

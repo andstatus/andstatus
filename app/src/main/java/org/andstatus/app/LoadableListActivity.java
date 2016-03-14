@@ -419,6 +419,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
         boolean needed = false;
         switch(commandData.getCommand()) {
             case GET_STATUS:
+			case GET_FOLLOWERS:
                 if (commandData.getResult().getDownloadedCount() > 0) {
                     needed = true;
                 }
