@@ -34,6 +34,7 @@ import org.andstatus.app.data.TimelineSql;
 
 import java.util.HashSet;
 import java.util.Set;
+import org.andstatus.app.util.*;
 
 public class ConversationViewItem extends ConversationItem {
     long mLinkedUserId = 0;
@@ -76,7 +77,7 @@ public class ConversationViewItem extends ConversationItem {
                 super.load(cursor);
                 mStatus = DownloadStatus.load(DbUtils.getLong(cursor, Msg.MSG_STATUS));
                 mAuthor = TimelineSql.userColumnNameToNameAtTimeline(cursor, User.AUTHOR_NAME, false);
-                mBody = DbUtils.getString(cursor, Msg.BODY);
+                mBody = MyHtml.htmlifyIfPlain(DbUtils.getString(cursor, Msg.BODY));
                 String via = DbUtils.getString(cursor, Msg.VIA);
                 if (!TextUtils.isEmpty(via)) {
                     mVia = Html.fromHtml(via).toString().trim();

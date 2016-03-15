@@ -23,7 +23,16 @@ public class MyHtml {
     private MyHtml() {
         // Empty
     }
-
+    
+	public static String htmlifyIfPlain(String messageIn) {
+		if (TextUtils.isEmpty(messageIn)) {
+			return "";
+		} else if (hasHtmlMarkup(messageIn)) {
+			return messageIn;
+		}
+        return htmlify(messageIn);
+    }
+	
     public static String htmlify(String messageIn) {
         return messageIn.replaceAll("(\r\n|\n)", "<br />");
     }

@@ -71,7 +71,7 @@ public class TimelineViewItem {
         item.msgId = DbUtils.getLong(cursor, MyDatabase.Msg._ID);
         item.authorName = TimelineSql.userColumnIndexToNameAtTimeline(cursor,
                 cursor.getColumnIndex(MyDatabase.User.AUTHOR_NAME), MyPreferences.showOrigin());
-        item.body = DbUtils.getString(cursor, MyDatabase.Msg.BODY);
+        item.body = MyHtml.htmlifyIfPlain(DbUtils.getString(cursor, MyDatabase.Msg.BODY));
         item.inReplyToMsgId = DbUtils.getLong(cursor, MyDatabase.Msg.IN_REPLY_TO_MSG_ID);
         item.inReplyToName = DbUtils.getString(cursor, MyDatabase.User.IN_REPLY_TO_NAME);
         item.recipientName = DbUtils.getString(cursor, MyDatabase.User.RECIPIENT_NAME);
