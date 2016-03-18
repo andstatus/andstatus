@@ -140,7 +140,6 @@ public class AddedMessagesNotifier {
                 MatchedUri.getTimelineUri(0, timelineType, myContext.persistentAccounts().size() > 1, 0),
                 "rnd/" + android.os.SystemClock.elapsedRealtime()
                 ));
-        intent.putExtra(IntentExtra.WHICH_PAGE.key, WhichPage.TOP.save());
         PendingIntent pendingIntent = PendingIntent.getActivity(myContext.context(), timelineType.hashCode(),
                 intent, PendingIntent.FLAG_UPDATE_CURRENT);
         builder.setContentIntent(pendingIntent);
