@@ -758,6 +758,7 @@ public class TimelineActivity extends LoadableListActivity implements
                 chainedRequest);
     }
 
+    @NonNull
     private TimelineListParameters getReferenceParametersFor(WhichPage whichPage) {
         TimelineAdapter adapter = getListAdapter();
         switch (whichPage) {
@@ -765,16 +766,16 @@ public class TimelineActivity extends LoadableListActivity implements
                 if (adapter != null && adapter.getPages().getItemsCount() > 0) {
                     return adapter.getPages().list.get(adapter.getPages().list.size()-1).parameters;
                 }
+                return getParamsLoaded();
             case YOUNGER:
                 if (adapter != null && adapter.getPages().getItemsCount() > 0) {
                     return adapter.getPages().list.get(0).parameters;
                 }
-            default:
-                if (paramsNew != null) {
-                    return paramsNew;
-                }
+                return getParamsLoaded();
             case EMPTY:
                 return new TimelineListParameters(this);
+            default:
+                return paramsNew;
         }
     }
 

@@ -241,8 +241,6 @@ public class TimelineListParameters {
         if (mSelectedUserId != that.mSelectedUserId) return false;
         if (!whichPage.equals(WhichPage.CURRENT) && !that.whichPage.equals(WhichPage.CURRENT)) {
             if (minSentDate != that.minSentDate) return false;
-        } else if (whichPage.equals(WhichPage.CURRENT) || that.whichPage.equals(WhichPage.CURRENT)) {
-            return false;
         }
         if (maxSentDate != that.maxSentDate) return false;
         if (mTimelineType != that.mTimelineType) return false;
