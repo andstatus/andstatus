@@ -40,7 +40,10 @@ public abstract class MyBaseAdapter extends BaseAdapter {
     }
 
     private TextView getPositionView(View view) {
-        return (TextView) view.findViewById(R.id.position);
+        if (view != null) {
+            return (TextView) view.findViewById(R.id.position);
+        }
+        return null;
     }
 
     protected void setPosition(View view, int position) {
