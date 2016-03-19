@@ -102,6 +102,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         textualSyncIndicator = findViewById(R.id.sync_indicator);
+        mSwipeLayout = (MySwipeRefreshLayout) findViewById(R.id.myLayoutParent);
 
         configChangeTime = MyContextHolder.initialize(this, this);
         if (MyLog.isDebugEnabled()) {
@@ -189,7 +190,6 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
         }
         return null;
     }
-
 
     public interface SyncLoader {
         void allowLoadingFromInternet();

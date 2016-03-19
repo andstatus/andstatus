@@ -117,7 +117,12 @@ public class TimelineActivity extends LoadableListActivity implements
         mContextMenu = new MessageContextMenu(this);
         mMessageEditor = new MessageEditor(this);
 
-        initializeSwipeLayout();
+        mSwipeLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                manualSyncWithInternet(false, true);
+            }
+        });
 
         initializeDrawer();
         getListView().setOnScrollListener(this);
@@ -143,16 +148,6 @@ public class TimelineActivity extends LoadableListActivity implements
                 MyPreferences.showAvatars() ? R.layout.message_avatar : R.layout.message_basic,
                 getListAdapter(),
                 ((TimelineLoader) getLoaded()).getPageLoaded());
-    }
-
-    private void initializeSwipeLayout() {
-        mSwipeLayout = (MySwipeRefreshLayout) findViewById(R.id.myLayoutParent);
-        mSwipeLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                manualSyncWithInternet(false, true);
-            }
-        });
     }
 
     @Override

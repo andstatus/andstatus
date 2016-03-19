@@ -17,6 +17,7 @@
 package org.andstatus.app.user;
 
 import android.os.Bundle;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -29,6 +30,18 @@ import org.andstatus.app.service.MyServiceManager;
  * @author yvolk@yurivolkov.com
  */
 public class FollowersList extends UserList {
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        mSwipeLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                manualSyncWithInternet(true);
+            }
+        });
+    }
 
     private long getFollowedUserId() {
         return centralItemId;

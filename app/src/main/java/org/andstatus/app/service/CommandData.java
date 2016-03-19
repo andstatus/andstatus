@@ -645,6 +645,7 @@ public class CommandData implements Comparable<CommandData> {
                 break;
             case FOLLOW_USER:
             case STOP_FOLLOWING_USER:
+            case GET_FOLLOWERS:
                 I18n.appendWithSpace(builder, MyQuery.userIdToWebfingerId(itemId));
                 break;
             case SEARCH_MESSAGE:
