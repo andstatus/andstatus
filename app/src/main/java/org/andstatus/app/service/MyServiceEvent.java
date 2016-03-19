@@ -24,6 +24,7 @@ import org.andstatus.app.util.MyLog;
 public enum MyServiceEvent {
     ON_COMMAND_RECEIVED,
     BEFORE_EXECUTING_COMMAND,
+    PROGRESS_EXECUTING_COMMAND,
     AFTER_EXECUTING_COMMAND,
     ON_STOP,
     UNKNOWN;

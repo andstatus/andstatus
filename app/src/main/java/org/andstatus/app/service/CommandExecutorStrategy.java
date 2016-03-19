@@ -23,10 +23,13 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.RelativeTime;
 
 class CommandExecutorStrategy implements CommandExecutorParent {
     protected CommandExecutionContext execContext = null;
     private CommandExecutorParent parent = null;
+    protected static final long MIN_PROGRESS_BROADCAST_PERIOD_SECONDS = 3;
+    protected long lastProgressBroadcastAt  = 0;
 
     static void executeCommand(CommandData commandData, CommandExecutorParent parent) {
         CommandExecutorStrategy strategy = getStrategy(new CommandExecutionContext(commandData, commandData.getAccount()))
@@ -78,7 +81,20 @@ class CommandExecutorStrategy implements CommandExecutorParent {
         MyLog.v(strategy, "ExecutedStep " + strategy.execContext);
         execContext.onOneExecStepEnd();
     }
-    
+
+    void broadcastProgress(String progress, boolean notTooOften) {
+        if (!notTooOften){
+            if (!RelativeTime.moreSecondsAgoThan(lastProgressBroadcastAt, MIN_PROGRESS_BROADCAST_PERIOD_SECONDS)) {
+                return;
+            }
+        }
+        lastProgressBroadcastAt = System.currentTimeMillis();
+        MyServiceEventsBroadcaster.newInstance(MyContextHolder.get(), MyServiceState.RUNNING)
+                .setCommandData(execContext.getCommandData())
+                .setProgress(progress)
+                .setEvent(MyServiceEvent.PROGRESS_EXECUTING_COMMAND).broadcast();
+    }
+
     static CommandExecutorStrategy getStrategy(CommandData commandData, CommandExecutorParent parent) {
         return getStrategy(new CommandExecutionContext(commandData, commandData.getAccount()))
                 .setParent(parent);
@@ -130,41 +146,14 @@ class CommandExecutorStrategy implements CommandExecutorParent {
                 }
                 break;
         }
-        strategy.setContext(execContext);
+        strategy.execContext = execContext;
         return strategy;
-    }
-    
-    static CommandExecutorStrategy newInstance(Class<? extends CommandExecutorStrategy> clazz, CommandExecutionContext execContextIn) {
-        CommandExecutorStrategy exec = null;
-        try {
-            exec = clazz.newInstance();
-            if (execContextIn == null) {
-                exec.execContext = new CommandExecutionContext(CommandData.getEmpty(), null);
-            } else {
-                exec.execContext = execContextIn;
-            }
-        } catch (InstantiationException e) {
-            MyLog.e(CommandExecutorStrategy.class, "class=" + clazz, e);
-        } catch (IllegalAccessException e) {
-            MyLog.e(CommandExecutorStrategy.class, "class=" + clazz, e);
-        }
-        return exec;
     }
 
     CommandExecutorStrategy() {
     }
-    
-    CommandExecutorStrategy setContext(CommandExecutionContext execContext) {
-        this.execContext = execContext;
-        return this;
-    }
-    
-    CommandExecutorStrategy setMyAccount(MyAccount ma) {
-        execContext.setMyAccount(ma);
-        return this;
-    }
-    
-    CommandExecutorStrategy setParent(CommandExecutorParent parent) {
+
+    private CommandExecutorStrategy setParent(CommandExecutorParent parent) {
         this.parent = parent;
         return this;
     }

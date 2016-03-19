@@ -19,6 +19,7 @@ package org.andstatus.app.service;
 import android.database.sqlite.SQLiteDatabase;
 import android.text.TextUtils;
 
+import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DataInserter;
 import org.andstatus.app.data.FollowingUserValues;
@@ -71,7 +72,7 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
         final String method = "getFollowers";
 
         List<String> userOidsNew = new ArrayList<>();
-        List<Long> userIdsNew = new ArrayList<>();
+        List<MbUser> usersNew = new ArrayList<>();
         LatestUserMessages lum = new LatestUserMessages();
 
         boolean usersLoaded = false;
@@ -80,11 +81,10 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
         if (execContext.getMyAccount().getConnection()
                 .isApiSupported(Connection.ApiRoutineEnum.GET_FOLLOWERS)) {
             usersLoaded = true;
-            List<MbUser> usersNew =
-                    execContext.getMyAccount().getConnection().getUsersFollowing(userOid);
+            usersNew = execContext.getMyAccount().getConnection().getUsersFollowing(userOid);
             for (MbUser mbUser : usersNew) {
                 userOidsNew.add(mbUser.oid);
-                userIdsNew.add(di.insertOrUpdateUser(mbUser, lum));
+                di.insertOrUpdateUser(mbUser, lum);
                 if (mbUser.hasLatestMessage()) {
                     messagesLoaded = true;
                 }
@@ -99,6 +99,8 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
         }
         Set<Long> userIdsOld = MyQuery.getIdsOfUsersFollowing(userId);
 		execContext.getResult().incrementDownloadedCount();
+        broadcastProgress(execContext.getContext().getText(R.string.followers).toString()
+                + ": " + userIdsOld.size() + " -> " + userOidsNew.size(), false);
 
         SQLiteDatabase db = MyContextHolder.get().getDatabase();
         if (db == null) {
@@ -107,13 +109,20 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
         }
 
         if (!usersLoaded) {
+            long count = 0;
             for (String userOidNew : userOidsNew) {
                 try {
+                    count++;
                     MbUser mbUser = execContext.getMyAccount().getConnection().getUser(userOidNew, null);
                     if (mbUser.hasLatestMessage()) {
                         messagesLoaded = true;
                     }
-                    userIdsNew.add(di.insertOrUpdateUser(mbUser, lum));
+                    di.insertOrUpdateUser(mbUser, lum);
+                    usersNew.add(mbUser);
+                    broadcastProgress(String.valueOf(count) + ". "
+                            + execContext.getContext().getText(R.string.get_user)
+                            + ": " + mbUser.getWebFingerId(), true);
+                    execContext.getResult().incrementDownloadedCount();
                 } catch (ConnectionException e) {
                     MyLog.i(this, "Failed to download User object for oid=" + userOidNew, e);
                 }
@@ -124,11 +133,17 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
         }
 
         if (!messagesLoaded) {
-            for (String userOidNew : userOidsNew) {
+            long count = 0;
+            for (MbUser mbUser : usersNew) {
+                count++;
                 try {
-                    di.downloadOneMessageBy(userOidNew, lum);
+                    di.downloadOneMessageBy(mbUser.oid, lum);
+                    broadcastProgress(String.valueOf(count) + ". "
+                            + execContext.getContext().getText(R.string.title_command_get_status)
+                            + ": " + mbUser.getWebFingerId(), true);
+                    execContext.getResult().incrementDownloadedCount();
                 } catch (ConnectionException e) {
-                    MyLog.i(this, "Failed to download User's message for oid=" + userOidNew, e);
+                    MyLog.i(this, "Failed to download User's message for " + mbUser.getWebFingerId(), e);
                 }
                 if (logSoftErrorIfStopping()) {
                     return;
@@ -137,9 +152,9 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
         }
 
         // Set "follow" flag for all new users
-        for (long userIdNew : userIdsNew) {
-            userIdsOld.remove(userIdNew);
-            FollowingUserValues fu = new FollowingUserValues(userIdNew, userId);
+        for (MbUser mbUser : usersNew) {
+            userIdsOld.remove(mbUser.userId);
+            FollowingUserValues fu = new FollowingUserValues(mbUser.userId, userId);
             fu.setFollowed(true);
             fu.update(db);
         }
@@ -153,6 +168,6 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
         }
 
         logOk(true);
-        MyLog.d(this, method + "ended, " + userIdsNew.size() + " followers of id=" + userId);
+        MyLog.d(this, method + "ended, " + usersNew.size() + " followers of id=" + userId);
     }
 }

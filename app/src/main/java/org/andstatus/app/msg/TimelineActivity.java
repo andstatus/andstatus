@@ -32,7 +32,6 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -57,11 +56,8 @@ import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.TimelineSearchSuggestionsProvider;
 import org.andstatus.app.data.TimelineType;
-import org.andstatus.app.os.AsyncTaskLauncher;
-import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
-import org.andstatus.app.service.MyServiceEvent;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.service.MyServiceState;
 import org.andstatus.app.service.QueueViewer;
@@ -79,21 +75,13 @@ import org.andstatus.app.widget.MySwipeRefreshLayout;
 public class TimelineActivity extends LoadableListActivity implements
         ActionableMessageList, AbsListView.OnScrollListener {
     private static final int DIALOG_ID_TIMELINE_TYPE = 9;
-    private static final String ACTIVITY_PERSISTENCE_NAME = TimelineActivity.class.getSimpleName();
     public static final String HORIZONTAL_ELLIPSIS = "\u2026";
-
-    private MySwipeRefreshLayout mSwipeLayout = null;
 
     /** Parameters for the next page request, not necessarily requested already */
     private TimelineListParameters paramsNew = new TimelineListParameters(this);
     /** Last parameters, requested to load. Thread safe. They are taken by a Loader at some time */
     private volatile TimelineListParameters paramsToLoad;
     private TimelineListParameters paramsLoaded;
-
-    private boolean mShowSyncIndicatorOnTimeline = false;
-    private View mTextualSyncIndicator = null;
-    private CharSequence syncingText = "";
-    private CharSequence loadingText = "";
 
     private MessageContextMenu mContextMenu;
     private MessageEditor mMessageEditor;
@@ -117,7 +105,7 @@ public class TimelineActivity extends LoadableListActivity implements
         mLayoutId = R.layout.timeline;
         super.onCreate(savedInstanceState);
 
-        mShowSyncIndicatorOnTimeline = MyPreferences.getBoolean(
+        showSyncIndicatorSetting = MyPreferences.getBoolean(
                 MyPreferences.KEY_SYNC_INDICATOR_ON_TIMELINE, true);
 
         if (HelpActivity.startFromActivity(this)) {
@@ -126,7 +114,6 @@ public class TimelineActivity extends LoadableListActivity implements
 
         paramsNew.myAccountUserId = MyContextHolder.get().persistentAccounts().getCurrentAccountUserId();
 
-        mTextualSyncIndicator = findViewById(R.id.sync_indicator);
         mContextMenu = new MessageContextMenu(this);
         mMessageEditor = new MessageEditor(this);
 
@@ -1062,57 +1049,12 @@ public class TimelineActivity extends LoadableListActivity implements
     }
 
     @Override
-    public void onReceive(CommandData commandData, MyServiceEvent event) {
-        switch (event) {
-            case BEFORE_EXECUTING_COMMAND:
-                if (isCommandToShowInSyncIndicator(commandData)) {
-                    showSyncing(commandData);
-                }
-                break;
-            case AFTER_EXECUTING_COMMAND:
-                onReceiveAfterExecutingCommand(commandData);
-                break;
-            case ON_STOP:
-                hideSyncing("onReceive STOP");
-                break;
-            default:
-                break;
-        }
-    }
-    
-    private void showSyncing(final CommandData commandData) {
-        new AsyncTaskLauncher<CommandData>().execute(this,
-                new MyAsyncTask<CommandData, Void, String>("ShowSyncing" + mInstanceId, MyAsyncTask.PoolEnum.QUICK_UI) {
-
-                    @Override
-                    protected String doInBackground2(CommandData... commandData) {
-                        return commandData[0].toCommandSummary(MyContextHolder.get());
-                    }
-
-                    @Override
-                    protected void onPostExecute(String result) {
-                        showSyncing("Show " + commandData.getCommand(),
-                                getText(R.string.title_preference_syncing) + ": " + result);
-                    }
-
-                    @Override
-                    public String toString() {
-                        return "ShowSyncing " + super.toString();
-                    }
-
-                }
-                , true, commandData);
+    protected boolean isEditorVisible() {
+        return getMessageEditor().isVisible();
     }
 
-    private void showSyncing(String source, CharSequence text) {
-        if (!mShowSyncIndicatorOnTimeline || mMessageEditor.isVisible()) {
-            return;
-        }
-        syncingText = text;
-        updateTextualSyncIndicator(source);
-    }
-
-    private boolean isCommandToShowInSyncIndicator(CommandData commandData) {
+    @Override
+    protected boolean isCommandToShowInSyncIndicator(CommandData commandData) {
         switch (commandData.getCommand()) {
             case FETCH_TIMELINE:
             case SEARCH_MESSAGE:
@@ -1129,48 +1071,6 @@ public class TimelineActivity extends LoadableListActivity implements
                 return true;
             default:
                 return false;
-        }
-    }
-
-    private void hideSyncing(String source) {
-        syncingText = "";
-        updateTextualSyncIndicator(source);
-        setCircularSyncIndicator(source, false);
-    }
-
-    private void setCircularSyncIndicator(String source, boolean isSyncing) {
-        if (mSwipeLayout != null
-                && mSwipeLayout.isRefreshing() != isSyncing
-                && !isFinishing()) {
-            MyLog.v(this, source + " set Circular Syncing to " + isSyncing);
-            mSwipeLayout.setRefreshing(isSyncing);
-        }
-    }
-
-    private void showLoading(String source, String text) {
-        if (!mShowSyncIndicatorOnTimeline) {
-            return;
-        }
-        loadingText = text;
-        updateTextualSyncIndicator(source);
-    }
-
-    private void hideLoading(String source) {
-        loadingText = "";
-        updateTextualSyncIndicator(source);
-    }
-
-    private void updateTextualSyncIndicator(String source) {
-        boolean isVisible = !TextUtils.isEmpty(loadingText) || !TextUtils.isEmpty(syncingText);
-        if (isVisible) {
-            isVisible = !getMessageEditor().isVisible();
-        }
-        if (isVisible) {
-            ((TextView) findViewById(R.id.sync_text)).setText(TextUtils.isEmpty(loadingText) ? syncingText : loadingText );
-        }
-        if (isVisible ? (mTextualSyncIndicator.getVisibility() != View.VISIBLE) : ((mTextualSyncIndicator.getVisibility() == View.VISIBLE))) {
-            MyLog.v(this, source + " set textual Sync indicator to " + isVisible);
-            mTextualSyncIndicator.setVisibility(isVisible ? View.VISIBLE : View.GONE);
         }
     }
 

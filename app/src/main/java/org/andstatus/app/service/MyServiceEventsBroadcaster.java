@@ -17,6 +17,7 @@
 package org.andstatus.app.service;
 
 import android.content.Intent;
+import android.text.TextUtils;
 
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.MyAction;
@@ -28,6 +29,7 @@ public class MyServiceEventsBroadcaster {
     private final MyServiceState mState;
     private CommandData mCommandData = null;
     private MyServiceEvent mEvent = MyServiceEvent.UNKNOWN;
+    private String progress = null;
     
     private MyServiceEventsBroadcaster(MyContext myContext, MyServiceState state) {
         this.mMyContext = myContext;
@@ -47,7 +49,12 @@ public class MyServiceEventsBroadcaster {
         this.mEvent = serviceEvent;
         return this;
     }
-    
+
+    public MyServiceEventsBroadcaster setProgress(String text) {
+        progress = text;
+        return this;
+    }
+
     public void broadcast() {
         Intent intent = MyAction.SERVICE_STATE.getIntent();
         if (mCommandData != null) {
@@ -55,7 +62,10 @@ public class MyServiceEventsBroadcaster {
         }
         intent.putExtra(IntentExtra.SERVICE_STATE.key, mState.save());
         intent.putExtra(IntentExtra.SERVICE_EVENT.key, mEvent.save());
-        mMyContext.context().sendBroadcast(intent);
+        if (!TextUtils.isEmpty(progress)) {
+            intent.putExtra(IntentExtra.PROGRESS_TEXT.key, progress);
+        }
         MyLog.v(this, "state: " + mState);
+        mMyContext.context().sendBroadcast(intent);
     }
 }

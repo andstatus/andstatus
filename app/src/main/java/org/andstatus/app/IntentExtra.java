@@ -44,6 +44,7 @@ public enum IntentExtra{
      */
     SERVICE_STATE("SERVICE_STATE"),
     SERVICE_EVENT("SERVICE_EVENT"),
+    PROGRESS_TEXT("PROGRESS_TEXT"),
     /**
      * Text of the message/"tweet"
      */

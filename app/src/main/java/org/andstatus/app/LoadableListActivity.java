@@ -27,6 +27,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ListAdapter;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import net.jcip.annotations.GuardedBy;
 
@@ -47,6 +48,7 @@ import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.widget.MyBaseAdapter;
+import org.andstatus.app.widget.MySwipeRefreshLayout;
 
 /**
  * List, loaded asynchronously. Updated by MyService
@@ -58,6 +60,13 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
      * We are going to finish/restart this Activity (e.g. onResume or even onCreate)
      */
     protected volatile boolean mFinishing = false;
+    protected MySwipeRefreshLayout mSwipeLayout = null;
+
+    protected boolean showSyncIndicatorSetting = true;
+    protected View mTextualSyncIndicator = null;
+    protected CharSequence syncingText = "";
+    protected CharSequence loadingText = "";
+
     ParsedUri mParsedUri = ParsedUri.fromUri(Uri.EMPTY);
 
     /**
@@ -92,6 +101,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mTextualSyncIndicator = findViewById(R.id.sync_indicator);
 
         configChangeTime = MyContextHolder.initialize(this, this);
         if (MyLog.isDebugEnabled()) {
@@ -396,9 +406,49 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
     
     @Override
     public void onReceive(CommandData commandData, MyServiceEvent event) {
-        if (event == MyServiceEvent.AFTER_EXECUTING_COMMAND) {
-            onReceiveAfterExecutingCommand(commandData);
+        switch (event) {
+            case BEFORE_EXECUTING_COMMAND:
+                if (isCommandToShowInSyncIndicator(commandData)) {
+                    showSyncing(commandData);
+                }
+                break;
+            case AFTER_EXECUTING_COMMAND:
+                onReceiveAfterExecutingCommand(commandData);
+                break;
+            case ON_STOP:
+                hideSyncing("onReceive STOP");
+                break;
+            default:
+                break;
         }
+    }
+
+    private void showSyncing(final CommandData commandData) {
+        new AsyncTaskLauncher<CommandData>().execute(this,
+                new MyAsyncTask<CommandData, Void, String>("ShowSyncing" + mInstanceId, MyAsyncTask.PoolEnum.QUICK_UI) {
+
+                    @Override
+                    protected String doInBackground2(CommandData... commandData) {
+                        return commandData[0].toCommandSummary(MyContextHolder.get());
+                    }
+
+                    @Override
+                    protected void onPostExecute(String result) {
+                        showSyncing("Show " + commandData.getCommand(),
+                                getText(R.string.title_preference_syncing) + ": " + result);
+                    }
+
+                    @Override
+                    public String toString() {
+                        return "ShowSyncing " + super.toString();
+                    }
+
+                }
+                , true, commandData);
+    }
+
+    protected boolean isCommandToShowInSyncIndicator(CommandData commandData) {
+        return false;
     }
 
     protected void onReceiveAfterExecutingCommand(CommandData commandData) {
@@ -500,5 +550,59 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
 
     public boolean isPositionRestored() {
         return getListAdapter() != null && getListAdapter().isPositionRestored();
+    }
+
+    protected void showSyncing(String source, CharSequence text) {
+        if (!showSyncIndicatorSetting || isEditorVisible()) {
+            return;
+        }
+        syncingText = text;
+        updateTextualSyncIndicator(source);
+    }
+
+    protected void hideSyncing(String source) {
+        syncingText = "";
+        updateTextualSyncIndicator(source);
+        setCircularSyncIndicator(source, false);
+    }
+
+    protected void setCircularSyncIndicator(String source, boolean isSyncing) {
+        if (mSwipeLayout != null
+                && mSwipeLayout.isRefreshing() != isSyncing
+                && !isFinishing()) {
+            MyLog.v(this, source + " set Circular Syncing to " + isSyncing);
+            mSwipeLayout.setRefreshing(isSyncing);
+        }
+    }
+
+    protected void showLoading(String source, String text) {
+        if (!showSyncIndicatorSetting) {
+            return;
+        }
+        loadingText = text;
+        updateTextualSyncIndicator(source);
+    }
+
+    protected void hideLoading(String source) {
+        loadingText = "";
+        updateTextualSyncIndicator(source);
+    }
+
+    protected void updateTextualSyncIndicator(String source) {
+        boolean isVisible = !TextUtils.isEmpty(loadingText) || !TextUtils.isEmpty(syncingText);
+        if (isVisible) {
+            isVisible = !isEditorVisible();
+        }
+        if (isVisible) {
+            ((TextView) findViewById(R.id.sync_text)).setText(TextUtils.isEmpty(loadingText) ? syncingText : loadingText );
+        }
+        if (isVisible ? (mTextualSyncIndicator.getVisibility() != View.VISIBLE) : ((mTextualSyncIndicator.getVisibility() == View.VISIBLE))) {
+            MyLog.v(this, source + " set textual Sync indicator to " + isVisible);
+            mTextualSyncIndicator.setVisibility(isVisible ? View.VISIBLE : View.GONE);
+        }
+    }
+
+    protected boolean isEditorVisible() {
+        return false;
     }
 }
