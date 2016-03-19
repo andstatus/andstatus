@@ -7,6 +7,7 @@ import android.provider.BaseColumns;
 import org.andstatus.app.LoadableListActivity;
 import org.andstatus.app.LoadableListActivity.ProgressPublisher;
 import org.andstatus.app.LoadableListActivity.SyncLoader;
+import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.AvatarFile;
@@ -55,16 +56,12 @@ public class UserListLoader implements SyncLoader {
         mProgress = publisher;
 
         loadInternal();
-
         MyLog.v(this, "Loaded " + size() + " items");
-        if (mItems.isEmpty()) {
-            addEmptyItem("...");
-        }
-        populateItems();
-    }
 
-    protected void loadInternal() {
-        addEmptyItem("Not implemented " + toString());
+        if (mItems.isEmpty()) {
+            addEmptyItem(MyContextHolder.get().context()
+                    .getText(R.string.empty_in_parenthesis).toString());
+        }
     }
 
     protected void addEmptyItem(String description) {
@@ -95,7 +92,7 @@ public class UserListLoader implements SyncLoader {
                 oUser.getUserId(), oUser.mbUser.getUserName()));
     }
 
-    protected void populateItems() {
+    protected void loadInternal() {
         Uri mContentUri = MatchedUri.getUserListUri(ma.getUserId(), mUserListType, mIsListCombined, mCentralItemId);
         Cursor c = null;
         try {

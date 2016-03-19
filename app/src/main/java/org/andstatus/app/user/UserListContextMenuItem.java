@@ -27,6 +27,8 @@ import org.andstatus.app.account.AccountSelector;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.MatchedUri;
+import org.andstatus.app.data.MyDatabase;
+import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.msg.TimelineActivity;
 import org.andstatus.app.msg.TimelineTypeSelector;
@@ -93,10 +95,28 @@ public enum UserListContextMenuItem implements ContextMenuItem {
             AccountSelector.selectAccount(menu.getActivity(), ma.getOriginId(), ActivityRequestCode.SELECT_ACCOUNT_TO_ACT_AS);
         }
     },
-    FOLLOWERS() {
+    FOLLOWERS(true) {
+        private volatile MyAccount ma2 = null;
+        @Override
+        void executeAsync(UserListContextMenu menu, MyAccount ma) {
+            ma2 = ma;
+            long userId = menu.getViewItem().getUserId();
+            long originId = MyQuery.userIdToLongColumnValue(MyDatabase.User.ORIGIN_ID, userId);
+            if (originId == 0) {
+                MyLog.e(this, "Unknown origin for userId=" + userId);
+                return;
+            }
+            if (!ma2.isValid() || ma2.getOriginId() != originId) {
+                ma2 = MyContextHolder.get().persistentAccounts().fromUserId(userId);
+                if (!ma2.isValid()) {
+                    ma2 = MyContextHolder.get().persistentAccounts().findFirstSucceededMyAccountByOriginId(originId);
+                }
+            }
+        }
+
         @Override
         void executeOnUiThread(UserListContextMenu menu, MyAccount ma) {
-            Uri uri = MatchedUri.getUserListUri(ma.getUserId(),
+            Uri uri = MatchedUri.getUserListUri(ma2.getUserId(),
                     UserListType.FOLLOWERS, false,
                     menu.getViewItem().getUserId());
             if (MyLog.isVerboseEnabled()) {

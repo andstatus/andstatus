@@ -21,6 +21,7 @@ import android.view.MenuItem;
 
 import org.andstatus.app.LoadableListActivity;
 import org.andstatus.app.R;
+import org.andstatus.app.service.CommandData;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.widget.MyBaseAdapter;
@@ -36,7 +37,7 @@ public class UserList extends LoadableListActivity {
     private UserListContextMenu contextMenu = null;
 
     public UserList() {
-        mLayoutId = R.layout.my_list_fragment;
+        mLayoutId = R.layout.userlist;
     }
 
     @Override
@@ -49,7 +50,7 @@ public class UserList extends LoadableListActivity {
     }
 
     @Override
-    protected SyncLoader newSyncLoader(Bundle args) {
+    protected UserListLoader newSyncLoader(Bundle args) {
         switch (mUserListType) {
             case USERS_OF_MESSAGE:
                 return new UsersOfMessageListLoader(mUserListType, getMa(), centralItemId, mIsListCombined);
@@ -80,6 +81,19 @@ public class UserList extends LoadableListActivity {
     protected CharSequence getCustomTitle() {
         mSubtitle = I18n.trimTextAt(MyHtml.fromHtml(getListLoader().getTitle()), 80);
         return mUserListType.getTitle(this);
+    }
+
+    @Override
+    protected boolean isCommandToShowInSyncIndicator(CommandData commandData) {
+        switch (commandData.getCommand()) {
+            case GET_USER:
+            case GET_FOLLOWERS:
+            case FOLLOW_USER:
+            case STOP_FOLLOWING_USER:
+                return true;
+            default:
+                return false;
+        }
     }
 
 }

@@ -21,13 +21,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import org.andstatus.app.R;
-import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.data.MyDatabase;
-import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
-import org.andstatus.app.util.MyLog;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -58,26 +54,13 @@ public class FollowersList extends UserList {
     }
 
     protected void manualSyncWithInternet(boolean manuallyLaunched) {
-        final String method = "manualSync";
-        long originId = MyQuery.userIdToLongColumnValue(MyDatabase.User.ORIGIN_ID, getFollowedUserId());
-        if (originId == 0) {
-            MyLog.e(this, "Unknown origin for userId=" + getFollowedUserId());
-            return;
-        }
-        if (!ma.isValid() || ma.getOriginId() != originId) {
-            ma = MyContextHolder.get().persistentAccounts().fromUserId(getFollowedUserId());
-            if (!ma.isValid()) {
-                ma = MyContextHolder.get().persistentAccounts().findFirstSucceededMyAccountByOriginId(originId);
-            }
-        }
-
         MyServiceManager.sendForegroundCommand(
                 (new CommandData(CommandEnum.GET_FOLLOWERS, ma.getAccountName(), getFollowedUserId()))
                         .setManuallyLaunched(manuallyLaunched));
     }
 
     @Override
-    protected SyncLoader newSyncLoader(Bundle args) {
+    protected UserListLoader newSyncLoader(Bundle args) {
         return new FollowersListLoader(mUserListType, getMa(), getFollowedUserId(), mIsListCombined);
     }
 }

@@ -699,6 +699,10 @@ public class CommandData implements Comparable<CommandData> {
         }
     }
 
+    public String toCommandProgress(MyContext myContext) {
+        return toShortCommandName(myContext) + "; " + getResult().getProgress();
+    }
+
     public String toShortCommandName(MyContext myContext) {
         StringBuilder builder = new StringBuilder();
         switch (command) {

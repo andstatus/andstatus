@@ -44,6 +44,7 @@ public final class CommandResult implements Parcelable {
     private long numIoExceptions = 0;
     private long numParseExceptions = 0;
     private String mMessage = "";
+    private String progress = "";
 
     private long itemId = 0;
     
@@ -116,6 +117,7 @@ public final class CommandResult implements Parcelable {
         dest.writeInt(hourlyLimit);
         dest.writeInt(remainingHits);
         dest.writeInt(downloadedCount);
+        dest.writeString(progress);
     }
     
     public CommandResult(Parcel parcel) {
@@ -130,6 +132,7 @@ public final class CommandResult implements Parcelable {
         hourlyLimit = parcel.readInt();
         remainingHits = parcel.readInt();
         downloadedCount = parcel.readInt();
+        progress = parcel.readString();
     }
     
     void saveToSharedPreferences(android.content.SharedPreferences.Editor ed, int index) {
@@ -142,6 +145,7 @@ public final class CommandResult implements Parcelable {
         ed.putLong(IntentExtra.NUM_PARSE_EXCEPTIONS.key + si, numParseExceptions);
         ed.putString(IntentExtra.ERROR_MESSAGE.key + si, mMessage);
         ed.putInt(IntentExtra.DOWNLOADED_COUNT.key + si, downloadedCount);
+        ed.putString(IntentExtra.PROGRESS_TEXT.key + si, progress);
     }
 
     void loadFromSharedPreferences(SharedPreferences sp, int index) {
@@ -154,6 +158,7 @@ public final class CommandResult implements Parcelable {
         numParseExceptions = sp.getLong(IntentExtra.NUM_PARSE_EXCEPTIONS.key + si, numParseExceptions);
         mMessage = sp.getString(IntentExtra.ERROR_MESSAGE.key + si, mMessage);
         downloadedCount = sp.getInt(IntentExtra.DOWNLOADED_COUNT.key + si, downloadedCount);
+        progress = sp.getString(IntentExtra.PROGRESS_TEXT.key + si, progress);
     }
 
     public int getExecutionCount() {
@@ -342,6 +347,8 @@ public final class CommandResult implements Parcelable {
         mentionsAdded = 0;
         directedAdded = 0;
         downloadedCount = 0;
+
+        progress = "";
     }
     
     void afterExecutionEnded() {
@@ -375,5 +382,13 @@ public final class CommandResult implements Parcelable {
 
     public void setMessage(String message) {
         this.mMessage = message;
+    }
+
+    public String getProgress() {
+        return progress;
+    }
+
+    public void setProgress(String progress) {
+        this.progress = progress;
     }
 }

@@ -63,7 +63,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
     protected MySwipeRefreshLayout mSwipeLayout = null;
 
     protected boolean showSyncIndicatorSetting = true;
-    protected View mTextualSyncIndicator = null;
+    protected View textualSyncIndicator = null;
     protected CharSequence syncingText = "";
     protected CharSequence loadingText = "";
 
@@ -101,7 +101,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mTextualSyncIndicator = findViewById(R.id.sync_indicator);
+        textualSyncIndicator = findViewById(R.id.sync_indicator);
 
         configChangeTime = MyContextHolder.initialize(this, this);
         if (MyLog.isDebugEnabled()) {
@@ -412,6 +412,12 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
                     showSyncing(commandData);
                 }
                 break;
+            case PROGRESS_EXECUTING_COMMAND:
+                if (isCommandToShowInSyncIndicator(commandData)) {
+                    showSyncing("Show Progress",
+                            commandData.toCommandProgress(MyContextHolder.get()));
+                }
+                break;
             case AFTER_EXECUTING_COMMAND:
                 onReceiveAfterExecutingCommand(commandData);
                 break;
@@ -589,6 +595,9 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
     }
 
     protected void updateTextualSyncIndicator(String source) {
+        if (textualSyncIndicator == null) {
+            return;
+        }
         boolean isVisible = !TextUtils.isEmpty(loadingText) || !TextUtils.isEmpty(syncingText);
         if (isVisible) {
             isVisible = !isEditorVisible();
@@ -596,9 +605,9 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
         if (isVisible) {
             ((TextView) findViewById(R.id.sync_text)).setText(TextUtils.isEmpty(loadingText) ? syncingText : loadingText );
         }
-        if (isVisible ? (mTextualSyncIndicator.getVisibility() != View.VISIBLE) : ((mTextualSyncIndicator.getVisibility() == View.VISIBLE))) {
+        if (isVisible ? (textualSyncIndicator.getVisibility() != View.VISIBLE) : ((textualSyncIndicator.getVisibility() == View.VISIBLE))) {
             MyLog.v(this, source + " set textual Sync indicator to " + isVisible);
-            mTextualSyncIndicator.setVisibility(isVisible ? View.VISIBLE : View.GONE);
+            textualSyncIndicator.setVisibility(isVisible ? View.VISIBLE : View.GONE);
         }
     }
 

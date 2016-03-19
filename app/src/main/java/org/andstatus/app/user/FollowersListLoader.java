@@ -34,12 +34,6 @@ public class FollowersListLoader extends UserListLoader {
         userName = MyQuery.userIdToWebfingerId(followedUserId);
     }
 
-    @Override
-    protected void loadInternal() {
-        MyLog.v(this, "Followers of " + userName);
-        populateItems();
-    }
-
     protected String getSqlUserIds() {
         String sql = "SELECT " + MyDatabase.FollowingUser.USER_ID
                 + " FROM " + MyDatabase.FollowingUser.TABLE_NAME

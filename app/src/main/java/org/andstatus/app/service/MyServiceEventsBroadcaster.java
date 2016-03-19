@@ -58,13 +58,11 @@ public class MyServiceEventsBroadcaster {
     public void broadcast() {
         Intent intent = MyAction.SERVICE_STATE.getIntent();
         if (mCommandData != null) {
+            mCommandData.getResult().setProgress(progress);
             intent = mCommandData.toIntent(intent);
         }
         intent.putExtra(IntentExtra.SERVICE_STATE.key, mState.save());
         intent.putExtra(IntentExtra.SERVICE_EVENT.key, mEvent.save());
-        if (!TextUtils.isEmpty(progress)) {
-            intent.putExtra(IntentExtra.PROGRESS_TEXT.key, progress);
-        }
         MyLog.v(this, "state: " + mState);
         mMyContext.context().sendBroadcast(intent);
     }
