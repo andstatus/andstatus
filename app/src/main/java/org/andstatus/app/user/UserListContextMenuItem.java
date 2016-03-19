@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2015 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2016 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -96,37 +96,39 @@ public enum UserListContextMenuItem implements ContextMenuItem {
         }
     },
     FOLLOWERS(true) {
-        private volatile MyAccount ma2 = null;
         @Override
-        void executeAsync(UserListContextMenu menu, MyAccount ma) {
-            ma2 = ma;
-            long userId = menu.getViewItem().getUserId();
-            long originId = MyQuery.userIdToLongColumnValue(MyDatabase.User.ORIGIN_ID, userId);
-            if (originId == 0) {
-                MyLog.e(this, "Unknown origin for userId=" + userId);
-                return;
-            }
-            if (!ma2.isValid() || ma2.getOriginId() != originId) {
-                ma2 = MyContextHolder.get().persistentAccounts().fromUserId(userId);
-                if (!ma2.isValid()) {
-                    ma2 = MyContextHolder.get().persistentAccounts().findFirstSucceededMyAccountByOriginId(originId);
-                }
-            }
+        void executeAsync(Params params) {
+            setMaForUserId(params);
         }
 
         @Override
         void executeOnUiThread(UserListContextMenu menu, MyAccount ma) {
-            Uri uri = MatchedUri.getUserListUri(ma2.getUserId(),
-                    UserListType.FOLLOWERS, false,
-                    menu.getViewItem().getUserId());
-            if (MyLog.isVerboseEnabled()) {
-                MyLog.d(this, "onItemClick, startActivity=" + uri);
-            }
-            menu.getActivity().startActivity(MyAction.VIEW_FOLLOWERS.getIntent(uri));
+            startFollowersList(menu, ma, UserListType.FOLLOWERS);
+        }
+    },
+    FRIENDS(true) {
+        @Override
+        void executeAsync(Params params) {
+            setMaForUserId(params);
+        }
+
+        @Override
+        void executeOnUiThread(UserListContextMenu menu, MyAccount ma) {
+            startFollowersList(menu, ma, UserListType.FRIENDS);
         }
     },
     NONEXISTENT(),
     UNKNOWN();
+
+    private static class Params {
+        UserListContextMenu menu;
+        volatile MyAccount ma;
+
+        Params(UserListContextMenu menu, MyAccount ma) {
+            this.menu = menu;
+            this.ma = ma;
+        }
+    }
 
     private final boolean mIsAsync;
     private static final String TAG = UserListContextMenuItem.class.getSimpleName();
@@ -162,30 +164,31 @@ public enum UserListContextMenuItem implements ContextMenuItem {
     }
     
     public boolean execute(UserListContextMenu menu, MyAccount ma) {
+        Params params = new Params(menu, ma);
         MyLog.v(this, "execute started");
         if (mIsAsync) {
-            executeAsync1(menu, ma);
+            executeAsync1(params);
         } else {
-            executeOnUiThread(menu, ma);
+            executeOnUiThread(params.menu, params.ma);
         }
         return false;
     }
     
-    private void executeAsync1(final UserListContextMenu menu, final MyAccount ma) {
+    private void executeAsync1(final Params params) {
         AsyncTaskLauncher.execute(TAG,
                 new MyAsyncTask<Void, Void, Void>(TAG + name(), MyAsyncTask.PoolEnum.QUICK_UI) {
                     @Override
-                    protected Void doInBackground2(Void... params) {
+                    protected Void doInBackground2(Void... params2) {
                         MyLog.v(this, "execute async started. "
-                                + menu.getViewItem().mbUser.getNamePreferablyWebFingerId());
-                        executeAsync(menu, ma);
+                                + params.menu.getViewItem().mbUser.getNamePreferablyWebFingerId());
+                        executeAsync(params);
                         return null;
                     }
 
                     @Override
                     protected void onPostExecute(Void v) {
                         MyLog.v(this, "execute async ended");
-                        executeOnUiThread(menu, ma);
+                        executeOnUiThread(params.menu, params.ma);
                     }
 
                     @Override
@@ -196,14 +199,39 @@ public enum UserListContextMenuItem implements ContextMenuItem {
         );
     }
 
-    void executeAsync(UserListContextMenu menu, MyAccount ma) {
+    void executeAsync(Params params) {
         // Empty
     }
 
     void executeOnUiThread(UserListContextMenu menu, MyAccount ma) {
         // Empty
     }
-    
+
+    void setMaForUserId(Params params) {
+        long userId = params.menu.getViewItem().getUserId();
+        long originId = MyQuery.userIdToLongColumnValue(MyDatabase.User.ORIGIN_ID, userId);
+        if (originId == 0) {
+            MyLog.e(this, "Unknown origin for userId=" + userId);
+            return;
+        }
+        if (!params.ma.isValid() || params.ma.getOriginId() != originId) {
+            params.ma = MyContextHolder.get().persistentAccounts().fromUserId(userId);
+            if (!params.ma.isValid()) {
+                params.ma = MyContextHolder.get().persistentAccounts().findFirstSucceededMyAccountByOriginId(originId);
+            }
+        }
+    }
+
+    void startFollowersList(UserListContextMenu menu, MyAccount ma, UserListType userListType) {
+        Uri uri = MatchedUri.getUserListUri(ma.getUserId(),
+                userListType, false,
+                menu.getViewItem().getUserId());
+        if (MyLog.isVerboseEnabled()) {
+            MyLog.d(this, "startFollowersList, uri:" + uri);
+        }
+        menu.getActivity().startActivity(MyAction.VIEW_FOLLOWERS.getIntent(uri));
+    }
+
     void sendCommandUser(CommandEnum command, MyAccount ma, long userID) {
         MyServiceManager.sendManualForegroundCommand(
                 new CommandData(command, ma.getAccountName(), userID));

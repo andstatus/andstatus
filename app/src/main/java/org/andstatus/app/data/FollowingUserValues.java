@@ -21,6 +21,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteDatabaseLockedException;
 
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.MyDatabase.FollowingUser;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
@@ -46,7 +47,21 @@ public class FollowingUserValues {
         MyQuery.moveBooleanKey(FollowingUser.USER_FOLLOWED, "", values, userValues.contentValues);
         return userValues;
     }
-    
+
+    public static void setFollowed(long followingUserId, long followedUserId) {
+        setFollowed(followingUserId, followedUserId, true);
+    }
+
+    public static void setNotFollowed(long followingUserId, long followedUserId) {
+        setFollowed(followingUserId, followedUserId, false);
+    }
+
+    private static void setFollowed(long followingUserId, long followedUserId, boolean followed) {
+        FollowingUserValues fu = new FollowingUserValues(followingUserId, followedUserId);
+        fu.setFollowed(followed);
+        fu.update(MyContextHolder.get().getDatabase());
+    }
+
     public FollowingUserValues(long userId, long followedUserId) {
         this.userId = userId;
         this.followedUserId = followedUserId;
@@ -64,7 +79,7 @@ public class FollowingUserValues {
      */
     public void update(SQLiteDatabase db) {
         boolean followed = false;
-        if (userId != 0 && followedUserId != 0 && contentValues.containsKey(FollowingUser.USER_FOLLOWED)) {
+        if (db != null &&  userId != 0 && followedUserId != 0 && contentValues.containsKey(FollowingUser.USER_FOLLOWED)) {
             followed = SharedPreferencesUtil.isTrue(contentValues.get(FollowingUser.USER_FOLLOWED));
         } else {
             // Don't change anything as there is no information

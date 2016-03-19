@@ -476,6 +476,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
         switch(commandData.getCommand()) {
             case GET_STATUS:
 			case GET_FOLLOWERS:
+            case GET_FRIENDS:
                 if (commandData.getResult().getDownloadedCount() > 0) {
                     needed = true;
                 }

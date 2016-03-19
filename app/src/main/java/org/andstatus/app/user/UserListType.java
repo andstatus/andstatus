@@ -32,7 +32,8 @@ public enum UserListType {
      * Users, related to the selected message, including mentioned users
      */
     USERS_OF_MESSAGE("users_of_message", R.string.users_of_message, true),
-    FOLLOWERS("followers", R.string.followers, true);
+    FOLLOWERS("followers", R.string.followers, true),
+    FRIENDS("friends", R.string.friends, true);
 
     /**
      * code of the enum that is used in messages

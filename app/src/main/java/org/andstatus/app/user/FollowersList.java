@@ -67,8 +67,10 @@ public class FollowersList extends UserList {
     }
 
     protected void manualSyncWithInternet(boolean manuallyLaunched) {
+        CommandEnum command = mUserListType == UserListType.FOLLOWERS ?
+                CommandEnum.GET_FOLLOWERS : CommandEnum.GET_FRIENDS;
         MyServiceManager.sendForegroundCommand(
-                (new CommandData(CommandEnum.GET_FOLLOWERS, ma.getAccountName(), getFollowedUserId()))
+                (new CommandData(command, ma.getAccountName(), getFollowedUserId()))
                         .setManuallyLaunched(manuallyLaunched));
     }
 

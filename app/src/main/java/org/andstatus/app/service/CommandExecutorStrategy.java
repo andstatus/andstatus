@@ -28,7 +28,7 @@ import org.andstatus.app.util.RelativeTime;
 class CommandExecutorStrategy implements CommandExecutorParent {
     protected CommandExecutionContext execContext = null;
     private CommandExecutorParent parent = null;
-    protected static final long MIN_PROGRESS_BROADCAST_PERIOD_SECONDS = 3;
+    protected static final long MIN_PROGRESS_BROADCAST_PERIOD_SECONDS = 1;
     protected long lastProgressBroadcastAt  = 0;
 
     static void executeCommand(CommandData commandData, CommandExecutorParent parent) {
@@ -83,7 +83,7 @@ class CommandExecutorStrategy implements CommandExecutorParent {
     }
 
     void broadcastProgress(String progress, boolean notTooOften) {
-        if (!notTooOften){
+        if (notTooOften){
             if (!RelativeTime.moreSecondsAgoThan(lastProgressBroadcastAt, MIN_PROGRESS_BROADCAST_PERIOD_SECONDS)) {
                 return;
             }
@@ -135,6 +135,7 @@ class CommandExecutorStrategy implements CommandExecutorParent {
                             strategy = new CommandExecutorSearch();
                             break;
                         case GET_FOLLOWERS:
+                        case GET_FRIENDS:
                             strategy = new CommandExecutorFollowers();
                             break;
                         default:

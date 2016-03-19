@@ -112,4 +112,12 @@ public class CommandExecutionContext {
         }
         return builder.toString();
     }
+
+    public String getCommandSummary() {
+        CommandData commandData = getCommandData();
+        if (commandData == null) {
+            return "No command";
+        }
+        return commandData.toCommandSummary(getMyContext());
+    }
 }

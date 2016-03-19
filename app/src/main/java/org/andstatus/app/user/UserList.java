@@ -88,6 +88,7 @@ public class UserList extends LoadableListActivity {
         switch (commandData.getCommand()) {
             case GET_USER:
             case GET_FOLLOWERS:
+            case GET_FRIENDS:
             case FOLLOW_USER:
             case STOP_FOLLOWING_USER:
                 return true;

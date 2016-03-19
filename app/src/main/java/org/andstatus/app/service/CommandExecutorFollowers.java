@@ -16,11 +16,9 @@
 
 package org.andstatus.app.service;
 
-import android.database.sqlite.SQLiteDatabase;
 import android.text.TextUtils;
 
 import org.andstatus.app.R;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DataInserter;
 import org.andstatus.app.data.FollowingUserValues;
 import org.andstatus.app.data.LatestUserMessages;
@@ -41,97 +39,140 @@ import java.util.Set;
 public class CommandExecutorFollowers extends CommandExecutorStrategy {
     long userId = 0;
     String userOid = "";
+    List<MbUser> usersNew = new ArrayList<>();
+    String commandSummary = "";
 
     @Override
     void execute() {
-        MyLog.v(this, execContext.getCommandData().toString());
-        if (!lookupUser()) {
-            return;
-        }
+        commandSummary = execContext.getCommandSummary();
+        if (lookupUser()) return;
         try {
-            getFollowers();
+            switch (execContext.getCommandData().getCommand()) {
+                case GET_FOLLOWERS:
+                    syncFollowers();
+                    break;
+                case GET_FRIENDS:
+                    syncFriends();
+                    break;
+                default:
+                    MyLog.e(this, "Unexpected command here: " + commandSummary);
+                    break;
+            }
+            MyLog.d(this, commandSummary + " ended, " + usersNew.size() + " users");
+            logOk(true);
         } catch (ConnectionException e) {
-            logConnectionException(e, "Getting followers for id:" + userId);
+            logConnectionException(e, commandSummary);
         }
     }
 
     private boolean lookupUser() {
-        final String method = "getFollowers";
-        boolean ok = true;
+        final String method = "lookupUser";
         userId = execContext.getCommandData().itemId;
         userOid = MyQuery.idToOid(MyDatabase.OidEnum.USER_OID, userId, 0);
         if (TextUtils.isEmpty(userOid)) {
-            ok = false;
             execContext.getResult().incrementParseExceptions();
-            MyLog.e(this, method + "; userOid not found for ID: " + userId);
+            MyLog.e(this, method + "; userOid not found for id: " + userId);
+            return true;
         }
-        return ok;
+        return false;
     }
 
-    private void getFollowers() throws ConnectionException {
-        final String method = "getFollowers";
-
-        List<String> userOidsNew = new ArrayList<>();
-        List<MbUser> usersNew = new ArrayList<>();
-        LatestUserMessages lum = new LatestUserMessages();
-
-        boolean usersLoaded = false;
-        boolean messagesLoaded = false;
-        DataInserter di = new DataInserter(execContext);
+    private void syncFollowers() throws ConnectionException {
         if (execContext.getMyAccount().getConnection()
                 .isApiSupported(Connection.ApiRoutineEnum.GET_FOLLOWERS)) {
-            usersLoaded = true;
             usersNew = execContext.getMyAccount().getConnection().getUsersFollowing(userOid);
-            for (MbUser mbUser : usersNew) {
-                userOidsNew.add(mbUser.oid);
-                di.insertOrUpdateUser(mbUser, lum);
-                if (mbUser.hasLatestMessage()) {
-                    messagesLoaded = true;
-                }
-            }
         } else if (execContext.getMyAccount().getConnection()
                 .isApiSupported(Connection.ApiRoutineEnum.GET_FOLLOWERS_IDS)) {
-            userOidsNew = execContext.getMyAccount().getConnection().getIdsOfUsersFollowing(userOid);
+            List<String> userOidsNew =
+                    execContext.getMyAccount().getConnection().getIdsOfUsersFollowing(userOid);
+            if (getUsersForOids(userOidsNew, usersNew)) return;
         } else {
             throw new ConnectionException(ConnectionException.StatusCode.UNSUPPORTED_API,
                     Connection.ApiRoutineEnum.GET_FOLLOWERS
                     + " and " + Connection.ApiRoutineEnum.GET_FOLLOWERS_IDS);
         }
-        Set<Long> userIdsOld = MyQuery.getIdsOfUsersFollowing(userId);
-		execContext.getResult().incrementDownloadedCount();
-        broadcastProgress(execContext.getContext().getText(R.string.followers).toString()
-                + ": " + userIdsOld.size() + " -> " + userOidsNew.size(), false);
 
-        SQLiteDatabase db = MyContextHolder.get().getDatabase();
-        if (db == null) {
-            MyLog.v(this, "Database is null");
-            return;
+        Set<Long> userIdsOld = MyQuery.getIdsOfUsersFollowing(userId);
+        execContext.getResult().incrementDownloadedCount();
+        broadcastProgress(execContext.getContext().getText(R.string.followers).toString()
+                + ": " + userIdsOld.size() + " -> " + usersNew.size(), false);
+
+        if (updateNewUsersAndTheirLatestMessages(usersNew)) return;
+
+        for (MbUser mbUser : usersNew) {
+            userIdsOld.remove(mbUser.userId);
+            FollowingUserValues.setFollowed(mbUser.userId, userId);
+        }
+        for (long userIdOld : userIdsOld) {
+            FollowingUserValues.setNotFollowed(userIdOld, userId);
+        }
+    }
+
+    private void syncFriends() throws ConnectionException {
+        if (execContext.getMyAccount().getConnection()
+                .isApiSupported(Connection.ApiRoutineEnum.GET_FRIENDS)) {
+            usersNew = execContext.getMyAccount().getConnection().getUsersFollowedBy(userOid);
+        } else if (execContext.getMyAccount().getConnection()
+                .isApiSupported(Connection.ApiRoutineEnum.GET_FRIENDS_IDS)) {
+            List<String> userOidsNew =
+                    execContext.getMyAccount().getConnection().getIdsOfUsersFollowedBy(userOid);
+            if (getUsersForOids(userOidsNew, usersNew)) return;
+        } else {
+            throw new ConnectionException(ConnectionException.StatusCode.UNSUPPORTED_API,
+                    Connection.ApiRoutineEnum.GET_FRIENDS
+                            + " and " + Connection.ApiRoutineEnum.GET_FRIENDS_IDS);
         }
 
-        if (!usersLoaded) {
-            long count = 0;
-            for (String userOidNew : userOidsNew) {
-                try {
-                    count++;
-                    MbUser mbUser = execContext.getMyAccount().getConnection().getUser(userOidNew, null);
-                    if (mbUser.hasLatestMessage()) {
-                        messagesLoaded = true;
-                    }
-                    di.insertOrUpdateUser(mbUser, lum);
-                    usersNew.add(mbUser);
-                    broadcastProgress(String.valueOf(count) + ". "
-                            + execContext.getContext().getText(R.string.get_user)
-                            + ": " + mbUser.getWebFingerId(), true);
-                    execContext.getResult().incrementDownloadedCount();
-                } catch (ConnectionException e) {
-                    MyLog.i(this, "Failed to download User object for oid=" + userOidNew, e);
-                }
-                if (logSoftErrorIfStopping()) {
-                    return;
-                }
+        Set<Long> userIdsOld = MyQuery.getIdsOfUsersFollowedBy(userId);
+        execContext.getResult().incrementDownloadedCount();
+        broadcastProgress(execContext.getContext().getText(R.string.friends).toString()
+                + ": " + userIdsOld.size() + " -> " + usersNew.size(), false);
+
+        if (updateNewUsersAndTheirLatestMessages(usersNew)) return;
+
+        for (MbUser mbUser : usersNew) {
+            userIdsOld.remove(mbUser.userId);
+            FollowingUserValues.setFollowed(userId, mbUser.userId);
+        }
+        for (long userIdOld : userIdsOld) {
+            FollowingUserValues.setNotFollowed(userId, userIdOld);
+        }
+    }
+
+    private boolean getUsersForOids(List<String> userOidsNew, List<MbUser> usersNew) {
+        long count = 0;
+        for (String userOidNew : userOidsNew) {
+            try {
+                count++;
+                MbUser mbUser = execContext.getMyAccount().getConnection().getUser(userOidNew, null);
+                usersNew.add(mbUser);
+                broadcastProgress(String.valueOf(count) + ". "
+                        + execContext.getContext().getText(R.string.get_user)
+                        + ": " + mbUser.getWebFingerId(), true);
+                execContext.getResult().incrementDownloadedCount();
+            } catch (ConnectionException e) {
+                MyLog.i(this, "Failed to download User object for oid=" + userOidNew, e);
+            }
+            if (logSoftErrorIfStopping()) {
+                return true;
             }
         }
+        return false;
+    }
 
+    /**
+     * @return true if we need to interrupt process
+     */
+    private boolean updateNewUsersAndTheirLatestMessages(List<MbUser> usersNew) {
+        DataInserter di = new DataInserter(execContext);
+        LatestUserMessages lum = new LatestUserMessages();
+        boolean messagesLoaded = false;
+        for (MbUser mbUser : usersNew) {
+            di.insertOrUpdateUser(mbUser, lum);
+            if (mbUser.hasLatestMessage()) {
+                messagesLoaded = true;
+            }
+        }
         if (!messagesLoaded) {
             long count = 0;
             for (MbUser mbUser : usersNew) {
@@ -146,28 +187,11 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
                     MyLog.i(this, "Failed to download User's message for " + mbUser.getWebFingerId(), e);
                 }
                 if (logSoftErrorIfStopping()) {
-                    return;
+                    return true;
                 }
             }
         }
-
-        // Set "follow" flag for all new users
-        for (MbUser mbUser : usersNew) {
-            userIdsOld.remove(mbUser.userId);
-            FollowingUserValues fu = new FollowingUserValues(mbUser.userId, userId);
-            fu.setFollowed(true);
-            fu.update(db);
-        }
         lum.save();
-
-        // Remove "following" information for all old users, who are not in the new list:
-        for (long userIdOld : userIdsOld) {
-            FollowingUserValues fu = new FollowingUserValues(userIdOld, userId);
-            fu.setFollowed(false);
-            fu.update(db);
-        }
-
-        logOk(true);
-        MyLog.d(this, method + "ended, " + usersNew.size() + " followers of id=" + userId);
+        return false;
     }
 }

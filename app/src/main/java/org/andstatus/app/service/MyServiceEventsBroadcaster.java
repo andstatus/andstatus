@@ -22,6 +22,7 @@ import android.text.TextUtils;
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.MyAction;
 import org.andstatus.app.context.MyContext;
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.util.MyLog;
 
 public class MyServiceEventsBroadcaster {
@@ -63,7 +64,11 @@ public class MyServiceEventsBroadcaster {
         }
         intent.putExtra(IntentExtra.SERVICE_STATE.key, mState.save());
         intent.putExtra(IntentExtra.SERVICE_EVENT.key, mEvent.save());
-        MyLog.v(this, "state: " + mState);
+        if (MyLog.isVerboseEnabled()) {
+            MyLog.v(this, "state:" + mState + ", event:" + mEvent
+            + (mCommandData == null ? "" : ", " + mCommandData.toCommandSummary(MyContextHolder.get()))
+            + (TextUtils.isEmpty(progress) ? "" : ", progress:" + progress) );
+        }
         mMyContext.context().sendBroadcast(intent);
     }
 }

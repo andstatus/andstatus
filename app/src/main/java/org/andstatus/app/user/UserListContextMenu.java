@@ -48,6 +48,10 @@ public class UserListContextMenu extends MyContextMenu {
                 UserListContextMenuItem.USER_MESSAGES.addTo(menu, order++,
                         String.format(getActivity().getText(R.string.menu_item_user_messages).toString(),
                                 getViewItem().mbUser.getNamePreferablyWebFingerId()));
+                UserListContextMenuItem.FRIENDS.addTo(menu, order++,
+                        String.format(
+                                getActivity().getText(R.string.friends_of).toString(),
+                                getViewItem().mbUser.getNamePreferablyWebFingerId()));
                 UserListContextMenuItem.FOLLOWERS.addTo(menu, order++,
                         String.format(
                                 getActivity().getText(R.string.followers_of).toString(),
