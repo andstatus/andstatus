@@ -485,12 +485,8 @@ public class DataInserter {
                 execContext.getContext().getContentResolver().update(userUri, values, null, null);
             }
             mbUser.userId = userId;
-            if (mbUser.latestMessage != null) {
-                if (mbUser.latestMessage.sender == null) {
-                    // This message doesn't have a sender!
-                    mbUser.latestMessage.sender = mbUser;
-                }
-                insertOrUpdateMsgInner(mbUser.latestMessage, lum, false);
+            if (mbUser.hasLatestMessage()) {
+                insertOrUpdateMsgInner(mbUser.getLatestMessage(), lum, false);
             }
             
         } catch (Exception e) {

@@ -381,8 +381,7 @@ public abstract class ConnectionTwitter extends Connection {
             JSONObject latestMessage;
             try {
                 latestMessage = jso.getJSONObject("status");
-                // This message doesn't have a sender!
-                user.latestMessage = messageFromJson(latestMessage);
+                user.setLatestMessage(messageFromJson(latestMessage));
             } catch (JSONException e) {
                 throw ConnectionException.loggedJsonException(this, "getting status from user", e, jso);
             }

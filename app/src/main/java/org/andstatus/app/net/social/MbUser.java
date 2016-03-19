@@ -61,7 +61,7 @@ public class MbUser implements Comparable<MbUser> {
     private long createdDate = 0;
     private long updatedDate = 0;
 
-    public MbMessage latestMessage = null;
+    private MbMessage latestMessage = null;
 
     public MbUser actor = null;
     public TriState followedByActor = TriState.UNKNOWN;
@@ -125,7 +125,7 @@ public class MbUser implements Comparable<MbUser> {
         if (!Uri.EMPTY.equals(profileUri)) {
             members += "; profileUri=" + profileUri.toString();
         }
-        if (latestMessage != null) {
+        if (hasLatestMessage()) {
             members += "; latest message present";
         }
         return str + "{" + members + "}";
@@ -276,6 +276,10 @@ public class MbUser implements Comparable<MbUser> {
         return !getTempOid().equals(getAltTempOid()) && !TextUtils.isEmpty(userName);
     }
 
+    public boolean hasLatestMessage() {
+        return latestMessage != null && !latestMessage.isEmpty() ;
+    }
+
     public String getTempOid() {
         return getTempOid(webFingerId, userName);
     }
@@ -416,5 +420,16 @@ public class MbUser implements Comparable<MbUser> {
             return originId > another.originId ? 1 : -1;
         }
         return oid.compareTo(another.oid);
+    }
+
+    public MbMessage getLatestMessage() {
+        return latestMessage;
+    }
+
+    public void setLatestMessage(MbMessage latestMessage) {
+        this.latestMessage = latestMessage;
+        if (this.latestMessage.sender == null) {
+            this.latestMessage.sender = this;
+        }
     }
 }
