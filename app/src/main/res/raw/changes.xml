@@ -27,14 +27,20 @@
     </header>
 
     <release android:versionName="24.00" android:versionCode="163"
-             versionDate="2016-03-14"
-             versionTitle="List of Followers">
+             versionDate="2016-03-20"
+             versionTitle="Followers and Friends - two Timelines and two User Lists">
         <changes>
-            <change>Added &quot;Followers of a User&quot; list as a context menu item
-                of &quot;Users of message&quot; list. The list of followers (just like
-                existing &quot;Following&quot; timeline) is not synced automatically
+            <change>&quot;Following&quot; timeline renamed to &quot;Friends&quot;. Added
+                &quot;Followers&quot; timeline. These timelines are not synced automatically
                 to avoid high network traffic: please hit &quot;Sync with Internet&quot;
-                action manually to populate or update the list for a selected User.
+                action. <a href="https://github.com/andstatus/andstatus/issues/222">#222</a>
+            </change>
+            <change>Added &quot;Friends of a User&quot; and
+                &quot;Followers of a User&quot; User Lists as context menu items
+                of &quot;Users of message&quot; list (and of any User List).
+                These lists are synced manually and simultaneously
+                with timelines of the same names: by hitting &quot;Sync with Internet&quot;
+                action to populate or update the list for a selected User.
                 <a href="https://github.com/andstatus/andstatus/issues/222">#222</a>
             </change>
         </changes>
