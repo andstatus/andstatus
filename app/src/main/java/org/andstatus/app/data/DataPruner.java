@@ -25,7 +25,6 @@ import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.MyDatabase.Download;
-import org.andstatus.app.data.MyDatabase.FollowingUser;
 import org.andstatus.app.data.MyDatabase.Msg;
 import org.andstatus.app.data.MyDatabase.MsgOfUser;
 import org.andstatus.app.data.MyDatabase.User;
@@ -80,10 +79,10 @@ public class DataPruner {
         String sqlNotLatestMessageByFollowedUser = Msg.TABLE_NAME + "." + Msg._ID + " NOT IN("
                 + "SELECT " + User.USER_MSG_ID 
                 + " FROM " + User.TABLE_NAME + " AS userf"
-                + " INNER JOIN " + FollowingUser.TABLE_NAME 
+                + " INNER JOIN " + MyDatabase.Friendship.TABLE_NAME
                 + " ON" 
-                + " userf." + User._ID + "=" + FollowingUser.TABLE_NAME + "." + FollowingUser.FOLLOWED_USER_ID
-                + " AND " + FollowingUser.TABLE_NAME + "." + FollowingUser.USER_FOLLOWED + "=1"
+                + " userf." + User._ID + "=" + MyDatabase.Friendship.TABLE_NAME + "." + MyDatabase.Friendship.FRIEND_ID
+                + " AND " + MyDatabase.Friendship.TABLE_NAME + "." + MyDatabase.Friendship.FOLLOWED + "=1"
                 + ")";
 
         int maxDays = Integer.parseInt(sp.getString(MyPreferences.KEY_HISTORY_TIME, "3"));

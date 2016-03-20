@@ -127,8 +127,8 @@ public class MyDataChecker {
         updateColumn(logMsg, user, MyDatabase.MsgOfUser.TABLE_NAME, MyDatabase.MsgOfUser.USER_ID, true);
         deleteRows(logMsg, user, MyDatabase.MsgOfUser.TABLE_NAME, MyDatabase.MsgOfUser.USER_ID);
 
-        deleteRows(logMsg, user, MyDatabase.FollowingUser.TABLE_NAME, MyDatabase.FollowingUser.USER_ID);
-        deleteRows(logMsg, user, MyDatabase.FollowingUser.TABLE_NAME, MyDatabase.FollowingUser.FOLLOWED_USER_ID);
+        deleteRows(logMsg, user, MyDatabase.Friendship.TABLE_NAME, MyDatabase.Friendship.USER_ID);
+        deleteRows(logMsg, user, MyDatabase.Friendship.TABLE_NAME, MyDatabase.Friendship.FRIEND_ID);
 
         deleteRows(logMsg, user, MyDatabase.Download.TABLE_NAME, MyDatabase.Download.USER_ID);
 

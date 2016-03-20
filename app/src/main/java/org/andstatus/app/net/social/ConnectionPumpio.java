@@ -175,7 +175,7 @@ public class ConnectionPumpio extends Connection {
     }
 
     @Override
-    public List<MbUser> getUsersFollowedBy(String userId) throws ConnectionException {
+    public List<MbUser> getFriends(String userId) throws ConnectionException {
         int limit = 200;
         ApiRoutineEnum apiRoutine = ApiRoutineEnum.GET_FRIENDS;
         ConnectionAndUrl conu = getConnectionAndUrl(apiRoutine, userId);

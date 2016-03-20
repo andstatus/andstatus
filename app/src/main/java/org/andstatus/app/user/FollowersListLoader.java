@@ -37,17 +37,17 @@ public class FollowersListLoader extends UserListLoader {
         String sql = "SELECT ";
         switch (mUserListType) {
             case FOLLOWERS:
-                sql += MyDatabase.FollowingUser.USER_ID
-                        + " FROM " + MyDatabase.FollowingUser.TABLE_NAME
-                        + " WHERE " + MyDatabase.FollowingUser.FOLLOWED_USER_ID + "=" + userId;
+                sql += MyDatabase.Friendship.USER_ID
+                        + " FROM " + MyDatabase.Friendship.TABLE_NAME
+                        + " WHERE " + MyDatabase.Friendship.FRIEND_ID + "=" + userId;
                 break;
             default:
-                sql += MyDatabase.FollowingUser.FOLLOWED_USER_ID
-                        + " FROM " + MyDatabase.FollowingUser.TABLE_NAME
-                        + " WHERE " + MyDatabase.FollowingUser.USER_ID + "=" + userId;
+                sql += MyDatabase.Friendship.FRIEND_ID
+                        + " FROM " + MyDatabase.Friendship.TABLE_NAME
+                        + " WHERE " + MyDatabase.Friendship.USER_ID + "=" + userId;
                 break;
         }
-        sql += " AND " + MyDatabase.FollowingUser.USER_FOLLOWED + "=1";
+        sql += " AND " + MyDatabase.Friendship.FOLLOWED + "=1";
         return " IN (" + sql + ")";
     }
 

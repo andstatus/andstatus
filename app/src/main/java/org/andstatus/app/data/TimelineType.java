@@ -20,7 +20,6 @@ import android.content.Context;
 
 import org.andstatus.app.R;
 import org.andstatus.app.account.PersistentAccounts;
-import org.andstatus.app.data.MyDatabase.FollowingUser;
 import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.net.social.Connection;
 
@@ -73,7 +72,7 @@ public enum TimelineType {
      * Latest messages of every user, followed by this User - AndStatus account. 
      * So this is essentially a list of "Following users". 
      * The timeline doesn't have Message ID because we download User IDs only 
-     * See {@link FollowingUser}
+     * See {@link MyDatabase.Friendship}
      */
     FOLLOWING_USER("following_user", R.string.timeline_title_following_user, 
             "", "", User.FOLLOWING_USER_DATE, Connection.ApiRoutineEnum.GET_FRIENDS_IDS),

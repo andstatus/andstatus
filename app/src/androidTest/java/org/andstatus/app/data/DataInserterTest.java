@@ -72,7 +72,7 @@ public class DataInserterTest extends InstrumentationTestCase {
                 userOid);
         assertTrue("User " + username + " added", somebodyId != 0);
 
-        Set<Long> followedIds = MyQuery.getIdsOfUsersFollowedBy(TestSuite
+        Set<Long> followedIds = MyQuery.getFriendsIds(TestSuite
                 .getConversationMyAccount().getUserId());
         assertFalse("User " + username + " is not followed", followedIds.contains(somebodyId));
 
@@ -118,7 +118,7 @@ public class DataInserterTest extends InstrumentationTestCase {
                 false, 0);
         SelectionAndArgs sa = new SelectionAndArgs();
         String sortOrder = MyDatabase.Msg.DESC_SORT_ORDER;
-        sa.addSelection(MyDatabase.FollowingUser.FOLLOWED_USER_ID + " = ?",
+        sa.addSelection(MyDatabase.Friendship.FRIEND_ID + " = ?",
                 new String[] {
                     Long.toString(somebodyId)
                 });
@@ -133,7 +133,7 @@ public class DataInserterTest extends InstrumentationTestCase {
         somebody.followedByActor = TriState.TRUE;
         di.insertOrUpdateUser(somebody);
 
-        followedIds = MyQuery.getIdsOfUsersFollowedBy(TestSuite.getConversationMyAccount()
+        followedIds = MyQuery.getFriendsIds(TestSuite.getConversationMyAccount()
                 .getUserId());
         assertTrue("User " + username + ", id=" + somebodyId + " is followed",
                 followedIds.contains(somebodyId));

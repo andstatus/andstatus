@@ -349,13 +349,13 @@ public final class MyDatabase extends SQLiteOpenHelper  {
     }
 
     /**
-     * Users, whom the {@link FollowingUser#USER_ID} is following
-     * I.e. this is a list of user IDs for every user the specified 
-     * (by {@link FollowingUser#USER_ID}) user is following (otherwise known as their "friends"). 
+     * IDs of Users the specified (by {@link Friendship#USER_ID}) user is following
+     * (otherwise known as their "friends").
+     * TODO: Rename table and fields in a database
      */
-    public static final class FollowingUser {
-        public static final String TABLE_NAME = FollowingUser.class.getSimpleName().toLowerCase(Locale.US);
-        private FollowingUser() {
+    public static final class Friendship {
+        public static final String TABLE_NAME = "followinguser";
+        private Friendship() {
         }
 
         /**
@@ -365,11 +365,12 @@ public final class MyDatabase extends SQLiteOpenHelper  {
         /**
          * Friend by {@link #USER_ID} (is followed by {@link #USER_ID})
          */
-        public static final String FOLLOWED_USER_ID = "following_user_id";
+        public static final String FRIEND_ID = "following_user_id";
         /**
-         * two state (1/0) flag showing if {@link FollowingUser#USER_ID} is following {@link FollowingUser#FOLLOWED_USER_ID}
+         * boolean ( 1 / 0 ) flag showing
+         * if {@link Friendship#FRIEND_ID} is followed by {@link Friendship#USER_ID}
          */
-        public static final String USER_FOLLOWED = "user_followed";
+        public static final String FOLLOWED = "user_followed";
         
         /**
          * Derived column: if the Author of the message is followed by the User
@@ -596,11 +597,11 @@ public final class MyDatabase extends SQLiteOpenHelper  {
                 + User.USER_OID  
                 + ")");
 
-        execSQL(db, "CREATE TABLE " + FollowingUser.TABLE_NAME + " (" 
-                + FollowingUser.USER_ID + " INTEGER NOT NULL," 
-                + FollowingUser.FOLLOWED_USER_ID + " INTEGER NOT NULL,"
-                + FollowingUser.USER_FOLLOWED + " BOOLEAN DEFAULT 1 NOT NULL," 
-                + " CONSTRAINT pk_followinguser PRIMARY KEY (" + FollowingUser.USER_ID + " ASC, " + FollowingUser.FOLLOWED_USER_ID + " ASC)"
+        execSQL(db, "CREATE TABLE " + Friendship.TABLE_NAME + " ("
+                + Friendship.USER_ID + " INTEGER NOT NULL,"
+                + Friendship.FRIEND_ID + " INTEGER NOT NULL,"
+                + Friendship.FOLLOWED + " BOOLEAN DEFAULT 1 NOT NULL,"
+                + " CONSTRAINT pk_followinguser PRIMARY KEY (" + Friendship.USER_ID + " ASC, " + Friendship.FRIEND_ID + " ASC)"
                 + ")");
 
         execSQL(db, "CREATE TABLE " + Download.TABLE_NAME + " (" 

@@ -19,7 +19,7 @@ package org.andstatus.app.data;
 import android.provider.BaseColumns;
 
 import org.andstatus.app.data.MyDatabase.Download;
-import org.andstatus.app.data.MyDatabase.FollowingUser;
+import org.andstatus.app.data.MyDatabase.Friendship;
 import org.andstatus.app.data.MyDatabase.Msg;
 import org.andstatus.app.data.MyDatabase.MsgOfUser;
 import org.andstatus.app.data.MyDatabase.User;
@@ -72,8 +72,8 @@ public class ProjectionMap {
         MSG.put(Msg.MSG_STATUS, Msg.MSG_STATUS);
         MSG.put(Msg.SENT_DATE, Msg.SENT_DATE);
         MSG.put(Msg.INS_DATE, Msg.INS_DATE);
-        MSG.put(FollowingUser.AUTHOR_FOLLOWED, FollowingUser.AUTHOR_FOLLOWED);
-        MSG.put(FollowingUser.SENDER_FOLLOWED, FollowingUser.SENDER_FOLLOWED);
+        MSG.put(Friendship.AUTHOR_FOLLOWED, Friendship.AUTHOR_FOLLOWED);
+        MSG.put(Friendship.SENDER_FOLLOWED, Friendship.SENDER_FOLLOWED);
     }
 
     /**

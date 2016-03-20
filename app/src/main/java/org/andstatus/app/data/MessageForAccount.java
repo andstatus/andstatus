@@ -75,8 +75,8 @@ public class MessageForAccount {
                     MyDatabase.MsgOfUser.SUBSCRIBED,
                     MyDatabase.MsgOfUser.FAVORITED,
                     MyDatabase.MsgOfUser.REBLOGGED,
-                    MyDatabase.FollowingUser.SENDER_FOLLOWED,
-                    MyDatabase.FollowingUser.AUTHOR_FOLLOWED,
+                    MyDatabase.Friendship.SENDER_FOLLOWED,
+                    MyDatabase.Friendship.AUTHOR_FOLLOWED,
                     MyDatabase.Download.IMAGE_FILE_NAME
             }, null, null, null);
             if (cursor != null && cursor.moveToFirst()) {
@@ -94,8 +94,8 @@ public class MessageForAccount {
                 isSubscribed = DbUtils.getBoolean(cursor, MyDatabase.MsgOfUser.SUBSCRIBED);
                 favorited = DbUtils.getBoolean(cursor, MyDatabase.MsgOfUser.FAVORITED);
                 reblogged = DbUtils.getBoolean(cursor, MyDatabase.MsgOfUser.REBLOGGED);
-                senderFollowed = DbUtils.getBoolean(cursor, MyDatabase.FollowingUser.SENDER_FOLLOWED);
-                authorFollowed = DbUtils.getBoolean(cursor, MyDatabase.FollowingUser.AUTHOR_FOLLOWED);
+                senderFollowed = DbUtils.getBoolean(cursor, MyDatabase.Friendship.SENDER_FOLLOWED);
+                authorFollowed = DbUtils.getBoolean(cursor, MyDatabase.Friendship.AUTHOR_FOLLOWED);
                 isSender = (userId == senderId);
                 isAuthor = (userId == authorId);
             }

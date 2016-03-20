@@ -27,7 +27,7 @@ import android.text.TextUtils;
 
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.UserInTimeline;
-import org.andstatus.app.data.MyDatabase.FollowingUser;
+import org.andstatus.app.data.MyDatabase.Friendship;
 import org.andstatus.app.data.MyDatabase.Msg;
 import org.andstatus.app.data.MyDatabase.MsgOfUser;
 import org.andstatus.app.data.MyDatabase.OidEnum;
@@ -517,21 +517,21 @@ public class MyQuery {
     }
 
     @NonNull
-    public static Set<Long> getIdsOfUsersFollowing(long userId) {
-        String where = MyDatabase.FollowingUser.FOLLOWED_USER_ID + "=" + userId
-                + " AND " + MyDatabase.FollowingUser.USER_FOLLOWED + "=1";
-        String sql = "SELECT " + MyDatabase.FollowingUser.USER_ID
-                + " FROM " + FollowingUser.TABLE_NAME
+    public static Set<Long> getFollowersIds(long userId) {
+        String where = Friendship.FRIEND_ID + "=" + userId
+                + " AND " + Friendship.FOLLOWED + "=1";
+        String sql = "SELECT " + Friendship.USER_ID
+                + " FROM " + Friendship.TABLE_NAME
                 + " WHERE " + where;
         return getLongs(sql);
     }
 
     @NonNull
-    public static Set<Long> getIdsOfUsersFollowedBy(long userId) {
-        String where = MyDatabase.FollowingUser.USER_ID + "=" + userId
-                + " AND " + MyDatabase.FollowingUser.USER_FOLLOWED + "=1";
-        String sql = "SELECT " + MyDatabase.FollowingUser.FOLLOWED_USER_ID
-                + " FROM " + FollowingUser.TABLE_NAME 
+    public static Set<Long> getFriendsIds(long userId) {
+        String where = Friendship.USER_ID + "=" + userId
+                + " AND " + MyDatabase.Friendship.FOLLOWED + "=1";
+        String sql = "SELECT " + MyDatabase.Friendship.FRIEND_ID
+                + " FROM " + Friendship.TABLE_NAME
                 + " WHERE " + where;
         return getLongs(sql);
     }
@@ -557,18 +557,18 @@ public class MyQuery {
     }
 
     /**
-     * IDs of MyAccounts' userIDs, who follow the specified User
+     *  MyAccounts' userIDs, who follow the specified User
      */
     @NonNull
     public static Set<Long> getMyFollowersOf(long userId) {
         SelectedUserIds selectedAccounts = new SelectedUserIds(true,
                 MyContextHolder.get().persistentAccounts().getCurrentAccountUserId());
 
-        String where = MyDatabase.FollowingUser.USER_ID + selectedAccounts.getSql()
-                + " AND " + MyDatabase.FollowingUser.FOLLOWED_USER_ID + "=" + userId
-                + " AND " + MyDatabase.FollowingUser.USER_FOLLOWED + "=1";
-        String sql = "SELECT " + FollowingUser.USER_ID
-                + " FROM " + FollowingUser.TABLE_NAME
+        String where = Friendship.USER_ID + selectedAccounts.getSql()
+                + " AND " + Friendship.FRIEND_ID + "=" + userId
+                + " AND " + Friendship.FOLLOWED + "=1";
+        String sql = "SELECT " + MyDatabase.Friendship.USER_ID
+                + " FROM " + MyDatabase.Friendship.TABLE_NAME
                 + " WHERE " + where;
 
         return getLongs(sql);

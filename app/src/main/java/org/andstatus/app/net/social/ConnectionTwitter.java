@@ -149,8 +149,8 @@ public abstract class ConnectionTwitter extends Connection {
      * @throws ConnectionException
      */
     @Override
-    public List<String> getIdsOfUsersFollowedBy(String userId) throws ConnectionException {
-        String method = "getIdsOfUsersFollowedBy";
+    public List<String> getFriendsIds(String userId) throws ConnectionException {
+        String method = "getFriendsIds";
         Uri sUri = Uri.parse(getApiPath(ApiRoutineEnum.GET_FRIENDS_IDS));
         Uri.Builder builder = sUri.buildUpon();
         builder.appendQueryParameter("user_id", userId);
@@ -172,8 +172,8 @@ public abstract class ConnectionTwitter extends Connection {
      *      href="https://dev.twitter.com/rest/reference/get/followers/ids">GET followers/ids</a>
      */
     @Override
-    public List<String> getIdsOfUsersFollowing(String userId) throws ConnectionException {
-        String method = "getIdsOfUsersFollowedBy";
+    public List<String> getFollowersIds(String userId) throws ConnectionException {
+        String method = "getFollowersIds";
         Uri sUri = Uri.parse(getApiPath(ApiRoutineEnum.GET_FOLLOWERS_IDS));
         Uri.Builder builder = sUri.buildUpon();
         builder.appendQueryParameter("user_id", userId);

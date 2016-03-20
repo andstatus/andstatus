@@ -465,7 +465,7 @@ public class DataInserter {
             }
             if (mbUser.followedByActor != TriState.UNKNOWN
                     && readerId == execContext.getMyAccount().getUserId()) {
-                values.put(MyDatabase.FollowingUser.USER_FOLLOWED,
+                values.put(MyDatabase.Friendship.FOLLOWED,
                         mbUser.followedByActor.toBoolean(false));
                 MyLog.v(this,
                         "User '" + mbUser.getUserName() + "' is "

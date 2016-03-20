@@ -28,7 +28,7 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.UserInTimeline;
 import org.andstatus.app.data.MyDatabase.Download;
-import org.andstatus.app.data.MyDatabase.FollowingUser;
+import org.andstatus.app.data.MyDatabase.Friendship;
 import org.andstatus.app.data.MyDatabase.Msg;
 import org.andstatus.app.data.MyDatabase.MsgOfUser;
 import org.andstatus.app.data.MyDatabase.OidEnum;
@@ -67,11 +67,11 @@ public class TimelineSql {
         String authorTableName = "";
         switch (tt) {
             case FOLLOWING_USER:
-                msgTable = "(SELECT " + FollowingUser.FOLLOWED_USER_ID + ", "
-                        + FollowingUser.USER_ID + " AS " + User.LINKED_USER_ID
-                        + " FROM " + FollowingUser.TABLE_NAME
+                msgTable = "(SELECT " + Friendship.FRIEND_ID + ", "
+                        + MyDatabase.Friendship.USER_ID + " AS " + User.LINKED_USER_ID
+                        + " FROM " + MyDatabase.Friendship.TABLE_NAME
                         + " WHERE (" + MyDatabase.User.LINKED_USER_ID + selectedAccounts.getSql()
-                        + " AND " + MyDatabase.FollowingUser.USER_FOLLOWED + "=1 )"
+                        + " AND " + MyDatabase.Friendship.FOLLOWED + "=1 )"
                         + ") as fUser";
                 linkedUserDefined = true;
                 boolean defineAuthorName = columns.contains(MyDatabase.User.AUTHOR_NAME);
@@ -85,7 +85,7 @@ public class TimelineSql {
                         + ", " + MyDatabase.User.USER_MSG_ID
                         + " FROM " + User.TABLE_NAME + ")";
                 msgTable += " INNER JOIN " + userTable + " as u1"
-                        + " ON (" + FollowingUser.FOLLOWED_USER_ID + "=u1." + BaseColumns._ID + ")";
+                        + " ON (" + MyDatabase.Friendship.FRIEND_ID + "=u1." + BaseColumns._ID + ")";
                 /**
                  * Select only the latest message from each following User's
                  * timeline
@@ -93,7 +93,7 @@ public class TimelineSql {
                 msgTable  += " LEFT JOIN " + Msg.TABLE_NAME + " AS " + ProjectionMap.MSG_TABLE_ALIAS
                         + " ON ("
                         + ProjectionMap.MSG_TABLE_ALIAS + "." + MyDatabase.Msg.SENDER_ID
-                        + "=fUser." + MyDatabase.FollowingUser.FOLLOWED_USER_ID
+                        + "=fUser." + Friendship.FRIEND_ID
                         + " AND " + ProjectionMap.MSG_TABLE_ALIAS + "." + BaseColumns._ID
                         + "=u1." + MyDatabase.User.USER_MSG_ID
                         + ")";
@@ -219,30 +219,30 @@ public class TimelineSql {
                     + ProjectionMap.MSG_TABLE_ALIAS + "." + MyDatabase.Msg.RECIPIENT_ID + "=recipient."
                     + BaseColumns._ID;
         }
-        if (columns.contains(MyDatabase.FollowingUser.AUTHOR_FOLLOWED)) {
+        if (columns.contains(Friendship.AUTHOR_FOLLOWED)) {
             tables = "(" + tables + ") LEFT OUTER JOIN (SELECT "
-                    + MyDatabase.FollowingUser.USER_ID + ", "
-                    + MyDatabase.FollowingUser.FOLLOWED_USER_ID + ", "
-                    + MyDatabase.FollowingUser.USER_FOLLOWED + " AS "
-                    + MyDatabase.FollowingUser.AUTHOR_FOLLOWED
-                    + " FROM " + FollowingUser.TABLE_NAME + ") AS followingAuthor ON ("
-                    + "followingAuthor." + MyDatabase.FollowingUser.USER_ID + "=" + MyDatabase.User.LINKED_USER_ID
+                    + MyDatabase.Friendship.USER_ID + ", "
+                    + MyDatabase.Friendship.FRIEND_ID + ", "
+                    + MyDatabase.Friendship.FOLLOWED + " AS "
+                    + Friendship.AUTHOR_FOLLOWED
+                    + " FROM " + MyDatabase.Friendship.TABLE_NAME + ") AS followingAuthor ON ("
+                    + "followingAuthor." + Friendship.USER_ID + "=" + MyDatabase.User.LINKED_USER_ID
                     + " AND "
                     + ProjectionMap.MSG_TABLE_ALIAS + "." + MyDatabase.Msg.AUTHOR_ID
-                    + "=followingAuthor." + MyDatabase.FollowingUser.FOLLOWED_USER_ID
+                    + "=followingAuthor." + MyDatabase.Friendship.FRIEND_ID
                     + ")";
         }
-        if (columns.contains(MyDatabase.FollowingUser.SENDER_FOLLOWED)) {
+        if (columns.contains(MyDatabase.Friendship.SENDER_FOLLOWED)) {
             tables = "(" + tables + ") LEFT OUTER JOIN (SELECT "
-                    + MyDatabase.FollowingUser.USER_ID + ", "
-                    + MyDatabase.FollowingUser.FOLLOWED_USER_ID + ", "
-                    + MyDatabase.FollowingUser.USER_FOLLOWED + " AS "
-                    + MyDatabase.FollowingUser.SENDER_FOLLOWED
-                    + " FROM " + FollowingUser.TABLE_NAME + ") AS followingSender ON ("
-                    + "followingSender." + MyDatabase.FollowingUser.USER_ID + "=" + MyDatabase.User.LINKED_USER_ID
+                    + Friendship.USER_ID + ", "
+                    + MyDatabase.Friendship.FRIEND_ID + ", "
+                    + MyDatabase.Friendship.FOLLOWED + " AS "
+                    + MyDatabase.Friendship.SENDER_FOLLOWED
+                    + " FROM " + MyDatabase.Friendship.TABLE_NAME + ") AS followingSender ON ("
+                    + "followingSender." + MyDatabase.Friendship.USER_ID + "=" + MyDatabase.User.LINKED_USER_ID
                     + " AND "
                     + ProjectionMap.MSG_TABLE_ALIAS + "." + MyDatabase.Msg.SENDER_ID
-                    + "=followingSender." + MyDatabase.FollowingUser.FOLLOWED_USER_ID
+                    + "=followingSender." + MyDatabase.Friendship.FRIEND_ID
                     + ")";
         }
         return tables;

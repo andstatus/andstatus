@@ -266,23 +266,23 @@ public abstract class Connection {
     /**
      * Returns a list of users the specified user is following.
      */
-    public List<MbUser> getUsersFollowedBy(String userId) throws ConnectionException {
+    public List<MbUser> getFriends(String userId) throws ConnectionException {
         throw ConnectionException.fromStatusCode(StatusCode.UNSUPPORTED_API, "getUsersFollowedBy for userOid=" + userId);
     }
     
     /**
      * Returns a list of IDs for every user the specified user is following.
      */
-    public List<String> getIdsOfUsersFollowedBy(String userId) throws ConnectionException {
+    public List<String> getFriendsIds(String userId) throws ConnectionException {
         throw ConnectionException.fromStatusCode(StatusCode.UNSUPPORTED_API, "getIdsOfUsersFollowedBy for userOid=" + userId);
     }
 
     @NonNull
-    public List<String> getIdsOfUsersFollowing(String userId) throws ConnectionException {
+    public List<String> getFollowersIds(String userId) throws ConnectionException {
         throw ConnectionException.fromStatusCode(StatusCode.UNSUPPORTED_API, "getIdsOfUsersFollowing userOid=" + userId);
     }
 
-    public List<MbUser> getUsersFollowing(String userId) throws ConnectionException {
+    public List<MbUser> getFollowers(String userId) throws ConnectionException {
         throw ConnectionException.fromStatusCode(StatusCode.UNSUPPORTED_API, "getUsersFollowing userOid=" + userId);
     }
 

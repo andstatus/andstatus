@@ -211,7 +211,7 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         assertTrue(connection.isApiSupported(ApiRoutineEnum.GET_FRIENDS));        
         assertTrue(connection.isApiSupported(ApiRoutineEnum.GET_FRIENDS_IDS));        
         
-        List<MbUser> users = connection.getUsersFollowedBy("acct:t131t@" + originUrl.getHost());
+        List<MbUser> users = connection.getFriends("acct:t131t@" + originUrl.getHost());
         assertNotNull("List of users returned", users);
         int size = 5;
         assertEquals("Response for t131t", size, users.size());

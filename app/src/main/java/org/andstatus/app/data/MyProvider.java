@@ -150,7 +150,7 @@ public class MyProvider extends ContentProvider {
         ContentValues values;
         MsgOfUserValues msgOfUserValues = new MsgOfUserValues(0);
         MsgOfUserValues otherUserValues = new MsgOfUserValues(0);
-        FollowingUserValues followingUserValues = null;
+        FriendshipValues friendshipValues = null;
         long accountUserId = 0;
         
         long rowId;
@@ -203,7 +203,7 @@ public class MyProvider extends ContentProvider {
                     table = User.TABLE_NAME;
                     values.put(User.INS_DATE, now);
                     accountUserId = uriParser.getAccountUserId();
-                    followingUserValues = FollowingUserValues.valueOf(accountUserId, 0, values);
+                    friendshipValues = FriendshipValues.valueOf(accountUserId, 0, values);
                     break;
                     
                 default:
@@ -222,9 +222,9 @@ public class MyProvider extends ContentProvider {
             otherUserValues.setMsgId(rowId);
             otherUserValues.insert(db);
 
-            if (followingUserValues != null) {
-                followingUserValues.followedUserId =  rowId;
-                followingUserValues.update(db);
+            if (friendshipValues != null) {
+                friendshipValues.friendId =  rowId;
+                friendshipValues.update(db);
             }
 
             switch (uriParser.matched()) {
@@ -452,11 +452,11 @@ public class MyProvider extends ContentProvider {
             case USER_ITEM:
                 accountUserId = uriParser.getAccountUserId();
                 long selectedUserId = uriParser.getUserId();
-                FollowingUserValues followingUserValues = FollowingUserValues.valueOf(accountUserId, selectedUserId, values);
+                FriendshipValues friendshipValues = FriendshipValues.valueOf(accountUserId, selectedUserId, values);
                 count = db.update(User.TABLE_NAME, values, BaseColumns._ID + "=" + selectedUserId
                         + (!TextUtils.isEmpty(selection) ? " AND (" + selection + ')' : ""),
                         selectionArgs);
-                followingUserValues.update(db);
+                friendshipValues.update(db);
                 optionallyLoadAvatar(selectedUserId, values);
                 break;
 

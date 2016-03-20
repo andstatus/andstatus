@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2013 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2016 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,56 +22,56 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteDatabaseLockedException;
 
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.data.MyDatabase.FollowingUser;
+import org.andstatus.app.data.MyDatabase.Friendship;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 
 /**
- * Helper class to update the "Following User" information (see {@link MyDatabase.FollowingUser}) 
+ * Helper class to update the "Friendship" information (see {@link Friendship})
  * @author yvolk@yurivolkov.com
  */
-public class FollowingUserValues {
+public class FriendshipValues {
     public long userId;
-    public long followedUserId;
+    public long friendId;
     private ContentValues contentValues = new ContentValues();
 
     /**
-     * Move all keys that belong to {@link FollowingUser} table from values to the newly created ContentValues.
+     * Move all keys that belong to {@link Friendship} table from values to the newly created ContentValues.
      * @param userId - first part of key
-     * @param followedUserId - second part of key
+     * @param friendId - second part of key
      * @param values - all other fields (currently only 1)
      * @return
      */
-    public static FollowingUserValues valueOf(long userId, long followedUserId, ContentValues values) {
-        FollowingUserValues userValues = new FollowingUserValues(userId, followedUserId);
-        MyQuery.moveBooleanKey(FollowingUser.USER_FOLLOWED, "", values, userValues.contentValues);
+    public static FriendshipValues valueOf(long userId, long friendId, ContentValues values) {
+        FriendshipValues userValues = new FriendshipValues(userId, friendId);
+        MyQuery.moveBooleanKey(Friendship.FOLLOWED, "", values, userValues.contentValues);
         return userValues;
     }
 
-    public static void setFollowed(long followingUserId, long followedUserId) {
-        setFollowed(followingUserId, followedUserId, true);
+    public static void setFollowed(long followerId, long friendId) {
+        setFollowed(followerId, friendId, true);
     }
 
-    public static void setNotFollowed(long followingUserId, long followedUserId) {
-        setFollowed(followingUserId, followedUserId, false);
+    public static void setNotFollowed(long followerId, long friendId) {
+        setFollowed(followerId, friendId, false);
     }
 
-    private static void setFollowed(long followingUserId, long followedUserId, boolean followed) {
-        FollowingUserValues fu = new FollowingUserValues(followingUserId, followedUserId);
+    private static void setFollowed(long followerId, long friendId, boolean followed) {
+        FriendshipValues fu = new FriendshipValues(followerId, friendId);
         fu.setFollowed(followed);
         fu.update(MyContextHolder.get().getDatabase());
     }
 
-    public FollowingUserValues(long userId, long followedUserId) {
+    public FriendshipValues(long userId, long friendId) {
         this.userId = userId;
-        this.followedUserId = followedUserId;
+        this.friendId = friendId;
     }
     
     /**
-     * Explicitly set the "following" flag 
+     * Explicitly set the "followed" flag
      */
     public void setFollowed(boolean followed) {
-        contentValues.put(FollowingUser.USER_FOLLOWED, followed);
+        contentValues.put(Friendship.FOLLOWED, followed);
     }
     
     /**
@@ -79,8 +79,8 @@ public class FollowingUserValues {
      */
     public void update(SQLiteDatabase db) {
         boolean followed = false;
-        if (db != null &&  userId != 0 && followedUserId != 0 && contentValues.containsKey(FollowingUser.USER_FOLLOWED)) {
-            followed = SharedPreferencesUtil.isTrue(contentValues.get(FollowingUser.USER_FOLLOWED));
+        if (db != null &&  userId != 0 && friendId != 0 && contentValues.containsKey(Friendship.FOLLOWED)) {
+            followed = SharedPreferencesUtil.isTrue(contentValues.get(Friendship.FOLLOWED));
         } else {
             // Don't change anything as there is no information
             return;
@@ -102,9 +102,9 @@ public class FollowingUserValues {
 
     private void tryToUpdate(SQLiteDatabase db, boolean followed) {
         // TODO: create universal dExists method...
-        String where = MyDatabase.FollowingUser.USER_ID + "=" + userId
-                + " AND " + MyDatabase.FollowingUser.FOLLOWED_USER_ID + "=" + followedUserId;
-        String sql = "SELECT * FROM " + FollowingUser.TABLE_NAME + " WHERE " + where;
+        String where = Friendship.USER_ID + "=" + userId
+                + " AND " + Friendship.FRIEND_ID + "=" + friendId;
+        String sql = "SELECT * FROM " + Friendship.TABLE_NAME + " WHERE " + where;
 
         Cursor cursor = null;
         boolean exists = false;
@@ -116,16 +116,16 @@ public class FollowingUserValues {
         }
 
         if (exists) {
-            db.update(FollowingUser.TABLE_NAME, contentValues, where,
+            db.update(Friendship.TABLE_NAME, contentValues, where,
                     null);
         } else if (followed) {
             // There was no such row
             ContentValues cv = new ContentValues(contentValues);
             // Add Key fields
-            cv.put(FollowingUser.USER_ID, userId);
-            cv.put(FollowingUser.FOLLOWED_USER_ID, followedUserId);
+            cv.put(Friendship.USER_ID, userId);
+            cv.put(Friendship.FRIEND_ID, friendId);
             
-            db.insert(FollowingUser.TABLE_NAME, null, cv);
+            db.insert(Friendship.TABLE_NAME, null, cv);
         }
     }
 }

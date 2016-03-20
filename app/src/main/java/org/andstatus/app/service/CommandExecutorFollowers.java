@@ -20,7 +20,7 @@ import android.text.TextUtils;
 
 import org.andstatus.app.R;
 import org.andstatus.app.data.DataInserter;
-import org.andstatus.app.data.FollowingUserValues;
+import org.andstatus.app.data.FriendshipValues;
 import org.andstatus.app.data.LatestUserMessages;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyQuery;
@@ -80,11 +80,11 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
     private void syncFollowers() throws ConnectionException {
         if (execContext.getMyAccount().getConnection()
                 .isApiSupported(Connection.ApiRoutineEnum.GET_FOLLOWERS)) {
-            usersNew = execContext.getMyAccount().getConnection().getUsersFollowing(userOid);
+            usersNew = execContext.getMyAccount().getConnection().getFollowers(userOid);
         } else if (execContext.getMyAccount().getConnection()
                 .isApiSupported(Connection.ApiRoutineEnum.GET_FOLLOWERS_IDS)) {
             List<String> userOidsNew =
-                    execContext.getMyAccount().getConnection().getIdsOfUsersFollowing(userOid);
+                    execContext.getMyAccount().getConnection().getFollowersIds(userOid);
             if (getUsersForOids(userOidsNew, usersNew)) return;
         } else {
             throw new ConnectionException(ConnectionException.StatusCode.UNSUPPORTED_API,
@@ -92,7 +92,7 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
                     + " and " + Connection.ApiRoutineEnum.GET_FOLLOWERS_IDS);
         }
 
-        Set<Long> userIdsOld = MyQuery.getIdsOfUsersFollowing(userId);
+        Set<Long> userIdsOld = MyQuery.getFollowersIds(userId);
         execContext.getResult().incrementDownloadedCount();
         broadcastProgress(execContext.getContext().getText(R.string.followers).toString()
                 + ": " + userIdsOld.size() + " -> " + usersNew.size(), false);
@@ -101,21 +101,21 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
 
         for (MbUser mbUser : usersNew) {
             userIdsOld.remove(mbUser.userId);
-            FollowingUserValues.setFollowed(mbUser.userId, userId);
+            FriendshipValues.setFollowed(mbUser.userId, userId);
         }
         for (long userIdOld : userIdsOld) {
-            FollowingUserValues.setNotFollowed(userIdOld, userId);
+            FriendshipValues.setNotFollowed(userIdOld, userId);
         }
     }
 
     private void syncFriends() throws ConnectionException {
         if (execContext.getMyAccount().getConnection()
                 .isApiSupported(Connection.ApiRoutineEnum.GET_FRIENDS)) {
-            usersNew = execContext.getMyAccount().getConnection().getUsersFollowedBy(userOid);
+            usersNew = execContext.getMyAccount().getConnection().getFriends(userOid);
         } else if (execContext.getMyAccount().getConnection()
                 .isApiSupported(Connection.ApiRoutineEnum.GET_FRIENDS_IDS)) {
             List<String> userOidsNew =
-                    execContext.getMyAccount().getConnection().getIdsOfUsersFollowedBy(userOid);
+                    execContext.getMyAccount().getConnection().getFriendsIds(userOid);
             if (getUsersForOids(userOidsNew, usersNew)) return;
         } else {
             throw new ConnectionException(ConnectionException.StatusCode.UNSUPPORTED_API,
@@ -123,7 +123,7 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
                             + " and " + Connection.ApiRoutineEnum.GET_FRIENDS_IDS);
         }
 
-        Set<Long> userIdsOld = MyQuery.getIdsOfUsersFollowedBy(userId);
+        Set<Long> userIdsOld = MyQuery.getFriendsIds(userId);
         execContext.getResult().incrementDownloadedCount();
         broadcastProgress(execContext.getContext().getText(R.string.friends).toString()
                 + ": " + userIdsOld.size() + " -> " + usersNew.size(), false);
@@ -132,10 +132,10 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
 
         for (MbUser mbUser : usersNew) {
             userIdsOld.remove(mbUser.userId);
-            FollowingUserValues.setFollowed(userId, mbUser.userId);
+            FriendshipValues.setFollowed(userId, mbUser.userId);
         }
         for (long userIdOld : userIdsOld) {
-            FollowingUserValues.setNotFollowed(userId, userIdOld);
+            FriendshipValues.setNotFollowed(userId, userIdOld);
         }
     }
 
@@ -168,6 +168,10 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
         LatestUserMessages lum = new LatestUserMessages();
         boolean messagesLoaded = false;
         for (MbUser mbUser : usersNew) {
+            long count = 0;
+            broadcastProgress(String.valueOf(count) + ". "
+                    + execContext.getContext().getText(R.string.button_save)
+                    + ": " + mbUser.getWebFingerId(), true);
             di.insertOrUpdateUser(mbUser, lum);
             if (mbUser.hasLatestMessage()) {
                 messagesLoaded = true;
@@ -178,10 +182,10 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
             for (MbUser mbUser : usersNew) {
                 count++;
                 try {
-                    di.downloadOneMessageBy(mbUser.oid, lum);
                     broadcastProgress(String.valueOf(count) + ". "
                             + execContext.getContext().getText(R.string.title_command_get_status)
                             + ": " + mbUser.getWebFingerId(), true);
+                    di.downloadOneMessageBy(mbUser.oid, lum);
                     execContext.getResult().incrementDownloadedCount();
                 } catch (ConnectionException e) {
                     MyLog.i(this, "Failed to download User's message for " + mbUser.getWebFingerId(), e);

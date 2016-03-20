@@ -21,7 +21,7 @@ import android.text.TextUtils;
 
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DataInserter;
-import org.andstatus.app.data.FollowingUserValues;
+import org.andstatus.app.data.FriendshipValues;
 import org.andstatus.app.data.LatestTimelineItem;
 import org.andstatus.app.data.LatestUserMessages;
 import org.andstatus.app.data.MyDatabase;
@@ -74,20 +74,20 @@ class TimelineDownloaderFollowing extends TimelineDownloader {
         DataInserter di = new DataInserter(execContext);
         if (execContext.getMyAccount().getConnection().isApiSupported(ApiRoutineEnum.GET_FRIENDS)) {
             List<MbUser> usersNew =
-                    execContext.getMyAccount().getConnection().getUsersFollowedBy(userOid);
+                    execContext.getMyAccount().getConnection().getFriends(userOid);
             userOidsNew = new ArrayList<>();
             for (MbUser user : usersNew) {
                 userOidsNew.add(user.oid);
                 di.insertOrUpdateUser(user, lum);
             }
         } else if (execContext.getMyAccount().getConnection().isApiSupported(ApiRoutineEnum.GET_FRIENDS_IDS)) {
-            userOidsNew = execContext.getMyAccount().getConnection().getIdsOfUsersFollowedBy(userOid);
+            userOidsNew = execContext.getMyAccount().getConnection().getFriendsIds(userOid);
         } else {
             throw new ConnectionException(StatusCode.UNSUPPORTED_API, ApiRoutineEnum.GET_FRIENDS 
                     + " and " + ApiRoutineEnum.GET_FRIENDS_IDS);
         }
         // Old list of followed users
-        Set<Long> userIdsOld = MyQuery.getIdsOfUsersFollowedBy(userId);
+        Set<Long> userIdsOld = MyQuery.getFriendsIds(userId);
         SQLiteDatabase db = MyContextHolder.get().getDatabase();
         if (db == null) {
             MyLog.v(this, "Database is null");
@@ -117,7 +117,7 @@ class TimelineDownloaderFollowing extends TimelineDownloader {
             }
             if (userIdNew != 0) {
                 userIdsOld.remove(userIdNew);
-                FollowingUserValues fu = new FollowingUserValues(userId, userIdNew);
+                FriendshipValues fu = new FriendshipValues(userId, userIdNew);
                 fu.setFollowed(true);
                 fu.update(db);
             }
@@ -127,7 +127,7 @@ class TimelineDownloaderFollowing extends TimelineDownloader {
         
         // Now let's remove "following" information for all users left in the Set:
         for (long notFollowedId : userIdsOld) {
-            FollowingUserValues fu = new FollowingUserValues(userId, notFollowedId);
+            FriendshipValues fu = new FriendshipValues(userId, notFollowedId);
             fu.setFollowed(false);
             fu.update(db);
         }
