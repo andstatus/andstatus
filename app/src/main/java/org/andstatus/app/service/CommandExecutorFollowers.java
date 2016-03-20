@@ -19,6 +19,7 @@ package org.andstatus.app.service;
 import android.text.TextUtils;
 
 import org.andstatus.app.R;
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DataInserter;
 import org.andstatus.app.data.FriendshipValues;
 import org.andstatus.app.data.LatestTimelineItem;
@@ -26,10 +27,12 @@ import org.andstatus.app.data.LatestUserMessages;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.TimelineType;
+import org.andstatus.app.data.UserMsg;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.RelativeTime;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -169,16 +172,28 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
     private boolean getUsersForOids(List<String> userOidsNew, List<MbUser> usersNew) {
         long count = 0;
         for (String userOidNew : userOidsNew) {
+            MbUser mbUser = null;
             try {
                 count++;
-                MbUser mbUser = execContext.getMyAccount().getConnection().getUser(userOidNew, null);
-                usersNew.add(mbUser);
-                broadcastProgress(String.valueOf(count) + ". "
-                        + execContext.getContext().getText(R.string.get_user)
-                        + ": " + mbUser.getWebFingerId(), true);
+                mbUser = execContext.getMyAccount().getConnection().getUser(userOidNew, null);
                 execContext.getResult().incrementDownloadedCount();
             } catch (ConnectionException e) {
-                MyLog.i(this, "Failed to download User object for oid=" + userOidNew, e);
+                long userId = MyQuery.oidToId(MyDatabase.OidEnum.USER_OID,
+                        execContext.getMyAccount().getOriginId(), userOidNew);
+                if (userId == 0) {
+                    MyLog.i(this, "Failed to identify a User for oid=" + userOidNew, e);
+                } else {
+                    MyLog.v(this, "Server doesn't return User object for oid=" + userOidNew, e);
+                    mbUser = MbUser.fromOriginAndUserOid(
+                            execContext.getMyAccount().getOriginId(), userOidNew);
+                    mbUser.userId = userId;
+                }
+            }
+            if (mbUser != null) {
+                broadcastProgress(String.valueOf(count) + ". "
+                        + execContext.getContext().getText(R.string.get_user)
+                        + ": " + mbUser.getNamePreferablyWebFingerId(), true);
+                usersNew.add(mbUser);
             }
             if (logSoftErrorIfStopping()) {
                 return true;
@@ -194,28 +209,48 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
         DataInserter di = new DataInserter(execContext);
         LatestUserMessages lum = new LatestUserMessages();
         boolean messagesLoaded = false;
+        long count = 0;
         for (MbUser mbUser : usersNew) {
-            long count = 0;
+            count++;
             broadcastProgress(String.valueOf(count) + ". "
                     + execContext.getContext().getText(R.string.button_save)
-                    + ": " + mbUser.getWebFingerId(), true);
+                    + ": " + mbUser.getNamePreferablyWebFingerId(), true);
             di.insertOrUpdateUser(mbUser, lum);
             if (mbUser.hasLatestMessage()) {
                 messagesLoaded = true;
             }
         }
         if (!messagesLoaded) {
-            long count = 0;
+            count = 0;
             for (MbUser mbUser : usersNew) {
                 count++;
                 try {
                     broadcastProgress(String.valueOf(count) + ". "
                             + execContext.getContext().getText(R.string.title_command_get_status)
-                            + ": " + mbUser.getWebFingerId(), true);
+                            + ": " + mbUser.getNamePreferablyWebFingerId(), true);
                     di.downloadOneMessageBy(mbUser.oid, lum);
                     execContext.getResult().incrementDownloadedCount();
                 } catch (ConnectionException e) {
-                    MyLog.i(this, "Failed to download User's message for " + mbUser.getWebFingerId(), e);
+                    long lastMsgId = MyQuery.userIdToLongColumnValue(MyDatabase.User.USER_MSG_ID,
+                            mbUser.userId);
+                    if (lastMsgId == 0) {
+                        lastMsgId = MyQuery.conditionToLongColumnValue(MyDatabase.Msg.TABLE_NAME,
+                                MyDatabase.Msg._ID,
+                                MyDatabase.Msg.SENDER_ID + "=" + mbUser.userId
+                        + " ORDER BY " + MyDatabase.Msg.SENT_DATE + " DESC LIMIT 0,0");
+                    }
+                    if (lastMsgId == 0) {
+                        MyLog.v(this, "Failed to find User's message for "
+                                + mbUser.getNamePreferablyWebFingerId(), e);
+                    } else {
+                        long sentDate = MyQuery.msgIdToLongColumnValue(MyDatabase.Msg.SENT_DATE, lastMsgId);
+                        lum.onNewUserMsg(new UserMsg(mbUser.userId, lastMsgId, sentDate));
+                        MyLog.v(this, "Server didn't return User's message for "
+                                        + mbUser.getNamePreferablyWebFingerId()
+                                        + " found msg " + RelativeTime.
+                                        getDifference(MyContextHolder.get().context(), sentDate),
+                                e);
+                    }
                 }
                 if (logSoftErrorIfStopping()) {
                     return true;
