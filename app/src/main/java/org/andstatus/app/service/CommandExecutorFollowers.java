@@ -47,21 +47,18 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
     @Override
     void execute() {
         commandSummary = execContext.getCommandSummary();
-        if (lookupUser()) return;
         try {
-            TimelineType timelineType;
-            switch (execContext.getCommandData().getCommand()) {
-                case GET_FOLLOWERS:
+            TimelineType timelineType = getTimelineType();
+            if (lookupUser()) return;
+            switch (timelineType) {
+                case FOLLOWERS:
                     syncFollowers();
-                    timelineType = TimelineType.FOLLOWERS;
                     break;
-                case GET_FRIENDS:
+                case FRIENDS:
                     syncFriends();
-                    timelineType = TimelineType.FRIENDS;
                     break;
                 default:
-                    timelineType = TimelineType.UNKNOWN;
-                    MyLog.e(this, "Unexpected command here: " + commandSummary);
+                    MyLog.e(this, "Unexpected timeline or command here: " + commandSummary);
                     break;
             }
 
@@ -76,9 +73,28 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
         }
     }
 
+    private TimelineType getTimelineType() {
+        TimelineType timelineType;
+        switch (execContext.getCommandData().getCommand()) {
+            case GET_FOLLOWERS:
+                timelineType = TimelineType.FOLLOWERS;
+                break;
+            case GET_FRIENDS:
+                timelineType = TimelineType.FRIENDS;
+                break;
+            default:
+                timelineType = execContext.getTimelineType();
+                break;
+        }
+        return timelineType;
+    }
+
     private boolean lookupUser() {
         final String method = "lookupUser";
         userId = execContext.getCommandData().itemId;
+        if (userId == 0) {
+            userId = execContext.getTimelineUserId();
+        }
         userOid = MyQuery.idToOid(MyDatabase.OidEnum.USER_OID, userId, 0);
         if (TextUtils.isEmpty(userOid)) {
             execContext.getResult().incrementParseExceptions();

@@ -186,6 +186,9 @@ public abstract class Connection {
      * @return true if supported
      */
     public boolean isApiSupported(ApiRoutineEnum routine) {
+        if (routine == null || routine == ApiRoutineEnum.DUMMY) {
+            return true;
+        }
         boolean is = !TextUtils.isEmpty(this.getApiPath1(routine));
         if (!is && MyLog.isVerboseEnabled()) {
           MyLog.v(this.getClass().getSimpleName(), "The API routine '" + routine + "' is not supported");  

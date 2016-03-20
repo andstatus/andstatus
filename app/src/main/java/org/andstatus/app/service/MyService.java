@@ -864,7 +864,7 @@ public class MyService extends Service {
             for (long iteration = 1; iteration < 10000; iteration++) {
                 try {
                     synchronized(heartBeatLock) {
-                        if (mHeartBeat != this && mHeartBeat.isReallyWorking() ) {
+                        if (mHeartBeat != null && mHeartBeat != this && mHeartBeat.isReallyWorking() ) {
                             breakReason = "Other instance found: " + mHeartBeat;
                             break;
                         }
