@@ -399,7 +399,7 @@
   <string name="timeline_title_drafts">Borradores</string>
   <string name="timeline_title_everything">Todo</string>
   <string name="timeline_title_favorites">Favoritos</string>
-  <string name="timeline_title_following_user">Siguiendo</string>
+  <string name="friends">Siguiendo</string>
   <string name="timeline_title_home">Inicio</string>
   <string name="timeline_title_mentions">Menciones</string>
   <string name="timeline_title_outbox">Bandeja de salida</string>

@@ -344,7 +344,7 @@
   <string name="timeline_title_direct_messages">Messages privés</string>
   <string name="timeline_title_everything">Tout</string>
   <string name="timeline_title_favorites">Favoris</string>
-  <string name="timeline_title_following_user">Suivi</string>
+  <string name="friends">Suivi</string>
   <string name="timeline_title_home">Principale</string>
   <string name="timeline_title_mentions">Mentions</string>
   <string name="timeline_title_public">Public</string>

@@ -398,7 +398,7 @@ Com suporte a GNU social, Twitter e Pump.io.</string>
   <string name="timeline_title_drafts">Rascunhos</string>
   <string name="timeline_title_everything">Tudo</string>
   <string name="timeline_title_favorites">Favoritas</string>
-  <string name="timeline_title_following_user">A seguir</string>
+  <string name="friends">A seguir</string>
   <string name="timeline_title_home">Home</string>
   <string name="timeline_title_mentions">Menções</string>
   <string name="timeline_title_outbox">Caixa de saída</string>

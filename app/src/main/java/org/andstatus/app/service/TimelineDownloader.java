@@ -34,7 +34,7 @@ abstract class TimelineDownloader {
     protected static TimelineDownloader getStrategy(CommandExecutionContext execContext) {
         TimelineDownloader td;
         switch (execContext.getTimelineType()) {
-            case FOLLOWING_USER:
+            case FRIENDS:
                 td = new TimelineDownloaderFollowing();
                 break;
             case ALL:

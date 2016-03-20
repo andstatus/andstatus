@@ -228,7 +228,7 @@
   <string name="timeline_title_direct_messages">Missatges directes</string>
   <string name="timeline_title_everything">Tot</string>
   <string name="timeline_title_favorites">Preferits</string>
-  <string name="timeline_title_following_user">Seguint</string>
+  <string name="friends">Seguint</string>
   <string name="timeline_title_home">Inici</string>
   <string name="timeline_title_mentions">Mencions</string>
   <string name="timeline_title_public">Públic</string>

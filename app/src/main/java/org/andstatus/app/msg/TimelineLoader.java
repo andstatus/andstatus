@@ -113,7 +113,7 @@ public class TimelineLoader implements LoadableListActivity.SyncLoader {
                         getParams().timelineToSync = getParams().mTimelineType;
                     }
                     break;
-                case FOLLOWING_USER:
+                case FRIENDS:
                     // This timeline doesn't update automatically so let's do it now if necessary
                     latestTimelineItem = new LatestTimelineItem(getParams().mTimelineType, getParams().myAccountUserId);
                     if (latestTimelineItem.isTimeToAutoUpdate()) {

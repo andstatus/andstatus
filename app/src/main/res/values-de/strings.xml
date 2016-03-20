@@ -399,7 +399,7 @@
   <string name="timeline_title_drafts">Entwürfe</string>
   <string name="timeline_title_everything">Alles</string>
   <string name="timeline_title_favorites">Favoriten</string>
-  <string name="timeline_title_following_user">Folgend</string>
+  <string name="friends">Folgend</string>
   <string name="timeline_title_home">Start</string>
   <string name="timeline_title_mentions">Erwähnungen</string>
   <string name="timeline_title_outbox">Postausgang</string>

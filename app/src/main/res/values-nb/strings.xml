@@ -397,7 +397,7 @@
   <string name="timeline_title_drafts">Kladd</string>
   <string name="timeline_title_everything">Alt</string>
   <string name="timeline_title_favorites">Favoritter</string>
-  <string name="timeline_title_following_user">Følger</string>
+  <string name="friends">Følger</string>
   <string name="timeline_title_home">Hjem</string>
   <string name="timeline_title_mentions">Nevner</string>
   <string name="timeline_title_outbox">Utboksen</string>

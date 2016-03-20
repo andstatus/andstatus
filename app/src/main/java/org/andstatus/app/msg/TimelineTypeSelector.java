@@ -12,7 +12,7 @@ public class TimelineTypeSelector {
             TimelineType.MENTIONS,
             TimelineType.DIRECT,
             TimelineType.USER,
-            TimelineType.FOLLOWING_USER,
+            TimelineType.FRIENDS,
             TimelineType.PUBLIC,
             TimelineType.EVERYTHING,
             TimelineType.DRAFTS,

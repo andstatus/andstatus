@@ -165,7 +165,7 @@
   <string name="timeline_title_direct_messages">הודעות ישירות</string>
   <string name="timeline_title_drafts">טיוטות</string>
   <string name="timeline_title_favorites">מועדפים</string>
-  <string name="timeline_title_following_user">עוקב</string>
+  <string name="friends">עוקב</string>
   <string name="timeline_title_home">בית</string>
   <string name="timeline_title_mentions">אזכורים</string>
   <string name="timeline_title_public">ציבורי</string>

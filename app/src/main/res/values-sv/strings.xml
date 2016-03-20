@@ -297,7 +297,7 @@
   <string name="timeline_title_drafts">Utkast</string>
   <string name="timeline_title_everything">Allt</string>
   <string name="timeline_title_favorites">Favoriter</string>
-  <string name="timeline_title_following_user">Följer</string>
+  <string name="friends">Följer</string>
   <string name="timeline_title_home">Vänner</string>
   <string name="timeline_title_mentions">Omnämningar</string>
   <string name="timeline_title_replies">Svar</string>

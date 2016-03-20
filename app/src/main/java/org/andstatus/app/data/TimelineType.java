@@ -69,12 +69,12 @@ public enum TimelineType {
             "", "", "", Connection.ApiRoutineEnum.STATUSES_HOME_TIMELINE,
             true),
     /**
-     * Latest messages of every user, followed by this User - AndStatus account. 
-     * So this is essentially a list of "Following users". 
-     * The timeline doesn't have Message ID because we download User IDs only 
+     * Latest messages of every Friend of this user - AndStatus account
+     * (i.e of every user, followed by this User).
+     * So this is essentially a list of "Friends".
      * See {@link MyDatabase.Friendship}
      */
-    FOLLOWING_USER("following_user", R.string.timeline_title_following_user, 
+    FRIENDS("friends", R.string.friends,
             "", "", User.FOLLOWING_USER_DATE, Connection.ApiRoutineEnum.GET_FRIENDS_IDS),
     /**
      * Replies

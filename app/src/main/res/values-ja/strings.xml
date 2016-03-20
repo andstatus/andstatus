@@ -397,7 +397,7 @@
   <string name="timeline_title_drafts">下書き</string>
   <string name="timeline_title_everything">すべて</string>
   <string name="timeline_title_favorites">お気に入り</string>
-  <string name="timeline_title_following_user">フォロー中</string>
+  <string name="friends">フォロー中</string>
   <string name="timeline_title_home">ホーム</string>
   <string name="timeline_title_mentions">メンション</string>
   <string name="timeline_title_outbox">送信トレイ</string>

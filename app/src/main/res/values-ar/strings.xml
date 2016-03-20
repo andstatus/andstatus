@@ -328,7 +328,7 @@
   <string name="timeline_title_direct_messages">رسائل مباشرة</string>
   <string name="timeline_title_everything">كل شيء</string>
   <string name="timeline_title_favorites">المفضلات</string>
-  <string name="timeline_title_following_user">متابَعون</string>
+  <string name="friends">متابَعون</string>
   <string name="timeline_title_home">الرئيسة</string>
   <string name="timeline_title_mentions">الإشارات</string>
   <string name="timeline_title_public">عمومي</string>

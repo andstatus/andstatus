@@ -398,7 +398,7 @@
   <string name="timeline_title_drafts">Черновики</string>
   <string name="timeline_title_everything">Всё</string>
   <string name="timeline_title_favorites">Избранное</string>
-  <string name="timeline_title_following_user">Следуем за</string>
+  <string name="friends">Следуем за</string>
   <string name="timeline_title_home">Дом</string>
   <string name="timeline_title_mentions">Упоминания</string>
   <string name="timeline_title_outbox">Исходящие</string>

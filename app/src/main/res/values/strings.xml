@@ -401,7 +401,6 @@
   <string name="timeline_title_drafts">Drafts</string>
   <string name="timeline_title_everything">Everything</string>
   <string name="timeline_title_favorites">Favorites</string>
-  <string name="timeline_title_following_user">Following</string>
   <string name="timeline_title_home">Home</string>
   <string name="timeline_title_mentions">Mentions</string>
   <string name="timeline_title_outbox">Outbox</string>

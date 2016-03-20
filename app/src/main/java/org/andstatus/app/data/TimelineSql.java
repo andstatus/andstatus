@@ -66,7 +66,7 @@ public class TimelineSql {
         boolean authorNameDefined = false;
         String authorTableName = "";
         switch (tt) {
-            case FOLLOWING_USER:
+            case FRIENDS:
                 msgTable = "(SELECT " + Friendship.FRIEND_ID + ", "
                         + MyDatabase.Friendship.USER_ID + " AS " + User.LINKED_USER_ID
                         + " FROM " + MyDatabase.Friendship.TABLE_NAME
@@ -145,7 +145,7 @@ public class TimelineSql {
                     + ProjectionMap.MSG_TABLE_ALIAS + "." + BaseColumns._ID + "="
                     + "mou." + MyDatabase.MsgOfUser.MSG_ID;
             switch (tt) {
-                case FOLLOWING_USER:
+                case FRIENDS:
                 case MESSAGES_TO_ACT:
                     tbl += " AND mou." + MyDatabase.MsgOfUser.USER_ID 
                     + "=" + MyDatabase.User.LINKED_USER_ID;

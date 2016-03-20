@@ -210,7 +210,7 @@
         <item>@string/timeline_title_mentions</item>
         <item>@string/timeline_title_direct_messages</item>
         <item>@string/timeline_title_user</item>
-        <item>@string/timeline_title_following_user</item>
+        <item>@string/friends</item>
         <item>@string/timeline_title_public</item>
         <item>@string/timeline_title_everything</item>
     </string-array>
@@ -220,7 +220,7 @@
         <item>mentions</item>
         <item>direct</item>
         <item>user</item>
-        <item>following_user</item>
+        <item>friends</item>
         <item>public</item>
         <item>everything</item>
     </string-array>

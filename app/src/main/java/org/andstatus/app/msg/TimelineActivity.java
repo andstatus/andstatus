@@ -67,7 +67,6 @@ import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
 import org.andstatus.app.widget.MyBaseAdapter;
-import org.andstatus.app.widget.MySwipeRefreshLayout;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -908,7 +907,7 @@ public class TimelineActivity extends LoadableListActivity implements
                 timelineTypeToSync = paramsNew.getTimelineType();
                 break;
             case USER:
-            case FOLLOWING_USER:
+            case FRIENDS:
                 timelineTypeToSync = paramsNew.getTimelineType();
                 userId = paramsNew.mSelectedUserId;
                 break;

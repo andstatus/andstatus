@@ -377,7 +377,7 @@ Admite GNU social, Twitter e Pump.io.</string>
   <string name="timeline_title_drafts">Borradores</string>
   <string name="timeline_title_everything">Todo</string>
   <string name="timeline_title_favorites">Favoritas</string>
-  <string name="timeline_title_following_user">Seguindo</string>
+  <string name="friends">Seguindo</string>
   <string name="timeline_title_home">Inicio</string>
   <string name="timeline_title_mentions">Mencións</string>
   <string name="timeline_title_outbox">Caixa de saída</string>
