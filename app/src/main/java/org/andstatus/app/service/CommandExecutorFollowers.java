@@ -21,9 +21,11 @@ import android.text.TextUtils;
 import org.andstatus.app.R;
 import org.andstatus.app.data.DataInserter;
 import org.andstatus.app.data.FriendshipValues;
+import org.andstatus.app.data.LatestTimelineItem;
 import org.andstatus.app.data.LatestUserMessages;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyQuery;
+import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.net.social.MbUser;
@@ -47,17 +49,26 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
         commandSummary = execContext.getCommandSummary();
         if (lookupUser()) return;
         try {
+            TimelineType timelineType;
             switch (execContext.getCommandData().getCommand()) {
                 case GET_FOLLOWERS:
                     syncFollowers();
+                    timelineType = TimelineType.FOLLOWERS;
                     break;
                 case GET_FRIENDS:
                     syncFriends();
+                    timelineType = TimelineType.FRIENDS;
                     break;
                 default:
+                    timelineType = TimelineType.UNKNOWN;
                     MyLog.e(this, "Unexpected command here: " + commandSummary);
                     break;
             }
+
+            LatestTimelineItem latestTimelineItem = new LatestTimelineItem(timelineType, userId);
+            latestTimelineItem.onTimelineDownloaded();
+            latestTimelineItem.save();
+
             MyLog.d(this, commandSummary + " ended, " + usersNew.size() + " users");
             logOk(true);
         } catch (ConnectionException e) {

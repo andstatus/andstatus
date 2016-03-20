@@ -52,7 +52,7 @@ public class DataInserterTest extends InstrumentationTestCase {
         assertEquals("Data path", "ok", TestSuite.checkDataPath(this));
     }
 
-    public void testFollowingUser() throws ConnectionException {
+    public void testFriends() throws ConnectionException {
         String messageOid = "https://identi.ca/api/comment/dasdjfdaskdjlkewjz1EhSrTRB";
         MessageInserter.deleteOldMessage(TestSuite.getConversationOriginId(), messageOid);
 
@@ -118,7 +118,7 @@ public class DataInserterTest extends InstrumentationTestCase {
                 false, 0);
         SelectionAndArgs sa = new SelectionAndArgs();
         String sortOrder = MyDatabase.Msg.DESC_SORT_ORDER;
-        sa.addSelection(MyDatabase.Friendship.FRIEND_ID + " = ?",
+        sa.addSelection("fUserId = ?",
                 new String[] {
                     Long.toString(somebodyId)
                 });
@@ -127,7 +127,7 @@ public class DataInserterTest extends InstrumentationTestCase {
         };
         Cursor cursor = context.getContentResolver().query(contentUri, PROJECTION, sa.selection,
                 sa.selectionArgs, sortOrder);
-        assertTrue("No messages of this user in the Following timeline", cursor.getCount() == 0);
+        assertTrue("No messages of this user in the Friends timeline", cursor.getCount() == 0);
         cursor.close();
 
         somebody.followedByActor = TriState.TRUE;
@@ -140,7 +140,7 @@ public class DataInserterTest extends InstrumentationTestCase {
 
         cursor = context.getContentResolver().query(contentUri, PROJECTION, sa.selection,
                 sa.selectionArgs, sortOrder);
-        assertTrue("Message by user=" + somebodyId + " is in the Following timeline",
+        assertTrue("Message by user=" + somebodyId + " is in the Friends timeline",
                 cursor.getCount() > 0);
         cursor.close();
 

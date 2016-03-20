@@ -13,6 +13,7 @@ public class TimelineTypeSelector {
             TimelineType.DIRECT,
             TimelineType.USER,
             TimelineType.FRIENDS,
+            TimelineType.FOLLOWERS,
             TimelineType.PUBLIC,
             TimelineType.EVERYTHING,
             TimelineType.DRAFTS,

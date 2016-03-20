@@ -233,6 +233,7 @@ public class MessageContextMenu extends MyContextMenu {
         if (ma1.isValid() && !forceFirstUser
                 && !msg.isTiedToThisAccount()
                 && ma1.getUserId() != preferredUserId
+                && messageList.getTimelineType() != TimelineType.FOLLOWERS
                 && messageList.getTimelineType() != TimelineType.FRIENDS) {
             MyAccount ma2 = MyContextHolder.get().persistentAccounts().fromUserId(preferredUserId);
             if (ma2.isValid() && ma1.getOriginId() == ma2.getOriginId()) {

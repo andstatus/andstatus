@@ -907,6 +907,7 @@ public class TimelineActivity extends LoadableListActivity implements
                 timelineTypeToSync = paramsNew.getTimelineType();
                 break;
             case USER:
+            case FOLLOWERS:
             case FRIENDS:
                 timelineTypeToSync = paramsNew.getTimelineType();
                 userId = paramsNew.mSelectedUserId;

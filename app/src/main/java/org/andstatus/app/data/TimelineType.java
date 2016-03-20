@@ -75,7 +75,10 @@ public enum TimelineType {
      * See {@link MyDatabase.Friendship}
      */
     FRIENDS("friends", R.string.friends,
-            "", "", User.FOLLOWING_USER_DATE, Connection.ApiRoutineEnum.GET_FRIENDS_IDS),
+            "", "", User.FOLLOWING_USER_DATE, Connection.ApiRoutineEnum.GET_FRIENDS),
+    FOLLOWERS("followers", R.string.followers,
+            "", "", User.FOLLOWERS_USER_DATE, Connection.ApiRoutineEnum.GET_FOLLOWERS),
+
     /**
      * Replies
      */
