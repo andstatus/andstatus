@@ -131,9 +131,6 @@ public class TimelineActivity extends LoadableListActivity implements
         } else {
             parseNewIntent(getIntent());
         }
-
-        updateScreen();
-        showList(paramsNew.whichPage);
     }
 
     @Override
@@ -542,8 +539,9 @@ public class TimelineActivity extends LoadableListActivity implements
         super.onNewIntent(intent);
         MyContextHolder.initialize(this, this);
         parseNewIntent(intent);
-        updateScreen();
-        showList(paramsNew.whichPage);
+		if (!isPaused() || size() > 0 || isLoading()) {
+            showList(paramsNew.whichPage);
+		}
     }
 
     private void parseNewIntent(Intent intentNew) {

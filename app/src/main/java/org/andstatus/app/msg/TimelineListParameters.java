@@ -97,7 +97,7 @@ public class TimelineListParameters {
 
     public static TimelineListParameters clone(TimelineListParameters prev, WhichPage whichPage) {
         TimelineListParameters params = new TimelineListParameters(prev.mContext);
-        params.whichPage = whichPage;
+        params.whichPage = whichPage == WhichPage.ANY ? prev.whichPage : whichPage;
         if (whichPage != WhichPage.EMPTY) {
             enrichNonEmptyParameters(params, prev);
         }

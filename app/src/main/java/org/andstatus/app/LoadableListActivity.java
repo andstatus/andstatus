@@ -90,7 +90,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
     long lastLoadedAt = 0;
     private static final long NO_AUTO_REFRESH_AFTER_LOAD_SECONDS = 10;
 
-    private boolean mIsPaused = false;
+    private boolean mIsPaused = true;
 
     protected CharSequence mSubtitle = "";
     /**
@@ -383,7 +383,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
             myServiceReceiver.registerReceiver(this);
             MyContextHolder.get().setInForeground(true);
             if (size() == 0 && !isLoading()) {
-                showList(WhichPage.CURRENT);
+                showList(WhichPage.ANY);
             }
         }
     }

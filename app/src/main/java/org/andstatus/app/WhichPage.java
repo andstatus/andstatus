@@ -25,6 +25,7 @@ import org.andstatus.app.util.MyLog;
  * @author yvolk@yurivolkov.com
  */
 public enum WhichPage {
+	ANY(8, R.string.page_current),
     CURRENT(1, R.string.page_current),
     YOUNGER(2, R.string.page_younger),
     YOUNGEST(3, R.string.page_youngest),
