@@ -488,4 +488,8 @@ public class MyPreferences {
     public static UserInTimeline userInTimeline() {
         return UserInTimeline.load(getString(KEY_USER_IN_TIMELINE, ""));
     }
+
+    public static boolean showDebuggingInfoInUi() {
+        return getBoolean(KEY_DEBUGGING_INFO_IN_UI, false);
+    }
 }

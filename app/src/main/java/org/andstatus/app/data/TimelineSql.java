@@ -325,7 +325,7 @@ public class TimelineSql {
                 Origin origin = MyContextHolder.get().persistentOrigins().fromId(originId);
                 userName += " / " + origin.getName();
                 if (origin.getOriginType() == OriginType.GNUSOCIAL &&
-                        MyPreferences.getBoolean(MyPreferences.KEY_DEBUGGING_INFO_IN_UI, false)) {
+                        MyPreferences.showDebuggingInfoInUi()) {
                     long authorId = DbUtils.getLong(cursor, Msg.AUTHOR_ID);
                     if (authorId != 0) {
                         userName += " id:" + MyQuery.idToOid(OidEnum.USER_OID, authorId, 0);

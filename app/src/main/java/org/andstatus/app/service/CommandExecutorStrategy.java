@@ -18,7 +18,6 @@ package org.andstatus.app.service;
 
 import android.text.TextUtils;
 
-import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.net.http.ConnectionException;

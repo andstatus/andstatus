@@ -25,6 +25,7 @@ import android.text.TextUtils;
 import android.util.LruCache;
 
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
 
@@ -107,8 +108,20 @@ public class MyDrawableCache extends LruCache<String, BitmapDrawable> {
 
     @Nullable
     private Bitmap loadBitmap(Object objTag, String path) {
-        Bitmap bitmap = BitmapFactory
-                .decodeFile(path, calculateScaling(objTag, getImageSize(path)));
+        Bitmap bitmap = null;
+        if (MyPreferences.showDebuggingInfoInUi()) {
+            bitmap = BitmapFactory
+                    .decodeFile(path, calculateScaling(objTag, getImageSize(path)));
+        } else {
+            try {
+                bitmap = BitmapFactory
+                        .decodeFile(path, calculateScaling(objTag, getImageSize(path)));
+            } catch (OutOfMemoryError e) {
+                MyLog.w(objTag, getInfo(), e);
+                evictAll();
+                maxCacheSize /= 2;
+            }
+        }
         if (MyLog.isVerboseEnabled()) {
             MyLog.v(objTag, (bitmap == null ? "Failed to load " + name + "'s bitmap"
                     : "Loaded " + name + "'s bitmap " + bitmap.getWidth()

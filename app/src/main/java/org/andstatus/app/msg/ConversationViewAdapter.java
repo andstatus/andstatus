@@ -239,7 +239,7 @@ public class ConversationViewAdapter extends MyBaseAdapter {
         if (oMsg.mStatus != DownloadStatus.LOADED) {
             messageDetails += " (" + oMsg.mStatus.getTitle(context) + ")";
         }
-        if (MyPreferences.getBoolean(MyPreferences.KEY_DEBUGGING_INFO_IN_UI, false)) {
+        if (MyPreferences.showDebuggingInfoInUi()) {
             messageDetails = messageDetails + " (i" + oMsg.mIndentLevel + ",r" + oMsg.mReplyLevel + ")";
         }
         ((TextView) messageView.findViewById(R.id.message_details)).setText(messageDetails);
