@@ -137,7 +137,7 @@ public class MessageEditor {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (event != null && (event.isAltPressed() ||
-                        !MyPreferences.getBoolean(MyPreferences.KEY_ENTER_SENDS_MESSAGE, true))) {
+                        !MyPreferences.getBoolean(MyPreferences.KEY_ENTER_SENDS_MESSAGE, false))) {
                     return false;
                 }
                 sendAndHide();
