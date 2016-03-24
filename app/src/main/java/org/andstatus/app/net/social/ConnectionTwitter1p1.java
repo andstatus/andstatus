@@ -73,13 +73,16 @@ public class ConnectionTwitter1p1 extends ConnectionTwitter {
             case CREATE_FAVORITE:
                 url = "favorites/create" + EXTENSION;
                 break;
-            case GET_FRIENDS:
-                // TODO: see https://dev.twitter.com/docs/api/1.1/get/friends/list
-                //   url will be: "friends/list" + EXTENSION
-                url = ""; 
-                break;
             case DESTROY_FAVORITE:
                 url = "favorites/destroy" + EXTENSION;
+                break;
+            case GET_FOLLOWERS:
+                // https://dev.twitter.com/rest/reference/get/followers/list
+                url = "followers/list" + EXTENSION;
+                break;
+            case GET_FRIENDS:
+                // https://dev.twitter.com/docs/api/1.1/get/friends/list
+                url = "friends/list" + EXTENSION;
                 break;
             case POST_WITH_MEDIA:
                 url = "statuses/update_with_media" + EXTENSION;
@@ -170,4 +173,28 @@ public class ConnectionTwitter1p1 extends ConnectionTwitter {
         return message;
     }
 
+    @Override
+    public List<MbUser> getFollowers(String userId) throws ConnectionException {
+        return getMbUsers(userId, ApiRoutineEnum.GET_FOLLOWERS);
+    }
+
+    @Override
+    public List<MbUser> getFriends(String userId) throws ConnectionException {
+        return getMbUsers(userId, ApiRoutineEnum.GET_FRIENDS);
+    }
+
+    public List<MbUser> getMbUsers(String userId, ApiRoutineEnum apiRoutine) throws ConnectionException {
+        String url = this.getApiPath(apiRoutine);
+        Uri sUri = Uri.parse(url);
+        Uri.Builder builder = sUri.buildUpon();
+        int limit = 200;
+        if (!TextUtils.isEmpty(userId)) {
+            builder.appendQueryParameter("user_id", userId);
+        }
+        if (fixedDownloadLimitForApiRoutine(limit, apiRoutine) > 0) {
+            builder.appendQueryParameter("count",
+                    String.valueOf(fixedDownloadLimitForApiRoutine(limit, apiRoutine)));
+        }
+        return jArrToUsers(http.getRequestAsArray(builder.build().toString()), apiRoutine, url);
+    }
 }

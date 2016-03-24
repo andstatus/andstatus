@@ -503,6 +503,14 @@ public abstract class Connection {
         }
     }
 
+    protected void setUserMessagesPublic(List<MbUser> users) {
+        for (MbUser item : users) {
+            if (item.getLatestMessage() != null) {
+                item.getLatestMessage().setPublic(true);
+            }
+        }
+    }
+
     public JSONArray getRequestArrayInObject(String path, String arrayName) throws ConnectionException {
         String method = "getRequestArrayInObject";
         JSONArray jArr = null;

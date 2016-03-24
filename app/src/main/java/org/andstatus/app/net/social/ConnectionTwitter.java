@@ -426,7 +426,27 @@ public abstract class ConnectionTwitter extends Connection {
         MyLog.d(this, apiRoutine + " '" + url + "' " + timeline.size() + " items");
         return timeline;
     }
-    
+
+    List<MbUser> jArrToUsers(JSONArray jArr, ApiRoutineEnum apiRoutine, String url) throws ConnectionException {
+        List<MbUser> users = new ArrayList<>();
+        if (jArr != null) {
+            for (int index = 0; index < jArr.length(); index++) {
+                try {
+                    JSONObject jso = jArr.getJSONObject(index);
+                    MbUser item = userFromJson(jso);
+                    users.add(item);
+                } catch (JSONException e) {
+                    throw ConnectionException.loggedJsonException(this, "Parsing " + apiRoutine, e, null);
+                }
+            }
+        }
+        if (apiRoutine.isMsgPublic()) {
+            setUserMessagesPublic(users);
+        }
+        MyLog.d(this, apiRoutine + " '" + url + "' " + users.size() + " items");
+        return users;
+    }
+
     /**
      * @see <a
      *      href="https://dev.twitter.com/docs/api/1.1/get/users/show">GET users/show</a>
