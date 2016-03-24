@@ -17,6 +17,7 @@
 package org.andstatus.app.net.social;
 
 import android.net.Uri;
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import org.andstatus.app.context.MyContextHolder;
@@ -65,6 +66,10 @@ public class ConnectionPumpio extends Connection {
         switch(routine) {
             case ACCOUNT_VERIFY_CREDENTIALS:
                 url = "whoami";
+                break;
+            case GET_FOLLOWERS:
+            case GET_FOLLOWERS_IDS:
+                url = "user/%nickname%/followers";
                 break;
             case GET_FRIENDS:
             case GET_FRIENDS_IDS:
@@ -175,9 +180,18 @@ public class ConnectionPumpio extends Connection {
     }
 
     @Override
+    public List<MbUser> getFollowers(String userId) throws ConnectionException {
+        return getUsers(userId, ApiRoutineEnum.GET_FOLLOWERS);
+    }
+
+    @Override
     public List<MbUser> getFriends(String userId) throws ConnectionException {
+        return getUsers(userId, ApiRoutineEnum.GET_FRIENDS);
+    }
+
+    @NonNull
+    private List<MbUser> getUsers(String userId, ApiRoutineEnum apiRoutine) throws ConnectionException {
         int limit = 200;
-        ApiRoutineEnum apiRoutine = ApiRoutineEnum.GET_FRIENDS;
         ConnectionAndUrl conu = getConnectionAndUrl(apiRoutine, userId);
         Uri sUri = Uri.parse(conu.url);
         Uri.Builder builder = sUri.buildUpon();
@@ -186,20 +200,20 @@ public class ConnectionPumpio extends Connection {
         }
         String url = builder.build().toString();
         JSONArray jArr = conu.httpConnection.getRequestAsArray(url);
-        List<MbUser> followedUsers = new ArrayList<MbUser>();
+        List<MbUser> users = new ArrayList<>();
         if (jArr != null) {
             for (int index = 0; index < jArr.length(); index++) {
                 try {
                     JSONObject jso = jArr.getJSONObject(index);
                     MbUser item = userFromJson(jso);
-                    followedUsers.add(item);
+                    users.add(item);
                 } catch (JSONException e) {
                     throw ConnectionException.loggedJsonException(this, "Parsing list of users", e, null);
                 }
             }
         }
-        MyLog.d(TAG, "getUsersFollowedBy '" + url + "' " + followedUsers.size() + " users");
-        return followedUsers;
+        MyLog.d(TAG, apiRoutine + " '" + url + "' " + users.size() + " users");
+        return users;
     }
 
     @Override
