@@ -34,6 +34,7 @@ import org.andstatus.app.data.MyImageCache;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.msg.TimelineListParameters;
+import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
@@ -218,21 +219,29 @@ public class CommandData implements Comparable<CommandData> {
             }
             SharedPreferences.Editor editor = sp.edit();
             editor.clear();
+            editor.commit();
             if (!queue.isEmpty()) {
-                while (!queue.isEmpty()) {
+                while (!queue.isEmpty() && count < 300) {
                     CommandData cd = queue.poll();
                     cd.toSharedPreferences(editor, count);
-                    MyLog.v(context, method + "; Command saved: " + cd.toString());
+                    if (MyLog.isVerboseEnabled() && count < 5) {
+                        MyLog.v(context, method + "; Command saved: " + cd.toString());
+                    }
                     count += 1;
                 }
-                MyLog.d(context, method + "; " + count + " msgs");
+                if (queue.isEmpty()) {
+                    MyLog.d(context, method + "; " + count + " saved");
+                } else {
+                    MyLog.e(context, method + "; " + count + " saved" +
+                            (queue.isEmpty() ? "" : ", " + queue.size() + " left"));
+                }
             }
             // Adding Empty command to mark the end.
             (new CommandData(CommandEnum.EMPTY, "")).toSharedPreferences(editor, count);
             editor.commit();
         } catch (Throwable e) {
-            String msgLog = method + "; " + count + " of " + queue.size() + " messages saved. \n"
-                    + MyImageCache.getCacheInfo() + "\n";
+            String msgLog = method + "; " + count + " saved, " + queue.size() + " left. \n"
+                    + MyImageCache.getCacheInfo() + "\n " + AsyncTaskLauncher.threadPoolInfo();
             MyLog.e(context, msgLog, e);
             throw new IllegalStateException(msgLog, e);
         }
@@ -291,14 +300,16 @@ public class CommandData implements Comparable<CommandData> {
                 break;
             } else {
                 if (q.offer(cd)) {
-                    MyLog.v(context, method + index + " " + cd);
+                    if (MyLog.isVerboseEnabled() && count < 5) {
+                        MyLog.v(context, method + index + " " + cd);
+                    }
                     count++;
                 } else {
                     MyLog.e(context, method + index + " " + cd);
                 }
             }
         }
-        MyLog.d(context, method + "; loaded " + count + " msgs from '" + queueType + "'");
+        MyLog.d(context, method + "; loaded " + count + " commands from '" + queueType + "'");
         return count;
     }
 
