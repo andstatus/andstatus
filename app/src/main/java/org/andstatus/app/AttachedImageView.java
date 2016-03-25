@@ -33,6 +33,10 @@ public class AttachedImageView extends ImageView {
     private View referencedView = null;
     private static final int MAX_HEIGHT = 2500;
 
+    private boolean heightLocked = false;
+    private int widthMeasureSpecStored = 0;
+    private int heightMeasureSpecStored = 0;
+
     public AttachedImageView(Context context) {
         super(context);
     }
@@ -51,18 +55,25 @@ public class AttachedImageView extends ImageView {
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        final String method = "onMeasure";
+        if (heightLocked && heightMeasureSpecStored != 0) {
+            saveMeasureSpec(widthMeasureSpecStored, heightMeasureSpecStored);
+            setMeasuredDimension(widthMeasureSpecStored, heightMeasureSpecStored);
+            return;
+        }
         if (referencedView == null) {
             referencedView =  ((View)getParent()).findViewById(R.id.message_body);
         }
         if (referencedView == null) {
             super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+            saveMeasureSpec(getMeasuredWidthAndState(), getMeasuredHeightAndState());
             return;
         }
-        final String method = "onMeasure";
         int refWidthPixels = referencedView.getMeasuredWidth();
         int height = (int) Math.floor(refWidthPixels * getDrawableHeightToWidthRatio());
         if (MyLog.isVerboseEnabled()) {
-            MyLog.v(this, method + "; refWidth=" + refWidthPixels + ", height=" + height + ", widthSpec=" + MeasureSpec.toString(widthMeasureSpec));
+            MyLog.v(this, method + "; refWidth=" + refWidthPixels + ", height=" + height
+                    + ", widthSpec=" + MeasureSpec.toString(widthMeasureSpec));
         }
         int mode = MeasureSpec.EXACTLY;
         if (height == 0) {
@@ -74,13 +85,27 @@ public class AttachedImageView extends ImageView {
                     * getDisplayHeight());
         }
         getLayoutParams().height = height;
-        int measuredWidth;
-        int measuredHeight;
-        measuredWidth = MeasureSpec.makeMeasureSpec(refWidthPixels,  MeasureSpec.EXACTLY);
-        measuredHeight = MeasureSpec.makeMeasureSpec(height, mode);
-        setMeasuredDimension(measuredWidth, measuredHeight);
+        int widthSpec = MeasureSpec.makeMeasureSpec(refWidthPixels,  MeasureSpec.EXACTLY);
+        int heightSpec = MeasureSpec.makeMeasureSpec(height, mode);
+        saveMeasureSpec(widthSpec, heightSpec);
+        setMeasuredDimension(widthSpec, heightSpec);
     }
-    
+
+    private void saveMeasureSpec(int widthMeasureSpec, int heightMeasureSpec) {
+        String method = "onMeasure";
+        if (MyLog.isVerboseEnabled()) {
+            MyLog.v(this, method + "; " + (heightLocked ? "locked" : "      ")
+                    + " width=" + MeasureSpec.toString(widthMeasureSpec)
+                    + ", height=" + MeasureSpec.toString(heightMeasureSpec));
+        }
+        if (!heightLocked) {
+            widthMeasureSpecStored = MeasureSpec.makeMeasureSpec(
+                    MeasureSpec.getSize(widthMeasureSpec),  MeasureSpec.AT_MOST);
+            heightMeasureSpecStored = MeasureSpec.makeMeasureSpec(
+                    MeasureSpec.getSize(heightMeasureSpec),  MeasureSpec.EXACTLY);
+        }
+    }
+
     public int getDisplayHeight() {
         return MyImageCache.getDisplaySize(getContext()).y;
     }
@@ -91,12 +116,14 @@ public class AttachedImageView extends ImageView {
             int width = getDrawable().getIntrinsicWidth();
             int height = getDrawable().getIntrinsicHeight();
             if (width > 0 && height > 0) {
-                float ratio2 = 1f * height / width;
-                if (ratio2 > ratio) {
-                    ratio = ratio2;
-                }
+                ratio = 1f * height / width;
             }
         }
         return ratio;
     }
+
+    public void setMeasuresLocked(boolean locked) {
+        heightLocked = locked;
+    }
+
 }

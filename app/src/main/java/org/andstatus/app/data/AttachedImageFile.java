@@ -24,6 +24,7 @@ import android.support.annotation.NonNull;
 import android.view.View;
 import android.widget.ImageView;
 
+import org.andstatus.app.AttachedImageView;
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.msg.ActionableMessageList;
@@ -100,18 +101,21 @@ public class AttachedImageFile {
             imageView.setVisibility(View.GONE);
             return;
         }
+        if (AttachedImageView.class.isAssignableFrom(imageView.getClass())) {
+            ((AttachedImageView) imageView).setMeasuresLocked(false);
+        }
         Drawable drawable = getDrawableFromCache();
         if (drawable == MyDrawableCache.BROKEN) {
             imageView.setVisibility(View.GONE);
             return;
         } else if (drawable != null) {
-            imageView.setVisibility(View.VISIBLE);
             imageView.setImageDrawable(drawable);
+            imageView.setVisibility(View.VISIBLE);
             return;
         }
         if (downloadFile.exists()) {
-            imageView.setVisibility(View.VISIBLE);
             imageView.setImageDrawable(BLANK_DRAWABLE);
+            imageView.setVisibility(View.VISIBLE);
             setImageDrawableAsync(messageList, imageView, downloadFile.getFilePath());
         } else {
             imageView.setVisibility(View.GONE);
@@ -152,6 +156,9 @@ public class AttachedImageFile {
                             MyLog.v(this, "Failed to load attached image: " + path);
                         } else {
                             try {
+                                if (AttachedImageView.class.isAssignableFrom(imageView.getClass())) {
+                                    ((AttachedImageView) imageView).setMeasuresLocked(true);
+                                }
                                 imageView.setImageDrawable(drawable);
                                 MyLog.v(this, "Attached image loaded: " + path);
                             } catch (Exception e) {
