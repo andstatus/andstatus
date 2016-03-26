@@ -60,7 +60,7 @@ public class UserListLoader implements SyncLoader {
 
         if (mItems.isEmpty()) {
             addEmptyItem(MyContextHolder.get().context()
-                    .getText(R.string.empty_in_parenthesis).toString());
+                    .getText(R.string.nothing_in_the_loadable_list).toString());
         }
     }
 

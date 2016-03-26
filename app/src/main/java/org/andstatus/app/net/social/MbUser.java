@@ -24,6 +24,7 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.origin.Origin;
+import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TriState;
@@ -434,8 +435,15 @@ public class MbUser implements Comparable<MbUser> {
     }
 
     public String toUserTitle(boolean showWebFingerId) {
-        return (showWebFingerId && !TextUtils.isEmpty(getWebFingerId()) ?
-                getWebFingerId() : "@" + getUserName())
-                + (TextUtils.isEmpty(getRealName()) ? "" : " (" + getRealName() + ")");
+        StringBuilder builder = new StringBuilder();
+        if (showWebFingerId && !TextUtils.isEmpty(getWebFingerId())) {
+            builder.append(getWebFingerId());
+        } else if (!TextUtils.isEmpty(getUserName())) {
+            builder.append("@" + getUserName());
+        }
+        if (!TextUtils.isEmpty(getRealName())) {
+            I18n.appendWithSpace(builder, "(" + getRealName() + ")");
+        }
+        return builder.toString();
     }
 }

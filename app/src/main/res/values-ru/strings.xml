@@ -162,11 +162,17 @@
   <string name="followed_by">Следуют</string>
   <string name="followers">Фолловеры</string>
   <string name="followers_of">Фолловеры \"%1s\"</string>
+  <string name="friends">Друзья</string>
+  <string name="friends_of">Друзья «%1s»</string>
+  <string name="gestures">Жесты</string>
+  <string name="gestures_summary">Сенсорная механика. Как пользователь взаимодействует с приложением</string>
   <string name="get_followers">Получить список фолловеров</string>
+  <string name="get_friends">Просмотр друзей</string>
   <string name="get_open_instances_title">Получить открытые серверы</string>
   <string name="get_user">Получить информацию о пользователе</string>
   <string name="go_to_the_top_title">Наверх</string>
   <string name="header_accounts">Аккаунты (Учётные записи)</string>
+  <string name="header_accounts_summary">Управление учётными записями и социальными сетями</string>
   <string name="header_add_new_account">Добавить новый аккаунт</string>
   <string name="header_manage_existing_accounts">Управление существующими аккаунтами</string>
   <string name="hide_messages_based_on_keywords_title">Скрыть сообщения, в которых есть ключевые слова или точные фразы</string>
@@ -211,6 +217,9 @@
   <string name="label_with_media">с медиа-контентом</string>
   <string name="latest_error_label">Последняя ошибка</string>
   <string name="loading">Загрузка</string>
+  <string name="long_press_to_open_context_menu">Длительно нажмите, чтобы открыть контекстное меню</string>
+  <string name="long_press_to_open_context_menu_on">Длительно нажмите на элемент, чтобы открыть его контекстное меню</string>
+  <string name="long_press_to_open_context_menu_off">Кратко нажмите на элемент, чтобы открыть его контекстное меню</string>
   <string name="malformed_link">Неисправные ссылки</string>
   <string name="message">Сообщение</string>
   <string name="message_twitter">Сообщение</string>
@@ -246,6 +255,7 @@
   <string name="message_sent">Ваше сообщение отправлено.</string>
   <string name="messages_activity">Личные сообщения</string>
   <string name="no">Нет</string>
+  <string name="nothing_in_the_loadable_list">Здесь пока ничего нет. Попробуйте использовать действие «Синхронизация с Интернетом», чтобы обновить этот список.</string>
   <string name="not_set">не задан</string>
   <string name="notification_message_formats_1">{0} сообщение</string>
   <string name="notification_message_formats_2">{0} сообщения</string>
@@ -281,6 +291,7 @@
   <string name="options_menu_mentions">Упоминания</string>
   <string name="options_menu_search">Поиск</string>
   <string name="origin_settings_action">Социальная сеть</string>
+  <string name="page_current">текущий</string>
   <string name="page_empty">пусто</string>
   <string name="page_new">новый</string>
   <string name="page_older">старший</string>
@@ -398,7 +409,6 @@
   <string name="timeline_title_drafts">Черновики</string>
   <string name="timeline_title_everything">Всё</string>
   <string name="timeline_title_favorites">Избранное</string>
-  <string name="friends">Следуем за</string>
   <string name="timeline_title_home">Дом</string>
   <string name="timeline_title_mentions">Упоминания</string>
   <string name="timeline_title_outbox">Исходящие</string>
