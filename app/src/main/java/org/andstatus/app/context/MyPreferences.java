@@ -113,7 +113,9 @@ public class MyPreferences {
     public static final String KEY_NOTIFY_OF_COMMANDS_IN_THE_QUEUE = "notifications_queue";
     public static final String KEY_NOTIFICATION_ICON_ALTERNATIVE = "notification_icon_alternative";
 
+    public static final String KEY_LONG_PRESS_TO_OPEN_CONTEXT_MENU = "long_press_to_open_context_menu";
     public static final String KEY_ENTER_SENDS_MESSAGE = "enter_sends_message";
+
     public static final String KEY_OLD_MESSAGES_FIRST_IN_CONVERSATION = "old_messages_first_in_conversation";
     public static final String KEY_SYNC_AFTER_MESSAGE_WAS_SENT = "sync_after_message_was_sent";
     public static final String KEY_MARK_REPLIES_IN_TIMELINE = "mark_replies_in_timeline";
@@ -414,7 +416,11 @@ public class MyPreferences {
     public static boolean isSyncWhileUsingApplicationEnabled() {
         return getBoolean(KEY_SYNC_WHILE_USING_APPLICATION, true);
     }
-    
+
+    public static boolean isLongPressToOpenContextMenu() {
+        return getBoolean(KEY_LONG_PRESS_TO_OPEN_CONTEXT_MENU, false);
+    }
+
     public static boolean getBoolean(String key, boolean defaultValue) {
         boolean value = defaultValue;
         SharedPreferences sp = getDefaultSharedPreferences();

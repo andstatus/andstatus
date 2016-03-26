@@ -21,8 +21,9 @@ import android.widget.BaseAdapter;
 import android.widget.TextView;
 
 import org.andstatus.app.R;
+import org.andstatus.app.context.MyPreferences;
 
-public abstract class MyBaseAdapter extends BaseAdapter {
+public abstract class MyBaseAdapter extends BaseAdapter  implements View.OnClickListener {
 
     private volatile boolean positionRestored = false;
 
@@ -70,5 +71,12 @@ public abstract class MyBaseAdapter extends BaseAdapter {
 
     public boolean isPositionRestored() {
         return positionRestored;
+    }
+
+    @Override
+    public void onClick(View v) {
+        if (!MyPreferences.isLongPressToOpenContextMenu()) {
+            v.showContextMenu();
+        }
     }
 }

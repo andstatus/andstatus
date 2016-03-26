@@ -25,6 +25,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 
+import org.andstatus.app.ContextMenuHeader;
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.MyContextMenu;
 import org.andstatus.app.R;
@@ -74,9 +75,13 @@ public class MessageContextMenu extends MyContextMenu {
 
         int order = 0;
         try {
-            menu.setHeaderTitle((MyContextHolder.get().persistentAccounts().size() > 1
-                    ? msg.myAccount().shortestUniqueAccountName() + ": " : "")
-                    + msg.bodyTrimmed);
+            new ContextMenuHeader(getActivity(), menu).setTitle(msg.bodyTrimmed)
+                    .setSubtitle(msg.myAccount().getAccountName());
+
+            if (msg.isLoaded()) {
+                MessageListContextMenuItem.OPEN_CONVERSATION.addTo(menu, order++, R.string.menu_item_open_conversation);
+            }
+            MessageListContextMenuItem.USERS_OF_MESSAGE.addTo(menu, order++, R.string.users_of_message);
 
             if (msg.status != DownloadStatus.LOADED) {
                 MessageListContextMenuItem.EDIT.addTo(menu, order++, R.string.menu_item_edit);
@@ -90,12 +95,8 @@ public class MessageContextMenu extends MyContextMenu {
                 MessageListContextMenuItem.COPY_AUTHOR.addTo(menu, order++, R.string.menu_item_copy_author);
             }
 
-            MessageListContextMenuItem.USERS_OF_MESSAGE.addTo(menu, order++, R.string.users_of_message);
             if (messageList.getSelectedUserId() != msg.senderId) {
-                /*
-                 * Messages by the Sender of this message ("User timeline" of
-                 * that user)
-                 */
+                // Messages by a Sender of this message ("User timeline" of that user)
                 MessageListContextMenuItem.SENDER_MESSAGES.addTo(menu, order++,
                         String.format(
                                 getActivity().getText(R.string.menu_item_user_messages).toString(),
@@ -103,10 +104,7 @@ public class MessageContextMenu extends MyContextMenu {
             }
 
             if (messageList.getSelectedUserId() != msg.authorId && msg.senderId != msg.authorId) {
-                /*
-                 * Messages by the Author of this message ("User timeline" of
-                 * that user)
-                 */
+                // Messages by an Author of this message ("User timeline" of that user)
                 MessageListContextMenuItem.AUTHOR_MESSAGES.addTo(menu, order++,
                         String.format(
                                 getActivity().getText(R.string.menu_item_user_messages).toString(),
@@ -151,7 +149,6 @@ public class MessageContextMenu extends MyContextMenu {
 
             if (msg.isLoaded()) {
                 MessageListContextMenuItem.OPEN_MESSAGE_PERMALINK.addTo(menu, order++, R.string.menu_item_open_message_permalink);
-                MessageListContextMenuItem.OPEN_CONVERSATION.addTo(menu, order++, R.string.menu_item_open_conversation);
             }
 
             if (msg.isSender) {

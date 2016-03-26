@@ -3,7 +3,7 @@
     <header
         android:fragment="org.andstatus.app.context.MySettingsFragment"
         android:title="@string/header_accounts"
-        android:summary="" >
+        android:summary="@string/header_accounts_summary" >
         <extra android:name="preferencesGroup" android:value="accounts" />
     </header>
     <header
@@ -17,6 +17,12 @@
         android:title="@string/title_timeline"
         android:summary="" >
         <extra android:name="preferencesGroup" android:value="timeline" />
+    </header>
+    <header
+        android:fragment="org.andstatus.app.context.MySettingsFragment"
+        android:title="@string/gestures"
+        android:summary="@string/gestures_summary" >
+        <extra android:name="preferencesGroup" android:value="gestures" />
     </header>
     <header
         android:fragment="org.andstatus.app.context.MySettingsFragment"

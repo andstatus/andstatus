@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:background="?attr/colorPrimary"
+              android:padding="2dip"
+              tools:context=".msg.TimelineActivity">
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        tools:text="Title of the header. It may be quite long, and this is why we need this custom header"
+        style="@style/messageBodyAppearance"
+        android:id="@+id/title"/>
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        tools:text="andstatus@loadaverage.org"
+        style="@style/messageUsernameAppearance"
+        android:id="@+id/subtitle"/>
+</LinearLayout>

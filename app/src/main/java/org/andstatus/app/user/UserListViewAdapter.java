@@ -67,13 +67,10 @@ class UserListViewAdapter extends MyBaseAdapter {
     public View getView(int position, View convertView, ViewGroup parent) {
         View view = convertView == null ? newView() : convertView;
         view.setOnCreateContextMenuListener(contextMenu);
+        view.setOnClickListener(this);
         setPosition(view, position);
         UserListViewItem item = items.get(position);
-        MyUrlSpan.showText(view, R.id.username,
-                (showWebFingerId && !TextUtils.isEmpty(item.mbUser.getWebFingerId()) ?
-                        item.mbUser.getWebFingerId() : item.mbUser.getUserName())
-                + " (" + (TextUtils.isEmpty(item.mbUser.getRealName()) ? " ? " : item.mbUser.getRealName()) + ")",
-                false);
+        MyUrlSpan.showText(view, R.id.username, item.mbUser.toUserTitle(showWebFingerId), false);
         if (showAvatars) {
             showAvatar(item, view);
         }

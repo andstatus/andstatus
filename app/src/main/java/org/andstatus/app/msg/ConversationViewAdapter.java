@@ -32,7 +32,6 @@ import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.context.MyTheme;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyImageCache;
 import org.andstatus.app.util.MyLog;
@@ -84,6 +83,7 @@ public class ConversationViewAdapter extends MyBaseAdapter {
         }
         View view = convertView == null ? newView() : convertView;
         view.setOnCreateContextMenuListener(contextMenu);
+        view.setOnClickListener(this);
         setPosition(view, position);
 
         setIndent(oMsg, view);

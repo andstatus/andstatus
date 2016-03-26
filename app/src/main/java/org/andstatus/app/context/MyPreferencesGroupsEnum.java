@@ -22,6 +22,7 @@ public enum MyPreferencesGroupsEnum {
     UNKNOWN("unknown", 0, 0),
     ACCOUNTS("accounts", R.string.header_accounts, R.xml.preferences_accounts),
     APPEARANCE("appearance", R.string.title_preference_appearance, R.xml.preferences_appearance),
+    GESTURES("gestures", R.string.gestures, R.xml.preferences_gestures),
     TIMELINE("timeline", R.string.title_timeline, R.xml.preferences_timeline),
     ATTACHMENTS("attachments", R.string.attachments, R.xml.preferences_attachments),
     SYNCING("syncing", R.string.title_preference_syncing, R.xml.preferences_syncing),

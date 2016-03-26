@@ -86,7 +86,7 @@ public class MessageForAccount {
                 recipientId = DbUtils.getLong(cursor, MyDatabase.Msg.RECIPIENT_ID);
                 imageFilename = DbUtils.getString(cursor, MyDatabase.Download.IMAGE_FILE_NAME);
                 bodyTrimmed = I18n.trimTextAt(MyHtml.fromHtml(
-                        DbUtils.getString(cursor, MyDatabase.Msg.BODY)), 40).toString();
+                        DbUtils.getString(cursor, MyDatabase.Msg.BODY)), 80).toString();
                 inReplyToUserId = DbUtils.getLong(cursor, MyDatabase.Msg.IN_REPLY_TO_USER_ID);
                 mayBePrivate = (recipientId != 0) || (inReplyToUserId != 0);
                 

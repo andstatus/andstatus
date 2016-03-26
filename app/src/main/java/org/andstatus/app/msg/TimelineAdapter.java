@@ -32,7 +32,7 @@ import org.andstatus.app.widget.MyBaseAdapter;
 /**
  * @author yvolk@yurivolkov.com
  */
-public class TimelineAdapter extends MyBaseAdapter implements View.OnClickListener {
+public class TimelineAdapter extends MyBaseAdapter {
     private final MessageContextMenu contextMenu;
     private final int listItemLayoutId;
     private final TimelinePages pages;
@@ -135,9 +135,16 @@ public class TimelineAdapter extends MyBaseAdapter implements View.OnClickListen
 
     @Override
     public void onClick(View v) {
-        TimelineViewItem item = getItem(v);
-        if (TimelineActivity.class.isAssignableFrom(contextMenu.messageList.getClass())) {
-            ((TimelineActivity) contextMenu.messageList).onItemClick(item);
+        boolean handled = false;
+        if (MyPreferences.isLongPressToOpenContextMenu()) {
+            TimelineViewItem item = getItem(v);
+            if (TimelineActivity.class.isAssignableFrom(contextMenu.messageList.getClass())) {
+                ((TimelineActivity) contextMenu.messageList).onItemClick(item);
+                handled = true;
+            }
+        }
+        if (!handled) {
+            super.onClick(v);
         }
     }
 }

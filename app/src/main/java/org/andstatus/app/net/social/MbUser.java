@@ -432,4 +432,10 @@ public class MbUser implements Comparable<MbUser> {
             this.latestMessage.sender = this;
         }
     }
+
+    public String toUserTitle(boolean showWebFingerId) {
+        return (showWebFingerId && !TextUtils.isEmpty(getWebFingerId()) ?
+                getWebFingerId() : "@" + getUserName())
+                + (TextUtils.isEmpty(getRealName()) ? "" : " (" + getRealName() + ")");
+    }
 }

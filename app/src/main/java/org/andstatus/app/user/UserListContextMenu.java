@@ -20,6 +20,7 @@ import android.view.ContextMenu;
 import android.view.MenuItem;
 import android.view.View;
 
+import org.andstatus.app.ContextMenuHeader;
 import org.andstatus.app.LoadableListActivity;
 import org.andstatus.app.MyContextMenu;
 import org.andstatus.app.R;
@@ -43,29 +44,28 @@ public class UserListContextMenu extends MyContextMenu {
 
         int order = 0;
         try {
-            menu.setHeaderTitle(getViewItem().mbUser.getUserName());
+            new ContextMenuHeader(getActivity(), menu)
+                    .setTitle(getViewItem().mbUser.toUserTitle(false))
+                    .setSubtitle(getViewItem().mbUser.getWebFingerId());
+            String shortName = getViewItem().mbUser.getUserName();
             if (getViewItem().mbUser.isIdentified()) {
                 UserListContextMenuItem.USER_MESSAGES.addTo(menu, order++,
-                        String.format(getActivity().getText(R.string.menu_item_user_messages).toString(),
-                                getViewItem().mbUser.getNamePreferablyWebFingerId()));
+                        String.format(getActivity().getText(R.string.menu_item_user_messages).toString(), shortName));
                 UserListContextMenuItem.FRIENDS.addTo(menu, order++,
                         String.format(
-                                getActivity().getText(R.string.friends_of).toString(),
-                                getViewItem().mbUser.getNamePreferablyWebFingerId()));
+                                getActivity().getText(R.string.friends_of).toString(), shortName));
                 UserListContextMenuItem.FOLLOWERS.addTo(menu, order++,
                         String.format(
-                                getActivity().getText(R.string.followers_of).toString(),
-                                getViewItem().mbUser.getNamePreferablyWebFingerId()));
-                if (getViewItem().userIsFollowedBy(MyContextHolder.get().persistentAccounts().getCurrentAccount())) {
+                                getActivity().getText(R.string.followers_of).toString(), shortName));
+                if (getViewItem().userIsFollowedBy(
+                        MyContextHolder.get().persistentAccounts().getCurrentAccount())) {
                     UserListContextMenuItem.STOP_FOLLOWING.addTo(menu, order++,
                             String.format(
-                                    getActivity().getText(R.string.menu_item_stop_following_user).toString(),
-                                    getViewItem().mbUser.getNamePreferablyWebFingerId()));
+                                    getActivity().getText(R.string.menu_item_stop_following_user).toString(), shortName));
                 } else {
                     UserListContextMenuItem.FOLLOW.addTo(menu, order++,
                             String.format(
-                                    getActivity().getText(R.string.menu_item_follow_user).toString(),
-                                    getViewItem().mbUser.getNamePreferablyWebFingerId()));
+                                    getActivity().getText(R.string.menu_item_follow_user).toString(), shortName));
                 }
             }
             UserListContextMenuItem.GET_USER.addTo(menu, order++, R.string.get_user);
