@@ -17,12 +17,12 @@
 <document xmlns:android="http://schemas.android.com/apk/res/android">
     <header>
         <title>AndStatus Change Log</title>
-        <subtitle>List of changes in releases of AndStatus</subtitle>
         <subtitle>
-            Download the latest release from
-            <a href="https://play.google.com/store/apps/details?id=org.andstatus.app" target="_blank">Google Play</a>.
-			Read more about the application at
-  				<a href="https://github.com/andstatus/andstatus/wiki">AndStatus Wiki</a>.
+            Get the latest release on
+            <a href="https://play.google.com/store/apps/details?id=org.andstatus.app" target="_blank">Google Play</a>
+            or
+            <a href="https://f-droid.org/repository/browse/?fdid=org.andstatus.app" target="_blank">F-Droid</a>.
+            AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
 		</subtitle>
     </header>
 
