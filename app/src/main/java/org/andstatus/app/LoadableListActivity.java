@@ -88,7 +88,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
     private boolean loaderIsWorking = false;
 
     long lastLoadedAt = 0;
-    private static final long NO_AUTO_REFRESH_AFTER_LOAD_SECONDS = 10;
+    private static final long NO_AUTO_REFRESH_AFTER_LOAD_SECONDS = 5;
 
     private boolean mIsPaused = true;
 

@@ -26,6 +26,41 @@
 		</subtitle>
     </header>
 
+    <release android:versionName="24.02" android:versionCode="165"
+             versionDate="2016-03-27"
+             versionTitle="Followers and Friends - two Timelines and two User Lists">
+        <changes>
+            <change>&quot;Following&quot; timeline renamed to &quot;Friends&quot;. Added
+                &quot;Followers&quot; timeline. These timelines are not synced automatically
+                to avoid high network traffic: please tap &quot;Sync with Internet&quot;
+                action. <a href="https://github.com/andstatus/andstatus/issues/222">#222</a>
+            </change>
+            <change>Added &quot;Friends of a User&quot; and
+                &quot;Followers of a User&quot; User Lists as context menu items
+                of the &quot;Users of message&quot; list (and of any User List).
+                These lists are synced manually and simultaneously
+                with timelines of the same names: by tapping &quot;Sync with Internet&quot;
+                action to populate or update the list for a selected User.
+                <a href="https://github.com/andstatus/andstatus/issues/222">#222</a>
+            </change>
+            <change>
+                Added &quot;Long press to open Context Menu&quot; setting (defaulting to OFF)
+                to the new &quot;Gestures&quot; section of AndStatus settings.
+                So, from now on, by default context menus are opened by Tap
+                (&quot;Single click&quot;) on an item. Tapping on a User's avatar is the most
+                reliable gesture. Tapping a body of a message in a Timeline does the same,
+                but in a Conversation view links in a message body become clickable, so tap may
+                launch an Internet Browser or open a Context menu, depending on exact place,
+                where a User clicked message body.<br/>
+                On gestures and their terminology see
+                <a href="https://www.google.com/design/spec/patterns/gestures.html">Gestures</a>.
+            </change>
+            <change>Default value of &quot;ENTER key sends message&quot; setting
+                changed to &quot;false&quot;. This means that new users now can create
+                multiline posts out of the box - without changes in Settings.
+            </change>
+        </changes>
+    </release>
     <release android:versionName="23.03" android:versionCode="162"
              versionDate="2016-03-13"
              versionTitle="Additional User info shown in a 'Users of message' view">

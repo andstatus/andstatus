@@ -26,8 +26,8 @@
 		</subtitle>
     </header>
 
-    <release android:versionName="24.01" android:versionCode="164"
-             versionDate="2016-03-26"
+    <release android:versionName="24.02" android:versionCode="165"
+             versionDate="2016-03-27"
              versionTitle="Followers and Friends - two Timelines and two User Lists">
         <changes>
             <change>&quot;Following&quot; timeline renamed to &quot;Friends&quot;. Added
@@ -54,6 +54,10 @@
                 where a User clicked message body.<br/>
                 On gestures and their terminology see
                 <a href="https://www.google.com/design/spec/patterns/gestures.html">Gestures</a>.
+            </change>
+            <change>Default value of &quot;ENTER key sends message&quot; setting
+                changed to &quot;false&quot;. This means that new users now can create
+                multiline posts out of the box - without changes in Settings.
             </change>
         </changes>
     </release>
