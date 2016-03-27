@@ -9,13 +9,14 @@ For Android v.4.1+ devices.
 Differentiating features of AndStatus:
 
 1. Many accounts in different Social networks. You may have several accounts in each, write/reply as any "You" and share between accounts and systems.
-2. You don't need to be online even to post your updates: unsent posts are kept even after reboot. They will be sent when your device is Online.
+2. You don't need to be online to read timelines and to post your updates: drafts and unsent posts are kept even after reboot. They will be sent when your device is Online.
 3. Convenient tree-like "Conversation view".
-4. "Global search" allows to search public messages in all registered systems with one query.
-5. Tweets/messages/avatars/attached images are being synced in a background, when your device has a good connection.
-6. Cached data may be stored for years or for several days only - it's your choice.
-7. Easily backup and restore accounts and data between your devices.
-8. Free and without ads, community supported.
+4. "Global search" allowing you to search public messages in all networks with one query.
+5. Lists of Friends and Followers, presented as User Lists and as Timelines (with the latest message of each user)
+6. Tweets/messages/avatars/attached images are being synced in a background, when your device has a good connection. By default, attachments are downloaded via WiFi only.
+7. Cached data may be stored for years or for several days only - it's your choice.
+8. Backup and restore accounts and messages between your devices. Own your data!
+9. Free and without ads, community supported.
 
 See a Change Log for descriptions of all features of AndStatus with links to their discussions:
 http://andstatus.org/changelog.html
