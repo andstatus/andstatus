@@ -26,8 +26,8 @@
 		</subtitle>
     </header>
 
-    <release android:versionName="24.02" android:versionCode="165"
-             versionDate="2016-03-27"
+    <release android:versionName="24.03" android:versionCode="166"
+             versionDate="2016-03-28"
              versionTitle="Followers and Friends - two Timelines and two User Lists">
         <changes>
             <change>&quot;Following&quot; timeline renamed to &quot;Friends&quot;. Added

@@ -162,11 +162,17 @@
   <string name="followed_by">Seguido por</string>
   <string name="followers">Seguidores</string>
   <string name="followers_of">Seguidores de \"%1s\"</string>
+  <string name="friends">Amigos</string>
+  <string name="friends_of">Amigos de \"%1s\"</string>
+  <string name="gestures">Gestos</string>
+  <string name="gestures_summary">Mecanismos de toque. Como o utilizador interage com a aplicação.</string>
   <string name="get_followers">Obter seguidores</string>
+  <string name="get_friends">Obter amigos</string>
   <string name="get_open_instances_title">Obter instâncias abertas</string>
   <string name="get_user">Obter informações do utilizador</string>
   <string name="go_to_the_top_title">Ir para o topo</string>
   <string name="header_accounts">Contas</string>
+  <string name="header_accounts_summary">Gerir contas e redes sociais</string>
   <string name="header_add_new_account">Adicionar nova conta</string>
   <string name="header_manage_existing_accounts">Gerir contas existentes</string>
   <string name="hide_messages_based_on_keywords_title">Ocultar mensagens tendo por base palavras-chave ou frases</string>
@@ -211,6 +217,9 @@
   <string name="label_with_media">com multimédia</string>
   <string name="latest_error_label">Último erro</string>
   <string name="loading">A carregar</string>
+  <string name="long_press_to_open_context_menu">Clique longo para abrir o menu de contexto</string>
+  <string name="long_press_to_open_context_menu_on">Clique longo no item abre o menu de contexto</string>
+  <string name="long_press_to_open_context_menu_off">Toque num item para abrir o menu de contexto</string>
   <string name="malformed_link">Ligação incorreta</string>
   <string name="message">Mensagem</string>
   <string name="message_twitter">Tweet</string>
@@ -246,6 +255,7 @@
   <string name="message_sent">A sua mensagem foi enviada.</string>
   <string name="messages_activity">Mensagens diretas</string>
   <string name="no">Não</string>
+  <string name="nothing_in_the_loadable_list">Aqui nada existe. Tente \"Sincronizar com a Internet\" para atualizar esta lista.</string>
   <string name="not_set">não definido</string>
   <string name="notification_message_formats_1">{0} mensagem</string>
   <string name="notification_message_formats_2">{0} mensagens</string>
@@ -281,6 +291,7 @@
   <string name="options_menu_mentions">Menções</string>
   <string name="options_menu_search">Procura</string>
   <string name="origin_settings_action">Rede social</string>
+  <string name="page_current">atual</string>
   <string name="page_empty">vazia</string>
   <string name="page_new">nova</string>
   <string name="page_older">antiga</string>
@@ -398,7 +409,6 @@ Com suporte a GNU social, Twitter e Pump.io.</string>
   <string name="timeline_title_drafts">Rascunhos</string>
   <string name="timeline_title_everything">Tudo</string>
   <string name="timeline_title_favorites">Favoritas</string>
-  <string name="friends">A seguir</string>
   <string name="timeline_title_home">Home</string>
   <string name="timeline_title_mentions">Menções</string>
   <string name="timeline_title_outbox">Caixa de saída</string>

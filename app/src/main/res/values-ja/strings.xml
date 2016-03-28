@@ -162,16 +162,22 @@
   <string name="followed_by">フォローしました</string>
   <string name="followers">フォロワー</string>
   <string name="followers_of">\"%1s\" のフォロワー</string>
+  <string name="friends">友達</string>
+  <string name="friends_of">\"%1s\" の友達</string>
+  <string name="gestures">ジェスチャー</string>
+  <string name="gestures_summary">タップのメカニズム。ユーザーがアプリケーションと対話する方法</string>
   <string name="get_followers">フォロワーを取得</string>
+  <string name="get_friends">友達になる</string>
   <string name="get_open_instances_title">オープン中のインスタンスを取得</string>
   <string name="get_user">ユーザー情報を取得</string>
   <string name="go_to_the_top_title">トップに戻る</string>
   <string name="header_accounts">アカウント</string>
+  <string name="header_accounts_summary">アカウントとソーシャル ネットワークを管理します</string>
   <string name="header_add_new_account">新しいアカウントを追加</string>
   <string name="header_manage_existing_accounts">既存のアカウントを管理</string>
   <string name="hide_messages_based_on_keywords_title">キーワードまたはフレーズに基づいてメッセージを非表示</string>
   <string name="hide_messages_based_on_keywords_dialog_message">スペースで複数のキーワードを分離します。フレーズは二重引用符で囲みます。例:\nキーワード \"exact phrase\"</string>
-  <string name="hide_replies_not_to_me_or_friends_title">ホーム タイムラインから、私または私の友人以外への返信を非表示</string>
+  <string name="hide_replies_not_to_me_or_friends_title">ホーム タイムラインから、私または私の友達以外への返信を非表示</string>
   <string name="history_size_entries_500">500 メッセージ</string>
   <string name="history_size_entries_1000">1000 メッセージ</string>
   <string name="history_size_entries_2000">2000 メッセージ</string>
@@ -211,6 +217,9 @@
   <string name="label_with_media">メディアで</string>
   <string name="latest_error_label">最新のエラー</string>
   <string name="loading">読み込み中</string>
+  <string name="long_press_to_open_context_menu">長押しでコンテキスト メニューを開く</string>
+  <string name="long_press_to_open_context_menu_on">項目を長押しして、コンテキスト メニューを開きます</string>
+  <string name="long_press_to_open_context_menu_off">項目をタップして、コンテキスト メニューを開きます</string>
   <string name="malformed_link">不正なリンク</string>
   <string name="message">メッセージ</string>
   <string name="message_twitter">ツイート</string>
@@ -246,6 +255,7 @@
   <string name="message_sent">メッセージを送信しました。</string>
   <string name="messages_activity">ダイレクトメッセージ</string>
   <string name="no">いいえ</string>
+  <string name="nothing_in_the_loadable_list">ここにはまだ何もありません。\"インターネットと同期\" をタップして、このリストを更新みてください。</string>
   <string name="not_set">設定しない</string>
   <string name="notification_message_formats_1">{0} メッセージ</string>
   <string name="notification_message_formats_2">{0} メッセージ</string>
@@ -281,6 +291,7 @@
   <string name="options_menu_mentions">メンション</string>
   <string name="options_menu_search">検索</string>
   <string name="origin_settings_action">ソーシャル ネットワーク</string>
+  <string name="page_current">現在</string>
   <string name="page_empty">空</string>
   <string name="page_new">新しい</string>
   <string name="page_older">古い</string>
@@ -397,7 +408,6 @@
   <string name="timeline_title_drafts">下書き</string>
   <string name="timeline_title_everything">すべて</string>
   <string name="timeline_title_favorites">お気に入り</string>
-  <string name="friends">フォロー中</string>
   <string name="timeline_title_home">ホーム</string>
   <string name="timeline_title_mentions">メンション</string>
   <string name="timeline_title_outbox">送信トレイ</string>
