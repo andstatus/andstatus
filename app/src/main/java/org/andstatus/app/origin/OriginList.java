@@ -57,16 +57,6 @@ public abstract class OriginList extends MyListActivity {
     protected void onCreate(Bundle savedInstanceState) {
         mLayoutId = getLayoutResourceId();
         super.onCreate(savedInstanceState);
-
-        ListAdapter adapter = new MySimpleAdapter(this,
-                data, 
-                R.layout.origin_list_item, 
-                new String[] {KEY_VISIBLE_NAME, KEY_NAME}, 
-                new int[] {R.id.visible_name, R.id.name});
-        
-        // Bind to our new adapter.
-        setListAdapter(adapter);
-
         processNewIntent(getIntent());
     }
 
@@ -89,6 +79,15 @@ public abstract class OriginList extends MyListActivity {
         if (Intent.ACTION_INSERT.equals(action)) {
             getSupportActionBar().setTitle(R.string.header_add_new_account);
         }
+
+        ListAdapter adapter = new MySimpleAdapter(this,
+                data,
+                R.layout.origin_list_item,
+                new String[] {KEY_VISIBLE_NAME, KEY_NAME},
+                new int[] {R.id.visible_name, R.id.name}, true);
+        // Bind to our new adapter.
+        setListAdapter(adapter);
+
         fillList();
     }
 

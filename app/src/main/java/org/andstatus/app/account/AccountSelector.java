@@ -109,7 +109,7 @@ public class AccountSelector extends MyListActivity {
                 list, 
                 R.layout.accountlist_item, 
                 new String[] {KEY_VISIBLE_NAME, KEY_CREDENTIALS_VERIFIED, KEY_SYNC_AUTO, BaseColumns._ID, KEY_TYPE}, 
-                new int[] {R.id.visible_name, R.id.credentials_verified, R.id.sync_auto, R.id.id, R.id.type});
+                new int[] {R.id.visible_name, R.id.credentials_verified, R.id.sync_auto, R.id.id, R.id.type}, true);
     }
 
     private void returnSelectedAccount(MyAccount ma) {

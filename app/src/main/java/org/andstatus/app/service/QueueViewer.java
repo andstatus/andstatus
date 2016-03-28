@@ -235,7 +235,8 @@ public class QueueViewer extends MyListActivity implements MyServiceEventsListen
                 list, 
                 R.layout.queue_item, 
                 new String[] {KEY_QUEUE_TYPE, KEY_COMMAND_SUMMARY, KEY_RESULT_SUMMARY, BaseColumns._ID}, 
-                new int[] {R.id.queue_type, R.id.command_summary, R.id.result_summary, R.id.id});
+                new int[] {R.id.queue_type, R.id.command_summary, R.id.result_summary, R.id.id},
+                false);
     }
 
     @Override
