@@ -26,6 +26,19 @@
 		</subtitle>
     </header>
 
+    <release android:versionName="25.00" android:versionCode="167"
+             versionDate="2016-03-30"
+             versionTitle="Quick navigation to the Default Timeline">
+        <changes>
+            <change>Icon to open the Navigation Drawer (on the Action bar) changed to
+                &quot;AndStatus icon&quot; when exactly at Default Timeline (i.e. when also
+                default account is selected and Combined is set to its default value).
+                Tapping on the icon opens/closes the Drawer as usual.
+                &quot;Timeline is Combined by default&quot; setting added to Timeline group.
+                <a href="https://github.com/andstatus/andstatus/issues/356">#356</a>
+            </change>
+        </changes>
+    </release>
     <release android:versionName="24.03" android:versionCode="166"
              versionDate="2016-03-28"
              versionTitle="Followers and Friends - two Timelines and two User Lists">

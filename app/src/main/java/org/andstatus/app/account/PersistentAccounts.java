@@ -48,7 +48,7 @@ public class PersistentAccounts {
     private final Map<String,MyAccount> mAccounts = new ConcurrentHashMap<>();
     private int distinctOriginsCount = 0;
     private volatile Set<Long> myFriends = null;
-    
+
     private PersistentAccounts() {
     }
     
@@ -501,5 +501,9 @@ public class PersistentAccounts {
             DbUtils.closeSilently(cursor);
         }
         myFriends = friends;
+    }
+
+    public long getDefaultAccountUserId() {
+        return fromAccountName(getDefaultAccountName()).getUserId();
     }
 }

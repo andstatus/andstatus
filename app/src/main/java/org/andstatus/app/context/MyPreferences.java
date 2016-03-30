@@ -30,7 +30,7 @@ import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
 
-import org.andstatus.app.msg.TimelineActivity;
+import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
 
@@ -46,6 +46,7 @@ public class MyPreferences {
 
     public static final String KEY_USER_IN_TIMELINE = "user_in_timeline";
     public static final String KEY_DEFAULT_TIMELINE = "default_timeline";
+    public static final String KEY_TIMELINE_IS_COMBINED_BY_DEFAULT = "timeline_is_combined_by_default";
 
     public static final String KEY_HISTORY_SIZE = "history_size";
     public static final String KEY_HISTORY_TIME = "history_time";
@@ -94,10 +95,6 @@ public class MyPreferences {
      */
     public static final String KEY_USE_EXTERNAL_STORAGE_NEW = "use_external_storage_new";
     public static final String KEY_ENABLE_ANDROID_BACKUP = "enable_android_backup";
-    /**
-     * Is the timeline combined in {@link TimelineActivity} 
-     */
-    public static final String KEY_TIMELINE_IS_COMBINED = "timeline_is_combined";
     /**
      * Version code of last opened application (int) 
      */
@@ -421,6 +418,10 @@ public class MyPreferences {
         return getBoolean(KEY_LONG_PRESS_TO_OPEN_CONTEXT_MENU, false);
     }
 
+    public static boolean isTimelineCombinedByDefault() {
+        return getBoolean(KEY_TIMELINE_IS_COMBINED_BY_DEFAULT, true);
+    }
+
     public static boolean getBoolean(String key, boolean defaultValue) {
         boolean value = defaultValue;
         SharedPreferences sp = getDefaultSharedPreferences();
@@ -497,5 +498,9 @@ public class MyPreferences {
 
     public static boolean showDebuggingInfoInUi() {
         return getBoolean(KEY_DEBUGGING_INFO_IN_UI, false);
+    }
+
+    public static TimelineType getDefaultTimeline() {
+        return TimelineType.load(getString(KEY_DEFAULT_TIMELINE, TimelineType.HOME.save()));
     }
 }

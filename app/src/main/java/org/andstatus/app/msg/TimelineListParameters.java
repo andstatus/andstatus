@@ -31,6 +31,7 @@ import org.andstatus.app.R;
 import org.andstatus.app.WhichPage;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyDatabase.User;
@@ -181,7 +182,24 @@ public class TimelineListParameters {
     public boolean isEmpty() {
         return mTimelineType == TimelineType.UNKNOWN || whichPage == WhichPage.EMPTY;
     }
-    
+
+    public boolean isAtHome() {
+        return getTimelineType().equals(MyPreferences.getDefaultTimeline())
+                && isTimelineCombined() == MyPreferences.isTimelineCombinedByDefault()
+                && getMyAccountUserId() ==
+                MyContextHolder.get().persistentAccounts().getDefaultAccountUserId()
+                && mSelectedUserId == 0
+                && TextUtils.isEmpty(mSearchQuery);
+    }
+
+    public void setAtHome() {
+        setTimelineType(MyPreferences.getDefaultTimeline());
+        setTimelineCombined(MyPreferences.isTimelineCombinedByDefault());
+        myAccountUserId = MyContextHolder.get().persistentAccounts().getDefaultAccountUserId();
+        mSelectedUserId = 0;
+        mSearchQuery = "";
+    }
+
     @Override
     public String toString() {
         return MyLog.formatKeyValue(this,

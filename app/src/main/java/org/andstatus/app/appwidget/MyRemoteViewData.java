@@ -14,7 +14,6 @@ import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.msg.TimelineActivity;
-import org.andstatus.app.msg.TimelineTypeSelector;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
@@ -150,8 +149,8 @@ class MyRemoteViewData {
         }
         boolean isTimelineCombined;
         if (timeLineType == TimelineType.UNKNOWN) {
-            timeLineType = TimelineTypeSelector.getDefault();
-            isTimelineCombined = MyPreferences.getBoolean(MyPreferences.KEY_TIMELINE_IS_COMBINED, false);
+            timeLineType = MyPreferences.getDefaultTimeline();
+            isTimelineCombined = MyPreferences.isTimelineCombinedByDefault();
         } else {
             // There are more than one account,
             // so turn Combined timeline on in order to show all the new messages.

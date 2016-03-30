@@ -44,7 +44,7 @@ public class TimelineTypeSelector {
     }
 
     public static TimelineType selectableType(TimelineType typeSelected) {
-        TimelineType typeSelectable = getDefault();
+        TimelineType typeSelectable = MyPreferences.getDefaultTimeline();
         for (TimelineType type : timelineTypes) {
             if (type == typeSelected) {
                 typeSelectable = typeSelected;
@@ -54,7 +54,4 @@ public class TimelineTypeSelector {
         return typeSelectable;
     }
 
-    public static TimelineType getDefault() {
-        return TimelineType.load(MyPreferences.getString(MyPreferences.KEY_DEFAULT_TIMELINE, TimelineType.HOME.save()));
-    }
 }

@@ -461,7 +461,7 @@ public class AccountSettingsActivity extends MyActivity {
     
     private void showDefaultAccountCheckbox() {
         MyAccount ma = state.getAccount();
-        boolean isDefaultAccount = ma.getAccountName().equals(MyContextHolder.get().persistentAccounts().getDefaultAccountName());
+        boolean isDefaultAccount = ma.getUserId() == MyContextHolder.get().persistentAccounts().getDefaultAccountUserId();
         CheckBox checkBox= (CheckBox) findFramentViewById(R.id.is_default_account);
         if (checkBox != null) {
             checkBox.setVisibility(state.builder.isPersistent() ? View.VISIBLE : View.GONE);

@@ -31,6 +31,7 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -163,6 +164,7 @@ public class TimelineActivity extends LoadableListActivity implements
         };
 
         mDrawerLayout.setDrawerListener(mDrawerToggle);
+        mDrawerToggle.setHomeAsUpIndicator(R.drawable.icon);
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
@@ -209,7 +211,6 @@ public class TimelineActivity extends LoadableListActivity implements
     public void onCombinedTimelineToggleClick(View item) {
         closeDrawer();
         boolean on = !isTimelineCombined();
-        MyPreferences.getDefaultSharedPreferences().edit().putBoolean(MyPreferences.KEY_TIMELINE_IS_COMBINED, on).apply();
         mContextMenu.switchTimelineActivity(paramsNew.getTimelineType(), on, paramsNew.myAccountUserId);
     }
 
@@ -423,6 +424,13 @@ public class TimelineActivity extends LoadableListActivity implements
             return true;
         }
         switch (item.getItemId()) {
+            case android.R.id.home:
+                if (mDrawerLayout.isDrawerOpen(Gravity.LEFT)) {
+                    mDrawerLayout.closeDrawer(Gravity.LEFT);
+                } else {
+                    mDrawerLayout.openDrawer(Gravity.LEFT);
+                }
+                break;
             case R.id.global_search_menu_id:
                 onSearchRequested(true);
                 break;
@@ -550,6 +558,7 @@ public class TimelineActivity extends LoadableListActivity implements
         }
         mRateLimitText = "";
         paramsNew.setTimelineType(TimelineType.UNKNOWN);
+        // TODO: get account from intent?!
         paramsNew.myAccountUserId = MyContextHolder.get().persistentAccounts().getCurrentAccountUserId();
         paramsNew.mSelectedUserId = 0;
         paramsNew.whichPage = WhichPage.load(
@@ -559,11 +568,7 @@ public class TimelineActivity extends LoadableListActivity implements
             paramsNew.parseIntentData(intentNew);
         }
         if (paramsNew.getTimelineType() == TimelineType.UNKNOWN) {
-            /* Set default values */
-            paramsNew.setTimelineType(TimelineTypeSelector.getDefault());
-            paramsNew.setTimelineCombined(
-                    MyPreferences.getBoolean(MyPreferences.KEY_TIMELINE_IS_COMBINED, false));
-            paramsNew.mSearchQuery = "";
+            paramsNew.setAtHome();
         }
         if (paramsNew.getTimelineType() == TimelineType.USER) {
             if (paramsNew.mSelectedUserId == 0) {
@@ -678,6 +683,7 @@ public class TimelineActivity extends LoadableListActivity implements
         invalidateOptionsMenu();
         mMessageEditor.updateScreen();
         updateTitle(mRateLimitText);
+        mDrawerToggle.setDrawerIndicatorEnabled(!getParamsLoaded().isAtHome());
     }
 
     @Override
