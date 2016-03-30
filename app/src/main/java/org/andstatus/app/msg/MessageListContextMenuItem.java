@@ -189,8 +189,8 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
                  * We better switch to the account selected for this message in order not to
                  * add new "MsgOfUser" entries hence duplicated messages in the combined timeline 
                  */
-                MyContextHolder.get().persistentAccounts().setCurrentAccount(editorData.ma);
-                menu.switchTimelineActivity(TimelineType.USER, menu.messageList.isTimelineCombined(), editorData.recipientId);
+                menu.switchTimelineActivity(editorData.ma, TimelineType.USER,
+                        menu.messageList.isTimelineCombined(), editorData.recipientId);
             }
         }
     },
@@ -207,8 +207,8 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
                  * We better switch to the account selected for this message in order not to
                  * add new "MsgOfUser" entries hence duplicated messages in the combined timeline 
                  */
-                MyContextHolder.get().persistentAccounts().setCurrentAccount(editorData.ma);
-                menu.switchTimelineActivity(TimelineType.USER, menu.messageList.isTimelineCombined(), editorData.recipientId);
+                menu.switchTimelineActivity(editorData.ma, TimelineType.USER,
+                        menu.messageList.isTimelineCombined(), editorData.recipientId);
             }
         }
     },

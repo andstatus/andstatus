@@ -73,9 +73,7 @@ public class MyUrlSpan extends URLSpan {
     public static void showText(TextView textView, String text, boolean linkify) {
         if (TextUtils.isEmpty(text)) {
             textView.setText("");
-            if (textView.getVisibility() != View.GONE) {
-                textView.setVisibility(View.GONE);
-            }
+            showView(textView, false);
         } else {
             if (linkify) {
                 textView.setFocusable(true);
@@ -94,9 +92,21 @@ public class MyUrlSpan extends URLSpan {
                 Linkify.addLinks(textView, Linkify.ALL);
             }
             fixUrlSpans(textView);
+            showView(textView, true);
+        }
+    }
 
-            if (textView.getVisibility() != View.VISIBLE) {
-                textView.setVisibility(View.VISIBLE);
+    public static void showView(View view, boolean show) {
+        if (view == null) {
+            return;
+        }
+        if (show) {
+            if (view.getVisibility() != View.VISIBLE) {
+                view.setVisibility(View.VISIBLE);
+            }
+        } else {
+            if (view.getVisibility() != View.GONE) {
+                view.setVisibility(View.GONE);
             }
         }
     }

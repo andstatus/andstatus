@@ -394,6 +394,7 @@
   <string name="summary_preference_verify_credentials_failed">Verification failed. Tap here to verify credentials and enable this User Account</string>
   <string name="summary_preference_vibration_off">Vibration is turned off</string>
   <string name="summary_preference_vibration_on">Vibrate on incoming message</string>
+  <string name="switch_to_default_timeline">Switch to Default Timeline</string>
   <string name="system_is_busy_try_later">The system is busy. Please try again later.</string>
   <string name="theme_color_entries_default">Device default</string>
   <string name="theme_color_entries_light">Light</string>

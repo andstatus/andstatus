@@ -78,7 +78,6 @@ public class TimelineListParameters {
     WhichPage whichPage = WhichPage.EMPTY;
     String[] mProjection;
 
-    Uri mContentUri = null;
     long maxSentDate = 0;
 
     // These params are updated just before page loading
@@ -135,12 +134,6 @@ public class TimelineListParameters {
         MyLog.v(TimelineListParameters.class, msgLog);
 
         params.mProjection = TimelineSql.getTimelineProjection();
-        params.mContentUri = params.buildContentUri();
-    }
-
-    private Uri buildContentUri() {
-        return MatchedUri.getTimelineSearchUri(myAccountUserId, mTimelineType,
-                mTimelineCombined, mSelectedUserId, mSearchQuery);
     }
 
     public String toAccountButtonText() {
@@ -207,7 +200,6 @@ public class TimelineListParameters {
                 + ", myAccountUserId=" + myAccountUserId
                 + (mSelectedUserId == 0 ? "" : ", selectedUserId=" + mSelectedUserId)
             //    + ", projection=" + Arrays.toString(mProjection)
-                + ", contentUri=" + mContentUri
                 + (minSentDate > 0 ? ", minSentDate=" + new Date(minSentDate).toString() : "")
                 + (maxSentDate > 0 ? ", maxSentDate=" + new Date(maxSentDate).toString() : "")
                 + (selectionAndArgs.isEmpty() ? "" : ", sa=" + selectionAndArgs)
@@ -471,7 +463,13 @@ public class TimelineListParameters {
 
     Cursor queryDatabase() {
         prepareQueryParameters();
-        return mContext.getContentResolver().query(mContentUri, mProjection,
+        return mContext.getContentResolver().query(getContentUri(), mProjection,
                 selectionAndArgs.selection, selectionAndArgs.selectionArgs, sortOrderAndLimit);
     }
+
+    public Uri getContentUri() {
+        return MatchedUri.getTimelineSearchUri(myAccountUserId, mTimelineType,
+                mTimelineCombined, mSelectedUserId, mSearchQuery);
+    }
+
 }

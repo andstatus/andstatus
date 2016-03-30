@@ -12,6 +12,12 @@
     android:orientation="vertical" >
 
     <TextView
+        android:id="@+id/switchToDefaultTimelineButton"
+        style="@style/drawerListItem"
+        android:onClick="onSwitchToDefaultTimelineButtonClick"
+        android:text="@string/switch_to_default_timeline" />
+
+    <TextView
         android:id="@+id/goToTheTopButton"
         style="@style/drawerListItem"
         android:onClick="onGoToTheTopButtonClick"

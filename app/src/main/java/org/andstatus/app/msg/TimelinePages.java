@@ -56,7 +56,7 @@ public class TimelinePages {
             return true;
         }
         return oldPages.list.size() > 0
-                && thisPage.parameters.mContentUri.equals(oldPages.list.get(0).parameters.mContentUri);
+                && thisPage.parameters.getContentUri().equals(oldPages.list.get(0).parameters.getContentUri());
     }
 
     private void addThisPage(TimelinePage page) {

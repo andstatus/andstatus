@@ -65,6 +65,7 @@ import org.andstatus.app.service.QueueViewer;
 import org.andstatus.app.test.SelectorActivityMock;
 import org.andstatus.app.util.BundleUtils;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.MyUrlSpan;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
 import org.andstatus.app.widget.MyBaseAdapter;
@@ -182,6 +183,15 @@ public class TimelineActivity extends LoadableListActivity implements
     /**
      * View.OnClickListener
      */
+    public void onSwitchToDefaultTimelineButtonClick(View item) {
+        closeDrawer();
+        paramsNew.setAtHome();
+        mContextMenu.switchTimelineActivity(paramsNew.getContentUri());
+    }
+
+    /**
+     * View.OnClickListener
+     */
     public void onGoToTheTopButtonClick(View item) {
         closeDrawer();
         TimelineAdapter adapter = getListAdapter();
@@ -210,8 +220,8 @@ public class TimelineActivity extends LoadableListActivity implements
      */
     public void onCombinedTimelineToggleClick(View item) {
         closeDrawer();
-        boolean on = !isTimelineCombined();
-        mContextMenu.switchTimelineActivity(paramsNew.getTimelineType(), on, paramsNew.myAccountUserId);
+        paramsNew.setTimelineCombined(!isTimelineCombined());
+        mContextMenu.switchTimelineActivity(paramsNew.getContentUri());
     }
 
     private void closeDrawer() {
@@ -266,7 +276,7 @@ public class TimelineActivity extends LoadableListActivity implements
                 if (isConfigChanged()) {
                     MyLog.v(this, method + "; Restarting this Activity to apply all new changes of configuration");
                     finish();
-                    mContextMenu.switchTimelineActivity(paramsNew.getTimelineType(), paramsNew.isTimelineCombined(), paramsNew.mSelectedUserId);
+                    mContextMenu.switchTimelineActivity(paramsNew.getContentUri());
                 }
             } else { 
                 MyLog.v(this, method + "; Finishing this Activity because there is no Account selected");
@@ -343,8 +353,8 @@ public class TimelineActivity extends LoadableListActivity implements
                 // selected item
                 TimelineType type = selector.positionToType(which);
                 if (type != TimelineType.UNKNOWN) {
-                    mContextMenu.switchTimelineActivity(type,
-                            paramsNew.isTimelineCombined(), paramsNew.myAccountUserId);
+                    paramsNew.mTimelineType = type;
+                    mContextMenu.switchTimelineActivity(paramsNew.getContentUri());
                 }
             }
         });
@@ -408,14 +418,12 @@ public class TimelineActivity extends LoadableListActivity implements
     private void prepareCombinedTimelineToggle(ViewGroup list) {
         CheckBox combinedTimelineToggle = (CheckBox) list.findViewById(R.id.combinedTimelineToggle);
         combinedTimelineToggle.setChecked(isTimelineCombined());
-        if (paramsNew.mSelectedUserId != 0 && paramsNew.mSelectedUserId != paramsNew.myAccountUserId) {
-            combinedTimelineToggle.setVisibility(View.GONE);
-        } else {
-            // Show the "Combined" toggle even for one account to see messages, 
-            // which are not on the timeline.
-            // E.g. messages by users, downloaded on demand.
-            combinedTimelineToggle.setVisibility(View.VISIBLE);
-        }
+        // Show the "Combined" toggle even for one account to see messages,
+        // which are not on the timeline.
+        // E.g. messages by users, downloaded on demand.
+        MyUrlSpan.showView(combinedTimelineToggle,
+                paramsNew.mSelectedUserId == 0 ||
+                        paramsNew.mSelectedUserId == paramsNew.myAccountUserId);
     }
 
     @Override
@@ -684,6 +692,8 @@ public class TimelineActivity extends LoadableListActivity implements
         mMessageEditor.updateScreen();
         updateTitle(mRateLimitText);
         mDrawerToggle.setDrawerIndicatorEnabled(!getParamsLoaded().isAtHome());
+        MyUrlSpan.showView(
+                findViewById(R.id.switchToDefaultTimelineButton), !getParamsLoaded().isAtHome());
     }
 
     @Override
@@ -809,8 +819,8 @@ public class TimelineActivity extends LoadableListActivity implements
         if (params.whichPage != WhichPage.EMPTY) {
             MyLog.v(this, method + ": " + params);
             Intent intent = getIntent();
-            if (!params.mContentUri.equals(intent.getData())) {
-                intent.setData(params.mContentUri);
+            if (!params.getContentUri().equals(intent.getData())) {
+                intent.setData(params.getContentUri());
             }
             saveSearchQuery();
         }
@@ -1021,8 +1031,7 @@ public class TimelineActivity extends LoadableListActivity implements
                  */
                 timelineTypeNew = TimelineType.HOME;
             }
-            MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
-            mContextMenu.switchTimelineActivity(timelineTypeNew, paramsNew.isTimelineCombined(), ma.getUserId());
+            mContextMenu.switchTimelineActivity(ma, timelineTypeNew, paramsNew.isTimelineCombined(), ma.getUserId());
         }
     }
 

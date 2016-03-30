@@ -17,6 +17,7 @@
 package org.andstatus.app.msg;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.ContextMenu;
@@ -275,21 +276,23 @@ public class MessageContextMenu extends MyContextMenu {
         }
     }
 
-    public void switchTimelineActivity(TimelineType timelineType, boolean isTimelineCombined, long selectedUserId) {
-        Intent intent;
+    public void switchTimelineActivity(MyAccount ma, TimelineType timelineType, boolean isTimelineCombined,
+                                       long selectedUserId) {
+        MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
         if (MyLog.isVerboseEnabled()) {
             MyLog.v(this, "switchTimelineActivity; " + timelineType 
                     + "; isCombined=" + (isTimelineCombined ? "yes" : "no")
                     + "; userId=" + selectedUserId);
         }
-        
-        // Actually we use one Activity for all timelines...
-        intent = new Intent(getActivity(), TimelineActivity.class);
-        intent.setData(MatchedUri.getTimelineUri(MyContextHolder.get().persistentAccounts()
-                .getCurrentAccountUserId(), TimelineTypeSelector.selectableType(timelineType),
-                isTimelineCombined, selectedUserId));
-        // We don't use Intent.ACTION_SEARCH action anywhere, so there is no need it setting it.
-        // - we're analyzing query instead!
+        Uri contentUri = MatchedUri.getTimelineUri(ma.getUserId(),
+                TimelineTypeSelector.selectableType(timelineType),
+                isTimelineCombined, selectedUserId);
+        switchTimelineActivity(contentUri);
+    }
+
+    public void switchTimelineActivity(Uri contentUri) {
+        Intent intent = new Intent(getActivity(), TimelineActivity.class);
+        intent.setData(contentUri);
         getActivity().startActivity(intent);
     }
 
