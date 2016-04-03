@@ -45,6 +45,7 @@ import org.andstatus.app.HelpActivity;
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.LoadableListActivity;
 import org.andstatus.app.MyAction;
+import org.andstatus.app.MyActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.WhichPage;
 import org.andstatus.app.account.AccountSelector;
@@ -726,12 +727,9 @@ public class TimelineActivity extends LoadableListActivity implements
             this.additionalTitleText = additionalTitleText;
         }
 
-        private void updateTitle(AppCompatActivity activity) {
-            ActionBar actionBar = activity.getSupportActionBar();
-            if (actionBar != null) {
-                actionBar.setTitle(ta.toTimelineTitle());
-                actionBar.setSubtitle(ta.toTimelineSubtitle(additionalTitleText));
-            }
+        private void updateTitle(MyActivity activity) {
+            activity.setTitle(ta.toTimelineTitle());
+            activity.setSubtitle(ta.toTimelineSubtitle(additionalTitleText));
             if (MyLog.isVerboseEnabled()) {
                 MyLog.v(activity, "Title: " + toString());
             }

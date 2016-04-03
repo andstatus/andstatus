@@ -79,7 +79,8 @@ public class MyPreferences {
     
     public static final String KEY_THEME_SIZE = "theme_size";
     public static final String KEY_THEME_COLOR = "theme_color";
-    public static final String KEY_ACTION_BAR_COLOR = "action_bar_color";
+    public static final String KEY_ACTION_BAR_BACKGROUND_COLOR = "action_bar_background_color";
+    public static final String KEY_ACTION_BAR_TEXT_COLOR = "action_bar_text_color";
     public static final String KEY_BACKGROUND_COLOR = "background_color";
     public static final String KEY_SHOW_AVATARS = "show_avatars";
     public static final String KEY_SHOW_ATTACHED_IMAGES = "show_attached_images";

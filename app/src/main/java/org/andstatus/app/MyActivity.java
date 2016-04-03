@@ -17,7 +17,9 @@
 package org.andstatus.app;
 
 import android.os.Bundle;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 
 import org.andstatus.app.context.MyTheme;
@@ -39,6 +41,15 @@ public class MyActivity extends AppCompatActivity {
         if (mLayoutId != 0) {
             MyTheme.setContentView(this, mLayoutId);
         }
+        Toolbar toolbar = (Toolbar) findViewById(R.id.my_action_bar);
+        if (toolbar != null) {
+            setSupportActionBar(toolbar);
+        }
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayShowHomeEnabled(true);
+            actionBar.setDisplayHomeAsUpEnabled(true);
+        }
     }
 
     @Override
@@ -49,5 +60,19 @@ public class MyActivity extends AppCompatActivity {
 
     public Menu getOptionsMenu() {
         return mOptionsMenu;
+    }
+
+    public void setTitle(String title) {
+        ActionBar bar = getSupportActionBar();
+        if (bar != null) {
+            bar.setTitle(title);
+        }
+    }
+
+    public void setSubtitle(CharSequence subtitle) {
+        ActionBar bar = getSupportActionBar();
+        if (bar != null) {
+            bar.setSubtitle(subtitle);
+        }
     }
 }

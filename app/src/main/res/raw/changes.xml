@@ -38,7 +38,15 @@
                 <a href="https://github.com/andstatus/andstatus/issues/356">#356</a>
             </change>
             <change>Added &quot;Switch to Default Timeline&quot; item to the Navigation Drawer to
-            ease return to the Default Timeline, Account and Combined settings.</change>
+                ease return to the Default Timeline, Account and Combined settings.</change>
+            <change>Added &quot;Action bar text and icon color&quot; option to
+                the &quot;Appearance&quot; section of AndStatus settings. It has two values:
+                &quot;White&quot; (default) and &quot;Black&quot;. This allows to have
+                white text of Action Bar title not only for Dark theme, but for Light theme also.
+                <a href="https://github.com/andstatus/andstatus/issues/289">#289</a>
+            </change>
+            <change>Added the third, &quot;Accent&quot; color to definition of each
+                &quot;Action bar background color&quot;.</change>
         </changes>
     </release>
     <release android:versionName="24.03" android:versionCode="166"

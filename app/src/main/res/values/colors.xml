@@ -16,21 +16,29 @@
  -->
 <resources>
 	<!-- Colors in Material design http://www.google.com/design/spec/style/color.html -->
+	<color name="red_a200">#FF5252</color>
 	<color name="red_500">#F44336</color>
 	<color name="red_700">#D32F2F</color>
+	<color name="orange_a200">#FFAB40</color>
 	<color name="orange_500">#FF9800</color>
 	<color name="orange_700">#F57C00</color>
+	<color name="green_a200">#69F0AE</color>
 	<color name="green_500">#4CAF50</color>
 	<color name="green_700">#388E3C</color>
+	<color name="teal_a200">#64FFDA</color>
     <color name="teal_500">#009688</color>
     <color name="teal_700">#00796B</color>
+	<color name="blue_a200">#448AFF</color>
 	<color name="blue_500">#2196F3</color>
 	<color name="blue_700">#1976D2</color>
+	<color name="light_blue_a200">#40C4FF</color>
 	<color name="light_blue_500">#03A9F4</color>
 	<color name="light_blue_700">#0288D1</color>
+	<color name="material_blue_a200">#6686F3</color>
 	<color name="material_blue_500">#577AF3</color>
 	<color name="material_blue_700">#485CD4</color>
-	<color name="my_blue_500">#0073be</color>
+	<color name="my_blue_a200">#0089E3</color>
+	<color name="my_blue_500">#0073BF</color>
 	<color name="my_blue_700">#005B97</color>
 	<color name="grey_500">#9E9E9E</color>
 	<color name="grey_700">#616161</color>

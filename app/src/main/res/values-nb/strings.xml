@@ -25,7 +25,7 @@
   <string name="account_settings_action">AndStatus konto innstillinger</string>
   <string name="account_settings_activity_title">Konto</string>
   <string name="account_settings_summary">Synkronisere frekvens, varsler, etc.</string>
-  <string name="action_bar_color_preference_title">Farge preferanser</string>
+  <string name="action_bar_background_color_preference_title">Farge preferanser</string>
   <string name="attach_images_summary_off">\"Binders+\" knapp, benyttet for å legge til bilder i dine statuser, er skjult</string>
   <string name="attach_images_summary_on">Benytt \"Binders+\" knappen (\"Legg til\" meny innslaget) for å legge til et bilde i din melding. Eller del et bilde til AndStatus fra en annen applikasjon</string>
   <string name="attach_images_title">Legg til bilde i min melding</string>

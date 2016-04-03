@@ -25,7 +25,7 @@
   <string name="account_settings_action">Настройки Учётных записей (Аккаунтов)</string>
   <string name="account_settings_activity_title">Аккаунт</string>
   <string name="account_settings_summary">Частота синхронизации, уведомления и др.</string>
-  <string name="action_bar_color_preference_title">Цвет панели действий</string>
+  <string name="action_bar_background_color_preference_title">Цвет панели действий</string>
   <string name="attach_images_summary_off">Кнопка «Скрепка+», используемая для прикрепления изображений к вашим сообщениям, скрыта</string>
   <string name="attach_images_summary_on">Используйте кнопку «Скрепка+» (пункт меню «Прикрепить») чтобы вложить изображение в ваше сообщение. Или \"поделитесь\" изображением с AndStatus-ом из другого приложения</string>
   <string name="attach_images_title">Прикреплять изображения к моим сообщениям</string>

@@ -24,7 +24,7 @@
 <resources>
   <string name="account_settings_action">הגדרות חשבון AndStatus</string>
   <string name="account_settings_activity_title">חשבון</string>
-  <string name="action_bar_color_preference_title">צבע שורת פעולות</string>
+  <string name="action_bar_background_color_preference_title">צבע שורת פעולות</string>
   <string name="attachments">תצריף</string>
   <string name="automatic">אוטומטי</string>
   <string name="settings_action">הגדרות</string>

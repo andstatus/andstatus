@@ -25,7 +25,7 @@
   <string name="account_settings_action">AndStatus アカウントの設定</string>
   <string name="account_settings_activity_title">アカウント</string>
   <string name="account_settings_summary">同期の頻度、通知など</string>
-  <string name="action_bar_color_preference_title">アクションバーの色</string>
+  <string name="action_bar_background_color_preference_title">アクションバーの色</string>
   <string name="attach_images_summary_off">投稿に画像を添付するために使用する \"クリップ+\" ボタンを非表示にします</string>
   <string name="attach_images_summary_on">メッセージに画像を添付する \"クリップ+\" ボタン (\"添付\" メニュー項目) を使用します。または別のアプリケーションから AndStatus に画像を共有します</string>
   <string name="attach_images_title">私のメッセージに画像を添付する</string>

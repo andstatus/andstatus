@@ -25,7 +25,7 @@
   <string name="account_settings_action">AndStatus Accounteinstellungen</string>
   <string name="account_settings_activity_title">Konto</string>
   <string name="account_settings_summary">Synchronisation Frequenz, Benachrichtigungen etc.</string>
-  <string name="action_bar_color_preference_title">Farbe der Actionbar</string>
+  <string name="action_bar_background_color_preference_title">Farbe der Actionbar</string>
   <string name="attach_images_summary_off">\"Büroklammer+\" Button, mit dem Bilder an deine Beiträge angehängt werden, ist ausgeblendet</string>
   <string name="attach_images_summary_on">Verwende \"Büroklammer +\" Button (Menüpunkt \"Anhängen\") um Bilder an die Nachricht anzufügen. Oder teile ein Bild aus einer anderen Anwendung mit AndStatus</string>
   <string name="attach_images_title">Bilder an meine Nachrichten anhängen</string>

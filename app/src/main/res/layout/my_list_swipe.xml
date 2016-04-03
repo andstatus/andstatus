@@ -27,11 +27,18 @@
     android:orientation="vertical"
     tools:context=".origin.OriginList" >
 
-    <fragment
-        android:id="@+id/myListParent"
-        android:name="android.support.v4.app.ListFragment"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        />
+    <LinearLayout android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:orientation="vertical">
+
+        <include layout="@layout/action_bar" />
+
+        <fragment
+            android:id="@+id/myListParent"
+            android:name="android.support.v4.app.ListFragment"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            tools:layout="@layout/my_list_fragment"/>
+    </LinearLayout>
 </org.andstatus.app.widget.MySwipeRefreshLayout>

@@ -20,6 +20,8 @@
     android:gravity="center"
     android:orientation="vertical" >
 
+    <include layout="@layout/action_bar" />
+
     <LinearLayout
         android:id="@+id/help_container"
         android:layout_width="match_parent"

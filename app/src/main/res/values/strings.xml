@@ -24,7 +24,8 @@
   <string name="account_settings_action">AndStatus account settings</string>
   <string name="account_settings_activity_title">Account</string>
   <string name="account_settings_summary">Sync frequency, notifications, etc.</string>
-  <string name="action_bar_color_preference_title">Action bar color</string>
+  <string name="action_bar_background_color_preference_title">Action bar background color</string>
+  <string name="action_bar_text_preference_title">Action bar text and icon color</string>
   <string name="attach_images_summary_off">\"Paperclip+\" button, used to attach images to your posts, is hidden</string>
   <string name="attach_images_summary_on">Use \"Paperclip+\" button (\"Attach\" menu item) to attach images to you message. Or Share image to AndStatus from another application</string>
   <string name="attach_images_title">Attach images to my messages</string>
@@ -84,6 +85,7 @@
   <string name="color_orange">Orange</string>
   <string name="color_red">Red</string>
   <string name="color_teal">Teal</string>
+  <string name="color_white">White</string>
   <string name="combined_timeline_on">combined</string>
   <string name="combined_timeline_off_account">for</string>
   <string name="combined_timeline_off_origin">at</string>

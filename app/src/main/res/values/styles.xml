@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
-    <string-array name="action_bar_color_values">
+    <string-array name="action_bar_background_color_values">
         <item>ActionBarRed</item>
         <item>ActionBarOrange</item>
         <item>ActionBarGreen</item>
@@ -14,38 +14,82 @@
     <style name="ActionBarRed">
         <item name="actionBarColor">@color/red_500</item>
         <item name="actionBarColorDark">@color/red_700</item>
+        <item name="actionBarColorAccent">@color/red_a200</item>
     </style>
     <style name="ActionBarOrange">
         <item name="actionBarColor">@color/orange_500</item>
         <item name="actionBarColorDark">@color/orange_700</item>
+        <item name="actionBarColorAccent">@color/orange_a200</item>
     </style>
     <style name="ActionBarGreen">
         <item name="actionBarColor">@color/green_500</item>
         <item name="actionBarColorDark">@color/green_700</item>
+        <item name="actionBarColorAccent">@color/green_a200</item>
     </style>
     <style name="ActionBarTeal">
         <item name="actionBarColor">@color/teal_500</item>
         <item name="actionBarColorDark">@color/teal_700</item>
+        <item name="actionBarColorAccent">@color/teal_a200</item>
     </style>
     <style name="ActionBarBlue">
         <item name="actionBarColor">@color/blue_500</item>
         <item name="actionBarColorDark">@color/blue_700</item>
+        <item name="actionBarColorAccent">@color/blue_a200</item>
     </style>
     <style name="ActionBarLightBlue">
         <item name="actionBarColor">@color/light_blue_500</item>
         <item name="actionBarColorDark">@color/light_blue_700</item>
+        <item name="actionBarColorAccent">@color/light_blue_a200</item>
     </style>
     <style name="ActionBarMaterialBlue">
         <item name="actionBarColor">@color/material_blue_500</item>
         <item name="actionBarColorDark">@color/material_blue_700</item>
+        <item name="actionBarColorAccent">@color/material_blue_a200</item>
     </style>
     <style name="ActionBarMyBlue">
         <item name="actionBarColor">@color/my_blue_500</item>
         <item name="actionBarColorDark">@color/my_blue_700</item>
+        <item name="actionBarColorAccent">@color/my_blue_a200</item>
     </style>
     <style name="ActionBarGrey">
         <item name="actionBarColor">@color/grey_500</item>
         <item name="actionBarColorDark">@color/grey_700</item>
+        <item name="actionBarColorAccent">@color/grey_500</item>
+    </style>
+
+    <string-array name="action_bar_text_color_values">
+        <item>ActionBarTextBlack</item>
+        <item>ActionBarTextWhite</item>
+    </string-array>
+    <style name="ActionBarTextBlack">
+        <item name="andStatusActionBarTheme">@style/ThemeOverlay.AppCompat.Light</item>
+    </style>
+    <style name="ActionBarTextWhite">
+        <item name="andStatusActionBarTheme">@style/ThemeOverlay.AppCompat.Dark.ActionBar</item>
+    </style>
+
+    <style name="ActionBarIconsBlack">
+        <item name="attachIcon">@drawable/ic_action_new_attachment_light</item>
+        <item name="globalSearchIcon">@drawable/ic_action_global_search_light</item>
+        <item name="helpIcon">@drawable/ic_action_help_light</item>
+        <item name="hideMessageIcon">@drawable/ic_action_hide_message_light</item>
+        <item name="mySearchIcon">@drawable/ic_action_search_light</item>
+        <item name="newIcon">@drawable/ic_action_new_light</item>
+        <item name="postMessageIcon">@drawable/ic_action_new_message_light</item>
+        <item name="reloadIcon">@drawable/ic_action_refresh_light</item>
+        <item name="sendIcon">@drawable/ic_action_send_now_light</item>
+    </style>
+
+    <style name="ActionBarIconsWhite">
+        <item name="attachIcon">@drawable/ic_action_new_attachment</item>
+        <item name="globalSearchIcon">@drawable/ic_action_global_search</item>
+        <item name="helpIcon">@drawable/ic_action_help</item>
+        <item name="hideMessageIcon">@drawable/ic_action_hide_message</item>
+        <item name="mySearchIcon">@drawable/ic_action_search</item>
+        <item name="newIcon">@drawable/ic_action_new</item>
+        <item name="postMessageIcon">@drawable/ic_action_new_message</item>
+        <item name="reloadIcon">@drawable/ic_action_refresh</item>
+        <item name="sendIcon">@drawable/ic_action_send_now</item>
     </style>
 
     <string-array name="theme_size_values">

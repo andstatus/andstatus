@@ -22,6 +22,8 @@
     android:orientation="vertical"
     tools:context=".backup.RestoreActivity" >
 
+    <include layout="@layout/action_bar" />
+
     <TextView
         android:id="@+id/label_backup_file"
         android:layout_width="match_parent"

@@ -101,7 +101,8 @@ public class MySettingsFragment extends PreferenceFragment implements
         showAuthorInTimeline();
         showCustomLocale();
         showThemeColor();
-        showActionBarColor();
+        showActionBarBackgroundColor();
+        showActionBarTextColor();
         showBackgroundColor();
         showThemeSize();
         showFilterHideMessagesBasedOnKeywords();
@@ -231,8 +232,12 @@ public class MySettingsFragment extends PreferenceFragment implements
         showListPreference(MyPreferences.KEY_BACKGROUND_COLOR);
     }
 
-    private void showActionBarColor() {
-        showListPreference(MyPreferences.KEY_ACTION_BAR_COLOR);
+    private void showActionBarBackgroundColor() {
+        showListPreference(MyPreferences.KEY_ACTION_BAR_BACKGROUND_COLOR);
+    }
+
+    private void showActionBarTextColor() {
+        showListPreference(MyPreferences.KEY_ACTION_BAR_TEXT_COLOR);
     }
 
     private void showDefaultTimeline() {
@@ -314,8 +319,12 @@ public class MySettingsFragment extends PreferenceFragment implements
                 case MyPreferences.KEY_BACKGROUND_COLOR:
                     showBackgroundColor();
                     break;
-                case MyPreferences.KEY_ACTION_BAR_COLOR:
-                    showActionBarColor();
+                case MyPreferences.KEY_ACTION_BAR_BACKGROUND_COLOR:
+                    showActionBarBackgroundColor();
+                    MySettingsActivity.restartMe(getActivity());
+                    break;
+                case MyPreferences.KEY_ACTION_BAR_TEXT_COLOR:
+                    showActionBarTextColor();
                     MySettingsActivity.restartMe(getActivity());
                     break;
                 case MyPreferences.KEY_SYNC_FREQUENCY_SECONDS:

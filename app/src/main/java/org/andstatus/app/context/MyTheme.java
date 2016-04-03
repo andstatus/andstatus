@@ -55,14 +55,20 @@ public class MyTheme {
         context.setTheme(themeId);
         Resources.Theme theme = context.getTheme();
 
+        int actionBarTextStyleId = R.style.ActionBarTextWhite;
         if (themeId != R.style.Theme_AndStatus_DeviceDefault) {
             theme.applyStyle(
-                    getStyleId(context, MyPreferences.getString(MyPreferences.KEY_ACTION_BAR_COLOR, ""), R.style.ActionBarMyBlue),
+                    getStyleId(context, MyPreferences.getString(MyPreferences.KEY_ACTION_BAR_BACKGROUND_COLOR, ""), R.style.ActionBarMyBlue),
                     false);
             theme.applyStyle(
                     getStyleId(context, MyPreferences.getString(MyPreferences.KEY_BACKGROUND_COLOR, ""), R.style.BackgroundColorBlack),
                     false);
+            actionBarTextStyleId = getStyleId(context, MyPreferences.getString(MyPreferences.KEY_ACTION_BAR_TEXT_COLOR, ""),
+                    R.style.ActionBarTextWhite);
+            theme.applyStyle(actionBarTextStyleId, false);
         }
+        theme.applyStyle(actionBarTextStyleId == R.style.ActionBarTextWhite ?
+                R.style.ActionBarIconsWhite : R.style.ActionBarIconsBlack, false);
         theme.applyStyle(
                 getStyleId(context, MyPreferences.getString(MyPreferences.KEY_THEME_SIZE, ""), R.style.StandardSize),
                 false);

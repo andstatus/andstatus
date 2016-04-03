@@ -20,8 +20,12 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.app.ActionBar;
+import android.support.v7.widget.Toolbar;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
+import android.view.ViewGroup;
 
 import com.example.android.supportv7.app.AppCompatPreferenceActivity;
 
@@ -60,10 +64,22 @@ public class MySettingsActivity extends AppCompatPreferenceActivity {
     protected void onCreate(Bundle savedInstanceState) {
         MyTheme.loadTheme(this);
         super.onCreate(savedInstanceState);
+        ViewGroup root = (ViewGroup) findViewById (android.R.id.content).getParent();
+        if (root != null) {
+            Toolbar bar = (Toolbar) LayoutInflater.from(this).inflate(R.layout.action_bar, root, false);
+            root.addView(bar, 0);
+            setSupportActionBar(bar);
+        }
+
         if (isRootScreen()) {
             MyContextHolder.initialize(this, this);
         }
-        this.getSupportActionBar().setTitle(getTitleResId());
+        ActionBar actionBar = this.getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setTitle(getTitleResId());
+            actionBar.setDisplayShowHomeEnabled(true);
+            actionBar.setDisplayHomeAsUpEnabled(true);
+        }
 
         boolean isNew = mInstanceId == 0;
         if (isNew) {

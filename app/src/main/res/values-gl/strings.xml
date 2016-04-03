@@ -25,7 +25,7 @@
   <string name="account_settings_action">Preferencias da conta AndStatus</string>
   <string name="account_settings_activity_title">Conta</string>
   <string name="account_settings_summary">Frecuencia da Sinc., notificacións, etc.</string>
-  <string name="action_bar_color_preference_title">Cor da barra de acción</string>
+  <string name="action_bar_background_color_preference_title">Cor da barra de acción</string>
   <string name="attach_images_summary_off">Botón \"Paperclip+\", utilizado para anexar imaxes as súas mensaxes, está oculto</string>
   <string name="attach_images_summary_on">Utilice o botón \"Paperclip+\" (no menú \"Anexar\") para anexar imaxes na súa mensaxe. Ou Compartir imaxe en AndStatus desde outro aplicativo</string>
   <string name="attach_images_title">Anexar imaxes nas miñas mensaxes</string>

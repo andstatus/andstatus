@@ -167,7 +167,7 @@ public class OriginEditor extends MyActivity {
         if (origin.isPersistent()) {
             title = origin.getName() + " - " + title;
         }
-        getSupportActionBar().setTitle(title);
+        setTitle(title);
     }
 
     void showSslModeSummary(SslModeEnum sslMode) {

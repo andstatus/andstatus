@@ -37,11 +37,15 @@
 		<attr name="dividerColor" format="reference|color" />
 		<attr name="actionBarColor" format="reference|color" />
 		<attr name="actionBarColorDark" format="reference|color" />
+		<attr name="actionBarColorAccent" format="reference|color" />
 		<attr name="myBackgroundColor" format="reference|color" />
 
 		<!-- Reference to a styled drawable, see  
  http://stackoverflow.com/questions/8041537/how-to-reference-style-attributes-from-a-drawable/13471695
 		-->
+		<attr name="andStatusActionBarTheme" format="reference" />
+		<attr name="andStatusActionBarPopupTheme" format="reference" />
+
         <attr name="attachIcon" format="reference" />
         <attr name="globalSearchIcon" format="reference" />
         <attr name="helpIcon" format="reference" />

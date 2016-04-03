@@ -335,10 +335,6 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
     }
     
     protected void updateTitle(String progress) {
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar == null) {
-            return;
-        }
         StringBuilder title = new StringBuilder(getCustomTitle());
         if (ma.isValid()) {
             I18n.appendWithSpace(title, "/ " + ma.getOrigin().getName());
@@ -348,8 +344,8 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
         if (!TextUtils.isEmpty(progress)) {
             I18n.appendWithSpace(title, progress);
         }
-        actionBar.setTitle(title.toString());
-        actionBar.setSubtitle(mSubtitle);
+        setTitle(title.toString());
+        setSubtitle(mSubtitle);
     }
 
     protected CharSequence getCustomTitle() {

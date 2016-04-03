@@ -100,6 +100,7 @@ public class AccountSettingsActivity extends MyActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        mLayoutId = R.layout.my_list;
         super.onCreate(savedInstanceState);
 
         MyContextHolder.initialize(this, this);
@@ -109,11 +110,11 @@ public class AccountSettingsActivity extends MyActivity {
         }
 
         getFragmentManager().beginTransaction()
-        .replace(android.R.id.content, new AccountSettingsFragment(), FRAGMENT_TAG)
+        .replace(R.id.myListParent, new AccountSettingsFragment(), FRAGMENT_TAG)
         .commit();
     }
     
-    private View findFramentViewById(int id) {
+    private View findFragmentViewById(int id) {
         Fragment fragment = getFragmentManager().findFragmentByTag(FRAGMENT_TAG);
         if (fragment != null) {
             View view = fragment.getView();
@@ -293,7 +294,7 @@ public class AccountSettingsActivity extends MyActivity {
         if (ma.isValid()) {
             title += " - " + ma.getAccountName();
         }
-        getSupportActionBar().setTitle(title);
+        setTitle(title);
     }
 
     private void showErrors() {
@@ -305,7 +306,7 @@ public class AccountSettingsActivity extends MyActivity {
 
     private void showOrigin() {
         MyAccount ma = state.getAccount();
-        TextView view = (TextView) findFramentViewById(R.id.origin_name);
+        TextView view = (TextView) findFragmentViewById(R.id.origin_name);
         if (view != null) {
             view.setText(this.getText(R.string.title_preference_origin_system)
                     .toString().replace("{0}", ma.getOrigin().getName())
@@ -318,7 +319,7 @@ public class AccountSettingsActivity extends MyActivity {
         showTextView(R.id.username_label,
                 ma.alternativeTermForResourceId(R.string.title_preference_username),
                 state.builder.isPersistent() || ma.isUsernameNeededToStartAddingNewAccount());
-        EditText usernameEditable = (EditText) findFramentViewById(R.id.username);
+        EditText usernameEditable = (EditText) findFragmentViewById(R.id.username);
         if (usernameEditable != null) {
             if (state.builder.isPersistent() || !ma.isUsernameNeededToStartAddingNewAccount()) {
                 usernameEditable.setVisibility(View.GONE);
@@ -363,7 +364,7 @@ public class AccountSettingsActivity extends MyActivity {
             }
         }
         showTextView(R.id.password_label, labelBuilder.toString(), isNeeded);
-        EditText passwordEditable = (EditText) findFramentViewById(R.id.password);
+        EditText passwordEditable = (EditText) findFragmentViewById(R.id.password);
         if (passwordEditable != null) {
             if (ma.getPassword().compareTo(passwordEditable.getText().toString()) != 0) {
                 passwordEditable.setText(ma.getPassword());
@@ -399,7 +400,7 @@ public class AccountSettingsActivity extends MyActivity {
                     break;
             }
         }
-        TextView state = (TextView) findFramentViewById(R.id.account_state);
+        TextView state = (TextView) findFragmentViewById(R.id.account_state);
         if (state != null) {
             state.setText(summary);
         }
@@ -462,7 +463,7 @@ public class AccountSettingsActivity extends MyActivity {
     private void showDefaultAccountCheckbox() {
         MyAccount ma = state.getAccount();
         boolean isDefaultAccount = ma.getUserId() == MyContextHolder.get().persistentAccounts().getDefaultAccountUserId();
-        CheckBox checkBox= (CheckBox) findFramentViewById(R.id.is_default_account);
+        CheckBox checkBox= (CheckBox) findFragmentViewById(R.id.is_default_account);
         if (checkBox != null) {
             checkBox.setVisibility(state.builder.isPersistent() ? View.VISIBLE : View.GONE);
             checkBox.setEnabled(!isDefaultAccount);
@@ -486,7 +487,7 @@ public class AccountSettingsActivity extends MyActivity {
     }
     
     private TextView showTextView(int textViewId, CharSequence text, boolean isVisible) {
-        TextView textView = (TextView) findFramentViewById(textViewId);
+        TextView textView = (TextView) findFragmentViewById(textViewId);
         if (textView != null) {
             if (!TextUtils.isEmpty(text)) {
                 textView.setText(text);
@@ -564,7 +565,7 @@ public class AccountSettingsActivity extends MyActivity {
 
     private void updateChangedFields() {
         if (!state.builder.isPersistent()) {
-            EditText usernameEditable = (EditText) findFramentViewById(R.id.username);
+            EditText usernameEditable = (EditText) findFragmentViewById(R.id.username);
             if (usernameEditable != null) {
                 String username = usernameEditable.getText().toString();
                 if (username.compareTo(state.getAccount().getUsername()) != 0) {
@@ -578,7 +579,7 @@ public class AccountSettingsActivity extends MyActivity {
                 }
             }
         }
-        EditText passwordEditable = (EditText) findFramentViewById(R.id.password);
+        EditText passwordEditable = (EditText) findFragmentViewById(R.id.password);
         if (passwordEditable != null) {
             if (state.getAccount().getPassword().compareTo(passwordEditable.getText().toString()) != 0) {
                 state.builder.setPassword(passwordEditable.getText().toString());

@@ -25,7 +25,7 @@
   <string name="account_settings_action">Configuración de la cuenta AndStatus</string>
   <string name="account_settings_activity_title">Cuenta</string>
   <string name="account_settings_summary">Sicronización de frecuencia, notificaciones , etc.</string>
-  <string name="action_bar_color_preference_title">Color de la barra de estado</string>
+  <string name="action_bar_background_color_preference_title">Color de la barra de estado</string>
   <string name="attach_images_summary_off">El botón \"Paperclip+\", usado para añadir imágenes a tus publicaciones, está oculto</string>
   <string name="attach_images_summary_on">Usa el botón \"Paperclip+\" (\"Adjuntar\" en el menú del objeto) para añadir imágenes a tu mensaje. O comparte una imagen a AndStatus desde otra aplicación</string>
   <string name="attach_images_title">Adjuntar imágenes a mis mensajes</string>
