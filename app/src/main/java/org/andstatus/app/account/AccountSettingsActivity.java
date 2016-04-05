@@ -77,7 +77,6 @@ import oauth.signpost.exception.OAuthNotAuthorizedException;
  */
 public class AccountSettingsActivity extends MyActivity {
     private static final String TAG = AccountSettingsActivity.class.getSimpleName();
-    private static final String FRAGMENT_TAG = AccountSettingsFragment.class.getSimpleName();
 
     /**
      * This is single list of (in fact, enums...) of Message/Dialog IDs
@@ -100,7 +99,7 @@ public class AccountSettingsActivity extends MyActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        mLayoutId = R.layout.my_list;
+        mLayoutId = R.layout.account_settings_main;
         super.onCreate(savedInstanceState);
 
         MyContextHolder.initialize(this, this);
@@ -108,14 +107,10 @@ public class AccountSettingsActivity extends MyActivity {
         if (HelpActivity.startFromActivity(this)) {
             return;
         }
-
-        getFragmentManager().beginTransaction()
-        .replace(R.id.myListParent, new AccountSettingsFragment(), FRAGMENT_TAG)
-        .commit();
     }
     
     private View findFragmentViewById(int id) {
-        Fragment fragment = getFragmentManager().findFragmentByTag(FRAGMENT_TAG);
+        Fragment fragment = getFragmentManager().findFragmentById(R.id.fragmentOne);
         if (fragment != null) {
             View view = fragment.getView();
             if (view != null) {
@@ -259,7 +254,7 @@ public class AccountSettingsActivity extends MyActivity {
                 startMyPreferenceActivity();
                 break;
             case R.id.remove_account_menu_id:
-                DialogFactory.showYesCancelDialog(getFragmentManager().findFragmentByTag(FRAGMENT_TAG), R.string.remove_account_dialog_title, 
+                DialogFactory.showYesCancelDialog(getFragmentManager().findFragmentById(R.id.fragmentOne), R.string.remove_account_dialog_title,
                         R.string.remove_account_dialog_text, 
                         ActivityRequestCode.REMOVE_ACCOUNT);                
             default:
@@ -274,7 +269,8 @@ public class AccountSettingsActivity extends MyActivity {
     }
     
     private void updateScreen() {
-        if (getFragmentManager().findFragmentByTag(FRAGMENT_TAG) == null) {
+        if (getFragmentManager().findFragmentById(R.id.fragmentOne) == null) {
+            MyLog.v(this, "No fragment found");
             return;
         }
         showTitle();

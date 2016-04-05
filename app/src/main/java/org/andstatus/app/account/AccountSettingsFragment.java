@@ -75,7 +75,8 @@ public class AccountSettingsFragment extends Fragment {
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
-        ((AccountSettingsActivity) getActivity()).restoreState(getActivity().getIntent(), "onCreateView");
+        ((AccountSettingsActivity) getActivity()).restoreState(getActivity().getIntent(),
+                "onActivityCreated");
         super.onActivityCreated(savedInstanceState);
     }
 
