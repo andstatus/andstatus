@@ -39,50 +39,40 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author yvolk@yurivolkov.com
  */
 public class MyImageCache {
-    private static final int ATTACHED_IMAGES_CACHE_SIZE_MINIMUM = 1024 * 1024 * 20;
     private static final float ATTACHED_IMAGES_CACHE_PART_OF_AVAILABLE_MEMORY = 0.1f;
-    static final MyDrawableCache attachedImagesCache =
-            new MyDrawableCache("Attached images", 5000, ATTACHED_IMAGES_CACHE_SIZE_MINIMUM);
-
-    private static final float AVATARS_CACHE_PART_OF_ATTACHED = 0.2f;
-    private static final MyDrawableCache avatarsCache =
-            new MyDrawableCache("Avatars", 1000,
-                    Math.round(ATTACHED_IMAGES_CACHE_SIZE_MINIMUM * AVATARS_CACHE_PART_OF_ATTACHED));
+    static volatile MyDrawableCache attachedImagesCache;
+    private static final float AVATARS_CACHE_PART_OF_ATTACHED = 0.1f;
+    private static volatile MyDrawableCache avatarsCache;
 
     private  MyImageCache() {
         // Empty
     }
 
-    public static void initialize(Context context) {
-        attachedImagesCache.evictAll();
-        int attachedImageCacheSize = calcAttachedImagesCacheSize(context);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            attachedImagesCache.resize(attachedImageCacheSize);
+    public static synchronized void initialize(Context context) {
+        styledDrawables.clear();
+        if (attachedImagesCache != null) {
+            return;
         }
         Point displaySize = getDisplaySize(context);
-        attachedImagesCache.setMaxBounds(displaySize.x,
-                (int) (AttachedImageFile.MAX_ATTACHED_IMAGE_PART * displaySize.y));
-
-        avatarsCache.evictAll();
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            int avatarsCacheSize = Math.round(
-                    AVATARS_CACHE_PART_OF_ATTACHED * attachedImageCacheSize);
-            avatarsCache.resize(avatarsCacheSize);
-        }
         float displayDensity = context.getResources().getDisplayMetrics().density;
-        int avatarSize = Math.round(AvatarFile.AVATAR_SIZE_DIP * displayDensity);
-        avatarsCache.setMaxBounds(avatarSize, avatarSize);
+        int attachedImageSize = (int) Math.round(AttachedImageFile.MAX_ATTACHED_IMAGE_PART *
+                (displaySize.x > displaySize.y ? displaySize.x : displaySize.y) / displayDensity);
+        int attachedImageCacheSize = calcCacheSize(context, attachedImageSize,
+                ATTACHED_IMAGES_CACHE_PART_OF_AVAILABLE_MEMORY);
+        attachedImagesCache = new MyDrawableCache(context, "Attached images", attachedImageSize,
+                attachedImageCacheSize);
 
-        styledDrawables.clear();
+        int avatarSize = AvatarFile.AVATAR_SIZE_DIP;
+        int avatarsCacheSize = calcCacheSize(context, avatarSize,
+                AVATARS_CACHE_PART_OF_ATTACHED * ATTACHED_IMAGES_CACHE_PART_OF_AVAILABLE_MEMORY);
+        avatarsCache = new MyDrawableCache(context, "Avatars", avatarSize, avatarsCacheSize);
     }
 
-    private static int calcAttachedImagesCacheSize(Context context) {
+    private static int calcCacheSize(Context context, int imageSize, float partOfAvailableMemory) {
         ActivityManager.MemoryInfo memInfo = getMemoryInfo(context);
         int size = Math.round(
-                ATTACHED_IMAGES_CACHE_PART_OF_AVAILABLE_MEMORY * memInfo.availMem);
-        if (size < ATTACHED_IMAGES_CACHE_SIZE_MINIMUM) {
-            size = 0;
-        }
+                partOfAvailableMemory * memInfo.availMem
+                        / imageSize / imageSize / MyDrawableCache.BYTES_PER_PIXEL);
         return size;
     }
 
