@@ -14,15 +14,16 @@
  * limitations under the License.
  */
 
-package org.andstatus.app;
+package org.andstatus.app.graphics;
 
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.ImageView;
 
+import org.andstatus.app.R;
 import org.andstatus.app.data.AttachedImageFile;
-import org.andstatus.app.data.MyImageCache;
+import org.andstatus.app.graphics.MyImageCache;
 import org.andstatus.app.util.MyLog;
 
 /**

@@ -1,4 +1,4 @@
-package org.andstatus.app.data;
+package org.andstatus.app.graphics;
 
 import android.graphics.BitmapFactory;
 import android.graphics.Point;
@@ -6,6 +6,8 @@ import android.test.InstrumentationTestCase;
 
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.graphics.MyDrawableCache;
+import org.andstatus.app.graphics.MyImageCache;
 
 public class AttachedImageScalingTest extends InstrumentationTestCase {
     @Override

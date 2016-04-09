@@ -24,7 +24,7 @@ import android.widget.ImageView;
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.data.MyImageCache;
+import org.andstatus.app.graphics.MyImageCache;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyUrlSpan;
 import org.andstatus.app.widget.MyBaseAdapter;

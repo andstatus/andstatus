@@ -59,7 +59,7 @@
             style="@style/messageBodyAppearance"
             tools:text="This is a sample message body, which is long enough to fill more than one line on a phone"/>
 
-        <org.andstatus.app.AttachedImageView
+        <org.andstatus.app.graphics.AttachedImageView
             android:id="@+id/attached_image"
             android:layout_width="match_parent"
             android:layout_height="match_parent"

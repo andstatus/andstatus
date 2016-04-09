@@ -16,16 +16,14 @@
 
 package org.andstatus.app.data;
 
-import android.content.Context;
 import android.database.Cursor;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.NonNull;
 
 import org.andstatus.app.R;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.context.MyTheme;
-import org.andstatus.app.util.MyLog;
+import org.andstatus.app.graphics.MyDrawableCache;
+import org.andstatus.app.graphics.MyImageCache;
 
 public class AvatarFile {
     private final long userId;

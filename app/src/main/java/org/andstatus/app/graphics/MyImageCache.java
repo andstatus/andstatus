@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.andstatus.app.data;
+package org.andstatus.app.graphics;
 
 import android.annotation.TargetApi;
 import android.app.ActivityManager;
@@ -30,6 +30,9 @@ import android.view.WindowManager;
 
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyTheme;
+import org.andstatus.app.data.AttachedImageFile;
+import org.andstatus.app.data.AvatarFile;
+import org.andstatus.app.graphics.MyDrawableCache;
 import org.andstatus.app.util.I18n;
 
 import java.util.Map;

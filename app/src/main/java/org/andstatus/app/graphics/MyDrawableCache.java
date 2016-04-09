@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.andstatus.app.data;
+package org.andstatus.app.graphics;
 
 import android.content.Context;
 import android.graphics.Bitmap;

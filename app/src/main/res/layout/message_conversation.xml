@@ -66,7 +66,7 @@
             android:layout_height="wrap_content"
             style="@style/messageBodyAppearance" />
 
-        <org.andstatus.app.AttachedImageView
+        <org.andstatus.app.graphics.AttachedImageView
             android:id="@+id/attached_image"
             android:layout_width="match_parent"
             android:layout_height="match_parent"

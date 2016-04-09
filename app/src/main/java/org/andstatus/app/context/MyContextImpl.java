@@ -31,7 +31,7 @@ import org.andstatus.app.account.PersistentAccounts;
 import org.andstatus.app.data.AssertionData;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyDatabaseConverterController;
-import org.andstatus.app.data.MyImageCache;
+import org.andstatus.app.graphics.MyImageCache;
 import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.net.http.TlsSniSocketFactory;

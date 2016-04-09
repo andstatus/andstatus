@@ -25,9 +25,11 @@ import android.support.annotation.Nullable;
 import android.view.View;
 import android.widget.ImageView;
 
-import org.andstatus.app.AttachedImageView;
+import org.andstatus.app.graphics.AttachedImageView;
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.graphics.MyDrawableCache;
+import org.andstatus.app.graphics.MyImageCache;
 import org.andstatus.app.msg.ActionableMessageList;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
