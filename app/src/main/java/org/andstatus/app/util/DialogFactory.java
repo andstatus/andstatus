@@ -48,14 +48,23 @@ public class DialogFactory {
 
     /** See http://stackoverflow.com/questions/10285047/showdialog-deprecated-whats-the-alternative */
     public static void showOkDialog(Fragment activity, int titleId, int messageId, final int requestCode) {
-        DialogFragment dialog = new DialogFragment() {
-            @Override
-            public Dialog onCreateDialog(Bundle savedInstanceState) {
-                Bundle args = getArguments();
-                String title = args.getString(DIALOG_TITLE_KEY, "");
-                String message = args.getString(DIALOG_MESSAGE_KEY, "");
+        DialogFragment dialog = new OkDialogFragment();
+        Bundle args = new Bundle();
+        args.putCharSequence(DIALOG_TITLE_KEY, activity.getText(titleId));
+        args.putCharSequence(DIALOG_MESSAGE_KEY, activity.getText(messageId));
+        dialog.setArguments(args);
+        dialog.setTargetFragment(activity, requestCode);
+        dialog.show(activity.getFragmentManager(), OK_DIALOG_TAG);
+    }
 
-                return new AlertDialog.Builder(getActivity())
+    public static class OkDialogFragment extends DialogFragment {
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+            Bundle args = getArguments();
+            String title = args.getString(DIALOG_TITLE_KEY, "");
+            String message = args.getString(DIALOG_MESSAGE_KEY, "");
+
+            return new AlertDialog.Builder(getActivity())
                     .setIcon(android.R.drawable.ic_dialog_alert)
                     .setTitle(title)
                     .setMessage(message)
@@ -66,27 +75,11 @@ public class DialogFactory {
                         }
                     })
                     .create();
-            }
-        };
-        Bundle args = new Bundle();
-        args.putCharSequence(DIALOG_TITLE_KEY, activity.getText(titleId));
-        args.putCharSequence(DIALOG_MESSAGE_KEY, activity.getText(messageId));
-        dialog.setArguments(args);
-        dialog.setTargetFragment(activity, requestCode);
-        dialog.show(activity.getFragmentManager(), OK_DIALOG_TAG);
+        }
     }
 
     public static void showYesCancelDialog(Fragment activity, int titleId, int messageId, final ActivityRequestCode requestCode) {
-        DialogFragment dialog = new DialogFragment() {
-            @Override
-            public Dialog onCreateDialog(Bundle savedInstanceState) {
-                Bundle args = getArguments();
-                String title = args.getString(DialogFactory.DIALOG_TITLE_KEY, "");
-                String message = args.getString(DialogFactory.DIALOG_MESSAGE_KEY, "");
-
-                return DialogFactory.newYesCancelDialog(this, title, message);
-            }
-        };
+        DialogFragment dialog = new YesCancelDialog();
         Bundle args = new Bundle();
         args.putCharSequence(DialogFactory.DIALOG_TITLE_KEY, 
                 activity.getText(titleId));
@@ -97,7 +90,18 @@ public class DialogFactory {
         dialog.setTargetFragment(activity, requestCode.id);
         dialog.show(activity.getFragmentManager(), DialogFactory.YES_CANCEL_DIALOG_TAG);
     }
-    
+
+    public static class YesCancelDialog extends DialogFragment {
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+            Bundle args = getArguments();
+            String title = args.getString(DialogFactory.DIALOG_TITLE_KEY, "");
+            String message = args.getString(DialogFactory.DIALOG_MESSAGE_KEY, "");
+
+            return DialogFactory.newYesCancelDialog(this, title, message);
+        }
+    }
+
     public static Dialog newYesCancelDialog(final DialogFragment dialogFragment, String title, String message) {
         Dialog dlg;
         AlertDialog.Builder builder = new AlertDialog.Builder(dialogFragment.getActivity());
