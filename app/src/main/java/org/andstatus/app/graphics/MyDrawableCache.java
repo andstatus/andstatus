@@ -20,19 +20,19 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Point;
+import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
-import android.os.SystemClock;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.LruCache;
 
 import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.graphics.BitmapSubsetDrawable;
 import org.andstatus.app.util.MyLog;
 
 import java.io.File;
@@ -162,6 +162,7 @@ public class MyDrawableCache extends LruCache<String, BitmapSubsetDrawable> {
             return null ;
         }
         Canvas canvas = new Canvas(background);
+        canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
         canvas.drawBitmap(bitmap, 0 , 0, null);
         bitmap.recycle();
         return new BitmapSubsetDrawable(background, srcRect);
