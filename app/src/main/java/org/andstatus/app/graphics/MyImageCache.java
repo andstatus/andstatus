@@ -70,7 +70,7 @@ public class MyImageCache {
         attachedImagesCache = new MyDrawableCache(context, "Attached images", attachedImageSize,
                 attachedImageCacheSize);
 
-        int avatarSize = AvatarFile.AVATAR_SIZE_DIP;
+        int avatarSize = (int) Math.round(AvatarFile.AVATAR_SIZE_DIP * displayDensity);
         int avatarsCacheSize = calcCacheSize(context, avatarSize,
                 AVATARS_CACHE_PART_OF_ATTACHED * ATTACHED_IMAGES_CACHE_PART_OF_AVAILABLE_MEMORY);
         if (avatarsCacheSize > AVATARS_CACHE_SIZE_MAX) {
