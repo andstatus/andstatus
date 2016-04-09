@@ -193,6 +193,12 @@ public class TimelineListParameters {
         mSearchQuery = "";
     }
 
+    public void switchTimelineType(TimelineType timelineType) {
+        mTimelineType = timelineType;
+        mSelectedUserId = 0;
+        mSearchQuery = "";
+    }
+
     @Override
     public String toString() {
         return MyLog.formatKeyValue(this,

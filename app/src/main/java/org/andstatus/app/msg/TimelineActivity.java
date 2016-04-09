@@ -129,6 +129,16 @@ public class TimelineActivity extends LoadableListActivity implements
         initializeDrawer();
         getListView().setOnScrollListener(this);
 
+        View view = findViewById(R.id.my_action_bar);
+        if (view != null) {
+            view.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    onSwitchToDefaultTimelineButtonClick(v);
+                }
+            });
+        }
+
         if (savedInstanceState != null) {
             restoreActivityState(savedInstanceState);
         } else {
@@ -167,9 +177,6 @@ public class TimelineActivity extends LoadableListActivity implements
 
         mDrawerLayout.setDrawerListener(mDrawerToggle);
         mDrawerToggle.setHomeAsUpIndicator(R.drawable.icon);
-
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setHomeButtonEnabled(true);
     }
 
     private void restoreActivityState(@NonNull Bundle savedInstanceState) {
@@ -186,8 +193,10 @@ public class TimelineActivity extends LoadableListActivity implements
      */
     public void onSwitchToDefaultTimelineButtonClick(View item) {
         closeDrawer();
-        paramsNew.setAtHome();
-        mContextMenu.switchTimelineActivity(paramsNew.getContentUri());
+        if (!paramsNew.isAtHome()) {
+            paramsNew.setAtHome();
+            mContextMenu.switchTimelineActivity(paramsNew.getContentUri());
+        }
     }
 
     /**
@@ -354,7 +363,7 @@ public class TimelineActivity extends LoadableListActivity implements
                 // selected item
                 TimelineType type = selector.positionToType(which);
                 if (type != TimelineType.UNKNOWN) {
-                    paramsNew.mTimelineType = type;
+                    paramsNew.switchTimelineType(type);
                     mContextMenu.switchTimelineActivity(paramsNew.getContentUri());
                 }
             }
@@ -572,6 +581,7 @@ public class TimelineActivity extends LoadableListActivity implements
         paramsNew.mSelectedUserId = 0;
         paramsNew.whichPage = WhichPage.load(
                 intentNew.getStringExtra(IntentExtra.WHICH_PAGE.key), WhichPage.CURRENT);
+        paramsNew.mSearchQuery = "";
         parseAppSearchData(intentNew);
         if (paramsNew.getTimelineType() == TimelineType.UNKNOWN) {
             paramsNew.parseIntentData(intentNew);
