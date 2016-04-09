@@ -43,8 +43,10 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class MyImageCache {
     private static final float ATTACHED_IMAGES_CACHE_PART_OF_AVAILABLE_MEMORY = 0.1f;
+    public static final int ATTACHED_IMAGES_CACHE_SIZE_MAX = 50;
+    private static final float AVATARS_CACHE_PART_OF_ATTACHED = 0.1f;
+    public static final int AVATARS_CACHE_SIZE_MAX = 700;
     static volatile MyDrawableCache attachedImagesCache;
-    private static final float AVATARS_CACHE_PART_OF_ATTACHED = 0.05f;
     private static volatile MyDrawableCache avatarsCache;
 
     private  MyImageCache() {
@@ -62,14 +64,17 @@ public class MyImageCache {
                 (displaySize.x > displaySize.y ? displaySize.y : displaySize.x) / displayDensity);
         int attachedImageCacheSize = calcCacheSize(context, attachedImageSize,
                 ATTACHED_IMAGES_CACHE_PART_OF_AVAILABLE_MEMORY);
+        if (attachedImageCacheSize > ATTACHED_IMAGES_CACHE_SIZE_MAX) {
+            attachedImageCacheSize = ATTACHED_IMAGES_CACHE_SIZE_MAX;
+        }
         attachedImagesCache = new MyDrawableCache(context, "Attached images", attachedImageSize,
                 attachedImageCacheSize);
 
         int avatarSize = AvatarFile.AVATAR_SIZE_DIP;
         int avatarsCacheSize = calcCacheSize(context, avatarSize,
                 AVATARS_CACHE_PART_OF_ATTACHED * ATTACHED_IMAGES_CACHE_PART_OF_AVAILABLE_MEMORY);
-        if (avatarsCacheSize > 1000) {
-            avatarsCacheSize = 1000;
+        if (avatarsCacheSize > AVATARS_CACHE_SIZE_MAX) {
+            avatarsCacheSize = AVATARS_CACHE_SIZE_MAX;
         }
         avatarsCache = new MyDrawableCache(context, "Avatars", avatarSize, avatarsCacheSize);
     }

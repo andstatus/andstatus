@@ -183,15 +183,15 @@ public class QueueViewer extends MyListActivity implements MyServiceEventsListen
     
     private List<QueueData> newListData() {
         List<QueueData> listData = new ArrayList<QueueData>();
-        showSystemInfo(listData);
         loadQueue(listData, QueueType.CURRENT);
         loadQueue(listData, QueueType.RETRY);
         loadQueue(listData, QueueType.ERROR);
+        showSystemInfo(listData);
         return listData;
     }
 
     private void showSystemInfo(List<QueueData> listData) {
-        CommandData commandData = new CommandData(CommandEnum.EMPTY, "");
+        CommandData commandData = new CommandData(CommandEnum.EMPTY, "System Info");
         commandData.getResult().setMessage(MyContextHolder.getSystemInfo(this));
         listData.add(QueueData.getNew(QueueType.TEST, commandData));
     }
