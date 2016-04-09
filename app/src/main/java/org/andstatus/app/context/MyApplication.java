@@ -16,11 +16,15 @@
 
 package org.andstatus.app.context;
 
+import android.app.ActivityManager;
 import android.app.Application;
+import android.content.Context;
 import android.content.res.Configuration;
 import android.database.DatabaseErrorHandler;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteDatabase.CursorFactory;
+import android.support.annotation.NonNull;
+import android.text.TextUtils;
 
 import org.acra.ACRA;
 import org.acra.ReportingInteractionMode;
@@ -29,6 +33,7 @@ import org.andstatus.app.R;
 import org.andstatus.app.util.MyLog;
 
 import java.io.File;
+import java.util.List;
 
 @ReportsCrashes(mode = ReportingInteractionMode.DIALOG,
         mailTo = "andstatus@gmail.com",
@@ -39,36 +44,54 @@ import java.io.File;
  * @author yvolk@yurivolkov.com
  */
 public class MyApplication extends Application {
+    public volatile boolean isAcraProcess = false;
 
     @Override
     public void onCreate() {
         super.onCreate();
-        MyLog.v(this, "onCreate started");
-        MyContextHolder.storeContextIfNotPresent(this, this);
-        MyPreferences.setLocale(this);
-
-        ACRA.init(this);
+        String processName = getCurrentProcessName(this);
+        isAcraProcess = processName.endsWith(":acra");
+        MyLog.v(this, "onCreate " + (isAcraProcess ? "ACRA process"
+                : "'" + processName + "' process"));
+        if (!isAcraProcess) {
+            MyContextHolder.storeContextIfNotPresent(this, this);
+            MyPreferences.setLocale(this);
+        }
     }
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(MyPreferences.onConfigurationChanged(this, newConfig));
+        super.onConfigurationChanged(isAcraProcess ? newConfig :
+                MyPreferences.onConfigurationChanged(this, newConfig));
     }
     
     @Override
     public File getDatabasePath(String name) {
-        return MyPreferences.getDatabasePath(name, null);
+        return isAcraProcess ? super.getDatabasePath(name) :
+                MyPreferences.getDatabasePath(name, null);
+    }
+
+    @Override
+    protected void attachBaseContext(Context base) {
+        MyLog.v(this, "attachBaseContext started" + (isAcraProcess ? ". ACRA process" : ""));
+        super.attachBaseContext(base);
+        ACRA.init(this);
     }
 
     @Override
     public SQLiteDatabase openOrCreateDatabase(String name, int mode, CursorFactory factory) {
+        if (isAcraProcess) {
+            return super.openOrCreateDatabase(name, mode, factory);
+        }
         SQLiteDatabase db = null;
         File dbAbsolutePath = getDatabasePath(name);
         if (dbAbsolutePath != null) {
-            db = SQLiteDatabase.openDatabase(dbAbsolutePath.getPath(), factory, SQLiteDatabase.CREATE_IF_NECESSARY + SQLiteDatabase.OPEN_READWRITE );
+            db = SQLiteDatabase.openDatabase(dbAbsolutePath.getPath(), factory,
+                    SQLiteDatabase.CREATE_IF_NECESSARY + SQLiteDatabase.OPEN_READWRITE );
         }
         if (MyLog.isVerboseEnabled()) {
-            MyLog.v(this, "openOrCreateDatabase, name=" + name + ( db!=null ? " opened '" + db.getPath() + "'" : " NOT opened" ));
+            MyLog.v(this, "openOrCreateDatabase, name=" + name + ( db!=null ? " opened '"
+                    + db.getPath() + "'" : " NOT opened" ));
         }
         return db;
     }
@@ -80,13 +103,32 @@ public class MyApplication extends Application {
     @Override
     public SQLiteDatabase openOrCreateDatabase(String name, int mode, CursorFactory factory,
             DatabaseErrorHandler errorHandler) {
-        
+        if (isAcraProcess) {
+            return super.openOrCreateDatabase(name, mode, factory, errorHandler);
+        }
         return openOrCreateDatabase(name, mode, factory);
     }
 
     @Override
     public String toString() {
-        return "AndStatus. " + super.toString();
+        return "AndStatus. " + (isAcraProcess ? "acra." : "") + super.toString();
+    }
+
+    @NonNull
+    private static String getCurrentProcessName(@NonNull Application app) {
+        final int processId = android.os.Process.myPid();
+        final ActivityManager manager = (ActivityManager) app.getSystemService(Context.ACTIVITY_SERVICE);
+        List<ActivityManager.RunningAppProcessInfo> processInfos = manager.getRunningAppProcesses();
+        String processName = null;
+        if (processInfos != null) {
+            for (final ActivityManager.RunningAppProcessInfo processInfo : processInfos) {
+                if (processInfo.pid == processId) {
+                    processName = processInfo.processName;
+                    break;
+                }
+            }
+        }
+        return TextUtils.isEmpty(processName) ? "?" : processName;
     }
 
 }

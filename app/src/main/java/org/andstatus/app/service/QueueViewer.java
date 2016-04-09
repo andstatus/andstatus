@@ -205,7 +205,7 @@ public class QueueViewer extends MyListActivity implements MyServiceEventsListen
     }
 
     private ListAdapter newListAdapter(List<QueueData> listData) {
-        List<Map<String, String>> list = new ArrayList<Map<String, String>>();
+        List<Map<String, String>> list = new ArrayList<>();
         for (QueueData queueData : listData) {
             Map<String, String> map = new HashMap<String, String>();
             map.put(KEY_QUEUE_TYPE, queueData.queueType.getAcronym());

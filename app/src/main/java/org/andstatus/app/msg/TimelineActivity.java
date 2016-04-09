@@ -306,9 +306,9 @@ public class TimelineActivity extends LoadableListActivity implements
         }
         hideLoading(method);
         hideSyncing(method);
+        crashTest();
         mMessageEditor.saveAsBeingEditedAndHide();
         saveListPosition();
-        crashTest();
         super.onPause();
     }
 
