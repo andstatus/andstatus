@@ -28,7 +28,7 @@
 
     <release android:versionName="25.00" android:versionCode="167"
              versionDate="2016-04-09"
-             versionTitle="Quick navigation to the Default Timeline">
+             versionTitle="Quick navigation to the Default Timeline and Clickable links">
         <changes>
             <change>Icon to open the Navigation Drawer (on the Action bar) is changing to
                 &quot;AndStatus icon&quot; when exactly at Default Timeline (i.e. when also
@@ -39,7 +39,16 @@
             </change>
             <change>Added &quot;Switch to Default Timeline&quot; item to the Navigation Drawer to
                 ease return to the Default Timeline, Account and Combined settings.</change>
-            <change>Clicking the Action Bar title in a Timeline view switches to Default Timeline also.</change>
+            <change>Clicking the Action Bar title in a Timeline view switches to Default Timeline
+                also.</change>
+            <change>Links in a Timeline are clickable now. You don't need to &quot;Open
+                Conversation&quot; anymore to click any of the links in a message body.
+                In order to open Context Menu of a message,  tap on an Avatar or on any text without
+                a link.<br/>
+                Please note that sometimes two taps on a message text are needed to open a Context
+                Menu. We understand this a sort of trade-off, which we had to accept by making links
+                clickable. Anyway, tap on an Avatar or on a User name works from the first tap.
+            </change>
             <change>Added &quot;Action bar text and icon color&quot; option to
                 the &quot;Appearance&quot; section of AndStatus settings. It has two values:
                 &quot;White&quot; (default) and &quot;Black&quot;. This allows to have

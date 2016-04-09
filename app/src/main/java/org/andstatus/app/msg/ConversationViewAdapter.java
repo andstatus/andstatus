@@ -77,21 +77,21 @@ public class ConversationViewAdapter extends MyBaseAdapter {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         final String method = "getView";
-        ConversationViewItem oMsg = oMsgs.get(position);
+        ConversationViewItem item = oMsgs.get(position);
         if (MyLog.isVerboseEnabled()) {
-            MyLog.v(this, method + ": msgId:" + oMsg.getMsgId() + ", author:" + oMsg.mAuthor);
+            MyLog.v(this, method + ": msgId:" + item.getMsgId() + ", author:" + item.mAuthor);
         }
         View view = convertView == null ? newView() : convertView;
         view.setOnCreateContextMenuListener(contextMenu);
         view.setOnClickListener(this);
         setPosition(view, position);
 
-        setIndent(oMsg, view);
-        setMessageAuthor(oMsg, view);
-        setMessageNumber(oMsg, view);
-        setMessageBody(oMsg, view);
-        setMessageDetails(oMsg, view);
-        setFavorited(oMsg, view);
+        showIndent(item, view);
+        showMessageAuthor(item, view);
+        showMessageNumber(item, view);
+        showMessageBody(item, view);
+        showMessageDetails(item, view);
+        showFavorited(item, view);
         return view;
     }
 
@@ -104,14 +104,14 @@ public class ConversationViewAdapter extends MyBaseAdapter {
         return inflater.inflate(layoutResource, null);
     }
     
-    private void setIndent(ConversationViewItem oMsg, View messageView) {
+    private void showIndent(ConversationViewItem item, View messageView) {
         float displayDensity = context.getResources().getDisplayMetrics().density;
         // See  http://stackoverflow.com/questions/2238883/what-is-the-correct-way-to-specify-dimensions-in-dip-from-java-code
         int indent0 = (int)( 10 * displayDensity);
-        int indentPixels = indent0 * oMsg.mIndentLevel;
+        int indentPixels = indent0 * item.mIndentLevel;
 
         LinearLayout messageIndented = (LinearLayout) messageView.findViewById(R.id.message_indented);
-        if (oMsg.getMsgId() == selectedMessageId  && oMsgs.size() > 1) {
+        if (item.getMsgId() == selectedMessageId  && oMsgs.size() > 1) {
             messageIndented.setBackground(MyImageCache.getStyledDrawable(
                     R.drawable.current_message_background_light,
                     R.drawable.current_message_background));
@@ -119,11 +119,11 @@ public class ConversationViewAdapter extends MyBaseAdapter {
             messageIndented.setBackgroundResource(0);
         }
 
-        oMsg.mImageFile.showAttachedImage(contextMenu.messageList,
+        item.mImageFile.showAttachedImage(contextMenu.messageList,
                 (ImageView) messageView.findViewById(R.id.attached_image));
 
         int viewToTheLeftId = 0;
-        if (oMsg.mIndentLevel > 0) {
+        if (item.mIndentLevel > 0) {
             viewToTheLeftId = R.id.indent_image;
         }
         View divider = messageView.findViewById(R.id.divider);
@@ -137,7 +137,7 @@ public class ConversationViewAdapter extends MyBaseAdapter {
         setIndentView(messageIndented, indentPixels);
 
         if (MyPreferences.showAvatars()) {
-            indentPixels = setAvatar(oMsg, messageIndented, viewToTheLeftId, indentPixels);
+            indentPixels = setAvatar(item, messageIndented, viewToTheLeftId, indentPixels);
         }
         messageIndented.setPadding(indentPixels + 6, 2, 6, 2);
     }
@@ -186,32 +186,32 @@ public class ConversationViewAdapter extends MyBaseAdapter {
         return indentPixels;
     }
 
-    private void setMessageAuthor(ConversationViewItem oMsg, View messageView) {
+    private void showMessageAuthor(ConversationViewItem item, View messageView) {
         TextView author = (TextView) messageView.findViewById(R.id.message_author);
-        author.setText(oMsg.mAuthor);
+        author.setText(item.mAuthor);
     }
 
-    private void setMessageNumber(ConversationViewItem oMsg, View messageView) {
+    private void showMessageNumber(ConversationViewItem item, View messageView) {
         TextView number = (TextView) messageView.findViewById(R.id.message_number);
-        number.setText(Integer.toString(oMsg.mHistoryOrder));
+        number.setText(Integer.toString(item.mHistoryOrder));
     }
 
-    private void setMessageBody(ConversationViewItem oMsg, View messageView) {
+    private void showMessageBody(ConversationViewItem item, View messageView) {
         TextView body = (TextView) messageView.findViewById(R.id.message_body);
-        MyUrlSpan.showText(body, oMsg.mBody, true);
+        MyUrlSpan.showText(body, item.mBody, true);
         body.setOnClickListener(this);
     }
 
-    private void setMessageDetails(ConversationViewItem oMsg, View messageView) {
-        String messageDetails = RelativeTime.getDifference(context, oMsg.mCreatedDate);
-        if (!SharedPreferencesUtil.isEmpty(oMsg.mVia)) {
+    private void showMessageDetails(ConversationViewItem item, View messageView) {
+        String messageDetails = RelativeTime.getDifference(context, item.mCreatedDate);
+        if (!SharedPreferencesUtil.isEmpty(item.mVia)) {
             messageDetails += " " + String.format(
                     context.getText(R.string.message_source_from).toString(),
-                    oMsg.mVia);
+                    item.mVia);
         }
         String inReplyToName = "";
-        if (!TextUtils.isEmpty(oMsg.mInReplyToName)) {
-            inReplyToName = oMsg.mInReplyToName;
+        if (!TextUtils.isEmpty(item.mInReplyToName)) {
+            inReplyToName = item.mInReplyToName;
             if (SharedPreferencesUtil.isEmpty(inReplyToName)) {
                 inReplyToName = "...";
             }
@@ -219,36 +219,36 @@ public class ConversationViewAdapter extends MyBaseAdapter {
                     + String.format(
                             context.getText(R.string.message_source_in_reply_to).toString(),
                             inReplyToName)
-                    + (oMsg.mInReplyToMsgId != 0 ? " (" + msgIdToHistoryOrder(oMsg.mInReplyToMsgId) + ")" : "");
+                    + (item.mInReplyToMsgId != 0 ? " (" + msgIdToHistoryOrder(item.mInReplyToMsgId) + ")" : "");
         }
-        if (!SharedPreferencesUtil.isEmpty(oMsg.mRebloggersString)
-                && !oMsg.mRebloggersString.equals(oMsg.mAuthor)) {
+        if (!SharedPreferencesUtil.isEmpty(item.mRebloggersString)
+                && !item.mRebloggersString.equals(item.mAuthor)) {
             if (!TextUtils.isEmpty(inReplyToName)) {
                 messageDetails += ";";
             }
             messageDetails += " "
                     + String.format(
                             context.getText(ma.alternativeTermForResourceId(R.string.reblogged_by))
-                                    .toString(), oMsg.mRebloggersString);
+                                    .toString(), item.mRebloggersString);
         }
-        if (!SharedPreferencesUtil.isEmpty(oMsg.mRecipientName)) {
+        if (!SharedPreferencesUtil.isEmpty(item.mRecipientName)) {
             messageDetails += " "
                     + String.format(
                             context.getText(R.string.message_source_to)
-                            .toString(), oMsg.mRecipientName);
+                            .toString(), item.mRecipientName);
         }
-        if (oMsg.mStatus != DownloadStatus.LOADED) {
-            messageDetails += " (" + oMsg.mStatus.getTitle(context) + ")";
+        if (item.mStatus != DownloadStatus.LOADED) {
+            messageDetails += " (" + item.mStatus.getTitle(context) + ")";
         }
         if (MyPreferences.showDebuggingInfoInUi()) {
-            messageDetails = messageDetails + " (i" + oMsg.mIndentLevel + ",r" + oMsg.mReplyLevel + ")";
+            messageDetails = messageDetails + " (i" + item.mIndentLevel + ",r" + item.mReplyLevel + ")";
         }
         ((TextView) messageView.findViewById(R.id.message_details)).setText(messageDetails);
     }
 
-    private void setFavorited(ConversationViewItem oMsg, View messageView) {
+    private void showFavorited(ConversationViewItem item, View messageView) {
         ImageView favorited = (ImageView) messageView.findViewById(R.id.message_favorited);
-        favorited.setVisibility(oMsg.mFavorited ? View.VISIBLE : View.GONE );
+        favorited.setVisibility(item.mFavorited ? View.VISIBLE : View.GONE );
     }
     
     private int msgIdToHistoryOrder(long msgId) {

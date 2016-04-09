@@ -20,6 +20,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
@@ -85,7 +86,7 @@ public class TimelineAdapter extends MyBaseAdapter {
         setPosition(view, position);
         TimelineViewItem item = getItem(position);
         MyUrlSpan.showText(view, R.id.message_author, item.authorName, false);
-        MyUrlSpan.showText(view, R.id.message_body, item.body, false);
+        showMessageBody(item, view);
         MyUrlSpan.showText(view, R.id.message_details, item.getDetails(contextMenu.getActivity()), false);
         if (showAvatars) {
             showAvatar(item, view);
@@ -100,6 +101,12 @@ public class TimelineAdapter extends MyBaseAdapter {
         preloadAttachments(position);
         positionPrev = position;
         return view;
+    }
+
+    private void showMessageBody(TimelineViewItem item, View messageView) {
+        TextView body = (TextView) messageView.findViewById(R.id.message_body);
+        MyUrlSpan.showText(body, item.body, true);
+        body.setOnClickListener(this);
     }
 
     private void preloadAttachments(int position) {
