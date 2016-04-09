@@ -21,6 +21,7 @@ import android.database.Cursor;
 import android.graphics.Point;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.view.View;
 import android.widget.ImageView;
 
@@ -64,7 +65,7 @@ public class AttachedImageFile {
 
     public Point getSize() {
         if (size == null && downloadFile.exists()) {
-            size = MyImageCache.getImageSize(downloadFile.getFilePath());
+            size = MyImageCache.getAttachedImageSize(downloadFile.getFilePath());
         }
         return size == null ? new Point() : size;
     }
@@ -91,6 +92,16 @@ public class AttachedImageFile {
     @Override
     public String toString() {
         return MyLog.objTagToString(this) + " [rowId=" + downloadRowId + ", " + downloadFile + "]";
+    }
+
+    public void preloadAttachedImage(@NonNull ActionableMessageList messageList) {
+        Drawable drawable = getDrawableFromCache();
+        if (drawable != null) {
+            return;
+        }
+        if (downloadFile.exists()) {
+            setImageDrawableAsync(messageList, null, downloadFile.getFilePath());
+        }
     }
 
     public void showAttachedImage(@NonNull ActionableMessageList messageList, ImageView imageView) {
@@ -129,7 +140,7 @@ public class AttachedImageFile {
     }
 
     private void setImageDrawableAsync(final ActionableMessageList messageList,
-                                       final ImageView imageView, final String path) {
+                                       @Nullable final ImageView imageView, final String path) {
         AsyncTaskLauncher.execute(this,
                 new MyAsyncTask<Void, Void, Drawable>(TAG + downloadRowId, MyAsyncTask.PoolEnum.QUICK_UI) {
                     @Override
@@ -149,7 +160,7 @@ public class AttachedImageFile {
                     }
 
                     private void onEnded(Drawable drawable) {
-                        if ( messageList.getActivity().isPaused()) {
+                        if (imageView == null || messageList.getActivity().isPaused()) {
                             return;
                         }
                         if (drawable == null) {

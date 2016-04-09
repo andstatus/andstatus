@@ -240,8 +240,8 @@ public class CommandData implements Comparable<CommandData> {
             (new CommandData(CommandEnum.EMPTY, "")).toSharedPreferences(editor, count);
             editor.commit();
         } catch (Throwable e) {
-            String msgLog = method + "; " + count + " saved, " + queue.size() + " left. \n"
-                    + MyImageCache.getCacheInfo() + "\n " + AsyncTaskLauncher.threadPoolInfo();
+            String msgLog = method + "; " + count + " saved, " + queue.size() + " left.\n"
+                    + MyContextHolder.getSystemInfo(context);
             MyLog.e(context, msgLog, e);
             throw new IllegalStateException(msgLog, e);
         }

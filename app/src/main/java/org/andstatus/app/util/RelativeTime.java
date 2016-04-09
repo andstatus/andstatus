@@ -73,8 +73,11 @@ public class RelativeTime {
      * @return String
      */
     public static String getDifference(Context context, long fromMs) {
+        return getDifference(context, fromMs, System.currentTimeMillis());
+    }
+
+    public static String getDifference(Context context, long fromMs, long toMs) {
         String value;
-        long toMs = System.currentTimeMillis();
         long deltaSeconds = java.util.concurrent.TimeUnit.MILLISECONDS.toSeconds(java.lang.Math.round((double)(toMs - fromMs)));
         if (fromMs <= 0) {
             value = "";

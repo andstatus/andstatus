@@ -20,21 +20,19 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Matrix;
-import android.graphics.Paint;
 import android.graphics.Point;
-import android.graphics.PorterDuff;
-import android.graphics.RectF;
+import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
+import android.os.SystemClock;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.LruCache;
 
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.graphics.BitmapSubsetDrawable;
 import org.andstatus.app.util.MyLog;
 
 import java.io.File;
@@ -48,12 +46,12 @@ import java.util.concurrent.atomic.AtomicLong;
  * @author yvolk@yurivolkov.com
  * On LruCache usage read http://developer.android.com/reference/android/util/LruCache.html
  */
-public class MyDrawableCache extends LruCache<String, Bitmap> {
-    public final static BitmapDrawable BROKEN = new BitmapDrawable();
+public class MyDrawableCache extends LruCache<String, BitmapSubsetDrawable> {
+    public final static Drawable BROKEN = new BitmapDrawable();
     public final static Bitmap.Config BITMAP_CONFIG = Bitmap.Config.ARGB_8888;
     public final static int BYTES_PER_PIXEL = 4;
     final String name;
-    private volatile int initialCacheSize;
+    private volatile int requestedCacheSize;
     private volatile int currentCacheSize;
     private volatile int maxBitmapHeight;
     private volatile int maxBitmapWidth;
@@ -68,16 +66,27 @@ public class MyDrawableCache extends LruCache<String, Bitmap> {
         throw new IllegalStateException("Cache cannot be resized");
     }
 
-    public MyDrawableCache(Context context, String name, int maxBitmapHeightWidth, int initialCacheSize) {
-        super(initialCacheSize);
+    public MyDrawableCache(Context context, String name, int maxBitmapHeightWidth, int requestedCacheSize) {
+        super(requestedCacheSize);
         this.name = name;
         this.setMaxBounds(maxBitmapHeightWidth, maxBitmapHeightWidth);
-        this.initialCacheSize = initialCacheSize;
-        this.currentCacheSize = initialCacheSize;
+        this.requestedCacheSize = requestedCacheSize;
+        this.currentCacheSize = requestedCacheSize;
         recycledBitmaps = new ConcurrentLinkedQueue<>();
         displayMetrics = context.getResources().getDisplayMetrics();
-        for (int i = 0; i < currentCacheSize + 2; i++) {
-            recycledBitmaps.add(newBlankBitmap());
+        try {
+            for (int i = 0; i < currentCacheSize + 2; i++) {
+                recycledBitmaps.add(newBlankBitmap());
+            }
+        } catch (OutOfMemoryError e) {
+            MyLog.w(this, getInfo(), e);
+            currentCacheSize = recycledBitmaps.size() - 2;
+            if (currentCacheSize < 0) {
+                currentCacheSize = 0;
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                super.resize(currentCacheSize);
+            }
         }
     }
 
@@ -95,26 +104,27 @@ public class MyDrawableCache extends LruCache<String, Bitmap> {
     }
 
     @Nullable
-    BitmapDrawable getCachedDrawable(Object objTag, String path) {
+    Drawable getCachedDrawable(Object objTag, String path) {
         return getDrawable(objTag, path, true);
     }
 
     @Nullable
-    BitmapDrawable getDrawable(Object objTag, String path) {
+    Drawable getDrawable(Object objTag, String path) {
         return getDrawable(objTag, path, false);
     }
 
     @Override
-    protected void entryRemoved(boolean evicted, String key, Bitmap oldValue, Bitmap newValue) {
-        recycledBitmaps.add(oldValue);
+    protected void entryRemoved(boolean evicted, String key, BitmapSubsetDrawable oldValue,
+                                BitmapSubsetDrawable newValue) {
+        recycledBitmaps.add(oldValue.getBitmap());
     }
 
     @Nullable
-    private BitmapDrawable getDrawable(Object objTag, String path, boolean fromCacheOnly) {
+    private Drawable getDrawable(Object objTag, String path, boolean fromCacheOnly) {
         if (TextUtils.isEmpty(path)) {
             return null;
         }
-        Bitmap bitmap = get(path);
+        BitmapSubsetDrawable bitmap = get(path);
         if (bitmap != null) {
             hits.incrementAndGet();
         } else if (brokenBitmaps.contains(path)) {
@@ -125,7 +135,7 @@ public class MyDrawableCache extends LruCache<String, Bitmap> {
         } else {
             misses.incrementAndGet();
             if (!fromCacheOnly) {
-                bitmap = loadBitmap(objTag, path);
+                bitmap = loadDrawable(objTag, path);
                 if (bitmap != null) {
                     if (currentCacheSize > 0) {
                         put(path, bitmap);
@@ -135,40 +145,34 @@ public class MyDrawableCache extends LruCache<String, Bitmap> {
                 }
             }
         }
-        return bitmap == null ? null :
-                new BitmapDrawable(MyContextHolder.get().context().getResources(), bitmap);
+        return bitmap;
     }
 
     @Nullable
-    private Bitmap loadBitmap(Object objTag, String path) {
-        Bitmap bitmapOriginal = loadBitmapFromFile(objTag, path);
-        if (bitmapOriginal == null) {
+    private BitmapSubsetDrawable loadDrawable(Object objTag, String path) {
+        Bitmap bitmap = loadBitmap(objTag, path);
+        if (bitmap == null) {
             return null;
         }
-        Bitmap background = getSuitableRecycledBitmap(bitmapOriginal);
-        if (background != null) {
-            Canvas canvas = new Canvas(background);
-            canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
-            Matrix matrix = new Matrix();
-            matrix.setRectToRect(new RectF(0, 0, bitmapOriginal.getWidth(), bitmapOriginal.getHeight()),
-                    new RectF(0, 0, maxBitmapWidth, maxBitmapHeight), Matrix.ScaleToFit.CENTER);
-            canvas.setMatrix(matrix);
-            Paint paint = new Paint();
-            paint.setAntiAlias(true);
-            paint.setFilterBitmap(true);
-            paint.setDither(true);
-            canvas.drawBitmap(bitmapOriginal, 0 , 0, paint);
+        Rect srcRect = new Rect(0, 0, bitmap.getWidth(), bitmap.getHeight());
+        Bitmap background = getSuitableRecycledBitmap(srcRect);
+        if (background == null) {
+            MyLog.w(objTag, "No suitable bitmap found to cache "
+                    + srcRect.width() + "x" + srcRect.height() + " '" + path + "'");
+            return null ;
         }
-        bitmapOriginal.recycle();
-        return background;
+        Canvas canvas = new Canvas(background);
+        canvas.drawBitmap(bitmap, 0 , 0, null);
+        bitmap.recycle();
+        return new BitmapSubsetDrawable(background, srcRect);
     }
 
-    private Bitmap getSuitableRecycledBitmap(Bitmap bitmapOriginal) {
+    private Bitmap getSuitableRecycledBitmap(Rect srcRect) {
         return recycledBitmaps.poll();
     }
 
     @Nullable
-    private Bitmap loadBitmapFromFile(Object objTag, String path) {
+    private Bitmap loadBitmap(Object objTag, String path) {
         Bitmap bitmap = null;
         if (MyPreferences.showDebuggingInfoInUi()) {
             bitmap = BitmapFactory
@@ -179,10 +183,6 @@ public class MyDrawableCache extends LruCache<String, Bitmap> {
                         .decodeFile(path, calculateScaling(objTag, getImageSize(path)));
             } catch (OutOfMemoryError e) {
                 MyLog.w(objTag, getInfo(), e);
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    currentCacheSize /= 2;
-                    super.resize(currentCacheSize);
-                }
                 evictAll();
                 System.gc();
             }
@@ -195,8 +195,12 @@ public class MyDrawableCache extends LruCache<String, Bitmap> {
         return bitmap;
     }
 
-    public static Point getImageSize(String path) {
+    public Point getImageSize(String path) {
         if (!TextUtils.isEmpty(path)) {
+            Drawable drawable = get(path);
+            if (drawable != null) {
+                return new Point(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight());
+            }
             try {
                 BitmapFactory.Options options = new BitmapFactory.Options();
                 options.inJustDecodeBounds = true;
@@ -227,7 +231,11 @@ public class MyDrawableCache extends LruCache<String, Bitmap> {
 
     public String getInfo() {
         StringBuilder builder = new StringBuilder(name);
-        builder.append(" size: " + size() + " of " + currentCacheSize);
+        builder.append(": " + size() + " of " + currentCacheSize);
+        if (requestedCacheSize != currentCacheSize) {
+            builder.append(" (initially capacity was " + requestedCacheSize + ")");
+        }
+        builder.append(", free: " + recycledBitmaps.size());
         if (!brokenBitmaps.isEmpty()) {
             builder.append(", broken: " + brokenBitmaps.size());
         }
@@ -241,7 +249,7 @@ public class MyDrawableCache extends LruCache<String, Bitmap> {
         return maxBitmapWidth;
     }
 
-    public final void setMaxBounds(int x, int y) {
+    private final void setMaxBounds(int x, int y) {
         if ( x < 1 || y < 1) {
             MyLog.e(this, MyLog.getStackTrace(
                     new IllegalArgumentException("setMaxBounds x=" + x + " y=" + y))

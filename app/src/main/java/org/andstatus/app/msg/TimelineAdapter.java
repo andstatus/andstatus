@@ -29,6 +29,9 @@ import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyUrlSpan;
 import org.andstatus.app.widget.MyBaseAdapter;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * @author yvolk@yurivolkov.com
  */
@@ -40,6 +43,8 @@ public class TimelineAdapter extends MyBaseAdapter {
     private final boolean showAttachedImages = MyPreferences.showAttachedImages();
     private final boolean markReplies = MyPreferences.getBoolean(
             MyPreferences.KEY_MARK_REPLIES_IN_TIMELINE, false);
+    private int positionPrev = -1;
+    private Set<Long> preloadedImages = new HashSet<>(100);
 
     public TimelineAdapter(MessageContextMenu contextMenu, int listItemLayoutId,
                            TimelineAdapter oldAdapter, TimelinePage loadedPage) {
@@ -92,7 +97,28 @@ public class TimelineAdapter extends MyBaseAdapter {
         if (markReplies) {
             showMarkReplies(item, view);
         }
+        preloadAttachments(position);
+        positionPrev = position;
         return view;
+    }
+
+    private void preloadAttachments(int position) {
+        if (positionPrev < 0 || position == positionPrev) {
+            return;
+        }
+        Integer positionToPreload = position;
+        for (int i = 0; i < 5; i++) {
+            positionToPreload = positionToPreload + (position > positionPrev ? 1 : -1);
+            if (positionToPreload < 0 || positionToPreload >= pages.getItemsCount()) {
+                break;
+            }
+            TimelineViewItem item = getItem(positionToPreload);
+            if (!preloadedImages.contains(item.msgId)) {
+                preloadedImages.add(item.msgId);
+                item.getAttachedImageFile().preloadAttachedImage(contextMenu.messageList);
+                break;
+            }
+        }
     }
 
     private View newView() {
@@ -105,6 +131,7 @@ public class TimelineAdapter extends MyBaseAdapter {
     }
 
     private void showAttachedImage(TimelineViewItem item, View view) {
+        preloadedImages.add(item.msgId);
         item.getAttachedImageFile().showAttachedImage(contextMenu.messageList,
                 (ImageView) view.findViewById(R.id.attached_image));
     }

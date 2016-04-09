@@ -81,7 +81,7 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
         ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<TimelineActivity>(this, ConversationActivity.class);
         long msgId = helper.getListItemIdOfLoadedReply();
         helper.selectListPosition(method, helper.getPositionOfListItemId(msgId));
-        helper.clickListAtPosition(method, helper.getPositionOfListItemId(msgId));
+        helper.invokeContextMenuAction4ListItemId(method, msgId, MessageListContextMenuItem.OPEN_CONVERSATION);
         Activity nextActivity = helper.waitForNextActivity(method, 40000);
         Thread.sleep(500);
         nextActivity.finish();        

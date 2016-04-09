@@ -18,12 +18,17 @@ package org.andstatus.app.context;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.os.SystemClock;
 import android.support.annotation.NonNull;
 
 import net.jcip.annotations.GuardedBy;
 import net.jcip.annotations.ThreadSafe;
 
 import org.andstatus.app.data.MyDatabaseConverterController;
+import org.andstatus.app.data.MyImageCache;
+import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
 
@@ -38,6 +43,7 @@ import java.util.concurrent.ExecutionException;
 @ThreadSafe
 public final class MyContextHolder {
     private static final String TAG = MyContextHolder.class.getSimpleName();
+    public final static long appStartedAt = SystemClock.elapsedRealtime();
 
     private static final Object CONTEXT_LOCK = new Object();
     @GuardedBy("CONTEXT_LOCK")
@@ -245,5 +251,27 @@ public final class MyContextHolder {
         if (get().state() == MyContextState.UPGRADING) {
             MyDatabaseConverterController.attemptToTriggerDatabaseUpgrade(upgradeRequestor);
         }
+    }
+
+    public static String getSystemInfo(Context context) {
+        StringBuilder builder = new StringBuilder();
+        builder.append(getVersionText(context));
+        builder.append(" started " + RelativeTime.getDifference(context, appStartedAt, SystemClock.elapsedRealtime()));
+        builder.append("\n");
+        builder.append(MyImageCache.getCacheInfo());
+        builder.append("\n");
+        builder.append(AsyncTaskLauncher.threadPoolInfo());
+        return builder.toString();
+    }
+
+    public static String getVersionText(Context context) {
+        try {
+            PackageManager pm = context.getPackageManager();
+            PackageInfo pi = pm.getPackageInfo(context.getPackageName(), 0);
+            return pi.packageName + " v." + pi.versionName + " (" + pi.versionCode + ")";
+        } catch (PackageManager.NameNotFoundException e) {
+            MyLog.e(TAG, "Unable to obtain package information", e);
+        }
+        return "AndStatus v.?";
     }
 }

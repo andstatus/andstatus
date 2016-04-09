@@ -19,9 +19,6 @@ package org.andstatus.app;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
-import android.content.pm.PackageManager.NameNotFoundException;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.Menu;
@@ -109,18 +106,12 @@ public class HelpActivity extends MyActivity implements SwipeInterface {
 
     private void showVersionText() {
         TextView versionText = (TextView) findViewById(R.id.splash_application_version);
-        try {
-            PackageManager pm = getPackageManager();
-            PackageInfo pi = pm.getPackageInfo(getPackageName(), 0);
-            versionText.setText(pi.packageName + " v." + pi.versionName + " (" + pi.versionCode + ")");
-        } catch (NameNotFoundException e) {
-            MyLog.e(this, "Unable to obtain package information", e);
-        }
+        versionText.setText(MyContextHolder.getVersionText(this));
         versionText.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(Intent.ACTION_VIEW);
-                intent.setData(Uri.parse("https://github.com/andstatus/andstatus/wiki"));
+                intent.setData(Uri.parse("http://andstatus.org"));
                 startActivity(intent);
             }
         });

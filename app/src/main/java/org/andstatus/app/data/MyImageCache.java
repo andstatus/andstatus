@@ -41,7 +41,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class MyImageCache {
     private static final float ATTACHED_IMAGES_CACHE_PART_OF_AVAILABLE_MEMORY = 0.1f;
     static volatile MyDrawableCache attachedImagesCache;
-    private static final float AVATARS_CACHE_PART_OF_ATTACHED = 0.1f;
+    private static final float AVATARS_CACHE_PART_OF_ATTACHED = 0.05f;
     private static volatile MyDrawableCache avatarsCache;
 
     private  MyImageCache() {
@@ -56,7 +56,7 @@ public class MyImageCache {
         Point displaySize = getDisplaySize(context);
         float displayDensity = context.getResources().getDisplayMetrics().density;
         int attachedImageSize = (int) Math.round(AttachedImageFile.MAX_ATTACHED_IMAGE_PART *
-                (displaySize.x > displaySize.y ? displaySize.x : displaySize.y) / displayDensity);
+                (displaySize.x > displaySize.y ? displaySize.y : displaySize.x) / displayDensity);
         int attachedImageCacheSize = calcCacheSize(context, attachedImageSize,
                 ATTACHED_IMAGES_CACHE_PART_OF_AVAILABLE_MEMORY);
         attachedImagesCache = new MyDrawableCache(context, "Attached images", attachedImageSize,
@@ -65,6 +65,9 @@ public class MyImageCache {
         int avatarSize = AvatarFile.AVATAR_SIZE_DIP;
         int avatarsCacheSize = calcCacheSize(context, avatarSize,
                 AVATARS_CACHE_PART_OF_ATTACHED * ATTACHED_IMAGES_CACHE_PART_OF_AVAILABLE_MEMORY);
+        if (avatarsCacheSize > 1000) {
+            avatarsCacheSize = 1000;
+        }
         avatarsCache = new MyDrawableCache(context, "Avatars", avatarSize, avatarsCacheSize);
     }
 
@@ -87,8 +90,8 @@ public class MyImageCache {
     }
 
     @NonNull
-    public static Point getImageSize(String path) {
-        return MyDrawableCache.getImageSize(path);
+    public static Point getAttachedImageSize(String path) {
+        return attachedImagesCache.getImageSize(path);
     }
 
     @Nullable

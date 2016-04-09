@@ -19,7 +19,7 @@ package org.andstatus.app.os;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 
-import org.andstatus.app.data.MyImageCache;
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
@@ -78,8 +78,7 @@ public abstract class MyAsyncTask<Params, Progress, Result> extends AsyncTask<Pa
                 return doInBackground2(params);
             }
         } catch (Throwable e) {
-            String msgLog = MyImageCache.getCacheInfo() + "\n "
-                    + AsyncTaskLauncher.threadPoolInfo();
+            String msgLog = MyContextHolder.getSystemInfo(MyContextHolder.get().context());
             MyLog.e(this, msgLog, e);
             throw new IllegalStateException(msgLog, e);
         } finally {

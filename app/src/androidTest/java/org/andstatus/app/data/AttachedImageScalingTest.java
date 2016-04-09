@@ -16,26 +16,29 @@ public class AttachedImageScalingTest extends InstrumentationTestCase {
     
     public void testScaling() {
         MyImageCache.initialize(MyContextHolder.get().context());
-        Point display = MyImageCache.getDisplaySize(MyContextHolder.get().context());
         MyDrawableCache cache = MyImageCache.attachedImagesCache;
-        BitmapFactory.Options options = cache.calculateScaling(this, display);
+        Point exactlyMaxSize = new Point(cache.getMaxBitmapWidth(), cache.getMaxBitmapWidth());
+        BitmapFactory.Options options = cache.calculateScaling(this, exactlyMaxSize);
+        assertEquals(0, options.inSampleSize);
+        Point largerSize = new Point(exactlyMaxSize.y + 10, exactlyMaxSize.x + 30);
+        options = cache.calculateScaling(this, largerSize);
         assertEquals(2, options.inSampleSize);
-        Point imageSize = new Point(display.x * 2, display.y * 2);
+        Point imageSize = new Point(largerSize.x * 2, largerSize.y * 2);
         options = cache.calculateScaling(this, imageSize);
         assertEquals(4, options.inSampleSize);
-        imageSize = new Point(display.x + display.x / 2, display.y + display.y / 2);
+        imageSize = new Point(largerSize.x + largerSize.x / 2, largerSize.y + largerSize.y / 2);
         options = cache.calculateScaling(this, imageSize);
         assertEquals(2, options.inSampleSize);
-        imageSize = new Point(display.x * 3, display.y);
+        imageSize = new Point(largerSize.x * 3, largerSize.y);
         options = cache.calculateScaling(this, imageSize);
         assertEquals(4, options.inSampleSize);
-        imageSize = new Point(display.x, display.y * 3);
+        imageSize = new Point(largerSize.x, largerSize.y * 3);
         options = cache.calculateScaling(this, imageSize);
         assertEquals(4, options.inSampleSize);
-        imageSize = new Point(display.x / 2, display.y);
+        imageSize = new Point(largerSize.x / 2, largerSize.y);
         options = cache.calculateScaling(this, imageSize);
         assertEquals(2, options.inSampleSize);
-        imageSize = new Point(display.x, display.y / 2);
+        imageSize = new Point(largerSize.x / 2, largerSize.y / 2);
         options = cache.calculateScaling(this, imageSize);
         assertTrue(options.inSampleSize < 2);
     }

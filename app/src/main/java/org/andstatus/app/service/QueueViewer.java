@@ -185,19 +185,16 @@ public class QueueViewer extends MyListActivity implements MyServiceEventsListen
     
     private List<QueueData> newListData() {
         List<QueueData> listData = new ArrayList<QueueData>();
-        showThreadPoolInfo(listData);
+        showSystemInfo(listData);
         loadQueue(listData, QueueType.CURRENT);
         loadQueue(listData, QueueType.RETRY);
         loadQueue(listData, QueueType.ERROR);
         return listData;
     }
 
-    private void showThreadPoolInfo(List<QueueData> listData) {
+    private void showSystemInfo(List<QueueData> listData) {
         CommandData commandData = new CommandData(CommandEnum.EMPTY, "");
-        commandData.getResult().setMessage(
-                AsyncTaskLauncher.threadPoolInfo()
-                + "\n\n" + MyImageCache.getCacheInfo()
-        );
+        commandData.getResult().setMessage(MyContextHolder.getSystemInfo(this));
         listData.add(QueueData.getNew(QueueType.TEST, commandData));
     }
 

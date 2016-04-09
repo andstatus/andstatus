@@ -15,7 +15,7 @@ package org.andstatus.app.service;
  * limitations under the License.
  */
 
-import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.test.InstrumentationTestCase;
 
 import org.andstatus.app.context.MyContextHolder;
@@ -80,7 +80,7 @@ public class LargeImageTest extends InstrumentationTestCase {
     }
 
     private void loadingTest(DownloadData dd) {
-        BitmapDrawable drawable = (BitmapDrawable) new AttachedImageFile(dd.getDownloadId(), dd.getFilename())
+        Drawable drawable = new AttachedImageFile(dd.getDownloadId(), dd.getFilename())
                 .getDrawableSync();
         int width = drawable.getIntrinsicWidth();
         assertTrue("Not wide already " + width, width < 4000 && width > 10);
