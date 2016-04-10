@@ -232,7 +232,8 @@ public class MyDrawableCache extends LruCache<String, BitmapSubsetDrawable> {
 
     public String getInfo() {
         StringBuilder builder = new StringBuilder(name);
-        builder.append(": " + size() + " of " + currentCacheSize);
+        builder.append(": " + maxBitmapWidth + "x" + maxBitmapHeight + ", "
+                + size() + " of " + currentCacheSize);
         if (requestedCacheSize != currentCacheSize) {
             builder.append(" (initially capacity was " + requestedCacheSize + ")");
         }

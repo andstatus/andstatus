@@ -49,7 +49,7 @@ public class QueueViewer extends MyListActivity implements MyServiceEventsListen
     MyServiceEventsReceiver mServiceConnector;
     private List<QueueData> mListData = null;
 
-    private static class QueueData {
+    private static class QueueData implements Comparable<QueueData> {
         QueueType queueType;
         CommandData commandData;
         
@@ -72,6 +72,16 @@ public class QueueViewer extends MyListActivity implements MyServiceEventsListen
         public String toSharedText() {
             return queueType.getAcronym() + "; "
                     + commandData.share(MyContextHolder.get());
+        }
+
+        @Override
+        public int compareTo(QueueData another) {
+            if (queueType == QueueType.TEST && another.queueType != QueueType.TEST) {
+                return -1;
+            } else if (queueType != QueueType.TEST && another.queueType == QueueType.TEST) {
+                return 1;
+            }
+            return -longCompare(commandData.getCreatedDate(), commandData.getCreatedDate());
         }
     }
 
@@ -162,18 +172,8 @@ public class QueueViewer extends MyListActivity implements MyServiceEventsListen
     
     private void showList() {
         mListData = newListData();
-        sortList(mListData);
         setListAdapter(newListAdapter(mListData));
         MyContextHolder.get().clearNotification(TimelineType.ALL);
-    }
-
-    private void sortList(List<QueueData> data) {
-        java.util.Collections.sort(data, new Comparator<QueueData>() {
-            @Override
-            public int compare(QueueData lhs, QueueData rhs) {
-                return -longCompare(lhs.commandData.getCreatedDate(), rhs.commandData.getCreatedDate());
-            }
-        });
     }
 
     // TODO: Replace with Long.compare for API >= 19
@@ -182,7 +182,7 @@ public class QueueViewer extends MyListActivity implements MyServiceEventsListen
     }
     
     private List<QueueData> newListData() {
-        List<QueueData> listData = new ArrayList<QueueData>();
+        List<QueueData> listData = new ArrayList<>();
         loadQueue(listData, QueueType.CURRENT);
         loadQueue(listData, QueueType.RETRY);
         loadQueue(listData, QueueType.ERROR);

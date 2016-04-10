@@ -51,8 +51,8 @@ public class MyApplication extends Application {
         super.onCreate();
         String processName = getCurrentProcessName(this);
         isAcraProcess = processName.endsWith(":acra");
-        MyLog.v(this, "onCreate " + (isAcraProcess ? "ACRA process"
-                : "'" + processName + "' process"));
+        MyLog.v(this, "onCreate "
+                + (isAcraProcess ? "ACRA" : "'" + processName + "'") + " process");
         if (!isAcraProcess) {
             MyContextHolder.storeContextIfNotPresent(this, this);
             MyPreferences.setLocale(this);
