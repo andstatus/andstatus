@@ -25,6 +25,8 @@
   <string name="account_settings_action">AndStatus Accounteinstellungen</string>
   <string name="account_settings_activity_title">Konto</string>
   <string name="account_settings_summary">Synchronisation Frequenz, Benachrichtigungen etc.</string>
+  <string name="action_bar_background_color_preference_title">Hintergrundfarbe der Aktionsleiste</string>
+  <string name="action_bar_text_preference_title">Text- und Symbolfarbe der Aktionsleiste</string>
   <string name="attach_images_summary_off">\"Büroklammer+\" Button, mit dem Bilder an deine Beiträge angehängt werden, ist ausgeblendet</string>
   <string name="attach_images_summary_on">Verwende \"Büroklammer +\" Button (Menüpunkt \"Anhängen\") um Bilder an die Nachricht anzufügen. Oder teile ein Bild aus einer anderen Anwendung mit AndStatus</string>
   <string name="attach_images_title">Bilder an meine Nachrichten anhängen</string>
@@ -85,6 +87,7 @@
   <string name="color_orange">Orange</string>
   <string name="color_red">Rot</string>
   <string name="color_teal">Blaugrün</string>
+  <string name="color_white">Weiß</string>
   <string name="combined_timeline_on">kombiniert</string>
   <string name="combined_timeline_off_account">für</string>
   <string name="combined_timeline_off_origin">auf</string>
@@ -395,6 +398,7 @@
   <string name="summary_preference_verify_credentials_failed">Überprüfung fehlgeschlagen. Hier tippen zur überprüfen der Zugangsdaten und zum Aktivieren dieses Benutzerkontos</string>
   <string name="summary_preference_vibration_off">Vibration ist abgeschaltet</string>
   <string name="summary_preference_vibration_on">Vibrieren bei eingehender Nachricht</string>
+  <string name="switch_to_default_timeline">Zur Standard-Timeline wechseln</string>
   <string name="system_is_busy_try_later">Das System ist beschäftigt. Bitte versuche es später erneut.</string>
   <string name="theme_color_entries_default">Gerätestandard</string>
   <string name="theme_color_entries_light">Hell</string>
@@ -403,6 +407,7 @@
   <string name="theme_size_entries_standard">Normal</string>
   <string name="theme_size_entries_large">Groß</string>
   <string name="this_option_is_turned_off">(deaktiviert)</string>
+  <string name="timeline_is_combined_by_default">Timeline ist standardmäßig kombiniert</string>
   <string name="timeline_reloaded">Timeline wurde neu geladen.</string>
   <string name="timeline_title_all">Alle</string>
   <string name="timeline_title_direct_messages">Direktnachrichten</string>
