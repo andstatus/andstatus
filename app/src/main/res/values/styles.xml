@@ -70,7 +70,7 @@
 
     <style name="ActionBarIconsBlack">
         <item name="attachIcon">@drawable/ic_action_new_attachment_light</item>
-        <item name="globalSearchIcon">@drawable/ic_action_global_search_light</item>
+        <item name="globalSearchIcon">@drawable/ic_language_black_24dp</item>
         <item name="helpIcon">@drawable/ic_action_help_light</item>
         <item name="hideMessageIcon">@drawable/ic_action_hide_message_light</item>
         <item name="mySearchIcon">@drawable/ic_search_black_24dp</item>
@@ -82,7 +82,7 @@
 
     <style name="ActionBarIconsWhite">
         <item name="attachIcon">@drawable/ic_action_new_attachment</item>
-        <item name="globalSearchIcon">@drawable/ic_action_global_search</item>
+        <item name="globalSearchIcon">@drawable/ic_language_white_24dp</item>
         <item name="helpIcon">@drawable/ic_action_help</item>
         <item name="hideMessageIcon">@drawable/ic_action_hide_message</item>
         <item name="mySearchIcon">@drawable/ic_search_white_24dp</item>
