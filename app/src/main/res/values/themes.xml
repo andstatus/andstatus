@@ -77,17 +77,4 @@
 
         <item name="sectionHeaderStyle">@style/sectionHeader</item>
     </style>
-    <style name="Theme.AndStatus.FullyDefinedLight" parent="Theme.AndStatus.Light">
-        <item name="messageUsernameTextAppearance">?android:attr/textAppearanceSmall</item>
-        <item name="messageUsernameColor">?android:attr/textColorSecondary</item>
-
-        <item name="messageBodyTextAppearance">?android:attr/textAppearanceMedium</item>
-        <item name="messageBodyColor">?android:attr/textColorPrimaryNoDisable</item>
-
-        <item name="messageDetailsTextAppearance">?android:attr/textAppearanceSmall</item>
-        <item name="messageDetailsColor">?android:attr/textColorTertiary</item>
-
-        <item name="sectionHeaderStyle">@style/sectionHeader</item>
-    </style>
-
 </resources>
