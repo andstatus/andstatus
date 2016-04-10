@@ -73,7 +73,7 @@
         <item name="globalSearchIcon">@drawable/ic_action_global_search_light</item>
         <item name="helpIcon">@drawable/ic_action_help_light</item>
         <item name="hideMessageIcon">@drawable/ic_action_hide_message_light</item>
-        <item name="mySearchIcon">@drawable/ic_action_search_light</item>
+        <item name="mySearchIcon">@drawable/ic_search_black_24dp</item>
         <item name="newIcon">@drawable/ic_action_new_light</item>
         <item name="postMessageIcon">@drawable/ic_action_new_message_light</item>
         <item name="reloadIcon">@drawable/ic_action_refresh_light</item>
@@ -85,7 +85,7 @@
         <item name="globalSearchIcon">@drawable/ic_action_global_search</item>
         <item name="helpIcon">@drawable/ic_action_help</item>
         <item name="hideMessageIcon">@drawable/ic_action_hide_message</item>
-        <item name="mySearchIcon">@drawable/ic_action_search</item>
+        <item name="mySearchIcon">@drawable/ic_search_white_24dp</item>
         <item name="newIcon">@drawable/ic_action_new</item>
         <item name="postMessageIcon">@drawable/ic_action_new_message</item>
         <item name="reloadIcon">@drawable/ic_action_refresh</item>
