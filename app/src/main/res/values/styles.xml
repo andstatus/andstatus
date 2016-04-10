@@ -78,6 +78,7 @@
         <item name="postMessageIcon">@drawable/ic_action_new_message_light</item>
         <item name="reloadIcon">@drawable/ic_refresh_black_24dp</item>
         <item name="sendIcon">@drawable/ic_action_send_now_light</item>
+        <item name="settingsIcon">@drawable/ic_settings_black_24dp</item>
     </style>
 
     <style name="ActionBarIconsWhite">
@@ -90,6 +91,7 @@
         <item name="postMessageIcon">@drawable/ic_action_new_message</item>
         <item name="reloadIcon">@drawable/ic_refresh_white_24dp</item>
         <item name="sendIcon">@drawable/ic_action_send_now</item>
+        <item name="settingsIcon">@drawable/ic_settings_white_24dp</item>
     </style>
 
     <string-array name="theme_size_values">
