@@ -69,9 +69,9 @@
     </style>
 
     <style name="ActionBarIconsBlack">
-        <item name="attachIcon">@drawable/ic_action_new_attachment_light</item>
+        <item name="attachIcon">@drawable/ic_attach_file_black_24dp</item>
         <item name="globalSearchIcon">@drawable/ic_language_black_24dp</item>
-        <item name="helpIcon">@drawable/ic_action_help_light</item>
+        <item name="helpIcon">@drawable/ic_help_outline_black_24dp</item>
         <item name="saveMessageIcon">@drawable/ic_save_black_24dp</item>
         <item name="mySearchIcon">@drawable/ic_search_black_24dp</item>
         <item name="newIcon">@drawable/ic_add_circle_outline_black_24dp</item>
@@ -82,9 +82,9 @@
     </style>
 
     <style name="ActionBarIconsWhite">
-        <item name="attachIcon">@drawable/ic_action_new_attachment</item>
+        <item name="attachIcon">@drawable/ic_attach_file_white_24dp</item>
         <item name="globalSearchIcon">@drawable/ic_language_white_24dp</item>
-        <item name="helpIcon">@drawable/ic_action_help</item>
+        <item name="helpIcon">@drawable/ic_help_outline_white_24dp</item>
         <item name="saveMessageIcon">@drawable/ic_save_white_24dp</item>
         <item name="mySearchIcon">@drawable/ic_search_white_24dp</item>
         <item name="newIcon">@drawable/ic_add_circle_outline_white_24dp</item>

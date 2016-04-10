@@ -36,7 +36,7 @@ public class AvatarFile {
     }
 
     public static Drawable getDefaultDrawable() {
-        return MyImageCache.getStyledDrawable(R.drawable.ic_action_user_light, R.drawable.ic_action_user);
+        return MyImageCache.getStyledDrawable(R.drawable.ic_person_black_36dp, R.drawable.ic_person_white_36dp);
     }
 
     @NonNull
