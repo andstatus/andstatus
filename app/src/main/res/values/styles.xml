@@ -74,7 +74,7 @@
         <item name="helpIcon">@drawable/ic_action_help_light</item>
         <item name="hideMessageIcon">@drawable/ic_action_hide_message_light</item>
         <item name="mySearchIcon">@drawable/ic_search_black_24dp</item>
-        <item name="newIcon">@drawable/ic_action_new_light</item>
+        <item name="newIcon">@drawable/ic_add_circle_outline_black_24dp</item>
         <item name="postMessageIcon">@drawable/ic_action_new_message_light</item>
         <item name="reloadIcon">@drawable/ic_refresh_black_24dp</item>
         <item name="sendIcon">@drawable/ic_action_send_now_light</item>
@@ -87,7 +87,7 @@
         <item name="helpIcon">@drawable/ic_action_help</item>
         <item name="hideMessageIcon">@drawable/ic_action_hide_message</item>
         <item name="mySearchIcon">@drawable/ic_search_white_24dp</item>
-        <item name="newIcon">@drawable/ic_action_new</item>
+        <item name="newIcon">@drawable/ic_add_circle_outline_white_24dp</item>
         <item name="postMessageIcon">@drawable/ic_action_new_message</item>
         <item name="reloadIcon">@drawable/ic_refresh_white_24dp</item>
         <item name="sendIcon">@drawable/ic_action_send_now</item>
