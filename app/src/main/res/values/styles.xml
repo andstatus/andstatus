@@ -77,7 +77,7 @@
         <item name="newIcon">@drawable/ic_add_circle_outline_black_24dp</item>
         <item name="postMessageIcon">@drawable/ic_action_new_message_light</item>
         <item name="reloadIcon">@drawable/ic_refresh_black_24dp</item>
-        <item name="sendIcon">@drawable/ic_action_send_now_light</item>
+        <item name="sendIcon">@drawable/ic_send_black_24dp</item>
         <item name="settingsIcon">@drawable/ic_settings_black_24dp</item>
     </style>
 
@@ -90,7 +90,7 @@
         <item name="newIcon">@drawable/ic_add_circle_outline_white_24dp</item>
         <item name="postMessageIcon">@drawable/ic_action_new_message</item>
         <item name="reloadIcon">@drawable/ic_refresh_white_24dp</item>
-        <item name="sendIcon">@drawable/ic_action_send_now</item>
+        <item name="sendIcon">@drawable/ic_send_white_24dp</item>
         <item name="settingsIcon">@drawable/ic_settings_white_24dp</item>
     </style>
 
