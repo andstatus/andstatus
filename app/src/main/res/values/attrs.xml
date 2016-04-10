@@ -46,6 +46,7 @@
 		<attr name="andStatusActionBarTheme" format="reference" />
 		<attr name="andStatusActionBarPopupTheme" format="reference" />
 
+		<attr name="homeIcon" format="reference" />
         <attr name="attachIcon" format="reference" />
         <attr name="globalSearchIcon" format="reference" />
         <attr name="helpIcon" format="reference" />

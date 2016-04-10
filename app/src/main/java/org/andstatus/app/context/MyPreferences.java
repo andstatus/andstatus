@@ -30,6 +30,7 @@ import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
 
+import org.andstatus.app.R;
 import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
@@ -503,5 +504,11 @@ public class MyPreferences {
 
     public static TimelineType getDefaultTimeline() {
         return TimelineType.load(getString(KEY_DEFAULT_TIMELINE, TimelineType.HOME.save()));
+    }
+
+    public static int getActionBarTextHomeIconResourceId() {
+        return getString(KEY_ACTION_BAR_TEXT_COLOR, "")
+                .equals("ActionBarTextBlack")
+                ? R.drawable.icon_black_24dp : R.drawable.icon_white_24dp;
     }
 }
