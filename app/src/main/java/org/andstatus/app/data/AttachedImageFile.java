@@ -102,7 +102,7 @@ public class AttachedImageFile {
             return;
         }
         if (downloadFile.exists()) {
-            setImageDrawableAsync(messageList, null, downloadFile.getFilePath());
+            setImageDrawableAsync(messageList, null, downloadFile.getFilePath(), "-preload");
         }
     }
 
@@ -129,7 +129,7 @@ public class AttachedImageFile {
         if (downloadFile.exists()) {
             imageView.setImageDrawable(BLANK_DRAWABLE);
             imageView.setVisibility(View.VISIBLE);
-            setImageDrawableAsync(messageList, imageView, downloadFile.getFilePath());
+            setImageDrawableAsync(messageList, imageView, downloadFile.getFilePath(), "-load");
         } else {
             imageView.setVisibility(View.GONE);
             if (downloadRowId == 0) {
@@ -142,9 +142,11 @@ public class AttachedImageFile {
     }
 
     private void setImageDrawableAsync(final ActionableMessageList messageList,
-                                       @Nullable final ImageView imageView, final String path) {
+                                       @Nullable final ImageView imageView, final String path,
+                                       final String taskSuffix) {
         AsyncTaskLauncher.execute(this,
-                new MyAsyncTask<Void, Void, Drawable>(TAG + downloadRowId, MyAsyncTask.PoolEnum.QUICK_UI) {
+                new MyAsyncTask<Void, Void, Drawable>(TAG + downloadRowId + taskSuffix,
+                        MyAsyncTask.PoolEnum.QUICK_UI) {
                     @Override
                     protected Drawable doInBackground2(Void... params) {
                         return MyImageCache.getAttachedImageDrawable(this, path);
