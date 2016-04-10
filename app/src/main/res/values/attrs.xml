@@ -49,7 +49,7 @@
         <attr name="attachIcon" format="reference" />
         <attr name="globalSearchIcon" format="reference" />
         <attr name="helpIcon" format="reference" />
-        <attr name="hideMessageIcon" format="reference" />
+        <attr name="saveMessageIcon" format="reference" />
         <attr name="mySearchIcon" format="reference" />
         <attr name="newIcon" format="reference" />
         <attr name="postMessageIcon" format="reference" />

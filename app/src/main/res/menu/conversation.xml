@@ -33,7 +33,7 @@
     </item>
     <item
         android:id="@+id/saveDraftButton"
-        android:icon="?attr/hideMessageIcon"
+        android:icon="?attr/saveMessageIcon"
         app:showAsAction="ifRoom"
         android:title="@string/button_save_draft"
         android:visible="false">
