@@ -24,7 +24,8 @@
         <item>DeviceDefault</item>
     </string-array>
 
-    <style name="Theme.AndStatus.Base" parent="Theme.AppCompat.NoActionBar">
+    <style name="Theme.AndStatus.Compat.Dark" parent="Theme.AppCompat.NoActionBar" />
+    <style name="Theme.AndStatus.Base" parent="Theme.AndStatus.Compat.Dark">
         <item name="textColorLink">@color/link_text_light</item>
         <item name="dividerColor">@android:color/darker_gray</item>
 
@@ -46,7 +47,8 @@
         <item name="android:colorBackground">?myBackgroundColor</item>
     </style>
 
-	<style name="Theme.AndStatus.Light" parent="Theme.AppCompat.Light.NoActionBar">
+    <style name="Theme.AndStatus.Compat.Light" parent="Theme.AppCompat.Light.NoActionBar" />
+	<style name="Theme.AndStatus.Light" parent="Theme.AndStatus.Compat.Light">
         <item name="andStatusActionBarPopupTheme">@style/ThemeOverlay.AppCompat.Light</item>
         <item name="colorPrimary">?actionBarColor</item>
         <item name="colorPrimaryDark">?actionBarColorDark</item>

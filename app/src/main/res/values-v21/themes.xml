@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.AndStatus.Compat.Dark" parent="Theme.AppCompat.NoActionBar">
+        <item name="android:navigationBarColor">?actionBarColor</item>
+    </style>
+    <style name="Theme.AndStatus.Compat.Light" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="android:navigationBarColor">?actionBarColor</item>
+    </style>
+</resources>
