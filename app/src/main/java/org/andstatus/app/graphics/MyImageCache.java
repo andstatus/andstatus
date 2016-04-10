@@ -32,7 +32,6 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyTheme;
 import org.andstatus.app.data.AttachedImageFile;
 import org.andstatus.app.data.AvatarFile;
-import org.andstatus.app.graphics.MyDrawableCache;
 import org.andstatus.app.util.I18n;
 
 import java.util.Map;
@@ -43,8 +42,9 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class MyImageCache {
     private static final float ATTACHED_IMAGES_CACHE_PART_OF_AVAILABLE_MEMORY = 0.1f;
-    public static final int ATTACHED_IMAGES_CACHE_SIZE_MAX = 50;
-    private static final float AVATARS_CACHE_PART_OF_ATTACHED = 0.1f;
+    public static final int ATTACHED_IMAGES_CACHE_SIZE_MIN = 15;
+    public static final int ATTACHED_IMAGES_CACHE_SIZE_MAX = 30;
+    private static final float AVATARS_CACHE_PART_OF_AVAILABLE_MEMORY = 0.01f;
     public static final int AVATARS_CACHE_SIZE_MAX = 700;
     static volatile MyDrawableCache attachedImagesCache;
     private static volatile MyDrawableCache avatarsCache;
@@ -58,33 +58,44 @@ public class MyImageCache {
         if (attachedImagesCache != null) {
             return;
         }
-        Point displaySize = getDisplaySize(context);
-        float displayDensity = context.getResources().getDisplayMetrics().density;
-        int attachedImageSize = (int) Math.round(AttachedImageFile.MAX_ATTACHED_IMAGE_PART *
-                (displaySize.x > displaySize.y ? displaySize.y : displaySize.x) / displayDensity);
-        int attachedImageCacheSize = calcCacheSize(context, attachedImageSize,
-                ATTACHED_IMAGES_CACHE_PART_OF_AVAILABLE_MEMORY);
-        if (attachedImageCacheSize > ATTACHED_IMAGES_CACHE_SIZE_MAX) {
-            attachedImageCacheSize = ATTACHED_IMAGES_CACHE_SIZE_MAX;
-        }
-        attachedImagesCache = new MyDrawableCache(context, "Attached images", attachedImageSize,
-                attachedImageCacheSize);
+        initializeAttachedImagesCache(context);
+        initializeAvatarsCache(context);
+    }
 
-        int avatarSize = (int) Math.round(AvatarFile.AVATAR_SIZE_DIP * displayDensity);
-        int avatarsCacheSize = calcCacheSize(context, avatarSize,
-                AVATARS_CACHE_PART_OF_ATTACHED * ATTACHED_IMAGES_CACHE_PART_OF_AVAILABLE_MEMORY);
-        if (avatarsCacheSize > AVATARS_CACHE_SIZE_MAX) {
-            avatarsCacheSize = AVATARS_CACHE_SIZE_MAX;
+    private static void initializeAttachedImagesCache(Context context) {
+        // We assume that current display orientation is preferred, so we use "y" size only
+        int imageSize = (int) Math.round(AttachedImageFile.MAX_ATTACHED_IMAGE_PART *
+                getDisplaySize(context).y);
+        int cacheSize = 0;
+        for (int i = 0 ; i < 5; i++) {
+            cacheSize = calcCacheSize(context, imageSize,
+                    ATTACHED_IMAGES_CACHE_PART_OF_AVAILABLE_MEMORY);
+            if (cacheSize >= ATTACHED_IMAGES_CACHE_SIZE_MIN || imageSize < 2 ) {
+                break;
+            }
+            imageSize = (imageSize * 2) / 3;
         }
-        avatarsCache = new MyDrawableCache(context, "Avatars", avatarSize, avatarsCacheSize);
+        if (cacheSize > ATTACHED_IMAGES_CACHE_SIZE_MAX) {
+            cacheSize = ATTACHED_IMAGES_CACHE_SIZE_MAX;
+        }
+        attachedImagesCache = new MyDrawableCache(context, "Attached images", imageSize,
+                cacheSize);
+    }
+
+    private static void initializeAvatarsCache(Context context) {
+        float displayDensity = context.getResources().getDisplayMetrics().density;
+        int imageSize = Math.round(AvatarFile.AVATAR_SIZE_DIP * displayDensity);
+        int cacheSize = calcCacheSize(context, imageSize, AVATARS_CACHE_PART_OF_AVAILABLE_MEMORY);
+        if (cacheSize > AVATARS_CACHE_SIZE_MAX) {
+            cacheSize = AVATARS_CACHE_SIZE_MAX;
+        }
+        avatarsCache = new MyDrawableCache(context, "Avatars", imageSize, cacheSize);
     }
 
     private static int calcCacheSize(Context context, int imageSize, float partOfAvailableMemory) {
         ActivityManager.MemoryInfo memInfo = getMemoryInfo(context);
-        int size = Math.round(
-                partOfAvailableMemory * memInfo.availMem
-                        / imageSize / imageSize / MyDrawableCache.BYTES_PER_PIXEL);
-        return size;
+        return Math.round(partOfAvailableMemory * memInfo.availMem
+                / imageSize / imageSize / MyDrawableCache.BYTES_PER_PIXEL);
     }
 
     @NonNull
