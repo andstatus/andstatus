@@ -1,15 +1,15 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 22
+    compileSdkVersion 23
     buildToolsVersion '24 rc2'
 
     defaultConfig {
         applicationId "org.andstatus.app"
         minSdkVersion 16
-        targetSdkVersion 22
-        versionName "25.02"
-        versionCode 169
+        targetSdkVersion 23
+        versionName "25.03"
+        versionCode 170
 
         testApplicationId "org.andstatus.app.tests"
         testInstrumentationRunner "android.test.InstrumentationTestRunner"
@@ -31,26 +31,16 @@ android {
     }
 }
 
-configurations {
-    all {
-        exclude module: 'httpclient'
-        exclude module: 'httpcore'
-    }
-}
-
 dependencies {
     compile 'com.github.stephenc.jcip:jcip-annotations:1.0-1' // http://stephenc.github.io/jcip-annotations/dependency-info.html
-    compile 'com.android.support:appcompat-v7:22.2.1'
-    compile 'ch.acra:acra:4.8.5'    // https://github.com/ACRA/acra/wiki/AdvancedUsage
-    compile 'org.apache.httpcomponents:httpclient-android:4.3.5.1' // https://hc.apache.org/httpcomponents-client-4.3.x/android-port.html
-	
-	/* Don't use these dependencies for now, because AIDE doesn't support exclusion 
-	   of transitive dependencies.
-    compile 'org.apache.httpcomponents:httpmime:4.3.5'
-    compile 'oauth.signpost:signpost-commonshttp4:1.2.1.2'
-
-    Use the files from 'libs' folder instead:	*/
-	compile files('libs/httpmime-4.3.5.jar')
-    compile files('libs/signpost-commonshttp4-1.2.1.2.jar')
+    compile 'com.android.support:appcompat-v7:23.3.0'
+    compile 'ch.acra:acra:4.8.5' // https://github.com/ACRA/acra/wiki/AdvancedUsage
+    compile 'cz.msebera.android:httpclient:4.4.1.2' // https://github.com/smarek/httpclient-android
+    /* Don't use these dependencies for now, because AIDE doesn't support exclusion
+               of transitive dependencies.
+            compile 'org.apache.httpcomponents:httpmime:4.3.5'
+            Use the files from 'libs' folder instead:	*/
+    compile files('libs/httpmime-4.3.5.jar')
+    compile files('libs/signpost-commonshttp4-1.2.1.2.jar')  // This is modified version for API 23
     compile files('libs/signpost-core-1.2.1.2.jar')
 }

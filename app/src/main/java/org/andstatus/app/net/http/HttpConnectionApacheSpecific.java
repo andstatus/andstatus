@@ -16,9 +16,9 @@
 
 package org.andstatus.app.net.http;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPostHC4;
+import cz.msebera.android.httpclient.HttpResponse;
+import cz.msebera.android.httpclient.client.methods.HttpGet;
+import cz.msebera.android.httpclient.client.methods.HttpPost;
 
 import java.io.IOException;
 
@@ -27,7 +27,7 @@ import java.io.IOException;
  * @author yvolk@yurivolkov.com
  */
 public interface HttpConnectionApacheSpecific {
-    void httpApachePostRequest(HttpPostHC4 httpPost, HttpReadResult result) throws ConnectionException;
+    void httpApachePostRequest(HttpPost httpPost, HttpReadResult result) throws ConnectionException;
     HttpResponse httpApacheGetResponse(HttpGet httpGet) throws IOException;
     void httpApacheSetAuthorization(HttpGet httpGet) throws IOException;
     SslModeEnum getSslMode();

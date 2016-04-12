@@ -17,10 +17,10 @@
 package org.andstatus.app.net.http;
 
 import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPostHC4;
-import org.apache.http.impl.client.BasicResponseHandler;
+import cz.msebera.android.httpclient.HttpResponse;
+import cz.msebera.android.httpclient.client.methods.HttpGet;
+import cz.msebera.android.httpclient.client.methods.HttpPost;
+import cz.msebera.android.httpclient.impl.client.BasicResponseHandler;
 
 import java.io.IOException;
 
@@ -66,7 +66,7 @@ public class HttpConnectionOAuthApache extends HttpConnectionOAuth implements Ht
     }
     
     @Override
-    public void httpApachePostRequest(HttpPostHC4 post, HttpReadResult result) throws ConnectionException {
+    public void httpApachePostRequest(HttpPost post, HttpReadResult result) throws ConnectionException {
         try {
             // TODO: Redo like for get request
             if (result.authenticate) {

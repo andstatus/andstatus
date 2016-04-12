@@ -17,15 +17,15 @@
 package org.andstatus.app.net.http;
 
 import org.andstatus.app.context.MyPreferences;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.config.Registry;
-import org.apache.http.config.RegistryBuilder;
-import org.apache.http.conn.socket.ConnectionSocketFactory;
-import org.apache.http.conn.socket.PlainConnectionSocketFactory;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import cz.msebera.android.httpclient.client.HttpClient;
+import cz.msebera.android.httpclient.client.config.RequestConfig;
+import cz.msebera.android.httpclient.config.Registry;
+import cz.msebera.android.httpclient.config.RegistryBuilder;
+import cz.msebera.android.httpclient.conn.socket.ConnectionSocketFactory;
+import cz.msebera.android.httpclient.conn.socket.PlainConnectionSocketFactory;
+import cz.msebera.android.httpclient.impl.client.HttpClientBuilder;
+import cz.msebera.android.httpclient.impl.client.HttpClients;
+import cz.msebera.android.httpclient.impl.conn.PoolingHttpClientConnectionManager;
 
 public class MyHttpClientFactory {
 

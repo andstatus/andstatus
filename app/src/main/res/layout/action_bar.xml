@@ -9,6 +9,6 @@
     android:layout_width="match_parent"
     android:minHeight="?attr/actionBarSize"
     android:background="?attr/colorPrimary"
-    app:theme="?attr/andStatusActionBarTheme"
-    app:popupTheme="?attr/andStatusActionBarPopupTheme"
+    android:theme="?attr/andStatusActionBarTheme"
+    android:popupTheme="?attr/andStatusActionBarPopupTheme"
     tools:context=".msg.TimelineActivity"/>

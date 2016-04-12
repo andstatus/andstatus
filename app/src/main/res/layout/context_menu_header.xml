@@ -7,7 +7,7 @@
               android:layout_height="match_parent"
               android:background="?attr/colorPrimary"
               android:padding="4dp"
-              app:theme="?attr/andStatusActionBarTheme"
+              android:theme="?attr/andStatusActionBarTheme"
               style="@style/RtlOverlay.Widget.AppCompat.ActionBar.TitleItem"
               tools:context=".msg.TimelineActivity">
     <TextView

@@ -22,11 +22,11 @@ import android.util.Base64;
 
 import org.andstatus.app.account.AccountDataWriter;
 import org.andstatus.app.net.social.Connection;
-import org.apache.http.HttpResponse;
-import org.apache.http.StatusLine;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPostHC4;
+import cz.msebera.android.httpclient.HttpResponse;
+import cz.msebera.android.httpclient.StatusLine;
+import cz.msebera.android.httpclient.client.HttpClient;
+import cz.msebera.android.httpclient.client.methods.HttpGet;
+import cz.msebera.android.httpclient.client.methods.HttpPost;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -48,7 +48,7 @@ public class HttpConnectionBasic extends HttpConnection implements HttpConnectio
     }
 
     @Override
-    public void httpApachePostRequest(HttpPostHC4 postMethod, HttpReadResult result) throws ConnectionException {
+    public void httpApachePostRequest(HttpPost postMethod, HttpReadResult result) throws ConnectionException {
         try {
             HttpClient client = HttpConnectionApacheCommon.getHttpClient(data.sslMode);
             postMethod.setHeader("User-Agent", HttpConnection.USER_AGENT);

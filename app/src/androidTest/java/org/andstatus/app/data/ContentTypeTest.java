@@ -3,7 +3,7 @@ package org.andstatus.app.data;
 import android.test.InstrumentationTestCase;
 
 import org.andstatus.app.context.TestSuite;
-import org.apache.http.entity.ContentType;
+import cz.msebera.android.httpclient.entity.ContentType;
 
 public class ContentTypeTest extends InstrumentationTestCase {
     public void testApacheContentType() {

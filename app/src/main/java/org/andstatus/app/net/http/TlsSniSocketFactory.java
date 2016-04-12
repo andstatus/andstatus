@@ -15,12 +15,12 @@ import android.os.Build;
 
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.util.MyLog;
-import org.apache.http.HttpHost;
-import org.apache.http.conn.socket.ConnectionSocketFactory;
-import org.apache.http.conn.socket.LayeredConnectionSocketFactory;
-import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
-import org.apache.http.conn.ssl.BrowserCompatHostnameVerifier;
-import org.apache.http.protocol.HttpContext;
+import cz.msebera.android.httpclient.HttpHost;
+import cz.msebera.android.httpclient.conn.socket.ConnectionSocketFactory;
+import cz.msebera.android.httpclient.conn.socket.LayeredConnectionSocketFactory;
+import cz.msebera.android.httpclient.conn.ssl.AllowAllHostnameVerifier;
+import cz.msebera.android.httpclient.conn.ssl.BrowserCompatHostnameVerifier;
+import cz.msebera.android.httpclient.protocol.HttpContext;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;

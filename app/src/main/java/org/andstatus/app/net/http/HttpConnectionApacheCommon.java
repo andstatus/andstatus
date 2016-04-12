@@ -25,20 +25,20 @@ import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.util.FileUtils;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.UriUtils;
-import org.apache.http.Header;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpVersion;
-import org.apache.http.NameValuePair;
-import org.apache.http.StatusLine;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.entity.UrlEncodedFormEntityHC4;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPostHC4;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.mime.MultipartEntityBuilder;
-import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.protocol.HTTP;
+import cz.msebera.android.httpclient.Header;
+import cz.msebera.android.httpclient.HttpEntity;
+import cz.msebera.android.httpclient.HttpResponse;
+import cz.msebera.android.httpclient.HttpVersion;
+import cz.msebera.android.httpclient.NameValuePair;
+import cz.msebera.android.httpclient.StatusLine;
+import cz.msebera.android.httpclient.client.HttpClient;
+import cz.msebera.android.httpclient.client.entity.UrlEncodedFormEntity;
+import cz.msebera.android.httpclient.client.methods.HttpGet;
+import cz.msebera.android.httpclient.client.methods.HttpPost;
+import cz.msebera.android.httpclient.entity.ContentType;
+import cz.msebera.android.httpclient.entity.mime.MultipartEntityBuilder;
+import cz.msebera.android.httpclient.message.BasicNameValuePair;
+import cz.msebera.android.httpclient.protocol.HTTP;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -56,7 +56,7 @@ public class HttpConnectionApacheCommon {
     }
 
     protected void postRequest(HttpReadResult result) throws ConnectionException {
-        HttpPostHC4 httpPost = new HttpPostHC4(result.getUrl());
+        HttpPost httpPost = new HttpPost(result.getUrl());
         if (result.isLegacyHttpProtocol()) {
             httpPost.setProtocolVersion(HttpVersion.HTTP_1_0);
         }
@@ -74,7 +74,7 @@ public class HttpConnectionApacheCommon {
         }
     }
 
-    private void fillMultiPartPost(HttpPostHC4 httpPost, JSONObject formParams) throws ConnectionException {
+    private void fillMultiPartPost(HttpPost httpPost, JSONObject formParams) throws ConnectionException {
         MultipartEntityBuilder builder = MultipartEntityBuilder.create(); 
         Uri mediaUri = null;
         String mediaPartName = "";
@@ -108,11 +108,11 @@ public class HttpConnectionApacheCommon {
         httpPost.setEntity(builder.build()); 
     }
     
-    private void fillSinglePartPost(HttpPostHC4 httpPost, JSONObject formParams)
+    private void fillSinglePartPost(HttpPost httpPost, JSONObject formParams)
             throws UnsupportedEncodingException {
         List<NameValuePair> nvFormParams = HttpConnectionApacheCommon.jsonToNameValuePair(formParams);
         if (nvFormParams != null) {
-            HttpEntity formEntity = new UrlEncodedFormEntityHC4(nvFormParams, HTTP.UTF_8);
+            HttpEntity formEntity = new UrlEncodedFormEntity(nvFormParams, HTTP.UTF_8);
             httpPost.setEntity(formEntity);
         }
     }
