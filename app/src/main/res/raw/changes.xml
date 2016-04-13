@@ -26,8 +26,8 @@
 		</subtitle>
     </header>
 
-    <release android:versionName="25.02" android:versionCode="169"
-             versionDate="2016-04-10"
+    <release android:versionName="25.03" android:versionCode="170"
+             versionDate="2016-04-13"
              versionTitle="Quick navigation to the Default Timeline and Clickable links">
         <changes>
             <change>Added &quot;Switch to Default Timeline&quot; item to the Navigation Drawer to
@@ -62,6 +62,8 @@
             </change>
             <change>Action Bar icons updated from
                 <a href="https://design.google.com/icons/">Material Icons repository</a>.
+            </change>
+            <change>Attachments showing and Image cache improvements.
             </change>
         </changes>
     </release>

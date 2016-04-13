@@ -33,6 +33,7 @@ import org.andstatus.app.context.MyTheme;
 import org.andstatus.app.data.AttachedImageFile;
 import org.andstatus.app.data.AvatarFile;
 import org.andstatus.app.util.I18n;
+import org.andstatus.app.util.MyLog;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -60,6 +61,7 @@ public class MyImageCache {
         }
         initializeAttachedImagesCache(context);
         initializeAvatarsCache(context);
+        MyLog.i(MyImageCache.class.getSimpleName(), "Cache initialized. " + getCacheInfo());
     }
 
     private static void initializeAttachedImagesCache(Context context) {

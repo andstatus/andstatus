@@ -66,14 +66,23 @@ public class MyDrawableCache extends LruCache<String, BitmapSubsetDrawable> {
         throw new IllegalStateException("Cache cannot be resized");
     }
 
-    public MyDrawableCache(Context context, String name, int maxBitmapHeightWidth, int requestedCacheSize) {
-        super(requestedCacheSize);
+    public MyDrawableCache(Context context, String name, int maxBitmapHeightWidthIn, int requestedCacheSizeIn) {
+        super(recalcRequestedCacheSize(requestedCacheSizeIn));
         this.name = name;
-        this.setMaxBounds(maxBitmapHeightWidth, maxBitmapHeightWidth);
-        this.requestedCacheSize = requestedCacheSize;
-        this.currentCacheSize = requestedCacheSize;
-        recycledBitmaps = new ConcurrentLinkedQueue<>();
         displayMetrics = context.getResources().getDisplayMetrics();
+        int maxBitmapHeightWidth = maxBitmapHeightWidthIn;
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+            if (maxBitmapHeightWidth > displayMetrics.heightPixels) {
+                maxBitmapHeightWidth = displayMetrics.heightPixels;
+            }
+            if (maxBitmapHeightWidth > displayMetrics.widthPixels) {
+                maxBitmapHeightWidth = displayMetrics.widthPixels;
+            }
+        }
+        this.setMaxBounds(maxBitmapHeightWidth, maxBitmapHeightWidth);
+        this.requestedCacheSize = recalcRequestedCacheSize(requestedCacheSizeIn);
+        this.currentCacheSize = this.requestedCacheSize;
+        recycledBitmaps = new ConcurrentLinkedQueue<>();
         try {
             for (int i = 0; i < currentCacheSize + 2; i++) {
                 recycledBitmaps.add(newBlankBitmap());
@@ -88,6 +97,10 @@ public class MyDrawableCache extends LruCache<String, BitmapSubsetDrawable> {
                 super.resize(currentCacheSize);
             }
         }
+    }
+
+    private static int recalcRequestedCacheSize(int requestedCacheSizeIn) {
+        return Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP ? requestedCacheSizeIn/2 : requestedCacheSizeIn;
     }
 
     private Bitmap newBlankBitmap() {
