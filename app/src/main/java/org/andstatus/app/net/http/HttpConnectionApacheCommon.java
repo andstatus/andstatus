@@ -199,6 +199,8 @@ public class HttpConnectionApacheCommon {
             } while (!stop);
         } catch (IOException e) {
             result.setException(e);
+        } catch (IllegalArgumentException e) {
+            result.setException(e);
         } finally {
             DbUtils.closeSilently(httpResponse);
         }
