@@ -42,10 +42,11 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author yvolk@yurivolkov.com
  */
 public class MyImageCache {
-    private static final float ATTACHED_IMAGES_CACHE_PART_OF_AVAILABLE_MEMORY = 0.1f;
-    public static final int ATTACHED_IMAGES_CACHE_SIZE_MIN = 15;
-    public static final int ATTACHED_IMAGES_CACHE_SIZE_MAX = 30;
-    private static final float AVATARS_CACHE_PART_OF_AVAILABLE_MEMORY = 0.01f;
+    private static final float ATTACHED_IMAGES_CACHE_PART_OF_TOTAL_APP_MEMORY = 0.20f;
+    public static final int ATTACHED_IMAGES_CACHE_SIZE_MIN = 10;
+    public static final int ATTACHED_IMAGES_CACHE_SIZE_MAX = 20;
+    private static final float AVATARS_CACHE_PART_OF_TOTAL_APP_MEMORY = 0.05f;
+    public static final int AVATARS_CACHE_SIZE_MIN = 200;
     public static final int AVATARS_CACHE_SIZE_MAX = 700;
     static volatile MyDrawableCache attachedImagesCache;
     private static volatile MyDrawableCache avatarsCache;
@@ -71,7 +72,7 @@ public class MyImageCache {
         int cacheSize = 0;
         for (int i = 0 ; i < 5; i++) {
             cacheSize = calcCacheSize(context, imageSize,
-                    ATTACHED_IMAGES_CACHE_PART_OF_AVAILABLE_MEMORY);
+                    ATTACHED_IMAGES_CACHE_PART_OF_TOTAL_APP_MEMORY);
             if (cacheSize >= ATTACHED_IMAGES_CACHE_SIZE_MIN || imageSize < 2 ) {
                 break;
             }
@@ -87,7 +88,14 @@ public class MyImageCache {
     private static void initializeAvatarsCache(Context context) {
         float displayDensity = context.getResources().getDisplayMetrics().density;
         int imageSize = Math.round(AvatarFile.AVATAR_SIZE_DIP * displayDensity);
-        int cacheSize = calcCacheSize(context, imageSize, AVATARS_CACHE_PART_OF_AVAILABLE_MEMORY);
+        int cacheSize = 0;
+        for (int i = 0 ; i < 5; i++) {
+            cacheSize = calcCacheSize(context, imageSize, AVATARS_CACHE_PART_OF_TOTAL_APP_MEMORY);
+            if (cacheSize >= AVATARS_CACHE_SIZE_MIN || imageSize < 48 ) {
+                break;
+            }
+            imageSize = (imageSize * 2) / 3;
+        }
         if (cacheSize > AVATARS_CACHE_SIZE_MAX) {
             cacheSize = AVATARS_CACHE_SIZE_MAX;
         }
@@ -95,9 +103,19 @@ public class MyImageCache {
     }
 
     private static int calcCacheSize(Context context, int imageSize, float partOfAvailableMemory) {
-        ActivityManager.MemoryInfo memInfo = getMemoryInfo(context);
-        return Math.round(partOfAvailableMemory * memInfo.availMem
+        return Math.round(partOfAvailableMemory * getTotalAppMemory(context)
                 / imageSize / imageSize / MyDrawableCache.BYTES_PER_PIXEL);
+    }
+
+
+    @NonNull
+    private static long getTotalAppMemory(Context context) {
+        int memoryClass = 16;
+        if (context != null) {
+            ActivityManager actManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+            memoryClass = actManager.getMemoryClass();
+        }
+        return memoryClass * 1024 * 1024;
     }
 
     @NonNull
@@ -137,8 +155,11 @@ public class MyImageCache {
         builder.append(avatarsCache.getInfo() + "\n");
         builder.append(attachedImagesCache.getInfo() + "\n");
         builder.append("Styled drawables: " + styledDrawables.size() + "\n");
+        builder.append("Memory. App total: "
+                + I18n.formatBytes(getTotalAppMemory(MyContextHolder.get().context())));
         ActivityManager.MemoryInfo memInfo = getMemoryInfo(MyContextHolder.get().context());
-        builder.append("Memory: available " + I18n.formatBytes(memInfo.availMem) + " of " + I18n.formatBytes(memInfo.totalMem) + "\n");
+        builder.append("; Device: available " + I18n.formatBytes(memInfo.availMem) + " of "
+                + I18n.formatBytes(memInfo.totalMem) + "\n");
         return builder.toString();
     }
 

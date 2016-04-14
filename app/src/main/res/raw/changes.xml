@@ -26,8 +26,8 @@
 		</subtitle>
     </header>
 
-    <release android:versionName="25.03" android:versionCode="170"
-             versionDate="2016-04-13"
+    <release android:versionName="25.04" android:versionCode="171"
+             versionDate="2016-04-14"
              versionTitle="Quick navigation to the Default Timeline and Clickable links">
         <changes>
             <change>Added &quot;Switch to Default Timeline&quot; item to the Navigation Drawer to

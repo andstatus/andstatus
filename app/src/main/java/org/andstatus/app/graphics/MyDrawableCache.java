@@ -67,7 +67,7 @@ public class MyDrawableCache extends LruCache<String, BitmapSubsetDrawable> {
     }
 
     public MyDrawableCache(Context context, String name, int maxBitmapHeightWidthIn, int requestedCacheSizeIn) {
-        super(recalcRequestedCacheSize(requestedCacheSizeIn));
+        super(requestedCacheSizeIn);
         this.name = name;
         displayMetrics = context.getResources().getDisplayMetrics();
         int maxBitmapHeightWidth = maxBitmapHeightWidthIn;
@@ -80,7 +80,7 @@ public class MyDrawableCache extends LruCache<String, BitmapSubsetDrawable> {
             }
         }
         this.setMaxBounds(maxBitmapHeightWidth, maxBitmapHeightWidth);
-        this.requestedCacheSize = recalcRequestedCacheSize(requestedCacheSizeIn);
+        this.requestedCacheSize = requestedCacheSizeIn;
         this.currentCacheSize = this.requestedCacheSize;
         recycledBitmaps = new ConcurrentLinkedQueue<>();
         try {
@@ -97,10 +97,6 @@ public class MyDrawableCache extends LruCache<String, BitmapSubsetDrawable> {
                 super.resize(currentCacheSize);
             }
         }
-    }
-
-    private static int recalcRequestedCacheSize(int requestedCacheSizeIn) {
-        return Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP ? requestedCacheSizeIn/2 : requestedCacheSizeIn;
     }
 
     private Bitmap newBlankBitmap() {
