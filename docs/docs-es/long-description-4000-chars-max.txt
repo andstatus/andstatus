@@ -1,16 +1,22 @@
-Cliente liviano para redes sociales basadas en conversaciones ramificadas. Soporta múltiples protocolos, incluyendo GNU social ("StatusNet". como por ejemplo Quitter, LoadAverage, Vinilox, etc.), Twitter y Pump.io. AndStatus combina tus todas cuentas en una sola línea temporal y te permite leer y escribir incluso estando desconectado.
+AndStatus es un un cliente de código abierto liviano para redes sociales con conversaciones ramificadas.
+Soporta diferentes redes sociales, incluyendo
+GNU social (como Quitter.se, LoadAverage, Vinilox, etc.), Twitter y Pump.io.
+AndStatus puede combinar tus líneas temporales de todas tus redes en una sola
+y te permite leer y publicar incluso desconectado.
 
-Para Android 4.1 o superior. Licencia de código abierto.
+Para dispositivos con Android 4.1 o posterior.
 
 Diferentes características de AndStatus:
 
 1. Varias cuentas en redes sociales distintas. Seguramente tengas diversas cuentas con las que escribir/contestar como cada "Tú" y compartir entre cuentas y redes.
-2. No necesitas estar conectado ni siquiera para para actualizar tus estados: las publicaciones no enviadas se mantendrán (en "Mensajes en cola") incluso reiniciando. Se enviarán cuando el dispositivo se conecte.
+2. No necesitas estar conectado para leer las líneas temporales y publicar tus novedades: los borradores y mensajes sin enviar se mantienen incluso reiniciando. Se enviarán cuando el dispositivo se conecte.
 3. "Vista de la conversación" práctica de forma ramificada.
-4. "Búsqueda global" permite buscar mensajes públicos en todas las redes sociales registradas con sólo una consulta.
-5. Los Tweets/Mensajes/avatares/imágenes adjuntas son sincronizadas en segundo plano, cuando tu dispositivo tiene una buena conexión.
-6. Los datos en caché pueden ser guardados desde años hasta solamente varios días según lo elijas.
-7. Se pueden hacer y restaurar copias de seguridad de tus cuentas y datos fácilmente entre tus dispositivos.
-8. Gratis y sin anuncios, soportados por la comunidad.
+4. La "búsqueda global" te permite buscar mensajes públicos en todas las redes con una sola consulta.
+5. Listas de amigos y seguidores, mostradas como listas del usuario y como líneas temporales (con el último mensaje de cada usuario)
+6. Los Tweets/Mensajes/avatares/imágenes adjuntas son sincronizadas en segundo plano, cuando tu dispositivo tiene una buena conexión. Por defecto, los adjuntos se descargan únicamente por WiFi.
+7. Los datos en caché pueden ser guardados desde años hasta solamente varios días según lo elijas.
+8. Hacer y restaurar copias de seguridad de tus cuentas y mensajes entre tus dispositivos. ¡Tus datos en tus manos!
+9. Gratis y sin anuncios, soportados por la comunidad.
 
-Lee en los Cambios en la versión las descripciones de todas las nuevas características de AndStatus:
+Para ver el registro de cambios de versiones de AndStatus con sus descripciones y enlaces a sus discusiones:
+http://andstatus.org/changelog.html
