@@ -151,15 +151,22 @@ public class MyImageCache {
     }
 
     public static String getCacheInfo() {
-        StringBuilder builder = new StringBuilder("ImageCaches:\n");
-        builder.append(avatarsCache.getInfo() + "\n");
-        builder.append(attachedImagesCache.getInfo() + "\n");
-        builder.append("Styled drawables: " + styledDrawables.size() + "\n");
-        builder.append("Memory. App total: "
-                + I18n.formatBytes(getTotalAppMemory(MyContextHolder.get().context())));
-        ActivityManager.MemoryInfo memInfo = getMemoryInfo(MyContextHolder.get().context());
-        builder.append("; Device: available " + I18n.formatBytes(memInfo.availMem) + " of "
-                + I18n.formatBytes(memInfo.totalMem) + "\n");
+        StringBuilder builder = new StringBuilder("ImageCaches: ");
+        if (avatarsCache == null || attachedImagesCache == null) {
+            builder.append("not initialized\n");
+        } else {
+            builder.append(avatarsCache.getInfo() + "\n");
+            builder.append(attachedImagesCache.getInfo() + "\n");
+            builder.append("Styled drawables: " + styledDrawables.size() + "\n");
+        }
+        Context context = MyContextHolder.get().context();
+        if (context != null) {
+            builder.append("Memory. App total: "
+                    + I18n.formatBytes(getTotalAppMemory(context)));
+            ActivityManager.MemoryInfo memInfo = getMemoryInfo(context);
+            builder.append("; Device: available " + I18n.formatBytes(memInfo.availMem) + " of "
+                    + I18n.formatBytes(memInfo.totalMem) + "\n");
+        }
         return builder.toString();
     }
 
