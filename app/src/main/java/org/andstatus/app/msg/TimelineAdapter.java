@@ -23,6 +23,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.andstatus.app.R;
+import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DownloadStatus;
@@ -138,44 +139,53 @@ public class TimelineAdapter extends MyBaseAdapter {
         View view = LayoutInflater.from(contextMenu.getActivity()).inflate(listItemLayoutId, null);
         if (showButtonsBelowMessages) {
             View buttons = view.findViewById(R.id.message_buttons);
-            buttons.setVisibility(View.VISIBLE);
-            buttons.findViewById(R.id.reply_button).setOnClickListener(
-                    new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            onButtonClick(v, MessageListContextMenuItem.REPLY);
+            if (buttons != null) {
+                buttons.setVisibility(View.VISIBLE);
+                buttons.findViewById(R.id.reply_button).setOnClickListener(
+                        new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                onButtonClick(v, MessageListContextMenuItem.REPLY);
+                            }
                         }
-                    }
-            );
-            buttons.findViewById(R.id.reblog_button).setOnClickListener(
-                    new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            onButtonClick(v, MessageListContextMenuItem.REBLOG);
+                );
+                buttons.findViewById(R.id.reblog_button).setOnClickListener(
+                        new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                onButtonClick(v, MessageListContextMenuItem.REBLOG);
+                            }
                         }
-                    }
-            );
-            buttons.findViewById(R.id.favorite_button).setOnClickListener(
-                    new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            onButtonClick(v, MessageListContextMenuItem.FAVORITE);
+                );
+                buttons.findViewById(R.id.favorite_button).setOnClickListener(
+                        new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                onButtonClick(v, MessageListContextMenuItem.FAVORITE);
+                            }
                         }
-                    }
-            );
+                );
+            }
         }
         return view;
     }
 
     private void onButtonClick(View v, MessageListContextMenuItem contextMenuItemIn) {
         TimelineViewItem item = getItem(v);
-        if (item != null && item.msgStatus == DownloadStatus.LOADED && item.linkedUserId != 0) {
+        if (item != null && item.msgStatus == DownloadStatus.LOADED) {
+            long actorId =  item.linkedUserId;
+            // Currently selected account is the best candidate as an actor
+            MyAccount ma = MyContextHolder.get().persistentAccounts().fromUserId(
+                    contextMenu.getCurrentMyAccountUserId());
+            if (ma.isValid() && ma.getOriginId() == item.originId) {
+                actorId = ma.getUserId();
+            }
             MessageListContextMenuItem contextMenuItem = contextMenuItemIn;
             if (contextMenuItem == MessageListContextMenuItem.FAVORITE
                     && item.favorited) {
                 contextMenuItem = MessageListContextMenuItem.DESTROY_FAVORITE;
             }
-            contextMenu.onContextMenuItemSelected(contextMenuItem, item.msgId, item.linkedUserId);
+            contextMenu.onContextMenuItemSelected(contextMenuItem, item.msgId, actorId);
         }
     }
 
@@ -211,7 +221,9 @@ public class TimelineAdapter extends MyBaseAdapter {
 
     private void showButtonsBelowMessage(TimelineViewItem item, View view) {
         View buttons = view.findViewById(R.id.message_buttons);
-        if (showButtonsBelowMessages && item.msgStatus == DownloadStatus.LOADED) {
+        if (buttons == null) {
+            return;
+        } else if (showButtonsBelowMessages && item.msgStatus == DownloadStatus.LOADED) {
             buttons.setVisibility(View.VISIBLE);
             ImageView imageView = (ImageView) buttons.findViewById(R.id.favorite_button);
             imageView.setAlpha(item.favorited ? 1f : 0.5f );
