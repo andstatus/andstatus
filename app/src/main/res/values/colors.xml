@@ -43,6 +43,9 @@
 	<color name="grey_300">#E0E0E0</color>
 	<color name="grey_500">#9E9E9E</color>
 	<color name="grey_700">#616161</color>
+	<color name="grey_800">#424242</color>
+	<color name="grey_850">#303030</color>
+	<color name="grey_900">#212121</color>
 
     <!-- Background colors http://www.computerhope.com/htmcolor.htm -->
     <color name="black">#000000</color>

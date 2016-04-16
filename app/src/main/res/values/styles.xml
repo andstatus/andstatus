@@ -10,6 +10,7 @@
         <item>ActionBarMaterialBlue</item>
         <item>ActionBarMyBlue</item>
         <item>ActionBarGrey</item>
+        <item>ActionBarBlack</item>
     </string-array>
     <style name="ActionBarRed">
         <item name="actionBarColor">@color/red_500</item>
@@ -55,6 +56,11 @@
         <item name="actionBarColor">@color/grey_500</item>
         <item name="actionBarColorDark">@color/grey_700</item>
         <item name="actionBarColorAccent">@color/grey_500</item>
+    </style>
+    <style name="ActionBarBlack">
+        <item name="actionBarColor">@color/grey_900</item>
+        <item name="actionBarColorDark">@color/black</item>
+        <item name="actionBarColorAccent">@color/grey_850</item>
     </style>
 
     <string-array name="action_bar_text_color_values">
