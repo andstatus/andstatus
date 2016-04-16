@@ -27,7 +27,7 @@
     <style name="Theme.AndStatus.Compat.Dark" parent="Theme.AppCompat.NoActionBar" />
     <style name="Theme.AndStatus.Base" parent="Theme.AndStatus.Compat.Dark">
         <item name="textColorLink">@color/link_text_light</item>
-        <item name="dividerColor">@android:color/darker_gray</item>
+        <item name="dividerColor">@color/grey_700</item>
 
         <item name="replyBackground">@drawable/reply_timeline_background</item>
         <item name="msgCountIcon">@drawable/ic_message_white_24dp</item>
@@ -53,7 +53,7 @@
         <item name="colorPrimary">?actionBarColor</item>
         <item name="colorPrimaryDark">?actionBarColorDark</item>
         <item name="colorAccent">?actionBarColorAccent</item>
-        <item name="dividerColor">@android:color/black</item>
+        <item name="dividerColor">@color/grey_300</item>
 
         <item name="textColorLink">@color/link_text_dark</item>
 
