@@ -66,6 +66,8 @@
 
     <!-- The theme has all attributes included and should be used in preview for Android tools -->
     <style name="Theme.AndStatus.FullyDefined" parent="Theme.AndStatus.DeviceDefault">
+        <item name="actionBarColorDark">@color/my_blue_700</item>
+
         <item name="messageUsernameTextAppearance">?android:attr/textAppearanceSmall</item>
         <item name="messageUsernameColor">?android:attr/textColorSecondary</item>
 

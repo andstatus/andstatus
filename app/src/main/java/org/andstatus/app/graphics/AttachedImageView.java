@@ -16,14 +16,14 @@
 
 package org.andstatus.app.graphics;
 
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 
 import org.andstatus.app.R;
-import org.andstatus.app.data.AttachedImageFile;
-import org.andstatus.app.graphics.MyImageCache;
 import org.andstatus.app.util.MyLog;
 
 /**
@@ -31,6 +31,8 @@ import org.andstatus.app.util.MyLog;
  * @author yvolk@yurivolkov.com
  */
 public class AttachedImageView extends ImageView {
+    public static final double MAX_ATTACHED_IMAGE_PART = 0.75;
+
     private View referencedView = null;
     private static final int MAX_HEIGHT = 2500;
 
@@ -49,7 +51,7 @@ public class AttachedImageView extends ImageView {
     public AttachedImageView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
     }
-    
+
     public void setReferencedView(View referencedViewIn) {
         referencedView = referencedViewIn;
     }
@@ -72,17 +74,14 @@ public class AttachedImageView extends ImageView {
         }
         int refWidthPixels = referencedView.getMeasuredWidth();
         int height = (int) Math.floor(refWidthPixels * getDrawableHeightToWidthRatio());
-        if (MyLog.isVerboseEnabled()) {
-            MyLog.v(this, method + "; refWidth=" + refWidthPixels + ", height=" + height
-                    + ", widthSpec=" + MeasureSpec.toString(widthMeasureSpec));
-        }
+        logIt(method, refWidthPixels, widthMeasureSpec, height);
         int mode = MeasureSpec.EXACTLY;
         if (height == 0) {
             height = MAX_HEIGHT;
             mode = MeasureSpec.AT_MOST;
         }
-        if (height > AttachedImageFile.MAX_ATTACHED_IMAGE_PART * getDisplayHeight()) {
-            height = (int) Math.floor(AttachedImageFile.MAX_ATTACHED_IMAGE_PART
+        if (height > MAX_ATTACHED_IMAGE_PART * getDisplayHeight()) {
+            height = (int) Math.floor(MAX_ATTACHED_IMAGE_PART
                     * getDisplayHeight());
         }
         getLayoutParams().height = height;
@@ -92,13 +91,27 @@ public class AttachedImageView extends ImageView {
         setMeasuredDimension(widthSpec, heightSpec);
     }
 
+    /**
+     * We need to catch an error here in order to work in Android Editor preview
+     */
+    private void logIt(String method, Integer refWidthPixels, int widthMeasureSpec, float height) {
+        try {
+            if (MyLog.isVerboseEnabled()) {
+                MyLog.v(this, method + ";"
+                        + (heightLocked ? "locked" : "      ")
+                        + " height=" + height
+                        + ", widthSpec=" + MeasureSpec.toString(widthMeasureSpec)
+                        + (refWidthPixels == null ? "" : " refWidth=" + refWidthPixels + ",")
+                );
+            }
+        } catch (Throwable e) {
+            Log.i(AttachedImageView.class.getSimpleName(), method + "; MyLog class was not found", e);
+        }
+    }
+
     private void saveMeasureSpec(int widthMeasureSpec, int heightMeasureSpec) {
         String method = "onMeasure";
-        if (MyLog.isVerboseEnabled()) {
-            MyLog.v(this, method + "; " + (heightLocked ? "locked" : "      ")
-                    + " width=" + MeasureSpec.toString(widthMeasureSpec)
-                    + ", height=" + MeasureSpec.toString(heightMeasureSpec));
-        }
+        logIt(method, null, widthMeasureSpec, heightMeasureSpec);
         if (!heightLocked) {
             widthMeasureSpecStored = MeasureSpec.makeMeasureSpec(
                     MeasureSpec.getSize(widthMeasureSpec),  MeasureSpec.AT_MOST);

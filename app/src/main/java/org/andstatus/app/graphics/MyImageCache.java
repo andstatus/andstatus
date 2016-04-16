@@ -31,7 +31,6 @@ import android.view.WindowManager;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.MyTheme;
-import org.andstatus.app.data.AttachedImageFile;
 import org.andstatus.app.data.AvatarFile;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
@@ -68,7 +67,7 @@ public class MyImageCache {
 
     private static void initializeAttachedImagesCache(Context context) {
         // We assume that current display orientation is preferred, so we use "y" size only
-        int imageSize = (int) Math.round(AttachedImageFile.MAX_ATTACHED_IMAGE_PART *
+        int imageSize = (int) Math.round(AttachedImageView.MAX_ATTACHED_IMAGE_PART *
                 getDisplaySize(context).y);
         int cacheSize = 0;
         for (int i = 0 ; i < 5; i++) {
@@ -184,6 +183,11 @@ public class MyImageCache {
         Display display = ((WindowManager) context.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
         Point size = new Point();
         display.getSize(size);
+        if (size.x < 480 || size.y < 480) {
+            // This is needed for preview in Layout editor
+            size.x = 1280;
+            size.y = 768;
+        }
         return size;
     }
 

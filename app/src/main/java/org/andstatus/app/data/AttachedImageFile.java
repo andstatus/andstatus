@@ -89,8 +89,6 @@ public class AttachedImageFile {
         return null;
     }
 
-    public static final double MAX_ATTACHED_IMAGE_PART = 0.75;
-
     @Override
     public String toString() {
         return MyLog.objTagToString(this) + " [rowId=" + downloadRowId + ", " + downloadFile + "]";
