@@ -84,6 +84,7 @@ public class MyPreferences {
     public static final String KEY_ACTION_BAR_TEXT_COLOR = "action_bar_text_color";
     public static final String KEY_BACKGROUND_COLOR = "background_color";
     public static final String KEY_SHOW_AVATARS = "show_avatars";
+    public static final String KEY_ROUNDED_AVATARS = "rounded_avatars";
     public static final String KEY_SHOW_ATTACHED_IMAGES = "show_attached_images";
     public static final String KEY_ATTACH_IMAGES = "attach_images";
     public static final String KEY_SHOW_ORIGIN = "show_origin";

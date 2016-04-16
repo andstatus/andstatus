@@ -52,4 +52,7 @@
         android:title="@string/title_preference_theme_size"
         android:summary="@string/summary_preference_theme_size"
         android:dialogTitle="@string/dialog_title_preference_theme_size" />
+    <org.andstatus.app.context.MultilineCheckBoxPreference android:key="rounded_avatars"
+        android:defaultValue="true"
+        android:title="@string/rounded_avatars" />
 </PreferenceScreen>

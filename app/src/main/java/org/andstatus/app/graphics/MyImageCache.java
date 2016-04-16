@@ -29,6 +29,7 @@ import android.view.Display;
 import android.view.WindowManager;
 
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.MyTheme;
 import org.andstatus.app.data.AttachedImageFile;
 import org.andstatus.app.data.AvatarFile;
@@ -100,6 +101,12 @@ public class MyImageCache {
             cacheSize = AVATARS_CACHE_SIZE_MAX;
         }
         avatarsCache = new MyDrawableCache(context, "Avatars", imageSize, cacheSize);
+        setAvatarsRounded();
+    }
+
+    public static void setAvatarsRounded() {
+        avatarsCache.evictAll();
+        avatarsCache.rounded = MyPreferences.getBoolean(MyPreferences.KEY_ROUNDED_AVATARS, true);
     }
 
     private static int calcCacheSize(Context context, int imageSize, float partOfAvailableMemory) {

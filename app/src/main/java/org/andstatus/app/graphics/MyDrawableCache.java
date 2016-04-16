@@ -19,11 +19,15 @@ package org.andstatus.app.graphics;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.BitmapShader;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.PorterDuff;
 import android.graphics.Rect;
+import android.graphics.RectF;
+import android.graphics.Shader;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
@@ -60,6 +64,7 @@ public class MyDrawableCache extends LruCache<String, BitmapSubsetDrawable> {
     final Set<String> brokenBitmaps = new ConcurrentSkipListSet<>();
     final Queue<Bitmap> recycledBitmaps;
     final DisplayMetrics displayMetrics;
+    volatile boolean rounded = false;
 
     @Override
     public void resize(int maxSize) {
@@ -172,9 +177,26 @@ public class MyDrawableCache extends LruCache<String, BitmapSubsetDrawable> {
         }
         Canvas canvas = new Canvas(background);
         canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
-        canvas.drawBitmap(bitmap, 0 , 0, null);
+        if (rounded) {
+            drawRoundedBitmap(canvas, bitmap);
+        } else {
+            canvas.drawBitmap(bitmap, 0 , 0, null);
+        }
         bitmap.recycle();
         return new BitmapSubsetDrawable(background, srcRect);
+    }
+
+    /**
+     * The solution is from http://evel.io/2013/07/21/rounded-avatars-in-android/
+     */
+    private void drawRoundedBitmap(Canvas canvas, Bitmap bitmap) {
+        RectF rectF = new RectF(0, 0, bitmap.getWidth(), bitmap.getHeight());
+        Paint paint = new Paint();
+        paint.setAntiAlias(true);
+        paint.setDither(true);
+        final BitmapShader shader = new BitmapShader(bitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP);
+        paint.setShader(shader);
+        canvas.drawOval(rectF, paint);
     }
 
     private Bitmap getSuitableRecycledBitmap(Rect srcRect) {
