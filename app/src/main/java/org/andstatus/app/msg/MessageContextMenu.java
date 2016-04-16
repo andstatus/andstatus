@@ -264,14 +264,26 @@ public class MessageContextMenu extends MyContextMenu {
             return;
         }
         if (mMsgId == 0) {
-            MyLog.e(this, "message id == 0");
+            MyLog.e(this, "message id == 0" + msgInfo);
             return;
         }
+        onContextMenuItemSelected(MessageListContextMenuItem.fromId(item.getItemId()), mMsgId,
+                mActorUserIdForCurrentMessage);
+    }
 
-        MyAccount ma = MyContextHolder.get().persistentAccounts().fromUserId(mActorUserIdForCurrentMessage);
+    public void onContextMenuItemSelected(MessageListContextMenuItem contextMenuItem, long msgId,
+                                          long actorId) {
+        final String method = "onContextMenuItemSelected";
+        if (msgId == 0 || actorId == 0) {
+            MyLog.d(this, method + "; msgId=" + msgId + "; actorId=" + actorId);
+            return;
+        }
+        mMsgId = msgId;
+        mActorUserIdForCurrentMessage = actorId;
+        MyAccount ma = MyContextHolder.get().persistentAccounts().fromUserId(actorId);
         if (ma.isValid()) {
-            MessageListContextMenuItem contextMenuItem = MessageListContextMenuItem.fromId(item.getItemId());
-            MyLog.v(this, "onContextItemSelected: " + contextMenuItem + "; actor=" + ma.getAccountName() + "; msgId=" + mMsgId + msgInfo);
+            MyLog.v(this, method + "; " + contextMenuItem
+                    + "; actor=" + ma.getAccountName() + "; msgId=" + msgId);
             contextMenuItem.execute(this, ma);
         }
     }

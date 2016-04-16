@@ -180,9 +180,14 @@ public class MyImageCache {
      * See http://stackoverflow.com/questions/1016896/how-to-get-screen-dimensions
      */
     public static Point getDisplaySize(Context context) {
-        Display display = ((WindowManager) context.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
         Point size = new Point();
-        display.getSize(size);
+        WindowManager windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+        if (windowManager != null) {
+            Display display = windowManager.getDefaultDisplay();
+            if (display != null) {
+                display.getSize(size);
+            }
+        }
         if (size.x < 480 || size.y < 480) {
             // This is needed for preview in Layout editor
             size.x = 1280;

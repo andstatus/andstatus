@@ -25,6 +25,7 @@ import android.widget.TextView;
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.graphics.MyImageCache;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyUrlSpan;
@@ -42,6 +43,8 @@ public class TimelineAdapter extends MyBaseAdapter {
     private final TimelinePages pages;
     private final boolean showAvatars = MyPreferences.showAvatars();
     private final boolean showAttachedImages = MyPreferences.showAttachedImages();
+    private final boolean showButtonsBelowMessages =
+            MyPreferences.getBoolean(MyPreferences.KEY_SHOW_BUTTONS_BELOW_MESSAGE, true);
     private final boolean markReplies = MyPreferences.getBoolean(
             MyPreferences.KEY_MARK_REPLIES_IN_TIMELINE, false);
     private int positionPrev = -1;
@@ -98,6 +101,9 @@ public class TimelineAdapter extends MyBaseAdapter {
         if (markReplies) {
             showMarkReplies(item, view);
         }
+        if (showButtonsBelowMessages) {
+            showButtonsBelowMessage(item, view);
+        }
         preloadAttachments(position);
         positionPrev = position;
         return view;
@@ -129,7 +135,48 @@ public class TimelineAdapter extends MyBaseAdapter {
     }
 
     private View newView() {
-        return LayoutInflater.from(contextMenu.getActivity()).inflate(listItemLayoutId, null);
+        View view = LayoutInflater.from(contextMenu.getActivity()).inflate(listItemLayoutId, null);
+        if (showButtonsBelowMessages) {
+            View buttons = view.findViewById(R.id.message_buttons);
+            buttons.setVisibility(View.VISIBLE);
+            buttons.findViewById(R.id.reply_button).setOnClickListener(
+                    new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            onButtonClick(v, MessageListContextMenuItem.REPLY);
+                        }
+                    }
+            );
+            buttons.findViewById(R.id.reblog_button).setOnClickListener(
+                    new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            onButtonClick(v, MessageListContextMenuItem.REBLOG);
+                        }
+                    }
+            );
+            buttons.findViewById(R.id.favorite_button).setOnClickListener(
+                    new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            onButtonClick(v, MessageListContextMenuItem.FAVORITE);
+                        }
+                    }
+            );
+        }
+        return view;
+    }
+
+    private void onButtonClick(View v, MessageListContextMenuItem contextMenuItemIn) {
+        TimelineViewItem item = getItem(v);
+        if (item != null && item.msgStatus == DownloadStatus.LOADED && item.linkedUserId != 0) {
+            MessageListContextMenuItem contextMenuItem = contextMenuItemIn;
+            if (contextMenuItem == MessageListContextMenuItem.FAVORITE
+                    && item.favorited) {
+                contextMenuItem = MessageListContextMenuItem.DESTROY_FAVORITE;
+            }
+            contextMenu.onContextMenuItemSelected(contextMenuItem, item.msgId, item.linkedUserId);
+        }
     }
 
     private void showAvatar(TimelineViewItem item, View view) {
@@ -159,6 +206,17 @@ public class TimelineAdapter extends MyBaseAdapter {
         } else {
             view.setBackgroundResource(0);
             view.setPadding(0, 0, 0, 0);
+        }
+    }
+
+    private void showButtonsBelowMessage(TimelineViewItem item, View view) {
+        View buttons = view.findViewById(R.id.message_buttons);
+        if (showButtonsBelowMessages && item.msgStatus == DownloadStatus.LOADED) {
+            buttons.setVisibility(View.VISIBLE);
+            ImageView imageView = (ImageView) buttons.findViewById(R.id.favorite_button);
+            imageView.setAlpha(item.favorited ? 1f : 0.5f );
+        } else {
+            buttons.setVisibility(View.GONE);
         }
     }
 

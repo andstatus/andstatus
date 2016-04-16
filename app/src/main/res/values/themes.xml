@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- 
-    Copyright (c) 2010-2015 yvolk (Yuri Volkov), http://yurivolkov.com
+    Copyright (c) 2010-2016 yvolk (Yuri Volkov), http://yurivolkov.com
 	Copyright (C) 2008 Torgny Bjers
 	
 	Licensed under the Apache License, Version 2.0 (the "License");
@@ -34,6 +34,10 @@
         <item name="followingCountIcon">@drawable/ic_person_white_24dp</item>
         <item name="followersCountIcon">@drawable/ic_people_white_24dp</item>
         <item name="favoriteIcon">@drawable/ic_favorite_white_24dp</item>
+
+        <item name="replyIcon">@drawable/ic_reply_white_24dp</item>
+        <item name="reblogIcon">@drawable/ic_repeat_white_24dp</item>
+        <item name="favoriteBorderIcon">@drawable/ic_favorite_border_white_24dp</item>
     </style>
     <style name="Theme.AndStatus.DeviceDefault" parent="Theme.AndStatus.Base">
         <item name="andStatusActionBarTheme">@style/ThemeOverlay.AppCompat</item>
@@ -62,6 +66,10 @@
         <item name="followingCountIcon">@drawable/ic_person_black_24dp</item>
         <item name="followersCountIcon">@drawable/ic_people_black_24dp</item>
         <item name="favoriteIcon">@drawable/ic_favorite_black_24dp</item>
+
+        <item name="replyIcon">@drawable/ic_reply_black_24dp</item>
+        <item name="reblogIcon">@drawable/ic_repeat_black_24dp</item>
+        <item name="favoriteBorderIcon">@drawable/ic_favorite_border_black_24dp</item>
     </style>
 
     <!-- The theme has all attributes included and should be used in preview for Android tools -->

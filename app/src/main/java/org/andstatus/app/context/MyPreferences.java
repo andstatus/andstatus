@@ -88,6 +88,7 @@ public class MyPreferences {
     public static final String KEY_SHOW_ATTACHED_IMAGES = "show_attached_images";
     public static final String KEY_ATTACH_IMAGES = "attach_images";
     public static final String KEY_SHOW_ORIGIN = "show_origin";
+    public static final String KEY_SHOW_BUTTONS_BELOW_MESSAGE = "show_buttons_below_message";
 
     public static final String KEY_CUSTOM_LOCALE = "custom_locale";
     public static final String CUSTOM_LOCALE_DEFAULT = "default";

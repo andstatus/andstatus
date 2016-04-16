@@ -17,6 +17,7 @@
 package org.andstatus.app.widget;
 
 import android.view.View;
+import android.view.ViewParent;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
@@ -42,6 +43,16 @@ public abstract class MyBaseAdapter extends BaseAdapter  implements View.OnClick
 
     private TextView getPositionView(View view) {
         if (view != null) {
+            View parentView = view;
+            for (int i = 0; i < 10; i++) {
+                TextView positionView = (TextView) parentView.findViewById(R.id.position);
+                if (positionView != null) {
+                    return positionView;
+                }
+                if (View.class.isAssignableFrom(parentView.getParent().getClass())) {
+                    parentView = (View) parentView.getParent();
+                }
+            }
             return (TextView) view.findViewById(R.id.position);
         }
         return null;

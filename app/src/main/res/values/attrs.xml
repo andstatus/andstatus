@@ -63,5 +63,10 @@
 		<attr name="followingCountIcon" format="reference" />
 		<attr name="followersCountIcon" format="reference" />
 		<attr name="favoriteIcon" format="reference" />
+
+		<attr name="replyIcon" format="reference" />
+		<attr name="reblogIcon" format="reference" />
+        <attr name="favoriteBorderIcon" format="reference" />
+
     </declare-styleable>
 </resources>

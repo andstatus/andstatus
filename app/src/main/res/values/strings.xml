@@ -347,6 +347,7 @@
   <string name="search_timeline_hint">Enter a username/phrase</string>
   <string name="search_direct_messages_label">Search direct messages</string>
   <string name="search_direct_messages_hint">Enter a username or phrase</string>
+  <string name="show_buttons_below_message">Show Reply, Repost and Favorite buttons below message</string>
   <string name="status_destroyed">The message has been removed.</string>
   <string name="summary_preference_accounts_absent">No AndStatus accounts yet</string>
   <string name="summary_preference_accounts_present">Number of AndStatus Accounts</string>
