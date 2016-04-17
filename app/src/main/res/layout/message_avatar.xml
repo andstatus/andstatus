@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Copyright (c) 2013 yvolk (Yuri Volkov), http://yurivolkov.com
+    Copyright (c) 2016 yvolk (Yuri Volkov), http://yurivolkov.com
     
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -21,8 +21,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 tools:context=".msg.TimelineActivity"
-                tools:theme="@style/Theme.AndStatus.FullyDefined"
-    >
+                tools:theme="@style/Theme.AndStatus.FullyDefined" >
 
     <View android:id="@+id/divider" style="@style/Divider"/>
 
@@ -37,21 +36,7 @@
         android:paddingLeft="54dp"
         android:paddingRight="6dp" >
 
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:orientation="horizontal" >
-
-            <TextView
-                android:id="@+id/message_author"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentLeft="true"
-                style="@style/messageUsernameAppearance"
-                tools:text="author@some.domain"/>
-
-        </RelativeLayout>
+        <include layout="@layout/author_and_rebloggers"/>
 
         <TextView
             android:id="@+id/message_body"

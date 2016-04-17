@@ -21,6 +21,7 @@ import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
 
 import org.andstatus.app.R;
+import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.AttachedImageFile;
@@ -34,6 +35,9 @@ import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * @author yvolk@yurivolkov.com
  */
@@ -46,6 +50,8 @@ public class TimelineViewItem {
 
     String authorName = "";
     long authorId = 0;
+
+    Map<Long, String> rebloggers = new HashMap<>();
 
     String recipientName = "";
 
@@ -81,6 +87,27 @@ public class TimelineViewItem {
         item.msgStatus = DownloadStatus.load(DbUtils.getLong(cursor, MyDatabase.Msg.MSG_STATUS));
         item.linkedUserId = DbUtils.getLong(cursor, MyDatabase.User.LINKED_USER_ID);
         item.authorId = DbUtils.getLong(cursor, MyDatabase.Msg.AUTHOR_ID);
+
+        long senderId = DbUtils.getLong(cursor, MyDatabase.Msg.SENDER_ID);
+        if (senderId != item.authorId) {
+            String senderName = DbUtils.getString(cursor, MyDatabase.User.SENDER_NAME);
+            if (TextUtils.isEmpty(senderName)) {
+                senderName = "(id" + senderId + ")";
+            }
+            item.rebloggers.put(senderId, senderName);
+        }
+
+        if (item.linkedUserId != 0) {
+            if (DbUtils.getInt(cursor, MyDatabase.MsgOfUser.REBLOGGED) == 1
+                    &&  !item.rebloggers.containsKey(item.linkedUserId)) {
+                MyAccount myAccount = MyContextHolder.get().persistentAccounts()
+                        .fromUserId(item.linkedUserId);
+                if (myAccount.isValid()) {
+                    item.rebloggers.put(senderId, myAccount.getAccountName());
+                }
+            }
+        }
+
         item.avatarDrawable = AvatarFile.getDrawable(item.authorId, cursor);
         if (MyPreferences.showAttachedImages()) {
             item.attachedImageFile = new AttachedImageFile(
@@ -132,6 +159,10 @@ public class TimelineViewItem {
         if (msgStatus != DownloadStatus.LOADED) {
             messageDetails.append(" (").append(msgStatus.getTitle(context)).append(")");
         }
+    }
+
+    public boolean isReblogged() {
+        return !rebloggers.isEmpty();
     }
 
     @Override

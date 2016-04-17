@@ -90,6 +90,7 @@ public class TimelineAdapter extends MyBaseAdapter {
         setPosition(view, position);
         TimelineViewItem item = getItem(position);
         MyUrlSpan.showText(view, R.id.message_author, item.authorName, false);
+        showRebloggers(item, view);
         showMessageBody(item, view);
         MyUrlSpan.showText(view, R.id.message_details, item.getDetails(contextMenu.getActivity()), false);
         if (showAvatars) {
@@ -108,6 +109,25 @@ public class TimelineAdapter extends MyBaseAdapter {
         preloadAttachments(position);
         positionPrev = position;
         return view;
+    }
+
+    private void showRebloggers(TimelineViewItem item, View view) {
+        View viewGroup = view.findViewById(R.id.reblogged);
+        if (viewGroup == null) {
+            return;
+        } else if (item.isReblogged()) {
+            viewGroup.setVisibility(View.VISIBLE);
+            String rebloggers = "";
+            for (String name : item.rebloggers.values()) {
+                if (!rebloggers.isEmpty()) {
+                    rebloggers += ", ";
+                }
+                rebloggers += name;
+            }
+            MyUrlSpan.showText(viewGroup, R.id.rebloggers, rebloggers, false);
+        } else {
+            viewGroup.setVisibility(View.GONE);
+        }
     }
 
     private void showMessageBody(TimelineViewItem item, View messageView) {
@@ -220,15 +240,15 @@ public class TimelineAdapter extends MyBaseAdapter {
     }
 
     private void showButtonsBelowMessage(TimelineViewItem item, View view) {
-        View buttons = view.findViewById(R.id.message_buttons);
-        if (buttons == null) {
+        View viewGroup = view.findViewById(R.id.message_buttons);
+        if (viewGroup == null) {
             return;
         } else if (showButtonsBelowMessages && item.msgStatus == DownloadStatus.LOADED) {
-            buttons.setVisibility(View.VISIBLE);
-            ImageView imageView = (ImageView) buttons.findViewById(R.id.favorite_button);
+            viewGroup.setVisibility(View.VISIBLE);
+            ImageView imageView = (ImageView) viewGroup.findViewById(R.id.favorite_button);
             imageView.setAlpha(item.favorited ? 1f : 0.5f );
         } else {
-            buttons.setVisibility(View.GONE);
+            viewGroup.setVisibility(View.GONE);
         }
     }
 

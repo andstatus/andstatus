@@ -259,7 +259,15 @@ public class TimelineSql {
      * Table columns to use for the messages content
      */
     public static String[] getTimelineProjection() {
-        return getBaseProjection().toArray(new String[]{});
+        List<String> columnNames = getBaseProjection();
+        if (!columnNames.contains(Msg.AUTHOR_ID)) {
+            columnNames.add(Msg.AUTHOR_ID);
+        }
+        columnNames.add(Msg.SENDER_ID);
+        columnNames.add(User.SENDER_NAME);
+        columnNames.add(Msg.VIA);
+        columnNames.add(MsgOfUser.REBLOGGED);
+        return columnNames.toArray(new String[]{});
     }
 
     private static List<String> getBaseProjection() {
