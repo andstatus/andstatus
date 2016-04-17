@@ -48,7 +48,7 @@ public class MyTheme {
      * Load a theme according to the preferences.
      */
     public static void loadTheme(Context context) {
-        String themeName = "Theme.AndStatus." + MyPreferences.getString(MyPreferences.KEY_THEME_COLOR, "Dark");
+        String themeName = "Theme.AndStatus." + MyPreferences.getString(MyPreferences.KEY_THEME_COLOR, "Light");
         mIsThemeLight = themeName.contains("Light");
         int themeId = getStyleId(context, themeName, R.style.Theme_AndStatus_Dark);
 

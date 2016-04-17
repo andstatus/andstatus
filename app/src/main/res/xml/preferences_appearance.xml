@@ -26,7 +26,7 @@
     <org.andstatus.app.context.MultilineListPreference android:key="theme_color"
         android:entries="@array/theme_color_entries"
         android:entryValues="@array/theme_color_values"
-        android:defaultValue="Dark"
+        android:defaultValue="Light"
         android:title="@string/title_preference_theme_color"
         android:summary="@string/summary_preference_theme_color"
         android:dialogTitle="@string/dialog_title_preference_theme_color" />
