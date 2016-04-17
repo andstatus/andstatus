@@ -46,7 +46,7 @@ public class ConversationViewItem extends ConversationItem {
      */
     String mRebloggersString = "";
     String mBody = "";
-    String mVia = "";
+    String messageSource = "";
     String mInReplyToName = "";
     String mRecipientName = "";
     DownloadStatus mStatus = DownloadStatus.UNKNOWN;
@@ -80,7 +80,7 @@ public class ConversationViewItem extends ConversationItem {
                 mBody = MyHtml.htmlifyIfPlain(DbUtils.getString(cursor, Msg.BODY));
                 String via = DbUtils.getString(cursor, Msg.VIA);
                 if (!TextUtils.isEmpty(via)) {
-                    mVia = Html.fromHtml(via).toString().trim();
+                    messageSource = Html.fromHtml(via).toString().trim();
                 }
                 mAvatarDrawable = AvatarFile.getDrawable(authorId, cursor);
                 if (MyPreferences.showAttachedImages()) {

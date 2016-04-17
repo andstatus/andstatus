@@ -204,10 +204,10 @@ public class ConversationViewAdapter extends MyBaseAdapter {
 
     private void showMessageDetails(ConversationViewItem item, View messageView) {
         String messageDetails = RelativeTime.getDifference(context, item.mCreatedDate);
-        if (!SharedPreferencesUtil.isEmpty(item.mVia)) {
+        if (!SharedPreferencesUtil.isEmpty(item.messageSource)) {
             messageDetails += " " + String.format(
                     context.getText(R.string.message_source_from).toString(),
-                    item.mVia);
+                    item.messageSource);
         }
         String inReplyToName = "";
         if (!TextUtils.isEmpty(item.mInReplyToName)) {

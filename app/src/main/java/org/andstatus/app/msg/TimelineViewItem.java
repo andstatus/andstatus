@@ -18,6 +18,7 @@ package org.andstatus.app.msg;
 import android.content.Context;
 import android.database.Cursor;
 import android.graphics.drawable.Drawable;
+import android.text.Html;
 import android.text.TextUtils;
 
 import org.andstatus.app.R;
@@ -34,6 +35,7 @@ import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
+import org.andstatus.app.util.SharedPreferencesUtil;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -60,6 +62,7 @@ public class TimelineViewItem {
     String inReplyToName = "";
 
     String body = "";
+    String messageSource = "";
     boolean favorited = false;
 
     AttachedImageFile attachedImageFile = AttachedImageFile.EMPTY;
@@ -103,9 +106,14 @@ public class TimelineViewItem {
                 MyAccount myAccount = MyContextHolder.get().persistentAccounts()
                         .fromUserId(item.linkedUserId);
                 if (myAccount.isValid()) {
-                    item.rebloggers.put(senderId, myAccount.getAccountName());
+                    item.rebloggers.put(item.linkedUserId, myAccount.getAccountName());
                 }
             }
+        }
+
+        String via = DbUtils.getString(cursor, MyDatabase.Msg.VIA);
+        if (!TextUtils.isEmpty(via)) {
+            item.messageSource = Html.fromHtml(via).toString().trim();
         }
 
         item.avatarDrawable = AvatarFile.getDrawable(item.authorId, cursor);
@@ -132,8 +140,16 @@ public class TimelineViewItem {
                 RelativeTime.getDifference(context, createdDate));
         setInReplyTo(context, messageDetails);
         setRecipientName(context, messageDetails);
+        setMessageSource(context, messageDetails);
         setMessageStatus(context, messageDetails);
         return messageDetails.toString();
+    }
+
+    private void setMessageSource(Context context, StringBuilder messageDetails) {
+        if (!SharedPreferencesUtil.isEmpty(messageSource) && !"ostatus".equals(messageSource)) {
+            messageDetails.append(" " + String.format(
+                    context.getText(R.string.message_source_from).toString(), messageSource));
+        }
     }
 
     private void setInReplyTo(Context context, StringBuilder messageDetails) {
