@@ -132,7 +132,7 @@ public class TimelineActivity extends LoadableListActivity implements
             view.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    onSwitchToDefaultTimelineButtonClick(v);
+                    onTimelineTitleClick(v);
                 }
             });
         }
@@ -184,6 +184,29 @@ public class TimelineActivity extends LoadableListActivity implements
             if (MyLog.isVerboseEnabled()) {
                 MyLog.v(this, "restoreActivityState; " + paramsNew);
             }
+    }
+
+    /**
+     * View.OnClickListener
+     */
+    public void onTimelineTitleClick(View item) {
+        switch (MyPreferences.tapOnATimelineTitleBehaviour()) {
+            case SWITCH_TO_DEFAULT_TIMELINE:
+                if (getParamsLoaded().isAtHome()) {
+                    onTimelineTypeButtonClick(item);
+                } else {
+                    onSwitchToDefaultTimelineButtonClick(item);
+                }
+                break;
+            case GO_TO_THE_TOP:
+                onGoToTheTopButtonClick(item);
+                break;
+            case SELECT_TIMELINE:
+                onTimelineTypeButtonClick(item);
+                break;
+            default:
+                break;
+        }
     }
 
     /**

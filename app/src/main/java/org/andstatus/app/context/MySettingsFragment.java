@@ -100,6 +100,7 @@ public class MySettingsFragment extends PreferenceFragment implements
         showUseExternalStorage();
         showBackupRestore();
         showAuthorInTimeline();
+        showTapOnATimelineTitleBehaviour();
         showCustomLocale();
         showThemeColor();
         showActionBarBackgroundColor();
@@ -137,15 +138,21 @@ public class MySettingsFragment extends PreferenceFragment implements
     }
 
     protected void showHistorySize() {
-        SharedPreferencesUtil.showListPreference(this, MyPreferences.KEY_HISTORY_SIZE, R.array.history_size_values, R.array.history_size_entries, R.string.summary_preference_history_size);
+        SharedPreferencesUtil.showListPreference(this, MyPreferences.KEY_HISTORY_SIZE,
+                R.array.history_size_values, R.array.history_size_entries,
+                R.string.summary_preference_history_size);
     }
 
     protected void showHistoryTime() {
-        SharedPreferencesUtil.showListPreference(this, MyPreferences.KEY_HISTORY_TIME, R.array.history_time_values, R.array.history_time_entries, R.string.summary_preference_history_time);
+        SharedPreferencesUtil.showListPreference(this, MyPreferences.KEY_HISTORY_TIME,
+                R.array.history_time_values, R.array.history_time_entries,
+                R.string.summary_preference_history_time);
     }
     
     protected void showMinLogLevel() {
-        SharedPreferencesUtil.showListPreference(this, MyPreferences.KEY_MIN_LOG_LEVEL, R.array.log_level_values, R.array.log_level_entries, R.string.summary_preference_min_log_level);
+        SharedPreferencesUtil.showListPreference(this, MyPreferences.KEY_MIN_LOG_LEVEL,
+                R.array.log_level_values, R.array.log_level_entries,
+                R.string.summary_preference_min_log_level);
     }
     
     protected void showRingtone() {
@@ -214,9 +221,15 @@ public class MySettingsFragment extends PreferenceFragment implements
     }
 
     private void showAuthorInTimeline() {
-        SharedPreferencesUtil.showListPreference(this, MyPreferences.KEY_USER_IN_TIMELINE, R.array.user_in_timeline_values, R.array.user_in_timeline_entries, R.string.summary_preference_user_in_timeline);
+        SharedPreferencesUtil.showListPreference(this, MyPreferences.KEY_USER_IN_TIMELINE,
+                R.array.user_in_timeline_values, R.array.user_in_timeline_entries,
+                R.string.summary_preference_user_in_timeline);
     }
-    
+
+    private void showTapOnATimelineTitleBehaviour() {
+        showListPreference(MyPreferences.KEY_TAP_ON_A_TIMELINE_TITLE);
+    }
+
     private void showCustomLocale() {
         showListPreference(MyPreferences.KEY_CUSTOM_LOCALE);
     }
@@ -242,7 +255,9 @@ public class MySettingsFragment extends PreferenceFragment implements
     }
 
     private void showDefaultTimeline() {
-        SharedPreferencesUtil.showListPreference(this, MyPreferences.KEY_DEFAULT_TIMELINE, R.array.timeline_type_values, R.array.timeline_type_entries, R.string.default_timeline_summary);
+        SharedPreferencesUtil.showListPreference(this, MyPreferences.KEY_DEFAULT_TIMELINE,
+                R.array.timeline_type_values, R.array.timeline_type_entries,
+                R.string.default_timeline_summary);
     }
 
     private void showListPreference(String key) {
@@ -349,6 +364,9 @@ public class MySettingsFragment extends PreferenceFragment implements
                     break;
                 case MyPreferences.KEY_USER_IN_TIMELINE:
                     showAuthorInTimeline();
+                    break;
+                case MyPreferences.KEY_TAP_ON_A_TIMELINE_TITLE:
+                    showTapOnATimelineTitleBehaviour();
                     break;
                 case MyPreferences.KEY_FILTER_HIDE_MESSAGES_BASED_ON_KEYWORDS:
                     showFilterHideMessagesBasedOnKeywords();

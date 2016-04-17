@@ -128,9 +128,10 @@ public class SharedPreferencesUtil {
      * @param preferenceKey android:key - Name of the preference key
      * @param valuesR android:entryValues
      * @param entriesR Almost like android:entries but to show in the summary (may be the same as android:entries) 
-     * @param summaryR
+     * @param summaryR If 0 then the selected entry will be put into the summary as is.
      */
-    public static void showListPreference(PreferenceFragment fragment, String preferenceKey, int valuesR, int entriesR, int summaryR) {
+    public static void showListPreference(PreferenceFragment fragment, String preferenceKey,
+                                          int valuesR, int entriesR, int summaryR) {
         ListPreference listPref = (ListPreference) fragment.findPreference(preferenceKey);
         if (listPref != null) {
             String[] values = fragment.getResources().getStringArray(valuesR);
@@ -143,19 +144,17 @@ public class SharedPreferencesUtil {
                     break;
                 }
             }
-            MessageFormat messageFormat = new MessageFormat(fragment.getText(summaryR)
-                    .toString());
-            listPref.setSummary(messageFormat.format(new Object[] {
-                    summary
-            }));
+            if (summaryR != 0) {
+                MessageFormat messageFormat = new MessageFormat(fragment.getText(summaryR)
+                        .toString());
+                summary = messageFormat.format(new Object[] { summary });
+            }
+            listPref.setSummary(summary);
         }
     }
 
     /**
-     * Returns true if the string is null or 0-length or "null"
-     * 
-     * @param str the string to be examined
-     * @return true if str is null or zero length or "null"
+     * @return true if input string is null, a zero-length string, or "null"
      */
     public static boolean isEmpty(CharSequence str) {
         return TextUtils.isEmpty(str) || "null".equals(str);

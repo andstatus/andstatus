@@ -32,6 +32,7 @@ import android.text.TextUtils;
 
 import org.andstatus.app.R;
 import org.andstatus.app.data.TimelineType;
+import org.andstatus.app.msg.TapOnATimelineTitleBehaviour;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
 
@@ -47,6 +48,7 @@ public class MyPreferences {
 
     public static final String KEY_USER_IN_TIMELINE = "user_in_timeline";
     public static final String KEY_DEFAULT_TIMELINE = "default_timeline";
+    public static final String KEY_TAP_ON_A_TIMELINE_TITLE = "tap_on_a_timeline_title";
     public static final String KEY_TIMELINE_IS_COMBINED_BY_DEFAULT = "timeline_is_combined_by_default";
 
     public static final String KEY_HISTORY_SIZE = "history_size";
@@ -494,6 +496,10 @@ public class MyPreferences {
 
     public static boolean showOrigin() {
         return getBoolean(KEY_SHOW_ORIGIN, false);
+    }
+
+    public static TapOnATimelineTitleBehaviour tapOnATimelineTitleBehaviour() {
+        return TapOnATimelineTitleBehaviour.load(getString(KEY_TAP_ON_A_TIMELINE_TITLE, ""));
     }
 
     public static UserInTimeline userInTimeline() {

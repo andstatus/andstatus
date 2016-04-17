@@ -400,6 +400,7 @@
   <string name="summary_preference_vibration_on">Vibrate on incoming message</string>
   <string name="switch_to_default_timeline">Switch to Default Timeline</string>
   <string name="system_is_busy_try_later">The system is busy. Please try again later.</string>
+  <string name="tap_on_a_timeline_title_behaviour">Tap on a Timeline Title behaviour</string>
   <string name="theme_color_entries_default">Device default</string>
   <string name="theme_color_entries_light">Light</string>
   <string name="theme_color_entries_dark">Dark</string>

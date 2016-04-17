@@ -195,6 +195,18 @@
         <item>@string/color_grey_wolf</item>
         <item>@string/color_carbon_grey</item>
     </string-array>
+    <string-array name="tap_on_a_timeline_title_entries">
+        <item>@string/switch_to_default_timeline</item>
+        <item>@string/go_to_the_top_title</item>
+        <item>@string/dialog_title_select_timeline</item>
+        <item>@string/this_option_is_turned_off</item>
+    </string-array>
+    <string-array name="tap_on_a_timeline_title_values">
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>20</item>
+    </string-array>
     <string-array name="user_in_timeline_entries">
         <item>@string/user_in_timeline_entries_username</item>
         <item>@string/user_in_timeline_entries_at_username</item>
