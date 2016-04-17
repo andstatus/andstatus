@@ -134,6 +134,7 @@
   <string name="dialog_title_service_unavailable">Service Unavailable</string>
   <string name="dialog_title_timeline_loading">Updating a Timeline&#8230;</string>
   <string name="discover_open_instances_title">Discover open instances</string>
+  <string name="dont_synchronize_old_messages">Don\'t synchronize old messages, if previous sync was more than ... hours ago</string>
   <string name="download_status_draft">draft</string>
   <string name="download_status_unsent">unsent</string>
   <string name="drawer_close">Close navigation drawer</string>

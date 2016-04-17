@@ -92,6 +92,7 @@ public class MySettingsFragment extends PreferenceFragment implements
     protected void showAllPreferences() {
         showManageAccounts();
         showFrequency();
+        showDontSynchronizeOldMessages();
         showConnectionTimeout();
         showHistorySize();
         showHistoryTime();
@@ -118,14 +119,17 @@ public class MySettingsFragment extends PreferenceFragment implements
             if (MyContextHolder.get().persistentAccounts().isEmpty()) {
                 summary = getText(R.string.summary_preference_accounts_absent);
             } else {
-                summary = getText(R.string.summary_preference_accounts_present) + ": " + MyContextHolder.get().persistentAccounts().size();
+                summary = getText(R.string.summary_preference_accounts_present) + ": "
+                        + MyContextHolder.get().persistentAccounts().size();
             }
             preference.setSummary(summary);
         }
     }
     
     protected void showFrequency() {
-        SharedPreferencesUtil.showListPreference(this, MyPreferences.KEY_SYNC_FREQUENCY_SECONDS, R.array.fetch_frequency_values, R.array.fetch_frequency_entries, R.string.summary_preference_frequency);
+        SharedPreferencesUtil.showListPreference(this, MyPreferences.KEY_SYNC_FREQUENCY_SECONDS,
+                R.array.fetch_frequency_values, R.array.fetch_frequency_entries,
+                R.string.summary_preference_frequency);
     }
 
     private void showConnectionTimeout() {
@@ -134,6 +138,15 @@ public class MySettingsFragment extends PreferenceFragment implements
             preference.setSummary(
                     Long.toString(java.util.concurrent.TimeUnit.MILLISECONDS.toSeconds(MyPreferences
                             .getConnectionTimeoutMs())) + "s");
+        }
+    }
+
+    private void showDontSynchronizeOldMessages() {
+        long hours = MyPreferences.getDontSynchronizeOldMessages();
+        Preference preference = findPreference(MyPreferences.KEY_DONT_SYNCHRONIZE_OLD_MESSAGES);
+        if (preference != null) {
+            preference.setSummary( hours > 0 ? Long.toString(hours) + "h"
+                    : getString(R.string.this_option_is_turned_off));
         }
     }
 
@@ -342,6 +355,9 @@ public class MySettingsFragment extends PreferenceFragment implements
                 case MyPreferences.KEY_ACTION_BAR_TEXT_COLOR:
                     showActionBarTextColor();
                     MySettingsActivity.restartMe(getActivity());
+                    break;
+                case MyPreferences.KEY_DONT_SYNCHRONIZE_OLD_MESSAGES:
+                    showDontSynchronizeOldMessages();
                     break;
                 case MyPreferences.KEY_SYNC_FREQUENCY_SECONDS:
                     MyContextHolder.get().persistentAccounts().onMyPreferencesChanged(MyContextHolder.get());

@@ -18,6 +18,7 @@ package org.andstatus.app.service;
 
 import android.text.TextUtils;
 
+import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DataInserter;
 import org.andstatus.app.data.LatestTimelineItem;
 import org.andstatus.app.data.LatestUserMessages;
@@ -28,9 +29,11 @@ import org.andstatus.app.net.http.ConnectionException.StatusCode;
 import org.andstatus.app.net.social.MbTimelineItem;
 import org.andstatus.app.net.social.TimelinePosition;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.RelativeTime;
 
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 class TimelineDownloaderOther extends TimelineDownloader {
     private static final int MAXIMUM_NUMBER_OF_MESSAGES_TO_DOWNLOAD = 200;
@@ -38,14 +41,25 @@ class TimelineDownloaderOther extends TimelineDownloader {
     @Override
     public void download() throws ConnectionException {
         LatestTimelineItem latestTimelineItem = new LatestTimelineItem(execContext.getTimelineType(), execContext.getTimelineUserId());
+        long hours = MyPreferences.getDontSynchronizeOldMessages();
+        boolean downloadingLatest = false;
+        if (hours > 0 && RelativeTime.moreSecondsAgoThan(latestTimelineItem.getTimelineDownloadedDate(),
+                TimeUnit.HOURS.toSeconds(hours))) {
+            downloadingLatest = true;
+            latestTimelineItem.clearPosition();
+        } else if (latestTimelineItem.getPosition().isEmpty()) {
+            downloadingLatest = true;
+        }
         
         if (MyLog.isLoggable(this, MyLog.DEBUG)) {
-            String strLog = "Loading " + execContext.getTimelineType() + "; account=" 
-        + execContext.getMyAccount().getAccountName()
-        + "; user=" + MyQuery.userIdToWebfingerId(execContext.getTimelineUserId());
-            if (latestTimelineItem.getTimelineItemDate() > 0) {
-                strLog += "; last Timeline item at=" + (new Date(latestTimelineItem.getTimelineItemDate()).toString())
-                        + "; last time downloaded at=" +  (new Date(latestTimelineItem.getTimelineDownloadedDate()).toString());
+            String strLog = "Loading "
+            + (downloadingLatest ? "latest " : "")
+            + execContext.getTimelineType() + "; account="
+            + execContext.getMyAccount().getAccountName()
+            + "; user=" + MyQuery.userIdToWebfingerId(execContext.getTimelineUserId());
+            if (latestTimelineItem.getTimelineItemDate() > 0) { strLog +=
+                "; last Timeline item at=" + (new Date(latestTimelineItem.getTimelineItemDate()).toString())
+                + "; last time downloaded at=" +  (new Date(latestTimelineItem.getTimelineDownloadedDate()).toString());
             }
             MyLog.d(this, strLog);
         }

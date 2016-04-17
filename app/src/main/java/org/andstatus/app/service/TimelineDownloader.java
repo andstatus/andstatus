@@ -22,7 +22,7 @@ import org.andstatus.app.net.http.ConnectionException;
 /**
  * Downloads ("loads") different types of Timelines 
  *  (i.e. Tweets and Messages) from the Internet (e.g. from twitter.com server).
- * Then Store them into database using {@link DataInserter}
+ * Then Store them into local database using {@link DataInserter}
  * 
  * @author yvolk@yurivolkov.com
  */

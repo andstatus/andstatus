@@ -209,4 +209,8 @@ public class LatestTimelineItem {
         }
         return blnOut;
     }
+
+    public void clearPosition() {
+        position = new TimelinePosition("");
+    }
 }

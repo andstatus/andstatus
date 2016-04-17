@@ -17,10 +17,12 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
                   android:title="@string/title_preference_syncing"
 				  android:summary="@string/summary_preference_syncing">
-    <org.andstatus.app.context.MultilineListPreference android:entryValues="@array/fetch_frequency_values"
-        android:entries="@array/fetch_frequency_entries" android:summary="@string/summary_preference_frequency"
+    <org.andstatus.app.context.MultilineListPreference android:key="fetch_frequency"
+        android:entryValues="@array/fetch_frequency_values"
+        android:entries="@array/fetch_frequency_entries"
+        android:summary="@string/summary_preference_frequency"
         android:dialogTitle="@string/dialog_title_preference_frequency"
-        android:title="@string/title_preference_frequency" android:key="fetch_frequency"
+        android:title="@string/title_preference_frequency"
         android:defaultValue="900" />
     <org.andstatus.app.context.MultilineCheckBoxPreference android:key="sync_while_using_application"
         android:title="@string/title_preference_sync_while_using_application"
@@ -35,10 +37,12 @@
     <org.andstatus.app.context.MultilineCheckBoxPreference android:key="sync_after_message_was_sent"
         android:title="@string/title_preference_sync_after_message_was_sent"
         android:defaultValue="false" />
-    <EditTextPreference
+    <org.andstatus.app.context.MultilineEditTextPreference android:key="dont_synchronize_old_messages"
+        android:singleLine="true"
+        android:defaultValue=""
+        android:title="@string/dont_synchronize_old_messages" />
+    <org.andstatus.app.context.MultilineEditTextPreference android:key="connection_timeout"
         android:dialogTitle="@string/dialog_title_preference_connection_timeout"
-        android:key="connection_timeout"
-        android:persistent="true"
         android:singleLine="true"
         android:defaultValue="30"
         android:title="@string/title_preference_connection_timeout" />
