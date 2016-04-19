@@ -26,9 +26,9 @@
 		</subtitle>
     </header>
 
-    <release android:versionName="26.00" android:versionCode="172"
+    <release android:versionName="26.01" android:versionCode="173"
              versionDate="2016-04-18"
-             versionTitle="Familiar look for the New Users">
+             versionTitle="Familiar look for New Users">
         <changes>
             <change>Light Theme is the default one in AndStatus now.
                 You can switch to the Dark Theme in Settings -&gt; Appearance.
@@ -82,6 +82,9 @@
                 A User sets a value for this option in hours, i.e. "1" or "100" ...
                 Empty value or "0" mean that the option is turned off (default behaviour).
                 <a href="https://github.com/andstatus/andstatus/issues/354">#354</a>
+            </change>
+            <change>Added support of Android 6 permissions.
+                <a href="https://github.com/andstatus/andstatus/issues/365">#365</a>
             </change>
         </changes>
     </release>

@@ -16,7 +16,6 @@
 
 package org.andstatus.app.backup;
 
-import android.os.AsyncTask.Status;
 import android.os.Bundle;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -28,6 +27,7 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.Permissions;
 import org.andstatus.app.util.SimpleFileDialog;
 
 import java.io.File;
@@ -41,6 +41,8 @@ public class BackupActivity extends MyActivity {
     protected void onCreate(Bundle savedInstanceState) {
         mLayoutId = R.layout.backup;
         super.onCreate(savedInstanceState);
+
+        Permissions.checkAndRequest(this, Permissions.PermissionType.WRITE_EXTERNAL_STORAGE);
 
         setBackupFolder(MyBackupManager.getDefaultBackupDirectory(this));
 
