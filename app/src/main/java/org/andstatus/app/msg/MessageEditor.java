@@ -89,7 +89,7 @@ public class MessageEditor {
 
             RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-            layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
+            layoutParams.addRule(RelativeLayout.BELOW, R.id.my_action_bar);
             editorView.setLayoutParams(layoutParams);
             layoutParent.addView(editorView);
         }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (c) 2016 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,12 +22,14 @@ import android.widget.ListAdapter;
 import android.widget.ListView;
 
 /**
- * Support library doesn't have ListActivity, so we recreated it using Fragments here
- * It assumes the list fragment has this id: R.id.myLayoutParent
+ * Support library doesn't have ListActivity, so we recreated it using one of two options:
+ * 1. Fragments. It assumes the list fragment has this id: R.id.myLayoutParent
+ * 2. ListView
  * @author yvolk@yurivolkov.com
  */
 public class MyListActivity extends MyBaseListActivity {
-    ListFragment mList;
+    ListFragment listFragment = null;
+    ListView listView = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,27 +38,40 @@ public class MyListActivity extends MyBaseListActivity {
 
     @Override
     protected void setListAdapter(ListAdapter adapter) {
-        getList().setListAdapter(adapter);
-    }
-
-    @Override
-    public ListView getListView() {
-        return getList().getListView();
+        findListView();
+        if (listFragment != null) {
+            listFragment.setListAdapter(adapter);
+        } else if (listView != null) {
+            listView.setAdapter(adapter);
+        }
     }
 
     @Override
     public ListAdapter getListAdapter() {
-        if (getList() != null) {
-            return getList().getListAdapter();
+        findListView();
+        if (listFragment != null) {
+            listFragment.getListAdapter();
+        } else if (listView != null) {
+            listView.getAdapter();
         }
         return null;
     }
 
-    private ListFragment getList() {
-        if (mList == null) {
-            mList = (ListFragment) getSupportFragmentManager().findFragmentById(R.id.myListParent);
+    @Override
+    public ListView getListView() {
+        findListView();
+        if (listFragment != null) {
+            return listFragment.getListView();
         }
-        return mList;
+        return listView;
     }
 
+    private void findListView() {
+        if (listFragment == null && listView == null) {
+            listFragment = (ListFragment) getSupportFragmentManager().findFragmentById(R.id.myListParent);
+            if (listFragment == null) {
+                listView = (ListView) findViewById(android.R.id.list);
+            }
+        }
+    }
 }

@@ -27,7 +27,7 @@
     </header>
 
     <release android:versionName="26.01" android:versionCode="173"
-             versionDate="2016-04-18"
+             versionDate="2016-04-21"
              versionTitle="Familiar look for New Users">
         <changes>
             <change>Light Theme is the default one in AndStatus now.

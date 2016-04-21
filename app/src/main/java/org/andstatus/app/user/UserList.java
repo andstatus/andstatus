@@ -37,7 +37,7 @@ public class UserList extends LoadableListActivity {
     private UserListContextMenu contextMenu = null;
 
     public UserList() {
-        mLayoutId = R.layout.userlist;
+        mLayoutId = R.layout.my_list_swipe;
     }
 
     @Override

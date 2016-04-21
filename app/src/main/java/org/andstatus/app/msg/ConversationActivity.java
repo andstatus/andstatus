@@ -47,7 +47,7 @@ public class ConversationActivity extends LoadableListActivity implements Action
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        mLayoutId = R.layout.my_list_fragment;
+        mLayoutId = R.layout.my_list_swipe;
         super.onCreate(savedInstanceState);
 
         mMessageEditor = new MessageEditor(this);

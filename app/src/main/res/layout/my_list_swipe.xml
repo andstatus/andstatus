@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-	Copyright (c) 2015 yvolk (Yuri Volkov), http://yurivolkov.com
+	Copyright (c) 2016 yvolk (Yuri Volkov), http://yurivolkov.com
 
 	Licensed under the Apache License, Version 2.0 (the "License");
 	you may not use this file except in compliance with the License.
@@ -15,30 +15,36 @@
 	limitations under the License.
  -->
 <!--
-    Simple list layout with swipe to be used with MyListActivity
+    Simple list layout with swipe and Sync indicator
+    to be used with MyListActivity
     http://www.bignerdranch.com/blog/implementing-swipe-to-refresh/
 -->
 <org.andstatus.app.widget.MySwipeRefreshLayout 
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/myLayoutParent"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:orientation="vertical"
-    tools:context=".origin.OriginList" >
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".user.UserList"
+    android:orientation="vertical" >
 
-    <LinearLayout android:layout_width="wrap_content"
-                  android:layout_height="wrap_content"
-                  android:orientation="vertical">
+	    <RelativeLayout
+		    android:id="@+id/myListParent"
+		    android:layout_width="match_parent"
+		    android:layout_height="match_parent"
+            android:orientation="vertical">
 
-        <include layout="@layout/action_bar" />
+        	<include layout="@layout/action_bar" />
 
-        <fragment
-            android:id="@+id/myListParent"
-            android:name="android.support.v4.app.ListFragment"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical"
-            tools:layout="@layout/my_list_fragment"/>
-    </LinearLayout>
+            <ListView
+                android:id="@android:id/list"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scrollbars="vertical"
+                android:layout_below="@id/my_action_bar"
+                />
+
+			<include layout="@layout/sync_indicator"/>
+
+		</RelativeLayout>
 </org.andstatus.app.widget.MySwipeRefreshLayout>

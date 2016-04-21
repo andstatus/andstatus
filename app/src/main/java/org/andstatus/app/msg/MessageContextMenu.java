@@ -79,9 +79,7 @@ public class MessageContextMenu extends MyContextMenu {
             new ContextMenuHeader(getActivity(), menu).setTitle(msg.bodyTrimmed)
                     .setSubtitle(msg.myAccount().getAccountName());
 
-            if (msg.isLoaded()) {
-                MessageListContextMenuItem.OPEN_CONVERSATION.addTo(menu, order++, R.string.menu_item_open_conversation);
-            }
+            MessageListContextMenuItem.OPEN_CONVERSATION.addTo(menu, order++, R.string.menu_item_open_conversation);
             MessageListContextMenuItem.USERS_OF_MESSAGE.addTo(menu, order++, R.string.users_of_message);
 
             if (msg.status != DownloadStatus.LOADED) {

@@ -23,23 +23,12 @@
     android:orientation="vertical"
     tools:context=".service.QueueViewer">
 
-    <RelativeLayout
+    <include layout="@layout/action_bar" />
+
+    <fragment
         android:id="@+id/myListParent"
+        android:name="android.support.v4.app.ListFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical">
-
-        <include layout="@layout/action_bar" />
-
-        <ListView
-            android:id="@android:id/list"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:scrollbars="vertical"
-            android:layout_below="@id/my_action_bar"
-            />
-
-        <include layout="@layout/sync_indicator"/>
-
-    </RelativeLayout>
+        android:orientation="vertical"/>
 </LinearLayout>

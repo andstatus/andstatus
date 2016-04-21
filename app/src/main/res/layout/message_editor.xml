@@ -20,7 +20,7 @@
     android:id="@+id/message_editor"
     android:layout_height="wrap_content"
     android:layout_width="match_parent"
-    android:layout_alignParentBottom="true"
+    android:layout_below="@id/my_action_bar"
     android:background="?android:attr/colorBackground">
     <LinearLayout
         android:layout_height="wrap_content"
@@ -36,6 +36,7 @@
                 android:id="@+id/message_author"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginLeft="2dp"
                 style="@style/messageUsernameAppearance"
                 android:layout_alignParentLeft="true"
                 android:layout_alignParentStart="true"
@@ -98,5 +99,6 @@
             android:paddingRight="5dip"
             style="@style/messageBodyAppearance"
             tools:text="This is a sample body of a message we are replying to.\nThis message may be quite long..."/>
+        <View style="@style/Divider"/>
     </LinearLayout>
 </ScrollView>
