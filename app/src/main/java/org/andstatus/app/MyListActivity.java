@@ -50,9 +50,9 @@ public class MyListActivity extends MyBaseListActivity {
     public ListAdapter getListAdapter() {
         findListView();
         if (listFragment != null) {
-            listFragment.getListAdapter();
+            return listFragment.getListAdapter();
         } else if (listView != null) {
-            listView.getAdapter();
+            return listView.getAdapter();
         }
         return null;
     }
