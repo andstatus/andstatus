@@ -23,13 +23,13 @@
     android:orientation="vertical"
     tools:context=".service.QueueViewer">
 
+    <include layout="@layout/action_bar" />
+
     <RelativeLayout
         android:id="@+id/myListParent"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
-
-        <include layout="@layout/action_bar" />
 
         <ListView
             android:id="@android:id/list"

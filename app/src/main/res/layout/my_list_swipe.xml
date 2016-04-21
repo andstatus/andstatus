@@ -28,23 +28,29 @@
     tools:context=".user.UserList"
     android:orientation="vertical" >
 
-	    <RelativeLayout
-		    android:id="@+id/myListParent"
-		    android:layout_width="match_parent"
-		    android:layout_height="match_parent"
-            android:orientation="vertical">
+	<LinearLayout
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		android:orientation="vertical">
 
-        	<include layout="@layout/action_bar" />
+		<include layout="@layout/action_bar" />
 
-            <ListView
-                android:id="@android:id/list"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:scrollbars="vertical"
-                android:layout_below="@id/my_action_bar"
-                />
+		<RelativeLayout
+			android:id="@+id/myListParent"
+			android:layout_width="match_parent"
+			android:layout_height="match_parent"
+			android:orientation="vertical">
+
+			<ListView
+				android:id="@android:id/list"
+				android:layout_width="match_parent"
+				android:layout_height="match_parent"
+				android:scrollbars="vertical"
+				android:layout_below="@id/my_action_bar"
+				/>
 
 			<include layout="@layout/sync_indicator"/>
 
 		</RelativeLayout>
+	</LinearLayout>
 </org.andstatus.app.widget.MySwipeRefreshLayout>

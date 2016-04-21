@@ -86,6 +86,13 @@
             <change>Added support of Android 6 permissions.
                 <a href="https://github.com/andstatus/andstatus/issues/365">#365</a>
             </change>
+            <change>Message Editor improvements:<br/>
+                <ul>
+                    <li>Fixed: Editor window covered Action Bar if replying to a long message.
+                        <a href="https://github.com/andstatus/andstatus/issues/362">#362</a></li>
+                    <li>Text box with a text of the new message is scrollable vertically now.</li>
+                </ul>
+            </change>
         </changes>
     </release>
     <release android:versionName="25.04" android:versionCode="171"
