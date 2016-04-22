@@ -99,12 +99,13 @@ public class TimelineAdapter extends MyBaseAdapter {
         if (showAttachedImages) {
             showAttachedImage(item, view);
         }
-        showFavorited(item, view);
         if (markReplies) {
             showMarkReplies(item, view);
         }
         if (showButtonsBelowMessages) {
             showButtonsBelowMessage(item, view);
+        } else {
+            showFavorited(item, view);
         }
         preloadAttachments(position);
         positionPrev = position;
@@ -246,7 +247,9 @@ public class TimelineAdapter extends MyBaseAdapter {
         } else if (showButtonsBelowMessages && item.msgStatus == DownloadStatus.LOADED) {
             viewGroup.setVisibility(View.VISIBLE);
             ImageView imageView = (ImageView) viewGroup.findViewById(R.id.favorite_button);
-            imageView.setAlpha(item.favorited ? 1f : 0.5f );
+            imageView.setAlpha(item.favorited ? 1f : 0.4f );
+            imageView = (ImageView) viewGroup.findViewById(R.id.reblog_button);
+            imageView.setAlpha(item.reblogged ? 1f : 0.4f );
         } else {
             viewGroup.setVisibility(View.GONE);
         }

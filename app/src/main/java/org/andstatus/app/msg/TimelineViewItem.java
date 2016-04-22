@@ -54,6 +54,7 @@ public class TimelineViewItem {
     long authorId = 0;
 
     Map<Long, String> rebloggers = new HashMap<>();
+    boolean reblogged = false;
 
     String recipientName = "";
 
@@ -97,7 +98,7 @@ public class TimelineViewItem {
             if (TextUtils.isEmpty(senderName)) {
                 senderName = "(id" + senderId + ")";
             }
-            item.rebloggers.put(senderId, senderName);
+            addReblogger(item, senderId, senderName);
         }
 
         if (item.linkedUserId != 0) {
@@ -106,7 +107,7 @@ public class TimelineViewItem {
                 MyAccount myAccount = MyContextHolder.get().persistentAccounts()
                         .fromUserId(item.linkedUserId);
                 if (myAccount.isValid()) {
-                    item.rebloggers.put(item.linkedUserId, myAccount.getAccountName());
+                    addReblogger(item, item.linkedUserId, myAccount.getAccountName());
                 }
             }
         }
@@ -125,6 +126,14 @@ public class TimelineViewItem {
         item.inReplyToUserId = DbUtils.getLong(cursor, MyDatabase.Msg.IN_REPLY_TO_USER_ID);
         item.originId = DbUtils.getLong(cursor, MyDatabase.Msg.ORIGIN_ID);
         return item;
+    }
+
+    private static void addReblogger(TimelineViewItem item, long userId, String userName) {
+        MyAccount myAccount = MyContextHolder.get().persistentAccounts().fromUserId(userId);
+        if (myAccount.isValid()) {
+            item.reblogged = true;
+        }
+        item.rebloggers.put(userId, userName);
     }
 
     public Drawable getAvatar() {
