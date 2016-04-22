@@ -78,6 +78,7 @@ public class MessageEditor {
         mEditorView = getEditorView();
         mCharsLeftText = (TextView) mEditorView.findViewById(R.id.messageEditCharsLeftTextView);
         setupEditText();
+        setupFullscreenToggle();
         hide();
     }
 
@@ -163,6 +164,25 @@ public class MessageEditor {
             }
         });
 
+    }
+
+    private void setupFullscreenToggle() {
+        setupFullscreenToggleFor(R.id.message_editor_above_body);
+        setupFullscreenToggleFor(R.id.message_editor_below_body);
+    }
+
+    private void setupFullscreenToggleFor(int id) {
+        View view = getActivity().findViewById(id);
+        if (view != null) {
+            view.setOnClickListener(
+                    new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            getActivity().toggleFullscreen();
+                        }
+                    }
+            );
+        }
     }
 
     public void onCreateOptionsMenu(Menu menu) {

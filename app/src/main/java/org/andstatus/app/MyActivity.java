@@ -16,11 +16,13 @@
 
 package org.andstatus.app;
 
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
+import android.view.View;
 
 import org.andstatus.app.context.MyTheme;
 import org.andstatus.app.util.MyLog;
@@ -74,5 +76,51 @@ public class MyActivity extends AppCompatActivity {
         if (bar != null) {
             bar.setSubtitle(subtitle);
         }
+    }
+
+    /**
+     * Toggles fullscreen mode
+     * REQUIRE: android:configChanges="orientation|screenSize"
+     * Based on http://stackoverflow.com/a/30224178/297710
+     * On Immersive mode: https://developer.android.com/training/system-ui/immersive.html
+     */
+    public void toggleFullscreen() {
+        int uiOptions = getWindow().getDecorView().getSystemUiVisibility();
+        int uiOptionsNew = uiOptions;
+        boolean fullscreenNew = ((uiOptions & View.SYSTEM_UI_FLAG_FULLSCREEN) == 0);
+
+        ActionBar actionBar = getSupportActionBar();
+        actionBar.isShowing();
+        if (actionBar != null) {
+            fullscreenNew = actionBar.isShowing();
+            if (fullscreenNew) {
+                actionBar.hide();
+            } else {
+                actionBar.show();
+            }
+        }
+
+        if (fullscreenNew) {
+            if (Build.VERSION.SDK_INT >= 14) {
+                uiOptionsNew |= View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
+            }
+            if (Build.VERSION.SDK_INT >= 16) {
+                uiOptionsNew |= View.SYSTEM_UI_FLAG_FULLSCREEN;
+            }
+            if (Build.VERSION.SDK_INT >= 19) {
+                uiOptionsNew |= View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+            }
+        } else {
+            if (Build.VERSION.SDK_INT >= 14) {
+                uiOptionsNew &= ~View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
+            }
+            if (Build.VERSION.SDK_INT >= 16) {
+                uiOptionsNew &= ~View.SYSTEM_UI_FLAG_FULLSCREEN;
+            }
+            if (Build.VERSION.SDK_INT >= 19) {
+                uiOptionsNew &= ~View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+            }
+        }
+        getWindow().getDecorView().setSystemUiVisibility(uiOptionsNew);
     }
 }
