@@ -91,6 +91,7 @@
                     <li>Fixed: Editor window covered Action Bar if replying to a long message.
                         <a href="https://github.com/andstatus/andstatus/issues/362">#362</a></li>
                     <li>Text box with a text of the new message is scrollable vertically now.</li>
+                    <li>Fullscreen mode toggle by tapping on not editable parts of the Editor.</li>
                 </ul>
             </change>
         </changes>
