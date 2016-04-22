@@ -26,6 +26,7 @@ import android.view.View;
 
 import org.andstatus.app.context.MyTheme;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.TriState;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -78,28 +79,35 @@ public class MyActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        toggleFullscreen(TriState.FALSE);
+    }
+
     /**
-     * Toggles fullscreen mode
+     * Sets or Toggles fullscreen mode
      * REQUIRE: android:configChanges="orientation|screenSize"
      * Based on http://stackoverflow.com/a/30224178/297710
      * On Immersive mode: https://developer.android.com/training/system-ui/immersive.html
      */
-    public void toggleFullscreen() {
+    public void toggleFullscreen(TriState fullScreenIn) {
         int uiOptions = getWindow().getDecorView().getSystemUiVisibility();
         int uiOptionsNew = uiOptions;
         boolean fullscreenNew = ((uiOptions & View.SYSTEM_UI_FLAG_FULLSCREEN) == 0);
-
         ActionBar actionBar = getSupportActionBar();
-        actionBar.isShowing();
         if (actionBar != null) {
             fullscreenNew = actionBar.isShowing();
+        }
+        fullscreenNew = fullScreenIn.toBoolean(fullscreenNew);
+
+        if (actionBar != null) {
             if (fullscreenNew) {
                 actionBar.hide();
             } else {
                 actionBar.show();
             }
         }
-
         if (fullscreenNew) {
             if (Build.VERSION.SDK_INT >= 14) {
                 uiOptionsNew |= View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;

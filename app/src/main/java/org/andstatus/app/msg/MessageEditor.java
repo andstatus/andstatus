@@ -55,6 +55,7 @@ import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
 
 /**
@@ -178,7 +179,7 @@ public class MessageEditor {
                     new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            getActivity().toggleFullscreen();
+                            getActivity().toggleFullscreen(TriState.UNKNOWN);
                         }
                     }
             );
