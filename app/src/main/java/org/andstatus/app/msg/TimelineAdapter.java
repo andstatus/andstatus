@@ -165,9 +165,9 @@ public class TimelineAdapter extends MyBaseAdapter {
                 buttons.setVisibility(View.VISIBLE);
                 setOnButtonClick(buttons, R.id.reply_button, MessageListContextMenuItem.REPLY);
                 setOnButtonClick(buttons, R.id.reblog_button, MessageListContextMenuItem.REBLOG);
-                setOnButtonClick(buttons, R.id.reblog_button_tinted, MessageListContextMenuItem.REBLOG);
+                setOnButtonClick(buttons, R.id.reblog_button_tinted, MessageListContextMenuItem.DESTROY_REBLOG);
                 setOnButtonClick(buttons, R.id.favorite_button, MessageListContextMenuItem.FAVORITE);
-                setOnButtonClick(buttons, R.id.favorite_button_tinted, MessageListContextMenuItem.FAVORITE);
+                setOnButtonClick(buttons, R.id.favorite_button_tinted, MessageListContextMenuItem.DESTROY_FAVORITE);
             }
         }
         return view;
@@ -194,12 +194,7 @@ public class TimelineAdapter extends MyBaseAdapter {
             if (ma.isValid() && ma.getOriginId() == item.originId) {
                 actorId = ma.getUserId();
             }
-            MessageListContextMenuItem contextMenuItem = contextMenuItemIn;
-            if (contextMenuItem == MessageListContextMenuItem.FAVORITE
-                    && item.favorited) {
-                contextMenuItem = MessageListContextMenuItem.DESTROY_FAVORITE;
-            }
-            contextMenu.onContextMenuItemSelected(contextMenuItem, item.msgId, actorId);
+            contextMenu.onContextMenuItemSelected(contextMenuItemIn, item.msgId, actorId);
         }
     }
 
