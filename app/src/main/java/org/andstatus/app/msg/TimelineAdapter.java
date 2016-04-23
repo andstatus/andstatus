@@ -163,49 +163,25 @@ public class TimelineAdapter extends MyBaseAdapter {
             View buttons = view.findViewById(R.id.message_buttons);
             if (buttons != null) {
                 buttons.setVisibility(View.VISIBLE);
-                buttons.findViewById(R.id.reply_button).setOnClickListener(
-                        new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                onButtonClick(v, MessageListContextMenuItem.REPLY);
-                            }
-                        }
-                );
-                buttons.findViewById(R.id.reblog_button).setOnClickListener(
-                        new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                onButtonClick(v, MessageListContextMenuItem.REBLOG);
-                            }
-                        }
-                );
-                buttons.findViewById(R.id.reblog_button_tinted).setOnClickListener(
-                        new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                onButtonClick(v, MessageListContextMenuItem.REBLOG);
-                            }
-                        }
-                );
-                buttons.findViewById(R.id.favorite_button).setOnClickListener(
-                        new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                onButtonClick(v, MessageListContextMenuItem.FAVORITE);
-                            }
-                        }
-                );
-                buttons.findViewById(R.id.favorite_button_tinted).setOnClickListener(
-                        new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                onButtonClick(v, MessageListContextMenuItem.FAVORITE);
-                            }
-                        }
-                );
+                setOnButtonClick(buttons, R.id.reply_button, MessageListContextMenuItem.REPLY);
+                setOnButtonClick(buttons, R.id.reblog_button, MessageListContextMenuItem.REBLOG);
+                setOnButtonClick(buttons, R.id.reblog_button_tinted, MessageListContextMenuItem.REBLOG);
+                setOnButtonClick(buttons, R.id.favorite_button, MessageListContextMenuItem.FAVORITE);
+                setOnButtonClick(buttons, R.id.favorite_button_tinted, MessageListContextMenuItem.FAVORITE);
             }
         }
         return view;
+    }
+
+    private void setOnButtonClick(View viewGroup, int buttonId, final MessageListContextMenuItem menuItem) {
+        viewGroup.findViewById(buttonId).setOnClickListener(
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        onButtonClick(v, menuItem);
+                    }
+                }
+        );
     }
 
     private void onButtonClick(View v, MessageListContextMenuItem contextMenuItemIn) {
