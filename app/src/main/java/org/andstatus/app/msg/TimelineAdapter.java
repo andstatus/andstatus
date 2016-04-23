@@ -16,6 +16,7 @@
 
 package org.andstatus.app.msg;
 
+import android.os.Build;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -178,7 +179,23 @@ public class TimelineAdapter extends MyBaseAdapter {
                             }
                         }
                 );
+                buttons.findViewById(R.id.reblog_button_tinted).setOnClickListener(
+                        new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                onButtonClick(v, MessageListContextMenuItem.REBLOG);
+                            }
+                        }
+                );
                 buttons.findViewById(R.id.favorite_button).setOnClickListener(
+                        new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                onButtonClick(v, MessageListContextMenuItem.FAVORITE);
+                            }
+                        }
+                );
+                buttons.findViewById(R.id.favorite_button_tinted).setOnClickListener(
                         new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
@@ -246,12 +263,21 @@ public class TimelineAdapter extends MyBaseAdapter {
             return;
         } else if (showButtonsBelowMessages && item.msgStatus == DownloadStatus.LOADED) {
             viewGroup.setVisibility(View.VISIBLE);
-            ImageView imageView = (ImageView) viewGroup.findViewById(R.id.favorite_button);
-            imageView.setAlpha(item.favorited ? 1f : 0.4f );
-            imageView = (ImageView) viewGroup.findViewById(R.id.reblog_button);
-            imageView.setAlpha(item.reblogged ? 1f : 0.4f );
+            tintIcon(viewGroup, item.reblogged, R.id.reblog_button, R.id.reblog_button_tinted);
+            tintIcon(viewGroup, item.favorited, R.id.favorite_button, R.id.favorite_button_tinted);
         } else {
             viewGroup.setVisibility(View.GONE);
+        }
+    }
+
+    private void tintIcon(View viewGroup, boolean colored, int viewId, int viewIdColored) {
+        ImageView imageView = (ImageView) viewGroup.findViewById(viewId);
+        ImageView imageViewColored = (ImageView) viewGroup.findViewById(viewIdColored);
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            imageView.setVisibility(colored ? View.GONE : View.VISIBLE);
+            imageViewColored.setVisibility(colored ? View.VISIBLE : View.GONE);
+        } else {
+            imageView.setAlpha(colored ? 1f : 0.4f);
         }
     }
 

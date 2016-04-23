@@ -11,8 +11,7 @@
     android:visibility="gone"
     tools:visibility="visible"
     android:layout_marginTop="3pt"
-    android:layout_marginBottom="3pt"
-    tools:showIn="@layout/message_avatar">
+    android:layout_marginBottom="3pt">
 
     <ImageView
         android:id="@+id/reply_button"
@@ -35,6 +34,17 @@
         android:contentDescription="@string/menu_item_reblog"/>
 
     <ImageView
+        android:id="@+id/reblog_button_tinted"
+        android:layout_width="24dip"
+        android:layout_height="24dip"
+        android:scaleType="fitCenter"
+        android:visibility="gone"
+        tools:visibility="visible"
+        android:layout_marginLeft="50dp"
+        android:src="@drawable/ic_repeat_white_24dp_tinted"
+        android:contentDescription="@string/menu_item_reblog"/>
+
+    <ImageView
         android:id="@+id/favorite_button"
         android:layout_width="24dip"
         android:layout_height="24dip"
@@ -42,6 +52,18 @@
         android:scaleType="fitCenter"
         android:src="?attr/favoriteBorderIcon"
         android:alpha="0.4"
+        android:adjustViewBounds="false"
+        android:contentDescription="@string/menu_item_favorite"/>
+
+    <ImageView
+        android:id="@+id/favorite_button_tinted"
+        android:layout_width="24dip"
+        android:layout_height="24dip"
+        android:layout_marginLeft="50dp"
+        android:visibility="gone"
+        tools:visibility="visible"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ic_favorite_border_white_24dp_tinted"
         android:adjustViewBounds="false"
         android:contentDescription="@string/menu_item_favorite"/>
 </LinearLayout>
