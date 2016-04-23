@@ -26,8 +26,8 @@
 		</subtitle>
     </header>
 
-    <release android:versionName="26.01" android:versionCode="173"
-             versionDate="2016-04-21"
+    <release android:versionName="26.02" android:versionCode="174"
+             versionDate="2016-04-23"
              versionTitle="Familiar look for New Users">
         <changes>
             <change>Light Theme is the default one in AndStatus now.
@@ -39,7 +39,9 @@
             </change>
             <change>Added Timeline option: "Show Reply, Favorite and Repost buttons
                 below each message". This option is turned on by default
-                in order for the new users to find these actions quicker.
+                in order for new users to find these actions quicker.
+                Reblog and Favorite icons-buttons are shown tinted if our account reblogged /
+                favorited this message.
                 <a href="https://github.com/andstatus/andstatus/issues/332">#332</a>
             </change>
             <change>Rebloggers and a message source (client application) are shown
