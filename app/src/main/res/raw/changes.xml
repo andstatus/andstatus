@@ -26,7 +26,7 @@
 		</subtitle>
     </header>
 
-    <release android:versionName="26.03" android:versionCode="175"
+    <release android:versionName="26.04" android:versionCode="176"
              versionDate="2016-04-24"
              versionTitle="Familiar look for New Users">
         <changes>

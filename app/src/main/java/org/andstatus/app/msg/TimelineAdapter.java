@@ -243,13 +243,9 @@ public class TimelineAdapter extends MyBaseAdapter {
 
     private void tintIcon(View viewGroup, boolean colored, int viewId, int viewIdColored) {
         ImageView imageView = (ImageView) viewGroup.findViewById(viewId);
-        ImageView imageViewColored = (ImageView) viewGroup.findViewById(viewIdColored);
-        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            imageView.setVisibility(colored ? View.GONE : View.VISIBLE);
-            imageViewColored.setVisibility(colored ? View.VISIBLE : View.GONE);
-        } else {
-            imageView.setAlpha(colored ? 1f : 0.4f);
-        }
+        ImageView imageViewTinted = (ImageView) viewGroup.findViewById(viewIdColored);
+        imageView.setVisibility(colored ? View.GONE : View.VISIBLE);
+        imageViewTinted.setVisibility(colored ? View.VISIBLE : View.GONE);
     }
 
     @Override
