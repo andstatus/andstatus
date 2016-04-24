@@ -26,6 +26,78 @@
 		</subtitle>
     </header>
 
+    <release android:versionName="26.03" android:versionCode="175"
+             versionDate="2016-04-24"
+             versionTitle="Familiar look for New Users">
+        <changes>
+            <change>Light Theme is the default one in AndStatus now.
+                You can switch to the Dark Theme in Settings -&gt; Appearance.
+            </change>
+            <change>Added "Rounded avatars" option to "Appearance" section of Settings.
+                Avatars are rounded by default now.
+                <a href="https://github.com/andstatus/andstatus/issues/357">#357</a>
+            </change>
+            <change>Added Timeline option: "Show Reply, Favorite and Repost buttons
+                below each message". This option is turned on by default
+                in order for new users to find these actions quicker.
+                Reblog and Favorite icons-buttons are shown tinted if our account reblogged /
+                favorited this message.
+                <a href="https://github.com/andstatus/andstatus/issues/332">#332</a>
+            </change>
+            <change>Rebloggers and a message source (client application) are shown
+                directly in a Timeline.<br/>
+                We decided to hide "ostatus" source because in
+                <a href="https://gnu.io/">GNU Social</a> this only means
+                that the message came from another instance.
+                The real source application is swallowed, unfortunately.
+                <a href="https://github.com/andstatus/andstatus/issues/168">#168</a>
+            </change>
+            <change>Color of the divider (separator) between messages made less contrast
+                for both light and dark themes.
+                <a href="https://github.com/andstatus/andstatus/issues/280">#280</a>
+            </change>
+            <change>Navigation Bar color changed to the dark variant of Action Bar colors
+                (e.g. to black for &quot;Black&quot; Action Bar).
+                <a href="https://github.com/andstatus/andstatus/issues/302">#302</a>
+            </change>
+            <change>Added another Action bar color: Black - for people,
+                who like really dark theme.
+                <a href="https://github.com/andstatus/andstatus/issues/202">#202</a>
+            </change>
+            <change>Added "Tap on a Timeline Title behaviour" option,
+                which allows to select most convenient action between:
+                "Switch to Default Timeline" (default), "Go to the Top" and "Select a Timeline".
+                Actually, "Switch to Default Timeline" works the same way as  "Select a Timeline"
+                if we're already on the Default Timeline.
+                <a href="https://github.com/andstatus/andstatus/issues/343">#343</a>
+            </change>
+            <change>Added option "Don't synchronize old messages, if previous sync was more than
+                ... hours ago".<br/>
+                This means that only on application start AndStatus will request from a server
+                "all latest messages" (as it always does for a Public timeline in GNU Social by
+                the way...).
+                In a case you tap "Sync with Internet" again, several minutes later,
+                AndStatus will not try to download "all latest messages" again
+                - it will request only messages,
+                which were sent after the last downloaded message, i.e. just like it does with
+                "Don't synchronize old messages..." option turned off.<br/>
+                A User sets a value for this option in hours, i.e. "1" or "100" ...
+                Empty value or "0" mean that the option is turned off (default behaviour).
+                <a href="https://github.com/andstatus/andstatus/issues/354">#354</a>
+            </change>
+            <change>Added support of Android 6 permissions.
+                <a href="https://github.com/andstatus/andstatus/issues/365">#365</a>
+            </change>
+            <change>Message Editor improvements:<br/>
+                <ul>
+                    <li>Fixed: Editor window covered Action Bar if replying to a long message.
+                        <a href="https://github.com/andstatus/andstatus/issues/362">#362</a></li>
+                    <li>Text box with a text of the new message is scrollable vertically now.</li>
+                    <li>Fullscreen mode toggle by tapping on not editable parts of the Editor.</li>
+                </ul>
+            </change>
+        </changes>
+    </release>
     <release android:versionName="25.04" android:versionCode="171"
              versionDate="2016-04-14"
              versionTitle="Quick navigation to the Default Timeline and Clickable links">
