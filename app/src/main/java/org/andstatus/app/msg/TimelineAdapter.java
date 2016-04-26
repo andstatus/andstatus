@@ -16,7 +16,6 @@
 
 package org.andstatus.app.msg;
 
-import android.os.Build;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -135,7 +134,6 @@ public class TimelineAdapter extends MyBaseAdapter {
     private void showMessageBody(TimelineViewItem item, View messageView) {
         TextView body = (TextView) messageView.findViewById(R.id.message_body);
         MyUrlSpan.showText(body, item.body, true);
-        body.setOnClickListener(this);
     }
 
     private void preloadAttachments(int position) {

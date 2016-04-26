@@ -21,12 +21,16 @@ import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.text.Html;
+import android.text.Layout;
+import android.text.Selection;
+import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.TextUtils;
-import android.text.method.LinkMovementMethod;
+import android.text.style.ClickableSpan;
 import android.text.style.URLSpan;
 import android.text.util.Linkify;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -79,7 +83,6 @@ public class MyUrlSpan extends URLSpan {
                 textView.setFocusable(true);
                 textView.setFocusableInTouchMode(true);
                 textView.setLinksClickable(true);
-                textView.setMovementMethod(LinkMovementMethod.getInstance());
             }
             // Android 6 bug, see https://github.com/andstatus/andstatus/issues/334
             // Setting setMovementMethod to not null causes a crash if text is SOFT_HYPHEN only:
@@ -92,8 +95,77 @@ public class MyUrlSpan extends URLSpan {
                 Linkify.addLinks(textView, Linkify.ALL);
             }
             fixUrlSpans(textView);
+            if (linkify) {
+                setOnTouchListener(textView);
+            }
             showView(textView, true);
         }
+    }
+
+    /**
+     * Substitute for: textView.setMovementMethod(LinkMovementMethod.getInstance());
+     * setMovementMethod intercepts click on a text part without links,
+     * so we replace it with our own method.
+     * Solution to have clickable both links and other text is found here:
+     * http://stackoverflow.com/questions/7236840/android-textview-linkify-intercepts-with-parent-view-gestures
+     * following an advice from here:
+     * http://stackoverflow.com/questions/7515710/listview-onclick-event-doesnt-fire-with-linkified-email-address?rq=1
+     */
+    public static void setOnTouchListener(TextView textView) {
+        textView.setMovementMethod(null);
+        textView.setOnTouchListener(
+                new View.OnTouchListener() {
+                    @Override
+                    public boolean onTouch(View v, MotionEvent event) {
+                        return onTouchEvent(v, event);
+                    }
+                }
+        );
+    }
+
+    private static boolean onTouchEvent(View view, MotionEvent event) {
+        TextView widget = (TextView) view;
+        Object text = widget.getText();
+        if (text instanceof Spanned) {
+            Spanned buffer = (Spanned) text;
+
+            int action = event.getAction();
+
+            if (action == MotionEvent.ACTION_UP
+                    || action == MotionEvent.ACTION_DOWN) {
+                int x = (int) event.getX();
+                int y = (int) event.getY();
+
+                x -= widget.getTotalPaddingLeft();
+                y -= widget.getTotalPaddingTop();
+
+                x += widget.getScrollX();
+                y += widget.getScrollY();
+
+                Layout layout = widget.getLayout();
+                int line = layout.getLineForVertical(y);
+                int off = layout.getOffsetForHorizontal(line, x);
+
+                ClickableSpan[] link = buffer.getSpans(off, off,
+                        ClickableSpan.class);
+
+                if (link.length != 0) {
+                    if (action == MotionEvent.ACTION_UP) {
+                        link[0].onClick(widget);
+                    } else if (action == MotionEvent.ACTION_DOWN) {
+                        if (buffer instanceof Spannable) {
+                            Selection.setSelection( (Spannable) buffer,
+                                    buffer.getSpanStart(link[0]),
+                                    buffer.getSpanEnd(link[0]));
+                        }
+                    }
+                    return true;
+                }
+            }
+
+        }
+
+        return false;
     }
 
     public static void showView(View view, boolean show) {
@@ -131,5 +203,6 @@ public class MyUrlSpan extends URLSpan {
             spannable.removeSpan(span);
             spannable.setSpan(new MyUrlSpan(span.getURL()), start, end, 0);
         }
+        textView.setText(spannable);
     }
 }
