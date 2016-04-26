@@ -1113,7 +1113,7 @@ public class TimelineActivity extends LoadableListActivity implements
 
     @Override
     public boolean canSwipeRefreshChildScrollUp() {
-        if (super.canSwipeRefreshChildScrollUp()) {
+        if ((mMessageEditor != null && mMessageEditor.isVisible()) ||  super.canSwipeRefreshChildScrollUp()) {
             return true;
         }
         if (getListAdapter() == null || getListAdapter().getPages().mayHaveYoungerPage()) {
