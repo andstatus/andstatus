@@ -31,8 +31,8 @@ import org.andstatus.app.account.PersistentAccounts;
 import org.andstatus.app.data.AssertionData;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyDatabaseConverterController;
-import org.andstatus.app.graphics.MyImageCache;
 import org.andstatus.app.data.TimelineType;
+import org.andstatus.app.graphics.MyImageCache;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.net.http.TlsSniSocketFactory;
 import org.andstatus.app.origin.PersistentOrigins;
@@ -115,7 +115,7 @@ public final class MyContextImpl implements MyContext {
     }
     
     private void tryToSetExternalStorageOnFirstLaunch() {
-        File databaseFile = MyPreferences.getDatabasePath(MyDatabase.DATABASE_NAME, null);
+        File databaseFile = MyPreferences.getDatabasePath(MyDatabase.DATABASE_NAME);
         if (databaseFile.exists()) {
             // This is not a first launch
             return;

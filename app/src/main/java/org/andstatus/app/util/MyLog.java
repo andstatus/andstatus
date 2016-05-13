@@ -408,7 +408,7 @@ public class MyLog {
     }
 
     public static File getLogDir(boolean logged) {
-        return MyPreferences.getDataFilesDir("logs", null, logged);
+        return MyPreferences.getDataFilesDir("logs", TriState.UNKNOWN, logged);
     }
     
     public static String formatKeyValue(Object keyIn, Object valueIn) {

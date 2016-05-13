@@ -237,7 +237,7 @@ class MyDatabaseConverter {
         @Override
         protected void execute2() {
             versionTo = 17;
-            File avatarsDir = MyPreferences.getDataFilesDir("avatars", null);
+            File avatarsDir = MyPreferences.getDataFilesDir("avatars");
             if (avatarsDir.exists()) {
                 FileUtils.deleteFilesRecursively(avatarsDir);
                 if (!avatarsDir.delete()) {

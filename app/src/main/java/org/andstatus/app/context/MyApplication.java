@@ -67,8 +67,7 @@ public class MyApplication extends Application {
     
     @Override
     public File getDatabasePath(String name) {
-        return isAcraProcess ? super.getDatabasePath(name) :
-                MyPreferences.getDatabasePath(name, null);
+        return isAcraProcess ? super.getDatabasePath(name) : MyPreferences.getDatabasePath(name);
     }
 
     @Override

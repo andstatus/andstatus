@@ -28,6 +28,7 @@ import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Environment;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import org.andstatus.app.R;
@@ -35,6 +36,7 @@ import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.msg.TapOnATimelineTitleBehaviour;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.TriState;
 
 import java.io.File;
 import java.util.Locale;
@@ -335,7 +337,11 @@ public class MyPreferences {
      */
     public static final String DIRECTORY_DATABASES = "databases";
     public static final String DIRECTORY_DOWNLOADS = "downloads";
-    
+
+    public static File getDataFilesDir(String type) {
+        return getDataFilesDir(type, TriState.UNKNOWN);
+    }
+
     /**
      * This function works just like {@link android.content.Context#getExternalFilesDir
      * Context.getExternalFilesDir}, but it takes {@link #KEY_USE_EXTERNAL_STORAGE} into account,
@@ -346,16 +352,16 @@ public class MyPreferences {
      * the following Environment constants for a subdirectory:
      * {@link android.os.Environment#DIRECTORY_PICTURES Environment.DIRECTORY_...} (since API 8),
      * {@link #DIRECTORY_DATABASES}
-     * @param forcedUseExternalStorage if not null, use this value instead of stored in preferences as {@link #KEY_USE_EXTERNAL_STORAGE}
+     * @param useExternalStorage if not UNKNOWN, use this value instead of stored in preferences as {@link #KEY_USE_EXTERNAL_STORAGE}
      * 
-     * @return directory, already created for you OR null in case of error
+     * @return directory, already created for you OR null in a case of an error
      * @see <a href="http://developer.android.com/guide/topics/data/data-storage.html#filesExternal">filesExternal</a>
      */
-    public static File getDataFilesDir(String type, Boolean forcedUseExternalStorage) {
-        return getDataFilesDir(type, forcedUseExternalStorage, true);
+    public static File getDataFilesDir(String type, @NonNull TriState useExternalStorage) {
+        return getDataFilesDir(type, useExternalStorage, true);
     }
 
-    public static File getDataFilesDir(String type, Boolean forcedUseExternalStorage, boolean logged) {
+    public static File getDataFilesDir(String type, @NonNull TriState useExternalStorage, boolean logged) {
         final String method = "getDataFilesDir";
         File dir = null;
         StringBuilder textToLog = new StringBuilder();
@@ -363,7 +369,7 @@ public class MyPreferences {
         if (myContext.context() == null) {
             textToLog.append("No android.content.Context yet");
         } else {
-            if (isStorageExternal(forcedUseExternalStorage)) {
+            if (isStorageExternal(useExternalStorage)) {
                 if (isWritableExternalStorageAvailable(textToLog)) {
                     try {
                         dir = myContext.context().getExternalFilesDir(type);
@@ -419,10 +425,13 @@ public class MyPreferences {
         }
         return available;
     }
-    
-    public static boolean isStorageExternal(Boolean forcedUseExternalStorage) {
-        return forcedUseExternalStorage == null ? getBoolean(KEY_USE_EXTERNAL_STORAGE, false)
-                : forcedUseExternalStorage;
+
+    public static boolean isStorageExternal() {
+        return isStorageExternal(TriState.UNKNOWN);
+    }
+
+    public static boolean isStorageExternal(@NonNull TriState useExternalStorage) {
+        return useExternalStorage.toBoolean(getBoolean(KEY_USE_EXTERNAL_STORAGE, false));
     }
 
     public static boolean isSyncWhileUsingApplicationEnabled() {
@@ -445,14 +454,18 @@ public class MyPreferences {
         }
         return value;
     }
-    
+
+    public static File getDatabasePath(String name) {
+        return getDatabasePath(name, TriState.UNKNOWN);
+    }
+
     /**
      * Extends {@link android.content.ContextWrapper#getDatabasePath(java.lang.String)}
      * @param name The name of the database for which you would like to get its path.
-     * @param forcedUseExternalStorage if not null, use this value instead of stored in preferences as {@link #KEY_USE_EXTERNAL_STORAGE}
+     * @param useExternalStorage if not UNKNOWN, use this value instead of stored in preferences as {@link #KEY_USE_EXTERNAL_STORAGE}
      */
-    public static File getDatabasePath(String name, Boolean forcedUseExternalStorage) {
-        File dbDir = getDataFilesDir(DIRECTORY_DATABASES, forcedUseExternalStorage);
+    public static File getDatabasePath(String name, @NonNull TriState useExternalStorage) {
+        File dbDir = getDataFilesDir(DIRECTORY_DATABASES, useExternalStorage);
         File dbAbsolutePath = null;
         if (dbDir != null) {
             dbAbsolutePath = new File(dbDir.getPath() + "/" + name);
@@ -464,7 +477,7 @@ public class MyPreferences {
      * Simple check that allows to prevent data access errors
      */
     public static boolean isDataAvailable() {
-        return getDataFilesDir(null, null) != null;
+        return getDataFilesDir(null) != null;
     }
 
     /**

@@ -196,7 +196,7 @@ public class MySettingsFragment extends PreferenceFragment implements
                 MyPreferences.KEY_USE_EXTERNAL_STORAGE_NEW);
         if (preference != null) {
             mIgnorePreferenceChange = true;
-            boolean use = MyPreferences.isStorageExternal(null);
+            boolean use = MyPreferences.isStorageExternal();
             if (use != preference.isChecked()) {
                 preference.setChecked(use);
             }

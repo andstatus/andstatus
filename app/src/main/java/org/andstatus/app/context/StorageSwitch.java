@@ -33,6 +33,7 @@ import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.service.MyServiceState;
 import org.andstatus.app.util.DialogFactory;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.TriState;
 
 import java.io.File;
 import java.io.IOException;
@@ -143,7 +144,7 @@ public class StorageSwitch {
         }
 
         private void moveAll(TaskResult result) {
-            boolean useExternalStorageOld = MyPreferences.isStorageExternal(null);
+            boolean useExternalStorageOld = MyPreferences.isStorageExternal();
             if (mUseExternalStorageNew
                     && !MyPreferences.isWritableExternalStorageAvailable(result.messageBuilder)) {
                 mUseExternalStorageNew = false;
@@ -188,7 +189,7 @@ public class StorageSwitch {
                     dbFileOld = MyContextHolder.get().context().getDatabasePath(
                             databaseName);
                     dbFileNew = MyPreferences.getDatabasePath(
-                            databaseName, useExternalStorageNew);
+                            databaseName, TriState.fromBoolean(useExternalStorageNew));
                     if (dbFileOld == null) {
                         messageToAppend.append(" No old database " + databaseName);
                         done = true;
@@ -310,9 +311,9 @@ public class StorageSwitch {
             try {
 
                 if (!done) {
-                    dirOld = MyPreferences.getDataFilesDir(MyPreferences.DIRECTORY_DOWNLOADS, null);
+                    dirOld = MyPreferences.getDataFilesDir(MyPreferences.DIRECTORY_DOWNLOADS);
                     dirNew = MyPreferences.getDataFilesDir(MyPreferences.DIRECTORY_DOWNLOADS,
-                            useExternalStorageNew);
+                            TriState.fromBoolean(useExternalStorageNew));
                     if (dirOld == null || !dirOld.exists()) {
                         messageToAppend.append(" No old avatars. ");
                         done = true;

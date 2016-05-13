@@ -32,7 +32,7 @@ public class DownloadFile {
     public DownloadFile(String filename) {
         this.filename = filename;
         if (!TextUtils.isEmpty(filename)) {
-            file = new File(MyPreferences.getDataFilesDir(MyPreferences.DIRECTORY_DOWNLOADS, null), filename);
+            file = new File(MyPreferences.getDataFilesDir(MyPreferences.DIRECTORY_DOWNLOADS), filename);
         } else {
             file = null;
         }

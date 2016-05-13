@@ -146,10 +146,10 @@ public class MyBackupAgent extends BackupAgent {
                 SharedPreferencesUtil.sharedPreferencesPath(MyContextHolder.get().context()));
         databasesBackedUp = backupFile(data,
                 DATABASE_KEY + "_" + MyDatabase.DATABASE_NAME,
-                MyPreferences.getDatabasePath(MyDatabase.DATABASE_NAME, null));
+                MyPreferences.getDatabasePath(MyDatabase.DATABASE_NAME));
         suggestionsBackedUp = backupFile(data,
                 DATABASE_KEY + "_" + TimelineSearchSuggestionsProvider.DATABASE_NAME,
-                MyPreferences.getDatabasePath(TimelineSearchSuggestionsProvider.DATABASE_NAME, null));
+                MyPreferences.getDatabasePath(TimelineSearchSuggestionsProvider.DATABASE_NAME));
         accountsBackedUp = MyContextHolder.get().persistentAccounts().onBackup(data, backupDescriptor);
     }
     
@@ -265,10 +265,10 @@ public class MyBackupAgent extends BackupAgent {
         restoreSharedPreferences(data);
         assertNextHeader(data, DATABASE_KEY + "_" + MyDatabase.DATABASE_NAME);
         databasesRestored += restoreFile(data,
-                    MyPreferences.getDatabasePath(MyDatabase.DATABASE_NAME, null));
+                    MyPreferences.getDatabasePath(MyDatabase.DATABASE_NAME));
         if (optionalNextHeader(data, DATABASE_KEY + "_" + TimelineSearchSuggestionsProvider.DATABASE_NAME)) {
             suggestionsRestored += restoreFile(data,
-                    MyPreferences.getDatabasePath(TimelineSearchSuggestionsProvider.DATABASE_NAME, null));            
+                    MyPreferences.getDatabasePath(TimelineSearchSuggestionsProvider.DATABASE_NAME));
         }
         MyContextHolder.release();
         MyContextHolder.initialize(this, this);
@@ -302,7 +302,7 @@ public class MyBackupAgent extends BackupAgent {
     }
     
     private void fixExternalStorage() {
-        if (!MyPreferences.isStorageExternal(null) ||
+        if (!MyPreferences.isStorageExternal() ||
                 MyPreferences.isWritableExternalStorageAvailable(null)) {
             return;
         }

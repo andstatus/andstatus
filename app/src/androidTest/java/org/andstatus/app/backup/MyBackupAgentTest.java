@@ -19,6 +19,7 @@ import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.FileUtils;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
+import org.andstatus.app.util.TriState;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -132,8 +133,8 @@ public class MyBackupAgentTest extends InstrumentationTestCase {
     }
 
     private void deleteFiles(Context context, boolean useExternalStorage) {
-        FileUtils.deleteFilesRecursively(MyPreferences.getDataFilesDir(MyPreferences.DIRECTORY_DOWNLOADS, useExternalStorage));
-        FileUtils.deleteFilesRecursively(MyPreferences.getDataFilesDir(MyPreferences.DIRECTORY_DATABASES, useExternalStorage));
+        FileUtils.deleteFilesRecursively(MyPreferences.getDataFilesDir(MyPreferences.DIRECTORY_DOWNLOADS, TriState.fromBoolean(useExternalStorage)));
+        FileUtils.deleteFilesRecursively(MyPreferences.getDataFilesDir(MyPreferences.DIRECTORY_DATABASES, TriState.fromBoolean(useExternalStorage)));
         FileUtils.deleteFilesRecursively(SharedPreferencesUtil.prefsDirectory(context));
     }
 
