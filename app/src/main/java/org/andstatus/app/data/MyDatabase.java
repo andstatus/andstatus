@@ -37,7 +37,9 @@ import java.util.Locale;
  * Used mainly by {@link MyProvider}
  */
 public final class MyDatabase extends SQLiteOpenHelper  {
-    
+    private final boolean creationEnabled;
+    private boolean wasNotCreated = false;
+
     /**
      * Current database scheme version, defined by AndStatus developers.
      * This is used to check (and upgrade if necessary) 
@@ -465,12 +467,16 @@ public final class MyDatabase extends SQLiteOpenHelper  {
     }
     
     
-    public MyDatabase(Context context) {
+    public MyDatabase(Context context, boolean creationEnabled) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
+        this.creationEnabled = creationEnabled;
     }
 
     private final ThreadLocal<Boolean> onUpgradeTriggered = new ThreadLocal<>();
     public MyContextState checkState() {
+        if (wasNotCreated) {
+            return MyContextState.DATABASE_UNAVAILABLE;
+        }
         if (MyDatabaseConverterController.isUpgradeError()) {
             return MyContextState.ERROR;
         }
@@ -505,6 +511,12 @@ public final class MyDatabase extends SQLiteOpenHelper  {
      */
     @Override
     public void onCreate(SQLiteDatabase db) {
+        if (!creationEnabled) {
+            wasNotCreated = true;
+            MyLog.e(this, "Database creation disabled");
+            return;
+        }
+
         MyLog.i(this, "Creating tables");
         execSQL(db, "CREATE TABLE " + Msg.TABLE_NAME + " (" 
                 + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," 

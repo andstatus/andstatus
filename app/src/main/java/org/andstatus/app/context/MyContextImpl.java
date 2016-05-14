@@ -23,6 +23,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Environment;
 
 import net.jcip.annotations.ThreadSafe;
 
@@ -40,8 +41,8 @@ import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.service.ConnectionRequired;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
+import org.andstatus.app.util.TriState;
 
-import java.io.File;
 import java.util.Locale;
 
 /**
@@ -86,12 +87,21 @@ public final class MyContextImpl implements MyContext {
         final String method = "newInitialized";
         MyContextImpl myContext = newNotInitialized(context, initializerName);
         if ( myContext.mContext != null) {
+            boolean createApplicationData = MyPreferences.isApplicationDataCreated().not().toBoolean(false);
             MyLog.v(TAG, method + " Starting initialization by " + initializerName);
-            tryToSetExternalStorageOnFirstLaunch();
+            if (createApplicationData) {
+                MyLog.i(TAG, method + " Creating application data");
+                MyPreferences.setDefaultValues();
+                tryToSetExternalStorageOnDataCreation();
+            }
             myContext.mPreferencesChangeTime = MyPreferences.getPreferencesChangeTime();
-            MyDatabase newDb = new MyDatabase(myContext.mContext);
+            MyDatabase newDb = new MyDatabase(myContext.mContext, createApplicationData);
             try {
                 myContext.mState = newDb.checkState();
+                if (myContext.state() == MyContextState.READY
+                        && MyPreferences.isApplicationDataCreated() != TriState.TRUE) {
+                    myContext.mState = MyContextState.ERROR;
+                }
                 switch (myContext.mState) {
                     case READY:
                             myContext.mDb = newDb;
@@ -114,15 +124,11 @@ public final class MyContextImpl implements MyContext {
         return myContext;
     }
     
-    private void tryToSetExternalStorageOnFirstLaunch() {
-        File databaseFile = MyPreferences.getDatabasePath(MyDatabase.DATABASE_NAME);
-        if (databaseFile.exists()) {
-            // This is not a first launch
-            return;
-        }
-        boolean isExternalAvailable = MyPreferences.isWritableExternalStorageAvailable(null);
-        MyLog.i(this, "External storage is " + (isExternalAvailable ? "" : "un") + "available");
-        MyPreferences.putBoolean(MyPreferences.KEY_USE_EXTERNAL_STORAGE, isExternalAvailable);
+    private void tryToSetExternalStorageOnDataCreation() {
+        boolean useExternalStorage = !Environment.isExternalStorageEmulated()
+                && MyPreferences.isWritableExternalStorageAvailable(null);
+        MyLog.i(this, "External storage is " + (useExternalStorage ? "" : "not") + " used");
+        MyPreferences.putBoolean(MyPreferences.KEY_USE_EXTERNAL_STORAGE, useExternalStorage);
     }
 
     @Override

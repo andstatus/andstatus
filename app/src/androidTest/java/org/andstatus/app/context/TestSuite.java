@@ -103,17 +103,6 @@ public class TestSuite extends TestCase {
         MyLog.d(TAG, "After Initializing Test Suite loop");
         assertTrue("MyContext state=" + MyContextHolder.get().state(), MyContextHolder.get().state() != MyContextState.EMPTY);
         
-        if (MyPreferences.shouldSetDefaultValues()) {
-            MyLog.d(TAG, "Before setting default preferences");
-            // Default values for the preferences will be set only once
-            // and in one place: here
-            MyPreferences.setDefaultValues();
-            if (MyPreferences.shouldSetDefaultValues()) {
-                MyLog.e(TAG, "Default values were not set?!");   
-            } else {
-                MyLog.i(TAG, "Default values has been set");   
-            }
-        }
         MyPreferences.getDefaultSharedPreferences().edit()
             .putString(MyPreferences.KEY_MIN_LOG_LEVEL, Integer.toString(MyLog.VERBOSE))
             .putBoolean(MyPreferences.KEY_SHOW_ATTACHED_IMAGES, true)

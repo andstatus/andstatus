@@ -69,22 +69,10 @@ public class HelpActivity extends MyActivity implements SwipeInterface {
      */
     private boolean mIsFirstActivity = false;
     private boolean wasPaused = false;
-    private static boolean isFirstTimeRun = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         MyContextHolder.initialize(this, this);
-        if (MyPreferences.shouldSetDefaultValues()) {
-            // Default values for the preferences will be set only once
-            // and in one place: here
-            MyPreferences.setDefaultValues();
-            if (MyPreferences.shouldSetDefaultValues()) {
-                MyLog.e(this, "Default values were not set?!");   
-            } else {
-                MyLog.i(this, "Default values has been set");
-                isFirstTimeRun = true;
-            }
-        }
 
         mLayoutId = R.layout.help;
         super.onCreate(savedInstanceState);
@@ -106,7 +94,11 @@ public class HelpActivity extends MyActivity implements SwipeInterface {
 
     private void showVersionText() {
         TextView versionText = (TextView) findViewById(R.id.splash_application_version);
-        versionText.setText(MyContextHolder.getVersionText(this));
+        String text = MyContextHolder.getVersionText(this);
+        if (!MyContextHolder.get().isReady()) {
+            text += "\n" + MyContextHolder.get().state();
+        }
+        versionText.setText(text);
         versionText.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -263,10 +255,7 @@ public class HelpActivity extends MyActivity implements SwipeInterface {
         boolean helpAsFirstActivity = false;
         boolean showChangeLog = false;
         if (!MyContextHolder.get().isReady()) {
-            MyLog.i(activity, "Context is not ready");
-            helpAsFirstActivity = true;
-        } else if (MyPreferences.shouldSetDefaultValues()) {
-            MyLog.i(activity, "We are running the Application for the very first time?");
+            MyLog.i(activity, "Context is not ready: " + MyContextHolder.get().toString());
             helpAsFirstActivity = true;
         } else if (MyContextHolder.get().persistentAccounts().isEmpty()) {
             MyLog.i(activity, "No AndStatus Accounts yet");
@@ -288,11 +277,7 @@ public class HelpActivity extends MyActivity implements SwipeInterface {
             } 
             
             int pageIndex = PAGE_INDEX_LOGO;
-            if (MyContextHolder.get().persistentAccounts().isEmpty()) {
-                if (!isFirstTimeRun) {
-                    pageIndex = PAGE_INDEX_USER_GUIDE;
-                }
-            } else if (showChangeLog) {
+            if (!helpAsFirstActivity && showChangeLog) {
                 pageIndex = PAGE_INDEX_CHANGELOG;
             }
             intent.putExtra(HelpActivity.EXTRA_HELP_PAGE_INDEX, pageIndex);

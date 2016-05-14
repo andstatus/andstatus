@@ -146,17 +146,16 @@ public class MyPreferences {
         }
     }
 
-    public static boolean shouldSetDefaultValues() {
+    public static TriState isApplicationDataCreated() {
         SharedPreferences sp = getSharedPreferences(PreferenceManager.KEY_HAS_SET_DEFAULT_VALUES);
         if (sp == null) {
-            return false;
+            return TriState.UNKNOWN;
         } else {
-            boolean areSetAlready = sp
-                    .getBoolean(PreferenceManager.KEY_HAS_SET_DEFAULT_VALUES, false);
-            return !areSetAlready;
+            return TriState.fromBoolean(
+                    sp.getBoolean(PreferenceManager.KEY_HAS_SET_DEFAULT_VALUES, false));
         }
     }
-    
+
     public static void setDefaultValues() {
         Context context = MyContextHolder.get().context();
         if (context == null) {

@@ -93,4 +93,15 @@ public enum TriState {
         bundle.putLong(key, id);
         return bundle;
     }
+
+    public TriState not() {
+        switch (this) {
+            case TRUE:
+                return FALSE;
+            case FALSE:
+                return TRUE;
+            default:
+                return UNKNOWN;
+        }
+    }
 }

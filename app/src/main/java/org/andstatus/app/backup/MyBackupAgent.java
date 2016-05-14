@@ -35,6 +35,7 @@ import org.andstatus.app.service.MyServiceState;
 import org.andstatus.app.util.FileUtils;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
+import org.andstatus.app.util.TriState;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -243,7 +244,7 @@ public class MyBackupAgent extends BackupAgent {
     }
 
     private void ensureNoDataIsPresent() throws IOException {
-        if (MyPreferences.shouldSetDefaultValues()) {
+        if (MyPreferences.isApplicationDataCreated() == TriState.FALSE) {
             return;
         }
         MyContextHolder.initialize(this, this);
