@@ -338,6 +338,7 @@
   <string name="remove_account_dialog_text">Removing the account will delete all its data from the device. Continue?</string>
   <string name="resolve_view">View Message</string>
   <string name="rounded_avatars">Rounded avatars</string>
+  <string name="select_social_network">Select social network</string>
   <string name="splash_button_learn_more">Learn More</string>
   <string name="splash_button_get_started">Get Started</string>
   <string name="splash_payoff_line">Open Source low traffic social networking client with tree-like threaded conversations.

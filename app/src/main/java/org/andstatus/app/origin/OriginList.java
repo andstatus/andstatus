@@ -77,7 +77,7 @@ public abstract class OriginList extends MyListActivity {
         }
         addEnabled = !Intent.ACTION_PICK.equals(action);
         if (Intent.ACTION_INSERT.equals(action)) {
-            getSupportActionBar().setTitle(R.string.header_add_new_account);
+            getSupportActionBar().setTitle(R.string.select_social_network);
         }
 
         ListAdapter adapter = new MySimpleAdapter(this,
