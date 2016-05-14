@@ -19,9 +19,7 @@
 				  android:summary="@string/summary_preference_storage">
 	<org.andstatus.app.context.MultilineCheckBoxPreference android:key="use_external_storage_new"
 		android:persistent="false"
-		android:title="@string/title_preference_storage_external"
-		android:summaryOff="@string/summary_preference_storage_external_off"
-		android:summaryOn="@string/summary_preference_storage_external_on" />
+		android:title="@string/title_preference_storage_external" />
 	<org.andstatus.app.context.MultilineListPreference android:entryValues="@array/history_size_values"
 		android:entries="@array/history_size_entries" android:summary="@string/summary_preference_history_size"
 		android:dialogTitle="@string/dialog_title_preference_history_size"

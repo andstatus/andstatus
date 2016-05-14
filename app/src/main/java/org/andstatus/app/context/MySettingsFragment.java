@@ -204,6 +204,13 @@ public class MySettingsFragment extends PreferenceFragment implements
                     && !preference.isChecked()) {
                 preference.setEnabled(false);
             }
+            StringBuilder summary = new StringBuilder(
+                    getActivity().getText(preference.isChecked()
+                    ? R.string.summary_preference_storage_external_on
+                    : R.string.summary_preference_storage_external_off));
+            summary.append(":\n ");
+            summary.append(MyPreferences.getDataFilesDir(null));
+            preference.setSummary(summary);
             mIgnorePreferenceChange = false;
         }
     }

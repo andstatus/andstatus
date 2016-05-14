@@ -379,8 +379,7 @@ public class MyPreferences {
                         }
                     }
                 }
-            }
-            if (dir == null) {
+            } else {
                 dir = myContext.context().getFilesDir();
                 if (!TextUtils.isEmpty(type)) {
                     dir = new File(dir, type);
