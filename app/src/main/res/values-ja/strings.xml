@@ -135,6 +135,7 @@
   <string name="dialog_title_service_unavailable">サービスが利用できません</string>
   <string name="dialog_title_timeline_loading">タイムラインを更新しています&#8230;</string>
   <string name="discover_open_instances_title">オープンインスタンスを検出</string>
+  <string name="dont_synchronize_old_messages">前回の同期が ... 時間以上前の場合、古いメッセージを同期しない</string>
   <string name="download_status_draft">下書き</string>
   <string name="download_status_unsent">未送信</string>
   <string name="drawer_close">ナビゲーションドロワーを閉じる</string>
@@ -337,6 +338,8 @@
   <string name="remove_account_dialog_title">アカウントを削除しますか?</string>
   <string name="remove_account_dialog_text">アカウントを削除すると、デバイスからすべてのデータが削除されます。続行しますか?</string>
   <string name="resolve_view">メッセージを表示</string>
+  <string name="rounded_avatars">丸みを帯びたアバター</string>
+  <string name="select_social_network">ソーシャル ネットワークを選択</string>
   <string name="splash_button_learn_more">もっと詳しく</string>
   <string name="splash_button_get_started">始めましょう</string>
   <string name="splash_payoff_line">ツリー形式スレッドの、オープンソースで低トラフィックなソーシャルネットワー キングのクライアント。GNU social、Twitter、および Pump.io をサポートします。</string>
@@ -346,6 +349,7 @@
   <string name="search_timeline_hint">ユーザー名/フレーズを入力してください</string>
   <string name="search_direct_messages_label">ダイレクトメッセージを検索</string>
   <string name="search_direct_messages_hint">ユーザー名またはフレーズを入力てください</string>
+  <string name="show_buttons_below_message">メッセージの下に返信、再投稿、お気に入りボタンを表示</string>
   <string name="status_destroyed">メッセージは削除されました。</string>
   <string name="summary_preference_accounts_absent">まだ AndStatus アカウントはありません</string>
   <string name="summary_preference_accounts_present">AndStatus アカウントの数</string>
@@ -398,6 +402,7 @@
   <string name="summary_preference_vibration_on">着信メッセージでバイブレーションします</string>
   <string name="switch_to_default_timeline">既定のタイムラインに切り替え</string>
   <string name="system_is_busy_try_later">システムがビジー状態です。後でもう一度やり直してください。</string>
+  <string name="tap_on_a_timeline_title_behaviour">タイムラインのタイトルをタップした時の動作</string>
   <string name="theme_color_entries_default">デバイス デフォルト</string>
   <string name="theme_color_entries_light">ライト</string>
   <string name="theme_color_entries_dark">ダーク</string>
