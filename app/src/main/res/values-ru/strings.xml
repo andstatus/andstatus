@@ -135,6 +135,7 @@
   <string name="dialog_title_service_unavailable">Сервис недоступен</string>
   <string name="dialog_title_timeline_loading">Обновление ленты времени&#8230;</string>
   <string name="discover_open_instances_title">Найти открытые серверы</string>
+  <string name="dont_synchronize_old_messages">Не синхронизировать старые сообщения, если предыдущая синхронизация была больше чем... часов назад</string>
   <string name="download_status_draft">черновик</string>
   <string name="download_status_unsent">неотправлено</string>
   <string name="drawer_close">Закрыть панель навигации</string>
@@ -337,6 +338,8 @@
   <string name="remove_account_dialog_title">Удалить аккаунт?</string>
   <string name="remove_account_dialog_text">При удалении аккаунта (учётной записи пользователя) из устройства будут удалены все данные, относящиеся к данному аккаунту. Продолжить?</string>
   <string name="resolve_view">Посмотреть сообщение</string>
+  <string name="rounded_avatars">Округлые аватары</string>
+  <string name="select_social_network">Выберите социальную сеть</string>
   <string name="splash_button_learn_more">Узнать больше</string>
   <string name="splash_button_get_started">Начать работу</string>
   <string name="splash_payoff_line">Open Source клиент c низким сетевым трафиком для социальных сетей, имеющий \"деревья\" обсуждений. 
@@ -347,6 +350,7 @@
   <string name="search_timeline_hint">Введите имя или фразу</string>
   <string name="search_direct_messages_label">Поиск личных сообщений</string>
   <string name="search_direct_messages_hint">Введите имя или фразу</string>
+  <string name="show_buttons_below_message">Показать кнопки \"Ответить\", \"Пересказать\" и \"Добавить в избранное\" под сообщением</string>
   <string name="status_destroyed">Сообщение удалено.</string>
   <string name="summary_preference_accounts_absent">Пока нет ни одного AndStatus-аккаунта</string>
   <string name="summary_preference_accounts_present">Количество AndStatus аккаунтов</string>
@@ -399,6 +403,7 @@
   <string name="summary_preference_vibration_on">Виброзвонок при входящем сообщении включён</string>
   <string name="switch_to_default_timeline">Переключиться на Ленту времени по умолчанию</string>
   <string name="system_is_busy_try_later">Система сейчас занята. Пожалуйста, попробуйте попозже.</string>
+  <string name="tap_on_a_timeline_title_behaviour">Поведение при нажатии на заголовок Линии времени</string>
   <string name="theme_color_entries_default">По умолчанию в устройстве</string>
   <string name="theme_color_entries_light">Светлая</string>
   <string name="theme_color_entries_dark">Тёмная</string>

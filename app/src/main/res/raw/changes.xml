@@ -26,8 +26,8 @@
 		</subtitle>
     </header>
 
-    <release android:versionName="26.05" android:versionCode="177"
-             versionDate="2016-04-27"
+    <release android:versionName="26.06" android:versionCode="178"
+             versionDate="2016-05-15"
              versionTitle="Familiar look for New Users">
         <changes>
             <change>Light Theme is the default one in AndStatus now.
@@ -95,6 +95,10 @@
                     <li>Text box with a text of the new message is scrollable vertically now.</li>
                     <li>Fullscreen mode toggle by tapping on not editable parts of the Editor.</li>
                 </ul>
+            </change>
+            <change>Fixed "Locally downloaded messages and images are lost after turning Power off",
+                which we noticed in Android 6.
+                <a href="https://github.com/andstatus/andstatus/issues/382">#382</a>
             </change>
         </changes>
     </release>
