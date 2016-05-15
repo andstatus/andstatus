@@ -83,7 +83,7 @@ public class ConversationViewItem extends ConversationItem {
                     messageSource = Html.fromHtml(via).toString().trim();
                 }
                 mAvatarDrawable = AvatarFile.getDrawable(authorId, cursor);
-                if (MyPreferences.showAttachedImages()) {
+                if (MyPreferences.downloadAndDisplayAttachedImages()) {
                     mImageFile = AttachedImageFile.fromCursor(cursor);
                 }
                 mInReplyToName = TimelineSql.userColumnNameToNameAtTimeline(cursor, User.IN_REPLY_TO_NAME, false);

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2016 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,85 +48,101 @@ import java.util.Locale;
 public class MyPreferences {
     private static final String TAG = MyPreferences.class.getSimpleName();
 
-    public static final String KEY_USER_IN_TIMELINE = "user_in_timeline";
-    public static final String KEY_DEFAULT_TIMELINE = "default_timeline";
-    public static final String KEY_TAP_ON_A_TIMELINE_TITLE = "tap_on_a_timeline_title";
-    public static final String KEY_TIMELINE_IS_COMBINED_BY_DEFAULT = "timeline_is_combined_by_default";
+    // ----------------------------------------------------------
+    // Accounts
+    // (no keys/settings here yet)
 
-    public static final String KEY_HISTORY_SIZE = "history_size";
-    public static final String KEY_HISTORY_TIME = "history_time";
-    /**
-     * Period of automatic updates in seconds
-     */
-    public static final String KEY_SYNC_FREQUENCY_SECONDS = "fetch_frequency";
-    public static final String KEY_SYNC_INDICATOR_ON_TIMELINE = "sync_indicator_on_timeline";
-    public static final String KEY_SYNC_WHILE_USING_APPLICATION = "sync_while_using_application";
-    public static final String KEY_DOWNLOAD_ATTACHMENTS_OVER_WIFI_ONLY = "download_attachments_over_wifi_only";
-    public static final String KEY_CONNECTION_TIMEOUT_SECONDS = "connection_timeout";
-    public static final String KEY_RINGTONE_PREFERENCE = "notification_ringtone";
-    public static final String KEY_COMMANDS_QUEUE = "commands_queue";
-
-    public static final String KEY_USE_KITKAT_MEDIA_CHOOSER = "use_kitkat_media_chooser";
-    public static final String KEY_DEBUGGING_INFO_IN_UI = "debugging_info_in_ui";
-    
-    /**
-     * System time when shared preferences were changed
-     */
-    public static final String KEY_PREFERENCES_CHANGE_TIME = "preferences_change_time";
-    public static final String KEY_DATA_PRUNED_DATE = "data_pruned_date";
-    /**
-     * Minimum logging level for the whole application (i.e. for any tag)
-     */
-    public static final String KEY_MIN_LOG_LEVEL = "min_log_level";
-    public static final String KEY_SENDING_MESSAGES_LOG_ENABLED = "sending_messages_log_enabled";
-    public static final String KEY_LOG_NETWORK_LEVEL_MESSAGES = "log_network_level_messages";
-    public static final String KEY_LOG_EVERYTHING_TO_FILE = "log_everything_to_file";
-    
-    public static final String KEY_THEME_SIZE = "theme_size";
+    // ----------------------------------------------------------
+    // Appearance
+    public static final String KEY_CUSTOM_LOCALE = "custom_locale";
+    public static final String CUSTOM_LOCALE_DEFAULT = "default";
     public static final String KEY_THEME_COLOR = "theme_color";
     public static final String KEY_ACTION_BAR_BACKGROUND_COLOR = "action_bar_background_color";
     public static final String KEY_ACTION_BAR_TEXT_COLOR = "action_bar_text_color";
     public static final String KEY_BACKGROUND_COLOR = "background_color";
-    public static final String KEY_SHOW_AVATARS = "show_avatars";
+    public static final String KEY_THEME_SIZE = "theme_size";
     public static final String KEY_ROUNDED_AVATARS = "rounded_avatars";
-    public static final String KEY_SHOW_ATTACHED_IMAGES = "show_attached_images";
-    public static final String KEY_ATTACH_IMAGES = "attach_images";
+
+    // ----------------------------------------------------------
+    // Timeline
+    public static final String KEY_DEFAULT_TIMELINE = "default_timeline";
+    public static final String KEY_TAP_ON_A_TIMELINE_TITLE_BEHAVIOUR = "tap_on_a_timeline_title";
+    public static final String KEY_TIMELINE_IS_COMBINED_BY_DEFAULT = "timeline_is_combined_by_default";
+    public static final String KEY_USER_IN_TIMELINE = "user_in_timeline";
+    public static final String KEY_SHOW_AVATARS = "show_avatars";
     public static final String KEY_SHOW_ORIGIN = "show_origin";
+    public static final String KEY_MARK_REPLIES_IN_TIMELINE = "mark_replies_in_timeline";
     public static final String KEY_SHOW_BUTTONS_BELOW_MESSAGE = "show_buttons_below_message";
+    public static final String KEY_OLD_MESSAGES_FIRST_IN_CONVERSATION = "old_messages_first_in_conversation";
+    public static final String KEY_REFRESH_TIMELINE_AUTOMATICALLY = "refresh_timeline_automatically";
 
-    public static final String KEY_CUSTOM_LOCALE = "custom_locale";
-    public static final String CUSTOM_LOCALE_DEFAULT = "default";
-    
-    public static final String KEY_USE_EXTERNAL_STORAGE = "use_external_storage";
-    /**
-     * New value for #KEY_USE_EXTERNAL_STORAGE to be confirmed/processed
-     */
-    public static final String KEY_USE_EXTERNAL_STORAGE_NEW = "use_external_storage_new";
-    public static final String KEY_ENABLE_ANDROID_BACKUP = "enable_android_backup";
-    /**
-     * Version code of last opened application (int) 
-     */
-    public static final String KEY_VERSION_CODE_LAST = "version_code_last";
-
-    public static final String KEY_FILTER_HIDE_MESSAGES_BASED_ON_KEYWORDS = "hide_messages_based_on_keywords";
-    public static final String KEY_FILTER_HIDE_REPLIES_NOT_TO_ME_OR_FRIENDS = "hide_replies_not_to_me_or_friends";
-
-    public static final String KEY_NOTIFICATIONS_ENABLED = "notifications_enabled";
-	public static final String KEY_NOTIFY_OF_HOME_TIMELINE = "notifications_timeline";
-	public static final String KEY_NOTIFY_OF_MENTIONS = "notifications_mentions";
-	public static final String KEY_NOTIFY_OF_DIRECT_MESSAGES = "notifications_messages";
-    public static final String KEY_NOTIFY_OF_COMMANDS_IN_THE_QUEUE = "notifications_queue";
-    public static final String KEY_NOTIFICATION_ICON_ALTERNATIVE = "notification_icon_alternative";
-
+    // ----------------------------------------------------------
+    // Gestures
     public static final String KEY_LONG_PRESS_TO_OPEN_CONTEXT_MENU = "long_press_to_open_context_menu";
     public static final String KEY_ENTER_SENDS_MESSAGE = "enter_sends_message";
 
-    public static final String KEY_OLD_MESSAGES_FIRST_IN_CONVERSATION = "old_messages_first_in_conversation";
+    // ----------------------------------------------------------
+    // Attachments
+    public static final String KEY_DOWNLOAD_AND_DISPLAY_ATTACHED_IMAGES = "show_attached_images";
+    public static final String KEY_ATTACH_IMAGES_TO_MY_MESSAGES = "attach_images";
+    public static final String KEY_DOWNLOAD_ATTACHMENTS_OVER_WIFI_ONLY = "download_attachments_over_wifi_only";
+    public static final String KEY_MODERN_INTERFACE_TO_SELECT_AN_ATTACHMENT = "use_kitkat_media_chooser";
+
+    // ----------------------------------------------------------
+    // Syncing
+    public static final String KEY_SYNC_FREQUENCY_SECONDS = "fetch_frequency";
+    public static final String KEY_SYNC_WHILE_USING_APPLICATION = "sync_while_using_application";
+    public static final String KEY_SYNC_INDICATOR_ON_TIMELINE = "sync_indicator_on_timeline";
     public static final String KEY_SYNC_AFTER_MESSAGE_WAS_SENT = "sync_after_message_was_sent";
     public static final String KEY_DONT_SYNCHRONIZE_OLD_MESSAGES = "dont_synchronize_old_messages";
-    public static final String KEY_MARK_REPLIES_IN_TIMELINE = "mark_replies_in_timeline";
-    public static final String KEY_REFRESH_TIMELINE_AUTOMATICALLY = "refresh_timeline_automatically";
+    public static final String KEY_CONNECTION_TIMEOUT_SECONDS = "connection_timeout";
 
+    // ----------------------------------------------------------
+    // Filters
+    public static final String KEY_FILTER_HIDE_MESSAGES_BASED_ON_KEYWORDS = "hide_messages_based_on_keywords";
+    public static final String KEY_FILTER_HIDE_REPLIES_NOT_TO_ME_OR_FRIENDS = "hide_replies_not_to_me_or_friends";
+
+    // ----------------------------------------------------------
+    // Notifications
+    public static final String KEY_NOTIFICATIONS_ENABLED = "notifications_enabled";
+    public static final String KEY_NOTIFY_OF_DIRECT_MESSAGES = "notifications_messages";
+    public static final String KEY_NOTIFY_OF_MENTIONS = "notifications_mentions";
+    public static final String KEY_NOTIFY_OF_HOME_TIMELINE = "notifications_timeline";
+    public static final String KEY_NOTIFY_OF_COMMANDS_IN_THE_QUEUE = "notifications_queue";
+    public static final String KEY_NOTIFICATION_VIBRATION = "vibration";
+    public static final String KEY_NOTIFICATION_ICON_ALTERNATIVE = "notification_icon_alternative";
+    public static final String KEY_NOTIFICATION_RINGTONE = "notification_ringtone";
+
+    // ----------------------------------------------------------
+    // Storage
+    public static final String KEY_USE_EXTERNAL_STORAGE = "use_external_storage";
+    /** New value for #KEY_USE_EXTERNAL_STORAGE to be confirmed/processed */
+    public static final String KEY_USE_EXTERNAL_STORAGE_NEW = "use_external_storage_new";
+    public static final String KEY_HISTORY_SIZE = "history_size";
+    public static final String KEY_HISTORY_TIME = "history_time";
+    public static final String KEY_ENABLE_ANDROID_BACKUP = "enable_android_backup";
+
+    // ----------------------------------------------------------
+    // Information
+    // (no keys/settings here yet)
+
+    // ----------------------------------------------------------
+    // Logging and debugging
+    public static final String KEY_COMMANDS_QUEUE = "commands_queue";
+    /** Minimum logging level for the whole application (i.e. for any tag) */
+    public static final String KEY_MIN_LOG_LEVEL = "min_log_level";
+    public static final String KEY_DEBUGGING_INFO_IN_UI = "debugging_info_in_ui";
+    public static final String KEY_SENDING_MESSAGES_LOG_ENABLED = "sending_messages_log_enabled";
+    public static final String KEY_LOG_NETWORK_LEVEL_MESSAGES = "log_network_level_messages";
+    public static final String KEY_LOG_EVERYTHING_TO_FILE = "log_everything_to_file";
+
+    // ----------------------------------------------------------
+    // Non-UI persistent items ("preferences")
+    /** System time when shared preferences were changed */
+    public static final String KEY_PREFERENCES_CHANGE_TIME = "preferences_change_time";
+    public static final String KEY_DATA_PRUNED_DATE = "data_pruned_date";
+    /** Version code of last opened application (int) */
+    public static final String KEY_VERSION_CODE_LAST = "version_code_last";
     public static final String KEY_BEING_EDITED_MESSAGE_ID = "draft_message_id";
 
     private MyPreferences(){
@@ -510,8 +526,8 @@ public class MyPreferences {
         return getBoolean(KEY_SHOW_AVATARS, true);
     }
 
-    public static boolean showAttachedImages() {
-        return getBoolean(KEY_SHOW_ATTACHED_IMAGES, true);
+    public static boolean downloadAndDisplayAttachedImages() {
+        return getBoolean(KEY_DOWNLOAD_AND_DISPLAY_ATTACHED_IMAGES, true);
     }
 
     public static boolean showOrigin() {
@@ -519,7 +535,8 @@ public class MyPreferences {
     }
 
     public static TapOnATimelineTitleBehaviour tapOnATimelineTitleBehaviour() {
-        return TapOnATimelineTitleBehaviour.load(getString(KEY_TAP_ON_A_TIMELINE_TITLE, ""));
+        return TapOnATimelineTitleBehaviour.load(
+                getString(KEY_TAP_ON_A_TIMELINE_TITLE_BEHAVIOUR, ""));
     }
 
     public static UserInTimeline userInTimeline() {

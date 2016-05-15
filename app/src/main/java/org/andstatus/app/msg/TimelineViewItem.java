@@ -118,7 +118,7 @@ public class TimelineViewItem {
         }
 
         item.avatarDrawable = AvatarFile.getDrawable(item.authorId, cursor);
-        if (MyPreferences.showAttachedImages()) {
+        if (MyPreferences.downloadAndDisplayAttachedImages()) {
             item.attachedImageFile = new AttachedImageFile(
                     DbUtils.getLong(cursor, MyDatabase.Download.IMAGE_ID),
                     DbUtils.getString(cursor, MyDatabase.Download.IMAGE_FILE_NAME));

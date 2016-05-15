@@ -20,18 +20,21 @@
 	<org.andstatus.app.context.MultilineCheckBoxPreference android:key="use_external_storage_new"
 		android:persistent="false"
 		android:title="@string/title_preference_storage_external" />
-	<org.andstatus.app.context.MultilineListPreference android:entryValues="@array/history_size_values"
-		android:entries="@array/history_size_entries" android:summary="@string/summary_preference_history_size"
+	<org.andstatus.app.context.MultilineListPreference  android:key="history_size"
+		android:entryValues="@array/history_size_values"
+		android:entries="@array/history_size_entries"
+		android:summary="@string/summary_preference_history_size"
 		android:dialogTitle="@string/dialog_title_preference_history_size"
 		android:defaultValue="100000"
-		android:title="@string/title_preference_history_size" android:key="history_size" />
-	<org.andstatus.app.context.MultilineListPreference android:entryValues="@array/history_time_values"
-		android:entries="@array/history_time_entries" android:summary="@string/summary_preference_history_time"
+		android:title="@string/title_preference_history_size" />
+	<org.andstatus.app.context.MultilineListPreference  android:key="history_time"
+		android:entryValues="@array/history_time_values"
+		android:entries="@array/history_time_entries"
+        android:summary="@string/summary_preference_history_time"
 		android:dialogTitle="@string/dialog_title_preference_history_time"
 		android:defaultValue="365"
-		android:title="@string/title_preference_history_time" android:key="history_time" />
-	<Preference
-		android:key="backup_restore"
+		android:title="@string/title_preference_history_time" />
+	<Preference android:key="backup_restore"
 		android:persistent="false" />
 	<org.andstatus.app.context.MultilineCheckBoxPreference android:key="enable_android_backup"
 		android:title="@string/title_preference_enable_android_backup"

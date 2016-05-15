@@ -169,9 +169,9 @@ public class MySettingsFragment extends PreferenceFragment implements
     }
     
     protected void showRingtone() {
-        RingtonePreference ringtonePreference = (RingtonePreference) findPreference(MyPreferences.KEY_RINGTONE_PREFERENCE);
+        RingtonePreference ringtonePreference = (RingtonePreference) findPreference(MyPreferences.KEY_NOTIFICATION_RINGTONE);
         if (ringtonePreference != null) {
-            String ringtoneString = MyPreferences.getString(MyPreferences.KEY_RINGTONE_PREFERENCE, null);
+            String ringtoneString = MyPreferences.getString(MyPreferences.KEY_NOTIFICATION_RINGTONE, null);
             Uri uri = Uri.EMPTY;
             Ringtone rt = null;
             if (ringtoneString == null) {
@@ -247,7 +247,7 @@ public class MySettingsFragment extends PreferenceFragment implements
     }
 
     private void showTapOnATimelineTitleBehaviour() {
-        showListPreference(MyPreferences.KEY_TAP_ON_A_TIMELINE_TITLE);
+        showListPreference(MyPreferences.KEY_TAP_ON_A_TIMELINE_TITLE_BEHAVIOUR);
     }
 
     private void showCustomLocale() {
@@ -373,7 +373,7 @@ public class MySettingsFragment extends PreferenceFragment implements
                 case MyPreferences.KEY_CONNECTION_TIMEOUT_SECONDS:
                     showConnectionTimeout();
                     break;
-                case MyPreferences.KEY_RINGTONE_PREFERENCE:
+                case MyPreferences.KEY_NOTIFICATION_RINGTONE:
                     showRingtone();
                     break;
                 case MyPreferences.KEY_HISTORY_SIZE:
@@ -388,7 +388,7 @@ public class MySettingsFragment extends PreferenceFragment implements
                 case MyPreferences.KEY_USER_IN_TIMELINE:
                     showAuthorInTimeline();
                     break;
-                case MyPreferences.KEY_TAP_ON_A_TIMELINE_TITLE:
+                case MyPreferences.KEY_TAP_ON_A_TIMELINE_TITLE_BEHAVIOUR:
                     showTapOnATimelineTitleBehaviour();
                     break;
                 case MyPreferences.KEY_FILTER_HIDE_MESSAGES_BASED_ON_KEYWORDS:

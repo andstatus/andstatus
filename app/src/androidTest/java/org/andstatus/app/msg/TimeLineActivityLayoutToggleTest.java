@@ -58,7 +58,7 @@ public class TimeLineActivityLayoutToggleTest extends android.test.ActivityInstr
                 showAvatars = !showAvatarsOld;
                 break;
             default:
-                showAttachedImagesOld = MyPreferences.showAttachedImages();
+                showAttachedImagesOld = MyPreferences.downloadAndDisplayAttachedImages();
                 showAvatarsOld = MyPreferences.showAvatars();
                 showAttachedImages = showAttachedImagesOld; 
                 showAvatars = showAvatarsOld;
@@ -111,7 +111,7 @@ public class TimeLineActivityLayoutToggleTest extends android.test.ActivityInstr
     
     private void setPreferences() {
         MyPreferences.getDefaultSharedPreferences().edit()
-                .putBoolean(MyPreferences.KEY_SHOW_ATTACHED_IMAGES, showAttachedImages)
+                .putBoolean(MyPreferences.KEY_DOWNLOAD_AND_DISPLAY_ATTACHED_IMAGES, showAttachedImages)
                 .putBoolean(MyPreferences.KEY_SHOW_AVATARS, showAvatars)
                 .commit();
     }

@@ -23,9 +23,7 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.text.TextUtils;
 
-import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
-import org.andstatus.app.WhichPage;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.MatchedUri;
@@ -41,7 +39,7 @@ public class AddedMessagesNotifier {
 
     private AddedMessagesNotifier(MyContext myContext) {
         this.myContext = myContext;
-        mNotificationsVibrate = MyPreferences.getBoolean("vibration", false);
+        mNotificationsVibrate = MyPreferences.getBoolean(MyPreferences.KEY_NOTIFICATION_VIBRATION, false);
     }
 
     public static AddedMessagesNotifier newInstance(MyContext myContext) {
@@ -112,7 +110,7 @@ public class AddedMessagesNotifier {
 
     private void notify(TimelineType timelineType, int messageTitleResId,
             String messageText) {
-        String ringtone = MyPreferences.getString(MyPreferences.KEY_RINGTONE_PREFERENCE, null);
+        String ringtone = MyPreferences.getString(MyPreferences.KEY_NOTIFICATION_RINGTONE, null);
         Uri sound = TextUtils.isEmpty(ringtone) ? null : Uri.parse(ringtone);
 
         Notification.Builder builder =

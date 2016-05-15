@@ -287,7 +287,7 @@ public class TimelineSql {
             columnNames.add(Msg.AUTHOR_ID);
             columnNames.add(MyDatabase.Download.AVATAR_FILE_NAME);
         }
-        if (MyPreferences.showAttachedImages()) {
+        if (MyPreferences.downloadAndDisplayAttachedImages()) {
             columnNames.add(Download.IMAGE_ID);
             columnNames.add(MyDatabase.Download.IMAGE_FILE_NAME);
         }

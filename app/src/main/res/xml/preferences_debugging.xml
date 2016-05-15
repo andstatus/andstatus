@@ -16,15 +16,15 @@
  -->
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
 				  android:title="@string/title_preference_debugging">
-	<Preference
-		android:key="commands_queue"
+	<Preference android:key="commands_queue"
 		android:persistent="false"
 		android:title="@string/title_preference_notifications_queue" >
 	</Preference>
-	<org.andstatus.app.context.MultilineListPreference android:entryValues="@array/log_level_values"
+	<org.andstatus.app.context.MultilineListPreference android:key="min_log_level"
+		android:entryValues="@array/log_level_values"
 		android:entries="@array/log_level_entries" android:summary="@string/summary_preference_min_log_level"
 		android:dialogTitle="@string/dialog_title_preference_min_log_level"
-		android:title="@string/title_preference_min_log_level" android:key="min_log_level"
+		android:title="@string/title_preference_min_log_level"
 		android:defaultValue="4" />
 	<org.andstatus.app.context.MultilineCheckBoxPreference android:key="debugging_info_in_ui"
 		android:title="@string/preference_debugging_info_in_ui_title" />
@@ -34,7 +34,9 @@
 		android:title="@string/preference_log_network_level_messages_title" />
 	<org.andstatus.app.context.MultilineCheckBoxPreference android:key="log_everything_to_file"
 		android:title="@string/preference_log_everything_to_file_title" />
-	<Preference android:key="report_bug" android:title="@string/title_preference_report_bug">
+	<Preference android:key="report_bug"
+				android:persistent="false"
+				android:title="@string/title_preference_report_bug">
 		<intent android:action="android.intent.action.VIEW" android:data="https://github.com/andstatus/andstatus/issues?q=is%3Aissue+sort%3Aupdated-desc" />
 	</Preference>
 </PreferenceScreen>

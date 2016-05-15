@@ -278,7 +278,7 @@ public class DataInserter {
                         if (UriUtils.isLocal(dd.getUri())) {
                             AttachmentDownloader.load(dd.getDownloadId(), execContext.getCommandData());
                         } else {
-                            if (attachment.contentType == MyContentType.IMAGE && MyPreferences.showAttachedImages()) {
+                            if (attachment.contentType == MyContentType.IMAGE && MyPreferences.downloadAndDisplayAttachedImages()) {
                                 dd.requestDownload();
                             }
                         }

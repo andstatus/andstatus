@@ -43,7 +43,7 @@ public class TimelineAdapter extends MyBaseAdapter {
     private final int listItemLayoutId;
     private final TimelinePages pages;
     private final boolean showAvatars = MyPreferences.showAvatars();
-    private final boolean showAttachedImages = MyPreferences.showAttachedImages();
+    private final boolean showAttachedImages = MyPreferences.downloadAndDisplayAttachedImages();
     private final boolean showButtonsBelowMessages =
             MyPreferences.getBoolean(MyPreferences.KEY_SHOW_BUTTONS_BELOW_MESSAGE, true);
     private final boolean markReplies = MyPreferences.getBoolean(

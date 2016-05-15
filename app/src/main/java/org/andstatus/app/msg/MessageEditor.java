@@ -299,7 +299,7 @@ public class MessageEditor {
         MenuItem item = menu.findItem(R.id.attach_menu_id);
         if (item != null) {
             boolean enableAttach = isVisible()
-                    && MyPreferences.getBoolean(MyPreferences.KEY_ATTACH_IMAGES, true)
+                    && MyPreferences.getBoolean(MyPreferences.KEY_ATTACH_IMAGES_TO_MY_MESSAGES, true)
                     && (editorData.recipientId == 0 || editorData.getMyAccount().getOrigin().getOriginType()
                     .allowAttachmentForDirectMessage());
             item.setEnabled(enableAttach);
@@ -615,7 +615,7 @@ public class MessageEditor {
     }
 
     public void onAttach() {
-		Intent intent = MyPreferences.getBoolean(MyPreferences.KEY_USE_KITKAT_MEDIA_CHOOSER, true) ?
+		Intent intent = MyPreferences.getBoolean(MyPreferences.KEY_MODERN_INTERFACE_TO_SELECT_AN_ATTACHMENT, true) ?
             getIntentForKitKatMediaChooser() :
             getIntentToPickImages();
         getActivity().startActivityForResult(intent, ActivityRequestCode.ATTACH.id);
