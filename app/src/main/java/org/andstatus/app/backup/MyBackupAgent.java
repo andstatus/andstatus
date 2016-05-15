@@ -146,7 +146,7 @@ public class MyBackupAgent extends BackupAgent {
     private void doBackup(MyBackupDataOutput data) throws IOException {
         sharedPreferencesBackedUp = backupFile(data,
                 SHARED_PREFERENCES_KEY,
-                SharedPreferencesUtil.sharedPreferencesPath(MyContextHolder.get().context()));
+                SharedPreferencesUtil.defaultSharedPreferencesPath(MyContextHolder.get().context()));
         databasesBackedUp = backupFile(data,
                 DATABASE_KEY + "_" + MyDatabase.DATABASE_NAME,
                 MyStorage.getDatabasePath(MyDatabase.DATABASE_NAME));

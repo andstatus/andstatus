@@ -16,9 +16,7 @@
 
 package org.andstatus.app.context;
 
-import android.content.SharedPreferences;
 import android.os.Environment;
-import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
@@ -44,13 +42,7 @@ public class MyStorage {
     }
 
     public static TriState isApplicationDataCreated() {
-        SharedPreferences sp = SharedPreferencesUtil.getSharedPreferences(PreferenceManager.KEY_HAS_SET_DEFAULT_VALUES);
-        if (sp == null) {
-            return TriState.UNKNOWN;
-        } else {
-            return TriState.fromBoolean(
-                    sp.getBoolean(PreferenceManager.KEY_HAS_SET_DEFAULT_VALUES, false));
-        }
+        return SharedPreferencesUtil.areDefaultPreferenceValuesSet();
     }
 
     public static File getDataFilesDir(String type) {

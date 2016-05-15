@@ -83,15 +83,17 @@ public class ActivityTestHelper<T extends MyActivity> extends InstrumentationTes
 
     public static boolean waitTextInAView(String method, TextView view, String textToFind) throws InterruptedException {
         boolean ok = false;
+        String textFound = "";
         for (int i = 0; i < 20; i++) {
-            if (view.getText().toString().contains(textToFind)) {
+            textFound = view.getText().toString();
+            if (textFound.contains(textToFind)) {
                 ok = true;
                 break;
             }
             Thread.sleep(2000);
         }
-        MyLog.v(method, (ok ? "Found" : "Not found") + " text '" + textToFind + "'");
-        assertTrue(method + "; Found text '" + textToFind + "'", ok);
+        MyLog.v(method, (ok ? "Found" : "Not found") + " text '" + textToFind + "' in '" + textFound + "'");
+        assertTrue(method + "; Not found text '" + textToFind + "' in '" + textFound + "'", ok);
         return ok;
     }
 

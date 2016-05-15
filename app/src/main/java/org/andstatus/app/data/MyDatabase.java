@@ -465,11 +465,13 @@ public final class MyDatabase extends SQLiteOpenHelper  {
         /** oid of this User */
         USER_OID
     }
-    
-    
+
     public MyDatabase(Context context, boolean creationEnabled) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
         this.creationEnabled = creationEnabled;
+        if (!creationEnabled && !context.getDatabasePath(DATABASE_NAME).exists()) {
+            wasNotCreated = true;
+        }
     }
 
     private final ThreadLocal<Boolean> onUpgradeTriggered = new ThreadLocal<>();

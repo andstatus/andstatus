@@ -113,6 +113,8 @@ public class MyBackupAgentTest extends InstrumentationTestCase {
         MyContextHolder.release();
         deleteFiles(context, false);
         deleteFiles(context, true);
+        SharedPreferencesUtil.resetHasSetDefaultValues();
+        assertEquals(TriState.FALSE, MyStorage.isApplicationDataCreated());
         TestSuite.onDataDeleted();
     }
 

@@ -23,7 +23,7 @@ import org.andstatus.app.context.TestSuite;
 
 import java.io.File;
 
-public class MyLogTest  extends InstrumentationTestCase {
+public class MyLogTest extends InstrumentationTestCase {
 
     @Override
     protected void setUp() throws Exception {

@@ -19,7 +19,6 @@ package org.andstatus.app.util;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
-import android.os.Environment;
 import android.preference.ListPreference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
@@ -39,7 +38,7 @@ public class SharedPreferencesUtil {
     private SharedPreferencesUtil() {
     }
 
-    public static File sharedPreferencesPath(Context context) {
+    public static File defaultSharedPreferencesPath(Context context) {
         return new File(prefsDirectory(context),
                 context.getPackageName() + "_preferences" + FILE_EXTENSION);
     }
@@ -48,9 +47,8 @@ public class SharedPreferencesUtil {
      * @return Directory for files of SharedPreferences
      */
     public static File prefsDirectory(Context context) {
-        File dir1 = new File(Environment.getDataDirectory(), "data/"
-                + context.getPackageName());
-        return new File(dir1, "shared_prefs");
+        String dataDir = context.getApplicationInfo().dataDir;
+        return new File(dataDir, "shared_prefs");
     }
 
     /**
@@ -172,6 +170,21 @@ public class SharedPreferencesUtil {
         }
         editor.commit();
         return entryCounter;
+    }
+
+    public static TriState areDefaultPreferenceValuesSet() {
+        SharedPreferences sp = getSharedPreferences(PreferenceManager.KEY_HAS_SET_DEFAULT_VALUES);
+        if (sp == null) {
+            return TriState.UNKNOWN;
+        } else {
+            return TriState.fromBoolean(
+                    sp.getBoolean(PreferenceManager.KEY_HAS_SET_DEFAULT_VALUES, false));
+        }
+    }
+
+    public static void resetHasSetDefaultValues() {
+        SharedPreferences sp = getSharedPreferences(PreferenceManager.KEY_HAS_SET_DEFAULT_VALUES);
+        sp.edit().clear().commit();
     }
 
     public static SharedPreferences getDefaultSharedPreferences() {
