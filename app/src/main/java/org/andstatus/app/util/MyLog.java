@@ -26,6 +26,7 @@ import net.jcip.annotations.GuardedBy;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.context.MyStorage;
 import org.andstatus.app.data.DbUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -99,7 +100,7 @@ public class MyLog {
     }
 
     public static void logSharedPreferencesValue(Object objTag, String key) {
-        SharedPreferences sp = MyPreferences.getDefaultSharedPreferences();
+        SharedPreferences sp = SharedPreferencesUtil.getDefaultSharedPreferences();
         if (sp == null || !isLoggable(objTag, DEBUG )) {
             return;
         }
@@ -315,11 +316,11 @@ public class MyLog {
             // The class was not initialized yet.
             String val = "(not set)";
             try {
-                SharedPreferences sp = MyPreferences.getDefaultSharedPreferences();  
+                SharedPreferences sp = SharedPreferencesUtil.getDefaultSharedPreferences();
                 if (sp != null) {
                     val = getMinLogLevel(sp);
                 }
-                setLogToFile(MyPreferences.getBoolean(MyPreferences.KEY_LOG_EVERYTHING_TO_FILE, false));                
+                setLogToFile(SharedPreferencesUtil.getBoolean(MyPreferences.KEY_LOG_EVERYTHING_TO_FILE, false));
             } catch (Exception e) {
                 Log.e(TAG, "Error in isLoggable", e);
             }
@@ -349,7 +350,7 @@ public class MyLog {
     }
 
     public static void setMinLogLevel(int minLogLevel) {
-        MyPreferences.getDefaultSharedPreferences().edit().putString(MyPreferences.KEY_MIN_LOG_LEVEL, Integer.toString(minLogLevel)).commit();
+        SharedPreferencesUtil.getDefaultSharedPreferences().edit().putString(MyPreferences.KEY_MIN_LOG_LEVEL, Integer.toString(minLogLevel)).commit();
         forget();
     }
     
@@ -408,7 +409,7 @@ public class MyLog {
     }
 
     public static File getLogDir(boolean logged) {
-        return MyPreferences.getDataFilesDir("logs", TriState.UNKNOWN, logged);
+        return MyStorage.getDataFilesDir("logs", TriState.UNKNOWN, logged);
     }
     
     public static String formatKeyValue(Object keyIn, Object valueIn) {
@@ -440,8 +441,8 @@ public class MyLog {
     }
 
     private static void onSendingMessageEvent(boolean start) {
-        if (!MyPreferences.getBoolean(MyPreferences.KEY_SENDING_MESSAGES_LOG_ENABLED, false) ||
-                MyPreferences.getBoolean(MyPreferences.KEY_LOG_EVERYTHING_TO_FILE, false)) {
+        if (!SharedPreferencesUtil.getBoolean(MyPreferences.KEY_SENDING_MESSAGES_LOG_ENABLED, false) ||
+                SharedPreferencesUtil.getBoolean(MyPreferences.KEY_LOG_EVERYTHING_TO_FILE, false)) {
             return;
         }
         setLogToFile(start);
@@ -571,8 +572,8 @@ public class MyLog {
 
     public static void logNetworkLevelMessage(Object objTag, String namePrefix, Object jso) {
         if (jso != null && isLoggable(objTag, VERBOSE) 
-                && MyPreferences.getBoolean(MyPreferences.KEY_LOG_NETWORK_LEVEL_MESSAGES, false)) {
-            logJson(objTag, namePrefix, jso, MyPreferences.getBoolean(MyPreferences.KEY_LOG_EVERYTHING_TO_FILE, false));
+                && SharedPreferencesUtil.getBoolean(MyPreferences.KEY_LOG_NETWORK_LEVEL_MESSAGES, false)) {
+            logJson(objTag, namePrefix, jso, SharedPreferencesUtil.getBoolean(MyPreferences.KEY_LOG_EVERYTHING_TO_FILE, false));
         }
     }
    

@@ -206,7 +206,7 @@ public class MyDrawableCache extends LruCache<String, BitmapSubsetDrawable> {
     @Nullable
     private Bitmap loadBitmap(Object objTag, String path) {
         Bitmap bitmap = null;
-        if (MyPreferences.showDebuggingInfoInUi()) {
+        if (MyPreferences.getShowDebuggingInfoInUi()) {
             bitmap = BitmapFactory
                     .decodeFile(path, calculateScaling(objTag, getImageSize(path)));
         } else {

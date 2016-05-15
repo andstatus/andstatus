@@ -36,6 +36,7 @@ import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
+import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TriState;
 
 import java.util.Queue;
@@ -787,7 +788,7 @@ public class MyService extends Service {
         private void addSyncOfThisToQueue(CommandData commandDataExecuted) {
             if (commandDataExecuted.getResult().hasError()
                     || commandDataExecuted.getCommand() != CommandEnum.UPDATE_STATUS
-                    || !MyPreferences.getBoolean(
+                    || !SharedPreferencesUtil.getBoolean(
                             MyPreferences.KEY_SYNC_AFTER_MESSAGE_WAS_SENT, false)) {
                 return;
             }

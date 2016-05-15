@@ -26,6 +26,8 @@ import org.andstatus.app.R;
 import org.andstatus.app.account.PersistentAccounts;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.context.MyPreferencesGroupsEnum;
+import org.andstatus.app.context.MyStorage;
 import org.andstatus.app.data.DataPruner;
 import org.andstatus.app.data.MyDataChecker;
 import org.andstatus.app.data.MyDatabase;
@@ -74,7 +76,7 @@ public class MyBackupAgent extends BackupAgent {
             MyLog.i(this, logmsg);
             throw new IOException(logmsg);
         }
-        if (!MyPreferences.getBoolean(MyPreferences.KEY_ENABLE_ANDROID_BACKUP, false)) {
+        if (!SharedPreferencesUtil.getBoolean(MyPreferences.KEY_ENABLE_ANDROID_BACKUP, false)) {
             String logmsg = "onBackup; skipped: disabled in Settings";
             MyLog.i(this, logmsg);
             throw new IOException(logmsg);
@@ -147,10 +149,10 @@ public class MyBackupAgent extends BackupAgent {
                 SharedPreferencesUtil.sharedPreferencesPath(MyContextHolder.get().context()));
         databasesBackedUp = backupFile(data,
                 DATABASE_KEY + "_" + MyDatabase.DATABASE_NAME,
-                MyPreferences.getDatabasePath(MyDatabase.DATABASE_NAME));
+                MyStorage.getDatabasePath(MyDatabase.DATABASE_NAME));
         suggestionsBackedUp = backupFile(data,
                 DATABASE_KEY + "_" + TimelineSearchSuggestionsProvider.DATABASE_NAME,
-                MyPreferences.getDatabasePath(TimelineSearchSuggestionsProvider.DATABASE_NAME));
+                MyStorage.getDatabasePath(TimelineSearchSuggestionsProvider.DATABASE_NAME));
         accountsBackedUp = MyContextHolder.get().persistentAccounts().onBackup(data, backupDescriptor);
     }
     
@@ -244,7 +246,7 @@ public class MyBackupAgent extends BackupAgent {
     }
 
     private void ensureNoDataIsPresent() throws IOException {
-        if (MyPreferences.isApplicationDataCreated() == TriState.FALSE) {
+        if (MyStorage.isApplicationDataCreated() == TriState.FALSE) {
             return;
         }
         MyContextHolder.initialize(this, this);
@@ -266,10 +268,10 @@ public class MyBackupAgent extends BackupAgent {
         restoreSharedPreferences(data);
         assertNextHeader(data, DATABASE_KEY + "_" + MyDatabase.DATABASE_NAME);
         databasesRestored += restoreFile(data,
-                    MyPreferences.getDatabasePath(MyDatabase.DATABASE_NAME));
+                    MyStorage.getDatabasePath(MyDatabase.DATABASE_NAME));
         if (optionalNextHeader(data, DATABASE_KEY + "_" + TimelineSearchSuggestionsProvider.DATABASE_NAME)) {
             suggestionsRestored += restoreFile(data,
-                    MyPreferences.getDatabasePath(TimelineSearchSuggestionsProvider.DATABASE_NAME));
+                    MyStorage.getDatabasePath(TimelineSearchSuggestionsProvider.DATABASE_NAME));
         }
         MyContextHolder.release();
         MyContextHolder.initialize(this, this);
@@ -286,14 +288,14 @@ public class MyBackupAgent extends BackupAgent {
 
     private void restoreSharedPreferences(MyBackupDataInput data) throws IOException {
         MyLog.i(this, "On restoring Shared preferences");
-        MyPreferences.setDefaultValues();
+        MyPreferencesGroupsEnum.setDefaultValues();
         assertNextHeader(data, SHARED_PREFERENCES_KEY);
         final String filename = "preferences";
         File tempFile = new File(SharedPreferencesUtil.prefsDirectory(MyContextHolder.get()
                 .context()), filename + ".xml");
         sharedPreferencesRestored += restoreFile(data, tempFile);
-        SharedPreferencesUtil.copyAll(MyPreferences.getSharedPreferences(filename),
-                MyPreferences.getDefaultSharedPreferences());
+        SharedPreferencesUtil.copyAll(SharedPreferencesUtil.getSharedPreferences(filename),
+                SharedPreferencesUtil.getDefaultSharedPreferences());
         if (!tempFile.delete()) {
             MyLog.v(this, "Couldn't delete " + tempFile.getAbsolutePath());
         }
@@ -303,12 +305,12 @@ public class MyBackupAgent extends BackupAgent {
     }
     
     private void fixExternalStorage() {
-        if (!MyPreferences.isStorageExternal() ||
-                MyPreferences.isWritableExternalStorageAvailable(null)) {
+        if (!MyStorage.isStorageExternal() ||
+                MyStorage.isWritableExternalStorageAvailable(null)) {
             return;
         }
         backupDescriptor.getLogger().logProgress("External storage is not available");
-        MyPreferences.putBoolean(MyPreferences.KEY_USE_EXTERNAL_STORAGE, false);
+        SharedPreferencesUtil.putBoolean(MyPreferences.KEY_USE_EXTERNAL_STORAGE, false);
     }
 
     private void assertNextHeader(MyBackupDataInput data, String key) throws IOException {

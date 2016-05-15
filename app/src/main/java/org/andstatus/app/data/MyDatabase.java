@@ -23,7 +23,7 @@ import android.provider.BaseColumns;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextState;
-import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.context.MyStorage;
 import org.andstatus.app.net.http.SslModeEnum;
 import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.origin.OriginType;
@@ -483,7 +483,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
         MyContextState state = MyContextState.ERROR;
         try {
             onUpgradeTriggered.set(false);
-            if (MyPreferences.isDataAvailable()) {
+            if (MyStorage.isDataAvailable()) {
                 SQLiteDatabase db = getWritableDatabase();
                 if (onUpgradeTriggered.get() || MyDatabaseConverterController.isUpgrading()) {
                     state = MyContextState.UPGRADING;

@@ -24,6 +24,7 @@ import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.SharedPreferencesUtil;
 
 import java.net.MalformedURLException;
 import java.util.Queue;
@@ -131,7 +132,7 @@ public class MyServiceTest extends InstrumentationTestCase {
     
     public void testSyncInForeground() throws InterruptedException {
         MyLog.v(this, "testSyncInForeground started");
-        MyPreferences.getDefaultSharedPreferences().edit()
+        SharedPreferencesUtil.getDefaultSharedPreferences().edit()
                 .putBoolean(MyPreferences.KEY_SYNC_WHILE_USING_APPLICATION, false).commit();
         CommandData cd1 = new CommandData(CommandEnum.FETCH_TIMELINE,
                 TestSuite.TWITTER_TEST_ACCOUNT_NAME, TimelineType.DIRECT, 0);

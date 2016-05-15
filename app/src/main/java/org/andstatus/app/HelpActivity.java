@@ -19,6 +19,8 @@ package org.andstatus.app;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.Menu;
@@ -40,6 +42,7 @@ import org.andstatus.app.context.MySettingsActivity;
 import org.andstatus.app.msg.TimelineActivity;
 import org.andstatus.app.util.ActivitySwipeDetector;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.SwipeInterface;
 import org.andstatus.app.util.Xslt;
 
@@ -139,7 +142,7 @@ public class HelpActivity extends MyActivity implements SwipeInterface {
             @Override
             public void onClick(View v) {
                 if (MyContextHolder.get().isReady()) {
-                    MyPreferences.checkAndUpdateLastOpenedAppVersion(HelpActivity.this, true);
+                    checkAndUpdateLastOpenedAppVersion(HelpActivity.this, true);
                     if (MyContextHolder.get().persistentAccounts().getCurrentAccount().isValid()) {
                         startActivity(new Intent(HelpActivity.this, TimelineActivity.class));
                     } else {
@@ -265,7 +268,7 @@ public class HelpActivity extends MyActivity implements SwipeInterface {
         } 
         
         // Show Change Log after update
-        if (MyPreferences.checkAndUpdateLastOpenedAppVersion(activity, true)) {
+        if (checkAndUpdateLastOpenedAppVersion(activity, true)) {
             showChangeLog = true;                    
         }
 
@@ -290,4 +293,34 @@ public class HelpActivity extends MyActivity implements SwipeInterface {
         }
         return doFinish;
     }
+
+    /**
+     * @return true if we opened previous version
+     */
+    public static boolean checkAndUpdateLastOpenedAppVersion(Context context, boolean update) {
+        boolean changed = false;
+        int versionCodeLast =  SharedPreferencesUtil.getDefaultSharedPreferences().getInt(MyPreferences.KEY_VERSION_CODE_LAST, 0);
+        PackageManager pm = context.getPackageManager();
+        PackageInfo pi;
+        try {
+            pi = pm.getPackageInfo(context.getPackageName(), 0);
+            int versionCode =  pi.versionCode;
+            if (versionCodeLast < versionCode) {
+                // Even if the User will see only the first page of the Help activity,
+                // count this as showing the Change Log
+                MyLog.v(TAG, "Last opened version=" + versionCodeLast + ", current is " + versionCode
+                        + (update ? ", updating" : "")
+                );
+                changed = true;
+                if ( update && MyContextHolder.get().isReady()) {
+                    SharedPreferencesUtil.getDefaultSharedPreferences().edit()
+                            .putInt(MyPreferences.KEY_VERSION_CODE_LAST, versionCode).commit();
+                }
+            }
+        } catch (PackageManager.NameNotFoundException e) {
+            MyLog.e(TAG, "Unable to obtain package information", e);
+        }
+        return changed;
+    }
+
 }

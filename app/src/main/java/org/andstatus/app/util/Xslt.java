@@ -21,7 +21,7 @@ import android.content.Context;
 import android.webkit.WebView;
 
 import org.andstatus.app.R;
-import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.context.MyLocale;
 
 import java.io.StringWriter;
 
@@ -87,7 +87,7 @@ public class Xslt {
         String output = "";
         try {
             output = toHtmlString(activity, resXml, resXsl);
-            if (!MyPreferences.isEnLocale()) {
+            if (!MyLocale.isEnLocale()) {
                 final String key1 = "Translator credits";
                 output = output.replace(key1, activity.getText(R.string.translator_credits));
             }

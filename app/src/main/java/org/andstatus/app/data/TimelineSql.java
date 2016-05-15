@@ -35,6 +35,7 @@ import org.andstatus.app.data.MyDatabase.OidEnum;
 import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
+import org.andstatus.app.util.SharedPreferencesUtil;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -283,20 +284,20 @@ public class TimelineSql {
         columnNames.add(Msg.CREATED_DATE);
         columnNames.add(Msg.MSG_STATUS);
         columnNames.add(User.LINKED_USER_ID);
-        if (MyPreferences.showAvatars()) {
+        if (MyPreferences.getShowAvatars()) {
             columnNames.add(Msg.AUTHOR_ID);
             columnNames.add(MyDatabase.Download.AVATAR_FILE_NAME);
         }
-        if (MyPreferences.downloadAndDisplayAttachedImages()) {
+        if (MyPreferences.getDownloadAndDisplayAttachedImages()) {
             columnNames.add(Download.IMAGE_ID);
             columnNames.add(MyDatabase.Download.IMAGE_FILE_NAME);
         }
-        if (MyPreferences.getBoolean(MyPreferences.KEY_MARK_REPLIES_IN_TIMELINE, false)
-                || MyPreferences.getBoolean(
+        if (SharedPreferencesUtil.getBoolean(MyPreferences.KEY_MARK_REPLIES_IN_TIMELINE, false)
+                || SharedPreferencesUtil.getBoolean(
                 MyPreferences.KEY_FILTER_HIDE_REPLIES_NOT_TO_ME_OR_FRIENDS, false)) {
             columnNames.add(Msg.IN_REPLY_TO_USER_ID);
         }
-        if (MyPreferences.showOrigin()) {
+        if (MyPreferences.getShowOrigin()) {
             columnNames.add(Msg.ORIGIN_ID);
         }
         return columnNames;
@@ -333,7 +334,7 @@ public class TimelineSql {
                 Origin origin = MyContextHolder.get().persistentOrigins().fromId(originId);
                 userName += " / " + origin.getName();
                 if (origin.getOriginType() == OriginType.GNUSOCIAL &&
-                        MyPreferences.showDebuggingInfoInUi()) {
+                        MyPreferences.getShowDebuggingInfoInUi()) {
                     long authorId = DbUtils.getLong(cursor, Msg.AUTHOR_ID);
                     if (authorId != 0) {
                         userName += " id:" + MyQuery.idToOid(OidEnum.USER_OID, authorId, 0);
@@ -345,7 +346,7 @@ public class TimelineSql {
     }
 
     private static String userNameField() {
-        UserInTimeline userInTimeline = MyPreferences.userInTimeline();
+        UserInTimeline userInTimeline = MyPreferences.getUserInTimeline();
         return MyQuery.userNameField(userInTimeline);
     }
     

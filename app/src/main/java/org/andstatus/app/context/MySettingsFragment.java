@@ -74,13 +74,13 @@ public class MySettingsFragment extends PreferenceFragment implements
     public void onResume() {
         super.onResume();
         showAllPreferences();
-        MyPreferences.getDefaultSharedPreferences().registerOnSharedPreferenceChangeListener(this);
+        SharedPreferencesUtil.getDefaultSharedPreferences().registerOnSharedPreferenceChangeListener(this);
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        MyPreferences.getDefaultSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
+        SharedPreferencesUtil.getDefaultSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
     }
 
     /**
@@ -171,7 +171,7 @@ public class MySettingsFragment extends PreferenceFragment implements
     protected void showRingtone() {
         RingtonePreference ringtonePreference = (RingtonePreference) findPreference(MyPreferences.KEY_NOTIFICATION_RINGTONE);
         if (ringtonePreference != null) {
-            String ringtoneString = MyPreferences.getString(MyPreferences.KEY_NOTIFICATION_RINGTONE, null);
+            String ringtoneString = SharedPreferencesUtil.getString(MyPreferences.KEY_NOTIFICATION_RINGTONE, null);
             Uri uri = Uri.EMPTY;
             Ringtone rt = null;
             if (ringtoneString == null) {
@@ -196,7 +196,7 @@ public class MySettingsFragment extends PreferenceFragment implements
                 MyPreferences.KEY_USE_EXTERNAL_STORAGE_NEW);
         if (preference != null) {
             mIgnorePreferenceChange = true;
-            boolean use = MyPreferences.isStorageExternal();
+            boolean use = MyStorage.isStorageExternal();
             if (use != preference.isChecked()) {
                 preference.setChecked(use);
             }
@@ -209,7 +209,7 @@ public class MySettingsFragment extends PreferenceFragment implements
                     ? R.string.summary_preference_storage_external_on
                     : R.string.summary_preference_storage_external_off));
             summary.append(":\n ");
-            summary.append(MyPreferences.getDataFilesDir(null));
+            summary.append(MyStorage.getDataFilesDir(null));
             preference.setSummary(summary);
             mIgnorePreferenceChange = false;
         }
@@ -342,7 +342,7 @@ public class MySettingsFragment extends PreferenceFragment implements
 
             switch (key) {
                 case MyPreferences.KEY_CUSTOM_LOCALE:
-                    MyPreferences.setLocale(getActivity());
+                    MyLocale.setLocale(getActivity());
                     MySettingsActivity.restartMe(getActivity());
                     break;
                 case MyPreferences.KEY_THEME_COLOR:

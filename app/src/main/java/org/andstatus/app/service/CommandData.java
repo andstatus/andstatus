@@ -28,7 +28,6 @@ import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.TimelineType;
@@ -37,6 +36,7 @@ import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
+import org.andstatus.app.util.SharedPreferencesUtil;
 
 import java.util.Queue;
 
@@ -210,7 +210,7 @@ public class CommandData implements Comparable<CommandData> {
         final String method = "saveQueue-to-" + queueType;
         int count = 0;
         try {
-            SharedPreferences sp = MyPreferences.getSharedPreferences(queueType.getFilename());
+            SharedPreferences sp = SharedPreferencesUtil.getSharedPreferences(queueType.getFilename());
             if (sp == null) {
                 MyLog.d(context, method + "; No shared preferences");
                 return 0;
@@ -288,7 +288,7 @@ public class CommandData implements Comparable<CommandData> {
     static int loadQueue(Context context, Queue<CommandData> q, QueueType queueType) {
         final String method = "loadQueue";
         int count = 0;
-        SharedPreferences sp = MyPreferences.getSharedPreferences(queueType.getFilename());
+        SharedPreferences sp = SharedPreferencesUtil.getSharedPreferences(queueType.getFilename());
         for (int index = 0; index < 100000; index++) {
             CommandData cd = fromSharedPreferences(sp, index);
             if (CommandEnum.EMPTY.equals(cd.getCommand())) {

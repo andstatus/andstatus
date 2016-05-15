@@ -103,7 +103,7 @@ public class MyAppWidgetData {
     }
     
     private void load() {
-        SharedPreferences prefs = MyPreferences.getSharedPreferences(prefsFileName);
+        SharedPreferences prefs = SharedPreferencesUtil.getSharedPreferences(prefsFileName);
         if (prefs == null) {
             MyLog.e(this, "The prefs file '" + prefsFileName + "' was not loaded");
         } else {
@@ -111,7 +111,7 @@ public class MyAppWidgetData {
             if (nothingPref == null) {
                 nothingPref = mContext
                         .getString(R.string.appwidget_nothingnew_default);
-                if (MyPreferences.showDebuggingInfoInUi()) {
+                if (MyPreferences.getShowDebuggingInfoInUi()) {
                     nothingPref += " (" + mAppWidgetId + ")";
                 }
             }
@@ -158,7 +158,7 @@ public class MyAppWidgetData {
         if (!isLoaded) {
             MyLog.d(this, "Save without load is not possible");
         } else {
-            SharedPreferences.Editor prefs = MyPreferences.getSharedPreferences(
+            SharedPreferences.Editor prefs = SharedPreferencesUtil.getSharedPreferences(
                     prefsFileName).edit();
             if (prefs == null) {
                 MyLog.e(this, "Prefs Editor was not loaded");

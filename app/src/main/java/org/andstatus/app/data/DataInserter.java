@@ -55,7 +55,7 @@ public class DataInserter {
     public static final String MSG_ASSERTION_KEY = "insertOrUpdateMsg";
     private final CommandExecutionContext execContext;
     KeywordsFilter keywordsFilter = new KeywordsFilter(
-            MyPreferences.getString(MyPreferences.KEY_FILTER_HIDE_MESSAGES_BASED_ON_KEYWORDS, ""));
+            SharedPreferencesUtil.getString(MyPreferences.KEY_FILTER_HIDE_MESSAGES_BASED_ON_KEYWORDS, ""));
 
     public DataInserter(MyAccount ma) {
         this(new CommandExecutionContext(CommandData.getEmpty(), ma));
@@ -278,7 +278,7 @@ public class DataInserter {
                         if (UriUtils.isLocal(dd.getUri())) {
                             AttachmentDownloader.load(dd.getDownloadId(), execContext.getCommandData());
                         } else {
-                            if (attachment.contentType == MyContentType.IMAGE && MyPreferences.downloadAndDisplayAttachedImages()) {
+                            if (attachment.contentType == MyContentType.IMAGE && MyPreferences.getDownloadAndDisplayAttachedImages()) {
                                 dd.requestDownload();
                             }
                         }

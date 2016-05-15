@@ -28,6 +28,7 @@ import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.service.QueueViewer;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.SharedPreferencesUtil;
 
 public class CommandsQueueNotifier {
     private MyContext myContext;
@@ -35,7 +36,7 @@ public class CommandsQueueNotifier {
 
     private CommandsQueueNotifier(MyContext myContext) {
         this.myContext = myContext;
-        mNotificationsEnabled = MyPreferences.getBoolean(MyPreferences.KEY_NOTIFICATIONS_ENABLED, false);
+        mNotificationsEnabled = SharedPreferencesUtil.getBoolean(MyPreferences.KEY_NOTIFICATIONS_ENABLED, false);
     }
 
     public static CommandsQueueNotifier newInstance(MyContext myContext) {
@@ -46,7 +47,7 @@ public class CommandsQueueNotifier {
         int count = mainQueueSize + retryQueueSize;
         if (count == 0 ) {
             myContext.clearNotification(TimelineType.ALL);
-        } else if (mNotificationsEnabled && MyPreferences.getBoolean(MyPreferences.KEY_NOTIFY_OF_COMMANDS_IN_THE_QUEUE, false)) {
+        } else if (mNotificationsEnabled && SharedPreferencesUtil.getBoolean(MyPreferences.KEY_NOTIFY_OF_COMMANDS_IN_THE_QUEUE, false)) {
             if (mainQueueSize != 0) {
                 MyLog.d(this, mainQueueSize + " commands in Main Queue.");
             }
@@ -67,7 +68,7 @@ public class CommandsQueueNotifier {
         Notification.Builder builder =
                 new Notification.Builder(myContext.context())
         .setSmallIcon(
-                MyPreferences.getBoolean(
+                SharedPreferencesUtil.getBoolean(
                         MyPreferences.KEY_NOTIFICATION_ICON_ALTERNATIVE, false)
                         ? R.drawable.notification_icon_circle
                                 : R.drawable.notification_icon)

@@ -33,6 +33,7 @@ import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.service.MyServiceState;
 import org.andstatus.app.util.DialogFactory;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TriState;
 
 import java.io.File;
@@ -144,9 +145,9 @@ public class StorageSwitch {
         }
 
         private void moveAll(TaskResult result) {
-            boolean useExternalStorageOld = MyPreferences.isStorageExternal();
+            boolean useExternalStorageOld = MyStorage.isStorageExternal();
             if (mUseExternalStorageNew
-                    && !MyPreferences.isWritableExternalStorageAvailable(result.messageBuilder)) {
+                    && !MyStorage.isWritableExternalStorageAvailable(result.messageBuilder)) {
                 mUseExternalStorageNew = false;
             }
 
@@ -188,7 +189,7 @@ public class StorageSwitch {
                 if (!done) {
                     dbFileOld = MyContextHolder.get().context().getDatabasePath(
                             databaseName);
-                    dbFileNew = MyPreferences.getDatabasePath(
+                    dbFileNew = MyStorage.getDatabasePath(
                             databaseName, TriState.fromBoolean(useExternalStorageNew));
                     if (dbFileOld == null) {
                         messageToAppend.append(" No old database " + databaseName);
@@ -311,8 +312,8 @@ public class StorageSwitch {
             try {
 
                 if (!done) {
-                    dirOld = MyPreferences.getDataFilesDir(MyPreferences.DIRECTORY_DOWNLOADS);
-                    dirNew = MyPreferences.getDataFilesDir(MyPreferences.DIRECTORY_DOWNLOADS,
+                    dirOld = MyStorage.getDataFilesDir(MyStorage.DIRECTORY_DOWNLOADS);
+                    dirNew = MyStorage.getDataFilesDir(MyStorage.DIRECTORY_DOWNLOADS,
                             TriState.fromBoolean(useExternalStorageNew));
                     if (dirOld == null || !dirOld.exists()) {
                         messageToAppend.append(" No old avatars. ");
@@ -385,7 +386,7 @@ public class StorageSwitch {
 
         private void saveNewSettings(boolean useExternalStorageNew, StringBuilder messageToAppend) {
             try {
-                MyPreferences
+                SharedPreferencesUtil
                         .getDefaultSharedPreferences()
                         .edit()
                         .putBoolean(MyPreferences.KEY_USE_EXTERNAL_STORAGE,

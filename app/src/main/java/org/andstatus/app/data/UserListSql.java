@@ -83,7 +83,7 @@ public class UserListSql {
 
         columnNames.add(User.PROFILE_URL);
         columnNames.add(User.HOMEPAGE);
-        if (MyPreferences.showAvatars()) {
+        if (MyPreferences.getShowAvatars()) {
             columnNames.add(Download.AVATAR_FILE_NAME);
         }
 

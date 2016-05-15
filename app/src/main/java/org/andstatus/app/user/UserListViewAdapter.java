@@ -34,9 +34,9 @@ class UserListViewAdapter extends MyBaseAdapter {
     private final UserListContextMenu contextMenu;
     private final int listItemLayoutId;
     private final List<UserListViewItem> items;
-    private final boolean showAvatars = MyPreferences.showAvatars();
+    private final boolean showAvatars = MyPreferences.getShowAvatars();
     private final boolean showWebFingerId =
-            MyPreferences.userInTimeline().equals(UserInTimeline.WEBFINGER_ID);
+            MyPreferences.getUserInTimeline().equals(UserInTimeline.WEBFINGER_ID);
 
     public UserListViewAdapter(UserListContextMenu contextMenu, int listItemLayoutId, List<UserListViewItem> items) {
         this.contextMenu = contextMenu;

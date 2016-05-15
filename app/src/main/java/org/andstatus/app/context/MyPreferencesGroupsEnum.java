@@ -16,7 +16,11 @@
 
 package org.andstatus.app.context;
 
+import android.content.Context;
+import android.preference.PreferenceManager;
+
 import org.andstatus.app.R;
+import org.andstatus.app.util.MyLog;
 
 public enum MyPreferencesGroupsEnum {
     UNKNOWN("unknown", 0, 0),
@@ -72,5 +76,18 @@ public enum MyPreferencesGroupsEnum {
 
     public int getTitleResId() {
         return titleResId;
+    }
+
+    public static void setDefaultValues() {
+        Context context = MyContextHolder.get().context();
+        if (context == null) {
+            MyLog.e(MyPreferencesGroupsEnum.class, "setDefaultValues - no context");
+        } else {
+            for (MyPreferencesGroupsEnum item : values()) {
+                if (item != UNKNOWN) {
+                    PreferenceManager.setDefaultValues(context, item.getPreferencesXmlResId(), false);
+                }
+            }
+        }
     }
 }

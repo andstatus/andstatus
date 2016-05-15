@@ -21,10 +21,10 @@ import android.text.TextUtils;
 import android.widget.ListView;
 
 import org.andstatus.app.LoadableListActivity;
-import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.SharedPreferencesUtil;
 
 /**
  * Determines where to save / retrieve position in the list
@@ -45,7 +45,7 @@ class TimelineListPositionStorage {
     /**
      * SharePreferences to use for storage 
      */
-    private final SharedPreferences sp = MyPreferences.getDefaultSharedPreferences();
+    private final SharedPreferences sp = SharedPreferencesUtil.getDefaultSharedPreferences();
     private String keyFirstVisibleItemId = "";
     private String keyFirstVisibleItemY = "";
     private String keyMinSentDate = "";

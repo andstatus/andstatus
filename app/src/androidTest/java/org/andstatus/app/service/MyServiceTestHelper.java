@@ -12,6 +12,7 @@ import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.net.http.HttpConnectionMock;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.SharedPreferencesUtil;
 
 public class MyServiceTestHelper implements MyServiceEventsListener {
     private volatile MyServiceEventsReceiver serviceConnector;
@@ -158,7 +159,7 @@ public class MyServiceTestHelper implements MyServiceEventsListener {
     public void tearDown() {
         MyLog.v(this, "tearDown started");
         dropQueues();
-        MyPreferences.getDefaultSharedPreferences().edit()
+        SharedPreferencesUtil.getDefaultSharedPreferences().edit()
                 .putBoolean(MyPreferences.KEY_SYNC_WHILE_USING_APPLICATION, true).commit();
         
         serviceConnector.unregisterReceiver(MyContextHolder.get().context());

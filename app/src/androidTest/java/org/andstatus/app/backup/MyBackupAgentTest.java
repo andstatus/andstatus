@@ -12,7 +12,7 @@ import org.andstatus.app.account.AuthenticatorService;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.account.PersistentAccounts;
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.context.MyStorage;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.service.MyServiceManager;
@@ -133,8 +133,8 @@ public class MyBackupAgentTest extends InstrumentationTestCase {
     }
 
     private void deleteFiles(Context context, boolean useExternalStorage) {
-        FileUtils.deleteFilesRecursively(MyPreferences.getDataFilesDir(MyPreferences.DIRECTORY_DOWNLOADS, TriState.fromBoolean(useExternalStorage)));
-        FileUtils.deleteFilesRecursively(MyPreferences.getDataFilesDir(MyPreferences.DIRECTORY_DATABASES, TriState.fromBoolean(useExternalStorage)));
+        FileUtils.deleteFilesRecursively(MyStorage.getDataFilesDir(MyStorage.DIRECTORY_DOWNLOADS, TriState.fromBoolean(useExternalStorage)));
+        FileUtils.deleteFilesRecursively(MyStorage.getDataFilesDir(MyStorage.DIRECTORY_DATABASES, TriState.fromBoolean(useExternalStorage)));
         FileUtils.deleteFilesRecursively(SharedPreferencesUtil.prefsDirectory(context));
     }
 

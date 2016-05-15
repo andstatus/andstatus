@@ -19,6 +19,7 @@ import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.SharedPreferencesUtil;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -95,7 +96,7 @@ public class PersistentAccounts {
     }
 
     public String getDefaultAccountName() {
-        return MyPreferences.getString(KEY_DEFAULT_ACCOUNT_NAME, "");
+        return SharedPreferencesUtil.getString(KEY_DEFAULT_ACCOUNT_NAME, "");
     }
 
     public int getDistinctOriginsCount() {
@@ -354,7 +355,7 @@ public class PersistentAccounts {
         if (ma != null) {
             defaultAccountName = ma.getAccountName();
         }
-        MyPreferences.getDefaultSharedPreferences().edit()
+        SharedPreferencesUtil.getDefaultSharedPreferences().edit()
                 .putString(KEY_DEFAULT_ACCOUNT_NAME, defaultAccountName).commit();
     }
     

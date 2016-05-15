@@ -41,6 +41,7 @@ import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.SharedPreferencesUtil;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -103,7 +104,7 @@ public class TestSuite extends TestCase {
         MyLog.d(TAG, "After Initializing Test Suite loop");
         assertTrue("MyContext state=" + MyContextHolder.get().state(), MyContextHolder.get().state() != MyContextState.EMPTY);
         
-        MyPreferences.getDefaultSharedPreferences().edit()
+        SharedPreferencesUtil.getDefaultSharedPreferences().edit()
             .putString(MyPreferences.KEY_MIN_LOG_LEVEL, Integer.toString(MyLog.VERBOSE))
             .putBoolean(MyPreferences.KEY_DOWNLOAD_AND_DISPLAY_ATTACHED_IMAGES, true)
             .putBoolean(MyPreferences.KEY_ATTACH_IMAGES_TO_MY_MESSAGES, true)
@@ -128,7 +129,7 @@ public class TestSuite extends TestCase {
         MyLog.v("TestSuite", "Test Suite initialized, MyContext state=" + MyContextHolder.get().state() 
                 + "; databasePath=" + dataPath);
         
-        if (MyPreferences.checkAndUpdateLastOpenedAppVersion(MyContextHolder.get().context(), true)) {
+        if (HelpActivity.checkAndUpdateLastOpenedAppVersion(MyContextHolder.get().context(), true)) {
             MyLog.i(TAG, "New version of application is running");
         }
         return context;

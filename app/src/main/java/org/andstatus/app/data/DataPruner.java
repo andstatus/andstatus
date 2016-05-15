@@ -31,6 +31,7 @@ import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.SelectionAndArgs;
+import org.andstatus.app.util.SharedPreferencesUtil;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -67,7 +68,7 @@ public class DataPruner {
         mDeleted = 0;
         int nDeletedTime = 0;
         // We're using global preferences here
-        SharedPreferences sp = MyPreferences
+        SharedPreferences sp = SharedPreferencesUtil
                 .getDefaultSharedPreferences();
 
         // Don't delete messages, which are favorited by any user
@@ -191,12 +192,12 @@ public class DataPruner {
     }
 
     public static void setDataPrunedNow() {
-        MyPreferences.putLong(MyPreferences.KEY_DATA_PRUNED_DATE, System.currentTimeMillis());
+        SharedPreferencesUtil.putLong(MyPreferences.KEY_DATA_PRUNED_DATE, System.currentTimeMillis());
     }
 
     private boolean isTimeToPrune()	{
         return !mMyContext.isInForeground() && RelativeTime.moreSecondsAgoThan(
-                MyPreferences.getLong(MyPreferences.KEY_DATA_PRUNED_DATE), 
+                SharedPreferencesUtil.getLong(MyPreferences.KEY_DATA_PRUNED_DATE),
                 PRUNE_MIN_PERIOD_DAYS * RelativeTime.SECONDS_IN_A_DAY);
     }
 

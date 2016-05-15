@@ -45,6 +45,7 @@ import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.SharedPreferencesUtil;
 
 /**
  * On activity testing: http://developer.android.com/tools/testing/activity_testing.html
@@ -66,7 +67,7 @@ public class MessageEditorTest extends ActivityInstrumentationTestCase2<Timeline
         MyLog.setLogToFile(true);
 
         if (editingStep == 0) {
-            MyPreferences.putLong(MyPreferences.KEY_BEING_EDITED_MESSAGE_ID, 0);
+            SharedPreferencesUtil.putLong(MyPreferences.KEY_BEING_EDITED_MESSAGE_ID, 0);
         }
 
         MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.CONVERSATION_ACCOUNT_NAME);

@@ -55,6 +55,7 @@ import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
 
@@ -140,7 +141,7 @@ public class MessageEditor {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (event != null && (event.isAltPressed() ||
-                        !MyPreferences.getBoolean(MyPreferences.KEY_ENTER_SENDS_MESSAGE, false))) {
+                        !SharedPreferencesUtil.getBoolean(MyPreferences.KEY_ENTER_SENDS_MESSAGE, false))) {
                     return false;
                 }
                 sendAndHide();
@@ -299,7 +300,7 @@ public class MessageEditor {
         MenuItem item = menu.findItem(R.id.attach_menu_id);
         if (item != null) {
             boolean enableAttach = isVisible()
-                    && MyPreferences.getBoolean(MyPreferences.KEY_ATTACH_IMAGES_TO_MY_MESSAGES, true)
+                    && SharedPreferencesUtil.getBoolean(MyPreferences.KEY_ATTACH_IMAGES_TO_MY_MESSAGES, true)
                     && (editorData.recipientId == 0 || editorData.getMyAccount().getOrigin().getOriginType()
                     .allowAttachmentForDirectMessage());
             item.setEnabled(enableAttach);
@@ -452,7 +453,7 @@ public class MessageEditor {
     private void showMessageDetails() {
         String messageDetails = "";
         if (editorData.inReplyToId != 0) {
-            String replyToName = MyQuery.msgIdToUsername(MyDatabase.Msg.AUTHOR_ID, editorData.inReplyToId, MyPreferences.userInTimeline());
+            String replyToName = MyQuery.msgIdToUsername(MyDatabase.Msg.AUTHOR_ID, editorData.inReplyToId, MyPreferences.getUserInTimeline());
             messageDetails += " " + String.format(
                     MyContextHolder.get().context().getText(R.string.message_source_in_reply_to).toString(),
                     replyToName);
@@ -505,7 +506,7 @@ public class MessageEditor {
                     Toast.LENGTH_SHORT).show();
         } else {
             MessageEditorCommand command = new MessageEditorCommand(editorData.copy());
-			if (MyPreferences.getBoolean(MyPreferences.KEY_SENDING_MESSAGES_LOG_ENABLED, false)) {
+			if (SharedPreferencesUtil.getBoolean(MyPreferences.KEY_SENDING_MESSAGES_LOG_ENABLED, false)) {
 				MyLog.setLogToFile(true);
 			}
             command.currentData.status = DownloadStatus.SENDING;
@@ -540,7 +541,7 @@ public class MessageEditor {
 
     private void saveData(MessageEditorCommand command) {
         command.acquireLock(false);
-        MyPreferences.putLong(MyPreferences.KEY_BEING_EDITED_MESSAGE_ID,
+        SharedPreferencesUtil.putLong(MyPreferences.KEY_BEING_EDITED_MESSAGE_ID,
                 command.beingEdited ? command.getCurrentMsgId() : 0);
         hide();
         if (!command.isEmpty()) {
@@ -561,7 +562,7 @@ public class MessageEditor {
             show();
             return;
         }
-        long msgId = MyPreferences.getLong(MyPreferences.KEY_BEING_EDITED_MESSAGE_ID);
+        long msgId = SharedPreferencesUtil.getLong(MyPreferences.KEY_BEING_EDITED_MESSAGE_ID);
         if (msgId == 0) {
             MyLog.v(MessageEditorData.TAG, "loadCurrentDraft: no current draft");
             return;
@@ -588,7 +589,7 @@ public class MessageEditor {
                             return MessageEditorData.load(msgId);
                         } else {
                             MyLog.v(MessageEditorData.TAG, "Cannot be edited " + msgId + " state:" + status);
-                            MyPreferences.putLong(MyPreferences.KEY_BEING_EDITED_MESSAGE_ID, 0);
+                            SharedPreferencesUtil.putLong(MyPreferences.KEY_BEING_EDITED_MESSAGE_ID, 0);
                             return MessageEditorData.INVALID;
                         }
                     }
@@ -615,7 +616,7 @@ public class MessageEditor {
     }
 
     public void onAttach() {
-		Intent intent = MyPreferences.getBoolean(MyPreferences.KEY_MODERN_INTERFACE_TO_SELECT_AN_ATTACHMENT, true) ?
+		Intent intent = SharedPreferencesUtil.getBoolean(MyPreferences.KEY_MODERN_INTERFACE_TO_SELECT_AN_ATTACHMENT, true) ?
             getIntentForKitKatMediaChooser() :
             getIntentToPickImages();
         getActivity().startActivityForResult(intent, ActivityRequestCode.ATTACH.id);

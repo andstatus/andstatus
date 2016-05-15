@@ -22,10 +22,12 @@ import android.content.SharedPreferences.Editor;
 import android.os.Environment;
 import android.preference.ListPreference;
 import android.preference.PreferenceFragment;
+import android.preference.PreferenceManager;
 import android.text.TextUtils;
 
+import org.andstatus.app.context.MyContextHolder;
+
 import java.io.File;
-import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Map.Entry;
 
@@ -78,49 +80,6 @@ public class SharedPreferencesUtil {
             }
         }
         return isDeleted;
-    }
-
-    /**
-     * Rename the preferences file
-     * 
-     * @return Was the file renamed?
-     */
-    public static boolean rename(Context context, String oldPrefsFileName, String newPrefsFileName) {
-        boolean isRenamed = false;
-
-        if (context == null || oldPrefsFileName == null || oldPrefsFileName.length() == 0
-                || newPrefsFileName == null || newPrefsFileName.length() == 0) {
-            if (MyLog.isVerboseEnabled()) {
-                MyLog.v(TAG, "rename: Nothing to do");
-            }
-        } else {
-            File newPrefFile = new File(prefsDirectory(context), newPrefsFileName + FILE_EXTENSION);
-            if (newPrefFile.exists()) {
-                try {
-                    if (MyLog.isVerboseEnabled()) {
-                        MyLog.v(TAG, "rename: New file already exists: \""
-                                + newPrefFile.getCanonicalPath() + "\"");
-                    }
-                } catch (IOException e) {
-                    MyLog.e(TAG, e);
-                }
-            } else {
-                File oldPrefFile = new File(prefsDirectory(context), oldPrefsFileName + FILE_EXTENSION);
-                if (oldPrefFile.exists()) {
-                    isRenamed = oldPrefFile.renameTo(newPrefFile);
-                    if (MyLog.isVerboseEnabled()) {
-                        MyLog.v(TAG, "The prefs file '" + oldPrefFile.getAbsolutePath() + "' was "
-                                + (isRenamed ? "" : "not ") + " renamed");
-                    }
-                } else {
-                    if (MyLog.isLoggable(TAG, MyLog.DEBUG)) {
-                        MyLog.d(TAG, "The prefs file '" + oldPrefFile.getAbsolutePath()
-                                + "' was not found");
-                    }
-                }
-            }
-        }
-        return isRenamed;
     }
 
     /**
@@ -213,5 +172,89 @@ public class SharedPreferencesUtil {
         }
         editor.commit();
         return entryCounter;
+    }
+
+    public static SharedPreferences getDefaultSharedPreferences() {
+        Context context = MyContextHolder.get().context();
+        if (context == null) {
+            MyLog.e(TAG, "getDefaultSharedPreferences - Was not initialized yet");
+            for(StackTraceElement element : Thread.currentThread().getStackTrace()) {
+                MyLog.v(TAG, element.toString());
+            }
+            return null;
+        } else {
+            return PreferenceManager.getDefaultSharedPreferences(context);
+        }
+    }
+
+    public static SharedPreferences getSharedPreferences(String name) {
+        Context context = MyContextHolder.get().context();
+        if (context == null) {
+            MyLog.e(TAG, "getSharedPreferences for " + name + " - were not initialized yet");
+            for(StackTraceElement element : Thread.currentThread().getStackTrace()) {
+                MyLog.v(TAG, element.toString());
+            }
+            return null;
+        } else {
+            return context.getSharedPreferences(name, Context.MODE_PRIVATE);
+        }
+    }
+
+    public static long getLongStoredAsString(String key, long defaultValue) {
+        long longValue = defaultValue;
+        try {
+            long longValueStored = Long.parseLong(getString(key, "0"));
+            if (longValueStored > 0) {
+                longValue = longValueStored;
+            }
+        } catch (NumberFormatException e) {
+            MyLog.v(TAG, e);
+        }
+        return longValue;
+    }
+
+    public static String getString(String key, String defaultValue) {
+        String longValue = defaultValue;
+        SharedPreferences sp = getDefaultSharedPreferences();
+        if (sp != null) {
+            longValue = sp.getString(key, defaultValue);
+        }
+        return longValue;
+    }
+
+    public static void putLong(String key, long value) {
+        SharedPreferences sp = getDefaultSharedPreferences();
+        if (sp != null) {
+            sp.edit().putLong(key, value).apply();
+        }
+    }
+
+    public static void putBoolean(String key, boolean value) {
+        SharedPreferences sp = getDefaultSharedPreferences();
+        if (sp != null) {
+            sp.edit().putBoolean(key, value).apply();
+        }
+    }
+
+    public static long getLong(String key) {
+        long value = 0;
+        SharedPreferences sp = getDefaultSharedPreferences();
+        if (sp != null) {
+            try {
+                value = sp.getLong(key, 0);
+            } catch (ClassCastException e) {
+                // Ignore
+            }
+        }
+        return value;
+    }
+
+    public static boolean getBoolean(String key, boolean defaultValue) {
+        boolean value = defaultValue;
+        SharedPreferences sp = getDefaultSharedPreferences();
+        if (sp != null) {
+            value = sp.getBoolean(key, defaultValue);
+        }
+        return value;
     }
 }

@@ -31,6 +31,7 @@ import org.andstatus.app.service.MyServiceEventsBroadcaster;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.service.MyServiceState;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.SharedPreferencesUtil;
 
 /**
  * Asynchronously save, delete and send a message, prepared by {@link MessageEditor}
@@ -74,7 +75,7 @@ public class MessageEditorSaver extends MyAsyncTask<MessageEditorCommand, Void, 
         } else {
             command.currentData.save(command.getMediaUri());
             if (command.beingEdited) {
-                MyPreferences.putLong(MyPreferences.KEY_BEING_EDITED_MESSAGE_ID,
+                SharedPreferencesUtil.putLong(MyPreferences.KEY_BEING_EDITED_MESSAGE_ID,
                         command.currentData.getMsgId());
             }
             if (command.currentData.status == DownloadStatus.SENDING) {

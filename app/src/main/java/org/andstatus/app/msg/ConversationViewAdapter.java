@@ -136,7 +136,7 @@ public class ConversationViewAdapter extends MyBaseAdapter {
         }
         setIndentView(messageIndented, indentPixels);
 
-        if (MyPreferences.showAvatars()) {
+        if (MyPreferences.getShowAvatars()) {
             indentPixels = setAvatar(item, messageIndented, viewToTheLeftId, indentPixels);
         }
         messageIndented.setPadding(indentPixels + 6, 2, 6, 2);
@@ -239,7 +239,7 @@ public class ConversationViewAdapter extends MyBaseAdapter {
         if (item.mStatus != DownloadStatus.LOADED) {
             messageDetails += " (" + item.mStatus.getTitle(context) + ")";
         }
-        if (MyPreferences.showDebuggingInfoInUi()) {
+        if (MyPreferences.getShowDebuggingInfoInUi()) {
             messageDetails = messageDetails + " (i" + item.mIndentLevel + ",r" + item.mReplyLevel + ")";
         }
         ((TextView) messageView.findViewById(R.id.message_details)).setText(messageDetails);

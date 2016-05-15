@@ -34,6 +34,7 @@ import org.andstatus.app.context.MyTheme;
 import org.andstatus.app.data.AvatarFile;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.SharedPreferencesUtil;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -105,7 +106,7 @@ public class MyImageCache {
 
     public static void setAvatarsRounded() {
         avatarsCache.evictAll();
-        avatarsCache.rounded = MyPreferences.getBoolean(MyPreferences.KEY_ROUNDED_AVATARS, true);
+        avatarsCache.rounded = SharedPreferencesUtil.getBoolean(MyPreferences.KEY_ROUNDED_AVATARS, true);
     }
 
     private static int calcCacheSize(Context context, int imageSize, float partOfAvailableMemory) {

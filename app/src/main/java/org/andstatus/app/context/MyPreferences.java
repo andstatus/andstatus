@@ -16,30 +16,13 @@
 
 package org.andstatus.app.context;
 
-import android.annotation.TargetApi;
 import android.app.backup.BackupManager;
 import android.content.Context;
-import android.content.ContextWrapper;
-import android.content.SharedPreferences;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
-import android.content.pm.PackageManager.NameNotFoundException;
-import android.content.res.Configuration;
-import android.os.Build;
-import android.os.Environment;
-import android.preference.PreferenceManager;
-import android.support.annotation.NonNull;
-import android.text.TextUtils;
 
 import org.andstatus.app.R;
 import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.msg.TapOnATimelineTitleBehaviour;
-import org.andstatus.app.util.I18n;
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.TriState;
-
-import java.io.File;
-import java.util.Locale;
+import org.andstatus.app.util.SharedPreferencesUtil;
 
 /**
  * This is a central point of accessing SharedPreferences
@@ -55,7 +38,6 @@ public class MyPreferences {
     // ----------------------------------------------------------
     // Appearance
     public static final String KEY_CUSTOM_LOCALE = "custom_locale";
-    public static final String CUSTOM_LOCALE_DEFAULT = "default";
     public static final String KEY_THEME_COLOR = "theme_color";
     public static final String KEY_ACTION_BAR_BACKGROUND_COLOR = "action_bar_background_color";
     public static final String KEY_ACTION_BAR_TEXT_COLOR = "action_bar_text_color";
@@ -91,11 +73,13 @@ public class MyPreferences {
     // ----------------------------------------------------------
     // Syncing
     public static final String KEY_SYNC_FREQUENCY_SECONDS = "fetch_frequency";
+    private static final long SYNC_FREQUENCY_DEFAULT_SECONDS = 180;
     public static final String KEY_SYNC_WHILE_USING_APPLICATION = "sync_while_using_application";
     public static final String KEY_SYNC_INDICATOR_ON_TIMELINE = "sync_indicator_on_timeline";
     public static final String KEY_SYNC_AFTER_MESSAGE_WAS_SENT = "sync_after_message_was_sent";
     public static final String KEY_DONT_SYNCHRONIZE_OLD_MESSAGES = "dont_synchronize_old_messages";
     public static final String KEY_CONNECTION_TIMEOUT_SECONDS = "connection_timeout";
+    private static final long CONNECTION_TIMEOUT_DEFAULT_SECONDS = 30;
 
     // ----------------------------------------------------------
     // Filters
@@ -148,412 +132,98 @@ public class MyPreferences {
     private MyPreferences(){
         // Non instantiable
     }
-    
-    public static SharedPreferences getDefaultSharedPreferences() {
-        Context context = MyContextHolder.get().context();
-        if (context == null) {
-            MyLog.e(TAG, "getDefaultSharedPreferences - Was not initialized yet");
-            for(StackTraceElement element : Thread.currentThread().getStackTrace()) { 
-                MyLog.v(TAG, element.toString()); 
-            }
-            return null;
-        } else {
-            return PreferenceManager.getDefaultSharedPreferences(context);
-        }
-    }
-
-    public static TriState isApplicationDataCreated() {
-        SharedPreferences sp = getSharedPreferences(PreferenceManager.KEY_HAS_SET_DEFAULT_VALUES);
-        if (sp == null) {
-            return TriState.UNKNOWN;
-        } else {
-            return TriState.fromBoolean(
-                    sp.getBoolean(PreferenceManager.KEY_HAS_SET_DEFAULT_VALUES, false));
-        }
-    }
-
-    public static void setDefaultValues() {
-        Context context = MyContextHolder.get().context();
-        if (context == null) {
-            MyLog.e(TAG, "setDefaultValues - Was not initialized yet");
-        } else {
-            for (MyPreferencesGroupsEnum item : MyPreferencesGroupsEnum.values()) {
-                if (item != MyPreferencesGroupsEnum.UNKNOWN) {
-                    PreferenceManager.setDefaultValues(context, item.getPreferencesXmlResId(), false);
-                }
-            }
-        }
-    }
-    
-    public static SharedPreferences getSharedPreferences(String name) {
-        Context context = MyContextHolder.get().context();
-        if (context == null) {
-            MyLog.e(TAG, "getSharedPreferences for " + name + " - were not initialized yet");
-            for(StackTraceElement element : Thread.currentThread().getStackTrace()) { 
-                MyLog.v(TAG, element.toString()); 
-            }
-            return null;
-        } else {
-            return context.getSharedPreferences(name, android.content.Context.MODE_PRIVATE);
-        }
-    }
 
     public static long getDontSynchronizeOldMessages() {
-        return getLongStoredAsString(KEY_DONT_SYNCHRONIZE_OLD_MESSAGES, 0);
+        return SharedPreferencesUtil.getLongStoredAsString(KEY_DONT_SYNCHRONIZE_OLD_MESSAGES, 0);
     }
 
-    private static final long SYNC_FREQUENCY_DEFAULT_SECONDS = 180;
-    /**
-     * @return the number of seconds between two sync ("fetch"...) actions.
-     */
-    public static long getSyncFrequencySeconds() {
-        return getLongStoredAsString(KEY_SYNC_FREQUENCY_SECONDS, SYNC_FREQUENCY_DEFAULT_SECONDS);
-    }
-
-    private static long getLongStoredAsString(String key, long defaultValue) {
-        long longValue = defaultValue;
-        try {
-            long longValueStored = Long.parseLong(getString(key, "0"));
-            if (longValueStored > 0) { 
-                longValue = longValueStored;
-            }
-        } catch (NumberFormatException e) {
-            MyLog.v(TAG, e);
-        }
-        return longValue;
-    }
-
-    public static String getString(String key, String defaultValue) {
-        String longValue = defaultValue;
-        SharedPreferences sp = getDefaultSharedPreferences();
-        if (sp != null) {
-            longValue = sp.getString(key, defaultValue);
-        }
-        return longValue;
-    }
-    
-    private static final long CONNECTION_TIMEOUT_DEFAULT_SECONDS = 30;
     public static int getConnectionTimeoutMs() {
-        return (int) java.util.concurrent.TimeUnit.SECONDS.toMillis(getLongStoredAsString(
+        return (int) java.util.concurrent.TimeUnit.SECONDS.toMillis(
+                SharedPreferencesUtil.getLongStoredAsString(
                 KEY_CONNECTION_TIMEOUT_SECONDS, CONNECTION_TIMEOUT_DEFAULT_SECONDS));
     }
-    
+
     /**
      * @return the number of milliseconds between two sync ("fetch"...) actions.
      */
     public static long getSyncFrequencyMs() {
         return java.util.concurrent.TimeUnit.SECONDS.toMillis(getSyncFrequencySeconds());
     }
-    
+
+    /**
+     * @return the number of seconds between two sync ("fetch"...) actions.
+     */
+    public static long getSyncFrequencySeconds() {
+        return SharedPreferencesUtil.getLongStoredAsString(KEY_SYNC_FREQUENCY_SECONDS,
+                SYNC_FREQUENCY_DEFAULT_SECONDS);
+    }
+
+    public static boolean isSyncWhileUsingApplicationEnabled() {
+        return SharedPreferencesUtil.getBoolean(KEY_SYNC_WHILE_USING_APPLICATION, true);
+    }
+
+    public static boolean isLongPressToOpenContextMenu() {
+        return SharedPreferencesUtil.getBoolean(KEY_LONG_PRESS_TO_OPEN_CONTEXT_MENU, false);
+    }
+
+    public static boolean isTimelineCombinedByDefault() {
+        return SharedPreferencesUtil.getBoolean(KEY_TIMELINE_IS_COMBINED_BY_DEFAULT, true);
+    }
+
+    public static boolean getShowAvatars() {
+        return SharedPreferencesUtil.getBoolean(KEY_SHOW_AVATARS, true);
+    }
+
+    public static boolean getDownloadAndDisplayAttachedImages() {
+        return SharedPreferencesUtil.getBoolean(KEY_DOWNLOAD_AND_DISPLAY_ATTACHED_IMAGES, true);
+    }
+
+    public static boolean getShowOrigin() {
+        return SharedPreferencesUtil.getBoolean(KEY_SHOW_ORIGIN, false);
+    }
+
+    public static TapOnATimelineTitleBehaviour getTapOnATimelineTitleBehaviour() {
+        return TapOnATimelineTitleBehaviour.load(
+                SharedPreferencesUtil.getString(KEY_TAP_ON_A_TIMELINE_TITLE_BEHAVIOUR, ""));
+    }
+
+    public static UserInTimeline getUserInTimeline() {
+        return UserInTimeline.load(SharedPreferencesUtil.getString(KEY_USER_IN_TIMELINE, ""));
+    }
+
+    public static boolean getShowDebuggingInfoInUi() {
+        return SharedPreferencesUtil.getBoolean(KEY_DEBUGGING_INFO_IN_UI, false);
+    }
+
+    public static TimelineType getDefaultTimeline() {
+        return TimelineType.load(
+                SharedPreferencesUtil.getString(KEY_DEFAULT_TIMELINE, TimelineType.HOME.save()));
+    }
+
+    public static int getActionBarTextHomeIconResourceId() {
+        return SharedPreferencesUtil.getString(KEY_ACTION_BAR_TEXT_COLOR, "")
+                .equals("ActionBarTextBlack")
+                ? R.drawable.icon_black_24dp : R.drawable.icon_white_24dp;
+    }
+
+    /**
+     * @return System time when AndStatus preferences were last time changed.
+     * We take into account here time when accounts were added/removed...
+     */
+    public static long getPreferencesChangeTime() {
+        return SharedPreferencesUtil.getLong(KEY_PREFERENCES_CHANGE_TIME);
+    }
+
     /**
      *  Event: Preferences have changed right now
      *  Remember when last changes to the preferences were made
      */
     public static void onPreferencesChanged() {
-        putLong(KEY_PREFERENCES_CHANGE_TIME, System.currentTimeMillis());
+        SharedPreferencesUtil.putLong(KEY_PREFERENCES_CHANGE_TIME, System.currentTimeMillis());
         Context context = MyContextHolder.get().context();
-        if (context != null && getBoolean(KEY_ENABLE_ANDROID_BACKUP, false)) {
+        if (context != null && SharedPreferencesUtil.getBoolean(KEY_ENABLE_ANDROID_BACKUP, false)) {
             new BackupManager(context).dataChanged();
         }
     }
 
-    public static boolean isEnLocale() {
-        Locale locale = mLocale;
-        if (locale == null) {
-            locale = mDefaultLocale;
-        }
-        return  locale == null || locale.getLanguage().isEmpty() || locale.getLanguage().startsWith("en");
-    }
-    
-    private static volatile Locale mLocale = null;
-    private static volatile Locale mDefaultLocale = null;
-    public static void setLocale(ContextWrapper contextWrapper) {
-        if (mDefaultLocale == null) {
-            mDefaultLocale = contextWrapper.getBaseContext().getResources().getConfiguration().locale;
-        }
-        String strLocale = getString(KEY_CUSTOM_LOCALE, CUSTOM_LOCALE_DEFAULT);
-        if (!strLocale.equals(CUSTOM_LOCALE_DEFAULT) || mLocale != null) {
-            Configuration config = contextWrapper.getBaseContext().getResources().getConfiguration();
-            if (strLocale.equals(CUSTOM_LOCALE_DEFAULT)) {
-                customizeConfig(contextWrapper, config, mDefaultLocale);
-                mLocale = null;
-            } else {
-                mLocale = new Locale(I18n.localeToLanguage(strLocale), I18n.localeToCountry(strLocale));
-                customizeConfig(contextWrapper, config, mLocale);
-            }
-        }
-    }
-    
-    public static Configuration onConfigurationChanged(ContextWrapper contextWrapper, Configuration newConfig) {
-        if (mLocale == null || mDefaultLocale == null) {
-            mDefaultLocale = newConfig.locale;
-        }
-        MyTheme.forget();
-        return customizeConfig(contextWrapper, newConfig, mLocale);
-    }
-    
-    private static Configuration customizeConfig(ContextWrapper contextWrapper, Configuration newConfig, Locale locale) {
-        Configuration configCustom = newConfig;
-        if (locale != null && !newConfig.locale.equals(locale)) {
-            Locale.setDefault(locale);
-            configCustom = new Configuration(newConfig);
-            setLocale(configCustom, locale);
-            contextWrapper.getBaseContext().getResources().updateConfiguration(configCustom, contextWrapper.getBaseContext().getResources().getDisplayMetrics());            
-        }
-        return configCustom;
-    }
-
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
-    private static void setLocale(Configuration configCustom, Locale locale) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            configCustom.setLocale(locale);
-        } else {
-            configCustom.locale = locale;
-        }
-    }    
-    
-	public static void putLong(String key, long value) {
-        SharedPreferences sp = getDefaultSharedPreferences();
-        if (sp != null) {
-            sp.edit().putLong(key, value).apply();
-        }
-    }
-
-    public static void putBoolean(String key, boolean value) {
-        SharedPreferences sp = getDefaultSharedPreferences();
-        if (sp != null) {
-            sp.edit().putBoolean(key, value).apply();
-        }
-    }
-	
-    /**
-     * @return System time when AndStatus preferences were last time changed. 
-     * We take into account here time when accounts were added/removed...
-     */
-    public static long getPreferencesChangeTime() {
-		return getLong(KEY_PREFERENCES_CHANGE_TIME);
-    }
-    
-    public static long getLong(String key) {
-        long value = 0;
-        SharedPreferences sp = getDefaultSharedPreferences();
-        if (sp != null) {
-            try {
-                value = sp.getLong(key, 0);
-            } catch (ClassCastException e) {
-                // Ignore
-            }
-        }
-        return value;
-    }
-	
-	/**
-     * Standard directory in which to place databases
-     */
-    public static final String DIRECTORY_DATABASES = "databases";
-    public static final String DIRECTORY_DOWNLOADS = "downloads";
-
-    public static File getDataFilesDir(String type) {
-        return getDataFilesDir(type, TriState.UNKNOWN);
-    }
-
-    /**
-     * This function works just like {@link android.content.Context#getExternalFilesDir
-     * Context.getExternalFilesDir}, but it takes {@link #KEY_USE_EXTERNAL_STORAGE} into account,
-     * so it returns directory either on internal or external storage.
-     * 
-     * @param type The type of files directory to return.  May be null for
-     * the root of the files directory or one of
-     * the following Environment constants for a subdirectory:
-     * {@link android.os.Environment#DIRECTORY_PICTURES Environment.DIRECTORY_...} (since API 8),
-     * {@link #DIRECTORY_DATABASES}
-     * @param useExternalStorage if not UNKNOWN, use this value instead of stored in preferences as {@link #KEY_USE_EXTERNAL_STORAGE}
-     * 
-     * @return directory, already created for you OR null in a case of an error
-     * @see <a href="http://developer.android.com/guide/topics/data/data-storage.html#filesExternal">filesExternal</a>
-     */
-    public static File getDataFilesDir(String type, @NonNull TriState useExternalStorage) {
-        return getDataFilesDir(type, useExternalStorage, true);
-    }
-
-    public static File getDataFilesDir(String type, @NonNull TriState useExternalStorage, boolean logged) {
-        final String method = "getDataFilesDir";
-        File dir = null;
-        StringBuilder textToLog = new StringBuilder();
-        MyContext myContext = MyContextHolder.get();
-        if (myContext.context() == null) {
-            textToLog.append("No android.content.Context yet");
-        } else {
-            if (isStorageExternal(useExternalStorage)) {
-                if (isWritableExternalStorageAvailable(textToLog)) {
-                    try {
-                        dir = myContext.context().getExternalFilesDir(type);
-                    } catch (NullPointerException e) {
-                        // I noticed this exception once, but that time it was related to SD card malfunction...
-                        if (logged) {
-                            MyLog.e(TAG, method, e);
-                        }
-                    }
-                }
-            } else {
-                dir = myContext.context().getFilesDir();
-                if (!TextUtils.isEmpty(type)) {
-                    dir = new File(dir, type);
-                }
-            }
-            if (dir != null && !dir.exists()) {
-                try {
-                    //noinspection ResultOfMethodCallIgnored
-                    dir.mkdirs();
-                } catch (Exception e) {
-                    if (logged) {
-                        MyLog.e(TAG, method + "; Error creating directory", e);
-                    }
-                } finally {
-                    if (!dir.exists()) {
-                        textToLog.append("Could not create '" + dir.getPath() + "'");
-                        dir = null;
-                    }
-                }
-            }
-        }
-        if (logged && textToLog.length() > 0) {
-            MyLog.i(TAG, method + "; " + textToLog);
-        }
-        return dir;
-    }
-
-    public static boolean isWritableExternalStorageAvailable(StringBuilder textToLog) {
-        String state = Environment.getExternalStorageState();
-        boolean available = false;
-        if (Environment.MEDIA_MOUNTED.equals(state)) {
-            available = true;
-        } else if (Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {
-            if (textToLog != null) {
-                textToLog.append("We can only read External storage");
-            }
-        } else {    
-            if (textToLog != null) {
-                textToLog.append("Error accessing External storage, state='" + state + "'");
-            }
-        }
-        return available;
-    }
-
-    public static boolean isStorageExternal() {
-        return isStorageExternal(TriState.UNKNOWN);
-    }
-
-    public static boolean isStorageExternal(@NonNull TriState useExternalStorage) {
-        return useExternalStorage.toBoolean(getBoolean(KEY_USE_EXTERNAL_STORAGE, false));
-    }
-
-    public static boolean isSyncWhileUsingApplicationEnabled() {
-        return getBoolean(KEY_SYNC_WHILE_USING_APPLICATION, true);
-    }
-
-    public static boolean isLongPressToOpenContextMenu() {
-        return getBoolean(KEY_LONG_PRESS_TO_OPEN_CONTEXT_MENU, false);
-    }
-
-    public static boolean isTimelineCombinedByDefault() {
-        return getBoolean(KEY_TIMELINE_IS_COMBINED_BY_DEFAULT, true);
-    }
-
-    public static boolean getBoolean(String key, boolean defaultValue) {
-        boolean value = defaultValue;
-        SharedPreferences sp = getDefaultSharedPreferences();
-        if (sp != null) {
-            value = sp.getBoolean(key, defaultValue);
-        }
-        return value;
-    }
-
-    public static File getDatabasePath(String name) {
-        return getDatabasePath(name, TriState.UNKNOWN);
-    }
-
-    /**
-     * Extends {@link android.content.ContextWrapper#getDatabasePath(java.lang.String)}
-     * @param name The name of the database for which you would like to get its path.
-     * @param useExternalStorage if not UNKNOWN, use this value instead of stored in preferences as {@link #KEY_USE_EXTERNAL_STORAGE}
-     */
-    public static File getDatabasePath(String name, @NonNull TriState useExternalStorage) {
-        File dbDir = getDataFilesDir(DIRECTORY_DATABASES, useExternalStorage);
-        File dbAbsolutePath = null;
-        if (dbDir != null) {
-            dbAbsolutePath = new File(dbDir.getPath() + "/" + name);
-        }
-        return dbAbsolutePath;
-    }
-    
-    /**
-     * Simple check that allows to prevent data access errors
-     */
-    public static boolean isDataAvailable() {
-        return getDataFilesDir(null) != null;
-    }
-
-    /**
-     * @return true if we opened previous version
-     */
-    public static boolean checkAndUpdateLastOpenedAppVersion(Context context, boolean update) {
-        boolean changed = false;
-        int versionCodeLast =  getDefaultSharedPreferences().getInt(KEY_VERSION_CODE_LAST, 0);
-        PackageManager pm = context.getPackageManager();
-        PackageInfo pi;
-        try {
-            pi = pm.getPackageInfo(context.getPackageName(), 0);
-            int versionCode =  pi.versionCode;
-            if (versionCodeLast < versionCode) {
-                // Even if the User will see only the first page of the Help activity,
-                // count this as showing the Change Log
-                MyLog.v(TAG, "Last opened version=" + versionCodeLast + ", current is " + versionCode
-                        + (update ? ", updating" : "")
-                        );
-                changed = true;
-                if ( update && MyContextHolder.get().isReady()) {
-                    getDefaultSharedPreferences().edit().putInt(KEY_VERSION_CODE_LAST, versionCode).commit();
-                }
-            }
-        } catch (NameNotFoundException e) {
-            MyLog.e(TAG, "Unable to obtain package information", e);
-        }
-        return changed;
-    }
-
-    public static boolean showAvatars() {
-        return getBoolean(KEY_SHOW_AVATARS, true);
-    }
-
-    public static boolean downloadAndDisplayAttachedImages() {
-        return getBoolean(KEY_DOWNLOAD_AND_DISPLAY_ATTACHED_IMAGES, true);
-    }
-
-    public static boolean showOrigin() {
-        return getBoolean(KEY_SHOW_ORIGIN, false);
-    }
-
-    public static TapOnATimelineTitleBehaviour tapOnATimelineTitleBehaviour() {
-        return TapOnATimelineTitleBehaviour.load(
-                getString(KEY_TAP_ON_A_TIMELINE_TITLE_BEHAVIOUR, ""));
-    }
-
-    public static UserInTimeline userInTimeline() {
-        return UserInTimeline.load(getString(KEY_USER_IN_TIMELINE, ""));
-    }
-
-    public static boolean showDebuggingInfoInUi() {
-        return getBoolean(KEY_DEBUGGING_INFO_IN_UI, false);
-    }
-
-    public static TimelineType getDefaultTimeline() {
-        return TimelineType.load(getString(KEY_DEFAULT_TIMELINE, TimelineType.HOME.save()));
-    }
-
-    public static int getActionBarTextHomeIconResourceId() {
-        return getString(KEY_ACTION_BAR_TEXT_COLOR, "")
-                .equals("ActionBarTextBlack")
-                ? R.drawable.icon_black_24dp : R.drawable.icon_white_24dp;
-    }
 }

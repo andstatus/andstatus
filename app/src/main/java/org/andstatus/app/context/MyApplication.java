@@ -55,19 +55,19 @@ public class MyApplication extends Application {
                 + (isAcraProcess ? "ACRA" : "'" + processName + "'") + " process");
         if (!isAcraProcess) {
             MyContextHolder.storeContextIfNotPresent(this, this);
-            MyPreferences.setLocale(this);
+            MyLocale.setLocale(this);
         }
     }
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(isAcraProcess ? newConfig :
-                MyPreferences.onConfigurationChanged(this, newConfig));
+                MyLocale.onConfigurationChanged(this, newConfig));
     }
     
     @Override
     public File getDatabasePath(String name) {
-        return isAcraProcess ? super.getDatabasePath(name) : MyPreferences.getDatabasePath(name);
+        return isAcraProcess ? super.getDatabasePath(name) : MyStorage.getDatabasePath(name);
     }
 
     @Override

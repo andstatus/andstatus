@@ -31,6 +31,7 @@ import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.SharedPreferencesUtil;
 
 import java.util.ArrayList;
 
@@ -140,9 +141,9 @@ public class TimelineLoader implements LoadableListActivity.SyncLoader {
     private TimelinePage pageFromCursor(Cursor cursor) {
         TimelinePage page = new TimelinePage(new ArrayList<TimelineViewItem>(), getParams());
         KeywordsFilter keywordsFilter = new KeywordsFilter(
-                MyPreferences.getString(MyPreferences.KEY_FILTER_HIDE_MESSAGES_BASED_ON_KEYWORDS, ""));
+                SharedPreferencesUtil.getString(MyPreferences.KEY_FILTER_HIDE_MESSAGES_BASED_ON_KEYWORDS, ""));
         boolean hideRepliesNotToMeOrFriends = getParams().getTimelineType() == TimelineType.HOME
-                && MyPreferences.getBoolean(MyPreferences.KEY_FILTER_HIDE_REPLIES_NOT_TO_ME_OR_FRIENDS, false);
+                && SharedPreferencesUtil.getBoolean(MyPreferences.KEY_FILTER_HIDE_REPLIES_NOT_TO_ME_OR_FRIENDS, false);
         String searchQuery = TextUtils.isEmpty(getParams().mSearchQuery) ? ""
                 : getParams().mSearchQuery.toLowerCase();
 

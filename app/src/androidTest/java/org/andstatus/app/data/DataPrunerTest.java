@@ -9,6 +9,7 @@ import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
+import org.andstatus.app.util.SharedPreferencesUtil;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -38,7 +39,7 @@ public class DataPrunerTest extends InstrumentationTestCase  {
         assertTrue("Pruned", dp.prune());
         
         assertTrue("File is fresh", logFile1.exists());
-        long pruneDate1 = MyPreferences.getLong(MyPreferences.KEY_DATA_PRUNED_DATE);
+        long pruneDate1 = SharedPreferencesUtil.getLong(MyPreferences.KEY_DATA_PRUNED_DATE);
         assertTrue(
                 "Pruning date updated " + pruneDate1 + " - "
                         + RelativeTime.getDifference(MyContextHolder.get().context(),
@@ -46,7 +47,7 @@ public class DataPrunerTest extends InstrumentationTestCase  {
                 !RelativeTime.moreSecondsAgoThan(pruneDate1, 300));
         assertFalse("Second prune skipped", dp.prune());
         assertEquals("No more pruning", pruneDate1,
-                MyPreferences.getLong(MyPreferences.KEY_DATA_PRUNED_DATE));
+                SharedPreferencesUtil.getLong(MyPreferences.KEY_DATA_PRUNED_DATE));
         
         // See http://stackoverflow.com/questions/6633748/file-lastmodified-is-never-what-was-set-with-file-setlastmodified
         long lastModifiedNew = ((System.currentTimeMillis()
@@ -88,7 +89,7 @@ public class DataPrunerTest extends InstrumentationTestCase  {
     }
 
     private void clearPrunedDate() {
-        MyPreferences.putLong(MyPreferences.KEY_DATA_PRUNED_DATE, 0);
+        SharedPreferencesUtil.putLong(MyPreferences.KEY_DATA_PRUNED_DATE, 0);
     }
 
     private String millisToDateString(long dateTime) {

@@ -19,6 +19,7 @@ package org.andstatus.app.msg;
 import android.net.Uri;
 
 import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.UriUtils;
 
 public class MessageEditorCommand {
@@ -68,7 +69,7 @@ public class MessageEditorCommand {
             return currentData.getMsgId();
         }
         if (currentMsgId == null) {
-            currentMsgId = MyPreferences.getLong(MyPreferences.KEY_BEING_EDITED_MESSAGE_ID);
+            currentMsgId = SharedPreferencesUtil.getLong(MyPreferences.KEY_BEING_EDITED_MESSAGE_ID);
         }
         return currentMsgId;
     }

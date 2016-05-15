@@ -42,7 +42,7 @@ public class AvatarFile {
     @NonNull
     public static Drawable getDrawable(long authorId, Cursor cursor) {
         Drawable drawable = null;
-        if (MyPreferences.showAvatars()) {
+        if (MyPreferences.getShowAvatars()) {
             String avatarFilename = DbUtils.getString(cursor, MyDatabase.Download.AVATAR_FILE_NAME);
             AvatarFile avatarFile = new AvatarFile(authorId, avatarFilename);
             drawable = avatarFile.getDrawable();

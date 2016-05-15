@@ -26,6 +26,7 @@ import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.SharedPreferencesUtil;
 
 public class TimeLineActivityLayoutToggleTest extends android.test.ActivityInstrumentationTestCase2<TimelineActivity> {
     private TimelineActivity activity;
@@ -58,8 +59,8 @@ public class TimeLineActivityLayoutToggleTest extends android.test.ActivityInstr
                 showAvatars = !showAvatarsOld;
                 break;
             default:
-                showAttachedImagesOld = MyPreferences.downloadAndDisplayAttachedImages();
-                showAvatarsOld = MyPreferences.showAvatars();
+                showAttachedImagesOld = MyPreferences.getDownloadAndDisplayAttachedImages();
+                showAvatarsOld = MyPreferences.getShowAvatars();
                 showAttachedImages = showAttachedImagesOld; 
                 showAvatars = showAvatarsOld;
                 break;
@@ -110,7 +111,7 @@ public class TimeLineActivityLayoutToggleTest extends android.test.ActivityInstr
     }
     
     private void setPreferences() {
-        MyPreferences.getDefaultSharedPreferences().edit()
+        SharedPreferencesUtil.getDefaultSharedPreferences().edit()
                 .putBoolean(MyPreferences.KEY_DOWNLOAD_AND_DISPLAY_ATTACHED_IMAGES, showAttachedImages)
                 .putBoolean(MyPreferences.KEY_SHOW_AVATARS, showAvatars)
                 .commit();

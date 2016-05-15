@@ -33,6 +33,7 @@ import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TFactory;
 
 import java.io.Serializable;
@@ -75,7 +76,7 @@ public class ConversationLoader<T extends ConversationItem> implements SyncLoade
         findPreviousMessagesRecursively(newOMsg(selectedMessageId, 0));
         Collections.sort(mMsgs, replyLevelComparator);
         enumerateMessages();
-        if (MyPreferences.getBoolean(
+        if (SharedPreferencesUtil.getBoolean(
                 MyPreferences.KEY_OLD_MESSAGES_FIRST_IN_CONVERSATION, false)) {
             reverseListOrder();
         }

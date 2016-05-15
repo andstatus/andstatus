@@ -19,7 +19,7 @@ package org.andstatus.app.data;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
-import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.context.MyStorage;
 import org.andstatus.app.util.MyLog;
 
 import java.io.File;
@@ -32,7 +32,7 @@ public class DownloadFile {
     public DownloadFile(String filename) {
         this.filename = filename;
         if (!TextUtils.isEmpty(filename)) {
-            file = new File(MyPreferences.getDataFilesDir(MyPreferences.DIRECTORY_DOWNLOADS), filename);
+            file = new File(MyStorage.getDataFilesDir(MyStorage.DIRECTORY_DOWNLOADS), filename);
         } else {
             file = null;
         }

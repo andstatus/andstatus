@@ -41,6 +41,7 @@ import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.service.ConnectionRequired;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
+import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TriState;
 
 import java.util.Locale;
@@ -87,11 +88,11 @@ public final class MyContextImpl implements MyContext {
         final String method = "newInitialized";
         MyContextImpl myContext = newNotInitialized(context, initializerName);
         if ( myContext.mContext != null) {
-            boolean createApplicationData = MyPreferences.isApplicationDataCreated().not().toBoolean(false);
+            boolean createApplicationData = MyStorage.isApplicationDataCreated().not().toBoolean(false);
             MyLog.v(TAG, method + " Starting initialization by " + initializerName);
             if (createApplicationData) {
                 MyLog.i(TAG, method + " Creating application data");
-                MyPreferences.setDefaultValues();
+                MyPreferencesGroupsEnum.setDefaultValues();
                 tryToSetExternalStorageOnDataCreation();
             }
             myContext.mPreferencesChangeTime = MyPreferences.getPreferencesChangeTime();
@@ -99,7 +100,7 @@ public final class MyContextImpl implements MyContext {
             try {
                 myContext.mState = newDb.checkState();
                 if (myContext.state() == MyContextState.READY
-                        && MyPreferences.isApplicationDataCreated() != TriState.TRUE) {
+                        && MyStorage.isApplicationDataCreated() != TriState.TRUE) {
                     myContext.mState = MyContextState.ERROR;
                 }
                 switch (myContext.mState) {
@@ -126,9 +127,9 @@ public final class MyContextImpl implements MyContext {
     
     private void tryToSetExternalStorageOnDataCreation() {
         boolean useExternalStorage = !Environment.isExternalStorageEmulated()
-                && MyPreferences.isWritableExternalStorageAvailable(null);
+                && MyStorage.isWritableExternalStorageAvailable(null);
         MyLog.i(this, "External storage is " + (useExternalStorage ? "" : "not") + " used");
-        MyPreferences.putBoolean(MyPreferences.KEY_USE_EXTERNAL_STORAGE, useExternalStorage);
+        SharedPreferencesUtil.putBoolean(MyPreferences.KEY_USE_EXTERNAL_STORAGE, useExternalStorage);
     }
 
     @Override
@@ -280,7 +281,7 @@ public final class MyContextImpl implements MyContext {
                 MyLog.v(this, method + "; No Internet Connection");
                 return false;
             case WIFI:
-                boolean prefWiFiOnly = MyPreferences.getBoolean(
+                boolean prefWiFiOnly = SharedPreferencesUtil.getBoolean(
                         MyPreferences.KEY_DOWNLOAD_ATTACHMENTS_OVER_WIFI_ONLY, true);
                 if (isOnlineNotLogged(prefWiFiOnly)) {
                     return true;

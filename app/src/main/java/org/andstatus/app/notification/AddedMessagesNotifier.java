@@ -32,6 +32,7 @@ import org.andstatus.app.msg.TimelineActivity;
 import org.andstatus.app.service.CommandResult;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.SharedPreferencesUtil;
 
 public class AddedMessagesNotifier {
     private MyContext myContext;
@@ -39,7 +40,7 @@ public class AddedMessagesNotifier {
 
     private AddedMessagesNotifier(MyContext myContext) {
         this.myContext = myContext;
-        mNotificationsVibrate = MyPreferences.getBoolean(MyPreferences.KEY_NOTIFICATION_VIBRATION, false);
+        mNotificationsVibrate = SharedPreferencesUtil.getBoolean(MyPreferences.KEY_NOTIFICATION_VIBRATION, false);
     }
 
     public static AddedMessagesNotifier newInstance(MyContext myContext) {
@@ -47,7 +48,7 @@ public class AddedMessagesNotifier {
     }
 
     public void update(CommandResult result) {
-        if (!MyPreferences.getBoolean(MyPreferences.KEY_NOTIFICATIONS_ENABLED, false)) {
+        if (!SharedPreferencesUtil.getBoolean(MyPreferences.KEY_NOTIFICATIONS_ENABLED, false)) {
             return;
         }
         notifyForOneType(TimelineType.HOME, result.getMessagesAdded());
@@ -98,11 +99,11 @@ public class AddedMessagesNotifier {
     private boolean areNotificationsEnabled(TimelineType timelineType) {
         switch (timelineType) {
             case MENTIONS:
-                return MyPreferences.getBoolean(MyPreferences.KEY_NOTIFY_OF_MENTIONS, false);
+                return SharedPreferencesUtil.getBoolean(MyPreferences.KEY_NOTIFY_OF_MENTIONS, false);
             case DIRECT:
-                return MyPreferences.getBoolean(MyPreferences.KEY_NOTIFY_OF_DIRECT_MESSAGES, false);
+                return SharedPreferencesUtil.getBoolean(MyPreferences.KEY_NOTIFY_OF_DIRECT_MESSAGES, false);
             case HOME:
-                return MyPreferences.getBoolean(MyPreferences.KEY_NOTIFY_OF_HOME_TIMELINE, false);
+                return SharedPreferencesUtil.getBoolean(MyPreferences.KEY_NOTIFY_OF_HOME_TIMELINE, false);
             default:
                 return true;
         }
@@ -110,13 +111,13 @@ public class AddedMessagesNotifier {
 
     private void notify(TimelineType timelineType, int messageTitleResId,
             String messageText) {
-        String ringtone = MyPreferences.getString(MyPreferences.KEY_NOTIFICATION_RINGTONE, null);
+        String ringtone = SharedPreferencesUtil.getString(MyPreferences.KEY_NOTIFICATION_RINGTONE, null);
         Uri sound = TextUtils.isEmpty(ringtone) ? null : Uri.parse(ringtone);
 
         Notification.Builder builder =
                 new Notification.Builder(myContext.context())
         .setSmallIcon(
-                MyPreferences.getBoolean(
+                SharedPreferencesUtil.getBoolean(
                         MyPreferences.KEY_NOTIFICATION_ICON_ALTERNATIVE, false) 
                         ? R.drawable.notification_icon_circle
                                 : R.drawable.notification_icon)

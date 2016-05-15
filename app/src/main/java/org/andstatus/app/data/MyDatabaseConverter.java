@@ -23,7 +23,7 @@ import android.database.sqlite.SQLiteDatabase;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccountConverter;
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.context.MyStorage;
 import org.andstatus.app.data.MyDatabaseConverterController.UpgradeParams;
 import org.andstatus.app.util.DialogFactory;
 import org.andstatus.app.util.FileUtils;
@@ -237,7 +237,7 @@ class MyDatabaseConverter {
         @Override
         protected void execute2() {
             versionTo = 17;
-            File avatarsDir = MyPreferences.getDataFilesDir("avatars");
+            File avatarsDir = MyStorage.getDataFilesDir("avatars");
             if (avatarsDir.exists()) {
                 FileUtils.deleteFilesRecursively(avatarsDir);
                 if (!avatarsDir.delete()) {

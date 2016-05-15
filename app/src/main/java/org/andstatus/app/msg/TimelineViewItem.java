@@ -80,7 +80,7 @@ public class TimelineViewItem {
         TimelineViewItem item = new TimelineViewItem();
         item.msgId = DbUtils.getLong(cursor, MyDatabase.Msg._ID);
         item.authorName = TimelineSql.userColumnIndexToNameAtTimeline(cursor,
-                cursor.getColumnIndex(MyDatabase.User.AUTHOR_NAME), MyPreferences.showOrigin());
+                cursor.getColumnIndex(MyDatabase.User.AUTHOR_NAME), MyPreferences.getShowOrigin());
         item.body = MyHtml.htmlifyIfPlain(DbUtils.getString(cursor, MyDatabase.Msg.BODY));
         item.inReplyToMsgId = DbUtils.getLong(cursor, MyDatabase.Msg.IN_REPLY_TO_MSG_ID);
         item.inReplyToName = DbUtils.getString(cursor, MyDatabase.User.IN_REPLY_TO_NAME);
@@ -118,7 +118,7 @@ public class TimelineViewItem {
         }
 
         item.avatarDrawable = AvatarFile.getDrawable(item.authorId, cursor);
-        if (MyPreferences.downloadAndDisplayAttachedImages()) {
+        if (MyPreferences.getDownloadAndDisplayAttachedImages()) {
             item.attachedImageFile = new AttachedImageFile(
                     DbUtils.getLong(cursor, MyDatabase.Download.IMAGE_ID),
                     DbUtils.getString(cursor, MyDatabase.Download.IMAGE_FILE_NAME));

@@ -7,16 +7,17 @@ import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.service.CommandResult;
+import org.andstatus.app.util.SharedPreferencesUtil;
 
 public class AddedMessagesNotifierTest extends InstrumentationTestCase {
     
     @Override
     protected void setUp() throws Exception {
         TestSuite.initialize(this);
-        MyPreferences.putBoolean(MyPreferences.KEY_NOTIFICATIONS_ENABLED, true);
-        MyPreferences.putBoolean(MyPreferences.KEY_NOTIFY_OF_HOME_TIMELINE, true);
-        MyPreferences.putBoolean(MyPreferences.KEY_NOTIFY_OF_MENTIONS, true);
-        MyPreferences.putBoolean(MyPreferences.KEY_NOTIFY_OF_DIRECT_MESSAGES, true);
+        SharedPreferencesUtil.putBoolean(MyPreferences.KEY_NOTIFICATIONS_ENABLED, true);
+        SharedPreferencesUtil.putBoolean(MyPreferences.KEY_NOTIFY_OF_HOME_TIMELINE, true);
+        SharedPreferencesUtil.putBoolean(MyPreferences.KEY_NOTIFY_OF_MENTIONS, true);
+        SharedPreferencesUtil.putBoolean(MyPreferences.KEY_NOTIFY_OF_DIRECT_MESSAGES, true);
     }
 
     public void testCreateNotification() {

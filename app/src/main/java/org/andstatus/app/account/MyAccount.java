@@ -784,7 +784,7 @@ public final class MyAccount {
         
         if (prefsFileName.length() > 0) {
             try {
-                sp = MyPreferences.getSharedPreferences(prefsFileName);
+                sp = SharedPreferencesUtil.getSharedPreferences(prefsFileName);
             } catch (Exception e) {
                 MyLog.e(this, "Cound't get preferences '" + prefsFileName + "'", e);
                 sp = null;

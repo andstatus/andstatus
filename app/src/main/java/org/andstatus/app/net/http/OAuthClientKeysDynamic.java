@@ -18,8 +18,8 @@ package org.andstatus.app.net.http;
 
 import android.text.TextUtils;
 
-import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.SharedPreferencesUtil;
 
 /**
  * CLient Keys, obtained dynamically for each host and Origin.
@@ -44,8 +44,8 @@ public class OAuthClientKeysDynamic implements OAuthClientKeysStrategy {
         keySuffix = Long.toString(connectionData.originId) + "-" + connectionData.originUrl.getHost(); 
         keyConsumerKey = KEY_OAUTH_CLIENT_KEY + keySuffix;
         keyConsumerSecret = KEY_OAUTH_CLIENT_SECRET + keySuffix;
-        consumerKey = MyPreferences.getString(keyConsumerKey, "");
-        consumerSecret = MyPreferences.getString(keyConsumerSecret, "");
+        consumerKey = SharedPreferencesUtil.getString(keyConsumerKey, "");
+        consumerSecret = SharedPreferencesUtil.getString(keyConsumerSecret, "");
     }
     
     @Override
@@ -62,14 +62,14 @@ public class OAuthClientKeysDynamic implements OAuthClientKeysStrategy {
         if (TextUtils.isEmpty(consumerKeyIn) || TextUtils.isEmpty(consumerSecretIn)) {
             consumerKey = "";
             consumerSecret = "";
-            MyPreferences.getDefaultSharedPreferences().edit()
+            SharedPreferencesUtil.getDefaultSharedPreferences().edit()
             .remove(keyConsumerKey)
             .remove(keyConsumerSecret)
             .commit();
         } else {
             consumerKey = consumerKeyIn;
             consumerSecret = consumerSecretIn;
-            MyPreferences.getDefaultSharedPreferences().edit()
+            SharedPreferencesUtil.getDefaultSharedPreferences().edit()
             .putString(keyConsumerKey, consumerKey)
             .putString(keyConsumerSecret, consumerSecret)
             .commit();

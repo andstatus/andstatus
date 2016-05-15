@@ -30,6 +30,7 @@ import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.graphics.MyImageCache;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyUrlSpan;
+import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.widget.MyBaseAdapter;
 
 import java.util.HashSet;
@@ -42,11 +43,11 @@ public class TimelineAdapter extends MyBaseAdapter {
     private final MessageContextMenu contextMenu;
     private final int listItemLayoutId;
     private final TimelinePages pages;
-    private final boolean showAvatars = MyPreferences.showAvatars();
-    private final boolean showAttachedImages = MyPreferences.downloadAndDisplayAttachedImages();
+    private final boolean showAvatars = MyPreferences.getShowAvatars();
+    private final boolean showAttachedImages = MyPreferences.getDownloadAndDisplayAttachedImages();
     private final boolean showButtonsBelowMessages =
-            MyPreferences.getBoolean(MyPreferences.KEY_SHOW_BUTTONS_BELOW_MESSAGE, true);
-    private final boolean markReplies = MyPreferences.getBoolean(
+            SharedPreferencesUtil.getBoolean(MyPreferences.KEY_SHOW_BUTTONS_BELOW_MESSAGE, true);
+    private final boolean markReplies = SharedPreferencesUtil.getBoolean(
             MyPreferences.KEY_MARK_REPLIES_IN_TIMELINE, false);
     private int positionPrev = -1;
     private Set<Long> preloadedImages = new HashSet<>(100);

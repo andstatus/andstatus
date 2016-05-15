@@ -65,6 +65,7 @@ import org.andstatus.app.test.SelectorActivityMock;
 import org.andstatus.app.util.BundleUtils;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyUrlSpan;
+import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
 import org.andstatus.app.widget.MyBaseAdapter;
@@ -105,7 +106,7 @@ public class TimelineActivity extends LoadableListActivity implements
         mLayoutId = R.layout.timeline;
         super.onCreate(savedInstanceState);
 
-        showSyncIndicatorSetting = MyPreferences.getBoolean(
+        showSyncIndicatorSetting = SharedPreferencesUtil.getBoolean(
                 MyPreferences.KEY_SYNC_INDICATOR_ON_TIMELINE, true);
 
         if (HelpActivity.startFromActivity(this)) {
@@ -152,7 +153,7 @@ public class TimelineActivity extends LoadableListActivity implements
     @Override
     protected MyBaseAdapter newListAdapter() {
         return new TimelineAdapter(mContextMenu,
-                MyPreferences.showAvatars() ? R.layout.message_avatar : R.layout.message_basic,
+                MyPreferences.getShowAvatars() ? R.layout.message_avatar : R.layout.message_basic,
                 getListAdapter(),
                 ((TimelineLoader) getLoaded()).getPageLoaded());
     }
@@ -190,7 +191,7 @@ public class TimelineActivity extends LoadableListActivity implements
      * View.OnClickListener
      */
     public void onTimelineTitleClick(View item) {
-        switch (MyPreferences.tapOnATimelineTitleBehaviour()) {
+        switch (MyPreferences.getTapOnATimelineTitleBehaviour()) {
             case SWITCH_TO_DEFAULT_TIMELINE:
                 if (getParamsLoaded().isAtHome()) {
                     onTimelineTypeButtonClick(item);
@@ -1172,7 +1173,7 @@ public class TimelineActivity extends LoadableListActivity implements
     @Override
     protected boolean isAutoRefreshAllowedAfterExecuting(CommandData commandData) {
         boolean allowed = super.isAutoRefreshAllowedAfterExecuting(commandData)
-                && MyPreferences.getBoolean(MyPreferences.KEY_REFRESH_TIMELINE_AUTOMATICALLY, true);
+                && SharedPreferencesUtil.getBoolean(MyPreferences.KEY_REFRESH_TIMELINE_AUTOMATICALLY, true);
         if (allowed) {
             TimelineAdapter adapter = getListAdapter();
             if (adapter == null || adapter.getPages().mayHaveYoungerPage()) {

@@ -26,6 +26,7 @@ import android.view.View;
 
 import org.andstatus.app.R;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.SharedPreferencesUtil;
 
 /**
  * Theme and style-relates utility class
@@ -48,7 +49,7 @@ public class MyTheme {
      * Load a theme according to the preferences.
      */
     public static void loadTheme(Context context) {
-        String themeName = "Theme.AndStatus." + MyPreferences.getString(MyPreferences.KEY_THEME_COLOR, "Light");
+        String themeName = "Theme.AndStatus." + SharedPreferencesUtil.getString(MyPreferences.KEY_THEME_COLOR, "Light");
         mIsThemeLight = themeName.contains("Light");
         int themeId = getStyleId(context, themeName, R.style.Theme_AndStatus_Dark);
 
@@ -58,19 +59,19 @@ public class MyTheme {
         int actionBarTextStyleId = R.style.ActionBarTextWhite;
         if (themeId != R.style.Theme_AndStatus_DeviceDefault) {
             theme.applyStyle(
-                    getStyleId(context, MyPreferences.getString(MyPreferences.KEY_ACTION_BAR_BACKGROUND_COLOR, ""), R.style.ActionBarMyBlue),
+                    getStyleId(context, SharedPreferencesUtil.getString(MyPreferences.KEY_ACTION_BAR_BACKGROUND_COLOR, ""), R.style.ActionBarMyBlue),
                     false);
             theme.applyStyle(
-                    getStyleId(context, MyPreferences.getString(MyPreferences.KEY_BACKGROUND_COLOR, ""), R.style.BackgroundColorBlack),
+                    getStyleId(context, SharedPreferencesUtil.getString(MyPreferences.KEY_BACKGROUND_COLOR, ""), R.style.BackgroundColorBlack),
                     false);
-            actionBarTextStyleId = getStyleId(context, MyPreferences.getString(MyPreferences.KEY_ACTION_BAR_TEXT_COLOR, ""),
+            actionBarTextStyleId = getStyleId(context, SharedPreferencesUtil.getString(MyPreferences.KEY_ACTION_BAR_TEXT_COLOR, ""),
                     R.style.ActionBarTextWhite);
             theme.applyStyle(actionBarTextStyleId, false);
         }
         theme.applyStyle(actionBarTextStyleId == R.style.ActionBarTextWhite ?
                 R.style.ActionBarIconsWhite : R.style.ActionBarIconsBlack, false);
         theme.applyStyle(
-                getStyleId(context, MyPreferences.getString(MyPreferences.KEY_THEME_SIZE, ""), R.style.StandardSize),
+                getStyleId(context, SharedPreferencesUtil.getString(MyPreferences.KEY_THEME_SIZE, ""), R.style.StandardSize),
                 false);
     }
 
