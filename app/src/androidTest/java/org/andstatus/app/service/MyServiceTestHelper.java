@@ -37,7 +37,7 @@ public class MyServiceTestHelper implements MyServiceEventsListener {
         } else {
             TestSuite.setHttpConnectionMockClass(HttpConnectionMock.class);
         }
-        TestSuite.getMyContextForTest().setOnline(ConnectionRequired.WIFI);
+        TestSuite.getMyContextForTest().setConnectionState(ConnectionState.WIFI);
         MyAccountTest.fixPersistentAccounts();
         // In order for the mocked connection to have effect:
         MyContextHolder.get().persistentAccounts().initialize();
@@ -165,7 +165,7 @@ public class MyServiceTestHelper implements MyServiceEventsListener {
         serviceConnector.unregisterReceiver(MyContextHolder.get().context());
         TestSuite.setHttpConnectionMockClass(null);
         TestSuite.setHttpConnectionMockInstance(null);
-        TestSuite.getMyContextForTest().setOnline(ConnectionRequired.ANY);
+        TestSuite.getMyContextForTest().setConnectionState(ConnectionState.UNKNOWN);
         MyContextHolder.get().persistentAccounts().initialize();
         MyLog.v(this, "tearDown ended");
     }

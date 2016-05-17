@@ -27,7 +27,7 @@ import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.origin.PersistentOrigins;
-import org.andstatus.app.service.ConnectionRequired;
+import org.andstatus.app.service.ConnectionState;
 
 import java.util.Locale;
 
@@ -50,7 +50,7 @@ public interface MyContext {
     void release();
     boolean isExpired();
     void setExpired();
-    boolean isOnline(ConnectionRequired connectionRequired);
+    ConnectionState getConnectionState();
     /** Is our application in Foreground now? **/
     boolean isInForeground();
     void setInForeground(boolean inForeground);

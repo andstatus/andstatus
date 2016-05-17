@@ -641,13 +641,18 @@ public class MyService extends Service {
                     breakReason = "No more commands";
                     break;
                 }
-                if (MyContextHolder.get().isOnline(commandData.getCommand().getConnetionRequired())) {
+                ConnectionState connectionState = MyContextHolder.get().getConnectionState();
+                if (commandData.getCommand().getConnectionRequired()
+                        .isConnectionStateOk(connectionState)) {
                     MyServiceEventsBroadcaster.newInstance(MyContextHolder.get(), getServiceState())
-                        .setCommandData(commandData).setEvent(MyServiceEvent.BEFORE_EXECUTING_COMMAND).broadcast();
+                            .setCommandData(commandData)
+                            .setEvent(MyServiceEvent.BEFORE_EXECUTING_COMMAND).broadcast();
                     CommandExecutorStrategy.executeCommand(commandData, this);
                 } else {
                     commandData.getResult().incrementNumIoExceptions();
-                    commandData.getResult().setMessage("No '" + commandData.getCommand().getConnetionRequired() + "' connection");
+                    commandData.getResult().setMessage("Expected '"
+                            + commandData.getCommand().getConnectionRequired()
+                            + "', but was '" + connectionState + "' connection");
                 }
                 if (commandData.getResult().shouldWeRetry()) {
                     addToRetryQueue(commandData);        

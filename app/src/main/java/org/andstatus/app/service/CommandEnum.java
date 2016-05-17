@@ -44,42 +44,42 @@ public enum CommandEnum {
     /**
      * The action to fetch all usual timelines in the background.
      */
-    AUTOMATIC_UPDATE("automatic-update", 0, 12, ConnectionRequired.ONLINE),
+    AUTOMATIC_UPDATE("automatic-update", 0, 12, ConnectionRequired.SYNC),
     /**
      * Fetch timeline(s) of the specified type for the specified MyAccount. 
      */
-    FETCH_TIMELINE("fetch-timeline", 0, 4, ConnectionRequired.ONLINE),
+    FETCH_TIMELINE("fetch-timeline", 0, 4, ConnectionRequired.SYNC),
 
     /**
      * Fetch avatar for the specified user 
      */
-    FETCH_AVATAR("fetch-avatar", R.string.title_command_fetch_avatar, 9, ConnectionRequired.ONLINE),
-    FETCH_ATTACHMENT("fetch-attachment", R.string.title_command_fetch_attachment, 11, ConnectionRequired.WIFI),
+    FETCH_AVATAR("fetch-avatar", R.string.title_command_fetch_avatar, 9, ConnectionRequired.SYNC),
+    FETCH_ATTACHMENT("fetch-attachment", R.string.title_command_fetch_attachment, 11, ConnectionRequired.DOWNLOAD_ATTACHMENT),
     
-    CREATE_FAVORITE("create-favorite", R.string.menu_item_favorite, 0, ConnectionRequired.ONLINE), 
-    DESTROY_FAVORITE("destroy-favorite", R.string.menu_item_destroy_favorite, 0, ConnectionRequired.ONLINE),
+    CREATE_FAVORITE("create-favorite", R.string.menu_item_favorite, 0, ConnectionRequired.SYNC),
+    DESTROY_FAVORITE("destroy-favorite", R.string.menu_item_destroy_favorite, 0, ConnectionRequired.SYNC),
 
-    GET_USER("get-user", R.string.get_user, -5, ConnectionRequired.ONLINE),
-    FOLLOW_USER("follow-user", R.string.command_follow_user, 0, ConnectionRequired.ONLINE),
-    STOP_FOLLOWING_USER("stop-following-user", R.string.command_stop_following_user, 0, ConnectionRequired.ONLINE),
-    GET_FOLLOWERS("get-followers", R.string.get_followers, -5, ConnectionRequired.ONLINE),
-    GET_FRIENDS("get-friends", R.string.get_friends, -5, ConnectionRequired.ONLINE),
+    GET_USER("get-user", R.string.get_user, -5, ConnectionRequired.SYNC),
+    FOLLOW_USER("follow-user", R.string.command_follow_user, 0, ConnectionRequired.SYNC),
+    STOP_FOLLOWING_USER("stop-following-user", R.string.command_stop_following_user, 0, ConnectionRequired.SYNC),
+    GET_FOLLOWERS("get-followers", R.string.get_followers, -5, ConnectionRequired.SYNC),
+    GET_FRIENDS("get-friends", R.string.get_friends, -5, ConnectionRequired.SYNC),
 
     /**
      * This command is for sending both public and direct messages
      */
-    UPDATE_STATUS("update-status", R.string.button_create_message, -10, ConnectionRequired.ONLINE), 
-    DESTROY_STATUS("destroy-status", R.string.menu_item_destroy_status, -3, ConnectionRequired.ONLINE),
-    GET_STATUS("get-status", R.string.title_command_get_status, -5, ConnectionRequired.ONLINE),
+    UPDATE_STATUS("update-status", R.string.button_create_message, -10, ConnectionRequired.SYNC),
+    DESTROY_STATUS("destroy-status", R.string.menu_item_destroy_status, -3, ConnectionRequired.SYNC),
+    GET_STATUS("get-status", R.string.title_command_get_status, -5, ConnectionRequired.SYNC),
     /** see http://gstools.org/api/doc/ */
-    GET_OPEN_INSTANCES("get_open_instances", R.string.get_open_instances_title, -1, ConnectionRequired.ONLINE),
+    GET_OPEN_INSTANCES("get_open_instances", R.string.get_open_instances_title, -1, ConnectionRequired.SYNC),
 
-    SEARCH_MESSAGE("search-message", R.string.options_menu_search, 4, ConnectionRequired.ONLINE),
+    SEARCH_MESSAGE("search-message", R.string.options_menu_search, 4, ConnectionRequired.SYNC),
     
-    REBLOG("reblog", R.string.menu_item_reblog, -9, ConnectionRequired.ONLINE),
-    DESTROY_REBLOG("destroy-reblog", R.string.menu_item_destroy_reblog, -3, ConnectionRequired.ONLINE),
+    REBLOG("reblog", R.string.menu_item_reblog, -9, ConnectionRequired.SYNC),
+    DESTROY_REBLOG("destroy-reblog", R.string.menu_item_destroy_reblog, -3, ConnectionRequired.SYNC),
 
-    RATE_LIMIT_STATUS("rate-limit-status", 0, 0, ConnectionRequired.ONLINE),
+    RATE_LIMIT_STATUS("rate-limit-status", 0, 0, ConnectionRequired.SYNC),
 
     /**
      * Notify User about commands in the Queue
@@ -186,7 +186,7 @@ public enum CommandEnum {
         return priority;
     }
 
-    public ConnectionRequired getConnetionRequired() {
+    public ConnectionRequired getConnectionRequired() {
         return connectionRequired;
     }
 }

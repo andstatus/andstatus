@@ -26,7 +26,7 @@ import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.origin.PersistentOrigins;
-import org.andstatus.app.service.ConnectionRequired;
+import org.andstatus.app.service.ConnectionState;
 import org.andstatus.app.util.MyLog;
 
 import java.util.Locale;
@@ -44,7 +44,7 @@ public class MyContextForTest implements MyContext {
     private final Set<AssertionData> dataSet = new CopyOnWriteArraySet<>();
     private volatile Class<? extends HttpConnection> httpConnectionMockClass = null;
     private volatile HttpConnection httpConnectionMockInstance = null;
-    private volatile ConnectionRequired mOnline = ConnectionRequired.ANY;
+    private volatile ConnectionState mockedConnectionState = ConnectionState.UNKNOWN;
     private final Map<TimelineType, Notification> notifications = new ConcurrentHashMap<>();
 
     public MyContextForTest setContext(MyContext myContextIn) {
@@ -193,26 +193,17 @@ public class MyContextForTest implements MyContext {
     }
 
     @Override
-    public boolean isOnline(ConnectionRequired connectionRequired) {
-        switch (mOnline) {
-            case ANY:
-                return myContext.isOnline(connectionRequired);
+    public ConnectionState getConnectionState() {
+        switch (mockedConnectionState) {
+            case UNKNOWN:
+                return myContext.getConnectionState();
             default:
-                switch (connectionRequired) {
-                    case ONLINE:
-                        return (mOnline == ConnectionRequired.ONLINE || mOnline == ConnectionRequired.WIFI);
-                    case WIFI:
-                        return (mOnline == ConnectionRequired.WIFI);
-                    case OFFLINE:
-                        return (mOnline == ConnectionRequired.OFFLINE);
-                    default:
-                        return true;
-                }
+                return mockedConnectionState;
         }
     }
 
-    public void setOnline(ConnectionRequired connectionState) {
-        this.mOnline = connectionState;
+    public void setConnectionState(ConnectionState connectionState) {
+        this.mockedConnectionState = connectionState;
     }
 
     @Override

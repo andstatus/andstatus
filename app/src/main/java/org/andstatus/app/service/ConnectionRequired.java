@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2016 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,40 @@
 
 package org.andstatus.app.service;
 
+import org.andstatus.app.context.MyPreferences;
+
 public enum ConnectionRequired {
     ANY,
     /** This may be used for testing, no real command required this yet... */
     OFFLINE,
-    ONLINE,
-    WIFI;
+    SYNC,
+    DOWNLOAD_ATTACHMENT;
+
+    public boolean isConnectionStateOk(ConnectionState connectionState) {
+        switch (this) {
+            case ANY:
+                return true;
+            default:
+                switch (connectionState) {
+                    case ONLINE:
+                        switch (this) {
+                            case SYNC:
+                                return !MyPreferences.isSyncOverWiFiOnly();
+                            case DOWNLOAD_ATTACHMENT:
+                                return !MyPreferences.isSyncOverWiFiOnly()
+                                        && !MyPreferences.isDownloadAttachmentsOverWiFiOnly();
+                            case OFFLINE:
+                                return false;
+                            default:
+                                return true;
+                        }
+                    case WIFI:
+                        return (this != ConnectionRequired.OFFLINE);
+                    case OFFLINE:
+                        return (this == ConnectionRequired.OFFLINE);
+                    default:
+                        return true;
+                }
+        }
+    }
 }

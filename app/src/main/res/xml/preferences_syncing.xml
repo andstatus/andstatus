@@ -24,6 +24,9 @@
         android:dialogTitle="@string/dialog_title_preference_frequency"
         android:title="@string/title_preference_frequency"
         android:defaultValue="900" />
+    <org.andstatus.app.context.MultilineCheckBoxPreference android:key="sync_over_wifi_only"
+        android:title="@string/sync_over_wifi_only"
+        android:defaultValue="false" />
     <org.andstatus.app.context.MultilineCheckBoxPreference android:key="sync_while_using_application"
         android:title="@string/title_preference_sync_while_using_application"
         android:summaryOff="@string/summary_preference_sync_while_using_application_off"

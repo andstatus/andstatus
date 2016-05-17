@@ -74,6 +74,7 @@ public class MyPreferences {
     // Syncing
     public static final String KEY_SYNC_FREQUENCY_SECONDS = "fetch_frequency";
     private static final long SYNC_FREQUENCY_DEFAULT_SECONDS = 180;
+    public static final String KEY_SYNC_OVER_WIFI_ONLY = "sync_over_wifi_only";
     public static final String KEY_SYNC_WHILE_USING_APPLICATION = "sync_while_using_application";
     public static final String KEY_SYNC_INDICATOR_ON_TIMELINE = "sync_indicator_on_timeline";
     public static final String KEY_SYNC_AFTER_MESSAGE_WAS_SENT = "sync_after_message_was_sent";
@@ -158,8 +159,24 @@ public class MyPreferences {
                 SYNC_FREQUENCY_DEFAULT_SECONDS);
     }
 
+    public static boolean isSyncOverWiFiOnly() {
+        return SharedPreferencesUtil.getBoolean(KEY_SYNC_OVER_WIFI_ONLY, false);
+    }
+
+    public static void setIsSyncOverWiFiOnly(boolean overWiFi) {
+        SharedPreferencesUtil.putBoolean(KEY_SYNC_OVER_WIFI_ONLY, overWiFi);
+    }
+
     public static boolean isSyncWhileUsingApplicationEnabled() {
         return SharedPreferencesUtil.getBoolean(KEY_SYNC_WHILE_USING_APPLICATION, true);
+    }
+
+    public static boolean isDownloadAttachmentsOverWiFiOnly() {
+        return SharedPreferencesUtil.getBoolean(KEY_DOWNLOAD_ATTACHMENTS_OVER_WIFI_ONLY, true);
+    }
+
+    public static void setDownloadAttachmentsOverWiFiOnly(boolean overWiFi) {
+        SharedPreferencesUtil.putBoolean(KEY_DOWNLOAD_ATTACHMENTS_OVER_WIFI_ONLY, overWiFi);
     }
 
     public static boolean isLongPressToOpenContextMenu() {
@@ -225,5 +242,4 @@ public class MyPreferences {
             new BackupManager(context).dataChanged();
         }
     }
-
 }
