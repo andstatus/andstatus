@@ -20,8 +20,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.provider.BaseColumns;
 
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.data.MyDatabase.Msg;
-import org.andstatus.app.data.MyDatabase.User;
+import org.andstatus.app.database.DatabaseHolder.Msg;
+import org.andstatus.app.database.DatabaseHolder.User;
 import org.andstatus.app.util.MyLog;
 
 import java.util.Date;

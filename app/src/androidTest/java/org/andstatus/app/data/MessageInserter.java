@@ -22,7 +22,8 @@ import android.text.TextUtils;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.data.MyDatabase.OidEnum;
+import org.andstatus.app.database.DatabaseHolder;
+import org.andstatus.app.database.DatabaseHolder.OidEnum;
 import org.andstatus.app.net.social.ConnectionPumpio;
 import org.andstatus.app.net.social.MbMessage;
 import org.andstatus.app.net.social.MbUser;
@@ -159,20 +160,20 @@ public class MessageInserter extends InstrumentationTestCase {
         }
         
         if (message.favoritedByActor == TriState.TRUE) {
-            long msgIdFromMsgOfUser = MyQuery.conditionToLongColumnValue(MyDatabase.MsgOfUser.TABLE_NAME, MyDatabase.MsgOfUser.MSG_ID, 
-                    "t." + MyDatabase.MsgOfUser.MSG_ID + "=" + messageId);
+            long msgIdFromMsgOfUser = MyQuery.conditionToLongColumnValue(DatabaseHolder.MsgOfUser.TABLE_NAME, DatabaseHolder.MsgOfUser.MSG_ID,
+                    "t." + DatabaseHolder.MsgOfUser.MSG_ID + "=" + messageId);
             assertEquals("msgOfUser found for msgId=" + messageId, messageId, msgIdFromMsgOfUser);
             
-            long userIdFromMsgOfUser = MyQuery.conditionToLongColumnValue(MyDatabase.MsgOfUser.TABLE_NAME, MyDatabase.MsgOfUser.MSG_ID, 
-                    "t." + MyDatabase.MsgOfUser.USER_ID + "=" + ma.getUserId());
+            long userIdFromMsgOfUser = MyQuery.conditionToLongColumnValue(DatabaseHolder.MsgOfUser.TABLE_NAME, DatabaseHolder.MsgOfUser.MSG_ID,
+                    "t." + DatabaseHolder.MsgOfUser.USER_ID + "=" + ma.getUserId());
             assertEquals("userId found for msgId=" + messageId, ma.getUserId(), userIdFromMsgOfUser);
         }
 
         if (messageIn.rebloggedMessage != null) {
-            long rebloggerId = MyQuery.conditionToLongColumnValue(MyDatabase.MsgOfUser.TABLE_NAME,
-                    MyDatabase.MsgOfUser.USER_ID,
-                    "t." + MyDatabase.MsgOfUser.MSG_ID + "=" + messageId
-            + " AND t." + MyDatabase.MsgOfUser.REBLOGGED + "=1" );
+            long rebloggerId = MyQuery.conditionToLongColumnValue(DatabaseHolder.MsgOfUser.TABLE_NAME,
+                    DatabaseHolder.MsgOfUser.USER_ID,
+                    "t." + DatabaseHolder.MsgOfUser.MSG_ID + "=" + messageId
+            + " AND t." + DatabaseHolder.MsgOfUser.REBLOGGED + "=1" );
             assertTrue("Reblogger found for msgId=" + messageId, rebloggerId != 0);
         }
 

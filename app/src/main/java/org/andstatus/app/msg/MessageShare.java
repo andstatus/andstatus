@@ -24,7 +24,7 @@ import android.text.TextUtils;
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.UserInTimeline;
-import org.andstatus.app.data.MyDatabase;
+import org.andstatus.app.database.DatabaseHolder;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.MyHtml;
@@ -56,7 +56,7 @@ public class MessageShare {
 
     Intent intentForShare() {
         StringBuilder subject = new StringBuilder();
-        String msgBody = MyQuery.msgIdToStringColumnValue(MyDatabase.Msg.BODY, messageId);
+        String msgBody = MyQuery.msgIdToStringColumnValue(DatabaseHolder.Msg.BODY, messageId);
         String msgBodyPlainText = msgBody;
         if (origin.isHtmlContentAllowed()) {
             msgBodyPlainText = MyHtml.fromHtml(msgBody);
@@ -94,7 +94,7 @@ public class MessageShare {
                                 html ? SIGNATURE_FORMAT_HTML
                                         : SIGNATURE_PLAIN_TEXT,
                                 MyQuery.msgIdToUsername(
-                                        MyDatabase.Msg.AUTHOR_ID,
+                                        DatabaseHolder.Msg.AUTHOR_ID,
                                         messageId,
                                         origin.isMentionAsWebFingerId() ? UserInTimeline.WEBFINGER_ID
                                                 : UserInTimeline.USERNAME),

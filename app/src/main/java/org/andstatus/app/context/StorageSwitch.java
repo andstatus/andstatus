@@ -25,7 +25,7 @@ import net.jcip.annotations.GuardedBy;
 import org.andstatus.app.ActivityRequestCode;
 import org.andstatus.app.R;
 import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.data.MyDatabase;
+import org.andstatus.app.database.DatabaseHolder;
 import org.andstatus.app.data.TimelineSearchSuggestionsProvider;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
@@ -160,7 +160,7 @@ public class StorageSwitch {
                 return;
             }
             try {
-                result.success = moveDatabase(mUseExternalStorageNew, result.messageBuilder, MyDatabase.DATABASE_NAME);
+                result.success = moveDatabase(mUseExternalStorageNew, result.messageBuilder, DatabaseHolder.DATABASE_NAME);
                 if (result.success) {
                     result.moved = true;
                     moveDatabase(mUseExternalStorageNew, result.messageBuilder, 

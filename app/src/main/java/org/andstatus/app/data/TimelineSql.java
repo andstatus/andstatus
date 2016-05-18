@@ -27,12 +27,13 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.UserInTimeline;
-import org.andstatus.app.data.MyDatabase.Download;
-import org.andstatus.app.data.MyDatabase.Friendship;
-import org.andstatus.app.data.MyDatabase.Msg;
-import org.andstatus.app.data.MyDatabase.MsgOfUser;
-import org.andstatus.app.data.MyDatabase.OidEnum;
-import org.andstatus.app.data.MyDatabase.User;
+import org.andstatus.app.database.DatabaseHolder;
+import org.andstatus.app.database.DatabaseHolder.Download;
+import org.andstatus.app.database.DatabaseHolder.Friendship;
+import org.andstatus.app.database.DatabaseHolder.Msg;
+import org.andstatus.app.database.DatabaseHolder.MsgOfUser;
+import org.andstatus.app.database.DatabaseHolder.OidEnum;
+import org.andstatus.app.database.DatabaseHolder.User;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.SharedPreferencesUtil;
@@ -78,19 +79,19 @@ public class TimelineSql {
                 msgTable = "(SELECT " + fUserIdColumnName + " AS fUserId, "
                         + fUserLinkedUserIdColumnName + " AS " + User.LINKED_USER_ID
                         + " FROM " + Friendship.TABLE_NAME
-                        + " WHERE (" + MyDatabase.User.LINKED_USER_ID + selectedAccounts.getSql()
+                        + " WHERE (" + DatabaseHolder.User.LINKED_USER_ID + selectedAccounts.getSql()
                         + " AND " + Friendship.FOLLOWED + "=1 )"
                         + ") as fUser";
                 linkedUserDefined = true;
-                boolean defineAuthorName = columns.contains(MyDatabase.User.AUTHOR_NAME);
+                boolean defineAuthorName = columns.contains(DatabaseHolder.User.AUTHOR_NAME);
                 if (defineAuthorName) {
                     authorNameDefined = true;
                     authorTableName = "u1";
                 }
                 String userTable = "(SELECT "
                         + BaseColumns._ID
-                        + (defineAuthorName ? ", " + MyDatabase.User.USERNAME + " AS " + MyDatabase.User.AUTHOR_NAME : "")
-                        + ", " + MyDatabase.User.USER_MSG_ID
+                        + (defineAuthorName ? ", " + DatabaseHolder.User.USERNAME + " AS " + DatabaseHolder.User.AUTHOR_NAME : "")
+                        + ", " + DatabaseHolder.User.USER_MSG_ID
                         + " FROM " + User.TABLE_NAME + ")";
                 msgTable += " INNER JOIN " + userTable + " as u1"
                         + " ON (fUserId=u1." + BaseColumns._ID + ")";
@@ -99,15 +100,15 @@ public class TimelineSql {
                  */
                 msgTable  += " LEFT JOIN " + Msg.TABLE_NAME + " AS " + ProjectionMap.MSG_TABLE_ALIAS
                         + " ON ("
-                        + ProjectionMap.MSG_TABLE_ALIAS + "." + MyDatabase.Msg.SENDER_ID
+                        + ProjectionMap.MSG_TABLE_ALIAS + "." + DatabaseHolder.Msg.SENDER_ID
                         + "=fUserId"
                         + " AND " + ProjectionMap.MSG_TABLE_ALIAS + "." + BaseColumns._ID
-                        + "=u1." + MyDatabase.User.USER_MSG_ID
+                        + "=u1." + DatabaseHolder.User.USER_MSG_ID
                         + ")";
                 break;
             case MESSAGES_TO_ACT:
                 if (selectedAccounts.size() == 1) {
-                    msgTable = "SELECT " + selectedAccounts.getList() + " AS " + MyDatabase.User.LINKED_USER_ID
+                    msgTable = "SELECT " + selectedAccounts.getList() + " AS " + DatabaseHolder.User.LINKED_USER_ID
                             + ", * FROM " + Msg.TABLE_NAME;
                     linkedUserDefined = true;
                 }
@@ -142,25 +143,25 @@ public class TimelineSql {
                             + ") AS " + ProjectionMap.MSG_TABLE_ALIAS;
         }
 
-        if (columns.contains(MyDatabase.MsgOfUser.FAVORITED)
-                || (columns.contains(MyDatabase.User.LINKED_USER_ID) && !linkedUserDefined)
+        if (columns.contains(DatabaseHolder.MsgOfUser.FAVORITED)
+                || (columns.contains(DatabaseHolder.User.LINKED_USER_ID) && !linkedUserDefined)
                 ) {
             String tbl = "(SELECT *" 
-                    + (linkedUserDefined ? "" : ", " + MyDatabase.MsgOfUser.USER_ID + " AS " 
-                    + MyDatabase.User.LINKED_USER_ID)   
+                    + (linkedUserDefined ? "" : ", " + DatabaseHolder.MsgOfUser.USER_ID + " AS "
+                    + DatabaseHolder.User.LINKED_USER_ID)
                     + " FROM " +  MsgOfUser.TABLE_NAME + ") AS mou ON "
                     + ProjectionMap.MSG_TABLE_ALIAS + "." + BaseColumns._ID + "="
-                    + "mou." + MyDatabase.MsgOfUser.MSG_ID;
+                    + "mou." + DatabaseHolder.MsgOfUser.MSG_ID;
             switch (tt) {
                 case FOLLOWERS:
                 case FRIENDS:
                 case MESSAGES_TO_ACT:
-                    tbl += " AND mou." + MyDatabase.MsgOfUser.USER_ID 
-                    + "=" + MyDatabase.User.LINKED_USER_ID;
+                    tbl += " AND mou." + DatabaseHolder.MsgOfUser.USER_ID
+                    + "=" + DatabaseHolder.User.LINKED_USER_ID;
                     tables += " LEFT JOIN " + tbl;
                     break;
                 default:
-                    tbl += " AND " + MyDatabase.User.LINKED_USER_ID + selectedAccounts.getSql();
+                    tbl += " AND " + DatabaseHolder.User.LINKED_USER_ID + selectedAccounts.getSql();
                     if (tt.atOrigin()) {
                         tables += " LEFT OUTER JOIN " + tbl;
                     } else {
@@ -170,61 +171,61 @@ public class TimelineSql {
             }
         }
     
-        if (!authorNameDefined && columns.contains(MyDatabase.User.AUTHOR_NAME)) {
+        if (!authorNameDefined && columns.contains(DatabaseHolder.User.AUTHOR_NAME)) {
             tables = "(" + tables + ") LEFT OUTER JOIN (SELECT "
                     + BaseColumns._ID + ", " 
-                    + TimelineSql.userNameField() + " AS " + MyDatabase.User.AUTHOR_NAME
+                    + TimelineSql.userNameField() + " AS " + DatabaseHolder.User.AUTHOR_NAME
                     + " FROM " + User.TABLE_NAME + ") AS author ON "
-                    + ProjectionMap.MSG_TABLE_ALIAS + "." + MyDatabase.Msg.AUTHOR_ID + "=author."
+                    + ProjectionMap.MSG_TABLE_ALIAS + "." + DatabaseHolder.Msg.AUTHOR_ID + "=author."
                     + BaseColumns._ID;
             authorNameDefined = true;
             authorTableName = "author";
         }
-        if (authorNameDefined && columns.contains(MyDatabase.Download.AVATAR_FILE_NAME)) {
+        if (authorNameDefined && columns.contains(DatabaseHolder.Download.AVATAR_FILE_NAME)) {
             tables = "(" + tables + ") LEFT OUTER JOIN (SELECT "
-                    + MyDatabase.Download.USER_ID + ", "
-                    + MyDatabase.Download.DOWNLOAD_STATUS + ", "
-                    + MyDatabase.Download.FILE_NAME
-                    + " FROM " + MyDatabase.Download.TABLE_NAME + ") AS " + ProjectionMap.AVATAR_IMAGE_TABLE_ALIAS 
+                    + DatabaseHolder.Download.USER_ID + ", "
+                    + DatabaseHolder.Download.DOWNLOAD_STATUS + ", "
+                    + DatabaseHolder.Download.FILE_NAME
+                    + " FROM " + DatabaseHolder.Download.TABLE_NAME + ") AS " + ProjectionMap.AVATAR_IMAGE_TABLE_ALIAS
                     + " ON "
                     + ProjectionMap.AVATAR_IMAGE_TABLE_ALIAS + "." + Download.DOWNLOAD_STATUS
                     + "=" + DownloadStatus.LOADED.save() + " AND " 
-                    + ProjectionMap.AVATAR_IMAGE_TABLE_ALIAS + "." + MyDatabase.Download.USER_ID
+                    + ProjectionMap.AVATAR_IMAGE_TABLE_ALIAS + "." + DatabaseHolder.Download.USER_ID
                     + "=" + authorTableName + "." + BaseColumns._ID;
         }
-        if (columns.contains(MyDatabase.Download.IMAGE_FILE_NAME)) {
+        if (columns.contains(DatabaseHolder.Download.IMAGE_FILE_NAME)) {
             tables = "(" + tables + ") LEFT OUTER JOIN (SELECT "
-                    + MyDatabase.Download._ID + ", "
-                    + MyDatabase.Download.MSG_ID + ", "
-                    + MyDatabase.Download.CONTENT_TYPE + ", "
-                    + (columns.contains(MyDatabase.Download.IMAGE_URL) ? MyDatabase.Download.URI + ", " : "")
-                    + MyDatabase.Download.FILE_NAME
-                    + " FROM " + MyDatabase.Download.TABLE_NAME + ") AS " + ProjectionMap.ATTACHMENT_IMAGE_TABLE_ALIAS 
+                    + DatabaseHolder.Download._ID + ", "
+                    + DatabaseHolder.Download.MSG_ID + ", "
+                    + DatabaseHolder.Download.CONTENT_TYPE + ", "
+                    + (columns.contains(DatabaseHolder.Download.IMAGE_URL) ? DatabaseHolder.Download.URI + ", " : "")
+                    + DatabaseHolder.Download.FILE_NAME
+                    + " FROM " + DatabaseHolder.Download.TABLE_NAME + ") AS " + ProjectionMap.ATTACHMENT_IMAGE_TABLE_ALIAS
                     +  " ON "
                     + ProjectionMap.ATTACHMENT_IMAGE_TABLE_ALIAS + "." + Download.CONTENT_TYPE 
                     + "=" + MyContentType.IMAGE.save() + " AND " 
-                    + ProjectionMap.ATTACHMENT_IMAGE_TABLE_ALIAS + "." + MyDatabase.Download.MSG_ID 
+                    + ProjectionMap.ATTACHMENT_IMAGE_TABLE_ALIAS + "." + DatabaseHolder.Download.MSG_ID
                     + "=" + ProjectionMap.MSG_TABLE_ALIAS + "." + BaseColumns._ID;
         }
-        if (columns.contains(MyDatabase.User.SENDER_NAME)) {
+        if (columns.contains(DatabaseHolder.User.SENDER_NAME)) {
             tables = "(" + tables + ") LEFT OUTER JOIN (SELECT " + BaseColumns._ID + ", "
-                    + TimelineSql.userNameField() + " AS " + MyDatabase.User.SENDER_NAME
+                    + TimelineSql.userNameField() + " AS " + DatabaseHolder.User.SENDER_NAME
                     + " FROM " + User.TABLE_NAME + ") AS sender ON "
-                    + ProjectionMap.MSG_TABLE_ALIAS + "." + MyDatabase.Msg.SENDER_ID + "=sender."
+                    + ProjectionMap.MSG_TABLE_ALIAS + "." + DatabaseHolder.Msg.SENDER_ID + "=sender."
                     + BaseColumns._ID;
         }
-        if (columns.contains(MyDatabase.User.IN_REPLY_TO_NAME)) {
+        if (columns.contains(DatabaseHolder.User.IN_REPLY_TO_NAME)) {
             tables = "(" + tables + ") LEFT OUTER JOIN (SELECT " + BaseColumns._ID + ", "
-                    + TimelineSql.userNameField() + " AS " + MyDatabase.User.IN_REPLY_TO_NAME
+                    + TimelineSql.userNameField() + " AS " + DatabaseHolder.User.IN_REPLY_TO_NAME
                     + " FROM " + User.TABLE_NAME + ") AS prevAuthor ON "
-                    + ProjectionMap.MSG_TABLE_ALIAS + "." + MyDatabase.Msg.IN_REPLY_TO_USER_ID
+                    + ProjectionMap.MSG_TABLE_ALIAS + "." + DatabaseHolder.Msg.IN_REPLY_TO_USER_ID
                     + "=prevAuthor." + BaseColumns._ID;
         }
-        if (columns.contains(MyDatabase.User.RECIPIENT_NAME)) {
+        if (columns.contains(DatabaseHolder.User.RECIPIENT_NAME)) {
             tables = "(" + tables + ") LEFT OUTER JOIN (SELECT " + BaseColumns._ID + ", "
-                    + TimelineSql.userNameField() + " AS " + MyDatabase.User.RECIPIENT_NAME
+                    + TimelineSql.userNameField() + " AS " + DatabaseHolder.User.RECIPIENT_NAME
                     + " FROM " + User.TABLE_NAME + ") AS recipient ON "
-                    + ProjectionMap.MSG_TABLE_ALIAS + "." + MyDatabase.Msg.RECIPIENT_ID + "=recipient."
+                    + ProjectionMap.MSG_TABLE_ALIAS + "." + DatabaseHolder.Msg.RECIPIENT_ID + "=recipient."
                     + BaseColumns._ID;
         }
         if (columns.contains(Friendship.AUTHOR_FOLLOWED)) {
@@ -234,9 +235,9 @@ public class TimelineSql {
                     + Friendship.FOLLOWED + " AS "
                     + Friendship.AUTHOR_FOLLOWED
                     + " FROM " + Friendship.TABLE_NAME + ") AS followingAuthor ON ("
-                    + "followingAuthor." + Friendship.USER_ID + "=" + MyDatabase.User.LINKED_USER_ID
+                    + "followingAuthor." + Friendship.USER_ID + "=" + DatabaseHolder.User.LINKED_USER_ID
                     + " AND "
-                    + ProjectionMap.MSG_TABLE_ALIAS + "." + MyDatabase.Msg.AUTHOR_ID
+                    + ProjectionMap.MSG_TABLE_ALIAS + "." + DatabaseHolder.Msg.AUTHOR_ID
                     + "=followingAuthor." + Friendship.FRIEND_ID
                     + ")";
         }
@@ -247,9 +248,9 @@ public class TimelineSql {
                     + Friendship.FOLLOWED + " AS "
                     + Friendship.SENDER_FOLLOWED
                     + " FROM " + Friendship.TABLE_NAME + ") AS followingSender ON ("
-                    + "followingSender." + Friendship.USER_ID + "=" + MyDatabase.User.LINKED_USER_ID
+                    + "followingSender." + Friendship.USER_ID + "=" + DatabaseHolder.User.LINKED_USER_ID
                     + " AND "
-                    + ProjectionMap.MSG_TABLE_ALIAS + "." + MyDatabase.Msg.SENDER_ID
+                    + ProjectionMap.MSG_TABLE_ALIAS + "." + DatabaseHolder.Msg.SENDER_ID
                     + "=followingSender." + Friendship.FRIEND_ID
                     + ")";
         }
@@ -286,11 +287,11 @@ public class TimelineSql {
         columnNames.add(User.LINKED_USER_ID);
         if (MyPreferences.getShowAvatars()) {
             columnNames.add(Msg.AUTHOR_ID);
-            columnNames.add(MyDatabase.Download.AVATAR_FILE_NAME);
+            columnNames.add(DatabaseHolder.Download.AVATAR_FILE_NAME);
         }
         if (MyPreferences.getDownloadAndDisplayAttachedImages()) {
             columnNames.add(Download.IMAGE_ID);
-            columnNames.add(MyDatabase.Download.IMAGE_FILE_NAME);
+            columnNames.add(DatabaseHolder.Download.IMAGE_FILE_NAME);
         }
         if (SharedPreferencesUtil.getBoolean(MyPreferences.KEY_MARK_REPLIES_IN_TIMELINE, false)
                 || SharedPreferencesUtil.getBoolean(

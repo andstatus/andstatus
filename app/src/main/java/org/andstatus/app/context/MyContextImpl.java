@@ -30,8 +30,8 @@ import net.jcip.annotations.ThreadSafe;
 import org.andstatus.app.ClassInApplicationPackage;
 import org.andstatus.app.account.PersistentAccounts;
 import org.andstatus.app.data.AssertionData;
-import org.andstatus.app.data.MyDatabase;
-import org.andstatus.app.data.MyDatabaseConverterController;
+import org.andstatus.app.database.DatabaseHolder;
+import org.andstatus.app.database.MyDatabaseConverterController;
 import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.graphics.MyImageCache;
 import org.andstatus.app.net.http.HttpConnection;
@@ -68,7 +68,7 @@ public final class MyContextImpl implements MyContext {
      * When preferences, loaded into this class, were changed
      */
     private volatile long mPreferencesChangeTime = 0;
-    private volatile MyDatabase mDb;
+    private volatile DatabaseHolder mDb;
     private final PersistentAccounts mPersistentAccounts = PersistentAccounts.getEmpty();
     private final PersistentOrigins mPersistentOrigins = PersistentOrigins.getEmpty();
     
@@ -96,7 +96,7 @@ public final class MyContextImpl implements MyContext {
                 tryToSetExternalStorageOnDataCreation();
             }
             myContext.mPreferencesChangeTime = MyPreferences.getPreferencesChangeTime();
-            MyDatabase newDb = new MyDatabase(myContext.mContext, createApplicationData);
+            DatabaseHolder newDb = new DatabaseHolder(myContext.mContext, createApplicationData);
             try {
                 myContext.mState = newDb.checkState();
                 if (myContext.state() == MyContextState.READY
@@ -201,7 +201,7 @@ public final class MyContextImpl implements MyContext {
     }
     
     @Override
-    public MyDatabase getMyDatabase() {
+    public DatabaseHolder getMyDatabase() {
         return mDb;
     }
 

@@ -23,8 +23,9 @@ import android.text.TextUtils;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.data.MyDatabase.Msg;
-import org.andstatus.app.data.MyDatabase.OidEnum;
+import org.andstatus.app.database.DatabaseHolder;
+import org.andstatus.app.database.DatabaseHolder.Msg;
+import org.andstatus.app.database.DatabaseHolder.OidEnum;
 import org.andstatus.app.msg.KeywordsFilter;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.social.MbAttachment;
@@ -72,7 +73,7 @@ public class DataInserter {
     private long insertOrUpdateMsgInner(MbMessage messageIn, LatestUserMessages lum, boolean updateSender) {
         final String funcName = "Inserting/updating msg";
         /**
-         * Id of the message in our system, see {@link MyDatabase.Msg#MSG_ID}
+         * Id of the message in our system, see {@link DatabaseHolder.Msg#MSG_ID}
          */
         long msgId = messageIn.msgId;
         try {
@@ -122,18 +123,18 @@ public class DataInserter {
                 }
                 if (senderId !=0) {
                     if (senderId != execContext.getMyAccount().getUserId()) {
-                        values.put(MyDatabase.MsgOfUser.USER_ID
-                                + MyDatabase.MsgOfUser.SUFFIX_FOR_OTHER_USER, senderId);
+                        values.put(DatabaseHolder.MsgOfUser.USER_ID
+                                + DatabaseHolder.MsgOfUser.SUFFIX_FOR_OTHER_USER, senderId);
                     }
-                    values.put(MyDatabase.MsgOfUser.REBLOGGED
+                    values.put(DatabaseHolder.MsgOfUser.REBLOGGED
                             + (senderId == execContext.getMyAccount().getUserId() ? ""
-                            : MyDatabase.MsgOfUser.SUFFIX_FOR_OTHER_USER), 1);
+                            : DatabaseHolder.MsgOfUser.SUFFIX_FOR_OTHER_USER), 1);
                     // Remember original id of the reblog message
                     // We will need it to "undo reblog" for our reblog
                     if (!SharedPreferencesUtil.isEmpty(rowOid)) {
-                        values.put(MyDatabase.MsgOfUser.REBLOG_OID
+                        values.put(DatabaseHolder.MsgOfUser.REBLOG_OID
                                 + (senderId == execContext.getMyAccount().getUserId() ? ""
-                                : MyDatabase.MsgOfUser.SUFFIX_FOR_OTHER_USER), rowOid);
+                                : DatabaseHolder.MsgOfUser.SUFFIX_FOR_OTHER_USER), rowOid);
                     }
                 }
 
@@ -150,7 +151,7 @@ public class DataInserter {
                 }
             }
             if (authorId != 0) {
-                values.put(MyDatabase.Msg.AUTHOR_ID, authorId);
+                values.put(DatabaseHolder.Msg.AUTHOR_ID, authorId);
             }
 
 
@@ -182,18 +183,18 @@ public class DataInserter {
 
             if (isFirstTimeLoaded || isDraftUpdated) {
                 values.put(Msg.MSG_STATUS, message.getStatus().save());
-                values.put(MyDatabase.Msg.CREATED_DATE, createdDate);
+                values.put(DatabaseHolder.Msg.CREATED_DATE, createdDate);
                 
                 if (senderId != 0) {
                     // Store the Sender only for the first retrieved message.
                     // Don't overwrite the original sender (especially the first reblogger) 
-                    values.put(MyDatabase.Msg.SENDER_ID, senderId);
+                    values.put(DatabaseHolder.Msg.SENDER_ID, senderId);
                 }
                 if (!TextUtils.isEmpty(rowOid)) {
-                    values.put(MyDatabase.Msg.MSG_OID, rowOid);
+                    values.put(DatabaseHolder.Msg.MSG_OID, rowOid);
                 }
-                values.put(MyDatabase.Msg.ORIGIN_ID, execContext.getMyAccount().getOriginId());
-                values.put(MyDatabase.Msg.BODY, message.getBody());
+                values.put(DatabaseHolder.Msg.ORIGIN_ID, execContext.getMyAccount().getOriginId());
+                values.put(DatabaseHolder.Msg.BODY, message.getBody());
             }
             
             /**
@@ -203,39 +204,39 @@ public class DataInserter {
             if (isNewerThanInDatabase) {
                 // Remember the latest sent date in order to see the reblogged message 
                 // at the top of the sorted list 
-                values.put(MyDatabase.Msg.SENT_DATE, sentDate);
+                values.put(DatabaseHolder.Msg.SENT_DATE, sentDate);
             }
 
             boolean isDirectMessage = false;
             if (message.recipient != null) {
                 long recipientId = insertOrUpdateUser(message.recipient, lum);
-                values.put(MyDatabase.Msg.RECIPIENT_ID, recipientId);
+                values.put(DatabaseHolder.Msg.RECIPIENT_ID, recipientId);
                 if (recipientId == execContext.getMyAccount().getUserId() ||
                         senderId == execContext.getMyAccount().getUserId()) {
                     isDirectMessage = true;
-                    values.put(MyDatabase.MsgOfUser.DIRECTED, 1);
+                    values.put(DatabaseHolder.MsgOfUser.DIRECTED, 1);
                     MyLog.v(this, "Message '" + message.oid + "' is Directed to " 
                             + execContext.getMyAccount().getAccountName() );
                 }
             }
             if (execContext.getTimelineType() == TimelineType.HOME
                     || (!isDirectMessage && senderId == execContext.getMyAccount().getUserId())) {
-                values.put(MyDatabase.MsgOfUser.SUBSCRIBED, 1);
+                values.put(DatabaseHolder.MsgOfUser.SUBSCRIBED, 1);
             }
             if (!TextUtils.isEmpty(message.via)) {
-                values.put(MyDatabase.Msg.VIA, message.via);
+                values.put(DatabaseHolder.Msg.VIA, message.via);
             }
             if (!TextUtils.isEmpty(message.url)) {
-                values.put(MyDatabase.Msg.URL, message.url);
+                values.put(DatabaseHolder.Msg.URL, message.url);
             }
             if (message.isPublic()) {
-                values.put(MyDatabase.Msg.PUBLIC, 1);
+                values.put(DatabaseHolder.Msg.PUBLIC, 1);
             }
 
             if (message.favoritedByActor != TriState.UNKNOWN
                     && actorId != 0
                     && actorId == execContext.getMyAccount().getUserId()) {
-                values.put(MyDatabase.MsgOfUser.FAVORITED,
+                values.put(DatabaseHolder.MsgOfUser.FAVORITED,
                         message.favoritedByActor.toBoolean(false));
                 MyLog.v(this,
                         "Message '"
@@ -323,16 +324,16 @@ public class DataInserter {
                 inReplyToUserId = MyQuery.msgIdToLongColumnValue(Msg.SENDER_ID, inReplyToMessageId);
             }
             if (inReplyToMessageId != 0) {
-                values.put(MyDatabase.Msg.IN_REPLY_TO_MSG_ID, inReplyToMessageId);
+                values.put(DatabaseHolder.Msg.IN_REPLY_TO_MSG_ID, inReplyToMessageId);
             }
         } else {
             inReplyToUserId = getReplyToUserIdInBody(message);
         }
         if (inReplyToUserId != 0) {
-            values.put(MyDatabase.Msg.IN_REPLY_TO_USER_ID, inReplyToUserId);
+            values.put(DatabaseHolder.Msg.IN_REPLY_TO_USER_ID, inReplyToUserId);
 
             if (execContext.getMyAccount().getUserId() == inReplyToUserId) {
-                values.put(MyDatabase.MsgOfUser.REPLIED, 1);
+                values.put(DatabaseHolder.MsgOfUser.REPLIED, 1);
                 // We count replies as Mentions
                 mentioned = true;
             }
@@ -345,7 +346,7 @@ public class DataInserter {
             mentioned = true;
         }
         if (mentioned) {
-            values.put(MyDatabase.MsgOfUser.MENTIONED, 1);
+            values.put(DatabaseHolder.MsgOfUser.MENTIONED, 1);
         }
         return mentioned;
     }
@@ -399,7 +400,7 @@ public class DataInserter {
         try {
             ContentValues values = new ContentValues();
             if (userId == 0 || mbUser.isOidReal()) {
-                values.put(MyDatabase.User.USER_OID, userOid);
+                values.put(DatabaseHolder.User.USER_OID, userOid);
             }
 
             // Substitute required empty values with some temporary for a new entry only!
@@ -407,54 +408,54 @@ public class DataInserter {
             if (SharedPreferencesUtil.isEmpty(userName)) {
                 userName = "id:" + userOid;
             }
-            values.put(MyDatabase.User.USERNAME, userName);
+            values.put(DatabaseHolder.User.USERNAME, userName);
             String webFingerId = mbUser.getWebFingerId();
             if (SharedPreferencesUtil.isEmpty(webFingerId)) {
                 webFingerId = userName;
             }
-            values.put(MyDatabase.User.WEBFINGER_ID, webFingerId);
+            values.put(DatabaseHolder.User.WEBFINGER_ID, webFingerId);
             String realName = mbUser.getRealName();
             if (SharedPreferencesUtil.isEmpty(realName)) {
                 realName = userName;
             }
-            values.put(MyDatabase.User.REAL_NAME, realName);
+            values.put(DatabaseHolder.User.REAL_NAME, realName);
             // Enf of required attributes
 
             if (!SharedPreferencesUtil.isEmpty(mbUser.avatarUrl)) {
-                values.put(MyDatabase.User.AVATAR_URL, mbUser.avatarUrl);
+                values.put(DatabaseHolder.User.AVATAR_URL, mbUser.avatarUrl);
             }
             if (!SharedPreferencesUtil.isEmpty(mbUser.getDescription())) {
-                values.put(MyDatabase.User.DESCRIPTION, mbUser.getDescription());
+                values.put(DatabaseHolder.User.DESCRIPTION, mbUser.getDescription());
             }
             if (!SharedPreferencesUtil.isEmpty(mbUser.getHomepage())) {
-                values.put(MyDatabase.User.HOMEPAGE, mbUser.getHomepage());
+                values.put(DatabaseHolder.User.HOMEPAGE, mbUser.getHomepage());
             }
             if (!SharedPreferencesUtil.isEmpty(mbUser.getProfileUrl())) {
-                values.put(MyDatabase.User.PROFILE_URL, mbUser.getProfileUrl());
+                values.put(DatabaseHolder.User.PROFILE_URL, mbUser.getProfileUrl());
             }
             if (!SharedPreferencesUtil.isEmpty(mbUser.bannerUrl)) {
-                values.put(MyDatabase.User.BANNER_URL, mbUser.bannerUrl);
+                values.put(DatabaseHolder.User.BANNER_URL, mbUser.bannerUrl);
             }
             if (!SharedPreferencesUtil.isEmpty(mbUser.location)) {
-                values.put(MyDatabase.User.LOCATION, mbUser.location);
+                values.put(DatabaseHolder.User.LOCATION, mbUser.location);
             }
             if (mbUser.msgCount > 0) {
-                values.put(MyDatabase.User.MSG_COUNT, mbUser.msgCount);
+                values.put(DatabaseHolder.User.MSG_COUNT, mbUser.msgCount);
             }
             if (mbUser.favoritesCount > 0) {
-                values.put(MyDatabase.User.FAVORITES_COUNT, mbUser.favoritesCount);
+                values.put(DatabaseHolder.User.FAVORITES_COUNT, mbUser.favoritesCount);
             }
             if (mbUser.followingCount > 0) {
-                values.put(MyDatabase.User.FOLLOWING_COUNT, mbUser.followingCount);
+                values.put(DatabaseHolder.User.FOLLOWING_COUNT, mbUser.followingCount);
             }
             if (mbUser.followersCount > 0) {
-                values.put(MyDatabase.User.FOLLOWERS_COUNT, mbUser.followersCount);
+                values.put(DatabaseHolder.User.FOLLOWERS_COUNT, mbUser.followersCount);
             }
             if (mbUser.getCreatedDate() > 0) {
-                values.put(MyDatabase.User.CREATED_DATE, mbUser.getCreatedDate());
+                values.put(DatabaseHolder.User.CREATED_DATE, mbUser.getCreatedDate());
             }
             if (mbUser.getUpdatedDate() > 0) {
-                values.put(MyDatabase.User.UPDATED_DATE, mbUser.getUpdatedDate());
+                values.put(DatabaseHolder.User.UPDATED_DATE, mbUser.getUpdatedDate());
             }
 
             long readerId;
@@ -465,7 +466,7 @@ public class DataInserter {
             }
             if (mbUser.followedByActor != TriState.UNKNOWN
                     && readerId == execContext.getMyAccount().getUserId()) {
-                values.put(MyDatabase.Friendship.FOLLOWED,
+                values.put(DatabaseHolder.Friendship.FOLLOWED,
                         mbUser.followedByActor.toBoolean(false));
                 MyLog.v(this,
                         "User '" + mbUser.getUserName() + "' is "
@@ -477,7 +478,7 @@ public class DataInserter {
             Uri userUri = MatchedUri.getUserUri(execContext.getMyAccount().getUserId(), userId);
             if (userId == 0) {
                 // There was no such row so add new one
-                values.put(MyDatabase.User.ORIGIN_ID, originId);
+                values.put(DatabaseHolder.User.ORIGIN_ID, originId);
                 userId = ParsedUri.fromUri(
                         execContext.getContext().getContentResolver().insert(userUri, values))
                         .getUserId();

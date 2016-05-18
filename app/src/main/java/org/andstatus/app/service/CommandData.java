@@ -28,7 +28,7 @@ import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.data.MyDatabase;
+import org.andstatus.app.database.DatabaseHolder;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.msg.TimelineListParameters;
@@ -67,8 +67,8 @@ public class CommandData implements Comparable<CommandData> {
     private volatile boolean mIsStep = false;
 
     /**
-     * This is: 1. Generally: Message ID ({@link MyDatabase.Msg#MSG_ID} of the
-     * {@link MyDatabase.Msg}). 2. User ID ( {@link MyDatabase.User#USER_ID} ) for the
+     * This is: 1. Generally: Message ID ({@link DatabaseHolder.Msg#MSG_ID} of the
+     * {@link DatabaseHolder.Msg}). 2. User ID ( {@link DatabaseHolder.User#USER_ID} ) for the
      * {@link CommandEnum#FETCH_TIMELINE}, {@link CommandEnum#FOLLOW_USER},
      * {@link CommandEnum#STOP_FOLLOWING_USER}
      */
@@ -365,7 +365,7 @@ public class CommandData implements Comparable<CommandData> {
             commandData.bundle.putString(
                     IntentExtra.MESSAGE_TEXT.key,
                     trimConditionally(
-                            MyQuery.msgIdToStringColumnValue(MyDatabase.Msg.BODY, msgId), true)
+                            MyQuery.msgIdToStringColumnValue(DatabaseHolder.Msg.BODY, msgId), true)
                             .toString());
         }
     }
@@ -619,7 +619,7 @@ public class CommandData implements Comparable<CommandData> {
                         myContext.context().getText(R.string.combined_timeline_off_account));
                 I18n.appendWithSpace(builder, MyQuery.userIdToWebfingerId(itemId));
                 if (myContext.persistentAccounts().getDistinctOriginsCount() > 1) {
-                    long originId = MyQuery.userIdToLongColumnValue(MyDatabase.User.ORIGIN_ID,
+                    long originId = MyQuery.userIdToLongColumnValue(DatabaseHolder.User.ORIGIN_ID,
                             itemId);
                     I18n.appendWithSpace(builder, 
                             myContext.context().getText(R.string.combined_timeline_off_origin));

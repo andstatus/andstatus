@@ -23,13 +23,13 @@ import android.text.TextUtils;
 
 import org.andstatus.app.appwidget.AppWidgets;
 import org.andstatus.app.data.DataInserter;
+import org.andstatus.app.database.DatabaseHolder;
 import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.FileProvider;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyContentType;
-import org.andstatus.app.data.MyDatabase;
-import org.andstatus.app.data.MyDatabase.OidEnum;
+import org.andstatus.app.database.DatabaseHolder.OidEnum;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.net.http.ConnectionException;
@@ -294,8 +294,8 @@ class CommandExecutorOther extends CommandExecutorStrategy{
             // And delete the status from the local storage
             try {
                 ContentValues values = new ContentValues();
-                values.put(MyDatabase.MsgOfUser.REBLOGGED, 0);
-                values.putNull(MyDatabase.MsgOfUser.REBLOG_OID);
+                values.put(DatabaseHolder.MsgOfUser.REBLOGGED, 0);
+                values.putNull(DatabaseHolder.MsgOfUser.REBLOG_OID);
                 Uri msgUri = MatchedUri.getMsgUri(execContext.getMyAccount().getUserId(), msgId);
                 execContext.getContext().getContentResolver().update(msgUri, values, null, null);
             } catch (Exception e) {
@@ -345,8 +345,8 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         final String method = "updateStatus";
         boolean ok = false;
         MbMessage message = null;
-        String status = MyQuery.msgIdToStringColumnValue(MyDatabase.Msg.BODY, msgId);
-        long recipientUserId = MyQuery.msgIdToLongColumnValue(MyDatabase.Msg.RECIPIENT_ID, msgId);
+        String status = MyQuery.msgIdToStringColumnValue(DatabaseHolder.Msg.BODY, msgId);
+        long recipientUserId = MyQuery.msgIdToLongColumnValue(DatabaseHolder.Msg.RECIPIENT_ID, msgId);
         DownloadData dd = DownloadData.getSingleForMessage(msgId, MyContentType.IMAGE, Uri.EMPTY);
         Uri mediaUri = dd.getUri().equals(Uri.EMPTY) ? Uri.EMPTY : FileProvider.downloadFilenameToUri(dd.getFile().getFilename());
         String msgLog = "text:'" + MyLog.trimmedString(status, 40) + "'"
@@ -355,13 +355,13 @@ class CommandExecutorOther extends CommandExecutorStrategy{
             if (MyLog.isVerboseEnabled()) {
                 MyLog.v(this, method + ";" + msgLog);
             }
-            DownloadStatus statusStored = DownloadStatus.load(MyQuery.msgIdToLongColumnValue(MyDatabase.Msg.MSG_STATUS, msgId));
+            DownloadStatus statusStored = DownloadStatus.load(MyQuery.msgIdToLongColumnValue(DatabaseHolder.Msg.MSG_STATUS, msgId));
             if (!statusStored.mayBeSent()) {
                 throw ConnectionException.hardConnectionException("Wrong message status: " + statusStored, null);
             }
             if (recipientUserId == 0) {
                 long replyToMsgId = MyQuery.msgIdToLongColumnValue(
-                        MyDatabase.Msg.IN_REPLY_TO_MSG_ID, msgId);
+                        DatabaseHolder.Msg.IN_REPLY_TO_MSG_ID, msgId);
                 String replyToMsgOid = MyQuery.idToOid(OidEnum.MSG_OID, replyToMsgId, 0);
                 message = execContext.getMyAccount().getConnection()
                         .updateStatus(status.trim(), replyToMsgOid, mediaUri);

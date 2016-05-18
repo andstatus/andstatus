@@ -19,7 +19,7 @@ package org.andstatus.app.msg;
 import android.database.Cursor;
 
 import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.data.MyDatabase.Msg;
+import org.andstatus.app.database.DatabaseHolder.Msg;
 
 public abstract class ConversationItem  implements Comparable<ConversationItem> {
     private long mMsgId;

@@ -23,7 +23,7 @@ import android.support.annotation.NonNull;
 
 import org.andstatus.app.account.PersistentAccounts;
 import org.andstatus.app.data.AssertionData;
-import org.andstatus.app.data.MyDatabase;
+import org.andstatus.app.database.DatabaseHolder;
 import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.origin.PersistentOrigins;
@@ -41,7 +41,7 @@ public interface MyContext {
     Context context();
     String initializedBy();
     long preferencesChangeTime();
-    MyDatabase getMyDatabase();
+    DatabaseHolder getMyDatabase();
     SQLiteDatabase getDatabase();
     @NonNull
     PersistentAccounts persistentAccounts();

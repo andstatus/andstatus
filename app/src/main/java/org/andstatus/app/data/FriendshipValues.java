@@ -22,7 +22,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteDatabaseLockedException;
 
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.data.MyDatabase.Friendship;
+import org.andstatus.app.database.DatabaseHolder.Friendship;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 

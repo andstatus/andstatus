@@ -29,10 +29,11 @@ import android.text.TextUtils;
 
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.data.MyDatabase.Msg;
-import org.andstatus.app.data.MyDatabase.MsgOfUser;
-import org.andstatus.app.data.MyDatabase.Origin;
-import org.andstatus.app.data.MyDatabase.User;
+import org.andstatus.app.database.DatabaseHolder;
+import org.andstatus.app.database.DatabaseHolder.Msg;
+import org.andstatus.app.database.DatabaseHolder.MsgOfUser;
+import org.andstatus.app.database.DatabaseHolder.Origin;
+import org.andstatus.app.database.DatabaseHolder.User;
 import org.andstatus.app.util.MyLog;
 
 import java.util.Arrays;
@@ -112,7 +113,7 @@ public class MyProvider extends ContentProvider {
             // Delete all related records from MyDatabase.MsgOfUser for these messages
             String selectionG = " EXISTS ("
                     + "SELECT * FROM " + Msg.TABLE_NAME + " WHERE ("
-                    + Msg.TABLE_NAME + "." + BaseColumns._ID + "=" + MsgOfUser.TABLE_NAME + "." + MyDatabase.MsgOfUser.MSG_ID
+                    + Msg.TABLE_NAME + "." + BaseColumns._ID + "=" + MsgOfUser.TABLE_NAME + "." + DatabaseHolder.MsgOfUser.MSG_ID
                     + ") AND ("
                     + selection
                     + "))";

@@ -21,10 +21,10 @@ import android.text.TextUtils;
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DataInserter;
+import org.andstatus.app.database.DatabaseHolder;
 import org.andstatus.app.data.FriendshipValues;
 import org.andstatus.app.data.LatestTimelineItem;
 import org.andstatus.app.data.LatestUserMessages;
-import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.data.UserMsg;
@@ -98,7 +98,7 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
         if (userId == 0) {
             userId = execContext.getTimelineUserId();
         }
-        userOid = MyQuery.idToOid(MyDatabase.OidEnum.USER_OID, userId, 0);
+        userOid = MyQuery.idToOid(DatabaseHolder.OidEnum.USER_OID, userId, 0);
         if (TextUtils.isEmpty(userOid)) {
             execContext.getResult().incrementParseExceptions();
             MyLog.e(this, method + "; userOid not found for id: " + userId);
@@ -178,7 +178,7 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
                 mbUser = execContext.getMyAccount().getConnection().getUser(userOidNew, null);
                 execContext.getResult().incrementDownloadedCount();
             } catch (ConnectionException e) {
-                long userId = MyQuery.oidToId(MyDatabase.OidEnum.USER_OID,
+                long userId = MyQuery.oidToId(DatabaseHolder.OidEnum.USER_OID,
                         execContext.getMyAccount().getOriginId(), userOidNew);
                 if (userId == 0) {
                     MyLog.i(this, "Failed to identify a User for oid=" + userOidNew, e);
@@ -231,19 +231,19 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
                     di.downloadOneMessageBy(mbUser.oid, lum);
                     execContext.getResult().incrementDownloadedCount();
                 } catch (ConnectionException e) {
-                    long lastMsgId = MyQuery.userIdToLongColumnValue(MyDatabase.User.USER_MSG_ID,
+                    long lastMsgId = MyQuery.userIdToLongColumnValue(DatabaseHolder.User.USER_MSG_ID,
                             mbUser.userId);
                     if (lastMsgId == 0) {
-                        lastMsgId = MyQuery.conditionToLongColumnValue(MyDatabase.Msg.TABLE_NAME,
-                                MyDatabase.Msg._ID,
-                                MyDatabase.Msg.SENDER_ID + "=" + mbUser.userId
-                        + " ORDER BY " + MyDatabase.Msg.SENT_DATE + " DESC LIMIT 0,0");
+                        lastMsgId = MyQuery.conditionToLongColumnValue(DatabaseHolder.Msg.TABLE_NAME,
+                                DatabaseHolder.Msg._ID,
+                                DatabaseHolder.Msg.SENDER_ID + "=" + mbUser.userId
+                        + " ORDER BY " + DatabaseHolder.Msg.SENT_DATE + " DESC LIMIT 0,0");
                     }
                     if (lastMsgId == 0) {
                         MyLog.v(this, "Failed to find User's message for "
                                 + mbUser.getNamePreferablyWebFingerId(), e);
                     } else {
-                        long sentDate = MyQuery.msgIdToLongColumnValue(MyDatabase.Msg.SENT_DATE, lastMsgId);
+                        long sentDate = MyQuery.msgIdToLongColumnValue(DatabaseHolder.Msg.SENT_DATE, lastMsgId);
                         lum.onNewUserMsg(new UserMsg(mbUser.userId, lastMsgId, sentDate));
                         MyLog.v(this, "Server didn't return User's message for "
                                         + mbUser.getNamePreferablyWebFingerId()

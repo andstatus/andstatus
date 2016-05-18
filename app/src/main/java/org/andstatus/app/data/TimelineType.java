@@ -20,7 +20,8 @@ import android.content.Context;
 
 import org.andstatus.app.R;
 import org.andstatus.app.account.PersistentAccounts;
-import org.andstatus.app.data.MyDatabase.User;
+import org.andstatus.app.database.DatabaseHolder;
+import org.andstatus.app.database.DatabaseHolder.User;
 import org.andstatus.app.net.social.Connection;
 
 /**
@@ -72,7 +73,7 @@ public enum TimelineType {
      * Latest messages of every Friend of this user - AndStatus account
      * (i.e of every user, followed by this User).
      * So this is essentially a list of "Friends".
-     * See {@link MyDatabase.Friendship}
+     * See {@link DatabaseHolder.Friendship}
      */
     FRIENDS("friends", R.string.friends,
             "", "", User.FOLLOWING_USER_DATE, Connection.ApiRoutineEnum.DUMMY),

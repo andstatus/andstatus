@@ -18,11 +18,12 @@ package org.andstatus.app.data;
 
 import android.provider.BaseColumns;
 
-import org.andstatus.app.data.MyDatabase.Download;
-import org.andstatus.app.data.MyDatabase.Friendship;
-import org.andstatus.app.data.MyDatabase.Msg;
-import org.andstatus.app.data.MyDatabase.MsgOfUser;
-import org.andstatus.app.data.MyDatabase.User;
+import org.andstatus.app.database.DatabaseHolder;
+import org.andstatus.app.database.DatabaseHolder.Download;
+import org.andstatus.app.database.DatabaseHolder.Friendship;
+import org.andstatus.app.database.DatabaseHolder.Msg;
+import org.andstatus.app.database.DatabaseHolder.MsgOfUser;
+import org.andstatus.app.database.DatabaseHolder.User;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -34,7 +35,7 @@ public class ProjectionMap {
  
     /**
      * Projection map used by SQLiteQueryBuilder
-     * Projection map for the {@link MyDatabase.Msg} table
+     * Projection map for the {@link DatabaseHolder.Msg} table
      * @see android.database.sqlite.SQLiteQueryBuilder#setProjectionMap
      */
     static final Map<String, String> MSG = new HashMap<>();
@@ -77,7 +78,7 @@ public class ProjectionMap {
     }
 
     /**
-     * Projection map for the {@link MyDatabase.User} table
+     * Projection map for the {@link DatabaseHolder.User} table
      */
     static final Map<String, String> USER = new HashMap<>();
     static {

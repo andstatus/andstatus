@@ -27,7 +27,7 @@ import org.andstatus.app.account.AccountSelector;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.MatchedUri;
-import org.andstatus.app.data.MyDatabase;
+import org.andstatus.app.database.DatabaseHolder;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.msg.TimelineActivity;
@@ -209,7 +209,7 @@ public enum UserListContextMenuItem implements ContextMenuItem {
 
     void setMaForUserId(Params params) {
         long userId = params.menu.getViewItem().getUserId();
-        long originId = MyQuery.userIdToLongColumnValue(MyDatabase.User.ORIGIN_ID, userId);
+        long originId = MyQuery.userIdToLongColumnValue(DatabaseHolder.User.ORIGIN_ID, userId);
         if (originId == 0) {
             MyLog.e(this, "Unknown origin for userId=" + userId);
             return;

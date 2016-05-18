@@ -29,7 +29,7 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.ConversationInserter;
 import org.andstatus.app.data.MatchedUri;
-import org.andstatus.app.data.MyDatabase;
+import org.andstatus.app.database.DatabaseHolder;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.service.CommandData;
@@ -190,7 +190,7 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
         ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<TimelineActivity>(this, AccountSelector.class);
         long msgId = helper.getListItemIdOfLoadedReply();
         String logMsg = "msgId:" + msgId
-                + "; text:'" + MyQuery.msgIdToStringColumnValue(MyDatabase.Msg.BODY, msgId) + "'";
+                + "; text:'" + MyQuery.msgIdToStringColumnValue(DatabaseHolder.Msg.BODY, msgId) + "'";
         assertTrue(logMsg, helper.invokeContextMenuAction4ListItemId(method, msgId, MessageListContextMenuItem.NONEXISTENT));
         long userId1 = getActivity().getContextMenu().getActorUserIdForCurrentMessage();
         logMsg += "; userId1=" + userId1;

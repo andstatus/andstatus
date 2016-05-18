@@ -25,6 +25,7 @@ import android.support.annotation.Nullable;
 import android.view.View;
 import android.widget.ImageView;
 
+import org.andstatus.app.database.DatabaseHolder;
 import org.andstatus.app.graphics.AttachedImageView;
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
@@ -56,8 +57,8 @@ public class AttachedImageFile {
 
     public static AttachedImageFile fromCursor(Cursor cursor) {
         return new AttachedImageFile(
-                DbUtils.getLong(cursor, MyDatabase.Download.IMAGE_ID),
-                DbUtils.getString(cursor, MyDatabase.Download.IMAGE_FILE_NAME));
+                DbUtils.getLong(cursor, DatabaseHolder.Download.IMAGE_ID),
+                DbUtils.getString(cursor, DatabaseHolder.Download.IMAGE_FILE_NAME));
     }
 
     public AttachedImageFile(long downloadRowIdIn, String filename) {

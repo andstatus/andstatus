@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.andstatus.app.data;
+package org.andstatus.app.database;
 
 import android.app.Activity;
 import android.database.sqlite.SQLiteDatabase;

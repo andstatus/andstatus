@@ -21,8 +21,8 @@ import android.net.Uri;
 import android.provider.BaseColumns;
 
 import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.data.MyDatabase.Download;
-import org.andstatus.app.data.MyDatabase.User;
+import org.andstatus.app.database.DatabaseHolder.Download;
+import org.andstatus.app.database.DatabaseHolder.User;
 import org.andstatus.app.user.UserListType;
 
 import java.util.ArrayList;

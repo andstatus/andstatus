@@ -27,9 +27,9 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.AttachedImageFile;
 import org.andstatus.app.data.AvatarFile;
+import org.andstatus.app.database.DatabaseHolder;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.DownloadStatus;
-import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.TimelineSql;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
@@ -78,23 +78,23 @@ public class TimelineViewItem {
 
     public static TimelineViewItem fromCursorRow(Cursor cursor) {
         TimelineViewItem item = new TimelineViewItem();
-        item.msgId = DbUtils.getLong(cursor, MyDatabase.Msg._ID);
+        item.msgId = DbUtils.getLong(cursor, DatabaseHolder.Msg._ID);
         item.authorName = TimelineSql.userColumnIndexToNameAtTimeline(cursor,
-                cursor.getColumnIndex(MyDatabase.User.AUTHOR_NAME), MyPreferences.getShowOrigin());
-        item.body = MyHtml.htmlifyIfPlain(DbUtils.getString(cursor, MyDatabase.Msg.BODY));
-        item.inReplyToMsgId = DbUtils.getLong(cursor, MyDatabase.Msg.IN_REPLY_TO_MSG_ID);
-        item.inReplyToName = DbUtils.getString(cursor, MyDatabase.User.IN_REPLY_TO_NAME);
-        item.recipientName = DbUtils.getString(cursor, MyDatabase.User.RECIPIENT_NAME);
-        item.favorited = DbUtils.getLong(cursor, MyDatabase.MsgOfUser.FAVORITED) == 1;
-        item.sentDate = DbUtils.getLong(cursor, MyDatabase.Msg.SENT_DATE);
-        item.createdDate = DbUtils.getLong(cursor, MyDatabase.Msg.CREATED_DATE);
-        item.msgStatus = DownloadStatus.load(DbUtils.getLong(cursor, MyDatabase.Msg.MSG_STATUS));
-        item.linkedUserId = DbUtils.getLong(cursor, MyDatabase.User.LINKED_USER_ID);
-        item.authorId = DbUtils.getLong(cursor, MyDatabase.Msg.AUTHOR_ID);
+                cursor.getColumnIndex(DatabaseHolder.User.AUTHOR_NAME), MyPreferences.getShowOrigin());
+        item.body = MyHtml.htmlifyIfPlain(DbUtils.getString(cursor, DatabaseHolder.Msg.BODY));
+        item.inReplyToMsgId = DbUtils.getLong(cursor, DatabaseHolder.Msg.IN_REPLY_TO_MSG_ID);
+        item.inReplyToName = DbUtils.getString(cursor, DatabaseHolder.User.IN_REPLY_TO_NAME);
+        item.recipientName = DbUtils.getString(cursor, DatabaseHolder.User.RECIPIENT_NAME);
+        item.favorited = DbUtils.getLong(cursor, DatabaseHolder.MsgOfUser.FAVORITED) == 1;
+        item.sentDate = DbUtils.getLong(cursor, DatabaseHolder.Msg.SENT_DATE);
+        item.createdDate = DbUtils.getLong(cursor, DatabaseHolder.Msg.CREATED_DATE);
+        item.msgStatus = DownloadStatus.load(DbUtils.getLong(cursor, DatabaseHolder.Msg.MSG_STATUS));
+        item.linkedUserId = DbUtils.getLong(cursor, DatabaseHolder.User.LINKED_USER_ID);
+        item.authorId = DbUtils.getLong(cursor, DatabaseHolder.Msg.AUTHOR_ID);
 
-        long senderId = DbUtils.getLong(cursor, MyDatabase.Msg.SENDER_ID);
+        long senderId = DbUtils.getLong(cursor, DatabaseHolder.Msg.SENDER_ID);
         if (senderId != item.authorId) {
-            String senderName = DbUtils.getString(cursor, MyDatabase.User.SENDER_NAME);
+            String senderName = DbUtils.getString(cursor, DatabaseHolder.User.SENDER_NAME);
             if (TextUtils.isEmpty(senderName)) {
                 senderName = "(id" + senderId + ")";
             }
@@ -102,7 +102,7 @@ public class TimelineViewItem {
         }
 
         if (item.linkedUserId != 0) {
-            if (DbUtils.getInt(cursor, MyDatabase.MsgOfUser.REBLOGGED) == 1
+            if (DbUtils.getInt(cursor, DatabaseHolder.MsgOfUser.REBLOGGED) == 1
                     &&  !item.rebloggers.containsKey(item.linkedUserId)) {
                 MyAccount myAccount = MyContextHolder.get().persistentAccounts()
                         .fromUserId(item.linkedUserId);
@@ -112,7 +112,7 @@ public class TimelineViewItem {
             }
         }
 
-        String via = DbUtils.getString(cursor, MyDatabase.Msg.VIA);
+        String via = DbUtils.getString(cursor, DatabaseHolder.Msg.VIA);
         if (!TextUtils.isEmpty(via)) {
             item.messageSource = Html.fromHtml(via).toString().trim();
         }
@@ -120,11 +120,11 @@ public class TimelineViewItem {
         item.avatarDrawable = AvatarFile.getDrawable(item.authorId, cursor);
         if (MyPreferences.getDownloadAndDisplayAttachedImages()) {
             item.attachedImageFile = new AttachedImageFile(
-                    DbUtils.getLong(cursor, MyDatabase.Download.IMAGE_ID),
-                    DbUtils.getString(cursor, MyDatabase.Download.IMAGE_FILE_NAME));
+                    DbUtils.getLong(cursor, DatabaseHolder.Download.IMAGE_ID),
+                    DbUtils.getString(cursor, DatabaseHolder.Download.IMAGE_FILE_NAME));
         }
-        item.inReplyToUserId = DbUtils.getLong(cursor, MyDatabase.Msg.IN_REPLY_TO_USER_ID);
-        item.originId = DbUtils.getLong(cursor, MyDatabase.Msg.ORIGIN_ID);
+        item.inReplyToUserId = DbUtils.getLong(cursor, DatabaseHolder.Msg.IN_REPLY_TO_USER_ID);
+        item.originId = DbUtils.getLong(cursor, DatabaseHolder.Msg.ORIGIN_ID);
         return item;
     }
 

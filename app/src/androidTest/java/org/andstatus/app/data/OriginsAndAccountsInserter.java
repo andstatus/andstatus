@@ -27,7 +27,7 @@ import org.andstatus.app.context.MyContextForTest;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.data.MyDatabase.OidEnum;
+import org.andstatus.app.database.DatabaseHolder.OidEnum;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.SslModeEnum;
 import org.andstatus.app.net.social.MbUser;

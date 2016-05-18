@@ -32,9 +32,9 @@ import org.andstatus.app.WhichPage;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.database.DatabaseHolder;
 import org.andstatus.app.data.MatchedUri;
-import org.andstatus.app.data.MyDatabase;
-import org.andstatus.app.data.MyDatabase.User;
+import org.andstatus.app.database.DatabaseHolder.User;
 import org.andstatus.app.data.ParsedUri;
 import org.andstatus.app.data.ProjectionMap;
 import org.andstatus.app.data.SelectedUserIds;
@@ -394,7 +394,7 @@ public class TimelineListParameters {
     }
 
     private String buildSortOrderAndLimit() {
-        return (isSortOrderAscending() ? MyDatabase.Msg.ASC_SORT_ORDER : MyDatabase.Msg.DESC_SORT_ORDER)
+        return (isSortOrderAscending() ? DatabaseHolder.Msg.ASC_SORT_ORDER : DatabaseHolder.Msg.DESC_SORT_ORDER)
                 + (minSentDate > 0 && maxSentDate > 0 ? "" : " LIMIT " + PAGE_SIZE);
     }
 
@@ -408,13 +408,13 @@ public class TimelineListParameters {
                 // messages, even those that we downloaded
                 // not as Home timeline of any Account
                 if (!isTimelineCombined()) {
-                    sa.addSelection(MyDatabase.MsgOfUser.SUBSCRIBED + " = ?", new String[] {
+                    sa.addSelection(DatabaseHolder.MsgOfUser.SUBSCRIBED + " = ?", new String[] {
                             "1"
                     });
                 }
                 break;
             case MENTIONS:
-                sa.addSelection(MyDatabase.MsgOfUser.MENTIONED + " = ?", new String[] {
+                sa.addSelection(DatabaseHolder.MsgOfUser.MENTIONED + " = ?", new String[] {
                         "1"
                 });
                 /*
@@ -423,26 +423,26 @@ public class TimelineListParameters {
                  */
                 break;
             case FAVORITES:
-                sa.addSelection(MyDatabase.MsgOfUser.FAVORITED + " = ?", new String[] {
+                sa.addSelection(DatabaseHolder.MsgOfUser.FAVORITED + " = ?", new String[] {
                         "1"
                 });
                 break;
             case DIRECT:
-                sa.addSelection(MyDatabase.MsgOfUser.DIRECTED + " = ?", new String[] {
+                sa.addSelection(DatabaseHolder.MsgOfUser.DIRECTED + " = ?", new String[] {
                         "1"
                 });
                 break;
             case USER:
                 SelectedUserIds userIds = new SelectedUserIds(isTimelineCombined(), getSelectedUserId());
                 // Reblogs are included also
-                sa.addSelection(MyDatabase.Msg.AUTHOR_ID + " " + userIds.getSql()
+                sa.addSelection(DatabaseHolder.Msg.AUTHOR_ID + " " + userIds.getSql()
                                 + " OR "
-                                + MyDatabase.Msg.SENDER_ID + " " + userIds.getSql()
+                                + DatabaseHolder.Msg.SENDER_ID + " " + userIds.getSql()
                                 + " OR "
                                 + "("
                                 + User.LINKED_USER_ID + " " + userIds.getSql()
                                 + " AND "
-                                + MyDatabase.MsgOfUser.REBLOGGED + " = 1"
+                                + DatabaseHolder.MsgOfUser.REBLOGGED + " = 1"
                                 + ")",
                         null);
                 break;
@@ -451,14 +451,14 @@ public class TimelineListParameters {
         }
 
         if (minSentDate > 0) {
-            sa.addSelection(ProjectionMap.MSG_TABLE_ALIAS + "." + MyDatabase.Msg.SENT_DATE
+            sa.addSelection(ProjectionMap.MSG_TABLE_ALIAS + "." + DatabaseHolder.Msg.SENT_DATE
                             + " >= ?",
                     new String[]{
                             String.valueOf(minSentDate)
                     });
         }
         if (maxSentDate > 0) {
-            sa.addSelection(ProjectionMap.MSG_TABLE_ALIAS + "." + MyDatabase.Msg.SENT_DATE
+            sa.addSelection(ProjectionMap.MSG_TABLE_ALIAS + "." + DatabaseHolder.Msg.SENT_DATE
                             + " <= ?",
                     new String[]{
                             String.valueOf(maxSentDate)

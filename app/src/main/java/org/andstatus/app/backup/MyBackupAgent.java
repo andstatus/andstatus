@@ -29,8 +29,8 @@ import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.MyPreferencesGroupsEnum;
 import org.andstatus.app.context.MyStorage;
 import org.andstatus.app.data.DataPruner;
+import org.andstatus.app.database.DatabaseHolder;
 import org.andstatus.app.data.MyDataChecker;
-import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.TimelineSearchSuggestionsProvider;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.service.MyServiceState;
@@ -148,8 +148,8 @@ public class MyBackupAgent extends BackupAgent {
                 SHARED_PREFERENCES_KEY,
                 SharedPreferencesUtil.defaultSharedPreferencesPath(MyContextHolder.get().context()));
         databasesBackedUp = backupFile(data,
-                DATABASE_KEY + "_" + MyDatabase.DATABASE_NAME,
-                MyStorage.getDatabasePath(MyDatabase.DATABASE_NAME));
+                DATABASE_KEY + "_" + DatabaseHolder.DATABASE_NAME,
+                MyStorage.getDatabasePath(DatabaseHolder.DATABASE_NAME));
         suggestionsBackedUp = backupFile(data,
                 DATABASE_KEY + "_" + TimelineSearchSuggestionsProvider.DATABASE_NAME,
                 MyStorage.getDatabasePath(TimelineSearchSuggestionsProvider.DATABASE_NAME));
@@ -258,7 +258,7 @@ public class MyBackupAgent extends BackupAgent {
 
         MyServiceManager.setServiceUnavailable();
         MyServiceManager.stopService();
-        MyDatabase db = MyContextHolder.get().getMyDatabase();
+        DatabaseHolder db = MyContextHolder.get().getMyDatabase();
         if (db != null) {
             db.close();
         }
@@ -266,9 +266,9 @@ public class MyBackupAgent extends BackupAgent {
     
     private void doRestore(MyBackupDataInput data) throws IOException {
         restoreSharedPreferences(data);
-        assertNextHeader(data, DATABASE_KEY + "_" + MyDatabase.DATABASE_NAME);
+        assertNextHeader(data, DATABASE_KEY + "_" + DatabaseHolder.DATABASE_NAME);
         databasesRestored += restoreFile(data,
-                    MyStorage.getDatabasePath(MyDatabase.DATABASE_NAME));
+                    MyStorage.getDatabasePath(DatabaseHolder.DATABASE_NAME));
         if (optionalNextHeader(data, DATABASE_KEY + "_" + TimelineSearchSuggestionsProvider.DATABASE_NAME)) {
             suggestionsRestored += restoreFile(data,
                     MyStorage.getDatabasePath(TimelineSearchSuggestionsProvider.DATABASE_NAME));

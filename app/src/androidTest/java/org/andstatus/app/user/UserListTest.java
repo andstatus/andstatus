@@ -24,8 +24,8 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.ConversationInserter;
+import org.andstatus.app.database.DatabaseHolder;
 import org.andstatus.app.data.MatchedUri;
-import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.msg.MessageListContextMenuItem;
@@ -61,9 +61,9 @@ public class UserListTest extends ActivityInstrumentationTestCase2<TimelineActiv
         final String method = "testUsersOfMessage";
         TestSuite.waitForListLoaded(this, getActivity(), 2);
         ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<>(this, UserList.class);
-        long msgId = MyQuery.oidToId(MyDatabase.OidEnum.MSG_OID, TestSuite.getConversationOriginId(),
+        long msgId = MyQuery.oidToId(DatabaseHolder.OidEnum.MSG_OID, TestSuite.getConversationOriginId(),
                 TestSuite.CONVERSATION_MENTIONS_MESSAGE_OID);
-        String body = MyQuery.msgIdToStringColumnValue(MyDatabase.Msg.BODY, msgId);
+        String body = MyQuery.msgIdToStringColumnValue(DatabaseHolder.Msg.BODY, msgId);
         String logMsg = "msgId:" + msgId + "; text:'" + body + "'";
 
         List<MbUser> users = MbUser.fromOriginAndUserOid(TestSuite.getConversationMyAccount().getOriginId(), "").fromBodyText(body, false);

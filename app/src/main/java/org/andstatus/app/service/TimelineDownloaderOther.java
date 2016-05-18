@@ -22,7 +22,7 @@ import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DataInserter;
 import org.andstatus.app.data.LatestTimelineItem;
 import org.andstatus.app.data.LatestUserMessages;
-import org.andstatus.app.data.MyDatabase.OidEnum;
+import org.andstatus.app.database.DatabaseHolder.OidEnum;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.ConnectionException.StatusCode;

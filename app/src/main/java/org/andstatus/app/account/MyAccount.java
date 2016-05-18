@@ -32,8 +32,8 @@ import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DataInserter;
 import org.andstatus.app.data.LatestUserMessages;
 import org.andstatus.app.data.MatchedUri;
-import org.andstatus.app.data.MyDatabase;
-import org.andstatus.app.data.MyDatabaseConverterController;
+import org.andstatus.app.database.DatabaseHolder;
+import org.andstatus.app.database.MyDatabaseConverterController;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.ConnectionException.StatusCode;
@@ -75,7 +75,7 @@ public final class MyAccount {
     /**
      * This Key is both global for the application and the same - for one MyAccount
      * Global: Username of currently selected MyAccount (Current MyAccount)
-     * This MyAccount: Username of the {@link MyDatabase.User} corresponding to this {@link MyAccount}
+     * This MyAccount: Username of the {@link DatabaseHolder.User} corresponding to this {@link MyAccount}
      */
     public static final String KEY_USERNAME = "username";
     /**
@@ -84,11 +84,11 @@ public final class MyAccount {
      */
     public static final String KEY_USERNAME_NEW = "username_new";
     /**
-     * {@link MyDatabase.User#_ID} in our System.
+     * {@link DatabaseHolder.User#_ID} in our System.
      */
     public static final String KEY_USER_ID = "user_id";
     /**
-     * {@link MyDatabase.User#USER_OID} in Microblogging System.
+     * {@link DatabaseHolder.User#USER_OID} in Microblogging System.
      */
     public static final String KEY_USER_OID = "user_oid";
 
@@ -570,7 +570,7 @@ public final class MyAccount {
     private final AccountData accountData;
     private AccountName oAccountName;
     private String userOid;
-    /** Id in the database, see {@link MyDatabase.User#_ID} */
+    /** Id in the database, see {@link DatabaseHolder.User#_ID} */
     private long userId;
     private Connection connection = null;
     /** Was this user authenticated last time _current_ credentials were verified?
@@ -764,7 +764,7 @@ public final class MyAccount {
     }
     
     /**
-     * @return The system in which the User is defined, see {@link MyDatabase.Origin}
+     * @return The system in which the User is defined, see {@link DatabaseHolder.Origin}
      */
     public Origin getOrigin() {
         return oAccountName.getOrigin();

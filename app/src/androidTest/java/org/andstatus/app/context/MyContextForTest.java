@@ -22,7 +22,7 @@ import android.database.sqlite.SQLiteDatabase;
 
 import org.andstatus.app.account.PersistentAccounts;
 import org.andstatus.app.data.AssertionData;
-import org.andstatus.app.data.MyDatabase;
+import org.andstatus.app.database.DatabaseHolder;
 import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.origin.PersistentOrigins;
@@ -110,7 +110,7 @@ public class MyContextForTest implements MyContext {
     }
 
     @Override
-    public MyDatabase getMyDatabase() {
+    public DatabaseHolder getMyDatabase() {
         return myContext.getMyDatabase();
     }
 

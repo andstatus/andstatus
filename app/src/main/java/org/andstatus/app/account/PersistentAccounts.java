@@ -15,7 +15,7 @@ import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.data.MyDatabase;
+import org.andstatus.app.database.DatabaseHolder;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
@@ -487,8 +487,8 @@ public class PersistentAccounts {
 
     private void initializeMyFriends() {
         Set<Long> friends = new HashSet<>();
-        String sql = "SELECT DISTINCT " + MyDatabase.Friendship.FRIEND_ID + " FROM " + MyDatabase.Friendship.TABLE_NAME
-                + " WHERE " + MyDatabase.Friendship.FOLLOWED + "=1";
+        String sql = "SELECT DISTINCT " + DatabaseHolder.Friendship.FRIEND_ID + " FROM " + DatabaseHolder.Friendship.TABLE_NAME
+                + " WHERE " + DatabaseHolder.Friendship.FOLLOWED + "=1";
         SQLiteDatabase db = MyContextHolder.get().getDatabase();
         Cursor cursor = null;
         try {

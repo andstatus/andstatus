@@ -26,7 +26,7 @@ import android.support.annotation.NonNull;
 import net.jcip.annotations.GuardedBy;
 import net.jcip.annotations.ThreadSafe;
 
-import org.andstatus.app.data.MyDatabaseConverterController;
+import org.andstatus.app.database.MyDatabaseConverterController;
 import org.andstatus.app.graphics.MyImageCache;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.util.MyLog;

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.andstatus.app.data;
+package org.andstatus.app.database;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
@@ -24,6 +24,10 @@ import android.provider.BaseColumns;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextState;
 import org.andstatus.app.context.MyStorage;
+import org.andstatus.app.data.DownloadStatus;
+import org.andstatus.app.data.DownloadType;
+import org.andstatus.app.data.MyContentType;
+import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.net.http.SslModeEnum;
 import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.origin.OriginType;
@@ -36,7 +40,7 @@ import java.util.Locale;
  * Database definitions and helper class.
  * Used mainly by {@link MyProvider}
  */
-public final class MyDatabase extends SQLiteOpenHelper  {
+public final class DatabaseHolder extends SQLiteOpenHelper  {
     private final boolean creationEnabled;
     private boolean wasNotCreated = false;
 
@@ -148,7 +152,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
         public static final String CREATED_DATE = "msg_created_date";
         /**
          * Date and time when the message was sent,
-         * it's not equal to {@link MyDatabase.Msg#CREATED_DATE} for reblogged messages
+         * it's not equal to {@link DatabaseHolder.Msg#CREATED_DATE} for reblogged messages
          * We change the value if we reblog the message in the application 
          * or if we receive new reblog of the message
          * This value is set for unsent messages also. So it is updated after successful retrieval
@@ -466,7 +470,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
         USER_OID
     }
 
-    public MyDatabase(Context context, boolean creationEnabled) {
+    public DatabaseHolder(Context context, boolean creationEnabled) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
         this.creationEnabled = creationEnabled;
         if (!creationEnabled && !context.getDatabasePath(DATABASE_NAME).exists()) {

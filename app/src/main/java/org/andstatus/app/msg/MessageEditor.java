@@ -44,8 +44,8 @@ import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.database.DatabaseHolder;
 import org.andstatus.app.data.DownloadStatus;
-import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
@@ -453,7 +453,7 @@ public class MessageEditor {
     private void showMessageDetails() {
         String messageDetails = "";
         if (editorData.inReplyToId != 0) {
-            String replyToName = MyQuery.msgIdToUsername(MyDatabase.Msg.AUTHOR_ID, editorData.inReplyToId, MyPreferences.getUserInTimeline());
+            String replyToName = MyQuery.msgIdToUsername(DatabaseHolder.Msg.AUTHOR_ID, editorData.inReplyToId, MyPreferences.getUserInTimeline());
             messageDetails += " " + String.format(
                     MyContextHolder.get().context().getText(R.string.message_source_in_reply_to).toString(),
                     replyToName);
@@ -584,7 +584,7 @@ public class MessageEditor {
                         MyLog.v(MessageEditorData.TAG, "loadCurrentDraft acquired lock");
 
                         DownloadStatus status = DownloadStatus.load(
-                                MyQuery.msgIdToLongColumnValue(MyDatabase.Msg.MSG_STATUS, msgId));
+                                MyQuery.msgIdToLongColumnValue(DatabaseHolder.Msg.MSG_STATUS, msgId));
                         if (status.mayBeEdited()) {
                             return MessageEditorData.load(msgId);
                         } else {

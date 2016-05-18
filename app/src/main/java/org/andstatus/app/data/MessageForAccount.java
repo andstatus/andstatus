@@ -22,6 +22,7 @@ import android.provider.BaseColumns;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.database.DatabaseHolder;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
 
@@ -67,35 +68,35 @@ public class MessageForAccount {
         try {
             cursor = MyContextHolder.get().context().getContentResolver().query(uri, new String[]{
                     BaseColumns._ID,
-                    MyDatabase.Msg.MSG_STATUS,
-                    MyDatabase.Msg.BODY, MyDatabase.Msg.SENDER_ID,
-                    MyDatabase.Msg.AUTHOR_ID,
-                    MyDatabase.Msg.IN_REPLY_TO_USER_ID,
-                    MyDatabase.Msg.RECIPIENT_ID,
-                    MyDatabase.MsgOfUser.SUBSCRIBED,
-                    MyDatabase.MsgOfUser.FAVORITED,
-                    MyDatabase.MsgOfUser.REBLOGGED,
-                    MyDatabase.Friendship.SENDER_FOLLOWED,
-                    MyDatabase.Friendship.AUTHOR_FOLLOWED,
-                    MyDatabase.Download.IMAGE_FILE_NAME
+                    DatabaseHolder.Msg.MSG_STATUS,
+                    DatabaseHolder.Msg.BODY, DatabaseHolder.Msg.SENDER_ID,
+                    DatabaseHolder.Msg.AUTHOR_ID,
+                    DatabaseHolder.Msg.IN_REPLY_TO_USER_ID,
+                    DatabaseHolder.Msg.RECIPIENT_ID,
+                    DatabaseHolder.MsgOfUser.SUBSCRIBED,
+                    DatabaseHolder.MsgOfUser.FAVORITED,
+                    DatabaseHolder.MsgOfUser.REBLOGGED,
+                    DatabaseHolder.Friendship.SENDER_FOLLOWED,
+                    DatabaseHolder.Friendship.AUTHOR_FOLLOWED,
+                    DatabaseHolder.Download.IMAGE_FILE_NAME
             }, null, null, null);
             if (cursor != null && cursor.moveToFirst()) {
-                status = DownloadStatus.load(DbUtils.getLong(cursor, MyDatabase.Msg.MSG_STATUS));
-                authorId = DbUtils.getLong(cursor, MyDatabase.Msg.AUTHOR_ID);
-                senderId = DbUtils.getLong(cursor, MyDatabase.Msg.SENDER_ID);
-                recipientId = DbUtils.getLong(cursor, MyDatabase.Msg.RECIPIENT_ID);
-                imageFilename = DbUtils.getString(cursor, MyDatabase.Download.IMAGE_FILE_NAME);
+                status = DownloadStatus.load(DbUtils.getLong(cursor, DatabaseHolder.Msg.MSG_STATUS));
+                authorId = DbUtils.getLong(cursor, DatabaseHolder.Msg.AUTHOR_ID);
+                senderId = DbUtils.getLong(cursor, DatabaseHolder.Msg.SENDER_ID);
+                recipientId = DbUtils.getLong(cursor, DatabaseHolder.Msg.RECIPIENT_ID);
+                imageFilename = DbUtils.getString(cursor, DatabaseHolder.Download.IMAGE_FILE_NAME);
                 bodyTrimmed = I18n.trimTextAt(MyHtml.fromHtml(
-                        DbUtils.getString(cursor, MyDatabase.Msg.BODY)), 80).toString();
-                inReplyToUserId = DbUtils.getLong(cursor, MyDatabase.Msg.IN_REPLY_TO_USER_ID);
+                        DbUtils.getString(cursor, DatabaseHolder.Msg.BODY)), 80).toString();
+                inReplyToUserId = DbUtils.getLong(cursor, DatabaseHolder.Msg.IN_REPLY_TO_USER_ID);
                 mayBePrivate = (recipientId != 0) || (inReplyToUserId != 0);
                 
                 isRecipient = (userId == recipientId) || (userId == inReplyToUserId);
-                isSubscribed = DbUtils.getBoolean(cursor, MyDatabase.MsgOfUser.SUBSCRIBED);
-                favorited = DbUtils.getBoolean(cursor, MyDatabase.MsgOfUser.FAVORITED);
-                reblogged = DbUtils.getBoolean(cursor, MyDatabase.MsgOfUser.REBLOGGED);
-                senderFollowed = DbUtils.getBoolean(cursor, MyDatabase.Friendship.SENDER_FOLLOWED);
-                authorFollowed = DbUtils.getBoolean(cursor, MyDatabase.Friendship.AUTHOR_FOLLOWED);
+                isSubscribed = DbUtils.getBoolean(cursor, DatabaseHolder.MsgOfUser.SUBSCRIBED);
+                favorited = DbUtils.getBoolean(cursor, DatabaseHolder.MsgOfUser.FAVORITED);
+                reblogged = DbUtils.getBoolean(cursor, DatabaseHolder.MsgOfUser.REBLOGGED);
+                senderFollowed = DbUtils.getBoolean(cursor, DatabaseHolder.Friendship.SENDER_FOLLOWED);
+                authorFollowed = DbUtils.getBoolean(cursor, DatabaseHolder.Friendship.AUTHOR_FOLLOWED);
                 isSender = (userId == senderId);
                 isAuthor = (userId == authorId);
             }

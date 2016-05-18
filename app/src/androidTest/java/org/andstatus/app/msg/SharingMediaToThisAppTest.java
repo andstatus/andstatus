@@ -18,7 +18,7 @@ import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyContentType;
-import org.andstatus.app.data.MyDatabase;
+import org.andstatus.app.database.DatabaseHolder;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.service.MyServiceTestHelper;
 import org.andstatus.app.util.MyLog;
@@ -95,10 +95,10 @@ public class SharingMediaToThisAppTest extends ActivityInstrumentationTestCase2<
         assertTrue(message, mService.httpConnectionMock.substring2PostedPath("statuses/update").length() > 0);
 
         String condition = "BODY='" + body + "'";
-        long unsentMsgId = MyQuery.conditionToLongColumnValue(MyDatabase.Msg.TABLE_NAME, BaseColumns._ID, condition);
+        long unsentMsgId = MyQuery.conditionToLongColumnValue(DatabaseHolder.Msg.TABLE_NAME, BaseColumns._ID, condition);
         assertTrue("Unsent message found: " + condition, unsentMsgId != 0);
         assertEquals("Status of unsent message", DownloadStatus.SENDING, DownloadStatus.load(
-                MyQuery.msgIdToLongColumnValue(MyDatabase.Msg.MSG_STATUS, unsentMsgId)));
+                MyQuery.msgIdToLongColumnValue(DatabaseHolder.Msg.MSG_STATUS, unsentMsgId)));
 
         DownloadData dd = DownloadData.getSingleForMessage(unsentMsgId,
                 MyContentType.IMAGE, null);

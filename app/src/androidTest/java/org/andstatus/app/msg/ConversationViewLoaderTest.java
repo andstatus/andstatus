@@ -7,7 +7,7 @@ import org.andstatus.app.LoadableListActivity.ProgressPublisher;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.data.MyDatabase.OidEnum;
+import org.andstatus.app.database.DatabaseHolder.OidEnum;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.util.MyLog;
 

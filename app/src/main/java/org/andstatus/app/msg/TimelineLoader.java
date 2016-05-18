@@ -25,7 +25,7 @@ import org.andstatus.app.WhichPage;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.LatestTimelineItem;
-import org.andstatus.app.data.MyDatabase;
+import org.andstatus.app.database.DatabaseHolder;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.util.I18n;
@@ -123,7 +123,7 @@ public class TimelineLoader implements LoadableListActivity.SyncLoader {
                     }
                     break;
                 default:
-                    if ( MyQuery.userIdToLongColumnValue(MyDatabase.User.HOME_TIMELINE_DATE, getParams().myAccountUserId) == 0) {
+                    if ( MyQuery.userIdToLongColumnValue(DatabaseHolder.User.HOME_TIMELINE_DATE, getParams().myAccountUserId) == 0) {
                         // This is supposed to be a one time task.
                         getParams().timelineToSync = TimelineType.ALL;
                     }

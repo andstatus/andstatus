@@ -23,9 +23,10 @@ import android.text.TextUtils;
 
 import org.andstatus.app.ClassInApplicationPackage;
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.data.MyDatabase.Msg;
-import org.andstatus.app.data.MyDatabase.Origin;
-import org.andstatus.app.data.MyDatabase.User;
+import org.andstatus.app.database.DatabaseHolder;
+import org.andstatus.app.database.DatabaseHolder.Msg;
+import org.andstatus.app.database.DatabaseHolder.Origin;
+import org.andstatus.app.database.DatabaseHolder.User;
 import org.andstatus.app.user.UserListType;
 
 /**
@@ -43,7 +44,7 @@ public enum MatchedUri {
      */
     TIMELINE_ITEM(4),
     /**
-     * Operations on {@link MyDatabase.Msg} itself
+     * Operations on {@link DatabaseHolder.Msg} itself
      */
     MSG(7),
     MSG_ITEM(10),
@@ -55,7 +56,7 @@ public enum MatchedUri {
      */
     USERLIST(5),
     /**
-     * Operations on {@link MyDatabase.User} itself
+     * Operations on {@link DatabaseHolder.User} itself
      */
     USER(6),
     USER_ITEM(9),
@@ -184,7 +185,7 @@ public enum MatchedUri {
 
     /**
      * Build a Timeline Uri for this User / {@link MyAccount}
-     * @param accountUserId {@link MyDatabase.User#USER_ID}. This user <i>may</i> be an account: {@link MyAccount#getUserId()} 
+     * @param accountUserId {@link DatabaseHolder.User#USER_ID}. This user <i>may</i> be an account: {@link MyAccount#getUserId()}
      */
     public static Uri getTimelineUri(long accountUserId, TimelineType timelineType, boolean isListCombined, long selectedUserId) {
         Uri uri = getBaseAccountUri(accountUserId, Msg.TABLE_NAME); 
@@ -196,12 +197,12 @@ public enum MatchedUri {
     }
 
     public static Uri getMsgUri(long accountUserId, long msgId) {
-        return getContentItemUri(accountUserId, MyDatabase.Msg.TABLE_NAME, msgId);
+        return getContentItemUri(accountUserId, DatabaseHolder.Msg.TABLE_NAME, msgId);
     }
 
     /**
      * Build a UseList Uri for this User / {@link MyAccount}
-     * @param accountUserId {@link MyDatabase.User#USER_ID}. This user <i>may</i> be an account: {@link MyAccount#getUserId()}
+     * @param accountUserId {@link DatabaseHolder.User#USER_ID}. This user <i>may</i> be an account: {@link MyAccount#getUserId()}
      */
     public static Uri getUserListUri(long accountUserId, UserListType userListType, boolean isListCombined, long centralItemId) {
         Uri uri = getBaseAccountUri(accountUserId, User.TABLE_NAME);
@@ -213,16 +214,16 @@ public enum MatchedUri {
     }
 
     public static Uri getUserUri(long accountUserId, long userId) {
-        return getContentItemUri(accountUserId, MyDatabase.User.TABLE_NAME, userId);
+        return getContentItemUri(accountUserId, DatabaseHolder.User.TABLE_NAME, userId);
     }
 
     public static Uri getOriginUri(long originId) {
-        return getContentItemUri(0, MyDatabase.Origin.TABLE_NAME, originId);
+        return getContentItemUri(0, DatabaseHolder.Origin.TABLE_NAME, originId);
     }
 
     /**
      * @param accountUserId userId of MyAccount or 0 if not needed
-     * @param tableName name in the {@link MyDatabase}
+     * @param tableName name in the {@link DatabaseHolder}
      * @param itemId ID or 0 - if the Item doesn't exist
      */
     private static Uri getContentItemUri(long accountUserId, String tableName, long itemId) {

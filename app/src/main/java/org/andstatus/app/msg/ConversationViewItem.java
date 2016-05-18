@@ -26,9 +26,9 @@ import org.andstatus.app.data.AttachedImageFile;
 import org.andstatus.app.data.AvatarFile;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.DownloadStatus;
-import org.andstatus.app.data.MyDatabase.Msg;
-import org.andstatus.app.data.MyDatabase.MsgOfUser;
-import org.andstatus.app.data.MyDatabase.User;
+import org.andstatus.app.database.DatabaseHolder.Msg;
+import org.andstatus.app.database.DatabaseHolder.MsgOfUser;
+import org.andstatus.app.database.DatabaseHolder.User;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.TimelineSql;
 

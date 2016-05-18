@@ -18,7 +18,7 @@ package org.andstatus.app.user;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.data.MyDatabase;
+import org.andstatus.app.database.DatabaseHolder;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.origin.Origin;
@@ -37,7 +37,7 @@ public class UsersOfMessageListLoader extends UserListLoader {
         super(userListType, ma, centralItemId, isListCombined);
 
         mSelectedMessageId = centralItemId;
-        messageBody = MyQuery.msgIdToStringColumnValue(MyDatabase.Msg.BODY, mSelectedMessageId);
+        messageBody = MyQuery.msgIdToStringColumnValue(DatabaseHolder.Msg.BODY, mSelectedMessageId);
         mOriginOfSelectedMessage = MyContextHolder.get().persistentOrigins().fromId(
                 MyQuery.msgIdToOriginId(mSelectedMessageId));
     }
@@ -50,20 +50,20 @@ public class UsersOfMessageListLoader extends UserListLoader {
 
     private void addFromMessageRow() {
         MbUser author = addUserIdToList(mOriginOfSelectedMessage,
-                MyQuery.msgIdToLongColumnValue(MyDatabase.Msg.AUTHOR_ID, mSelectedMessageId)).mbUser;
+                MyQuery.msgIdToLongColumnValue(DatabaseHolder.Msg.AUTHOR_ID, mSelectedMessageId)).mbUser;
         addUserIdToList(mOriginOfSelectedMessage,
-                MyQuery.msgIdToLongColumnValue(MyDatabase.Msg.SENDER_ID, mSelectedMessageId));
+                MyQuery.msgIdToLongColumnValue(DatabaseHolder.Msg.SENDER_ID, mSelectedMessageId));
         addUserIdToList(mOriginOfSelectedMessage,
-                MyQuery.msgIdToLongColumnValue(MyDatabase.Msg.IN_REPLY_TO_USER_ID, mSelectedMessageId));
+                MyQuery.msgIdToLongColumnValue(DatabaseHolder.Msg.IN_REPLY_TO_USER_ID, mSelectedMessageId));
         addUserIdToList(mOriginOfSelectedMessage,
-                MyQuery.msgIdToLongColumnValue(MyDatabase.Msg.RECIPIENT_ID, mSelectedMessageId));
+                MyQuery.msgIdToLongColumnValue(DatabaseHolder.Msg.RECIPIENT_ID, mSelectedMessageId));
         addUsersFromMessageBody(author);
         addRebloggers();
     }
 
     private void addUsersFromMessageBody(MbUser author) {
         List<MbUser> users = author.fromBodyText(
-                MyQuery.msgIdToStringColumnValue(MyDatabase.Msg.BODY, mSelectedMessageId), false);
+                MyQuery.msgIdToStringColumnValue(DatabaseHolder.Msg.BODY, mSelectedMessageId), false);
         for (MbUser mbUser: users) {
             addUserToList(UserListViewItem.fromMbUser(mbUser));
         }

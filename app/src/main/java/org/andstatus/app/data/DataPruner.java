@@ -24,10 +24,11 @@ import android.database.sqlite.SQLiteDatabase;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.data.MyDatabase.Download;
-import org.andstatus.app.data.MyDatabase.Msg;
-import org.andstatus.app.data.MyDatabase.MsgOfUser;
-import org.andstatus.app.data.MyDatabase.User;
+import org.andstatus.app.database.DatabaseHolder;
+import org.andstatus.app.database.DatabaseHolder.Download;
+import org.andstatus.app.database.DatabaseHolder.Msg;
+import org.andstatus.app.database.DatabaseHolder.MsgOfUser;
+import org.andstatus.app.database.DatabaseHolder.User;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.SelectionAndArgs;
@@ -74,16 +75,16 @@ public class DataPruner {
         // Don't delete messages, which are favorited by any user
         String sqlNotFavoritedMessage = "NOT EXISTS ("
                 + "SELECT * FROM " + MsgOfUser.TABLE_NAME + " AS gnf WHERE "
-                + Msg.TABLE_NAME + "." + Msg._ID + "=gnf." + MyDatabase.MsgOfUser.MSG_ID
-                + " AND gnf." + MyDatabase.MsgOfUser.FAVORITED + "=1" 
+                + Msg.TABLE_NAME + "." + Msg._ID + "=gnf." + DatabaseHolder.MsgOfUser.MSG_ID
+                + " AND gnf." + DatabaseHolder.MsgOfUser.FAVORITED + "=1"
                 + ")";
         String sqlNotLatestMessageByFollowedUser = Msg.TABLE_NAME + "." + Msg._ID + " NOT IN("
                 + "SELECT " + User.USER_MSG_ID 
                 + " FROM " + User.TABLE_NAME + " AS userf"
-                + " INNER JOIN " + MyDatabase.Friendship.TABLE_NAME
+                + " INNER JOIN " + DatabaseHolder.Friendship.TABLE_NAME
                 + " ON" 
-                + " userf." + User._ID + "=" + MyDatabase.Friendship.TABLE_NAME + "." + MyDatabase.Friendship.FRIEND_ID
-                + " AND " + MyDatabase.Friendship.TABLE_NAME + "." + MyDatabase.Friendship.FOLLOWED + "=1"
+                + " userf." + User._ID + "=" + DatabaseHolder.Friendship.TABLE_NAME + "." + DatabaseHolder.Friendship.FRIEND_ID
+                + " AND " + DatabaseHolder.Friendship.TABLE_NAME + "." + DatabaseHolder.Friendship.FOLLOWED + "=1"
                 + ")";
 
         int maxDays = Integer.parseInt(sp.getString(MyPreferences.KEY_HISTORY_TIME, "3"));
@@ -99,7 +100,7 @@ public class DataPruner {
             if (maxDays > 0) {
                 latestTimestamp = System.currentTimeMillis() - java.util.concurrent.TimeUnit.DAYS.toMillis(maxDays);
                 SelectionAndArgs sa = new SelectionAndArgs();
-                sa.addSelection(Msg.TABLE_NAME + "." + MyDatabase.Msg.INS_DATE + " <  ?", 
+                sa.addSelection(Msg.TABLE_NAME + "." + DatabaseHolder.Msg.INS_DATE + " <  ?",
                         new String[] {String.valueOf(latestTimestamp)});
                 sa.addSelection(sqlNotFavoritedMessage);
                 sa.addSelection(sqlNotLatestMessageByFollowedUser);
@@ -118,15 +119,15 @@ public class DataPruner {
                 if (nToDeleteSize > 0) {
                     // Find INS_DATE of the most recent tweet to delete
                     cursor = mContentResolver.query(MatchedUri.MSG_CONTENT_URI, new String[] {
-                            MyDatabase.Msg.INS_DATE
-                    }, null, null, MyDatabase.Msg.INS_DATE + " ASC LIMIT 0," + nToDeleteSize);
+                            DatabaseHolder.Msg.INS_DATE
+                    }, null, null, DatabaseHolder.Msg.INS_DATE + " ASC LIMIT 0," + nToDeleteSize);
                     if (cursor.moveToLast()) {
                         latestTimestampSize = cursor.getLong(0);
                     }
                     cursor.close();
                     if (latestTimestampSize > 0) {
                         SelectionAndArgs sa = new SelectionAndArgs();
-                        sa.addSelection(Msg.TABLE_NAME + "." + MyDatabase.Msg.INS_DATE + " <=  ?", 
+                        sa.addSelection(Msg.TABLE_NAME + "." + DatabaseHolder.Msg.INS_DATE + " <=  ?",
                                 new String[] {String.valueOf(latestTimestampSize)});
                         sa.addSelection(sqlNotFavoritedMessage);
                         sa.addSelection(sqlNotLatestMessageByFollowedUser);

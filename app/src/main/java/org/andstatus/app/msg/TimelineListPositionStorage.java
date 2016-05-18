@@ -21,7 +21,7 @@ import android.text.TextUtils;
 import android.widget.ListView;
 
 import org.andstatus.app.LoadableListActivity;
-import org.andstatus.app.data.MyDatabase;
+import org.andstatus.app.database.DatabaseHolder;
 import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
@@ -30,7 +30,7 @@ import org.andstatus.app.util.SharedPreferencesUtil;
  * Determines where to save / retrieve position in the list
  * Information on two rows is stored for each "position" hence two keys. 
  * Plus Query string is being stored for the search results.
- * 2014-11-15 We are storing {@link MyDatabase.Msg#SENT_DATE} for the last item to retrieve, not its ID as before
+ * 2014-11-15 We are storing {@link DatabaseHolder.Msg#SENT_DATE} for the last item to retrieve, not its ID as before
  * @author yvolk@yurivolkov.com
  */
 class TimelineListPositionStorage {

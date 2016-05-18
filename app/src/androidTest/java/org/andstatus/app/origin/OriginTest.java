@@ -8,7 +8,7 @@ import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.context.UserInTimeline;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MessageInserter;
-import org.andstatus.app.data.MyDatabase;
+import org.andstatus.app.database.DatabaseHolder;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.net.http.OAuthClientKeysTest;
 import org.andstatus.app.net.http.SslModeEnum;
@@ -175,7 +175,7 @@ public class OriginTest extends InstrumentationTestCase {
         long msgId = MessageInserter.addMessageForAccount(TestSuite.TWITTER_TEST_ACCOUNT_NAME,
                 body, messageOid, DownloadStatus.LOADED);
         assertTrue(msgId != 0);
-        String userName = MyQuery.msgIdToUsername(MyDatabase.Msg.AUTHOR_ID, msgId, 
+        String userName = MyQuery.msgIdToUsername(DatabaseHolder.Msg.AUTHOR_ID, msgId,
                 UserInTimeline.USERNAME);
         String permalink = origin.messagePermalink(msgId);
         String desc = "Permalink of Twitter message '" + messageOid + "' by '" + userName

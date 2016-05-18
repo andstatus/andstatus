@@ -17,7 +17,7 @@
 package org.andstatus.app.origin;
 
 import org.andstatus.app.R;
-import org.andstatus.app.data.MyDatabase.Msg;
+import org.andstatus.app.database.DatabaseHolder.Msg;
 import org.andstatus.app.data.MyQuery;
 
 class OriginPumpio extends Origin {

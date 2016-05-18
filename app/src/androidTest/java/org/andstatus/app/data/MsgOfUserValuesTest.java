@@ -3,7 +3,7 @@ package org.andstatus.app.data;
 import android.content.ContentValues;
 import android.test.InstrumentationTestCase;
 
-import org.andstatus.app.data.MyDatabase.MsgOfUser;
+import org.andstatus.app.database.DatabaseHolder.MsgOfUser;
 
 public class MsgOfUserValuesTest extends InstrumentationTestCase {
     public void testCreationFromContentValues() {

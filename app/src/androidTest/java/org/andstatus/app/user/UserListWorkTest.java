@@ -25,7 +25,7 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MatchedUri;
-import org.andstatus.app.data.MyDatabase;
+import org.andstatus.app.database.DatabaseHolder;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.util.MyLog;
@@ -47,7 +47,7 @@ public class UserListWorkTest extends ActivityInstrumentationTestCase2<UserList>
         assertTrue(ma.isValid());
         MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
 
-        long msgId = MyQuery.oidToId(MyDatabase.OidEnum.MSG_OID, TestSuite.getConversationOriginId(),
+        long msgId = MyQuery.oidToId(DatabaseHolder.OidEnum.MSG_OID, TestSuite.getConversationOriginId(),
                 TestSuite.CONVERSATION_MENTIONS_MESSAGE_OID);
         assertTrue(msgId > 0);
 

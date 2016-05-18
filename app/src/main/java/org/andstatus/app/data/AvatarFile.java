@@ -22,6 +22,7 @@ import android.support.annotation.NonNull;
 
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.database.DatabaseHolder;
 import org.andstatus.app.graphics.MyDrawableCache;
 import org.andstatus.app.graphics.MyImageCache;
 
@@ -43,7 +44,7 @@ public class AvatarFile {
     public static Drawable getDrawable(long authorId, Cursor cursor) {
         Drawable drawable = null;
         if (MyPreferences.getShowAvatars()) {
-            String avatarFilename = DbUtils.getString(cursor, MyDatabase.Download.AVATAR_FILE_NAME);
+            String avatarFilename = DbUtils.getString(cursor, DatabaseHolder.Download.AVATAR_FILE_NAME);
             AvatarFile avatarFile = new AvatarFile(authorId, avatarFilename);
             drawable = avatarFile.getDrawable();
         }

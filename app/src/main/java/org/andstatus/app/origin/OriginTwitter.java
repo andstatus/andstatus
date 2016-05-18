@@ -20,8 +20,8 @@ import android.net.Uri;
 
 import org.andstatus.app.R;
 import org.andstatus.app.context.UserInTimeline;
-import org.andstatus.app.data.MyDatabase;
-import org.andstatus.app.data.MyDatabase.Msg;
+import org.andstatus.app.database.DatabaseHolder;
+import org.andstatus.app.database.DatabaseHolder.Msg;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.UriUtils;
@@ -65,7 +65,7 @@ class OriginTwitter extends Origin {
         if (url == null) {
             return "";
         }
-        String userName = MyQuery.msgIdToUsername(MyDatabase.Msg.AUTHOR_ID, messageId, 
+        String userName = MyQuery.msgIdToUsername(DatabaseHolder.Msg.AUTHOR_ID, messageId,
                 UserInTimeline.USERNAME);
         return Uri.withAppendedPath(fixUriforPermalink(UriUtils.fromUrl(url)), userName
                 + "/status/"

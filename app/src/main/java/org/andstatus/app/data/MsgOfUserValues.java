@@ -23,7 +23,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.provider.BaseColumns;
 import android.text.TextUtils;
 
-import org.andstatus.app.data.MyDatabase.MsgOfUser;
+import org.andstatus.app.database.DatabaseHolder.MsgOfUser;
 
 class MsgOfUserValues {
     private long rowId;
