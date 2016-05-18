@@ -63,12 +63,12 @@ public class DatabaseConverterController {
                     + ": not initialized yet");
             skip = true;
         }
-        if (!skip && aquireUpgradeLock(requestorName)) {
+        if (!skip && acquireUpgradeLock(requestorName)) {
             doUpgrade(upgradeRequestorIn);
         }
     }
 
-    private static boolean aquireUpgradeLock(String requestorName) {
+    private static boolean acquireUpgradeLock(String requestorName) {
         boolean skip = false;
         synchronized(UPGRADE_LOCK) {
             if (isUpgrading()) {

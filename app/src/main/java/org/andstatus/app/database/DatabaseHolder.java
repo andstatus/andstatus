@@ -77,7 +77,7 @@ public final class DatabaseHolder extends SQLiteOpenHelper  {
             MyLog.e(this, "Database creation disabled");
             return;
         }
-        new DatabaseCreator(db).create();
+        new DatabaseCreator(db).create().insertData();
     }
 
     /**

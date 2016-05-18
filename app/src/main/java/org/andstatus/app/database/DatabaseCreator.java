@@ -67,7 +67,7 @@ public class DatabaseCreator {
      * On data types in SQLite see <a href="http://www.sqlite.org/datatype3.html">Datatypes In SQLite Version 3</a>.
      * See also <a href="http://sqlite.org/autoinc.html">SQLite Autoincrement</a>.
      */
-    public void create() {
+    public DatabaseCreator create() {
         MyLog.i(this, "Creating tables");
         DbUtils.execSQL(db, "CREATE TABLE " + MsgTable.TABLE_NAME + " ("
                 + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
@@ -211,6 +211,10 @@ public class DatabaseCreator {
                 + OriginTable.ORIGIN_NAME
                 + ")");
 
+        return this;
+    }
+
+    void insertData() {
         String sqlIns = "INSERT INTO " + OriginTable.TABLE_NAME + " ("
                 + BaseColumns._ID + ","
                 + OriginTable.ORIGIN_TYPE_ID + ","
