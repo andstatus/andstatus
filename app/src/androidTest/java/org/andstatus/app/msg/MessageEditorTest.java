@@ -38,11 +38,11 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.database.DatabaseHolder;
 import org.andstatus.app.data.MatchedUri;
-import org.andstatus.app.database.DatabaseHolder.OidEnum;
+import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.TimelineType;
+import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
@@ -265,7 +265,7 @@ public class MessageEditorTest extends ActivityInstrumentationTestCase2<Timeline
         long msgId = helper.getListItemIdOfLoadedReply();
         String logMsg = "msgId=" + msgId;
 
-        String body = MyQuery.msgIdToStringColumnValue(DatabaseHolder.Msg.BODY, msgId);
+        String body = MyQuery.msgIdToStringColumnValue(MsgTable.BODY, msgId);
         helper.invokeContextMenuAction4ListItemId(method, msgId, MessageListContextMenuItem.COPY_TEXT);
         assertEquals(logMsg, body, getClipboardText(method));
 

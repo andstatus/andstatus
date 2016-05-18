@@ -19,7 +19,7 @@ package org.andstatus.app.msg;
 import android.database.Cursor;
 
 import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.database.DatabaseHolder.Msg;
+import org.andstatus.app.database.MsgTable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,17 +30,17 @@ public class ConversationMemberItem extends ConversationItem {
     @Override
     String[] getProjection() {
         List<String> columnNames = new ArrayList<String>();
-        columnNames.add(Msg._ID);
-        columnNames.add(Msg.CREATED_DATE);
-        columnNames.add(Msg.IN_REPLY_TO_MSG_ID);
-        columnNames.add(Msg.AUTHOR_ID);
+        columnNames.add(MsgTable._ID);
+        columnNames.add(MsgTable.CREATED_DATE);
+        columnNames.add(MsgTable.IN_REPLY_TO_MSG_ID);
+        columnNames.add(MsgTable.AUTHOR_ID);
         return columnNames.toArray(new String[]{});
     }
 
     @Override
     void load(Cursor cursor) {
         super.load(cursor);
-        authorId = DbUtils.getLong(cursor, Msg.AUTHOR_ID);
+        authorId = DbUtils.getLong(cursor, MsgTable.AUTHOR_ID);
     }
 
     @Override

@@ -24,11 +24,11 @@ import android.database.sqlite.SQLiteDatabase;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.database.DatabaseHolder;
-import org.andstatus.app.database.DatabaseHolder.Download;
-import org.andstatus.app.database.DatabaseHolder.Msg;
-import org.andstatus.app.database.DatabaseHolder.MsgOfUser;
-import org.andstatus.app.database.DatabaseHolder.User;
+import org.andstatus.app.database.DownloadTable;
+import org.andstatus.app.database.FriendshipTable;
+import org.andstatus.app.database.MsgTable;
+import org.andstatus.app.database.MsgOfUserTable;
+import org.andstatus.app.database.UserTable;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.SelectionAndArgs;
@@ -74,17 +74,17 @@ public class DataPruner {
 
         // Don't delete messages, which are favorited by any user
         String sqlNotFavoritedMessage = "NOT EXISTS ("
-                + "SELECT * FROM " + MsgOfUser.TABLE_NAME + " AS gnf WHERE "
-                + Msg.TABLE_NAME + "." + Msg._ID + "=gnf." + DatabaseHolder.MsgOfUser.MSG_ID
-                + " AND gnf." + DatabaseHolder.MsgOfUser.FAVORITED + "=1"
+                + "SELECT * FROM " + MsgOfUserTable.TABLE_NAME + " AS gnf WHERE "
+                + MsgTable.TABLE_NAME + "." + MsgTable._ID + "=gnf." + MsgOfUserTable.MSG_ID
+                + " AND gnf." + MsgOfUserTable.FAVORITED + "=1"
                 + ")";
-        String sqlNotLatestMessageByFollowedUser = Msg.TABLE_NAME + "." + Msg._ID + " NOT IN("
-                + "SELECT " + User.USER_MSG_ID 
-                + " FROM " + User.TABLE_NAME + " AS userf"
-                + " INNER JOIN " + DatabaseHolder.Friendship.TABLE_NAME
+        String sqlNotLatestMessageByFollowedUser = MsgTable.TABLE_NAME + "." + MsgTable._ID + " NOT IN("
+                + "SELECT " + UserTable.USER_MSG_ID
+                + " FROM " + UserTable.TABLE_NAME + " AS userf"
+                + " INNER JOIN " + FriendshipTable.TABLE_NAME
                 + " ON" 
-                + " userf." + User._ID + "=" + DatabaseHolder.Friendship.TABLE_NAME + "." + DatabaseHolder.Friendship.FRIEND_ID
-                + " AND " + DatabaseHolder.Friendship.TABLE_NAME + "." + DatabaseHolder.Friendship.FOLLOWED + "=1"
+                + " userf." + UserTable._ID + "=" + FriendshipTable.TABLE_NAME + "." + FriendshipTable.FRIEND_ID
+                + " AND " + FriendshipTable.TABLE_NAME + "." + FriendshipTable.FOLLOWED + "=1"
                 + ")";
 
         int maxDays = Integer.parseInt(sp.getString(MyPreferences.KEY_HISTORY_TIME, "3"));
@@ -100,7 +100,7 @@ public class DataPruner {
             if (maxDays > 0) {
                 latestTimestamp = System.currentTimeMillis() - java.util.concurrent.TimeUnit.DAYS.toMillis(maxDays);
                 SelectionAndArgs sa = new SelectionAndArgs();
-                sa.addSelection(Msg.TABLE_NAME + "." + DatabaseHolder.Msg.INS_DATE + " <  ?",
+                sa.addSelection(MsgTable.TABLE_NAME + "." + MsgTable.INS_DATE + " <  ?",
                         new String[] {String.valueOf(latestTimestamp)});
                 sa.addSelection(sqlNotFavoritedMessage);
                 sa.addSelection(sqlNotLatestMessageByFollowedUser);
@@ -119,15 +119,15 @@ public class DataPruner {
                 if (nToDeleteSize > 0) {
                     // Find INS_DATE of the most recent tweet to delete
                     cursor = mContentResolver.query(MatchedUri.MSG_CONTENT_URI, new String[] {
-                            DatabaseHolder.Msg.INS_DATE
-                    }, null, null, DatabaseHolder.Msg.INS_DATE + " ASC LIMIT 0," + nToDeleteSize);
+                            MsgTable.INS_DATE
+                    }, null, null, MsgTable.INS_DATE + " ASC LIMIT 0," + nToDeleteSize);
                     if (cursor.moveToLast()) {
                         latestTimestampSize = cursor.getLong(0);
                     }
                     cursor.close();
                     if (latestTimestampSize > 0) {
                         SelectionAndArgs sa = new SelectionAndArgs();
-                        sa.addSelection(Msg.TABLE_NAME + "." + DatabaseHolder.Msg.INS_DATE + " <=  ?",
+                        sa.addSelection(MsgTable.TABLE_NAME + "." + MsgTable.INS_DATE + " <=  ?",
                                 new String[] {String.valueOf(latestTimestampSize)});
                         sa.addSelection(sqlNotFavoritedMessage);
                         sa.addSelection(sqlNotLatestMessageByFollowedUser);
@@ -160,11 +160,11 @@ public class DataPruner {
 
     long pruneAttachments() {
         final String method = "pruneAttachments";
-        String sql = "SELECT DISTINCT " + Download.MSG_ID + " FROM " + Download.TABLE_NAME
-                + " WHERE " + Download.MSG_ID + " NOT NULL"
+        String sql = "SELECT DISTINCT " + DownloadTable.MSG_ID + " FROM " + DownloadTable.TABLE_NAME
+                + " WHERE " + DownloadTable.MSG_ID + " NOT NULL"
                 + " AND NOT EXISTS (" 
-                + "SELECT * FROM " + Msg.TABLE_NAME 
-                + " WHERE " + Msg.TABLE_NAME + "." + Msg._ID + "=" + Download.MSG_ID 
+                + "SELECT * FROM " + MsgTable.TABLE_NAME
+                + " WHERE " + MsgTable.TABLE_NAME + "." + MsgTable._ID + "=" + DownloadTable.MSG_ID
                 + ")";
         SQLiteDatabase db = MyContextHolder.get().getDatabase();
         if (db == null) {

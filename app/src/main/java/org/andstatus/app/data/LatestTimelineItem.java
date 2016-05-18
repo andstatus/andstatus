@@ -22,7 +22,7 @@ import android.text.TextUtils;
 
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.database.DatabaseHolder.User;
+import org.andstatus.app.database.UserTable;
 import org.andstatus.app.net.social.TimelinePosition;
 import org.andstatus.app.util.MyLog;
 
@@ -174,7 +174,7 @@ public class LatestTimelineItem {
                 + timelineItemDate;
             }
 
-            sql = "UPDATE " + User.TABLE_NAME + " SET " + sql 
+            sql = "UPDATE " + UserTable.TABLE_NAME + " SET " + sql
                     + " WHERE " + BaseColumns._ID + "=" + userId;
 
             SQLiteDatabase db = MyContextHolder.get().getDatabase();

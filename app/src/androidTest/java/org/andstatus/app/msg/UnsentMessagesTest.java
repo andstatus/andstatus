@@ -10,9 +10,9 @@ import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.database.DatabaseHolder;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyQuery;
+import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.service.MyServiceTestHelper;
 import org.andstatus.app.util.MyLog;
 
@@ -66,11 +66,11 @@ public class UnsentMessagesTest extends ActivityInstrumentationTestCase2<Timelin
         mService.waitForServiceStopped();
 
         String condition = "BODY='" + body + "'";
-        long unsentMsgId = MyQuery.conditionToLongColumnValue(DatabaseHolder.Msg.TABLE_NAME, BaseColumns._ID, condition);
+        long unsentMsgId = MyQuery.conditionToLongColumnValue(MsgTable.TABLE_NAME, BaseColumns._ID, condition);
         step = "Unsent message " + unsentMsgId;
         assertTrue(method + "; " + step + ": " + condition, unsentMsgId != 0);
         assertEquals(method + "; " + step, DownloadStatus.SENDING, DownloadStatus.load(
-                MyQuery.msgIdToLongColumnValue(DatabaseHolder.Msg.MSG_STATUS, unsentMsgId)));
+                MyQuery.msgIdToLongColumnValue(MsgTable.MSG_STATUS, unsentMsgId)));
 
         step = "Start editing unsent message" + unsentMsgId ;
         getActivity().getMessageEditor().startEditingMessage(MessageEditorData.load(unsentMsgId));
@@ -82,7 +82,7 @@ public class UnsentMessagesTest extends ActivityInstrumentationTestCase2<Timelin
         ActivityTestHelper.waitViewInvisible(method + "; " + step, editorView);
 
         assertEquals(method + "; " + step, DownloadStatus.DRAFT, DownloadStatus.load(
-                MyQuery.msgIdToLongColumnValue(DatabaseHolder.Msg.MSG_STATUS, unsentMsgId)));
+                MyQuery.msgIdToLongColumnValue(MsgTable.MSG_STATUS, unsentMsgId)));
 
         MyLog.v(this, method + " ended");
     }

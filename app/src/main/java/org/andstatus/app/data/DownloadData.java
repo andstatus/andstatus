@@ -8,7 +8,7 @@ import android.net.Uri;
 import android.text.TextUtils;
 
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.database.DatabaseHolder.Download;
+import org.andstatus.app.database.DownloadTable;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.service.CommandData;
@@ -91,15 +91,15 @@ public class DownloadData {
 
     private void loadOtherFields() {
         if (checkHardErrorBeforeLoad()) return;
-        String sql = "SELECT " + Download.DOWNLOAD_STATUS + ", "
-                + Download.FILE_NAME
-                + (downloadType == DownloadType.UNKNOWN ? ", " + Download.DOWNLOAD_TYPE : "")
-                + (userId == 0 ? ", " + Download.USER_ID : "")
-                + (msgId == 0 ? ", " + Download.MSG_ID : "")
-                + (contentType == MyContentType.UNKNOWN ? ", " + Download.CONTENT_TYPE : "")
-                + (downloadId == 0 ? ", " + Download._ID : "")
-                + (uri.equals(Uri.EMPTY) ? ", " + Download.URI : "")
-                + " FROM " + Download.TABLE_NAME 
+        String sql = "SELECT " + DownloadTable.DOWNLOAD_STATUS + ", "
+                + DownloadTable.FILE_NAME
+                + (downloadType == DownloadType.UNKNOWN ? ", " + DownloadTable.DOWNLOAD_TYPE : "")
+                + (userId == 0 ? ", " + DownloadTable.USER_ID : "")
+                + (msgId == 0 ? ", " + DownloadTable.MSG_ID : "")
+                + (contentType == MyContentType.UNKNOWN ? ", " + DownloadTable.CONTENT_TYPE : "")
+                + (downloadId == 0 ? ", " + DownloadTable._ID : "")
+                + (uri.equals(Uri.EMPTY) ? ", " + DownloadTable.URI : "")
+                + " FROM " + DownloadTable.TABLE_NAME
                 + " WHERE " + getWhereClause();
         
         SQLiteDatabase db = MyContextHolder.get().getDatabase();
@@ -113,25 +113,25 @@ public class DownloadData {
             cursor = db.rawQuery(sql, null);
             status = DownloadStatus.ABSENT;
             if (cursor.moveToNext()) {
-                status = DownloadStatus.load(DbUtils.getLong(cursor, Download.DOWNLOAD_STATUS));
-                fileStored = new DownloadFile(DbUtils.getString(cursor, Download.FILE_NAME));
+                status = DownloadStatus.load(DbUtils.getLong(cursor, DownloadTable.DOWNLOAD_STATUS));
+                fileStored = new DownloadFile(DbUtils.getString(cursor, DownloadTable.FILE_NAME));
                 if (downloadType == DownloadType.UNKNOWN) {
-                    downloadType = DownloadType.load(DbUtils.getLong(cursor, Download.DOWNLOAD_TYPE));
+                    downloadType = DownloadType.load(DbUtils.getLong(cursor, DownloadTable.DOWNLOAD_TYPE));
                 }
                 if (userId == 0) {
-                    userId = DbUtils.getLong(cursor, Download.USER_ID);
+                    userId = DbUtils.getLong(cursor, DownloadTable.USER_ID);
                 }
                 if (msgId == 0) {
-                    msgId = DbUtils.getLong(cursor, Download.MSG_ID);
+                    msgId = DbUtils.getLong(cursor, DownloadTable.MSG_ID);
                 }
                 if (contentType == MyContentType.UNKNOWN) {
-                    contentType = MyContentType.load(DbUtils.getLong(cursor, Download.CONTENT_TYPE));
+                    contentType = MyContentType.load(DbUtils.getLong(cursor, DownloadTable.CONTENT_TYPE));
                 }
                 if (downloadId == 0) {
-                    downloadId = DbUtils.getLong(cursor, Download._ID);
+                    downloadId = DbUtils.getLong(cursor, DownloadTable._ID);
                 }
                 if (uri.equals(Uri.EMPTY)) {
-                    uri = UriUtils.fromString(DbUtils.getString(cursor, Download.URI));
+                    uri = UriUtils.fromString(DbUtils.getString(cursor, DownloadTable.URI));
                 }
             }
         } finally {
@@ -151,17 +151,17 @@ public class DownloadData {
     private String getWhereClause() {
         StringBuilder builder = new StringBuilder();
         if (userId != 0) {
-            builder.append(Download.USER_ID + "=" + userId);
+            builder.append(DownloadTable.USER_ID + "=" + userId);
         } else if (msgId != 0) {
-            builder.append(Download.MSG_ID + "=" + msgId);
+            builder.append(DownloadTable.MSG_ID + "=" + msgId);
         } else {
-            builder.append(Download._ID + "=" + downloadId);
+            builder.append(DownloadTable._ID + "=" + downloadId);
         }
         if (contentType != MyContentType.UNKNOWN) {
-            builder.append(" AND " + Download.CONTENT_TYPE + "=" + contentType.save());
+            builder.append(" AND " + DownloadTable.CONTENT_TYPE + "=" + contentType.save());
         }
         if (!UriUtils.isEmpty(uri)) {
-            builder.append(" AND " + Download.URI + "=" + MyQuery.quoteIfNotQuoted(uri.toString()));
+            builder.append(" AND " + DownloadTable.URI + "=" + MyQuery.quoteIfNotQuoted(uri.toString()));
         }
         return builder.toString();
     }
@@ -225,20 +225,20 @@ public class DownloadData {
 
     private void addNew() {
        ContentValues values = new ContentValues();
-       values.put(Download.DOWNLOAD_TYPE, downloadType.save());
+       values.put(DownloadTable.DOWNLOAD_TYPE, downloadType.save());
        if (userId != 0) {
-           values.put(Download.USER_ID, userId);
+           values.put(DownloadTable.USER_ID, userId);
        }
        if (msgId != 0) {
-           values.put(Download.MSG_ID, msgId);
+           values.put(DownloadTable.MSG_ID, msgId);
        }
-       values.put(Download.CONTENT_TYPE, contentType.save());
-       values.put(Download.VALID_FROM, loadTimeNew);
-       values.put(Download.URI, uri.toString());
-       values.put(Download.DOWNLOAD_STATUS, status.save());
-       values.put(Download.FILE_NAME, fileNew.getFilename());
+       values.put(DownloadTable.CONTENT_TYPE, contentType.save());
+       values.put(DownloadTable.VALID_FROM, loadTimeNew);
+       values.put(DownloadTable.URI, uri.toString());
+       values.put(DownloadTable.DOWNLOAD_STATUS, status.save());
+       values.put(DownloadTable.FILE_NAME, fileNew.getFilename());
 
-       downloadId = DbUtils.addRowWithRetry(Download.TABLE_NAME, values, 3);
+       downloadId = DbUtils.addRowWithRetry(DownloadTable.TABLE_NAME, values, 3);
        if (downloadId == -1) {
            softError = true;
        } else {
@@ -260,14 +260,14 @@ public class DownloadData {
     
     private void update() {
         ContentValues values = new ContentValues();
-        values.put(Download.DOWNLOAD_STATUS, status.save());
+        values.put(DownloadTable.DOWNLOAD_STATUS, status.save());
         boolean changeFile = !isError() && fileNew.exists() && fileStored != fileNew;
         if (changeFile) {
-            values.put(Download.FILE_NAME, fileNew.getFilename());
-            values.put(Download.VALID_FROM, loadTimeNew);
+            values.put(DownloadTable.FILE_NAME, fileNew.getFilename());
+            values.put(DownloadTable.VALID_FROM, loadTimeNew);
         }
 
-        if (DbUtils.updateRowWithRetry(Download.TABLE_NAME, downloadId, values, 3) != 1) {
+        if (DbUtils.updateRowWithRetry(DownloadTable.TABLE_NAME, downloadId, values, 3) != 1) {
             softError = true;
         } else {
             MyLog.v(this, "Updated " + userMsgUriToString());
@@ -314,15 +314,15 @@ public class DownloadData {
     
     public static void deleteOtherOfThisUser(long userId, long rowId) {
         final String method = "deleteOtherOfThisUser userId=" + userId + (rowId != 0 ? ", downloadId=" + rowId : "");
-        String where = Download.USER_ID + "=" + userId
-                + (rowId != 0 ? " AND " + Download._ID + "<>" + Long.toString(rowId) : "") ;
+        String where = DownloadTable.USER_ID + "=" + userId
+                + (rowId != 0 ? " AND " + DownloadTable._ID + "<>" + Long.toString(rowId) : "") ;
         deleteSelected(method, where);
     }
 
     private static void deleteSelected(final String method, String where) {
-        String sql = "SELECT " + Download._ID + ", "
-                + Download.FILE_NAME
-                + " FROM " + Download.TABLE_NAME 
+        String sql = "SELECT " + DownloadTable._ID + ", "
+                + DownloadTable.FILE_NAME
+                + " FROM " + DownloadTable.TABLE_NAME
                 + " WHERE " + where;
         int rowsDeleted = 0;
         boolean done = false;
@@ -338,7 +338,7 @@ public class DownloadData {
                 while (cursor.moveToNext()) {
                     long rowIdOld = cursor.getLong(0);
                     new DownloadFile(cursor.getString(1)).delete();
-                    rowsDeleted += db.delete(Download.TABLE_NAME, Download._ID + "=" + Long.toString(rowIdOld), null);
+                    rowsDeleted += db.delete(DownloadTable.TABLE_NAME, DownloadTable._ID + "=" + Long.toString(rowIdOld), null);
                 }
                 done = true;
             } catch (SQLiteException e) {
@@ -361,7 +361,7 @@ public class DownloadData {
 
     public static void deleteAllOfThisMsg(long msgId) {
         final String method = "deleteAllOfThisMsg msgId=" + msgId;
-        deleteSelected(method, Download.MSG_ID + "=" + msgId);
+        deleteSelected(method, DownloadTable.MSG_ID + "=" + msgId);
     }
 
     public static void deleteOtherOfThisMsg(long msgId, List<Long> downloadIds) {
@@ -369,8 +369,8 @@ public class DownloadData {
             return;
         }
         final String method = "deleteOtherOfThisMsg msgId=" + msgId + ", rowIds:" + toSqlList(downloadIds);
-        String where = Download.MSG_ID + "=" + msgId
-                + " AND " + Download._ID + " NOT IN(" + toSqlList(downloadIds) + ")" ;
+        String where = DownloadTable.MSG_ID + "=" + msgId
+                + " AND " + DownloadTable._ID + " NOT IN(" + toSqlList(downloadIds) + ")" ;
         deleteSelected(method, where);
     }
 

@@ -28,8 +28,10 @@ import android.text.util.Linkify;
 
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.database.DatabaseHolder;
 import org.andstatus.app.data.DbUtils;
+import org.andstatus.app.database.MsgTable;
+import org.andstatus.app.database.OriginTable;
+import org.andstatus.app.database.UserTable;
 import org.andstatus.app.net.http.SslModeEnum;
 import org.andstatus.app.net.social.Connection.ApiEnum;
 import org.andstatus.app.net.social.MbConfig;
@@ -280,16 +282,16 @@ public class Origin {
             return false;
         }
         try {
-            String sql = "SELECT Count(*) FROM " + DatabaseHolder.Msg.TABLE_NAME + " WHERE "
-                    + DatabaseHolder.Msg.ORIGIN_ID + "=" + id;
+            String sql = "SELECT Count(*) FROM " + MsgTable.TABLE_NAME + " WHERE "
+                    + MsgTable.ORIGIN_ID + "=" + id;
             cursor = db.rawQuery(sql, null);
             if (cursor.moveToNext()) {
                 count = cursor.getLong(0);
             }
             cursor.close();
             if (count == 0) {
-                sql = "SELECT Count(*) FROM " + DatabaseHolder.User.TABLE_NAME + " WHERE "
-                        + DatabaseHolder.User.ORIGIN_ID + "=" + id;
+                sql = "SELECT Count(*) FROM " + UserTable.TABLE_NAME + " WHERE "
+                        + UserTable.ORIGIN_ID + "=" + id;
                 cursor = db.rawQuery(sql, null);
                 if (cursor.moveToNext()) {
                     count = cursor.getLong(0);
@@ -362,30 +364,30 @@ public class Origin {
          */
         public Builder(Cursor cursor) {
             OriginType originType1 = OriginType.fromId(
-                    DbUtils.getLong(cursor, DatabaseHolder.Origin.ORIGIN_TYPE_ID));
+                    DbUtils.getLong(cursor, OriginTable.ORIGIN_TYPE_ID));
             origin = getEmpty(originType1);
 
-            origin.id = DbUtils.getLong(cursor, DatabaseHolder.Origin._ID);
-            origin.name = DbUtils.getString(cursor, DatabaseHolder.Origin.ORIGIN_NAME);
-            setHostOrUrl(DbUtils.getString(cursor, DatabaseHolder.Origin.ORIGIN_URL));
-            setSsl(DbUtils.getBoolean(cursor, DatabaseHolder.Origin.SSL));
-            setSslMode(SslModeEnum.fromId(DbUtils.getLong(cursor, DatabaseHolder.Origin.SSL_MODE)));
+            origin.id = DbUtils.getLong(cursor, OriginTable._ID);
+            origin.name = DbUtils.getString(cursor, OriginTable.ORIGIN_NAME);
+            setHostOrUrl(DbUtils.getString(cursor, OriginTable.ORIGIN_URL));
+            setSsl(DbUtils.getBoolean(cursor, OriginTable.SSL));
+            setSslMode(SslModeEnum.fromId(DbUtils.getLong(cursor, OriginTable.SSL_MODE)));
             
-            origin.allowHtml = DbUtils.getBoolean(cursor, DatabaseHolder.Origin.ALLOW_HTML);
+            origin.allowHtml = DbUtils.getBoolean(cursor, OriginTable.ALLOW_HTML);
             if (originType1.shortUrlLengthDefault == 0) {
-                origin.shortUrlLength = DbUtils.getInt(cursor, DatabaseHolder.Origin.SHORT_URL_LENGTH);
+                origin.shortUrlLength = DbUtils.getInt(cursor, OriginTable.SHORT_URL_LENGTH);
             }
             if (originType1.textLimitDefault == 0) {
-                setTextLimit(DbUtils.getInt(cursor, DatabaseHolder.Origin.TEXT_LIMIT));
+                setTextLimit(DbUtils.getInt(cursor, OriginTable.TEXT_LIMIT));
             }
             origin.inCombinedGlobalSearch = DbUtils.getBoolean(cursor,
-                    DatabaseHolder.Origin.IN_COMBINED_GLOBAL_SEARCH);
+                    OriginTable.IN_COMBINED_GLOBAL_SEARCH);
             origin.inCombinedPublicReload = DbUtils.getBoolean(cursor,
-                    DatabaseHolder.Origin.IN_COMBINED_PUBLIC_RELOAD);
+                    OriginTable.IN_COMBINED_PUBLIC_RELOAD);
             setMentionAsWebFingerId(TriState.fromId(DbUtils.getLong(cursor,
-                    DatabaseHolder.Origin.MENTION_AS_WEBFINGER_ID)));
+                    OriginTable.MENTION_AS_WEBFINGER_ID)));
             setUseLegacyHttpProtocol(TriState.fromId(DbUtils.getLong(cursor,
-                    DatabaseHolder.Origin.USE_LEGACY_HTTP)));
+                    OriginTable.USE_LEGACY_HTTP)));
         }
 
         protected void setTextLimit(int textLimit) {
@@ -517,25 +519,25 @@ public class Origin {
             }
 
             ContentValues values = new ContentValues();
-            values.put(DatabaseHolder.Origin.ORIGIN_URL, origin.url != null ? origin.url.toExternalForm() : "");
-            values.put(DatabaseHolder.Origin.SSL, origin.ssl);
-            values.put(DatabaseHolder.Origin.SSL_MODE, origin.getSslMode().getId());
-            values.put(DatabaseHolder.Origin.ALLOW_HTML, origin.allowHtml);
-            values.put(DatabaseHolder.Origin.SHORT_URL_LENGTH, origin.shortUrlLength);
-            values.put(DatabaseHolder.Origin.TEXT_LIMIT, origin.getTextLimit());
-            values.put(DatabaseHolder.Origin.IN_COMBINED_GLOBAL_SEARCH, origin.inCombinedGlobalSearch);
-            values.put(DatabaseHolder.Origin.IN_COMBINED_PUBLIC_RELOAD, origin.inCombinedPublicReload);
-            values.put(DatabaseHolder.Origin.MENTION_AS_WEBFINGER_ID, origin.mMentionAsWebFingerId.getId());
-            values.put(DatabaseHolder.Origin.USE_LEGACY_HTTP, origin.useLegacyHttpProtocol().getId());
+            values.put(OriginTable.ORIGIN_URL, origin.url != null ? origin.url.toExternalForm() : "");
+            values.put(OriginTable.SSL, origin.ssl);
+            values.put(OriginTable.SSL_MODE, origin.getSslMode().getId());
+            values.put(OriginTable.ALLOW_HTML, origin.allowHtml);
+            values.put(OriginTable.SHORT_URL_LENGTH, origin.shortUrlLength);
+            values.put(OriginTable.TEXT_LIMIT, origin.getTextLimit());
+            values.put(OriginTable.IN_COMBINED_GLOBAL_SEARCH, origin.inCombinedGlobalSearch);
+            values.put(OriginTable.IN_COMBINED_PUBLIC_RELOAD, origin.inCombinedPublicReload);
+            values.put(OriginTable.MENTION_AS_WEBFINGER_ID, origin.mMentionAsWebFingerId.getId());
+            values.put(OriginTable.USE_LEGACY_HTTP, origin.useLegacyHttpProtocol().getId());
 
             boolean changed = false;
             if (origin.id == 0) {
-                values.put(DatabaseHolder.Origin.ORIGIN_NAME, origin.name);
-                values.put(DatabaseHolder.Origin.ORIGIN_TYPE_ID, origin.originType.getId());
-                origin.id = DbUtils.addRowWithRetry(DatabaseHolder.Origin.TABLE_NAME, values, 3);
+                values.put(OriginTable.ORIGIN_NAME, origin.name);
+                values.put(OriginTable.ORIGIN_TYPE_ID, origin.originType.getId());
+                origin.id = DbUtils.addRowWithRetry(OriginTable.TABLE_NAME, values, 3);
                 changed = origin.isPersistent();
             } else {
-                changed = (DbUtils.updateRowWithRetry(DatabaseHolder.Origin.TABLE_NAME, origin.id,
+                changed = (DbUtils.updateRowWithRetry(OriginTable.TABLE_NAME, origin.id,
                         values, 3) != 0);
             }
             if (changed && MyContextHolder.get().isReady()) {
@@ -554,7 +556,7 @@ public class Origin {
                     return false;
                 }
                 try {
-                    String sql = "DELETE FROM " + DatabaseHolder.Origin.TABLE_NAME + " WHERE "
+                    String sql = "DELETE FROM " + OriginTable.TABLE_NAME + " WHERE "
                             + BaseColumns._ID + "=" + origin.id;
                     db.execSQL(sql);
                     deleted = true;

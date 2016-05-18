@@ -24,8 +24,8 @@ import org.andstatus.app.account.AccountDataReaderEmpty;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.database.DatabaseHolder.Msg;
-import org.andstatus.app.database.DatabaseHolder.OidEnum;
+import org.andstatus.app.database.MsgTable;
+import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.net.http.HttpConnectionMock;
 import org.andstatus.app.net.http.OAuthClientKeys;
@@ -104,7 +104,7 @@ public class VerifyCredentialsTest extends InstrumentationTestCase {
         String msgOid = "383296535213002752";
         long msgId = MyQuery.oidToId(OidEnum.MSG_OID, origin.getId(), msgOid) ;
         assertTrue("Message found", msgId !=0);
-        long userIdM = MyQuery.msgIdToUserId(Msg.AUTHOR_ID, msgId);
+        long userIdM = MyQuery.msgIdToUserId(MsgTable.AUTHOR_ID, msgId);
         assertEquals("Message is by " + mbUser.getUserName() + " found", userId, userIdM);
 
         assertEquals("Message permalink at twitter",

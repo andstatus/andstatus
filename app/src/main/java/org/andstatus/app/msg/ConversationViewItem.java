@@ -26,9 +26,9 @@ import org.andstatus.app.data.AttachedImageFile;
 import org.andstatus.app.data.AvatarFile;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.DownloadStatus;
-import org.andstatus.app.database.DatabaseHolder.Msg;
-import org.andstatus.app.database.DatabaseHolder.MsgOfUser;
-import org.andstatus.app.database.DatabaseHolder.User;
+import org.andstatus.app.database.MsgTable;
+import org.andstatus.app.database.MsgOfUserTable;
+import org.andstatus.app.database.UserTable;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.TimelineSql;
 
@@ -68,17 +68,17 @@ public class ConversationViewItem extends ConversationItem {
         Set<Long> rebloggers = new HashSet<>();
         int ind=0;
         do {
-            long senderId = DbUtils.getLong(cursor, Msg.SENDER_ID);
-            long authorId = DbUtils.getLong(cursor, Msg.AUTHOR_ID);
-            long linkedUserId = DbUtils.getLong(cursor, User.LINKED_USER_ID);
+            long senderId = DbUtils.getLong(cursor, MsgTable.SENDER_ID);
+            long authorId = DbUtils.getLong(cursor, MsgTable.AUTHOR_ID);
+            long linkedUserId = DbUtils.getLong(cursor, UserTable.LINKED_USER_ID);
     
             if (ind == 0) {
                 // This is the same for all retrieved rows
                 super.load(cursor);
-                mStatus = DownloadStatus.load(DbUtils.getLong(cursor, Msg.MSG_STATUS));
-                mAuthor = TimelineSql.userColumnNameToNameAtTimeline(cursor, User.AUTHOR_NAME, false);
-                mBody = MyHtml.htmlifyIfPlain(DbUtils.getString(cursor, Msg.BODY));
-                String via = DbUtils.getString(cursor, Msg.VIA);
+                mStatus = DownloadStatus.load(DbUtils.getLong(cursor, MsgTable.MSG_STATUS));
+                mAuthor = TimelineSql.userColumnNameToNameAtTimeline(cursor, UserTable.AUTHOR_NAME, false);
+                mBody = MyHtml.htmlifyIfPlain(DbUtils.getString(cursor, MsgTable.BODY));
+                String via = DbUtils.getString(cursor, MsgTable.VIA);
                 if (!TextUtils.isEmpty(via)) {
                     messageSource = Html.fromHtml(via).toString().trim();
                 }
@@ -86,8 +86,8 @@ public class ConversationViewItem extends ConversationItem {
                 if (MyPreferences.getDownloadAndDisplayAttachedImages()) {
                     mImageFile = AttachedImageFile.fromCursor(cursor);
                 }
-                mInReplyToName = TimelineSql.userColumnNameToNameAtTimeline(cursor, User.IN_REPLY_TO_NAME, false);
-                mRecipientName = TimelineSql.userColumnNameToNameAtTimeline(cursor, User.RECIPIENT_NAME, false);
+                mInReplyToName = TimelineSql.userColumnNameToNameAtTimeline(cursor, UserTable.IN_REPLY_TO_NAME, false);
+                mRecipientName = TimelineSql.userColumnNameToNameAtTimeline(cursor, UserTable.RECIPIENT_NAME, false);
             }
     
             if (senderId != authorId) {
@@ -97,11 +97,11 @@ public class ConversationViewItem extends ConversationItem {
                 if (mLinkedUserId == 0) {
                     mLinkedUserId = linkedUserId;
                 }
-                if (DbUtils.getInt(cursor, MsgOfUser.REBLOGGED) == 1
+                if (DbUtils.getInt(cursor, MsgOfUserTable.REBLOGGED) == 1
                         && linkedUserId != authorId) {
                     rebloggers.add(linkedUserId);
                 }
-                if (DbUtils.getInt(cursor, MsgOfUser.FAVORITED) == 1) {
+                if (DbUtils.getInt(cursor, MsgOfUserTable.FAVORITED) == 1) {
                     mFavorited = true;
                 }
             }

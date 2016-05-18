@@ -29,11 +29,10 @@ import android.text.TextUtils;
 
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.database.DatabaseHolder;
-import org.andstatus.app.database.DatabaseHolder.Msg;
-import org.andstatus.app.database.DatabaseHolder.MsgOfUser;
-import org.andstatus.app.database.DatabaseHolder.Origin;
-import org.andstatus.app.database.DatabaseHolder.User;
+import org.andstatus.app.database.MsgTable;
+import org.andstatus.app.database.MsgOfUserTable;
+import org.andstatus.app.database.OriginTable;
+import org.andstatus.app.database.UserTable;
 import org.andstatus.app.util.MyLog;
 
 import java.util.Arrays;
@@ -112,17 +111,17 @@ public class MyProvider extends ContentProvider {
         try {
             // Delete all related records from MyDatabase.MsgOfUser for these messages
             String selectionG = " EXISTS ("
-                    + "SELECT * FROM " + Msg.TABLE_NAME + " WHERE ("
-                    + Msg.TABLE_NAME + "." + BaseColumns._ID + "=" + MsgOfUser.TABLE_NAME + "." + DatabaseHolder.MsgOfUser.MSG_ID
+                    + "SELECT * FROM " + MsgTable.TABLE_NAME + " WHERE ("
+                    + MsgTable.TABLE_NAME + "." + BaseColumns._ID + "=" + MsgOfUserTable.TABLE_NAME + "." + MsgOfUserTable.MSG_ID
                     + ") AND ("
                     + selection
                     + "))";
             String descSuffix = "; args=" + Arrays.toString(selectionArgs);
             sqlDesc = selectionG + descSuffix;
-            count = db.delete(MsgOfUser.TABLE_NAME, selectionG, selectionArgs);
+            count = db.delete(MsgOfUserTable.TABLE_NAME, selectionG, selectionArgs);
             // Now delete messages themselves
             sqlDesc = selection + descSuffix;
-            count = db.delete(Msg.TABLE_NAME, selection, selectionArgs);
+            count = db.delete(MsgTable.TABLE_NAME, selection, selectionArgs);
             db.setTransactionSuccessful();
         } catch(Exception e) {
             MyLog.d(TAG, "; SQL='" + sqlDesc + "'", e);
@@ -135,7 +134,7 @@ public class MyProvider extends ContentProvider {
     private int deleteUsers(SQLiteDatabase db, String selection, String[] selectionArgs) {
         int count;
         // TODO: Delete related records also... 
-        count = db.delete(User.TABLE_NAME, selection, selectionArgs);
+        count = db.delete(UserTable.TABLE_NAME, selection, selectionArgs);
         return count;
     }
 
@@ -177,32 +176,32 @@ public class MyProvider extends ContentProvider {
                 case MSG_ITEM:
                     accountUserId = uriParser.getAccountUserId();
                     
-                    table = Msg.TABLE_NAME;
+                    table = MsgTable.TABLE_NAME;
                     /**
                      * Add default values for missed required fields
                      */
-                    if (!values.containsKey(Msg.AUTHOR_ID) && values.containsKey(Msg.SENDER_ID)) {
-                        values.put(Msg.AUTHOR_ID, values.get(Msg.SENDER_ID).toString());
+                    if (!values.containsKey(MsgTable.AUTHOR_ID) && values.containsKey(MsgTable.SENDER_ID)) {
+                        values.put(MsgTable.AUTHOR_ID, values.get(MsgTable.SENDER_ID).toString());
                     }
-                    if (!values.containsKey(Msg.BODY)) {
-                        values.put(Msg.BODY, "");
+                    if (!values.containsKey(MsgTable.BODY)) {
+                        values.put(MsgTable.BODY, "");
                     }
-                    if (!values.containsKey(Msg.VIA)) {
-                        values.put(Msg.VIA, "");
+                    if (!values.containsKey(MsgTable.VIA)) {
+                        values.put(MsgTable.VIA, "");
                     }
-                    values.put(Msg.INS_DATE, now);
+                    values.put(MsgTable.INS_DATE, now);
                     
                     msgOfUserValues = MsgOfUserValues.valueOf(accountUserId, values);
                     otherUserValues = MsgOfUserValues.valuesOfOtherUser(values);
                     break;
                     
                 case ORIGIN_ITEM:
-                    table = Origin.TABLE_NAME;
+                    table = OriginTable.TABLE_NAME;
                     break;
 
                 case USER_ITEM:
-                    table = User.TABLE_NAME;
-                    values.put(User.INS_DATE, now);
+                    table = UserTable.TABLE_NAME;
+                    values.put(UserTable.INS_DATE, now);
                     accountUserId = uriParser.getAccountUserId();
                     friendshipValues = FriendshipValues.valueOf(accountUserId, 0, values);
                     break;
@@ -214,7 +213,7 @@ public class MyProvider extends ContentProvider {
             rowId = db.insert(table, null, values);
             if (rowId == -1) {
                 throw new SQLException("Failed to insert row into " + uri);
-            } else if ( User.TABLE_NAME.equals(table)) {
+            } else if ( UserTable.TABLE_NAME.equals(table)) {
                 optionallyLoadAvatar(rowId, values);
             }
             
@@ -248,7 +247,7 @@ public class MyProvider extends ContentProvider {
     }
 
     private void optionallyLoadAvatar(long userId, ContentValues values) {
-        if (MyPreferences.getShowAvatars() && values.containsKey(User.AVATAR_URL)) {
+        if (MyPreferences.getShowAvatars() && values.containsKey(UserTable.AVATAR_URL)) {
             AvatarData.getForUser(userId).requestDownload();
         }
     }
@@ -294,7 +293,7 @@ public class MyProvider extends ContentProvider {
                         selection = "";
                     }
                     // TODO: Search in MyDatabase.User.USERNAME also
-                    selection = "(" + User.AUTHOR_NAME + " LIKE ?  OR " + Msg.BODY
+                    selection = "(" + UserTable.AUTHOR_NAME + " LIKE ?  OR " + MsgTable.BODY
                             + " LIKE ?)" + selection;
 
                     selectionArgs = addBeforeArray(selectionArgs, "%" + searchQuery + "%");
@@ -303,14 +302,14 @@ public class MyProvider extends ContentProvider {
                 break;
 
             case MSG_COUNT:
-                sql = "SELECT count(*) FROM " + Msg.TABLE_NAME + " AS " + ProjectionMap.MSG_TABLE_ALIAS;
+                sql = "SELECT count(*) FROM " + MsgTable.TABLE_NAME + " AS " + ProjectionMap.MSG_TABLE_ALIAS;
                 if (!TextUtils.isEmpty(selection)) {
                     sql += " WHERE " + selection;
                 }
                 break;
 
             case MSG:
-                qb.setTables(Msg.TABLE_NAME + " AS " + ProjectionMap.MSG_TABLE_ALIAS);
+                qb.setTables(MsgTable.TABLE_NAME + " AS " + ProjectionMap.MSG_TABLE_ALIAS);
                 qb.setProjectionMap(ProjectionMap.MSG);
                 break;
 
@@ -321,7 +320,7 @@ public class MyProvider extends ContentProvider {
                 break;
 
             case USER_ITEM:
-                qb.setTables(User.TABLE_NAME);
+                qb.setTables(UserTable.TABLE_NAME);
                 qb.setProjectionMap(ProjectionMap.USER);
                 qb.appendWhere(BaseColumns._ID + "=" + uriParser.getUserId());
                 break;
@@ -337,7 +336,7 @@ public class MyProvider extends ContentProvider {
                 case TIMELINE:
                 case TIMELINE_ITEM:
                 case TIMELINE_SEARCH:
-                    orderBy = Msg.DESC_SORT_ORDER;
+                    orderBy = MsgTable.DESC_SORT_ORDER;
                     break;
 
                 case MSG_COUNT:
@@ -347,7 +346,7 @@ public class MyProvider extends ContentProvider {
                 case USER:
                 case USERLIST:
                 case USER_ITEM:
-                    orderBy = User.DEFAULT_SORT_ORDER;
+                    orderBy = UserTable.DEFAULT_SORT_ORDER;
                     break;
 
                 default:
@@ -427,7 +426,7 @@ public class MyProvider extends ContentProvider {
         long accountUserId;
         switch (uriParser.matched()) {
             case MSG:
-                count = db.update(Msg.TABLE_NAME, values, selection, selectionArgs);
+                count = db.update(MsgTable.TABLE_NAME, values, selection, selectionArgs);
                 break;
 
             case MSG_ITEM:
@@ -438,7 +437,7 @@ public class MyProvider extends ContentProvider {
                 MsgOfUserValues otherUserValues = MsgOfUserValues.valuesOfOtherUser(values);
                 otherUserValues.setMsgId(rowId);
                 if (values.size() > 0) {
-                    count = db.update(Msg.TABLE_NAME, values, BaseColumns._ID + "=" + rowId
+                    count = db.update(MsgTable.TABLE_NAME, values, BaseColumns._ID + "=" + rowId
                             + (!TextUtils.isEmpty(selection) ? " AND (" + selection + ')' : ""),
                             selectionArgs);
                 }
@@ -447,14 +446,14 @@ public class MyProvider extends ContentProvider {
                 break;
 
             case USER:
-                count = db.update(User.TABLE_NAME, values, selection, selectionArgs);
+                count = db.update(UserTable.TABLE_NAME, values, selection, selectionArgs);
                 break;
 
             case USER_ITEM:
                 accountUserId = uriParser.getAccountUserId();
                 long selectedUserId = uriParser.getUserId();
                 FriendshipValues friendshipValues = FriendshipValues.valueOf(accountUserId, selectedUserId, values);
-                count = db.update(User.TABLE_NAME, values, BaseColumns._ID + "=" + selectedUserId
+                count = db.update(UserTable.TABLE_NAME, values, BaseColumns._ID + "=" + selectedUserId
                         + (!TextUtils.isEmpty(selection) ? " AND (" + selection + ')' : ""),
                         selectionArgs);
                 friendshipValues.update(db);

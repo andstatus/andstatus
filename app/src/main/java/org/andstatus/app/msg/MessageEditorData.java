@@ -27,11 +27,12 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.UserInTimeline;
 import org.andstatus.app.data.AttachedImageFile;
 import org.andstatus.app.data.DataInserter;
-import org.andstatus.app.database.DatabaseHolder;
+import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.data.MyQuery;
+import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.net.social.MbAttachment;
 import org.andstatus.app.net.social.MbMessage;
 import org.andstatus.app.net.social.MbUser;
@@ -138,10 +139,10 @@ public class MessageEditorData {
         MessageEditorData data;
         if (msgId != 0) {
             MyAccount ma = MyContextHolder.get().persistentAccounts().fromUserId(
-                    MyQuery.msgIdToLongColumnValue(DatabaseHolder.Msg.SENDER_ID, msgId));
+                    MyQuery.msgIdToLongColumnValue(MsgTable.SENDER_ID, msgId));
             data = new MessageEditorData(ma);
             data.msgId = msgId;
-            data.setBody(MyQuery.msgIdToStringColumnValue(DatabaseHolder.Msg.BODY, msgId));
+            data.setBody(MyQuery.msgIdToStringColumnValue(MsgTable.BODY, msgId));
             data.image = DownloadData.getSingleForMessage(msgId, MyContentType.IMAGE, Uri.EMPTY);
             if (data.image.getStatus() == DownloadStatus.LOADED) {
                 AttachedImageFile imageFile = new AttachedImageFile(data.image.getDownloadId(),
@@ -149,9 +150,9 @@ public class MessageEditorData {
                 data.imageSize = imageFile.getSize();
                 data.imageDrawable = imageFile.getDrawableSync();
             }
-            data.inReplyToId = MyQuery.msgIdToLongColumnValue(DatabaseHolder.Msg.IN_REPLY_TO_MSG_ID, msgId);
-            data.inReplyToBody = MyQuery.msgIdToStringColumnValue(DatabaseHolder.Msg.BODY, data.inReplyToId);
-            data.recipientId = MyQuery.msgIdToLongColumnValue(DatabaseHolder.Msg.RECIPIENT_ID, msgId);
+            data.inReplyToId = MyQuery.msgIdToLongColumnValue(MsgTable.IN_REPLY_TO_MSG_ID, msgId);
+            data.inReplyToBody = MyQuery.msgIdToStringColumnValue(MsgTable.BODY, data.inReplyToId);
+            data.recipientId = MyQuery.msgIdToLongColumnValue(MsgTable.RECIPIENT_ID, msgId);
             MyLog.v(TAG, "Loaded " + data);
         } else {
             data = new MessageEditorData(MyContextHolder.get().persistentAccounts().getCurrentAccount());
@@ -189,11 +190,11 @@ public class MessageEditorData {
         message.setBody(body);
         if (recipientId != 0) {
             message.recipient = MbUser.fromOriginAndUserOid(getMyAccount().getOriginId(),
-                    MyQuery.idToOid(DatabaseHolder.OidEnum.USER_OID, recipientId, 0));
+                    MyQuery.idToOid(OidEnum.USER_OID, recipientId, 0));
         }
         if (inReplyToId != 0) {
             message.inReplyToMessage = MbMessage.fromOriginAndOid(getMyAccount().getOriginId(),
-                    MyQuery.idToOid(DatabaseHolder.OidEnum.MSG_OID, inReplyToId, 0),
+                    MyQuery.idToOid(OidEnum.MSG_OID, inReplyToId, 0),
                     DownloadStatus.UNKNOWN);
         }
         Uri mediaUri = imageUriToSave.equals(Uri.EMPTY) ? image.getUri() : imageUriToSave;
@@ -311,7 +312,7 @@ public class MessageEditorData {
     }
 
     private void addMentionedAuthorOfMessageToText(long messageId) {
-        String name = MyQuery.msgIdToUsername(DatabaseHolder.Msg.AUTHOR_ID, messageId, getUserInTimeline());
+        String name = MyQuery.msgIdToUsername(MsgTable.AUTHOR_ID, messageId, getUserInTimeline());
         addMentionedUsernameToText(name);
     }
     

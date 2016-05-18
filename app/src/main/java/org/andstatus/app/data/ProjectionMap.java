@@ -18,12 +18,11 @@ package org.andstatus.app.data;
 
 import android.provider.BaseColumns;
 
-import org.andstatus.app.database.DatabaseHolder;
-import org.andstatus.app.database.DatabaseHolder.Download;
-import org.andstatus.app.database.DatabaseHolder.Friendship;
-import org.andstatus.app.database.DatabaseHolder.Msg;
-import org.andstatus.app.database.DatabaseHolder.MsgOfUser;
-import org.andstatus.app.database.DatabaseHolder.User;
+import org.andstatus.app.database.DownloadTable;
+import org.andstatus.app.database.FriendshipTable;
+import org.andstatus.app.database.MsgTable;
+import org.andstatus.app.database.MsgOfUserTable;
+import org.andstatus.app.database.UserTable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -35,90 +34,90 @@ public class ProjectionMap {
  
     /**
      * Projection map used by SQLiteQueryBuilder
-     * Projection map for the {@link DatabaseHolder.Msg} table
+     * Projection map for the {@link MsgTable} table
      * @see android.database.sqlite.SQLiteQueryBuilder#setProjectionMap
      */
     static final Map<String, String> MSG = new HashMap<>();
     static {
         MSG.put(BaseColumns._ID, MSG_TABLE_ALIAS + "." + BaseColumns._ID + " AS " + BaseColumns._ID);
-        MSG.put(Msg.MSG_ID, MSG_TABLE_ALIAS + "." + BaseColumns._ID + " AS " + Msg.MSG_ID);
-        MSG.put(Msg.ORIGIN_ID, Msg.ORIGIN_ID);
-        MSG.put(Msg.MSG_OID, Msg.MSG_OID);
-        MSG.put(Msg.AUTHOR_ID, Msg.AUTHOR_ID);
-        MSG.put(User.AUTHOR_NAME, User.AUTHOR_NAME);
-        MSG.put(Download.DOWNLOAD_STATUS, Download.DOWNLOAD_STATUS);
-        MSG.put(Download.FILE_NAME, Download.FILE_NAME);
-        MSG.put(Download.AVATAR_FILE_NAME, AVATAR_IMAGE_TABLE_ALIAS + "." + Download.FILE_NAME + " AS " + Download.AVATAR_FILE_NAME);
-        MSG.put(Download.IMAGE_FILE_NAME, ATTACHMENT_IMAGE_TABLE_ALIAS + "." + Download.FILE_NAME + " AS " + Download.IMAGE_FILE_NAME);
-        MSG.put(Download.IMAGE_ID, ATTACHMENT_IMAGE_TABLE_ALIAS + "." + Download._ID + " AS " + Download.IMAGE_ID);
-        MSG.put(Download.IMAGE_URL, ATTACHMENT_IMAGE_TABLE_ALIAS + "." + Download.URI + " AS " + Download.IMAGE_URL);
-        MSG.put(Msg.SENDER_ID, Msg.SENDER_ID);
-        MSG.put(User.SENDER_NAME, User.SENDER_NAME);
-        MSG.put(Msg.BODY, Msg.BODY);
-        MSG.put(Msg.VIA, Msg.VIA);
-        MSG.put(Msg.URL, Msg.URL);
-        MSG.put(Msg.IN_REPLY_TO_MSG_ID, Msg.IN_REPLY_TO_MSG_ID);
-        MSG.put(Msg.IN_REPLY_TO_USER_ID, Msg.IN_REPLY_TO_USER_ID);
-        MSG.put(User.IN_REPLY_TO_NAME, User.IN_REPLY_TO_NAME);
-        MSG.put(Msg.RECIPIENT_ID, Msg.RECIPIENT_ID);
-        MSG.put(User.RECIPIENT_NAME, User.RECIPIENT_NAME);
-        MSG.put(User.LINKED_USER_ID, User.LINKED_USER_ID);
-        MSG.put(MsgOfUser.USER_ID, MsgOfUser.TABLE_NAME + "." + MsgOfUser.USER_ID + " AS " + MsgOfUser.USER_ID);
-        MSG.put(MsgOfUser.DIRECTED, MsgOfUser.DIRECTED);
-        MSG.put(MsgOfUser.FAVORITED, MsgOfUser.FAVORITED);
-        MSG.put(MsgOfUser.REBLOGGED, MsgOfUser.REBLOGGED);
-        MSG.put(MsgOfUser.REBLOG_OID, MsgOfUser.REBLOG_OID);
-        MSG.put(MsgOfUser.SUBSCRIBED, MsgOfUser.SUBSCRIBED);
-        MSG.put(Msg.CREATED_DATE, Msg.CREATED_DATE);
-        MSG.put(Msg.MSG_STATUS, Msg.MSG_STATUS);
-        MSG.put(Msg.SENT_DATE, Msg.SENT_DATE);
-        MSG.put(Msg.INS_DATE, Msg.INS_DATE);
-        MSG.put(Friendship.AUTHOR_FOLLOWED, Friendship.AUTHOR_FOLLOWED);
-        MSG.put(Friendship.SENDER_FOLLOWED, Friendship.SENDER_FOLLOWED);
+        MSG.put(MsgTable.MSG_ID, MSG_TABLE_ALIAS + "." + BaseColumns._ID + " AS " + MsgTable.MSG_ID);
+        MSG.put(MsgTable.ORIGIN_ID, MsgTable.ORIGIN_ID);
+        MSG.put(MsgTable.MSG_OID, MsgTable.MSG_OID);
+        MSG.put(MsgTable.AUTHOR_ID, MsgTable.AUTHOR_ID);
+        MSG.put(UserTable.AUTHOR_NAME, UserTable.AUTHOR_NAME);
+        MSG.put(DownloadTable.DOWNLOAD_STATUS, DownloadTable.DOWNLOAD_STATUS);
+        MSG.put(DownloadTable.FILE_NAME, DownloadTable.FILE_NAME);
+        MSG.put(DownloadTable.AVATAR_FILE_NAME, AVATAR_IMAGE_TABLE_ALIAS + "." + DownloadTable.FILE_NAME + " AS " + DownloadTable.AVATAR_FILE_NAME);
+        MSG.put(DownloadTable.IMAGE_FILE_NAME, ATTACHMENT_IMAGE_TABLE_ALIAS + "." + DownloadTable.FILE_NAME + " AS " + DownloadTable.IMAGE_FILE_NAME);
+        MSG.put(DownloadTable.IMAGE_ID, ATTACHMENT_IMAGE_TABLE_ALIAS + "." + DownloadTable._ID + " AS " + DownloadTable.IMAGE_ID);
+        MSG.put(DownloadTable.IMAGE_URL, ATTACHMENT_IMAGE_TABLE_ALIAS + "." + DownloadTable.URI + " AS " + DownloadTable.IMAGE_URL);
+        MSG.put(MsgTable.SENDER_ID, MsgTable.SENDER_ID);
+        MSG.put(UserTable.SENDER_NAME, UserTable.SENDER_NAME);
+        MSG.put(MsgTable.BODY, MsgTable.BODY);
+        MSG.put(MsgTable.VIA, MsgTable.VIA);
+        MSG.put(MsgTable.URL, MsgTable.URL);
+        MSG.put(MsgTable.IN_REPLY_TO_MSG_ID, MsgTable.IN_REPLY_TO_MSG_ID);
+        MSG.put(MsgTable.IN_REPLY_TO_USER_ID, MsgTable.IN_REPLY_TO_USER_ID);
+        MSG.put(UserTable.IN_REPLY_TO_NAME, UserTable.IN_REPLY_TO_NAME);
+        MSG.put(MsgTable.RECIPIENT_ID, MsgTable.RECIPIENT_ID);
+        MSG.put(UserTable.RECIPIENT_NAME, UserTable.RECIPIENT_NAME);
+        MSG.put(UserTable.LINKED_USER_ID, UserTable.LINKED_USER_ID);
+        MSG.put(MsgOfUserTable.USER_ID, MsgOfUserTable.TABLE_NAME + "." + MsgOfUserTable.USER_ID + " AS " + MsgOfUserTable.USER_ID);
+        MSG.put(MsgOfUserTable.DIRECTED, MsgOfUserTable.DIRECTED);
+        MSG.put(MsgOfUserTable.FAVORITED, MsgOfUserTable.FAVORITED);
+        MSG.put(MsgOfUserTable.REBLOGGED, MsgOfUserTable.REBLOGGED);
+        MSG.put(MsgOfUserTable.REBLOG_OID, MsgOfUserTable.REBLOG_OID);
+        MSG.put(MsgOfUserTable.SUBSCRIBED, MsgOfUserTable.SUBSCRIBED);
+        MSG.put(MsgTable.CREATED_DATE, MsgTable.CREATED_DATE);
+        MSG.put(MsgTable.MSG_STATUS, MsgTable.MSG_STATUS);
+        MSG.put(MsgTable.SENT_DATE, MsgTable.SENT_DATE);
+        MSG.put(MsgTable.INS_DATE, MsgTable.INS_DATE);
+        MSG.put(FriendshipTable.AUTHOR_FOLLOWED, FriendshipTable.AUTHOR_FOLLOWED);
+        MSG.put(FriendshipTable.SENDER_FOLLOWED, FriendshipTable.SENDER_FOLLOWED);
     }
 
     /**
-     * Projection map for the {@link DatabaseHolder.User} table
+     * Projection map for the {@link UserTable} table
      */
     static final Map<String, String> USER = new HashMap<>();
     static {
-        USER.put(BaseColumns._ID, User.TABLE_NAME + "." + BaseColumns._ID + " AS " + BaseColumns._ID);
-        USER.put(User.ORIGIN_ID, User.ORIGIN_ID);
-        USER.put(User.USER_ID, User.TABLE_NAME + "." + BaseColumns._ID + " AS " + User.USER_ID);
-        USER.put(User.USER_OID, User.USER_OID);
-        USER.put(User.USERNAME, User.USERNAME);
-        USER.put(User.WEBFINGER_ID, User.WEBFINGER_ID);
-        USER.put(User.REAL_NAME, User.REAL_NAME);
-        USER.put(User.DESCRIPTION, User.DESCRIPTION);
-        USER.put(User.LOCATION, User.LOCATION);
+        USER.put(BaseColumns._ID, UserTable.TABLE_NAME + "." + BaseColumns._ID + " AS " + BaseColumns._ID);
+        USER.put(UserTable.ORIGIN_ID, UserTable.ORIGIN_ID);
+        USER.put(UserTable.USER_ID, UserTable.TABLE_NAME + "." + BaseColumns._ID + " AS " + UserTable.USER_ID);
+        USER.put(UserTable.USER_OID, UserTable.USER_OID);
+        USER.put(UserTable.USERNAME, UserTable.USERNAME);
+        USER.put(UserTable.WEBFINGER_ID, UserTable.WEBFINGER_ID);
+        USER.put(UserTable.REAL_NAME, UserTable.REAL_NAME);
+        USER.put(UserTable.DESCRIPTION, UserTable.DESCRIPTION);
+        USER.put(UserTable.LOCATION, UserTable.LOCATION);
 
-        USER.put(User.PROFILE_URL, User.PROFILE_URL);
-        USER.put(User.HOMEPAGE, User.HOMEPAGE);
-        USER.put(User.AVATAR_URL, User.AVATAR_URL);
-        USER.put(Download.AVATAR_FILE_NAME, AVATAR_IMAGE_TABLE_ALIAS + "." + Download.FILE_NAME + " AS " + Download.AVATAR_FILE_NAME);
-        USER.put(User.BANNER_URL, User.BANNER_URL);
+        USER.put(UserTable.PROFILE_URL, UserTable.PROFILE_URL);
+        USER.put(UserTable.HOMEPAGE, UserTable.HOMEPAGE);
+        USER.put(UserTable.AVATAR_URL, UserTable.AVATAR_URL);
+        USER.put(DownloadTable.AVATAR_FILE_NAME, AVATAR_IMAGE_TABLE_ALIAS + "." + DownloadTable.FILE_NAME + " AS " + DownloadTable.AVATAR_FILE_NAME);
+        USER.put(UserTable.BANNER_URL, UserTable.BANNER_URL);
 
-        USER.put(User.MSG_COUNT, User.MSG_COUNT);
-        USER.put(User.FAVORITES_COUNT, User.FAVORITES_COUNT);
-        USER.put(User.FOLLOWING_COUNT, User.FOLLOWING_COUNT);
-        USER.put(User.FOLLOWERS_COUNT, User.FOLLOWERS_COUNT);
+        USER.put(UserTable.MSG_COUNT, UserTable.MSG_COUNT);
+        USER.put(UserTable.FAVORITES_COUNT, UserTable.FAVORITES_COUNT);
+        USER.put(UserTable.FOLLOWING_COUNT, UserTable.FOLLOWING_COUNT);
+        USER.put(UserTable.FOLLOWERS_COUNT, UserTable.FOLLOWERS_COUNT);
 
-        USER.put(User.CREATED_DATE, User.CREATED_DATE);
-        USER.put(User.UPDATED_DATE, User.UPDATED_DATE);
-        USER.put(User.INS_DATE, User.INS_DATE);
+        USER.put(UserTable.CREATED_DATE, UserTable.CREATED_DATE);
+        USER.put(UserTable.UPDATED_DATE, UserTable.UPDATED_DATE);
+        USER.put(UserTable.INS_DATE, UserTable.INS_DATE);
         
-        USER.put(User.HOME_TIMELINE_POSITION, User.HOME_TIMELINE_POSITION);
-        USER.put(User.HOME_TIMELINE_DATE, User.HOME_TIMELINE_DATE);
-        USER.put(User.FAVORITES_TIMELINE_POSITION, User.FAVORITES_TIMELINE_POSITION);
-        USER.put(User.FAVORITES_TIMELINE_DATE, User.FAVORITES_TIMELINE_DATE);
-        USER.put(User.DIRECT_TIMELINE_POSITION, User.DIRECT_TIMELINE_POSITION);
-        USER.put(User.DIRECT_TIMELINE_DATE, User.DIRECT_TIMELINE_DATE);
-        USER.put(User.MENTIONS_TIMELINE_POSITION, User.MENTIONS_TIMELINE_POSITION);
-        USER.put(User.MENTIONS_TIMELINE_DATE, User.MENTIONS_TIMELINE_DATE);
-        USER.put(User.USER_TIMELINE_POSITION, User.USER_TIMELINE_POSITION);
-        USER.put(User.USER_TIMELINE_DATE, User.USER_TIMELINE_DATE);
-        USER.put(User.USER_MSG_ID, User.USER_MSG_ID);
-        USER.put(User.USER_MSG_DATE, User.USER_MSG_DATE);
+        USER.put(UserTable.HOME_TIMELINE_POSITION, UserTable.HOME_TIMELINE_POSITION);
+        USER.put(UserTable.HOME_TIMELINE_DATE, UserTable.HOME_TIMELINE_DATE);
+        USER.put(UserTable.FAVORITES_TIMELINE_POSITION, UserTable.FAVORITES_TIMELINE_POSITION);
+        USER.put(UserTable.FAVORITES_TIMELINE_DATE, UserTable.FAVORITES_TIMELINE_DATE);
+        USER.put(UserTable.DIRECT_TIMELINE_POSITION, UserTable.DIRECT_TIMELINE_POSITION);
+        USER.put(UserTable.DIRECT_TIMELINE_DATE, UserTable.DIRECT_TIMELINE_DATE);
+        USER.put(UserTable.MENTIONS_TIMELINE_POSITION, UserTable.MENTIONS_TIMELINE_POSITION);
+        USER.put(UserTable.MENTIONS_TIMELINE_DATE, UserTable.MENTIONS_TIMELINE_DATE);
+        USER.put(UserTable.USER_TIMELINE_POSITION, UserTable.USER_TIMELINE_POSITION);
+        USER.put(UserTable.USER_TIMELINE_DATE, UserTable.USER_TIMELINE_DATE);
+        USER.put(UserTable.USER_MSG_ID, UserTable.USER_MSG_ID);
+        USER.put(UserTable.USER_MSG_DATE, UserTable.USER_MSG_DATE);
     }
     
     private ProjectionMap() {

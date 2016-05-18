@@ -19,7 +19,7 @@ package org.andstatus.app.user;
 import android.graphics.drawable.Drawable;
 
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.database.DatabaseHolder;
+import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.origin.Origin;
@@ -61,7 +61,7 @@ public class UserListViewItem {
         MbUser mbUser = MbUser.getEmpty();
         if (userId != 0) {
             mbUser = MbUser.fromOriginAndUserOid(origin.getId(),
-                    MyQuery.idToOid(DatabaseHolder.OidEnum.USER_OID, userId, 0));
+                    MyQuery.idToOid(OidEnum.USER_OID, userId, 0));
             mbUser.userId = userId;
             mbUser.setWebFingerId(MyQuery.userIdToWebfingerId(userId));
         }

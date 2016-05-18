@@ -7,9 +7,9 @@ import android.text.TextUtils;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.database.DatabaseHolder;
-import org.andstatus.app.database.DatabaseHolder.OidEnum;
+import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.data.MyQuery;
+import org.andstatus.app.database.UserTable;
 
 public class MessageEditorDataTest extends InstrumentationTestCase {
 
@@ -58,8 +58,8 @@ public class MessageEditorDataTest extends InstrumentationTestCase {
             return;
         }
         String expectedName = MyQuery.userIdToStringColumnValue(
-                data.ma.getOrigin().isMentionAsWebFingerId() ? DatabaseHolder.User.WEBFINGER_ID
-                        : DatabaseHolder.User.USERNAME, mentionedUserId);
+                data.ma.getOrigin().isMentionAsWebFingerId() ? UserTable.WEBFINGER_ID
+                        : UserTable.USERNAME, mentionedUserId);
         assertTrue(!TextUtils.isEmpty(expectedName));
         boolean isMentioned = data.body.contains("@" + expectedName);
         assertEquals(data.toString() + "; expected name:" + expectedName, isMentioned_in, isMentioned);

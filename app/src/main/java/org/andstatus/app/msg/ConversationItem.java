@@ -19,7 +19,7 @@ package org.andstatus.app.msg;
 import android.database.Cursor;
 
 import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.database.DatabaseHolder.Msg;
+import org.andstatus.app.database.MsgTable;
 
 public abstract class ConversationItem  implements Comparable<ConversationItem> {
     private long mMsgId;
@@ -95,8 +95,8 @@ public abstract class ConversationItem  implements Comparable<ConversationItem> 
     abstract String[] getProjection();
     
     void load(Cursor cursor) {
-        mInReplyToMsgId = DbUtils.getLong(cursor, Msg.IN_REPLY_TO_MSG_ID);
-        mCreatedDate = DbUtils.getLong(cursor, Msg.CREATED_DATE);
+        mInReplyToMsgId = DbUtils.getLong(cursor, MsgTable.IN_REPLY_TO_MSG_ID);
+        mCreatedDate = DbUtils.getLong(cursor, MsgTable.CREATED_DATE);
     }
     
 }

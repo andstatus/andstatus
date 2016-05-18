@@ -20,8 +20,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.provider.BaseColumns;
 
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.database.DatabaseHolder.Msg;
-import org.andstatus.app.database.DatabaseHolder.User;
+import org.andstatus.app.database.MsgTable;
+import org.andstatus.app.database.UserTable;
 import org.andstatus.app.util.MyLog;
 
 import java.util.Date;
@@ -62,8 +62,8 @@ public final class UserMsg {
         if (userId == 0) {
             throw new IllegalArgumentException(TAG + ": userId==0");
         }
-        lastMsgId = MyQuery.userIdToLongColumnValue(User.USER_MSG_ID, userId);
-        lastMsgDate = MyQuery.userIdToLongColumnValue(User.USER_MSG_DATE, userId);
+        lastMsgId = MyQuery.userIdToLongColumnValue(UserTable.USER_MSG_ID, userId);
+        lastMsgDate = MyQuery.userIdToLongColumnValue(UserTable.USER_MSG_DATE, userId);
     }
 
     /**
@@ -104,7 +104,7 @@ public final class UserMsg {
         }
         long msgDate = msgDateIn;
         if (msgDate == 0) {
-            msgDate = MyQuery.msgIdToLongColumnValue(Msg.SENT_DATE, msgId);
+            msgDate = MyQuery.msgIdToLongColumnValue(MsgTable.SENT_DATE, msgId);
         }
         if (msgDate > lastMsgDate) {
             lastMsgDate = msgDate;
@@ -130,10 +130,10 @@ public final class UserMsg {
         }
 
         // As a precaution compare with stored values ones again
-        long msgDate = MyQuery.userIdToLongColumnValue(User.USER_MSG_DATE, userId);
+        long msgDate = MyQuery.userIdToLongColumnValue(UserTable.USER_MSG_DATE, userId);
         if (msgDate > lastMsgDate) {
             lastMsgDate = msgDate;
-            lastMsgId = MyQuery.userIdToLongColumnValue(User.USER_MSG_ID, userId);
+            lastMsgId = MyQuery.userIdToLongColumnValue(UserTable.USER_MSG_ID, userId);
             MyLog.v(this, "There is newer information in the database. User=" + MyQuery.userIdToWebfingerId(userId) 
                     + " Latest msg at " + (new Date(getLastMsgDate()).toString()));
             changed = false;
@@ -142,10 +142,10 @@ public final class UserMsg {
 
         String sql = "";
         try {
-            sql += User.USER_MSG_ID + "=" + lastMsgId;
-            sql += ", " + User.USER_MSG_DATE + "=" + lastMsgDate;
+            sql += UserTable.USER_MSG_ID + "=" + lastMsgId;
+            sql += ", " + UserTable.USER_MSG_DATE + "=" + lastMsgDate;
 
-            sql = "UPDATE " + User.TABLE_NAME + " SET " + sql 
+            sql = "UPDATE " + UserTable.TABLE_NAME + " SET " + sql
                     + " WHERE " + BaseColumns._ID + "=" + userId;
 
             SQLiteDatabase db = MyContextHolder.get().getDatabase();

@@ -31,11 +31,11 @@ import org.andstatus.app.MyAction;
 import org.andstatus.app.account.AccountSelector;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.database.DatabaseHolder;
 import org.andstatus.app.data.FileProvider;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.TimelineType;
+import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.service.CommandData;
@@ -73,7 +73,7 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
         @Override
         MessageEditorData executeAsync(MyAccount maIn, long msgId) {
             MyAccount ma = MyContextHolder.get().persistentAccounts().fromUserId(
-                    MyQuery.msgIdToLongColumnValue(DatabaseHolder.Msg.SENDER_ID, msgId));
+                    MyQuery.msgIdToLongColumnValue(MsgTable.SENDER_ID, msgId));
             CommandData commandData = CommandData.updateStatus(ma.getAccountName(), msgId);
             MyServiceManager.sendManualForegroundCommand(commandData);
             return null;
@@ -94,7 +94,7 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
         @Override
         MessageEditorData executeAsync(MyAccount ma, long msgId) {
             return MessageEditorData.newEmpty(ma).setInReplyToId(msgId)
-                    .setRecipientId(MyQuery.msgIdToUserId(DatabaseHolder.Msg.AUTHOR_ID, msgId))
+                    .setRecipientId(MyQuery.msgIdToUserId(MsgTable.AUTHOR_ID, msgId))
                     .addMentionsToText();
         }
 
@@ -152,7 +152,7 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
     COPY_TEXT(true) {
         @Override
         MessageEditorData executeAsync(MyAccount ma, long msgId) {
-            String body = MyQuery.msgIdToStringColumnValue(DatabaseHolder.Msg.BODY, msgId);
+            String body = MyQuery.msgIdToStringColumnValue(MsgTable.BODY, msgId);
             if (ma.getOrigin().isHtmlContentAllowed()) {
                 body = MyHtml.fromHtml(body);
             }
@@ -168,7 +168,7 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
         @Override
         MessageEditorData executeAsync(MyAccount ma, long msgId) {
             return MessageEditorData.newEmpty(ma).addMentionedUserToText(
-                    MyQuery.msgIdToUserId(DatabaseHolder.Msg.AUTHOR_ID, msgId));
+                    MyQuery.msgIdToUserId(MsgTable.AUTHOR_ID, msgId));
         }
 
         @Override
@@ -179,7 +179,7 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
     SENDER_MESSAGES(true) {
         @Override
         MessageEditorData executeAsync(MyAccount ma, long msgId) {
-            return getUserId(ma, msgId, DatabaseHolder.Msg.SENDER_ID);
+            return getUserId(ma, msgId, MsgTable.SENDER_ID);
         }
 
         @Override
@@ -197,7 +197,7 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
     AUTHOR_MESSAGES(true) {
         @Override
         MessageEditorData executeAsync(MyAccount ma, long msgId) {
-            return getUserId(ma, msgId, DatabaseHolder.Msg.AUTHOR_ID);
+            return getUserId(ma, msgId, MsgTable.AUTHOR_ID);
         }
 
         @Override
@@ -215,7 +215,7 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
     FOLLOW_SENDER(true) {
         @Override
         MessageEditorData executeAsync(MyAccount ma, long msgId) {
-            return getUserId(ma, msgId, DatabaseHolder.Msg.SENDER_ID);
+            return getUserId(ma, msgId, MsgTable.SENDER_ID);
         }
 
         @Override
@@ -226,7 +226,7 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
     STOP_FOLLOWING_SENDER(true) {
         @Override
         MessageEditorData executeAsync(MyAccount ma, long msgId) {
-            return getUserId(ma, msgId, DatabaseHolder.Msg.SENDER_ID);
+            return getUserId(ma, msgId, MsgTable.SENDER_ID);
         }
 
         @Override
@@ -237,7 +237,7 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
     FOLLOW_AUTHOR(true) {
         @Override
         MessageEditorData executeAsync(MyAccount ma, long msgId) {
-            return getUserId(ma, msgId, DatabaseHolder.Msg.AUTHOR_ID);
+            return getUserId(ma, msgId, MsgTable.AUTHOR_ID);
         }
 
         @Override
@@ -248,7 +248,7 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
     STOP_FOLLOWING_AUTHOR(true) {
         @Override
         MessageEditorData executeAsync(MyAccount ma, long msgId) {
-            return getUserId(ma, msgId, DatabaseHolder.Msg.AUTHOR_ID);
+            return getUserId(ma, msgId, MsgTable.AUTHOR_ID);
         }
 
         @Override

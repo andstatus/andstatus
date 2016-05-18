@@ -23,7 +23,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.provider.BaseColumns;
 import android.text.TextUtils;
 
-import org.andstatus.app.database.DatabaseHolder.MsgOfUser;
+import org.andstatus.app.database.MsgOfUserTable;
 
 class MsgOfUserValues {
     private long rowId;
@@ -33,7 +33,7 @@ class MsgOfUserValues {
 
     public MsgOfUserValues(long userId) {
         this.userId = userId;
-        contentValues.put(MsgOfUser.USER_ID, userId);
+        contentValues.put(MsgOfUserTable.USER_ID, userId);
     }
 
     /**
@@ -47,21 +47,21 @@ class MsgOfUserValues {
     }
 
     public static MsgOfUserValues valuesOfOtherUser(ContentValues values) {
-        long userId = MyQuery.moveLongKey(MsgOfUser.USER_ID, MsgOfUser.SUFFIX_FOR_OTHER_USER, values, null);
-        return valueOf(userId, MsgOfUser.SUFFIX_FOR_OTHER_USER, values);
+        long userId = MyQuery.moveLongKey(MsgOfUserTable.USER_ID, MsgOfUserTable.SUFFIX_FOR_OTHER_USER, values, null);
+        return valueOf(userId, MsgOfUserTable.SUFFIX_FOR_OTHER_USER, values);
     }
 
     private static MsgOfUserValues valueOf(long userId, String sourceSuffix, ContentValues values) {
         MsgOfUserValues userValues = new MsgOfUserValues(userId);
         userValues.setMsgId(values.getAsLong(BaseColumns._ID));
-        MyQuery.moveBooleanKey(MsgOfUser.SUBSCRIBED, sourceSuffix, values, userValues.contentValues);
-        MyQuery.moveBooleanKey(MsgOfUser.FAVORITED, sourceSuffix, values, userValues.contentValues);
-        MyQuery.moveBooleanKey(MsgOfUser.REBLOGGED, sourceSuffix, values, userValues.contentValues);
+        MyQuery.moveBooleanKey(MsgOfUserTable.SUBSCRIBED, sourceSuffix, values, userValues.contentValues);
+        MyQuery.moveBooleanKey(MsgOfUserTable.FAVORITED, sourceSuffix, values, userValues.contentValues);
+        MyQuery.moveBooleanKey(MsgOfUserTable.REBLOGGED, sourceSuffix, values, userValues.contentValues);
         // The value is String!
-        MyQuery.moveStringKey(MsgOfUser.REBLOG_OID, sourceSuffix, values, userValues.contentValues);
-        MyQuery.moveBooleanKey(MsgOfUser.MENTIONED, sourceSuffix, values, userValues.contentValues);
-        MyQuery.moveBooleanKey(MsgOfUser.REPLIED, sourceSuffix, values, userValues.contentValues);
-        MyQuery.moveBooleanKey(MsgOfUser.DIRECTED, sourceSuffix, values, userValues.contentValues);
+        MyQuery.moveStringKey(MsgOfUserTable.REBLOG_OID, sourceSuffix, values, userValues.contentValues);
+        MyQuery.moveBooleanKey(MsgOfUserTable.MENTIONED, sourceSuffix, values, userValues.contentValues);
+        MyQuery.moveBooleanKey(MsgOfUserTable.REPLIED, sourceSuffix, values, userValues.contentValues);
+        MyQuery.moveBooleanKey(MsgOfUserTable.DIRECTED, sourceSuffix, values, userValues.contentValues);
         return userValues;
     }
 
@@ -71,17 +71,17 @@ class MsgOfUserValues {
     
     boolean isEmpty() {
         boolean empty = true;
-        if (isTrue(MsgOfUser.SUBSCRIBED) 
-                || isTrue(MsgOfUser.FAVORITED)
-                || isTrue(MsgOfUser.REBLOGGED) 
-                || isTrue(MsgOfUser.MENTIONED)
-                || isTrue(MsgOfUser.REPLIED) 
-                || isTrue(MsgOfUser.DIRECTED) 
+        if (isTrue(MsgOfUserTable.SUBSCRIBED)
+                || isTrue(MsgOfUserTable.FAVORITED)
+                || isTrue(MsgOfUserTable.REBLOGGED)
+                || isTrue(MsgOfUserTable.MENTIONED)
+                || isTrue(MsgOfUserTable.REPLIED)
+                || isTrue(MsgOfUserTable.DIRECTED)
                         ) {
             empty = false;
         }
-        if (empty && contentValues.containsKey(MsgOfUser.REBLOG_OID)
-                && !TextUtils.isEmpty(contentValues.getAsString(MsgOfUser.REBLOG_OID))) {
+        if (empty && contentValues.containsKey(MsgOfUserTable.REBLOG_OID)
+                && !TextUtils.isEmpty(contentValues.getAsString(MsgOfUserTable.REBLOG_OID))) {
             empty = false;
         }
         if (!isValid()) {
@@ -112,14 +112,14 @@ class MsgOfUserValues {
         } else {
             msgId = 0;
         }
-        contentValues.put(MsgOfUser.MSG_ID, msgId);
+        contentValues.put(MsgOfUserTable.MSG_ID, msgId);
     }
     
     long insert(SQLiteDatabase db) {
         if (!isEmpty()) {
-            rowId = db.insert(MsgOfUser.TABLE_NAME, MsgOfUser.MSG_ID, contentValues);
+            rowId = db.insert(MsgOfUserTable.TABLE_NAME, MsgOfUserTable.MSG_ID, contentValues);
             if (rowId == -1) {
-                throw new SQLException("Failed to insert row into " + MsgOfUser.TABLE_NAME);
+                throw new SQLException("Failed to insert row into " + MsgOfUserTable.TABLE_NAME);
             }
         }
         return rowId;
@@ -130,10 +130,10 @@ class MsgOfUserValues {
         if (!isValid()) {
             return count;
         }
-        String where = "(" + MsgOfUser.MSG_ID + "=" + msgId + " AND "
-                + MsgOfUser.USER_ID + "="
+        String where = "(" + MsgOfUserTable.MSG_ID + "=" + msgId + " AND "
+                + MsgOfUserTable.USER_ID + "="
                 + userId + ")";
-        String sql = "SELECT * FROM " + MsgOfUser.TABLE_NAME + " WHERE "
+        String sql = "SELECT * FROM " + MsgOfUserTable.TABLE_NAME + " WHERE "
                 + where;
         Cursor cursor = null;
         try {
@@ -141,7 +141,7 @@ class MsgOfUserValues {
             boolean exists = cursor.moveToFirst();
             DbUtils.closeSilently(cursor);
             if (exists) {
-                count += db.update(MsgOfUser.TABLE_NAME, contentValues, where, null);
+                count += db.update(MsgOfUserTable.TABLE_NAME, contentValues, where, null);
             } else {
                 insert(db);
                 if (rowId != 0) {

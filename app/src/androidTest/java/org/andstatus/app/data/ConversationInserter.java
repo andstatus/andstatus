@@ -22,7 +22,7 @@ import android.text.TextUtils;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.database.DatabaseHolder.Msg;
+import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.net.social.MbAttachment;
 import org.andstatus.app.net.social.MbMessage;
 import org.andstatus.app.net.social.MbUser;
@@ -157,7 +157,7 @@ public class ConversationInserter extends InstrumentationTestCase {
     private void addPublicMessage(MbMessage message, boolean isPublic) {
         message.setPublic(isPublic);
         long id = addMessage(message);
-        long storedPublic = MyQuery.msgIdToLongColumnValue(Msg.PUBLIC, id);
+        long storedPublic = MyQuery.msgIdToLongColumnValue(MsgTable.PUBLIC, id);
         assertTrue("Message is " + (isPublic ? "public" : "private") + ": " + message.getBody(),
                 (isPublic == (storedPublic != 0)));
     }

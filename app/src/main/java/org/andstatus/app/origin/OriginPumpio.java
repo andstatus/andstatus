@@ -17,7 +17,7 @@
 package org.andstatus.app.origin;
 
 import org.andstatus.app.R;
-import org.andstatus.app.database.DatabaseHolder.Msg;
+import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.data.MyQuery;
 
 class OriginPumpio extends Origin {
@@ -43,7 +43,7 @@ class OriginPumpio extends Origin {
     
     @Override
     public String messagePermalink(long messageId) {
-        return MyQuery.msgIdToStringColumnValue(Msg.URL, messageId);
+        return MyQuery.msgIdToStringColumnValue(MsgTable.URL, messageId);
     }
     
     @Override

@@ -16,7 +16,7 @@
 
 package org.andstatus.app.origin;
 
-import org.andstatus.app.database.DatabaseHolder.Msg;
+import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.util.MyLog;
 
@@ -29,7 +29,7 @@ class OriginGnuSocial extends Origin {
     public String messagePermalink(long messageId) {
         try {
             return  new URL(url, "notice/"
-                    + MyQuery.msgIdToStringColumnValue(Msg.MSG_OID, messageId)).toExternalForm();
+                    + MyQuery.msgIdToStringColumnValue(MsgTable.MSG_OID, messageId)).toExternalForm();
         } catch (MalformedURLException e) {
             MyLog.d(this, "Malformed URL from '" + url.toExternalForm() + "'", e);
         }

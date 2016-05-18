@@ -17,8 +17,8 @@
 package org.andstatus.app.user;
 
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.database.DatabaseHolder;
 import org.andstatus.app.data.MyQuery;
+import org.andstatus.app.database.FriendshipTable;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -37,17 +37,17 @@ public class FollowersListLoader extends UserListLoader {
         String sql = "SELECT ";
         switch (mUserListType) {
             case FOLLOWERS:
-                sql += DatabaseHolder.Friendship.USER_ID
-                        + " FROM " + DatabaseHolder.Friendship.TABLE_NAME
-                        + " WHERE " + DatabaseHolder.Friendship.FRIEND_ID + "=" + userId;
+                sql += FriendshipTable.USER_ID
+                        + " FROM " + FriendshipTable.TABLE_NAME
+                        + " WHERE " + FriendshipTable.FRIEND_ID + "=" + userId;
                 break;
             default:
-                sql += DatabaseHolder.Friendship.FRIEND_ID
-                        + " FROM " + DatabaseHolder.Friendship.TABLE_NAME
-                        + " WHERE " + DatabaseHolder.Friendship.USER_ID + "=" + userId;
+                sql += FriendshipTable.FRIEND_ID
+                        + " FROM " + FriendshipTable.TABLE_NAME
+                        + " WHERE " + FriendshipTable.USER_ID + "=" + userId;
                 break;
         }
-        sql += " AND " + DatabaseHolder.Friendship.FOLLOWED + "=1";
+        sql += " AND " + FriendshipTable.FOLLOWED + "=1";
         return " IN (" + sql + ")";
     }
 

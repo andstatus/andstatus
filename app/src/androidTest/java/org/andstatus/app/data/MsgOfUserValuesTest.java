@@ -3,7 +3,7 @@ package org.andstatus.app.data;
 import android.content.ContentValues;
 import android.test.InstrumentationTestCase;
 
-import org.andstatus.app.database.DatabaseHolder.MsgOfUser;
+import org.andstatus.app.database.MsgOfUserTable;
 
 public class MsgOfUserValuesTest extends InstrumentationTestCase {
     public void testCreationFromContentValues() {
@@ -20,7 +20,7 @@ public class MsgOfUserValuesTest extends InstrumentationTestCase {
        assertTrue(userValues.isValid());
        assertTrue(userValues.isEmpty());
        
-       contentValues.put(MsgOfUser.SUBSCRIBED, true);
+       contentValues.put(MsgOfUserTable.SUBSCRIBED, true);
        userValues = MsgOfUserValues.valueOf(userId , contentValues);
        assertFalse(userValues.isValid());
        userValues.setMsgId(msgId);

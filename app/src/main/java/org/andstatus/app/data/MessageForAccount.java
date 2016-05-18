@@ -22,7 +22,10 @@ import android.provider.BaseColumns;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.database.DatabaseHolder;
+import org.andstatus.app.database.DownloadTable;
+import org.andstatus.app.database.FriendshipTable;
+import org.andstatus.app.database.MsgOfUserTable;
+import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
 
@@ -68,35 +71,35 @@ public class MessageForAccount {
         try {
             cursor = MyContextHolder.get().context().getContentResolver().query(uri, new String[]{
                     BaseColumns._ID,
-                    DatabaseHolder.Msg.MSG_STATUS,
-                    DatabaseHolder.Msg.BODY, DatabaseHolder.Msg.SENDER_ID,
-                    DatabaseHolder.Msg.AUTHOR_ID,
-                    DatabaseHolder.Msg.IN_REPLY_TO_USER_ID,
-                    DatabaseHolder.Msg.RECIPIENT_ID,
-                    DatabaseHolder.MsgOfUser.SUBSCRIBED,
-                    DatabaseHolder.MsgOfUser.FAVORITED,
-                    DatabaseHolder.MsgOfUser.REBLOGGED,
-                    DatabaseHolder.Friendship.SENDER_FOLLOWED,
-                    DatabaseHolder.Friendship.AUTHOR_FOLLOWED,
-                    DatabaseHolder.Download.IMAGE_FILE_NAME
+                    MsgTable.MSG_STATUS,
+                    MsgTable.BODY, MsgTable.SENDER_ID,
+                    MsgTable.AUTHOR_ID,
+                    MsgTable.IN_REPLY_TO_USER_ID,
+                    MsgTable.RECIPIENT_ID,
+                    MsgOfUserTable.SUBSCRIBED,
+                    MsgOfUserTable.FAVORITED,
+                    MsgOfUserTable.REBLOGGED,
+                    FriendshipTable.SENDER_FOLLOWED,
+                    FriendshipTable.AUTHOR_FOLLOWED,
+                    DownloadTable.IMAGE_FILE_NAME
             }, null, null, null);
             if (cursor != null && cursor.moveToFirst()) {
-                status = DownloadStatus.load(DbUtils.getLong(cursor, DatabaseHolder.Msg.MSG_STATUS));
-                authorId = DbUtils.getLong(cursor, DatabaseHolder.Msg.AUTHOR_ID);
-                senderId = DbUtils.getLong(cursor, DatabaseHolder.Msg.SENDER_ID);
-                recipientId = DbUtils.getLong(cursor, DatabaseHolder.Msg.RECIPIENT_ID);
-                imageFilename = DbUtils.getString(cursor, DatabaseHolder.Download.IMAGE_FILE_NAME);
+                status = DownloadStatus.load(DbUtils.getLong(cursor, MsgTable.MSG_STATUS));
+                authorId = DbUtils.getLong(cursor, MsgTable.AUTHOR_ID);
+                senderId = DbUtils.getLong(cursor, MsgTable.SENDER_ID);
+                recipientId = DbUtils.getLong(cursor, MsgTable.RECIPIENT_ID);
+                imageFilename = DbUtils.getString(cursor, DownloadTable.IMAGE_FILE_NAME);
                 bodyTrimmed = I18n.trimTextAt(MyHtml.fromHtml(
-                        DbUtils.getString(cursor, DatabaseHolder.Msg.BODY)), 80).toString();
-                inReplyToUserId = DbUtils.getLong(cursor, DatabaseHolder.Msg.IN_REPLY_TO_USER_ID);
+                        DbUtils.getString(cursor, MsgTable.BODY)), 80).toString();
+                inReplyToUserId = DbUtils.getLong(cursor, MsgTable.IN_REPLY_TO_USER_ID);
                 mayBePrivate = (recipientId != 0) || (inReplyToUserId != 0);
                 
                 isRecipient = (userId == recipientId) || (userId == inReplyToUserId);
-                isSubscribed = DbUtils.getBoolean(cursor, DatabaseHolder.MsgOfUser.SUBSCRIBED);
-                favorited = DbUtils.getBoolean(cursor, DatabaseHolder.MsgOfUser.FAVORITED);
-                reblogged = DbUtils.getBoolean(cursor, DatabaseHolder.MsgOfUser.REBLOGGED);
-                senderFollowed = DbUtils.getBoolean(cursor, DatabaseHolder.Friendship.SENDER_FOLLOWED);
-                authorFollowed = DbUtils.getBoolean(cursor, DatabaseHolder.Friendship.AUTHOR_FOLLOWED);
+                isSubscribed = DbUtils.getBoolean(cursor, MsgOfUserTable.SUBSCRIBED);
+                favorited = DbUtils.getBoolean(cursor, MsgOfUserTable.FAVORITED);
+                reblogged = DbUtils.getBoolean(cursor, MsgOfUserTable.REBLOGGED);
+                senderFollowed = DbUtils.getBoolean(cursor, FriendshipTable.SENDER_FOLLOWED);
+                authorFollowed = DbUtils.getBoolean(cursor, FriendshipTable.AUTHOR_FOLLOWED);
                 isSender = (userId == senderId);
                 isAuthor = (userId == authorId);
             }

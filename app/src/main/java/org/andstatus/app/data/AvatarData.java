@@ -18,7 +18,7 @@ package org.andstatus.app.data;
 
 import android.net.Uri;
 
-import org.andstatus.app.database.DatabaseHolder.User;
+import org.andstatus.app.database.UserTable;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.util.UriUtils;
@@ -39,7 +39,7 @@ public class AvatarData extends DownloadData {
     }
     
     public static AvatarData getForUser(long userIdIn) {
-        Uri avatarUriNew = UriUtils.fromString(MyQuery.userIdToStringColumnValue(User.AVATAR_URL, userIdIn));
+        Uri avatarUriNew = UriUtils.fromString(MyQuery.userIdToStringColumnValue(UserTable.AVATAR_URL, userIdIn));
         AvatarData data = new AvatarData(userIdIn, Uri.EMPTY);
         if (!data.getUri().equals(avatarUriNew)) {
             deleteAllOfThisUser(userIdIn);

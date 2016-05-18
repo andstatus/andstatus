@@ -27,12 +27,10 @@ import android.text.TextUtils;
 
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.UserInTimeline;
-import org.andstatus.app.database.DatabaseHolder;
-import org.andstatus.app.database.DatabaseHolder.Friendship;
-import org.andstatus.app.database.DatabaseHolder.Msg;
-import org.andstatus.app.database.DatabaseHolder.MsgOfUser;
-import org.andstatus.app.database.DatabaseHolder.OidEnum;
-import org.andstatus.app.database.DatabaseHolder.User;
+import org.andstatus.app.database.FriendshipTable;
+import org.andstatus.app.database.MsgTable;
+import org.andstatus.app.database.MsgOfUserTable;
+import org.andstatus.app.database.UserTable;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 
@@ -106,31 +104,31 @@ public class MyQuery {
     static String userNameField(UserInTimeline userInTimeline) {
         switch (userInTimeline) {
             case AT_USERNAME:
-                return "('@' || " + DatabaseHolder.User.USERNAME + ")";
+                return "('@' || " + UserTable.USERNAME + ")";
             case WEBFINGER_ID:
-                return DatabaseHolder.User.WEBFINGER_ID;
+                return UserTable.WEBFINGER_ID;
             case REAL_NAME:
-                return DatabaseHolder.User.REAL_NAME;
+                return UserTable.REAL_NAME;
             case REAL_NAME_AT_USERNAME:
-                return "(" + DatabaseHolder.User.REAL_NAME + " || ' @' || " + DatabaseHolder.User.USERNAME + ")";
+                return "(" + UserTable.REAL_NAME + " || ' @' || " + UserTable.USERNAME + ")";
             default:
-                return DatabaseHolder.User.USERNAME;
+                return UserTable.USERNAME;
         }
     }
 
     /**
      * Lookup the System's (AndStatus) id from the Originated system's id
      * 
-     * @param originId - see {@link DatabaseHolder.Msg#ORIGIN_ID}
-     * @param oid - see {@link DatabaseHolder.Msg#MSG_OID}
+     * @param originId - see {@link MsgTable#ORIGIN_ID}
+     * @param oid - see {@link MsgTable#MSG_OID}
      * @return - id in our System (i.e. in the table, e.g.
-     *         {@link DatabaseHolder.Msg#_ID} ). Or 0 if nothing was found.
+     *         {@link MsgTable#_ID} ). Or 0 if nothing was found.
      */
-    public static long oidToId(DatabaseHolder.OidEnum oidEnum, long originId, String oid) {
+    public static long oidToId(OidEnum oidEnum, long originId, String oid) {
         return oidToId(null, oidEnum, originId, oid);
     }
 
-    static long oidToId(SQLiteDatabase database, DatabaseHolder.OidEnum oidEnum, long originId, String oid) {
+    static long oidToId(SQLiteDatabase database, OidEnum oidEnum, long originId, String oid) {
         if (TextUtils.isEmpty(oid)) {
             return 0;
         }
@@ -138,14 +136,14 @@ public class MyQuery {
         String sql;
         switch (oidEnum) {
             case MSG_OID:
-                sql = "SELECT " + BaseColumns._ID + " FROM " + Msg.TABLE_NAME
-                        + " WHERE " + Msg.ORIGIN_ID + "=" + originId + " AND " + Msg.MSG_OID
+                sql = "SELECT " + BaseColumns._ID + " FROM " + MsgTable.TABLE_NAME
+                        + " WHERE " + MsgTable.ORIGIN_ID + "=" + originId + " AND " + MsgTable.MSG_OID
                         + "=" + quoteIfNotQuoted(oid);
                 break;
 
             case USER_OID:
-                sql = "SELECT " + BaseColumns._ID + " FROM " + User.TABLE_NAME
-                        + " WHERE " + User.ORIGIN_ID + "=" + originId + " AND " + User.USER_OID
+                sql = "SELECT " + BaseColumns._ID + " FROM " + UserTable.TABLE_NAME
+                        + " WHERE " + UserTable.ORIGIN_ID + "=" + originId + " AND " + UserTable.USER_OID
                         + "=" + quoteIfNotQuoted(oid);
                 break;
 
@@ -212,10 +210,10 @@ public class MyQuery {
      * Lookup Originated system's id from the System's (AndStatus) id
      * 
      * @param oe what oid we need
-     * @param entityId - see {@link DatabaseHolder.Msg#_ID}
+     * @param entityId - see {@link MsgTable#_ID}
      * @param rebloggerUserId Is needed to find reblog by this user
      * @return - oid in Originated system (i.e. in the table, e.g.
-     *         {@link DatabaseHolder.Msg#MSG_OID} empty string in case of an error
+     *         {@link MsgTable#MSG_OID} empty string in case of an error
      */
     @NonNull
     public static String idToOid(OidEnum oe, long entityId, long rebloggerUserId) {
@@ -232,10 +230,10 @@ public class MyQuery {
      * Lookup Originated system's id from the System's (AndStatus) id
      * 
      * @param oe what oid we need
-     * @param entityId - see {@link DatabaseHolder.Msg#_ID}
+     * @param entityId - see {@link MsgTable#_ID}
      * @param rebloggerUserId Is needed to find reblog by this user
      * @return - oid in Originated system (i.e. in the table, e.g.
-     *         {@link DatabaseHolder.Msg#MSG_OID} empty string in case of an error
+     *         {@link MsgTable#MSG_OID} empty string in case of an error
      */
     @NonNull
     static String idToOid(SQLiteDatabase db, OidEnum oe, long entityId, long rebloggerUserId) {
@@ -248,13 +246,13 @@ public class MyQuery {
             try {
                 switch (oe) {
                     case MSG_OID:
-                        sql = "SELECT " + DatabaseHolder.Msg.MSG_OID + " FROM "
-                                + Msg.TABLE_NAME + " WHERE " + BaseColumns._ID + "=" + entityId;
+                        sql = "SELECT " + MsgTable.MSG_OID + " FROM "
+                                + MsgTable.TABLE_NAME + " WHERE " + BaseColumns._ID + "=" + entityId;
                         break;
     
                     case USER_OID:
-                        sql = "SELECT " + DatabaseHolder.User.USER_OID + " FROM "
-                                + User.TABLE_NAME + " WHERE " + BaseColumns._ID + "="
+                        sql = "SELECT " + UserTable.USER_OID + " FROM "
+                                + UserTable.TABLE_NAME + " WHERE " + BaseColumns._ID + "="
                                 + entityId;
                         break;
     
@@ -262,10 +260,10 @@ public class MyQuery {
                         if (rebloggerUserId == 0) {
                             MyLog.e(MyProvider.TAG, method + ": userId was not defined");
                         }
-                        sql = "SELECT " + DatabaseHolder.MsgOfUser.REBLOG_OID + " FROM "
-                                + MsgOfUser.TABLE_NAME + " WHERE " 
-                                + MsgOfUser.MSG_ID + "=" + entityId + " AND "
-                                + MsgOfUser.USER_ID + "=" + rebloggerUserId;
+                        sql = "SELECT " + MsgOfUserTable.REBLOG_OID + " FROM "
+                                + MsgOfUserTable.TABLE_NAME + " WHERE "
+                                + MsgOfUserTable.MSG_ID + "=" + entityId + " AND "
+                                + MsgOfUserTable.USER_ID + "=" + rebloggerUserId;
                         break;
     
                     default:
@@ -302,14 +300,14 @@ public class MyQuery {
             SQLiteStatement prog = null;
             String sql = "";
             try {
-                if (userIdColumnName.contentEquals(DatabaseHolder.Msg.SENDER_ID) ||
-                        userIdColumnName.contentEquals(DatabaseHolder.Msg.AUTHOR_ID) ||
-                        userIdColumnName.contentEquals(DatabaseHolder.Msg.IN_REPLY_TO_USER_ID) ||
-                        userIdColumnName.contentEquals(DatabaseHolder.Msg.RECIPIENT_ID)) {
-                    sql = "SELECT " + userNameField(userInTimeline) + " FROM " + User.TABLE_NAME
-                            + " INNER JOIN " + Msg.TABLE_NAME + " ON "
-                            + Msg.TABLE_NAME + "." + userIdColumnName + "=" + User.TABLE_NAME + "." + BaseColumns._ID
-                            + " WHERE " + Msg.TABLE_NAME + "." + BaseColumns._ID + "=" + messageId;
+                if (userIdColumnName.contentEquals(MsgTable.SENDER_ID) ||
+                        userIdColumnName.contentEquals(MsgTable.AUTHOR_ID) ||
+                        userIdColumnName.contentEquals(MsgTable.IN_REPLY_TO_USER_ID) ||
+                        userIdColumnName.contentEquals(MsgTable.RECIPIENT_ID)) {
+                    sql = "SELECT " + userNameField(userInTimeline) + " FROM " + UserTable.TABLE_NAME
+                            + " INNER JOIN " + MsgTable.TABLE_NAME + " ON "
+                            + MsgTable.TABLE_NAME + "." + userIdColumnName + "=" + UserTable.TABLE_NAME + "." + BaseColumns._ID
+                            + " WHERE " + MsgTable.TABLE_NAME + "." + BaseColumns._ID + "=" + messageId;
                 } else {
                     throw new IllegalArgumentException( method + "; Unknown name \"" + userIdColumnName + "\"");
                 }
@@ -341,17 +339,17 @@ public class MyQuery {
     }
 
     public static String userIdToName(long userId, UserInTimeline userInTimeline) {
-        return idToStringColumnValue(DatabaseHolder.User.TABLE_NAME, userNameField(userInTimeline), userId);
+        return idToStringColumnValue(UserTable.TABLE_NAME, userNameField(userInTimeline), userId);
     }
 
     /**
-     * Convenience method to get column value from {@link DatabaseHolder.User} table
+     * Convenience method to get column value from {@link UserTable} table
      * @param columnName without table name
-     * @param systemId {@link DatabaseHolder.User#USER_ID}
+     * @param systemId {@link UserTable#USER_ID}
      * @return 0 in case not found or error
      */
     public static long userIdToLongColumnValue(String columnName, long systemId) {
-        return idToLongColumnValue(User.TABLE_NAME, columnName, systemId);
+        return idToLongColumnValue(UserTable.TABLE_NAME, columnName, systemId);
     }
 
     private static long idToLongColumnValue(String tableName, String columnName, long systemId) {
@@ -364,7 +362,7 @@ public class MyQuery {
 
     /**
      * Convenience method to get long column value from the 'tableName' table
-     * @param tableName e.g. {@link Msg#TABLE_NAME} 
+     * @param tableName e.g. {@link MsgTable#TABLE_NAME}
      * @param columnName without table name
      * @param condition WHERE part of SQL statement
      * @return 0 in case not found or error or systemId==0
@@ -387,17 +385,17 @@ public class MyQuery {
 
     @NonNull
     public static String msgIdToStringColumnValue(String columnName, long systemId) {
-        return idToStringColumnValue(Msg.TABLE_NAME, columnName, systemId);
+        return idToStringColumnValue(MsgTable.TABLE_NAME, columnName, systemId);
     }
 
     @NonNull
     public static String userIdToStringColumnValue(String columnName, long systemId) {
-        return idToStringColumnValue(User.TABLE_NAME, columnName, systemId);
+        return idToStringColumnValue(UserTable.TABLE_NAME, columnName, systemId);
     }
 
     /**
      * Convenience method to get String column value from the 'tableName' table
-     * @param tableName e.g. {@link Msg#TABLE_NAME} 
+     * @param tableName e.g. {@link MsgTable#TABLE_NAME}
      * @param columnName without table name
      * @param systemId tableName._id
      * @return not null; "" in a case not found or error or systemId==0
@@ -441,10 +439,10 @@ public class MyQuery {
     public static long msgIdToUserId(String msgUserIdColumnName, long systemId) {
         long userId = 0;
         try {
-            if (msgUserIdColumnName.contentEquals(DatabaseHolder.Msg.SENDER_ID) ||
-                    msgUserIdColumnName.contentEquals(DatabaseHolder.Msg.AUTHOR_ID) ||
-                    msgUserIdColumnName.contentEquals(DatabaseHolder.Msg.IN_REPLY_TO_USER_ID) ||
-                    msgUserIdColumnName.contentEquals(DatabaseHolder.Msg.RECIPIENT_ID)) {
+            if (msgUserIdColumnName.contentEquals(MsgTable.SENDER_ID) ||
+                    msgUserIdColumnName.contentEquals(MsgTable.AUTHOR_ID) ||
+                    msgUserIdColumnName.contentEquals(MsgTable.IN_REPLY_TO_USER_ID) ||
+                    msgUserIdColumnName.contentEquals(MsgTable.RECIPIENT_ID)) {
                 userId = msgIdToLongColumnValue(msgUserIdColumnName, systemId);
             } else {
                 throw new IllegalArgumentException("msgIdToUserId; Unknown name \"" + msgUserIdColumnName);
@@ -457,33 +455,33 @@ public class MyQuery {
     }
 
     public static long msgIdToOriginId(long systemId) {
-        return msgIdToLongColumnValue(Msg.ORIGIN_ID, systemId);
+        return msgIdToLongColumnValue(MsgTable.ORIGIN_ID, systemId);
     }
 
     /**
-     * Convenience method to get column value from {@link DatabaseHolder.Msg} table
+     * Convenience method to get column value from {@link MsgTable} table
      * @param columnName without table name
      * @param systemId  MyDatabase.MSG_TABLE_NAME + "." + Msg._ID
      * @return 0 in case not found or error
      */
     public static long msgIdToLongColumnValue(String columnName, long systemId) {
-        return idToLongColumnValue(Msg.TABLE_NAME, columnName, systemId);
+        return idToLongColumnValue(MsgTable.TABLE_NAME, columnName, systemId);
     }
 
     public static long webFingerIdToId(long originId, String webFingerId) {
-        return userColumnValueToId(originId, User.WEBFINGER_ID, webFingerId);
+        return userColumnValueToId(originId, UserTable.WEBFINGER_ID, webFingerId);
     }
     
     /**
      * Lookup the User's id based on the Username in the Originating system
      * 
-     * @param originId - see {@link DatabaseHolder.Msg#ORIGIN_ID}
-     * @param userName - see {@link DatabaseHolder.User#USERNAME}
+     * @param originId - see {@link MsgTable#ORIGIN_ID}
+     * @param userName - see {@link UserTable#USERNAME}
      * @return - id in our System (i.e. in the table, e.g.
-     *         {@link DatabaseHolder.User#_ID} ), 0 if not found
+     *         {@link UserTable#_ID} ), 0 if not found
      */
     public static long userNameToId(long originId, String userName) {
-        return userColumnValueToId(originId, User.USERNAME, userName);
+        return userColumnValueToId(originId, UserTable.USERNAME, userName);
     }
 
     private static long userColumnValueToId(long originId, String columnName, String columnValue) {
@@ -497,8 +495,8 @@ public class MyQuery {
         SQLiteStatement prog = null;
         String sql = "";
         try {
-            sql = "SELECT " + BaseColumns._ID + " FROM " + User.TABLE_NAME
-                    + " WHERE " + User.ORIGIN_ID + "=" + originId + " AND " + columnName + "='"
+            sql = "SELECT " + BaseColumns._ID + " FROM " + UserTable.TABLE_NAME
+                    + " WHERE " + UserTable.ORIGIN_ID + "=" + originId + " AND " + columnName + "='"
                     + columnValue + "'";
             prog = db.compileStatement(sql);
             id = prog.simpleQueryForLong();
@@ -519,20 +517,20 @@ public class MyQuery {
 
     @NonNull
     public static Set<Long> getFollowersIds(long userId) {
-        String where = Friendship.FRIEND_ID + "=" + userId
-                + " AND " + Friendship.FOLLOWED + "=1";
-        String sql = "SELECT " + Friendship.USER_ID
-                + " FROM " + Friendship.TABLE_NAME
+        String where = FriendshipTable.FRIEND_ID + "=" + userId
+                + " AND " + FriendshipTable.FOLLOWED + "=1";
+        String sql = "SELECT " + FriendshipTable.USER_ID
+                + " FROM " + FriendshipTable.TABLE_NAME
                 + " WHERE " + where;
         return getLongs(sql);
     }
 
     @NonNull
     public static Set<Long> getFriendsIds(long userId) {
-        String where = Friendship.USER_ID + "=" + userId
-                + " AND " + DatabaseHolder.Friendship.FOLLOWED + "=1";
-        String sql = "SELECT " + DatabaseHolder.Friendship.FRIEND_ID
-                + " FROM " + Friendship.TABLE_NAME
+        String where = FriendshipTable.USER_ID + "=" + userId
+                + " AND " + FriendshipTable.FOLLOWED + "=1";
+        String sql = "SELECT " + FriendshipTable.FRIEND_ID
+                + " FROM " + FriendshipTable.TABLE_NAME
                 + " WHERE " + where;
         return getLongs(sql);
     }
@@ -565,11 +563,11 @@ public class MyQuery {
         SelectedUserIds selectedAccounts = new SelectedUserIds(true,
                 MyContextHolder.get().persistentAccounts().getCurrentAccountUserId());
 
-        String where = Friendship.USER_ID + selectedAccounts.getSql()
-                + " AND " + Friendship.FRIEND_ID + "=" + userId
-                + " AND " + Friendship.FOLLOWED + "=1";
-        String sql = "SELECT " + DatabaseHolder.Friendship.USER_ID
-                + " FROM " + DatabaseHolder.Friendship.TABLE_NAME
+        String where = FriendshipTable.USER_ID + selectedAccounts.getSql()
+                + " AND " + FriendshipTable.FRIEND_ID + "=" + userId
+                + " AND " + FriendshipTable.FOLLOWED + "=1";
+        String sql = "SELECT " + FriendshipTable.USER_ID
+                + " FROM " + FriendshipTable.TABLE_NAME
                 + " WHERE " + where;
 
         return getLongs(sql);
@@ -580,10 +578,10 @@ public class MyQuery {
      */
     public static List<Long> getReplyIds(long msgId) {
         List<Long> replies = new ArrayList<>();
-        String sql = "SELECT " + DatabaseHolder.Msg._ID
-                + " FROM " + Msg.TABLE_NAME 
-                + " WHERE " + DatabaseHolder.Msg.IN_REPLY_TO_MSG_ID + "=" + msgId
-                + " ORDER BY " + Msg.CREATED_DATE + " DESC";
+        String sql = "SELECT " + MsgTable._ID
+                + " FROM " + MsgTable.TABLE_NAME
+                + " WHERE " + MsgTable.IN_REPLY_TO_MSG_ID + "=" + msgId
+                + " ORDER BY " + MsgTable.CREATED_DATE + " DESC";
         
         SQLiteDatabase db = MyContextHolder.get().getDatabase();
         if (db == null) {
@@ -604,10 +602,10 @@ public class MyQuery {
 
     public static List<Long> getRebloggers(long msgId) {
         List<Long> rebloggers = new ArrayList<>();
-        String sql = "SELECT " + MsgOfUser.USER_ID
-                + " FROM " + MsgOfUser.TABLE_NAME
-                + " WHERE " + MsgOfUser.MSG_ID + "=" + msgId
-                + " AND " + MsgOfUser.REBLOGGED + "=1";
+        String sql = "SELECT " + MsgOfUserTable.USER_ID
+                + " FROM " + MsgOfUserTable.TABLE_NAME
+                + " WHERE " + MsgOfUserTable.MSG_ID + "=" + msgId
+                + " AND " + MsgOfUserTable.REBLOGGED + "=1";
 
         SQLiteDatabase db = MyContextHolder.get().getDatabase();
         if (db == null) {

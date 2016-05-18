@@ -21,7 +21,7 @@ import android.text.TextUtils;
 
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.database.DatabaseHolder;
+import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.I18n;
@@ -255,7 +255,7 @@ public class MbUser implements Comparable<MbUser> {
     public long lookupUserId() {
         if (userId == 0) {
             if (isOidReal()) {
-                userId = MyQuery.oidToId(DatabaseHolder.OidEnum.USER_OID, originId, oid);
+                userId = MyQuery.oidToId(OidEnum.USER_OID, originId, oid);
             }
         }
         if (userId == 0 && isWebFingerIdValid()) {
@@ -265,10 +265,10 @@ public class MbUser implements Comparable<MbUser> {
             userId = MyQuery.userNameToId(originId, userName);
         }
         if (userId == 0) {
-            userId = MyQuery.oidToId(DatabaseHolder.OidEnum.USER_OID, originId, getTempOid());
+            userId = MyQuery.oidToId(OidEnum.USER_OID, originId, getTempOid());
         }
         if (userId == 0 && hasAltTempOid()) {
-            userId = MyQuery.oidToId(DatabaseHolder.OidEnum.USER_OID, originId, getAltTempOid());
+            userId = MyQuery.oidToId(OidEnum.USER_OID, originId, getAltTempOid());
         }
         return userId;
     }

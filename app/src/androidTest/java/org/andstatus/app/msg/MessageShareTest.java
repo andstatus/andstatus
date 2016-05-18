@@ -24,7 +24,7 @@ import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.HtmlContentInserter;
 import org.andstatus.app.data.MessageInserter;
-import org.andstatus.app.database.DatabaseHolder.OidEnum;
+import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.MyHtml;

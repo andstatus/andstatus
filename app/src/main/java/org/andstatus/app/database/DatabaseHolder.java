@@ -21,20 +21,12 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.provider.BaseColumns;
 
-import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextState;
 import org.andstatus.app.context.MyStorage;
-import org.andstatus.app.data.DownloadStatus;
-import org.andstatus.app.data.DownloadType;
-import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.net.http.SslModeEnum;
-import org.andstatus.app.net.social.Connection;
-import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
-
-import java.util.Locale;
 
 /**
  * Database definitions and helper class.
@@ -53,7 +45,7 @@ public final class DatabaseHolder extends SQLiteOpenHelper  {
      * v.23 2015-09-02 app.v.19 msg_status added for Unsent messages
      * v.22 2015-04-04 app.v.17 use_legacy_http added to Origin
      * v.21 2015-03-14 app.v.16 mention_as_webfinger_id added to Origin, 
-     *                 index on {@link Msg#IN_REPLY_TO_MSG_ID} added. 
+     *                 index on {@link MsgTable#IN_REPLY_TO_MSG_ID} added.
      * v.20 2015-02-04 app.v.15 SslMode added to Origin
      * v.19 2014-11-15 Index on sent date added to messages
      * v.18 2014-09-21 Duplicated User.USERNAME allowed
@@ -72,403 +64,6 @@ public final class DatabaseHolder extends SQLiteOpenHelper  {
      */
     public static final int DATABASE_VERSION = 24;
     public static final String DATABASE_NAME = "andstatus.sqlite";
-
-    /**
-     * Table for both public and direct messages 
-     * i.e. for tweets, dents, notices 
-     * and also for "direct messages", "direct dents" etc.
-     */
-    public static final class Msg implements BaseColumns {
-        public static final String TABLE_NAME = Msg.class.getSimpleName().toLowerCase(Locale.US);
-
-        private Msg() {
-        }
-        
-        // Table columns are below:
-        /*
-         * {@link BaseColumns#_ID} is primary key in this database
-         * No, we can not rename the {@link BaseColumns#_ID}, it should always be "_id". 
-         * See <a href="http://stackoverflow.com/questions/3359414/android-column-id-does-not-exist">Android column '_id' does not exist?</a>
-         */
-
-        /**
-         * ID of the originating (source) system (twitter.com, identi.ca, ... ) where the row was created
-         * See {@link Origin#_ID}
-         */
-        public static final String ORIGIN_ID =  "origin_id";
-        /**
-         * ID in the originating system
-         * The id is not unique for this table, because we have IDs from different systems in one column
-         * and IDs from different systems may overlap.
-         */
-        public static final String MSG_OID = "msg_oid";
-        /**
-         * See {@link DownloadStatus}. Defaults to {@link DownloadStatus#UNKNOWN}
-         */
-        public static final String MSG_STATUS = "msg_status";
-        /**
-         * A link to the representation of the resource. Currently this is simply URL to the HTML 
-         * representation of the resource (its "permalink") 
-         */
-        public static final String URL = "url";
-        /**
-         * Author of the message = User._ID
-         * If message was "Reblogged" ("Retweeted", "Repeated", ...) this is Original author (whose message was reblogged)
-         */
-        public static final String AUTHOR_ID = "author_id";
-        /**
-         * Sender of the message = User._ID
-         */
-        public static final String SENDER_ID = "sender_id";
-        /**
-         * Recipient of the message = User._ID
-         * null for public messages
-         * not null for direct messages
-         */
-        public static final String RECIPIENT_ID = "recipient_id";
-        /**
-         * Text of the message ("TEXT" may be reserved word so it was renamed here)
-         */
-        public static final String BODY = "body";
-        /**
-         * String generally describing Client's software used to post this message
-         * It's like "User Agent" string in the browsers?!: "via ..."
-         * (This is "source" field in tweets)
-         */
-        public static final String VIA = "via";
-        /**
-         * If not null: Link to the Msg._ID in this table
-         */
-        public static final String IN_REPLY_TO_MSG_ID = "in_reply_to_msg_id";
-        /**
-         * If not null: to which Sender this message is a reply = User._ID
-         * This field is not necessary but speeds up IN_REPLY_TO_NAME calculation
-         */
-        public static final String IN_REPLY_TO_USER_ID = "in_reply_to_user_id";
-        /**
-         * Date and time when the row was created in the originating system.
-         * We store it as long milliseconds.
-         */
-        public static final String CREATED_DATE = "msg_created_date";
-        /**
-         * Date and time when the message was sent,
-         * it's not equal to {@link DatabaseHolder.Msg#CREATED_DATE} for reblogged messages
-         * We change the value if we reblog the message in the application 
-         * or if we receive new reblog of the message
-         * This value is set for unsent messages also. So it is updated after successful retrieval
-         * of this sent message from a Social Network.
-         */
-        public static final String SENT_DATE = "msg_sent_date";
-        /**
-         * Date and time the row was inserted into this database
-         */
-        public static final String INS_DATE = "msg_ins_date";
-        /**
-         * The Msg is public
-         */
-        public static final String PUBLIC = "public";
-
-        /*
-         * Derived columns (they are not stored in this table but are result of joins and aliasing)
-         */
-        /**
-         * Alias for the primary key
-         */
-        public static final String MSG_ID =  "msg_id";
-        
-        public static final String DESC_SORT_ORDER = SENT_DATE + " DESC";
-        public static final String ASC_SORT_ORDER = SENT_DATE + " ASC";
-    }
-    
-    /**
-     * Link tables: Msg to a User.
-     * This User may be not even mentioned in this message 
-     *   (e.g. SUBSCRIBED by the User who is not sender not recipient...).
-     * This table is used to filter User's timelines (based on flags: SUBSCRIBED etc.) 
-     */
-    public static final class MsgOfUser {
-        public static final String TABLE_NAME = MsgOfUser.class.getSimpleName().toLowerCase(Locale.US);
-        private MsgOfUser() {
-        }
-        
-        /**
-         * Fields for joining tables
-         */
-        public static final String MSG_ID =  Msg.MSG_ID;
-        public static final String USER_ID = User.USER_ID;
-
-        /**
-         * The message is in the User's Home timeline
-         * i.e. it corresponds to the TIMELINE_TYPE = TIMELINE_TYPE_HOME
-         */
-        public static final String SUBSCRIBED = "subscribed";
-        /**
-         * The Msg is favorite for this User
-         */
-        public static final String FAVORITED = "favorited";
-        /**
-         * The Msg is reblogged by this User
-         * In some sense REBLOGGED is like FAVORITED. 
-         * Main difference: visibility. REBLOGGED are shown for all followers in their Home timelines.
-         */
-        public static final String REBLOGGED = "reblogged";
-        /**
-         * ID in the originating system of the "reblog" message
-         * null for the message that was not reblogged
-         * We use THIS id when we need to "undo reblog"
-         */
-        public static final String REBLOG_OID = "reblog_oid";
-        /**
-         * User is mentioned in this message
-         */
-        public static final String MENTIONED = "mentioned";
-        /**
-         * This User is not only (optionally) mentioned in this message (explicitly using "@username" form)
-         * but the message has explicit reference to the User's message for which this message is a reply. 
-         */
-        public static final String REPLIED = "replied";
-        /**
-         * This is Direct message which was sent by (Sender) or to (Recipient) this User
-         */
-        public static final String DIRECTED = "directed";
-
-        /** It's not in a database, for passing data only */
-        public static final String SUFFIX_FOR_OTHER_USER = "_other";
-    }
-
-    /**
-     * Users table (they are both senders AND recipients in the {@link Msg} table)
-     * Some of these Users are Accounts (connected to accounts in AndStatus), 
-     * see {@link MyAccount#getUserId()}
-     */
-    public static final class User implements BaseColumns {
-        public static final String TABLE_NAME = User.class.getSimpleName().toLowerCase(Locale.US);
-
-        private User() {
-        }
-
-        // Table columns
-        /* {@link BaseColumns#_ID} is primary key in this database  */
-
-        /**
-         * ID of the originating (source) system (twitter.com, identi.ca, ... ) where the row was created
-         */
-        public static final String ORIGIN_ID =  Msg.ORIGIN_ID;
-        /**
-         * ID in the originating system
-         * The id is not unique for this table, because we have IDs from different systems in one column.
-         */
-        public static final String USER_OID = "user_oid";
-        /** This is called "screen_name" in Twitter API */
-        public static final String USERNAME = "username";
-        /** It looks like an email address with your nickname then "@" then your server */
-        public static final String WEBFINGER_ID = "webfinger_id";
-        /** This is called "name" in Twitter API */
-        public static final String REAL_NAME = "real_name";
-        /** User's description / "About myself" */
-        public static final String DESCRIPTION = "user_description";
-        /** Location string */
-        public static final String LOCATION = "location";
-        /**
-         * User's profile URL
-         * A link to the representation of the resource. Currently this is simply URL to the HTML
-         * representation of the resource (its "permalink")
-         */
-        public static final String PROFILE_URL = "profile_url";
-        /** URL of User's web home page */
-        public static final String HOMEPAGE = "homepage";
-        /** The latest url of the avatar */
-        public static final String AVATAR_URL = "avatar_url";
-        public static final String BANNER_URL = "banner_url";
-
-        public static final String MSG_COUNT = "msg_count";
-        public static final String FAVORITES_COUNT = "favorited_count";
-        public static final String FOLLOWING_COUNT = "following_count";
-        public static final String FOLLOWERS_COUNT = "followers_count";
-
-        /**
-         * Date and time when the row was created in the originating system.
-         * We store it as long returned by {@link Connection#dateFromJson}.
-         * NULL means the row was not retrieved from the Internet yet
-         * (And maybe there is no such User in the originating system...)
-         */
-        public static final String CREATED_DATE = "user_created_date";
-        public static final String UPDATED_DATE = "user_updated_date";
-        /** Date and time the row was inserted into this database */
-        public static final String INS_DATE = "user_ins_date";
-        
-        /**
-         * Columns holding information on timelines downloaded: 
-         * last message id and last date-time the timeline was downloaded. 
-         */
-        public static final String HOME_TIMELINE_POSITION = "home_timeline_position";
-        public static final String HOME_TIMELINE_ITEM_DATE = "home_timeline_item_date";
-        public static final String HOME_TIMELINE_DATE = "home_timeline_date";
-        public static final String FAVORITES_TIMELINE_POSITION = "favorites_timeline_position";
-        public static final String FAVORITES_TIMELINE_ITEM_DATE = "favorites_timeline_item_date";
-        public static final String FAVORITES_TIMELINE_DATE = "favorites_timeline_date";
-        public static final String DIRECT_TIMELINE_POSITION = "direct_timeline_position";
-        public static final String DIRECT_TIMELINE_ITEM_DATE = "direct_timeline_item_date";
-        public static final String DIRECT_TIMELINE_DATE = "direct_timeline_date";
-        public static final String MENTIONS_TIMELINE_POSITION = "mentions_timeline_position";
-        public static final String MENTIONS_TIMELINE_ITEM_DATE = "mentions_timeline_item_date";
-        public static final String MENTIONS_TIMELINE_DATE = "mentions_timeline_date";
-        public static final String USER_TIMELINE_POSITION = "user_timeline_position";
-        public static final String USER_TIMELINE_ITEM_DATE = "user_timeline_item_date";
-        public static final String USER_TIMELINE_DATE = "user_timeline_date";
-
-        /**
-         * For the list ("collection") of following users 
-         * we store only the date-time of the last retrieval of the list 
-         */
-        public static final String FOLLOWING_USER_DATE = "following_user_date";
-        public static final String FOLLOWERS_USER_DATE = "followers_user_date";
-        /**
-         * Id of the latest message where this User was a Sender or an Author
-         */
-        public static final String USER_MSG_ID = "user_msg_id";
-        /**
-         * Date of the latest message where this User was a Sender or an Author
-         */
-        public static final String USER_MSG_DATE = "user_msg_date";
-        
-        /*
-         * Derived columns (they are not stored in this table but are result of joins)
-         */
-        /** Alias for the primary key */
-        public static final String USER_ID = "user_id";
-        /** Alias used in a timeline to distinguish messages for different users */
-        public static final String LINKED_USER_ID = "linked_user_id";
-        /**
-         * Derived from {@link Msg#SENDER_ID}
-         * TODO: Whether this (and other similar...) is {@link #USERNAME} or {@link #REAL_NAME}, depends on settings 
-         */
-        public static final String SENDER_NAME = "sender_name";
-        /** Derived from {@link Msg#AUTHOR_ID} */
-        public static final String AUTHOR_NAME = "author_name";
-        /** Derived from {@link Msg#IN_REPLY_TO_USER_ID} */
-        public static final String IN_REPLY_TO_NAME = "in_reply_to_name";
-        /** Derived from {@link Msg#RECIPIENT_ID} */
-        public static final String RECIPIENT_NAME = "recipient_name";
-
-        public static final String DEFAULT_SORT_ORDER = USERNAME + " ASC";
-    }
-
-    /**
-     * IDs of Users the specified (by {@link Friendship#USER_ID}) user is following
-     * (otherwise known as their "friends").
-     * TODO: Rename table and fields in a database
-     */
-    public static final class Friendship {
-        public static final String TABLE_NAME = "followinguser";
-        private Friendship() {
-        }
-
-        /**
-         * Who is following
-         */
-        public static final String USER_ID = User.USER_ID;
-        /**
-         * Friend by {@link #USER_ID} (is followed by {@link #USER_ID})
-         */
-        public static final String FRIEND_ID = "following_user_id";
-        /**
-         * boolean ( 1 / 0 ) flag showing
-         * if {@link Friendship#FRIEND_ID} is followed by {@link Friendship#USER_ID}
-         */
-        public static final String FOLLOWED = "user_followed";
-        
-        /**
-         * Derived column: if the Author of the message is followed by the User
-         */
-        public static final String AUTHOR_FOLLOWED = "author_followed";
-        /**
-         * Derived column: if the Sender of the message is followed by the User
-         */
-        public static final String SENDER_FOLLOWED = "sender_followed";
-    }
-
-    /** Avatar, Message attachment...
-     */
-    public static final class Download implements BaseColumns {
-        public static final String TABLE_NAME = Download.class.getSimpleName().toLowerCase(Locale.US);
-        private Download() {
-        }
-        /** See {@link DownloadType} */
-        public static final String DOWNLOAD_TYPE = "download_type";
-        /** Avatar is connected to exactly one user */
-        public static final String USER_ID = User.USER_ID;
-        /** Attachment is connected to a message */
-        public static final String MSG_ID =  Msg.MSG_ID;
-        /** See {@link MyContentType} */
-        public static final String CONTENT_TYPE = "content_type";
-        /**
-         * Date and time of the information. Used to decide which 
-         * (version of) information
-         * is newer (we may upload older information later...)
-         */
-        public static final String VALID_FROM = "valid_from";
-        public static final String URI = "url";
-        /**
-         * TODO: Drop this column on next table update as it is not used
-         * Date and time there was last attempt to load this. The attempt may be successful or not.
-         */
-        private static final String LOADED_DATE = "loaded_date";
-        /**
-         * See {@link DownloadStatus}. Defaults to {@link DownloadStatus#UNKNOWN}
-         */
-        public static final String DOWNLOAD_STATUS = "download_status";
-        public static final String FILE_NAME = "file_name";
-        
-        /*
-         * Derived columns (they are not stored in this table but are result of joins)
-         */
-        /** Alias for the primary key */
-        public static final String IMAGE_ID = "image_id";
-
-        public static final String AVATAR_FILE_NAME = "avatar_file_name";
-        /** Alias helping to show first attached image */
-        public static final String IMAGE_FILE_NAME = "image_file_name";
-        public static final String IMAGE_URL = "image_url";
-    }
-
-    public static final class Origin implements BaseColumns {
-        public static final String TABLE_NAME = Origin.class.getSimpleName().toLowerCase(Locale.US);
-        private Origin() {
-        }
-        /**
-         * Reference to {@link OriginType#getId()}
-         */
-        public static final String ORIGIN_TYPE_ID = "origin_type_id";
-        public static final String ORIGIN_NAME = "origin_name";
-        public static final String ORIGIN_URL = "origin_url";
-        public static final String SSL = "ssl";
-        public static final String SSL_MODE = "ssl_mode";
-        public static final String ALLOW_HTML = "allow_html";
-        public static final String TEXT_LIMIT = "text_limit";
-        public static final String SHORT_URL_LENGTH = "short_url_length";
-        public static final String MENTION_AS_WEBFINGER_ID = "mention_as_webfinger_id";
-        public static final String USE_LEGACY_HTTP = "use_legacy_http";
-        /** Include this system in Global Search while in Combined Timeline */
-        public static final String IN_COMBINED_GLOBAL_SEARCH = "in_combined_global_search";
-        /** Include this system in Reload while in Combined Public Timeline */
-        public static final String IN_COMBINED_PUBLIC_RELOAD = "in_combined_public_reload";
-    }
-    
-    /**
-     * ids in originating system
-     */
-    public enum OidEnum {
-        /** oid of this message */
-        MSG_OID,
-        /** If the message was reblogged by the User,
-         * then oid of the "reblog" message,  
-         * else oid of the reblogged message (the first message which was reblogged)
-         */
-        REBLOG_OID,
-        /** oid of this User */
-        USER_OID
-    }
 
     public DatabaseHolder(Context context, boolean creationEnabled) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -524,158 +119,158 @@ public final class DatabaseHolder extends SQLiteOpenHelper  {
         }
 
         MyLog.i(this, "Creating tables");
-        execSQL(db, "CREATE TABLE " + Msg.TABLE_NAME + " (" 
+        execSQL(db, "CREATE TABLE " + MsgTable.TABLE_NAME + " ("
                 + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," 
-                + Msg.ORIGIN_ID + " INTEGER NOT NULL," 
-                + Msg.MSG_OID + " TEXT,"
-                + Msg.MSG_STATUS + " INTEGER NOT NULL DEFAULT 0,"
-                + Msg.AUTHOR_ID + " INTEGER,"
-                + Msg.SENDER_ID + " INTEGER," 
-                + Msg.RECIPIENT_ID + " INTEGER," 
-                + Msg.BODY + " TEXT," 
-                + Msg.VIA + " TEXT," 
-                + Msg.URL + " TEXT," 
-                + Msg.IN_REPLY_TO_MSG_ID + " INTEGER," 
-                + Msg.IN_REPLY_TO_USER_ID + " INTEGER," 
-                + Msg.CREATED_DATE + " INTEGER,"
-                + Msg.SENT_DATE + " INTEGER,"
-                + Msg.INS_DATE + " INTEGER NOT NULL,"
-                + Msg.PUBLIC + " BOOLEAN DEFAULT 0 NOT NULL" 
+                + MsgTable.ORIGIN_ID + " INTEGER NOT NULL,"
+                + MsgTable.MSG_OID + " TEXT,"
+                + MsgTable.MSG_STATUS + " INTEGER NOT NULL DEFAULT 0,"
+                + MsgTable.AUTHOR_ID + " INTEGER,"
+                + MsgTable.SENDER_ID + " INTEGER,"
+                + MsgTable.RECIPIENT_ID + " INTEGER,"
+                + MsgTable.BODY + " TEXT,"
+                + MsgTable.VIA + " TEXT,"
+                + MsgTable.URL + " TEXT,"
+                + MsgTable.IN_REPLY_TO_MSG_ID + " INTEGER,"
+                + MsgTable.IN_REPLY_TO_USER_ID + " INTEGER,"
+                + MsgTable.CREATED_DATE + " INTEGER,"
+                + MsgTable.SENT_DATE + " INTEGER,"
+                + MsgTable.INS_DATE + " INTEGER NOT NULL,"
+                + MsgTable.PUBLIC + " BOOLEAN DEFAULT 0 NOT NULL"
                 + ")");
 
-        execSQL(db, "CREATE UNIQUE INDEX idx_msg_origin ON " + Msg.TABLE_NAME + " (" 
-                + Msg.ORIGIN_ID + ", "
-                + Msg.MSG_OID
+        execSQL(db, "CREATE UNIQUE INDEX idx_msg_origin ON " + MsgTable.TABLE_NAME + " ("
+                + MsgTable.ORIGIN_ID + ", "
+                + MsgTable.MSG_OID
                 + ")");
 
-        execSQL(db, "CREATE INDEX idx_msg_sent_date ON " + Msg.TABLE_NAME + " (" 
-                + Msg.SENT_DATE
+        execSQL(db, "CREATE INDEX idx_msg_sent_date ON " + MsgTable.TABLE_NAME + " ("
+                + MsgTable.SENT_DATE
                 + ")");
 
-        execSQL(db, "CREATE INDEX idx_msg_in_reply_to_msg_id ON " + Msg.TABLE_NAME + " (" 
-                + Msg.IN_REPLY_TO_MSG_ID
+        execSQL(db, "CREATE INDEX idx_msg_in_reply_to_msg_id ON " + MsgTable.TABLE_NAME + " ("
+                + MsgTable.IN_REPLY_TO_MSG_ID
                 + ")");
         
-        execSQL(db, "CREATE TABLE " + MsgOfUser.TABLE_NAME + " (" 
-                + MsgOfUser.USER_ID + " INTEGER NOT NULL," 
-                + MsgOfUser.MSG_ID + " INTEGER NOT NULL," 
-                + MsgOfUser.SUBSCRIBED + " BOOLEAN DEFAULT 0 NOT NULL," 
-                + MsgOfUser.FAVORITED + " BOOLEAN DEFAULT 0 NOT NULL," 
-                + MsgOfUser.REBLOGGED + " BOOLEAN DEFAULT 0 NOT NULL," 
-                + MsgOfUser.REBLOG_OID + " TEXT," 
-                + MsgOfUser.MENTIONED + " BOOLEAN DEFAULT 0 NOT NULL," 
-                + MsgOfUser.REPLIED + " BOOLEAN DEFAULT 0 NOT NULL," 
-                + MsgOfUser.DIRECTED + " BOOLEAN DEFAULT 0 NOT NULL," 
-                + " CONSTRAINT pk_msgofuser PRIMARY KEY (" + MsgOfUser.USER_ID + " ASC, " + MsgOfUser.MSG_ID + " ASC)"
+        execSQL(db, "CREATE TABLE " + MsgOfUserTable.TABLE_NAME + " ("
+                + MsgOfUserTable.USER_ID + " INTEGER NOT NULL,"
+                + MsgOfUserTable.MSG_ID + " INTEGER NOT NULL,"
+                + MsgOfUserTable.SUBSCRIBED + " BOOLEAN DEFAULT 0 NOT NULL,"
+                + MsgOfUserTable.FAVORITED + " BOOLEAN DEFAULT 0 NOT NULL,"
+                + MsgOfUserTable.REBLOGGED + " BOOLEAN DEFAULT 0 NOT NULL,"
+                + MsgOfUserTable.REBLOG_OID + " TEXT,"
+                + MsgOfUserTable.MENTIONED + " BOOLEAN DEFAULT 0 NOT NULL,"
+                + MsgOfUserTable.REPLIED + " BOOLEAN DEFAULT 0 NOT NULL,"
+                + MsgOfUserTable.DIRECTED + " BOOLEAN DEFAULT 0 NOT NULL,"
+                + " CONSTRAINT pk_msgofuser PRIMARY KEY (" + MsgOfUserTable.USER_ID + " ASC, " + MsgOfUserTable.MSG_ID + " ASC)"
                 + ")");
         
-        execSQL(db, "CREATE TABLE " + User.TABLE_NAME + " (" 
+        execSQL(db, "CREATE TABLE " + UserTable.TABLE_NAME + " ("
                 + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," 
-                + User.ORIGIN_ID + " INTEGER NOT NULL," 
-                + User.USER_OID + " TEXT," 
-                + User.USERNAME + " TEXT NOT NULL," 
-                + User.WEBFINGER_ID + " TEXT NOT NULL," 
-                + User.REAL_NAME + " TEXT,"
-                + User.DESCRIPTION + " TEXT,"
-                + User.LOCATION + " TEXT,"
-                + User.PROFILE_URL + " TEXT,"
-                + User.HOMEPAGE + " TEXT,"
-                + User.AVATAR_URL + " TEXT,"
-                + User.BANNER_URL + " TEXT,"
-                + User.MSG_COUNT + " INTEGER DEFAULT 0 NOT NULL,"
-                + User.FAVORITES_COUNT + " INTEGER DEFAULT 0 NOT NULL,"
-                + User.FOLLOWING_COUNT + " INTEGER DEFAULT 0 NOT NULL,"
-                + User.FOLLOWERS_COUNT + " INTEGER DEFAULT 0 NOT NULL,"
-                + User.CREATED_DATE + " INTEGER DEFAULT 0 NOT NULL,"
-                + User.UPDATED_DATE + " INTEGER DEFAULT 0 NOT NULL,"
-                + User.INS_DATE + " INTEGER NOT NULL,"
-                + User.HOME_TIMELINE_POSITION + " TEXT DEFAULT '' NOT NULL," 
-                + User.HOME_TIMELINE_ITEM_DATE + " INTEGER DEFAULT 0 NOT NULL," 
-                + User.HOME_TIMELINE_DATE + " INTEGER DEFAULT 0 NOT NULL," 
-                + User.FAVORITES_TIMELINE_POSITION + " TEXT DEFAULT '' NOT NULL," 
-                + User.FAVORITES_TIMELINE_ITEM_DATE + " INTEGER DEFAULT 0 NOT NULL," 
-                + User.FAVORITES_TIMELINE_DATE + " INTEGER DEFAULT 0 NOT NULL," 
-                + User.DIRECT_TIMELINE_POSITION + " TEXT DEFAULT '' NOT NULL," 
-                + User.DIRECT_TIMELINE_ITEM_DATE + " INTEGER DEFAULT 0 NOT NULL," 
-                + User.DIRECT_TIMELINE_DATE + " INTEGER DEFAULT 0 NOT NULL," 
-                + User.MENTIONS_TIMELINE_POSITION + " TEXT DEFAULT '' NOT NULL," 
-                + User.MENTIONS_TIMELINE_ITEM_DATE + " INTEGER DEFAULT 0 NOT NULL," 
-                + User.MENTIONS_TIMELINE_DATE + " INTEGER DEFAULT 0 NOT NULL," 
-                + User.USER_TIMELINE_POSITION + " TEXT DEFAULT '' NOT NULL," 
-                + User.USER_TIMELINE_ITEM_DATE + " INTEGER DEFAULT 0 NOT NULL," 
-                + User.USER_TIMELINE_DATE + " INTEGER DEFAULT 0 NOT NULL," 
-                + User.FOLLOWING_USER_DATE + " INTEGER DEFAULT 0 NOT NULL,"
-                + User.FOLLOWERS_USER_DATE + " INTEGER DEFAULT 0 NOT NULL,"
-                + User.USER_MSG_ID + " INTEGER DEFAULT 0 NOT NULL,"
-                + User.USER_MSG_DATE + " INTEGER DEFAULT 0 NOT NULL" 
+                + UserTable.ORIGIN_ID + " INTEGER NOT NULL,"
+                + UserTable.USER_OID + " TEXT,"
+                + UserTable.USERNAME + " TEXT NOT NULL,"
+                + UserTable.WEBFINGER_ID + " TEXT NOT NULL,"
+                + UserTable.REAL_NAME + " TEXT,"
+                + UserTable.DESCRIPTION + " TEXT,"
+                + UserTable.LOCATION + " TEXT,"
+                + UserTable.PROFILE_URL + " TEXT,"
+                + UserTable.HOMEPAGE + " TEXT,"
+                + UserTable.AVATAR_URL + " TEXT,"
+                + UserTable.BANNER_URL + " TEXT,"
+                + UserTable.MSG_COUNT + " INTEGER DEFAULT 0 NOT NULL,"
+                + UserTable.FAVORITES_COUNT + " INTEGER DEFAULT 0 NOT NULL,"
+                + UserTable.FOLLOWING_COUNT + " INTEGER DEFAULT 0 NOT NULL,"
+                + UserTable.FOLLOWERS_COUNT + " INTEGER DEFAULT 0 NOT NULL,"
+                + UserTable.CREATED_DATE + " INTEGER DEFAULT 0 NOT NULL,"
+                + UserTable.UPDATED_DATE + " INTEGER DEFAULT 0 NOT NULL,"
+                + UserTable.INS_DATE + " INTEGER NOT NULL,"
+                + UserTable.HOME_TIMELINE_POSITION + " TEXT DEFAULT '' NOT NULL,"
+                + UserTable.HOME_TIMELINE_ITEM_DATE + " INTEGER DEFAULT 0 NOT NULL,"
+                + UserTable.HOME_TIMELINE_DATE + " INTEGER DEFAULT 0 NOT NULL,"
+                + UserTable.FAVORITES_TIMELINE_POSITION + " TEXT DEFAULT '' NOT NULL,"
+                + UserTable.FAVORITES_TIMELINE_ITEM_DATE + " INTEGER DEFAULT 0 NOT NULL,"
+                + UserTable.FAVORITES_TIMELINE_DATE + " INTEGER DEFAULT 0 NOT NULL,"
+                + UserTable.DIRECT_TIMELINE_POSITION + " TEXT DEFAULT '' NOT NULL,"
+                + UserTable.DIRECT_TIMELINE_ITEM_DATE + " INTEGER DEFAULT 0 NOT NULL,"
+                + UserTable.DIRECT_TIMELINE_DATE + " INTEGER DEFAULT 0 NOT NULL,"
+                + UserTable.MENTIONS_TIMELINE_POSITION + " TEXT DEFAULT '' NOT NULL,"
+                + UserTable.MENTIONS_TIMELINE_ITEM_DATE + " INTEGER DEFAULT 0 NOT NULL,"
+                + UserTable.MENTIONS_TIMELINE_DATE + " INTEGER DEFAULT 0 NOT NULL,"
+                + UserTable.USER_TIMELINE_POSITION + " TEXT DEFAULT '' NOT NULL,"
+                + UserTable.USER_TIMELINE_ITEM_DATE + " INTEGER DEFAULT 0 NOT NULL,"
+                + UserTable.USER_TIMELINE_DATE + " INTEGER DEFAULT 0 NOT NULL,"
+                + UserTable.FOLLOWING_USER_DATE + " INTEGER DEFAULT 0 NOT NULL,"
+                + UserTable.FOLLOWERS_USER_DATE + " INTEGER DEFAULT 0 NOT NULL,"
+                + UserTable.USER_MSG_ID + " INTEGER DEFAULT 0 NOT NULL,"
+                + UserTable.USER_MSG_DATE + " INTEGER DEFAULT 0 NOT NULL"
                 + ")");
 
-        execSQL(db, "CREATE UNIQUE INDEX idx_user_origin ON " + User.TABLE_NAME + " ("
-                + User.ORIGIN_ID + ", "
-                + User.USER_OID  
+        execSQL(db, "CREATE UNIQUE INDEX idx_user_origin ON " + UserTable.TABLE_NAME + " ("
+                + UserTable.ORIGIN_ID + ", "
+                + UserTable.USER_OID
                 + ")");
 
-        execSQL(db, "CREATE TABLE " + Friendship.TABLE_NAME + " ("
-                + Friendship.USER_ID + " INTEGER NOT NULL,"
-                + Friendship.FRIEND_ID + " INTEGER NOT NULL,"
-                + Friendship.FOLLOWED + " BOOLEAN DEFAULT 1 NOT NULL,"
-                + " CONSTRAINT pk_followinguser PRIMARY KEY (" + Friendship.USER_ID + " ASC, " + Friendship.FRIEND_ID + " ASC)"
+        execSQL(db, "CREATE TABLE " + FriendshipTable.TABLE_NAME + " ("
+                + FriendshipTable.USER_ID + " INTEGER NOT NULL,"
+                + FriendshipTable.FRIEND_ID + " INTEGER NOT NULL,"
+                + FriendshipTable.FOLLOWED + " BOOLEAN DEFAULT 1 NOT NULL,"
+                + " CONSTRAINT pk_followinguser PRIMARY KEY (" + FriendshipTable.USER_ID + " ASC, " + FriendshipTable.FRIEND_ID + " ASC)"
                 + ")");
 
-        execSQL(db, "CREATE TABLE " + Download.TABLE_NAME + " (" 
+        execSQL(db, "CREATE TABLE " + DownloadTable.TABLE_NAME + " ("
                 + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," 
-                + Download.DOWNLOAD_TYPE + " INTEGER NOT NULL," 
-                + Download.USER_ID + " INTEGER," 
-                + Download.MSG_ID + " INTEGER," 
-                + Download.CONTENT_TYPE + " INTEGER NOT NULL," 
-                + Download.VALID_FROM + " INTEGER NOT NULL,"
-                + Download.URI + " TEXT NOT NULL,"
-                + Download.LOADED_DATE + " INTEGER,"
-                + Download.DOWNLOAD_STATUS + " INTEGER NOT NULL DEFAULT 0," 
-                + Download.FILE_NAME + " TEXT" 
+                + DownloadTable.DOWNLOAD_TYPE + " INTEGER NOT NULL,"
+                + DownloadTable.USER_ID + " INTEGER,"
+                + DownloadTable.MSG_ID + " INTEGER,"
+                + DownloadTable.CONTENT_TYPE + " INTEGER NOT NULL,"
+                + DownloadTable.VALID_FROM + " INTEGER NOT NULL,"
+                + DownloadTable.URI + " TEXT NOT NULL,"
+                + DownloadTable.LOADED_DATE + " INTEGER,"
+                + DownloadTable.DOWNLOAD_STATUS + " INTEGER NOT NULL DEFAULT 0,"
+                + DownloadTable.FILE_NAME + " TEXT"
                 + ")");
 
-        execSQL(db, "CREATE INDEX idx_download_user ON " + Download.TABLE_NAME + " (" 
-                + Download.USER_ID + ", "
-                + Download.DOWNLOAD_STATUS
+        execSQL(db, "CREATE INDEX idx_download_user ON " + DownloadTable.TABLE_NAME + " ("
+                + DownloadTable.USER_ID + ", "
+                + DownloadTable.DOWNLOAD_STATUS
                 + ")");
 
-        execSQL(db, "CREATE INDEX idx_download_msg ON " + Download.TABLE_NAME + " (" 
-                + Download.MSG_ID + ", "
-                + Download.CONTENT_TYPE  + ", "
-                + Download.DOWNLOAD_STATUS
+        execSQL(db, "CREATE INDEX idx_download_msg ON " + DownloadTable.TABLE_NAME + " ("
+                + DownloadTable.MSG_ID + ", "
+                + DownloadTable.CONTENT_TYPE  + ", "
+                + DownloadTable.DOWNLOAD_STATUS
                 + ")");
         
-        execSQL(db, "CREATE TABLE " + Origin.TABLE_NAME + " (" 
+        execSQL(db, "CREATE TABLE " + OriginTable.TABLE_NAME + " ("
                 + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," 
-                + Origin.ORIGIN_TYPE_ID + " INTEGER NOT NULL," 
-                + Origin.ORIGIN_NAME + " TEXT NOT NULL," 
-                + Origin.ORIGIN_URL + " TEXT NOT NULL," 
-                + Origin.SSL + " BOOLEAN DEFAULT 1 NOT NULL," 
-                + Origin.SSL_MODE + " INTEGER DEFAULT " + SslModeEnum.SECURE.getId() + " NOT NULL," 
-                + Origin.ALLOW_HTML + " BOOLEAN DEFAULT 1 NOT NULL," 
-                + Origin.TEXT_LIMIT + " INTEGER NOT NULL,"
-                + Origin.SHORT_URL_LENGTH + " INTEGER NOT NULL DEFAULT 0," 
-                + Origin.MENTION_AS_WEBFINGER_ID + " INTEGER DEFAULT " + TriState.UNKNOWN.getId() + " NOT NULL," 
-                + Origin.USE_LEGACY_HTTP + " INTEGER DEFAULT " + TriState.UNKNOWN.getId() + " NOT NULL," 
-                + Origin.IN_COMBINED_GLOBAL_SEARCH + " BOOLEAN DEFAULT 1 NOT NULL," 
-                + Origin.IN_COMBINED_PUBLIC_RELOAD + " BOOLEAN DEFAULT 1 NOT NULL" 
+                + OriginTable.ORIGIN_TYPE_ID + " INTEGER NOT NULL,"
+                + OriginTable.ORIGIN_NAME + " TEXT NOT NULL,"
+                + OriginTable.ORIGIN_URL + " TEXT NOT NULL,"
+                + OriginTable.SSL + " BOOLEAN DEFAULT 1 NOT NULL,"
+                + OriginTable.SSL_MODE + " INTEGER DEFAULT " + SslModeEnum.SECURE.getId() + " NOT NULL,"
+                + OriginTable.ALLOW_HTML + " BOOLEAN DEFAULT 1 NOT NULL,"
+                + OriginTable.TEXT_LIMIT + " INTEGER NOT NULL,"
+                + OriginTable.SHORT_URL_LENGTH + " INTEGER NOT NULL DEFAULT 0,"
+                + OriginTable.MENTION_AS_WEBFINGER_ID + " INTEGER DEFAULT " + TriState.UNKNOWN.getId() + " NOT NULL,"
+                + OriginTable.USE_LEGACY_HTTP + " INTEGER DEFAULT " + TriState.UNKNOWN.getId() + " NOT NULL,"
+                + OriginTable.IN_COMBINED_GLOBAL_SEARCH + " BOOLEAN DEFAULT 1 NOT NULL,"
+                + OriginTable.IN_COMBINED_PUBLIC_RELOAD + " BOOLEAN DEFAULT 1 NOT NULL"
                 + ")");
         
-        execSQL(db, "CREATE UNIQUE INDEX idx_origin_name ON " + Origin.TABLE_NAME + " (" 
-                + Origin.ORIGIN_NAME
+        execSQL(db, "CREATE UNIQUE INDEX idx_origin_name ON " + OriginTable.TABLE_NAME + " ("
+                + OriginTable.ORIGIN_NAME
                 + ")");
         
-        String sqlIns = "INSERT INTO " + Origin.TABLE_NAME + " ("
+        String sqlIns = "INSERT INTO " + OriginTable.TABLE_NAME + " ("
                 + BaseColumns._ID + "," 
-                + Origin.ORIGIN_TYPE_ID + "," 
-                + Origin.ORIGIN_NAME + "," 
-                + Origin.ORIGIN_URL + "," 
-                + Origin.SSL + "," 
-                + Origin.SSL_MODE + ","
-                + Origin.ALLOW_HTML + ","
-                + Origin.TEXT_LIMIT + ","
-                + Origin.SHORT_URL_LENGTH
+                + OriginTable.ORIGIN_TYPE_ID + ","
+                + OriginTable.ORIGIN_NAME + ","
+                + OriginTable.ORIGIN_URL + ","
+                + OriginTable.SSL + ","
+                + OriginTable.SSL_MODE + ","
+                + OriginTable.ALLOW_HTML + ","
+                + OriginTable.TEXT_LIMIT + ","
+                + OriginTable.SHORT_URL_LENGTH
                 + ") VALUES ("
                 + "%s"
                 + ")";

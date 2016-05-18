@@ -21,8 +21,8 @@ import android.net.Uri;
 import android.provider.BaseColumns;
 
 import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.database.DatabaseHolder.Download;
-import org.andstatus.app.database.DatabaseHolder.User;
+import org.andstatus.app.database.DownloadTable;
+import org.andstatus.app.database.UserTable;
 import org.andstatus.app.user.UserListType;
 
 import java.util.ArrayList;
@@ -48,18 +48,18 @@ public class UserListSql {
 
         Collection<String> columns = new java.util.HashSet<>(Arrays.asList(projection));
 
-        String tables = User.TABLE_NAME;
-        if (columns.contains(Download.AVATAR_FILE_NAME)) {
+        String tables = UserTable.TABLE_NAME;
+        if (columns.contains(DownloadTable.AVATAR_FILE_NAME)) {
             tables = "(" + tables + ") LEFT OUTER JOIN (SELECT "
-                    + Download.USER_ID + ", "
-                    + Download.DOWNLOAD_STATUS + ", "
-                    + Download.FILE_NAME
-                    + " FROM " + Download.TABLE_NAME + ") AS " + ProjectionMap.AVATAR_IMAGE_TABLE_ALIAS
+                    + DownloadTable.USER_ID + ", "
+                    + DownloadTable.DOWNLOAD_STATUS + ", "
+                    + DownloadTable.FILE_NAME
+                    + " FROM " + DownloadTable.TABLE_NAME + ") AS " + ProjectionMap.AVATAR_IMAGE_TABLE_ALIAS
                     + " ON "
-                    + ProjectionMap.AVATAR_IMAGE_TABLE_ALIAS + "." + Download.DOWNLOAD_STATUS
+                    + ProjectionMap.AVATAR_IMAGE_TABLE_ALIAS + "." + DownloadTable.DOWNLOAD_STATUS
                     + "=" + DownloadStatus.LOADED.save() + " AND "
-                    + ProjectionMap.AVATAR_IMAGE_TABLE_ALIAS + "." + Download.USER_ID
-                    + "=" + User.TABLE_NAME + "." + BaseColumns._ID;
+                    + ProjectionMap.AVATAR_IMAGE_TABLE_ALIAS + "." + DownloadTable.USER_ID
+                    + "=" + UserTable.TABLE_NAME + "." + BaseColumns._ID;
         }
         return tables;
     }
@@ -73,28 +73,28 @@ public class UserListSql {
 
     private static List<String> getBaseProjection() {
         List<String> columnNames = new ArrayList<>();
-        columnNames.add(User._ID);
-        columnNames.add(User.USER_OID);
-        columnNames.add(User.USERNAME);
-        columnNames.add(User.WEBFINGER_ID);
-        columnNames.add(User.REAL_NAME);
-        columnNames.add(User.DESCRIPTION);
-        columnNames.add(User.LOCATION);
+        columnNames.add(UserTable._ID);
+        columnNames.add(UserTable.USER_OID);
+        columnNames.add(UserTable.USERNAME);
+        columnNames.add(UserTable.WEBFINGER_ID);
+        columnNames.add(UserTable.REAL_NAME);
+        columnNames.add(UserTable.DESCRIPTION);
+        columnNames.add(UserTable.LOCATION);
 
-        columnNames.add(User.PROFILE_URL);
-        columnNames.add(User.HOMEPAGE);
+        columnNames.add(UserTable.PROFILE_URL);
+        columnNames.add(UserTable.HOMEPAGE);
         if (MyPreferences.getShowAvatars()) {
-            columnNames.add(Download.AVATAR_FILE_NAME);
+            columnNames.add(DownloadTable.AVATAR_FILE_NAME);
         }
 
-        columnNames.add(User.MSG_COUNT);
-        columnNames.add(User.FAVORITES_COUNT);
-        columnNames.add(User.FOLLOWING_COUNT);
-        columnNames.add(User.FOLLOWERS_COUNT);
+        columnNames.add(UserTable.MSG_COUNT);
+        columnNames.add(UserTable.FAVORITES_COUNT);
+        columnNames.add(UserTable.FOLLOWING_COUNT);
+        columnNames.add(UserTable.FOLLOWERS_COUNT);
 
-        columnNames.add(User.CREATED_DATE);
-        columnNames.add(User.UPDATED_DATE);
-        columnNames.add(User.ORIGIN_ID);
+        columnNames.add(UserTable.CREATED_DATE);
+        columnNames.add(UserTable.UPDATED_DATE);
+        columnNames.add(UserTable.ORIGIN_ID);
         return columnNames;
     }
 

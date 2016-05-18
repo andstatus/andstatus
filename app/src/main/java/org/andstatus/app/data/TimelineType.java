@@ -20,8 +20,8 @@ import android.content.Context;
 
 import org.andstatus.app.R;
 import org.andstatus.app.account.PersistentAccounts;
-import org.andstatus.app.database.DatabaseHolder;
-import org.andstatus.app.database.DatabaseHolder.User;
+import org.andstatus.app.database.FriendshipTable;
+import org.andstatus.app.database.UserTable;
 import org.andstatus.app.net.social.Connection;
 
 /**
@@ -32,27 +32,27 @@ public enum TimelineType {
      * The type is unknown
      */
     UNKNOWN("unknown", R.string.timeline_title_unknown, 
-            User.HOME_TIMELINE_POSITION, User.HOME_TIMELINE_ITEM_DATE, User.HOME_TIMELINE_DATE, Connection.ApiRoutineEnum.DUMMY),
+            UserTable.HOME_TIMELINE_POSITION, UserTable.HOME_TIMELINE_ITEM_DATE, UserTable.HOME_TIMELINE_DATE, Connection.ApiRoutineEnum.DUMMY),
     /**
      * The Home timeline and other information (replies...).
      */
     HOME("home", R.string.timeline_title_home, 
-            User.HOME_TIMELINE_POSITION, User.HOME_TIMELINE_ITEM_DATE, User.HOME_TIMELINE_DATE, Connection.ApiRoutineEnum.STATUSES_HOME_TIMELINE),
+            UserTable.HOME_TIMELINE_POSITION, UserTable.HOME_TIMELINE_ITEM_DATE, UserTable.HOME_TIMELINE_DATE, Connection.ApiRoutineEnum.STATUSES_HOME_TIMELINE),
     /**
      * The Mentions timeline and other information (replies...).
      */
     MENTIONS("mentions", R.string.timeline_title_mentions, 
-            User.MENTIONS_TIMELINE_POSITION, User.MENTIONS_TIMELINE_ITEM_DATE, User.MENTIONS_TIMELINE_DATE, Connection.ApiRoutineEnum.STATUSES_MENTIONS_TIMELINE),
+            UserTable.MENTIONS_TIMELINE_POSITION, UserTable.MENTIONS_TIMELINE_ITEM_DATE, UserTable.MENTIONS_TIMELINE_DATE, Connection.ApiRoutineEnum.STATUSES_MENTIONS_TIMELINE),
     /**
      * Direct messages (direct dents...)
      */
     DIRECT("direct", R.string.timeline_title_direct_messages, 
-            User.DIRECT_TIMELINE_POSITION, User.DIRECT_TIMELINE_ITEM_DATE, User.DIRECT_TIMELINE_DATE, Connection.ApiRoutineEnum.DIRECT_MESSAGES),
+            UserTable.DIRECT_TIMELINE_POSITION, UserTable.DIRECT_TIMELINE_ITEM_DATE, UserTable.DIRECT_TIMELINE_DATE, Connection.ApiRoutineEnum.DIRECT_MESSAGES),
     /**
      * Favorites (favorited messages)
      */
     FAVORITES("favorites", R.string.timeline_title_favorites, 
-            User.FAVORITES_TIMELINE_POSITION, User.FAVORITES_TIMELINE_ITEM_DATE, User.FAVORITES_TIMELINE_DATE, Connection.ApiRoutineEnum.DUMMY),
+            UserTable.FAVORITES_TIMELINE_POSITION, UserTable.FAVORITES_TIMELINE_ITEM_DATE, UserTable.FAVORITES_TIMELINE_DATE, Connection.ApiRoutineEnum.DUMMY),
     /**
      * Messages of the selected User (where he is an Author or a Sender only (e.g. for Reblog/Retweet). 
      * This User may be not the same as a user of current account ( {@link PersistentAccounts#getCurrentAccountName()} ).
@@ -60,7 +60,7 @@ public enum TimelineType {
      * Hence this timeline type requires the User parameter.
      */
     USER("user", R.string.timeline_title_user, 
-            User.USER_TIMELINE_POSITION, User.USER_TIMELINE_ITEM_DATE, User.USER_TIMELINE_DATE, Connection.ApiRoutineEnum.STATUSES_USER_TIMELINE,
+            UserTable.USER_TIMELINE_POSITION, UserTable.USER_TIMELINE_ITEM_DATE, UserTable.USER_TIMELINE_DATE, Connection.ApiRoutineEnum.STATUSES_USER_TIMELINE,
             true),
     /**
      * For the selected user, the timeline includes all messages of the same origin irrespectively existence
@@ -73,12 +73,12 @@ public enum TimelineType {
      * Latest messages of every Friend of this user - AndStatus account
      * (i.e of every user, followed by this User).
      * So this is essentially a list of "Friends".
-     * See {@link DatabaseHolder.Friendship}
+     * See {@link FriendshipTable}
      */
     FRIENDS("friends", R.string.friends,
-            "", "", User.FOLLOWING_USER_DATE, Connection.ApiRoutineEnum.DUMMY),
+            "", "", UserTable.FOLLOWING_USER_DATE, Connection.ApiRoutineEnum.DUMMY),
     FOLLOWERS("followers", R.string.followers,
-            "", "", User.FOLLOWERS_USER_DATE, Connection.ApiRoutineEnum.DUMMY),
+            "", "", UserTable.FOLLOWERS_USER_DATE, Connection.ApiRoutineEnum.DUMMY),
 
     /**
      * Replies
@@ -100,7 +100,7 @@ public enum TimelineType {
      * This is generally done after addition of the new MyAccount).
      */
     ALL("all", R.string.timeline_title_all, 
-            User.HOME_TIMELINE_POSITION, User.HOME_TIMELINE_ITEM_DATE, User.HOME_TIMELINE_DATE, Connection.ApiRoutineEnum.DUMMY);
+            UserTable.HOME_TIMELINE_POSITION, UserTable.HOME_TIMELINE_ITEM_DATE, UserTable.HOME_TIMELINE_DATE, Connection.ApiRoutineEnum.DUMMY);
     
     /**
      * code of the enum that is used in messages
@@ -113,13 +113,13 @@ public enum TimelineType {
     /**
      * Position of the latest downloaded timeline item 
      * E.g. the "timeline item" is a "message" for Twitter and an "Activity" for Pump.Io.
-     * Name of the column in the {@link User} table.  
+     * Name of the column in the {@link UserTable} table.
      */
     private final String columnNameLatestTimelinePosition;
     private final String columnNameLatestTimelineItemDate;
     /**
      * Date when this timeline was last time fetched (downloaded). 
-     * Name of the column in the {@link User} table.
+     * Name of the column in the {@link UserTable} table.
      */
     private final String columnNameTimelineDownloadedDate;
     /**

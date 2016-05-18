@@ -21,7 +21,11 @@ import android.support.annotation.NonNull;
 
 import org.andstatus.app.backup.ProgressLogger;
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.database.DatabaseHolder;
+import org.andstatus.app.database.DownloadTable;
+import org.andstatus.app.database.FriendshipTable;
+import org.andstatus.app.database.MsgOfUserTable;
+import org.andstatus.app.database.MsgTable;
+import org.andstatus.app.database.UserTable;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.util.MyLog;
 
@@ -58,13 +62,13 @@ public class MyDataChecker {
         final String method = "getUsersToMerge";
 
         Set<MbUser> usersToMerge = new ConcurrentSkipListSet<>();
-        String sql = "SELECT " + DatabaseHolder.User._ID
-                + ", " + DatabaseHolder.User.ORIGIN_ID
-                + ", " + DatabaseHolder.User.USER_OID
-                + ", " + DatabaseHolder.User.WEBFINGER_ID
-                + " FROM " + DatabaseHolder.User.TABLE_NAME
-                + " ORDER BY " + DatabaseHolder.User.ORIGIN_ID
-                + ", " + DatabaseHolder.User.USER_OID
+        String sql = "SELECT " + UserTable._ID
+                + ", " + UserTable.ORIGIN_ID
+                + ", " + UserTable.USER_OID
+                + ", " + UserTable.WEBFINGER_ID
+                + " FROM " + UserTable.TABLE_NAME
+                + " ORDER BY " + UserTable.ORIGIN_ID
+                + ", " + UserTable.USER_OID
                 ;
         Cursor c = null;
         long rowsCount = 0;
@@ -120,20 +124,20 @@ public class MyDataChecker {
     private void mergeUser(MbUser user) {
         String logMsg = "Merging " + user + " with " + user.actor;
         logger.logProgress(logMsg);
-        updateColumn(logMsg, user, DatabaseHolder.Msg.TABLE_NAME, DatabaseHolder.Msg.SENDER_ID, false);
-        updateColumn(logMsg, user, DatabaseHolder.Msg.TABLE_NAME, DatabaseHolder.Msg.AUTHOR_ID, false);
-        updateColumn(logMsg, user, DatabaseHolder.Msg.TABLE_NAME, DatabaseHolder.Msg.RECIPIENT_ID, false);
-        updateColumn(logMsg, user, DatabaseHolder.Msg.TABLE_NAME, DatabaseHolder.Msg.IN_REPLY_TO_USER_ID, false);
+        updateColumn(logMsg, user, MsgTable.TABLE_NAME, MsgTable.SENDER_ID, false);
+        updateColumn(logMsg, user, MsgTable.TABLE_NAME, MsgTable.AUTHOR_ID, false);
+        updateColumn(logMsg, user, MsgTable.TABLE_NAME, MsgTable.RECIPIENT_ID, false);
+        updateColumn(logMsg, user, MsgTable.TABLE_NAME, MsgTable.IN_REPLY_TO_USER_ID, false);
 
-        updateColumn(logMsg, user, DatabaseHolder.MsgOfUser.TABLE_NAME, DatabaseHolder.MsgOfUser.USER_ID, true);
-        deleteRows(logMsg, user, DatabaseHolder.MsgOfUser.TABLE_NAME, DatabaseHolder.MsgOfUser.USER_ID);
+        updateColumn(logMsg, user, MsgOfUserTable.TABLE_NAME, MsgOfUserTable.USER_ID, true);
+        deleteRows(logMsg, user, MsgOfUserTable.TABLE_NAME, MsgOfUserTable.USER_ID);
 
-        deleteRows(logMsg, user, DatabaseHolder.Friendship.TABLE_NAME, DatabaseHolder.Friendship.USER_ID);
-        deleteRows(logMsg, user, DatabaseHolder.Friendship.TABLE_NAME, DatabaseHolder.Friendship.FRIEND_ID);
+        deleteRows(logMsg, user, FriendshipTable.TABLE_NAME, FriendshipTable.USER_ID);
+        deleteRows(logMsg, user, FriendshipTable.TABLE_NAME, FriendshipTable.FRIEND_ID);
 
-        deleteRows(logMsg, user, DatabaseHolder.Download.TABLE_NAME, DatabaseHolder.Download.USER_ID);
+        deleteRows(logMsg, user, DownloadTable.TABLE_NAME, DownloadTable.USER_ID);
 
-        deleteRows(logMsg, user, DatabaseHolder.User.TABLE_NAME, DatabaseHolder.User._ID);
+        deleteRows(logMsg, user, UserTable.TABLE_NAME, UserTable._ID);
     }
 
     private void updateColumn(String logMsg, MbUser user, String table, String column, boolean ignoreError) {

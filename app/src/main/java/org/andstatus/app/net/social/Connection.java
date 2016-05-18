@@ -22,7 +22,7 @@ import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import org.andstatus.app.account.AccountDataWriter;
-import org.andstatus.app.database.DatabaseHolder.User;
+import org.andstatus.app.database.UserTable;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.ConnectionException.StatusCode;
 import org.andstatus.app.net.http.HttpConnection;
@@ -328,7 +328,7 @@ public abstract class Connection {
      *      href="https://dev.twitter.com/docs/api/1/post/direct_messages/new">POST direct_messages/new</a>
      * 
      * @param message
-     * @param userId {@link User#USER_OID} - The ID of the user who should receive the direct message
+     * @param userId {@link UserTable#USER_OID} - The ID of the user who should receive the direct message
      * @param mediaUri 
      * @return The sent message if successful (empty message if not)
      * @throws ConnectionException

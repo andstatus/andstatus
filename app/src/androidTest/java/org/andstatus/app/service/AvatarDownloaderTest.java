@@ -26,8 +26,8 @@ import org.andstatus.app.data.AvatarData;
 import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.data.DownloadFile;
 import org.andstatus.app.data.DownloadStatus;
-import org.andstatus.app.database.DatabaseHolder.Download;
-import org.andstatus.app.database.DatabaseHolder.User;
+import org.andstatus.app.database.DownloadTable;
+import org.andstatus.app.database.UserTable;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.social.ConnectionTwitterGnuSocialMock;
@@ -61,7 +61,7 @@ public class AvatarDownloaderTest extends InstrumentationTestCase {
     }
     
     private void loadForOneMyAccount(String urlStringInitial) throws IOException {
-        String urlString1 = MyQuery.userIdToStringColumnValue(User.AVATAR_URL, ma.getUserId());
+        String urlString1 = MyQuery.userIdToStringColumnValue(UserTable.AVATAR_URL, ma.getUserId());
         assertEquals(urlStringInitial, urlString1);
         
         AvatarData.deleteAllOfThisUser(ma.getUserId());
@@ -109,7 +109,7 @@ public class AvatarDownloaderTest extends InstrumentationTestCase {
         ma = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.CONVERSATION_ACCOUNT_NAME);
         
         changeMaAvatarUrl(TestSuite.CONVERSATION_ACCOUNT_AVATAR_URL);
-        String urlString = MyQuery.userIdToStringColumnValue(User.AVATAR_URL, ma.getUserId());
+        String urlString = MyQuery.userIdToStringColumnValue(UserTable.AVATAR_URL, ma.getUserId());
         assertEquals(TestSuite.CONVERSATION_ACCOUNT_AVATAR_URL, urlString);
         
         loadAndAssertStatusForMa(DownloadStatus.LOADED, false);
@@ -132,18 +132,18 @@ public class AvatarDownloaderTest extends InstrumentationTestCase {
 
     static int changeAvatarUrl(MyAccount myAccount, String urlString) {
         ContentValues values = new ContentValues();
-        values.put(User.AVATAR_URL, urlString);
+        values.put(UserTable.AVATAR_URL, urlString);
         return MyContextHolder.get().getDatabase()
-                .update(User.TABLE_NAME, values, User._ID + "=" + myAccount.getUserId(), null);
+                .update(UserTable.TABLE_NAME, values, UserTable._ID + "=" + myAccount.getUserId(), null);
     }
 
     private int changeMaAvatarStatus(String urlString, DownloadStatus status) throws MalformedURLException {
         URL url = new URL(urlString); 
         ContentValues values = new ContentValues();
-        values.put(Download.DOWNLOAD_STATUS, status.save());
+        values.put(DownloadTable.DOWNLOAD_STATUS, status.save());
         return MyContextHolder.get().getDatabase()
-                .update(Download.TABLE_NAME, values, Download.USER_ID + "=" + ma.getUserId() 
-                        + " AND " + Download.URI + "=" + MyQuery.quoteIfNotQuoted(url.toExternalForm()), null);
+                .update(DownloadTable.TABLE_NAME, values, DownloadTable.USER_ID + "=" + ma.getUserId()
+                        + " AND " + DownloadTable.URI + "=" + MyQuery.quoteIfNotQuoted(url.toExternalForm()), null);
     }
 
     private long loadAndAssertStatusForMa(DownloadStatus status, boolean mockNetworkError) {
