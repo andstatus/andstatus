@@ -32,7 +32,7 @@ import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DataInserter;
 import org.andstatus.app.data.LatestUserMessages;
 import org.andstatus.app.data.MatchedUri;
-import org.andstatus.app.database.MyDatabaseConverterController;
+import org.andstatus.app.database.DatabaseConverterController;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.OriginTable;
 import org.andstatus.app.database.UserTable;
@@ -421,7 +421,7 @@ public final class MyAccount {
             if (ok) {
                 setCredentialsVerificationStatus(CredentialsVerificationStatus.SUCCEEDED);
                 myAccount.userOid = user.oid;
-                if (MyDatabaseConverterController.isUpgrading()) {
+                if (DatabaseConverterController.isUpgrading()) {
                     MyLog.v(TAG, "Upgrade in progress");
                     myAccount.userId = myAccount.accountData.getDataLong(KEY_USER_ID, myAccount.userId);
                 } else {

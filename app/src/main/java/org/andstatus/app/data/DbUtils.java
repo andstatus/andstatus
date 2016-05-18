@@ -207,4 +207,9 @@ public final class DbUtils {
         }
         return value;
     }
+
+    public static void execSQL(SQLiteDatabase db, String sql) {
+        MyLog.v("execSQL", sql);
+        db.execSQL(sql);
+    }
 }

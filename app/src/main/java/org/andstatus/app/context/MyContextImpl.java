@@ -31,7 +31,7 @@ import org.andstatus.app.ClassInApplicationPackage;
 import org.andstatus.app.account.PersistentAccounts;
 import org.andstatus.app.data.AssertionData;
 import org.andstatus.app.database.DatabaseHolder;
-import org.andstatus.app.database.MyDatabaseConverterController;
+import org.andstatus.app.database.DatabaseConverterController;
 import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.graphics.MyImageCache;
 import org.andstatus.app.net.http.HttpConnection;
@@ -177,7 +177,7 @@ public final class MyContextImpl implements MyContext {
 
     @Override
     public boolean isReady() {
-        return mState == MyContextState.READY && !MyDatabaseConverterController.isUpgrading();
+        return mState == MyContextState.READY && !DatabaseConverterController.isUpgrading();
     }
 
     @Override

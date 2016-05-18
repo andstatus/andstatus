@@ -26,7 +26,7 @@ import android.support.annotation.NonNull;
 import net.jcip.annotations.GuardedBy;
 import net.jcip.annotations.ThreadSafe;
 
-import org.andstatus.app.database.MyDatabaseConverterController;
+import org.andstatus.app.database.DatabaseConverterController;
 import org.andstatus.app.graphics.MyImageCache;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.util.MyLog;
@@ -93,7 +93,7 @@ public final class MyContextHolder {
      * @return preferencesChangeTime or 0 in a case of error
      */
     public static long initialize(Context context, Object initializedBy) {
-        if (MyDatabaseConverterController.isUpgrading()) {
+        if (DatabaseConverterController.isUpgrading()) {
             MyLog.v(TAG, "Skipping initialization: upgrade in progress (called by: " + initializedBy + ")");
             return 0;
         }
@@ -249,7 +249,7 @@ public final class MyContextHolder {
     
     public static void upgradeIfNeeded(Activity upgradeRequestor) {
         if (get().state() == MyContextState.UPGRADING) {
-            MyDatabaseConverterController.attemptToTriggerDatabaseUpgrade(upgradeRequestor);
+            DatabaseConverterController.attemptToTriggerDatabaseUpgrade(upgradeRequestor);
         }
     }
 

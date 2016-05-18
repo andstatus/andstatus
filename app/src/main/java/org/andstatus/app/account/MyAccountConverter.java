@@ -23,7 +23,7 @@ import org.andstatus.app.account.MyAccount.Builder;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.database.MyDatabaseConverterController;
+import org.andstatus.app.database.DatabaseConverterController;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.MyLog;
 
@@ -52,7 +52,7 @@ public class MyAccountConverter {
             android.accounts.Account[] aa = am.getAccountsByType( AuthenticatorService.ANDROID_ACCOUNT_TYPE );
             Collection<android.accounts.Account> accountsToRemove = new ArrayList<android.accounts.Account>(); 
             for (android.accounts.Account androidAccount : aa) {
-                MyDatabaseConverterController.stillUpgrading();
+                DatabaseConverterController.stillUpgrading();
                 AndroidAccountData androidAccountData = new AndroidAccountData(am, androidAccount);
                 int versionOldBefore16 = androidAccountData.getDataInt(MyAccount.KEY_VERSION, 0);
                 AccountData accountDataOld = AccountData.fromAndroidAccount(myContext, androidAccount);

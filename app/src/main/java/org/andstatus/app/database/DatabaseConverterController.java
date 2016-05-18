@@ -27,8 +27,8 @@ import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.util.MyLog;
 
-public class MyDatabaseConverterController {
-    private static final String TAG = MyDatabaseConverterController.class.getSimpleName();
+public class DatabaseConverterController {
+    private static final String TAG = DatabaseConverterController.class.getSimpleName();
 
     private static final Object UPGRADE_LOCK = new Object();
     @GuardedBy("upgradeLock")
@@ -187,7 +187,7 @@ public class MyDatabaseConverterController {
             stillUpgrading();
         }
         MyContextHolder.get().setInForeground(true);
-        boolean success = new MyDatabaseConverter().execute(new UpgradeParams(upgradeRequestor, db,
+        boolean success = new DatabaseConverter().execute(new UpgradeParams(upgradeRequestor, db,
                 oldVersion, newVersion));
         synchronized(UPGRADE_LOCK) {
             upgradeEnded = true;

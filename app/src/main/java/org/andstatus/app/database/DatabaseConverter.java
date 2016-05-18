@@ -25,18 +25,19 @@ import org.andstatus.app.account.MyAccountConverter;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyStorage;
 import org.andstatus.app.data.ApplicationUpgradeException;
+import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.util.DialogFactory;
 import org.andstatus.app.util.FileUtils;
 import org.andstatus.app.util.MyLog;
 
 import java.io.File;
 
-class MyDatabaseConverter {
+class DatabaseConverter {
     long startTime = java.lang.System.currentTimeMillis();
     private Activity activity;
     private ProgressDialog progress = null;
 
-    protected boolean execute(MyDatabaseConverterController.UpgradeParams params) {
+    protected boolean execute(DatabaseConverterController.UpgradeParams params) {
         boolean success = false;
         activity = params.upgradeRequestor;
         String msgLog = "";
@@ -215,9 +216,9 @@ class MyDatabaseConverter {
         protected void execute2() {
             versionTo = 15;
             sql = "ALTER TABLE msg ADD COLUMN public BOOLEAN DEFAULT 0 NOT NULL";
-            DatabaseHolder.execSQL(db, sql);
+            DbUtils.execSQL(db, sql);
             sql = "UPDATE msg SET public=0";
-            DatabaseHolder.execSQL(db, sql);
+            DbUtils.execSQL(db, sql);
         }
     }
 
@@ -228,7 +229,7 @@ class MyDatabaseConverter {
             boolean ok = MyAccountConverter.convert14to16(db, oldVersion) == versionTo;
             if (ok) {
                 sql = "DELETE FROM Origin WHERE _ID IN(6, 7)";
-                DatabaseHolder.execSQL(db, sql);
+                DbUtils.execSQL(db, sql);
             }
         }
     }
@@ -245,29 +246,29 @@ class MyDatabaseConverter {
                 }
             }
             sql = "DROP TABLE avatar";
-            DatabaseHolder.execSQL(db, sql);
+            DbUtils.execSQL(db, sql);
             sql = "CREATE TABLE download (_id INTEGER PRIMARY KEY AUTOINCREMENT,download_type INTEGER NOT NULL,user_id INTEGER,msg_id INTEGER,content_type INTEGER NOT NULL,valid_from INTEGER NOT NULL,url TEXT NOT NULL,loaded_date INTEGER,download_status INTEGER NOT NULL DEFAULT 0,file_name TEXT)";
-            DatabaseHolder.execSQL(db, sql);
+            DbUtils.execSQL(db, sql);
             sql = "CREATE INDEX idx_download_user ON download (user_id, download_status)";
-            DatabaseHolder.execSQL(db, sql);
+            DbUtils.execSQL(db, sql);
             sql = "CREATE INDEX idx_download_msg ON download (msg_id, content_type, download_status)";
-            DatabaseHolder.execSQL(db, sql);
+            DbUtils.execSQL(db, sql);
 
             sql = "ALTER TABLE origin RENAME TO oldorigin";
-            DatabaseHolder.execSQL(db, sql);
+            DbUtils.execSQL(db, sql);
             sql = "DROP INDEX idx_origin_name";
-            DatabaseHolder.execSQL(db, sql);
+            DbUtils.execSQL(db, sql);
 
             sql = "CREATE TABLE origin (_id INTEGER PRIMARY KEY AUTOINCREMENT,origin_type_id INTEGER NOT NULL,origin_name TEXT NOT NULL,origin_url TEXT NOT NULL,ssl BOOLEAN DEFAULT 0 NOT NULL,allow_html BOOLEAN DEFAULT 0 NOT NULL,text_limit INTEGER NOT NULL,short_url_length INTEGER NOT NULL DEFAULT 0)";
-            DatabaseHolder.execSQL(db, sql);
+            DbUtils.execSQL(db, sql);
             sql = "CREATE UNIQUE INDEX idx_origin_name ON origin (origin_name)";
-            DatabaseHolder.execSQL(db, sql);
+            DbUtils.execSQL(db, sql);
             sql = "INSERT INTO origin (_id, origin_type_id, origin_name, origin_url, ssl, allow_html, text_limit, short_url_length)" +
                     " SELECT _id, origin_type_id, origin_name, host, ssl, allow_html, text_limit, short_url_length" +
                     " FROM oldorigin";
-            DatabaseHolder.execSQL(db, sql);
+            DbUtils.execSQL(db, sql);
             sql = "DROP TABLE oldorigin";
-            DatabaseHolder.execSQL(db, sql);
+            DbUtils.execSQL(db, sql);
         }
     }
 
@@ -277,15 +278,15 @@ class MyDatabaseConverter {
             versionTo = 18 ;
 
             sql = "DROP INDEX IF EXISTS idx_username";
-            DatabaseHolder.execSQL(db, sql);
+            DbUtils.execSQL(db, sql);
 
             sql = "CREATE INDEX idx_user_origin ON user (origin_id, user_oid)";
-            DatabaseHolder.execSQL(db, sql);
+            DbUtils.execSQL(db, sql);
 
             sql = "ALTER TABLE user ADD COLUMN webfinger_id TEXT";
-            DatabaseHolder.execSQL(db, sql);
+            DbUtils.execSQL(db, sql);
             sql = "UPDATE user SET webfinger_id=username";
-            DatabaseHolder.execSQL(db, sql);
+            DbUtils.execSQL(db, sql);
         }
     }
 
@@ -295,7 +296,7 @@ class MyDatabaseConverter {
             versionTo = 19;
 
             sql = "CREATE INDEX idx_msg_sent_date ON msg (msg_sent_date)";
-            DatabaseHolder.execSQL(db, sql);
+            DbUtils.execSQL(db, sql);
         }
     }
 
@@ -305,15 +306,15 @@ class MyDatabaseConverter {
             versionTo = 20;
 
             sql = "ALTER TABLE origin ADD COLUMN ssl_mode INTEGER DEFAULT 1";
-            DatabaseHolder.execSQL(db, sql);
+            DbUtils.execSQL(db, sql);
             sql = "ALTER TABLE origin ADD COLUMN in_combined_global_search BOOLEAN DEFAULT 1";
-            DatabaseHolder.execSQL(db, sql);
+            DbUtils.execSQL(db, sql);
             sql = "ALTER TABLE origin ADD COLUMN in_combined_public_reload BOOLEAN DEFAULT 1";
-            DatabaseHolder.execSQL(db, sql);
+            DbUtils.execSQL(db, sql);
             sql = "UPDATE origin SET ssl_mode=1, in_combined_global_search=1, in_combined_public_reload=1";
-            DatabaseHolder.execSQL(db, sql);
+            DbUtils.execSQL(db, sql);
             sql = "UPDATE origin SET ssl_mode=2 WHERE origin_url LIKE '%quitter.zone%'";
-            DatabaseHolder.execSQL(db, sql);
+            DbUtils.execSQL(db, sql);
         }
     }
 
@@ -323,11 +324,11 @@ class MyDatabaseConverter {
             versionTo = 21;
 
             sql = "ALTER TABLE origin ADD COLUMN mention_as_webfinger_id INTEGER DEFAULT 3";
-            DatabaseHolder.execSQL(db, sql);
+            DbUtils.execSQL(db, sql);
             sql = "UPDATE origin SET mention_as_webfinger_id=3";
-            DatabaseHolder.execSQL(db, sql);
+            DbUtils.execSQL(db, sql);
             sql = "CREATE INDEX idx_msg_in_reply_to_msg_id ON msg (in_reply_to_msg_id)";
-            DatabaseHolder.execSQL(db, sql);
+            DbUtils.execSQL(db, sql);
         }
     }
 
@@ -337,9 +338,9 @@ class MyDatabaseConverter {
             versionTo = 22;
 
             sql = "ALTER TABLE origin ADD COLUMN use_legacy_http INTEGER DEFAULT 3";
-            DatabaseHolder.execSQL(db, sql);
+            DbUtils.execSQL(db, sql);
             sql = "UPDATE origin SET use_legacy_http=3";
-            DatabaseHolder.execSQL(db, sql);
+            DbUtils.execSQL(db, sql);
         }
     }
 
@@ -349,11 +350,11 @@ class MyDatabaseConverter {
             versionTo = 23;
 
             sql = "ALTER TABLE msg ADD COLUMN msg_status INTEGER NOT NULL DEFAULT 0";
-            DatabaseHolder.execSQL(db, sql);
+            DbUtils.execSQL(db, sql);
             sql = "UPDATE msg SET msg_status=0";
-            DatabaseHolder.execSQL(db, sql);
+            DbUtils.execSQL(db, sql);
             sql = "UPDATE msg SET msg_status=2 WHERE msg_created_date IS NOT NULL";
-            DatabaseHolder.execSQL(db, sql);
+            DbUtils.execSQL(db, sql);
 
 
         }
@@ -365,15 +366,15 @@ class MyDatabaseConverter {
             versionTo = 24;
 
             sql = "DROP TABLE IF EXISTS newuser";
-            DatabaseHolder.execSQL(db, sql);
+            DbUtils.execSQL(db, sql);
 
             sql = "UPDATE user SET user_created_date = 0 WHERE user_created_date IS NULL";
-            DatabaseHolder.execSQL(db, sql);
+            DbUtils.execSQL(db, sql);
             sql = "UPDATE user SET user_oid = ('andstatustemp:' || _id) WHERE user_oid IS NULL";
-            DatabaseHolder.execSQL(db, sql);
+            DbUtils.execSQL(db, sql);
 
             sql = "CREATE TABLE newuser (_id INTEGER PRIMARY KEY AUTOINCREMENT,origin_id INTEGER NOT NULL,user_oid TEXT,username TEXT NOT NULL,webfinger_id TEXT NOT NULL,real_name TEXT,user_description TEXT,location TEXT,profile_url TEXT,homepage TEXT,avatar_url TEXT,banner_url TEXT,msg_count INTEGER DEFAULT 0 NOT NULL,favorited_count INTEGER DEFAULT 0 NOT NULL,following_count INTEGER DEFAULT 0 NOT NULL,followers_count INTEGER DEFAULT 0 NOT NULL,user_created_date INTEGER,user_updated_date INTEGER,user_ins_date INTEGER NOT NULL,home_timeline_position TEXT DEFAULT '' NOT NULL,home_timeline_item_date INTEGER DEFAULT 0 NOT NULL,home_timeline_date INTEGER DEFAULT 0 NOT NULL,favorites_timeline_position TEXT DEFAULT '' NOT NULL,favorites_timeline_item_date INTEGER DEFAULT 0 NOT NULL,favorites_timeline_date INTEGER DEFAULT 0 NOT NULL,direct_timeline_position TEXT DEFAULT '' NOT NULL,direct_timeline_item_date INTEGER DEFAULT 0 NOT NULL,direct_timeline_date INTEGER DEFAULT 0 NOT NULL,mentions_timeline_position TEXT DEFAULT '' NOT NULL,mentions_timeline_item_date INTEGER DEFAULT 0 NOT NULL,mentions_timeline_date INTEGER DEFAULT 0 NOT NULL,user_timeline_position TEXT DEFAULT '' NOT NULL,user_timeline_item_date INTEGER DEFAULT 0 NOT NULL,user_timeline_date INTEGER DEFAULT 0 NOT NULL,following_user_date INTEGER DEFAULT 0 NOT NULL,followers_user_date INTEGER DEFAULT 0 NOT NULL,user_msg_id INTEGER DEFAULT 0 NOT NULL,user_msg_date INTEGER DEFAULT 0 NOT NULL)";
-            DatabaseHolder.execSQL(db, sql);
+            DbUtils.execSQL(db, sql);
             sql = "INSERT INTO newuser (" +
                     " _id, origin_id, user_oid, username, webfinger_id, real_name, user_description, location," +
                     " profile_url, homepage, avatar_url, banner_url," +
@@ -389,22 +390,22 @@ class MyDatabaseConverter {
                     " home_timeline_position, home_timeline_item_date, home_timeline_date, favorites_timeline_position, favorites_timeline_item_date, favorites_timeline_date, direct_timeline_position, direct_timeline_item_date, direct_timeline_date, mentions_timeline_position, mentions_timeline_item_date, mentions_timeline_date, user_timeline_position, user_timeline_item_date, user_timeline_date," +
                     " following_user_date,                   0, user_msg_id, user_msg_date" +
                     " FROM user";
-            DatabaseHolder.execSQL(db, sql);
+            DbUtils.execSQL(db, sql);
 
             sql = "DROP INDEX idx_user_origin";
-            DatabaseHolder.execSQL(db, sql);
+            DbUtils.execSQL(db, sql);
             sql = "DROP TABLE user";
-            DatabaseHolder.execSQL(db, sql);
+            DbUtils.execSQL(db, sql);
 
             sql = "ALTER TABLE newuser RENAME TO user";
-            DatabaseHolder.execSQL(db, sql);
+            DbUtils.execSQL(db, sql);
             try {
                 sql = "CREATE UNIQUE INDEX idx_user_origin ON user (origin_id, user_oid)";
-                DatabaseHolder.execSQL(db, sql);
+                DbUtils.execSQL(db, sql);
             } catch (Exception e) {
                 MyLog.e(this, "Couldn't create unique constraint");
                 sql = "CREATE INDEX idx_user_origin ON user (origin_id, user_oid)";
-                DatabaseHolder.execSQL(db, sql);
+                DbUtils.execSQL(db, sql);
             }
         }
     }
