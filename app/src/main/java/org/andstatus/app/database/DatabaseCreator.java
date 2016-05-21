@@ -214,7 +214,7 @@ public class DatabaseCreator {
 
         DbUtils.execSQL(db, "CREATE TABLE " + TimelineTable.TABLE_NAME + " ("
                 + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
-                + TimelineTable.TIMELINE_NAME + " TEXT NOT NULL,"
+                + TimelineTable.TIMELINE_NAME + " TEXT,"
                 + TimelineTable.TIMELINE_DESCRIPTION + " TEXT,"
                 + TimelineTable.TIMELINE_TYPE + " STRING NOT NULL,"
                 + TimelineTable.ALL_ORIGINS + " BOOLEAN DEFAULT 0 NOT NULL,"

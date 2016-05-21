@@ -215,7 +215,7 @@ public class AccountData implements Parcelable, AccountDataWriter {
         return value;
     }
 
-    long getDataLong(String key, long defValue) {
+    public long getDataLong(String key, long defValue) {
         long value = defValue;
         try {
             String str = getDataString(key, "null");

@@ -28,8 +28,8 @@ import android.text.TextUtils;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.UserInTimeline;
 import org.andstatus.app.database.FriendshipTable;
-import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.database.MsgOfUserTable;
+import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.database.UserTable;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
@@ -153,10 +153,10 @@ public class MyQuery {
         return sqlToLong(database, msgLog, sql);
     }
 
-    private static long sqlToLong(SQLiteDatabase databaseIn, String msgLog, String sql) {
+    public static long sqlToLong(SQLiteDatabase databaseIn, String msgLog, String sql) {
         SQLiteDatabase db = databaseIn == null ? MyContextHolder.get().getDatabase() : databaseIn;
         if (db == null) {
-            MyLog.v(MyProvider.TAG, msgLog + "; database is null");
+            MyLog.v(TAG, msgLog + "; database is null");
             return 0;
         }
         String msgLogSql = msgLog + "; sql='" + sql +"'";
@@ -167,19 +167,19 @@ public class MyQuery {
             value = statement.simpleQueryForLong();
             if ((value == 1 || value == 388)
                 && MyLog.isVerboseEnabled()) {
-                MyLog.v(MyProvider.TAG, msgLogSql);
+                MyLog.v(TAG, msgLogSql);
             }
         } catch (SQLiteDoneException e) {
-            MyLog.ignored(MyProvider.TAG, e);
+            MyLog.ignored(TAG, e);
             value = 0;
         } catch (Exception e) {
-            MyLog.e(MyProvider.TAG, msgLogSql, e);
+            MyLog.e(TAG, msgLogSql, e);
             value = 0;
         } finally {
             DbUtils.closeSilently(statement);
         }
         if (MyLog.isVerboseEnabled()) {
-            MyLog.v(MyProvider.TAG, msgLog + " -> " + value);
+            MyLog.v(TAG, msgLog + " -> " + value);
         }
         return value;
     }
@@ -219,7 +219,7 @@ public class MyQuery {
     public static String idToOid(OidEnum oe, long entityId, long rebloggerUserId) {
         SQLiteDatabase db = MyContextHolder.get().getDatabase();
         if (db == null) {
-            MyLog.v(MyProvider.TAG, "idToOid: database is null, oe=" + oe + " id=" + entityId);
+            MyLog.v(TAG, "idToOid: database is null, oe=" + oe + " id=" + entityId);
             return "";
         } else {
             return idToOid(db, oe, entityId, rebloggerUserId);
@@ -258,7 +258,7 @@ public class MyQuery {
     
                     case REBLOG_OID:
                         if (rebloggerUserId == 0) {
-                            MyLog.e(MyProvider.TAG, method + ": userId was not defined");
+                            MyLog.e(TAG, method + ": userId was not defined");
                         }
                         sql = "SELECT " + MsgOfUserTable.REBLOG_OID + " FROM "
                                 + MsgOfUserTable.TABLE_NAME + " WHERE "
@@ -278,16 +278,16 @@ public class MyQuery {
                 }
                 
             } catch (SQLiteDoneException e) {
-                MyLog.ignored(MyProvider.TAG, e);
+                MyLog.ignored(TAG, e);
                 oid = "";
             } catch (Exception e) {
-                MyLog.e(MyProvider.TAG, method, e);
+                MyLog.e(TAG, method, e);
                 oid = "";
             } finally {
                 DbUtils.closeSilently(prog);
             }
             if (MyLog.isVerboseEnabled()) {
-                MyLog.v(MyProvider.TAG, method + ": " + oe + " + " + entityId + " -> " + oid);
+                MyLog.v(TAG, method + ": " + oe + " + " + entityId + " -> " + oid);
             }
         }
         return oid;
@@ -319,16 +319,16 @@ public class MyQuery {
                 prog = db.compileStatement(sql);
                 userName = prog.simpleQueryForString();
             } catch (SQLiteDoneException e) {
-                MyLog.ignored(MyProvider.TAG, e);
+                MyLog.ignored(TAG, e);
                 userName = "";
             } catch (Exception e) {
-                MyLog.e(MyProvider.TAG, method, e);
+                MyLog.e(TAG, method, e);
                 userName = "";
             } finally {
                 DbUtils.closeSilently(prog);
             }
             if (MyLog.isVerboseEnabled()) {
-                MyLog.v(MyProvider.TAG, method + "; " + userIdColumnName + ": " + messageId + " -> " + userName );
+                MyLog.v(TAG, method + "; " + userIdColumnName + ": " + messageId + " -> " + userName );
             }
         }
         return userName;
@@ -421,16 +421,16 @@ public class MyQuery {
                 prog = db.compileStatement(sql);
                 columnValue = prog.simpleQueryForString();
             } catch (SQLiteDoneException e) {
-                MyLog.ignored(MyProvider.TAG, e);
+                MyLog.ignored(TAG, e);
             } catch (Exception e) {
-                MyLog.e(MyProvider.TAG, method + " table='" + tableName 
+                MyLog.e(TAG, method + " table='" + tableName
                         + "', column='" + columnName + "'", e);
                 return "";
             } finally {
                 DbUtils.closeSilently(prog);
             }
             if (MyLog.isVerboseEnabled()) {
-                MyLog.v(MyProvider.TAG, method + " table=" + tableName + ", column=" + columnName + ", id=" + systemId + " -> " + columnValue );
+                MyLog.v(TAG, method + " table=" + tableName + ", column=" + columnName + ", id=" + systemId + " -> " + columnValue );
             }
         }
         return TextUtils.isEmpty(columnValue) ? "" : columnValue;
@@ -448,7 +448,7 @@ public class MyQuery {
                 throw new IllegalArgumentException("msgIdToUserId; Unknown name \"" + msgUserIdColumnName);
             }
         } catch (Exception e) {
-            MyLog.e(MyProvider.TAG, "msgIdToUserId", e);
+            MyLog.e(TAG, "msgIdToUserId", e);
             return 0;
         }
         return userId;

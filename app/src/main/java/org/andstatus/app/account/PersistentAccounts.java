@@ -95,6 +95,16 @@ public class PersistentAccounts {
         return this;
     }
 
+    public static Set<AccountData> getAccountDataFromAccountManager(MyContext myContext) {
+        Set<AccountData> accountDataSet = new HashSet<>();
+        android.accounts.AccountManager am = AccountManager.get(myContext.context());
+        android.accounts.Account[] aa = am.getAccountsByType( AuthenticatorService.ANDROID_ACCOUNT_TYPE );
+        for (android.accounts.Account androidAccount : aa) {
+            accountDataSet.add(AccountData.fromAndroidAccount(myContext, androidAccount));
+        }
+        return accountDataSet;
+    }
+
     public String getDefaultAccountName() {
         return SharedPreferencesUtil.getString(KEY_DEFAULT_ACCOUNT_NAME, "");
     }

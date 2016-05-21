@@ -21,16 +21,22 @@ import android.app.ProgressDialog;
 import android.database.sqlite.SQLiteDatabase;
 
 import org.andstatus.app.R;
+import org.andstatus.app.account.AccountData;
+import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.account.MyAccountConverter;
+import org.andstatus.app.account.PersistentAccounts;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyStorage;
 import org.andstatus.app.data.ApplicationUpgradeException;
 import org.andstatus.app.data.DbUtils;
+import org.andstatus.app.data.MyQuery;
+import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.util.DialogFactory;
 import org.andstatus.app.util.FileUtils;
 import org.andstatus.app.util.MyLog;
 
 import java.io.File;
+import java.util.Set;
 
 class DatabaseConverter {
     long startTime = java.lang.System.currentTimeMillis();
@@ -415,7 +421,43 @@ class DatabaseConverter {
         protected void execute2() {
             versionTo = 25;
 
-            // TODO
+            sql = "CREATE TABLE timeline (_id INTEGER PRIMARY KEY AUTOINCREMENT,timeline_name TEXT,timeline_description TEXT,timeline_type STRING NOT NULL,all_origin BOOLEAN DEFAULT 0 NOT NULL,origin_id INTEGER,account_id INTEGER,user_id INTEGER,search_query TEXT,syncable BOOLEAN DEFAULT 1 NOT NULL,display_in_selector BOOLEAN DEFAULT 1 NOT NULL,selector_order INTEGER DEFAULT 1 NOT NULL,synced_date INTEGER,sync_failed_date INTEGER,error_message TEXT,synced_times_count INTEGER DEFAULT 0 NOT NULL,sync_failed_times_count INTEGER DEFAULT 0 NOT NULL,new_items_count INTEGER DEFAULT 0 NOT NULL,count_since INTEGER,synced_times_count_total INTEGER DEFAULT 0 NOT NULL,sync_failed_times_count_total INTEGER DEFAULT 0 NOT NULL,new_items_count_total INTEGER DEFAULT 0 NOT NULL,youngest_position TEXT,youngest_item_date INTEGER,youngest_synced_date INTEGER,oldest_position TEXT,oldest_item_date INTEGER,oldest_synced_date INTEGER)";
+            DbUtils.execSQL(db, sql);
+
+            sql = "CREATE TABLE command (_id INTEGER PRIMARY KEY NOT NULL,queue_type TEXT NOT NULL,command_code TEXT NOT NULL,command_created_date INTEGER NOT NULL,user_id INTEGER,timeline_id INTEGER,in_foreground BOOLEAN DEFAULT 0 NOT NULL,manually_launched BOOLEAN DEFAULT 0 NOT NULL,item_id INTEGER,body TEXT,search_query TEXT,username TEXT,last_executed_date INTEGER,execution_count INTEGER DEFAULT 0 NOT NULL,retries_left INTEGER DEFAULT 0 NOT NULL,num_auth_exceptions INTEGER DEFAULT 0 NOT NULL,num_io_exceptions INTEGER DEFAULT 0 NOT NULL,num_parse_exceptions INTEGER DEFAULT 0 NOT NULL,error_message TEXT,downloaded_count INTEGER DEFAULT 0 NOT NULL,progress_text TEXT)";
+            DbUtils.execSQL(db, sql);
+
+            Set<AccountData> accountDataSet = PersistentAccounts.getAccountDataFromAccountManager(MyContextHolder.get());
+            for (AccountData accountData : accountDataSet) {
+                long accountId = accountData.getDataLong(MyAccount.KEY_USER_ID, 0);
+                sql = "SELECT origin_id FROM user WHERE _id=" + accountId;
+                long originId = MyQuery.sqlToLong(db, sql, sql);
+                if (originId != 0) {
+                    long selectorOrder = 1;
+                    insertTimeline(TimelineType.HOME, originId, accountId, selectorOrder++, true);
+                    insertTimeline(TimelineType.FAVORITES, originId, accountId, selectorOrder++, false);
+                    insertTimeline(TimelineType.MENTIONS, originId, accountId, selectorOrder++, true);
+                    insertTimeline(TimelineType.DIRECT, originId, accountId, selectorOrder++, true);
+                    insertTimeline(TimelineType.USER, originId, accountId, selectorOrder++, false);
+                    insertTimeline(TimelineType.FRIENDS, originId, accountId, selectorOrder++, false);
+                    insertTimeline(TimelineType.FOLLOWERS, originId, accountId, selectorOrder++, false);
+                    insertTimeline(TimelineType.PUBLIC, originId, accountId, selectorOrder++, false);
+                    insertTimeline(TimelineType.EVERYTHING, originId, accountId, selectorOrder++, false);
+                    insertTimeline(TimelineType.DRAFTS, originId, accountId, selectorOrder++, false);
+                    insertTimeline(TimelineType.OUTBOX, originId, accountId, selectorOrder++, false);
+                }
+            }
+        }
+
+        private void insertTimeline(TimelineType timelineType, long originId, long userId,
+                                    long selectorOrder, boolean syncable) {
+            sql = "INSERT INTO timeline (timeline_type, origin_id, account_id" +
+                    ", selector_order, syncable)"
+                    + " VALUES('" + timelineType.save() + "', "
+                    + originId + ", " + userId + ", "
+                    + selectorOrder + ", "
+                    + (syncable ? "1" : "0") + ")";
+            DbUtils.execSQL(db, sql);
         }
     }
 }
