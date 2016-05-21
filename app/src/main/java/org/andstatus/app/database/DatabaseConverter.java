@@ -61,12 +61,12 @@ class DatabaseConverter {
             MyLog.ignored(this, e);
             mySleepWithLogging(30000);
         } finally {
-            mySleepWithLogging(1000);
+            mySleepWithLogging(1500);
             upgradeEnded();
             if (MyContextHolder.get().isTestRun()) {
                 activity.finish();
-                mySleepWithLogging(500);
             }
+            mySleepWithLogging(500);
         }
         if (success) {
             MyLog.w(this, "Upgrade successfully completed in "

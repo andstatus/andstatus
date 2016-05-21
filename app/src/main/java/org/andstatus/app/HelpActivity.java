@@ -250,7 +250,7 @@ public class HelpActivity extends MyActivity implements SwipeInterface {
             mFlipper.showNext();
         }
     }
-    
+
     /**
      * @return true if calling Activity is being finishing
      */
@@ -268,7 +268,7 @@ public class HelpActivity extends MyActivity implements SwipeInterface {
         } 
         
         // Show Change Log after update
-        if (checkAndUpdateLastOpenedAppVersion(activity, true)) {
+        if (MyContextHolder.get().isReady() && checkAndUpdateLastOpenedAppVersion(activity, true)) {
             showChangeLog = true;                    
         }
 

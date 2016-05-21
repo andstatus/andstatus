@@ -21,6 +21,7 @@ import android.database.sqlite.SQLiteDatabase;
 
 import net.jcip.annotations.GuardedBy;
 
+import org.andstatus.app.HelpActivity;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.os.AsyncTaskLauncher;
@@ -137,6 +138,7 @@ public class DatabaseConverterController {
                 if (!MyContextHolder.get().isReady()) {
                     MyContextHolder.initialize(activity[0], activity[0]);
                 }
+                HelpActivity.startFromActivity(activity[0]);
             }
             return null;
         }
