@@ -29,9 +29,10 @@ public final class OriginTable implements BaseColumns {
     private OriginTable() {
     }
 
-    /**
-     * Reference to {@link OriginType#getId()}
-     */
+    /** Alias for {@link #_ID} */
+    public static final String ORIGIN_ID =  "origin_id";
+
+    /** Reference to {@link OriginType#getId()} */
     public static final String ORIGIN_TYPE_ID = "origin_type_id";
     public static final String ORIGIN_NAME = "origin_name";
     public static final String ORIGIN_URL = "origin_url";

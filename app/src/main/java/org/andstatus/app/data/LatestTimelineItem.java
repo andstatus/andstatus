@@ -175,7 +175,7 @@ public class LatestTimelineItem {
             }
 
             sql = "UPDATE " + UserTable.TABLE_NAME + " SET " + sql
-                    + " WHERE " + BaseColumns._ID + "=" + userId;
+                    + " WHERE " + UserTable._ID + "=" + userId;
 
             SQLiteDatabase db = MyContextHolder.get().getDatabase();
             if (db == null) {

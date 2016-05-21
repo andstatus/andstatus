@@ -62,10 +62,8 @@ public class CommandData implements Comparable<CommandData> {
      */
     private final TimelineType timelineType;
 
-    private int priority = 0;
     private volatile boolean mInForeground = false;
     private volatile boolean mManuallyLaunched = false;
-    private volatile boolean mIsStep = false;
 
     /**
      * This is: 1. Generally: Message ID ({@link MsgTable#MSG_ID} of the
@@ -109,7 +107,6 @@ public class CommandData implements Comparable<CommandData> {
                 execContext.getMyAccount().getAccountName(),
                 execContext.getTimelineType()
                 );
-        commandData.mIsStep = true;
         commandData.commandResult = execContext.getCommandData().getResult().forOneExecStep();
         return commandData;
     }
@@ -157,8 +154,6 @@ public class CommandData implements Comparable<CommandData> {
                             .getBoolean(IntentExtra.IN_FOREGROUND.key);
                     commandData.mManuallyLaunched = commandData.bundle
                             .getBoolean(IntentExtra.MANUALLY_LAUNCHED.key);
-                    commandData.mIsStep = commandData.bundle
-                            .getBoolean(IntentExtra.IS_STEP.key);
                     commandData.commandResult = commandData.bundle
                             .getParcelable(IntentExtra.COMMAND_RESULT.key);
                     break;
@@ -190,7 +185,6 @@ public class CommandData implements Comparable<CommandData> {
         }
         bundle.putBoolean(IntentExtra.IN_FOREGROUND.key, mInForeground);
         bundle.putBoolean(IntentExtra.MANUALLY_LAUNCHED.key, mManuallyLaunched);
-        bundle.putBoolean(IntentExtra.IS_STEP.key, mIsStep);
         bundle.putParcelable(IntentExtra.COMMAND_RESULT.key, commandResult);
         intent.putExtras(bundle);
         return intent;
@@ -264,7 +258,6 @@ public class CommandData implements Comparable<CommandData> {
         ed.putLong(IntentExtra.ITEM_ID.key + si, itemId);
         ed.putBoolean(IntentExtra.IN_FOREGROUND.key + si, mInForeground);
         ed.putBoolean(IntentExtra.MANUALLY_LAUNCHED.key + si, mManuallyLaunched);
-        ed.putBoolean(IntentExtra.IS_STEP.key + si, mIsStep);
         switch (command) {
             case FETCH_ATTACHMENT:
             case UPDATE_STATUS:
@@ -401,7 +394,6 @@ public class CommandData implements Comparable<CommandData> {
         command = commandIn;
         String accountName2 = "";
         TimelineType timelineType2 = TimelineType.UNKNOWN;
-        priority = command.getPriority();
         switch (command) {
             case FETCH_ATTACHMENT:
             case FETCH_AVATAR:
@@ -487,9 +479,6 @@ public class CommandData implements Comparable<CommandData> {
         if (mManuallyLaunched) {
             builder.append("manual,");
         }
-        if (mIsStep) {
-            builder.append("step,");
-        }
         builder.append("created:"
                 + RelativeTime.getDifference(MyContextHolder.get().context(), getCreatedDate())
                 + ",");
@@ -561,9 +550,16 @@ public class CommandData implements Comparable<CommandData> {
 
     @Override
     public int compareTo(@NonNull CommandData another) {
-        int greater = 0;
-        if (another != null && another.priority != this.priority) {
-            greater = this.priority > another.priority ? 1 : -1;
+        if (another == null) {
+            return 0;
+        }
+        int greater;
+        if (this.id == another.id) {
+            return 0;
+        } else if (another.command.getPriority() == this.command.getPriority()) {
+            greater = this.id > another.id ? 1 : -1;
+        } else {
+            greater = this.command.getPriority() > another.command.getPriority() ? 1 : -1;
         }
         return greater;
     }
@@ -580,10 +576,6 @@ public class CommandData implements Comparable<CommandData> {
         return mManuallyLaunched;
     }
 
-    public boolean isStep() {
-        return mIsStep;
-    }
-    
     public CommandData setManuallyLaunched(boolean manuallyLaunched) {
         this.mManuallyLaunched = manuallyLaunched;
         return this;
@@ -609,9 +601,6 @@ public class CommandData implements Comparable<CommandData> {
             }
             if (mManuallyLaunched) {
                 I18n.appendWithSpace(builder, ", manual");
-            }
-            if (mIsStep) {
-                I18n.appendWithSpace(builder, ", step");
             }
         }
         switch (command) {

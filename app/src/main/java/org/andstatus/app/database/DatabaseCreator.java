@@ -33,6 +33,7 @@ public class DatabaseCreator {
      * This is used to check (and upgrade if necessary)
      * existing database after application update.
      *
+     * v.25 2016-05-21 app.v.27 TimelineTable and CommandTable added
      * v.24 2016-02-27 app.v.23 several attributes added to User, https://github.com/andstatus/andstatus/issues/320
      * v.23 2015-09-02 app.v.19 msg_status added for Unsent messages
      * v.22 2015-04-04 app.v.17 use_legacy_http added to Origin
@@ -54,7 +55,7 @@ public class DatabaseCreator {
      *      All messages are in the same table.
      *      Allows to have multiple User Accounts in different Originating systems (twitter.com etc. )
      */
-    public static final int DATABASE_VERSION = 24;
+    public static final int DATABASE_VERSION = 25;
     public static final long ORIGIN_ID_TWITTER =  1L;
 
     private final SQLiteDatabase db;
@@ -209,6 +210,66 @@ public class DatabaseCreator {
 
         DbUtils.execSQL(db, "CREATE UNIQUE INDEX idx_origin_name ON " + OriginTable.TABLE_NAME + " ("
                 + OriginTable.ORIGIN_NAME
+                + ")");
+
+        DbUtils.execSQL(db, "CREATE TABLE " + TimelineTable.TABLE_NAME + " ("
+                + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
+                + TimelineTable.TIMELINE_NAME + " TEXT NOT NULL,"
+                + TimelineTable.TIMELINE_DESCRIPTION + " TEXT,"
+                + TimelineTable.TIMELINE_TYPE + " STRING NOT NULL,"
+                + TimelineTable.ALL_ORIGINS + " BOOLEAN DEFAULT 0 NOT NULL,"
+                + TimelineTable.ORIGIN_ID + " INTEGER,"
+                + TimelineTable.ACCOUNT_ID + " INTEGER,"
+                + TimelineTable.USER_ID + " INTEGER,"
+                + TimelineTable.SEARCH_QUERY + " TEXT,"
+
+                + TimelineTable.SYNCABLE + " BOOLEAN DEFAULT 1 NOT NULL,"
+                + TimelineTable.DISPLAY_IN_SELECTOR + " BOOLEAN DEFAULT 1 NOT NULL,"
+                + TimelineTable.SELECTOR_ORDER + " INTEGER DEFAULT 1 NOT NULL,"
+
+                + TimelineTable.SYNCED_DATE + " INTEGER,"
+                + TimelineTable.SYNC_FAILED_DATE + " INTEGER,"
+                + TimelineTable.ERROR_MESSAGE + " TEXT,"
+
+                + TimelineTable.SYNCED_TIMES_COUNT + " INTEGER DEFAULT 0 NOT NULL,"
+                + TimelineTable.SYNC_FAILED_TIMES_COUNT + " INTEGER DEFAULT 0 NOT NULL,"
+                + TimelineTable.NEW_ITEMS_COUNT + " INTEGER DEFAULT 0 NOT NULL,"
+                + TimelineTable.COUNT_SINCE + " INTEGER,"
+                + TimelineTable.SYNCED_TIMES_COUNT_TOTAL + " INTEGER DEFAULT 0 NOT NULL,"
+                + TimelineTable.SYNC_FAILED_TIMES_COUNT_TOTAL + " INTEGER DEFAULT 0 NOT NULL,"
+                + TimelineTable.NEW_ITEMS_COUNT_TOTAL + " INTEGER DEFAULT 0 NOT NULL,"
+
+                + TimelineTable.YOUNGEST_POSITION + " TEXT,"
+                + TimelineTable.YOUNGEST_ITEM_DATE + " INTEGER,"
+                + TimelineTable.YOUNGEST_SYNCED_DATE + " INTEGER,"
+                + TimelineTable.OLDEST_POSITION + " TEXT,"
+                + TimelineTable.OLDEST_ITEM_DATE + " INTEGER,"
+                + TimelineTable.OLDEST_SYNCED_DATE + " INTEGER"
+                + ")");
+
+        DbUtils.execSQL(db, "CREATE TABLE " + CommandTable.TABLE_NAME + " ("
+                + BaseColumns._ID + " INTEGER PRIMARY KEY NOT NULL,"
+                + CommandTable.QUEUE_TYPE + " TEXT NOT NULL,"
+                + CommandTable.COMMAND_CODE + " TEXT NOT NULL,"
+                + CommandTable.CREATED_DATE + " INTEGER NOT NULL,"
+                + CommandTable.ACCOUNT_ID + " INTEGER,"
+                + CommandTable.TIMELINE_ID + " INTEGER,"
+                + CommandTable.IN_FOREGROUND + " BOOLEAN DEFAULT 0 NOT NULL,"
+                + CommandTable.MANUALLY_LAUNCHED + " BOOLEAN DEFAULT 0 NOT NULL,"
+                + CommandTable.ITEM_ID + " INTEGER,"
+                + CommandTable.BODY + " TEXT,"
+                + CommandTable.SEARCH_QUERY + " TEXT,"
+                + CommandTable.USERNAME + " TEXT,"
+
+                + CommandTable.LAST_EXECUTED_DATE + " INTEGER,"
+                + CommandTable.EXECUTION_COUNT + " INTEGER DEFAULT 0 NOT NULL,"
+                + CommandTable.RETRIES_LEFT + " INTEGER DEFAULT 0 NOT NULL,"
+                + CommandTable.NUM_AUTH_EXCEPTIONS + " INTEGER DEFAULT 0 NOT NULL,"
+                + CommandTable.NUM_IO_EXCEPTIONS + " INTEGER DEFAULT 0 NOT NULL,"
+                + CommandTable.NUM_PARSE_EXCEPTIONS + " INTEGER DEFAULT 0 NOT NULL,"
+                + CommandTable.ERROR_MESSAGE + " TEXT,"
+                + CommandTable.DOWNLOADED_COUNT + " INTEGER DEFAULT 0 NOT NULL,"
+                + CommandTable.PROGRESS_TEXT + " TEXT"
                 + ")");
 
         return this;

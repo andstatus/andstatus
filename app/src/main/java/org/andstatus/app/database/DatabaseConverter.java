@@ -409,4 +409,13 @@ class DatabaseConverter {
             }
         }
     }
+
+    static class Convert24 extends OneStep {
+        @Override
+        protected void execute2() {
+            versionTo = 25;
+
+            // TODO
+        }
+    }
 }

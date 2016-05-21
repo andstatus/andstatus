@@ -39,10 +39,9 @@ public final class MsgTable implements BaseColumns {
      */
 
     /**
-     * ID of the originating (source) system (twitter.com, identi.ca, ... ) where the row was created
-     * See {@link OriginTable#_ID}
+     * ID of the originating (source) system ("Social Network": twitter.com, identi.ca, ... ) where the row was created
      */
-    public static final String ORIGIN_ID =  "origin_id";
+    public static final String ORIGIN_ID =  OriginTable.ORIGIN_ID;
     /**
      * ID in the originating system
      * The id is not unique for this table, because we have IDs from different systems in one column

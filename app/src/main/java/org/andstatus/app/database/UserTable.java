@@ -38,7 +38,7 @@ public final class UserTable implements BaseColumns {
     /**
      * ID of the originating (source) system (twitter.com, identi.ca, ... ) where the row was created
      */
-    public static final String ORIGIN_ID =  MsgTable.ORIGIN_ID;
+    public static final String ORIGIN_ID =  OriginTable.ORIGIN_ID;
     /**
      * ID in the originating system
      * The id is not unique for this table, because we have IDs from different systems in one column.
@@ -122,6 +122,8 @@ public final class UserTable implements BaseColumns {
      */
     /** Alias for the primary key */
     public static final String USER_ID = "user_id";
+    /** Alias for the primary key used for accounts */
+    public static final String ACCOUNT_ID = "account_id";
     /** Alias used in a timeline to distinguish messages for different users */
     public static final String LINKED_USER_ID = "linked_user_id";
     /**
