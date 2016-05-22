@@ -28,7 +28,6 @@ import org.andstatus.app.util.SharedPreferencesUtil;
 
 import java.net.MalformedURLException;
 import java.util.Queue;
-import java.util.concurrent.PriorityBlockingQueue;
 
 public class MyServiceTest extends InstrumentationTestCase {
     private final MyServiceTestHelper mService = new MyServiceTestHelper();
@@ -74,7 +73,7 @@ public class MyServiceTest extends InstrumentationTestCase {
         assertTrue("Manually launched duplicated command started executing",
                 mService.waitForCommandExecutionStarted(startCount + 1));
         assertTrue("The third command ended executing", mService.waitForCommandExecutionEnded(endCount+1));
-        assertTrue("Service stopped", mService.waitForServiceStopped());
+        assertTrue("Service stopped", mService.waitForServiceStopped(true));
         MyLog.v(this, method + " ended");
     }
 
@@ -91,7 +90,7 @@ public class MyServiceTest extends InstrumentationTestCase {
         assertTrue("First command ended executing", mService.waitForCommandExecutionEnded(endCount));
         assertTrue(mService.httpConnectionMock.toString(), 
                 mService.httpConnectionMock.getRequestsCounter() > 1);
-        assertTrue("Service stopped", mService.waitForServiceStopped());
+        assertTrue("Service stopped", mService.waitForServiceStopped(true));
         MyLog.v(this, "testAutomaticUpdates ended");
     }
 
@@ -110,7 +109,7 @@ public class MyServiceTest extends InstrumentationTestCase {
         MyLog.v(this, method  + "; " + mService.httpConnectionMock.toString());
         assertEquals("connection instance Id", mService.connectionInstanceId, mService.httpConnectionMock.getInstanceId());
         assertEquals(mService.httpConnectionMock.toString(), 1, mService.httpConnectionMock.getRequestsCounter());
-        assertTrue("Service stopped", mService.waitForServiceStopped());
+        assertTrue("Service stopped", mService.waitForServiceStopped(true));
         MyLog.v(this, method + " ended");
     }
 
@@ -126,7 +125,7 @@ public class MyServiceTest extends InstrumentationTestCase {
         assertTrue("First command ended executing", mService.waitForCommandExecutionEnded(endCount));
         assertTrue(mService.httpConnectionMock.toString(),
                 mService.httpConnectionMock.getRequestsCounter() > 0);
-        assertTrue("Service stopped", mService.waitForServiceStopped());
+        assertTrue("Service stopped", mService.waitForServiceStopped(true));
         MyLog.v(this, "testRateLimitStatus ended");
     }
     
@@ -154,13 +153,13 @@ public class MyServiceTest extends InstrumentationTestCase {
         mService.listenedCommand = cd2;
         mService.sendListenedToCommand();
 
-        assertTrue("Service stopped", mService.waitForServiceStopped());
+        assertTrue("Service stopped", mService.waitForServiceStopped(false));
         assertEquals("No new data was posted while in foreground",
                 mService.httpConnectionMock.getRequestsCounter(), 1);
 
         Queue<CommandData> queue = new CommandQueue().load().get(QueueType.CURRENT);
-        assertFalse("Main queue is not empty", queue.isEmpty());
-        assertFalse("First command is not in the main queue", queue.contains(cd1));
+        assertFalse("Main queue is empty", queue.isEmpty());
+        assertFalse("First command is in the main queue", queue.contains(cd1));
         assertTrue("The second command stayed in the main queue", queue.contains(cd2));
 
         CommandData cd3 = new CommandData(CommandEnum.FETCH_TIMELINE,
@@ -175,7 +174,7 @@ public class MyServiceTest extends InstrumentationTestCase {
         assertTrue("Foreground command started executing",
                 mService.waitForCommandExecutionStarted(startCount));
         assertTrue("Foreground command ended executing", mService.waitForCommandExecutionEnded(endCount));
-        assertTrue("Service stopped", mService.waitForServiceStopped());
+        assertTrue("Service stopped", mService.waitForServiceStopped(false));
 
         queue = new CommandQueue().load().get(QueueType.CURRENT);
         assertFalse("Main queue is not empty", queue.isEmpty());
@@ -191,6 +190,7 @@ public class MyServiceTest extends InstrumentationTestCase {
         assertTrue("command id=" + idFound, idFound >= 0);
         
         assertFalse("Foreground command is not in main queue", queue.contains(cd3));
+        new CommandQueue().clear();
         MyLog.v(this, "testSyncInForeground ended");
         myTestDeleteCommand(cd2);
     }
@@ -210,7 +210,7 @@ public class MyServiceTest extends InstrumentationTestCase {
         mService.sendListenedToCommand();
         assertTrue("Delete command ended executing", mService.waitForCommandExecutionEnded(endCount));
 
-        assertTrue("Service stopped", mService.waitForServiceStopped());
+        assertTrue("Service stopped", mService.waitForServiceStopped(false));
 
         Queue<CommandData> queue = new CommandQueue().load().get(QueueType.CURRENT);
         assertFalse("The second command was deleted from the main queue", queue.contains(cd2));

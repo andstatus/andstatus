@@ -38,8 +38,6 @@ public enum CommandEnum {
      * There is no action
      */
     EMPTY("empty"),
-    /** For testing purposes only */
-    DROP_QUEUES("drop-queues"),
     DELETE_COMMAND("delete-command", R.string.button_delete, 100),
     /**
      * The action to fetch all usual timelines in the background.
@@ -157,12 +155,11 @@ public enum CommandEnum {
      * Returns the enum for a String action code or UNKNOWN
      */
     public static CommandEnum load(String strCode) {
-        if (TextUtils.isEmpty(strCode)) {
-            return EMPTY;
-        }
-        for (CommandEnum serviceCommand : CommandEnum.values()) {
-            if (serviceCommand.code.equals(strCode)) {
-                return serviceCommand;
+        if (!TextUtils.isEmpty(strCode)) {
+            for (CommandEnum serviceCommand : CommandEnum.values()) {
+                if (serviceCommand.code.equals(strCode)) {
+                    return serviceCommand;
+                }
             }
         }
         return UNKNOWN;

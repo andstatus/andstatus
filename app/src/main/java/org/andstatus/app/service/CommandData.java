@@ -16,9 +16,10 @@
 
 package org.andstatus.app.service;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
@@ -28,8 +29,10 @@ import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.TimelineType;
+import org.andstatus.app.database.CommandTable;
 import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.database.UserTable;
 import org.andstatus.app.msg.TimelineListParameters;
@@ -37,12 +40,11 @@ import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
-import org.andstatus.app.util.SharedPreferencesUtil;
 
 import java.util.Queue;
 
 /**
- * Command data store (message...)
+ * Command data store
  * 
  * @author yvolk@yurivolkov.com
  */
@@ -198,153 +200,78 @@ public class CommandData implements Comparable<CommandData> {
         commandResult.accumulateOneStep(commandData.getResult());
     }
 
-    /**
-     * @return Number of items persisted
-     */
-    static int saveQueue(Context context, Queue<CommandData> queue, QueueType queueType) {
-        final String method = "saveQueue-to-" + queueType;
-        int count = 0;
-        try {
-            SharedPreferences sp = SharedPreferencesUtil.getSharedPreferences(queueType.getFilename());
-            if (sp == null) {
-                MyLog.d(context, method + "; No shared preferences");
-                return 0;
-            }
-            SharedPreferences.Editor editor = sp.edit();
-            editor.clear();
-            editor.commit();
-            if (!queue.isEmpty()) {
-                while (!queue.isEmpty() && count < 300) {
-                    CommandData cd = queue.poll();
-                    cd.toSharedPreferences(editor, count);
-                    if (MyLog.isVerboseEnabled() && count < 5) {
-                        MyLog.v(context, method + "; Command saved: " + cd.toString());
-                    }
-                    count += 1;
-                }
-                if (queue.isEmpty()) {
-                    MyLog.d(context, method + "; " + count + " saved");
-                } else {
-                    MyLog.e(context, method + "; " + count + " saved" +
-                            (queue.isEmpty() ? "" : ", " + queue.size() + " left"));
-                }
-            }
-            // Adding Empty command to mark the end.
-            (new CommandData(CommandEnum.EMPTY, "")).toSharedPreferences(editor, count);
-            editor.commit();
-        } catch (Throwable e) {
-            String msgLog = method + "; " + count + " saved, " + queue.size() + " left.\n"
-                    + MyContextHolder.getSystemInfo(context);
-            MyLog.e(context, msgLog, e);
-            throw new IllegalStateException(msgLog, e);
+    public void toContentValues(ContentValues values) {
+        values.put(CommandTable._ID, id);
+        values.put(CommandTable.CREATED_DATE, createdDate);
+        values.put(CommandTable.COMMAND_CODE, command.save());
+        if (getAccount().isValid()) {
+            values.put(CommandTable.ACCOUNT_ID, getAccount().getUserId());
         }
-        return count;
-    }
-
-    /**
-     * Persist the object to the SharedPreferences We're not storing all types of commands here
-     * because not all commands go to the queue. SharedPreferences should not contain any previous
-     * versions of the same entries (we don't store default values!)
-     *
-     * @param index Index of the preference's name to be used
-     */
-    private void toSharedPreferences(SharedPreferences.Editor ed, int index) {
-        String si = Integer.toString(index);
-
-        ed.putLong(IntentExtra.COMMAND_ID.key + si, id);
-        ed.putString(IntentExtra.COMMAND.key + si, command.save());
-        ed.putString(IntentExtra.ACCOUNT_NAME.key + si, getAccountName());
-        ed.putString(IntentExtra.TIMELINE_TYPE.key + si, timelineType.save());
-        ed.putLong(IntentExtra.ITEM_ID.key + si, itemId);
-        ed.putBoolean(IntentExtra.IN_FOREGROUND.key + si, mInForeground);
-        ed.putBoolean(IntentExtra.MANUALLY_LAUNCHED.key + si, mManuallyLaunched);
+        values.put(CommandTable.TIMELINE_TYPE, timelineType.save());
+        values.put(CommandTable.ITEM_ID, itemId);
+        values.put(CommandTable.IN_FOREGROUND, mInForeground);
+        values.put(CommandTable.MANUALLY_LAUNCHED, mManuallyLaunched);
         switch (command) {
             case FETCH_ATTACHMENT:
             case UPDATE_STATUS:
-                ed.putString(IntentExtra.MESSAGE_TEXT.key + si,
-                        bundle.getString(IntentExtra.MESSAGE_TEXT.key));
+                values.put(CommandTable.BODY, getMessageText());
                 break;
             case SEARCH_MESSAGE:
-                ed.putString(IntentExtra.SEARCH_QUERY.key + si, getSearchQuery());
+                values.put(CommandTable.SEARCH_QUERY, getSearchQuery());
                 break;
             case GET_USER:
-                ed.putString(IntentExtra.USER_NAME.key + si, getUserName());
+                values.put(CommandTable.USERNAME, getUserName());
                 break;
             default:
                 break;
         }
-        commandResult.saveToSharedPreferences(ed, index);
+        commandResult.toContentValues(values);
     }
 
-    /**
-     * @return Number of items loaded
-     */
-    static int loadQueue(Context context, Queue<CommandData> q, QueueType queueType) {
-        final String method = "loadQueue";
-        int count = 0;
-        SharedPreferences sp = SharedPreferencesUtil.getSharedPreferences(queueType.getFilename());
-        for (int index = 0; index < 100000; index++) {
-            CommandData cd = fromSharedPreferences(sp, index);
-            if (CommandEnum.EMPTY.equals(cd.getCommand())) {
-                break;
-            } else if (q.contains(cd)) {
-                MyLog.e(context, method + "; " + index + " duplicate skipped " + cd);
-                break;
-            } else {
-                if (q.offer(cd)) {
-                    if (MyLog.isVerboseEnabled() && count < 5) {
-                        MyLog.v(context, method + index + " " + cd);
-                    }
-                    count++;
-                } else {
-                    MyLog.e(context, method + index + " " + cd);
-                }
-            }
-        }
-        MyLog.d(context, method + "; loaded " + count + " commands from '" + queueType + "'");
-        return count;
-    }
-
-    /**
-     * Restore this from the SharedPreferences
-     * 
-     * @param index Index of the preference's name to be used
-     */
-    private static CommandData fromSharedPreferences(SharedPreferences sp, int index) {
-        String si = Integer.toString(index);
-        CommandEnum command = CommandEnum.load(sp.getString(IntentExtra.COMMAND.key + si,
-                CommandEnum.EMPTY.save()));
-        if (CommandEnum.EMPTY.equals(command)) {
+    public static CommandData fromCursor(Cursor cursor) {
+        CommandEnum command = CommandEnum.load(DbUtils.getString(cursor, CommandTable.COMMAND_CODE));
+        if (CommandEnum.UNKNOWN.equals(command)) {
             return CommandData.getEmpty();
         }
         CommandData commandData = new CommandData(
-                sp.getLong(IntentExtra.COMMAND_ID.key + si, 0),
+                DbUtils.getLong(cursor, CommandTable._ID),
                 command,
-                sp.getString(IntentExtra.ACCOUNT_NAME.key + si, ""),
-                TimelineType.load(sp.getString(IntentExtra.TIMELINE_TYPE.key + si, "")),
-                sp.getLong(IntentExtra.ITEM_ID.key + si, 0));
+                accountIdToName(DbUtils.getLong(cursor, CommandTable.ACCOUNT_ID)),
+                TimelineType.load(DbUtils.getString(cursor, CommandTable.TIMELINE_TYPE)),
+                DbUtils.getLong(cursor, CommandTable.ITEM_ID),
+                DbUtils.getLong(cursor, CommandTable.CREATED_DATE));
         commandData.bundle.putBoolean(IntentExtra.IN_FOREGROUND.key,
-                sp.getBoolean(IntentExtra.IN_FOREGROUND.key + si, false));
+                DbUtils.getBoolean(cursor, CommandTable.IN_FOREGROUND));
 
         switch (commandData.command) {
             case FETCH_ATTACHMENT:
             case UPDATE_STATUS:
                 commandData.bundle.putString(IntentExtra.MESSAGE_TEXT.key,
-                        sp.getString(IntentExtra.MESSAGE_TEXT.key + si, ""));
+                        DbUtils.getString(cursor, CommandTable.BODY));
                 break;
             case SEARCH_MESSAGE:
                 commandData.bundle.putString(IntentExtra.SEARCH_QUERY.key,
-                        sp.getString(IntentExtra.SEARCH_QUERY.key + si, ""));
+                        DbUtils.getString(cursor, CommandTable.SEARCH_QUERY));
                 break;
             case GET_USER:
                 commandData.bundle.putString(IntentExtra.USER_NAME.key,
-                        sp.getString(IntentExtra.USER_NAME.key + si, ""));
+                        DbUtils.getString(cursor, CommandTable.USERNAME));
                 break;
             default:
                 break;
         }
-        commandData.getResult().loadFromSharedPreferences(sp, index);
+        commandData.commandResult = CommandResult.fromCursor(cursor);
         return commandData;
+    }
+
+    @NonNull
+    private static String accountIdToName(Long accountId) {
+        MyAccount ma = MyContextHolder.get().persistentAccounts()
+                .fromUserId(accountId);
+        if (ma.isValid()) {
+            return ma.getAccountName();
+        }
+        return "";
     }
 
     public static CommandData fetchAttachment(long msgId, long downloadDataRowId) {
@@ -381,15 +308,24 @@ public class CommandData implements Comparable<CommandData> {
         this(0, commandIn, accountNameIn, timelineTypeIn, itemIdIn);
     }
 
+    private CommandData(long id, CommandEnum commandIn, String accountNameIn,
+                        TimelineType timelineTypeIn, long itemIdIn) {
+        this(id, commandIn, accountNameIn, timelineTypeIn, itemIdIn, 0);
+    }
+
     private CommandData(long idIn, CommandEnum commandIn, String accountNameIn,
-            TimelineType timelineTypeIn, long itemIdIn) {
+            TimelineType timelineTypeIn, long itemIdIn, long createdDate) {
         if (idIn == 0) {
             id = MyLog.uniqueCurrentTimeMS();
         } else {
             id = idIn;
         }
-        // This is by implementation
-        createdDate = id;
+        if (createdDate > 0) {
+            this.createdDate = createdDate;
+        } else {
+            // This is by implementation
+            this.createdDate = id;
+        }
 
         command = commandIn;
         String accountName2 = "";

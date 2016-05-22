@@ -16,10 +16,15 @@
 
 package org.andstatus.app.service;
 
+import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.data.DbUtils;
+import org.andstatus.app.database.CommandTable;
 import org.andstatus.app.util.MyLog;
 
 import java.util.HashMap;
@@ -59,8 +64,43 @@ public class CommandQueue {
         return this;
     }
 
+    /** @return Number of items loaded */
     public int load(QueueType queueType) {
-        return CommandData.loadQueue(context, get(queueType), queueType);
+        final String method = "loadQueue-" + queueType.save();
+        Queue<CommandData> queue = get(queueType);
+        int count = 0;
+        SQLiteDatabase db = MyContextHolder.get().getDatabase();
+        if (db == null) {
+            MyLog.d(context, method + "; Database is unavailable");
+            return 0;
+        }
+        queue.clear();
+        String sql = "SELECT * FROM " + CommandTable.TABLE_NAME + " WHERE " + CommandTable.QUEUE_TYPE + "='" + queueType.save() + "'";
+        Cursor c = null;
+        try {
+            c = db.rawQuery(sql, null);
+            while (c.moveToNext()) {
+                CommandData cd = CommandData.fromCursor(c);
+                if (CommandEnum.EMPTY.equals(cd.getCommand())) {
+                    MyLog.e(context, method + "; empty skipped " + cd);
+                } else if (queue.contains(cd)) {
+                    MyLog.e(context, method + "; duplicate skipped " + cd);
+                } else {
+                    if (queue.offer(cd)) {
+                        if (MyLog.isVerboseEnabled() && count < 5) {
+                            MyLog.v(context, method + "; " + cd);
+                        }
+                        count++;
+                    } else {
+                        MyLog.e(context, method + "; " + cd);
+                    }
+                }
+            }
+        } finally {
+            DbUtils.closeSilently(c);
+        }
+        MyLog.d(context, method + "; loaded " + count + " commands from '" + queueType + "'");
+        return count;
     }
 
     public void save() {
@@ -72,13 +112,53 @@ public class CommandQueue {
         );
     }
 
+    /** @return Number of items persisted */
     public int save(QueueType queueType) {
-        return CommandData.saveQueue(context, get(queueType), queueType);
+        final String method = "saveQueue-" + queueType.save();
+        Queue<CommandData> queue = get(queueType);
+        int count = 0;
+        try {
+            SQLiteDatabase db = MyContextHolder.get().getDatabase();
+            if (db == null) {
+                MyLog.d(context, method + "; Database is unavailable");
+                return 0;
+            }
+            String sql = "DELETE FROM " + CommandTable.TABLE_NAME + " WHERE " + CommandTable.QUEUE_TYPE + "='" + queueType.save() + "'";
+            DbUtils.execSQL(db, sql);
+
+            if (!queue.isEmpty()) {
+                while (!queue.isEmpty() && count < 300) {
+                    CommandData cd = queue.poll();
+                    ContentValues values = new ContentValues();
+                    cd.toContentValues(values);
+                    values.put(CommandTable.QUEUE_TYPE, queueType.save());
+                    db.insert(CommandTable.TABLE_NAME, null, values);
+                    if (MyLog.isVerboseEnabled() && count < 5) {
+                        MyLog.v(context, method + "; Command saved: " + cd.toString());
+                    }
+                    count += 1;
+                }
+                if (queue.isEmpty()) {
+                    MyLog.d(context, method + "; " + count + " saved");
+                } else {
+                    MyLog.e(context, method + "; " + count + " saved" +
+                            (queue.isEmpty() ? "" : ", " + queue.size() + " left"));
+                }
+            }
+        } catch (Throwable e) {
+            String msgLog = method + "; " + count + " saved, " + queue.size() + " left.\n"
+                    + MyContextHolder.getSystemInfo(context);
+            MyLog.e(context, msgLog, e);
+            throw new IllegalStateException(msgLog, e);
+        }
+        return count;
     }
 
     public void clear() {
-        for (Queue<CommandData> queue : queues.values()) {
-            queue.clear();
+        // MyLog.v(this, MyLog.getStackTrace(new IllegalStateException("CommandQueue#clear called")));
+        for ( Map.Entry<QueueType,Queue<CommandData>> entry : queues.entrySet()) {
+            entry.getValue().clear();
+            save(entry.getKey());
         }
         MyLog.v(this, "Queues cleared");
     }

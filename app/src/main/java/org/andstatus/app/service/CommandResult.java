@@ -16,14 +16,16 @@
 
 package org.andstatus.app.service;
 
-import android.content.SharedPreferences;
+import android.content.ContentValues;
+import android.database.Cursor;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.text.TextUtils;
 
-import org.andstatus.app.IntentExtra;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.TimelineType;
+import org.andstatus.app.database.CommandTable;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
 
@@ -134,31 +136,31 @@ public final class CommandResult implements Parcelable {
         downloadedCount = parcel.readInt();
         progress = parcel.readString();
     }
-    
-    void saveToSharedPreferences(android.content.SharedPreferences.Editor ed, int index) {
-        String si = Integer.toString(index);
-        ed.putLong(IntentExtra.LAST_EXECUTED_DATE.key + si, lastExecutedDate);
-        ed.putInt(IntentExtra.EXECUTION_COUNT.key + si, executionCount);
-        ed.putInt(IntentExtra.RETRIES_LEFT.key + si, retriesLeft);
-        ed.putLong(IntentExtra.NUM_AUTH_EXCEPTIONS.key + si, numAuthExceptions);
-        ed.putLong(IntentExtra.NUM_IO_EXCEPTIONS.key + si, numIoExceptions);
-        ed.putLong(IntentExtra.NUM_PARSE_EXCEPTIONS.key + si, numParseExceptions);
-        ed.putString(IntentExtra.ERROR_MESSAGE.key + si, mMessage);
-        ed.putInt(IntentExtra.DOWNLOADED_COUNT.key + si, downloadedCount);
-        ed.putString(IntentExtra.PROGRESS_TEXT.key + si, progress);
+
+    public void toContentValues(ContentValues values) {
+        values.put(CommandTable.LAST_EXECUTED_DATE, lastExecutedDate);
+        values.put(CommandTable.EXECUTION_COUNT, executionCount);
+        values.put(CommandTable.RETRIES_LEFT, retriesLeft);
+        values.put(CommandTable.NUM_AUTH_EXCEPTIONS, numAuthExceptions);
+        values.put(CommandTable.NUM_IO_EXCEPTIONS, numIoExceptions);
+        values.put(CommandTable.NUM_PARSE_EXCEPTIONS, numParseExceptions);
+        values.put(CommandTable.ERROR_MESSAGE, mMessage);
+        values.put(CommandTable.DOWNLOADED_COUNT, downloadedCount);
+        values.put(CommandTable.PROGRESS_TEXT, progress);
     }
 
-    void loadFromSharedPreferences(SharedPreferences sp, int index) {
-        String si = Integer.toString(index);
-        lastExecutedDate = sp.getLong(IntentExtra.LAST_EXECUTED_DATE.key + si, lastExecutedDate);
-        executionCount = sp.getInt(IntentExtra.EXECUTION_COUNT.key + si, executionCount);
-        retriesLeft = sp.getInt(IntentExtra.RETRIES_LEFT.key + si, retriesLeft);
-        numAuthExceptions = sp.getLong(IntentExtra.NUM_AUTH_EXCEPTIONS.key + si, numAuthExceptions);
-        numIoExceptions = sp.getLong(IntentExtra.NUM_IO_EXCEPTIONS.key + si, numIoExceptions);
-        numParseExceptions = sp.getLong(IntentExtra.NUM_PARSE_EXCEPTIONS.key + si, numParseExceptions);
-        mMessage = sp.getString(IntentExtra.ERROR_MESSAGE.key + si, mMessage);
-        downloadedCount = sp.getInt(IntentExtra.DOWNLOADED_COUNT.key + si, downloadedCount);
-        progress = sp.getString(IntentExtra.PROGRESS_TEXT.key + si, progress);
+    public static CommandResult fromCursor(Cursor cursor) {
+        CommandResult result = new CommandResult();
+        result.lastExecutedDate = DbUtils.getLong(cursor, CommandTable.LAST_EXECUTED_DATE);
+        result.executionCount = DbUtils.getInt(cursor, CommandTable.EXECUTION_COUNT);
+        result.retriesLeft = DbUtils.getInt(cursor, CommandTable.RETRIES_LEFT);
+        result.numAuthExceptions = DbUtils.getLong(cursor, CommandTable.NUM_AUTH_EXCEPTIONS);
+        result.numIoExceptions = DbUtils.getLong(cursor, CommandTable.NUM_IO_EXCEPTIONS);
+        result.numParseExceptions = DbUtils.getLong(cursor, CommandTable.NUM_PARSE_EXCEPTIONS);
+        result.mMessage = DbUtils.getString(cursor, CommandTable.ERROR_MESSAGE);
+        result.downloadedCount = DbUtils.getInt(cursor, CommandTable.DOWNLOADED_COUNT);
+        result.progress = DbUtils.getString(cursor, CommandTable.PROGRESS_TEXT);
+        return result;
     }
 
     public int getExecutionCount() {

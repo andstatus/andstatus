@@ -70,14 +70,18 @@ public class CommandDataTest extends InstrumentationTestCase {
         assertFalse(commandData.getResult().hasHardError());
         
         CommandQueue queues = new CommandQueue();
+        queues.clear();
         queues.get(QueueType.TEST).add(commandData);
         assertEquals(1, queues.save(QueueType.TEST));
-        queues.clear();
         assertEquals(1, queues.load(QueueType.TEST));
 
         CommandData commandData2 = queues.get(QueueType.TEST).poll();
+
         assertEquals(commandData, commandData2);
+        // Below fields are not included in equals
         assertEquals(commandData.getId(), commandData2.getId());
+        assertEquals(commandData.getCreatedDate(), commandData2.getCreatedDate());
+
         assertEquals(commandData.getResult().getLastExecutedDate(), commandData2.getResult().getLastExecutedDate());
         assertEquals(commandData.getResult().getExecutionCount(), commandData2.getResult().getExecutionCount());
         assertEquals(commandData.getResult().getRetriesLeft(), commandData2.getResult().getRetriesLeft());
@@ -135,12 +139,6 @@ public class CommandDataTest extends InstrumentationTestCase {
         MyLog.v(this, msgLog);
         assertTrue(msgLog, summary.contains(command.getTitle(MyContextHolder.get(),
                 ma.getAccountName()) + " " + MyQuery.userIdToWebfingerId(userId)));
-    }
-    
-    @Override
-    protected void tearDown() throws Exception {
-        SharedPreferencesUtil.delete(MyContextHolder.get().context(), QueueType.TEST.getFilename());
-        super.tearDown();
     }
 
 }

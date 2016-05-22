@@ -63,7 +63,7 @@ public class UnsentMessagesTest extends ActivityInstrumentationTestCase2<Timelin
         helper.clickMenuItem(method + "; " + step, R.id.messageSendButton);
         ActivityTestHelper.waitViewInvisible(method + "; " + step, editorView);
 
-        mService.waitForServiceStopped();
+        mService.waitForServiceStopped(false);
 
         String condition = "BODY='" + body + "'";
         long unsentMsgId = MyQuery.conditionToLongColumnValue(MsgTable.TABLE_NAME, BaseColumns._ID, condition);

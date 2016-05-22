@@ -59,10 +59,7 @@ public class MyServiceTestHelper implements MyServiceEventsListener {
     }
 
     private void dropQueues() {
-        listenedCommand = new CommandData(CommandEnum.DROP_QUEUES, "", TimelineType.UNKNOWN, 0);
-        long endCount = executionEndCount;
-        sendListenedToCommand();
-        TestCase.assertTrue("Drop queues command ended executing", waitForCommandExecutionEnded(endCount));
+        new CommandQueue().clear();
     }
 
     public void sendListenedToCommand() {
@@ -113,9 +110,12 @@ public class MyServiceTestHelper implements MyServiceEventsListener {
         return found;
     }
 
-    public boolean waitForServiceStopped() {
+    public boolean waitForServiceStopped(boolean clearQueue) {
         for (int pass = 0; pass < 10000; pass++) {
             if (serviceStopped) {
+                if (clearQueue) {
+                    new CommandQueue().clear();
+                }
                 return true;
             }
             try {

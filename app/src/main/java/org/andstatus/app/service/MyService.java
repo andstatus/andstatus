@@ -191,10 +191,7 @@ public class MyService extends Service {
     private CommandData addToMainQueue(CommandData commandData) {
         switch (commandData.getCommand()) {
             case EMPTY:
-                return null;
-            case DROP_QUEUES:
-                queues.clear();
-                broadcastAfterExecutingCommand(commandData);
+            case UNKNOWN:
                 return null;
             case DELETE_COMMAND:
                 queues.deleteCommand(commandData);

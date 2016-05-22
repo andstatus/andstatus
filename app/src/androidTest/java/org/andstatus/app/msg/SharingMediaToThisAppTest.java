@@ -86,7 +86,7 @@ public class SharingMediaToThisAppTest extends ActivityInstrumentationTestCase2<
         helper.clickMenuItem(method, R.id.messageSendButton);
         ActivityTestHelper.waitViewInvisible(method, editorView);
 
-        mService.waitForServiceStopped();
+        mService.waitForServiceStopped(false);
 
         String message = "Data was posted " + mService.httpConnectionMock.getPostedCounter() + " times; "
                 + Arrays.toString(mService.httpConnectionMock.getResults().toArray());

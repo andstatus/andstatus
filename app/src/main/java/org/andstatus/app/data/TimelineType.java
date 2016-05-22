@@ -88,7 +88,7 @@ public enum TimelineType {
             false, false,
             UserTable.HOME_TIMELINE_POSITION, UserTable.HOME_TIMELINE_ITEM_DATE, UserTable.HOME_TIMELINE_DATE);
     
-    /** Code of the enum that is used in messages */
+    /** Code - identifier of the type */
     private final String code;
     /** The id of the string resource with the localized name of this enum to use in UI */
     private final int titleResId;

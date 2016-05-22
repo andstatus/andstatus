@@ -1,25 +1,40 @@
 package org.andstatus.app.service;
 
+import android.support.annotation.NonNull;
+
 public enum QueueType {
-    CURRENT("commands-queue", "C", true),
-    RETRY("retry-queue", "R", true),
-    ERROR("error-queue", "E", false),
-    TEST("test-queue", "T", false);
-    
-    private String filenameSuffix;
+    CURRENT("current", "C", true),
+    RETRY("retry", "R", true),
+    ERROR("error", "E", false),
+    TEST("test", "T", false),
+    UNKNOWN("unknown", "U", false);
+
+    private String code;
     private String acronym;
     private boolean executable;
-    
-    QueueType(String filenameSuffix, String acronym, boolean executable) {
-        this.filenameSuffix = filenameSuffix;
+
+    QueueType(String code, String acronym, boolean executable) {
+        this.code = code;
         this.acronym = acronym;
         this.executable = executable;
     }
-    
-    public String getFilename() {
-        return "MyService" + "-" + filenameSuffix;
+
+    /** Returns the enum or UNKNOWN */
+    @NonNull
+    public static QueueType load(String strCode) {
+        for (QueueType tt : QueueType.values()) {
+            if (tt.code.equals(strCode)) {
+                return tt;
+            }
+        }
+        return UNKNOWN;
     }
-    
+
+    /** String to be used for persistence */
+    public String save() {
+        return code;
+    }
+
     public String getAcronym() {
         return acronym;
     }
