@@ -1,17 +1,19 @@
 package org.andstatus.app.service;
 
 public enum QueueType {
-    CURRENT("commands-queue", "C"),
-    RETRY("retry-queue", "R"),
-    ERROR("error-queue", "E"),
-    TEST("test-queue", "T");
+    CURRENT("commands-queue", "C", true),
+    RETRY("retry-queue", "R", true),
+    ERROR("error-queue", "E", false),
+    TEST("test-queue", "T", false);
     
     private String filenameSuffix;
     private String acronym;
+    private boolean executable;
     
-    private QueueType(String filenameSuffix, String acronym) {
+    QueueType(String filenameSuffix, String acronym, boolean executable) {
         this.filenameSuffix = filenameSuffix;
         this.acronym = acronym;
+        this.executable = executable;
     }
     
     public String getFilename() {
@@ -20,5 +22,9 @@ public enum QueueType {
     
     public String getAcronym() {
         return acronym;
+    }
+
+    public boolean isExecutable() {
+        return executable;
     }
 }

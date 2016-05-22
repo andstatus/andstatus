@@ -69,15 +69,13 @@ public class CommandDataTest extends InstrumentationTestCase {
         assertEquals(hasSoftError, commandData.getResult().hasSoftError());
         assertFalse(commandData.getResult().hasHardError());
         
-        
-        
-        Queue<CommandData> queue = new PriorityBlockingQueue<>(100);
-        queue.add(commandData);
-        assertEquals(1, CommandData.saveQueue(MyContextHolder.get().context(), queue, QueueType.TEST));
-        queue.clear();
-        assertEquals(1, CommandData.loadQueue(MyContextHolder.get().context(), queue, QueueType.TEST));
+        CommandQueue queues = new CommandQueue();
+        queues.get(QueueType.TEST).add(commandData);
+        assertEquals(1, queues.save(QueueType.TEST));
+        queues.clear();
+        assertEquals(1, queues.load(QueueType.TEST));
 
-        CommandData commandData2 = queue.poll();
+        CommandData commandData2 = queues.get(QueueType.TEST).poll();
         assertEquals(commandData, commandData2);
         assertEquals(commandData.getId(), commandData2.getId());
         assertEquals(commandData.getResult().getLastExecutedDate(), commandData2.getResult().getLastExecutedDate());

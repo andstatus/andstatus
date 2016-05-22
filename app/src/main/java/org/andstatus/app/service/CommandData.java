@@ -677,7 +677,7 @@ public class CommandData implements Comparable<CommandData> {
         if (!TextUtils.isEmpty(accountName)) {
             I18n.appendWithSpace(builder, 
                     timelineType.getPrepositionForNotCombinedTimeline(myContext.context()));
-            if (timelineType.atOrigin()) {
+            if (timelineType.isAtOrigin()) {
                 MyAccount ma = myContext.persistentAccounts().fromAccountName(accountName);
                 I18n.appendWithSpace(builder, ma != null ? ma.getOrigin().getName() : "?");
             } else {

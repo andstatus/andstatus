@@ -253,6 +253,7 @@ public class DatabaseCreator {
                 + CommandTable.COMMAND_CODE + " TEXT NOT NULL,"
                 + CommandTable.CREATED_DATE + " INTEGER NOT NULL,"
                 + CommandTable.ACCOUNT_ID + " INTEGER,"
+                + CommandTable.TIMELINE_TYPE + " STRING,"
                 + CommandTable.TIMELINE_ID + " INTEGER,"
                 + CommandTable.IN_FOREGROUND + " BOOLEAN DEFAULT 0 NOT NULL,"
                 + CommandTable.MANUALLY_LAUNCHED + " BOOLEAN DEFAULT 0 NOT NULL,"

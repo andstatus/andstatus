@@ -41,6 +41,7 @@ public class TimelineTable implements BaseColumns {
     public static final String USER_ID = UserTable.USER_ID;
     public static final String SEARCH_QUERY = CommandTable.SEARCH_QUERY;
 
+    /** If the timeline is synced automatically */
     public static final String SYNCABLE = "syncable";
     /** If the timeline should be shown in a Timeline selector */
     public static final String DISPLAY_IN_SELECTOR = "display_in_selector";

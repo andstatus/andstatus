@@ -127,7 +127,7 @@ public class TimelineSql {
 
         String tables = msgTable;
         if (!tables.contains(" AS " + ProjectionMap.MSG_TABLE_ALIAS)) {
-            if (tt.atOrigin() && !uriParser.isCombined()) {
+            if (tt.isAtOrigin() && !uriParser.isCombined()) {
                 MyAccount ma = MyContextHolder.get().persistentAccounts().fromUserId(uriParser.getAccountUserId());
                 if (ma.isValid()) {
                     if (!TextUtils.isEmpty(where)) {
@@ -160,7 +160,7 @@ public class TimelineSql {
                     break;
                 default:
                     tbl += " AND " + UserTable.LINKED_USER_ID + selectedAccounts.getSql();
-                    if (tt.atOrigin()) {
+                    if (tt.isAtOrigin()) {
                         tables += " LEFT OUTER JOIN " + tbl;
                     } else {
                         tables += " INNER JOIN " + tbl;

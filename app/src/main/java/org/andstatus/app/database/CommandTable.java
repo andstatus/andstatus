@@ -34,6 +34,8 @@ public final class CommandTable implements BaseColumns {
     public static final String COMMAND_CODE = "command_code";
     public static final String CREATED_DATE = "command_created_date";
     public static final String ACCOUNT_ID = UserTable.USER_ID;
+    public static final String TIMELINE_TYPE = TimelineTable.TIMELINE_TYPE;
+    /** Timeline here may have type but not ID for not persistent timelines */
     public static final String TIMELINE_ID = TimelineTable.TIMELINE_ID;
     public static final String IN_FOREGROUND = "in_foreground";
     public static final String MANUALLY_LAUNCHED = "manually_launched";

@@ -42,9 +42,10 @@ public class MyBackupDescriptor {
     
     static final int BACKUP_SCHEMA_VERSION_UNKNOWN = -1;
     /**
+     * v.5 2016-05-22 app.v.27 database schema changed
      * v.4 2016-02-28 app.v.23 database schema changed
      */
-    static final int BACKUP_SCHEMA_VERSION = 4;
+    static final int BACKUP_SCHEMA_VERSION = 5;
     static final String KEY_ACCOUNTS_COUNT = "accounts_count";
     static final String KEY_CREATED_DATE = "created_date";
     static final String KEY_BACKUP_SCHEMA_VERSION = "backup_schema_version";

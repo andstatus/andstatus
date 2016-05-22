@@ -358,7 +358,7 @@ public class TimelineListParameters {
         if (!isTimelineCombined()) {
             I18n.appendWithSpace(subTitle, getTimelineType()
                     .getPrepositionForNotCombinedTimeline(mContext));
-            if (getTimelineType().atOrigin()) {
+            if (getTimelineType().isAtOrigin()) {
                 I18n.appendWithSpace(subTitle, MyContextHolder.get().persistentAccounts()
                         .fromUserId(getMyAccountUserId()).getOrigin().getName()
                         + ";");

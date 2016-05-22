@@ -19,6 +19,7 @@ package org.andstatus.app.service;
 import android.content.Intent;
 import android.os.Bundle;
 import android.provider.BaseColumns;
+import android.support.annotation.NonNull;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.MenuInflater;
@@ -35,12 +36,10 @@ import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.util.MyLog;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
-import java.util.concurrent.PriorityBlockingQueue;
 
 public class QueueViewer extends MyListActivity implements MyServiceEventsListener {
     private static final String KEY_QUEUE_TYPE = "queue_type";
@@ -182,11 +181,22 @@ public class QueueViewer extends MyListActivity implements MyServiceEventsListen
     }
     
     private List<QueueData> newListData() {
-        List<QueueData> listData = new ArrayList<>();
-        loadQueue(listData, QueueType.CURRENT);
-        loadQueue(listData, QueueType.RETRY);
-        loadQueue(listData, QueueType.ERROR);
+        List<QueueData> listData = loadListData();
         showSystemInfo(listData);
+        return listData;
+    }
+
+    @NonNull
+    private List<QueueData> loadListData() {
+        List<QueueData> listData = new ArrayList<>();
+        CommandQueue queues = new CommandQueue(this).load();
+        for (QueueType queueType :
+                new QueueType[]{QueueType.CURRENT, QueueType.RETRY, QueueType.ERROR}) {
+            Queue<CommandData> queue = queues.get(queueType);
+            for (CommandData commandData : queue) {
+                listData.add(QueueData.getNew(queueType, commandData));
+            }
+        }
         return listData;
     }
 
@@ -194,14 +204,6 @@ public class QueueViewer extends MyListActivity implements MyServiceEventsListen
         CommandData commandData = new CommandData(CommandEnum.EMPTY, "System Info");
         commandData.getResult().setMessage(MyContextHolder.getSystemInfo(this));
         listData.add(QueueData.getNew(QueueType.TEST, commandData));
-    }
-
-    private void loadQueue(List<QueueData> listData, QueueType queueType) {
-        Queue<CommandData> queue = new PriorityBlockingQueue<>(100);
-        CommandData.loadQueue(this, queue, queueType);
-        for (CommandData commandData : queue) {
-            listData.add(QueueData.getNew(queueType, commandData));
-        }
     }
 
     private ListAdapter newListAdapter(List<QueueData> listData) {

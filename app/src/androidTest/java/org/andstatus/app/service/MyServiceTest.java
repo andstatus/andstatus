@@ -158,9 +158,7 @@ public class MyServiceTest extends InstrumentationTestCase {
         assertEquals("No new data was posted while in foreground",
                 mService.httpConnectionMock.getRequestsCounter(), 1);
 
-        Queue<CommandData> queue = new PriorityBlockingQueue<CommandData>(100);
-        CommandData.loadQueue(MyContextHolder.get().context(), queue,
-                QueueType.CURRENT);
+        Queue<CommandData> queue = new CommandQueue().load().get(QueueType.CURRENT);
         assertFalse("Main queue is not empty", queue.isEmpty());
         assertFalse("First command is not in the main queue", queue.contains(cd1));
         assertTrue("The second command stayed in the main queue", queue.contains(cd2));
@@ -179,9 +177,7 @@ public class MyServiceTest extends InstrumentationTestCase {
         assertTrue("Foreground command ended executing", mService.waitForCommandExecutionEnded(endCount));
         assertTrue("Service stopped", mService.waitForServiceStopped());
 
-        queue = new PriorityBlockingQueue<CommandData>(100);
-        CommandData.loadQueue(MyContextHolder.get().context(), queue,
-                QueueType.CURRENT);
+        queue = new CommandQueue().load().get(QueueType.CURRENT);
         assertFalse("Main queue is not empty", queue.isEmpty());
         assertTrue("The second command stayed in the main queue", queue.contains(cd2));
         
@@ -216,9 +212,7 @@ public class MyServiceTest extends InstrumentationTestCase {
 
         assertTrue("Service stopped", mService.waitForServiceStopped());
 
-        Queue<CommandData> queue = new PriorityBlockingQueue<CommandData>(100);
-        CommandData.loadQueue(MyContextHolder.get().context(), queue,
-                QueueType.CURRENT);
+        Queue<CommandData> queue = new CommandQueue().load().get(QueueType.CURRENT);
         assertFalse("The second command was deleted from the main queue", queue.contains(cd2));
         MyLog.v(this, "myTestDeleteCommand ended");
     }
