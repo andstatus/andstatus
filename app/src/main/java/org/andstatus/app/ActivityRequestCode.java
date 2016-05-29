@@ -29,6 +29,7 @@ public enum ActivityRequestCode {
     SELECT_ACCOUNT_TO_SHARE_VIA(5),
     SELECT_ORIGIN(3),
     SELECT_OPEN_INSTANCE(9),
+    SELECT_TIMELINE(10),
     UNKNOWN(100);
 
     public final int id;

@@ -60,14 +60,10 @@ public class SharingMediaToThisAppTest extends ActivityInstrumentationTestCase2<
 
     public void testSharingMediaToThisApp() throws InterruptedException {
         final String method = "testSharingMediaToThisApp";
-        ListActivityTestHelper<TimelineActivity> helperTimelineActivity = new ListActivityTestHelper<>(this, AccountSelector.class);
-        AccountSelector selector = (AccountSelector) helperTimelineActivity.waitForNextActivity(method, 15000);
-        ListActivityTestHelper<AccountSelector> helperAccountSelector = new ListActivityTestHelper<>(this, selector);
-        int position = helperAccountSelector.getPositionOfListItemId(ma.getUserId());
-        assertTrue("Account found", position >= 0);
-        helperAccountSelector.selectListPosition(method, position);
-        helperAccountSelector.clickListAtPosition(method, position);
-        
+        ListActivityTestHelper<TimelineActivity> listActivityTestHelper =
+                ListActivityTestHelper.newForSelectorDialog(this, AccountSelector.getDialogTag());
+        listActivityTestHelper.selectIdFromSelectorDialog(method, ma.getUserId());
+
         View editorView = getActivity().findViewById(R.id.message_editor);
         ActivityTestHelper.waitViewVisible(method, editorView);
         TextView details = (TextView) editorView.findViewById(R.id.messageEditDetails);
@@ -106,5 +102,4 @@ public class SharingMediaToThisAppTest extends ActivityInstrumentationTestCase2<
         assertEquals("Image URI stored", TestSuite.LOCAL_IMAGE_TEST_URI2, dd.getUri());
         assertEquals("Loaded '" + dd.getUri() + "'; " + dd, DownloadStatus.LOADED, dd.getStatus());
     }
-
 }

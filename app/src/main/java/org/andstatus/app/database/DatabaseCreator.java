@@ -223,7 +223,7 @@ public class DatabaseCreator {
                 + TimelineTable.USER_ID + " INTEGER,"
                 + TimelineTable.SEARCH_QUERY + " TEXT,"
 
-                + TimelineTable.SYNCABLE + " BOOLEAN DEFAULT 1 NOT NULL,"
+                + TimelineTable.SYNCED + " BOOLEAN DEFAULT 1 NOT NULL,"
                 + TimelineTable.DISPLAY_IN_SELECTOR + " BOOLEAN DEFAULT 1 NOT NULL,"
                 + TimelineTable.SELECTOR_ORDER + " INTEGER DEFAULT 1 NOT NULL,"
 

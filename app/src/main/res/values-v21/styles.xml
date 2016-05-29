@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="BaseDialogStyle" parent="BaseDialogStyle_min" >
+        <item name="android:windowElevation">@dimen/abc_floating_window_z</item>
+    </style>
+</resources>

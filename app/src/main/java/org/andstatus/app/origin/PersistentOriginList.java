@@ -68,7 +68,7 @@ public class PersistentOriginList extends OriginList {
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
         MyLog.v(this, "onActivityResult " + ActivityRequestCode.fromId(requestCode) );
         switch (ActivityRequestCode.fromId(requestCode)) {
             case EDIT_ORIGIN:

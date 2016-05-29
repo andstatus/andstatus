@@ -16,6 +16,7 @@
 
 package org.andstatus.app;
 
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
@@ -83,6 +84,11 @@ public class MyActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         toggleFullscreen(TriState.FALSE);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
     }
 
     /**

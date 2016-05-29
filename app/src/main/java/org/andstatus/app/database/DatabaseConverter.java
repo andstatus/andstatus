@@ -421,7 +421,7 @@ class DatabaseConverter {
         protected void execute2() {
             versionTo = 25;
 
-            sql = "CREATE TABLE timeline (_id INTEGER PRIMARY KEY AUTOINCREMENT,timeline_name TEXT,timeline_description TEXT,timeline_type STRING NOT NULL,all_origin BOOLEAN DEFAULT 0 NOT NULL,origin_id INTEGER,account_id INTEGER,user_id INTEGER,search_query TEXT,syncable BOOLEAN DEFAULT 1 NOT NULL,display_in_selector BOOLEAN DEFAULT 1 NOT NULL,selector_order INTEGER DEFAULT 1 NOT NULL,synced_date INTEGER,sync_failed_date INTEGER,error_message TEXT,synced_times_count INTEGER DEFAULT 0 NOT NULL,sync_failed_times_count INTEGER DEFAULT 0 NOT NULL,new_items_count INTEGER DEFAULT 0 NOT NULL,count_since INTEGER,synced_times_count_total INTEGER DEFAULT 0 NOT NULL,sync_failed_times_count_total INTEGER DEFAULT 0 NOT NULL,new_items_count_total INTEGER DEFAULT 0 NOT NULL,youngest_position TEXT,youngest_item_date INTEGER,youngest_synced_date INTEGER,oldest_position TEXT,oldest_item_date INTEGER,oldest_synced_date INTEGER)";
+            sql = "CREATE TABLE timeline (_id INTEGER PRIMARY KEY AUTOINCREMENT,timeline_name TEXT,timeline_description TEXT,timeline_type STRING NOT NULL,all_origin BOOLEAN DEFAULT 0 NOT NULL,origin_id INTEGER,account_id INTEGER,user_id INTEGER,search_query TEXT,synced BOOLEAN DEFAULT 1 NOT NULL,display_in_selector BOOLEAN DEFAULT 1 NOT NULL,selector_order INTEGER DEFAULT 1 NOT NULL,synced_date INTEGER,sync_failed_date INTEGER,error_message TEXT,synced_times_count INTEGER DEFAULT 0 NOT NULL,sync_failed_times_count INTEGER DEFAULT 0 NOT NULL,new_items_count INTEGER DEFAULT 0 NOT NULL,count_since INTEGER,synced_times_count_total INTEGER DEFAULT 0 NOT NULL,sync_failed_times_count_total INTEGER DEFAULT 0 NOT NULL,new_items_count_total INTEGER DEFAULT 0 NOT NULL,youngest_position TEXT,youngest_item_date INTEGER,youngest_synced_date INTEGER,oldest_position TEXT,oldest_item_date INTEGER,oldest_synced_date INTEGER)";
             DbUtils.execSQL(db, sql);
 
             sql = "CREATE TABLE command (_id INTEGER PRIMARY KEY NOT NULL,queue_type TEXT NOT NULL,command_code TEXT NOT NULL,command_created_date INTEGER NOT NULL,user_id INTEGER,timeline_type STRING,timeline_id INTEGER,in_foreground BOOLEAN DEFAULT 0 NOT NULL,manually_launched BOOLEAN DEFAULT 0 NOT NULL,item_id INTEGER,body TEXT,search_query TEXT,username TEXT,last_executed_date INTEGER,execution_count INTEGER DEFAULT 0 NOT NULL,retries_left INTEGER DEFAULT 0 NOT NULL,num_auth_exceptions INTEGER DEFAULT 0 NOT NULL,num_io_exceptions INTEGER DEFAULT 0 NOT NULL,num_parse_exceptions INTEGER DEFAULT 0 NOT NULL,error_message TEXT,downloaded_count INTEGER DEFAULT 0 NOT NULL,progress_text TEXT)";
@@ -450,13 +450,13 @@ class DatabaseConverter {
         }
 
         private void insertTimeline(TimelineType timelineType, long originId, long userId,
-                                    long selectorOrder, boolean syncable) {
+                                    long selectorOrder, boolean synced) {
             sql = "INSERT INTO timeline (timeline_type, origin_id, account_id" +
-                    ", selector_order, syncable)"
+                    ", selector_order, synced)"
                     + " VALUES('" + timelineType.save() + "', "
                     + originId + ", " + userId + ", "
                     + selectorOrder + ", "
-                    + (syncable ? "1" : "0") + ")";
+                    + (synced ? "1" : "0") + ")";
             DbUtils.execSQL(db, sql);
         }
     }

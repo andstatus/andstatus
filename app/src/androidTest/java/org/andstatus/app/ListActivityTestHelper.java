@@ -36,6 +36,8 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> extends Instru
     private final Instrumentation mInstrumentation;
     private final T mActivity;
     private ActivityMonitor mActivityMonitor = null;
+    private String dialogTagToMonitor = null;
+    private SelectorDialog dialogToMonitor = null;
 
     public ListActivityTestHelper(ActivityTestCase testCase, T activity) {
         this(testCase.getInstrumentation(), activity);
@@ -52,6 +54,15 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> extends Instru
         mInstrumentation = testCase.getInstrumentation();
         addMonitor(classOfActivityToMonitor);
         mActivity = testCase.getActivity();
+    }
+
+    public static ListActivityTestHelper newForSelectorDialog(
+            ActivityInstrumentationTestCase2<? extends MyBaseListActivity> testCase,
+            String dialogTagToMonitor) {
+        ListActivityTestHelper helper =
+                new ListActivityTestHelper(testCase.getInstrumentation(), testCase.getActivity());
+        helper.dialogTagToMonitor = dialogTagToMonitor;
+        return helper;
     }
 
     /**
@@ -85,23 +96,30 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> extends Instru
     }
 
     public void selectListPosition(final String methodExt, final int positionIn) throws InterruptedException {
+        selectListPosition(methodExt, positionIn, getListView(), getListAdapter());
+    }
+
+    public void selectListPosition(final String methodExt, final int positionIn,
+                                   final ListView listView,
+                                   final ListAdapter listAdapter) throws InterruptedException {
         final String method = "selectListPosition";
         MyLog.v(methodExt, method + " started; position=" + positionIn);
         mInstrumentation.runOnMainSync(new Runnable() {
             @Override
             public void run() {
                 int position = positionIn;
-                if (getListAdapter().getCount() <= position) {
-                    position = getListAdapter().getCount() - 1;
+                if (listAdapter.getCount() <= position) {
+                    position = listAdapter.getCount() - 1;
                 }
                 MyLog.v(methodExt, method + " on setSelection " + position
-                        + " of " + (getListAdapter().getCount() - 1));
-                getListView().setSelectionFromTop(position, 0);
+                        + " of " + (listAdapter.getCount() - 1));
+                listView.setSelectionFromTop(position, 0);
             }
         });
         TestSuite.waitForIdleSync(mInstrumentation);
         MyLog.v(methodExt, method + " ended");
     }
+
 
     /**
      * InstrumentationTestCase.getInstrumentation().invokeContextMenuAction doesn't work properly
@@ -162,20 +180,24 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> extends Instru
 
     // See http://stackoverflow.com/questions/24811536/android-listview-get-item-view-by-position
     public View getViewByPosition(int position) {
+        return getViewByPosition(position, getListView(), getListAdapter());
+    }
+
+    public View getViewByPosition(int position, ListView listView, final ListAdapter listAdapter) {
         final String method = "getViewByPosition";
-        final int firstListItemPosition = getListView().getFirstVisiblePosition();
-        final int lastListItemPosition = firstListItemPosition + getListView().getChildCount() - 1;
+        final int firstListItemPosition = listView.getFirstVisiblePosition();
+        final int lastListItemPosition = firstListItemPosition + listView.getChildCount() - 1;
         View view;
         if (position < firstListItemPosition || position > lastListItemPosition ) {
-            if (position < 0 || getListAdapter() == null
-                    || getListAdapter().getCount() < position + 1) {
+            if (position < 0 || listAdapter == null
+                    || listAdapter.getCount() < position + 1) {
                 view = null;
             } else {
-                view = getListAdapter().getView(position, null, getListView());
+                view = listAdapter.getView(position, null, listView);
             }
         } else {
             final int childIndex = position - firstListItemPosition;
-            view = getListView().getChildAt(childIndex);
+            view = listView.getChildAt(childIndex);
         }
         MyLog.v(this, method + ": pos:" + position + ", first:" + firstListItemPosition
                 + ", last:" + lastListItemPosition + ", view:" + view);
@@ -226,9 +248,15 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> extends Instru
     }
 
     public void clickListAtPosition(final String methodExt, final int position) throws InterruptedException {
+        clickListAtPosition(methodExt, position, getListView(), getListAdapter());
+    }
+
+    public void clickListAtPosition(final String methodExt, final int position,
+                                    final ListView listView,
+                                    ListAdapter listAdapter) throws InterruptedException {
         final String method = "clickListAtPosition";
-        final View viewToClick = getViewByPosition(position);
-        final long listItemId = getListAdapter().getItemId(position);
+        final View viewToClick = getViewByPosition(position, listView, listAdapter);
+        final long listItemId = listAdapter.getItemId(position);
         final String msgLog = method + "; id:" + listItemId + ", position:" + position + ", view:" + viewToClick;
         mInstrumentation.runOnMainSync(new Runnable() {
             @Override
@@ -237,7 +265,7 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> extends Instru
 
                 // One of the two should work
                 viewToClick.performClick();
-                getListView().performItemClick(
+                listView.performItemClick(
                         viewToClick,
                         position, listItemId);
 
@@ -260,7 +288,72 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> extends Instru
         mActivityMonitor = null;
         return nextActivity;
     }
-    
+
+    public SelectorDialog waitForSelectorDialog(String methodExt, int timeout) throws InterruptedException {
+        SelectorDialog selectorDialog = null;
+        boolean isVisible = false;
+        for (int ind=0; ind<20; ind++) {
+            mInstrumentation.waitForIdleSync();
+            selectorDialog = (SelectorDialog) mActivity.getSupportFragmentManager().findFragmentByTag(dialogTagToMonitor);
+            if (selectorDialog != null && selectorDialog.isVisible()) {
+                isVisible = true;
+                break;
+            }
+            Thread.sleep(1000);
+        }
+        assertTrue(selectorDialog != null);
+        assertTrue(isVisible);
+
+        final ListView list = selectorDialog.getListView();
+        assertTrue(list != null);
+        int itemsCount = 0;
+        int minCount = 1;
+        for (int ind=0; ind<60; ind++) {
+            Thread.sleep(2000);
+            mInstrumentation.waitForIdleSync();
+            int itemsCountNew = list.getCount();
+            MyLog.v(methodExt, "waitForSelectorDialog; countNew=" + itemsCountNew + ", prev=" + itemsCount + ", min=" + minCount);
+            if (itemsCountNew >= minCount && itemsCount == itemsCountNew) {
+                break;
+            }
+            itemsCount = itemsCountNew;
+        }
+        assertTrue("There are " + itemsCount + " items (min=" + minCount + ") in the list of " + dialogTagToMonitor,
+                itemsCount >= minCount);
+        return selectorDialog;
+    }
+
+    public void selectIdFromSelectorDialog(String method, long id) throws InterruptedException {
+        SelectorDialog selector = waitForSelectorDialog(method, 15000);
+        int position = selector.getListAdapter().getPositionById(id);
+        assertTrue("Item id:" + id + " found", position >= 0);
+        selectListPosition(method, position, selector.getListView(), selector.getListAdapter());
+        clickListAtPosition(method, position, selector.getListView(), selector.getListAdapter());
+    }
+
+    // TODO: Unify interface with my List Activity
+    public View getSelectorViewByPosition(int position) {
+        SelectorDialog selector = dialogToMonitor;
+        final String method = "getSelectorViewByPosition";
+        final int firstListItemPosition = selector.getListView().getFirstVisiblePosition();
+        final int lastListItemPosition = firstListItemPosition + selector.getListView().getChildCount() - 1;
+        View view;
+        if (position < firstListItemPosition || position > lastListItemPosition ) {
+            if (position < 0 || getListAdapter() == null
+                    || selector.getListAdapter().getCount() < position + 1) {
+                view = null;
+            } else {
+                view = selector.getListAdapter().getView(position, null, getListView());
+            }
+        } else {
+            final int childIndex = position - firstListItemPosition;
+            view = selector.getListView().getChildAt(childIndex);
+        }
+        MyLog.v(this, method + ": pos:" + position + ", first:" + firstListItemPosition
+                + ", last:" + lastListItemPosition + ", view:" + view);
+        return view;
+    }
+
     public void clickView(String methodExt, int resourceId) throws InterruptedException {
         clickView(methodExt, mActivity.findViewById(resourceId));
     }
@@ -280,5 +373,4 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> extends Instru
         MyLog.v(methodExt, "After click view");
         TestSuite.waitForIdleSync(mInstrumentation);
     }
-
 }

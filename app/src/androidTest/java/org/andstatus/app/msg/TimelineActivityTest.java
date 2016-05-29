@@ -22,6 +22,7 @@ import android.widget.ListView;
 
 import org.andstatus.app.ListActivityTestHelper;
 import org.andstatus.app.R;
+import org.andstatus.app.SelectorDialog;
 import org.andstatus.app.WhichPage;
 import org.andstatus.app.account.AccountSelector;
 import org.andstatus.app.account.MyAccount;
@@ -176,18 +177,19 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
     public void testOpeningAccountSelector() throws InterruptedException {
         final String method = "testOpeningAccountSelector";
         TestSuite.waitForListLoaded(this, getActivity(), 10);
-        ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<TimelineActivity>(this, AccountSelector.class);
+        ListActivityTestHelper<TimelineActivity> helper =
+                ListActivityTestHelper.newForSelectorDialog(this, AccountSelector.getDialogTag());
         helper.clickView(method, R.id.selectAccountButton);
-        Activity nextActivity = helper.waitForNextActivity(method, 15000);
-        TestSuite.waitForListLoaded(this, nextActivity, 3);
+        SelectorDialog selectorDialog = helper.waitForSelectorDialog(method, 15000);
         Thread.sleep(500);
-        nextActivity.finish();        
+        selectorDialog.dismiss();
     }
 
     public void testActAs() throws InterruptedException {
         final String method = "testActAs";
         TestSuite.waitForListLoaded(this, getActivity(), 2);
-        ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<TimelineActivity>(this, AccountSelector.class);
+        ListActivityTestHelper<TimelineActivity> helper =
+                ListActivityTestHelper.newForSelectorDialog(this, AccountSelector.getDialogTag());
         long msgId = helper.getListItemIdOfLoadedReply();
         String logMsg = "msgId:" + msgId
                 + "; text:'" + MyQuery.msgIdToStringColumnValue(MsgTable.BODY, msgId) + "'";
@@ -198,14 +200,12 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
 
         helper.invokeContextMenuAction4ListItemId(method, msgId, MessageListContextMenuItem.ACT_AS);
 
-        AccountSelector accountSelector = (AccountSelector) helper.waitForNextActivity(method, 15000);
-        TestSuite.waitForListLoaded(this, accountSelector, 3);
-        ListActivityTestHelper<AccountSelector> asHelper = new ListActivityTestHelper<AccountSelector>(this, accountSelector);
         MyAccount ma = MyContextHolder.get().persistentAccounts().fromUserId(userId1);
         MyAccount ma2 = ma.firstOtherAccountOfThisOrigin();
         logMsg += ", user1:" + ma.getAccountName() + ", user2:" + ma2.getAccountName();
         assertNotSame(logMsg, ma, ma2);
-        asHelper.clickListAtPosition(method, asHelper.getPositionOfListItemId(ma2.getUserId()));
+
+        helper.selectIdFromSelectorDialog(method, ma2.getUserId());
         Thread.sleep(500);
 
         long userId3 = getActivity().getContextMenu().getActorUserIdForCurrentMessage();

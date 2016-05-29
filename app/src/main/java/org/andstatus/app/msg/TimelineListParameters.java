@@ -359,14 +359,19 @@ public class TimelineListParameters {
             I18n.appendWithSpace(subTitle, getTimelineType()
                     .getPrepositionForNotCombinedTimeline(mContext));
             if (getTimelineType().isAtOrigin()) {
-                I18n.appendWithSpace(subTitle, MyContextHolder.get().persistentAccounts()
-                        .fromUserId(getMyAccountUserId()).getOrigin().getName()
+                I18n.appendWithSpace(subTitle, getMyAccount().getOrigin().getName()
                         + ";");
             }
         }
         I18n.appendWithSpace(subTitle, toAccountButtonText());
         I18n.appendWithSpace(subTitle, additionalTitleText);
         return subTitle.toString();
+    }
+
+    @NonNull
+    public MyAccount getMyAccount() {
+        return MyContextHolder.get().persistentAccounts()
+                .fromUserId(getMyAccountUserId());
     }
 
     public static String notNullString(String string) {

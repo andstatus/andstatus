@@ -24,8 +24,8 @@
         <item>DeviceDefault</item>
     </string-array>
 
-    <style name="Theme.AndStatus.Compat.Dark" parent="Theme.AppCompat.NoActionBar" />
-    <style name="Theme.AndStatus.Base" parent="Theme.AndStatus.Compat.Dark">
+    <style name="Theme.AndStatus.Base.Dark" parent="Theme.AppCompat.NoActionBar" />
+    <style name="Theme.AndStatus.Min.Dark" parent="Theme.AndStatus.Base.Dark">
         <item name="textColorLink">@color/link_text_light</item>
         <item name="dividerColor">@color/grey_700</item>
 
@@ -39,11 +39,11 @@
         <item name="reblogIcon">@drawable/ic_repeat_white_24dp</item>
         <item name="favoriteBorderIcon">@drawable/ic_favorite_border_white_24dp</item>
     </style>
-    <style name="Theme.AndStatus.DeviceDefault" parent="Theme.AndStatus.Base">
+    <style name="Theme.AndStatus.DeviceDefault" parent="Theme.AndStatus.Min.Dark">
         <item name="andStatusActionBarTheme">@style/ThemeOverlay.AppCompat</item>
         <item name="andStatusActionBarPopupTheme">@style/ThemeOverlay.AppCompat</item>
     </style>
-    <style name="Theme.AndStatus.Dark" parent="Theme.AndStatus.Base">
+    <style name="Theme.AndStatus.Dark" parent="Theme.AndStatus.Min.Dark">
         <item name="andStatusActionBarPopupTheme">@style/ThemeOverlay.AppCompat.Dark</item>
         <item name="colorPrimary">?actionBarColor</item>
         <item name="colorPrimaryDark">?actionBarColorDark</item>
@@ -51,8 +51,8 @@
         <item name="android:colorBackground">?myBackgroundColor</item>
     </style>
 
-    <style name="Theme.AndStatus.Compat.Light" parent="Theme.AppCompat.Light.NoActionBar" />
-	<style name="Theme.AndStatus.Light" parent="Theme.AndStatus.Compat.Light">
+    <style name="Theme.AndStatus.Base.Light" parent="Theme.AppCompat.Light.NoActionBar" />
+	<style name="Theme.AndStatus.Light" parent="Theme.AndStatus.Base.Light">
         <item name="andStatusActionBarPopupTheme">@style/ThemeOverlay.AppCompat.Light</item>
         <item name="colorPrimary">?actionBarColor</item>
         <item name="colorPrimaryDark">?actionBarColorDark</item>
@@ -73,7 +73,7 @@
     </style>
 
     <!-- The theme has all attributes included and should be used in preview for Android tools -->
-    <style name="Theme.AndStatus.FullyDefined" parent="Theme.AndStatus.DeviceDefault">
+    <style name="Theme.AndStatus.FullyDefined" parent="Theme.AndStatus.Light">
         <item name="actionBarColorDark">@color/my_blue_700</item>
 
         <item name="messageUsernameTextAppearance">?android:attr/textAppearanceSmall</item>

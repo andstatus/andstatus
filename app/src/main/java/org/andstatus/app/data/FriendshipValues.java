@@ -23,6 +23,7 @@ import android.database.sqlite.SQLiteDatabaseLockedException;
 
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.database.FriendshipTable;
+import org.andstatus.app.util.ContentValuesUtils;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 
@@ -44,7 +45,7 @@ public class FriendshipValues {
      */
     public static FriendshipValues valueOf(long userId, long friendId, ContentValues values) {
         FriendshipValues userValues = new FriendshipValues(userId, friendId);
-        MyQuery.moveBooleanKey(FriendshipTable.FOLLOWED, "", values, userValues.contentValues);
+        ContentValuesUtils.moveBooleanKey(FriendshipTable.FOLLOWED, "", values, userValues.contentValues);
         return userValues;
     }
 

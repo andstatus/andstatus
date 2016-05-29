@@ -24,6 +24,7 @@ import android.provider.BaseColumns;
 import android.text.TextUtils;
 
 import org.andstatus.app.database.MsgOfUserTable;
+import org.andstatus.app.util.ContentValuesUtils;
 
 class MsgOfUserValues {
     private long rowId;
@@ -47,21 +48,21 @@ class MsgOfUserValues {
     }
 
     public static MsgOfUserValues valuesOfOtherUser(ContentValues values) {
-        long userId = MyQuery.moveLongKey(MsgOfUserTable.USER_ID, MsgOfUserTable.SUFFIX_FOR_OTHER_USER, values, null);
+        long userId = ContentValuesUtils.moveLongKey(MsgOfUserTable.USER_ID, MsgOfUserTable.SUFFIX_FOR_OTHER_USER, values, null);
         return valueOf(userId, MsgOfUserTable.SUFFIX_FOR_OTHER_USER, values);
     }
 
     private static MsgOfUserValues valueOf(long userId, String sourceSuffix, ContentValues values) {
         MsgOfUserValues userValues = new MsgOfUserValues(userId);
         userValues.setMsgId(values.getAsLong(BaseColumns._ID));
-        MyQuery.moveBooleanKey(MsgOfUserTable.SUBSCRIBED, sourceSuffix, values, userValues.contentValues);
-        MyQuery.moveBooleanKey(MsgOfUserTable.FAVORITED, sourceSuffix, values, userValues.contentValues);
-        MyQuery.moveBooleanKey(MsgOfUserTable.REBLOGGED, sourceSuffix, values, userValues.contentValues);
+        ContentValuesUtils.moveBooleanKey(MsgOfUserTable.SUBSCRIBED, sourceSuffix, values, userValues.contentValues);
+        ContentValuesUtils.moveBooleanKey(MsgOfUserTable.FAVORITED, sourceSuffix, values, userValues.contentValues);
+        ContentValuesUtils.moveBooleanKey(MsgOfUserTable.REBLOGGED, sourceSuffix, values, userValues.contentValues);
         // The value is String!
-        MyQuery.moveStringKey(MsgOfUserTable.REBLOG_OID, sourceSuffix, values, userValues.contentValues);
-        MyQuery.moveBooleanKey(MsgOfUserTable.MENTIONED, sourceSuffix, values, userValues.contentValues);
-        MyQuery.moveBooleanKey(MsgOfUserTable.REPLIED, sourceSuffix, values, userValues.contentValues);
-        MyQuery.moveBooleanKey(MsgOfUserTable.DIRECTED, sourceSuffix, values, userValues.contentValues);
+        ContentValuesUtils.moveStringKey(MsgOfUserTable.REBLOG_OID, sourceSuffix, values, userValues.contentValues);
+        ContentValuesUtils.moveBooleanKey(MsgOfUserTable.MENTIONED, sourceSuffix, values, userValues.contentValues);
+        ContentValuesUtils.moveBooleanKey(MsgOfUserTable.REPLIED, sourceSuffix, values, userValues.contentValues);
+        ContentValuesUtils.moveBooleanKey(MsgOfUserTable.DIRECTED, sourceSuffix, values, userValues.contentValues);
         return userValues;
     }
 

@@ -16,10 +16,7 @@
 
 package org.andstatus.app.msg;
 
-import android.app.AlertDialog;
-import android.app.Dialog;
 import android.app.SearchManager;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -265,7 +262,9 @@ public class TimelineActivity extends LoadableListActivity implements
      * View.OnClickListener
      */
     public void onTimelineTypeButtonClick(View item) {
-        showDialog(DIALOG_ID_TIMELINE_TYPE);
+        TimelineTypeSelector.newInstance(
+                ActivityRequestCode.SELECT_TIMELINE, paramsNew.getMyAccount().getOriginId()
+        ).show(this);
         closeDrawer();
     }
 
@@ -360,37 +359,6 @@ public class TimelineActivity extends LoadableListActivity implements
             };
             runOnUiThread(runnable);
         }
-    }
-
-    @Override
-    protected Dialog onCreateDialog(int id) {
-        switch (id) {
-            case DIALOG_ID_TIMELINE_TYPE:
-                return newTimelineTypeSelector();
-            default:
-                break;
-        }
-        return super.onCreateDialog(id);
-    }
-
-    // TODO: Replace this with http://developer.android.com/reference/android/app/DialogFragment.html
-    private AlertDialog newTimelineTypeSelector() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle(R.string.dialog_title_select_timeline);
-        final TimelineTypeSelector selector = new TimelineTypeSelector(this);
-        builder.setItems(selector.getTitles(), new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                // The 'which' argument contains the index position of the
-                // selected item
-                TimelineType type = selector.positionToType(which);
-                if (type != TimelineType.UNKNOWN) {
-                    paramsNew.switchTimelineType(type);
-                    mContextMenu.switchTimelineActivity(paramsNew.getContentUri());
-                }
-            }
-        });
-        return builder.create();                
     }
 
     @Override
@@ -1021,7 +989,7 @@ public class TimelineActivity extends LoadableListActivity implements
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
         MyLog.v(this, "onActivityResult; request:" + requestCode + ", result:" + (resultCode == RESULT_OK ? "ok" : "fail"));
         if (resultCode != RESULT_OK || data == null) {
             return;
@@ -1038,6 +1006,13 @@ public class TimelineActivity extends LoadableListActivity implements
                 break;
             case ATTACH:
                 attachmentSelected(data);
+                break;
+            case SELECT_TIMELINE:
+                TimelineType type = TimelineType.load(data.getStringExtra(IntentExtra.TIMELINE_TYPE.key));
+                if (type != TimelineType.UNKNOWN) {
+                    paramsNew.switchTimelineType(type);
+                    mContextMenu.switchTimelineActivity(paramsNew.getContentUri());
+                }
                 break;
             default:
                 super.onActivityResult(requestCode, resultCode, data);

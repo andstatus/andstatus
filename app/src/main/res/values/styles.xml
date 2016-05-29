@@ -229,4 +229,26 @@
         <item name="android:textStyle">normal</item>
         <item name="android:textColor">?attr/messageDetailsColor</item>
     </style>
+
+    <style name="BaseDialogStyle_min">
+        <item name="android:windowFrame">@null</item>
+        <item name="android:windowIsFloating">true</item>
+        <item name="android:backgroundDimEnabled">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowAnimationStyle">@style/Animation.AppCompat.Dialog</item>
+        <item name="android:windowSoftInputMode">stateUnspecified|adjustPan</item>
+
+        <item name="windowActionBar">false</item>
+        <item name="windowActionModeOverlay">true</item>
+
+        <item name="listPreferredItemPaddingLeft">24dip</item>
+        <item name="listPreferredItemPaddingRight">24dip</item>
+
+        <item name="android:buttonBarStyle">@style/Widget.AppCompat.ButtonBar.AlertDialog</item>
+        <item name="android:borderlessButtonStyle">@style/Widget.AppCompat.Button.Borderless</item>
+        <item name="android:windowCloseOnTouchOutside">@bool/abc_config_closeDialogWhenTouchOutside</item>
+    </style>
+    <style name="BaseDialogStyle" parent="BaseDialogStyle_min" />
+    <style name="AndStatusDialogStyle" parent="BaseDialogStyle" />
+
 </resources>

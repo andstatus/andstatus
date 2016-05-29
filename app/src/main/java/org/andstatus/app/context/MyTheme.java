@@ -20,6 +20,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.res.Resources;
 import android.os.Build;
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 import android.util.TypedValue;
 import android.view.View;
@@ -35,48 +36,40 @@ import org.andstatus.app.util.SharedPreferencesUtil;
  */
 public class MyTheme {
 
-    private static volatile boolean mIsThemeLight = false;
+    private static volatile boolean isLightTheme = true;
+    private static volatile boolean isDeviceDefaultTheme = false;
 
     private MyTheme() {
         // Empty
     }
 
     public static void forget() {
-        mIsThemeLight = false;
+        isLightTheme = true;
+        isDeviceDefaultTheme = false;
     }
 
     /**
      * Load a theme according to the preferences.
      */
     public static void loadTheme(Context context) {
-        String themeName = "Theme.AndStatus." + SharedPreferencesUtil.getString(MyPreferences.KEY_THEME_COLOR, "Light");
-        mIsThemeLight = themeName.contains("Light");
-        int themeId = getStyleId(context, themeName, R.style.Theme_AndStatus_Dark);
+        String themeName = getThemeName();
+        isLightTheme = themeName.contains(".Light");
+        isDeviceDefaultTheme = themeName.contains(".DeviceDefault");
+        context.setTheme(getThemeId(context, themeName));
+        applyStyles(context, false);
+    }
 
-        context.setTheme(themeId);
-        Resources.Theme theme = context.getTheme();
-
-        int actionBarTextStyleId = R.style.ActionBarTextWhite;
-        if (themeId != R.style.Theme_AndStatus_DeviceDefault) {
-            theme.applyStyle(
-                    getStyleId(context, SharedPreferencesUtil.getString(MyPreferences.KEY_ACTION_BAR_BACKGROUND_COLOR, ""), R.style.ActionBarMyBlue),
-                    false);
-            theme.applyStyle(
-                    getStyleId(context, SharedPreferencesUtil.getString(MyPreferences.KEY_BACKGROUND_COLOR, ""), R.style.BackgroundColorBlack),
-                    false);
-            actionBarTextStyleId = getStyleId(context, SharedPreferencesUtil.getString(MyPreferences.KEY_ACTION_BAR_TEXT_COLOR, ""),
-                    R.style.ActionBarTextWhite);
-            theme.applyStyle(actionBarTextStyleId, false);
-        }
-        theme.applyStyle(actionBarTextStyleId == R.style.ActionBarTextWhite ?
-                R.style.ActionBarIconsWhite : R.style.ActionBarIconsBlack, false);
-        theme.applyStyle(
-                getStyleId(context, SharedPreferencesUtil.getString(MyPreferences.KEY_THEME_SIZE, ""), R.style.StandardSize),
-                false);
+    @NonNull
+    public static String getThemeName() {
+        return "Theme.AndStatus." + SharedPreferencesUtil.getString(MyPreferences.KEY_THEME_COLOR, "Light");
     }
 
     public static boolean isThemeLight() {
-        return mIsThemeLight;
+        return isLightTheme;
+    }
+
+    public static int getThemeId(Context context, String themeName) {
+        return getStyleId(context, themeName, R.style.Theme_AndStatus_Light);
     }
 
     private static int getStyleId(Context context, String styleName, int defaultId) {
@@ -99,6 +92,29 @@ public class MyTheme {
         return styleId;
     }
 
+    public static void applyStyles(Context context, boolean isDialog) {
+        Resources.Theme theme = context.getTheme();
+        int actionBarTextStyleId = R.style.ActionBarTextWhite;
+        if (!isDeviceDefaultTheme) {
+            theme.applyStyle(
+                    getStyleId(context, SharedPreferencesUtil.getString(MyPreferences.KEY_ACTION_BAR_BACKGROUND_COLOR, ""), R.style.ActionBarMyBlue),
+                    false);
+            theme.applyStyle(
+                    getStyleId(context, SharedPreferencesUtil.getString(MyPreferences.KEY_BACKGROUND_COLOR, ""), R.style.BackgroundColorBlack),
+                    false);
+            actionBarTextStyleId = getStyleId(context, SharedPreferencesUtil.getString(MyPreferences.KEY_ACTION_BAR_TEXT_COLOR, ""),
+                    R.style.ActionBarTextWhite);
+            theme.applyStyle(actionBarTextStyleId, false);
+        }
+        theme.applyStyle(actionBarTextStyleId == R.style.ActionBarTextWhite ?
+                R.style.ActionBarIconsWhite : R.style.ActionBarIconsBlack, false);
+        theme.applyStyle(
+                getStyleId(context, SharedPreferencesUtil.getString(MyPreferences.KEY_THEME_SIZE, ""), R.style.StandardSize),
+                false);
+        if (isDialog) {
+            theme.applyStyle(R.style.AndStatusDialogStyle, true);
+        }
+    }
 
     public static void setContentView(Activity activity, int layoutId) {
         activity.setContentView(layoutId);

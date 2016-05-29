@@ -33,6 +33,7 @@ public enum IntentExtra{
      * {@link MyAppWidgetProvider}. Value of this extra is a string code of CommandEnum
      */
     COMMAND("COMMAND_ENUM"),
+    REQUEST_CODE("REQUEST_CODE"),
     /**
      * Command parameter: long - ID of the Tweet (or Msg) / User / Origin
      */

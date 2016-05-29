@@ -63,7 +63,7 @@ public class ConversationActivity extends LoadableListActivity implements Action
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (ActivityRequestCode.fromId(requestCode)) {
             case SELECT_ACCOUNT_TO_ACT_AS:
                 if (resultCode == RESULT_OK) {

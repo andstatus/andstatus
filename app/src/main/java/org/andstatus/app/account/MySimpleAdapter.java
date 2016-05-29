@@ -40,6 +40,17 @@ public class MySimpleAdapter extends SimpleAdapter implements View.OnClickListen
         }
     }
 
+    public int getPositionById(long itemId) {
+        if (itemId != 0) {
+            for (int position = 0; position < getCount(); position++) {
+                if (getItemId(position) == itemId) {
+                    return position;
+                }
+            }
+        }
+        return -1;
+    }
+
     @Override
     public void onClick(View v) {
         if (!MyPreferences.isLongPressToOpenContextMenu()) {

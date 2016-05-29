@@ -42,7 +42,7 @@ public class TimelineTable implements BaseColumns {
     public static final String SEARCH_QUERY = CommandTable.SEARCH_QUERY;
 
     /** If the timeline is synced automatically */
-    public static final String SYNCABLE = "syncable";
+    public static final String SYNCED = "synced";
     /** If the timeline should be shown in a Timeline selector */
     public static final String DISPLAY_IN_SELECTOR = "display_in_selector";
     /** Used for sorting timelines in a selector */

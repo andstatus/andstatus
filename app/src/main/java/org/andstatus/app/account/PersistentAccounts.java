@@ -249,6 +249,7 @@ public class PersistentAccounts {
      * Please note that a valid User may not have an Account (in AndStatus)
      * @return Invalid account if was not found
      */
+    @NonNull
     public MyAccount fromUserId(long userId) {
         MyAccount ma = MyAccount.getEmpty(MyContextHolder.get(), "(id=" + userId +")");
         if (userId != 0) {
