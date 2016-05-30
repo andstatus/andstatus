@@ -262,9 +262,7 @@ public class TimelineActivity extends LoadableListActivity implements
      * View.OnClickListener
      */
     public void onTimelineTypeButtonClick(View item) {
-        TimelineTypeSelector.newInstance(
-                ActivityRequestCode.SELECT_TIMELINE, paramsNew.getMyAccount().getOriginId()
-        ).show(this);
+        TimelineTypeSelector.newInstance(ActivityRequestCode.SELECT_TIMELINE).show(this);
         closeDrawer();
     }
 

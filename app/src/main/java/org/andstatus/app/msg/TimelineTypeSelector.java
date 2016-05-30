@@ -55,9 +55,9 @@ public class TimelineTypeSelector extends org.andstatus.app.SelectorDialog {
             TimelineType.OUTBOX
     };
 
-    static SelectorDialog newInstance(ActivityRequestCode requestCode, long originId) {
+    static SelectorDialog newInstance(ActivityRequestCode requestCode) {
         SelectorDialog selector = new TimelineTypeSelector();
-        selector.setRequestCode(requestCode).putLong(IntentExtra.ORIGIN_ID.key, originId);
+        selector.setRequestCode(requestCode);
         return selector;
     }
 
