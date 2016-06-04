@@ -1,4 +1,4 @@
-package org.andstatus.app.account;
+package org.andstatus.app.widget;
 
 import android.content.Context;
 import android.provider.BaseColumns;

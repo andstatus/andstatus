@@ -27,7 +27,7 @@ import org.andstatus.app.ActivityRequestCode;
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
 import org.andstatus.app.SelectorDialog;
-import org.andstatus.app.account.MySimpleAdapter;
+import org.andstatus.app.widget.MySimpleAdapter;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.TimelineType;
 
@@ -41,19 +41,6 @@ import java.util.Map;
  */
 public class TimelineTypeSelector extends org.andstatus.app.SelectorDialog {
     private static final String KEY_VISIBLE_NAME = "visible_name";
-    private static TimelineType[] timelineTypes = {
-            TimelineType.HOME,
-            TimelineType.FAVORITES,
-            TimelineType.MENTIONS,
-            TimelineType.DIRECT,
-            TimelineType.USER,
-            TimelineType.FRIENDS,
-            TimelineType.FOLLOWERS,
-            TimelineType.PUBLIC,
-            TimelineType.EVERYTHING,
-            TimelineType.DRAFTS,
-            TimelineType.OUTBOX
-    };
 
     static SelectorDialog newInstance(ActivityRequestCode requestCode) {
         SelectorDialog selector = new TimelineTypeSelector();
@@ -80,7 +67,7 @@ public class TimelineTypeSelector extends org.andstatus.app.SelectorDialog {
 
     private MySimpleAdapter newListAdapter() {
         List<Map<String, String>> list = new ArrayList<Map<String, String>>();
-        for (TimelineType timelineType : timelineTypes) {
+        for (TimelineType timelineType : TimelineType.defaultTimelineTypes) {
             Map<String, String> map = new HashMap<String, String>();
             map.put(KEY_VISIBLE_NAME, timelineType.getTitle(getActivity()).toString());
             map.put(BaseColumns._ID, Long.toString(timelineType.ordinal()));
@@ -100,7 +87,7 @@ public class TimelineTypeSelector extends org.andstatus.app.SelectorDialog {
 
     public static TimelineType selectableType(TimelineType typeSelected) {
         TimelineType typeSelectable = MyPreferences.getDefaultTimeline();
-        for (TimelineType type : timelineTypes) {
+        for (TimelineType type : TimelineType.defaultTimelineTypes) {
             if (type == typeSelected) {
                 typeSelectable = typeSelected;
                 break;

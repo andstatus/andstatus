@@ -316,6 +316,8 @@ public final class MyAccount {
                 }
                 MyLog.v(this, (result.savedToAccountManager ? " Saved " 
                         : ( result.changed ? " Didn't save?! " : " Didn't change") ) + this.toString());
+
+                myContext.persistentTimelines().onAccountSave(myAccount);
             } catch (Exception e) {
                 MyLog.e(this, "Saving " + myAccount.getAccountName(), e);
             }

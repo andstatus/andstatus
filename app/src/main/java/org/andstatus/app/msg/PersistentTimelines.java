@@ -19,21 +19,33 @@ package org.andstatus.app.msg;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.support.annotation.NonNull;
 
+import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DbUtils;
+import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.TimelineTable;
+import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.MyLog;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 
 /**
  * @author yvolk@yurivolkov.com
  */
 public class PersistentTimelines {
-    private final Map<Long,Timeline> timelines = new TreeMap<>();
+    private final List<Timeline> timelines = new ArrayList<>();
+
+    public static PersistentTimelines getEmpty() {
+        return new PersistentTimelines();
+    }
 
     private PersistentTimelines() {
         // Empty
@@ -46,38 +58,39 @@ public class PersistentTimelines {
     public PersistentTimelines initialize(MyContext myContext) {
         final String method = "initialize";
         Context context = myContext.context();
-
-        SQLiteDatabase db = MyContextHolder.get().getDatabase();
+        timelines.clear();
+        SQLiteDatabase db = myContext.getDatabase();
         if (db == null) {
             MyLog.d(context, method + "; Database is unavailable");
-        }
-        timelines.clear();
-        String sql = "SELECT * FROM " + TimelineTable.TABLE_NAME;
-        Cursor c = null;
-        try {
-            c = db.rawQuery(sql, null);
-            while (c.moveToNext()) {
-                Timeline cd = Timeline.fromCursor(c);
-                if (!cd.isValid()) {
-                    MyLog.e(context, method + "; invalid skipped " + cd);
-                } else {
-                    timelines.put(1L, cd);
-                    if (MyLog.isVerboseEnabled() && timelines.size() < 5) {
-                        MyLog.v(context, method + "; " + cd);
+        } else {
+            String sql = "SELECT * FROM " + TimelineTable.TABLE_NAME;
+            Cursor c = null;
+            try {
+                c = db.rawQuery(sql, null);
+                while (c.moveToNext()) {
+                    Timeline timeline = Timeline.fromCursor(myContext, c);
+                    if (!timeline.isValid()) {
+                        MyLog.e(context, method + "; invalid skipped " + timeline);
+                    } else {
+                        timelines.add(timeline);
+                        if (MyLog.isVerboseEnabled() && timelines.size() < 5) {
+                            MyLog.v(context, method + "; " + timeline);
+                        }
                     }
                 }
+            } finally {
+                DbUtils.closeSilently(c);
             }
-        } finally {
-            DbUtils.closeSilently(c);
+            sort(timelines);
+            MyLog.v(this, "Timelines initialized, " + timelines.size() + " timelines");
         }
-        MyLog.v(this, "Timelines initialized, " + timelines.size() + " timelines");
         return this;
     }
 
     public Timeline fromId(long id) {
         Timeline timelineFound = Timeline.getEmpty();
         if (id != 0) {
-            for (Timeline timeline : timelines.values()) {
+            for (Timeline timeline : timelines) {
                 if (timeline.getId() == id) {
                     timelineFound = timeline;
                     break;
@@ -87,4 +100,81 @@ public class PersistentTimelines {
         return timelineFound;
     }
 
+    public List<Timeline> getList() {
+        return timelines;
+    }
+
+    @NonNull
+    public List<Timeline> getFiltered(boolean isForSelector,
+                                      boolean isTimelineCombined,
+                                      MyAccount ma,
+                                      Origin origin) {
+        List<Timeline> timelines = new ArrayList<>();
+        for (Timeline timeline : getList()) {
+            boolean include = false;
+            if (isForSelector && !timeline.isDisplayedInSelector()) {
+                include = false;
+            } else if (isTimelineCombined) {
+                include = true;
+            } else if (ma != null && ma.isValid()) {
+                include = timeline.getAccount() == ma;
+            } else if (origin != null && origin.isValid()) {
+                include = timeline.getOrigin() == origin;
+            }
+            if (include) {
+                timelines.add(timeline);
+            }
+        }
+        if (isForSelector) {
+            removeDuplicatesForSelector(timelines);
+        }
+        return timelines;
+    }
+
+    private void removeDuplicatesForSelector(List<Timeline> timelines) {
+        Map<String, Timeline> map = new HashMap<>();
+        for (Timeline timeline : timelines) {
+            String key = timeline.getTimelineType().save() + timeline.getName();
+            // TODO
+            if (!map.containsKey(key)) {
+                map.put(key, timeline);
+            }
+        }
+        timelines.retainAll(map.values());
+    }
+
+    private void sort(List<Timeline> timelines) {
+        Collections.sort(timelines, new Comparator<Timeline>() {
+            @Override
+            public int compare(Timeline lhs, Timeline rhs) {
+                if (lhs.getSelectorOrder() == rhs.getSelectorOrder()) {
+                    return lhs.getTimelineType().compareTo(rhs.getTimelineType());
+                } else {
+                    return lhs.getSelectorOrder() > rhs.getSelectorOrder() ? 1 : -1;
+                }
+            }
+        });
+    }
+
+    public void onAccountSave(MyAccount ma) {
+        if (ma.isValid() && getFiltered(false, false, ma, null).isEmpty()) {
+            long timelineId = MyQuery.conditionToLongColumnValue(TimelineTable.TABLE_NAME,
+                    TimelineTable._ID, TimelineTable.ACCOUNT_ID + "=" + ma.getUserId());
+            if (timelineId == 0) {
+                timelines.addAll(Timeline.addDefaultForAccount(ma));
+                sort(timelines);
+            }
+        }
+    }
+
+    public void onAccountDelete(MyAccount ma) {
+        List<Timeline> toRemove = new ArrayList<>();
+        for (Timeline timeline : getList()) {
+            if (timeline.getAccount().equals(ma)) {
+                timeline.delete();
+                toRemove.add(timeline);
+            }
+        }
+        timelines.removeAll(toRemove);
+    }
 }

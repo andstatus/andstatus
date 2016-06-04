@@ -433,30 +433,20 @@ class DatabaseConverter {
                 sql = "SELECT origin_id FROM user WHERE _id=" + accountId;
                 long originId = MyQuery.sqlToLong(db, sql, sql);
                 if (originId != 0) {
-                    long selectorOrder = 1;
-                    insertTimeline(TimelineType.HOME, originId, accountId, selectorOrder++, true);
-                    insertTimeline(TimelineType.FAVORITES, originId, accountId, selectorOrder++, false);
-                    insertTimeline(TimelineType.MENTIONS, originId, accountId, selectorOrder++, true);
-                    insertTimeline(TimelineType.DIRECT, originId, accountId, selectorOrder++, true);
-                    insertTimeline(TimelineType.USER, originId, accountId, selectorOrder++, false);
-                    insertTimeline(TimelineType.FRIENDS, originId, accountId, selectorOrder++, false);
-                    insertTimeline(TimelineType.FOLLOWERS, originId, accountId, selectorOrder++, false);
-                    insertTimeline(TimelineType.PUBLIC, originId, accountId, selectorOrder++, false);
-                    insertTimeline(TimelineType.EVERYTHING, originId, accountId, selectorOrder++, false);
-                    insertTimeline(TimelineType.DRAFTS, originId, accountId, selectorOrder++, false);
-                    insertTimeline(TimelineType.OUTBOX, originId, accountId, selectorOrder++, false);
+                    for (TimelineType timelineType : TimelineType.defaultTimelineTypes) {
+                        insertTimeline(timelineType, originId, accountId);
+                    }
                 }
             }
         }
 
-        private void insertTimeline(TimelineType timelineType, long originId, long userId,
-                                    long selectorOrder, boolean synced) {
+        private void insertTimeline(TimelineType timelineType, long originId, long userId) {
             sql = "INSERT INTO timeline (timeline_type, origin_id, account_id" +
                     ", selector_order, synced)"
                     + " VALUES('" + timelineType.save() + "', "
                     + originId + ", " + userId + ", "
-                    + selectorOrder + ", "
-                    + (synced ? "1" : "0") + ")";
+                    + timelineType.ordinal() + ", "
+                    + (timelineType.isSyncableByDefault() ? "1" : "0") + ")";
             DbUtils.execSQL(db, sql);
         }
     }

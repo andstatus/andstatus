@@ -22,7 +22,6 @@ import android.provider.BaseColumns;
 import android.support.v4.app.FragmentActivity;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ListAdapter;
 import android.widget.TextView;
 
 import org.andstatus.app.ActivityRequestCode;
@@ -30,6 +29,7 @@ import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
 import org.andstatus.app.SelectorDialog;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.widget.MySimpleAdapter;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -49,7 +49,7 @@ public class AccountSelector extends SelectorDialog {
 
     private static final String TYPE_ACCOUNT = "account";
 
-    public static void selectAccount(FragmentActivity activity, long originId, ActivityRequestCode requestCode) {
+    public static void selectAccount(FragmentActivity activity, ActivityRequestCode requestCode, long originId) {
         SelectorDialog selector = new AccountSelector();
         selector.setRequestCode(requestCode).putLong(IntentExtra.ORIGIN_ID.key, originId);
         selector.show(activity);

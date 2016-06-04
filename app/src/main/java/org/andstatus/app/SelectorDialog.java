@@ -32,7 +32,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 
-import org.andstatus.app.account.MySimpleAdapter;
+import org.andstatus.app.widget.MySimpleAdapter;
 import org.andstatus.app.context.MyTheme;
 
 /**

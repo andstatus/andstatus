@@ -155,7 +155,7 @@ public class AccountSettingsActivity extends MyActivity {
             if (state.originShouldBeSelected) {
                 selectOrigin();
             } else if (state.accountShouldBeSelected) {
-                AccountSelector.selectAccount(this, 0, ActivityRequestCode.SELECT_ACCOUNT);
+                AccountSelector.selectAccount(this, ActivityRequestCode.SELECT_ACCOUNT, 0);
                 message += "Select account; ";
             }
             message += "action=" + state.getAccountAction() + "; ";

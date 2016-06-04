@@ -19,11 +19,13 @@ package org.andstatus.app.context;
 import android.app.Notification;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
+import android.support.annotation.NonNull;
 
 import org.andstatus.app.account.PersistentAccounts;
 import org.andstatus.app.data.AssertionData;
 import org.andstatus.app.database.DatabaseHolder;
 import org.andstatus.app.data.TimelineType;
+import org.andstatus.app.msg.PersistentTimelines;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.origin.PersistentOrigins;
 import org.andstatus.app.service.ConnectionState;
@@ -174,6 +176,12 @@ public class MyContextForTest implements MyContext {
     @Override
     public PersistentOrigins persistentOrigins() {
         return myContext.persistentOrigins();
+    }
+
+    @NonNull
+    @Override
+    public PersistentTimelines persistentTimelines() {
+        return myContext.persistentTimelines();
     }
 
     @Override

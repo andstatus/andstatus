@@ -32,7 +32,7 @@ import org.andstatus.app.ActivityRequestCode;
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.MyListActivity;
 import org.andstatus.app.R;
-import org.andstatus.app.account.MySimpleAdapter;
+import org.andstatus.app.widget.MySimpleAdapter;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.util.MyLog;
 

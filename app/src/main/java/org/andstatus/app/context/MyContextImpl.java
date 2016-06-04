@@ -24,6 +24,7 @@ import android.database.sqlite.SQLiteException;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Environment;
+import android.support.annotation.NonNull;
 
 import net.jcip.annotations.ThreadSafe;
 
@@ -34,6 +35,7 @@ import org.andstatus.app.database.DatabaseHolder;
 import org.andstatus.app.database.DatabaseConverterController;
 import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.graphics.MyImageCache;
+import org.andstatus.app.msg.PersistentTimelines;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.net.http.TlsSniSocketFactory;
 import org.andstatus.app.origin.PersistentOrigins;
@@ -71,7 +73,8 @@ public final class MyContextImpl implements MyContext {
     private volatile DatabaseHolder mDb;
     private final PersistentAccounts mPersistentAccounts = PersistentAccounts.getEmpty();
     private final PersistentOrigins mPersistentOrigins = PersistentOrigins.getEmpty();
-    
+    private final PersistentTimelines persistentTimelines = PersistentTimelines.getEmpty();
+
     private volatile boolean mExpired = false;
 
     private final Locale mLocale = Locale.getDefault();
@@ -79,7 +82,7 @@ public final class MyContextImpl implements MyContext {
     private static volatile boolean mInForeground = false;
     private static volatile long mInForegroundChangedAt = 0;
     private static final long CONSIDER_IN_BACKGROUND_AFTER_SECONDS = 20;
-    
+
     private MyContextImpl() {
     }
 
@@ -105,12 +108,13 @@ public final class MyContextImpl implements MyContext {
                 }
                 switch (myContext.mState) {
                     case READY:
-                            myContext.mDb = newDb;
-                            myContext.mPersistentOrigins.initialize(myContext);
-                            myContext.mPersistentAccounts.initialize(myContext);
-                            MyImageCache.initialize(myContext.context());
+                        myContext.mDb = newDb;
+                        myContext.mPersistentOrigins.initialize(myContext);
+                        myContext.mPersistentAccounts.initialize(myContext);
+                        myContext.persistentTimelines.initialize(myContext);
+                        MyImageCache.initialize(myContext.context());
                         break;
-                    default: 
+                    default:
                         break;
                 }
             } catch (SQLiteException e) {
@@ -263,6 +267,12 @@ public final class MyContextImpl implements MyContext {
     @Override
     public PersistentOrigins persistentOrigins() {
         return mPersistentOrigins;
+    }
+
+    @NonNull
+    @Override
+    public PersistentTimelines persistentTimelines() {
+        return persistentTimelines;
     }
 
     @Override

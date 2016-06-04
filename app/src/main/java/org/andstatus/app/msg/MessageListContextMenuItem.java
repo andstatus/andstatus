@@ -268,7 +268,7 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
     ACT_AS() {
         @Override
         void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
-            AccountSelector.selectAccount(menu.getActivity(), editorData.ma.getOriginId(), ActivityRequestCode.SELECT_ACCOUNT_TO_ACT_AS);
+            AccountSelector.selectAccount(menu.getActivity(), ActivityRequestCode.SELECT_ACCOUNT_TO_ACT_AS, editorData.ma.getOriginId());
         }
     },
     OPEN_MESSAGE_PERMALINK(true) {

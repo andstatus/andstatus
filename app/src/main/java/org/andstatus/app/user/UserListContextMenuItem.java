@@ -92,7 +92,7 @@ public enum UserListContextMenuItem implements ContextMenuItem {
     ACT_AS() {
         @Override
         void executeOnUiThread(UserListContextMenu menu, MyAccount ma) {
-            AccountSelector.selectAccount(menu.getActivity(), ma.getOriginId(), ActivityRequestCode.SELECT_ACCOUNT_TO_ACT_AS);
+            AccountSelector.selectAccount(menu.getActivity(), ActivityRequestCode.SELECT_ACCOUNT_TO_ACT_AS, ma.getOriginId());
         }
     },
     FOLLOWERS(true) {

@@ -129,6 +129,7 @@ public class AuthenticatorService extends Service {
             MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(account.name);
             boolean deleted = true;
             if (ma.isValid()) {
+                MyContextHolder.get().persistentTimelines().onAccountDelete(ma);
                 deleted = MyContextHolder.get().persistentAccounts().delete(ma);
             }
             MyPreferences.onPreferencesChanged();

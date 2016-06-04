@@ -271,7 +271,7 @@ public class TimelineActivity extends LoadableListActivity implements
      */
     public void onSelectAccountButtonClick(View item) {
         if (MyContextHolder.get().persistentAccounts().size() > 1) {
-            AccountSelector.selectAccount(TimelineActivity.this, 0, ActivityRequestCode.SELECT_ACCOUNT);
+            AccountSelector.selectAccount(TimelineActivity.this, ActivityRequestCode.SELECT_ACCOUNT, 0);
         }
         closeDrawer();
     }
@@ -633,7 +633,7 @@ public class TimelineActivity extends LoadableListActivity implements
         MyLog.v(this, "Share via this app " 
                 + (!TextUtils.isEmpty(mTextToShareViaThisApp) ? "; text:'" + mTextToShareViaThisApp +"'" : "") 
                 + (!UriUtils.isEmpty(mMediaToShareViaThisApp) ? "; media:" + mMediaToShareViaThisApp.toString() : ""));
-        AccountSelector.selectAccount(this, 0, ActivityRequestCode.SELECT_ACCOUNT_TO_SHARE_VIA);
+        AccountSelector.selectAccount(this, ActivityRequestCode.SELECT_ACCOUNT_TO_SHARE_VIA, 0);
     }
 
     static boolean subjectHasAdditionalContent(String subject, String text) {

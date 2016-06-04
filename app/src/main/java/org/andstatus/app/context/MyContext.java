@@ -25,6 +25,7 @@ import org.andstatus.app.account.PersistentAccounts;
 import org.andstatus.app.data.AssertionData;
 import org.andstatus.app.database.DatabaseHolder;
 import org.andstatus.app.data.TimelineType;
+import org.andstatus.app.msg.PersistentTimelines;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.origin.PersistentOrigins;
 import org.andstatus.app.service.ConnectionState;
@@ -45,7 +46,10 @@ public interface MyContext {
     SQLiteDatabase getDatabase();
     @NonNull
     PersistentAccounts persistentAccounts();
+    @NonNull
     PersistentOrigins persistentOrigins();
+    @NonNull
+    PersistentTimelines persistentTimelines();
     void put(AssertionData data);
     void release();
     boolean isExpired();
