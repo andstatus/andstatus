@@ -106,24 +106,24 @@ public class TimelineLoader implements LoadableListActivity.SyncLoader {
 
     private void checkIfReloadIsNeeded(Cursor cursor) {
         if (noMessagesInATimeline(cursor)) {
-            switch (getParams().mTimelineType) {
+            switch (getParams().getTimelineType()) {
                 case USER:
                     // This timeline doesn't update automatically so let's do it now if necessary
-                    LatestTimelineItem latestTimelineItem = new LatestTimelineItem(getParams().mTimelineType, getParams().mSelectedUserId);
+                    LatestTimelineItem latestTimelineItem = new LatestTimelineItem(getParams().getTimelineType(), getParams().getSelectedUserId());
                     if (latestTimelineItem.isTimeToAutoUpdate()) {
-                        getParams().timelineToSync = getParams().mTimelineType;
+                        getParams().timelineToSync = getParams().getTimelineType();
                     }
                     break;
                 case FOLLOWERS:
                 case FRIENDS:
                     // This timeline doesn't update automatically so let's do it now if necessary
-                    latestTimelineItem = new LatestTimelineItem(getParams().mTimelineType, getParams().myAccountUserId);
+                    latestTimelineItem = new LatestTimelineItem(getParams().getTimelineType(), getParams().getMyAccount().getUserId());
                     if (latestTimelineItem.isTimeToAutoUpdate()) {
-                        getParams().timelineToSync = getParams().mTimelineType;
+                        getParams().timelineToSync = getParams().getTimelineType();
                     }
                     break;
                 default:
-                    if ( MyQuery.userIdToLongColumnValue(UserTable.HOME_TIMELINE_DATE, getParams().myAccountUserId) == 0) {
+                    if ( MyQuery.userIdToLongColumnValue(UserTable.HOME_TIMELINE_DATE, getParams().getMyAccount().getUserId()) == 0) {
                         // This is supposed to be a one time task.
                         getParams().timelineToSync = TimelineType.ALL;
                     }
@@ -134,7 +134,7 @@ public class TimelineLoader implements LoadableListActivity.SyncLoader {
 
     private boolean noMessagesInATimeline(Cursor cursor) {
         return getParams().whichPage.isYoungest()
-                && TextUtils.isEmpty(getParams().mSearchQuery)
+                && TextUtils.isEmpty(getParams().getTimeline().getSearchQuery())
                 && cursor != null && !cursor.isClosed() && cursor.getCount() == 0;
     }
 
@@ -144,8 +144,8 @@ public class TimelineLoader implements LoadableListActivity.SyncLoader {
                 SharedPreferencesUtil.getString(MyPreferences.KEY_FILTER_HIDE_MESSAGES_BASED_ON_KEYWORDS, ""));
         boolean hideRepliesNotToMeOrFriends = getParams().getTimelineType() == TimelineType.HOME
                 && SharedPreferencesUtil.getBoolean(MyPreferences.KEY_FILTER_HIDE_REPLIES_NOT_TO_ME_OR_FRIENDS, false);
-        String searchQuery = TextUtils.isEmpty(getParams().mSearchQuery) ? ""
-                : getParams().mSearchQuery.toLowerCase();
+        String searchQuery = TextUtils.isEmpty(getParams().getTimeline().getSearchQuery()) ? ""
+                : getParams().getTimeline().getSearchQuery().toLowerCase();
 
         long startTime = System.currentTimeMillis();
         int rowsCount = 0;

@@ -189,7 +189,6 @@ public class PersistentAccounts {
         return myAccount;
     }
 
-    
     /**
      * Get instance of current MyAccount (MyAccount selected by the user). The account isPersistent.
      * As a side effect the function changes current account if old value is not valid.
@@ -205,8 +204,6 @@ public class PersistentAccounts {
         ma = fromAccountName(defaultAccountName);
         if (!ma.isValid()) {
             defaultAccountName = "";
-        }
-        if (!ma.isValid()) {
             for (MyAccount myAccount : mAccounts.values()) {
                 if (myAccount.isValid()) {
                     ma = myAccount;
@@ -515,7 +512,7 @@ public class PersistentAccounts {
         myFriends = friends;
     }
 
-    public long getDefaultAccountUserId() {
-        return fromAccountName(getDefaultAccountName()).getUserId();
+    public MyAccount getDefaultAccount() {
+        return fromAccountName(defaultAccountName);
     }
 }

@@ -64,15 +64,15 @@ class TimelineListPositionStorage {
         this.mListView = listView;
         this.mListParameters = listParameters;
         
-        queryString = listParameters.mSearchQuery;
+        queryString = listParameters.getTimeline().getSearchQuery();
         long userId = 0;
-        if (listParameters.mTimelineType == TimelineType.USER) {
-            userId = listParameters.mSelectedUserId;
+        if (listParameters.getTimelineType() == TimelineType.USER) {
+            userId = listParameters.getSelectedUserId();
         } else if (!listParameters.mTimelineCombined) {
-            userId = listParameters.myAccountUserId;
+            userId = listParameters.getMyAccount().getUserId();
         }
         keyFirstVisibleItemId = KEY_PREFIX
-                + listParameters.mTimelineType.save()
+                + listParameters.getTimelineType().save()
                 + "_user" + Long.toString(userId)
                 + (TextUtils.isEmpty(queryString) ? "" : "_search");
         keyFirstVisibleItemY = keyFirstVisibleItemId + "_y";
@@ -182,7 +182,7 @@ class TimelineListPositionStorage {
             } else {
                 // There is no stored position
                 if (mListParameters.whichPage.isYoungest()
-                        || !TextUtils.isEmpty(mListParameters.mSearchQuery)
+                        || !TextUtils.isEmpty(mListParameters.getTimeline().getSearchQuery())
                         || mListView.getCount() < 10) {
                     // In search mode start from the most recent message!
                     position = 0;

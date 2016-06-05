@@ -72,7 +72,6 @@ import org.andstatus.app.widget.MyBaseAdapter;
  */
 public class TimelineActivity extends LoadableListActivity implements
         ActionableMessageList, AbsListView.OnScrollListener {
-    private static final int DIALOG_ID_TIMELINE_TYPE = 9;
     public static final String HORIZONTAL_ELLIPSIS = "\u2026";
 
     /** Parameters for the next page request, not necessarily requested already */
@@ -110,8 +109,7 @@ public class TimelineActivity extends LoadableListActivity implements
             return;
         }
 
-        paramsNew.myAccountUserId = MyContextHolder.get().persistentAccounts().getCurrentAccountUserId();
-
+        paramsNew.setAtHome();
         mContextMenu = new MessageContextMenu(this);
         mMessageEditor = new MessageEditor(this);
 
@@ -262,7 +260,9 @@ public class TimelineActivity extends LoadableListActivity implements
      * View.OnClickListener
      */
     public void onTimelineTypeButtonClick(View item) {
-        TimelineTypeSelector.newInstance(ActivityRequestCode.SELECT_TIMELINE).show(this);
+        TimelineSelector.selectTimeline(this, ActivityRequestCode.SELECT_TIMELINE,
+                paramsNew.getMyAccount().getOrigin(), paramsNew.getMyAccount(),
+                paramsNew.isTimelineCombined());
         closeDrawer();
     }
 
@@ -337,8 +337,7 @@ public class TimelineActivity extends LoadableListActivity implements
     private void clearNotifications() {
         MyContextHolder.get().clearNotification(getTimelineType());
         MyServiceManager.sendForegroundCommand(new CommandData(CommandEnum.NOTIFY_CLEAR,
-                MyContextHolder.get().persistentAccounts()
-                        .fromUserId(paramsNew.myAccountUserId).getAccountName()));
+                paramsNew.getMyAccount().getAccountName()));
     }
 
     /**
@@ -420,8 +419,8 @@ public class TimelineActivity extends LoadableListActivity implements
         // which are not on the timeline.
         // E.g. messages by users, downloaded on demand.
         MyUrlSpan.showView(combinedTimelineToggle,
-                paramsNew.mSelectedUserId == 0 ||
-                        paramsNew.mSelectedUserId == paramsNew.myAccountUserId);
+                paramsNew.getSelectedUserId() == 0 ||
+                        paramsNew.getSelectedUserId() == paramsNew.getMyAccount().getUserId());
     }
 
     @Override
@@ -470,7 +469,7 @@ public class TimelineActivity extends LoadableListActivity implements
     public void onItemClick(TimelineViewItem item) {
         MyAccount ma = MyContextHolder.get().persistentAccounts().getAccountForThisMessage(item.originId,
                 item.msgId, item.linkedUserId,
-                paramsNew.myAccountUserId, false);
+                paramsNew.getMyAccount().getUserId(), false);
         if (MyLog.isVerboseEnabled()) {
             MyLog.v(this,
                     "onItemClick, " + item
@@ -530,7 +529,7 @@ public class TimelineActivity extends LoadableListActivity implements
 
     private String timelineTypeButtonText() {
         CharSequence timelineName = paramsNew.getTimelineType().getTitle(this);
-        return timelineName + (TextUtils.isEmpty(paramsNew.mSearchQuery) ? "" : " *");
+        return timelineName + (TextUtils.isEmpty(paramsNew.getTimeline().getSearchQuery()) ? "" : " *");
     }
 
     private void updateAccountButtonText(ViewGroup mDrawerList) {
@@ -563,26 +562,12 @@ public class TimelineActivity extends LoadableListActivity implements
             MyLog.v(this, "parseNewIntent:" + intentNew);
         }
         mRateLimitText = "";
-        paramsNew.setTimelineType(TimelineType.UNKNOWN);
-        // TODO: get account from intent?!
-        paramsNew.myAccountUserId = MyContextHolder.get().persistentAccounts().getCurrentAccountUserId();
-        paramsNew.mSelectedUserId = 0;
         paramsNew.whichPage = WhichPage.load(
                 intentNew.getStringExtra(IntentExtra.WHICH_PAGE.key), WhichPage.CURRENT);
-        paramsNew.mSearchQuery = "";
-        parseAppSearchData(intentNew);
-        if (paramsNew.getTimelineType() == TimelineType.UNKNOWN) {
-            paramsNew.parseIntentData(intentNew);
-        }
-        if (paramsNew.getTimelineType() == TimelineType.UNKNOWN) {
+        String searchQuery = intentNew.getStringExtra(SearchManager.QUERY);
+        if (!parseAppSearchData(intentNew, searchQuery)
+                && !paramsNew.parseUri(intentNew.getData(), searchQuery)) {
             paramsNew.setAtHome();
-        }
-        if (paramsNew.getTimelineType() == TimelineType.USER) {
-            if (paramsNew.mSelectedUserId == 0) {
-                paramsNew.mSelectedUserId = paramsNew.myAccountUserId;
-            }
-        } else {
-            paramsNew.mSelectedUserId = 0;
         }
 
         if (Intent.ACTION_SEND.equals(intentNew.getAction())) {
@@ -592,27 +577,23 @@ public class TimelineActivity extends LoadableListActivity implements
         }
     }
 
-    private void parseAppSearchData(Intent intentNew) {
+    private boolean parseAppSearchData(Intent intentNew, String searchQuery) {
         final String method = "parseAppSearchData";
         Bundle appSearchData = intentNew.getBundleExtra(SearchManager.APP_DATA);
-        if (appSearchData == null
-                || !paramsNew.parseUri(Uri.parse(appSearchData.getString(
-                        IntentExtra.TIMELINE_URI.key, "")))) {
-            return;
+        if (appSearchData != null
+                && paramsNew.parseUri(Uri.parse(appSearchData.getString(
+                        IntentExtra.TIMELINE_URI.key, "")), searchQuery)) {
+            if (!TextUtils.isEmpty(paramsNew.getTimeline().getSearchQuery())
+                    && appSearchData.getBoolean(IntentExtra.GLOBAL_SEARCH.key, false)) {
+                showSyncing(method, "Global search: " + paramsNew.getTimeline().getSearchQuery());
+                MyServiceManager.sendManualForegroundCommand(
+                        CommandData.searchCommand(isTimelineCombined() ? "" :
+                                paramsNew.getMyAccount().getAccountName(),
+                                paramsNew.getTimeline().getSearchQuery()));
+            }
+            return true;
         }
-        /* The query itself is still from the Intent */
-        paramsNew.mSearchQuery = TimelineListParameters.notNullString(intentNew.getStringExtra(SearchManager.QUERY));
-        if (!TextUtils.isEmpty(paramsNew.mSearchQuery)
-                && appSearchData.getBoolean(IntentExtra.GLOBAL_SEARCH.key, false)) {
-            showSyncing(method, "Global search: " + paramsNew.mSearchQuery);
-            MyServiceManager.sendManualForegroundCommand(
-                    CommandData.searchCommand(
-                            isTimelineCombined()
-                                    ? ""
-                                    : MyContextHolder.get().persistentAccounts()
-                                    .getCurrentAccountName(),
-                            paramsNew.mSearchQuery));
-        }
+        return false;
     }
 
     private void shareViaThisApplication(String subject, String text, Uri mediaUri) {
@@ -824,13 +805,13 @@ public class TimelineActivity extends LoadableListActivity implements
     }
 
     private void saveSearchQuery() {
-        if (!TextUtils.isEmpty(paramsNew.mSearchQuery)) {
+        if (!TextUtils.isEmpty(paramsNew.getTimeline().getSearchQuery())) {
             // Record the query string in the recent queries
             // of the Suggestion Provider
             SearchRecentSuggestions suggestions = new SearchRecentSuggestions(this,
                     TimelineSearchSuggestionsProvider.AUTHORITY,
                     TimelineSearchSuggestionsProvider.MODE);
-            suggestions.saveRecentQuery(paramsNew.mSearchQuery, null);
+            suggestions.saveRecentQuery(paramsNew.getTimeline().getSearchQuery(), null);
 
         }
     }
@@ -906,7 +887,7 @@ public class TimelineActivity extends LoadableListActivity implements
      */
     protected void manualSyncWithInternet(boolean allTimelineTypes, boolean manuallyLaunched) {
         final String method = "manualSync";
-        MyAccount ma = MyContextHolder.get().persistentAccounts().fromUserId(paramsNew.myAccountUserId);
+        MyAccount ma = paramsNew.getMyAccount();
         TimelineType timelineTypeToSync = TimelineType.HOME;
         long userId = 0;
         switch (paramsNew.getTimelineType()) {
@@ -920,7 +901,7 @@ public class TimelineActivity extends LoadableListActivity implements
             case FOLLOWERS:
             case FRIENDS:
                 timelineTypeToSync = paramsNew.getTimelineType();
-                userId = paramsNew.mSelectedUserId;
+                userId = paramsNew.getSelectedUserId();
                 break;
             default:
                 break;
@@ -1006,9 +987,10 @@ public class TimelineActivity extends LoadableListActivity implements
                 attachmentSelected(data);
                 break;
             case SELECT_TIMELINE:
-                TimelineType type = TimelineType.load(data.getStringExtra(IntentExtra.TIMELINE_TYPE.key));
-                if (type != TimelineType.UNKNOWN) {
-                    paramsNew.switchTimelineType(type);
+                Timeline timeline = MyContextHolder.get().persistentTimelines()
+                        .fromId(data.getLongExtra(IntentExtra.TIMELINE_ID.key, 0));
+                if (timeline.isValid()) {
+                    paramsNew.switchTimeline(timeline);
                     mContextMenu.switchTimelineActivity(paramsNew.getContentUri());
                 }
                 break;
@@ -1026,7 +1008,7 @@ public class TimelineActivity extends LoadableListActivity implements
             TimelineType timelineTypeNew = paramsNew.getTimelineType();
             if (paramsNew.getTimelineType() == TimelineType.USER
                     && !MyContextHolder.get().persistentAccounts()
-                            .fromUserId(paramsNew.mSelectedUserId).isValid()) {
+                            .fromUserId(paramsNew.getSelectedUserId()).isValid()) {
                 /*  "Other User's timeline" vs "My User's timeline" 
                  * Actually we saw messages of the user, who is not MyAccount,
                  * so let's switch to the HOME
@@ -1175,7 +1157,7 @@ public class TimelineActivity extends LoadableListActivity implements
     
     @Override
     public long getCurrentMyAccountUserId() {
-        return paramsNew.myAccountUserId;
+        return paramsNew.getMyAccount().getUserId();
     }
 
     @Override
@@ -1190,6 +1172,6 @@ public class TimelineActivity extends LoadableListActivity implements
 
     @Override
     public long getSelectedUserId() {
-        return paramsNew.mSelectedUserId;
+        return paramsNew.getSelectedUserId();
     }
 }

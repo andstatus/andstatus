@@ -28,6 +28,8 @@ import org.andstatus.app.ActivityRequestCode;
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
 import org.andstatus.app.SelectorDialog;
+import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.origin.Origin;
 import org.andstatus.app.widget.MySimpleAdapter;
 import org.andstatus.app.context.MyContextHolder;
 
@@ -47,10 +49,10 @@ public class TimelineSelector extends SelectorDialog {
     private static final String TYPE_TIMELINE = "timeline";
 
     public static void selectTimeline(FragmentActivity activity, ActivityRequestCode requestCode,
-                                      long originId, String accountName, boolean isCombined) {
+                                      Origin origin, MyAccount myAccount, boolean isCombined) {
         SelectorDialog selector = new TimelineSelector();
-        selector.setRequestCode(requestCode).putLong(IntentExtra.ORIGIN_ID.key, originId);
-        selector.getArguments().putString(IntentExtra.ACCOUNT_NAME.key, accountName);
+        selector.setRequestCode(requestCode).putLong(IntentExtra.ORIGIN_ID.key, origin.getId());
+        selector.getArguments().putString(IntentExtra.ACCOUNT_NAME.key, myAccount.getAccountName());
         selector.getArguments().putBoolean(IntentExtra.TIMELINE_IS_COMBINED.key, isCombined);
         selector.show(activity);
     }

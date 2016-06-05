@@ -574,7 +574,7 @@ public class CommandData implements Comparable<CommandData> {
                         I18n.appendWithSpace(builder, "('" + accountName + "' ?)");
                     } else {
                         I18n.appendWithSpace(builder,
-                                TimelineListParameters.toAccountButtonText(ma.getUserId()));
+                                TimelineListParameters.toAccountButtonText(ma));
                     }
                 }
                 break;

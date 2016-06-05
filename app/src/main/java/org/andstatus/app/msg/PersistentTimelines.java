@@ -23,9 +23,11 @@ import android.support.annotation.NonNull;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyQuery;
+import org.andstatus.app.data.ParsedUri;
+import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.database.TimelineTable;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.MyLog;
@@ -42,20 +44,17 @@ import java.util.Map;
  */
 public class PersistentTimelines {
     private final List<Timeline> timelines = new ArrayList<>();
+    private MyContext myContext;
 
-    public static PersistentTimelines getEmpty() {
-        return new PersistentTimelines();
+    public static PersistentTimelines newEmpty(MyContext myContext) {
+        return new PersistentTimelines(myContext);
     }
 
-    private PersistentTimelines() {
-        // Empty
+    private PersistentTimelines(MyContext myContext) {
+        this.myContext = myContext;
     }
 
     public PersistentTimelines initialize() {
-        return initialize(MyContextHolder.get());
-    }
-
-    public PersistentTimelines initialize(MyContext myContext) {
         final String method = "initialize";
         Context context = myContext.context();
         timelines.clear();
@@ -95,6 +94,26 @@ public class PersistentTimelines {
                     timelineFound = timeline;
                     break;
                 }
+            }
+        }
+        return timelineFound;
+    }
+
+    @NonNull
+    public Timeline getDefaultForCurrentAccount() {
+        return fromTypeAndAccount(
+                MyPreferences.getDefaultTimeline(),
+                myContext.persistentAccounts().getCurrentAccount());
+    }
+
+    @NonNull
+    public Timeline fromTypeAndAccount(TimelineType timelineType, MyAccount myAccount) {
+        Timeline timelineFound = new Timeline(timelineType);
+        timelineFound.setAccount(myAccount);
+        for (Timeline timeline : timelines) {
+            if (timeline.getTimelineType() == timelineType && timeline.getAccount().equals(myAccount)) {
+                timelineFound = timeline;
+                break;
             }
         }
         return timelineFound;
@@ -176,5 +195,16 @@ public class PersistentTimelines {
             }
         }
         timelines.removeAll(toRemove);
+    }
+
+    @NonNull
+    public Timeline fromParsedUri(ParsedUri parsedUri, String searchQuery) {
+        Timeline timelineNew = Timeline.fromParsedUri(myContext, parsedUri, searchQuery);
+        for (Timeline timeline : getList()) {
+            if (timeline.equals(timelineNew)) {
+                return timeline;
+            }
+        }
+        return timelineNew;
     }
 }

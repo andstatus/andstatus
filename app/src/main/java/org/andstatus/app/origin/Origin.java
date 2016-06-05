@@ -21,6 +21,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.provider.BaseColumns;
+import android.support.annotation.NonNull;
 import android.text.SpannableString;
 import android.text.TextUtils;
 import android.text.style.URLSpan;
@@ -57,6 +58,7 @@ public class Origin {
 
     protected OriginType originType = OriginType.UNKNOWN;
 
+    @NonNull
     protected String name = "";
     public static final String KEY_ORIGIN_NAME = "origin_name";
 
@@ -339,6 +341,24 @@ public class Origin {
         return textLimit;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Origin)) return false;
+
+        Origin origin = (Origin) o;
+
+        if (id != origin.id) return false;
+        return name.equals(origin.name);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = name.hashCode();
+        result = 31 * result + (int) (id ^ (id >>> 32));
+        return result;
+    }
+
     public static final class Builder {
 
         private final Origin origin;
@@ -366,7 +386,6 @@ public class Origin {
             OriginType originType1 = OriginType.fromId(
                     DbUtils.getLong(cursor, OriginTable.ORIGIN_TYPE_ID));
             origin = getEmpty(originType1);
-
             origin.id = DbUtils.getLong(cursor, OriginTable._ID);
             origin.name = DbUtils.getString(cursor, OriginTable.ORIGIN_NAME);
             setHostOrUrl(DbUtils.getString(cursor, OriginTable.ORIGIN_URL));
@@ -426,6 +445,7 @@ public class Origin {
             return this;
         }
 
+        @NonNull
         private String correctedName(String nameIn) {
             if (origin.isNameValid(nameIn)) {
                 return nameIn;

@@ -17,6 +17,7 @@
 package org.andstatus.app.data;
 
 import android.net.Uri;
+import android.support.annotation.NonNull;
 
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.user.UserListType;
@@ -42,6 +43,14 @@ public class ParsedUri {
     @Override
     public String toString() {
         return "Uri:'" + uri + "'; matched:" + matched();
+    }
+
+    public Uri getUri() {
+        return uri;
+    }
+
+    public boolean isEmpty() {
+        return uri == Uri.EMPTY;
     }
 
     public long getAccountUserId() {
@@ -183,6 +192,7 @@ public class ParsedUri {
         return messageId;        
     }
 
+    @NonNull
     public String getSearchQuery() {
         String searchString = "";
         try {

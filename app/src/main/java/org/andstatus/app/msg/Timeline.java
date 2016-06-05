@@ -19,12 +19,14 @@ package org.andstatus.app.msg;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DbUtils;
+import org.andstatus.app.data.ParsedUri;
 import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.database.TimelineTable;
 import org.andstatus.app.origin.Origin;
@@ -41,12 +43,23 @@ public class Timeline implements Comparable<Timeline> {
     private long id;
     private String name;
     private String description = "";
+
     private final TimelineType timelineType;
 
     private boolean allOrigins = false;
     private Origin origin = Origin.Builder.buildUnknown();
     private MyAccount account = MyAccount.getEmpty(MyContextHolder.get(), "(empty)");
+    /**
+     * Selected User for the {@link TimelineType#USER} timeline.
+     * This is either User Id of current account OR user id of any other selected user.
+     * So it's never == 0 for the {@link TimelineType#USER} timeline
+     */
     private long userId = 0;
+    /**
+     * The string is not empty if this timeline is filtered using query string
+     * ("Mentions" are not counted here because they have the separate TimelineType)
+     */
+    @NonNull
     private String searchQuery = "";
 
     private boolean synced = true;
@@ -170,6 +183,10 @@ public class Timeline implements Comparable<Timeline> {
         return new Timeline(TimelineType.UNKNOWN);
     }
 
+    public boolean isEmpty() {
+        return timelineType == TimelineType.UNKNOWN;
+    }
+
     public boolean isValid() {
         return timelineType != TimelineType.UNKNOWN && id != 0;
     }
@@ -203,6 +220,12 @@ public class Timeline implements Comparable<Timeline> {
 
     public MyAccount getAccount() {
         return account;
+    }
+
+    public void setAccount(MyAccount account) {
+        if (id == 0 && account != null && account.isValid()) {
+            this.account = account;
+        }
     }
 
     public boolean isDisplayedInSelector() {
@@ -255,5 +278,60 @@ public class Timeline implements Comparable<Timeline> {
                 (TextUtils.isEmpty(name) ? "" : ", name='" + name + '\'') +
                 ", type=" + timelineType.save() +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Timeline)) return false;
+
+        Timeline timeline = (Timeline) o;
+
+        if (id != timeline.id) return false;
+        if (allOrigins != timeline.allOrigins) return false;
+        if (userId != timeline.userId) return false;
+        if (timelineType != timeline.timelineType) return false;
+        if (!origin.equals(timeline.origin)) return false;
+        if (!account.equals(timeline.account)) return false;
+        return searchQuery.equals(timeline.searchQuery);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = (int) (id ^ (id >>> 32));
+        result = 31 * result + timelineType.hashCode();
+        result = 31 * result + (allOrigins ? 1 : 0);
+        result = 31 * result + origin.hashCode();
+        result = 31 * result + account.hashCode();
+        result = 31 * result + (int) (userId ^ (userId >>> 32));
+        result = 31 * result + searchQuery.hashCode();
+        return result;
+    }
+
+    public long getUserId() {
+        return userId;
+    }
+
+    public static Timeline fromParsedUri(MyContext myContext, ParsedUri parsedUri, String searchQuery) {
+        Timeline timeline = new Timeline(parsedUri.getTimelineType());
+        if (timeline.getTimelineType() == TimelineType.UNKNOWN ||
+                parsedUri.getAccountUserId() == 0) {
+            MyLog.e(Timeline.class,"fromParsedUri; uri:" + parsedUri.getUri()
+                    + ", " + timeline.getTimelineType()
+                    + ", accountId:" + parsedUri.getAccountUserId() );
+            return timeline;
+        }
+        timeline.account = myContext.persistentAccounts().fromUserId(parsedUri.getAccountUserId());
+        timeline.userId = parsedUri.getUserId();
+        timeline.searchQuery = parsedUri.getSearchQuery();
+        if (TextUtils.isEmpty(timeline.searchQuery) && !TextUtils.isEmpty(searchQuery)) {
+            timeline.searchQuery = searchQuery;
+        }
+        return timeline;
+    }
+
+    @NonNull
+    public String getSearchQuery() {
+        return searchQuery;
     }
 }
