@@ -17,6 +17,7 @@
 package org.andstatus.app.util;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import java.text.MessageFormat;
@@ -74,7 +75,8 @@ public class I18n {
         }
         return message;
     }
-    
+
+    @NonNull
     public static CharSequence trimTextAt(CharSequence text, int maxLength) {
         if (TextUtils.isEmpty(text) || maxLength < 1) {
             return "";

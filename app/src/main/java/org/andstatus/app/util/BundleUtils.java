@@ -20,6 +20,8 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
+import org.andstatus.app.IntentExtra;
+
 /**
  * @author yvolk@yurivolkov.com
  */
@@ -57,5 +59,29 @@ public class BundleUtils {
             }
         }
         return bundle;
+    }
+
+    public static void putNotEmpty(Bundle bundle, IntentExtra intentExtra, String value) {
+        if (!TextUtils.isEmpty(value)) {
+            bundle.putString(intentExtra.key, value);
+        }
+    }
+
+    public static void putNotZero(Bundle bundle, IntentExtra intentExtra, Long value) {
+        if (value != null && value != 0) {
+            bundle.putLong(intentExtra.key, value);
+        }
+    }
+
+    @NonNull
+    public static String getString(Bundle bundle, IntentExtra intentExtra) {
+        String out = "";
+        if (bundle != null && intentExtra != null) {
+            String value = bundle.getString(intentExtra.key);
+            if (!TextUtils.isEmpty(value)) {
+                out = value;
+            }
+        }
+        return out;
     }
 }

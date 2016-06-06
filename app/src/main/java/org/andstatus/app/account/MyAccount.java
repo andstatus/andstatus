@@ -25,6 +25,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.text.TextUtils;
 
+import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
@@ -32,8 +33,8 @@ import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DataInserter;
 import org.andstatus.app.data.LatestUserMessages;
 import org.andstatus.app.data.MatchedUri;
-import org.andstatus.app.database.DatabaseConverterController;
 import org.andstatus.app.data.MyQuery;
+import org.andstatus.app.database.DatabaseConverterController;
 import org.andstatus.app.database.OriginTable;
 import org.andstatus.app.database.UserTable;
 import org.andstatus.app.net.http.ConnectionException;
@@ -641,11 +642,25 @@ public final class MyAccount {
             return fromId(id);
         }
     }
-    
+
+    public static MyAccount getEmpty() {
+        return MyAccount.getEmpty(MyContextHolder.get());
+    }
+
+    public static MyAccount getEmpty(MyContext myContext) {
+        return Builder.getEmptyAccount(myContext, "(empty)");
+    }
+
     public static MyAccount getEmpty(MyContext myContext, String accountName) {
         return Builder.getEmptyAccount(myContext, accountName); 
     }
-    
+
+    public static MyAccount fromBundle(Bundle bundle) {
+        return bundle == null ? getEmpty() :
+                MyContextHolder.get().persistentAccounts().fromAccountName(
+                        bundle.getString(IntentExtra.ACCOUNT_NAME.key));
+    }
+
     public boolean getCredentialsPresent() {
         return getConnection().getCredentialsPresent();
     }    

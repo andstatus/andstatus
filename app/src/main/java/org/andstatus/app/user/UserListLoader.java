@@ -19,6 +19,7 @@ import org.andstatus.app.database.UserTable;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.service.CommandData;
+import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
 
@@ -88,8 +89,12 @@ public class UserListLoader implements SyncLoader {
 
     private void loadFromInternet(UserListViewItem oUser) {
         MyLog.v(this, "User " + oUser + " will be loaded from the Internet");
-        MyServiceManager.sendForegroundCommand(CommandData.getUser(ma.getAccountName(),
-                oUser.getUserId(), oUser.mbUser.getUserName()));
+        MyServiceManager.sendForegroundCommand(
+                CommandData.newUserCommand(
+                        CommandEnum.GET_USER,
+                        ma,
+                        oUser.getUserId(),
+                        oUser.mbUser.getUserName()));
     }
 
     protected void loadInternal() {

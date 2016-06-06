@@ -34,15 +34,17 @@ public class LatestTimelineItemTest extends InstrumentationTestCase {
         MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(accountName);
         assertTrue(ma.isValid());
         assertEquals("Account was found", ma.getAccountName(), accountName);
+        Timeline timeline = MyContextHolder.get().persistentTimelines()
+                .fromNewTimeLine(new Timeline(timelineType, ma));
 
-        LatestTimelineItem latest = new LatestTimelineItem(timelineType, ma.getUserId());
+        LatestTimelineItem latest = new LatestTimelineItem(timeline);
         latest.onTimelineDownloaded();
         latest.onNewMsg(
                 new TimelinePosition("position_" + timelineType.save() + "_" + accountName),
                 System.currentTimeMillis() - 10000);
         latest.save();
 
-        latest = new LatestTimelineItem(timelineType, ma.getUserId());
+        latest = new LatestTimelineItem(timeline);
         switch (timelineType) {
             case PUBLIC:
                 assertEquals("Don't remember public timeline dates", latest.getTimelineItemDate(), 0);

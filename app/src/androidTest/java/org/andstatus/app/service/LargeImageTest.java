@@ -62,7 +62,7 @@ public class LargeImageTest extends InstrumentationTestCase {
         DownloadData dd = DownloadData.getSingleForMessage(msgId, message.attachments.get(0).contentType, null);
         assertEquals("Image URI stored", message.attachments.get(0).getUri(), dd.getUri());
 
-        CommandData commandData = new CommandData(CommandEnum.FETCH_AVATAR, null);
+        CommandData commandData = CommandData.newCommand(CommandEnum.FETCH_AVATAR);
         AttachmentDownloader loader = new AttachmentDownloader(dd);
         ConnectionTwitterGnuSocialMock connection = new ConnectionTwitterGnuSocialMock();
         InputStream inputStream = this.getInstrumentation().getContext().getResources()

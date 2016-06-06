@@ -79,8 +79,8 @@ public class MessageEditorSaver extends MyAsyncTask<MessageEditorCommand, Void, 
                         command.currentData.getMsgId());
             }
             if (command.currentData.status == DownloadStatus.SENDING) {
-                CommandData commandData = CommandData.updateStatus(
-                        command.currentData.getMyAccount().getAccountName(),
+                CommandData commandData = CommandData.newUpdateStatus(
+                        command.currentData.getMyAccount(),
                         command.currentData.getMsgId());
                 MyServiceManager.sendManualForegroundCommand(commandData);
             }
@@ -98,9 +98,10 @@ public class MessageEditorSaver extends MyAsyncTask<MessageEditorCommand, Void, 
         if (data.isEmpty()) {
             return;
         }
-        CommandData commandData = new CommandData(
+        CommandData commandData = CommandData.newItemCommand(
                 data.status == DownloadStatus.DELETED ? CommandEnum.DESTROY_STATUS : CommandEnum.UPDATE_STATUS,
-                data.getMyAccount().getAccountName(), data.getMsgId());
+                data.getMyAccount(),
+                data.getMsgId());
         MyServiceEventsBroadcaster.newInstance(MyContextHolder.get(), MyServiceState.UNKNOWN)
                 .setCommandData(commandData).setEvent(MyServiceEvent.AFTER_EXECUTING_COMMAND).broadcast();
     }

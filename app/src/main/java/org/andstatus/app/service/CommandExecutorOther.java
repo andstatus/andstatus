@@ -1,6 +1,5 @@
 /* 
- * Copyright (c) 2011-2014 yvolk (Yuri Volkov), http://yurivolkov.com
- * Copyright (C) 2008 Torgny Bjers
+ * Copyright (c) 2011-2016 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,8 +27,8 @@ import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.FileProvider;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyContentType;
-import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.data.MyQuery;
+import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.database.MsgOfUserTable;
 import org.andstatus.app.database.MsgTable;
@@ -53,7 +52,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 break;
             case FOLLOW_USER:
             case STOP_FOLLOWING_USER:
-                followOrStopFollowingUser(execContext.getCommandData().itemId,
+                followOrStopFollowingUser(execContext.getCommandData().getUserId(),
                         execContext.getCommandData().getCommand() == CommandEnum.FOLLOW_USER);
                 break;
             case UPDATE_STATUS:
@@ -69,7 +68,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 getStatus();
                 break;
             case GET_USER:
-                getUser(execContext.getCommandData().itemId, execContext.getCommandData().getUserName());
+                getUser(execContext.getCommandData().getUserId(), execContext.getCommandData().getUserName());
                 break;
             case REBLOG:
                 reblog(execContext.getCommandData().itemId);
@@ -81,7 +80,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 FileDownloader.newForDownloadRow(execContext.getCommandData().itemId).load(execContext.getCommandData());
                 break;
             case FETCH_AVATAR:
-                (new AvatarDownloader(execContext.getCommandData().itemId)).load(execContext.getCommandData());
+                (new AvatarDownloader(execContext.getCommandData().getUserId())).load(execContext.getCommandData());
                 break;
             case NOTIFY_CLEAR:
                 AppWidgets.clearAndUpdateWidgets(execContext.getMyContext());
@@ -409,10 +408,9 @@ class CommandExecutorOther extends CommandExecutorStrategy{
     }
     
     private void rateLimitStatus() {
-        boolean ok = false;
         try {
             MbRateLimitStatus rateLimitStatus = execContext.getMyAccount().getConnection().rateLimitStatus();
-            ok = !rateLimitStatus.isEmpty();
+            boolean ok = !rateLimitStatus.isEmpty();
             if (ok) {
                 execContext.getResult().setRemainingHits(rateLimitStatus.remaining); 
                 execContext.getResult().setHourlyLimit(rateLimitStatus.limit);

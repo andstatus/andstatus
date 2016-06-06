@@ -33,15 +33,17 @@ public final class CommandTable implements BaseColumns {
 
     public static final String COMMAND_CODE = "command_code";
     public static final String CREATED_DATE = "command_created_date";
-    public static final String ACCOUNT_ID = UserTable.USER_ID;
+    public static final String ACCOUNT_ID = UserTable.ACCOUNT_ID;
     public static final String TIMELINE_TYPE = TimelineTable.TIMELINE_TYPE;
-    /** Timeline here may have type but not ID for not persistent timelines */
+    /** Timeline here may have type but not ID for timelines, which are not persistent */
     public static final String TIMELINE_ID = TimelineTable.TIMELINE_ID;
     public static final String IN_FOREGROUND = "in_foreground";
     public static final String MANUALLY_LAUNCHED = "manually_launched";
     public static final String ITEM_ID = "item_id";
-    public static final String BODY = MsgTable.BODY;
+    public static final String DESCRIPTION = "command_description";
     public static final String SEARCH_QUERY = "search_query";
+    public static final String USER_ID = UserTable.USER_ID;
+    /** This is used e.g. when a {@link #USER_ID} is not known */
     public static final String USERNAME = UserTable.USERNAME;
 
     // Result is below

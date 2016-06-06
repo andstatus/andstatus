@@ -28,7 +28,7 @@ class CommandExecutorLoadTimeline extends CommandExecutorStrategy {
         boolean ok = false;
         try {
             if (execContext.getMyAccount().getConnection().isApiSupported(execContext.getTimelineType().getConnectionApiRoutine())) {
-                long userId = execContext.getCommandData().itemId;
+                long userId = execContext.getCommandData().getUserId();
                 if (userId == 0) {
                     userId = execContext.getMyAccount().getUserId();
                 }

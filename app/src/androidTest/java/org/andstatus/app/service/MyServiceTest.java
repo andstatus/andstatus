@@ -54,7 +54,8 @@ public class MyServiceTest extends InstrumentationTestCase {
         String urlString = "http://andstatus.org/nonexistent2_avatar_" + System.currentTimeMillis() +  ".png";
         AvatarDownloaderTest.changeAvatarUrl(ma, urlString);
         
-        mService.listenedCommand = new CommandData(CommandEnum.FETCH_AVATAR, "", TimelineType.UNKNOWN,
+        mService.listenedCommand = CommandData.newTimelineCommand(CommandEnum.FETCH_AVATAR, null,
+                TimelineType.UNKNOWN,
                 ma.getUserId());
 
         long startCount = mService.executionStartCount;
@@ -80,7 +81,8 @@ public class MyServiceTest extends InstrumentationTestCase {
     public void testAutomaticUpdates() {
         MyLog.v(this, "testAutomaticUpdates started");
 
-        mService.listenedCommand = new CommandData(CommandEnum.AUTOMATIC_UPDATE, "", TimelineType.ALL, 0);
+        mService.listenedCommand = CommandData.newTimelineCommand(
+                CommandEnum.AUTOMATIC_UPDATE, null, TimelineType.ALL, 0);
         long startCount = mService.executionStartCount;
         long endCount = mService.executionEndCount;
         
@@ -98,7 +100,8 @@ public class MyServiceTest extends InstrumentationTestCase {
         final String method = "testHomeTimeline";
         MyLog.v(this, method + " started");
 
-        mService.listenedCommand = new CommandData(CommandEnum.FETCH_TIMELINE, ma.getAccountName(), TimelineType.HOME, 0);
+        mService.listenedCommand = CommandData.newTimelineCommand(
+                CommandEnum.FETCH_TIMELINE, ma, TimelineType.HOME, 0);
         long startCount = mService.executionStartCount;
         long endCount = mService.executionEndCount;
 
@@ -116,7 +119,9 @@ public class MyServiceTest extends InstrumentationTestCase {
     public void testRateLimitStatus() {
         MyLog.v(this, "testRateLimitStatus started");
 
-        mService.listenedCommand = new CommandData(CommandEnum.RATE_LIMIT_STATUS, TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME, TimelineType.ALL, 0);
+        mService.listenedCommand = CommandData.newTimelineCommand(
+                CommandEnum.RATE_LIMIT_STATUS,
+                TestSuite.getMyAccount(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME), TimelineType.ALL, 0);
         long startCount = mService.executionStartCount;
         long endCount = mService.executionEndCount;
 
@@ -133,8 +138,9 @@ public class MyServiceTest extends InstrumentationTestCase {
         MyLog.v(this, "testSyncInForeground started");
         SharedPreferencesUtil.getDefaultSharedPreferences().edit()
                 .putBoolean(MyPreferences.KEY_SYNC_WHILE_USING_APPLICATION, false).commit();
-        CommandData cd1 = new CommandData(CommandEnum.FETCH_TIMELINE,
-                TestSuite.TWITTER_TEST_ACCOUNT_NAME, TimelineType.DIRECT, 0);
+        CommandData cd1 = CommandData.newTimelineCommand(CommandEnum.FETCH_TIMELINE,
+                TestSuite.getMyAccount(TestSuite.TWITTER_TEST_ACCOUNT_NAME),
+                TimelineType.DIRECT, 0);
         mService.listenedCommand = cd1;
 
         long startCount = mService.executionStartCount;
@@ -148,8 +154,9 @@ public class MyServiceTest extends InstrumentationTestCase {
 
         assertTrue(TestSuite.setAndWaitForIsInForeground(true));
 
-        CommandData cd2 = new CommandData(CommandEnum.FETCH_TIMELINE,
-                TestSuite.TWITTER_TEST_ACCOUNT_NAME, TimelineType.MENTIONS, 0);
+        CommandData cd2 = CommandData.newTimelineCommand(CommandEnum.FETCH_TIMELINE,
+                TestSuite.getMyAccount(TestSuite.TWITTER_TEST_ACCOUNT_NAME),
+                TimelineType.MENTIONS, 0);
         mService.listenedCommand = cd2;
         mService.sendListenedToCommand();
 
@@ -160,10 +167,11 @@ public class MyServiceTest extends InstrumentationTestCase {
         Queue<CommandData> queue = new CommandQueue().load().get(QueueType.CURRENT);
         assertFalse("Main queue is empty", queue.isEmpty());
         assertFalse("First command is in the main queue", queue.contains(cd1));
-        assertTrue("The second command stayed in the main queue", queue.contains(cd2));
+        assertTrue("The second command is not in the main queue", queue.contains(cd2));
 
-        CommandData cd3 = new CommandData(CommandEnum.FETCH_TIMELINE,
-                TestSuite.TWITTER_TEST_ACCOUNT_NAME, TimelineType.HOME, 0)
+        CommandData cd3 = CommandData.newTimelineCommand(CommandEnum.FETCH_TIMELINE,
+                TestSuite.getMyAccount(TestSuite.TWITTER_TEST_ACCOUNT_NAME),
+                TimelineType.HOME, 0)
                 .setInForeground(true);
         mService.listenedCommand = cd3;
 
@@ -183,10 +191,10 @@ public class MyServiceTest extends InstrumentationTestCase {
         long idFound = -1;
         for (CommandData cd : queue) {
             if (cd.equals(cd2)) {
-                idFound = cd.getId();
+                idFound = cd.getCommandId();
             }
         }
-        assertEquals("command id", cd2.getId(), idFound);
+        assertEquals("command id", cd2.getCommandId(), idFound);
         assertTrue("command id=" + idFound, idFound >= 0);
         
         assertFalse("Foreground command is not in main queue", queue.contains(cd3));
@@ -198,12 +206,14 @@ public class MyServiceTest extends InstrumentationTestCase {
     private void myTestDeleteCommand(CommandData cd2) {
         MyLog.v(this, "myTestDeleteCommand started");
 
-        CommandData cdDelete = new CommandData(CommandEnum.DELETE_COMMAND,
-        "", TimelineType.EVERYTHING, cd2.getId());
+        CommandData cdDelete = CommandData.newItemCommand(
+                CommandEnum.DELETE_COMMAND,
+                null,
+                cd2.getCommandId());
         cdDelete.setInForeground(true);
         mService.listenedCommand = cdDelete;
 
-        assertEquals(cd2.getId(), mService.listenedCommand.itemId);
+        assertEquals(cd2.getCommandId(), mService.listenedCommand.itemId);
         
         long endCount = mService.executionEndCount;
 

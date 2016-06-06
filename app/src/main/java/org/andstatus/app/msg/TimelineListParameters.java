@@ -57,7 +57,7 @@ public class TimelineListParameters {
      * are being loaded in a case User scrolls down to the end of list.
      */
     static final int PAGE_SIZE = 200;
-    Timeline timeline = Timeline.getEmpty();
+    Timeline timeline = Timeline.getEmpty(MyAccount.getEmpty());
     /** Combined Timeline shows messages from all accounts/origins */
     boolean mTimelineCombined = false;
 
@@ -218,6 +218,10 @@ public class TimelineListParameters {
         mTimelineCombined = isTimelineCombined;
     }
 
+    public boolean hasSearchQuery() {
+        return !TextUtils.isEmpty(timeline.getSearchQuery());
+    }
+
     public void saveState(Bundle outState) {
         outState.putString(IntentExtra.TIMELINE_URI.key, toTimelineUri(false).toString());
     }
@@ -272,7 +276,7 @@ public class TimelineListParameters {
     Uri toTimelineUri(boolean globalSearch) {
         return MatchedUri.getTimelineSearchUri(timeline.getAccount().getUserId(),
                 globalSearch ? TimelineType.EVERYTHING : getTimelineType(),
-                isTimelineCombined(), getSelectedUserId(), timeline.getSearchQuery());
+                isTimelineCombined(), timeline.getUserId(), timeline.getSearchQuery());
     }
 
     public String toSummary() {
@@ -290,13 +294,13 @@ public class TimelineListParameters {
     public String toTimelineTitle() {
         StringBuilder title = new StringBuilder();
         I18n.appendWithSpace(title, getTimelineType().getTitle(mContext));
-        if (!TextUtils.isEmpty(timeline.getSearchQuery())) {
+        if (hasSearchQuery()) {
             I18n.appendWithSpace(title, "'" + timeline.getSearchQuery() + "'");
         }
         if (getTimelineType() == TimelineType.USER
                 && !(isTimelineCombined()
                 && MyContextHolder.get().persistentAccounts()
-                .fromUserId(getSelectedUserId()).isValid())) {
+                .fromUserId(timeline.getUserId()).isValid())) {
             I18n.appendWithSpace(title, selectedUserWebFingerId);
         }
         if (isTimelineCombined()) {
@@ -391,7 +395,7 @@ public class TimelineListParameters {
                 });
                 break;
             case USER:
-                SelectedUserIds userIds = new SelectedUserIds(isTimelineCombined(), getSelectedUserId());
+                SelectedUserIds userIds = new SelectedUserIds(isTimelineCombined(), timeline.getUserId());
                 // Reblogs are included also
                 sa.addSelection(MsgTable.AUTHOR_ID + " " + userIds.getSql()
                                 + " OR "

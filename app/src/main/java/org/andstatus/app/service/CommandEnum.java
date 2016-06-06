@@ -16,11 +16,15 @@
 
 package org.andstatus.app.service;
 
+import android.content.Intent;
+import android.os.Bundle;
 import android.text.TextUtils;
 
+import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
+import org.andstatus.app.util.MyLog;
 
 /**
  * The command to the MyService or to MyAppWidgetProvider as a
@@ -38,7 +42,7 @@ public enum CommandEnum {
      * There is no action
      */
     EMPTY("empty"),
-    DELETE_COMMAND("delete-command", R.string.button_delete, 100),
+    DELETE_COMMAND("delete-command", R.string.button_delete, 100, ConnectionRequired.ANY),
     /**
      * The action to fetch all usual timelines in the background.
      */
@@ -46,7 +50,7 @@ public enum CommandEnum {
     /**
      * Fetch timeline(s) of the specified type for the specified MyAccount. 
      */
-    FETCH_TIMELINE("fetch-timeline", 0, 4, ConnectionRequired.SYNC),
+    FETCH_TIMELINE(true, "fetch-timeline", 0, 4, ConnectionRequired.SYNC),
 
     /**
      * Fetch avatar for the specified user 
@@ -60,8 +64,8 @@ public enum CommandEnum {
     GET_USER("get-user", R.string.get_user, -5, ConnectionRequired.SYNC),
     FOLLOW_USER("follow-user", R.string.command_follow_user, 0, ConnectionRequired.SYNC),
     STOP_FOLLOWING_USER("stop-following-user", R.string.command_stop_following_user, 0, ConnectionRequired.SYNC),
-    GET_FOLLOWERS("get-followers", R.string.get_followers, -5, ConnectionRequired.SYNC),
-    GET_FRIENDS("get-friends", R.string.get_friends, -5, ConnectionRequired.SYNC),
+    GET_FOLLOWERS(true, "get-followers", R.string.get_followers, -5, ConnectionRequired.SYNC),
+    GET_FRIENDS(true, "get-friends", R.string.get_friends, -5, ConnectionRequired.SYNC),
 
     /**
      * This command is for sending both public and direct messages
@@ -72,7 +76,7 @@ public enum CommandEnum {
     /** see http://gstools.org/api/doc/ */
     GET_OPEN_INSTANCES("get_open_instances", R.string.get_open_instances_title, -1, ConnectionRequired.SYNC),
 
-    SEARCH_MESSAGE("search-message", R.string.options_menu_search, 4, ConnectionRequired.SYNC),
+    SEARCH_MESSAGE(true, "search-message", R.string.options_menu_search, 4, ConnectionRequired.SYNC),
     
     REBLOG("reblog", R.string.menu_item_reblog, -9, ConnectionRequired.SYNC),
     DESTROY_REBLOG("destroy-reblog", R.string.menu_item_destroy_reblog, -3, ConnectionRequired.SYNC),
@@ -101,7 +105,7 @@ public enum CommandEnum {
     /**
      * Clear previous notifications (because e.g. user opened a Timeline)
      */
-    NOTIFY_CLEAR("notify-clear", 0, -20),
+    NOTIFY_CLEAR("notify-clear", 0, -20, ConnectionRequired.ANY),
 
     /**
      * Stop the service after finishing all asynchronous treads (i.e. not immediately!)
@@ -117,6 +121,7 @@ public enum CommandEnum {
      * code of the enum that is used in messages
      */
     private final String code;
+    private final boolean isTimeline;
     /**
      * The id of the string resource with the localized name of this enum to use in UI
      */
@@ -125,20 +130,17 @@ public enum CommandEnum {
     private final int priority;
     private final ConnectionRequired connectionRequired;
 
-    private CommandEnum(String code) {
-        this(code, 0);
+    CommandEnum(String code) {
+        this(code, 0, 0, ConnectionRequired.ANY);
     }
 
-    private CommandEnum(String code, int titleResId) {
-        this(code, titleResId, 0);
+    CommandEnum(String code, int titleResId, int priority, ConnectionRequired connectionRequired) {
+        this(false, code, titleResId, priority, connectionRequired);
     }
 
-    private CommandEnum(String code, int titleResId, int priority) {
-        this(code, titleResId, priority, ConnectionRequired.ANY);
-    }
-
-    private CommandEnum(String code, int titleResId, int priority, ConnectionRequired connectionRequired) {
+    CommandEnum(boolean isTimeline, String code, int titleResId, int priority, ConnectionRequired connectionRequired) {
         this.code = code;
+        this.isTimeline = isTimeline;
         this.titleResId = titleResId;
         this.priority = priority;
         this.connectionRequired = connectionRequired;
@@ -149,6 +151,17 @@ public enum CommandEnum {
      */
     public String save() {
         return code;
+    }
+
+    public static CommandEnum fromBundle(Bundle bundle) {
+        CommandEnum command = UNKNOWN;
+        if (bundle != null) {
+            command = CommandEnum.load(bundle.getString(IntentExtra.COMMAND.key));
+            if (command == UNKNOWN) {
+                MyLog.w(CommandData.class, "Bundle has UNKNOWN command: " + bundle);
+            }
+        }
+        return command;
     }
 
     /**
@@ -163,6 +176,10 @@ public enum CommandEnum {
             }
         }
         return UNKNOWN;
+    }
+
+    public boolean isTimeline() {
+        return isTimeline;
     }
 
     /** Localized title for UI 

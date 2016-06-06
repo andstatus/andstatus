@@ -141,8 +141,11 @@ public class QueueViewer extends MyListActivity implements MyServiceEventsListen
                 MyServiceManager.sendForegroundCommand(queueData.commandData);
                 return true;
             case R.id.menuItemDelete:
-                MyServiceManager.sendForegroundCommand(new CommandData(CommandEnum.DELETE_COMMAND,
-                        null, queueData.commandData.getId()));
+                MyServiceManager.sendForegroundCommand(
+                        CommandData.newItemCommand(
+                                CommandEnum.DELETE_COMMAND,
+                                null,
+                                queueData.commandData.getCommandId()));
                 return true;
             default:
                 return super.onContextItemSelected(item);
@@ -201,7 +204,7 @@ public class QueueViewer extends MyListActivity implements MyServiceEventsListen
     }
 
     private void showSystemInfo(List<QueueData> listData) {
-        CommandData commandData = new CommandData(CommandEnum.EMPTY, "System Info");
+        CommandData commandData = CommandData.newCommand(CommandEnum.EMPTY);
         commandData.getResult().setMessage(MyContextHolder.getSystemInfo(this));
         listData.add(QueueData.getNew(QueueType.TEST, commandData));
     }

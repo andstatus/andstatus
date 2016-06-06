@@ -336,8 +336,8 @@ public class TimelineActivity extends LoadableListActivity implements
      */
     private void clearNotifications() {
         MyContextHolder.get().clearNotification(getTimelineType());
-        MyServiceManager.sendForegroundCommand(new CommandData(CommandEnum.NOTIFY_CLEAR,
-                paramsNew.getMyAccount().getAccountName()));
+        MyServiceManager.sendForegroundCommand(
+                CommandData.newCommand(CommandEnum.NOTIFY_CLEAR, paramsNew.getMyAccount()));
     }
 
     /**
@@ -529,7 +529,7 @@ public class TimelineActivity extends LoadableListActivity implements
 
     private String timelineTypeButtonText() {
         CharSequence timelineName = paramsNew.getTimelineType().getTitle(this);
-        return timelineName + (TextUtils.isEmpty(paramsNew.getTimeline().getSearchQuery()) ? "" : " *");
+        return timelineName + (paramsNew.hasSearchQuery() ? " *" : "");
     }
 
     private void updateAccountButtonText(ViewGroup mDrawerList) {
@@ -583,12 +583,12 @@ public class TimelineActivity extends LoadableListActivity implements
         if (appSearchData != null
                 && paramsNew.parseUri(Uri.parse(appSearchData.getString(
                         IntentExtra.TIMELINE_URI.key, "")), searchQuery)) {
-            if (!TextUtils.isEmpty(paramsNew.getTimeline().getSearchQuery())
+            if (paramsNew.hasSearchQuery()
                     && appSearchData.getBoolean(IntentExtra.GLOBAL_SEARCH.key, false)) {
                 showSyncing(method, "Global search: " + paramsNew.getTimeline().getSearchQuery());
                 MyServiceManager.sendManualForegroundCommand(
-                        CommandData.searchCommand(isTimelineCombined() ? "" :
-                                paramsNew.getMyAccount().getAccountName(),
+                        CommandData.newSearch(
+                                isTimelineCombined() ? null : paramsNew.getMyAccount(),
                                 paramsNew.getTimeline().getSearchQuery()));
             }
             return true;
@@ -805,7 +805,7 @@ public class TimelineActivity extends LoadableListActivity implements
     }
 
     private void saveSearchQuery() {
-        if (!TextUtils.isEmpty(paramsNew.getTimeline().getSearchQuery())) {
+        if (paramsNew.hasSearchQuery()) {
             // Record the query string in the recent queries
             // of the Suggestion Provider
             SearchRecentSuggestions suggestions = new SearchRecentSuggestions(this,
@@ -928,8 +928,9 @@ public class TimelineActivity extends LoadableListActivity implements
         setCircularSyncIndicator(method, true);
         showSyncing(method, getText(R.string.options_menu_sync));
         MyServiceManager.sendForegroundCommand(
-                (new CommandData(CommandEnum.FETCH_TIMELINE,
-                        allAccounts ? "" : ma.getAccountName(), timelineTypeToSync, userId)).setManuallyLaunched(manuallyLaunched)
+                (CommandData.newTimelineCommand(CommandEnum.FETCH_TIMELINE,
+                        allAccounts ? null : ma, timelineTypeToSync, userId))
+                        .setManuallyLaunched(manuallyLaunched)
         );
 
         if (allTimelineTypes && ma.isValid()) {

@@ -33,7 +33,7 @@ public class DatabaseCreator {
      * This is used to check (and upgrade if necessary)
      * existing database after application update.
      *
-     * v.25 2016-05-21 app.v.27 TimelineTable and CommandTable added
+     * v.25 2016-06-06 app.v.27 TimelineTable and CommandTable added
      * v.24 2016-02-27 app.v.23 several attributes added to User, https://github.com/andstatus/andstatus/issues/320
      * v.23 2015-09-02 app.v.19 msg_status added for Unsent messages
      * v.22 2015-04-04 app.v.17 use_legacy_http added to Origin
@@ -258,8 +258,9 @@ public class DatabaseCreator {
                 + CommandTable.IN_FOREGROUND + " BOOLEAN DEFAULT 0 NOT NULL,"
                 + CommandTable.MANUALLY_LAUNCHED + " BOOLEAN DEFAULT 0 NOT NULL,"
                 + CommandTable.ITEM_ID + " INTEGER,"
-                + CommandTable.BODY + " TEXT,"
+                + CommandTable.DESCRIPTION + " TEXT,"
                 + CommandTable.SEARCH_QUERY + " TEXT,"
+                + CommandTable.USER_ID + " INTEGER,"
                 + CommandTable.USERNAME + " TEXT,"
 
                 + CommandTable.LAST_EXECUTED_DATE + " INTEGER,"

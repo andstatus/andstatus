@@ -418,8 +418,9 @@ public class DownloadData {
         }
         if (!DownloadStatus.LOADED.equals(status) && !hardError) {
             MyServiceManager.sendCommand(
-                    userId != 0 ? new CommandData(CommandEnum.FETCH_AVATAR, null, userId)
-                            : CommandData.fetchAttachment(msgId, downloadId));
+                    userId != 0 ?
+                            CommandData.newUserCommand(CommandEnum.FETCH_AVATAR, null, userId, "")
+                            : CommandData.newFetchAttachment(msgId, downloadId));
         }
     }
 

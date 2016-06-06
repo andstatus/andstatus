@@ -67,7 +67,7 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
                     break;
             }
 
-            LatestTimelineItem latestTimelineItem = new LatestTimelineItem(timelineType, userId);
+            LatestTimelineItem latestTimelineItem = new LatestTimelineItem(execContext.getCommandData().getTimeline());
             latestTimelineItem.onTimelineDownloaded();
             latestTimelineItem.save();
 
@@ -96,7 +96,7 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
 
     private boolean lookupUser() {
         final String method = "lookupUser";
-        userId = execContext.getCommandData().itemId;
+        userId = execContext.getCommandData().getUserId();
         if (userId == 0) {
             userId = execContext.getTimelineUserId();
         }

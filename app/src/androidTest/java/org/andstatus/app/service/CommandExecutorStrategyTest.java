@@ -55,17 +55,17 @@ public class CommandExecutorStrategyTest extends InstrumentationTestCase {
     }
 
     public void testFetchTimeline() {
-        CommandData commandData = new CommandData(CommandEnum.FETCH_TIMELINE, "");
+        CommandData commandData = CommandData.newCommand(CommandEnum.FETCH_TIMELINE);
         CommandExecutorStrategy strategy = CommandExecutorStrategy.getStrategy(commandData, null);
         assertEquals(CommandExecutorAllAccounts.class, strategy.getClass());
     }
 
     public void testSearch() {
-        CommandData commandData = CommandData.searchCommand("", TestSuite.GLOBAL_PUBLIC_MESSAGE_TEXT);
+        CommandData commandData = CommandData.newSearch(null, TestSuite.GLOBAL_PUBLIC_MESSAGE_TEXT);
         CommandExecutorStrategy strategy = CommandExecutorStrategy.getStrategy(commandData, null);
         assertEquals(CommandExecutorAllOrigins.class, strategy.getClass());
 
-        commandData = CommandData.searchCommand(ma.getAccountName(), TestSuite.GLOBAL_PUBLIC_MESSAGE_TEXT);
+        commandData = CommandData.newSearch(ma, TestSuite.GLOBAL_PUBLIC_MESSAGE_TEXT);
         strategy = CommandExecutorStrategy.getStrategy(commandData, null);
         assertEquals(CommandExecutorSearch.class, strategy.getClass());
         strategy.execute();
@@ -118,12 +118,18 @@ public class CommandExecutorStrategyTest extends InstrumentationTestCase {
                 + errorMessage + "'", commandData.getResult().getMessage().contains(errorMessage));
 
         httpConnectionMock.setException(null);
-        commandData = new CommandData(CommandEnum.DESTROY_STATUS, TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME, msgId);
+        commandData = CommandData.newItemCommand(
+                CommandEnum.DESTROY_STATUS,
+                TestSuite.getMyAccount(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME),
+                msgId);
         CommandExecutorStrategy.executeCommand(commandData, null);
         assertFalse(commandData.toString(), commandData.getResult().hasError());
 
         final long INEXISTENT_MSG_ID = -1;
-        commandData = new CommandData(CommandEnum.DESTROY_STATUS, TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME, INEXISTENT_MSG_ID);
+        commandData = CommandData.newItemCommand(
+                CommandEnum.DESTROY_STATUS,
+                TestSuite.getMyAccount(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME),
+                INEXISTENT_MSG_ID);
         CommandExecutorStrategy.executeCommand(commandData, null);
         assertFalse(commandData.toString(), commandData.getResult().hasError());
         
@@ -134,7 +140,8 @@ public class CommandExecutorStrategyTest extends InstrumentationTestCase {
         String body = "Some text " + suffix + " to send " + System.currentTimeMillis() + "ms";
         long unsentMessageId = MessageInserter.addMessageForAccount(
                 TestSuite.TWITTER_TEST_ACCOUNT_NAME, body, "", DownloadStatus.SENDING);
-        return CommandData.updateStatus(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME,
+        return CommandData.newUpdateStatus(
+                TestSuite.getMyAccount(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME),
                 unsentMessageId);
     }
 
@@ -143,8 +150,10 @@ public class CommandExecutorStrategyTest extends InstrumentationTestCase {
         http.setResponse(RawResourceUtils.getString(this.getInstrumentation().getContext(),
                 org.andstatus.app.tests.R.raw.get_open_instances));
         TestSuite.setHttpConnectionMockInstance(http);
-        CommandData commandData = new CommandData(CommandEnum.GET_OPEN_INSTANCES,
-                TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME, OriginType.GNUSOCIAL.getId());
+        CommandData commandData = CommandData.newItemCommand(
+                CommandEnum.GET_OPEN_INSTANCES,
+                TestSuite.getMyAccount(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME),
+                OriginType.GNUSOCIAL.getId());
         DiscoveredOrigins.clear();
         CommandExecutorStrategy.executeCommand(commandData, null);
         assertEquals(1, commandData.getResult().getExecutionCount());

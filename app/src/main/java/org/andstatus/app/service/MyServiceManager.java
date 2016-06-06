@@ -132,9 +132,9 @@ public class MyServiceManager extends BroadcastReceiver {
         }
         // Don't do "context.stopService", because we may lose some information and (or) get Force Close
         // This is "mild" stopping
-        CommandData element = new CommandData(CommandEnum.STOP_SERVICE, "");
         MyContextHolder.get().context()
-                .sendBroadcast(element.toIntent(MyAction.EXECUTE_COMMAND.getIntent()));
+                .sendBroadcast(CommandData.newCommand(CommandEnum.STOP_SERVICE)
+                        .toIntent(MyAction.EXECUTE_COMMAND.getIntent()));
     }
 
     /**
@@ -154,9 +154,9 @@ public class MyServiceManager extends BroadcastReceiver {
                 waitingForServiceState = true;
                 stateQueuedTime = time;
                 mServiceState = MyServiceState.UNKNOWN;
-                CommandData element = new CommandData(CommandEnum.BROADCAST_SERVICE_STATE, "");
                 MyContextHolder.get().context()
-                        .sendBroadcast(element.toIntent(MyAction.EXECUTE_COMMAND.getIntent()));
+                        .sendBroadcast(CommandData.newCommand(CommandEnum.BROADCAST_SERVICE_STATE)
+                                .toIntent(MyAction.EXECUTE_COMMAND.getIntent()));
             }
         }
         return mServiceState;

@@ -80,7 +80,7 @@ public class CommandQueue {
         try {
             c = db.rawQuery(sql, null);
             while (c.moveToNext()) {
-                CommandData cd = CommandData.fromCursor(c);
+                CommandData cd = CommandData.fromCursor(MyContextHolder.get(), c);
                 if (CommandEnum.EMPTY.equals(cd.getCommand())) {
                     MyLog.e(context, method + "; empty skipped " + cd);
                 } else if (queue.contains(cd)) {

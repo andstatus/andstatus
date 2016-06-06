@@ -22,6 +22,7 @@ import android.app.KeyguardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.support.annotation.NonNull;
 import android.test.InstrumentationTestCase;
 import android.view.ViewGroup;
 import android.widget.ListView;
@@ -357,10 +358,15 @@ public class TestSuite extends TestCase {
     }
 
     public static MyAccount getConversationMyAccount() {
-        MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(CONVERSATION_ACCOUNT_NAME); 
-        assertTrue(CONVERSATION_ACCOUNT_NAME + " exists", ma.isValid());
+        return getMyAccount(CONVERSATION_ACCOUNT_NAME);
+    }
+
+    @NonNull
+    public static MyAccount getMyAccount(String accountName) {
+        MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(accountName);
+        assertTrue(accountName + " exists", ma.isValid());
         Origin origin = MyContextHolder.get().persistentOrigins().fromId(ma.getOriginId());
-        assertTrue("Origin for " + ma.getAccountName() + " exists", origin != null);
+        assertTrue("Origin for " + accountName + " doesn't exist", origin != null);
         return ma;
     }
 

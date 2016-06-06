@@ -162,8 +162,8 @@ public class ConversationLoader<T extends ConversationItem> implements SyncLoade
 
     private void loadFromInternet(long msgId) {
         MyLog.v(this, "Message id=" + msgId + " will be loaded from the Internet");
-        MyServiceManager.sendForegroundCommand(new CommandData(CommandEnum.GET_STATUS, ma
-                .getAccountName(), msgId));
+        MyServiceManager.sendForegroundCommand(
+                CommandData.newItemCommand(CommandEnum.GET_STATUS, ma, msgId));
     }
 
     private static class ReplyLevelComparator<T extends ConversationItem> implements Comparator<T>, Serializable {

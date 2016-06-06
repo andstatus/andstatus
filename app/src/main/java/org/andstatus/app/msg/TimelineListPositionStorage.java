@@ -182,7 +182,7 @@ class TimelineListPositionStorage {
             } else {
                 // There is no stored position
                 if (mListParameters.whichPage.isYoungest()
-                        || !TextUtils.isEmpty(mListParameters.getTimeline().getSearchQuery())
+                        || mListParameters.hasSearchQuery()
                         || mListView.getCount() < 10) {
                     // In search mode start from the most recent message!
                     position = 0;

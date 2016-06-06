@@ -40,7 +40,7 @@ class TimelineDownloaderOther extends TimelineDownloader {
 
     @Override
     public void download() throws ConnectionException {
-        LatestTimelineItem latestTimelineItem = new LatestTimelineItem(execContext.getTimelineType(), execContext.getTimelineUserId());
+        LatestTimelineItem latestTimelineItem = new LatestTimelineItem(execContext.getCommandData().getTimeline());
         long hours = MyPreferences.getDontSynchronizeOldMessages();
         boolean downloadingLatest = false;
         if (hours > 0 && RelativeTime.moreSecondsAgoThan(latestTimelineItem.getTimelineDownloadedDate(),

@@ -74,7 +74,7 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
         MessageEditorData executeAsync(MyAccount maIn, long msgId) {
             MyAccount ma = MyContextHolder.get().persistentAccounts().fromUserId(
                     MyQuery.msgIdToLongColumnValue(MsgTable.SENDER_ID, msgId));
-            CommandData commandData = CommandData.updateStatus(ma.getAccountName(), msgId);
+            CommandData commandData = CommandData.newUpdateStatus(ma, msgId);
             MyServiceManager.sendManualForegroundCommand(commandData);
             return null;
         }
@@ -108,31 +108,31 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
     FAVORITE() {
         @Override
         void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
-            sendCommandMsg(CommandEnum.CREATE_FAVORITE, editorData);
+            sendMsgCommand(CommandEnum.CREATE_FAVORITE, editorData);
         }
     },
     DESTROY_FAVORITE() {
         @Override
         void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
-            sendCommandMsg(CommandEnum.DESTROY_FAVORITE, editorData);
+            sendMsgCommand(CommandEnum.DESTROY_FAVORITE, editorData);
         }
     },
     REBLOG() {
         @Override
         void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
-            sendCommandMsg(CommandEnum.REBLOG, editorData);
+            sendMsgCommand(CommandEnum.REBLOG, editorData);
         }
     },
     DESTROY_REBLOG() {
         @Override
         void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
-            sendCommandMsg(CommandEnum.DESTROY_REBLOG, editorData);
+            sendMsgCommand(CommandEnum.DESTROY_REBLOG, editorData);
         }
     },
     DESTROY_STATUS() {
         @Override
         void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
-            sendCommandMsg(CommandEnum.DESTROY_STATUS, editorData);
+            sendMsgCommand(CommandEnum.DESTROY_STATUS, editorData);
         }
     },
     SHARE(true) {
@@ -220,7 +220,7 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
 
         @Override
         void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
-            sendCommandUser(CommandEnum.FOLLOW_USER, editorData);
+            sendUserCommand(CommandEnum.FOLLOW_USER, editorData);
         }
     },
     STOP_FOLLOWING_SENDER(true) {
@@ -231,7 +231,7 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
 
         @Override
         void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
-            sendCommandUser(CommandEnum.STOP_FOLLOWING_USER, editorData);
+            sendUserCommand(CommandEnum.STOP_FOLLOWING_USER, editorData);
         }
     },
     FOLLOW_AUTHOR(true) {
@@ -242,7 +242,7 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
 
         @Override
         void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
-            sendCommandUser(CommandEnum.FOLLOW_USER, editorData);
+            sendUserCommand(CommandEnum.FOLLOW_USER, editorData);
         }
     },
     STOP_FOLLOWING_AUTHOR(true) {
@@ -253,7 +253,7 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
 
         @Override
         void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
-            sendCommandUser(CommandEnum.STOP_FOLLOWING_USER, editorData);
+            sendUserCommand(CommandEnum.STOP_FOLLOWING_USER, editorData);
         }
     },
     PROFILE(),
@@ -411,13 +411,13 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
         // Empty
     }
     
-    void sendCommandUser(CommandEnum command, MessageEditorData editorData) {
+    void sendUserCommand(CommandEnum command, MessageEditorData editorData) {
         MyServiceManager.sendManualForegroundCommand(
-                new CommandData(command, editorData.ma.getAccountName(), editorData.recipientId));
+                CommandData.newUserCommand(command, editorData.ma, editorData.recipientId, ""));
     }
     
-    void sendCommandMsg(CommandEnum command, MessageEditorData editorData) {
+    void sendMsgCommand(CommandEnum command, MessageEditorData editorData) {
         MyServiceManager.sendManualForegroundCommand(
-                new CommandData(command, editorData.ma.getAccountName(), editorData.getMsgId()));
+                CommandData.newItemCommand(command, editorData.ma, editorData.getMsgId()));
     }
 }

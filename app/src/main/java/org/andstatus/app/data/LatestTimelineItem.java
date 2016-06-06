@@ -23,6 +23,7 @@ import android.text.TextUtils;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.database.UserTable;
+import org.andstatus.app.msg.Timeline;
 import org.andstatus.app.net.social.TimelinePosition;
 import org.andstatus.app.util.MyLog;
 
@@ -64,11 +65,13 @@ public class LatestTimelineItem {
     
     /**
      * Retrieve information about the last downloaded message from this timeline
-     * @param userIdIn Should always be Id of the User of this timeline
      */
-    public LatestTimelineItem(TimelineType timelineTypeIn, long userIdIn) {
-        timelineType = timelineTypeIn;
-        userId = userIdIn;
+    public LatestTimelineItem(Timeline timeline) {
+        timelineType = timeline.getTimelineType();
+        userId = timeline.getUserId();
+        if (userId == 0) {
+            userId = timeline.getAccount().getUserId();
+        }
         if (userId == 0) {
             throw new IllegalArgumentException(TAG + ": userId==0");
         }

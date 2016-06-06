@@ -95,7 +95,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements MyServic
         boolean interrupted = true;
         try {
             MyLog.v(this, method + "; Started, account:" + account.name);
-            mCommandData = new CommandData(CommandEnum.AUTOMATIC_UPDATE, account.name,
+            mCommandData = CommandData.newTimelineCommand(CommandEnum.AUTOMATIC_UPDATE,
+                    MyContextHolder.get().persistentAccounts().fromAccountName(account.name),
                     TimelineType.ALL, 0);
             intentReceiver.registerReceiver(mContext);	
             MyServiceManager.sendCommand(mCommandData);

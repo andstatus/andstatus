@@ -24,7 +24,6 @@ import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.SharedPreferencesUtil;
 
 import java.util.Queue;
 import java.util.concurrent.PriorityBlockingQueue;
@@ -39,14 +38,14 @@ public class CommandDataTest extends InstrumentationTestCase {
     public void testQueue() throws InterruptedException {
         long time0 = System.currentTimeMillis(); 
         String body = "Some text to send " + time0 + "ms";
-        CommandData commandData = CommandData.updateStatus(TestSuite.CONVERSATION_ACCOUNT_NAME, 1);
+        CommandData commandData = CommandData.newUpdateStatus(TestSuite.getConversationMyAccount(), 1);
         testQueueOneCommandData(commandData, time0);
 
         long msgId = MyQuery.oidToId(OidEnum.MSG_OID, MyContextHolder.get().persistentOrigins()
                 .fromName(TestSuite.CONVERSATION_ORIGIN_NAME).getId(),
                 TestSuite.CONVERSATION_ENTRY_MESSAGE_OID);
         long downloadDataRowId = 23;
-        commandData = CommandData.fetchAttachment(msgId, downloadDataRowId);
+        commandData = CommandData.newFetchAttachment(msgId, downloadDataRowId);
         testQueueOneCommandData(commandData, time0);
     }
 
@@ -79,7 +78,7 @@ public class CommandDataTest extends InstrumentationTestCase {
 
         assertEquals(commandData, commandData2);
         // Below fields are not included in equals
-        assertEquals(commandData.getId(), commandData2.getId());
+        assertEquals(commandData.getCommandId(), commandData2.getCommandId());
         assertEquals(commandData.getCreatedDate(), commandData2.getCreatedDate());
 
         assertEquals(commandData.getResult().getLastExecutedDate(), commandData2.getResult().getLastExecutedDate());
@@ -91,8 +90,8 @@ public class CommandDataTest extends InstrumentationTestCase {
     }
 
     public void testEquals() {
-        CommandData data1 = CommandData.searchCommand("", "andstatus");
-        CommandData data2 = CommandData.searchCommand("", "mustard");
+        CommandData data1 = CommandData.newSearch(null, "andstatus");
+        CommandData data2 = CommandData.newSearch(null, "mustard");
         assertTrue("Hashcodes: " + data1.hashCode() + " and " + data2.hashCode(), data1.hashCode() != data2.hashCode());
         assertFalse(data1.equals(data2));
         
@@ -100,7 +99,7 @@ public class CommandDataTest extends InstrumentationTestCase {
         data1.getResult().incrementNumIoExceptions();
         data1.getResult().afterExecutionEnded();
         assertFalse(data1.getResult().shouldWeRetry());
-        CommandData data3 = CommandData.searchCommand("", "andstatus");
+        CommandData data3 = CommandData.newSearch(null, "andstatus");
         assertTrue(data1.equals(data3));
         assertTrue(data1.hashCode() == data3.hashCode());
         assertEquals(data1, data3);
@@ -108,11 +107,12 @@ public class CommandDataTest extends InstrumentationTestCase {
     
     public void testPriority() {
         Queue<CommandData> queue = new PriorityBlockingQueue<CommandData>(100);
-        queue.add(CommandData.searchCommand(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME, "q1"));
-        queue.add(CommandData.updateStatus("", 2));
-        queue.add(new CommandData(CommandEnum.AUTOMATIC_UPDATE, ""));
-        queue.add(CommandData.updateStatus("", 3));
-        queue.add(new CommandData(CommandEnum.GET_STATUS, ""));
+        queue.add(CommandData.newSearch(
+                TestSuite.getMyAccount(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME), "q1"));
+        queue.add(CommandData.newUpdateStatus(null, 2));
+        queue.add(CommandData.newCommand(CommandEnum.AUTOMATIC_UPDATE));
+        queue.add(CommandData.newUpdateStatus(null, 3));
+        queue.add(CommandData.newCommand(CommandEnum.GET_STATUS));
         
         assertEquals(CommandEnum.UPDATE_STATUS, queue.poll().getCommand());
         assertEquals(CommandEnum.UPDATE_STATUS, queue.poll().getCommand());
@@ -132,8 +132,8 @@ public class CommandDataTest extends InstrumentationTestCase {
         assertTrue(ma.isValid());
         long userId = MyQuery.oidToId(OidEnum.USER_OID, ma.getOrigin().getId(),
                 TestSuite.CONVERSATION_MEMBER_USER_OID);
-        CommandData data = new CommandData(command, 
-                TestSuite.CONVERSATION_ACCOUNT_NAME, userId);
+        CommandData data = CommandData.newUserCommand(
+                command, TestSuite.getConversationMyAccount(), userId, "");
         String summary = data.toCommandSummary(MyContextHolder.get());
         String msgLog = command.name() + "; Summary:'" + summary + "'";
         MyLog.v(this, msgLog);

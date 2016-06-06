@@ -43,8 +43,11 @@ public enum UserListContextMenuItem implements ContextMenuItem {
     GET_USER() {
         @Override
         void executeOnUiThread(UserListContextMenu menu, MyAccount ma) {
-            CommandData commandData = CommandData.getUser(ma.getAccountName(),
-                    menu.getViewItem().getUserId(), menu.getViewItem().mbUser.getUserName());
+            CommandData commandData = CommandData.newUserCommand(
+                    CommandEnum.GET_USER,
+                    ma,
+                    menu.getViewItem().getUserId(),
+                    menu.getViewItem().mbUser.getUserName());
             MyServiceManager.sendManualForegroundCommand(commandData);
         }
     },
@@ -73,13 +76,13 @@ public enum UserListContextMenuItem implements ContextMenuItem {
     FOLLOW() {
         @Override
         void executeOnUiThread(UserListContextMenu menu, MyAccount ma) {
-            sendCommandUser(CommandEnum.FOLLOW_USER, ma, menu.getViewItem().getUserId());
+            sendUserCommand(CommandEnum.FOLLOW_USER, ma, menu.getViewItem().getUserId());
         }
     },
     STOP_FOLLOWING() {
         @Override
         void executeOnUiThread(UserListContextMenu menu, MyAccount ma) {
-            sendCommandUser(CommandEnum.STOP_FOLLOWING_USER, ma, menu.getViewItem().getUserId());
+            sendUserCommand(CommandEnum.STOP_FOLLOWING_USER, ma, menu.getViewItem().getUserId());
         }
     },
     ACT_AS_USER() {
@@ -232,8 +235,8 @@ public enum UserListContextMenuItem implements ContextMenuItem {
         menu.getActivity().startActivity(MyAction.VIEW_FOLLOWERS.getIntent(uri));
     }
 
-    void sendCommandUser(CommandEnum command, MyAccount ma, long userID) {
+    void sendUserCommand(CommandEnum command, MyAccount ma, long userID) {
         MyServiceManager.sendManualForegroundCommand(
-                new CommandData(command, ma.getAccountName(), userID));
+                CommandData.newUserCommand(command, ma, userID, ""));
     }
 }

@@ -403,8 +403,8 @@ public class MessageEditor {
         command.beingEdited = true;
         saveData(command);
         if (data.getMyAccount().getConnection().isApiSupported(ApiRoutineEnum.ACCOUNT_RATE_LIMIT_STATUS)) {
-            // Start asynchronous task that will show Rate limit status
-            MyServiceManager.sendForegroundCommand(new CommandData(CommandEnum.RATE_LIMIT_STATUS, data.getMyAccount().getAccountName()));
+            MyServiceManager.sendForegroundCommand(
+                    CommandData.newCommand(CommandEnum.RATE_LIMIT_STATUS, data.getMyAccount()));
         }
     }
 

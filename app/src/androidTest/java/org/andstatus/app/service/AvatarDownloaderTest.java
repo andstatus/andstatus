@@ -151,7 +151,7 @@ public class AvatarDownloaderTest extends InstrumentationTestCase {
         if (mockNetworkError) {
             loader.connectionMock = new ConnectionTwitterGnuSocialMock(new ConnectionException("Mocked IO exception"));
         }
-        CommandData commandData = new CommandData(CommandEnum.FETCH_AVATAR, null);
+        CommandData commandData = CommandData.newCommand(CommandEnum.FETCH_AVATAR);
         loader.load(commandData);
 
         DownloadData data = AvatarData.getForUser(ma.getUserId());

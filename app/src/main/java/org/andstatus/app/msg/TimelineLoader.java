@@ -109,7 +109,7 @@ public class TimelineLoader implements LoadableListActivity.SyncLoader {
             switch (getParams().getTimelineType()) {
                 case USER:
                     // This timeline doesn't update automatically so let's do it now if necessary
-                    LatestTimelineItem latestTimelineItem = new LatestTimelineItem(getParams().getTimelineType(), getParams().getSelectedUserId());
+                    LatestTimelineItem latestTimelineItem = new LatestTimelineItem(getParams().getTimeline());
                     if (latestTimelineItem.isTimeToAutoUpdate()) {
                         getParams().timelineToSync = getParams().getTimelineType();
                     }
@@ -117,7 +117,7 @@ public class TimelineLoader implements LoadableListActivity.SyncLoader {
                 case FOLLOWERS:
                 case FRIENDS:
                     // This timeline doesn't update automatically so let's do it now if necessary
-                    latestTimelineItem = new LatestTimelineItem(getParams().getTimelineType(), getParams().getMyAccount().getUserId());
+                    latestTimelineItem = new LatestTimelineItem(getParams().getTimeline());
                     if (latestTimelineItem.isTimeToAutoUpdate()) {
                         getParams().timelineToSync = getParams().getTimelineType();
                     }
@@ -134,7 +134,7 @@ public class TimelineLoader implements LoadableListActivity.SyncLoader {
 
     private boolean noMessagesInATimeline(Cursor cursor) {
         return getParams().whichPage.isYoungest()
-                && TextUtils.isEmpty(getParams().getTimeline().getSearchQuery())
+                && !getParams().hasSearchQuery()
                 && cursor != null && !cursor.isClosed() && cursor.getCount() == 0;
     }
 
@@ -144,8 +144,7 @@ public class TimelineLoader implements LoadableListActivity.SyncLoader {
                 SharedPreferencesUtil.getString(MyPreferences.KEY_FILTER_HIDE_MESSAGES_BASED_ON_KEYWORDS, ""));
         boolean hideRepliesNotToMeOrFriends = getParams().getTimelineType() == TimelineType.HOME
                 && SharedPreferencesUtil.getBoolean(MyPreferences.KEY_FILTER_HIDE_REPLIES_NOT_TO_ME_OR_FRIENDS, false);
-        String searchQuery = TextUtils.isEmpty(getParams().getTimeline().getSearchQuery()) ? ""
-                : getParams().getTimeline().getSearchQuery().toLowerCase();
+        String searchQuery = getParams().getTimeline().getSearchQuery().toLowerCase();
 
         long startTime = System.currentTimeMillis();
         int rowsCount = 0;

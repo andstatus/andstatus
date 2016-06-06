@@ -33,6 +33,7 @@ public enum IntentExtra{
      * {@link MyAppWidgetProvider}. Value of this extra is a string code of CommandEnum
      */
     COMMAND("COMMAND_ENUM"),
+    COMMAND_DESCRIPTION("COMMAND_DESCRIPTION"),
     REQUEST_CODE("REQUEST_CODE"),
     /**
      * Command parameter: long - ID of the Tweet (or Msg) / User / Origin
@@ -46,15 +47,13 @@ public enum IntentExtra{
     SERVICE_STATE("SERVICE_STATE"),
     SERVICE_EVENT("SERVICE_EVENT"),
     PROGRESS_TEXT("PROGRESS_TEXT"),
-    /**
-     * Text of the message/"tweet"
-     */
+    /** Text of the message/"tweet" */
     MESSAGE_TEXT("MESSAGE_TEXT"),
     MEDIA_URI("MEDIA_URI"),
-    /**
-     * Account name, see {@link MyAccount#getAccountName()}
-     */
+    /** Account name, see {@link MyAccount#getAccountName()} */
     ACCOUNT_NAME("ACCOUNT_NAME"),
+    /** Selected User. E.g. the User whose messages we are seeing */
+    USER_ID("USER_ID"),
     USER_NAME("USER_NAME"),
     ORIGIN_NAME("ORIGIN_NAME"),
     ORIGIN_ID("ORIGIN_ID"),
@@ -76,10 +75,6 @@ public enum IntentExtra{
      * boolean. "true" means search in Internet, i.e. sending requests to Microblogging systems  
      */
     GLOBAL_SEARCH("GLOBAL_SEARCH"),
-    /**
-     * Selected User. E.g. the User whose messages we are seeing  
-     */
-    SELECTED_USER_ID("SELECTED_USER_ID"),
     /**
      * Number of new tweets. Value is integer
      */
@@ -103,6 +98,7 @@ public enum IntentExtra{
     WHICH_PAGE("WHICH_PAGE"),
 
     COMMAND_ID("COMMAND_ID"),
+    CREATED_DATE("CREATED_DATE"),
     LAST_EXECUTED_DATE("LAST_EXECUTED_DATE"),
     EXECUTION_COUNT("EXECUTION_COUNT"),
     FINISH("FINISH"),

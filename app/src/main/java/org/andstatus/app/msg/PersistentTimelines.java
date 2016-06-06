@@ -86,8 +86,9 @@ public class PersistentTimelines {
         return this;
     }
 
+    @NonNull
     public Timeline fromId(long id) {
-        Timeline timelineFound = Timeline.getEmpty();
+        Timeline timelineFound = Timeline.getEmpty(MyAccount.getEmpty(myContext));
         if (id != 0) {
             for (Timeline timeline : timelines) {
                 if (timeline.getId() == id) {
@@ -101,22 +102,21 @@ public class PersistentTimelines {
 
     @NonNull
     public Timeline getDefaultForCurrentAccount() {
-        return fromTypeAndAccount(
-                MyPreferences.getDefaultTimeline(),
-                myContext.persistentAccounts().getCurrentAccount());
+        return fromNewTimeLine(
+                new Timeline(MyPreferences.getDefaultTimeline(),
+                        myContext.persistentAccounts().getCurrentAccount()));
     }
 
     @NonNull
-    public Timeline fromTypeAndAccount(TimelineType timelineType, MyAccount myAccount) {
-        Timeline timelineFound = new Timeline(timelineType);
-        timelineFound.setAccount(myAccount);
+    public Timeline fromNewTimeLine(Timeline newTimeline) {
+        Timeline found = newTimeline;
         for (Timeline timeline : timelines) {
-            if (timeline.getTimelineType() == timelineType && timeline.getAccount().equals(myAccount)) {
-                timelineFound = timeline;
+            if (timeline.equals(newTimeline)) {
+                found = timeline;
                 break;
             }
         }
-        return timelineFound;
+        return found;
     }
 
     public List<Timeline> getList() {
