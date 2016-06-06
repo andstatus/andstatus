@@ -16,7 +16,6 @@
 
 package org.andstatus.app.service;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 
@@ -50,7 +49,7 @@ public enum CommandEnum {
     /**
      * Fetch timeline(s) of the specified type for the specified MyAccount. 
      */
-    FETCH_TIMELINE(true, "fetch-timeline", 0, 4, ConnectionRequired.SYNC),
+    FETCH_TIMELINE("fetch-timeline", 0, 4, ConnectionRequired.SYNC),
 
     /**
      * Fetch avatar for the specified user 
@@ -64,8 +63,8 @@ public enum CommandEnum {
     GET_USER("get-user", R.string.get_user, -5, ConnectionRequired.SYNC),
     FOLLOW_USER("follow-user", R.string.command_follow_user, 0, ConnectionRequired.SYNC),
     STOP_FOLLOWING_USER("stop-following-user", R.string.command_stop_following_user, 0, ConnectionRequired.SYNC),
-    GET_FOLLOWERS(true, "get-followers", R.string.get_followers, -5, ConnectionRequired.SYNC),
-    GET_FRIENDS(true, "get-friends", R.string.get_friends, -5, ConnectionRequired.SYNC),
+    GET_FOLLOWERS("get-followers", R.string.get_followers, -5, ConnectionRequired.SYNC),
+    GET_FRIENDS("get-friends", R.string.get_friends, -5, ConnectionRequired.SYNC),
 
     /**
      * This command is for sending both public and direct messages
@@ -76,7 +75,7 @@ public enum CommandEnum {
     /** see http://gstools.org/api/doc/ */
     GET_OPEN_INSTANCES("get_open_instances", R.string.get_open_instances_title, -1, ConnectionRequired.SYNC),
 
-    SEARCH_MESSAGE(true, "search-message", R.string.options_menu_search, 4, ConnectionRequired.SYNC),
+    SEARCH_MESSAGE("search-message", R.string.options_menu_search, 4, ConnectionRequired.SYNC),
     
     REBLOG("reblog", R.string.menu_item_reblog, -9, ConnectionRequired.SYNC),
     DESTROY_REBLOG("destroy-reblog", R.string.menu_item_destroy_reblog, -3, ConnectionRequired.SYNC),
@@ -121,7 +120,6 @@ public enum CommandEnum {
      * code of the enum that is used in messages
      */
     private final String code;
-    private final boolean isTimeline;
     /**
      * The id of the string resource with the localized name of this enum to use in UI
      */
@@ -135,12 +133,7 @@ public enum CommandEnum {
     }
 
     CommandEnum(String code, int titleResId, int priority, ConnectionRequired connectionRequired) {
-        this(false, code, titleResId, priority, connectionRequired);
-    }
-
-    CommandEnum(boolean isTimeline, String code, int titleResId, int priority, ConnectionRequired connectionRequired) {
         this.code = code;
-        this.isTimeline = isTimeline;
         this.titleResId = titleResId;
         this.priority = priority;
         this.connectionRequired = connectionRequired;
@@ -176,10 +169,6 @@ public enum CommandEnum {
             }
         }
         return UNKNOWN;
-    }
-
-    public boolean isTimeline() {
-        return isTimeline;
     }
 
     /** Localized title for UI 
