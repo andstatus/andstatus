@@ -22,71 +22,55 @@ import android.support.annotation.NonNull;
 import org.andstatus.app.R;
 import org.andstatus.app.account.PersistentAccounts;
 import org.andstatus.app.database.FriendshipTable;
-import org.andstatus.app.database.UserTable;
 import org.andstatus.app.net.social.Connection;
 
 public enum TimelineType {
     /** The type is unknown */
     UNKNOWN("unknown", R.string.timeline_title_unknown, Connection.ApiRoutineEnum.DUMMY,
-            false, false,
-            UserTable.HOME_TIMELINE_POSITION, UserTable.HOME_TIMELINE_ITEM_DATE, UserTable.HOME_TIMELINE_DATE),
+            false, false),
     /** The Home timeline and other information (replies...). */
     HOME("home", R.string.timeline_title_home, Connection.ApiRoutineEnum.STATUSES_HOME_TIMELINE,
-            true, false,
-            UserTable.HOME_TIMELINE_POSITION, UserTable.HOME_TIMELINE_ITEM_DATE, UserTable.HOME_TIMELINE_DATE),
+            true, false),
     /** Favorites (favorited messages) */
     FAVORITES("favorites", R.string.timeline_title_favorites, Connection.ApiRoutineEnum.DUMMY,
-            false, false,
-            UserTable.FAVORITES_TIMELINE_POSITION, UserTable.FAVORITES_TIMELINE_ITEM_DATE, UserTable.FAVORITES_TIMELINE_DATE),
+            false, false),
     /** The Mentions timeline and other information (replies...). */
     MENTIONS("mentions", R.string.timeline_title_mentions, Connection.ApiRoutineEnum.STATUSES_MENTIONS_TIMELINE,
-            true, false,
-            UserTable.MENTIONS_TIMELINE_POSITION, UserTable.MENTIONS_TIMELINE_ITEM_DATE, UserTable.MENTIONS_TIMELINE_DATE),
+            true, false),
     /** Direct messages (direct dents...) */
     DIRECT("direct", R.string.timeline_title_direct_messages, Connection.ApiRoutineEnum.DIRECT_MESSAGES,
-            true, false,
-            UserTable.DIRECT_TIMELINE_POSITION, UserTable.DIRECT_TIMELINE_ITEM_DATE, UserTable.DIRECT_TIMELINE_DATE),
+            true, false),
     /** Messages of the selected User (where he is an Author or a Sender only (e.g. for Reblog/Retweet).
      * This User may be not the same as a user of current account ( {@link PersistentAccounts#getCurrentAccountName()} ).
      * Moreover, the User may not be "AndStatus account" at all.
      * Hence this timeline type requires the User parameter. */
     USER("user", R.string.timeline_title_user, Connection.ApiRoutineEnum.STATUSES_USER_TIMELINE,
-            false, true,
-            UserTable.USER_TIMELINE_POSITION, UserTable.USER_TIMELINE_ITEM_DATE, UserTable.USER_TIMELINE_DATE),
+            false, true),
     /** Latest messages of every Friend of this user - AndStatus account
      * (i.e of every user, followed by this User).
      * So this is essentially a list of "Friends". See {@link FriendshipTable} */
     FRIENDS("friends", R.string.friends, Connection.ApiRoutineEnum.DUMMY,
-            false, false,
-            "", "", UserTable.FOLLOWING_USER_DATE),
+            false, false),
     FOLLOWERS("followers", R.string.followers, Connection.ApiRoutineEnum.DUMMY,
-            false, false,
-            "", "", UserTable.FOLLOWERS_USER_DATE),
+            false, false),
     PUBLIC("public", R.string.timeline_title_public, Connection.ApiRoutineEnum.PUBLIC_TIMELINE,
-            false, true,
-            "", "", ""),
+            false, true),
     EVERYTHING("everything", R.string.timeline_title_everything, Connection.ApiRoutineEnum.DUMMY,
-            false, true,
-            "", "", ""),
+            false, true),
     DRAFTS("drafts", R.string.timeline_title_drafts, Connection.ApiRoutineEnum.DUMMY,
-            false, false,
-            "", "", ""),
+            false, false),
     OUTBOX("outbox", R.string.timeline_title_outbox, Connection.ApiRoutineEnum.DUMMY,
-            false, false,
-            "", "", ""),
+            false, false),
     /** For the selected user, the timeline includes all messages of the same origin irrespectively existence
      * of the link between the message and the User. So the User may "Act" on this message. */
     MESSAGES_TO_ACT("messages_to_act", R.string.timeline_title_home, Connection.ApiRoutineEnum.STATUSES_HOME_TIMELINE,
-            false, true,
-            "", "", ""),
+            false, true),
     REPLIES("replies", R.string.timeline_title_replies, Connection.ApiRoutineEnum.DUMMY,
-            false, false,
-            "", "", ""),
+            false, false),
     /** All timelines (e.g. for download of all timelines.
      * This is generally done after addition of the new MyAccount). */
     ALL("all", R.string.timeline_title_all, Connection.ApiRoutineEnum.DUMMY,
-            false, false,
-            UserTable.HOME_TIMELINE_POSITION, UserTable.HOME_TIMELINE_ITEM_DATE, UserTable.HOME_TIMELINE_DATE);
+            false, false);
 
     public static final TimelineType[] defaultTimelineTypes = {
             HOME,
@@ -106,31 +90,18 @@ public enum TimelineType {
     private final String code;
     /** The id of the string resource with the localized name of this enum to use in UI */
     private final int titleResId;
-    /** Position of the latest downloaded timeline item
-     * E.g. the "timeline item" is a "message" for Twitter and an "Activity" for Pump.Io.
-     * Name of the column in the {@link UserTable} table. */
-    private final String columnNameLatestTimelinePosition;
-    private final String columnNameLatestTimelineItemDate;
-    /** Date when this timeline was last time fetched (downloaded).
-     * Name of the column in the {@link UserTable} table. */
-    private final String columnNameTimelineDownloadedDate;
     /** Api routine to download this timeline */
     private final Connection.ApiRoutineEnum connectionApiRoutine;
     private final boolean syncableByDefault;
     private final boolean atOrigin;
 
     private TimelineType(String code, int resId, Connection.ApiRoutineEnum connectionApiRoutine,
-                         boolean syncableByDefault, boolean atOrigin,
-                         String columnNameLatestTimelinePosition, String columnNameLatestTimelineItemDate,
-                         String columnNameTimelineDownloadedDate) {
+                         boolean syncableByDefault, boolean atOrigin) {
         this.code = code;
         this.titleResId = resId;
         this.connectionApiRoutine = connectionApiRoutine;
         this.syncableByDefault = syncableByDefault;
         this.atOrigin = atOrigin;
-        this.columnNameLatestTimelinePosition = columnNameLatestTimelinePosition;
-        this.columnNameLatestTimelineItemDate = columnNameLatestTimelineItemDate;
-        this.columnNameTimelineDownloadedDate = columnNameTimelineDownloadedDate;
     }
 
     /** Returns the enum or UNKNOWN */
@@ -183,17 +154,5 @@ public enum TimelineType {
     
     public Connection.ApiRoutineEnum getConnectionApiRoutine() {
         return connectionApiRoutine;
-    }
-
-    public String columnNameLatestTimelinePosition() {
-        return columnNameLatestTimelinePosition;
-    }
-
-    public String columnNameLatestTimelineItemDate() {
-        return columnNameLatestTimelineItemDate;
-    }
-
-    public String columnNameTimelineDownloadedDate() {
-        return columnNameTimelineDownloadedDate;
     }
 }

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2013 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2013-2016 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,7 @@
 
 package org.andstatus.app.data;
 
-import android.database.sqlite.SQLiteDatabase;
-import android.provider.BaseColumns;
-import android.text.TextUtils;
-
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.database.UserTable;
 import org.andstatus.app.msg.Timeline;
 import org.andstatus.app.net.social.TimelinePosition;
 import org.andstatus.app.util.MyLog;
@@ -37,7 +31,7 @@ import java.util.Date;
 public class LatestTimelineItem {
     private static final String TAG = LatestTimelineItem.class.getSimpleName();
 
-    private TimelineType timelineType;
+    private final Timeline timeline;
     /**
      * The timeline is of this User, for all timeline types.
      */
@@ -67,28 +61,12 @@ public class LatestTimelineItem {
      * Retrieve information about the last downloaded message from this timeline
      */
     public LatestTimelineItem(Timeline timeline) {
-        timelineType = timeline.getTimelineType();
-        userId = timeline.getUserId();
-        if (userId == 0) {
-            userId = timeline.getAccount().getUserId();
-        }
-        if (userId == 0) {
-            throw new IllegalArgumentException(TAG + ": userId==0");
-        }
-        maySaveThis = !TextUtils.isEmpty(timelineType.columnNameTimelineDownloadedDate());
-        
-        if (maySaveThis) {
-            timelineDownloadedDate = MyQuery.userIdToLongColumnValue(
-                    timelineType.columnNameTimelineDownloadedDate(), userId);
-            if (!TextUtils.isEmpty(timelineType.columnNameLatestTimelinePosition())) {
-                timelineItemDate = MyQuery.userIdToLongColumnValue(
-                        timelineType.columnNameLatestTimelineItemDate(), userId);
-                if (timelineItemDate != 0) {
-                    position = new TimelinePosition(MyQuery.userIdToStringColumnValue(
-                            timelineType.columnNameLatestTimelinePosition(), userId));
-                }
-            }
-        }
+        this.timeline = timeline;
+        maySaveThis = timeline.isValid();
+
+        timelineDownloadedDate = timeline.getYoungestSyncedDate();
+        timelineItemDate = timeline.getYoungestItemDate();
+        position = new TimelinePosition(timeline.getYoungestPosition());
     }
     
     /**
@@ -141,15 +119,13 @@ public class LatestTimelineItem {
     }
     
     private boolean changed() {
-        return timelineDateChanged || 
-                (timelineItemChanged && !TextUtils.isEmpty(timelineType.columnNameLatestTimelinePosition()));
+        return timelineDateChanged || timelineItemChanged;
     }
     
     @Override
     public String toString() {
-        return TAG + "[" + timelineType 
-                    + forTheUser() 
-                    + (getTimelineDownloadedDate() > 0 
+        return TAG + "[" + timeline.toString()
+                    + (getTimelineDownloadedDate() > 0
                             ? " downloaded at " + (new Date(getTimelineDownloadedDate()).toString()) 
                             : " never downloaded")
                     + (changed() ? "" : " not changed")                    
@@ -157,42 +133,15 @@ public class LatestTimelineItem {
                     + "]";
     }
 
-    private String forTheUser() {
-        return " for the userName=" + MyQuery.userIdToWebfingerId(userId);
-    }
-
     private void saveChanged() {
-        String sql = "";
-        try {
-            if (timelineDateChanged) {
-                sql += timelineType.columnNameTimelineDownloadedDate() + "=" + timelineDownloadedDate;
-            }
-            if (timelineItemChanged && !TextUtils.isEmpty(timelineType.columnNameLatestTimelinePosition())) {
-                if (!TextUtils.isEmpty(sql)) {
-                    sql += ", ";
-                }
-                sql += timelineType.columnNameLatestTimelinePosition() + "=" 
-                + MyQuery.quoteIfNotQuoted(position.getPosition()) + ", "
-                + timelineType.columnNameLatestTimelineItemDate() + "="
-                + timelineItemDate;
-            }
-
-            sql = "UPDATE " + UserTable.TABLE_NAME + " SET " + sql
-                    + " WHERE " + UserTable._ID + "=" + userId;
-
-            SQLiteDatabase db = MyContextHolder.get().getDatabase();
-            if (db == null) {
-                MyLog.v(this, "Database is null");
-                return;
-            }
-
-            db.execSQL(sql);
-            
-            timelineDateChanged = false;
-            timelineItemChanged = false;
-        } catch (Exception e) {
-            MyLog.e(this, "save: sql='" + sql + "'", e);
+        if (timelineDateChanged) {
+            timeline.setYoungestSyncedDate(timelineDownloadedDate);
         }
+        if (timelineItemChanged) {
+            timeline.setYoungestItemDate(timelineItemDate);
+            timeline.setYoungestPosition(position.getPosition());
+        }
+        timeline.save();
     }
     
     /**
@@ -204,11 +153,10 @@ public class LatestTimelineItem {
         boolean blnOut = passedMs > frequencyMs;
         
         if (blnOut && MyLog.isVerboseEnabled()) {
-            MyLog.v(this, "It's time to auto update " 
-                    + timelineType 
-                    + forTheUser() + ". " 
-                    + java.util.concurrent.TimeUnit.MILLISECONDS.toMinutes(passedMs) 
-                    + " minutes passed.");
+            MyLog.v(this, "It's time to auto update " + timeline.toString() +
+                    ". " +
+                    java.util.concurrent.TimeUnit.MILLISECONDS.toMinutes(passedMs) +
+                    " minutes passed.");
         }
         return blnOut;
     }

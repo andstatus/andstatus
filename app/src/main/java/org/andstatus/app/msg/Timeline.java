@@ -462,4 +462,29 @@ public class Timeline implements Comparable<Timeline> {
             this.userName = userName;
         }
     }
+
+    public String getYoungestPosition() {
+        return youngestPosition;
+    }
+
+    public void setYoungestPosition(String youngestPosition) {
+        this.youngestPosition = youngestPosition;
+    }
+
+    public long getYoungestItemDate() {
+        return youngestItemDate;
+    }
+
+    public void setYoungestItemDate(long youngestItemDate) {
+        this.youngestItemDate = youngestItemDate;
+    }
+
+    public long getYoungestSyncedDate() {
+        return youngestSyncedDate;
+    }
+
+    public void setYoungestSyncedDate(long youngestSyncedDate) {
+        this.youngestSyncedDate = youngestSyncedDate;
+    }
+
 }
