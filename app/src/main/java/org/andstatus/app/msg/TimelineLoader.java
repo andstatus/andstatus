@@ -123,7 +123,9 @@ public class TimelineLoader implements LoadableListActivity.SyncLoader {
                     }
                     break;
                 default:
-                    if ( MyQuery.userIdToLongColumnValue(UserTable.HOME_TIMELINE_DATE, getParams().getMyAccount().getUserId()) == 0) {
+                    if ( MyContextHolder.get().persistentTimelines().fromNewTimeLine(
+                            new Timeline(TimelineType.HOME, getParams().getMyAccount(), 0, null)).
+                            getYoungestSyncedDate() == 0) {
                         // This is supposed to be a one time task.
                         getParams().timelineToSync = TimelineType.ALL;
                     }

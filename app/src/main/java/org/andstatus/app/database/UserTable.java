@@ -85,32 +85,6 @@ public final class UserTable implements BaseColumns {
     public static final String INS_DATE = "user_ins_date";
 
     /**
-     * Columns holding information on timelines downloaded:
-     * last message id and last date-time the timeline was downloaded.
-     */
-    public static final String HOME_TIMELINE_POSITION = "home_timeline_position";
-    public static final String HOME_TIMELINE_ITEM_DATE = "home_timeline_item_date";
-    public static final String HOME_TIMELINE_DATE = "home_timeline_date";
-    public static final String FAVORITES_TIMELINE_POSITION = "favorites_timeline_position";
-    public static final String FAVORITES_TIMELINE_ITEM_DATE = "favorites_timeline_item_date";
-    public static final String FAVORITES_TIMELINE_DATE = "favorites_timeline_date";
-    public static final String DIRECT_TIMELINE_POSITION = "direct_timeline_position";
-    public static final String DIRECT_TIMELINE_ITEM_DATE = "direct_timeline_item_date";
-    public static final String DIRECT_TIMELINE_DATE = "direct_timeline_date";
-    public static final String MENTIONS_TIMELINE_POSITION = "mentions_timeline_position";
-    public static final String MENTIONS_TIMELINE_ITEM_DATE = "mentions_timeline_item_date";
-    public static final String MENTIONS_TIMELINE_DATE = "mentions_timeline_date";
-    public static final String USER_TIMELINE_POSITION = "user_timeline_position";
-    public static final String USER_TIMELINE_ITEM_DATE = "user_timeline_item_date";
-    public static final String USER_TIMELINE_DATE = "user_timeline_date";
-
-    /**
-     * For the list ("collection") of following users
-     * we store only the date-time of the last retrieval of the list
-     */
-    public static final String FOLLOWING_USER_DATE = "following_user_date";
-    public static final String FOLLOWERS_USER_DATE = "followers_user_date";
-    /**
      * Id of the latest message where this User was a Sender or an Author
      */
     public static final String USER_MSG_ID = "user_msg_id";
@@ -163,23 +137,6 @@ public final class UserTable implements BaseColumns {
                 + UserTable.CREATED_DATE + " INTEGER DEFAULT 0 NOT NULL,"
                 + UserTable.UPDATED_DATE + " INTEGER DEFAULT 0 NOT NULL,"
                 + UserTable.INS_DATE + " INTEGER NOT NULL,"
-                + UserTable.HOME_TIMELINE_POSITION + " TEXT DEFAULT '' NOT NULL,"
-                + UserTable.HOME_TIMELINE_ITEM_DATE + " INTEGER DEFAULT 0 NOT NULL,"
-                + UserTable.HOME_TIMELINE_DATE + " INTEGER DEFAULT 0 NOT NULL,"
-                + UserTable.FAVORITES_TIMELINE_POSITION + " TEXT DEFAULT '' NOT NULL,"
-                + UserTable.FAVORITES_TIMELINE_ITEM_DATE + " INTEGER DEFAULT 0 NOT NULL,"
-                + UserTable.FAVORITES_TIMELINE_DATE + " INTEGER DEFAULT 0 NOT NULL,"
-                + UserTable.DIRECT_TIMELINE_POSITION + " TEXT DEFAULT '' NOT NULL,"
-                + UserTable.DIRECT_TIMELINE_ITEM_DATE + " INTEGER DEFAULT 0 NOT NULL,"
-                + UserTable.DIRECT_TIMELINE_DATE + " INTEGER DEFAULT 0 NOT NULL,"
-                + UserTable.MENTIONS_TIMELINE_POSITION + " TEXT DEFAULT '' NOT NULL,"
-                + UserTable.MENTIONS_TIMELINE_ITEM_DATE + " INTEGER DEFAULT 0 NOT NULL,"
-                + UserTable.MENTIONS_TIMELINE_DATE + " INTEGER DEFAULT 0 NOT NULL,"
-                + UserTable.USER_TIMELINE_POSITION + " TEXT DEFAULT '' NOT NULL,"
-                + UserTable.USER_TIMELINE_ITEM_DATE + " INTEGER DEFAULT 0 NOT NULL,"
-                + UserTable.USER_TIMELINE_DATE + " INTEGER DEFAULT 0 NOT NULL,"
-                + UserTable.FOLLOWING_USER_DATE + " INTEGER DEFAULT 0 NOT NULL,"
-                + UserTable.FOLLOWERS_USER_DATE + " INTEGER DEFAULT 0 NOT NULL,"
                 + UserTable.USER_MSG_ID + " INTEGER DEFAULT 0 NOT NULL,"
                 + UserTable.USER_MSG_DATE + " INTEGER DEFAULT 0 NOT NULL"
                 + ")");
