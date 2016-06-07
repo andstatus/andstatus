@@ -131,7 +131,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
 
     protected void showList(Bundle args) {
         WhichPage whichPage = WhichPage.load(args);
-        TriState chainedRequest = TriState.fromBundle(args, IntentExtra.CHAINED_REQUEST.key);
+        TriState chainedRequest = TriState.fromBundle(args, IntentExtra.CHAINED_REQUEST);
         String msgLog = "showList, instanceId=" + mInstanceId
                 + (chainedRequest == TriState.TRUE ? ", chained" : "")
                 + ", " + whichPage + " page"

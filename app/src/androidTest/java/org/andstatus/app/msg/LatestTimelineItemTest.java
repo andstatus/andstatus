@@ -35,7 +35,7 @@ public class LatestTimelineItemTest extends InstrumentationTestCase {
         assertTrue(ma.isValid());
         assertEquals("Account was found", ma.getAccountName(), accountName);
         Timeline timeline = MyContextHolder.get().persistentTimelines()
-                .fromNewTimeLine(new Timeline(timelineType, ma));
+                .fromNewTimeLine(new Timeline(timelineType, ma, 0, null));
 
         LatestTimelineItem latest = new LatestTimelineItem(timeline);
         latest.onTimelineDownloaded();

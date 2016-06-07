@@ -37,6 +37,7 @@ import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.database.UserTable;
 import org.andstatus.app.msg.Timeline;
 import org.andstatus.app.msg.TimelineListParameters;
+import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.BundleUtils;
 import org.andstatus.app.util.ContentValuesUtils;
 import org.andstatus.app.util.I18n;
@@ -55,6 +56,7 @@ public class CommandData implements Comparable<CommandData> {
     private final long commandId;
     private final CommandEnum command;
     private final long createdDate;
+    private String description = "";
 
     private volatile boolean mInForeground = false;
     private volatile boolean mManuallyLaunched = false;
@@ -68,14 +70,11 @@ public class CommandData implements Comparable<CommandData> {
      */
     protected long itemId = 0;
 
-    private String userName = "";
-    private String description = "";
-
     private volatile int result = 0;
     private CommandResult commandResult = new CommandResult();
 
     public static CommandData newSearch(MyAccount myAccount, String queryString) {
-        Timeline timeline =  new Timeline(TimelineType.PUBLIC, myAccount);
+        Timeline timeline =  new Timeline(TimelineType.PUBLIC, myAccount, 0, null);
         timeline.setSearchQuery(queryString);
         CommandData commandData = new CommandData(0, CommandEnum.SEARCH_MESSAGE, timeline, 0);
         return commandData;
@@ -104,13 +103,10 @@ public class CommandData implements Comparable<CommandData> {
     }
 
     @NonNull
-    public static CommandData newUserCommand(CommandEnum command, MyAccount myAccount, long userId, String userName) {
-        CommandData commandData = newTimelineCommand(command, myAccount,
-                TimelineType.UNKNOWN, userId);
-        if (!TextUtils.isEmpty(userName)) {
-            commandData.userName = userName;
-            commandData.description = userName;
-        }
+    public static CommandData newUserCommand(CommandEnum command, @NonNull Origin origin, long userId, String userName) {
+        CommandData commandData = newTimelineCommand(command, null, TimelineType.UNKNOWN, userId, origin);
+        commandData.timeline.setUserName(userName);
+        commandData.description = commandData.getUserName();
         return commandData;
     }
 
@@ -132,11 +128,15 @@ public class CommandData implements Comparable<CommandData> {
         return new CommandData(0, command, Timeline.getEmpty(myAccount), 0);
     }
 
+
     public static CommandData newTimelineCommand(
-            CommandEnum command, MyAccount myAccount, TimelineType timelineType, long userId) {
-        return new CommandData(0, command,
-                new Timeline(timelineType, myAccount).setUserId(userId),
-                0);
+            CommandEnum command, MyAccount myAccount, TimelineType timelineType) {
+        return new CommandData(0, command, new Timeline(timelineType, myAccount, 0, null), 0);
+    }
+
+    public static CommandData newTimelineCommand(
+            CommandEnum command, MyAccount myAccount, TimelineType timelineType, long userId, Origin origin) {
+        return new CommandData(0, command, new Timeline(timelineType, myAccount, userId, origin), 0);
     }
 
     private CommandData(long commandId, CommandEnum command, Timeline timeline, long createdDate) {
@@ -182,7 +182,6 @@ public class CommandData implements Comparable<CommandData> {
                         bundle.getLong(IntentExtra.CREATED_DATE.key));
                 commandData.itemId = bundle.getLong(IntentExtra.ITEM_ID.key);
                 commandData.description = BundleUtils.getString(bundle, IntentExtra.COMMAND_DESCRIPTION);
-                commandData.userName = BundleUtils.getString(bundle, IntentExtra.USER_NAME);
                 commandData.mInForeground = bundle.getBoolean(IntentExtra.IN_FOREGROUND.key);
                 commandData.mManuallyLaunched = bundle.getBoolean(IntentExtra.MANUALLY_LAUNCHED.key);
                 commandData.commandResult = bundle.getParcelable(IntentExtra.COMMAND_RESULT.key);
@@ -209,7 +208,6 @@ public class CommandData implements Comparable<CommandData> {
         timeline.toBundle(bundle);
         BundleUtils.putNotZero(bundle, IntentExtra.ITEM_ID, itemId);
         BundleUtils.putNotEmpty(bundle, IntentExtra.COMMAND_DESCRIPTION, description);
-        BundleUtils.putNotEmpty(bundle, IntentExtra.USER_NAME, userName);
         bundle.putBoolean(IntentExtra.IN_FOREGROUND.key, mInForeground);
         bundle.putBoolean(IntentExtra.MANUALLY_LAUNCHED.key, mManuallyLaunched);
         bundle.putParcelable(IntentExtra.COMMAND_RESULT.key, commandResult);
@@ -224,12 +222,11 @@ public class CommandData implements Comparable<CommandData> {
         ContentValuesUtils.putNotZero(values, CommandTable._ID, commandId);
         ContentValuesUtils.putNotZero(values, CommandTable.CREATED_DATE, createdDate);
         values.put(CommandTable.COMMAND_CODE, command.save());
-        timeline.toCommandContentValues(values);
-        ContentValuesUtils.putNotZero(values, CommandTable.ITEM_ID, itemId);
         ContentValuesUtils.putNotEmpty(values, CommandTable.DESCRIPTION, description);
-        ContentValuesUtils.putNotEmpty(values, CommandTable.USERNAME, userName);
         values.put(CommandTable.IN_FOREGROUND, mInForeground);
         values.put(CommandTable.MANUALLY_LAUNCHED, mManuallyLaunched);
+        timeline.toCommandContentValues(values);
+        ContentValuesUtils.putNotZero(values, CommandTable.ITEM_ID, itemId);
         commandResult.toContentValues(values);
     }
 
@@ -244,11 +241,10 @@ public class CommandData implements Comparable<CommandData> {
                 myContext.persistentTimelines().fromNewTimeLine(
                         Timeline.fromCommandCursor(myContext, cursor)),
                 DbUtils.getLong(cursor, CommandTable.CREATED_DATE));
-        commandData.itemId = DbUtils.getLong(cursor, CommandTable.ITEM_ID);
         commandData.description = DbUtils.getString(cursor, CommandTable.DESCRIPTION);
-        commandData.userName = DbUtils.getString(cursor, CommandTable.USERNAME);
         commandData.mInForeground = DbUtils.getBoolean(cursor, CommandTable.IN_FOREGROUND);
         commandData.mManuallyLaunched = DbUtils.getBoolean(cursor, CommandTable.MANUALLY_LAUNCHED);
+        commandData.itemId = DbUtils.getLong(cursor, CommandTable.ITEM_ID);
         commandData.commandResult = CommandResult.fromCursor(cursor);
         return commandData;
     }
@@ -307,9 +303,9 @@ public class CommandData implements Comparable<CommandData> {
             builder.append(getSearchQuery());
             builder.append("\",");
         }
-        if (!TextUtils.isEmpty(userName)) {
+        if (!TextUtils.isEmpty(getUserName())) {
             builder.append("username:\"");
-            builder.append(userName);
+            builder.append(getUserName());
             builder.append("\",");
         }
         if (getAccount().isValid()) {
@@ -449,9 +445,9 @@ public class CommandData implements Comparable<CommandData> {
                 appendAccountName(myContext, builder);
                 break;
             case GET_USER:
-                if (!TextUtils.isEmpty(userName)) {
+                if (!TextUtils.isEmpty(getUserName())) {
                     builder.append(" \"");
-                    builder.append(userName);
+                    builder.append(getUserName());
                     builder.append("\"");
                 }
                 break;
@@ -471,7 +467,7 @@ public class CommandData implements Comparable<CommandData> {
             I18n.appendWithSpace(builder, 
                     getTimelineType().getPrepositionForNotCombinedTimeline(myContext.context()));
             if (getTimelineType().isAtOrigin()) {
-                I18n.appendWithSpace(builder, getAccount().getOrigin().getName());
+                I18n.appendWithSpace(builder, getTimeline().getOrigin().getName());
             } else {
                 I18n.appendWithSpace(builder, getAccount().getAccountName());
             }
@@ -560,6 +556,6 @@ public class CommandData implements Comparable<CommandData> {
     }
 
     public String getUserName() {
-        return userName;
+        return timeline.getUserName();
     }
 }

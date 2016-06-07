@@ -707,7 +707,7 @@ public class MyService extends Service {
                 return;
             }
             addToMainQueue(CommandData.newTimelineCommand(CommandEnum.FETCH_TIMELINE,
-                    commandDataExecuted.getAccount(), TimelineType.HOME, 0)
+                    commandDataExecuted.getAccount(), TimelineType.HOME)
                     .setInForeground(commandDataExecuted.isInForeground()));
         }
         

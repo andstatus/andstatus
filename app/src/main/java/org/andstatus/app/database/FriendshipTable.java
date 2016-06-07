@@ -16,6 +16,10 @@
 
 package org.andstatus.app.database;
 
+import android.database.sqlite.SQLiteDatabase;
+
+import org.andstatus.app.data.DbUtils;
+
 /**
  * IDs of Users the specified (by {@link FriendshipTable#USER_ID}) user is following
  * (otherwise known as their "friends").
@@ -48,4 +52,16 @@ public final class FriendshipTable {
      * Derived column: if the Sender of the message is followed by the User
      */
     public static final String SENDER_FOLLOWED = "sender_followed";
+
+    public static void create(SQLiteDatabase db) {
+        DbUtils.execSQL(db, "CREATE TABLE " + FriendshipTable.TABLE_NAME + " ("
+                + FriendshipTable.USER_ID + " INTEGER NOT NULL,"
+                + FriendshipTable.FRIEND_ID + " INTEGER NOT NULL,"
+                + FriendshipTable.FOLLOWED + " BOOLEAN DEFAULT 1 NOT NULL,"
+
+                + " CONSTRAINT pk_followinguser PRIMARY KEY ("
+                + FriendshipTable.USER_ID + " ASC, "
+                + FriendshipTable.FRIEND_ID + " ASC)"
+                + ")");
+    }
 }

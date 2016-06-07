@@ -16,9 +16,11 @@
 
 package org.andstatus.app.database;
 
+import android.database.sqlite.SQLiteDatabase;
 import android.provider.BaseColumns;
 
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.net.social.Connection;
 
 /**
@@ -139,4 +141,52 @@ public final class UserTable implements BaseColumns {
     public static final String RECIPIENT_NAME = "recipient_name";
 
     public static final String DEFAULT_SORT_ORDER = USERNAME + " ASC";
+
+    public static void create(SQLiteDatabase db) {
+        DbUtils.execSQL(db, "CREATE TABLE " + UserTable.TABLE_NAME + " ("
+                + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
+                + UserTable.ORIGIN_ID + " INTEGER NOT NULL,"
+                + UserTable.USER_OID + " TEXT,"
+                + UserTable.USERNAME + " TEXT NOT NULL,"
+                + UserTable.WEBFINGER_ID + " TEXT NOT NULL,"
+                + UserTable.REAL_NAME + " TEXT,"
+                + UserTable.DESCRIPTION + " TEXT,"
+                + UserTable.LOCATION + " TEXT,"
+                + UserTable.PROFILE_URL + " TEXT,"
+                + UserTable.HOMEPAGE + " TEXT,"
+                + UserTable.AVATAR_URL + " TEXT,"
+                + UserTable.BANNER_URL + " TEXT,"
+                + UserTable.MSG_COUNT + " INTEGER DEFAULT 0 NOT NULL,"
+                + UserTable.FAVORITES_COUNT + " INTEGER DEFAULT 0 NOT NULL,"
+                + UserTable.FOLLOWING_COUNT + " INTEGER DEFAULT 0 NOT NULL,"
+                + UserTable.FOLLOWERS_COUNT + " INTEGER DEFAULT 0 NOT NULL,"
+                + UserTable.CREATED_DATE + " INTEGER DEFAULT 0 NOT NULL,"
+                + UserTable.UPDATED_DATE + " INTEGER DEFAULT 0 NOT NULL,"
+                + UserTable.INS_DATE + " INTEGER NOT NULL,"
+                + UserTable.HOME_TIMELINE_POSITION + " TEXT DEFAULT '' NOT NULL,"
+                + UserTable.HOME_TIMELINE_ITEM_DATE + " INTEGER DEFAULT 0 NOT NULL,"
+                + UserTable.HOME_TIMELINE_DATE + " INTEGER DEFAULT 0 NOT NULL,"
+                + UserTable.FAVORITES_TIMELINE_POSITION + " TEXT DEFAULT '' NOT NULL,"
+                + UserTable.FAVORITES_TIMELINE_ITEM_DATE + " INTEGER DEFAULT 0 NOT NULL,"
+                + UserTable.FAVORITES_TIMELINE_DATE + " INTEGER DEFAULT 0 NOT NULL,"
+                + UserTable.DIRECT_TIMELINE_POSITION + " TEXT DEFAULT '' NOT NULL,"
+                + UserTable.DIRECT_TIMELINE_ITEM_DATE + " INTEGER DEFAULT 0 NOT NULL,"
+                + UserTable.DIRECT_TIMELINE_DATE + " INTEGER DEFAULT 0 NOT NULL,"
+                + UserTable.MENTIONS_TIMELINE_POSITION + " TEXT DEFAULT '' NOT NULL,"
+                + UserTable.MENTIONS_TIMELINE_ITEM_DATE + " INTEGER DEFAULT 0 NOT NULL,"
+                + UserTable.MENTIONS_TIMELINE_DATE + " INTEGER DEFAULT 0 NOT NULL,"
+                + UserTable.USER_TIMELINE_POSITION + " TEXT DEFAULT '' NOT NULL,"
+                + UserTable.USER_TIMELINE_ITEM_DATE + " INTEGER DEFAULT 0 NOT NULL,"
+                + UserTable.USER_TIMELINE_DATE + " INTEGER DEFAULT 0 NOT NULL,"
+                + UserTable.FOLLOWING_USER_DATE + " INTEGER DEFAULT 0 NOT NULL,"
+                + UserTable.FOLLOWERS_USER_DATE + " INTEGER DEFAULT 0 NOT NULL,"
+                + UserTable.USER_MSG_ID + " INTEGER DEFAULT 0 NOT NULL,"
+                + UserTable.USER_MSG_DATE + " INTEGER DEFAULT 0 NOT NULL"
+                + ")");
+
+        DbUtils.execSQL(db, "CREATE UNIQUE INDEX idx_user_origin ON " + UserTable.TABLE_NAME + " ("
+                + UserTable.ORIGIN_ID + ", "
+                + UserTable.USER_OID
+                + ")");
+    }
 }

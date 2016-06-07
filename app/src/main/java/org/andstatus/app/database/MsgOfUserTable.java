@@ -16,6 +16,10 @@
 
 package org.andstatus.app.database;
 
+import android.database.sqlite.SQLiteDatabase;
+
+import org.andstatus.app.data.DbUtils;
+
 /**
  * Link tables: Msg to a User.
  * This User may be not even mentioned in this message
@@ -70,4 +74,19 @@ public final class MsgOfUserTable {
 
     /** It's not in a database, for passing data only */
     public static final String SUFFIX_FOR_OTHER_USER = "_other";
+
+    public static void create(SQLiteDatabase db) {
+        DbUtils.execSQL(db, "CREATE TABLE " + MsgOfUserTable.TABLE_NAME + " ("
+                + MsgOfUserTable.USER_ID + " INTEGER NOT NULL,"
+                + MsgOfUserTable.MSG_ID + " INTEGER NOT NULL,"
+                + MsgOfUserTable.SUBSCRIBED + " BOOLEAN DEFAULT 0 NOT NULL,"
+                + MsgOfUserTable.FAVORITED + " BOOLEAN DEFAULT 0 NOT NULL,"
+                + MsgOfUserTable.REBLOGGED + " BOOLEAN DEFAULT 0 NOT NULL,"
+                + MsgOfUserTable.REBLOG_OID + " TEXT,"
+                + MsgOfUserTable.MENTIONED + " BOOLEAN DEFAULT 0 NOT NULL,"
+                + MsgOfUserTable.REPLIED + " BOOLEAN DEFAULT 0 NOT NULL,"
+                + MsgOfUserTable.DIRECTED + " BOOLEAN DEFAULT 0 NOT NULL,"
+                + " CONSTRAINT pk_msgofuser PRIMARY KEY (" + MsgOfUserTable.USER_ID + " ASC, " + MsgOfUserTable.MSG_ID + " ASC)"
+                + ")");
+    }
 }

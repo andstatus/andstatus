@@ -50,15 +50,17 @@ public class Timeline implements Comparable<Timeline> {
 
     private final TimelineType timelineType;
     private final MyAccount account;
-
-    private boolean allOrigins = false;
-    private Origin origin = Origin.Builder.buildUnknown();
     /**
      * Selected User for the {@link TimelineType#USER} timeline.
      * This is either User Id of current account OR user id of any other selected user.
      * So it's never == 0 for the {@link TimelineType#USER} timeline
      */
-    private long userId = 0;
+    private final long userId;
+    private String userName = "";
+
+    private final Origin origin;
+    /** The timeline combines messages from all Social Networks, e.g. Search in all Social Networks */
+    private final boolean allOrigins;
     /**
      * The string is not empty if this timeline is filtered using query string
      * ("Mentions" are not counted here because they have the separate TimelineType)
@@ -92,9 +94,52 @@ public class Timeline implements Comparable<Timeline> {
     private long oldestItemDate = 0;
     private long oldestSyncedDate = 0;
 
-    public Timeline(TimelineType timelineType, MyAccount myAccount) {
+    public Timeline(TimelineType timelineType, MyAccount myAccount, long userId, Origin origin) {
         this.timelineType = timelineType == null ? TimelineType.UNKNOWN : timelineType;
         this.account = myAccount == null ?  MyAccount.getEmpty() : myAccount;
+        this.userId = fixedUserId(userId);
+        this.origin = fixedOrigin(origin);
+        this.allOrigins = !this.account.isValid() && !this.origin.isValid();
+        fixUserName();
+    }
+
+    private Origin fixedOrigin(Origin origin) {
+        Origin fixedOrigin = origin == null ? Origin.Builder.buildUnknown() : origin;
+        if (!fixedOrigin.isValid() && userId != 0) {
+            MyAccount myAccount = MyContextHolder.get().persistentAccounts().fromUserId(userId);
+            if (myAccount.isValid()) {
+                fixedOrigin = myAccount.getOrigin();
+            }
+        }
+        if (!fixedOrigin.isValid() && account.isValid()) {
+            fixedOrigin = account.getOrigin();
+        }
+        return fixedOrigin;
+    }
+
+    private long fixedUserId(long userId) {
+        long userIdFixed = userId;
+        switch (timelineType) {
+            case ALL:
+            case EVERYTHING:
+            case PUBLIC:
+            case UNKNOWN:
+                break;
+            default:
+                if (userIdFixed == 0 && account.isValid()) {
+                    userIdFixed = account.getUserId();
+                }
+        }
+        return userIdFixed;
+    }
+
+    private void fixUserName() {
+        if (this.userId != 0) {
+            MyAccount myAccount2 = MyContextHolder.get().persistentAccounts().fromUserId(this.userId);
+            if (myAccount2.isValid()) {
+                userName = myAccount2.getUsername();
+            }
+        }
     }
 
     @Override
@@ -108,22 +153,18 @@ public class Timeline implements Comparable<Timeline> {
         values.put(TimelineTable.TIMELINE_NAME, name);
         values.put(TimelineTable.TIMELINE_DESCRIPTION, description);
         values.put(TimelineTable.TIMELINE_TYPE, timelineType.save());
-        values.put(TimelineTable.ALL_ORIGINS, allOrigins);
-        if (origin.isValid()) {
-            values.put(TimelineTable.ORIGIN_ID, origin.getId());
-        }
-        if (account.isValid()) {
-            values.put(TimelineTable.ACCOUNT_ID, account.getUserId());
-        }
-        ContentValuesUtils.putNotZero(values, TimelineTable.USER_ID, userId);
-        ContentValuesUtils.putNotEmpty(values, TimelineTable.SEARCH_QUERY, searchQuery);
+        values.put(TimelineTable.ACCOUNT_ID, account.getUserId());
+        values.put(TimelineTable.USER_ID, userId);
+        values.put(TimelineTable.ORIGIN_ID, origin.getId());
+        values.put(TimelineTable.SEARCH_QUERY, searchQuery);
+
         values.put(TimelineTable.SYNCED, synced);
         values.put(TimelineTable.DISPLAY_IN_SELECTOR, displayedInSelector);
         values.put(TimelineTable.SELECTOR_ORDER, selectorOrder);
 
         values.put(TimelineTable.SYNCED_DATE, syncedDate);
         values.put(TimelineTable.SYNC_FAILED_DATE, syncFailedDate);
-        ContentValuesUtils.putNotEmpty(values, TimelineTable.ERROR_MESSAGE, errorMessage);
+        values.put(TimelineTable.ERROR_MESSAGE, errorMessage);
 
         values.put(TimelineTable.SYNCED_TIMES_COUNT, syncedTimesCount);
         values.put(TimelineTable.SYNC_FAILED_TIMES_COUNT, syncFailedTimesCount);
@@ -133,79 +174,77 @@ public class Timeline implements Comparable<Timeline> {
         values.put(TimelineTable.SYNC_FAILED_TIMES_COUNT_TOTAL, syncFailedTimesCountTotal);
         values.put(TimelineTable.NEW_ITEMS_COUNT_TOTAL, newItemsCountTotal);
 
-        ContentValuesUtils.putNotEmpty(values, TimelineTable.YOUNGEST_POSITION, youngestPosition);
+        values.put(TimelineTable.YOUNGEST_POSITION, youngestPosition);
         values.put(TimelineTable.YOUNGEST_ITEM_DATE, youngestItemDate);
         values.put(TimelineTable.YOUNGEST_SYNCED_DATE, youngestSyncedDate);
-        ContentValuesUtils.putNotEmpty(values, TimelineTable.OLDEST_POSITION, oldestPosition);
+        values.put(TimelineTable.OLDEST_POSITION, oldestPosition);
         values.put(TimelineTable.OLDEST_ITEM_DATE, oldestItemDate);
         values.put(TimelineTable.OLDEST_SYNCED_DATE, oldestSyncedDate);
     }
 
     public void toCommandContentValues(ContentValues values) {
-        ContentValuesUtils.putNotZero(values, CommandTable.TIMELINE_ID, id);
+        values.put(CommandTable.TIMELINE_ID, id);
         values.put(CommandTable.TIMELINE_TYPE, timelineType.save());
-        if (account.isValid()) {
-            values.put(CommandTable.ACCOUNT_ID, account.getUserId());
-        }
-        ContentValuesUtils.putNotEmpty(values, CommandTable.SEARCH_QUERY, searchQuery);
-        ContentValuesUtils.putNotZero(values, CommandTable.USER_ID, userId);
+        values.put(CommandTable.ACCOUNT_ID, account.getUserId());
+        values.put(CommandTable.USER_ID, userId);
+        values.put(CommandTable.USERNAME, userName);
+        values.put(CommandTable.ORIGIN_ID, origin.getId());
+        values.put(CommandTable.SEARCH_QUERY, searchQuery);
     }
 
     public static Timeline fromCursor(MyContext myContext, Cursor cursor) {
-        TimelineType timelineType = TimelineType.load(DbUtils.getString(cursor, TimelineTable.TIMELINE_TYPE));
-        MyAccount myAccount = myContext.persistentAccounts()
-                .fromUserId(DbUtils.getLong(cursor, TimelineTable.ACCOUNT_ID));
-        Timeline timeline = new Timeline(timelineType, myAccount);
-        if (!TimelineType.UNKNOWN.equals(timelineType)) {
-            timeline.id = DbUtils.getLong(cursor, TimelineTable._ID);
+        Timeline timeline = new Timeline(
+                TimelineType.load(DbUtils.getString(cursor, TimelineTable.TIMELINE_TYPE)),
+                myContext.persistentAccounts()
+                        .fromUserId(DbUtils.getLong(cursor, TimelineTable.ACCOUNT_ID)),
+                DbUtils.getLong(cursor, TimelineTable.USER_ID),
+                myContext.persistentOrigins()
+                        .fromId(DbUtils.getLong(cursor, TimelineTable.ORIGIN_ID)));
 
-            timeline.name = DbUtils.getString(cursor, TimelineTable.TIMELINE_NAME);
-            timeline.description = DbUtils.getString(cursor, TimelineTable.TIMELINE_DESCRIPTION);
-            timeline.allOrigins = DbUtils.getBoolean(cursor, TimelineTable.ALL_ORIGINS);
-            timeline.origin = myContext.persistentOrigins()
-                    .fromId(DbUtils.getLong(cursor, TimelineTable.ORIGIN_ID));
-            timeline.userId = DbUtils.getLong(cursor, TimelineTable.USER_ID);
-            timeline.searchQuery = DbUtils.getString(cursor, TimelineTable.SEARCH_QUERY);
-            timeline.synced = DbUtils.getBoolean(cursor, TimelineTable.SYNCED);
-            timeline.displayedInSelector = DbUtils.getBoolean(cursor, TimelineTable.DISPLAY_IN_SELECTOR);
-            timeline.selectorOrder = DbUtils.getLong(cursor, TimelineTable.SELECTOR_ORDER);
+        timeline.id = DbUtils.getLong(cursor, TimelineTable._ID);
+        timeline.name = DbUtils.getString(cursor, TimelineTable.TIMELINE_NAME);
+        timeline.description = DbUtils.getString(cursor, TimelineTable.TIMELINE_DESCRIPTION);
+        timeline.searchQuery = DbUtils.getString(cursor, TimelineTable.SEARCH_QUERY);
+        timeline.synced = DbUtils.getBoolean(cursor, TimelineTable.SYNCED);
+        timeline.displayedInSelector = DbUtils.getBoolean(cursor, TimelineTable.DISPLAY_IN_SELECTOR);
+        timeline.selectorOrder = DbUtils.getLong(cursor, TimelineTable.SELECTOR_ORDER);
 
-            timeline.syncedDate = DbUtils.getLong(cursor, TimelineTable.SYNCED_DATE);
-            timeline.syncFailedDate = DbUtils.getLong(cursor, TimelineTable.SYNC_FAILED_DATE);
-            timeline.errorMessage = DbUtils.getString(cursor, TimelineTable.ERROR_MESSAGE);
+        timeline.syncedDate = DbUtils.getLong(cursor, TimelineTable.SYNCED_DATE);
+        timeline.syncFailedDate = DbUtils.getLong(cursor, TimelineTable.SYNC_FAILED_DATE);
+        timeline.errorMessage = DbUtils.getString(cursor, TimelineTable.ERROR_MESSAGE);
 
-            timeline.syncedTimesCount = DbUtils.getLong(cursor, TimelineTable.SYNCED_TIMES_COUNT);
-            timeline.syncFailedTimesCount = DbUtils.getLong(cursor, TimelineTable.SYNC_FAILED_TIMES_COUNT);
-            timeline.newItemsCount = DbUtils.getLong(cursor, TimelineTable.NEW_ITEMS_COUNT);
-            timeline.countSince = DbUtils.getLong(cursor, TimelineTable.COUNT_SINCE);
-            timeline.syncedTimesCountTotal = DbUtils.getLong(cursor, TimelineTable.SYNCED_TIMES_COUNT_TOTAL);
-            timeline.syncFailedTimesCountTotal = DbUtils.getLong(cursor, TimelineTable.SYNC_FAILED_TIMES_COUNT_TOTAL);
-            timeline.newItemsCountTotal = DbUtils.getLong(cursor, TimelineTable.NEW_ITEMS_COUNT_TOTAL);
+        timeline.syncedTimesCount = DbUtils.getLong(cursor, TimelineTable.SYNCED_TIMES_COUNT);
+        timeline.syncFailedTimesCount = DbUtils.getLong(cursor, TimelineTable.SYNC_FAILED_TIMES_COUNT);
+        timeline.newItemsCount = DbUtils.getLong(cursor, TimelineTable.NEW_ITEMS_COUNT);
+        timeline.countSince = DbUtils.getLong(cursor, TimelineTable.COUNT_SINCE);
+        timeline.syncedTimesCountTotal = DbUtils.getLong(cursor, TimelineTable.SYNCED_TIMES_COUNT_TOTAL);
+        timeline.syncFailedTimesCountTotal = DbUtils.getLong(cursor, TimelineTable.SYNC_FAILED_TIMES_COUNT_TOTAL);
+        timeline.newItemsCountTotal = DbUtils.getLong(cursor, TimelineTable.NEW_ITEMS_COUNT_TOTAL);
 
-            timeline.youngestPosition = DbUtils.getString(cursor, TimelineTable.YOUNGEST_POSITION);
-            timeline.youngestItemDate = DbUtils.getLong(cursor, TimelineTable.YOUNGEST_ITEM_DATE);
-            timeline.youngestSyncedDate = DbUtils.getLong(cursor, TimelineTable.YOUNGEST_SYNCED_DATE);
-            timeline.oldestPosition = DbUtils.getString(cursor, TimelineTable.OLDEST_POSITION);
-            timeline.oldestItemDate = DbUtils.getLong(cursor, TimelineTable.OLDEST_ITEM_DATE);
-            timeline.oldestSyncedDate = DbUtils.getLong(cursor, TimelineTable.OLDEST_SYNCED_DATE);
-        }
+        timeline.youngestPosition = DbUtils.getString(cursor, TimelineTable.YOUNGEST_POSITION);
+        timeline.youngestItemDate = DbUtils.getLong(cursor, TimelineTable.YOUNGEST_ITEM_DATE);
+        timeline.youngestSyncedDate = DbUtils.getLong(cursor, TimelineTable.YOUNGEST_SYNCED_DATE);
+        timeline.oldestPosition = DbUtils.getString(cursor, TimelineTable.OLDEST_POSITION);
+        timeline.oldestItemDate = DbUtils.getLong(cursor, TimelineTable.OLDEST_ITEM_DATE);
+        timeline.oldestSyncedDate = DbUtils.getLong(cursor, TimelineTable.OLDEST_SYNCED_DATE);
         return timeline;
     }
 
 
     public static Timeline fromCommandCursor(MyContext myContext, Cursor cursor) {
-        TimelineType timelineType = TimelineType.load(DbUtils.getString(cursor, CommandTable.TIMELINE_TYPE));
-        MyAccount myAccount = myContext.persistentAccounts()
-                .fromUserId(DbUtils.getLong(cursor, CommandTable.ACCOUNT_ID));
-        Timeline timeline = new Timeline(timelineType, myAccount);
+        Timeline timeline = new Timeline(
+                TimelineType.load(DbUtils.getString(cursor, CommandTable.TIMELINE_TYPE)),
+                myContext.persistentAccounts().fromUserId(DbUtils.getLong(cursor, CommandTable.ACCOUNT_ID)),
+                DbUtils.getLong(cursor, CommandTable.USER_ID),
+                myContext.persistentOrigins().fromId(DbUtils.getLong(cursor, CommandTable.ORIGIN_ID)));
         timeline.id = DbUtils.getLong(cursor, CommandTable.TIMELINE_ID);
+        timeline.setUserName(DbUtils.getString(cursor, CommandTable.USERNAME));
         timeline.searchQuery = DbUtils.getString(cursor, CommandTable.SEARCH_QUERY);
-        timeline.userId = DbUtils.getLong(cursor, CommandTable.USER_ID);
         return timeline;
     }
 
     public static Timeline getEmpty(MyAccount myAccount) {
-        return new Timeline(TimelineType.UNKNOWN, myAccount);
+        return new Timeline(TimelineType.UNKNOWN, myAccount, 0, null);
     }
 
     public boolean isEmpty() {
@@ -258,8 +297,7 @@ public class Timeline implements Comparable<Timeline> {
     public static List<Timeline> addDefaultForAccount(MyAccount myAccount) {
         List<Timeline> timelines = new ArrayList<>();
         for (TimelineType timelineType : TimelineType.defaultTimelineTypes) {
-            Timeline timeline = new Timeline(timelineType, myAccount);
-            timeline.origin = myAccount.getOrigin();
+            Timeline timeline = new Timeline(timelineType, myAccount, 0, myAccount.getOrigin());
             timeline.selectorOrder = timelineType.ordinal();
             timeline.synced = timelineType.isSyncableByDefault();
             timeline.save();
@@ -292,10 +330,26 @@ public class Timeline implements Comparable<Timeline> {
     @Override
     public String toString() {
         return "Timeline{" +
-                account.getAccountName() +
-                (TextUtils.isEmpty(name) ? "" : ", name:'" + name + '\'') +
-                ", type:" + timelineType.save() +
-                (userId == 0 ? "" : ", userId:" + userId) +
+                ( account.isValid() ?
+                        account.getAccountName() :
+                        ( origin.isValid() ?
+                                origin.getName() :
+                                "(all origins)")
+                ) +
+                (TextUtils.isEmpty(name) ?
+                        "" :
+                        ", name:'" + name + '\'') +
+                (timelineType == TimelineType.UNKNOWN ?
+                        "" :
+                        ", type:" + timelineType.save()) +
+                (TextUtils.isEmpty(userName) ?
+                        (userId == 0 ?
+                                "" :
+                                ", userId:" + userId) :
+                        " user:" + userName) +
+                (hasSearchQuery() ?
+                        " search:\"" + getSearchQuery() + "\"" :
+                        "") +
                 '}';
     }
 
@@ -338,20 +392,24 @@ public class Timeline implements Comparable<Timeline> {
             if (timeline.isEmpty()) {
                 Timeline timeline2 = new Timeline(
                         TimelineType.load(bundle.getString(IntentExtra.TIMELINE_TYPE.key)),
-                        myAccount);
-                timeline2.setSearchQuery(bundle.getString(IntentExtra.SEARCH_QUERY.key));
-                timeline2.setUserId(bundle.getLong(IntentExtra.USER_ID.key));
-                // TODO: set something else?!
+                        myAccount,
+                        bundle.getLong(IntentExtra.USER_ID.key),
+                        MyContextHolder.get().persistentOrigins().fromId(BundleUtils.fromBundle(bundle, IntentExtra.ORIGIN_ID)));
+                timeline2.setUserName(BundleUtils.getString(bundle, IntentExtra.USER_NAME));
+                timeline2.setSearchQuery(BundleUtils.getString(bundle, IntentExtra.SEARCH_QUERY));
                 timeline = MyContextHolder.get().persistentTimelines().fromNewTimeLine(timeline2);
             }
         }
         return timeline;
     }
 
+    // TODO: by ID only?!
     public static Timeline fromParsedUri(MyContext myContext, ParsedUri parsedUri, String searchQuery) {
         Timeline timeline = new Timeline(
                 parsedUri.getTimelineType(),
-                myContext.persistentAccounts().fromUserId(parsedUri.getAccountUserId()));
+                myContext.persistentAccounts().fromUserId(parsedUri.getAccountUserId()),
+                parsedUri.getUserId(),
+                null);
         if (timeline.getTimelineType() == TimelineType.UNKNOWN ||
                 parsedUri.getAccountUserId() == 0) {
             MyLog.e(Timeline.class,"fromParsedUri; uri:" + parsedUri.getUri()
@@ -359,12 +417,15 @@ public class Timeline implements Comparable<Timeline> {
                     + ", accountId:" + parsedUri.getAccountUserId() );
             return timeline;
         }
-        timeline.userId = parsedUri.getUserId();
         timeline.searchQuery = parsedUri.getSearchQuery();
         if (TextUtils.isEmpty(timeline.searchQuery) && !TextUtils.isEmpty(searchQuery)) {
             timeline.searchQuery = searchQuery;
         }
         return timeline;
+    }
+
+    public boolean hasSearchQuery() {
+        return !TextUtils.isEmpty(getSearchQuery());
     }
 
     @NonNull
@@ -387,12 +448,18 @@ public class Timeline implements Comparable<Timeline> {
         if (timelineType != TimelineType.UNKNOWN) {
             bundle.putString(IntentExtra.TIMELINE_TYPE.key, timelineType.save());
         }
-        BundleUtils.putNotEmpty(bundle, IntentExtra.SEARCH_QUERY, searchQuery);
         BundleUtils.putNotZero(bundle, IntentExtra.USER_ID, userId);
+        BundleUtils.putNotEmpty(bundle, IntentExtra.USER_NAME, userName);
+        BundleUtils.putNotEmpty(bundle, IntentExtra.SEARCH_QUERY, searchQuery);
     }
 
-    public Timeline setUserId(long userId) {
-        this.userId = userId;
-        return this;
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        if (TextUtils.isEmpty(this.userName) && !TextUtils.isEmpty(userName)) {
+            this.userName = userName;
+        }
     }
 }

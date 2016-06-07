@@ -801,7 +801,7 @@ public class TimelineActivity extends LoadableListActivity implements
             }
             saveSearchQuery();
         }
-        return new TimelineLoader(params, BundleUtils.fromBundle(args, IntentExtra.INSTANCE_ID.key));
+        return new TimelineLoader(params, BundleUtils.fromBundle(args, IntentExtra.INSTANCE_ID));
     }
 
     private void saveSearchQuery() {
@@ -928,9 +928,13 @@ public class TimelineActivity extends LoadableListActivity implements
         setCircularSyncIndicator(method, true);
         showSyncing(method, getText(R.string.options_menu_sync));
         MyServiceManager.sendForegroundCommand(
-                (CommandData.newTimelineCommand(CommandEnum.FETCH_TIMELINE,
-                        allAccounts ? null : ma, timelineTypeToSync, userId))
-                        .setManuallyLaunched(manuallyLaunched)
+                CommandData.newTimelineCommand(
+                        CommandEnum.FETCH_TIMELINE,
+                        allAccounts ? null : ma,
+                        timelineTypeToSync,
+                        userId,
+                        userId == 0 ? null : paramsNew.getTimeline().getOrigin()
+                ).setManuallyLaunched(manuallyLaunched)
         );
 
         if (allTimelineTypes && ma.isValid()) {

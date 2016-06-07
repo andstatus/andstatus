@@ -45,7 +45,7 @@ public enum UserListContextMenuItem implements ContextMenuItem {
         void executeOnUiThread(UserListContextMenu menu, MyAccount ma) {
             CommandData commandData = CommandData.newUserCommand(
                     CommandEnum.GET_USER,
-                    ma,
+                    MyContextHolder.get().persistentOrigins().fromId(menu.getViewItem().mbUser.originId),
                     menu.getViewItem().getUserId(),
                     menu.getViewItem().mbUser.getUserName());
             MyServiceManager.sendManualForegroundCommand(commandData);
@@ -76,13 +76,13 @@ public enum UserListContextMenuItem implements ContextMenuItem {
     FOLLOW() {
         @Override
         void executeOnUiThread(UserListContextMenu menu, MyAccount ma) {
-            sendUserCommand(CommandEnum.FOLLOW_USER, ma, menu.getViewItem().getUserId());
+            sendUserCommand(CommandEnum.FOLLOW_USER, menu.getViewItem());
         }
     },
     STOP_FOLLOWING() {
         @Override
         void executeOnUiThread(UserListContextMenu menu, MyAccount ma) {
-            sendUserCommand(CommandEnum.STOP_FOLLOWING_USER, ma, menu.getViewItem().getUserId());
+            sendUserCommand(CommandEnum.STOP_FOLLOWING_USER, menu.getViewItem());
         }
     },
     ACT_AS_USER() {
@@ -235,8 +235,14 @@ public enum UserListContextMenuItem implements ContextMenuItem {
         menu.getActivity().startActivity(MyAction.VIEW_FOLLOWERS.getIntent(uri));
     }
 
-    void sendUserCommand(CommandEnum command, MyAccount ma, long userID) {
+    void sendUserCommand(CommandEnum command, UserListViewItem viewItem) {
         MyServiceManager.sendManualForegroundCommand(
-                CommandData.newUserCommand(command, ma, userID, ""));
+                CommandData.newUserCommand(
+                        command,
+                        MyContextHolder.get().persistentOrigins().fromId(viewItem.mbUser.originId),
+                        viewItem.getUserId(),
+                        ""
+                )
+        );
     }
 }

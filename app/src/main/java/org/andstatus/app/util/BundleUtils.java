@@ -30,13 +30,13 @@ public class BundleUtils {
     private BundleUtils() {
     }
 
-    public static long fromBundle(Bundle bundle, String key) {
-        return fromBundle(bundle, key, 0);
+    public static long fromBundle(Bundle bundle, @NonNull IntentExtra intentExtra) {
+        return fromBundle(bundle, intentExtra, 0);
     }
 
-    public static long fromBundle(Bundle bundle, String key, long defaultValue) {
-        if (bundle != null && !TextUtils.isEmpty(key)) {
-            return bundle.getLong(key, defaultValue);
+    public static long fromBundle(Bundle bundle, @NonNull IntentExtra intentExtra, long defaultValue) {
+        if (bundle != null) {
+            return bundle.getLong(intentExtra.key, defaultValue);
         }
         return defaultValue;
     }

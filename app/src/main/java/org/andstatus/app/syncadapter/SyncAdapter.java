@@ -97,7 +97,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements MyServic
             MyLog.v(this, method + "; Started, account:" + account.name);
             mCommandData = CommandData.newTimelineCommand(CommandEnum.AUTOMATIC_UPDATE,
                     MyContextHolder.get().persistentAccounts().fromAccountName(account.name),
-                    TimelineType.ALL, 0);
+                    TimelineType.ALL);
             intentReceiver.registerReceiver(mContext);	
             MyServiceManager.sendCommand(mCommandData);
             final long numIterations = 10;

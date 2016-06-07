@@ -413,7 +413,7 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
     
     void sendUserCommand(CommandEnum command, MessageEditorData editorData) {
         MyServiceManager.sendManualForegroundCommand(
-                CommandData.newUserCommand(command, editorData.ma, editorData.recipientId, ""));
+                CommandData.newUserCommand(command, editorData.ma.getOrigin(), editorData.recipientId, ""));
     }
     
     void sendMsgCommand(CommandEnum command, MessageEditorData editorData) {

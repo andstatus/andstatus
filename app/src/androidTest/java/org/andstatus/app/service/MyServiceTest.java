@@ -54,9 +54,11 @@ public class MyServiceTest extends InstrumentationTestCase {
         String urlString = "http://andstatus.org/nonexistent2_avatar_" + System.currentTimeMillis() +  ".png";
         AvatarDownloaderTest.changeAvatarUrl(ma, urlString);
         
-        mService.listenedCommand = CommandData.newTimelineCommand(CommandEnum.FETCH_AVATAR, null,
-                TimelineType.UNKNOWN,
-                ma.getUserId());
+        mService.listenedCommand = CommandData.newUserCommand(
+                CommandEnum.FETCH_AVATAR,
+                ma.getOrigin(),
+                ma.getUserId(),
+                "");
 
         long startCount = mService.executionStartCount;
         long endCount = mService.executionEndCount;
@@ -82,7 +84,7 @@ public class MyServiceTest extends InstrumentationTestCase {
         MyLog.v(this, "testAutomaticUpdates started");
 
         mService.listenedCommand = CommandData.newTimelineCommand(
-                CommandEnum.AUTOMATIC_UPDATE, null, TimelineType.ALL, 0);
+                CommandEnum.AUTOMATIC_UPDATE, null, TimelineType.ALL);
         long startCount = mService.executionStartCount;
         long endCount = mService.executionEndCount;
         
@@ -101,7 +103,7 @@ public class MyServiceTest extends InstrumentationTestCase {
         MyLog.v(this, method + " started");
 
         mService.listenedCommand = CommandData.newTimelineCommand(
-                CommandEnum.FETCH_TIMELINE, ma, TimelineType.HOME, 0);
+                CommandEnum.FETCH_TIMELINE, ma, TimelineType.HOME);
         long startCount = mService.executionStartCount;
         long endCount = mService.executionEndCount;
 
@@ -121,7 +123,8 @@ public class MyServiceTest extends InstrumentationTestCase {
 
         mService.listenedCommand = CommandData.newTimelineCommand(
                 CommandEnum.RATE_LIMIT_STATUS,
-                TestSuite.getMyAccount(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME), TimelineType.ALL, 0);
+                TestSuite.getMyAccount(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME),
+                TimelineType.ALL);
         long startCount = mService.executionStartCount;
         long endCount = mService.executionEndCount;
 
@@ -140,7 +143,7 @@ public class MyServiceTest extends InstrumentationTestCase {
                 .putBoolean(MyPreferences.KEY_SYNC_WHILE_USING_APPLICATION, false).commit();
         CommandData cd1 = CommandData.newTimelineCommand(CommandEnum.FETCH_TIMELINE,
                 TestSuite.getMyAccount(TestSuite.TWITTER_TEST_ACCOUNT_NAME),
-                TimelineType.DIRECT, 0);
+                TimelineType.DIRECT);
         mService.listenedCommand = cd1;
 
         long startCount = mService.executionStartCount;
@@ -156,7 +159,7 @@ public class MyServiceTest extends InstrumentationTestCase {
 
         CommandData cd2 = CommandData.newTimelineCommand(CommandEnum.FETCH_TIMELINE,
                 TestSuite.getMyAccount(TestSuite.TWITTER_TEST_ACCOUNT_NAME),
-                TimelineType.MENTIONS, 0);
+                TimelineType.MENTIONS);
         mService.listenedCommand = cd2;
         mService.sendListenedToCommand();
 
@@ -171,7 +174,7 @@ public class MyServiceTest extends InstrumentationTestCase {
 
         CommandData cd3 = CommandData.newTimelineCommand(CommandEnum.FETCH_TIMELINE,
                 TestSuite.getMyAccount(TestSuite.TWITTER_TEST_ACCOUNT_NAME),
-                TimelineType.HOME, 0)
+                TimelineType.HOME)
                 .setInForeground(true);
         mService.listenedCommand = cd3;
 

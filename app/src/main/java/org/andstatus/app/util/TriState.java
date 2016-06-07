@@ -18,6 +18,8 @@ package org.andstatus.app.util;
 
 import android.os.Bundle;
 
+import org.andstatus.app.IntentExtra;
+
 public enum TriState {
     TRUE(2),
     FALSE(1),
@@ -38,8 +40,8 @@ public enum TriState {
         return UNKNOWN;
     }
 
-    public static TriState fromBundle(Bundle bundle, String key) {
-        return fromId(BundleUtils.fromBundle(bundle, key, UNKNOWN.id));
+    public static TriState fromBundle(Bundle bundle, IntentExtra intentExtra) {
+        return fromId(BundleUtils.fromBundle(bundle, intentExtra, UNKNOWN.id));
     }
 
     public Long getId() {

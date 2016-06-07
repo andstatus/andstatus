@@ -219,7 +219,7 @@ public class TimelineListParameters {
     }
 
     public boolean hasSearchQuery() {
-        return !TextUtils.isEmpty(timeline.getSearchQuery());
+        return timeline.hasSearchQuery();
     }
 
     public void saveState(Bundle outState) {
@@ -316,7 +316,7 @@ public class TimelineListParameters {
             I18n.appendWithSpace(subTitle, getTimelineType()
                     .getPrepositionForNotCombinedTimeline(mContext));
             if (getTimelineType().isAtOrigin()) {
-                I18n.appendWithSpace(subTitle, getMyAccount().getOrigin().getName()
+                I18n.appendWithSpace(subTitle, timeline.getOrigin().getName()
                         + ";");
             }
         }
