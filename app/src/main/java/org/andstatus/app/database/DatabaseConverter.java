@@ -426,28 +426,6 @@ class DatabaseConverter {
 
             sql = "CREATE TABLE command (_id INTEGER PRIMARY KEY NOT NULL,queue_type TEXT NOT NULL,command_code TEXT NOT NULL,command_created_date INTEGER NOT NULL,command_description TEXT,in_foreground BOOLEAN DEFAULT 0 NOT NULL,manually_launched BOOLEAN DEFAULT 0 NOT NULL,timeline_id INTEGER,timeline_type STRING,account_id INTEGER,user_id INTEGER,username TEXT,origin_id INTEGER,search_query TEXT,item_id INTEGER,last_executed_date INTEGER,execution_count INTEGER DEFAULT 0 NOT NULL,retries_left INTEGER DEFAULT 0 NOT NULL,num_auth_exceptions INTEGER DEFAULT 0 NOT NULL,num_io_exceptions INTEGER DEFAULT 0 NOT NULL,num_parse_exceptions INTEGER DEFAULT 0 NOT NULL,error_message TEXT,downloaded_count INTEGER DEFAULT 0 NOT NULL,progress_text TEXT)";
             DbUtils.execSQL(db, sql);
-
-            Set<AccountData> accountDataSet = PersistentAccounts.getAccountDataFromAccountManager(MyContextHolder.get());
-            for (AccountData accountData : accountDataSet) {
-                long accountId = accountData.getDataLong(MyAccount.KEY_USER_ID, 0);
-                sql = "SELECT origin_id FROM user WHERE _id=" + accountId;
-                long originId = MyQuery.sqlToLong(db, sql, sql);
-                if (originId != 0) {
-                    for (TimelineType timelineType : TimelineType.defaultTimelineTypes) {
-                        insertTimeline(timelineType, originId, accountId);
-                    }
-                }
-            }
-        }
-
-        private void insertTimeline(TimelineType timelineType, long originId, long userId) {
-            sql = "INSERT INTO timeline (timeline_type, origin_id, account_id" +
-                    ", selector_order, synced)"
-                    + " VALUES('" + timelineType.save() + "', "
-                    + originId + ", " + userId + ", "
-                    + timelineType.ordinal() + ", "
-                    + (timelineType.isSyncableByDefault() ? "1" : "0") + ")";
-            DbUtils.execSQL(db, sql);
         }
     }
 }

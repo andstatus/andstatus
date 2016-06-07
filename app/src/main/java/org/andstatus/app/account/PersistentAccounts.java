@@ -12,7 +12,6 @@ import org.andstatus.app.backup.MyBackupDataInput;
 import org.andstatus.app.backup.MyBackupDataOutput;
 import org.andstatus.app.backup.MyBackupDescriptor;
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyQuery;
@@ -45,12 +44,14 @@ public class PersistentAccounts {
      * Name of "current" account: it is not stored when application is killed
      */
     private volatile String currentAccountName = "";
-    
+
+    private final MyContext myContext;
     private final Map<String,MyAccount> mAccounts = new ConcurrentHashMap<>();
     private int distinctOriginsCount = 0;
     private volatile Set<Long> myFriends = null;
 
-    private PersistentAccounts() {
+    private PersistentAccounts(MyContext myContext) {
+        this.myContext = myContext;
     }
     
     /**
@@ -73,10 +74,6 @@ public class PersistentAccounts {
     }
     
     public PersistentAccounts initialize() {
-        return initialize(MyContextHolder.get());
-    }
-    
-    public PersistentAccounts initialize(MyContext myContext) {
         defaultAccountName = getDefaultAccountName();
         mAccounts.clear();
         myFriends = null;
@@ -121,8 +118,8 @@ public class PersistentAccounts {
         distinctOriginsCount = originIds.size();
     }
     
-    public static PersistentAccounts getEmpty() {
-        return new PersistentAccounts();
+    public static PersistentAccounts newEmpty(MyContext myContext) {
+        return new PersistentAccounts(myContext);
     }
     
     /**
@@ -142,7 +139,7 @@ public class PersistentAccounts {
             }
         }
         if (found) {
-            MyAccount.Builder.fromMyAccount(MyContextHolder.get(), ma, "delete", false).deleteData();
+            MyAccount.Builder.fromMyAccount(myContext, ma, "delete", false).deleteData();
 
             // And delete the object from the list
             mAccounts.remove(ma.getAccountName());
@@ -160,7 +157,7 @@ public class PersistentAccounts {
      * @return Invalid account if was not found
      */
     public MyAccount fromAccountName(String accountNameIn) {
-        MyAccount myAccount = MyAccount.getEmpty(MyContextHolder.get(), accountNameIn);
+        MyAccount myAccount = MyAccount.getEmpty(myContext, accountNameIn);
         if (!myAccount.isUsernameValid()) {
             return myAccount;
         }
@@ -174,11 +171,11 @@ public class PersistentAccounts {
         // Try to find persisted Account which was not loaded yet
         if (!myAccount.isValid()) {
             android.accounts.Account[] androidAccounts = AccountManager.get(
-                    MyContextHolder.get().context()).getAccountsByType(
+                    myContext.context()).getAccountsByType(
                     AuthenticatorService.ANDROID_ACCOUNT_TYPE);
             for (android.accounts.Account androidAccount : androidAccounts) {
                 if (myAccount.getAccountName().compareTo(androidAccount.name) == 0) {
-                    myAccount = Builder.fromAndroidAccount(MyContextHolder.get(), androidAccount)
+                    myAccount = Builder.fromAndroidAccount(myContext, androidAccount)
                             .getAccount();
                     mAccounts.put(myAccount.getAccountName(), myAccount);
                     MyPreferences.onPreferencesChanged();
@@ -248,7 +245,7 @@ public class PersistentAccounts {
      */
     @NonNull
     public MyAccount fromUserId(long userId) {
-        MyAccount ma = MyAccount.getEmpty(MyContextHolder.get(), "(id=" + userId +")");
+        MyAccount ma = MyAccount.getEmpty(myContext, "(id=" + userId +")");
         if (userId != 0) {
             for (MyAccount persistentAccount : mAccounts.values()) {
                 if (persistentAccount.getUserId() == userId) {
@@ -280,7 +277,7 @@ public class PersistentAccounts {
             }
         }
         if (ma == null) {
-            ma = MyAccount.getEmpty(MyContextHolder.get(), "");
+            ma = MyAccount.getEmpty(myContext, "");
         }
         return ma;
     }
@@ -497,7 +494,7 @@ public class PersistentAccounts {
         Set<Long> friends = new HashSet<>();
         String sql = "SELECT DISTINCT " + FriendshipTable.FRIEND_ID + " FROM " + FriendshipTable.TABLE_NAME
                 + " WHERE " + FriendshipTable.FOLLOWED + "=1";
-        SQLiteDatabase db = MyContextHolder.get().getDatabase();
+        SQLiteDatabase db = myContext.getDatabase();
         Cursor cursor = null;
         try {
             cursor = db.rawQuery(sql, null);
@@ -510,6 +507,12 @@ public class PersistentAccounts {
             DbUtils.closeSilently(cursor);
         }
         myFriends = friends;
+    }
+
+    public void addDefaultTimelinesIfNoneFound() {
+        for (MyAccount ma : mAccounts.values()) {
+            myContext.persistentTimelines().addDefaultTimelinesIfNoneFound(ma);
+        }
     }
 
     public MyAccount getDefaultAccount() {

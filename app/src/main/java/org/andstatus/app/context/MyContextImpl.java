@@ -71,8 +71,8 @@ public final class MyContextImpl implements MyContext {
      */
     private volatile long mPreferencesChangeTime = 0;
     private volatile DatabaseHolder mDb;
-    private final PersistentAccounts mPersistentAccounts = PersistentAccounts.getEmpty();
-    private final PersistentOrigins mPersistentOrigins = PersistentOrigins.getEmpty();
+    private final PersistentAccounts mPersistentAccounts = PersistentAccounts.newEmpty(this);
+    private final PersistentOrigins mPersistentOrigins = PersistentOrigins.newEmpty(this);
     private final PersistentTimelines persistentTimelines = PersistentTimelines.newEmpty(this);
 
     private volatile boolean mExpired = false;
@@ -109,8 +109,8 @@ public final class MyContextImpl implements MyContext {
                 switch (myContext.mState) {
                     case READY:
                         myContext.mDb = newDb;
-                        myContext.mPersistentOrigins.initialize(myContext);
-                        myContext.mPersistentAccounts.initialize(myContext);
+                        myContext.mPersistentOrigins.initialize();
+                        myContext.mPersistentAccounts.initialize();
                         myContext.persistentTimelines.initialize();
                         MyImageCache.initialize(myContext.context());
                         break;

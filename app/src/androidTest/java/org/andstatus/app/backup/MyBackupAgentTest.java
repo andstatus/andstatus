@@ -41,7 +41,7 @@ public class MyBackupAgentTest extends InstrumentationTestCase {
         TestSuite.forget();
         TestSuite.initialize(this);
         
-        PersistentAccounts accountsBefore = PersistentAccounts.getEmpty();
+        PersistentAccounts accountsBefore = PersistentAccounts.newEmpty(MyContextHolder.get());
         accountsBefore.initialize();
         assertEquals("Compare Persistent accounts with copy", MyContextHolder.get().persistentAccounts(), accountsBefore);
         compareOneAccount(MyContextHolder.get().persistentAccounts(), accountsBefore, TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME);

@@ -72,7 +72,7 @@ public class TimelineSelector extends SelectorDialog {
                 getArguments().getLong(IntentExtra.ORIGIN_ID.key, 0))
         );
         if (listData.isEmpty()) {
-            returnSelectedTimeline(null);
+            returnSelectedTimeline(Timeline.getEmpty(null));
             return;
         } else if (listData.size() == 1) {
             returnSelectedTimeline(listData.get(0));

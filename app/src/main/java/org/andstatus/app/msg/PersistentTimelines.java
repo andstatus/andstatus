@@ -43,7 +43,7 @@ import java.util.Map;
  */
 public class PersistentTimelines {
     private final List<Timeline> timelines = new ArrayList<>();
-    private MyContext myContext;
+    private final MyContext myContext;
 
     public static PersistentTimelines newEmpty(MyContext myContext) {
         return new PersistentTimelines(myContext);
@@ -174,7 +174,7 @@ public class PersistentTimelines {
         });
     }
 
-    public void onAccountSave(MyAccount ma) {
+    public void addDefaultTimelinesIfNoneFound(MyAccount ma) {
         if (ma.isValid() && getFiltered(false, false, ma, null).isEmpty()) {
             long timelineId = MyQuery.conditionToLongColumnValue(TimelineTable.TABLE_NAME,
                     TimelineTable._ID, TimelineTable.ACCOUNT_ID + "=" + ma.getUserId());

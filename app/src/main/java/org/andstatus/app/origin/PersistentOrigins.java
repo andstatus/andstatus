@@ -22,7 +22,7 @@ import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MyContextImpl;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.database.OriginTable;
 import org.andstatus.app.util.MyLog;
@@ -32,16 +32,14 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class PersistentOrigins {
+    private final MyContext myContext;
     private final Map<String,Origin> mOrigins = new ConcurrentHashMap<String, Origin>();
     
-    private PersistentOrigins() {
+    private PersistentOrigins(MyContextImpl myContext) {
+        this.myContext = myContext;
     }
 
     public PersistentOrigins initialize() {
-        return initialize(MyContextHolder.get());
-    }
-    
-    public PersistentOrigins initialize(MyContext myContext) {
         return initialize(myContext.getDatabase());
     }
     
@@ -63,8 +61,8 @@ public class PersistentOrigins {
         return this;
     }
     
-    public static PersistentOrigins getEmpty() {
-        return new PersistentOrigins();
+    public static PersistentOrigins newEmpty(MyContextImpl myContext) {
+        return new PersistentOrigins(myContext);
     }
 
     /**
