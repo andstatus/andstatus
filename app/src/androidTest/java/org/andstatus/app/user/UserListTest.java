@@ -27,7 +27,7 @@ import org.andstatus.app.data.ConversationInserter;
 import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.data.TimelineType;
+import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.msg.MessageListContextMenuItem;
 import org.andstatus.app.msg.TimelineActivity;

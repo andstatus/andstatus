@@ -34,6 +34,7 @@ import org.andstatus.app.database.MsgOfUserTable;
 import org.andstatus.app.database.UserTable;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
+import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.SharedPreferencesUtil;
 
 import java.util.ArrayList;

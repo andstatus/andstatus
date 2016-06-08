@@ -509,12 +509,6 @@ public class PersistentAccounts {
         myFriends = friends;
     }
 
-    public void addDefaultTimelinesIfNoneFound() {
-        for (MyAccount ma : mAccounts.values()) {
-            myContext.persistentTimelines().addDefaultTimelinesIfNoneFound(ma);
-        }
-    }
-
     public MyAccount getDefaultAccount() {
         return fromAccountName(defaultAccountName);
     }

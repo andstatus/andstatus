@@ -19,6 +19,7 @@ package org.andstatus.app.data;
 import android.net.Uri;
 import android.test.InstrumentationTestCase;
 
+import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.user.UserListType;
 
 public class ParsedUriTest extends InstrumentationTestCase {

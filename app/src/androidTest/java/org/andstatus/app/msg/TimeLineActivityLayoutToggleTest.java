@@ -23,7 +23,7 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MatchedUri;
-import org.andstatus.app.data.TimelineType;
+import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;

@@ -29,7 +29,7 @@ import net.jcip.annotations.GuardedBy;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.data.TimelineType;
+import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyService;

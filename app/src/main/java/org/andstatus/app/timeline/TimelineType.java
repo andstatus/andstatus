@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.andstatus.app.data;
+package org.andstatus.app.timeline;
 
 import android.content.Context;
 import android.support.annotation.NonNull;

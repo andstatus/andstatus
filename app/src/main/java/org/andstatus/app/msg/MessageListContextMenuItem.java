@@ -34,7 +34,7 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.FileProvider;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.data.TimelineType;
+import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;

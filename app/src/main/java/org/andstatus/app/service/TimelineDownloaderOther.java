@@ -20,7 +20,7 @@ import android.text.TextUtils;
 
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DataInserter;
-import org.andstatus.app.data.LatestTimelineItem;
+import org.andstatus.app.timeline.LatestTimelineItem;
 import org.andstatus.app.data.LatestUserMessages;
 import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.data.MyQuery;

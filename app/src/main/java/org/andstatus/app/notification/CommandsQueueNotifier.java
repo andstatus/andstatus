@@ -24,7 +24,7 @@ import android.content.Intent;
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.data.TimelineType;
+import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.service.QueueViewer;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;

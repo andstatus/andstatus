@@ -139,7 +139,7 @@ public class DatabaseConverterController {
                     MyContextHolder.initialize(activity[0], activity[0]);
                 }
                 if (MyContextHolder.get().isReady()) {
-                    MyContextHolder.get().persistentAccounts().addDefaultTimelinesIfNoneFound();
+                    MyContextHolder.get().persistentTimelines().addDefaultTimelinesIfNoneFound();
                 }
                 HelpActivity.startFromActivity(activity[0]);
             }

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.andstatus.app.msg;
+package org.andstatus.app.timeline;
 
 import android.content.Intent;
 import android.os.Bundle;

@@ -30,7 +30,7 @@ import org.andstatus.app.MyAction;
 import org.andstatus.app.appwidget.AppWidgets;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.data.TimelineType;
+import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.notification.CommandsQueueNotifier;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;

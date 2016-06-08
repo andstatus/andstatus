@@ -24,7 +24,7 @@ import android.text.format.Time;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.data.TimelineType;
+import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.service.CommandResult;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;

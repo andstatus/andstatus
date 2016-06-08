@@ -35,6 +35,7 @@ import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.service.AttachmentDownloaderTest;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandExecutionContext;
+import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.SelectionAndArgs;
 import org.andstatus.app.util.TriState;
 

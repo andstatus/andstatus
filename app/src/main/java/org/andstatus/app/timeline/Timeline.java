@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.andstatus.app.msg;
+package org.andstatus.app.timeline;
 
 import android.content.ContentValues;
 import android.database.Cursor;
@@ -29,7 +29,6 @@ import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.ParsedUri;
-import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.database.CommandTable;
 import org.andstatus.app.database.TimelineTable;
 import org.andstatus.app.origin.Origin;

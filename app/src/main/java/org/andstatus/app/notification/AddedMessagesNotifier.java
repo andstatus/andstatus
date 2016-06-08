@@ -27,7 +27,7 @@ import org.andstatus.app.R;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.MatchedUri;
-import org.andstatus.app.data.TimelineType;
+import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.msg.TimelineActivity;
 import org.andstatus.app.service.CommandResult;
 import org.andstatus.app.util.I18n;

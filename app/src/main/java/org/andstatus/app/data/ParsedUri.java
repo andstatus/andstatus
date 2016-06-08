@@ -20,6 +20,7 @@ import android.net.Uri;
 import android.support.annotation.NonNull;
 
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.user.UserListType;
 import org.andstatus.app.util.MyLog;
 

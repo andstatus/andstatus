@@ -32,7 +32,7 @@ import org.andstatus.app.MyListActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.widget.MySimpleAdapter;
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.data.TimelineType;
+import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.MyLog;
 
 import java.util.ArrayList;

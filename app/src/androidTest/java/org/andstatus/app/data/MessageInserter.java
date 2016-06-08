@@ -30,6 +30,7 @@ import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandExecutionContext;
+import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UrlUtils;

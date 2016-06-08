@@ -46,7 +46,7 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.data.TimelineType;
+import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
 import org.andstatus.app.os.AsyncTaskLauncher;

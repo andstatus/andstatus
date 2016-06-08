@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.andstatus.app.msg;
+package org.andstatus.app.timeline;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -29,7 +29,6 @@ import org.andstatus.app.R;
 import org.andstatus.app.SelectorDialog;
 import org.andstatus.app.widget.MySimpleAdapter;
 import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.data.TimelineType;
 
 import java.util.ArrayList;
 import java.util.HashMap;

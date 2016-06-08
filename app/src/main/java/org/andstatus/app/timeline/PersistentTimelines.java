@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.andstatus.app.msg;
+package org.andstatus.app.timeline;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -172,6 +172,12 @@ public class PersistentTimelines {
                 }
             }
         });
+    }
+
+    public void addDefaultTimelinesIfNoneFound() {
+        for (MyAccount ma : myContext.persistentAccounts().collection()) {
+            addDefaultTimelinesIfNoneFound(ma);
+        }
     }
 
     public void addDefaultTimelinesIfNoneFound(MyAccount ma) {

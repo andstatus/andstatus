@@ -27,6 +27,7 @@ import org.andstatus.app.database.DatabaseHolder;
 import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.database.OriginTable;
 import org.andstatus.app.database.UserTable;
+import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.user.UserListType;
 
 /**

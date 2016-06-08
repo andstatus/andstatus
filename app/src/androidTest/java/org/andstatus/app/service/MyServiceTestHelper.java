@@ -9,7 +9,6 @@ import org.andstatus.app.account.MyAccountTest;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.net.http.HttpConnectionMock;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;

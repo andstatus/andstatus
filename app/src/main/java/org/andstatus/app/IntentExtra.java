@@ -19,7 +19,7 @@ package org.andstatus.app;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.appwidget.MyAppWidgetProvider;
 import org.andstatus.app.data.ParsedUri;
-import org.andstatus.app.data.TimelineType;
+import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.service.MyService;
 import org.andstatus.app.service.MyServiceState;
 

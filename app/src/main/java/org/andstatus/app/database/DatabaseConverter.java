@@ -21,22 +21,16 @@ import android.app.ProgressDialog;
 import android.database.sqlite.SQLiteDatabase;
 
 import org.andstatus.app.R;
-import org.andstatus.app.account.AccountData;
-import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.account.MyAccountConverter;
-import org.andstatus.app.account.PersistentAccounts;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyStorage;
 import org.andstatus.app.data.ApplicationUpgradeException;
 import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.data.TimelineType;
 import org.andstatus.app.util.DialogFactory;
 import org.andstatus.app.util.FileUtils;
 import org.andstatus.app.util.MyLog;
 
 import java.io.File;
-import java.util.Set;
 
 class DatabaseConverter {
     long startTime = java.lang.System.currentTimeMillis();

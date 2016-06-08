@@ -5,7 +5,7 @@ import android.test.InstrumentationTestCase;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.data.TimelineType;
+import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.TriState;
 
 public class CommandExecutionContextTest extends InstrumentationTestCase {

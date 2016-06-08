@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package org.andstatus.app.data;
+package org.andstatus.app.timeline;
 
 import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.msg.Timeline;
+import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.net.social.TimelinePosition;
 import org.andstatus.app.util.MyLog;
 

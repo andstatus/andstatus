@@ -29,7 +29,7 @@ import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
-import org.andstatus.app.data.TimelineType;
+import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.database.MsgOfUserTable;
 import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.net.http.ConnectionException;

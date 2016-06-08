@@ -21,7 +21,7 @@ import android.text.TextUtils;
 import android.widget.ListView;
 
 import org.andstatus.app.LoadableListActivity;
-import org.andstatus.app.data.TimelineType;
+import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;

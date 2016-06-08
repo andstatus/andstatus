@@ -18,7 +18,7 @@ package org.andstatus.app.service;
 
 import org.andstatus.app.appwidget.AppWidgets;
 import org.andstatus.app.data.DataPruner;
-import org.andstatus.app.data.TimelineType;
+import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.notification.AddedMessagesNotifier;
 import org.andstatus.app.util.MyLog;
 

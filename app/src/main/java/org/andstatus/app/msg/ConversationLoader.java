@@ -28,7 +28,7 @@ import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.data.TimelineType;
+import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;

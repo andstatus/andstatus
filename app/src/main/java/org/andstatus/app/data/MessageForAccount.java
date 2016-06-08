@@ -26,6 +26,7 @@ import org.andstatus.app.database.DownloadTable;
 import org.andstatus.app.database.FriendshipTable;
 import org.andstatus.app.database.MsgOfUserTable;
 import org.andstatus.app.database.MsgTable;
+import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
 

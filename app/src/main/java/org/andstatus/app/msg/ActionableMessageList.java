@@ -17,7 +17,7 @@
 package org.andstatus.app.msg;
 
 import org.andstatus.app.LoadableListActivity;
-import org.andstatus.app.data.TimelineType;
+import org.andstatus.app.timeline.TimelineType;
 
 /**
  * Activity should implement this interface in order to use {@link MessageContextMenu} 
