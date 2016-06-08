@@ -138,7 +138,8 @@ public class MyServiceTest extends InstrumentationTestCase {
     }
     
     public void testSyncInForeground() throws InterruptedException {
-        MyLog.v(this, "testSyncInForeground started");
+        final String method = "testSyncInForeground";
+        MyLog.v(this, method + " started");
         SharedPreferencesUtil.getDefaultSharedPreferences().edit()
                 .putBoolean(MyPreferences.KEY_SYNC_WHILE_USING_APPLICATION, false).commit();
         CommandData cd1 = CommandData.newTimelineCommand(CommandEnum.FETCH_TIMELINE,
@@ -150,24 +151,31 @@ public class MyServiceTest extends InstrumentationTestCase {
         long endCount = mService.executionEndCount;
 
         mService.sendListenedToCommand();
-        assertTrue("First command started executing", mService.waitForCommandExecutionStarted(startCount));
-        assertTrue("First command ended executing", mService.waitForCommandExecutionEnded(endCount));
+        assertTrue("First command didn't start executing", mService.waitForCommandExecutionStarted(startCount));
+        assertTrue("First command didn't end executing", mService.waitForCommandExecutionEnded(endCount));
         assertEquals(mService.httpConnectionMock.toString(),
                 mService.httpConnectionMock.getRequestsCounter(), 1);
 
         assertTrue(TestSuite.setAndWaitForIsInForeground(true));
+        MyLog.v(this, method + "; we are in a foreground");
 
         CommandData cd2 = CommandData.newTimelineCommand(CommandEnum.FETCH_TIMELINE,
                 TestSuite.getMyAccount(TestSuite.TWITTER_TEST_ACCOUNT_NAME),
                 TimelineType.MENTIONS);
         mService.listenedCommand = cd2;
-        mService.sendListenedToCommand();
 
+        startCount = mService.executionStartCount;
+        endCount = mService.executionEndCount;
+        mService.sendListenedToCommand();
+        assertFalse("Second command started execution", mService.waitForCommandExecutionStarted(startCount));
+        MyLog.v(this, method + "; After waiting for the second command");
         assertTrue("Service stopped", mService.waitForServiceStopped(false));
+        MyLog.v(this, method + "; Service stopped after the second command");
         assertEquals("No new data was posted while in foreground",
                 mService.httpConnectionMock.getRequestsCounter(), 1);
 
         Queue<CommandData> queue = new CommandQueue().load().get(QueueType.CURRENT);
+        MyLog.v(this, method + "; Queue loaded, size:" + queue.size());
         assertFalse("Main queue is empty", queue.isEmpty());
         assertFalse("First command is in the main queue", queue.contains(cd1));
         assertTrue("The second command is not in the main queue", queue.contains(cd2));
@@ -202,7 +210,7 @@ public class MyServiceTest extends InstrumentationTestCase {
         
         assertFalse("Foreground command is not in main queue", queue.contains(cd3));
         new CommandQueue().clear();
-        MyLog.v(this, "testSyncInForeground ended");
+        MyLog.v(this, method + " ended");
         myTestDeleteCommand(cd2);
     }
     

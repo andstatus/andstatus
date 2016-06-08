@@ -16,9 +16,15 @@
 
 package org.andstatus.app.os;
 
+import android.support.annotation.NonNull;
+
 import org.andstatus.app.util.MyLog;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Queue;
+import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.RejectedExecutionException;
@@ -104,6 +110,7 @@ public class AsyncTaskLauncher<Params> {
                            boolean throwOnFail, Params... params) {
         boolean launched = false;
         try {
+            checkForStalledTasks();
             if (asyncTask.isSingleInstance() && foundUnfinished(asyncTask)) {
                 skippedCount.incrementAndGet();
             } else {
@@ -123,6 +130,17 @@ public class AsyncTaskLauncher<Params> {
             }
         }
         return launched;
+    }
+
+    private void checkForStalledTasks() {
+        Set<MyAsyncTask.PoolEnum> stalledPools = new HashSet<>();
+        for (MyAsyncTask<?, ?, ?> launched : launchedTasks) {
+            if (launched.needsBackgroundWork() && !launched.isReallyWorking()) {
+                MyLog.v(this, "Found stalled task at " + launched.pool + ": " + launched);
+                stalledPools.add(launched.pool);
+            }
+        }
+        shutdownExecutors(stalledPools);
     }
 
     private boolean foundUnfinished(MyAsyncTask<Params, ?, ?> asyncTask) {
@@ -227,17 +245,33 @@ public class AsyncTaskLauncher<Params> {
         return builder2;
     }
 
-    public static void shutdownExecutor(MyAsyncTask.PoolEnum pool) {
-        if (pool != MyAsyncTask.PoolEnum.DEFAULT)  {
-            getExecutor(pool).shutdown();
+    public static void shutdownExecutors(@NonNull Collection<MyAsyncTask.PoolEnum> pools) {
+        for (MyAsyncTask.PoolEnum pool : pools) {
+            ThreadPoolExecutor executor = getExecutor(pool);
+            if (pool == MyAsyncTask.PoolEnum.DEFAULT || executor == null)  {
+                continue;
+            }
+            try {
+                MyLog.v(TAG, "Shutting down executor:" + executor);
+                executor.shutdown();
+                executor.awaitTermination(5, TimeUnit.SECONDS);
+            }
+            catch (InterruptedException e) {
+                MyLog.d(TAG, "Interrupted: Shutting down executor:" + executor);
+            }
+            finally {
+                if (!executor.isTerminated()) {
+                    MyLog.d(TAG, "Cancelling unfinished tasks in executor:" + executor);
+                }
+                executor.shutdownNow();
+                MyLog.v(TAG, "Shut down finished. Executor:" + executor);
+                removePoolTasks(pool);
+            }
         }
     }
 
     public static void forget() {
         MyLog.v(TAG, "forget");
-        for (MyAsyncTask.PoolEnum pool : MyAsyncTask.PoolEnum.values()) {
-            shutdownExecutor(pool);
-            removePoolTasks(pool);
-        }
+        shutdownExecutors(Arrays.asList(MyAsyncTask.PoolEnum.values()));
     }
 }

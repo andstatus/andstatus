@@ -29,10 +29,10 @@ import net.jcip.annotations.GuardedBy;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
-import org.andstatus.app.service.MyService;
 import org.andstatus.app.service.MyServiceEvent;
 import org.andstatus.app.service.MyServiceEventsListener;
 import org.andstatus.app.service.MyServiceEventsReceiver;
@@ -107,7 +107,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements MyServic
                         break;
                     }
                     syncLock.wait(java.util.concurrent.TimeUnit.SECONDS.toMillis(
-                            MyService.MAX_COMMAND_EXECUTION_SECONDS / numIterations ));
+                            MyAsyncTask.MAX_COMMAND_EXECUTION_SECONDS / numIterations ));
                 }
             }
             interrupted = false;

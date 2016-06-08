@@ -507,7 +507,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
             }
             allowed = false;
         } else if (!commandData.isInForeground() &&
-                !RelativeTime.moreSecondsAgoThan(lastLoadedAt, NO_AUTO_REFRESH_AFTER_LOAD_SECONDS)) {
+                !RelativeTime.wasButMoreSecondsAgoThan(lastLoadedAt, NO_AUTO_REFRESH_AFTER_LOAD_SECONDS)) {
             if (MyLog.isVerboseEnabled()) {
                 MyLog.v(this, "Ignoring background content change - loaded recently");
             }

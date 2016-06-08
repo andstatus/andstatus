@@ -30,15 +30,16 @@ import org.andstatus.app.MyAction;
 import org.andstatus.app.appwidget.AppWidgets;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.notification.CommandsQueueNotifier;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
+import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TriState;
 
+import java.util.Collections;
 import java.util.Queue;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.atomic.AtomicLong;
@@ -48,7 +49,6 @@ import java.util.concurrent.atomic.AtomicLong;
  * between this Android Device and Social networks.
  */
 public class MyService extends Service {
-    public static final long MAX_COMMAND_EXECUTION_SECONDS = 600;
 
     private final Object serviceStateLock = new Object();
     /** We are going to finish this service. But may rethink...  */
@@ -241,7 +241,7 @@ public class MyService extends Service {
     private void reviveHeartBeat() {
         synchronized(heartBeatLock) {
             if (mHeartBeat != null && !mHeartBeat.isReallyWorking()) {
-                mHeartBeat.cancel(true);
+                mHeartBeat.cancelLogged(true);
                 mHeartBeat = null;
             }
             if (mHeartBeat == null) {
@@ -391,7 +391,7 @@ public class MyService extends Service {
             }
             if (mExecutor.needsBackgroundWork()) {
                 logMessageBuilder.append(" Cancelling and");
-                mExecutor.cancel(true);
+                mExecutor.cancelLogged(true);
             }
             logMessageBuilder.append(" Removing Executor " + mExecutor);
             mExecutor = null;
@@ -424,7 +424,7 @@ public class MyService extends Service {
     
     private boolean isExecutorReallyWorkingNow() {
         synchronized(executorLock) {
-          return mExecutor != null && mExecutor.needsBackgroundWork() && mExecutor.isReallyWorking();
+          return mExecutor != null && mExecutor.isReallyWorking();
         }        
     }
     
@@ -482,11 +482,11 @@ public class MyService extends Service {
         }
         synchronized(heartBeatLock) {
             if (mHeartBeat != null) {
-                mHeartBeat.cancel(true);
+                mHeartBeat.cancelLogged(true);
                 mHeartBeat = null;
             }
         }
-        AsyncTaskLauncher.shutdownExecutor(MyAsyncTask.PoolEnum.SYNC);
+        AsyncTaskLauncher.shutdownExecutors(Collections.singleton(MyAsyncTask.PoolEnum.SYNC));
         releaseWakeLock();
         stopSelfResult(latestProcessedStartId);
         CommandsQueueNotifier.newInstance(MyContextHolder.get()).update(
@@ -530,8 +530,6 @@ public class MyService extends Service {
     
     private class QueueExecutor extends MyAsyncTask<Void, Void, Boolean> implements CommandExecutorParent {
         private volatile CommandData currentlyExecuting = null;
-        private volatile long currentlyExecutingSince = 0;
-        private static final long DELAY_AFTER_EXECUTOR_ENDED_SECONDS = 1;
         private static final long MAX_EXECUTION_TIME_SECONDS = 60;
 
         public QueueExecutor() {
@@ -747,20 +745,7 @@ public class MyService extends Service {
             sb.append(super.toString());
             return MyLog.formatKeyValue(this, sb.toString());
         }
-        
-        boolean isReallyWorking() {
-            if (backgroundEndedAt > 0) {
-                return !RelativeTime.moreSecondsAgoThan(backgroundEndedAt,
-                        DELAY_AFTER_EXECUTOR_ENDED_SECONDS);
-            }
-            if ( !needsBackgroundWork()
-                    || currentlyExecuting == null
-                    || RelativeTime.moreSecondsAgoThan(currentlyExecutingSince,
-                            MAX_COMMAND_EXECUTION_SECONDS)) {
-                return false;
-            }
-            return true;
-        }
+
     }
     
     private class HeartBeat extends MyAsyncTask<Void, Long, Void> {
@@ -829,11 +814,11 @@ public class MyService extends Service {
         public String toString() {
             return "HeartBeat " + mIteration + "; " + super.toString();
         }
-        
+
+        @Override
         public boolean isReallyWorking() {
             if ( !needsBackgroundWork()
-                    || RelativeTime.moreSecondsAgoThan(previousBeat,
-                            HEARTBEAT_PERIOD_SECONDS + 3)) {
+                    || RelativeTime.wasButMoreSecondsAgoThan(previousBeat, HEARTBEAT_PERIOD_SECONDS + 3)) {
                 return false;
             }
             return true;

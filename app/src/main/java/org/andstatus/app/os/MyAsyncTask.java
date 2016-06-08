@@ -28,12 +28,22 @@ import org.andstatus.app.util.RelativeTime;
  * @author yvolk@yurivolkov.com
  */
 public abstract class MyAsyncTask<Params, Progress, Result> extends AsyncTask<Params, Progress, Result> {
+    public static final long MAX_WAITING_BEFORE_EXECUTION_SECONDS = 600;
+    public static final long MAX_COMMAND_EXECUTION_SECONDS = 600;
+    public static final long MAX_EXECUTION_AFTER_CANCEL_SECONDS = 300;
+    protected static final long DELAY_AFTER_EXECUTOR_ENDED_SECONDS = 1;
+
     private final String taskId;
     protected final long createdAt = MyLog.uniqueCurrentTimeMS();
     protected final long instanceId = InstanceId.next();
+    private boolean singleInstance = true;
+
     protected volatile long backgroundStartedAt;
     protected volatile long backgroundEndedAt;
-    private boolean singleInstance = true;
+    /** This allows to control execution time of single steps/commands by this AsyncTask */
+    protected volatile long currentlyExecutingSince = 0;
+
+    protected volatile long cancelledAt = 0;
 
     public enum PoolEnum {
         SYNC(2),
@@ -71,6 +81,7 @@ public abstract class MyAsyncTask<Params, Progress, Result> extends AsyncTask<Pa
     @Override
     protected final Result doInBackground(Params... params) {
         backgroundStartedAt = System.currentTimeMillis();
+        currentlyExecutingSince = backgroundStartedAt;
         try {
             if (isCancelled()) {
                 return null;
@@ -143,9 +154,24 @@ public abstract class MyAsyncTask<Params, Progress, Result> extends AsyncTask<Pa
                 break;
         }
         if (isCancelled()) {
-            summary += ", cancelled";
+            if (cancelledAt == 0) {
+                cancelledAt = System.currentTimeMillis();
+            }
+            summary += ", cancelled " + RelativeTime.secondsAgo(cancelledAt) + "sec ago";
         }
         return summary;
+    }
+
+    public boolean isReallyWorking() {
+        return needsBackgroundWork() && !isStalled();
+    }
+
+    private boolean isStalled() {
+        return RelativeTime.wasButMoreSecondsAgoThan(backgroundEndedAt, DELAY_AFTER_EXECUTOR_ENDED_SECONDS)
+                || RelativeTime.wasButMoreSecondsAgoThan(currentlyExecutingSince, MAX_COMMAND_EXECUTION_SECONDS)
+                || RelativeTime.wasButMoreSecondsAgoThan(cancelledAt, MAX_EXECUTION_AFTER_CANCEL_SECONDS)
+                || (getStatus() == Status.PENDING
+                && RelativeTime.wasButMoreSecondsAgoThan(createdAt, MAX_WAITING_BEFORE_EXECUTION_SECONDS));
     }
 
     public boolean needsBackgroundWork() {
@@ -157,5 +183,12 @@ public abstract class MyAsyncTask<Params, Progress, Result> extends AsyncTask<Pa
             default:
                 return backgroundEndedAt == 0;
         }
+    }
+
+    public boolean cancelLogged(boolean mayInterruptIfRunning) {
+        if (cancelledAt == 0) {
+            cancelledAt = System.currentTimeMillis();
+        }
+        return super.cancel(mayInterruptIfRunning);
     }
 }

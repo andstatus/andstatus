@@ -135,6 +135,11 @@ public class RelativeTime {
         return getDifference(mContext, mCalendar.getTimeInMillis());
     }
 
+    /** Returns false if previousTime <= 0 */
+    public static boolean wasButMoreSecondsAgoThan(long previousTime, long predefinedPeriodSeconds) {
+        return previousTime > 0 && secondsAgo(previousTime) > predefinedPeriodSeconds;
+    }
+
     public static boolean moreSecondsAgoThan(long previousTime, long predefinedPeriodSeconds) {
         return secondsAgo(previousTime) > predefinedPeriodSeconds;
     }
