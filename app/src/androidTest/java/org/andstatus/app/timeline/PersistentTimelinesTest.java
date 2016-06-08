@@ -14,14 +14,13 @@
  * limitations under the License.
  */
 
-package org.andstatus.app.msg;
+package org.andstatus.app.timeline;
 
 import android.test.InstrumentationTestCase;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.timeline.Timeline;
 
 import java.util.List;
 
