@@ -25,26 +25,29 @@ import org.andstatus.app.WhichPage;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.timeline.LatestTimelineItem;
-import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.timeline.Timeline;
+import org.andstatus.app.timeline.TimelineTitle;
+import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
 * @author yvolk@yurivolkov.com
 */
 public class TimelineLoader implements LoadableListActivity.SyncLoader {
     private final TimelineListParameters params;
-    private volatile TimelinePage pageLoaded = null;
+    private volatile TimelinePage pageLoaded;
     private final long instanceId;
 
     public TimelineLoader(@NonNull TimelineListParameters params, long instanceId) {
         this.params = params;
+        this.pageLoaded = new TimelinePage(new ArrayList<TimelineViewItem>(), getParams());
         this.instanceId = instanceId;
     }
 
@@ -59,27 +62,29 @@ public class TimelineLoader implements LoadableListActivity.SyncLoader {
         if (params.whichPage != WhichPage.EMPTY) {
             Cursor cursor = queryDatabase();
             checkIfReloadIsNeeded(cursor);
-            setPageLoaded(pageFromCursor(cursor));
+            pageLoaded = pageFromCursor(cursor);
         }
         params.endTime = System.nanoTime();
         logExecutionStats();
     }
 
     @Override
+    public List<TimelinePage> getList() {
+        return Collections.singletonList(pageLoaded);
+    }
+
+    @Override
     public int size() {
-        return pageLoaded == null ? 0 : pageLoaded.items.size();
+        return pageLoaded.items.size();
     }
 
     void markStart() {
         params.startTime = System.nanoTime();
         params.cancelled = false;
         params.timelineToSync = TimelineType.UNKNOWN;
-        if (params.getSelectedUserId() != 0) {
-            params.selectedUserWebFingerId =
-                    MyQuery.userIdToWebfingerId(params.getSelectedUserId());
-        }
+        params.timelineTitle = TimelineTitle.load(params.getTimeline(), params.isTimelineCombined());
         if (MyLog.isVerboseEnabled()) {
-            logV("markStart", params.toTimelineTitleAndSubtitle());
+            logV("markStart", params.toSummary());
         }
     }
 
@@ -140,6 +145,7 @@ public class TimelineLoader implements LoadableListActivity.SyncLoader {
                 && cursor != null && !cursor.isClosed() && cursor.getCount() == 0;
     }
 
+    @NonNull
     private TimelinePage pageFromCursor(Cursor cursor) {
         TimelinePage page = new TimelinePage(new ArrayList<TimelineViewItem>(), getParams());
         KeywordsFilter keywordsFilter = new KeywordsFilter(
@@ -197,10 +203,12 @@ public class TimelineLoader implements LoadableListActivity.SyncLoader {
         if (MyLog.isVerboseEnabled()) {
             StringBuilder text = new StringBuilder(getParams().cancelled ? "cancelled" : "ended");
             if (!getParams().cancelled) {
-                text.append(", " + getPageLoaded().items.size() + " rows");
-                text.append(", dates from " + getPageLoaded().parameters.minSentDateLoaded + " to " + getPageLoaded().parameters.maxSentDateLoaded);
+                text.append(", " + pageLoaded.items.size() + " rows");
+                text.append(", dates from " + pageLoaded.parameters.minSentDateLoaded + " to "
+                        + pageLoaded.parameters.maxSentDateLoaded);
             }
-            text.append(", " + java.util.concurrent.TimeUnit.NANOSECONDS.toMillis(getParams().endTime - getParams().startTime) + " ms");
+            text.append(", " + java.util.concurrent.TimeUnit.NANOSECONDS.toMillis(getParams().endTime
+                    - getParams().startTime) + " ms");
             logV("stats", text.toString());
         }
     }
@@ -214,18 +222,6 @@ public class TimelineLoader implements LoadableListActivity.SyncLoader {
             String message = (obj != null) ? obj.toString() : "";
             MyLog.v(this, String.valueOf(instanceId) + " " + method + "; " + message);
         }
-    }
-
-    @NonNull
-    TimelinePage getPageLoaded() {
-        if (pageLoaded == null) {
-            return new TimelinePage(new ArrayList<TimelineViewItem>(), getParams());
-        }
-        return pageLoaded;
-    }
-
-    void setPageLoaded(TimelinePage pageLoaded) {
-        this.pageLoaded = pageLoaded;
     }
 
     @Override

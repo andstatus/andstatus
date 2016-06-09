@@ -223,6 +223,7 @@
   <string name="long_press_to_open_context_menu_on">Long press an item to open its Context Menu</string>
   <string name="long_press_to_open_context_menu_off">Tap an item to open its Context Menu</string>
   <string name="malformed_link">Malformed link</string>
+  <string name="manage_timelines">Manage Timelines</string>
   <string name="message">Message</string>
   <string name="message_twitter">Tweet</string>
   <string name="message_edit_hint">Enter your message here!</string>

@@ -274,5 +274,10 @@
             android:parentActivityName=".msg.TimelineActivity">
         </activity>
 
-</application>
+        <activity android:name=".timeline.TimelineList"
+            android:label="@string/manage_timelines"
+            android:parentActivityName=".context.MySettingsActivity">
+        </activity>
+
+    </application>
 </manifest>

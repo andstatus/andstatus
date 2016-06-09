@@ -944,7 +944,15 @@ public final class MyAccount {
         jso.put(KEY_VERSION, version);
         return jso;
     }
-    
+
+    public String toAccountButtonText() {
+        String accountButtonText = shortestUniqueAccountName();
+        if (!isValidAndSucceeded()) {
+            accountButtonText = "(" + accountButtonText + ")";
+        }
+        return accountButtonText;
+    }
+
     public int numberOfAccountsOfThisOrigin() {
         int count = 0;
         for (MyAccount persistentAccount : MyContextHolder.get().persistentAccounts().collection()) {

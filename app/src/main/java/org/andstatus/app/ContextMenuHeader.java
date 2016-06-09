@@ -38,7 +38,7 @@ public class ContextMenuHeader {
     }
 
     public ContextMenuHeader setSubtitle(String subtitle) {
-        ((TextView)header.findViewById(R.id.subtitle)).setText(subtitle);
+        ((TextView)header.findViewById(R.id.subTitle)).setText(subtitle);
         return this;
     }
 }

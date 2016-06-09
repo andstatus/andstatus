@@ -428,8 +428,7 @@ public class CommandData implements Comparable<CommandData> {
                     I18n.appendWithSpace(builder, 
                             getTimelineType().getPrepositionForNotCombinedTimeline(myContext
                             .context()));
-                    I18n.appendWithSpace(builder,
-                            TimelineListParameters.toAccountButtonText(getAccount()));
+                    I18n.appendWithSpace(builder, getAccount().toAccountButtonText());
                 }
                 break;
             case FOLLOW_USER:

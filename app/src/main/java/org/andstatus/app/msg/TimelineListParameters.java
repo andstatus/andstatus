@@ -27,22 +27,21 @@ import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import org.andstatus.app.IntentExtra;
-import org.andstatus.app.R;
 import org.andstatus.app.WhichPage;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.MatchedUri;
-import org.andstatus.app.database.UserTable;
 import org.andstatus.app.data.ParsedUri;
 import org.andstatus.app.data.ProjectionMap;
 import org.andstatus.app.data.SelectedUserIds;
 import org.andstatus.app.data.TimelineSql;
-import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.database.MsgOfUserTable;
 import org.andstatus.app.database.MsgTable;
+import org.andstatus.app.database.UserTable;
 import org.andstatus.app.timeline.Timeline;
-import org.andstatus.app.util.I18n;
+import org.andstatus.app.timeline.TimelineTitle;
+import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SelectionAndArgs;
 
@@ -80,7 +79,7 @@ public class TimelineListParameters {
     volatile int rowsLoaded = 0;
     volatile long minSentDateLoaded = 0;
     volatile long maxSentDateLoaded = 0;
-    volatile String selectedUserWebFingerId = "";
+    volatile TimelineTitle timelineTitle = new TimelineTitle();
 
     public static TimelineListParameters clone(TimelineListParameters prev, WhichPage whichPage) {
         TimelineListParameters params = new TimelineListParameters(prev.mContext);
@@ -118,18 +117,6 @@ public class TimelineListParameters {
         MyLog.v(TimelineListParameters.class, msgLog);
 
         params.mProjection = TimelineSql.getTimelineProjection();
-    }
-
-    public String toAccountButtonText() {
-        return toAccountButtonText(timeline.getAccount());
-    }
-
-    public static String toAccountButtonText(MyAccount ma) {
-        String accountButtonText = ma.shortestUniqueAccountName();
-        if (!ma.isValidAndSucceeded()) {
-            accountButtonText = "(" + accountButtonText + ")";
-        }
-        return accountButtonText;
     }
 
     public boolean isLoaded() {
@@ -281,49 +268,7 @@ public class TimelineListParameters {
     }
 
     public String toSummary() {
-        return whichPage.getTitle(mContext) + " " + toTimelineTitleAndSubtitle();
-    }
-
-    public String toTimelineTitleAndSubtitle() {
-        return toTimelineTitleAndSubtitle("");
-    }
-
-    public String toTimelineTitleAndSubtitle(String additionalTitleText) {
-        return toTimelineTitle() + "; " + toTimelineSubtitle(additionalTitleText);
-    }
-
-    public String toTimelineTitle() {
-        StringBuilder title = new StringBuilder();
-        I18n.appendWithSpace(title, getTimelineType().getTitle(mContext));
-        if (hasSearchQuery()) {
-            I18n.appendWithSpace(title, "'" + timeline.getSearchQuery() + "'");
-        }
-        if (getTimelineType() == TimelineType.USER
-                && !(isTimelineCombined()
-                && MyContextHolder.get().persistentAccounts()
-                .fromUserId(timeline.getUserId()).isValid())) {
-            I18n.appendWithSpace(title, selectedUserWebFingerId);
-        }
-        if (isTimelineCombined()) {
-            I18n.appendWithSpace(title,
-                    mContext == null ? "combined" : mContext.getText(R.string.combined_timeline_on));
-        }
-        return title.toString();
-    }
-
-    public String toTimelineSubtitle(String additionalTitleText) {
-        final StringBuilder subTitle = new StringBuilder();
-        if (!isTimelineCombined()) {
-            I18n.appendWithSpace(subTitle, getTimelineType()
-                    .getPrepositionForNotCombinedTimeline(mContext));
-            if (getTimelineType().isAtOrigin()) {
-                I18n.appendWithSpace(subTitle, timeline.getOrigin().getName()
-                        + ";");
-            }
-        }
-        I18n.appendWithSpace(subTitle, toAccountButtonText());
-        I18n.appendWithSpace(subTitle, additionalTitleText);
-        return subTitle.toString();
+        return whichPage.getTitle(mContext) + " " + timelineTitle.toString();
     }
 
     @NonNull

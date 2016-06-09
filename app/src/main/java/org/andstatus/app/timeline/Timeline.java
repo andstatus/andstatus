@@ -486,4 +486,7 @@ public class Timeline implements Comparable<Timeline> {
         this.youngestSyncedDate = youngestSyncedDate;
     }
 
+    public boolean isSynced() {
+        return synced;
+    }
 }

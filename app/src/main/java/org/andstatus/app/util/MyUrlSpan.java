@@ -32,6 +32,7 @@ import android.text.style.URLSpan;
 import android.text.util.Linkify;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.CheckBox;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -166,6 +167,14 @@ public class MyUrlSpan extends URLSpan {
         }
 
         return false;
+    }
+
+    public static void showCheckBox(View parentView, int viewId, boolean checked, boolean enabled) {
+        CheckBox checkBox = (CheckBox) parentView.findViewById(viewId);
+        if (checkBox != null) {
+            checkBox.setChecked(checked);
+            checkBox.setEnabled(enabled);
+        }
     }
 
     public static void showView(View view, boolean show) {

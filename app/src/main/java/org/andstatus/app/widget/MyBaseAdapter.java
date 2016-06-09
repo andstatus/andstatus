@@ -49,11 +49,13 @@ public abstract class MyBaseAdapter extends BaseAdapter  implements View.OnClick
                 if (positionView != null) {
                     return positionView;
                 }
-                if (View.class.isAssignableFrom(parentView.getParent().getClass())) {
+                if (parentView.getParent() != null &&
+                        View.class.isAssignableFrom(parentView.getParent().getClass())) {
                     parentView = (View) parentView.getParent();
+                } else {
+                    break;
                 }
             }
-            return (TextView) view.findViewById(R.id.position);
         }
         return null;
     }

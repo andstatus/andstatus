@@ -40,7 +40,6 @@ import org.andstatus.app.HelpActivity;
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.LoadableListActivity;
 import org.andstatus.app.MyAction;
-import org.andstatus.app.MyActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.WhichPage;
 import org.andstatus.app.account.AccountSelector;
@@ -51,7 +50,6 @@ import org.andstatus.app.context.MySettingsActivity;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.TimelineSearchSuggestionsProvider;
-import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.database.UserTable;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
@@ -61,6 +59,7 @@ import org.andstatus.app.service.QueueViewer;
 import org.andstatus.app.test.SelectorActivityMock;
 import org.andstatus.app.timeline.Timeline;
 import org.andstatus.app.timeline.TimelineSelector;
+import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.BundleUtils;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyUrlSpan;
@@ -152,7 +151,7 @@ public class TimelineActivity extends LoadableListActivity implements
         return new TimelineAdapter(mContextMenu,
                 MyPreferences.getShowAvatars() ? R.layout.message_avatar : R.layout.message_basic,
                 getListAdapter(),
-                ((TimelineLoader) getLoaded()).getPageLoaded());
+                (TimelinePage) getLoaded().getList().get(0));
     }
 
     @Override
@@ -536,7 +535,7 @@ public class TimelineActivity extends LoadableListActivity implements
 
     private void updateAccountButtonText(ViewGroup mDrawerList) {
         TextView selectAccountButton = (TextView) mDrawerList.findViewById(R.id.selectAccountButton);
-        String accountButtonText = paramsNew.toAccountButtonText();
+        String accountButtonText = paramsNew.getMyAccount().toAccountButtonText();
         selectAccountButton.setText(accountButtonText);
     }
 
@@ -680,9 +679,7 @@ public class TimelineActivity extends LoadableListActivity implements
 
     @Override
     protected void updateTitle(String additionalTitleText) {
-        new TimelineTitle(getParamsLoaded().getTimelineType() == TimelineType.UNKNOWN ?
-                paramsNew : getParamsLoaded(),
-                additionalTitleText).updateTitle(this);
+        getParamsLoaded().timelineTitle.updateActivityTitle(this, additionalTitleText);
     }
 
     MessageContextMenu getContextMenu() {
@@ -697,29 +694,6 @@ public class TimelineActivity extends LoadableListActivity implements
 
     private void setParamsLoaded(TimelineListParameters paramsLoaded) {
         this.paramsLoaded = paramsLoaded;
-    }
-
-    static class TimelineTitle {
-        private final TimelineListParameters ta;
-        private final String additionalTitleText;
-
-        public TimelineTitle(TimelineListParameters ta, String additionalTitleText) {
-            this.ta = ta;
-            this.additionalTitleText = additionalTitleText;
-        }
-
-        private void updateTitle(MyActivity activity) {
-            activity.setTitle(ta.toTimelineTitle());
-            activity.setSubtitle(ta.toTimelineSubtitle(additionalTitleText));
-            if (MyLog.isVerboseEnabled()) {
-                MyLog.v(activity, "Title: " + toString());
-            }
-        }
-
-        @Override
-        public String toString() {
-            return ta.toTimelineTitleAndSubtitle(additionalTitleText);
-        }
     }
 
     @Override

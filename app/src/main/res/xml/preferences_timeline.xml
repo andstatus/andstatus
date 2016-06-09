@@ -16,6 +16,11 @@
  -->
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
 				  android:title="@string/title_timeline">
+    <Preference
+        android:key="manage_timelines"
+        android:persistent="false"
+        android:title="@string/manage_timelines" >
+    </Preference>
     <org.andstatus.app.context.MultilineListPreference android:key="default_timeline"
         android:entries="@array/timeline_type_entries"
         android:entryValues="@array/timeline_type_values"

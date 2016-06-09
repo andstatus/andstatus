@@ -21,7 +21,6 @@ import android.os.AsyncTask.Status;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v7.app.ActionBar;
 import android.text.TextUtils;
 import android.view.MenuItem;
 import android.view.View;
@@ -32,6 +31,7 @@ import android.widget.TextView;
 import net.jcip.annotations.GuardedBy;
 
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.ParsedUri;
 import org.andstatus.app.os.AsyncTaskLauncher;
@@ -49,6 +49,8 @@ import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.widget.MyBaseAdapter;
 import org.andstatus.app.widget.MySwipeRefreshLayout;
+
+import java.util.List;
 
 /**
  * List, loaded asynchronously. Updated by MyService
@@ -75,6 +77,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
     protected MyAccount ma = MyAccount.getEmpty(MyContextHolder.get(), "");
 
     protected final long mInstanceId = InstanceId.next();
+    protected MyContext myContext = MyContextHolder.get();
     private long configChangeTime = 0;
     private boolean configChanged = false;
     MyServiceEventsReceiver myServiceReceiver;
@@ -112,6 +115,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
                             + (MyContextHolder.get().isReady() ? "" : ", MyContext is not ready")
             );
         }
+        myContext = MyContextHolder.get();
 
         MyServiceManager.setServiceAvailable();
         myServiceReceiver = new MyServiceEventsReceiver(this);
@@ -194,6 +198,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
     public interface SyncLoader {
         void allowLoadingFromInternet();
         void load(ProgressPublisher publisher);
+        List<? extends Object> getList();
         int size();
     }
     

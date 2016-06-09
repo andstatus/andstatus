@@ -44,6 +44,7 @@ import org.andstatus.app.graphics.MyImageCache;
 import org.andstatus.app.msg.KeywordsFilter;
 import org.andstatus.app.origin.PersistentOriginList;
 import org.andstatus.app.service.QueueViewer;
+import org.andstatus.app.timeline.TimelineList;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 
@@ -56,6 +57,7 @@ public class MySettingsFragment extends PreferenceFragment implements
     private static final String KEY_CHANGE_LOG = "change_log";
     static final String KEY_MANAGE_EXISTING_ACCOUNTS = "manage_existing_accounts";
     private static final String KEY_MANAGE_ORIGIN_SYSTEMS = "manage_origin_systems";
+    private static final String KEY_MANAGE_TIMELINES = "manage_timelines";
 
     private StorageSwitch storageSwitch = null;
     
@@ -311,6 +313,9 @@ public class MySettingsFragment extends PreferenceFragment implements
                 break;
             case KEY_MANAGE_ORIGIN_SYSTEMS:
                 startActivity(new Intent(getActivity(), PersistentOriginList.class));
+                break;
+            case KEY_MANAGE_TIMELINES:
+                startActivity(new Intent(getActivity(), TimelineList.class));
                 break;
             case KEY_ABOUT_APPLICATION:
                 startActivity(new Intent(getActivity(), HelpActivity.class));

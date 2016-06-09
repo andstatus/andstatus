@@ -123,7 +123,7 @@ class TimelineListPositionStorage {
                     + " at pos=" + lastPosition + " of " + itemCount;
             if (firstVisibleItemId <= 0) {
                 MyLog.v(this, method + "; failed " + msgLog
-                        + "\n no visible items for " + mListParameters.toTimelineTitleAndSubtitle());
+                        + "\n no visible items for " + mListParameters.timelineTitle.toString());
             } else {
                 MyLog.v(this, method + "; succeeded " + msgLog);
             }
