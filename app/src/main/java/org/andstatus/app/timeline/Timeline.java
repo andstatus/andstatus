@@ -93,6 +93,8 @@ public class Timeline implements Comparable<Timeline> {
     private long oldestItemDate = 0;
     private long oldestSyncedDate = 0;
 
+    private boolean changed = false;
+
     public Timeline(TimelineType timelineType, MyAccount myAccount, long userId, Origin origin) {
         this.timelineType = timelineType == null ? TimelineType.UNKNOWN : timelineType;
         this.account = myAccount == null ?  MyAccount.getEmpty() : myAccount;
@@ -312,6 +314,7 @@ public class Timeline implements Comparable<Timeline> {
         } else {
             DbUtils.updateRowWithRetry(TimelineTable.TABLE_NAME, getId(), contentValues, 3);
         }
+        changed = false;
         return getId();
     }
 
@@ -435,6 +438,7 @@ public class Timeline implements Comparable<Timeline> {
     public Timeline setSearchQuery(String searchQuery) {
         if (!TextUtils.isEmpty(searchQuery)) {
             this.searchQuery = searchQuery;
+            changed = true;
         }
         return this;
     }
@@ -459,6 +463,7 @@ public class Timeline implements Comparable<Timeline> {
     public void setUserName(String userName) {
         if (TextUtils.isEmpty(this.userName) && !TextUtils.isEmpty(userName)) {
             this.userName = userName;
+            changed = true;
         }
     }
 
@@ -468,6 +473,7 @@ public class Timeline implements Comparable<Timeline> {
 
     public void setYoungestPosition(String youngestPosition) {
         this.youngestPosition = youngestPosition;
+        changed = true;
     }
 
     public long getYoungestItemDate() {
@@ -476,6 +482,7 @@ public class Timeline implements Comparable<Timeline> {
 
     public void setYoungestItemDate(long youngestItemDate) {
         this.youngestItemDate = youngestItemDate;
+        changed = true;
     }
 
     public long getYoungestSyncedDate() {
@@ -484,9 +491,29 @@ public class Timeline implements Comparable<Timeline> {
 
     public void setYoungestSyncedDate(long youngestSyncedDate) {
         this.youngestSyncedDate = youngestSyncedDate;
+        changed = true;
     }
 
     public boolean isSynced() {
         return synced;
     }
+
+    public boolean isChanged() {
+        return changed;
+    }
+
+    public void setSynced(boolean synced) {
+        if (this.synced != synced) {
+            this.synced = synced;
+            changed = true;
+        }
+    }
+
+    public void setDisplayedInSelector(boolean displayedInSelector) {
+        if (this.displayedInSelector != displayedInSelector) {
+            this.displayedInSelector = displayedInSelector;
+            changed = true;
+        }
+    }
+
 }

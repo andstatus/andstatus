@@ -169,11 +169,12 @@ public class MyUrlSpan extends URLSpan {
         return false;
     }
 
-    public static void showCheckBox(View parentView, int viewId, boolean checked, boolean enabled) {
+    public static void showCheckBox(View parentView, int viewId, boolean checked, View.OnClickListener onClickListener) {
         CheckBox checkBox = (CheckBox) parentView.findViewById(viewId);
         if (checkBox != null) {
             checkBox.setChecked(checked);
-            checkBox.setEnabled(enabled);
+            checkBox.setEnabled(onClickListener != null);
+            checkBox.setOnClickListener(onClickListener);
         }
     }
 

@@ -20,9 +20,11 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
 
 import org.andstatus.app.LoadableListActivity;
 import org.andstatus.app.R;
+import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyUrlSpan;
 import org.andstatus.app.widget.MyBaseAdapter;
 
@@ -33,6 +35,12 @@ import java.util.List;
  * @author yvolk@yurivolkov.com
  */
 public class TimelineList extends LoadableListActivity {
+
+    @Override
+    protected void onPause() {
+        myContext.persistentTimelines().saveChanged();
+        super.onPause();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -107,11 +115,27 @@ public class TimelineList extends LoadableListActivity {
                 View view = convertView == null ? newView() : convertView;
                 view.setOnClickListener(this);
                 setPosition(view, position);
-                TimelineListViewItem item = mItems.get(position);
+                final TimelineListViewItem item = mItems.get(position);
                 MyUrlSpan.showText(view, R.id.title, item.timelineTitle.title, false);
                 MyUrlSpan.showText(view, R.id.subTitle,  item.timelineTitle.subTitle, false);
-                MyUrlSpan.showCheckBox(view, R.id.synced,  item.timeline.isSynced(), true);
-                MyUrlSpan.showCheckBox(view, R.id.displayedInSelector,  item.timeline.isDisplayedInSelector(), true);
+                MyUrlSpan.showCheckBox(view, R.id.synced, item.timeline.isSynced(),
+                        new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                boolean isChecked = ((CheckBox) v).isChecked();
+                                item.timeline.setSynced(isChecked);
+                                MyLog.v("isSynced", (isChecked ? "+ " : "- ") + item.timelineTitle.toString());
+                            }
+                });
+                MyUrlSpan.showCheckBox(view, R.id.displayedInSelector, item.timeline.isDisplayedInSelector(),
+                        new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                boolean isChecked = ((CheckBox) v).isChecked();
+                                item.timeline.setDisplayedInSelector(isChecked);
+                                MyLog.v("isDisplayedInSelector", (isChecked ? "+ " : "- ") + item.timelineTitle.toString());
+                            }
+                });
                 return view;
             }
 

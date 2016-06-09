@@ -212,4 +212,13 @@ public class PersistentTimelines {
         }
         return timelineNew;
     }
+
+    public void saveChanged() {
+        for (Timeline timeline : getList()) {
+            if (timeline.isChanged()) {
+                timeline.save();
+            }
+        }
+    }
+
 }
