@@ -21,6 +21,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
+import android.widget.ListView;
 
 import org.andstatus.app.LoadableListActivity;
 import org.andstatus.app.R;
@@ -44,8 +45,13 @@ public class TimelineList extends LoadableListActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        mLayoutId = R.layout.my_list_swipe;
+        mLayoutId = R.layout.my_list;
         super.onCreate(savedInstanceState);
+
+        ListView listView = getListView();
+        LayoutInflater inflater = getLayoutInflater();
+        View header = inflater.inflate(R.layout.timeline_list_item, listView, false);
+        listView.addHeaderView(header, null, false);
     }
 
     @Override

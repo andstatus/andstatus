@@ -105,7 +105,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         textualSyncIndicator = findViewById(R.id.sync_indicator);
-        mSwipeLayout = (MySwipeRefreshLayout) findViewById(R.id.myLayoutParent);
+        mSwipeLayout = findSwipeLayout();
 
         configChangeTime = MyContextHolder.initialize(this, this);
         if (MyLog.isDebugEnabled()) {
@@ -123,6 +123,14 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
         mParsedUri = ParsedUri.fromUri(getIntent().getData());
         ma = MyContextHolder.get().persistentAccounts().fromUserId(getParsedUri().getAccountUserId());
         centralItemId = getParsedUri().getItemId();
+    }
+
+    private MySwipeRefreshLayout findSwipeLayout() {
+        View view = findViewById(R.id.myLayoutParent);
+        if (view != null && MySwipeRefreshLayout.class.isAssignableFrom(view.getClass())) {
+            return (MySwipeRefreshLayout) view ;
+        }
+        return null;
     }
 
     protected ParsedUri getParsedUri() {
