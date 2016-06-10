@@ -134,6 +134,8 @@
   <string name="dialog_title_service_unavailable">Service Unavailable</string>
   <string name="dialog_title_timeline_loading">Updating a Timeline&#8230;</string>
   <string name="discover_open_instances_title">Discover open instances</string>
+  <string name="displayed_in_selector">Displayed in a selector</string>
+  <string name="displayed_in_selector_abbreviated">Displ.</string>
   <string name="dont_synchronize_old_messages">Don\'t synchronize old messages, if previous sync was more than ... hours ago</string>
   <string name="download_status_draft">draft</string>
   <string name="download_status_unsent">unsent</string>
@@ -352,6 +354,7 @@
   <string name="search_direct_messages_hint">Enter a username or phrase</string>
   <string name="show_buttons_below_message">Show Reply, Repost and Favorite buttons below message</string>
   <string name="status_destroyed">The message has been removed.</string>
+  <string name="subtitle">Subtitle</string>
   <string name="summary_preference_accounts_absent">No AndStatus accounts yet</string>
   <string name="summary_preference_accounts_present">Number of AndStatus Accounts</string>
   <string name="summary_preference_add_account_oauth">Tap here to open a site of the Social network in a browser.</string>
@@ -403,6 +406,8 @@
   <string name="summary_preference_vibration_on">Vibrate on incoming message</string>
   <string name="switch_to_default_timeline">Switch to Default Timeline</string>
   <string name="sync_over_wifi_only">Sync over WiFi only</string>
+  <string name="synced">Synced</string>
+  <string name="synced_abbreviated">Sync</string>
   <string name="system_is_busy_try_later">The system is busy. Please try again later.</string>
   <string name="tap_on_a_timeline_title_behaviour">Tap on a Timeline Title behaviour</string>
   <string name="theme_color_entries_default">Device default</string>
@@ -426,6 +431,7 @@
   <string name="timeline_title_replies">Replies</string>
   <string name="timeline_title_unknown">(Unknown timeline)</string>
   <string name="timeline_title_user">User</string>
+  <string name="title">Title</string>
   <string name="title_account">Account</string>
   <string name="title_command_fetch_attachment">Fetch attachment</string>
   <string name="title_command_fetch_avatar">Avatar</string>

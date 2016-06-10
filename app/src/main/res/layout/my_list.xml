@@ -31,13 +31,20 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <ListView
-            android:id="@android:id/list"
+        <LinearLayout
+            android:id="@+id/linear_list_wrapper"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:scrollbars="vertical"
-            android:layout_below="@id/my_action_bar"
-            />
+            android:orientation="vertical"
+            android:layout_alignParentTop="true">
+
+            <ListView
+                android:id="@android:id/list"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scrollbars="vertical"
+                />
+        </LinearLayout>
 
         <include layout="@layout/sync_indicator"/>
 
