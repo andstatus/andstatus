@@ -54,6 +54,7 @@ public class MyActivity extends AppCompatActivity {
             actionBar.setDisplayShowHomeEnabled(true);
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
+
     }
 
     @Override

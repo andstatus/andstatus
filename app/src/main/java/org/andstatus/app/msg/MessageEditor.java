@@ -87,7 +87,7 @@ public class MessageEditor {
     private ViewGroup getEditorView() {
         ViewGroup editorView = (ViewGroup) getActivity().findViewById(R.id.message_editor);
         if (editorView == null) {
-            ViewGroup layoutParent = (ViewGroup) getActivity().findViewById(R.id.myListParent);
+            ViewGroup layoutParent = (ViewGroup) getActivity().findViewById(R.id.relative_list_parent);
             LayoutInflater inflater = LayoutInflater.from(getActivity());
             editorView = (ViewGroup) inflater.inflate(R.layout.message_editor, null);
 

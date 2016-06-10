@@ -130,8 +130,8 @@ public class MyTheme {
         TypedValue typedValue = new TypedValue();
         activity.getTheme().resolveAttribute(R.attr.myBackgroundColor, typedValue, true);
         int color = typedValue.data;
-        setBackgroundColor(activity.findViewById(R.id.myLayoutParent), color);
-        setBackgroundColor(activity.findViewById(R.id.myListParent), color);
+        setBackgroundColor(activity.findViewById(R.id.my_layout_parent), color);
+        setBackgroundColor(activity.findViewById(R.id.relative_list_parent), color);
         setBackgroundColor(activity.findViewById(android.R.id.list), color);
     }
 

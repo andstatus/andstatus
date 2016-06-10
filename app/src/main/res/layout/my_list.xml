@@ -17,7 +17,7 @@
 <!-- Simple list layout to be used with MyListActivity -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/myLayoutParent"
+    android:id="@+id/my_layout_parent"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -26,7 +26,7 @@
     <include layout="@layout/action_bar" />
 
     <RelativeLayout
-        android:id="@+id/myListParent"
+        android:id="@+id/relative_list_parent"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">

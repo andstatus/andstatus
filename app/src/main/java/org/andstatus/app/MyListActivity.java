@@ -23,7 +23,7 @@ import android.widget.ListView;
 
 /**
  * Support library doesn't have ListActivity, so we recreated it using one of two options:
- * 1. Fragments. It assumes the list fragment has this id: R.id.myLayoutParent
+ * 1. Fragments
  * 2. ListView
  * And now it looks like we don't need ListFragment at all!
  * @author yvolk@yurivolkov.com
@@ -69,7 +69,7 @@ public class MyListActivity extends MyBaseListActivity {
 
     private void findListView() {
         if (listFragment == null && listView == null) {
-            listFragment = (ListFragment) getSupportFragmentManager().findFragmentById(R.id.myListParent);
+            listFragment = (ListFragment) getSupportFragmentManager().findFragmentById(R.id.relative_list_parent);
             if (listFragment == null) {
                 listView = (ListView) findViewById(android.R.id.list);
             }

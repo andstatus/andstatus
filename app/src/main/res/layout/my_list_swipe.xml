@@ -19,38 +19,45 @@
     to be used with MyListActivity
     http://www.bignerdranch.com/blog/implementing-swipe-to-refresh/
 -->
-<org.andstatus.app.widget.MySwipeRefreshLayout 
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/myLayoutParent"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".user.UserList"
-    android:orientation="vertical" >
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:id="@+id/my_layout_parent"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:orientation="vertical"
+              tools:context=".service.QueueViewer">
 
-	<LinearLayout
-		android:layout_width="match_parent"
-		android:layout_height="match_parent"
-		android:orientation="vertical">
+    <include layout="@layout/action_bar" />
 
-		<include layout="@layout/action_bar" />
+    <RelativeLayout
+        android:id="@+id/relative_list_parent"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
-		<RelativeLayout
-			android:id="@+id/myListParent"
-			android:layout_width="match_parent"
-			android:layout_height="match_parent"
-			android:orientation="vertical">
+        <LinearLayout
+            android:id="@+id/linear_list_wrapper"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:layout_alignParentTop="true">
 
-			<ListView
-				android:id="@android:id/list"
-				android:layout_width="match_parent"
-				android:layout_height="match_parent"
-				android:scrollbars="vertical"
-				android:layout_below="@id/my_action_bar"
-				/>
+            <org.andstatus.app.widget.MySwipeRefreshLayout
+                android:id="@+id/swipeRefreshLayout"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical" >
 
-			<include layout="@layout/sync_indicator"/>
+                <ListView
+                    android:id="@android:id/list"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scrollbars="vertical"
+                    />
+            </org.andstatus.app.widget.MySwipeRefreshLayout>
+        </LinearLayout>
 
-		</RelativeLayout>
-	</LinearLayout>
-</org.andstatus.app.widget.MySwipeRefreshLayout>
+        <include layout="@layout/sync_indicator"/>
+
+    </RelativeLayout>
+</LinearLayout>

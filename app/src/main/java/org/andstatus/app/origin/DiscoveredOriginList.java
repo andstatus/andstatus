@@ -30,21 +30,19 @@ import org.andstatus.app.service.MyServiceManager;
 
 public class DiscoveredOriginList extends OriginList implements MyServiceEventsListener {
     MyServiceEventsReceiver mServiceConnector = new MyServiceEventsReceiver(this);
-    SwipeRefreshLayout mSwipeRefreshLayout = null;
-    
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         initializeSwipeRefresh();
         if (DiscoveredOrigins.get().isEmpty()) {
-            mSwipeRefreshLayout.setRefreshing(true);
+            mSwipeLayout.setRefreshing(true);
             manualSync();
         }
     }
 
     private void initializeSwipeRefresh() {
-        mSwipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.myLayoutParent);
-        mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+        mSwipeLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
                 manualSync();
@@ -82,7 +80,7 @@ public class DiscoveredOriginList extends OriginList implements MyServiceEventsL
         if (MyServiceEvent.AFTER_EXECUTING_COMMAND.equals(myServiceEvent) 
                 && CommandEnum.GET_OPEN_INSTANCES.equals(commandData.getCommand())) {
             fillList();
-            mSwipeRefreshLayout.setRefreshing(false);
+            mSwipeLayout.setRefreshing(false);
         }
     }
 

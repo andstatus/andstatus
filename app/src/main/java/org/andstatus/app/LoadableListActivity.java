@@ -1,5 +1,5 @@
 /* 
- * Copyright (c) 2015 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (c) 2016 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,7 +48,6 @@ import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.widget.MyBaseAdapter;
-import org.andstatus.app.widget.MySwipeRefreshLayout;
 
 import java.util.List;
 
@@ -62,7 +61,6 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
      * We are going to finish/restart this Activity (e.g. onResume or even onCreate)
      */
     protected volatile boolean mFinishing = false;
-    protected MySwipeRefreshLayout mSwipeLayout = null;
 
     protected boolean showSyncIndicatorSetting = true;
     protected View textualSyncIndicator = null;
@@ -105,7 +103,6 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         textualSyncIndicator = findViewById(R.id.sync_indicator);
-        mSwipeLayout = findSwipeLayout();
 
         configChangeTime = MyContextHolder.initialize(this, this);
         if (MyLog.isDebugEnabled()) {
@@ -123,14 +120,6 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
         mParsedUri = ParsedUri.fromUri(getIntent().getData());
         ma = MyContextHolder.get().persistentAccounts().fromUserId(getParsedUri().getAccountUserId());
         centralItemId = getParsedUri().getItemId();
-    }
-
-    private MySwipeRefreshLayout findSwipeLayout() {
-        View view = findViewById(R.id.myLayoutParent);
-        if (view != null && MySwipeRefreshLayout.class.isAssignableFrom(view.getClass())) {
-            return (MySwipeRefreshLayout) view ;
-        }
-        return null;
     }
 
     protected ParsedUri getParsedUri() {
@@ -580,15 +569,6 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
         syncingText = "";
         updateTextualSyncIndicator(source);
         setCircularSyncIndicator(source, false);
-    }
-
-    protected void setCircularSyncIndicator(String source, boolean isSyncing) {
-        if (mSwipeLayout != null
-                && mSwipeLayout.isRefreshing() != isSyncing
-                && !isFinishing()) {
-            MyLog.v(this, source + " set Circular Syncing to " + isSyncing);
-            mSwipeLayout.setRefreshing(isSyncing);
-        }
     }
 
     protected void showLoading(String source, String text) {

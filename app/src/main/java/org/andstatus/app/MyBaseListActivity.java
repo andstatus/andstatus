@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (c) 2016 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package org.andstatus.app;
 
+import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.view.View;
 import android.widget.ListAdapter;
@@ -26,8 +27,23 @@ import org.andstatus.app.widget.MySwipeRefreshLayout;
 
 public abstract class MyBaseListActivity extends MyActivity implements MySwipeRefreshLayout.CanSwipeRefreshScrollUpCallback {
 
+    protected MySwipeRefreshLayout mSwipeLayout = null;
     private int mPositionOfContextMenu = -1;
     private ListAdapter mAdapter = null;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        mSwipeLayout = findSwipeLayout();
+    }
+
+    protected MySwipeRefreshLayout findSwipeLayout() {
+        View view = findViewById(R.id.swipeRefreshLayout);
+        if (view != null && MySwipeRefreshLayout.class.isAssignableFrom(view.getClass())) {
+            return (MySwipeRefreshLayout) view ;
+        }
+        return null;
+    }
 
     public int getPositionOfContextMenu() {
         return mPositionOfContextMenu;
@@ -69,4 +85,12 @@ public abstract class MyBaseListActivity extends MyActivity implements MySwipeRe
         return can;
     }
 
+    protected void setCircularSyncIndicator(String source, boolean isSyncing) {
+        if (mSwipeLayout != null
+                && mSwipeLayout.isRefreshing() != isSyncing
+                && !isFinishing()) {
+            MyLog.v(this, source + " set Circular Syncing to " + isSyncing);
+            mSwipeLayout.setRefreshing(isSyncing);
+        }
+    }
 }
