@@ -121,7 +121,6 @@ class CommandExecutorStrategy implements CommandExecutorParent {
                         case AUTOMATIC_UPDATE:
                         case FETCH_TIMELINE:
                             switch (execContext.getTimelineType()) {
-                                case ALL:
                                 case EVERYTHING:
                                     strategy = new CommandExecutorLoadAllTimelines();
                                     break;

@@ -27,7 +27,9 @@ import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.database.OriginTable;
 import org.andstatus.app.util.MyLog;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -111,4 +113,37 @@ public class PersistentOrigins {
     public boolean isHtmlContentAllowed(long originId) {
         return fromId(originId).isHtmlContentAllowed();
     }
+
+    public List<Origin> originsToSync(Origin originIn, boolean forAllOrigins, boolean isSearch) {
+        boolean hasSynced = hasSyncedForAllOrigins(isSearch);
+        List<Origin> origins = new ArrayList<>();
+        if (forAllOrigins) {
+            for (Origin origin : collection()) {
+                addMyOriginToSync(origins, origin, isSearch, hasSynced);
+            }
+        } else {
+            addMyOriginToSync(origins, originIn, isSearch, false);
+        }
+        return origins;
+    }
+
+    public boolean hasSyncedForAllOrigins(boolean isSearch) {
+        for (Origin origin : mOrigins.values()) {
+            if (origin.isSyncedForAllOrigins(isSearch)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void addMyOriginToSync(List<Origin> origins, Origin origin, boolean isSearch, boolean hasSynced) {
+        if ( !origin.isValid()) {
+            return;
+        }
+        if (hasSynced && !origin.isSyncedForAllOrigins(isSearch)) {
+            return;
+        }
+        origins.add(origin);
+    }
+
 }

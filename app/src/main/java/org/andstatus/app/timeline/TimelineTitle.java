@@ -61,12 +61,8 @@ public class TimelineTitle {
         if (timeline.hasSearchQuery()) {
             I18n.appendWithSpace(title, "'" + timeline.getSearchQuery() + "'");
         }
-        if (timeline.getTimelineType() == TimelineType.USER
-                && !(isTimelineCombined
-                && MyContextHolder.get().persistentAccounts()
-                .fromUserId(timeline.getUserId()).isValid())) {
-            CharSequence userWebFingerId = MyQuery.userIdToWebfingerId(timeline.getUserId());
-            I18n.appendWithSpace(title, userWebFingerId);
+        if (timeline.getTimelineType().requiresUserToBeDefined()) {
+            I18n.appendWithSpace(title, MyQuery.userIdToWebfingerId(timeline.getUserId()));
         }
         if (isTimelineCombined) {
             I18n.appendWithSpace(title,

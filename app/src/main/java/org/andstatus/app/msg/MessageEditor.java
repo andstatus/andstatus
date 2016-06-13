@@ -476,12 +476,9 @@ public class MessageEditor {
     }
 
     private boolean shouldShowAccountName() {
-        boolean should = mMessageList.isTimelineCombined()
-                || mMessageList.getTimelineType() == TimelineType.USER;
-        if (!should) {
-            should = editorData.getMyAccount().getUserId() != mMessageList.getCurrentMyAccountUserId();
-        }
-        return should;
+        return mMessageList.isTimelineCombined()
+                || mMessageList.getTimelineType().isAtOrigin()
+                || editorData.getMyAccount().getUserId() != mMessageList.getCurrentMyAccountUserId();
     }
 
     private void showAttachedImage() {

@@ -247,6 +247,19 @@ public class Origin {
         return allowHtml;
     }
 
+    public boolean isSyncedForAllOrigins(boolean isSearch) {
+        if (isSearch) {
+            if (isInCombinedGlobalSearch()) {
+                return true;
+            }
+        } else {
+            if (isInCombinedPublicReload()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public boolean isInCombinedGlobalSearch() {
         return inCombinedGlobalSearch;
     }

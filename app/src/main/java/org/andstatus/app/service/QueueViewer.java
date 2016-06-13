@@ -175,7 +175,7 @@ public class QueueViewer extends MyListActivity implements MyServiceEventsListen
     private void showList() {
         mListData = newListData();
         setListAdapter(newListAdapter(mListData));
-        MyContextHolder.get().clearNotification(TimelineType.ALL);
+        MyContextHolder.get().clearNotification(TimelineType.EVERYTHING);
     }
 
     // TODO: Replace with Long.compare for API >= 19

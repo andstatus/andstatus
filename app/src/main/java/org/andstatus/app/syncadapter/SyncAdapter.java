@@ -30,28 +30,25 @@ import net.jcip.annotations.GuardedBy;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.os.MyAsyncTask;
-import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceEvent;
 import org.andstatus.app.service.MyServiceEventsListener;
 import org.andstatus.app.service.MyServiceEventsReceiver;
 import org.andstatus.app.service.MyServiceManager;
+import org.andstatus.app.timeline.Timeline;
 import org.andstatus.app.util.MyLog;
+
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class SyncAdapter extends AbstractThreadedSyncAdapter implements MyServiceEventsListener {
 
     private final Context mContext;
-    private volatile CommandData mCommandData;
+    private final Map<CommandData, Boolean> commands = new ConcurrentHashMap<>();
     private final Object syncLock = new Object();
     @GuardedBy("syncLock")
     private boolean mSyncCompleted = false;
-    @GuardedBy("syncLock")
-    private long mNumAuthExceptions = 0;
-    @GuardedBy("syncLock")
-    private long mNumIoExceptions = 0;
-    @GuardedBy("syncLock")
-    private long mNumParseExceptions = 0;
 
     public SyncAdapter(Context context, boolean autoInitialize) {
         super(context, autoInitialize);
@@ -87,20 +84,22 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements MyServic
 
         synchronized(syncLock) {
             mSyncCompleted = false;
-            mNumAuthExceptions = 0;
-            mNumIoExceptions = 0;
-            mNumParseExceptions = 0;
         }
         MyServiceEventsReceiver intentReceiver = new MyServiceEventsReceiver(this);
         boolean interrupted = true;
         try {
-            MyLog.v(this, method + "; Started, account:" + account.name);
-            mCommandData = CommandData.newTimelineCommand(CommandEnum.AUTOMATIC_UPDATE,
-                    MyContextHolder.get().persistentAccounts().fromAccountName(account.name),
-                    TimelineType.ALL);
-            intentReceiver.registerReceiver(mContext);	
-            MyServiceManager.sendCommand(mCommandData);
-            final long numIterations = 10;
+            for (Timeline timeline : MyContextHolder.get().persistentTimelines()
+                    .toSyncForAccount(MyContextHolder.get().persistentAccounts()
+                            .fromAccountName(account.name))) {
+                commands.put(CommandData.newTimelineCommand(CommandEnum.FETCH_TIMELINE, timeline),
+                        false);
+            }
+            MyLog.v(this, method + " started, account:" + account.name + ", " + commands.size() + " timelines");
+            intentReceiver.registerReceiver(mContext);
+            for (CommandData commandData : commands.keySet()) {
+                MyServiceManager.sendCommand(commandData);
+            }
+            final long numIterations = commands.size() * 3;
             synchronized(syncLock) {
                 for (int iteration = 0; iteration < numIterations; iteration++) {
                     if (mSyncCompleted) {
@@ -118,9 +117,11 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements MyServic
                 if (interrupted || !mSyncCompleted) {
                     syncResult.stats.numIoExceptions++;
                 }
-                syncResult.stats.numAuthExceptions += mNumAuthExceptions;
-                syncResult.stats.numIoExceptions += mNumIoExceptions;
-                syncResult.stats.numParseExceptions += mNumParseExceptions;
+                for (CommandData commandData : commands.keySet()) {
+                    syncResult.stats.numAuthExceptions += commandData.getResult().getNumAuthExceptions();
+                    syncResult.stats.numIoExceptions += commandData.getResult().getNumIoExceptions();
+                    syncResult.stats.numParseExceptions += commandData.getResult().getNumParseExceptions();
+                }
             }
             intentReceiver.unregisterReceiver(mContext);            
         }
@@ -130,17 +131,20 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements MyServic
 
     @Override
     public void onReceive(CommandData commandData, MyServiceEvent event) {
-        if (event != MyServiceEvent.AFTER_EXECUTING_COMMAND 
-                || mCommandData == null || !mCommandData.equals(commandData) ) {
+        if (event != MyServiceEvent.AFTER_EXECUTING_COMMAND) {
             return;
         }
-        MyLog.v(this, "onReceive; command:" + commandData.getCommand());
+        Boolean executed = commands.get(commandData);
+        if (executed == null) {
+            return;
+        }
+        MyLog.v(this, "Synced " + (executed == false ? "" : "again ") + commandData);
         synchronized (syncLock) {
-            mSyncCompleted = true;
-            mNumAuthExceptions += commandData.getResult().getNumAuthExceptions();
-            mNumIoExceptions += commandData.getResult().getNumIoExceptions();
-            mNumParseExceptions += commandData.getResult().getNumParseExceptions();
-            syncLock.notifyAll();
+            commands.put(commandData, true);
+            if (!commands.containsValue(false)) {
+                mSyncCompleted = true;
+                syncLock.notifyAll();
+            }
         }
     }
 }

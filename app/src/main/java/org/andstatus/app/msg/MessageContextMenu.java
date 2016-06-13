@@ -37,7 +37,6 @@ import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MessageForAccount;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.timeline.TimelineType;
-import org.andstatus.app.timeline.TimelineTypeSelector;
 import org.andstatus.app.util.MyLog;
 
 /**
@@ -230,8 +229,7 @@ public class MessageContextMenu extends MyContextMenu {
         if (ma1.isValid() && !forceFirstUser
                 && !msg.isTiedToThisAccount()
                 && ma1.getUserId() != preferredUserId
-                && messageList.getTimelineType() != TimelineType.FOLLOWERS
-                && messageList.getTimelineType() != TimelineType.FRIENDS) {
+                && !messageList.getTimelineType().requiresUserToBeDefined()) {
             MyAccount ma2 = MyContextHolder.get().persistentAccounts().fromUserId(preferredUserId);
             if (ma2.isValid() && ma1.getOriginId() == ma2.getOriginId()) {
                 msg = new MessageForAccount(mMsgId, ma2);
@@ -296,7 +294,7 @@ public class MessageContextMenu extends MyContextMenu {
                     + "; userId=" + selectedUserId);
         }
         Uri contentUri = MatchedUri.getTimelineUri(ma.getUserId(),
-                TimelineTypeSelector.selectableType(timelineType),
+                TimelineType.toSelectableType(timelineType),
                 isTimelineCombined, selectedUserId);
         switchTimelineActivity(contentUri);
     }

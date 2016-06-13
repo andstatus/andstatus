@@ -35,10 +35,11 @@ abstract class TimelineDownloader {
         TimelineDownloader td;
         switch (execContext.getTimelineType()) {
             case FOLLOWERS:
+            case MY_FOLLOWERS:
             case FRIENDS:
+            case MY_FRIENDS:
                 td = new TimelineDownloaderFollowers();
                 break;
-            case ALL:
             case EVERYTHING:
                 throw new IllegalArgumentException(TAG + ": Invalid TimelineType for loadTimeline: " + execContext.getTimelineType());
             default:

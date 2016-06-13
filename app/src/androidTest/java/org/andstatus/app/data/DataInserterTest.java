@@ -114,7 +114,7 @@ public class DataInserterTest extends InstrumentationTestCase {
         assertEquals("Url of the sender " + somebody.getUserName(), somebody.getProfileUrl(), url);
 
         Uri contentUri = MatchedUri.getTimelineUri(
-                TestSuite.getConversationMyAccount().getUserId(), TimelineType.FRIENDS,
+                TestSuite.getConversationMyAccount().getUserId(), TimelineType.MY_FRIENDS,
                 false, 0);
         SelectionAndArgs sa = new SelectionAndArgs();
         String sortOrder = MsgTable.DESC_SORT_ORDER;

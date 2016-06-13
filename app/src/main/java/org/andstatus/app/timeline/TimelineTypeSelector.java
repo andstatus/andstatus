@@ -66,7 +66,7 @@ public class TimelineTypeSelector extends org.andstatus.app.SelectorDialog {
 
     private MySimpleAdapter newListAdapter() {
         List<Map<String, String>> list = new ArrayList<Map<String, String>>();
-        for (TimelineType timelineType : TimelineType.defaultTimelineTypes) {
+        for (TimelineType timelineType : TimelineType.defaultMyAccountTimelineTypes) {
             Map<String, String> map = new HashMap<String, String>();
             map.put(KEY_VISIBLE_NAME, timelineType.getTitle(getActivity()).toString());
             map.put(BaseColumns._ID, Long.toString(timelineType.ordinal()));
@@ -82,17 +82,6 @@ public class TimelineTypeSelector extends org.andstatus.app.SelectorDialog {
 
     private void returnSelectedAccount(TimelineType timelineType) {
         returnSelected(new Intent().putExtra(IntentExtra.TIMELINE_TYPE.key, timelineType.save()));
-    }
-
-    public static TimelineType selectableType(TimelineType typeSelected) {
-        TimelineType typeSelectable = MyPreferences.getDefaultTimeline();
-        for (TimelineType type : TimelineType.defaultTimelineTypes) {
-            if (type == typeSelected) {
-                typeSelectable = typeSelected;
-                break;
-            }
-        }
-        return typeSelectable;
     }
 
 }

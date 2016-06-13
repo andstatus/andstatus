@@ -36,7 +36,6 @@ import org.andstatus.app.database.CommandTable;
 import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.database.UserTable;
 import org.andstatus.app.timeline.Timeline;
-import org.andstatus.app.msg.TimelineListParameters;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.BundleUtils;
 import org.andstatus.app.util.ContentValuesUtils;
@@ -125,18 +124,21 @@ public class CommandData implements Comparable<CommandData> {
     }
 
     public static CommandData newCommand(CommandEnum command, MyAccount myAccount) {
-        return new CommandData(0, command, Timeline.getEmpty(myAccount), 0);
+        return newTimelineCommand(command, Timeline.getEmpty(myAccount));
     }
 
-
-    public static CommandData newTimelineCommand(
-            CommandEnum command, MyAccount myAccount, TimelineType timelineType) {
-        return new CommandData(0, command, new Timeline(timelineType, myAccount, 0, null), 0);
+    public static CommandData newTimelineCommand(CommandEnum command, MyAccount myAccount,
+                                                 TimelineType timelineType) {
+        return newTimelineCommand(command, new Timeline(timelineType, myAccount, 0, null));
     }
 
-    public static CommandData newTimelineCommand(
-            CommandEnum command, MyAccount myAccount, TimelineType timelineType, long userId, Origin origin) {
-        return new CommandData(0, command, new Timeline(timelineType, myAccount, userId, origin), 0);
+    public static CommandData newTimelineCommand(CommandEnum command, MyAccount myAccount,
+                                                 TimelineType timelineType, long userId, Origin origin) {
+        return newTimelineCommand(command, new Timeline(timelineType, myAccount, userId, origin));
+    }
+
+    public static CommandData newTimelineCommand(CommandEnum command, Timeline timeline) {
+        return new CommandData(0, command, timeline, 0);
     }
 
     private CommandData(long commandId, CommandEnum command, Timeline timeline, long createdDate) {
@@ -325,10 +327,10 @@ public class CommandData implements Comparable<CommandData> {
             return false;
         }
         CommandData other = (CommandData) o;
-        if (hashCode() != other.hashCode()) {
+        if (!command.equals(other.command)) {
             return false;
         }
-        if (!timeline.equals(other.getTimeline())) {
+        if (!timeline.equals(other.timeline)) {
             return false;
         }
         if (!description.contentEquals(other.description)) {
@@ -422,8 +424,8 @@ public class CommandData implements Comparable<CommandData> {
             case AUTOMATIC_UPDATE:
             case FETCH_TIMELINE:
                 if (getAccount().isValid()) {
-                    if (getTimelineType() == TimelineType.USER) {
-                        I18n.appendWithSpace(builder, MyQuery.userIdToWebfingerId(itemId));
+                    if (getTimelineType().requiresUserToBeDefined()) {
+                        I18n.appendWithSpace(builder, MyQuery.userIdToWebfingerId(timeline.getUserId()));
                     }
                     I18n.appendWithSpace(builder, 
                             getTimelineType().getPrepositionForNotCombinedTimeline(myContext

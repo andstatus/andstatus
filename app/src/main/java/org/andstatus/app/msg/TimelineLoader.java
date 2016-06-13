@@ -81,7 +81,7 @@ public class TimelineLoader implements LoadableListActivity.SyncLoader {
     void markStart() {
         params.startTime = System.nanoTime();
         params.cancelled = false;
-        params.timelineToSync = TimelineType.UNKNOWN;
+        params.timelineToSync = Timeline.getEmpty(params.getMyAccount());
         params.timelineTitle = TimelineTitle.load(params.getTimeline(), params.isTimelineCombined());
         if (MyLog.isVerboseEnabled()) {
             logV("markStart", params.toSummary());
@@ -111,30 +111,19 @@ public class TimelineLoader implements LoadableListActivity.SyncLoader {
 
     private void checkIfReloadIsNeeded(Cursor cursor) {
         if (noMessagesInATimeline(cursor)) {
-            switch (getParams().getTimelineType()) {
-                case USER:
-                    // This timeline doesn't update automatically so let's do it now if necessary
-                    LatestTimelineItem latestTimelineItem = new LatestTimelineItem(getParams().getTimeline());
-                    if (latestTimelineItem.isTimeToAutoUpdate()) {
-                        getParams().timelineToSync = getParams().getTimelineType();
-                    }
-                    break;
-                case FOLLOWERS:
-                case FRIENDS:
-                    // This timeline doesn't update automatically so let's do it now if necessary
-                    latestTimelineItem = new LatestTimelineItem(getParams().getTimeline());
-                    if (latestTimelineItem.isTimeToAutoUpdate()) {
-                        getParams().timelineToSync = getParams().getTimelineType();
-                    }
-                    break;
-                default:
-                    if ( MyContextHolder.get().persistentTimelines().fromNewTimeLine(
-                            new Timeline(TimelineType.HOME, getParams().getMyAccount(), 0, null)).
-                            getYoungestSyncedDate() == 0) {
-                        // This is supposed to be a one time task.
-                        getParams().timelineToSync = TimelineType.ALL;
-                    }
-                    break;
+            if (getParams().getTimeline().isSynced()) {
+                if ( MyContextHolder.get().persistentTimelines().fromNewTimeLine(
+                        new Timeline(TimelineType.HOME, getParams().getMyAccount(), 0, null)).
+                        getYoungestSyncedDate() == 0) {
+                    // This is supposed to be a one time task.
+                    getParams().timelineToSync = new Timeline(TimelineType.EVERYTHING, getParams().getMyAccount(), 0, null);
+                }
+            } else {
+                // This timeline doesn't update automatically so let's do it now if necessary
+                LatestTimelineItem latestTimelineItem = new LatestTimelineItem(getParams().getTimeline());
+                if (latestTimelineItem.isTimeToAutoUpdate()) {
+                    getParams().timelineToSync = getParams().getTimeline();
+                }
             }
         }
     }

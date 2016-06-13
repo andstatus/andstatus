@@ -84,7 +84,7 @@ public class MyServiceTest extends InstrumentationTestCase {
         MyLog.v(this, "testAutomaticUpdates started");
 
         mService.listenedCommand = CommandData.newTimelineCommand(
-                CommandEnum.AUTOMATIC_UPDATE, null, TimelineType.ALL);
+                CommandEnum.AUTOMATIC_UPDATE, null, TimelineType.EVERYTHING);
         long startCount = mService.executionStartCount;
         long endCount = mService.executionEndCount;
         
@@ -124,7 +124,7 @@ public class MyServiceTest extends InstrumentationTestCase {
         mService.listenedCommand = CommandData.newTimelineCommand(
                 CommandEnum.RATE_LIMIT_STATUS,
                 TestSuite.getMyAccount(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME),
-                TimelineType.ALL);
+                TimelineType.EVERYTHING);
         long startCount = mService.executionStartCount;
         long endCount = mService.executionEndCount;
 

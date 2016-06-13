@@ -26,6 +26,7 @@ import org.andstatus.app.timeline.LatestTimelineItem;
 import org.andstatus.app.data.LatestUserMessages;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
+import org.andstatus.app.timeline.Timeline;
 import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.data.UserMsg;
 import org.andstatus.app.database.MsgTable;
@@ -57,9 +58,11 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
             if (lookupUser()) return;
             switch (timelineType) {
                 case FOLLOWERS:
+                case MY_FOLLOWERS:
                     syncFollowers();
                     break;
                 case FRIENDS:
+                case MY_FRIENDS:
                     syncFriends();
                     break;
                 default:
@@ -82,10 +85,16 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
         TimelineType timelineType;
         switch (execContext.getCommandData().getCommand()) {
             case GET_FOLLOWERS:
-                timelineType = TimelineType.FOLLOWERS;
+                timelineType = Timeline.fixedTimelineType(
+                        TimelineType.FOLLOWERS,
+                        execContext.getCommandData().getAccount(),
+                        execContext.getCommandData().getUserId());
                 break;
             case GET_FRIENDS:
-                timelineType = TimelineType.FRIENDS;
+                timelineType = Timeline.fixedTimelineType(
+                        TimelineType.FRIENDS,
+                        execContext.getCommandData().getAccount(),
+                        execContext.getCommandData().getUserId());
                 break;
             default:
                 timelineType = execContext.getTimelineType();

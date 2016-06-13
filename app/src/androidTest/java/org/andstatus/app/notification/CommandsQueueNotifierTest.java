@@ -20,6 +20,6 @@ public class CommandsQueueNotifierTest extends InstrumentationTestCase {
     public void testCreateNotification() {
     	TestSuite.getMyContextForTest().getNotifications().clear();
         CommandsQueueNotifier.newInstance(MyContextHolder.get()).update(3, 7);
-        assertTrue(TestSuite.getMyContextForTest().getNotifications().get(TimelineType.ALL) != null);
+        assertTrue(TestSuite.getMyContextForTest().getNotifications().get(TimelineType.EVERYTHING) != null);
     }
 }

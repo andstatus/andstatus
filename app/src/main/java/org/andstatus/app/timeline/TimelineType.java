@@ -20,66 +20,53 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 
 import org.andstatus.app.R;
-import org.andstatus.app.account.PersistentAccounts;
+import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.database.FriendshipTable;
 import org.andstatus.app.net.social.Connection;
 
 public enum TimelineType {
     /** The type is unknown */
-    UNKNOWN("unknown", R.string.timeline_title_unknown, Connection.ApiRoutineEnum.DUMMY,
-            false, false),
+    UNKNOWN("unknown", R.string.timeline_title_unknown, Connection.ApiRoutineEnum.DUMMY),
     /** The Home timeline and other information (replies...). */
-    HOME("home", R.string.timeline_title_home, Connection.ApiRoutineEnum.STATUSES_HOME_TIMELINE,
-            true, false),
+    HOME("home", R.string.timeline_title_home, Connection.ApiRoutineEnum.STATUSES_HOME_TIMELINE),
     /** Favorites (favorited messages) */
-    FAVORITES("favorites", R.string.timeline_title_favorites, Connection.ApiRoutineEnum.DUMMY,
-            false, false),
+    FAVORITES("favorites", R.string.timeline_title_favorites, Connection.ApiRoutineEnum.DUMMY),
     /** The Mentions timeline and other information (replies...). */
-    MENTIONS("mentions", R.string.timeline_title_mentions, Connection.ApiRoutineEnum.STATUSES_MENTIONS_TIMELINE,
-            true, false),
+    MENTIONS("mentions", R.string.timeline_title_mentions, Connection.ApiRoutineEnum.STATUSES_MENTIONS_TIMELINE),
     /** Direct messages (direct dents...) */
-    DIRECT("direct", R.string.timeline_title_direct_messages, Connection.ApiRoutineEnum.DIRECT_MESSAGES,
-            true, false),
+    DIRECT("direct", R.string.timeline_title_direct_messages, Connection.ApiRoutineEnum.DIRECT_MESSAGES),
     /** Messages of the selected User (where he is an Author or a Sender only (e.g. for Reblog/Retweet).
-     * This User may be not the same as a user of current account ( {@link PersistentAccounts#getCurrentAccountName()} ).
-     * Moreover, the User may not be "AndStatus account" at all.
+     * This User is NOT one of our Accounts.
      * Hence this timeline type requires the User parameter. */
-    USER("user", R.string.timeline_title_user, Connection.ApiRoutineEnum.STATUSES_USER_TIMELINE,
-            false, true),
+    USER("user", R.string.timeline_title_user, Connection.ApiRoutineEnum.STATUSES_USER_TIMELINE),
+    /** Almost like {@link #USER}, but for a User, who is one of my accounts. */
+    SENT("sent", R.string.sent, Connection.ApiRoutineEnum.STATUSES_USER_TIMELINE),
     /** Latest messages of every Friend of this user - AndStatus account
      * (i.e of every user, followed by this User).
      * So this is essentially a list of "Friends". See {@link FriendshipTable} */
-    FRIENDS("friends", R.string.friends, Connection.ApiRoutineEnum.DUMMY,
-            false, false),
-    FOLLOWERS("followers", R.string.followers, Connection.ApiRoutineEnum.DUMMY,
-            false, false),
-    PUBLIC("public", R.string.timeline_title_public, Connection.ApiRoutineEnum.PUBLIC_TIMELINE,
-            false, true),
-    EVERYTHING("everything", R.string.timeline_title_everything, Connection.ApiRoutineEnum.DUMMY,
-            false, true),
-    DRAFTS("drafts", R.string.timeline_title_drafts, Connection.ApiRoutineEnum.DUMMY,
-            false, false),
-    OUTBOX("outbox", R.string.timeline_title_outbox, Connection.ApiRoutineEnum.DUMMY,
-            false, false),
-    /** For the selected user, the timeline includes all messages of the same origin irrespectively existence
+    FRIENDS("friends", R.string.friends, Connection.ApiRoutineEnum.GET_FRIENDS),
+    /** Same as {@link #FRIENDS} but for my accounts only */
+    MY_FRIENDS("my_friends", R.string.friends, Connection.ApiRoutineEnum.GET_FRIENDS),
+    FOLLOWERS("followers", R.string.followers, Connection.ApiRoutineEnum.GET_FOLLOWERS),
+    /** Same as {@link #FOLLOWERS} but for my accounts only */
+    MY_FOLLOWERS("my_followers", R.string.followers, Connection.ApiRoutineEnum.GET_FOLLOWERS),
+    PUBLIC("public", R.string.timeline_title_public, Connection.ApiRoutineEnum.PUBLIC_TIMELINE),
+    EVERYTHING("everything", R.string.timeline_title_everything, Connection.ApiRoutineEnum.DUMMY),
+    DRAFTS("drafts", R.string.timeline_title_drafts, Connection.ApiRoutineEnum.DUMMY),
+    OUTBOX("outbox", R.string.timeline_title_outbox, Connection.ApiRoutineEnum.DUMMY),
+    /** For the selected my account (a user), the timeline includes all messages of the same origin irrespectively existence
      * of the link between the message and the User. So the User may "Act" on this message. */
-    MESSAGES_TO_ACT("messages_to_act", R.string.timeline_title_home, Connection.ApiRoutineEnum.STATUSES_HOME_TIMELINE,
-            false, true),
-    REPLIES("replies", R.string.timeline_title_replies, Connection.ApiRoutineEnum.DUMMY,
-            false, false),
-    /** All timelines (e.g. for download of all timelines.
-     * This is generally done after addition of the new MyAccount). */
-    ALL("all", R.string.timeline_title_all, Connection.ApiRoutineEnum.DUMMY,
-            false, false);
+    MESSAGES_TO_ACT("messages_to_act", R.string.timeline_title_home, Connection.ApiRoutineEnum.STATUSES_HOME_TIMELINE),
+    REPLIES("replies", R.string.timeline_title_replies, Connection.ApiRoutineEnum.DUMMY);
 
-    public static final TimelineType[] defaultTimelineTypes = {
+    public static final TimelineType[] defaultMyAccountTimelineTypes = {
             HOME,
             FAVORITES,
             MENTIONS,
             DIRECT,
-            USER,
-            FRIENDS,
-            FOLLOWERS,
+            SENT,
+            MY_FRIENDS,
+            MY_FOLLOWERS,
             PUBLIC,
             EVERYTHING,
             DRAFTS,
@@ -92,16 +79,11 @@ public enum TimelineType {
     private final int titleResId;
     /** Api routine to download this timeline */
     private final Connection.ApiRoutineEnum connectionApiRoutine;
-    private final boolean syncableByDefault;
-    private final boolean atOrigin;
 
-    private TimelineType(String code, int resId, Connection.ApiRoutineEnum connectionApiRoutine,
-                         boolean syncableByDefault, boolean atOrigin) {
+    TimelineType(String code, int resId, Connection.ApiRoutineEnum connectionApiRoutine) {
         this.code = code;
         this.titleResId = resId;
         this.connectionApiRoutine = connectionApiRoutine;
-        this.syncableByDefault = syncableByDefault;
-        this.atOrigin = atOrigin;
     }
 
     /** Returns the enum or UNKNOWN */
@@ -113,6 +95,14 @@ public enum TimelineType {
             }
         }
         return UNKNOWN;
+    }
+
+    public static TimelineType toSelectableType(TimelineType typeSelected) {
+        if (typeSelected == null || !typeSelected.isSelectable()) {
+            return MyPreferences.getDefaultTimeline();
+        } else {
+            return typeSelected;
+        }
     }
 
     /** String to be used for persistence */
@@ -145,13 +135,97 @@ public enum TimelineType {
     }
 
     public boolean isSyncableByDefault() {
-        return syncableByDefault;
+        switch (this) {
+            case HOME:
+            case MENTIONS:
+            case DIRECT:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    public boolean canBeCombined() {
+        if (isAtOrigin()) {
+            return canBeCombinedForOrigins();
+        } else {
+            return canBeCombinedForMyAccounts();
+        }
+    }
+
+    public boolean isSelectable() {
+        switch (this) {
+            case UNKNOWN:
+            case MESSAGES_TO_ACT:
+                return false;
+            default:
+                return true;
+        }
     }
 
     public boolean isAtOrigin() {
-        return atOrigin;
+        switch (this) {
+            case USER:
+            case SENT:
+            case FRIENDS:
+            case MY_FRIENDS:
+            case FOLLOWERS:
+            case MY_FOLLOWERS:
+            case PUBLIC:
+            case EVERYTHING:
+            case MESSAGES_TO_ACT:
+                return true;
+            default:
+                return false;
+        }
     }
-    
+
+    public boolean canBeCombinedForMyAccounts() {
+        switch (this) {
+            case HOME:
+            case FAVORITES:
+            case MENTIONS:
+            case DIRECT:
+            case SENT:
+            case MY_FRIENDS:
+            case MY_FOLLOWERS:
+            case DRAFTS:
+            case OUTBOX:
+            case REPLIES:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    public boolean requiresUserToBeDefined() {
+        switch (this) {
+            case USER:
+            case SENT:
+            case FRIENDS:
+            case MY_FRIENDS:
+            case FOLLOWERS:
+            case MY_FOLLOWERS:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    public boolean canBeCombinedForOrigins() {
+        switch (this) {
+            case PUBLIC:
+            case EVERYTHING:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    public boolean canBeSynced() {
+        return connectionApiRoutine != Connection.ApiRoutineEnum.DUMMY;
+    }
+
     public Connection.ApiRoutineEnum getConnectionApiRoutine() {
         return connectionApiRoutine;
     }

@@ -48,8 +48,7 @@ class CommandExecutorLoadAllTimelines extends CommandExecutorStrategy {
 
     private TimelineType[] getTimelines() {
         TimelineType[] timelineTypes;
-        if (execContext.getCommandData().getTimelineType() == TimelineType.ALL
-                || execContext.getCommandData().getTimelineType() == TimelineType.EVERYTHING) {
+        if (execContext.getCommandData().getTimelineType() == TimelineType.EVERYTHING) {
             timelineTypes = new TimelineType[] {
                     TimelineType.HOME, TimelineType.MENTIONS,
                     TimelineType.DIRECT

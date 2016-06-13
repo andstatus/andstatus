@@ -31,7 +31,7 @@ public class LatestTimelineItemTest extends InstrumentationTestCase {
     private void testTimelineForAccount(String accountName) {
         oneTimelineType(TimelineType.PUBLIC, accountName);
         oneTimelineType(TimelineType.HOME, accountName);
-        oneTimelineType(TimelineType.ALL, accountName);
+        oneTimelineType(TimelineType.EVERYTHING, accountName);
     }
 
     private void oneTimelineType(TimelineType timelineType, String accountName) {
@@ -40,7 +40,7 @@ public class LatestTimelineItemTest extends InstrumentationTestCase {
         assertEquals("Account was found", ma.getAccountName(), accountName);
         Timeline timeline = getTimeline(timelineType, ma);
         assertEquals("Timeline persistence " + timeline,
-                Arrays.asList(TimelineType.defaultTimelineTypes).contains(timelineType), timeline.getId() != 0);
+                Arrays.asList(TimelineType.defaultMyAccountTimelineTypes).contains(timelineType), timeline.getId() != 0);
         long time1 = System.currentTimeMillis();
         LatestTimelineItem latest = new LatestTimelineItem(timeline);
         latest.onTimelineDownloaded();

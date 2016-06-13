@@ -137,36 +137,16 @@ public class ParsedUri {
     }
 
     /**
-     * @return Is the timeline/userlist combined. false for URIs that don't contain such information
+     * @return Is the timeline/userlist combined. false for Uri that doesn't contain such information
      */
     public boolean isCombined() {
         boolean isCombined = false;
         try {
-            switch (getTimelineType()) {
-            case USER:
-                if (MyContextHolder.get().persistentAccounts().isAccountUserId(getUserId())) {
-                    isCombined = Long.parseLong(uri.getPathSegments().get(5)) != 0;
-                } else {
-                    isCombined = true;
-                }
-                break;
-            default:
-                switch (matchedUri) {
-                    case TIMELINE:
-                    case TIMELINE_SEARCH:
-                    case TIMELINE_ITEM:
-                    case USERLIST:
-                        isCombined = Long.parseLong(uri.getPathSegments().get(5)) != 0;
-                        break;
-                    default:
-                        break;
-                }
-                break;
-            }
+            isCombined = Long.parseLong(uri.getPathSegments().get(5)) != 0;
         } catch (Exception e) {
             MyLog.d(this, toString(), e);
         }
-        return isCombined;        
+        return isCombined;
     }
     
     public long getMessageId() {

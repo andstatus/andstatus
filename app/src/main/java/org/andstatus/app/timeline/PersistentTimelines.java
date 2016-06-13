@@ -123,6 +123,17 @@ public class PersistentTimelines {
     }
 
     @NonNull
+    public List<Timeline> toSyncForAccount(MyAccount ma) {
+        List<Timeline> timelines = new ArrayList<>();
+        for (Timeline timeline : getList()) {
+            if (timeline.isSynced() && timeline.getAccount() == ma) {
+                timelines.add(timeline);
+            }
+        }
+        return timelines;
+    }
+
+    @NonNull
     public List<Timeline> getFiltered(boolean isForSelector,
                                       boolean isTimelineCombined,
                                       MyAccount ma,

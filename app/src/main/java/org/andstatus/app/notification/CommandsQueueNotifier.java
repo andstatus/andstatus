@@ -46,7 +46,7 @@ public class CommandsQueueNotifier {
     public void update(int mainQueueSize, int retryQueueSize) {
         int count = mainQueueSize + retryQueueSize;
         if (count == 0 ) {
-            myContext.clearNotification(TimelineType.ALL);
+            myContext.clearNotification(TimelineType.EVERYTHING);
         } else if (mNotificationsEnabled && SharedPreferencesUtil.getBoolean(MyPreferences.KEY_NOTIFY_OF_COMMANDS_IN_THE_QUEUE, false)) {
             if (mainQueueSize != 0) {
                 MyLog.d(this, mainQueueSize + " commands in Main Queue.");
@@ -92,6 +92,6 @@ public class CommandsQueueNotifier {
                         PendingIntent.FLAG_UPDATE_CURRENT
                         );
         builder.setContentIntent(pendingIntent);
-        myContext.notify(TimelineType.ALL, builder.build());
+        myContext.notify(TimelineType.EVERYTHING, builder.build());
     }
 }

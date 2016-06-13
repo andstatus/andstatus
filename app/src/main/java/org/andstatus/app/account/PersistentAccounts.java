@@ -16,6 +16,7 @@ import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.FriendshipTable;
+import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
@@ -25,8 +26,11 @@ import org.json.JSONObject;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -374,20 +378,50 @@ public class PersistentAccounts {
     }
 
     public boolean isGlobalSearchSupported(MyAccount ma, boolean forAllAccounts) {
-        boolean yes = false;
+        return accountsForGlobalSearch(ma, forAllAccounts).size() > 0;
+    }
+
+    public Collection<MyAccount> accountsForGlobalSearch(MyAccount myAccount, boolean forAllAccounts) {
+        Map<Origin, MyAccount> accounts = new HashMap<>();
         if (forAllAccounts) {
-            for (MyAccount ma1 : collection()) {
-                if (ma1.isGlobalSearchSupported()) {
-                    yes = true;
-                    break;
+            for (MyAccount account : collection()) {
+                if (account.isGlobalSearchSupported() && !accounts.containsKey(account.getOrigin())) {
+                    accounts.put(account.getOrigin(), account);
                 }
             }
         } else {
-            yes = ma.isGlobalSearchSupported();
+            if (myAccount.isGlobalSearchSupported()) {
+                accounts.put(myAccount.getOrigin(), myAccount);
+            }
         }
-        return yes;
+        return accounts.values();
     }
-    
+
+    public List<MyAccount> accountsToSync(MyAccount myAccount, boolean forAllAccounts) {
+        boolean hasSyncedAutomatically = hasSyncedAutomatically();
+        List<MyAccount> accounts = new ArrayList<>();
+        if (forAllAccounts) {
+            for (MyAccount account : collection()) {
+                addMyAccountToSync(accounts, account, hasSyncedAutomatically);
+            }
+        } else {
+            addMyAccountToSync(accounts, myAccount, false);
+        }
+        return accounts;
+    }
+
+    private void addMyAccountToSync(List<MyAccount> accounts, MyAccount account, boolean hasSyncedAutomatically) {
+        if ( !account.isValidAndSucceeded()) {
+            MyLog.v(this, "Account '" + account.getAccountName() + "' skipped as invalid authenticated account");
+            return;
+        }
+        if (hasSyncedAutomatically && !account.isSyncedAutomatically()) {
+            MyLog.v(this, "Account '" + account.getAccountName() + "' skipped as it is not synced automatically");
+            return;
+        }
+        accounts.add(account);
+    }
+
     public static final String KEY_ACCOUNT = "account";
     public long onBackup(MyBackupDataOutput data, MyBackupDescriptor newDescriptor) throws IOException {
         long backedUpCount = 0;

@@ -48,9 +48,8 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.MySettingsActivity;
 import org.andstatus.app.data.MatchedUri;
-import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.TimelineSearchSuggestionsProvider;
-import org.andstatus.app.database.UserTable;
+import org.andstatus.app.origin.Origin;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
@@ -117,7 +116,7 @@ public class TimelineActivity extends LoadableListActivity implements
         mSwipeLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                manualSyncWithInternet(false, true);
+                syncWithInternet(paramsNew.getTimeline(), true);
             }
         });
 
@@ -444,7 +443,7 @@ public class TimelineActivity extends LoadableListActivity implements
                 onSearchRequested();
                 break;
             case R.id.sync_menu_item:
-                manualSyncWithInternet(false, true);
+                syncWithInternet(paramsNew.getTimeline(), true);
                 break;
             case R.id.commands_queue_id:
                 startActivity(new Intent(getActivity(), QueueViewer.class));
@@ -587,10 +586,11 @@ public class TimelineActivity extends LoadableListActivity implements
             if (paramsNew.hasSearchQuery()
                     && appSearchData.getBoolean(IntentExtra.GLOBAL_SEARCH.key, false)) {
                 showSyncing(method, "Global search: " + paramsNew.getTimeline().getSearchQuery());
-                MyServiceManager.sendManualForegroundCommand(
-                        CommandData.newSearch(
-                                isTimelineCombined() ? null : paramsNew.getMyAccount(),
-                                paramsNew.getTimeline().getSearchQuery()));
+                for (MyAccount myAccount : myContext.persistentAccounts().accountsForGlobalSearch(
+                        paramsNew.getMyAccount(), isTimelineCombined())) {
+                    MyServiceManager.sendManualForegroundCommand(
+                            CommandData.newSearch(myAccount, paramsNew.getTimeline().getSearchQuery()));
+                }
             }
             return true;
         }
@@ -843,78 +843,60 @@ public class TimelineActivity extends LoadableListActivity implements
         }
     }
 
-    private void launchSyncIfNeeded(TimelineType timelineToSync) {
-        switch (timelineToSync) {
-            case ALL:
-                manualSyncWithInternet(true, false);
-                break;
-            case UNKNOWN:
-                break;
-            default:
-                manualSyncWithInternet(false, false);
-                break;
+    private void launchSyncIfNeeded(Timeline timelineToSync) {
+        if (!timelineToSync.isEmpty()) {
+            if (timelineToSync.getTimelineType() == TimelineType.EVERYTHING) {
+                syncWithInternet(getParamsLoaded().getTimeline(), false);
+                // Sync this one timeline and then - all syncable for this account
+                if (paramsNew.getMyAccount().isValidAndSucceeded()) {
+                    paramsNew.getMyAccount().requestSync();
+                }
+            } else {
+                syncWithInternet(timelineToSync, false);
+            }
         }
     }
 
-    /**
-     * Ask a service to load data from the Internet for the selected TimelineType
-     * Only newer messages (newer than last loaded) are being loaded (synced),
-     * older ones are not being synced.
-     */
-    protected void manualSyncWithInternet(boolean allTimelineTypes, boolean manuallyLaunched) {
-        final String method = "manualSync";
-        MyAccount ma = paramsNew.getMyAccount();
-        TimelineType timelineTypeToSync = TimelineType.HOME;
-        long userId = 0;
-        switch (paramsNew.getTimelineType()) {
-            case DIRECT:
-            case MENTIONS:
-            case PUBLIC:
-            case EVERYTHING:
-                timelineTypeToSync = paramsNew.getTimelineType();
-                break;
-            case USER:
-            case FOLLOWERS:
-            case FRIENDS:
-                timelineTypeToSync = paramsNew.getTimelineType();
-                userId = paramsNew.getSelectedUserId();
-                break;
-            default:
-                break;
+    protected void syncWithInternet(Timeline timelineToSync, boolean manuallyLaunched) {
+        if (paramsNew.isTimelineCombined() && timelineToSync.getTimelineType().canBeCombinedForOrigins()) {
+            syncForAllOrigins(timelineToSync, manuallyLaunched);
+        } else if (paramsNew.isTimelineCombined() && timelineToSync.getTimelineType().canBeCombinedForMyAccounts()) {
+            syncForAllAccounts(timelineToSync, manuallyLaunched);
+        } else {
+            syncOneTimeline(timelineToSync, manuallyLaunched);
         }
-        boolean allAccounts = paramsNew.isTimelineCombined();
-        if (userId != 0) {
-            allAccounts = false;
-            long originId = MyQuery.userIdToLongColumnValue(UserTable.ORIGIN_ID, userId);
-            if (originId == 0) {
-                MyLog.e(this, "Unknown origin for userId=" + userId);
-                return;
-            }
-            if (!ma.isValid() || ma.getOriginId() != originId) {
-                ma = MyContextHolder.get().persistentAccounts().fromUserId(userId);
-                if (!ma.isValid()) {
-                    ma = MyContextHolder.get().persistentAccounts().findFirstSucceededMyAccountByOriginId(originId);
-                }
+    }
+
+    private void syncForAllOrigins(Timeline timelineToSync, boolean manuallyLaunched) {
+        for (Origin origin : myContext.persistentOrigins().originsToSync(
+                timelineToSync.getAccount().getOrigin(), true, timelineToSync.hasSearchQuery())) {
+            syncOneTimeline(myContext.persistentTimelines()
+                            .fromNewTimeLine(timelineToSync.cloneForOrigin(origin)),
+                    manuallyLaunched);
+        }
+    }
+
+    private void syncForAllAccounts(Timeline timelineToSync, boolean manuallyLaunched) {
+        for (MyAccount ma : myContext.persistentAccounts().accountsToSync(timelineToSync.getAccount(), true)) {
+            if (timelineToSync.getTimelineType() == TimelineType.EVERYTHING) {
+                ma.requestSync();
+            } else {
+                syncOneTimeline(myContext.persistentTimelines()
+                        .fromNewTimeLine(timelineToSync.cloneForAccount(ma)),
+                        manuallyLaunched);
             }
         }
-        if (!allAccounts && !ma.isValid()) {
-            return;
-        }
+    }
 
-        setCircularSyncIndicator(method, true);
-        showSyncing(method, getText(R.string.options_menu_sync));
-        MyServiceManager.sendForegroundCommand(
-                CommandData.newTimelineCommand(
-                        CommandEnum.FETCH_TIMELINE,
-                        allAccounts ? null : ma,
-                        timelineTypeToSync,
-                        userId,
-                        userId == 0 ? null : paramsNew.getTimeline().getOrigin()
-                ).setManuallyLaunched(manuallyLaunched)
-        );
-
-        if (allTimelineTypes && ma.isValid()) {
-            ma.requestSync();
+    private void syncOneTimeline(Timeline timeline, boolean manuallyLaunched) {
+        final String method = "syncOneTimeline";
+        if (timeline.getAccount().isValidAndSucceeded() && timeline.getTimelineType().canBeSynced() ) {
+            setCircularSyncIndicator(method, true);
+            showSyncing(method, getText(R.string.options_menu_sync));
+            MyServiceManager.sendForegroundCommand(
+                    CommandData.newTimelineCommand(CommandEnum.FETCH_TIMELINE, timeline)
+                            .setManuallyLaunched(manuallyLaunched)
+            );
         }
     }
 
@@ -982,22 +964,11 @@ public class TimelineActivity extends LoadableListActivity implements
     }
 
     private void accountSelected(Intent data) {
-        MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(data.getStringExtra(IntentExtra.ACCOUNT_NAME.key));
+        MyAccount ma = myContext.persistentAccounts().fromAccountName(data.getStringExtra(IntentExtra.ACCOUNT_NAME.key));
         if (ma.isValid()) {
-            MyLog.v(this, "Restarting the activity for the selected account " + ma.getAccountName());
+            MyLog.v(this, "Restarting this activity for the selected account " + ma.getAccountName());
             finish();
-            TimelineType timelineTypeNew = paramsNew.getTimelineType();
-            if (paramsNew.getTimelineType() == TimelineType.USER
-                    && !MyContextHolder.get().persistentAccounts()
-                            .fromUserId(paramsNew.getSelectedUserId()).isValid()) {
-                /*  "Other User's timeline" vs "My User's timeline" 
-                 * Actually we saw messages of the user, who is not MyAccount,
-                 * so let's switch to the HOME
-                 * TODO: Open "Other User's timeline" in a separate Activity?!
-                 */
-                timelineTypeNew = TimelineType.HOME;
-            }
-            mContextMenu.switchTimelineActivity(ma, timelineTypeNew, paramsNew.isTimelineCombined(), ma.getUserId());
+            mContextMenu.switchTimelineActivity(ma, paramsNew.getTimelineType(), paramsNew.isTimelineCombined(), ma.getUserId());
         }
     }
 

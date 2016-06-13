@@ -75,7 +75,7 @@ public class TimelineListParameters {
     volatile long startTime = 0;
     volatile long endTime = 0;
     volatile boolean cancelled = false;
-    volatile TimelineType timelineToSync = TimelineType.UNKNOWN;
+    volatile Timeline timelineToSync = Timeline.getEmpty(MyAccount.getEmpty());
     volatile int rowsLoaded = 0;
     volatile long minSentDateLoaded = 0;
     volatile long maxSentDateLoaded = 0;
@@ -173,7 +173,7 @@ public class TimelineListParameters {
                 + (TextUtils.isEmpty(sortOrderAndLimit) ? "" : ", sortOrder=" + sortOrderAndLimit)
                 + (startTime > 0 ? ", startTime=" + startTime : "")
                 + (cancelled ? ", cancelled" : "")
-                + (timelineToSync == TimelineType.UNKNOWN ? "" : ", timelineToSync=" + timelineToSync)
+                + (timelineToSync.isEmpty() ? "" : ", toSync=" + timelineToSync)
                 + (mLoaderCallbacks == null ? "" : ", loaderCallbacks=" + mLoaderCallbacks)
         );
     }
@@ -341,6 +341,7 @@ public class TimelineListParameters {
                 });
                 break;
             case USER:
+            case SENT:
                 SelectedUserIds userIds = new SelectedUserIds(isTimelineCombined(), timeline.getUserId());
                 // Reblogs are included also
                 sa.addSelection(MsgTable.AUTHOR_ID + " " + userIds.getSql()

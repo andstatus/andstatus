@@ -31,7 +31,6 @@ import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.database.UserTable;
 import org.andstatus.app.msg.TimelineActivity;
-import org.andstatus.app.timeline.TimelineTypeSelector;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.service.CommandData;
@@ -68,7 +67,7 @@ public enum UserListContextMenuItem implements ContextMenuItem {
         void executeOnUiThread(UserListContextMenu menu, MyAccount ma) {
             MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
             Intent intent = new Intent(menu.getActivity(), TimelineActivity.class);
-            intent.setData(MatchedUri.getTimelineUri(ma.getUserId(), TimelineTypeSelector.selectableType(TimelineType.USER),
+            intent.setData(MatchedUri.getTimelineUri(ma.getUserId(), TimelineType.USER,
                     true, menu.getViewItem().getUserId()));
             menu.getActivity().startActivity(intent);
         }

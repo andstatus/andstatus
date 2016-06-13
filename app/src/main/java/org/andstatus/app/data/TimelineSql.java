@@ -68,10 +68,12 @@ public class TimelineSql {
         String authorTableName = "";
         switch (tt) {
             case FOLLOWERS:
+            case MY_FOLLOWERS:
             case FRIENDS:
+            case MY_FRIENDS:
                 String fUserIdColumnName = FriendshipTable.FRIEND_ID;
                 String fUserLinkedUserIdColumnName = FriendshipTable.USER_ID;
-                if (tt == TimelineType.FOLLOWERS) {
+                if (tt == TimelineType.FOLLOWERS || tt == TimelineType.MY_FOLLOWERS) {
                     fUserIdColumnName = FriendshipTable.USER_ID;
                     fUserLinkedUserIdColumnName = FriendshipTable.FRIEND_ID;
                 }
@@ -153,7 +155,9 @@ public class TimelineSql {
                     + "mou." + MsgOfUserTable.MSG_ID;
             switch (tt) {
                 case FOLLOWERS:
+                case MY_FOLLOWERS:
                 case FRIENDS:
+                case MY_FRIENDS:
                 case MESSAGES_TO_ACT:
                     tbl += " AND mou." + MsgOfUserTable.USER_ID
                     + "=" + UserTable.LINKED_USER_ID;

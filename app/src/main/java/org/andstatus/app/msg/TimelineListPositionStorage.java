@@ -21,7 +21,6 @@ import android.text.TextUtils;
 import android.widget.ListView;
 
 import org.andstatus.app.LoadableListActivity;
-import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
@@ -66,7 +65,7 @@ class TimelineListPositionStorage {
         
         queryString = listParameters.getTimeline().getSearchQuery();
         long userId = 0;
-        if (listParameters.getTimelineType() == TimelineType.USER) {
+        if (listParameters.getTimelineType().requiresUserToBeDefined()) {
             userId = listParameters.getSelectedUserId();
         } else if (!listParameters.mTimelineCombined) {
             userId = listParameters.getMyAccount().getUserId();
