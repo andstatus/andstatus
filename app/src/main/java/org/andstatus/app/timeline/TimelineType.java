@@ -145,14 +145,6 @@ public enum TimelineType {
         }
     }
 
-    public boolean canBeCombined() {
-        if (isAtOrigin()) {
-            return canBeCombinedForOrigins();
-        } else {
-            return canBeCombinedForMyAccounts();
-        }
-    }
-
     public boolean isSelectable() {
         switch (this) {
             case UNKNOWN:
@@ -166,11 +158,8 @@ public enum TimelineType {
     public boolean isAtOrigin() {
         switch (this) {
             case USER:
-            case SENT:
             case FRIENDS:
-            case MY_FRIENDS:
             case FOLLOWERS:
-            case MY_FOLLOWERS:
             case PUBLIC:
             case EVERYTHING:
             case MESSAGES_TO_ACT:

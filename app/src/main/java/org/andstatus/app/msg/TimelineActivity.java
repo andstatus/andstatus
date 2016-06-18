@@ -337,7 +337,7 @@ public class TimelineActivity extends LoadableListActivity implements
     private void clearNotifications() {
         MyContextHolder.get().clearNotification(getTimelineType());
         MyServiceManager.sendForegroundCommand(
-                CommandData.newCommand(CommandEnum.NOTIFY_CLEAR, paramsNew.getMyAccount()));
+                CommandData.newCommand(CommandEnum.CLEAR_NOTIFICATIONS, paramsNew.getMyAccount()));
     }
 
     /**
@@ -1060,7 +1060,6 @@ public class TimelineActivity extends LoadableListActivity implements
     public boolean isRefreshNeededAfterExecuting(CommandData commandData) {
         boolean needed = super.isRefreshNeededAfterExecuting(commandData);
         switch (commandData.getCommand()) {
-            case AUTOMATIC_UPDATE:
             case FETCH_TIMELINE:
                 if (!getParamsLoaded().isLoaded()
                         || getParamsLoaded().getTimelineType() != commandData.getTimelineType()) {

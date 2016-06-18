@@ -772,6 +772,7 @@ public class AccountSettingsActivity extends MyActivity {
                     if (succeeded) {
                         String accountName = state.getAccount().getAccountName();
                         MyContextHolder.get().persistentAccounts().initialize();
+                        MyContextHolder.get().persistentTimelines().initialize();
                         state.builder = MyAccount.Builder.newOrExistingFromAccountName(
                                 MyContextHolder.get(), accountName, TriState.TRUE);
                         updateScreen();

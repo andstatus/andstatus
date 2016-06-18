@@ -480,6 +480,13 @@ public class PersistentAccounts {
     }
 
     @Override
+    public String toString() {
+        return "PersistentAccounts{" +
+                "mAccounts=" + mAccounts +
+                '}';
+    }
+
+    @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;

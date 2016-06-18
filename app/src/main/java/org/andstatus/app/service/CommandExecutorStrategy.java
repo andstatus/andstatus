@@ -31,7 +31,7 @@ class CommandExecutorStrategy implements CommandExecutorParent {
     protected long lastProgressBroadcastAt  = 0;
 
     static void executeCommand(CommandData commandData, CommandExecutorParent parent) {
-        CommandExecutorStrategy strategy = getStrategy(new CommandExecutionContext(commandData, commandData.getAccount()))
+        CommandExecutorStrategy strategy = getStrategy(new CommandExecutionContext(commandData))
                 .setParent(parent);
         commandData.getResult().prepareForLaunch();
         logLaunch(strategy);
@@ -66,21 +66,6 @@ class CommandExecutorStrategy implements CommandExecutorParent {
         }
     }
 
-    static void executeStep(CommandExecutionContext execContext, CommandExecutorParent parent) {
-        execContext.onOneExecStepLaunch();
-        CommandExecutorStrategy strategy = getStrategy(execContext).setParent(parent);
-        MyLog.v(strategy, "LaunchingStep " + strategy.execContext);
-        MyServiceEventsBroadcaster.newInstance(MyContextHolder.get(), MyServiceState.RUNNING)
-                .setCommandData(execContext.getCommandData())
-                .setEvent(MyServiceEvent.BEFORE_EXECUTING_COMMAND).broadcast();
-        strategy.execute();
-        MyServiceEventsBroadcaster.newInstance(MyContextHolder.get(), MyServiceState.RUNNING)
-                .setCommandData(execContext.getCommandData())
-                .setEvent(MyServiceEvent.AFTER_EXECUTING_COMMAND).broadcast();
-        MyLog.v(strategy, "ExecutedStep " + strategy.execContext);
-        execContext.onOneExecStepEnd();
-    }
-
     void broadcastProgress(String progress, boolean notTooOften) {
         if (notTooOften){
             if (!RelativeTime.moreSecondsAgoThan(lastProgressBroadcastAt, MIN_PROGRESS_BROADCAST_PERIOD_SECONDS)) {
@@ -95,8 +80,7 @@ class CommandExecutorStrategy implements CommandExecutorParent {
     }
 
     static CommandExecutorStrategy getStrategy(CommandData commandData, CommandExecutorParent parent) {
-        return getStrategy(new CommandExecutionContext(commandData, commandData.getAccount()))
-                .setParent(parent);
+        return getStrategy(new CommandExecutionContext(commandData)).setParent(parent);
     }
 
     static CommandExecutorStrategy getStrategy(CommandExecutionContext execContext) {
@@ -110,24 +94,10 @@ class CommandExecutorStrategy implements CommandExecutorParent {
                 strategy = new CommandExecutorGetOpenInstances();
                 break;
             default:
-                if (!execContext.getMyAccount().isValid()) {
-                    if (execContext.getTimelineType() == TimelineType.PUBLIC) {
-                        strategy = new CommandExecutorAllOrigins();
-                    } else {
-                        strategy = new CommandExecutorAllAccounts();
-                    }
-                } else if (execContext.getMyAccount().isValidAndSucceeded()) {
+                if (execContext.getMyAccount().isValidAndSucceeded()) {
                     switch (execContext.getCommandData().getCommand()) {
-                        case AUTOMATIC_UPDATE:
                         case FETCH_TIMELINE:
-                            switch (execContext.getTimelineType()) {
-                                case EVERYTHING:
-                                    strategy = new CommandExecutorLoadAllTimelines();
-                                    break;
-                                default:
-                                    strategy = new CommandExecutorLoadTimeline();
-                                    break;
-                            }
+                            strategy = new CommandExecutorLoadTimeline();
                             break;
                         case SEARCH_MESSAGE:
                             strategy = new CommandExecutorSearch();

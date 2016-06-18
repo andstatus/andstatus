@@ -36,6 +36,7 @@ import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.net.social.TimelinePosition;
 import org.andstatus.app.service.AttachmentDownloader;
 import org.andstatus.app.service.CommandData;
+import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.CommandExecutionContext;
 import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.MyLog;
@@ -61,7 +62,7 @@ public class DataInserter {
             SharedPreferencesUtil.getString(MyPreferences.KEY_FILTER_HIDE_MESSAGES_BASED_ON_KEYWORDS, ""));
 
     public DataInserter(MyAccount ma) {
-        this(new CommandExecutionContext(CommandData.getEmpty(), ma));
+        this(new CommandExecutionContext(CommandData.newCommand(CommandEnum.EMPTY, ma)));
     }
     
     public DataInserter(CommandExecutionContext execContext) {

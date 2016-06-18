@@ -19,7 +19,8 @@ public class CommandExecutionContextTest extends InstrumentationTestCase {
     }
 
     public void testHomeAccumulation() {
-        CommandExecutionContext execContext = new CommandExecutionContext(CommandData.getEmpty(), ma).setTimelineType(TimelineType.HOME);
+        CommandExecutionContext execContext = new CommandExecutionContext(
+                CommandData.newCommand(CommandEnum.EMPTY, ma)).setTimelineType(TimelineType.HOME);
         assertEquals(execContext.getTimelineType(), TimelineType.HOME);
         
         final int MESSAGES = 4;
@@ -36,7 +37,8 @@ public class CommandExecutionContextTest extends InstrumentationTestCase {
     }
 
     public void testDirectAccumulation() {
-        CommandExecutionContext execContext = new CommandExecutionContext(CommandData.getEmpty(), ma).setTimelineType(TimelineType.DIRECT);
+        CommandExecutionContext execContext = new CommandExecutionContext(
+                CommandData.newCommand(CommandEnum.EMPTY, ma)).setTimelineType(TimelineType.DIRECT);
         final int MESSAGES = 4;
         for (int ind=0; ind < MESSAGES; ind++) {
             execContext.getResult().incrementMessagesCount(execContext.getTimelineType());

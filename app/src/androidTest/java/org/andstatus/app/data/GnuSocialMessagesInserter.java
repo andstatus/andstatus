@@ -29,6 +29,7 @@ import org.andstatus.app.net.social.MbMessage;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.service.CommandData;
+import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.CommandExecutionContext;
 import org.andstatus.app.timeline.TimelineType;
 
@@ -140,7 +141,8 @@ public class GnuSocialMessagesInserter extends InstrumentationTestCase {
     }
     
     private long addMessage(MbMessage message) {
-        DataInserter di = new DataInserter(new CommandExecutionContext(CommandData.getEmpty(), ma).setTimelineType(TimelineType.HOME));
+        DataInserter di = new DataInserter(new CommandExecutionContext(
+                CommandData.newCommand(CommandEnum.EMPTY, ma)).setTimelineType(TimelineType.HOME));
         long messageId = di.insertOrUpdateMsg(message);
         assertTrue( "Message added " + message.oid, messageId != 0);
         return messageId;

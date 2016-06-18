@@ -320,7 +320,6 @@ public final class CommandResult implements Parcelable {
     void resetRetries(CommandEnum command) {
         retriesLeft = INITIAL_NUMBER_OF_RETRIES;
         switch (command) {
-            case AUTOMATIC_UPDATE:
             case FETCH_TIMELINE:
             case RATE_LIMIT_STATUS:
             case SEARCH_MESSAGE:

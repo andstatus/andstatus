@@ -308,9 +308,9 @@ public final class MyAccount {
                 myAccount.accountData.setDataBoolean(MyAccount.KEY_IS_SYNCABLE, myAccount.mIsSyncable);
                 myAccount.accountData.setDataBoolean(MyAccount.KEY_SYNC_AUTOMATICALLY, myAccount.mSyncAutomatically);
                 if (myAccount.syncFrequencySeconds == 0) {
-                    myAccount.syncFrequencySeconds = MyPreferences.getSyncFrequencySeconds();
+                    setSyncFrequency(MyPreferences.getSyncFrequencySeconds());
                 }
-                myAccount.accountData.setDataLong(MyPreferences.KEY_SYNC_FREQUENCY_SECONDS, myAccount.syncFrequencySeconds); 
+                myAccount.accountData.setDataLong(MyPreferences.KEY_SYNC_FREQUENCY_SECONDS, myAccount.syncFrequencySeconds);
                 myAccount.accountData.setDataInt(KEY_VERSION, myAccount.version);
                 if (androidAccount != null) {
                     myAccount.accountData.saveDataToAccount(myContext, androidAccount, result);

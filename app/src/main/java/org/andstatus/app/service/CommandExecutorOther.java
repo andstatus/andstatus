@@ -82,7 +82,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
             case FETCH_AVATAR:
                 (new AvatarDownloader(execContext.getCommandData().getUserId())).load(execContext.getCommandData());
                 break;
-            case NOTIFY_CLEAR:
+            case CLEAR_NOTIFICATIONS:
                 AppWidgets.clearAndUpdateWidgets(execContext.getMyContext());
                 break;
             default:

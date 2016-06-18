@@ -61,7 +61,7 @@ public class CommandData implements Comparable<CommandData> {
     private volatile boolean mManuallyLaunched = false;
 
     /** {@link MyAccount} for this command. Invalid account if command is not Account
-     * specific (e.g. {@link CommandEnum#AUTOMATIC_UPDATE} which works for all accounts)
+     * specific e.g. {@link CommandEnum#DELETE_COMMAND}
      * It holds UserId for command, which need such parameter (not only for a timeline)
      */
     private final Timeline timeline;
@@ -147,16 +147,6 @@ public class CommandData implements Comparable<CommandData> {
         this.timeline = MyContextHolder.get().persistentTimelines().fromNewTimeLine(timeline);
         this.createdDate = createdDate > 0 ? createdDate : this.commandId;
         resetRetries();
-    }
-
-    // TODO: Get rid of this
-    public static CommandData forOneExecStep(CommandExecutionContext execContext) {
-        Bundle bundle = execContext.getCommandData().toBundle();
-        bundle.putString(IntentExtra.ACCOUNT_NAME.key, execContext.getMyAccount().getAccountName());
-        bundle.putString(IntentExtra.TIMELINE_TYPE.key, execContext.getTimelineType().save());
-        CommandData commandData = CommandData.fromBundle(bundle);
-        commandData.commandResult = execContext.getCommandData().getResult().forOneExecStep();
-        return commandData;
     }
 
     /**
@@ -421,7 +411,6 @@ public class CommandData implements Comparable<CommandData> {
                 builder.append(trimConditionally(description, summaryOnly));
                 builder.append("\"");
                 break;
-            case AUTOMATIC_UPDATE:
             case FETCH_TIMELINE:
                 if (getAccount().isValid()) {
                     if (getTimelineType().requiresUserToBeDefined()) {
@@ -499,7 +488,6 @@ public class CommandData implements Comparable<CommandData> {
     public String toShortCommandName(MyContext myContext) {
         StringBuilder builder = new StringBuilder();
         switch (command) {
-            case AUTOMATIC_UPDATE:
             case FETCH_TIMELINE:
                 builder.append(getTimelineType().getTitle(myContext.context()));
                 break;

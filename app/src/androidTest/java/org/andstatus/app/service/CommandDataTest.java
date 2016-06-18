@@ -110,7 +110,7 @@ public class CommandDataTest extends InstrumentationTestCase {
         queue.add(CommandData.newSearch(
                 TestSuite.getMyAccount(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME), "q1"));
         queue.add(CommandData.newUpdateStatus(null, 2));
-        queue.add(CommandData.newCommand(CommandEnum.AUTOMATIC_UPDATE));
+        queue.add(CommandData.newCommand(CommandEnum.FETCH_TIMELINE));
         queue.add(CommandData.newUpdateStatus(null, 3));
         queue.add(CommandData.newCommand(CommandEnum.GET_STATUS));
         
@@ -118,7 +118,7 @@ public class CommandDataTest extends InstrumentationTestCase {
         assertEquals(CommandEnum.UPDATE_STATUS, queue.poll().getCommand());
         assertEquals(CommandEnum.GET_STATUS, queue.poll().getCommand());
         assertEquals(CommandEnum.SEARCH_MESSAGE, queue.poll().getCommand());
-        assertEquals(CommandEnum.AUTOMATIC_UPDATE, queue.poll().getCommand());
+        assertEquals(CommandEnum.FETCH_TIMELINE, queue.poll().getCommand());
     }
     
     public void testSummary() {

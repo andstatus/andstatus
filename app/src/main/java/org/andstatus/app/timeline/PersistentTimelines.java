@@ -126,7 +126,7 @@ public class PersistentTimelines {
     public List<Timeline> toSyncForAccount(MyAccount ma) {
         List<Timeline> timelines = new ArrayList<>();
         for (Timeline timeline : getList()) {
-            if (timeline.isSynced() && timeline.getAccount() == ma) {
+            if (timeline.isSynced() && timeline.getAccount().equals(ma)) {
                 timelines.add(timeline);
             }
         }

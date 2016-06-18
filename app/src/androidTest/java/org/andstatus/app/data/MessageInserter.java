@@ -29,6 +29,7 @@ import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.service.CommandData;
+import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.CommandExecutionContext;
 import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.InstanceId;
@@ -142,7 +143,8 @@ public class MessageInserter extends InstrumentationTestCase {
         if (messageIn.isPublic() ) {
             tt = TimelineType.PUBLIC;
         }
-        DataInserter di = new DataInserter(new CommandExecutionContext(CommandData.getEmpty(), ma).setTimelineType(tt));
+        DataInserter di = new DataInserter(new CommandExecutionContext(
+                CommandData.newCommand(CommandEnum.EMPTY, ma)).setTimelineType(tt));
         long messageId = di.insertOrUpdateMsg(messageIn);
         assertTrue( "Message added " + messageIn.oid, messageId != 0);
 

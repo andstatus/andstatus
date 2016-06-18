@@ -33,27 +33,15 @@ import org.andstatus.app.util.MyLog;
  */
 public enum CommandEnum {
 
-    /**
-     * The action is unknown
-     */
+    /** The action is unknown */
     UNKNOWN("unknown"),
-    /**
-     * There is no action
-     */
+    /** There is no action */
     EMPTY("empty"),
     DELETE_COMMAND("delete-command", R.string.button_delete, 100, ConnectionRequired.ANY),
-    /**
-     * The action to fetch all usual timelines in the background.
-     */
-    AUTOMATIC_UPDATE("automatic-update", 0, 12, ConnectionRequired.SYNC),
-    /**
-     * Fetch timeline(s) of the specified type for the specified MyAccount. 
-     */
+    /** Fetch timeline(s) of the specified type for the specified MyAccount */
     FETCH_TIMELINE("fetch-timeline", 0, 4, ConnectionRequired.SYNC),
 
-    /**
-     * Fetch avatar for the specified user 
-     */
+    /** Fetch avatar for the specified user */
     FETCH_AVATAR("fetch-avatar", R.string.title_command_fetch_avatar, 9, ConnectionRequired.SYNC),
     FETCH_ATTACHMENT("fetch-attachment", R.string.title_command_fetch_attachment, 11, ConnectionRequired.DOWNLOAD_ATTACHMENT),
     
@@ -66,9 +54,7 @@ public enum CommandEnum {
     GET_FOLLOWERS("get-followers", R.string.get_followers, -5, ConnectionRequired.SYNC),
     GET_FRIENDS("get-friends", R.string.get_friends, -5, ConnectionRequired.SYNC),
 
-    /**
-     * This command is for sending both public and direct messages
-     */
+    /** This command is for sending both public and direct messages */
     UPDATE_STATUS("update-status", R.string.button_create_message, -10, ConnectionRequired.SYNC),
     DESTROY_STATUS("destroy-status", R.string.menu_item_destroy_status, -3, ConnectionRequired.SYNC),
     GET_STATUS("get-status", R.string.title_command_get_status, -5, ConnectionRequired.SYNC),
@@ -82,47 +68,18 @@ public enum CommandEnum {
 
     RATE_LIMIT_STATUS("rate-limit-status", 0, 0, ConnectionRequired.SYNC),
 
-    /**
-     * Notify User about commands in the Queue
-     */
-    NOTIFY_QUEUE("notify-queue"),
+    /** Clear previous notifications (because e.g. user opened a Timeline) */
+    CLEAR_NOTIFICATIONS("clear-notifications", 0, -20, ConnectionRequired.ANY),
 
-    /**
-     * Commands to the Widget New tweets|messages were successfully loaded
-     * from the server
-     */
-    NOTIFY_DIRECT_MESSAGE("notify-direct-message"),
-    /**
-     * New messages in the Home timeline of Account
-     */
-    NOTIFY_HOME_TIMELINE("notify-home-timeline"),
-    /**
-     * Mentions and replies are currently shown in one timeline
-     */
-    NOTIFY_MENTIONS("notify-mentions"), 
-            // TODO: Add NOTIFY_REPLIES("notify-replies"),
-    /**
-     * Clear previous notifications (because e.g. user opened a Timeline)
-     */
-    NOTIFY_CLEAR("notify-clear", 0, -20, ConnectionRequired.ANY),
-
-    /**
-     * Stop the service after finishing all asynchronous treads (i.e. not immediately!)
-     */
+    /** Stop the service after finishing all asynchronous treads (i.e. not immediately!) */
     STOP_SERVICE("stop-service"),
 
-    /**
-     * Broadcast back state of {@link MyService}
-     */
+    /** Broadcast back state of {@link MyService} */
     BROADCAST_SERVICE_STATE("broadcast-service-state");
 
-    /**
-     * code of the enum that is used in messages
-     */
+    /** code of the enum that is used in messages */
     private final String code;
-    /**
-     * The id of the string resource with the localized name of this enum to use in UI
-     */
+    /** The id of the string resource with the localized name of this enum to use in UI */
     private final int titleResId;
     /** less value of the  priority means higher priority */
     private final int priority;

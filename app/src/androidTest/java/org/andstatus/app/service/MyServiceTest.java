@@ -16,6 +16,7 @@
 
 package org.andstatus.app.service;
 
+import android.content.SyncResult;
 import android.test.InstrumentationTestCase;
 
 import org.andstatus.app.account.MyAccount;
@@ -80,22 +81,32 @@ public class MyServiceTest extends InstrumentationTestCase {
         MyLog.v(this, method + " ended");
     }
 
-    public void testAutomaticUpdates() {
-        MyLog.v(this, "testAutomaticUpdates started");
+    public void testAccountSync() {
+        final String method = "testAccountSync";
+        MyLog.v(this, method + " started");
 
-        mService.listenedCommand = CommandData.newTimelineCommand(
-                CommandEnum.AUTOMATIC_UPDATE, null, TimelineType.EVERYTHING);
-        long startCount = mService.executionStartCount;
-        long endCount = mService.executionEndCount;
-        
-        mService.sendListenedToCommand();
-        
-        assertTrue("First command started executing", mService.waitForCommandExecutionStarted(startCount));
-        assertTrue("First command ended executing", mService.waitForCommandExecutionEnded(endCount));
-        assertTrue(mService.httpConnectionMock.toString(), 
+        MyAccount myAccount = MyContextHolder.get().persistentAccounts().findFirstSucceededMyAccountByOriginId(0);
+        assertTrue("No successful account", myAccount != null);
+
+        SyncResult syncResult = new SyncResult();
+        MyServiceCommandsRunner runner = new MyServiceCommandsRunner(getInstrumentation().getTargetContext());
+        runner.syncAccount(myAccount.getAccountName(), syncResult);
+        assertFalse(runner.toString(), runner.isSyncCompleted());
+        assertTrue(mService.httpConnectionMock.getRequestsCounter() + " requests were sent" +
+                " while service was unavailable. " +
+                mService.httpConnectionMock.toString(),
+                mService.httpConnectionMock.getRequestsCounter() == 0);
+
+        syncResult = new SyncResult();
+        runner = new MyServiceCommandsRunner(getInstrumentation().getTargetContext());
+        runner.setIgnoreServiceAvailability(true);
+        runner.syncAccount(myAccount.getAccountName(), syncResult);
+        assertTrue(runner.toString(), runner.isSyncCompleted());
+        assertTrue(runner.toString() + "; " + mService.httpConnectionMock.toString(),
                 mService.httpConnectionMock.getRequestsCounter() > 1);
+
         assertTrue("Service stopped", mService.waitForServiceStopped(true));
-        MyLog.v(this, "testAutomaticUpdates ended");
+        MyLog.v(this, method + " ended");
     }
 
     public void testHomeTimeline() {

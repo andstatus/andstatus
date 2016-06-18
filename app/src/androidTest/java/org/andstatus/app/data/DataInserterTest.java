@@ -34,6 +34,7 @@ import org.andstatus.app.net.social.MbMessage;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.service.AttachmentDownloaderTest;
 import org.andstatus.app.service.CommandData;
+import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.CommandExecutionContext;
 import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.SelectionAndArgs;
@@ -56,8 +57,8 @@ public class DataInserterTest extends InstrumentationTestCase {
         String messageOid = "https://identi.ca/api/comment/dasdjfdaskdjlkewjz1EhSrTRB";
         MessageInserter.deleteOldMessage(TestSuite.getConversationOriginId(), messageOid);
 
-        CommandExecutionContext counters = new CommandExecutionContext(CommandData.getEmpty(),
-                TestSuite.getConversationMyAccount()).setTimelineType(TimelineType.HOME);
+        CommandExecutionContext counters = new CommandExecutionContext(CommandData.newCommand(CommandEnum.EMPTY,
+                TestSuite.getConversationMyAccount())).setTimelineType(TimelineType.HOME);
         DataInserter di = new DataInserter(counters);
         String username = "somebody@identi.ca";
         String userOid = "acct:" + username;

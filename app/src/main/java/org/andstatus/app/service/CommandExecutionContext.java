@@ -8,14 +8,10 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.MyLog;
 
-import java.util.LinkedList;
-
 public class CommandExecutionContext {
     private CommandData commandData;
-    private LinkedList<CommandData> stackOfCommandDataOfExecSteps = new LinkedList<CommandData>();
 
-    private MyAccount ma;
-    private TimelineType timelineType;    
+    private TimelineType timelineType;
     /**
      * The Timeline (if any) is of this User 
      */
@@ -23,25 +19,21 @@ public class CommandExecutionContext {
 
     private MyContext myContext;
 
-    public CommandExecutionContext(CommandData commandData, MyAccount ma) {
-        this(MyContextHolder.get(), commandData, ma);
+    public CommandExecutionContext(CommandData commandData) {
+        this(MyContextHolder.get(), commandData);
     }
 
-    public CommandExecutionContext(MyContext myContext, CommandData commandData, MyAccount ma) {
+    public CommandExecutionContext(MyContext myContext, CommandData commandData) {
         if (commandData == null) {
             throw new IllegalArgumentException( "CommandData is null");
         }
         this.commandData = commandData;
-        this.ma = ma;
         this.timelineType = commandData.getTimelineType();
         this.myContext = myContext;
     }
 
     public MyAccount getMyAccount() {
-        return ma;
-    }
-    public void setMyAccount(MyAccount ma) {
-        this.ma = ma;
+        return commandData.getAccount();
     }
 
     public MyContext getMyContext() {
@@ -73,17 +65,6 @@ public class CommandExecutionContext {
         return commandData;
     }
 
-    void onOneExecStepLaunch() {
-        stackOfCommandDataOfExecSteps.addFirst(commandData);
-        commandData = CommandData.forOneExecStep(this);
-    }
-
-    void onOneExecStepEnd() {
-        CommandData storedBeforeExecStep = stackOfCommandDataOfExecSteps.removeFirst();
-        storedBeforeExecStep.accumulateOneStep(commandData);
-        commandData = storedBeforeExecStep;
-    }
-
     public CommandResult getResult() {
         return commandData.getResult();
     }
@@ -92,7 +73,7 @@ public class CommandExecutionContext {
     public String toString() {
         return MyLog.formatKeyValue(
                 "CommandExecutionContext",
-                (ma == null ? "" : ma.toString() + ",")
+                getMyAccount().toString() + ","
                 + (TimelineType.UNKNOWN.equals(timelineType) ? "" : timelineType
                         .toString() + ",")
                         + (timelineUserId == 0 ? "" : "userId:" + timelineUserId + ",")
@@ -101,9 +82,7 @@ public class CommandExecutionContext {
 
     public String toExceptionContext() {
         StringBuilder builder = new StringBuilder(100);
-        if (ma != null) {
-            builder.append(ma.getAccountName() + ", ");
-        }
+        builder.append(getMyAccount().getAccountName() + ", ");
         if (!TimelineType.UNKNOWN.equals(timelineType)) {
             builder.append(timelineType.toString() + ", ");
         }
