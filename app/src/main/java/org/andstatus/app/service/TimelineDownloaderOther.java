@@ -20,14 +20,15 @@ import android.text.TextUtils;
 
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DataInserter;
-import org.andstatus.app.timeline.LatestTimelineItem;
 import org.andstatus.app.data.LatestUserMessages;
-import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.data.MyQuery;
+import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.ConnectionException.StatusCode;
+import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.net.social.MbTimelineItem;
 import org.andstatus.app.net.social.TimelinePosition;
+import org.andstatus.app.timeline.LatestTimelineItem;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
 
@@ -40,7 +41,12 @@ class TimelineDownloaderOther extends TimelineDownloader {
 
     @Override
     public void download() throws ConnectionException {
-        LatestTimelineItem latestTimelineItem = new LatestTimelineItem(execContext.getCommandData().getTimeline());
+        if (execContext.getTimelineType().getConnectionApiRoutine() == Connection.ApiRoutineEnum.DUMMY) {
+            throw new IllegalArgumentException("Invalid TimelineType for loadTimeline: "
+                    + execContext.getTimelineType());
+        }
+
+        LatestTimelineItem latestTimelineItem = new LatestTimelineItem(getTimeline());
         long hours = MyPreferences.getDontSynchronizeOldMessages();
         boolean downloadingLatest = false;
         if (hours > 0 && RelativeTime.moreSecondsAgoThan(latestTimelineItem.getTimelineDownloadedDate(),
@@ -70,7 +76,9 @@ class TimelineDownloaderOther extends TimelineDownloader {
         int toDownload = MAXIMUM_NUMBER_OF_MESSAGES_TO_DOWNLOAD;
         TimelinePosition lastPosition = latestTimelineItem.getPosition();
         LatestUserMessages latestUserMessages = new LatestUserMessages();
+
         latestTimelineItem.onTimelineDownloaded();
+
         DataInserter di = new DataInserter(execContext);
         for (int loopCounter=0; loopCounter < 100; loopCounter++ ) {
             try {

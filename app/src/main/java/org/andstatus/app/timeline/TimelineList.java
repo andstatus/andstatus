@@ -27,6 +27,8 @@ import org.andstatus.app.LoadableListActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyUrlSpan;
+import org.andstatus.app.util.RelativeTime;
+import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.widget.MyBaseAdapter;
 
 import java.util.ArrayList;
@@ -133,6 +135,8 @@ public class TimelineList extends LoadableListActivity {
                                 MyLog.v("isSynced", (isChecked ? "+ " : "- ") + item.timelineTitle.toString());
                             }
                 });
+                MyUrlSpan.showText(view, R.id.syncedDate, StringUtils.notEmpty(
+                        RelativeTime.getDifference(TimelineList.this, item.timeline.getSyncedDate()), " "), false);
                 MyUrlSpan.showCheckBox(view, R.id.displayedInSelector, item.timeline.isDisplayedInSelector(),
                         new View.OnClickListener() {
                             @Override

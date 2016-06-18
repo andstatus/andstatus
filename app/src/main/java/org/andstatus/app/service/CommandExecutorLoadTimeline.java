@@ -34,7 +34,9 @@ class CommandExecutorLoadTimeline extends CommandExecutorStrategy {
                 }
                 execContext.setTimelineUserId(userId);
                 MyLog.d(this, "Getting " + execContext.getTimelineType() + " timeline for " + execContext.getMyAccount().getAccountName() );
-                TimelineDownloader.getStrategy(execContext).download();
+                TimelineDownloader downloader = TimelineDownloader.getStrategy(execContext);
+                downloader.download();
+                downloader.onSyncEnded();
             } else {
                 MyLog.v(this, execContext.getTimelineType() + " is not supported for "
                         + execContext.getMyAccount().getAccountName());

@@ -141,7 +141,6 @@ public class LatestTimelineItem {
             timeline.setYoungestItemDate(timelineItemDate);
             timeline.setYoungestPosition(position.getPosition());
         }
-        timeline.save();
     }
     
     /**

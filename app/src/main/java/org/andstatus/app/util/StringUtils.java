@@ -16,9 +16,14 @@
 
 package org.andstatus.app.util;
 
+import android.text.TextUtils;
+
 /**
  * @author yvolk@yurivolkov.com
  */
 public class StringUtils {
 
+    public static String notEmpty(String value, String valueIfEmpty) {
+        return TextUtils.isEmpty(value) ? valueIfEmpty : value;
+    }
 }

@@ -18,6 +18,7 @@ package org.andstatus.app.service;
 
 import org.andstatus.app.data.DataInserter;
 import org.andstatus.app.net.http.ConnectionException;
+import org.andstatus.app.timeline.Timeline;
 
 /**
  * Downloads ("loads") different types of Timelines 
@@ -27,8 +28,6 @@ import org.andstatus.app.net.http.ConnectionException;
  * @author yvolk@yurivolkov.com
  */
 abstract class TimelineDownloader {
-    private static final String TAG = TimelineDownloader.class.getSimpleName();
-
     protected CommandExecutionContext execContext;
     
     protected static TimelineDownloader getStrategy(CommandExecutionContext execContext) {
@@ -40,8 +39,6 @@ abstract class TimelineDownloader {
             case MY_FRIENDS:
                 td = new TimelineDownloaderFollowers();
                 break;
-            case EVERYTHING:
-                throw new IllegalArgumentException(TAG + ": Invalid TimelineType for loadTimeline: " + execContext.getTimelineType());
             default:
                 td = new TimelineDownloaderOther();
                 break;
@@ -49,6 +46,15 @@ abstract class TimelineDownloader {
         td.execContext = execContext;
         return td;
     }
-    
+
     public abstract void download() throws ConnectionException;
+
+    protected Timeline getTimeline() {
+        return execContext.getCommandData().getTimeline();
+    }
+
+    public void onSyncEnded() {
+        getTimeline().onSyncEnded(execContext.getCommandData().getResult());
+        getTimeline().save();
+    }
 }

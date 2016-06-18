@@ -32,6 +32,7 @@ import org.andstatus.app.data.ParsedUri;
 import org.andstatus.app.database.CommandTable;
 import org.andstatus.app.database.TimelineTable;
 import org.andstatus.app.origin.Origin;
+import org.andstatus.app.service.CommandResult;
 import org.andstatus.app.util.BundleUtils;
 import org.andstatus.app.util.ContentValuesUtils;
 import org.andstatus.app.util.MyLog;
@@ -334,6 +335,14 @@ public class Timeline implements Comparable<Timeline> {
         return timelines;
     }
 
+    public long saveIfChanged() {
+        if (id != 0 && !changed) {
+            return id;
+        } else {
+            return save();
+        }
+    }
+
     public long save() {
         ContentValues contentValues = new ContentValues();
         toContentValues(contentValues);
@@ -564,5 +573,29 @@ public class Timeline implements Comparable<Timeline> {
         Timeline timeline = new Timeline(getTimelineType(), null, 0, origin);
         timeline.setSearchQuery(getSearchQuery());
         return timeline;
+    }
+
+    public void onSyncEnded(CommandResult result) {
+        if (result.hasError()) {
+            syncFailedDate = System.currentTimeMillis();
+            if (!TextUtils.isEmpty(result.getMessage())) {
+                errorMessage = result.getMessage();
+            }
+            syncFailedTimesCount++;
+            syncFailedTimesCountTotal++;
+        } else {
+            syncedDate = System.currentTimeMillis();
+            syncedTimesCount++;
+            syncedTimesCountTotal++;
+        }
+        if (result.getMessagesAdded() > 0) {
+            newItemsCount += result.getMessagesAdded();
+            newItemsCountTotal += result.getMessagesAdded();
+        }
+        changed = true;
+    }
+
+    public long getSyncedDate() {
+        return syncedDate;
     }
 }

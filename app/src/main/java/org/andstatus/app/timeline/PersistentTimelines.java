@@ -226,9 +226,7 @@ public class PersistentTimelines {
 
     public void saveChanged() {
         for (Timeline timeline : getList()) {
-            if (timeline.isChanged()) {
-                timeline.save();
-            }
+            timeline.saveIfChanged();
         }
     }
 
