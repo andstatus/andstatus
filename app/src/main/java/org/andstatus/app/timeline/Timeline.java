@@ -550,6 +550,10 @@ public class Timeline implements Comparable<Timeline> {
         }
     }
 
+    public boolean isUserDifferentFromAccount() {
+        return userId != 0 && myAccount.getUserId() != userId;
+    }
+
     public String getYoungestPosition() {
         return youngestPosition;
     }

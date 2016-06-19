@@ -62,7 +62,8 @@ public class TimelineTitle {
         if (timeline.hasSearchQuery()) {
             I18n.appendWithSpace(title, "'" + timeline.getSearchQuery() + "'");
         }
-        if (timeline.getTimelineType().requiresUserToBeDefined()) {
+        if (timeline.getTimelineType().requiresUserToBeDefined()
+                && (timeline.isUserDifferentFromAccount() || timeline.getTimelineType().isAtOrigin())) {
             I18n.appendWithSpace(title, MyQuery.userIdToWebfingerId(timeline.getUserId()));
         }
         if (timeline.isCombined()) {
@@ -79,6 +80,9 @@ public class TimelineTitle {
                     .getPrepositionForNotCombinedTimeline(MyContextHolder.get().context()));
             if (timeline.getTimelineType().isAtOrigin()) {
                 I18n.appendWithSpace(subTitle, timeline.getOrigin().getName()
+                        + ";");
+            } else if (!timeline.getMyAccount().equals(currentMyAccount)) {
+                I18n.appendWithSpace(subTitle, timeline.getMyAccount().toAccountButtonText()
                         + ";");
             }
         }
