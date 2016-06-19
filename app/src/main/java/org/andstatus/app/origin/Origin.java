@@ -322,6 +322,10 @@ public class Origin {
         return count != 0;
     }
 
+    public static Origin getEmpty() {
+        return getEmpty(OriginType.UNKNOWN);
+    }
+
     private static Origin getEmpty(OriginType originType) {
         Origin origin;
         try {
@@ -382,10 +386,6 @@ public class Origin {
 
         public boolean isSaved() {
             return saved;
-        }
-
-        public static Origin buildUnknown() {
-            return new Builder(OriginType.UNKNOWN).build();
         }
 
         public Builder(OriginType originType) {

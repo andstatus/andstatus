@@ -49,14 +49,15 @@ public class Timeline implements Comparable<Timeline> {
     private String description = "";
 
     private final TimelineType timelineType;
-    private final MyAccount account;
+    /** The timeline combines messages from all accounts
+     * or from Social Networks, e.g. Search in all Social Networks */
+    private final boolean isCombined;
+    private final MyAccount myAccount;
     /** Selected User for e.g. {@link TimelineType#USER} timeline */
     private final long userId;
     private String userName = "";
 
     private final Origin origin;
-    /** The timeline combines messages from all Social Networks, e.g. Search in all Social Networks */
-    private final boolean allOrigins;
     /**
      * The string is not empty if this timeline is filtered using query string
      * ("Mentions" are not counted here because they have the separate TimelineType)
@@ -97,11 +98,11 @@ public class Timeline implements Comparable<Timeline> {
     }
 
     public Timeline(MyContext myContext, TimelineType timelineType, MyAccount myAccount, long userId, Origin origin) {
-        this.account = fixedMyAccount(myContext, myAccount, userId);
+        this.myAccount = fixedMyAccount(myContext, myAccount, userId);
         this.userId = fixedUserId(timelineType, userId);
-        this.timelineType = fixedTimelineType(timelineType, this.account, this.userId);
+        this.timelineType = fixedTimelineType(timelineType, this.myAccount, this.userId);
         this.origin = fixedOrigin(myContext, origin);
-        this.allOrigins = !this.account.isValid() && !this.origin.isValid();
+        this.isCombined = this.timelineType.isAtOrigin() ? !this.origin.isValid() : !this.myAccount.isValid();
         fixUserName(myContext);
     }
 
@@ -115,8 +116,8 @@ public class Timeline implements Comparable<Timeline> {
     }
 
     private long fixedUserId(TimelineType timelineType, long userId) {
-        if (userId == 0 && account.isValid() && timelineType.requiresUserToBeDefined()) {
-            return account.getUserId();
+        if (userId == 0 && myAccount.isValid() && timelineType.requiresUserToBeDefined()) {
+            return myAccount.getUserId();
         }
         return userId;
     }
@@ -150,15 +151,17 @@ public class Timeline implements Comparable<Timeline> {
     }
 
     private Origin fixedOrigin(MyContext myContext, Origin origin) {
-        Origin fixedOrigin = origin == null ? Origin.Builder.buildUnknown() : origin;
+        Origin fixedOrigin = origin == null ? Origin.getEmpty() : origin;
         if (!fixedOrigin.isValid() && userId != 0) {
             MyAccount myAccount = myContext.persistentAccounts().fromUserId(userId);
             if (myAccount.isValid()) {
                 fixedOrigin = myAccount.getOrigin();
             }
         }
-        if (!fixedOrigin.isValid() && account.isValid()) {
-            fixedOrigin = account.getOrigin();
+        if (myAccount.isValid()) {
+            if (!fixedOrigin.isValid() || fixedOrigin.isValid() && !myAccount.getOrigin().equals(fixedOrigin) ) {
+                fixedOrigin = myAccount.getOrigin();
+            }
         }
         return fixedOrigin;
     }
@@ -183,7 +186,7 @@ public class Timeline implements Comparable<Timeline> {
         values.put(TimelineTable.TIMELINE_NAME, name);
         values.put(TimelineTable.TIMELINE_DESCRIPTION, description);
         values.put(TimelineTable.TIMELINE_TYPE, timelineType.save());
-        values.put(TimelineTable.ACCOUNT_ID, account.getUserId());
+        values.put(TimelineTable.ACCOUNT_ID, myAccount.getUserId());
         values.put(TimelineTable.USER_ID, userId);
         values.put(TimelineTable.ORIGIN_ID, origin.getId());
         values.put(TimelineTable.SEARCH_QUERY, searchQuery);
@@ -215,11 +218,21 @@ public class Timeline implements Comparable<Timeline> {
     public void toCommandContentValues(ContentValues values) {
         values.put(CommandTable.TIMELINE_ID, id);
         values.put(CommandTable.TIMELINE_TYPE, timelineType.save());
-        values.put(CommandTable.ACCOUNT_ID, account.getUserId());
+        values.put(CommandTable.ACCOUNT_ID, myAccount.getUserId());
         values.put(CommandTable.USER_ID, userId);
         values.put(CommandTable.USERNAME, userName);
         values.put(CommandTable.ORIGIN_ID, origin.getId());
         values.put(CommandTable.SEARCH_QUERY, searchQuery);
+    }
+
+    public Timeline fromSearch(boolean globalSearch) {
+        Timeline timeline = this;
+        if (globalSearch) {
+            timeline = new Timeline(TimelineType.EVERYTHING,
+                    this.getMyAccount(), this.getUserId(), this.getOrigin());
+            timeline.setSearchQuery(this.getSearchQuery());
+        }
+        return timeline;
     }
 
     public static Timeline fromCursor(MyContext myContext, Cursor cursor) {
@@ -273,6 +286,37 @@ public class Timeline implements Comparable<Timeline> {
         return timeline;
     }
 
+    public Timeline fromIsCombined(boolean isCombined) {
+        if (isCombined == this.isCombined) {
+            return this;
+        }
+        MyAccount myAccount;
+        Origin origin;
+        if (isCombined) {
+            origin = Origin.getEmpty();
+            myAccount = MyAccount.getEmpty();
+        } else {
+            myAccount = MyContextHolder.get().persistentAccounts().getCurrentAccount();
+            origin = MyContextHolder.get().persistentAccounts().getCurrentAccount().getOrigin();
+        }
+        Timeline timeline = new Timeline(getTimelineType(), myAccount, userId, origin);
+        timeline.setUserName(userName);
+        timeline.searchQuery = searchQuery;
+        return timeline;
+    }
+
+    public Timeline fromMyAccount(MyAccount myAccount) {
+        if ( isCombined ||
+                ((myAccount == null || !myAccount.isValid()) && !this.myAccount.isValid()) ||
+                (myAccount != null && myAccount.equals(this.myAccount)) ) {
+            return this;
+        }
+        Timeline timeline = new Timeline(getTimelineType(), myAccount, userId, origin);
+        timeline.setUserName(userName);
+        timeline.setSearchQuery(searchQuery);
+        return timeline;
+    }
+
     public static Timeline getEmpty(MyAccount myAccount) {
         return new Timeline(TimelineType.UNKNOWN, myAccount, 0, null);
     }
@@ -304,16 +348,16 @@ public class Timeline implements Comparable<Timeline> {
         return timelineType;
     }
 
-    public boolean isAllOrigins() {
-        return allOrigins;
+    public boolean isCombined() {
+        return isCombined;
     }
 
     public Origin getOrigin() {
         return origin;
     }
 
-    public MyAccount getAccount() {
-        return account;
+    public MyAccount getMyAccount() {
+        return myAccount;
     }
 
     public boolean isDisplayedInSelector() {
@@ -368,28 +412,34 @@ public class Timeline implements Comparable<Timeline> {
 
     @Override
     public String toString() {
-        return "Timeline{" +
-                ( account.isValid() ?
-                        account.getAccountName() :
-                        ( origin.isValid() ?
-                                origin.getName() :
-                                "(all origins)")
-                ) +
-                (TextUtils.isEmpty(name) ?
-                        "" :
-                        ", name:'" + name + '\'') +
-                (timelineType == TimelineType.UNKNOWN ?
-                        "" :
-                        ", type:" + timelineType.save()) +
-                (TextUtils.isEmpty(userName) ?
-                        (userId == 0 ?
-                                "" :
-                                ", userId:" + userId) :
-                        " user:" + userName) +
-                (hasSearchQuery() ?
-                        " search:\"" + getSearchQuery() + "\"" :
-                        "") +
-                '}';
+        StringBuilder builder = new StringBuilder();
+
+         builder.append("Timeline{");
+        if (myAccount.isValid()) {
+            builder.append(myAccount.getAccountName());
+            if (!myAccount.getOrigin().equals(origin) && origin.isValid()) {
+                builder.append(", origin:" + origin.getName());
+            }
+        } else {
+            builder.append(origin.isValid() ? origin.getName() : "(all origins)");
+        }
+        if (!TextUtils.isEmpty(name)) {
+            builder.append(", name:'" + name + "'");
+        }
+        if (timelineType != TimelineType.UNKNOWN) {
+            builder.append(", type:" + timelineType.save());
+        }
+        if (!TextUtils.isEmpty(userName)) {
+            builder.append(", userName:'" + userName + "'");
+        }
+        if (userId != 0) {
+            builder.append(", userId:" + userId);
+        }
+        if (hasSearchQuery()) {
+            builder.append(" search:'" + getSearchQuery() + "'");
+        }
+        builder.append('}');
+        return builder.toString();
     }
 
     @Override
@@ -399,20 +449,20 @@ public class Timeline implements Comparable<Timeline> {
 
         Timeline timeline = (Timeline) o;
 
-        if (allOrigins != timeline.allOrigins) return false;
+        if (isCombined != timeline.isCombined) return false;
         if (userId != timeline.userId) return false;
         if (timelineType != timeline.timelineType) return false;
         if (!origin.equals(timeline.origin)) return false;
-        if (!account.equals(timeline.account)) return false;
+        if (!myAccount.equals(timeline.myAccount)) return false;
         return searchQuery.equals(timeline.searchQuery);
     }
 
     @Override
     public int hashCode() {
         int result = timelineType.hashCode();
-        result = 31 * result + (allOrigins ? 1 : 0);
+        result = 31 * result + (isCombined ? 1 : 0);
         result = 31 * result + origin.hashCode();
-        result = 31 * result + account.hashCode();
+        result = 31 * result + myAccount.hashCode();
         result = 31 * result + (int) (userId ^ (userId >>> 32));
         result = 31 * result + searchQuery.hashCode();
         return result;
@@ -444,30 +494,17 @@ public class Timeline implements Comparable<Timeline> {
 
     // TODO: by ID only?!
     public static Timeline fromParsedUri(MyContext myContext, ParsedUri parsedUri, String searchQuery) {
-
-        MyAccount myAccount = myContext.persistentAccounts().fromUserId(parsedUri.getAccountUserId());
-        final long userId = parsedUri.getUserId();
-        if (userId != 0 && myAccount.getUserId() != userId
-                && myContext.persistentAccounts().isAccountUserId(userId)) {
-            myAccount = myContext.persistentAccounts().fromUserId(userId);
-        }
-        final TimelineType timelineType = parsedUri.getTimelineType();
-
         Timeline timeline = new Timeline(
-                timelineType,
-                myAccount,
-                userId,
-                null);
-        if (timeline.getTimelineType() == TimelineType.UNKNOWN ||
-                parsedUri.getAccountUserId() == 0) {
-            MyLog.e(Timeline.class,"fromParsedUri; uri:" + parsedUri.getUri()
-                    + ", " + timeline.getTimelineType()
-                    + ", accountId:" + parsedUri.getAccountUserId() );
-            return timeline;
+                parsedUri.getTimelineType(),
+                myContext.persistentAccounts().fromUserId(parsedUri.getAccountUserId()),
+                parsedUri.getUserId(),
+                myContext.persistentOrigins().fromId(parsedUri.getOriginId()));
+        if (timeline.getTimelineType() == TimelineType.UNKNOWN) {
+            MyLog.e(Timeline.class,"fromParsedUri; uri:" + parsedUri.getUri() + "; " + timeline );
         }
-        timeline.searchQuery = parsedUri.getSearchQuery();
+        timeline.setSearchQuery(parsedUri.getSearchQuery());
         if (TextUtils.isEmpty(timeline.searchQuery) && !TextUtils.isEmpty(searchQuery)) {
-            timeline.searchQuery = searchQuery;
+            timeline.setSearchQuery(searchQuery);
         }
         return timeline;
     }
@@ -491,8 +528,8 @@ public class Timeline implements Comparable<Timeline> {
 
     public void toBundle(Bundle bundle) {
         BundleUtils.putNotZero(bundle, IntentExtra.TIMELINE_ID, id);
-        if (account.isValid()) {
-            bundle.putString(IntentExtra.ACCOUNT_NAME.key, account.getAccountName());
+        if (myAccount.isValid()) {
+            bundle.putString(IntentExtra.ACCOUNT_NAME.key, myAccount.getAccountName());
         }
         if (timelineType != TimelineType.UNKNOWN) {
             bundle.putString(IntentExtra.TIMELINE_TYPE.key, timelineType.save());
@@ -563,7 +600,7 @@ public class Timeline implements Comparable<Timeline> {
     }
 
     public Timeline cloneForAccount(MyAccount ma) {
-        long userId = getAccount().getUserId() != getUserId() ? getUserId() : 0;
+        long userId = getMyAccount().getUserId() != getUserId() ? getUserId() : 0;
         Timeline timeline = new Timeline(getTimelineType(), ma, userId, null);
         timeline.setSearchQuery(getSearchQuery());
         return timeline;

@@ -34,13 +34,14 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.FileProvider;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
+import org.andstatus.app.timeline.Timeline;
+import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.user.UserListType;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
@@ -185,12 +186,8 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
         @Override
         void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
             if (editorData.recipientId != 0) {
-                /**
-                 * We better switch to the account selected for this message in order not to
-                 * add new "MsgOfUser" entries hence duplicated messages in the combined timeline 
-                 */
-                menu.switchTimelineActivity(editorData.ma, TimelineType.USER,
-                        menu.messageList.isTimelineCombined(), editorData.recipientId);
+                menu.switchTimelineActivity(menu.messageList.getTimeline(),
+                        new Timeline(TimelineType.USER, null, editorData.recipientId, null), null);
             }
         }
     },
@@ -203,12 +200,8 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
         @Override
         void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
             if (editorData.recipientId != 0) {
-                /**
-                 * We better switch to the account selected for this message in order not to
-                 * add new "MsgOfUser" entries hence duplicated messages in the combined timeline 
-                 */
-                menu.switchTimelineActivity(editorData.ma, TimelineType.USER,
-                        menu.messageList.isTimelineCombined(), editorData.recipientId);
+                menu.switchTimelineActivity(menu.messageList.getTimeline(),
+                        new Timeline(TimelineType.USER, null, editorData.recipientId, null), null);
             }
         }
     },
@@ -294,9 +287,9 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
     OPEN_CONVERSATION() {
         @Override
         void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
-            Uri uri = MatchedUri.getTimelineItemUri(editorData.ma.getUserId(),
-                    menu.messageList.getTimelineType(), menu.messageList.isTimelineCombined(),
-                    menu.messageList.getSelectedUserId(), menu.getMsgId());
+            Uri uri = MatchedUri.getTimelineItemUri(
+                    menu.messageList.getTimeline().fromMyAccount(editorData.ma),
+                    menu.getMsgId());
             String action = menu.getActivity().getIntent().getAction();
             if (Intent.ACTION_PICK.equals(action) || Intent.ACTION_GET_CONTENT.equals(action)) {
                 if (MyLog.isLoggable(this, MyLog.DEBUG)) {
@@ -315,7 +308,7 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
         @Override
         void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
             Uri uri = MatchedUri.getUserListUri(editorData.ma.getUserId(),
-                    UserListType.USERS_OF_MESSAGE, menu.messageList.isTimelineCombined(),
+                    UserListType.USERS_OF_MESSAGE, menu.messageList.getTimeline().getOrigin().getId(),
                     menu.getMsgId());
             if (MyLog.isLoggable(this, MyLog.DEBUG)) {
                 MyLog.d(this, "onItemClick, startActivity=" + uri);

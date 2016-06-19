@@ -28,6 +28,7 @@ import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyQuery;
+import org.andstatus.app.timeline.Timeline;
 import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
@@ -134,7 +135,7 @@ public class ConversationLoader<T extends ConversationItem> implements SyncLoade
     }
     
     private void loadMessageFromDatabase(ConversationItem oMsg) {
-        Uri uri = MatchedUri.getTimelineItemUri(ma.getUserId(), TimelineType.EVERYTHING, true, 0, oMsg.getMsgId());
+        Uri uri = MatchedUri.getTimelineItemUri(new Timeline(TimelineType.EVERYTHING, ma, 0, null), oMsg.getMsgId());
         Cursor cursor = null;
         try {
             cursor = context.getContentResolver().query(uri, oMsg.getProjection(), null, null, null);

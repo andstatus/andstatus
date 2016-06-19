@@ -34,6 +34,7 @@ import org.andstatus.app.database.MsgOfUserTable;
 import org.andstatus.app.database.UserTable;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
+import org.andstatus.app.timeline.Timeline;
 import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.SharedPreferencesUtil;
 
@@ -54,9 +55,9 @@ public class TimelineSql {
      * @return String for {@link SQLiteQueryBuilder#setTables(String)}
      */
     static String tablesForTimeline(Uri uri, String[] projection) {
+        Timeline timeline = Timeline.fromParsedUri(MyContextHolder.get(), ParsedUri.fromUri(uri), "");
         ParsedUri uriParser = ParsedUri.fromUri(uri);
-        TimelineType tt = uriParser.getTimelineType();
-        SelectedUserIds selectedAccounts = new SelectedUserIds(uriParser.isCombined(), uriParser.getAccountUserId());
+        SelectedUserIds selectedAccounts = new SelectedUserIds(timeline);
     
         Collection<String> columns = new java.util.HashSet<>(Arrays.asList(projection));
     
@@ -66,14 +67,15 @@ public class TimelineSql {
         boolean linkedUserDefined = false;
         boolean authorNameDefined = false;
         String authorTableName = "";
-        switch (tt) {
+        switch (timeline.getTimelineType()) {
             case FOLLOWERS:
             case MY_FOLLOWERS:
             case FRIENDS:
             case MY_FRIENDS:
                 String fUserIdColumnName = FriendshipTable.FRIEND_ID;
                 String fUserLinkedUserIdColumnName = FriendshipTable.USER_ID;
-                if (tt == TimelineType.FOLLOWERS || tt == TimelineType.MY_FOLLOWERS) {
+                if (timeline.getTimelineType() == TimelineType.FOLLOWERS ||
+                        timeline.getTimelineType() == TimelineType.MY_FOLLOWERS) {
                     fUserIdColumnName = FriendshipTable.USER_ID;
                     fUserLinkedUserIdColumnName = FriendshipTable.FRIEND_ID;
                 }
@@ -130,7 +132,7 @@ public class TimelineSql {
 
         String tables = msgTable;
         if (!tables.contains(" AS " + ProjectionMap.MSG_TABLE_ALIAS)) {
-            if (tt.isAtOrigin() && !uriParser.isCombined()) {
+            if (timeline.getTimelineType().isAtOrigin() && !timeline.isCombined()) {
                 MyAccount ma = MyContextHolder.get().persistentAccounts().fromUserId(uriParser.getAccountUserId());
                 if (ma.isValid()) {
                     if (!TextUtils.isEmpty(where)) {
@@ -153,7 +155,7 @@ public class TimelineSql {
                     + " FROM " +  MsgOfUserTable.TABLE_NAME + ") AS mou ON "
                     + ProjectionMap.MSG_TABLE_ALIAS + "." + BaseColumns._ID + "="
                     + "mou." + MsgOfUserTable.MSG_ID;
-            switch (tt) {
+            switch (timeline.getTimelineType()) {
                 case FOLLOWERS:
                 case MY_FOLLOWERS:
                 case FRIENDS:
@@ -165,7 +167,7 @@ public class TimelineSql {
                     break;
                 default:
                     tbl += " AND " + UserTable.LINKED_USER_ID + selectedAccounts.getSql();
-                    if (tt.isAtOrigin()) {
+                    if (timeline.getTimelineType().isAtOrigin()) {
                         tables += " LEFT OUTER JOIN " + tbl;
                     } else {
                         tables += " INNER JOIN " + tbl;

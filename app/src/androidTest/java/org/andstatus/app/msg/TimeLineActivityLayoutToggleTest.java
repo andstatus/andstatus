@@ -23,8 +23,9 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MatchedUri;
-import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.service.MyServiceManager;
+import org.andstatus.app.timeline.Timeline;
+import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 
@@ -74,7 +75,7 @@ public class TimeLineActivityLayoutToggleTest extends android.test.ActivityInstr
         MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
         
         Intent intent = new Intent(Intent.ACTION_VIEW, 
-                MatchedUri.getTimelineUri(ma.getUserId(), TimelineType.HOME, false, 0));
+                MatchedUri.getTimelineUri(new Timeline(TimelineType.HOME, ma, 0, null)));
         setActivityIntent(intent);
         
         activity = getActivity();

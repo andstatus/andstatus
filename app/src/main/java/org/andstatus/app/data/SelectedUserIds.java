@@ -18,6 +18,8 @@ package org.andstatus.app.data;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.timeline.Timeline;
+import org.andstatus.app.timeline.TimelineType;
 
 /**
  * Helper class to construct sql WHERE clause selecting by UserIds
@@ -27,28 +29,34 @@ public class SelectedUserIds {
     private int mSize = 0;
     private String sqlUserIds = "";
 
-    /**
-     * @param isCombined timeline
-     * @param selectedUserId May be an Account, maybe not. If the selected user is an account
-     * and timeline is combined, then ALL accounts of ALL Social networks should be included in the selection
-     * TODO: Social network scope selection ( i.e. for one {@link org.andstatus.app.origin.Origin} )
-     */
-    public SelectedUserIds(boolean isCombined, long selectedUserId) {
-        boolean isAccount = MyContextHolder.get().persistentAccounts().isAccountUserId(selectedUserId);
-        // Allows to link to one or more accounts
-        if (isCombined && isAccount) {
-            StringBuilder sb = new StringBuilder();
-            for (MyAccount ma : MyContextHolder.get().persistentAccounts().collection()) {
-                if (sb.length() > 0) {
-                    sb.append(", ");
-                }
-                mSize += 1;
-                sb.append(Long.toString(ma.getUserId()));
-            }
-            sqlUserIds = sb.toString();
-        } else if (selectedUserId != 0) {
+    public SelectedUserIds(long selectedUserId) {
+        if (selectedUserId != 0) {
             mSize = 1;
             sqlUserIds = Long.toString(selectedUserId);
+        }
+    }
+
+    public SelectedUserIds(Timeline timeline) {
+        if (timeline.getTimelineType() == TimelineType.USER) {
+            if ( timeline.getUserId() != 0) {
+                mSize = 1;
+                sqlUserIds = Long.toString(timeline.getUserId());
+            }
+        } else if (timeline.isCombined()) {
+            StringBuilder sb = new StringBuilder();
+            for (MyAccount ma : MyContextHolder.get().persistentAccounts().collection()) {
+                if (!timeline.getOrigin().isValid() || timeline.getOrigin().equals(ma.getOrigin())) {
+                    if (sb.length() > 0) {
+                        sb.append(", ");
+                    }
+                    mSize += 1;
+                    sb.append(Long.toString(ma.getUserId()));
+                }
+            }
+            sqlUserIds = sb.toString();
+        } else if (timeline.getMyAccount().isValid()) {
+            mSize = 1;
+            sqlUserIds = Long.toString(timeline.getMyAccount().getUserId());
         }
     }
 

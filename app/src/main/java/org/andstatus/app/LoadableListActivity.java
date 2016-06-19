@@ -34,6 +34,7 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.ParsedUri;
+import org.andstatus.app.origin.Origin;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.service.CommandData;
@@ -69,10 +70,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
 
     ParsedUri mParsedUri = ParsedUri.fromUri(Uri.EMPTY);
 
-    /**
-     * We use this to request additional items (from Internet)
-     */
-    protected MyAccount ma = MyAccount.getEmpty(MyContextHolder.get(), "");
+    private MyAccount ma = MyAccount.getEmpty(MyContextHolder.get(), "");
 
     protected final long mInstanceId = InstanceId.next();
     protected MyContext myContext = MyContextHolder.get();
@@ -118,7 +116,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
         myServiceReceiver = new MyServiceEventsReceiver(this);
 
         mParsedUri = ParsedUri.fromUri(getIntent().getData());
-        ma = MyContextHolder.get().persistentAccounts().fromUserId(getParsedUri().getAccountUserId());
+        setCurrentMyAccount(getParsedUri().getAccountUserId(), getParsedUri().getOriginId());
         centralItemId = getParsedUri().getItemId();
     }
 
@@ -126,7 +124,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
         return mParsedUri;
     }
 
-    protected void showList(WhichPage whichPage) {
+    public void showList(WhichPage whichPage) {
         showList(whichPage.toBundle());
     }
 
@@ -190,6 +188,25 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
             return getListAdapter().getItem(position);
         }
         return null;
+    }
+
+    protected void setCurrentMyAccount(long accountId, long originId) {
+        setCurrentMyAccount(myContext.persistentAccounts().fromUserId(accountId),
+                myContext.persistentOrigins().fromId(originId));
+    }
+
+    protected void setCurrentMyAccount(MyAccount ma, Origin origin) {
+        if (ma != null && ma.isValid()) {
+            this.ma = ma;
+        } else {
+            if (origin != null && origin.isValid()) {
+                if (!getCurrentMyAccount().isValid() || !getCurrentMyAccount().getOrigin().equals(origin)) {
+                    this.ma = myContext.persistentAccounts().getFirstSucceededMyAccountByOriginId(origin.getId());
+                }
+            } else if (!getCurrentMyAccount().isValid()) {
+                this.ma = myContext.persistentAccounts().getCurrentAccount();
+            }
+        }
     }
 
     public interface SyncLoader {
@@ -549,7 +566,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
         return super.onOptionsItemSelected(item);
     }
 
-    public MyAccount getMa() {
+    public MyAccount getCurrentMyAccount() {
         return ma;
     }
 

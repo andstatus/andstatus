@@ -126,7 +126,7 @@ public class PersistentTimelines {
     public List<Timeline> toSyncForAccount(MyAccount ma) {
         List<Timeline> timelines = new ArrayList<>();
         for (Timeline timeline : getList()) {
-            if (timeline.isSynced() && timeline.getAccount().equals(ma)) {
+            if (timeline.isSynced() && timeline.getMyAccount().equals(ma)) {
                 timelines.add(timeline);
             }
         }
@@ -146,7 +146,7 @@ public class PersistentTimelines {
             } else if (isTimelineCombined) {
                 include = true;
             } else if (ma != null && ma.isValid()) {
-                include = timeline.getAccount() == ma;
+                include = timeline.getMyAccount() == ma;
             } else if (origin != null && origin.isValid()) {
                 include = timeline.getOrigin() == origin;
             }
@@ -205,7 +205,7 @@ public class PersistentTimelines {
     public void onAccountDelete(MyAccount ma) {
         List<Timeline> toRemove = new ArrayList<>();
         for (Timeline timeline : getList()) {
-            if (timeline.getAccount().equals(ma)) {
+            if (timeline.getMyAccount().equals(ma)) {
                 timeline.delete();
                 toRemove.add(timeline);
             }
@@ -215,13 +215,7 @@ public class PersistentTimelines {
 
     @NonNull
     public Timeline fromParsedUri(ParsedUri parsedUri, String searchQuery) {
-        Timeline timelineNew = Timeline.fromParsedUri(myContext, parsedUri, searchQuery);
-        for (Timeline timeline : getList()) {
-            if (timeline.equals(timelineNew)) {
-                return timeline;
-            }
-        }
-        return timelineNew;
+        return fromNewTimeLine(Timeline.fromParsedUri(myContext, parsedUri, searchQuery));
     }
 
     public void saveChanged() {
@@ -230,4 +224,8 @@ public class PersistentTimelines {
         }
     }
 
+    public Timeline getHome() {
+        return fromNewTimeLine(getDefaultForCurrentAccount().
+                fromIsCombined(MyPreferences.isTimelineCombinedByDefault()));
+    }
 }

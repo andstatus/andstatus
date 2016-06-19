@@ -52,7 +52,7 @@ public class UserListWorkTest extends ActivityInstrumentationTestCase2<UserList>
         assertTrue(msgId > 0);
 
         Intent intent = new Intent(MyAction.VIEW_USERS.getAction(),
-                MatchedUri.getUserListUri(ma.getUserId(), UserListType.USERS_OF_MESSAGE, false, msgId));
+                MatchedUri.getUserListUri(ma.getUserId(), UserListType.USERS_OF_MESSAGE, ma.getOriginId(), msgId));
         setActivityIntent(intent);
 
         MyLog.i(this, "setUp ended");

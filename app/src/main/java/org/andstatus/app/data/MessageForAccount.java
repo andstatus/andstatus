@@ -26,6 +26,7 @@ import org.andstatus.app.database.DownloadTable;
 import org.andstatus.app.database.FriendshipTable;
 import org.andstatus.app.database.MsgOfUserTable;
 import org.andstatus.app.database.MsgTable;
+import org.andstatus.app.timeline.Timeline;
 import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
@@ -66,8 +67,8 @@ public class MessageForAccount {
     }
 
     private void getData() {
-        // Get the record for the currently selected item
-        Uri uri = MatchedUri.getTimelineItemUri(ma.getUserId(), TimelineType.MESSAGES_TO_ACT, false, 0, msgId);
+        // Get a database raw for the currently selected item
+        Uri uri = MatchedUri.getTimelineItemUri(new Timeline(TimelineType.MESSAGES_TO_ACT, ma, 0, null), msgId);
         Cursor cursor = null;
         try {
             cursor = MyContextHolder.get().context().getContentResolver().query(uri, new String[]{

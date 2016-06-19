@@ -17,7 +17,8 @@
 package org.andstatus.app.msg;
 
 import org.andstatus.app.LoadableListActivity;
-import org.andstatus.app.timeline.TimelineType;
+import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.timeline.Timeline;
 
 /**
  * Activity should implement this interface in order to use {@link MessageContextMenu} 
@@ -27,9 +28,7 @@ public interface ActionableMessageList {
     LoadableListActivity getActivity();
     MessageEditor getMessageEditor();
     void onMessageEditorVisibilityChange();
-    long getCurrentMyAccountUserId();
-    long getSelectedUserId();
-    TimelineType getTimelineType();
-    boolean isTimelineCombined();
+    MyAccount getCurrentMyAccount();
+    Timeline getTimeline();
     boolean isPaused();
 }

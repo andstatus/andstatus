@@ -67,7 +67,7 @@ class TimelineListPositionStorage {
         long userId = 0;
         if (listParameters.getTimelineType().requiresUserToBeDefined()) {
             userId = listParameters.getSelectedUserId();
-        } else if (!listParameters.mTimelineCombined) {
+        } else if (!listParameters.isTimelineCombined()) {
             userId = listParameters.getMyAccount().getUserId();
         }
         keyFirstVisibleItemId = KEY_PREFIX

@@ -98,7 +98,8 @@ public class UserListLoader implements SyncLoader {
     }
 
     protected void loadInternal() {
-        Uri mContentUri = MatchedUri.getUserListUri(ma.getUserId(), mUserListType, mIsListCombined, mCentralItemId);
+        // TODO: Why only MyAccount's ID ??
+        Uri mContentUri = MatchedUri.getUserListUri(ma.getUserId(), mUserListType, ma.getOriginId(), mCentralItemId);
         Cursor c = null;
         try {
             c = MyContextHolder.get().context().getContentResolver()

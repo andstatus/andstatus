@@ -18,6 +18,7 @@ package org.andstatus.app.timeline;
 
 import org.andstatus.app.MyActivity;
 import org.andstatus.app.R;
+import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.util.I18n;
@@ -48,14 +49,14 @@ public class TimelineTitle {
     }
 
     /** Requires async work */
-    public static TimelineTitle load(Timeline timeline, boolean isTimelineCombined) {
+    public static TimelineTitle load(Timeline timeline, MyAccount currentMyAccount) {
         TimelineTitle timelineTitle = new TimelineTitle();
-        timelineTitle.title = toTimelineTitle(timeline, isTimelineCombined);
-        timelineTitle.subTitle = toTimelineSubtitle(timeline, isTimelineCombined);
+        timelineTitle.title = toTimelineTitle(timeline, currentMyAccount);
+        timelineTitle.subTitle = toTimelineSubtitle(timeline, currentMyAccount);
         return timelineTitle;
     }
 
-    private static String toTimelineTitle(Timeline timeline, boolean isTimelineCombined) {
+    private static String toTimelineTitle(Timeline timeline, MyAccount currentMyAccount) {
         StringBuilder title = new StringBuilder();
         I18n.appendWithSpace(title, timeline.getTimelineType().getTitle(MyContextHolder.get().context()));
         if (timeline.hasSearchQuery()) {
@@ -64,16 +65,16 @@ public class TimelineTitle {
         if (timeline.getTimelineType().requiresUserToBeDefined()) {
             I18n.appendWithSpace(title, MyQuery.userIdToWebfingerId(timeline.getUserId()));
         }
-        if (isTimelineCombined) {
+        if (timeline.isCombined()) {
             I18n.appendWithSpace(title,
                     MyContextHolder.get().context() == null ? "combined" : MyContextHolder.get().context().getText(R.string.combined_timeline_on));
         }
         return title.toString();
     }
 
-    private static String toTimelineSubtitle(Timeline timeline, boolean isTimelineCombined) {
+    private static String toTimelineSubtitle(Timeline timeline, MyAccount currentMyAccount) {
         final StringBuilder subTitle = new StringBuilder();
-        if (!isTimelineCombined) {
+        if (!timeline.isCombined()) {
             I18n.appendWithSpace(subTitle, timeline.getTimelineType()
                     .getPrepositionForNotCombinedTimeline(MyContextHolder.get().context()));
             if (timeline.getTimelineType().isAtOrigin()) {
@@ -81,7 +82,7 @@ public class TimelineTitle {
                         + ";");
             }
         }
-        I18n.appendWithSpace(subTitle, timeline.getAccount().toAccountButtonText());
+        I18n.appendWithSpace(subTitle, currentMyAccount.toAccountButtonText());
         return subTitle.toString();
     }
 

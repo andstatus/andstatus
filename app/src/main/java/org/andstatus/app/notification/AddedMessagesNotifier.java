@@ -27,6 +27,7 @@ import org.andstatus.app.R;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.MatchedUri;
+import org.andstatus.app.timeline.Timeline;
 import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.msg.TimelineActivity;
 import org.andstatus.app.service.CommandResult;
@@ -136,7 +137,7 @@ public class AddedMessagesNotifier {
         // org.andstatus.app.TimelineActivity.onOptionsItemSelected
         Intent intent = new Intent(myContext.context(), TimelineActivity.class);
         intent.setData(Uri.withAppendedPath(
-                MatchedUri.getTimelineUri(0, timelineType, myContext.persistentAccounts().size() > 1, 0),
+                MatchedUri.getTimelineUri(new Timeline(timelineType, null, 0, null)),
                 "rnd/" + android.os.SystemClock.elapsedRealtime()
                 ));
         PendingIntent pendingIntent = PendingIntent.getActivity(myContext.context(), timelineType.hashCode(),

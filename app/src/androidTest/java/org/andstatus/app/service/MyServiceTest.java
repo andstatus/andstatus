@@ -85,7 +85,7 @@ public class MyServiceTest extends InstrumentationTestCase {
         final String method = "testAccountSync";
         MyLog.v(this, method + " started");
 
-        MyAccount myAccount = MyContextHolder.get().persistentAccounts().findFirstSucceededMyAccountByOriginId(0);
+        MyAccount myAccount = MyContextHolder.get().persistentAccounts().getFirstSucceededMyAccountByOriginId(0);
         assertTrue("No successful account", myAccount != null);
 
         SyncResult syncResult = new SyncResult();

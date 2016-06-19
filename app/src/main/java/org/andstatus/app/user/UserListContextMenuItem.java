@@ -28,6 +28,7 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyQuery;
+import org.andstatus.app.timeline.Timeline;
 import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.database.UserTable;
 import org.andstatus.app.msg.TimelineActivity;
@@ -67,8 +68,8 @@ public enum UserListContextMenuItem implements ContextMenuItem {
         void executeOnUiThread(UserListContextMenu menu, MyAccount ma) {
             MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
             Intent intent = new Intent(menu.getActivity(), TimelineActivity.class);
-            intent.setData(MatchedUri.getTimelineUri(ma.getUserId(), TimelineType.USER,
-                    true, menu.getViewItem().getUserId()));
+            intent.setData(MatchedUri.getTimelineUri(
+                    new Timeline(TimelineType.USER, ma, menu.getViewItem().getUserId(), null)));
             menu.getActivity().startActivity(intent);
         }
     },
@@ -219,14 +220,15 @@ public enum UserListContextMenuItem implements ContextMenuItem {
         if (!params.ma.isValid() || params.ma.getOriginId() != originId) {
             params.ma = MyContextHolder.get().persistentAccounts().fromUserId(userId);
             if (!params.ma.isValid()) {
-                params.ma = MyContextHolder.get().persistentAccounts().findFirstSucceededMyAccountByOriginId(originId);
+                params.ma = MyContextHolder.get().persistentAccounts().getFirstSucceededMyAccountByOriginId(originId);
             }
         }
     }
 
     void startFollowersList(UserListContextMenu menu, MyAccount ma, UserListType userListType) {
         Uri uri = MatchedUri.getUserListUri(ma.getUserId(),
-                userListType, false,
+                userListType,
+                ma.getOriginId(),
                 menu.getViewItem().getUserId());
         if (MyLog.isVerboseEnabled()) {
             MyLog.d(this, "startFollowersList, uri:" + uri);

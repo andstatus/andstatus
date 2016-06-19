@@ -19,26 +19,28 @@ package org.andstatus.app.data;
 import android.net.Uri;
 import android.test.InstrumentationTestCase;
 
+import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.user.UserListType;
 
 public class ParsedUriTest extends InstrumentationTestCase {
 
     public void testUserList() {
-        assertOneUserList(true);
-        assertOneUserList(false);
+        assertOneUserList(TestSuite.getConversationOriginId());
+        assertOneUserList(0);
     }
 
-    private void assertOneUserList(boolean combined) {
+    private void assertOneUserList(long originId) {
         long userId = 5;
         long msgId = 2;
-        Uri uri = MatchedUri.getUserListUri(userId, UserListType.USERS_OF_MESSAGE, combined, msgId);
+        Uri uri = MatchedUri.getUserListUri(userId, UserListType.USERS_OF_MESSAGE, originId, msgId);
         ParsedUri parsedUri = ParsedUri.fromUri(uri);
         String msgLog = parsedUri.toString();
         assertEquals(TimelineType.UNKNOWN, parsedUri.getTimelineType());
         assertEquals(msgLog, UserListType.USERS_OF_MESSAGE, parsedUri.getUserListType());
         assertEquals(msgLog, userId, parsedUri.getAccountUserId());
-        assertEquals(msgLog, combined, parsedUri.isCombined());
+        assertEquals(msgLog, originId, parsedUri.getOriginId());
         assertEquals(msgLog, msgId, parsedUri.getMessageId());
         assertEquals(msgLog, msgId, parsedUri.getItemId());
         assertEquals(msgLog, 0, parsedUri.getUserId());

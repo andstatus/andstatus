@@ -29,6 +29,7 @@ import org.andstatus.app.LoadableListActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.timeline.Timeline;
 import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.QueueViewer;
@@ -166,35 +167,20 @@ public class ConversationActivity extends LoadableListActivity implements Action
         invalidateOptionsMenu();
     }
 
+    @Override
+    public Timeline getTimeline() {
+        return new Timeline(TimelineType.MESSAGES_TO_ACT, getCurrentMyAccount(), 0, getCurrentMyAccount().getOrigin());
+    }
+
     @SuppressWarnings("unchecked")
     private ConversationLoader<ConversationViewItem> getListLoader() {
         return ((ConversationLoader<ConversationViewItem>)getLoaded());
     }
     
     @Override
-    public long getCurrentMyAccountUserId() {
-        return getMa().getUserId();
-    }
-
-    @Override
-    public long getSelectedUserId() {
-        return 0;
-    }
-
-    @Override
-    public TimelineType getTimelineType() {
-        return TimelineType.MESSAGES_TO_ACT;
-    }
-
-    @Override
-    public boolean isTimelineCombined() {
-        return true;
-    }
-
-    @Override
     protected SyncLoader newSyncLoader(Bundle args) {
         return new ConversationLoader<>(ConversationViewItem.class,
-                this, getMa(), centralItemId);
+                this, getCurrentMyAccount(), centralItemId);
     }
 
     @Override

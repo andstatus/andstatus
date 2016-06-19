@@ -505,7 +505,7 @@ public class MyQuery {
      */
     @NonNull
     public static Set<Long> getMyFollowersOf(long userId) {
-        SelectedUserIds selectedAccounts = new SelectedUserIds(true,
+        SelectedUserIds selectedAccounts = new SelectedUserIds(
                 MyContextHolder.get().persistentAccounts().getCurrentAccountUserId());
 
         String where = FriendshipTable.USER_ID + selectedAccounts.getSql()

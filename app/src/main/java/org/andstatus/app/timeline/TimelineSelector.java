@@ -49,11 +49,12 @@ public class TimelineSelector extends SelectorDialog {
     private static final String TYPE_TIMELINE = "timeline";
 
     public static void selectTimeline(FragmentActivity activity, ActivityRequestCode requestCode,
-                                      Origin origin, MyAccount myAccount, boolean isCombined) {
+                                      Timeline timeline) {
         SelectorDialog selector = new TimelineSelector();
-        selector.setRequestCode(requestCode).putLong(IntentExtra.ORIGIN_ID.key, origin.getId());
-        selector.getArguments().putString(IntentExtra.ACCOUNT_NAME.key, myAccount.getAccountName());
-        selector.getArguments().putBoolean(IntentExtra.TIMELINE_IS_COMBINED.key, isCombined);
+        selector.setRequestCode(requestCode);
+        selector.getArguments().putLong(IntentExtra.ORIGIN_ID.key, timeline.getOrigin().getId());
+        selector.getArguments().putString(IntentExtra.ACCOUNT_NAME.key, timeline.getMyAccount().getAccountName());
+        selector.getArguments().putBoolean(IntentExtra.TIMELINE_IS_COMBINED.key, timeline.isCombined());
         selector.show(activity);
     }
 

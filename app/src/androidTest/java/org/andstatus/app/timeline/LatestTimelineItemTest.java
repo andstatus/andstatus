@@ -48,6 +48,7 @@ public class LatestTimelineItemTest extends InstrumentationTestCase {
                 new TimelinePosition("position_" + timelineType.save() + "_" + accountName),
                 System.currentTimeMillis() - LATEST_ITEM_MILLIS_AGO);
         latest.save();
+        timeline.saveIfChanged();
 
         MyContextHolder.get().persistentTimelines().initialize();
         timeline = getTimeline(timelineType, ma);

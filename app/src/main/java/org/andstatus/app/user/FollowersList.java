@@ -70,12 +70,12 @@ public class FollowersList extends UserList {
         CommandEnum command = mUserListType == UserListType.FOLLOWERS ?
                 CommandEnum.GET_FOLLOWERS : CommandEnum.GET_FRIENDS;
         MyServiceManager.sendForegroundCommand(
-                (CommandData.newUserCommand(command, ma.getOrigin(), getFollowedUserId(), ""))
+                (CommandData.newUserCommand(command, getCurrentMyAccount().getOrigin(), getFollowedUserId(), ""))
                         .setManuallyLaunched(manuallyLaunched));
     }
 
     @Override
     protected UserListLoader newSyncLoader(Bundle args) {
-        return new FollowersListLoader(mUserListType, getMa(), getFollowedUserId(), mIsListCombined);
+        return new FollowersListLoader(mUserListType, getCurrentMyAccount(), getFollowedUserId(), mIsListCombined);
     }
 }

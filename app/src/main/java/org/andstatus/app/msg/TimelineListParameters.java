@@ -17,9 +17,7 @@
 package org.andstatus.app.msg;
 
 import android.app.LoaderManager;
-import android.app.SearchManager;
 import android.content.Context;
-import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -30,7 +28,6 @@ import org.andstatus.app.IntentExtra;
 import org.andstatus.app.WhichPage;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.ParsedUri;
 import org.andstatus.app.data.ProjectionMap;
@@ -39,6 +36,7 @@ import org.andstatus.app.data.TimelineSql;
 import org.andstatus.app.database.MsgOfUserTable;
 import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.database.UserTable;
+import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.Timeline;
 import org.andstatus.app.timeline.TimelineTitle;
 import org.andstatus.app.timeline.TimelineType;
@@ -58,8 +56,6 @@ public class TimelineListParameters {
      */
     static final int PAGE_SIZE = 200;
     Timeline timeline = Timeline.getEmpty(MyAccount.getEmpty());
-    /** Combined Timeline shows messages from all accounts/origins */
-    boolean mTimelineCombined = false;
 
     WhichPage whichPage = WhichPage.EMPTY;
     String[] mProjection;
@@ -93,7 +89,6 @@ public class TimelineListParameters {
     private static void enrichNonEmptyParameters(TimelineListParameters params, TimelineListParameters prev) {
         params.mLoaderCallbacks = prev.mLoaderCallbacks;
         params.timeline = prev.getTimeline();
-        params.mTimelineCombined = prev.isTimelineCombined();
 
         String msgLog = "Constructing " + params.toSummary();
         switch (params.whichPage) {
@@ -147,24 +142,14 @@ public class TimelineListParameters {
     }
 
     public boolean isAtHome() {
-        return  timeline.equals(MyContextHolder.get().persistentTimelines().getDefaultForCurrentAccount())
-                && isTimelineCombined() == MyPreferences.isTimelineCombinedByDefault();
-    }
-
-    public void setAtHome() {
-        timeline = MyContextHolder.get().persistentTimelines().getDefaultForCurrentAccount();
-        setTimelineCombined(MyPreferences.isTimelineCombinedByDefault());
-    }
-
-    public void switchTimeline(Timeline timeline) {
-        this.timeline = timeline;
+        return  timeline.equals(MyContextHolder.get().persistentTimelines().getHome());
     }
 
     @Override
     public String toString() {
         return MyLog.formatKeyValue(this,
                 toSummary()
-                + ", account=" + timeline.getAccount().getAccountName()
+                + ", account=" + timeline.getMyAccount().getAccountName()
                 + (timeline.getUserId() == 0 ? "" : ", selectedUserId=" + timeline.getUserId())
             //    + ", projection=" + Arrays.toString(mProjection)
                 + (minSentDate > 0 ? ", minSentDate=" + new Date(minSentDate).toString() : "")
@@ -190,20 +175,12 @@ public class TimelineListParameters {
         return timeline.getTimelineType();
     }
 
-    public void setTimelineType(TimelineType timelineType) {
-
-    }
-    
     public long getSelectedUserId() {
         return timeline.getUserId();
     }
 
     public boolean isTimelineCombined() {
-        return mTimelineCombined;
-    }
-
-    public void setTimelineCombined(boolean isTimelineCombined) {
-        mTimelineCombined = isTimelineCombined;
+        return timeline.isCombined();
     }
 
     public boolean hasSearchQuery() {
@@ -211,7 +188,7 @@ public class TimelineListParameters {
     }
 
     public void saveState(Bundle outState) {
-        outState.putString(IntentExtra.TIMELINE_URI.key, toTimelineUri(false).toString());
+        outState.putString(IntentExtra.TIMELINE_URI.key, MatchedUri.getTimelineUri(timeline).toString());
     }
 
     @Override
@@ -222,7 +199,6 @@ public class TimelineListParameters {
         TimelineListParameters that = (TimelineListParameters) o;
 
         if (!timeline.equals(that.timeline)) return false;
-        if (mTimelineCombined != that.mTimelineCombined) return false;
         if (!whichPage.equals(WhichPage.CURRENT) && !that.whichPage.equals(WhichPage.CURRENT)) {
             if (minSentDate != that.minSentDate) return false;
         }
@@ -232,7 +208,6 @@ public class TimelineListParameters {
     @Override
     public int hashCode() {
         int result = timeline.hashCode();
-        result = 31 * result + (mTimelineCombined ? 1 : 0);
         if (whichPage.equals(WhichPage.CURRENT)) {
             result = 31 * result + (-1 ^ (-1 >>> 32));
         } else {
@@ -249,22 +224,11 @@ public class TimelineListParameters {
         return parseUri(Uri.parse(savedInstanceState.getString(IntentExtra.TIMELINE_URI.key,"")), "");
     }
     
-    void parseIntentData(Intent intentNew) {
-        parseUri(intentNew.getData(), notNullString(intentNew.getStringExtra(SearchManager.QUERY)));
-    }
-
     /** @return true if parsed successfully */
     boolean parseUri(Uri uri, String searchQuery) {
         ParsedUri parsedUri = ParsedUri.fromUri(uri);
         timeline = MyContextHolder.get().persistentTimelines().fromParsedUri(parsedUri, searchQuery);
-        setTimelineCombined(parsedUri.isCombined());
         return !timeline.isEmpty();
-    }
-    
-    Uri toTimelineUri(boolean globalSearch) {
-        return MatchedUri.getTimelineSearchUri(timeline.getAccount().getUserId(),
-                globalSearch ? TimelineType.EVERYTHING : getTimelineType(),
-                isTimelineCombined(), timeline.getUserId(), timeline.getSearchQuery());
     }
 
     public String toSummary() {
@@ -273,11 +237,7 @@ public class TimelineListParameters {
 
     @NonNull
     public MyAccount getMyAccount() {
-        return timeline.getAccount();
-    }
-
-    public static String notNullString(String string) {
-        return string == null ? "" : string;
+        return timeline.getMyAccount();
     }
 
     public void rememberSentDateLoaded(long sentDate) {
@@ -342,7 +302,7 @@ public class TimelineListParameters {
                 break;
             case USER:
             case SENT:
-                SelectedUserIds userIds = new SelectedUserIds(isTimelineCombined(), timeline.getUserId());
+                SelectedUserIds userIds = new SelectedUserIds(timeline);
                 // Reblogs are included also
                 sa.addSelection(MsgTable.AUTHOR_ID + " " + userIds.getSql()
                                 + " OR "
@@ -383,8 +343,6 @@ public class TimelineListParameters {
     }
 
     public Uri getContentUri() {
-        return MatchedUri.getTimelineSearchUri(timeline.getAccount().getUserId(),
-                timeline.getTimelineType(),
-                mTimelineCombined, timeline.getUserId(), timeline.getSearchQuery());
+        return MatchedUri.getTimelineUri(timeline);
     }
 }

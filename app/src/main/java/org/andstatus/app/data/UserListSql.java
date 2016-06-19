@@ -42,10 +42,6 @@ public class UserListSql {
      * @return String for {@link SQLiteQueryBuilder#setTables(String)}
      */
     static String tablesForList(Uri uri, String[] projection) {
-        ParsedUri uriParser = ParsedUri.fromUri(uri);
-        UserListType listType = uriParser.getUserListType();
-        SelectedUserIds selectedAccounts = new SelectedUserIds(uriParser.isCombined(), uriParser.getAccountUserId());
-
         Collection<String> columns = new java.util.HashSet<>(Arrays.asList(projection));
 
         String tables = UserTable.TABLE_NAME;

@@ -36,6 +36,7 @@ import org.andstatus.app.service.AttachmentDownloaderTest;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.CommandExecutionContext;
+import org.andstatus.app.timeline.Timeline;
 import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.SelectionAndArgs;
 import org.andstatus.app.util.TriState;
@@ -115,8 +116,7 @@ public class DataInserterTest extends InstrumentationTestCase {
         assertEquals("Url of the sender " + somebody.getUserName(), somebody.getProfileUrl(), url);
 
         Uri contentUri = MatchedUri.getTimelineUri(
-                TestSuite.getConversationMyAccount().getUserId(), TimelineType.MY_FRIENDS,
-                false, 0);
+                new Timeline(TimelineType.MY_FRIENDS, TestSuite.getConversationMyAccount(), 0, null));
         SelectionAndArgs sa = new SelectionAndArgs();
         String sortOrder = MsgTable.DESC_SORT_ORDER;
         sa.addSelection("fUserId = ?",
@@ -172,7 +172,7 @@ public class DataInserterTest extends InstrumentationTestCase {
                 .addMessage(message);
 
         Uri contentUri = MatchedUri.getTimelineUri(
-                TestSuite.getConversationMyAccount().getUserId(), TimelineType.HOME, false, 0);
+                new Timeline(TimelineType.HOME, TestSuite.getConversationMyAccount(), 0, null));
         SelectionAndArgs sa = new SelectionAndArgs();
         String sortOrder = MsgTable.DESC_SORT_ORDER;
         sa.addSelection(MsgTable.MSG_ID + " = ?",
@@ -224,7 +224,7 @@ public class DataInserterTest extends InstrumentationTestCase {
         assertTrue("Message added", messageId != 0);
 
         Uri contentUri = MatchedUri.getTimelineUri(
-                TestSuite.getConversationMyAccount().getUserId(), TimelineType.HOME, false, 0);
+                new Timeline(TimelineType.HOME, TestSuite.getConversationMyAccount(), 0, null));
         SelectionAndArgs sa = new SelectionAndArgs();
         String sortOrder = MsgTable.DESC_SORT_ORDER;
         sa.addSelection(MsgTable.MSG_ID + " = ?",
@@ -271,7 +271,7 @@ public class DataInserterTest extends InstrumentationTestCase {
         assertTrue("Message added", messageId != 0);
 
         Uri contentUri = MatchedUri.getTimelineUri(
-                TestSuite.getConversationMyAccount().getUserId(), TimelineType.HOME, false, 0);
+                new Timeline(TimelineType.HOME, TestSuite.getConversationMyAccount(), 0, null));
         SelectionAndArgs sa = new SelectionAndArgs();
         String sortOrder = MsgTable.DESC_SORT_ORDER;
         sa.addSelection(MsgTable.MSG_ID + " = ?",
@@ -306,7 +306,7 @@ public class DataInserterTest extends InstrumentationTestCase {
                 .getInstrumentation().getContext());
 
         MyAccount ma = MyContextHolder.get().persistentAccounts()
-                .findFirstSucceededMyAccountByOriginId(message.originId);
+                .getFirstSucceededMyAccountByOriginId(message.originId);
         DataInserter di = new DataInserter(ma);
         long messageId = di.insertOrUpdateMsg(message);
         assertTrue("Message added", messageId != 0);
@@ -318,7 +318,7 @@ public class DataInserterTest extends InstrumentationTestCase {
 
     public void testUnsentMessageWithAttachment() throws Exception {
         MyAccount ma = MyContextHolder.get().persistentAccounts()
-                .findFirstSucceededMyAccountByOriginId(0);
+                .getFirstSucceededMyAccountByOriginId(0);
         MbMessage message = MbMessage.fromOriginAndOid(ma.getOriginId(), "",
                 DownloadStatus.SENDING);
         message.actor = MbUser.fromOriginAndUserOid(ma.getOriginId(), ma.getUserOid());

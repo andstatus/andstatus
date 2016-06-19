@@ -267,7 +267,7 @@ public class PersistentAccounts {
      * @param originId May be 0 to search in any Origin
      * @return Invalid account if not found
      */
-    public MyAccount findFirstSucceededMyAccountByOriginId(long originId) {
+    public MyAccount getFirstSucceededMyAccountByOriginId(long originId) {
         MyAccount ma = null;
         for (MyAccount persistentAccount : mAccounts.values()) {
             if (originId==0 || persistentAccount.getOriginId() == originId) {
@@ -317,7 +317,7 @@ public class PersistentAccounts {
             ma = betterFit(ma, fromUserId(preferredUserId), originId, succeededOnly);
         }
         if (!accountFits(ma, originId, succeededOnly)) {
-            ma = betterFit(ma, findFirstSucceededMyAccountByOriginId(originId), originId, succeededOnly);
+            ma = betterFit(ma, getFirstSucceededMyAccountByOriginId(originId), originId, succeededOnly);
         }
         if (MyLog.isVerboseEnabled()) {
             MyLog.v(this, method + "; msgId=" + messageId 

@@ -28,10 +28,11 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MatchedUri;
-import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.timeline.TimelineType;
+import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.service.MyServiceManager;
+import org.andstatus.app.timeline.Timeline;
+import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.MyLog;
 
 /**
@@ -53,14 +54,14 @@ public class PublicTimelineActivityTest extends android.test.ActivityInstrumenta
         assertEquals(ma.getUserId(), MyContextHolder.get().persistentAccounts().getCurrentAccountUserId());
         
         Intent intent = new Intent(Intent.ACTION_VIEW, 
-                MatchedUri.getTimelineUri(ma.getUserId(), TimelineType.PUBLIC, false, 0));
+                MatchedUri.getTimelineUri(new Timeline(TimelineType.PUBLIC, ma, 0, null)));
         setActivityIntent(intent);
         
         mActivity = getActivity();
         TestSuite.waitForListLoaded(this, mActivity, 2);
         
-        assertEquals(ma.getUserId(), mActivity.getCurrentMyAccountUserId());
-        assertEquals(TimelineType.PUBLIC, mActivity.getTimelineType());
+        assertEquals(ma, mActivity.getCurrentMyAccount());
+        assertEquals(TimelineType.PUBLIC, mActivity.getTimeline().getTimelineType());
         
         assertTrue("MyService is available", MyServiceManager.isServiceAvailable());
         MyLog.i(this, "setUp ended");

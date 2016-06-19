@@ -19,7 +19,6 @@ package org.andstatus.app.data;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.user.UserListType;
 import org.andstatus.app.util.MyLog;
@@ -136,19 +135,16 @@ public class ParsedUri {
         return tt;        
     }
 
-    /**
-     * @return Is the timeline/userlist combined. false for Uri that doesn't contain such information
-     */
-    public boolean isCombined() {
-        boolean isCombined = false;
+    public long getOriginId() {
+        long originId = 0;
         try {
-            isCombined = Long.parseLong(uri.getPathSegments().get(5)) != 0;
+            originId = Long.parseLong(uri.getPathSegments().get(5));
         } catch (Exception e) {
             MyLog.d(this, toString(), e);
         }
-        return isCombined;
+        return originId;
     }
-    
+
     public long getMessageId() {
         long messageId = 0;
         try {

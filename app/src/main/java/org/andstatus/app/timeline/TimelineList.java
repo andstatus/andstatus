@@ -71,7 +71,7 @@ public class TimelineList extends LoadableListActivity {
                 for (Timeline timeline : myContext.persistentTimelines().getFiltered(false, true, null, null)) {
                     TimelineListViewItem viewItem = new TimelineListViewItem(
                             timeline,
-                            TimelineTitle.load(timeline, false));
+                            TimelineTitle.load(timeline, timeline.getMyAccount()));
                     mItems.add(viewItem);
                 }
             }

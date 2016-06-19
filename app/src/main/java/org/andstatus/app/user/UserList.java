@@ -45,7 +45,7 @@ public class UserList extends LoadableListActivity {
         super.onCreate(savedInstanceState);
 
         mUserListType = getParsedUri().getUserListType();
-        mIsListCombined = getParsedUri().isCombined();
+        mIsListCombined = false; // For now...
         contextMenu = new UserListContextMenu(this);
     }
 
@@ -53,9 +53,9 @@ public class UserList extends LoadableListActivity {
     protected UserListLoader newSyncLoader(Bundle args) {
         switch (mUserListType) {
             case USERS_OF_MESSAGE:
-                return new UsersOfMessageListLoader(mUserListType, getMa(), centralItemId, mIsListCombined);
+                return new UsersOfMessageListLoader(mUserListType, getCurrentMyAccount(), centralItemId, mIsListCombined);
             default:
-                return new UserListLoader(mUserListType, getMa(), centralItemId, mIsListCombined);
+                return new UserListLoader(mUserListType, getCurrentMyAccount(), centralItemId, mIsListCombined);
         }
     }
 

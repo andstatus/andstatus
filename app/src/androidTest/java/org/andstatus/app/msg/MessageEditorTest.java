@@ -39,11 +39,12 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MatchedUri;
-import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.timeline.TimelineType;
+import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.service.MyServiceManager;
+import org.andstatus.app.timeline.Timeline;
+import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 
@@ -75,7 +76,7 @@ public class MessageEditorTest extends ActivityInstrumentationTestCase2<Timeline
         MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
 
         Intent intent = new Intent(Intent.ACTION_VIEW,
-                MatchedUri.getTimelineUri(ma.getUserId(), TimelineType.HOME, false, 0));
+                MatchedUri.getTimelineUri(new Timeline(TimelineType.HOME, ma, 0, null)));
         setActivityIntent(intent);
 
         data = getStaticData();
@@ -85,8 +86,7 @@ public class MessageEditorTest extends ActivityInstrumentationTestCase2<Timeline
     }
 
     private MessageEditorData getStaticData() {
-        MyAccount ma = MyContextHolder.get().persistentAccounts()
-                .fromUserId(getActivity().getCurrentMyAccountUserId());
+        MyAccount ma = getActivity().getCurrentMyAccount();
         return MessageEditorData.newEmpty(ma)
                 .setInReplyToId(
                         MyQuery.oidToId(OidEnum.MSG_OID, MyContextHolder.get()
@@ -251,9 +251,7 @@ public class MessageEditorTest extends ActivityInstrumentationTestCase2<Timeline
     private void assertTextCleared() {
         final MessageEditor editor = getActivity().getMessageEditor();
         assertTrue("Editor is not null", editor != null);
-        assertEquals(MessageEditorData.newEmpty(
-                MyContextHolder.get().persistentAccounts().fromUserId(
-                        getActivity().getCurrentMyAccountUserId())), editor.getData());
+        assertEquals(MessageEditorData.newEmpty(getActivity().getCurrentMyAccount()), editor.getData());
     }
 
     public void testContextMenuWhileEditing() throws InterruptedException {

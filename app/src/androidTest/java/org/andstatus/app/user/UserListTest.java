@@ -24,14 +24,15 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.ConversationInserter;
-import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.timeline.TimelineType;
+import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.msg.MessageListContextMenuItem;
 import org.andstatus.app.msg.TimelineActivity;
 import org.andstatus.app.net.social.MbUser;
+import org.andstatus.app.timeline.Timeline;
+import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.MyLog;
 
 import java.util.List;
@@ -52,7 +53,7 @@ public class UserListTest extends ActivityInstrumentationTestCase2<TimelineActiv
         MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
 
         Intent intent = new Intent(Intent.ACTION_VIEW,
-                MatchedUri.getTimelineUri(ma.getUserId(), TimelineType.HOME, false, 0));
+                MatchedUri.getTimelineUri(new Timeline(TimelineType.HOME, ma, 0, null)));
         setActivityIntent(intent);
 
         MyLog.i(this, "setUp ended");

@@ -333,7 +333,7 @@ public class CommandData implements Comparable<CommandData> {
      * @return Invalid account if no MyAccount exists with supplied name
      */
     public MyAccount getAccount() {
-        return timeline.getAccount();
+        return timeline.getMyAccount();
     }
 
     @Override

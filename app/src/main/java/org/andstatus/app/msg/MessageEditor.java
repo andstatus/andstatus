@@ -282,8 +282,8 @@ public class MessageEditor {
             MyAccount accountForButton = accountForCreateMessageButton();
             item.setVisible(!isVisible()
                     && accountForButton.isValidAndSucceeded()
-                    && mMessageList.getTimelineType() != TimelineType.DIRECT
-                    && mMessageList.getTimelineType() != TimelineType.MESSAGES_TO_ACT);
+                    && mMessageList.getTimeline().getTimelineType() != TimelineType.DIRECT
+                    && mMessageList.getTimeline().getTimelineType() != TimelineType.MESSAGES_TO_ACT);
         }
     }
 
@@ -291,8 +291,7 @@ public class MessageEditor {
         if (isVisible()) {
             return editorData.getMyAccount();
         } else {
-            return MyContextHolder.get().persistentAccounts().fromUserId(
-                    mMessageList.getCurrentMyAccountUserId());
+            return mMessageList.getCurrentMyAccount();
         }
     }
 
@@ -476,9 +475,9 @@ public class MessageEditor {
     }
 
     private boolean shouldShowAccountName() {
-        return mMessageList.isTimelineCombined()
-                || mMessageList.getTimelineType().isAtOrigin()
-                || editorData.getMyAccount().getUserId() != mMessageList.getCurrentMyAccountUserId();
+        return mMessageList.getTimeline().isCombined()
+                || mMessageList.getTimeline().getTimelineType().isAtOrigin()
+                || !editorData.getMyAccount().equals(mMessageList.getCurrentMyAccount());
     }
 
     private void showAttachedImage() {

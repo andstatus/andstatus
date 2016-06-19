@@ -22,6 +22,7 @@ import android.text.TextUtils;
 
 import org.andstatus.app.LoadableListActivity;
 import org.andstatus.app.WhichPage;
+import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.timeline.LatestTimelineItem;
@@ -44,9 +45,11 @@ public class TimelineLoader implements LoadableListActivity.SyncLoader {
     private final TimelineListParameters params;
     private volatile TimelinePage pageLoaded;
     private final long instanceId;
+    private final MyAccount currentMyAccount;
 
-    public TimelineLoader(@NonNull TimelineListParameters params, long instanceId) {
+    public TimelineLoader(@NonNull TimelineListParameters params, MyAccount currentMyAccount, long instanceId) {
         this.params = params;
+        this.currentMyAccount = currentMyAccount;
         this.pageLoaded = new TimelinePage(new ArrayList<TimelineViewItem>(), getParams());
         this.instanceId = instanceId;
     }
@@ -82,7 +85,7 @@ public class TimelineLoader implements LoadableListActivity.SyncLoader {
         params.startTime = System.nanoTime();
         params.cancelled = false;
         params.timelineToSync = Timeline.getEmpty(params.getMyAccount());
-        params.timelineTitle = TimelineTitle.load(params.getTimeline(), params.isTimelineCombined());
+        params.timelineTitle = TimelineTitle.load(params.getTimeline(), currentMyAccount);
         if (MyLog.isVerboseEnabled()) {
             logV("markStart", params.toSummary());
         }

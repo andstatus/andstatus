@@ -17,7 +17,6 @@
 package org.andstatus.app.msg;
 
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.ContextMenu;
@@ -30,13 +29,14 @@ import org.andstatus.app.ContextMenuHeader;
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.MyContextMenu;
 import org.andstatus.app.R;
+import org.andstatus.app.WhichPage;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MessageForAccount;
 import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.timeline.TimelineType;
+import org.andstatus.app.timeline.Timeline;
 import org.andstatus.app.util.MyLog;
 
 /**
@@ -94,7 +94,7 @@ public class MessageContextMenu extends MyContextMenu {
                 MessageListContextMenuItem.COPY_AUTHOR.addTo(menu, order++, R.string.menu_item_copy_author);
             }
 
-            if (messageList.getSelectedUserId() != msg.senderId) {
+            if (messageList.getTimeline().getUserId() != msg.senderId) {
                 // Messages by a Sender of this message ("User timeline" of that user)
                 MessageListContextMenuItem.SENDER_MESSAGES.addTo(menu, order++,
                         String.format(
@@ -102,7 +102,7 @@ public class MessageContextMenu extends MyContextMenu {
                                 MyQuery.userIdToWebfingerId(msg.senderId)));
             }
 
-            if (messageList.getSelectedUserId() != msg.authorId && msg.senderId != msg.authorId) {
+            if (messageList.getTimeline().getUserId() != msg.authorId && msg.senderId != msg.authorId) {
                 // Messages by an Author of this message ("User timeline" of that user)
                 MessageListContextMenuItem.AUTHOR_MESSAGES.addTo(menu, order++,
                         String.format(
@@ -229,7 +229,7 @@ public class MessageContextMenu extends MyContextMenu {
         if (ma1.isValid() && !forceFirstUser
                 && !msg.isTiedToThisAccount()
                 && ma1.getUserId() != preferredUserId
-                && !messageList.getTimelineType().requiresUserToBeDefined()) {
+                && !messageList.getTimeline().getTimelineType().requiresUserToBeDefined()) {
             MyAccount ma2 = MyContextHolder.get().persistentAccounts().fromUserId(preferredUserId);
             if (ma2.isValid() && ma1.getOriginId() == ma2.getOriginId()) {
                 msg = new MessageForAccount(mMsgId, ma2);
@@ -243,7 +243,7 @@ public class MessageContextMenu extends MyContextMenu {
     }
 
     protected long getCurrentMyAccountUserId() {
-        return messageList.getCurrentMyAccountUserId();
+        return messageList.getCurrentMyAccount().getUserId();
     }
 
     public void onContextItemSelected(MenuItem item) {
@@ -285,24 +285,22 @@ public class MessageContextMenu extends MyContextMenu {
         }
     }
 
-    public void switchTimelineActivity(MyAccount ma, TimelineType timelineType, boolean isTimelineCombined,
-                                       long selectedUserId) {
-        MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
-        if (MyLog.isVerboseEnabled()) {
-            MyLog.v(this, "switchTimelineActivity; " + timelineType 
-                    + "; isCombined=" + (isTimelineCombined ? "yes" : "no")
-                    + "; userId=" + selectedUserId);
+    public void switchTimelineActivity(Timeline timelinePrev, Timeline timeline, MyAccount currentMyAccount) {
+        if (currentMyAccount != null && currentMyAccount.isValid()) {
+            MyContextHolder.get().persistentAccounts().setCurrentAccount(timeline.getMyAccount());
+        } else if (timeline.getMyAccount().isValid()) {
+            MyContextHolder.get().persistentAccounts().setCurrentAccount(timeline.getMyAccount());
         }
-        Uri contentUri = MatchedUri.getTimelineUri(ma.getUserId(),
-                TimelineType.toSelectableType(timelineType),
-                isTimelineCombined, selectedUserId);
-        switchTimelineActivity(contentUri);
-    }
-
-    public void switchTimelineActivity(Uri contentUri) {
-        Intent intent = new Intent(getActivity(), TimelineActivity.class);
-        intent.setData(contentUri);
-        getActivity().startActivity(intent);
+        if (!timeline.equals(timelinePrev)) {
+            if (MyLog.isVerboseEnabled()) {
+                MyLog.v(this, "switchTimelineActivity; " + timeline);
+            }
+            Intent intent = new Intent(getActivity(), TimelineActivity.class);
+            intent.setData(MatchedUri.getTimelineUri(timeline));
+            getActivity().startActivity(intent);
+        } else {
+            getActivity().showList(WhichPage.CURRENT);
+        }
     }
 
     public void loadState(Bundle savedInstanceState) {
