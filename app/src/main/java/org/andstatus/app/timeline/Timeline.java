@@ -38,6 +38,7 @@ import org.andstatus.app.util.ContentValuesUtils;
 import org.andstatus.app.util.MyLog;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -53,7 +54,8 @@ public class Timeline implements Comparable<Timeline> {
      * or from Social Networks, e.g. Search in all Social Networks */
     private final boolean isCombined;
     private final MyAccount myAccount;
-    /** Selected User for e.g. {@link TimelineType#USER} timeline */
+    /** Selected User for e.g. {@link TimelineType#USER} timeline
+     * It is == 0 if the same as for MyAccount */
     private final long userId;
     private String userName = "";
 
@@ -98,19 +100,28 @@ public class Timeline implements Comparable<Timeline> {
     }
 
     public Timeline(MyContext myContext, TimelineType timelineType, MyAccount myAccount, long userId, Origin origin) {
-        this.myAccount = fixedMyAccount(myContext, myAccount, userId);
+        this.myAccount = fixedMyAccount(myContext, timelineType, myAccount, userId);
         this.userId = fixedUserId(timelineType, userId);
-        this.timelineType = fixedTimelineType(timelineType, this.myAccount, this.userId);
-        this.origin = fixedOrigin(myContext, origin);
+        this.origin = fixedOrigin(myContext, timelineType, myAccount, userId, origin);
+        this.timelineType = fixedTimelineType(myContext, timelineType);
         this.isCombined = this.timelineType.isAtOrigin() ? !this.origin.isValid() : !this.myAccount.isValid();
         fixUserName(myContext);
     }
 
-    private MyAccount fixedMyAccount(MyContext myContext, MyAccount myAccountIn, long userId) {
+    private MyAccount fixedMyAccount(MyContext myContext, TimelineType timelineType, MyAccount myAccountIn, long userIdIn) {
+        if (timelineType == null) {
+            return MyAccount.getEmpty();
+        }
         MyAccount myAccount = myAccountIn == null ?  MyAccount.getEmpty() : myAccountIn;
-        if (userId != 0 && myAccount.getUserId() != userId
-                && myContext.persistentAccounts().isAccountUserId(userId)) {
+        long userId = timelineType.requiresUserToBeDefined() ? userIdIn : 0;
+        if (myContext.persistentAccounts().isAccountUserId(userId)) {
             myAccount = myContext.persistentAccounts().fromUserId(userId);
+        }
+        if (timelineType.isAtOrigin() &&
+                !timelineType.requiresUserToBeDefined() &&
+                userId== 0 || (userId != 0 && !myContext.persistentAccounts().isAccountUserId(userId))
+                ) {
+            return MyAccount.getEmpty();
         }
         return myAccount;
     }
@@ -122,48 +133,71 @@ public class Timeline implements Comparable<Timeline> {
         return userId;
     }
 
-    public static TimelineType fixedTimelineType(TimelineType timelineType, MyAccount myAccount, long userId) {
-        if (timelineType == null) {
-            return TimelineType.UNKNOWN;
-        }
-        if (userId == 0 || (myAccount != null && myAccount.getUserId() == userId)) {
-            switch (timelineType) {
-                case USER:
-                    return TimelineType.SENT;
-                case FRIENDS:
-                    return TimelineType.MY_FRIENDS;
-                case FOLLOWERS:
-                    return TimelineType.MY_FOLLOWERS;
-                default:
-                    return timelineType;
-            }
-        }
-        switch (timelineType) {
-            case SENT:
-                return TimelineType.USER;
-            case MY_FRIENDS:
-                return TimelineType.FRIENDS;
-            case MY_FOLLOWERS:
-                return TimelineType.FOLLOWERS;
-            default:
-                return timelineType;
-        }
-    }
-
-    private Origin fixedOrigin(MyContext myContext, Origin origin) {
+    private Origin fixedOrigin(MyContext myContext, TimelineType timelineType, MyAccount myAccountIn, long userId, Origin origin) {
         Origin fixedOrigin = origin == null ? Origin.getEmpty() : origin;
-        if (!fixedOrigin.isValid() && userId != 0) {
-            MyAccount myAccount = myContext.persistentAccounts().fromUserId(userId);
-            if (myAccount.isValid()) {
-                fixedOrigin = myAccount.getOrigin();
-            }
+        if (!fixedOrigin.isValid() && !timelineType.isAtOrigin()) {
+            return fixedOrigin;
         }
-        if (myAccount.isValid()) {
-            if (!fixedOrigin.isValid() || fixedOrigin.isValid() && !myAccount.getOrigin().equals(fixedOrigin) ) {
-                fixedOrigin = myAccount.getOrigin();
+        MyAccount ma = myContext.persistentAccounts().fromUserId(userId);
+        if (!ma.isValid() && myAccountIn != null) {
+            ma = myAccountIn;
+        }
+        if (ma.isValid()) {
+            if (timelineType.isAtOrigin()) {
+                if (!fixedOrigin.isValid()) {
+                    fixedOrigin = ma.getOrigin();
+                }
+            } else {
+                if (fixedOrigin.isValid() && fixedOrigin != ma.getOrigin()) {
+                    fixedOrigin = Origin.getEmpty();
+                }
             }
         }
         return fixedOrigin;
+    }
+
+    private TimelineType fixedTimelineType(MyContext myContext, TimelineType timelineType) {
+        if (timelineType == null) {
+            return TimelineType.UNKNOWN;
+        }
+        if (timelineType.isAtOrigin()) {
+            if (!origin.isValid()) {
+                return TimelineType.UNKNOWN;
+            }
+        } else {
+            if (!myAccount.isValid()) {
+                return TimelineType.UNKNOWN;
+            }
+        }
+        if (timelineType.requiresUserToBeDefined()) {
+            if (userId == 0) {
+                return TimelineType.UNKNOWN;
+            }
+            if (myAccount.getUserId() == userId) {
+                switch (timelineType) {
+                    case USER:
+                        return TimelineType.SENT;
+                    case FRIENDS:
+                        return TimelineType.MY_FRIENDS;
+                    case FOLLOWERS:
+                        return TimelineType.MY_FOLLOWERS;
+                    default:
+                        break;
+                }
+            } else {
+                switch (timelineType) {
+                    case SENT:
+                        return TimelineType.USER;
+                    case MY_FRIENDS:
+                        return TimelineType.FRIENDS;
+                    case MY_FOLLOWERS:
+                        return TimelineType.FOLLOWERS;
+                    default:
+                        break;
+                }
+            }
+        }
+        return timelineType;
     }
 
     private void fixUserName(MyContext myContext) {
@@ -371,7 +405,18 @@ public class Timeline implements Comparable<Timeline> {
     public static List<Timeline> addDefaultForAccount(MyAccount myAccount) {
         List<Timeline> timelines = new ArrayList<>();
         for (TimelineType timelineType : TimelineType.defaultMyAccountTimelineTypes) {
-            Timeline timeline = new Timeline(timelineType, myAccount, 0, myAccount.getOrigin());
+            Timeline timeline = new Timeline(timelineType, myAccount, 0, null);
+            timeline.selectorOrder = timelineType.ordinal();
+            timeline.synced = timelineType.isSyncableByDefault();
+            timeline.save();
+        }
+        return timelines;
+    }
+
+    public static Collection<Timeline> addDefaultForOrigin(Origin origin) {
+        List<Timeline> timelines = new ArrayList<>();
+        for (TimelineType timelineType : TimelineType.defaultOriginTimelineTypes) {
+            Timeline timeline = new Timeline(timelineType, null, 0, origin);
             timeline.selectorOrder = timelineType.ordinal();
             timeline.synced = timelineType.isSyncableByDefault();
             timeline.save();
@@ -449,20 +494,18 @@ public class Timeline implements Comparable<Timeline> {
 
         Timeline timeline = (Timeline) o;
 
-        if (isCombined != timeline.isCombined) return false;
         if (userId != timeline.userId) return false;
         if (timelineType != timeline.timelineType) return false;
         if (!origin.equals(timeline.origin)) return false;
-        if (!myAccount.equals(timeline.myAccount)) return false;
+        if (!myAccount.getAccountName().equals(timeline.myAccount.getAccountName())) return false;
         return searchQuery.equals(timeline.searchQuery);
     }
 
     @Override
     public int hashCode() {
         int result = timelineType.hashCode();
-        result = 31 * result + (isCombined ? 1 : 0);
         result = 31 * result + origin.hashCode();
-        result = 31 * result + myAccount.hashCode();
+        result = 31 * result + myAccount.getAccountName().hashCode();
         result = 31 * result + (int) (userId ^ (userId >>> 32));
         result = 31 * result + searchQuery.hashCode();
         return result;
@@ -534,6 +577,7 @@ public class Timeline implements Comparable<Timeline> {
         if (timelineType != TimelineType.UNKNOWN) {
             bundle.putString(IntentExtra.TIMELINE_TYPE.key, timelineType.save());
         }
+        BundleUtils.putNotZero(bundle, IntentExtra.ORIGIN_ID, origin.getId());
         BundleUtils.putNotZero(bundle, IntentExtra.USER_ID, userId);
         BundleUtils.putNotEmpty(bundle, IntentExtra.USER_NAME, userName);
         BundleUtils.putNotEmpty(bundle, IntentExtra.SEARCH_QUERY, searchQuery);

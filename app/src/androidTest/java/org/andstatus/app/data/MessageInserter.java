@@ -139,12 +139,9 @@ public class MessageInserter extends InstrumentationTestCase {
     }
 
     public long addMessage(MbMessage messageIn) {
-        TimelineType tt = TimelineType.HOME;
-        if (messageIn.isPublic() ) {
-            tt = TimelineType.PUBLIC;
-        }
         DataInserter di = new DataInserter(new CommandExecutionContext(
-                CommandData.newCommand(CommandEnum.EMPTY, ma)).setTimelineType(tt));
+                        CommandData.newTimelineCommand(CommandEnum.EMPTY, ma,
+                                messageIn.isPublic() ? TimelineType.PUBLIC : TimelineType.HOME)));
         long messageId = di.insertOrUpdateMsg(messageIn);
         assertTrue( "Message added " + messageIn.oid, messageId != 0);
 
@@ -190,9 +187,8 @@ public class MessageInserter extends InstrumentationTestCase {
         }
     }
     
-    public static long addMessageForAccount(String accountName, String body, String messageOid, DownloadStatus messageStatus) {
-        MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(accountName);
-        assertTrue(accountName + " exists", ma.isValid());
+    public static long addMessageForAccount(MyAccount ma, String body, String messageOid, DownloadStatus messageStatus) {
+        assertTrue("Is not valid: " + ma, ma.isValid());
         MessageInserter mi = new MessageInserter(ma);
         return mi.addMessage(mi.buildMessage(mi.buildUser(), body, null, messageOid, messageStatus));
     }

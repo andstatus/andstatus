@@ -97,10 +97,18 @@ class CommandExecutorStrategy implements CommandExecutorParent {
                 if (execContext.getMyAccount().isValidAndSucceeded()) {
                     switch (execContext.getCommandData().getCommand()) {
                         case FETCH_TIMELINE:
-                            strategy = new CommandExecutorLoadTimeline();
+                            if (execContext.getCommandData().getTimelineType().isSyncable()) {
+                                strategy = new CommandExecutorLoadTimeline();
+                            } else {
+                                strategy = new CommandExecutorStrategy();
+                            }
                             break;
                         case SEARCH_MESSAGE:
-                            strategy = new CommandExecutorSearch();
+                            if (execContext.getCommandData().getTimelineType().isSyncable()) {
+                                strategy = new CommandExecutorSearch();
+                            } else {
+                                strategy = new CommandExecutorStrategy();
+                            }
                             break;
                         case GET_FOLLOWERS:
                         case GET_FRIENDS:

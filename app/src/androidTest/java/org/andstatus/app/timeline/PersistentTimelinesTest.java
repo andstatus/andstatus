@@ -54,6 +54,6 @@ public class PersistentTimelinesTest extends InstrumentationTestCase {
         assertTrue(!filtered.isEmpty());
 
         List<Timeline> filtered2 = MyContextHolder.get().persistentTimelines().getFiltered(true, false, null, myAccount.getOrigin());
-        assertEquals(filtered.size(), filtered2.size());
+        assertTrue(!filtered2.isEmpty());
     }
 }

@@ -41,9 +41,8 @@ public class MyServiceTest extends InstrumentationTestCase {
         TestSuite.initializeWithData(this);
 
         mService.setUp(null);
-        ma = MyContextHolder.get().persistentAccounts()
-                .fromAccountName(TestSuite.CONVERSATION_ACCOUNT_NAME);
-        assertTrue(TestSuite.CONVERSATION_ACCOUNT_NAME + " exists", ma.isValid());
+        ma = MyContextHolder.get().persistentAccounts().getFirstSucceededForOriginId(0);
+        assertTrue("No successfully verified accounts", ma.isValidAndSucceeded());
         
         MyLog.i(this, "setUp ended instanceId=" + mService.connectionInstanceId);
     }
@@ -55,11 +54,11 @@ public class MyServiceTest extends InstrumentationTestCase {
         String urlString = "http://andstatus.org/nonexistent2_avatar_" + System.currentTimeMillis() +  ".png";
         AvatarDownloaderTest.changeAvatarUrl(ma, urlString);
         
-        mService.listenedCommand = CommandData.newUserCommand(
+        mService.setListenedCommand(CommandData.newUserCommand(
                 CommandEnum.FETCH_AVATAR,
                 ma.getOrigin(),
                 ma.getUserId(),
-                "");
+                ""));
 
         long startCount = mService.executionStartCount;
         long endCount = mService.executionEndCount;
@@ -72,7 +71,7 @@ public class MyServiceTest extends InstrumentationTestCase {
         mService.sendListenedToCommand();
         assertFalse("Duplicated command didn't start executing",
                 mService.waitForCommandExecutionStarted(startCount + 1));
-        mService.listenedCommand.setManuallyLaunched(true);
+        mService.getListenedCommand().setManuallyLaunched(true);
         mService.sendListenedToCommand();
         assertTrue("Manually launched duplicated command started executing",
                 mService.waitForCommandExecutionStarted(startCount + 1));
@@ -85,7 +84,7 @@ public class MyServiceTest extends InstrumentationTestCase {
         final String method = "testAccountSync";
         MyLog.v(this, method + " started");
 
-        MyAccount myAccount = MyContextHolder.get().persistentAccounts().getFirstSucceededMyAccountByOriginId(0);
+        MyAccount myAccount = MyContextHolder.get().persistentAccounts().getFirstSucceededForOriginId(0);
         assertTrue("No successful account", myAccount != null);
 
         SyncResult syncResult = new SyncResult();
@@ -113,8 +112,8 @@ public class MyServiceTest extends InstrumentationTestCase {
         final String method = "testHomeTimeline";
         MyLog.v(this, method + " started");
 
-        mService.listenedCommand = CommandData.newTimelineCommand(
-                CommandEnum.FETCH_TIMELINE, ma, TimelineType.HOME);
+        mService.setListenedCommand(CommandData.newTimelineCommand(
+                CommandEnum.FETCH_TIMELINE, ma, TimelineType.HOME));
         long startCount = mService.executionStartCount;
         long endCount = mService.executionEndCount;
 
@@ -132,10 +131,9 @@ public class MyServiceTest extends InstrumentationTestCase {
     public void testRateLimitStatus() {
         MyLog.v(this, "testRateLimitStatus started");
 
-        mService.listenedCommand = CommandData.newTimelineCommand(
+        mService.setListenedCommand(CommandData.newAccountCommand(
                 CommandEnum.RATE_LIMIT_STATUS,
-                TestSuite.getMyAccount(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME),
-                TimelineType.EVERYTHING);
+                TestSuite.getMyAccount(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME)));
         long startCount = mService.executionStartCount;
         long endCount = mService.executionEndCount;
 
@@ -156,7 +154,7 @@ public class MyServiceTest extends InstrumentationTestCase {
         CommandData cd1 = CommandData.newTimelineCommand(CommandEnum.FETCH_TIMELINE,
                 TestSuite.getMyAccount(TestSuite.TWITTER_TEST_ACCOUNT_NAME),
                 TimelineType.DIRECT);
-        mService.listenedCommand = cd1;
+        mService.setListenedCommand(cd1);
 
         long startCount = mService.executionStartCount;
         long endCount = mService.executionEndCount;
@@ -165,7 +163,7 @@ public class MyServiceTest extends InstrumentationTestCase {
         assertTrue("First command didn't start executing", mService.waitForCommandExecutionStarted(startCount));
         assertTrue("First command didn't end executing", mService.waitForCommandExecutionEnded(endCount));
         assertEquals(mService.httpConnectionMock.toString(),
-                mService.httpConnectionMock.getRequestsCounter(), 1);
+                1, mService.httpConnectionMock.getRequestsCounter());
 
         assertTrue(TestSuite.setAndWaitForIsInForeground(true));
         MyLog.v(this, method + "; we are in a foreground");
@@ -173,7 +171,7 @@ public class MyServiceTest extends InstrumentationTestCase {
         CommandData cd2 = CommandData.newTimelineCommand(CommandEnum.FETCH_TIMELINE,
                 TestSuite.getMyAccount(TestSuite.TWITTER_TEST_ACCOUNT_NAME),
                 TimelineType.MENTIONS);
-        mService.listenedCommand = cd2;
+        mService.setListenedCommand(cd2);
 
         startCount = mService.executionStartCount;
         endCount = mService.executionEndCount;
@@ -195,7 +193,7 @@ public class MyServiceTest extends InstrumentationTestCase {
                 TestSuite.getMyAccount(TestSuite.TWITTER_TEST_ACCOUNT_NAME),
                 TimelineType.HOME)
                 .setInForeground(true);
-        mService.listenedCommand = cd3;
+        mService.setListenedCommand(cd3);
 
         startCount = mService.executionStartCount;
         endCount = mService.executionEndCount;
@@ -233,9 +231,9 @@ public class MyServiceTest extends InstrumentationTestCase {
                 null,
                 cd2.getCommandId());
         cdDelete.setInForeground(true);
-        mService.listenedCommand = cdDelete;
+        mService.setListenedCommand(cdDelete);
 
-        assertEquals(cd2.getCommandId(), mService.listenedCommand.itemId);
+        assertEquals(cd2.getCommandId(), mService.getListenedCommand().itemId);
         
         long endCount = mService.executionEndCount;
 

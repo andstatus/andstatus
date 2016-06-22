@@ -58,11 +58,9 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
             if (lookupUser()) return;
             switch (timelineType) {
                 case FOLLOWERS:
-                case MY_FOLLOWERS:
                     syncFollowers();
                     break;
                 case FRIENDS:
-                case MY_FRIENDS:
                     syncFriends();
                     break;
                 default:
@@ -85,16 +83,10 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
         TimelineType timelineType;
         switch (execContext.getCommandData().getCommand()) {
             case GET_FOLLOWERS:
-                timelineType = Timeline.fixedTimelineType(
-                        TimelineType.FOLLOWERS,
-                        execContext.getCommandData().getAccount(),
-                        execContext.getCommandData().getUserId());
+                timelineType = TimelineType.FOLLOWERS;
                 break;
             case GET_FRIENDS:
-                timelineType = Timeline.fixedTimelineType(
-                        TimelineType.FRIENDS,
-                        execContext.getCommandData().getAccount(),
-                        execContext.getCommandData().getUserId());
+                timelineType = TimelineType.FRIENDS;
                 break;
             default:
                 timelineType = execContext.getTimelineType();
@@ -106,9 +98,6 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
     private boolean lookupUser() {
         final String method = "lookupUser";
         userId = execContext.getCommandData().getUserId();
-        if (userId == 0) {
-            userId = execContext.getTimelineUserId();
-        }
         userOid = MyQuery.idToOid(OidEnum.USER_OID, userId, 0);
         if (TextUtils.isEmpty(userOid)) {
             execContext.getResult().incrementParseExceptions();

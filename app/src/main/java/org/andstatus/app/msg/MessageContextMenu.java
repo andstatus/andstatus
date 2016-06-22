@@ -211,7 +211,7 @@ public class MessageContextMenu extends MyContextMenu {
         mActorUserIdForCurrentMessage = 0;
         MyLog.v(this, logMsg);
 
-        MessageForAccount msg2 = getMessageForAccount(userIdForThisMessage, getCurrentMyAccountUserId());
+        MessageForAccount msg2 = getMessageForAccount(userIdForThisMessage, messageList.getCurrentMyAccount());
         if (!msg2.myAccount().isValid()) {
             return;
         }
@@ -219,20 +219,19 @@ public class MessageContextMenu extends MyContextMenu {
         mActorUserIdForCurrentMessage = msg.myAccount().getUserId();
     }
 
-    private MessageForAccount getMessageForAccount(long userIdForThisMessage, long preferredUserId) {
+    private MessageForAccount getMessageForAccount(long linkedUserId, MyAccount currentMyAccount) {
         MyAccount ma1 = MyContextHolder.get().persistentAccounts()
-                .getAccountForThisMessage(mMsgId, userIdForThisMessage,
-                        preferredUserId,
+                .getAccountForThisMessage(mMsgId, linkedUserId,
+                        currentMyAccount.getUserId(),
                         false);
         MessageForAccount msg = new MessageForAccount(mMsgId, ma1);
         boolean forceFirstUser = otherAccountUserIdToActAs !=0;
         if (ma1.isValid() && !forceFirstUser
                 && !msg.isTiedToThisAccount()
-                && ma1.getUserId() != preferredUserId
+                && ma1.getUserId() != currentMyAccount.getUserId()
                 && !messageList.getTimeline().getTimelineType().requiresUserToBeDefined()) {
-            MyAccount ma2 = MyContextHolder.get().persistentAccounts().fromUserId(preferredUserId);
-            if (ma2.isValid() && ma1.getOriginId() == ma2.getOriginId()) {
-                msg = new MessageForAccount(mMsgId, ma2);
+            if (currentMyAccount.isValid() && ma1.getOriginId() == currentMyAccount.getOriginId()) {
+                msg = new MessageForAccount(mMsgId, currentMyAccount);
             }
         }
         return msg;

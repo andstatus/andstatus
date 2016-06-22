@@ -346,7 +346,7 @@ public class Origin {
 
     @Override
     public String toString() {
-        return "Origin:{name:" + getName() 
+        return "Origin:{" + (isValid() ? "" : "(invalid) ") + "name:" + getName()
                 + ", type:" + originType
                 + (getUrl() != null ? ", url:" + getUrl() : "" )
                 + (isSsl() ? ", " + getSslMode() : "" )

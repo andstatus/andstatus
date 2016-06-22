@@ -403,7 +403,7 @@ public class MessageEditor {
         saveData(command);
         if (data.getMyAccount().getConnection().isApiSupported(ApiRoutineEnum.ACCOUNT_RATE_LIMIT_STATUS)) {
             MyServiceManager.sendForegroundCommand(
-                    CommandData.newCommand(CommandEnum.RATE_LIMIT_STATUS, data.getMyAccount()));
+                    CommandData.newAccountCommand(CommandEnum.RATE_LIMIT_STATUS, data.getMyAccount()));
         }
     }
 

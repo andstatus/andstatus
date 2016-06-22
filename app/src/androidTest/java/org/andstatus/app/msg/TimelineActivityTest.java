@@ -169,7 +169,7 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
     }
 
     private void broadcastCommandExecuted() {
-        CommandData commandData = CommandData.newCommand(CommandEnum.CREATE_FAVORITE,
+        CommandData commandData = CommandData.newAccountCommand(CommandEnum.CREATE_FAVORITE,
                 TestSuite.getConversationMyAccount());
         MyServiceEventsBroadcaster.newInstance(MyContextHolder.get(), MyServiceState.RUNNING)
                 .setCommandData(commandData).setEvent(MyServiceEvent.AFTER_EXECUTING_COMMAND)

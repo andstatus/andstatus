@@ -47,8 +47,9 @@ public class PublicTimelineActivityTest extends android.test.ActivityInstrumenta
         MyLog.i(this, "setUp started");
         TestSuite.initializeWithData(this);
 
-        MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME);
-        assertTrue(ma.isValid());
+        MyAccount ma = MyContextHolder.get().persistentAccounts().getFirstSucceededForOriginId(
+                MyContextHolder.get().persistentOrigins().fromName(TestSuite.GNUSOCIAL_TEST_ORIGIN_NAME).getId());
+        assertTrue(ma.isValidAndSucceeded());
         MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
         
         assertEquals(ma.getUserId(), MyContextHolder.get().persistentAccounts().getCurrentAccountUserId());

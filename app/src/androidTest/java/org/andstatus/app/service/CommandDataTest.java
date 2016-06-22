@@ -108,7 +108,7 @@ public class CommandDataTest extends InstrumentationTestCase {
     public void testPriority() {
         Queue<CommandData> queue = new PriorityBlockingQueue<CommandData>(100);
         queue.add(CommandData.newSearch(
-                TestSuite.getMyAccount(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME), "q1"));
+                TestSuite.getMyAccount(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME).getOrigin(), "q1"));
         queue.add(CommandData.newUpdateStatus(null, 2));
         queue.add(CommandData.newCommand(CommandEnum.FETCH_TIMELINE));
         queue.add(CommandData.newUpdateStatus(null, 3));

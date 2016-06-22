@@ -380,9 +380,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
             // The message was sent successfully, so now update unsent message
             // New User's message should be put into the user's Home timeline.
             message.msgId = msgId;
-            new DataInserter(
-                    execContext.setTimelineType((recipientUserId == 0) ? TimelineType.HOME
-                            : TimelineType.DIRECT)).insertOrUpdateMsg(message);
+            new DataInserter(execContext).insertOrUpdateMsg(message);
             execContext.getResult().setItemId(msgId);
         }
     }
@@ -402,8 +400,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         if (ok) {
             // The tweet was sent successfully
             // Reblog should be put into the user's Home timeline!
-            new DataInserter(execContext.
-                    setTimelineType(TimelineType.HOME)).insertOrUpdateMsg(result);
+            new DataInserter(execContext).insertOrUpdateMsg(result);
         }
     }
     

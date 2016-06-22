@@ -62,7 +62,7 @@ public class DataInserter {
             SharedPreferencesUtil.getString(MyPreferences.KEY_FILTER_HIDE_MESSAGES_BASED_ON_KEYWORDS, ""));
 
     public DataInserter(MyAccount ma) {
-        this(new CommandExecutionContext(CommandData.newCommand(CommandEnum.EMPTY, ma)));
+        this(new CommandExecutionContext(CommandData.newAccountCommand(CommandEnum.EMPTY, ma)));
     }
     
     public DataInserter(CommandExecutionContext execContext) {
@@ -196,7 +196,7 @@ public class DataInserter {
                 if (!TextUtils.isEmpty(rowOid)) {
                     values.put(MsgTable.MSG_OID, rowOid);
                 }
-                values.put(MsgTable.ORIGIN_ID, execContext.getMyAccount().getOriginId());
+                values.put(MsgTable.ORIGIN_ID, message.originId);
                 values.put(MsgTable.BODY, message.getBody());
             }
             

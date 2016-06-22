@@ -25,15 +25,10 @@ class CommandExecutorLoadTimeline extends CommandExecutorStrategy {
     
     @Override
     void execute() {
-        boolean ok = false;
         try {
             if (execContext.getMyAccount().getConnection().isApiSupported(execContext.getTimelineType().getConnectionApiRoutine())) {
-                long userId = execContext.getCommandData().getUserId();
-                if (userId == 0) {
-                    userId = execContext.getMyAccount().getUserId();
-                }
-                execContext.setTimelineUserId(userId);
-                MyLog.d(this, "Getting " + execContext.getTimelineType() + " timeline for " + execContext.getMyAccount().getAccountName() );
+                MyLog.d(this, "Getting " + execContext.getCommandData().toCommandSummary(execContext.getMyContext()) +
+                        " by " + execContext.getMyAccount().getAccountName() );
                 TimelineDownloader downloader = TimelineDownloader.getStrategy(execContext);
                 downloader.download();
                 downloader.onSyncEnded();
@@ -41,8 +36,7 @@ class CommandExecutorLoadTimeline extends CommandExecutorStrategy {
                 MyLog.v(this, execContext.getTimelineType() + " is not supported for "
                         + execContext.getMyAccount().getAccountName());
             }
-            ok = true;
-            logOk(ok);
+            logOk(true);
         } catch (ConnectionException e) {
             logConnectionException(e, "Load Timeline");
         } catch (SQLiteConstraintException e) {

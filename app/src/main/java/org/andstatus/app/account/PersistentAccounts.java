@@ -238,8 +238,11 @@ public class PersistentAccounts {
         return getCurrentAccount().getUserId();
     }
 
-    public boolean isAccountUserId(long selectedUserId) {
-        return fromUserId(selectedUserId).isValid();
+    public boolean isAccountUserId(long userId) {
+        if (userId == 0) {
+            return false;
+        }
+        return fromUserId(userId).isValid();
     }
 
     /**
@@ -267,7 +270,7 @@ public class PersistentAccounts {
      * @param originId May be 0 to search in any Origin
      * @return Invalid account if not found
      */
-    public MyAccount getFirstSucceededMyAccountByOriginId(long originId) {
+    public MyAccount getFirstSucceededForOriginId(long originId) {
         MyAccount ma = null;
         for (MyAccount persistentAccount : mAccounts.values()) {
             if (originId==0 || persistentAccount.getOriginId() == originId) {
@@ -317,7 +320,7 @@ public class PersistentAccounts {
             ma = betterFit(ma, fromUserId(preferredUserId), originId, succeededOnly);
         }
         if (!accountFits(ma, originId, succeededOnly)) {
-            ma = betterFit(ma, getFirstSucceededMyAccountByOriginId(originId), originId, succeededOnly);
+            ma = betterFit(ma, getFirstSucceededForOriginId(originId), originId, succeededOnly);
         }
         if (MyLog.isVerboseEnabled()) {
             MyLog.v(this, method + "; msgId=" + messageId 
@@ -375,26 +378,6 @@ public class PersistentAccounts {
             builder.setSyncFrequency(syncFrequencySeconds);
             builder.save();
         }
-    }
-
-    public boolean isGlobalSearchSupported(MyAccount ma, boolean forAllAccounts) {
-        return accountsForGlobalSearch(ma, forAllAccounts).size() > 0;
-    }
-
-    public Collection<MyAccount> accountsForGlobalSearch(MyAccount myAccount, boolean forAllAccounts) {
-        Map<Origin, MyAccount> accounts = new HashMap<>();
-        if (forAllAccounts) {
-            for (MyAccount account : collection()) {
-                if (account.isGlobalSearchSupported() && !accounts.containsKey(account.getOrigin())) {
-                    accounts.put(account.getOrigin(), account);
-                }
-            }
-        } else {
-            if (myAccount.isGlobalSearchSupported()) {
-                accounts.put(myAccount.getOrigin(), myAccount);
-            }
-        }
-        return accounts.values();
     }
 
     public List<MyAccount> accountsToSync(MyAccount myAccount, boolean forAllAccounts) {

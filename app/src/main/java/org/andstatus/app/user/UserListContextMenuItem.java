@@ -220,7 +220,7 @@ public enum UserListContextMenuItem implements ContextMenuItem {
         if (!params.ma.isValid() || params.ma.getOriginId() != originId) {
             params.ma = MyContextHolder.get().persistentAccounts().fromUserId(userId);
             if (!params.ma.isValid()) {
-                params.ma = MyContextHolder.get().persistentAccounts().getFirstSucceededMyAccountByOriginId(originId);
+                params.ma = MyContextHolder.get().persistentAccounts().getFirstSucceededForOriginId(originId);
             }
         }
     }

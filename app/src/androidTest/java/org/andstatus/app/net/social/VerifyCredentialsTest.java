@@ -103,7 +103,7 @@ public class VerifyCredentialsTest extends InstrumentationTestCase {
 
         String msgOid = "383296535213002752";
         long msgId = MyQuery.oidToId(OidEnum.MSG_OID, origin.getId(), msgOid) ;
-        assertTrue("Message found", msgId !=0);
+        assertTrue("Message not found", msgId !=0);
         long userIdM = MyQuery.msgIdToUserId(MsgTable.AUTHOR_ID, msgId);
         assertEquals("Message is by " + mbUser.getUserName() + " found", userId, userIdM);
 

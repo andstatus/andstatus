@@ -60,7 +60,7 @@ public class MessageShareTest extends InstrumentationTestCase {
     
     public void testSharePlainText() {
         String body = "Posting as a plain Text " + TestSuite.TESTRUN_UID;
-        long msgId = MessageInserter.addMessageForAccount(TestSuite.TWITTER_TEST_ACCOUNT_NAME, body,
+        long msgId = MessageInserter.addMessageForAccount(TestSuite.getMyAccount(TestSuite.TWITTER_TEST_ACCOUNT_NAME), body,
                 TestSuite.PLAIN_TEXT_MESSAGE_OID, DownloadStatus.LOADED);
         MessageShare messageShare = new MessageShare(msgId);
         Intent intent = messageShare.intentForShare();

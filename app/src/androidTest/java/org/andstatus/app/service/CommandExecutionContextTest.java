@@ -13,14 +13,13 @@ public class CommandExecutionContextTest extends InstrumentationTestCase {
 
     @Override
     protected void setUp() throws Exception {
-        TestSuite.initialize(this);
-        ma = MyAccount.Builder.newOrExistingFromAccountName(MyContextHolder.get(), "temp/",
-                TriState.UNKNOWN).getAccount();
+        TestSuite.initializeWithData(this);
+        ma = MyContextHolder.get().persistentAccounts().getFirstSucceededForOriginId(0);
     }
 
     public void testHomeAccumulation() {
         CommandExecutionContext execContext = new CommandExecutionContext(
-                CommandData.newCommand(CommandEnum.EMPTY, ma)).setTimelineType(TimelineType.HOME);
+                CommandData.newAccountCommand(CommandEnum.EMPTY, ma));
         assertEquals(execContext.getTimelineType(), TimelineType.HOME);
         
         final int MESSAGES = 4;
@@ -31,20 +30,20 @@ public class CommandExecutionContextTest extends InstrumentationTestCase {
         for (int ind=0; ind < MENTIONS; ind++) {
             execContext.getResult().incrementMentionsCount();
         }
-        assertEquals(4, execContext.getResult().getMessagesAdded());
-        assertEquals(2, execContext.getResult().getMentionsAdded());
+        assertEquals(MESSAGES, execContext.getResult().getMessagesAdded());
+        assertEquals(MENTIONS, execContext.getResult().getMentionsAdded());
         assertEquals(0, execContext.getResult().getDirectedAdded());
     }
 
     public void testDirectAccumulation() {
         CommandExecutionContext execContext = new CommandExecutionContext(
-                CommandData.newCommand(CommandEnum.EMPTY, ma)).setTimelineType(TimelineType.DIRECT);
+                CommandData.newTimelineCommand(CommandEnum.EMPTY, ma, TimelineType.DIRECT));
         final int MESSAGES = 4;
         for (int ind=0; ind < MESSAGES; ind++) {
             execContext.getResult().incrementMessagesCount(execContext.getTimelineType());
         }
         assertEquals(0, execContext.getResult().getMessagesAdded());
         assertEquals(0, execContext.getResult().getMentionsAdded());
-        assertEquals(4, execContext.getResult().getDirectedAdded());
+        assertEquals(MESSAGES, execContext.getResult().getDirectedAdded());
     }
 }

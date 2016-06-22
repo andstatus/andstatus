@@ -335,7 +335,7 @@ public class TimelineActivity extends LoadableListActivity implements
     private void clearNotifications() {
         MyContextHolder.get().clearNotification(getParamsLoaded().getTimelineType());
         MyServiceManager.sendForegroundCommand(
-                CommandData.newCommand(CommandEnum.CLEAR_NOTIFICATIONS, paramsNew.getMyAccount()));
+                CommandData.newAccountCommand(CommandEnum.CLEAR_NOTIFICATIONS, paramsNew.getMyAccount()));
     }
 
     /**
@@ -390,8 +390,8 @@ public class TimelineActivity extends LoadableListActivity implements
             mMessageEditor.onPrepareOptionsMenu(menu);
         }
 
-        boolean enableGlobalSearch = MyContextHolder.get().persistentAccounts()
-                .isGlobalSearchSupported(ma, getParamsLoaded().getTimeline().isCombined());
+        boolean enableGlobalSearch = MyContextHolder.get().persistentOrigins()
+                .isGlobalSearchSupported(ma.getOrigin(), getParamsLoaded().getTimeline().isCombined());
         item = menu.findItem(R.id.global_search_menu_id);
         item.setEnabled(enableGlobalSearch);
         item.setVisible(enableGlobalSearch);
@@ -584,10 +584,11 @@ public class TimelineActivity extends LoadableListActivity implements
             if (paramsNew.hasSearchQuery()
                     && appSearchData.getBoolean(IntentExtra.GLOBAL_SEARCH.key, false)) {
                 showSyncing(method, "Global search: " + paramsNew.getTimeline().getSearchQuery());
-                for (MyAccount myAccount : myContext.persistentAccounts().accountsForGlobalSearch(
-                        paramsNew.getMyAccount(), paramsNew.getTimeline().isCombined())) {
+                for (Origin origin : myContext.persistentOrigins().originsForGlobalSearch(
+                        paramsNew.getTimeline().getOrigin(), paramsNew.getTimeline().isCombined())) {
                     MyServiceManager.sendManualForegroundCommand(
-                            CommandData.newSearch(myAccount, paramsNew.getTimeline().getSearchQuery()));
+                            CommandData.newSearch(origin,
+                                    paramsNew.getTimeline().getSearchQuery()));
                 }
             }
             return true;

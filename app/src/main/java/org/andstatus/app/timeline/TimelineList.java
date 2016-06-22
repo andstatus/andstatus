@@ -25,6 +25,7 @@ import android.widget.LinearLayout;
 
 import org.andstatus.app.LoadableListActivity;
 import org.andstatus.app.R;
+import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyUrlSpan;
 import org.andstatus.app.util.RelativeTime;
@@ -71,7 +72,7 @@ public class TimelineList extends LoadableListActivity {
                 for (Timeline timeline : myContext.persistentTimelines().getFiltered(false, true, null, null)) {
                     TimelineListViewItem viewItem = new TimelineListViewItem(
                             timeline,
-                            TimelineTitle.load(timeline, timeline.getMyAccount()));
+                            TimelineTitle.load(timeline, MyAccount.getEmpty()));
                     mItems.add(viewItem);
                 }
             }

@@ -72,22 +72,22 @@ public class CommandData implements Comparable<CommandData> {
     private volatile int result = 0;
     private CommandResult commandResult = new CommandResult();
 
-    public static CommandData newSearch(MyAccount myAccount, String queryString) {
-        Timeline timeline =  new Timeline(TimelineType.PUBLIC, myAccount, 0, null);
+    public static CommandData newSearch(Origin origin, String queryString) {
+        Timeline timeline =  new Timeline(TimelineType.PUBLIC, null, 0, origin);
         timeline.setSearchQuery(queryString);
         CommandData commandData = new CommandData(0, CommandEnum.SEARCH_MESSAGE, timeline, 0);
         return commandData;
     }
 
     public static CommandData newUpdateStatus(MyAccount myAccount, long unsentMessageId) {
-        CommandData commandData = newCommand(CommandEnum.UPDATE_STATUS, myAccount);
+        CommandData commandData = newAccountCommand(CommandEnum.UPDATE_STATUS, myAccount);
         commandData.itemId = unsentMessageId;
         commandData.setTrimmedMessageBodyAsDescription(unsentMessageId);
         return commandData;
     }
 
     public static CommandData newFetchAttachment(long msgId, long downloadDataRowId) {
-        CommandData commandData = newCommand(CommandEnum.FETCH_ATTACHMENT, null);
+        CommandData commandData = newAccountCommand(CommandEnum.FETCH_ATTACHMENT, null);
         commandData.itemId = downloadDataRowId;
         commandData.setTrimmedMessageBodyAsDescription(msgId);
         return commandData;
@@ -114,17 +114,17 @@ public class CommandData implements Comparable<CommandData> {
     }
 
     public static CommandData newCommand(CommandEnum command) {
-        return newCommand(command, null);
+        return newAccountCommand(command, null);
     }
 
     public static CommandData newItemCommand(CommandEnum command, MyAccount myAccount, long itemId) {
-        CommandData commandData = newCommand(command, myAccount);
+        CommandData commandData = newAccountCommand(command, myAccount);
         commandData.itemId = itemId;
         return commandData;
     }
 
-    public static CommandData newCommand(CommandEnum command, MyAccount myAccount) {
-        return newTimelineCommand(command, Timeline.getEmpty(myAccount));
+    public static CommandData newAccountCommand(CommandEnum command, MyAccount myAccount) {
+        return newTimelineCommand(command, new Timeline(TimelineType.HOME, myAccount, 0, null));
     }
 
     public static CommandData newTimelineCommand(CommandEnum command, MyAccount myAccount,
@@ -273,9 +273,6 @@ public class CommandData implements Comparable<CommandData> {
     public String toString() {
         StringBuilder builder = new StringBuilder();
         builder.append("command:" + command.save() + ",");
-        if (getTimelineType() != TimelineType.UNKNOWN) {
-            builder.append(getTimelineType() + ",");
-        }
         if (mInForeground) {
             builder.append("foreground,");
         }
@@ -290,19 +287,7 @@ public class CommandData implements Comparable<CommandData> {
             builder.append(description);
             builder.append("\",");
         }
-        if (!TextUtils.isEmpty(getSearchQuery())) {
-            builder.append("\"");
-            builder.append(getSearchQuery());
-            builder.append("\",");
-        }
-        if (!TextUtils.isEmpty(getUserName())) {
-            builder.append("username:\"");
-            builder.append(getUserName());
-            builder.append("\",");
-        }
-        if (getAccount().isValid()) {
-            builder.append("account:" + getAccount().getAccountName() + ",");
-        }
+        builder.append(getTimeline().toString() + ",");
         if (itemId != 0) {
             builder.append("itemId:" + itemId + ",");
         }
@@ -327,13 +312,6 @@ public class CommandData implements Comparable<CommandData> {
             return false;
         }
         return true;
-    }
-
-    /**
-     * @return Invalid account if no MyAccount exists with supplied name
-     */
-    public MyAccount getAccount() {
-        return timeline.getMyAccount();
     }
 
     @Override
@@ -412,14 +390,14 @@ public class CommandData implements Comparable<CommandData> {
                 builder.append("\"");
                 break;
             case FETCH_TIMELINE:
-                if (getAccount().isValid()) {
-                    if (getTimelineType().requiresUserToBeDefined()) {
+                if (getTimeline().getMyAccount().isValid()) {
+                    if (timeline.isUserDifferentFromAccount()) {
                         I18n.appendWithSpace(builder, MyQuery.userIdToWebfingerId(timeline.getUserId()));
                     }
                     I18n.appendWithSpace(builder, 
                             getTimelineType().getPrepositionForNotCombinedTimeline(myContext
                             .context()));
-                    I18n.appendWithSpace(builder, getAccount().toAccountButtonText());
+                    I18n.appendWithSpace(builder, getTimeline().getMyAccount().toAccountButtonText());
                 }
                 break;
             case FOLLOW_USER:
@@ -453,13 +431,13 @@ public class CommandData implements Comparable<CommandData> {
     }
 
     private void appendAccountName(MyContext myContext, StringBuilder builder) {
-        if (getAccount().isValid()) {
+        if (getTimeline().getMyAccount().isValid()) {
             I18n.appendWithSpace(builder, 
                     getTimelineType().getPrepositionForNotCombinedTimeline(myContext.context()));
             if (getTimelineType().isAtOrigin()) {
                 I18n.appendWithSpace(builder, getTimeline().getOrigin().getName());
             } else {
-                I18n.appendWithSpace(builder, getAccount().getAccountName());
+                I18n.appendWithSpace(builder, getTimeline().getMyAccount().getAccountName());
             }
         }
     }
@@ -492,7 +470,7 @@ public class CommandData implements Comparable<CommandData> {
                 builder.append(getTimelineType().getTitle(myContext.context()));
                 break;
             default:
-                builder.append(command.getTitle(myContext, getAccount().getAccountName()));
+                builder.append(command.getTitle(myContext, getTimeline().getMyAccount().getAccountName()));
                 break;
         }
         return builder.toString();

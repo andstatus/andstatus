@@ -145,10 +145,10 @@ public class PersistentTimelines {
                 include = false;
             } else if (isTimelineCombined) {
                 include = true;
-            } else if (ma != null && ma.isValid()) {
-                include = timeline.getMyAccount() == ma;
-            } else if (origin != null && origin.isValid()) {
-                include = timeline.getOrigin() == origin;
+            } else if (ma != null && ma.isValid() && timeline.getMyAccount().equals(ma)) {
+                include = true;
+            } else if (origin != null && origin.isValid() && timeline.getOrigin().equals(origin)) {
+                include = true;
             }
             if (include) {
                 timelines.add(timeline);
@@ -187,16 +187,31 @@ public class PersistentTimelines {
 
     public void addDefaultTimelinesIfNoneFound() {
         for (MyAccount ma : myContext.persistentAccounts().collection()) {
-            addDefaultTimelinesIfNoneFound(ma);
+            addDefaultMyAccountTimelinesIfNoneFound(ma);
         }
     }
 
-    public void addDefaultTimelinesIfNoneFound(MyAccount ma) {
+    public void addDefaultMyAccountTimelinesIfNoneFound(MyAccount ma) {
         if (ma.isValid() && getFiltered(false, false, ma, null).isEmpty()) {
+            addDefaultOriginTimelinesIfNoneFound(ma.getOrigin());
+
             long timelineId = MyQuery.conditionToLongColumnValue(TimelineTable.TABLE_NAME,
                     TimelineTable._ID, TimelineTable.ACCOUNT_ID + "=" + ma.getUserId());
             if (timelineId == 0) {
                 timelines.addAll(Timeline.addDefaultForAccount(ma));
+                sort(timelines);
+            }
+        }
+    }
+
+    public void addDefaultOriginTimelinesIfNoneFound(Origin origin) {
+        if (origin.isValid()) {
+            long timelineId = MyQuery.conditionToLongColumnValue(TimelineTable.TABLE_NAME,
+                    TimelineTable._ID,
+                    TimelineTable.ORIGIN_ID + "=" + origin.getId() + " AND " +
+                            TimelineTable.TIMELINE_TYPE + "='" + TimelineType.EVERYTHING.save() + "'");
+            if (timelineId == 0) {
+                timelines.addAll(Timeline.addDefaultForOrigin(origin));
                 sort(timelines);
             }
         }

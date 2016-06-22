@@ -64,12 +64,7 @@ class TimelineListPositionStorage {
         this.mListParameters = listParameters;
         
         queryString = listParameters.getTimeline().getSearchQuery();
-        long userId = 0;
-        if (listParameters.getTimelineType().requiresUserToBeDefined()) {
-            userId = listParameters.getSelectedUserId();
-        } else if (!listParameters.isTimelineCombined()) {
-            userId = listParameters.getMyAccount().getUserId();
-        }
+        long userId = listParameters.getSelectedUserId();
         keyFirstVisibleItemId = KEY_PREFIX
                 + listParameters.getTimelineType().save()
                 + "_user" + Long.toString(userId)

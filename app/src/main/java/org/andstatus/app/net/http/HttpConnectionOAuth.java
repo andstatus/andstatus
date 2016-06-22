@@ -26,8 +26,8 @@ import org.json.JSONObject;
 
 abstract class HttpConnectionOAuth extends HttpConnection implements OAuthConsumerAndProvider {
     private static final String TAG = HttpConnectionOAuth.class.getSimpleName();
-    public static final String REQUEST_SUCCEEDED = "request_succeeded";
-    
+    public boolean logMe = false;
+
     private String userTokenKey() {
         return "user_token";
     }
@@ -59,7 +59,7 @@ abstract class HttpConnectionOAuth extends HttpConnection implements OAuthConsum
             && !TextUtils.isEmpty(userSecret)) {
                 yes = true;
         }
-        if (!yes) {
+        if (!yes && logMe) {
             MyLog.v(this, "Credentials presence: clientKeys:" + data.oauthClientKeys.areKeysPresent() + "; userKeys:" + !TextUtils.isEmpty(userToken) + "," + !TextUtils.isEmpty(userSecret));
         }
         return yes;
@@ -100,7 +100,9 @@ abstract class HttpConnectionOAuth extends HttpConnection implements OAuthConsum
             userToken = token;
             userSecret = secret;
         }
-        MyLog.v(this, "Credentials set?: " + !TextUtils.isEmpty(token) + ", " + !TextUtils.isEmpty(secret));
+        if (logMe) {
+            MyLog.v(this, "Credentials set?: " + !TextUtils.isEmpty(token) + ", " + !TextUtils.isEmpty(secret));
+        }
     }
 
     @Override
@@ -127,17 +129,25 @@ abstract class HttpConnectionOAuth extends HttpConnection implements OAuthConsum
 
             if (TextUtils.isEmpty(userToken)) {
                 dw.setDataString(userTokenKey(), null);
-                MyLog.d(TAG, "Clearing OAuth Token");
+                if (logMe) {
+                    MyLog.d(TAG, "Clearing OAuth Token");
+                }
             } else {
                 dw.setDataString(userTokenKey(), userToken);
-                MyLog.d(TAG, "Saving OAuth Token: " + userToken);
+                if (logMe) {
+                    MyLog.d(TAG, "Saving OAuth Token: " + userToken);
+                }
             }
             if (TextUtils.isEmpty(userSecret)) {
                 dw.setDataString(userSecretKey(), null);
-                MyLog.d(TAG, "Clearing OAuth Secret");
+                if (logMe) {
+                    MyLog.d(TAG, "Clearing OAuth Secret");
+                }
             } else {
                 dw.setDataString(userSecretKey(), userSecret);
-                MyLog.d(TAG, "Saving OAuth Secret: " + userSecret);
+                if (logMe) {
+                    MyLog.d(TAG, "Saving OAuth Secret: " + userSecret);
+                }
             }
         }
         return changed;
@@ -154,17 +164,25 @@ abstract class HttpConnectionOAuth extends HttpConnection implements OAuthConsum
 
             if (TextUtils.isEmpty(userToken)) {
                 jso.remove(userTokenKey());
-                MyLog.d(TAG, "Clearing OAuth Token");
+                if (logMe) {
+                    MyLog.d(TAG, "Clearing OAuth Token");
+                }
             } else {
                 jso.put(userTokenKey(), userToken);
-                MyLog.d(TAG, "Saving OAuth Token: " + userToken);
+                if (logMe) {
+                    MyLog.d(TAG, "Saving OAuth Token: " + userToken);
+                }
             }
             if (TextUtils.isEmpty(userSecret)) {
                 jso.remove(userSecretKey());
-                MyLog.d(TAG, "Clearing OAuth Secret");
+                if (logMe) {
+                    MyLog.d(TAG, "Clearing OAuth Secret");
+                }
             } else {
                 jso.put(userSecretKey(), userSecret);
-                MyLog.d(TAG, "Saving OAuth Secret: " + userSecret);
+                if (logMe) {
+                    MyLog.d(TAG, "Saving OAuth Secret: " + userSecret);
+                }
             }
         }
         return changed;

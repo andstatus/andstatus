@@ -66,7 +66,7 @@ public class TimelineTypeSelector extends org.andstatus.app.SelectorDialog {
 
     private MySimpleAdapter newListAdapter() {
         List<Map<String, String>> list = new ArrayList<Map<String, String>>();
-        for (TimelineType timelineType : TimelineType.defaultMyAccountTimelineTypes) {
+        for (TimelineType timelineType : TimelineType.values()) {
             Map<String, String> map = new HashMap<String, String>();
             map.put(KEY_VISIBLE_NAME, timelineType.getTitle(getActivity()).toString());
             map.put(BaseColumns._ID, Long.toString(timelineType.ordinal()));

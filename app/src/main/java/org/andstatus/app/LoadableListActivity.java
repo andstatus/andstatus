@@ -200,8 +200,8 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
             this.ma = ma;
         } else {
             if (origin != null && origin.isValid()) {
-                if (!getCurrentMyAccount().isValid() || !getCurrentMyAccount().getOrigin().equals(origin)) {
-                    this.ma = myContext.persistentAccounts().getFirstSucceededMyAccountByOriginId(origin.getId());
+                if (!this.ma.isValid() || !this.ma.getOrigin().equals(origin)) {
+                    this.ma = myContext.persistentAccounts().getFirstSucceededForOriginId(origin.getId());
                 }
             } else if (!getCurrentMyAccount().isValid()) {
                 this.ma = myContext.persistentAccounts().getCurrentAccount();

@@ -21,6 +21,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
+import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextImpl;
 import org.andstatus.app.data.DbUtils;
@@ -146,4 +147,26 @@ public class PersistentOrigins {
         origins.add(origin);
     }
 
+    public boolean isGlobalSearchSupported(Origin origin, boolean forAllOrigins) {
+        return originsForGlobalSearch(origin, forAllOrigins).size() > 0;
+    }
+
+    public List<Origin> originsForGlobalSearch(Origin originIn, boolean forAllOrigins) {
+        List<Origin> origins = new ArrayList<>();
+        if (forAllOrigins) {
+            for (MyAccount account : myContext.persistentAccounts().collection()) {
+                if (account.getOrigin().isInCombinedGlobalSearch() &&
+                        account.isValidAndSucceeded() && account.isGlobalSearchSupported()
+                        && !origins.contains(account.getOrigin())) {
+                    origins.add(account.getOrigin());
+                }
+            }
+        } else if (originIn != null && originIn.isValid()) {
+            MyAccount account = myContext.persistentAccounts().getFirstSucceededForOriginId(originIn.getId());
+            if (account.isValidAndSucceeded() && account.isGlobalSearchSupported()) {
+                origins.add(originIn);
+            }
+        }
+        return origins;
+    }
 }

@@ -285,7 +285,6 @@ public final class MyAccount {
 
         /**
          * Save this MyAccount to AccountManager
-         * @return true if saved to AccountManager 
          */
         SaveResult saveSilently() {
             SaveResult result = new SaveResult();
@@ -317,8 +316,9 @@ public final class MyAccount {
                 }
                 MyLog.v(this, (result.savedToAccountManager ? " Saved " 
                         : ( result.changed ? " Didn't save?! " : " Didn't change") ) + this.toString());
-
-                myContext.persistentTimelines().addDefaultTimelinesIfNoneFound(myAccount);
+                if (result.savedToAccountManager && result.changed) {
+                    myContext.persistentTimelines().addDefaultMyAccountTimelinesIfNoneFound(myAccount);
+                }
             } catch (Exception e) {
                 MyLog.e(this, "Saving " + myAccount.getAccountName(), e);
             }
@@ -862,8 +862,7 @@ public final class MyAccount {
     }
     
     public boolean isGlobalSearchSupported() {
-        return getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED
-                && getConnection().isApiSupported(ApiRoutineEnum.SEARCH_MESSAGES);        
+        return getConnection().isApiSupported(ApiRoutineEnum.SEARCH_MESSAGES);
     }
     
     public void requestSync() {
@@ -888,10 +887,14 @@ public final class MyAccount {
     
     @Override
     public String toString() {
-        String members = "accountName:" + getAccountName() + ",";
+        String members = (isValid() ? "" : "(invalid) ") + "accountName:" + getAccountName() + ",";
         try {
-            members += "id:" + userId + ",";
-            members += "oid:" + userOid + ",";
+            if (userId != 0) {
+                members += "id:" + userId + ",";
+            }
+            if (!TextUtils.isEmpty(userOid)) {
+                members += "oid:" + userOid + ",";
+            }
             if (!isPersistent()) {
                 members += "not persistent,";
             }

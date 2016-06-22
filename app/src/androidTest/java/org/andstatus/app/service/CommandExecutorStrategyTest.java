@@ -28,8 +28,8 @@ import org.andstatus.app.net.http.ConnectionException.StatusCode;
 import org.andstatus.app.net.http.HttpConnectionMock;
 import org.andstatus.app.origin.DiscoveredOrigins;
 import org.andstatus.app.origin.OriginType;
+import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.RawResourceUtils;
-import org.andstatus.app.util.TriState;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -44,22 +44,22 @@ public class CommandExecutorStrategyTest extends InstrumentationTestCase {
         TestSuite.initializeWithData(this);
 
         TestSuite.setHttpConnectionMockClass(HttpConnectionMock.class);
-        // In order the mocked connection to have effect:
+        // In order for the the mocked connection to have effect:
         MyContextHolder.get().persistentAccounts().initialize();
-        ma = MyAccount.Builder.newOrExistingFromAccountName(
-                MyContextHolder.get(), 
-                TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME, TriState.UNKNOWN).getAccount();
-        assertTrue(ma.getUserId() != 0);
+        MyContextHolder.get().persistentTimelines().initialize();
+        ma = MyContextHolder.get().persistentAccounts().getFirstSucceededForOriginId(
+                MyContextHolder.get().persistentOrigins().fromName(TestSuite.GNUSOCIAL_TEST_ORIGIN_NAME).getId());
+        assertTrue(ma.toString(), ma.isValidAndSucceeded());
         assertTrue("HttpConnection mocked", ma.getConnection().getHttp() instanceof HttpConnectionMock);
         httpConnectionMock = (HttpConnectionMock) ma.getConnection().getHttp();
     }
 
     public void testFetchTimeline() {
-        CommandData commandData = CommandData.newCommand(CommandEnum.FETCH_TIMELINE);
+        CommandData commandData = CommandData.newTimelineCommand(CommandEnum.FETCH_TIMELINE, null, TimelineType.HOME);
         CommandExecutorStrategy strategy = CommandExecutorStrategy.getStrategy(commandData, null);
         assertEquals(CommandExecutorStrategy.class, strategy.getClass());
 
-        commandData = CommandData.newCommand(CommandEnum.FETCH_TIMELINE, ma);
+        commandData = CommandData.newTimelineCommand(CommandEnum.FETCH_TIMELINE, ma, TimelineType.HOME);
         strategy = CommandExecutorStrategy.getStrategy(commandData, null);
         assertEquals(CommandExecutorLoadTimeline.class, strategy.getClass());
     }
@@ -69,7 +69,7 @@ public class CommandExecutorStrategyTest extends InstrumentationTestCase {
         CommandExecutorStrategy strategy = CommandExecutorStrategy.getStrategy(commandData, null);
         assertEquals(CommandExecutorStrategy.class, strategy.getClass());
 
-        commandData = CommandData.newSearch(ma, TestSuite.GLOBAL_PUBLIC_MESSAGE_TEXT);
+        commandData = CommandData.newSearch(ma.getOrigin(), TestSuite.GLOBAL_PUBLIC_MESSAGE_TEXT);
         strategy = CommandExecutorStrategy.getStrategy(commandData, null);
         assertEquals(CommandExecutorSearch.class, strategy.getClass());
         strategy.execute();
@@ -143,10 +143,8 @@ public class CommandExecutorStrategyTest extends InstrumentationTestCase {
     private CommandData getCommandDataForUnsentMessage(String suffix) {
         String body = "Some text " + suffix + " to send " + System.currentTimeMillis() + "ms";
         long unsentMessageId = MessageInserter.addMessageForAccount(
-                TestSuite.TWITTER_TEST_ACCOUNT_NAME, body, "", DownloadStatus.SENDING);
-        return CommandData.newUpdateStatus(
-                TestSuite.getMyAccount(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME),
-                unsentMessageId);
+                ma, body, "", DownloadStatus.SENDING);
+        return CommandData.newUpdateStatus(ma, unsentMessageId);
     }
 
     public void testDiscoverOrigins() throws IOException {

@@ -51,19 +51,19 @@ public class TimelineTitle {
     /** Requires async work */
     public static TimelineTitle load(Timeline timeline, MyAccount currentMyAccount) {
         TimelineTitle timelineTitle = new TimelineTitle();
-        timelineTitle.title = toTimelineTitle(timeline, currentMyAccount);
+        timelineTitle.title = toTimelineTitle(timeline);
         timelineTitle.subTitle = toTimelineSubtitle(timeline, currentMyAccount);
         return timelineTitle;
     }
 
-    private static String toTimelineTitle(Timeline timeline, MyAccount currentMyAccount) {
+    private static String toTimelineTitle(Timeline timeline) {
         StringBuilder title = new StringBuilder();
         I18n.appendWithSpace(title, timeline.getTimelineType().getTitle(MyContextHolder.get().context()));
         if (timeline.hasSearchQuery()) {
             I18n.appendWithSpace(title, "'" + timeline.getSearchQuery() + "'");
         }
-        if (timeline.getTimelineType().requiresUserToBeDefined()
-                && (timeline.isUserDifferentFromAccount() || timeline.getTimelineType().isAtOrigin())) {
+        if (timeline.getUserId() != 0 && (timeline.isUserDifferentFromAccount() ||
+                timeline.getTimelineType().isAtOrigin())) {
             I18n.appendWithSpace(title, MyQuery.userIdToWebfingerId(timeline.getUserId()));
         }
         if (timeline.isCombined()) {
@@ -75,18 +75,24 @@ public class TimelineTitle {
 
     private static String toTimelineSubtitle(Timeline timeline, MyAccount currentMyAccount) {
         final StringBuilder subTitle = new StringBuilder();
+        boolean nameAdded = false;
         if (!timeline.isCombined()) {
             I18n.appendWithSpace(subTitle, timeline.getTimelineType()
                     .getPrepositionForNotCombinedTimeline(MyContextHolder.get().context()));
             if (timeline.getTimelineType().isAtOrigin()) {
-                I18n.appendWithSpace(subTitle, timeline.getOrigin().getName()
-                        + ";");
+                I18n.appendWithSpace(subTitle, timeline.getOrigin().getName());
+                nameAdded = true;
             } else if (!timeline.getMyAccount().equals(currentMyAccount)) {
-                I18n.appendWithSpace(subTitle, timeline.getMyAccount().toAccountButtonText()
-                        + ";");
+                I18n.appendWithSpace(subTitle, timeline.getMyAccount().toAccountButtonText());
+                nameAdded = true;
             }
         }
-        I18n.appendWithSpace(subTitle, currentMyAccount.toAccountButtonText());
+        if (currentMyAccount.isValid()) {
+            if (nameAdded) {
+                subTitle.append(";");
+            }
+            I18n.appendWithSpace(subTitle, currentMyAccount.toAccountButtonText());
+        }
         return subTitle.toString();
     }
 

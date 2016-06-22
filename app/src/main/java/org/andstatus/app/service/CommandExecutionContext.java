@@ -5,18 +5,12 @@ import android.content.Context;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.MyLog;
 
 public class CommandExecutionContext {
     private CommandData commandData;
-
-    private TimelineType timelineType;
-    /**
-     * The Timeline (if any) is of this User 
-     */
-    private long timelineUserId = 0;
-
     private MyContext myContext;
 
     public CommandExecutionContext(CommandData commandData) {
@@ -28,12 +22,21 @@ public class CommandExecutionContext {
             throw new IllegalArgumentException( "CommandData is null");
         }
         this.commandData = commandData;
-        this.timelineType = commandData.getTimelineType();
         this.myContext = myContext;
     }
 
     public MyAccount getMyAccount() {
-        return commandData.getAccount();
+        MyAccount myAccount = commandData.getTimeline().getMyAccount();
+        if (!myAccount.isValid()) {
+            Origin origin = commandData.getTimeline().getOrigin();
+            if (origin.isValid()) {
+                myAccount = myContext.persistentAccounts().getFirstSucceededForOriginId(origin.getId());
+            }
+        }
+        if (!myAccount.isValid()) {
+            myAccount = myContext.persistentAccounts().getFirstSucceededForOriginId(0);
+        }
+        return myAccount;
     }
 
     public MyContext getMyContext() {
@@ -45,20 +48,7 @@ public class CommandExecutionContext {
     }
 
     public TimelineType getTimelineType() {
-        return timelineType;
-    }
-    public CommandExecutionContext setTimelineType(TimelineType timelineType) {
-        this.timelineType = timelineType;
-        return this;
-    }
-
-    public long getTimelineUserId() {
-        return timelineUserId;
-    }
-
-    public CommandExecutionContext setTimelineUserId(long timelineUserId) {
-        this.timelineUserId = timelineUserId;
-        return this;
+        return commandData.getTimelineType();
     }
 
     public CommandData getCommandData() {
@@ -71,25 +61,13 @@ public class CommandExecutionContext {
 
     @Override
     public String toString() {
-        return MyLog.formatKeyValue(
-                "CommandExecutionContext",
-                getMyAccount().toString() + ","
-                + (TimelineType.UNKNOWN.equals(timelineType) ? "" : timelineType
-                        .toString() + ",")
-                        + (timelineUserId == 0 ? "" : "userId:" + timelineUserId + ",")
-                        + commandData.toString());
+        return MyLog.formatKeyValue("CommandExecutionContext",
+                getMyAccount().toString() + ", " + commandData.toString());
     }
 
+    // TODO: Do we need this?
     public String toExceptionContext() {
-        StringBuilder builder = new StringBuilder(100);
-        builder.append(getMyAccount().getAccountName() + ", ");
-        if (!TimelineType.UNKNOWN.equals(timelineType)) {
-            builder.append(timelineType.toString() + ", ");
-        }
-        if (timelineUserId != 0) {
-            builder.append("userId:" + timelineUserId + ", ");
-        }
-        return builder.toString();
+        return toString();
     }
 
     public String getCommandSummary() {

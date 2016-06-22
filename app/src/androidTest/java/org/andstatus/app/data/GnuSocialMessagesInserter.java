@@ -142,7 +142,7 @@ public class GnuSocialMessagesInserter extends InstrumentationTestCase {
     
     private long addMessage(MbMessage message) {
         DataInserter di = new DataInserter(new CommandExecutionContext(
-                CommandData.newCommand(CommandEnum.EMPTY, ma)).setTimelineType(TimelineType.HOME));
+                CommandData.newAccountCommand(CommandEnum.EMPTY, ma)));
         long messageId = di.insertOrUpdateMsg(message);
         assertTrue( "Message added " + message.oid, messageId != 0);
         return messageId;

@@ -58,8 +58,8 @@ public class DataInserterTest extends InstrumentationTestCase {
         String messageOid = "https://identi.ca/api/comment/dasdjfdaskdjlkewjz1EhSrTRB";
         MessageInserter.deleteOldMessage(TestSuite.getConversationOriginId(), messageOid);
 
-        CommandExecutionContext counters = new CommandExecutionContext(CommandData.newCommand(CommandEnum.EMPTY,
-                TestSuite.getConversationMyAccount())).setTimelineType(TimelineType.HOME);
+        CommandExecutionContext counters = new CommandExecutionContext(
+                CommandData.newAccountCommand(CommandEnum.EMPTY, TestSuite.getConversationMyAccount()));
         DataInserter di = new DataInserter(counters);
         String username = "somebody@identi.ca";
         String userOid = "acct:" + username;
@@ -238,7 +238,10 @@ public class DataInserterTest extends InstrumentationTestCase {
         Cursor cursor = context.getContentResolver().query(contentUri, PROJECTION, sa.selection,
                 sa.selectionArgs, sortOrder);
         assertTrue("Cursor returned", cursor != null);
-        assertEquals("MsgOfUser was not created, msgId=" + messageId, 0, cursor.getCount());
+        assertEquals("Message is not in a Home timeline, msgId=" + messageId, true, cursor.moveToNext());
+        assertEquals("Linked some other user, not " + TestSuite.getConversationMyAccount(),
+                TestSuite.getConversationMyAccount().getUserId(), cursor.getLong(1));
+        assertEquals("Message is favorited by " + TestSuite.getConversationMyAccount(), 0, cursor.getLong(0));
         cursor.close();
     }
 
@@ -306,7 +309,7 @@ public class DataInserterTest extends InstrumentationTestCase {
                 .getInstrumentation().getContext());
 
         MyAccount ma = MyContextHolder.get().persistentAccounts()
-                .getFirstSucceededMyAccountByOriginId(message.originId);
+                .getFirstSucceededForOriginId(message.originId);
         DataInserter di = new DataInserter(ma);
         long messageId = di.insertOrUpdateMsg(message);
         assertTrue("Message added", messageId != 0);
@@ -318,7 +321,7 @@ public class DataInserterTest extends InstrumentationTestCase {
 
     public void testUnsentMessageWithAttachment() throws Exception {
         MyAccount ma = MyContextHolder.get().persistentAccounts()
-                .getFirstSucceededMyAccountByOriginId(0);
+                .getFirstSucceededForOriginId(0);
         MbMessage message = MbMessage.fromOriginAndOid(ma.getOriginId(), "",
                 DownloadStatus.SENDING);
         message.actor = MbUser.fromOriginAndUserOid(ma.getOriginId(), ma.getUserOid());

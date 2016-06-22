@@ -59,20 +59,6 @@ public enum TimelineType {
     MESSAGES_TO_ACT("messages_to_act", R.string.timeline_title_home, Connection.ApiRoutineEnum.STATUSES_HOME_TIMELINE),
     REPLIES("replies", R.string.timeline_title_replies, Connection.ApiRoutineEnum.DUMMY);
 
-    public static final TimelineType[] defaultMyAccountTimelineTypes = {
-            HOME,
-            FAVORITES,
-            MENTIONS,
-            DIRECT,
-            SENT,
-            MY_FRIENDS,
-            MY_FOLLOWERS,
-            PUBLIC,
-            EVERYTHING,
-            DRAFTS,
-            OUTBOX
-            };
-
     /** Code - identifier of the type */
     private final String code;
     /** The id of the string resource with the localized name of this enum to use in UI */
@@ -134,6 +120,10 @@ public enum TimelineType {
         }
     }
 
+    public boolean isSyncable() {
+        return getConnectionApiRoutine() != Connection.ApiRoutineEnum.DUMMY;
+    }
+
     public boolean isSyncableByDefault() {
         switch (this) {
             case HOME:
@@ -154,6 +144,23 @@ public enum TimelineType {
                 return true;
         }
     }
+
+    public static final TimelineType[] defaultMyAccountTimelineTypes = {
+            HOME,
+            FAVORITES,
+            MENTIONS,
+            DIRECT,
+            SENT,
+            MY_FRIENDS,
+            MY_FOLLOWERS,
+            DRAFTS,
+            OUTBOX
+    };
+
+    public static final TimelineType[] defaultOriginTimelineTypes = {
+            PUBLIC,
+            EVERYTHING
+    };
 
     public boolean isAtOrigin() {
         switch (this) {
@@ -187,20 +194,6 @@ public enum TimelineType {
         }
     }
 
-    public boolean requiresUserToBeDefined() {
-        switch (this) {
-            case USER:
-            case SENT:
-            case FRIENDS:
-            case MY_FRIENDS:
-            case FOLLOWERS:
-            case MY_FOLLOWERS:
-                return true;
-            default:
-                return false;
-        }
-    }
-
     public boolean canBeCombinedForOrigins() {
         switch (this) {
             case PUBLIC:
@@ -208,6 +201,17 @@ public enum TimelineType {
                 return true;
             default:
                 return false;
+        }
+    }
+
+    public boolean requiresUserToBeDefined() {
+        switch (this) {
+            case UNKNOWN:
+            case PUBLIC:
+            case EVERYTHING:
+                return false;
+            default:
+                return true;
         }
     }
 

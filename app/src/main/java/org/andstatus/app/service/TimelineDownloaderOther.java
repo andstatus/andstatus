@@ -41,7 +41,7 @@ class TimelineDownloaderOther extends TimelineDownloader {
 
     @Override
     public void download() throws ConnectionException {
-        if (execContext.getTimelineType().getConnectionApiRoutine() == Connection.ApiRoutineEnum.DUMMY) {
+        if (!execContext.getTimelineType().isSyncable()) {
             throw new IllegalArgumentException("Invalid TimelineType for loadTimeline: "
                     + execContext.getTimelineType());
         }
@@ -60,18 +60,16 @@ class TimelineDownloaderOther extends TimelineDownloader {
         if (MyLog.isLoggable(this, MyLog.DEBUG)) {
             String strLog = "Loading "
             + (downloadingLatest ? "latest " : "")
-            + execContext.getTimelineType() + "; account="
-            + execContext.getMyAccount().getAccountName()
-            + "; user=" + MyQuery.userIdToWebfingerId(execContext.getTimelineUserId());
+            + execContext.getCommandData().toCommandSummary(execContext.getMyContext());
             if (latestTimelineItem.getTimelineItemDate() > 0) { strLog +=
                 "; last Timeline item at=" + (new Date(latestTimelineItem.getTimelineItemDate()).toString())
                 + "; last time downloaded at=" +  (new Date(latestTimelineItem.getTimelineDownloadedDate()).toString());
             }
             MyLog.d(this, strLog);
         }
-        String userOid =  MyQuery.idToOid(OidEnum.USER_OID, execContext.getTimelineUserId(), 0);
-        if (TextUtils.isEmpty(userOid)) {
-            throw new ConnectionException("User oId is not found for id=" + execContext.getTimelineUserId());
+        String userOid =  MyQuery.idToOid(OidEnum.USER_OID, execContext.getCommandData().getUserId(), 0);
+        if (TextUtils.isEmpty(userOid) && getTimeline().getTimelineType().requiresUserToBeDefined()) {
+            throw new ConnectionException("User oId is not found for id=" + execContext.getCommandData().getUserId());
         }
         int toDownload = MAXIMUM_NUMBER_OF_MESSAGES_TO_DOWNLOAD;
         TimelinePosition lastPosition = latestTimelineItem.getPosition();

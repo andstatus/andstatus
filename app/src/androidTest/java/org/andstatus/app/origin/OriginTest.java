@@ -172,7 +172,8 @@ public class OriginTest extends InstrumentationTestCase {
         assertEquals(origin.originType, OriginType.TWITTER);
         String body = "Posting to Twitter " + TestSuite.TESTRUN_UID;
         String messageOid = "2578909845023" + TestSuite.TESTRUN_UID;
-        long msgId = MessageInserter.addMessageForAccount(TestSuite.TWITTER_TEST_ACCOUNT_NAME,
+        long msgId = MessageInserter.addMessageForAccount(
+                TestSuite.getMyAccount(TestSuite.TWITTER_TEST_ACCOUNT_NAME),
                 body, messageOid, DownloadStatus.LOADED);
         assertTrue(msgId != 0);
         String userName = MyQuery.msgIdToUsername(MsgTable.AUTHOR_ID, msgId,

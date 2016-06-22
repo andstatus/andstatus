@@ -18,7 +18,7 @@ public class MyServiceTestHelper implements MyServiceEventsListener {
     public volatile HttpConnectionMock httpConnectionMock;
     public volatile long connectionInstanceId;
 
-    public volatile CommandData listenedCommand = CommandData.getEmpty();
+    private volatile CommandData listenedCommand = CommandData.getEmpty();
     public volatile long executionStartCount = 0;
     public volatile long executionEndCount = 0;
     public volatile boolean serviceStopped = false;
@@ -63,7 +63,7 @@ public class MyServiceTestHelper implements MyServiceEventsListener {
     }
 
     public void sendListenedToCommand() {
-        MyServiceManager.sendCommandEvenForUnavailable(listenedCommand);
+        MyServiceManager.sendCommandEvenForUnavailable(getListenedCommand());
     }
     
     public boolean waitForCommandExecutionStarted(long count0) {
@@ -83,7 +83,7 @@ public class MyServiceTestHelper implements MyServiceEventsListener {
                 break;
             }
         }
-        MyLog.v(this, "waitForCommandExecutionStarted " + listenedCommand.getCommand().save()
+        MyLog.v(this, "waitForCommandExecutionStarted " + getListenedCommand().getCommand().save()
                 + " " + found + ", event:" + locEvent + ", count0=" + count0);
         return found;
     }
@@ -105,7 +105,7 @@ public class MyServiceTestHelper implements MyServiceEventsListener {
                 break;
             }
         }
-        MyLog.v(this, "waitForCommandExecutionEnded " + listenedCommand.getCommand().save()
+        MyLog.v(this, "waitForCommandExecutionEnded " + getListenedCommand().getCommand().save()
                 + " " + found + ", event:" + locEvent + ", count0=" + count0);
         return found;
     }
@@ -133,14 +133,14 @@ public class MyServiceTestHelper implements MyServiceEventsListener {
         String locEvent = "ignored";
         switch (myServiceEvent) {
             case BEFORE_EXECUTING_COMMAND:
-                if (commandData.equals(listenedCommand)) {
+                if (commandData.equals(getListenedCommand())) {
                     executionStartCount++;
                     locEvent = "execution started";
                 }
                 serviceStopped = false;
                 break;
             case AFTER_EXECUTING_COMMAND:
-                if (commandData.equals(listenedCommand)) {
+                if (commandData.equals(getListenedCommand())) {
                     executionEndCount++;
                     locEvent = "execution ended";
                 }
@@ -169,5 +169,14 @@ public class MyServiceTestHelper implements MyServiceEventsListener {
         MyContextHolder.get().persistentAccounts().initialize();
         MyContextHolder.get().persistentTimelines().initialize();
         MyLog.v(this, "tearDown ended");
+    }
+
+    public CommandData getListenedCommand() {
+        return listenedCommand;
+    }
+
+    public void setListenedCommand(CommandData listenedCommand) {
+        this.listenedCommand = listenedCommand;
+        MyLog.v(this, "setListenedCommand; " + this.listenedCommand);
     }
 }
