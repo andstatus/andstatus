@@ -53,17 +53,20 @@ public class Timeline implements Comparable<Timeline> {
     /** The timeline combines messages from all accounts
      * or from Social Networks, e.g. Search in all Social Networks */
     private final boolean isCombined;
+    /** "Authenticated User" used to retrieve/post to... this Timeline */
     private final MyAccount myAccount;
-    /** Selected User for e.g. {@link TimelineType#USER} timeline
-     * It is == 0 if the same as for MyAccount */
+    /** A User as a parameter of this timeline.
+     * This may be the same the Authenticated User ({@link #myAccount})
+     * or some other User e.g. to get a list of messages by some other person/user of the Social Network*/
     private final long userId;
+    /** Sometimes we don't know {@link #userId} yet... */
     private String userName = "";
 
+    /** The Social Network of this timeline. Some timelines don't depend on
+     * an Authenticated User ({@link #myAccount}), e.g. {@link TimelineType#PUBLIC} - this
+     * timeline may be fetched by any authenticated user of this Social Network*/
     private final Origin origin;
-    /**
-     * The string is not empty if this timeline is filtered using query string
-     * ("Mentions" are not counted here because they have the separate TimelineType)
-     */
+    /** This may be used e.g. to search {@link TimelineType#PUBLIC} timeline */
     @NonNull
     private String searchQuery = "";
 

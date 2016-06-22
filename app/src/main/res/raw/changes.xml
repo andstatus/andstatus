@@ -25,7 +25,19 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
 		</subtitle>
     </header>
-
+    <release android:versionName="27.00" android:versionCode="180"
+             versionDate="2016-06-22"
+             versionTitle="Automatic syncing of individual timelines">
+        <changes>
+            <change>Individual timelines can now be managed separately. For each timeline you
+                can now define if it's shown it a list of available timelines and if it's synced
+                automatically. <a href="https://github.com/andstatus/andstatus/issues/384">#384</a>
+                <br/>This seemingly not a very big change actually opens a way for further application
+                improvements, including creation of custom syncable timelines
+                (e.g. for scheduled keyword searches...). To be implemented in upcoming releases.
+            </change>
+        </changes>
+    </release>
     <release android:versionName="26.07" android:versionCode="179"
              versionDate="2016-05-15"
              versionTitle="Familiar look for New Users">
