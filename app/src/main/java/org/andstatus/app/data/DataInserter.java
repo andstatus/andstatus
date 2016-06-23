@@ -222,7 +222,7 @@ public class DataInserter {
                             + execContext.getMyAccount().getAccountName() );
                 }
             }
-            if (execContext.getTimelineType() == TimelineType.HOME
+            if (execContext.getTimeline().getTimelineType() == TimelineType.HOME
                     || (!isDirectMessage && senderId == execContext.getMyAccount().getUserId())) {
                 values.put(MsgOfUserTable.SUBSCRIBED, 1);
             }
@@ -293,7 +293,7 @@ public class DataInserter {
 
             if (isNewerThanInDatabase && !keywordsFilter.matched(message.getBody())) {
                 // This message is newer than already stored in our database, so count it!
-                execContext.getResult().incrementMessagesCount(execContext.getTimelineType());
+                execContext.getResult().incrementMessagesCount(execContext.getTimeline());
                 if (mentioned) {
                     execContext.getResult().incrementMentionsCount();
                 }
@@ -312,8 +312,9 @@ public class DataInserter {
         return msgId;
     }
 
-    private boolean isMentionedAndPutInReplyToMessage(MbMessage message, LatestUserMessages lum, ContentValues values) {
-        boolean mentioned = execContext.getTimelineType() == TimelineType.MENTIONS;
+    private boolean isMentionedAndPutInReplyToMessage(MbMessage message, LatestUserMessages lum,
+                                                      ContentValues values) {
+        boolean mentioned = execContext.getTimeline().getTimelineType() == TimelineType.MENTIONS;
         Long inReplyToUserId = 0L;
         if (message.inReplyToMessage != null) {
             // If the Msg is a Reply to another message

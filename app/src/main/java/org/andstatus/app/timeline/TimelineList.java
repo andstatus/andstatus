@@ -128,14 +128,14 @@ public class TimelineList extends LoadableListActivity {
                 MyUrlSpan.showText(view, R.id.title, item.timelineTitle.title, false);
                 MyUrlSpan.showText(view, R.id.subTitle,  item.timelineTitle.subTitle, false);
                 MyUrlSpan.showCheckBox(view, R.id.synced, item.timeline.isSynced(),
-                        new View.OnClickListener() {
+                        item.timeline.isSyncable() ? new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
                                 boolean isChecked = ((CheckBox) v).isChecked();
                                 item.timeline.setSynced(isChecked);
-                                MyLog.v("isSynced", (isChecked ? "+ " : "- ") + item.timelineTitle.toString());
+                                MyLog.v("isSynced", (isChecked ? "+ " : "- ") + item.timelineTitle);
                             }
-                });
+                        } : null);
                 MyUrlSpan.showText(view, R.id.syncedDate, StringUtils.notEmpty(
                         RelativeTime.getDifference(TimelineList.this, item.timeline.getSyncedDate()), " "), false);
                 MyUrlSpan.showCheckBox(view, R.id.displayedInSelector, item.timeline.isDisplayedInSelector(),

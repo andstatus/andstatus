@@ -86,6 +86,11 @@ public class TimelineTable implements BaseColumns {
      * It may be used to calculate when it will be time for the next automatic update */
     public static final String OLDEST_SYNCED_DATE = "oldest_synced_date";
 
+    /** Position of the timeline, which a User viewed  */
+    public static final String VISIBLE_ITEM_ID = "visible_item_id";
+    public static final String VISIBLE_Y = "visible_y";
+    public static final String VISIBLE_YOUNGEST_DATE = "visible_youngest_date";
+
     public static void create(SQLiteDatabase db) {
         DbUtils.execSQL(db, "CREATE TABLE " + TimelineTable.TABLE_NAME + " ("
                 + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
@@ -120,7 +125,12 @@ public class TimelineTable implements BaseColumns {
 
                 + TimelineTable.OLDEST_POSITION + " TEXT,"
                 + TimelineTable.OLDEST_ITEM_DATE + " INTEGER,"
-                + TimelineTable.OLDEST_SYNCED_DATE + " INTEGER"
+                + TimelineTable.OLDEST_SYNCED_DATE + " INTEGER,"
+
+                + TimelineTable.VISIBLE_ITEM_ID + " INTEGER,"
+                + TimelineTable.VISIBLE_Y + " INTEGER,"
+                + TimelineTable.VISIBLE_YOUNGEST_DATE + " INTEGER"
+
                 + ")");
     }
 }

@@ -326,6 +326,7 @@ public class TimelineActivity extends LoadableListActivity implements
         crashTest();
         mMessageEditor.saveAsBeingEditedAndHide();
         saveListPosition();
+        myContext.persistentTimelines().saveChanged();
         super.onPause();
     }
 

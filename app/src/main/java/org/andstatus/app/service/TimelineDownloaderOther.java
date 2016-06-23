@@ -41,9 +41,8 @@ class TimelineDownloaderOther extends TimelineDownloader {
 
     @Override
     public void download() throws ConnectionException {
-        if (!execContext.getTimelineType().isSyncable()) {
-            throw new IllegalArgumentException("Invalid TimelineType for loadTimeline: "
-                    + execContext.getTimelineType());
+        if (!getTimeline().isSyncable()) {
+            throw new IllegalArgumentException("Invalid Timeline for download: " + getTimeline());
         }
 
         LatestTimelineItem latestTimelineItem = new LatestTimelineItem(getTimeline());
@@ -80,10 +79,10 @@ class TimelineDownloaderOther extends TimelineDownloader {
         DataInserter di = new DataInserter(execContext);
         for (int loopCounter=0; loopCounter < 100; loopCounter++ ) {
             try {
-                int limit = execContext.getMyAccount().getConnection().fixedDownloadLimitForApiRoutine(toDownload, 
-                        execContext.getTimelineType().getConnectionApiRoutine()); 
+                int limit = execContext.getMyAccount().getConnection().fixedDownloadLimitForApiRoutine(
+                        toDownload, getTimeline().getTimelineType().getConnectionApiRoutine());
                 List<MbTimelineItem> messages = execContext.getMyAccount().getConnection().getTimeline(
-                        execContext.getTimelineType().getConnectionApiRoutine(), lastPosition, limit, userOid);
+                        getTimeline().getTimelineType().getConnectionApiRoutine(), lastPosition, limit, userOid);
                 for (MbTimelineItem item : messages) {
                     toDownload--;
                     latestTimelineItem.onNewMsg(item.timelineItemPosition, item.timelineItemDate);

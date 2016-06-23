@@ -24,8 +24,8 @@ import android.text.TextUtils;
 
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.database.CommandTable;
+import org.andstatus.app.timeline.Timeline;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
 
@@ -276,8 +276,8 @@ public final class CommandResult implements Parcelable {
         this.remainingHits = remainingHits;
     }
 
-    public void incrementMessagesCount(TimelineType timelineType) {
-        switch (timelineType) {
+    public void incrementMessagesCount(Timeline timeline) {
+        switch (timeline.getTimelineType()) {
             case HOME:
                 messagesAdded++;
                 break;

@@ -24,6 +24,7 @@ import android.text.format.Time;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.timeline.Timeline;
 import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.service.CommandResult;
 import org.andstatus.app.service.MyServiceManager;
@@ -42,7 +43,7 @@ public class MyAppWidgetProviderTest extends InstrumentationTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        TestSuite.initialize(this);
+        TestSuite.initializeWithData(this);
         myContext = MyContextHolder.get();
         MyServiceManager.setServiceUnavailable();
         initializeDateTests();
@@ -254,10 +255,11 @@ public class MyAppWidgetProviderTest extends InstrumentationTestCase {
 	 */
 	private void updateWidgets(int msgAdded, TimelineType timelineType, int mentionsAdded) throws InterruptedException{
         Thread.sleep(500);
+        Timeline timeline = new Timeline(timelineType, TestSuite.getConversationMyAccount(), 0, null);
         AppWidgets appWidgets = AppWidgets.newInstance(myContext);
         CommandResult result = new CommandResult();
         for (int count = 0; count < msgAdded; count++) {
-            result.incrementMessagesCount(timelineType);
+            result.incrementMessagesCount(timeline);
         }
         for (int count = 0; count < mentionsAdded; count++) {
             result.incrementMentionsCount();

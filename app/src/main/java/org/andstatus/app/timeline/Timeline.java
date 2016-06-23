@@ -70,10 +70,10 @@ public class Timeline implements Comparable<Timeline> {
     @NonNull
     private String searchQuery = "";
 
-    private boolean synced = true;
+    private boolean synced = false;
 
-    private boolean displayedInSelector = true;
-    private long selectorOrder = 1;
+    private boolean displayedInSelector = false;
+    private long selectorOrder = 100;
 
     private long syncedDate = 0;
     private long syncFailedDate = 0;
@@ -96,6 +96,10 @@ public class Timeline implements Comparable<Timeline> {
     private long oldestItemDate = 0;
     private long oldestSyncedDate = 0;
 
+    private long visibleItemId = 0;
+    private int visibleY = 0;
+    private long visibleYoungestDate = 0;
+
     private boolean changed = false;
 
     public Timeline(TimelineType timelineType, MyAccount myAccount, long userId, Origin origin) {
@@ -106,7 +110,7 @@ public class Timeline implements Comparable<Timeline> {
         this.myAccount = fixedMyAccount(myContext, timelineType, myAccount, userId);
         this.userId = fixedUserId(timelineType, userId);
         this.origin = fixedOrigin(myContext, timelineType, myAccount, userId, origin);
-        this.timelineType = fixedTimelineType(myContext, timelineType);
+        this.timelineType = fixedTimelineType(timelineType);
         this.isCombined = this.timelineType.isAtOrigin() ? !this.origin.isValid() : !this.myAccount.isValid();
         fixUserName(myContext);
     }
@@ -138,28 +142,22 @@ public class Timeline implements Comparable<Timeline> {
 
     private Origin fixedOrigin(MyContext myContext, TimelineType timelineType, MyAccount myAccountIn, long userId, Origin origin) {
         Origin fixedOrigin = origin == null ? Origin.getEmpty() : origin;
-        if (!fixedOrigin.isValid() && !timelineType.isAtOrigin()) {
-            return fixedOrigin;
-        }
         MyAccount ma = myContext.persistentAccounts().fromUserId(userId);
         if (!ma.isValid() && myAccountIn != null) {
             ma = myAccountIn;
         }
         if (ma.isValid()) {
-            if (timelineType.isAtOrigin()) {
-                if (!fixedOrigin.isValid()) {
-                    fixedOrigin = ma.getOrigin();
-                }
-            } else {
-                if (fixedOrigin.isValid() && fixedOrigin != ma.getOrigin()) {
-                    fixedOrigin = Origin.getEmpty();
-                }
+            if (fixedOrigin.isValid() && fixedOrigin != ma.getOrigin()) {
+                fixedOrigin = Origin.getEmpty();
+            }
+            if (timelineType.isAtOrigin() || !fixedOrigin.isValid()) {
+                fixedOrigin = ma.getOrigin();
             }
         }
         return fixedOrigin;
     }
 
-    private TimelineType fixedTimelineType(MyContext myContext, TimelineType timelineType) {
+    private TimelineType fixedTimelineType(TimelineType timelineType) {
         if (timelineType == null) {
             return TimelineType.UNKNOWN;
         }
@@ -250,6 +248,10 @@ public class Timeline implements Comparable<Timeline> {
         values.put(TimelineTable.OLDEST_POSITION, oldestPosition);
         values.put(TimelineTable.OLDEST_ITEM_DATE, oldestItemDate);
         values.put(TimelineTable.OLDEST_SYNCED_DATE, oldestSyncedDate);
+
+        values.put(TimelineTable.VISIBLE_ITEM_ID, visibleItemId);
+        values.put(TimelineTable.VISIBLE_Y, visibleY);
+        values.put(TimelineTable.VISIBLE_YOUNGEST_DATE, visibleYoungestDate);
     }
 
     public void toCommandContentValues(ContentValues values) {
@@ -285,7 +287,7 @@ public class Timeline implements Comparable<Timeline> {
         timeline.name = DbUtils.getString(cursor, TimelineTable.TIMELINE_NAME);
         timeline.description = DbUtils.getString(cursor, TimelineTable.TIMELINE_DESCRIPTION);
         timeline.searchQuery = DbUtils.getString(cursor, TimelineTable.SEARCH_QUERY);
-        timeline.synced = DbUtils.getBoolean(cursor, TimelineTable.SYNCED);
+        timeline.setSynced(DbUtils.getBoolean(cursor, TimelineTable.SYNCED));
         timeline.displayedInSelector = DbUtils.getBoolean(cursor, TimelineTable.DISPLAY_IN_SELECTOR);
         timeline.selectorOrder = DbUtils.getLong(cursor, TimelineTable.SELECTOR_ORDER);
 
@@ -307,6 +309,11 @@ public class Timeline implements Comparable<Timeline> {
         timeline.oldestPosition = DbUtils.getString(cursor, TimelineTable.OLDEST_POSITION);
         timeline.oldestItemDate = DbUtils.getLong(cursor, TimelineTable.OLDEST_ITEM_DATE);
         timeline.oldestSyncedDate = DbUtils.getLong(cursor, TimelineTable.OLDEST_SYNCED_DATE);
+
+        timeline.visibleItemId = DbUtils.getLong(cursor, TimelineTable.VISIBLE_ITEM_ID);
+        timeline.visibleY = DbUtils.getInt(cursor, TimelineTable.VISIBLE_Y);
+        timeline.visibleYoungestDate = DbUtils.getLong(cursor, TimelineTable.VISIBLE_YOUNGEST_DATE);
+
         return timeline;
     }
 
@@ -408,10 +415,7 @@ public class Timeline implements Comparable<Timeline> {
     public static List<Timeline> addDefaultForAccount(MyAccount myAccount) {
         List<Timeline> timelines = new ArrayList<>();
         for (TimelineType timelineType : TimelineType.defaultMyAccountTimelineTypes) {
-            Timeline timeline = new Timeline(timelineType, myAccount, 0, null);
-            timeline.selectorOrder = timelineType.ordinal();
-            timeline.synced = timelineType.isSyncableByDefault();
-            timeline.save();
+            saveNewDefaultTimeline(new Timeline(timelineType, myAccount, 0, null));
         }
         return timelines;
     }
@@ -419,12 +423,16 @@ public class Timeline implements Comparable<Timeline> {
     public static Collection<Timeline> addDefaultForOrigin(Origin origin) {
         List<Timeline> timelines = new ArrayList<>();
         for (TimelineType timelineType : TimelineType.defaultOriginTimelineTypes) {
-            Timeline timeline = new Timeline(timelineType, null, 0, origin);
-            timeline.selectorOrder = timelineType.ordinal();
-            timeline.synced = timelineType.isSyncableByDefault();
-            timeline.save();
+            saveNewDefaultTimeline(new Timeline(timelineType, null, 0, origin));
         }
         return timelines;
+    }
+
+    protected static void saveNewDefaultTimeline(Timeline timeline) {
+        timeline.displayedInSelector = true;
+        timeline.selectorOrder = timeline.getTimelineType().ordinal();
+        timeline.setSynced(timeline.getTimelineType().isSyncableByDefault());
+        timeline.save();
     }
 
     public long saveIfChanged() {
@@ -628,6 +636,39 @@ public class Timeline implements Comparable<Timeline> {
         changed = true;
     }
 
+    public long getVisibleItemId() {
+        return visibleItemId;
+    }
+
+    public void setVisibleItemId(long visibleItemId) {
+        if (this.visibleItemId != visibleItemId) {
+            changed = true;
+            this.visibleItemId = visibleItemId;
+        }
+    }
+
+    public int getVisibleY() {
+        return visibleY;
+    }
+
+    public void setVisibleY(int visibleY) {
+        if (this.visibleY != visibleY) {
+            changed = true;
+            this.visibleY = visibleY;
+        }
+    }
+
+    public long getVisibleYoungestDate() {
+        return visibleYoungestDate;
+    }
+
+    public void setVisibleYoungestDate(long visibleYoungestDate) {
+        if (this.visibleYoungestDate != visibleYoungestDate) {
+            changed = true;
+            this.visibleYoungestDate = visibleYoungestDate;
+        }
+    }
+
     public boolean isSynced() {
         return synced;
     }
@@ -637,7 +678,7 @@ public class Timeline implements Comparable<Timeline> {
     }
 
     public void setSynced(boolean synced) {
-        if (this.synced != synced) {
+        if (this.synced != synced && isSyncable()) {
             this.synced = synced;
             changed = true;
         }
@@ -685,5 +726,9 @@ public class Timeline implements Comparable<Timeline> {
 
     public long getSyncedDate() {
         return syncedDate;
+    }
+
+    public boolean isSyncable() {
+        return !isCombined && timelineType.isSyncable();
     }
 }

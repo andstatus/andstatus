@@ -68,7 +68,7 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
                     break;
             }
 
-            LatestTimelineItem latestTimelineItem = new LatestTimelineItem(execContext.getCommandData().getTimeline());
+            LatestTimelineItem latestTimelineItem = new LatestTimelineItem(execContext.getTimeline());
             latestTimelineItem.onTimelineDownloaded();
             latestTimelineItem.save();
 
@@ -89,7 +89,7 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
                 timelineType = TimelineType.FRIENDS;
                 break;
             default:
-                timelineType = execContext.getTimelineType();
+                timelineType = execContext.getTimeline().getTimelineType();
                 break;
         }
         return timelineType;

@@ -6,7 +6,7 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.origin.Origin;
-import org.andstatus.app.timeline.TimelineType;
+import org.andstatus.app.timeline.Timeline;
 import org.andstatus.app.util.MyLog;
 
 public class CommandExecutionContext {
@@ -26,9 +26,9 @@ public class CommandExecutionContext {
     }
 
     public MyAccount getMyAccount() {
-        MyAccount myAccount = commandData.getTimeline().getMyAccount();
+        MyAccount myAccount = getTimeline().getMyAccount();
         if (!myAccount.isValid()) {
-            Origin origin = commandData.getTimeline().getOrigin();
+            Origin origin = getTimeline().getOrigin();
             if (origin.isValid()) {
                 myAccount = myContext.persistentAccounts().getFirstSucceededForOriginId(origin.getId());
             }
@@ -47,8 +47,8 @@ public class CommandExecutionContext {
         return myContext.context();
     }
 
-    public TimelineType getTimelineType() {
-        return commandData.getTimelineType();
+    public Timeline getTimeline() {
+        return commandData.getTimeline();
     }
 
     public CommandData getCommandData() {

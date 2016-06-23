@@ -32,7 +32,7 @@ abstract class TimelineDownloader {
     
     protected static TimelineDownloader getStrategy(CommandExecutionContext execContext) {
         TimelineDownloader td;
-        switch (execContext.getTimelineType()) {
+        switch (execContext.getTimeline().getTimelineType()) {
             case FOLLOWERS:
             case MY_FOLLOWERS:
             case FRIENDS:
@@ -50,7 +50,7 @@ abstract class TimelineDownloader {
     public abstract void download() throws ConnectionException;
 
     protected Timeline getTimeline() {
-        return execContext.getCommandData().getTimeline();
+        return execContext.getTimeline();
     }
 
     public void onSyncEnded() {
