@@ -48,7 +48,7 @@ public class TimelineList extends LoadableListActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        mLayoutId = R.layout.my_list;
+        mLayoutId = R.layout.my_list_wide;
         super.onCreate(savedInstanceState);
 
         LinearLayout linearLayout = (LinearLayout) findViewById(R.id.linear_list_wrapper);
@@ -69,6 +69,7 @@ public class TimelineList extends LoadableListActivity {
 
             @Override
             public void load(ProgressPublisher publisher) {
+                // TODO: Implement filter parameters in this activity
                 for (Timeline timeline : myContext.persistentTimelines().getFiltered(false, true, null, null)) {
                     TimelineListViewItem viewItem = new TimelineListViewItem(
                             timeline,

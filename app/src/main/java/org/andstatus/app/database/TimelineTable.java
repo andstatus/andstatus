@@ -89,7 +89,7 @@ public class TimelineTable implements BaseColumns {
     /** Position of the timeline, which a User viewed  */
     public static final String VISIBLE_ITEM_ID = "visible_item_id";
     public static final String VISIBLE_Y = "visible_y";
-    public static final String VISIBLE_YOUNGEST_DATE = "visible_youngest_date";
+    public static final String VISIBLE_OLDEST_DATE = "visible_oldest_date";
 
     public static void create(SQLiteDatabase db) {
         DbUtils.execSQL(db, "CREATE TABLE " + TimelineTable.TABLE_NAME + " ("
@@ -129,7 +129,7 @@ public class TimelineTable implements BaseColumns {
 
                 + TimelineTable.VISIBLE_ITEM_ID + " INTEGER,"
                 + TimelineTable.VISIBLE_Y + " INTEGER,"
-                + TimelineTable.VISIBLE_YOUNGEST_DATE + " INTEGER"
+                + TimelineTable.VISIBLE_OLDEST_DATE + " INTEGER"
 
                 + ")");
     }

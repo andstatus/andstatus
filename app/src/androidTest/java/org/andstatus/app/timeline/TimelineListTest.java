@@ -18,6 +18,7 @@ package org.andstatus.app.timeline;
 
 import android.test.ActivityInstrumentationTestCase2;
 
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 
 /**
@@ -35,8 +36,9 @@ public class TimelineListTest extends ActivityInstrumentationTestCase2<TimelineL
     }
 
     public void testActivityOpened() throws InterruptedException {
-        TestSuite.waitForListLoaded(this, getActivity(), 2);
+        int expectedCount = MyContextHolder.get().persistentTimelines().getList().size();
+        TestSuite.waitForListLoaded(this, getActivity(), expectedCount);
         assertTrue("Timelines shown: " + getActivity().getListAdapter().getCount(),
-                getActivity().getListAdapter().getCount() > 15);
+                getActivity().getListAdapter().getCount() ==  expectedCount);
     }
 }

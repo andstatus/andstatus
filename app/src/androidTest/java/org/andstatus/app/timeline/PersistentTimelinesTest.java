@@ -21,6 +21,7 @@ import android.test.InstrumentationTestCase;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.origin.Origin;
 
 import java.util.List;
 
@@ -55,5 +56,35 @@ public class PersistentTimelinesTest extends InstrumentationTestCase {
 
         List<Timeline> filtered2 = MyContextHolder.get().persistentTimelines().getFiltered(true, false, null, myAccount.getOrigin());
         assertTrue(!filtered2.isEmpty());
+
+    }
+
+    public void testDefaultMyAccountTimelinesCreation() {
+        for (MyAccount myAccount : MyContextHolder.get().persistentAccounts().collection()) {
+            for (TimelineType timelineType : TimelineType.defaultMyAccountTimelineTypes) {
+                long count = 0;
+                for (Timeline timeline : MyContextHolder.get().persistentTimelines().getList()) {
+                    if (timeline.getMyAccount().equals(myAccount) && timeline.getTimelineType().equals(timelineType)) {
+                        count++;
+                    }
+                }
+                assertEquals( myAccount.toString() + " " + timelineType , 1, count);
+            }
+        }
+    }
+
+    public void testDefaultOriginTimelinesCreation() {
+        for (Origin origin : MyContextHolder.get().persistentOrigins().collection()) {
+            MyAccount myAccount = MyContextHolder.get().persistentAccounts().getFirstSucceededForOriginId(origin.getId());
+            for (TimelineType timelineType : TimelineType.defaultOriginTimelineTypes) {
+                long count = 0;
+                for (Timeline timeline : MyContextHolder.get().persistentTimelines().getList()) {
+                    if (timeline.getOrigin().equals(origin) && timeline.getTimelineType().equals(timelineType)) {
+                        count++;
+                    }
+                }
+                assertEquals( origin.toString() + " " + timelineType , myAccount.isValid() ? 1 : 0, count);
+            }
+        }
     }
 }

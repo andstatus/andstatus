@@ -198,7 +198,7 @@ public class PersistentTimelines {
             long timelineId = MyQuery.conditionToLongColumnValue(TimelineTable.TABLE_NAME,
                     TimelineTable._ID, TimelineTable.ACCOUNT_ID + "=" + ma.getUserId());
             if (timelineId == 0) {
-                timelines.addAll(Timeline.addDefaultForAccount(ma));
+                timelines.addAll(Timeline.addDefaultForAccount(myContext, ma));
                 sort(timelines);
             }
         }
@@ -211,7 +211,7 @@ public class PersistentTimelines {
                     TimelineTable.ORIGIN_ID + "=" + origin.getId() + " AND " +
                             TimelineTable.TIMELINE_TYPE + "='" + TimelineType.EVERYTHING.save() + "'");
             if (timelineId == 0) {
-                timelines.addAll(Timeline.addDefaultForOrigin(origin));
+                timelines.addAll(Timeline.addDefaultForOrigin(myContext, origin));
                 sort(timelines);
             }
         }
@@ -225,6 +225,7 @@ public class PersistentTimelines {
                 toRemove.add(timeline);
             }
         }
+        // TODO: Delete from a database!
         timelines.removeAll(toRemove);
     }
 

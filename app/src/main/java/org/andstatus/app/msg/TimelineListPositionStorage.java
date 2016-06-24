@@ -101,7 +101,7 @@ class TimelineListPositionStorage {
     
     private void saveTLPosition(long firstVisibleItemId, long minSentDate, int y) {
         mListParameters.getTimeline().setVisibleItemId(firstVisibleItemId);
-        mListParameters.getTimeline().setVisibleYoungestDate(minSentDate);
+        mListParameters.getTimeline().setVisibleOldestDate(minSentDate);
         mListParameters.getTimeline().setVisibleY(y);
     }
 
@@ -110,14 +110,14 @@ class TimelineListPositionStorage {
         if (mListParameters.getTimeline().getVisibleItemId() > 0) {
             tlPosition.firstVisibleItemId = mListParameters.getTimeline().getVisibleItemId();
             tlPosition.y = mListParameters.getTimeline().getVisibleY();
-            tlPosition.minSentDate = mListParameters.getTimeline().getVisibleYoungestDate();
+            tlPosition.minSentDate = mListParameters.getTimeline().getVisibleOldestDate();
         }
         return tlPosition;
     }
 
     void clear() {
         mListParameters.getTimeline().setVisibleItemId(0);
-        mListParameters.getTimeline().setVisibleYoungestDate(0);
+        mListParameters.getTimeline().setVisibleOldestDate(0);
         mListParameters.getTimeline().setVisibleY(0);
         if (MyLog.isVerboseEnabled()) {
             MyLog.v(this, "Position forgot " + mListParameters.getTimeline());

@@ -980,35 +980,22 @@ public final class MyAccount {
     }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        try {
-            result = prime * result + toJson().toString(2).hashCode();
-        } catch (JSONException e) {
-            MyLog.v(this, e);
-        }
-        return result;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof MyAccount)) return false;
+
+        MyAccount myAccount = (MyAccount) o;
+
+        if (!oAccountName.equals(myAccount.oAccountName)) return false;
+        return userOid.equals(myAccount.userOid);
+
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        MyAccount other = (MyAccount) obj;
-        try {
-            return toJson().toString(2).equals(other.toJson().toString(2));
-        } catch (JSONException e) {
-            MyLog.v(this, e);
-        }
-        return hashCode() == other.hashCode();
+    public int hashCode() {
+        int result = oAccountName.hashCode();
+        result = 31 * result + userOid.hashCode();
+        return result;
     }
 
     public boolean isSyncedAutomatically() {

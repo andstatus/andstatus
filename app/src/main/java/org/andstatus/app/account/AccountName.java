@@ -142,4 +142,23 @@ public class AccountName {
     String prefsFilename() {
         return FILE_PREFIX + toString().replace("@", "-").replace(ORIGIN_SEPARATOR, "-");
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof AccountName)) return false;
+
+        AccountName that = (AccountName) o;
+
+        if (!origin.equals(that.origin)) return false;
+        return username.equals(that.username);
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = origin.hashCode();
+        result = 31 * result + username.hashCode();
+        return result;
+    }
 }

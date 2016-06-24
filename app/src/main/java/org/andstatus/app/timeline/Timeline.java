@@ -70,35 +70,55 @@ public class Timeline implements Comparable<Timeline> {
     @NonNull
     private String searchQuery = "";
 
+    /** If the timeline is synced automatically */
     private boolean synced = false;
 
+    /** If the timeline should be shown in a Timeline selector */
     private boolean displayedInSelector = false;
+    /** Used for sorting timelines in a selector */
     private long selectorOrder = 100;
 
+    /** When this timeline was last time successfully synced */
     private long syncedDate = 0;
+    /** When last sync error occurred */
     private long syncFailedDate = 0;
+    /** Error message at {@link #syncFailedDate} */
     private String errorMessage = "";
 
+    /** Number of successful sync operations: "Synced {@link #syncedTimesCount} times" */
     private long syncedTimesCount = 0;
+    /** Number of failed sync operations */
     private long syncFailedTimesCount = 0;
     private long newItemsCount = 0;
     private long countSince = 0;
 
+    /** Accumulated numbers for statistics. They are reset by a user's request */
     private long syncedTimesCountTotal = 0;
     private long syncFailedTimesCountTotal = 0;
     private long newItemsCountTotal = 0;
 
+    /** Timeline position of the youngest ever downloaded message */
     private String youngestPosition = "";
+    /** Date of the item corresponding to the {@link #youngestPosition} */
     private long youngestItemDate = 0;
+    /** Last date when youngest items of this timeline were successfully synced
+     * (even if there were no new item at that time).
+     * It may be used to calculate when it will be time for the next automatic update */
     private long youngestSyncedDate = 0;
 
+    /** Timeline position of the oldest ever downloaded message */
     private String oldestPosition = "";
+    /** Date of the item corresponding to the {@link #oldestPosition} */
     private long oldestItemDate = 0;
+    /** Last date when oldest items of this timeline were successfully synced
+     * (even if there were no new item at that time).
+     * It may be used to calculate when it will be time for the next automatic update */
     private long oldestSyncedDate = 0;
 
+    /** Position of the timeline, which a User viewed  */
     private long visibleItemId = 0;
     private int visibleY = 0;
-    private long visibleYoungestDate = 0;
+    private long visibleOldestDate = 0;
 
     private boolean changed = false;
 
@@ -251,7 +271,7 @@ public class Timeline implements Comparable<Timeline> {
 
         values.put(TimelineTable.VISIBLE_ITEM_ID, visibleItemId);
         values.put(TimelineTable.VISIBLE_Y, visibleY);
-        values.put(TimelineTable.VISIBLE_YOUNGEST_DATE, visibleYoungestDate);
+        values.put(TimelineTable.VISIBLE_OLDEST_DATE, visibleOldestDate);
     }
 
     public void toCommandContentValues(ContentValues values) {
@@ -276,6 +296,7 @@ public class Timeline implements Comparable<Timeline> {
 
     public static Timeline fromCursor(MyContext myContext, Cursor cursor) {
         Timeline timeline = new Timeline(
+                myContext,
                 TimelineType.load(DbUtils.getString(cursor, TimelineTable.TIMELINE_TYPE)),
                 myContext.persistentAccounts()
                         .fromUserId(DbUtils.getLong(cursor, TimelineTable.ACCOUNT_ID)),
@@ -312,7 +333,7 @@ public class Timeline implements Comparable<Timeline> {
 
         timeline.visibleItemId = DbUtils.getLong(cursor, TimelineTable.VISIBLE_ITEM_ID);
         timeline.visibleY = DbUtils.getInt(cursor, TimelineTable.VISIBLE_Y);
-        timeline.visibleYoungestDate = DbUtils.getLong(cursor, TimelineTable.VISIBLE_YOUNGEST_DATE);
+        timeline.visibleOldestDate = DbUtils.getLong(cursor, TimelineTable.VISIBLE_OLDEST_DATE);
 
         return timeline;
     }
@@ -412,18 +433,18 @@ public class Timeline implements Comparable<Timeline> {
         return selectorOrder;
     }
 
-    public static List<Timeline> addDefaultForAccount(MyAccount myAccount) {
+    public static List<Timeline> addDefaultForAccount(MyContext myContext, MyAccount myAccount) {
         List<Timeline> timelines = new ArrayList<>();
         for (TimelineType timelineType : TimelineType.defaultMyAccountTimelineTypes) {
-            saveNewDefaultTimeline(new Timeline(timelineType, myAccount, 0, null));
+            saveNewDefaultTimeline(new Timeline(myContext, timelineType, myAccount, 0, null));
         }
         return timelines;
     }
 
-    public static Collection<Timeline> addDefaultForOrigin(Origin origin) {
+    public static Collection<Timeline> addDefaultForOrigin(MyContext myContext, Origin origin) {
         List<Timeline> timelines = new ArrayList<>();
         for (TimelineType timelineType : TimelineType.defaultOriginTimelineTypes) {
-            saveNewDefaultTimeline(new Timeline(timelineType, null, 0, origin));
+            saveNewDefaultTimeline(new Timeline(myContext, timelineType, null, 0, origin));
         }
         return timelines;
     }
@@ -658,14 +679,14 @@ public class Timeline implements Comparable<Timeline> {
         }
     }
 
-    public long getVisibleYoungestDate() {
-        return visibleYoungestDate;
+    public long getVisibleOldestDate() {
+        return visibleOldestDate;
     }
 
-    public void setVisibleYoungestDate(long visibleYoungestDate) {
-        if (this.visibleYoungestDate != visibleYoungestDate) {
+    public void setVisibleOldestDate(long visibleOldestDate) {
+        if (this.visibleOldestDate != visibleOldestDate) {
             changed = true;
-            this.visibleYoungestDate = visibleYoungestDate;
+            this.visibleOldestDate = visibleOldestDate;
         }
     }
 

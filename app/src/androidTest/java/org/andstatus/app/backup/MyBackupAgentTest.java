@@ -65,9 +65,10 @@ public class MyBackupAgentTest extends InstrumentationTestCase {
     private void compareOneAccount(PersistentAccounts accountsExpected, PersistentAccounts accountsActual, String accountName) throws JSONException {
         MyAccount oldAccount = accountsExpected.fromAccountName(accountName);
         MyAccount newAccount = accountsActual.fromAccountName(accountName);
-        String message = "Compare account, hash codes: " + oldAccount.hashCode() + " and " + newAccount.hashCode() +
+        String message = "Compare accounts " +
                 oldAccount.toJson().toString(2) + " and " + newAccount.toJson().toString(2);
         assertEquals(message, oldAccount, newAccount);
+        assertEquals(message, oldAccount.toJson().toString(2), newAccount.toJson().toString(2));
     }
 
     private File testBackup(File backupFolder) throws IOException, JSONException {
