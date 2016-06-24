@@ -225,7 +225,6 @@ public class PersistentTimelines {
                 toRemove.add(timeline);
             }
         }
-        // TODO: Delete from a database!
         timelines.removeAll(toRemove);
     }
 
