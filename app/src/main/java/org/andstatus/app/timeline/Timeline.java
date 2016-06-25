@@ -347,7 +347,7 @@ public class Timeline implements Comparable<Timeline> {
     }
 
     public Timeline fromIsCombined(boolean isCombined) {
-        if (this.isCombined == isCombined) {
+        if (this.isCombined() == isCombined) {
             return this;
         }
         Origin origin;
@@ -365,7 +365,8 @@ public class Timeline implements Comparable<Timeline> {
     }
 
     public Timeline fromMyAccount(MyAccount myAccount) {
-        if ( this.myAccount.equals(myAccount)) {
+        if ( this.myAccount.equals(myAccount) ||
+                (isCombined() && !this.myAccount.isValid())) {
             return this;
         }
         long userId = this.userId;

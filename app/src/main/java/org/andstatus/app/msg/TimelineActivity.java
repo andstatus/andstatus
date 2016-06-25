@@ -210,8 +210,7 @@ public class TimelineActivity extends LoadableListActivity implements
      */
     public void onSwitchToDefaultTimelineButtonClick(View item) {
         closeDrawer();
-        mContextMenu.switchTimelineActivity(paramsLoaded.getTimeline(),
-                MyContextHolder.get().persistentTimelines().getHome(), null);
+        switchView(MyContextHolder.get().persistentTimelines().getHome(), null);
     }
 
     /**
@@ -245,8 +244,8 @@ public class TimelineActivity extends LoadableListActivity implements
      */
     public void onCombinedTimelineToggleClick(View item) {
         closeDrawer();
-        mContextMenu.switchTimelineActivity(paramsLoaded.getTimeline(),
-                paramsLoaded.getTimeline().fromIsCombined(!paramsLoaded.isTimelineCombined()), null);
+        switchView( paramsLoaded.getTimeline().fromIsCombined(!paramsLoaded.isTimelineCombined()),
+                null);
 
     }
 
@@ -303,7 +302,7 @@ public class TimelineActivity extends LoadableListActivity implements
                 if (isConfigChanged()) {
                     MyLog.v(this, method + "; Restarting this Activity to apply all new changes of configuration");
                     finish();
-                    mContextMenu.switchTimelineActivity(null, paramsLoaded.getTimeline(), null);
+                    switchView(paramsLoaded.getTimeline(), null);
                 }
             } else { 
                 MyLog.v(this, method + "; Finishing this Activity because there is no Account selected");
@@ -954,7 +953,7 @@ public class TimelineActivity extends LoadableListActivity implements
                 Timeline timeline = MyContextHolder.get().persistentTimelines()
                         .fromId(data.getLongExtra(IntentExtra.TIMELINE_ID.key, 0));
                 if (timeline.isValid()) {
-                    mContextMenu.switchTimelineActivity(getParamsLoaded().getTimeline(), timeline, null);
+                    switchView(timeline, null);
                 }
                 break;
             default:
@@ -966,10 +965,9 @@ public class TimelineActivity extends LoadableListActivity implements
     private void accountSelected(Intent data) {
         MyAccount ma = myContext.persistentAccounts().fromAccountName(data.getStringExtra(IntentExtra.ACCOUNT_NAME.key));
         if (ma.isValid()) {
-            mContextMenu.switchTimelineActivity(getParamsLoaded().getTimeline(),
-                    getParamsLoaded().getTimeline().isCombined() ?
-                            getParamsLoaded().getTimeline() :
-                            getParamsLoaded().getTimeline().fromMyAccount(ma), ma);
+            switchView(getParamsLoaded().getTimeline().isCombined() ?
+                    getParamsLoaded().getTimeline() :
+                    getParamsLoaded().getTimeline().fromMyAccount(ma), ma);
         }
     }
 
@@ -1110,5 +1108,28 @@ public class TimelineActivity extends LoadableListActivity implements
     @Override
     public Timeline getTimeline() {
         return getParamsLoaded().getTimeline();
+    }
+
+    public void switchView(Timeline timeline, MyAccount currentMyAccount) {
+        MyAccount currentMyAccountToSet = MyAccount.getEmpty();
+        if (currentMyAccount != null && currentMyAccount.isValid()) {
+            currentMyAccountToSet = currentMyAccount;
+        } else if (timeline.getMyAccount().isValid()) {
+            currentMyAccountToSet = timeline.getMyAccount();
+        }
+        if (currentMyAccountToSet.isValid()) {
+            setCurrentMyAccount(currentMyAccountToSet, currentMyAccountToSet.getOrigin());
+            MyContextHolder.get().persistentAccounts().setCurrentAccount(currentMyAccountToSet);
+        }
+        if (isFinishing() || !timeline.equals(getParamsLoaded().getTimeline())) {
+            if (MyLog.isVerboseEnabled()) {
+                MyLog.v(this, "switchTimelineActivity; " + timeline);
+            }
+            Intent intent = new Intent(this, TimelineActivity.class);
+            intent.setData(MatchedUri.getTimelineUri(timeline));
+            startActivity(intent);
+        } else {
+            showList(WhichPage.CURRENT);
+        }
     }
 }

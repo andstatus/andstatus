@@ -284,26 +284,9 @@ public class MessageContextMenu extends MyContextMenu {
         }
     }
 
-    public void switchTimelineActivity(Timeline timelinePrev, Timeline timeline, MyAccount currentMyAccount) {
-        MyAccount currentMyAccountToSet = MyAccount.getEmpty();
-        if (currentMyAccount != null && currentMyAccount.isValid()) {
-            currentMyAccountToSet = currentMyAccount;
-        } else if (timeline.getMyAccount().isValid()) {
-            currentMyAccountToSet = timeline.getMyAccount();
-        }
-        if (currentMyAccountToSet.isValid()) {
-            getActivity().setCurrentMyAccount(currentMyAccountToSet, currentMyAccountToSet.getOrigin());
-            MyContextHolder.get().persistentAccounts().setCurrentAccount(currentMyAccountToSet);
-        }
-        if (!timeline.equals(timelinePrev)) {
-            if (MyLog.isVerboseEnabled()) {
-                MyLog.v(this, "switchTimelineActivity; " + timeline);
-            }
-            Intent intent = new Intent(getActivity(), TimelineActivity.class);
-            intent.setData(MatchedUri.getTimelineUri(timeline));
-            getActivity().startActivity(intent);
-        } else {
-            getActivity().showList(WhichPage.CURRENT);
+    public void switchTimelineActivityView(Timeline timeline) {
+        if (TimelineActivity.class.isAssignableFrom(getActivity().getClass())) {
+            ((TimelineActivity) getActivity()).switchView(timeline, null);
         }
     }
 
