@@ -16,6 +16,9 @@
 
 package org.andstatus.app.timeline;
 
+import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.context.MyContext;
+
 /**
  * @author yvolk@yurivolkov.com
  */
@@ -23,8 +26,8 @@ public class TimelineListViewItem {
     final Timeline timeline;
     final TimelineTitle timelineTitle;
 
-    public TimelineListViewItem(Timeline timeline, TimelineTitle timelineTitle) {
+    public TimelineListViewItem(MyContext myContext, Timeline timeline) {
         this.timeline = timeline;
-        this.timelineTitle = timelineTitle;
+        this.timelineTitle = TimelineTitle.load(myContext, timeline, MyAccount.getEmpty());
     }
 }

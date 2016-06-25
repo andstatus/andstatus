@@ -99,9 +99,7 @@ public class TimelineList extends LoadableListActivity {
                 // TODO: Implement filter parameters in this activity
                 for (Timeline timeline : myContext.persistentTimelines().
                         getFiltered(false, TriState.UNKNOWN, null, null)) {
-                    TimelineListViewItem viewItem = new TimelineListViewItem(
-                            timeline,
-                            TimelineTitle.load(timeline, MyAccount.getEmpty()));
+                    TimelineListViewItem viewItem = new TimelineListViewItem(myContext, timeline);
                     mItems.add(viewItem);
                 }
                 if (sortByField != 0) {

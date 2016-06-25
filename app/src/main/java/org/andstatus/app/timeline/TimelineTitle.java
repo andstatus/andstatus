@@ -19,18 +19,21 @@ package org.andstatus.app.timeline;
 import org.andstatus.app.MyActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.data.MyQuery;
+import org.andstatus.app.context.MyContext;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
 
 /**
- * Data to show on UI. Its creation requires async work
+ * Data to show on UI. May be create on UI thread
  * @author yvolk@yurivolkov.com
  */
 public class TimelineTitle {
     public String title = "";
     public String subTitle = "";
+
+    private TimelineTitle() {
+        // Empty
+    }
 
     public void updateActivityTitle(MyActivity activity, String additionalTitleText) {
         activity.setTitle(title);
@@ -48,41 +51,40 @@ public class TimelineTitle {
         return stringBuilder.toString();
     }
 
-    /** Requires async work */
-    public static TimelineTitle load(Timeline timeline, MyAccount currentMyAccount) {
+    public static TimelineTitle load(MyContext myContext, Timeline timeline, MyAccount currentMyAccount) {
         TimelineTitle timelineTitle = new TimelineTitle();
-        timelineTitle.title = toTimelineTitle(timeline);
-        timelineTitle.subTitle = toTimelineSubtitle(timeline, currentMyAccount);
+        timelineTitle.title = toTimelineTitle(myContext, timeline);
+        timelineTitle.subTitle = toTimelineSubtitle(myContext, timeline, currentMyAccount);
         return timelineTitle;
     }
 
-    private static String toTimelineTitle(Timeline timeline) {
+    private static String toTimelineTitle(MyContext myContext, Timeline timeline) {
         StringBuilder title = new StringBuilder();
-        I18n.appendWithSpace(title, timeline.getTimelineType().getTitle(MyContextHolder.get().context()));
+        I18n.appendWithSpace(title, timeline.getTimelineType().getTitle(myContext.context()));
         if (timeline.hasSearchQuery()) {
             I18n.appendWithSpace(title, "'" + timeline.getSearchQuery() + "'");
         }
         if (timeline.getUserId() != 0 && (timeline.isUserDifferentFromAccount() ||
                 timeline.getTimelineType().isAtOrigin())) {
             if (timeline.isUserDifferentFromAccount()) {
-                I18n.appendWithSpace(title, MyQuery.userIdToWebfingerId(timeline.getUserId()));
+                I18n.appendWithSpace(title, timeline.getUserInTimeline());
             } else {
                 I18n.appendWithSpace(title, timeline.getMyAccount().toAccountButtonText());
             }
         }
         if (timeline.isCombined()) {
             I18n.appendWithSpace(title,
-                    MyContextHolder.get().context() == null ? "combined" : MyContextHolder.get().context().getText(R.string.combined_timeline_on));
+                    myContext.context() == null ? "combined" : myContext.context().getText(R.string.combined_timeline_on));
         }
         return title.toString();
     }
 
-    private static String toTimelineSubtitle(Timeline timeline, MyAccount currentMyAccount) {
+    private static String toTimelineSubtitle(MyContext myContext, Timeline timeline, MyAccount currentMyAccount) {
         final StringBuilder subTitle = new StringBuilder();
         boolean nameAdded = false;
         if (!timeline.isCombined()) {
             I18n.appendWithSpace(subTitle, timeline.getTimelineType()
-                    .getPrepositionForNotCombinedTimeline(MyContextHolder.get().context()));
+                    .getPrepositionForNotCombinedTimeline(myContext.context()));
             if (timeline.getTimelineType().isAtOrigin()) {
                 I18n.appendWithSpace(subTitle, timeline.getOrigin().getName());
                 nameAdded = true;

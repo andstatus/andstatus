@@ -161,8 +161,7 @@ public class PersistentTimelines {
     private void removeDuplicatesForSelector(List<Timeline> timelines) {
         Map<String, Timeline> map = new HashMap<>();
         for (Timeline timeline : timelines) {
-            String key = timeline.getTimelineType().save() + timeline.getName();
-            // TODO
+            String key = timeline.getNameForSelector();
             if (!map.containsKey(key)) {
                 map.put(key, timeline);
             }

@@ -58,6 +58,7 @@ import org.andstatus.app.service.QueueViewer;
 import org.andstatus.app.test.SelectorActivityMock;
 import org.andstatus.app.timeline.Timeline;
 import org.andstatus.app.timeline.TimelineSelector;
+import org.andstatus.app.timeline.TimelineTitle;
 import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.BundleUtils;
 import org.andstatus.app.util.MyLog;
@@ -75,7 +76,7 @@ public class TimelineActivity extends LoadableListActivity implements
     public static final String HORIZONTAL_ELLIPSIS = "\u2026";
 
     /** Parameters for the next page request, not necessarily requested already */
-    private TimelineListParameters paramsNew = new TimelineListParameters(this);
+    private volatile TimelineListParameters paramsNew = null;
     /** Last parameters, requested to load. Thread safe. They are taken by a Loader at some time */
     private volatile TimelineListParameters paramsToLoad;
     private TimelineListParameters paramsLoaded;
@@ -109,14 +110,14 @@ public class TimelineActivity extends LoadableListActivity implements
             return;
         }
 
-        paramsNew.setTimeline(MyContextHolder.get().persistentTimelines().getHome());
+        getParamsNew().setTimeline(MyContextHolder.get().persistentTimelines().getHome());
         mContextMenu = new MessageContextMenu(this);
         mMessageEditor = new MessageEditor(this);
 
         mSwipeLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                syncWithInternet(paramsNew.getTimeline(), true);
+                syncWithInternet(getParamsNew().getTimeline(), true);
             }
         });
 
@@ -174,11 +175,11 @@ public class TimelineActivity extends LoadableListActivity implements
     }
 
     private void restoreActivityState(@NonNull Bundle savedInstanceState) {
-            if (paramsNew.restoreState(savedInstanceState)) {
+            if (getParamsNew().restoreState(savedInstanceState)) {
                 mContextMenu.loadState(savedInstanceState);
             }
             if (MyLog.isVerboseEnabled()) {
-                MyLog.v(this, "restoreActivityState; " + paramsNew);
+                MyLog.v(this, "restoreActivityState; " + getParamsNew());
             }
     }
 
@@ -258,7 +259,7 @@ public class TimelineActivity extends LoadableListActivity implements
      * View.OnClickListener
      */
     public void onTimelineTypeButtonClick(View item) {
-        TimelineSelector.selectTimeline(this, ActivityRequestCode.SELECT_TIMELINE, paramsNew.getTimeline());
+        TimelineSelector.selectTimeline(this, ActivityRequestCode.SELECT_TIMELINE, getParamsNew().getTimeline());
         closeDrawer();
     }
 
@@ -335,7 +336,7 @@ public class TimelineActivity extends LoadableListActivity implements
     private void clearNotifications() {
         MyContextHolder.get().clearNotification(getParamsLoaded().getTimelineType());
         MyServiceManager.sendForegroundCommand(
-                CommandData.newAccountCommand(CommandEnum.CLEAR_NOTIFICATIONS, paramsNew.getMyAccount()));
+                CommandData.newAccountCommand(CommandEnum.CLEAR_NOTIFICATIONS, getParamsNew().getMyAccount()));
     }
 
     /**
@@ -417,8 +418,8 @@ public class TimelineActivity extends LoadableListActivity implements
         // which are not on the timeline.
         // E.g. messages by users, downloaded on demand.
         MyUrlSpan.showView(combinedTimelineToggle,
-                paramsNew.getSelectedUserId() == 0 ||
-                        paramsNew.getSelectedUserId() == paramsNew.getMyAccount().getUserId());
+                getParamsNew().getSelectedUserId() == 0 ||
+                        getParamsNew().getSelectedUserId() == getParamsNew().getMyAccount().getUserId());
     }
 
     @Override
@@ -441,7 +442,7 @@ public class TimelineActivity extends LoadableListActivity implements
                 onSearchRequested();
                 break;
             case R.id.sync_menu_item:
-                syncWithInternet(paramsNew.getTimeline(), true);
+                syncWithInternet(getParamsNew().getTimeline(), true);
                 break;
             case R.id.commands_queue_id:
                 startActivity(new Intent(getActivity(), QueueViewer.class));
@@ -467,7 +468,7 @@ public class TimelineActivity extends LoadableListActivity implements
     public void onItemClick(TimelineViewItem item) {
         MyAccount ma = MyContextHolder.get().persistentAccounts().getAccountForThisMessage(item.originId,
                 item.msgId, item.linkedUserId,
-                paramsNew.getMyAccount().getUserId(), false);
+                getParamsNew().getMyAccount().getUserId(), false);
         if (MyLog.isVerboseEnabled()) {
             MyLog.v(this,
                     "onItemClick, " + item
@@ -525,8 +526,8 @@ public class TimelineActivity extends LoadableListActivity implements
     }
 
     private String timelineTypeButtonText() {
-        CharSequence timelineName = paramsNew.getTimelineType().getTitle(this);
-        return timelineName + (paramsNew.hasSearchQuery() ? " *" : "");
+        CharSequence timelineName = getParamsNew().getTimelineType().getTitle(this);
+        return timelineName + (getParamsNew().hasSearchQuery() ? " *" : "");
     }
 
     private void updateAccountButtonText(ViewGroup mDrawerList) {
@@ -550,7 +551,7 @@ public class TimelineActivity extends LoadableListActivity implements
         MyContextHolder.initialize(this, this);
         parseNewIntent(intent);
 		if (!isPaused() || size() > 0 || isLoading()) {
-            showList(paramsNew.whichPage);
+            showList(getParamsNew().whichPage);
 		}
     }
 
@@ -559,14 +560,14 @@ public class TimelineActivity extends LoadableListActivity implements
             MyLog.v(this, "parseNewIntent:" + intentNew);
         }
         mRateLimitText = "";
-        paramsNew.whichPage = WhichPage.load(
+        getParamsNew().whichPage = WhichPage.load(
                 intentNew.getStringExtra(IntentExtra.WHICH_PAGE.key), WhichPage.CURRENT);
         String searchQuery = intentNew.getStringExtra(SearchManager.QUERY);
         if (!parseAppSearchData(intentNew, searchQuery)
-                && !paramsNew.parseUri(intentNew.getData(), searchQuery)) {
-            paramsNew.setTimeline(MyContextHolder.get().persistentTimelines().getHome());
+                && !getParamsNew().parseUri(intentNew.getData(), searchQuery)) {
+            getParamsNew().setTimeline(MyContextHolder.get().persistentTimelines().getHome());
         }
-        setCurrentMyAccount(paramsNew.getTimeline().getMyAccount(), paramsNew.getTimeline().getOrigin());
+        setCurrentMyAccount(getParamsNew().getTimeline().getMyAccount(), getParamsNew().getTimeline().getOrigin());
 
         if (Intent.ACTION_SEND.equals(intentNew.getAction())) {
             shareViaThisApplication(intentNew.getStringExtra(Intent.EXTRA_SUBJECT),
@@ -579,16 +580,16 @@ public class TimelineActivity extends LoadableListActivity implements
         final String method = "parseAppSearchData";
         Bundle appSearchData = intentNew.getBundleExtra(SearchManager.APP_DATA);
         if (appSearchData != null
-                && paramsNew.parseUri(Uri.parse(appSearchData.getString(
+                && getParamsNew().parseUri(Uri.parse(appSearchData.getString(
                         IntentExtra.TIMELINE_URI.key, "")), searchQuery)) {
-            if (paramsNew.hasSearchQuery()
+            if (getParamsNew().hasSearchQuery()
                     && appSearchData.getBoolean(IntentExtra.GLOBAL_SEARCH.key, false)) {
-                showSyncing(method, "Global search: " + paramsNew.getTimeline().getSearchQuery());
+                showSyncing(method, "Global search: " + getParamsNew().getTimeline().getSearchQuery());
                 for (Origin origin : myContext.persistentOrigins().originsForGlobalSearch(
-                        paramsNew.getTimeline().getOrigin(), paramsNew.getTimeline().isCombined())) {
+                        getParamsNew().getTimeline().getOrigin(), getParamsNew().getTimeline().isCombined())) {
                     MyServiceManager.sendManualForegroundCommand(
                             CommandData.newSearch(origin,
-                                    paramsNew.getTimeline().getSearchQuery()));
+                                    getParamsNew().getTimeline().getSearchQuery()));
                 }
             }
             return true;
@@ -678,7 +679,8 @@ public class TimelineActivity extends LoadableListActivity implements
 
     @Override
     protected void updateTitle(String additionalTitleText) {
-        getParamsLoaded().timelineTitle.updateActivityTitle(this, additionalTitleText);
+        TimelineTitle.load(myContext, getParamsLoaded().timeline, getCurrentMyAccount()).
+                updateActivityTitle(this, additionalTitleText);
     }
 
     MessageContextMenu getContextMenu() {
@@ -688,7 +690,7 @@ public class TimelineActivity extends LoadableListActivity implements
     /** Parameters of currently shown Timeline */
     @NonNull
     private TimelineListParameters getParamsLoaded() {
-        return paramsLoaded == null ? paramsNew : paramsLoaded;
+        return paramsLoaded == null ? getParamsNew() : paramsLoaded;
     }
 
     private void setParamsLoaded(TimelineListParameters paramsLoaded) {
@@ -720,9 +722,9 @@ public class TimelineActivity extends LoadableListActivity implements
                 }
                 return getParamsLoaded();
             case EMPTY:
-                return new TimelineListParameters(this);
+                return new TimelineListParameters(myContext);
             default:
-                return paramsNew;
+                return getParamsNew();
         }
     }
 
@@ -767,7 +769,7 @@ public class TimelineActivity extends LoadableListActivity implements
         WhichPage whichPage = WhichPage.load(args);
         TimelineListParameters params = paramsToLoad == null
                 || whichPage == WhichPage.EMPTY ?
-                new TimelineListParameters(this) : paramsToLoad;
+                new TimelineListParameters(myContext) : paramsToLoad;
         if (params.whichPage != WhichPage.EMPTY) {
             MyLog.v(this, method + ": " + params);
             Intent intent = getIntent();
@@ -781,13 +783,13 @@ public class TimelineActivity extends LoadableListActivity implements
     }
 
     private void saveSearchQuery() {
-        if (paramsNew.hasSearchQuery()) {
+        if (getParamsNew().hasSearchQuery()) {
             // Record the query string in the recent queries
             // of the Suggestion Provider
             SearchRecentSuggestions suggestions = new SearchRecentSuggestions(this,
                     TimelineSearchSuggestionsProvider.AUTHORITY,
                     TimelineSearchSuggestionsProvider.MODE);
-            suggestions.saveRecentQuery(paramsNew.getTimeline().getSearchQuery(), null);
+            suggestions.saveRecentQuery(getParamsNew().getTimeline().getSearchQuery(), null);
 
         }
     }
@@ -848,8 +850,8 @@ public class TimelineActivity extends LoadableListActivity implements
             if (timelineToSync.getTimelineType() == TimelineType.EVERYTHING) {
                 syncWithInternet(getParamsLoaded().getTimeline(), false);
                 // Sync this one timeline and then - all syncable for this account
-                if (paramsNew.getMyAccount().isValidAndSucceeded()) {
-                    paramsNew.getMyAccount().requestSync();
+                if (getParamsNew().getMyAccount().isValidAndSucceeded()) {
+                    getParamsNew().getMyAccount().requestSync();
                 }
             } else {
                 syncWithInternet(timelineToSync, false);
@@ -858,9 +860,9 @@ public class TimelineActivity extends LoadableListActivity implements
     }
 
     protected void syncWithInternet(Timeline timelineToSync, boolean manuallyLaunched) {
-        if (paramsNew.isTimelineCombined() && timelineToSync.getTimelineType().canBeCombinedForOrigins()) {
+        if (getParamsNew().isTimelineCombined() && timelineToSync.getTimelineType().canBeCombinedForOrigins()) {
             syncForAllOrigins(timelineToSync, manuallyLaunched);
-        } else if (paramsNew.isTimelineCombined() && timelineToSync.getTimelineType().canBeCombinedForMyAccounts()) {
+        } else if (getParamsNew().isTimelineCombined() && timelineToSync.getTimelineType().canBeCombinedForMyAccounts()) {
             syncForAllAccounts(timelineToSync, manuallyLaunched);
         } else {
             syncOneTimeline(timelineToSync, manuallyLaunched);
@@ -908,7 +910,7 @@ public class TimelineActivity extends LoadableListActivity implements
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        paramsNew.saveState(outState);
+        getParamsNew().saveState(outState);
         mContextMenu.saveState(outState);
     }
 
@@ -1131,5 +1133,16 @@ public class TimelineActivity extends LoadableListActivity implements
         } else {
             showList(WhichPage.CURRENT);
         }
+    }
+
+    @NonNull
+    public TimelineListParameters getParamsNew() {
+        if (paramsNew == null) {
+            if (myContext == null) {
+                return new TimelineListParameters(MyContextHolder.get());
+            }
+            paramsNew = new TimelineListParameters(myContext);
+        }
+        return paramsNew;
     }
 }

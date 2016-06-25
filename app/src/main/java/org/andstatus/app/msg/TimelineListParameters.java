@@ -17,7 +17,6 @@
 package org.andstatus.app.msg;
 
 import android.app.LoaderManager;
-import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -27,6 +26,7 @@ import android.text.TextUtils;
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.WhichPage;
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.ParsedUri;
@@ -36,7 +36,6 @@ import org.andstatus.app.data.TimelineSql;
 import org.andstatus.app.database.MsgOfUserTable;
 import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.database.UserTable;
-import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.Timeline;
 import org.andstatus.app.timeline.TimelineTitle;
 import org.andstatus.app.timeline.TimelineType;
@@ -46,8 +45,8 @@ import org.andstatus.app.util.SelectionAndArgs;
 import java.util.Date;
 
 public class TimelineListParameters {
-    final Context mContext;
-    
+    private final MyContext myContext;
+
     LoaderManager.LoaderCallbacks<Cursor> mLoaderCallbacks = null;
 
     /**
@@ -75,10 +74,9 @@ public class TimelineListParameters {
     volatile int rowsLoaded = 0;
     volatile long minSentDateLoaded = 0;
     volatile long maxSentDateLoaded = 0;
-    volatile TimelineTitle timelineTitle = new TimelineTitle();
 
     public static TimelineListParameters clone(TimelineListParameters prev, WhichPage whichPage) {
-        TimelineListParameters params = new TimelineListParameters(prev.mContext);
+        TimelineListParameters params = new TimelineListParameters(prev.myContext);
         params.whichPage = whichPage == WhichPage.ANY ? prev.whichPage : whichPage;
         if (whichPage != WhichPage.EMPTY) {
             enrichNonEmptyParameters(params, prev);
@@ -133,8 +131,8 @@ public class TimelineListParameters {
         return maxSentDate == 0 && minSentDate > 0;
     }
 
-    public TimelineListParameters(Context context) {
-        this.mContext = context;
+    public TimelineListParameters(MyContext myContext) {
+        this.myContext = myContext;
     }
 
     public boolean isEmpty() {
@@ -232,7 +230,8 @@ public class TimelineListParameters {
     }
 
     public String toSummary() {
-        return whichPage.getTitle(mContext) + " " + timelineTitle.toString();
+        return whichPage.getTitle(myContext.context()) + " " +
+                TimelineTitle.load(myContext, timeline, MyAccount.getEmpty());
     }
 
     @NonNull
@@ -338,7 +337,7 @@ public class TimelineListParameters {
 
     Cursor queryDatabase() {
         prepareQueryParameters();
-        return mContext.getContentResolver().query(getContentUri(), mProjection,
+        return myContext.context().getContentResolver().query(getContentUri(), mProjection,
                 selectionAndArgs.selection, selectionAndArgs.selectionArgs, sortOrderAndLimit);
     }
 

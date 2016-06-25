@@ -85,7 +85,7 @@ public class TimelineLoader implements LoadableListActivity.SyncLoader {
         params.startTime = System.nanoTime();
         params.cancelled = false;
         params.timelineToSync = Timeline.getEmpty(params.getMyAccount());
-        params.timelineTitle = TimelineTitle.load(params.getTimeline(), currentMyAccount);
+        params.timeline.saveIfChanged();
         if (MyLog.isVerboseEnabled()) {
             logV("markStart", params.toSummary());
         }

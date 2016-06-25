@@ -27,7 +27,9 @@ import org.andstatus.app.IntentExtra;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DbUtils;
+import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.ParsedUri;
 import org.andstatus.app.database.CommandTable;
 import org.andstatus.app.database.TimelineTable;
@@ -46,8 +48,6 @@ import java.util.List;
  */
 public class Timeline implements Comparable<Timeline> {
     private long id;
-    private String name;
-    private String description = "";
 
     private final TimelineType timelineType;
     /** The timeline combines messages from all accounts
@@ -59,6 +59,8 @@ public class Timeline implements Comparable<Timeline> {
      * This may be the same the Authenticated User ({@link #myAccount})
      * or some other User e.g. to get a list of messages by some other person/user of the Social Network*/
     private final long userId;
+    /** Pre-fetched string to be used to present in UI */
+    private String userInTimeline = "";
 
     /** The Social Network of this timeline. Some timelines don't depend on
      * an Authenticated User ({@link #myAccount}), e.g. {@link TimelineType#PUBLIC} - this
@@ -235,11 +237,10 @@ public class Timeline implements Comparable<Timeline> {
 
     public void toContentValues(ContentValues values) {
         ContentValuesUtils.putNotZero(values, TimelineTable._ID, id);
-        values.put(TimelineTable.TIMELINE_NAME, name);
-        values.put(TimelineTable.TIMELINE_DESCRIPTION, description);
         values.put(TimelineTable.TIMELINE_TYPE, timelineType.save());
         values.put(TimelineTable.ACCOUNT_ID, myAccount.getUserId());
         values.put(TimelineTable.USER_ID, userId);
+        values.put(TimelineTable.USER_IN_TIMELINE, userInTimeline);
         values.put(TimelineTable.ORIGIN_ID, origin.getId());
         values.put(TimelineTable.SEARCH_QUERY, searchQuery);
 
@@ -301,8 +302,7 @@ public class Timeline implements Comparable<Timeline> {
                         .fromId(DbUtils.getLong(cursor, TimelineTable.ORIGIN_ID)));
 
         timeline.id = DbUtils.getLong(cursor, TimelineTable._ID);
-        timeline.name = DbUtils.getString(cursor, TimelineTable.TIMELINE_NAME);
-        timeline.description = DbUtils.getString(cursor, TimelineTable.TIMELINE_DESCRIPTION);
+        timeline.userInTimeline = DbUtils.getString(cursor, TimelineTable.USER_IN_TIMELINE);
         timeline.searchQuery = DbUtils.getString(cursor, TimelineTable.SEARCH_QUERY);
         timeline.setSynced(DbUtils.getBoolean(cursor, TimelineTable.SYNCED));
         timeline.displayedInSelector = DbUtils.getBoolean(cursor, TimelineTable.DISPLAY_IN_SELECTOR);
@@ -333,7 +333,6 @@ public class Timeline implements Comparable<Timeline> {
 
         return timeline;
     }
-
 
     public static Timeline fromCommandCursor(MyContext myContext, Cursor cursor) {
         Timeline timeline = new Timeline(
@@ -398,15 +397,8 @@ public class Timeline implements Comparable<Timeline> {
         return id;
     }
 
-    public String getName() {
-        if (TextUtils.isEmpty(name)) {
-            return timelineType.getTitle(MyContextHolder.get().context()).toString();
-        }
-        return name;
-    }
-
-    public String getDescription() {
-        return description;
+    public String getNameForSelector() {
+        return timelineType.getTitle(MyContextHolder.get().context()).toString();
     }
 
     public TimelineType getTimelineType() {
@@ -467,6 +459,9 @@ public class Timeline implements Comparable<Timeline> {
     }
 
     public long saveIfChanged() {
+        if (needToLoadUserInTimeline()) {
+            changed = true;
+        }
         if (id != 0 && !changed) {
             return id;
         } else {
@@ -475,6 +470,9 @@ public class Timeline implements Comparable<Timeline> {
     }
 
     public long save() {
+        if (needToLoadUserInTimeline()) {
+            userInTimeline = MyQuery.userIdToName(userId, MyPreferences.getUserInTimeline());
+        }
         ContentValues contentValues = new ContentValues();
         toContentValues(contentValues);
         if (getId() == 0) {
@@ -484,6 +482,10 @@ public class Timeline implements Comparable<Timeline> {
         }
         changed = false;
         return getId();
+    }
+
+    public boolean needToLoadUserInTimeline() {
+        return userId !=0 && isUserDifferentFromAccount() && TextUtils.isEmpty(userInTimeline);
     }
 
     public void delete() {
@@ -510,13 +512,12 @@ public class Timeline implements Comparable<Timeline> {
         } else {
             builder.append(origin.isValid() ? origin.getName() : "(all origins)");
         }
-        if (!TextUtils.isEmpty(name)) {
-            builder.append(", name:'" + name + "'");
-        }
         if (timelineType != TimelineType.UNKNOWN) {
             builder.append(", type:" + timelineType.save());
         }
-        if (userId != 0) {
+        if (!TextUtils.isEmpty(userInTimeline)) {
+            builder.append(", user:'" + userInTimeline + "'");
+        } else if (userId != 0) {
             builder.append(", userId:" + userId);
         }
         if (hasSearchQuery()) {
@@ -810,5 +811,18 @@ public class Timeline implements Comparable<Timeline> {
 
     public long getLastSyncedDate() {
         return syncedDate > 0 ? syncedDate : syncFailedDate;
+    }
+
+    @NonNull
+    public String getUserInTimeline() {
+        if (TextUtils.isEmpty(userInTimeline)) {
+            if (needToLoadUserInTimeline()) {
+                return "...";
+            } else {
+                return "";
+            }
+        } else {
+            return userInTimeline;
+        }
     }
 }

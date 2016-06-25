@@ -95,7 +95,7 @@ public class TimelineSelector extends SelectorDialog {
         List<Map<String, String>> list = new ArrayList<>();
         for (Timeline timeline : listData) {
             Map<String, String> map = new HashMap<>();
-            String visibleName = timeline.getName();
+            String visibleName = timeline.getNameForSelector();
             map.put(KEY_VISIBLE_NAME, visibleName);
             map.put(BaseColumns._ID, Long.toString(timeline.getId()));
             map.put(KEY_TYPE, TYPE_TIMELINE);

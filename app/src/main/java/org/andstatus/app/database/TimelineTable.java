@@ -34,11 +34,10 @@ public class TimelineTable implements BaseColumns {
 
     /** Alias for #_ID */
     public static final String TIMELINE_ID = "timeline_id";
-    public static final String TIMELINE_NAME = "timeline_name";
-    public static final String TIMELINE_DESCRIPTION = "timeline_description";
     public static final String TIMELINE_TYPE = "timeline_type";
     public static final String ACCOUNT_ID = UserTable.ACCOUNT_ID;
     public static final String USER_ID = UserTable.USER_ID;
+    public static final String USER_IN_TIMELINE = "user_in_timeline";
     public static final String ORIGIN_ID =  OriginTable.ORIGIN_ID;
     public static final String SEARCH_QUERY = "search_query";
 
@@ -94,11 +93,10 @@ public class TimelineTable implements BaseColumns {
     public static void create(SQLiteDatabase db) {
         DbUtils.execSQL(db, "CREATE TABLE " + TimelineTable.TABLE_NAME + " ("
                 + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
-                + TimelineTable.TIMELINE_NAME + " TEXT,"
-                + TimelineTable.TIMELINE_DESCRIPTION + " TEXT,"
                 + TimelineTable.TIMELINE_TYPE + " STRING NOT NULL,"
                 + TimelineTable.ACCOUNT_ID + " INTEGER,"
                 + TimelineTable.USER_ID + " INTEGER,"
+                + TimelineTable.USER_IN_TIMELINE + " TEXT,"
                 + TimelineTable.ORIGIN_ID + " INTEGER,"
                 + TimelineTable.SEARCH_QUERY + " TEXT,"
 
