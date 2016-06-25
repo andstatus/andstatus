@@ -155,4 +155,12 @@ public class I18n {
         long gB = Math.round(1.0 * mB / 1024);
         return Long.toString(gB) + "GB";
     }
+
+    public static String notZero(long value) {
+        if (value == 0) {
+            return "";
+        } else {
+            return Long.toString(value);
+        }
+    }
 }

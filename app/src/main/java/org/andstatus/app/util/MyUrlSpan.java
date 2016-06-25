@@ -68,17 +68,17 @@ public class MyUrlSpan extends URLSpan {
         }
     }
 
-    public static void showText(View parentView, int viewId, String text, boolean linkify) {
+    public static void showText(View parentView, int viewId, String text, boolean linkify, boolean showIfEmpty) {
         TextView textView = (TextView) parentView.findViewById(viewId);
         if (textView != null) {
-            showText(textView, text, linkify);
+            showText(textView, text, linkify, showIfEmpty);
         }
     }
 
-    public static void showText(TextView textView, String text, boolean linkify) {
+    public static void showText(TextView textView, String text, boolean linkify, boolean showIfEmpty) {
         if (TextUtils.isEmpty(text)) {
             textView.setText("");
-            showView(textView, false);
+            showView(textView, showIfEmpty);
         } else {
             if (linkify) {
                 textView.setFocusable(true);

@@ -28,10 +28,9 @@ import org.andstatus.app.ActivityRequestCode;
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
 import org.andstatus.app.SelectorDialog;
-import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.origin.Origin;
-import org.andstatus.app.widget.MySimpleAdapter;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.util.TriState;
+import org.andstatus.app.widget.MySimpleAdapter;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -66,7 +65,7 @@ public class TimelineSelector extends SelectorDialog {
 
         List<Timeline> listData = MyContextHolder.get().persistentTimelines().getFiltered(
                 true,
-                getArguments().getBoolean(IntentExtra.TIMELINE_IS_COMBINED.key),
+                TriState.fromBoolean(getArguments().getBoolean(IntentExtra.TIMELINE_IS_COMBINED.key)),
                 MyContextHolder.get().persistentAccounts().fromAccountName(
                         getArguments().getString(IntentExtra.ACCOUNT_NAME.key)),
                 MyContextHolder.get().persistentOrigins().fromId(

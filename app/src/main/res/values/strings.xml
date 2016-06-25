@@ -408,6 +408,7 @@
   <string name="summary_preference_vibration_on">Vibrate on incoming message</string>
   <string name="switch_to_default_timeline">Switch to Default Timeline</string>
   <string name="sync_over_wifi_only">Sync over WiFi only</string>
+  <string name="sync_failed">Sync failed</string>
   <string name="synced">Synced</string>
   <string name="synced_abbreviated">Sync</string>
   <string name="system_is_busy_try_later">The system is busy. Please try again later.</string>

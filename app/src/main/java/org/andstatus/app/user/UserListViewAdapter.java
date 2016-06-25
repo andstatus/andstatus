@@ -69,27 +69,27 @@ class UserListViewAdapter extends MyBaseAdapter {
         view.setOnClickListener(this);
         setPosition(view, position);
         UserListViewItem item = items.get(position);
-        MyUrlSpan.showText(view, R.id.username, item.mbUser.toUserTitle(showWebFingerId), false);
+        MyUrlSpan.showText(view, R.id.username, item.mbUser.toUserTitle(showWebFingerId), false, false);
         if (showAvatars) {
             showAvatar(item, view);
         }
-        MyUrlSpan.showText(view, R.id.homepage, item.mbUser.getHomepage(), true);
-        MyUrlSpan.showText(view, R.id.description, item.mbUser.getDescription(), false);
-        MyUrlSpan.showText(view, R.id.location, item.mbUser.location, false);
-        MyUrlSpan.showText(view, R.id.profile_url, item.mbUser.getProfileUrl(), true);
+        MyUrlSpan.showText(view, R.id.homepage, item.mbUser.getHomepage(), true, false);
+        MyUrlSpan.showText(view, R.id.description, item.mbUser.getDescription(), false, false);
+        MyUrlSpan.showText(view, R.id.location, item.mbUser.location, false, false);
+        MyUrlSpan.showText(view, R.id.profile_url, item.mbUser.getProfileUrl(), true, false);
 
         showCounter(view, R.id.msg_count, item.mbUser.msgCount);
         showCounter(view, R.id.favorites_count, item.mbUser.favoritesCount);
         showCounter(view, R.id.following_count, item.mbUser.followingCount);
         showCounter(view, R.id.followers_count, item.mbUser.followersCount);
 
-        MyUrlSpan.showText(view, R.id.location, item.mbUser.location, false);
+        MyUrlSpan.showText(view, R.id.location, item.mbUser.location, false, false);
         showMyFollowers(view, item);
         return view;
     }
 
     public static void showCounter(View parentView, int viewId, long counter) {
-        MyUrlSpan.showText(parentView, viewId, counter <= 0 ? "-" : String.valueOf(counter) , false);
+        MyUrlSpan.showText(parentView, viewId, counter <= 0 ? "-" : String.valueOf(counter) , false, false);
     }
 
     private View newView() {
@@ -116,6 +116,6 @@ class UserListViewAdapter extends MyBaseAdapter {
                 count++;
             }
         }
-        MyUrlSpan.showText(view, R.id.followed_by, builder.toString(), false);
+        MyUrlSpan.showText(view, R.id.followed_by, builder.toString(), false, false);
     }
 }

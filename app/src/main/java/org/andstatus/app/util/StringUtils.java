@@ -26,4 +26,8 @@ public class StringUtils {
     public static String notEmpty(String value, String valueIfEmpty) {
         return TextUtils.isEmpty(value) ? valueIfEmpty : value;
     }
+
+    public static String notNull(String value) {
+        return value == null ? "" : value;
+    }
 }

@@ -22,6 +22,7 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.origin.Origin;
+import org.andstatus.app.util.TriState;
 
 import java.util.List;
 
@@ -40,22 +41,25 @@ public class PersistentTimelinesTest extends InstrumentationTestCase {
 
     public void testFilteredList() throws Exception {
         List<Timeline> timelines = MyContextHolder.get().persistentTimelines().getList();
-        List<Timeline> filtered = MyContextHolder.get().persistentTimelines().getFiltered(true, false, null, null);
-        assertTrue(filtered.isEmpty());
+        List<Timeline> filtered = MyContextHolder.get().persistentTimelines().getFiltered(false, TriState.UNKNOWN, null, null);
+        assertEquals(timelines.size(), filtered.size());
 
-        filtered = MyContextHolder.get().persistentTimelines().getFiltered(true, true, null, null);
+        filtered = MyContextHolder.get().persistentTimelines().getFiltered(true, TriState.FALSE, null, null);
+        assertTrue(timelines.size() > filtered.size());
+
+        filtered = MyContextHolder.get().persistentTimelines().getFiltered(true, TriState.TRUE, null, null);
         assertTrue(!filtered.isEmpty());
         assertTrue(timelines.size() > filtered.size());
 
-        filtered = MyContextHolder.get().persistentTimelines().getFiltered(false, true, null, null);
-        assertEquals(timelines.size(), filtered.size());
+        List<Timeline> filtered2 = MyContextHolder.get().persistentTimelines().getFiltered(true, TriState.UNKNOWN, null, null);
+        assertEquals(filtered, filtered2);
 
         MyAccount myAccount = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.CONVERSATION_ACCOUNT_NAME);
-        filtered = MyContextHolder.get().persistentTimelines().getFiltered(true, false, myAccount, null);
+        filtered = MyContextHolder.get().persistentTimelines().getFiltered(true, TriState.FALSE, myAccount, null);
         assertTrue(!filtered.isEmpty());
 
-        List<Timeline> filtered2 = MyContextHolder.get().persistentTimelines().getFiltered(true, false, null, myAccount.getOrigin());
-        assertTrue(!filtered2.isEmpty());
+        filtered = MyContextHolder.get().persistentTimelines().getFiltered(true, TriState.FALSE, null, myAccount.getOrigin());
+        assertTrue(!filtered.isEmpty());
 
     }
 

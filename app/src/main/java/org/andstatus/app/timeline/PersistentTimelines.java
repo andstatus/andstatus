@@ -30,6 +30,7 @@ import org.andstatus.app.data.ParsedUri;
 import org.andstatus.app.database.TimelineTable;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.TriState;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -135,21 +136,18 @@ public class PersistentTimelines {
 
     @NonNull
     public List<Timeline> getFiltered(boolean isForSelector,
-                                      boolean isTimelineCombined,
-                                      MyAccount ma,
+                                      TriState isTimelineCombined,
+                                      MyAccount currentMyAccount,
                                       Origin origin) {
         List<Timeline> timelines = new ArrayList<>();
         for (Timeline timeline : getList()) {
-            boolean include = false;
-            if (isForSelector && !timeline.isDisplayedInSelector()) {
-                include = false;
-            } else if (isTimelineCombined) {
-                include = true;
-            } else if (ma != null && ma.isValid() && timeline.getMyAccount().equals(ma)) {
-                include = true;
-            } else if (origin != null && origin.isValid() && timeline.getOrigin().equals(origin)) {
-                include = true;
-            }
+            boolean include = (!isForSelector || timeline.isDisplayedInSelector()) &&
+                    isTimelineCombined.isBoolean(timeline.isCombined()) &&
+                    (currentMyAccount == null || !currentMyAccount.isValid() ||
+                            timeline.isCombined() ||
+                            timeline.getMyAccount().equals(currentMyAccount)) &&
+                    (origin == null || !origin.isValid() ||
+                            timeline.isCombined() || timeline.getOrigin().equals(origin));
             if (include) {
                 timelines.add(timeline);
             }
@@ -192,7 +190,8 @@ public class PersistentTimelines {
     }
 
     public void addDefaultMyAccountTimelinesIfNoneFound(MyAccount ma) {
-        if (ma.isValid() && getFiltered(false, false, ma, null).isEmpty()) {
+        if (ma.isValid() && getFiltered(false, TriState.UNKNOWN, ma, null).isEmpty()) {
+            addDefaultCombinedTimelinesIfNoneFound();
             addDefaultOriginTimelinesIfNoneFound(ma.getOrigin());
 
             long timelineId = MyQuery.conditionToLongColumnValue(TimelineTable.TABLE_NAME,
@@ -201,6 +200,19 @@ public class PersistentTimelines {
                 timelines.addAll(Timeline.addDefaultForAccount(myContext, ma));
                 sort(timelines);
             }
+        }
+    }
+
+    private void addDefaultCombinedTimelinesIfNoneFound() {
+        if (!timelines.isEmpty()) {
+            return;
+        }
+        long timelineId = MyQuery.conditionToLongColumnValue(TimelineTable.TABLE_NAME,
+                TimelineTable._ID,
+                TimelineTable.ACCOUNT_ID + "=0 AND " + TimelineTable.ORIGIN_ID + "=0");
+        if (timelineId == 0) {
+            timelines.addAll(Timeline.addDefaultCombined(myContext));
+            sort(timelines);
         }
     }
 

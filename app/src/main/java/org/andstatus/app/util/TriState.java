@@ -106,4 +106,8 @@ public enum TriState {
                 return UNKNOWN;
         }
     }
+
+    public boolean isBoolean(boolean value) {
+        return this.toBoolean(value) == value;
+    }
 }

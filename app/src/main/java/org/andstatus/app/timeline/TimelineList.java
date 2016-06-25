@@ -25,20 +25,26 @@ import android.widget.LinearLayout;
 
 import org.andstatus.app.LoadableListActivity;
 import org.andstatus.app.R;
+import org.andstatus.app.WhichPage;
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyUrlSpan;
 import org.andstatus.app.util.RelativeTime;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.TriState;
 import org.andstatus.app.widget.MyBaseAdapter;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
  * @author yvolk@yurivolkov.com
  */
 public class TimelineList extends LoadableListActivity {
+    private int sortByField = R.id.synced;
+    private TriState sortDesc = TriState.UNKNOWN;
 
     @Override
     protected void onPause() {
@@ -55,6 +61,27 @@ public class TimelineList extends LoadableListActivity {
         LayoutInflater inflater = getLayoutInflater();
         View listHeader = inflater.inflate(R.layout.timeline_list_header, linearLayout, false);
         linearLayout.addView(listHeader, 0);
+
+        ViewGroup columnHeadersParent = (ViewGroup) listHeader.findViewById(R.id.columnHeadersParent);
+        for (int i = 0; i < columnHeadersParent.getChildCount(); i++) {
+            View view = columnHeadersParent.getChildAt(i);
+            view.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    sortBy(v.getId());
+                }
+            });
+        }
+    }
+
+    private void sortBy(int fieldId) {
+        if (sortByField == fieldId) {
+            sortDesc = sortDesc.not();
+        } else {
+            sortDesc = TriState.UNKNOWN;
+        }
+        sortByField = fieldId;
+        showList(WhichPage.CURRENT);
     }
 
     @Override
@@ -70,11 +97,83 @@ public class TimelineList extends LoadableListActivity {
             @Override
             public void load(ProgressPublisher publisher) {
                 // TODO: Implement filter parameters in this activity
-                for (Timeline timeline : myContext.persistentTimelines().getFiltered(false, true, null, null)) {
+                for (Timeline timeline : myContext.persistentTimelines().
+                        getFiltered(false, TriState.UNKNOWN, null, null)) {
                     TimelineListViewItem viewItem = new TimelineListViewItem(
                             timeline,
                             TimelineTitle.load(timeline, MyAccount.getEmpty()));
                     mItems.add(viewItem);
+                }
+                if (sortByField != 0) {
+                    Collections.sort(mItems, new Comparator<TimelineListViewItem>() {
+                        @Override
+                        public int compare(TimelineListViewItem lhs, TimelineListViewItem rhs) {
+                            int result = 0;
+                            switch (sortByField) {
+                                case R.id.displayedInSelector:
+                                    return compareCheckbox(lhs.timeline.isDisplayedInSelector(), rhs.timeline.isDisplayedInSelector());
+                                case R.id.synced:
+                                    return compareSynced(lhs, rhs);
+                                case R.id.syncedDate:
+                                case R.id.syncedTimesCount:
+                                    result = compareDate(lhs.timeline.getSyncedDate(), rhs.timeline.getSyncedDate());
+                                    if (result == 0) {
+                                        return compareSynced(lhs, rhs);
+                                    }
+                                    break;
+                                case R.id.syncFailedDate:
+                                case R.id.syncFailedTimesCount:
+                                    result = compareDate(lhs.timeline.getSyncFailedDate(), rhs.timeline.getSyncFailedDate());
+                                    if (result == 0) {
+                                        return compareSynced(lhs, rhs);
+                                    }
+                                    break;
+                                case R.id.subTitle:
+                                    return compareString(lhs.timelineTitle.subTitle, rhs.timelineTitle.subTitle);
+                                case R.id.errorMessage:
+                                    return compareString(lhs.timeline.getErrorMessage(), rhs.timeline.getErrorMessage());
+                                default:
+                                    break;
+                            }
+                            return result;
+                        }
+
+                        private int compareString(String lhs, String rhs) {
+                            if (sortDesc == TriState.UNKNOWN) {
+                                sortDesc = TriState.FALSE;
+                            }
+                            int result = lhs == null ? 0 : lhs.compareTo(rhs);
+                            return result == 0 ? 0 : sortDesc.toBoolean(false) ? 0 - result : result;
+                        }
+
+                        private int compareSynced(TimelineListViewItem lhs, TimelineListViewItem rhs) {
+                            int result = compareDate(lhs.timeline.getLastSyncedDate(), rhs.timeline.getLastSyncedDate());
+                            if (result == 0) {
+                                result = compareCheckbox(lhs.timeline.isSynced(), rhs.timeline.isSynced());
+                            }
+                            if (result == 0) {
+                                result = compareCheckbox(lhs.timeline.isSyncable(), rhs.timeline.isSyncable());
+                            }
+                            return result;
+                        }
+
+                        private int compareDate(long lhs, long rhs) {
+                            if (sortDesc == TriState.UNKNOWN) {
+                                sortDesc = TriState.TRUE;
+                            }
+                            int result = lhs == rhs ? 0 : lhs > rhs ? 1 : -1;
+                            return result == 0 ? 0 : sortDesc.toBoolean(false) ? 0 - result : result;
+                        }
+
+                        private int compareCheckbox(boolean lhs, boolean rhs) {
+                            if (sortDesc == TriState.UNKNOWN) {
+                                sortDesc = TriState.TRUE;
+                            }
+                            int result = lhs == rhs ? 0 : lhs ? 1 : -1;
+                            return result == 0 ? 0 : sortDesc.toBoolean(false) ? 0 - result : result;
+                        }
+
+                    });
                 }
             }
 
@@ -95,6 +194,7 @@ public class TimelineList extends LoadableListActivity {
 
         return new MyBaseAdapter() {
             final List<TimelineListViewItem> mItems;
+
             {
                 mItems = (List<TimelineListViewItem>) getLoaded().getList();
             }
@@ -126,8 +226,18 @@ public class TimelineList extends LoadableListActivity {
                 view.setOnClickListener(this);
                 setPosition(view, position);
                 final TimelineListViewItem item = mItems.get(position);
-                MyUrlSpan.showText(view, R.id.title, item.timelineTitle.title, false);
-                MyUrlSpan.showText(view, R.id.subTitle,  item.timelineTitle.subTitle, false);
+                MyUrlSpan.showText(view, R.id.title, item.timelineTitle.title, false, true);
+                MyUrlSpan.showText(view, R.id.subTitle, item.timelineTitle.subTitle, false, true);
+                MyUrlSpan.showCheckBox(view, R.id.displayedInSelector, item.timeline.isDisplayedInSelector(),
+                        new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                boolean isChecked = ((CheckBox) v).isChecked();
+                                item.timeline.setDisplayedInSelector(isChecked);
+                                MyLog.v("isDisplayedInSelector", (isChecked ? "+ " : "- ") +
+                                        item.timelineTitle.toString());
+                            }
+                        });
                 MyUrlSpan.showCheckBox(view, R.id.synced, item.timeline.isSynced(),
                         item.timeline.isSyncable() ? new View.OnClickListener() {
                             @Override
@@ -137,17 +247,16 @@ public class TimelineList extends LoadableListActivity {
                                 MyLog.v("isSynced", (isChecked ? "+ " : "- ") + item.timelineTitle);
                             }
                         } : null);
-                MyUrlSpan.showText(view, R.id.syncedDate, StringUtils.notEmpty(
-                        RelativeTime.getDifference(TimelineList.this, item.timeline.getSyncedDate()), " "), false);
-                MyUrlSpan.showCheckBox(view, R.id.displayedInSelector, item.timeline.isDisplayedInSelector(),
-                        new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                boolean isChecked = ((CheckBox) v).isChecked();
-                                item.timeline.setDisplayedInSelector(isChecked);
-                                MyLog.v("isDisplayedInSelector", (isChecked ? "+ " : "- ") + item.timelineTitle.toString());
-                            }
-                });
+                MyUrlSpan.showText(view, R.id.syncedTimesCount, I18n.notZero(item.timeline.getSyncedTimesCount()), false, true);
+                MyUrlSpan.showText(view, R.id.newItemsCount, I18n.notZero(item.timeline.getNewItemsCount()), false, true);
+                MyUrlSpan.showText(view, R.id.syncedDate,
+                        RelativeTime.getDifference(TimelineList.this, item.timeline.getSyncedDate()),
+                        false, true);
+                MyUrlSpan.showText(view, R.id.syncFailedTimesCount, I18n.notZero(item.timeline.getSyncFailedTimesCount()), false, true);
+                MyUrlSpan.showText(view, R.id.syncFailedDate,
+                        RelativeTime.getDifference(TimelineList.this, item.timeline.getSyncFailedDate()),
+                        false, true);
+                MyUrlSpan.showText(view, R.id.errorMessage, item.timeline.getErrorMessage(), false, true);
                 return view;
             }
 

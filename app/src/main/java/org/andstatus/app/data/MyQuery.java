@@ -16,7 +16,6 @@
 
 package org.andstatus.app.data;
 
-import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteDoneException;
@@ -32,7 +31,7 @@ import org.andstatus.app.database.MsgOfUserTable;
 import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.database.UserTable;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.SharedPreferencesUtil;
+import org.andstatus.app.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -98,13 +97,18 @@ public class MyQuery {
         return sqlToLong(database, msgLog, sql);
     }
 
-    public static long sqlToLong(SQLiteDatabase databaseIn, String msgLog, String sql) {
+    public static long sqlToLong(SQLiteDatabase databaseIn, String msgLogIn, String sql) {
+        String msgLog = StringUtils.notNull(msgLogIn);
         SQLiteDatabase db = databaseIn == null ? MyContextHolder.get().getDatabase() : databaseIn;
         if (db == null) {
             MyLog.v(TAG, msgLog + "; database is null");
             return 0;
         }
-        String msgLogSql = msgLog + "; sql='" + sql +"'";
+        if (TextUtils.isEmpty(sql)) {
+            MyLog.v(TAG, msgLog + "; sql is empty");
+            return 0;
+        }
+        String msgLogSql = msgLog + (msgLog.contains(sql) ? "" : "; sql='" + sql +"'");
         long value = 0;
         SQLiteStatement statement = null;
         try {
@@ -313,17 +317,16 @@ public class MyQuery {
      * @return 0 in case not found or error or systemId==0
      */
     public static long conditionToLongColumnValue(String tableName, String columnName, String condition) {
-        final String method = "conditionToLongColumnValue";
-        String msgLog = method + "; table='" + tableName + "', column='" + columnName + "'"
-                + " where '" + condition + "'";
+        String sql = "SELECT t." + columnName +
+                " FROM " + tableName + " AS t" +
+                (TextUtils.isEmpty(condition) ? "" : " WHERE " + condition + ";");
         long columnValue = 0;
-        if (TextUtils.isEmpty(tableName) || TextUtils.isEmpty(columnName)) {
-            throw new IllegalArgumentException(msgLog + " tableName or columnName are empty");
-        } else if (!TextUtils.isEmpty(condition)) {
-            String sql = "SELECT t." + columnName
-                    + " FROM " + tableName + " AS t"
-                    + " WHERE " + condition;
-            columnValue = sqlToLong(null, msgLog, sql);
+        if (TextUtils.isEmpty(tableName)) {
+            throw new IllegalArgumentException("tableName is empty: " + sql);
+        } else if (TextUtils.isEmpty(columnName)) {
+            throw new IllegalArgumentException("columnName is empty: " + sql);
+        } else {
+            columnValue = sqlToLong(null, "", sql);
         }
         return columnValue;
     }

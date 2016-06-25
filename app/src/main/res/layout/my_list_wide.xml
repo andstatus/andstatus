@@ -43,9 +43,11 @@
 
                 <ListView
                     android:id="@android:id/list"
-                    android:layout_width="match_parent"
+                    android:layout_width="1000dp"
                     android:layout_height="match_parent"
                     android:scrollbars="vertical"
+                    tools:listheader="@layout/timeline_list_header"
+                    tools:listitem="@layout/timeline_list_item"
                     />
             </LinearLayout>
         </HorizontalScrollView>

@@ -5,36 +5,95 @@
               android:layout_height="wrap_content">
 
     <LinearLayout
+        android:id="@+id/columnHeadersParent"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:weightSum="8">
+        android:weightSum="30">
 
         <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:text="@string/title"
-            android:id="@+id/title"
-            android:layout_weight="2" />
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:text="@string/subtitle"
-            android:id="@+id/subTitle"
-            android:layout_weight="4" />
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:id="@+id/synced"
-            android:text="@string/synced_abbreviated"
-            android:layout_weight="1" />
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
             android:id="@+id/displayedInSelector"
+            android:minHeight="32dp"
+            android:gravity="center_vertical"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
             android:text="@string/displayed_in_selector_abbreviated"
             android:contentDescription="@string/displayed_in_selector"
             android:layout_weight="1" />
+        <TextView
+            android:id="@+id/title"
+            android:minHeight="32dp"
+            android:gravity="center_vertical"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@string/title"
+            android:layout_weight="3" />
+        <TextView
+            android:id="@+id/subTitle"
+            android:minHeight="32dp"
+            android:gravity="center_vertical"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@string/subtitle"
+            android:layout_weight="4" />
+        <TextView
+            android:id="@+id/synced"
+            android:minHeight="32dp"
+            android:gravity="center_vertical"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@string/synced_abbreviated"
+            android:layout_weight="1" />
+        <View style="@style/VerticalDivider"/>
+        <TextView
+            android:id="@+id/syncedTimesCount"
+            android:minHeight="32dp"
+            android:gravity="center_vertical"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@string/successfully_synced"
+            android:layout_weight="6" />
+        <TextView
+            android:id="@+id/newItemsCount"
+            android:minHeight="32dp"
+            android:gravity="center_vertical"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:layout_weight="0" />
+        <TextView
+            android:id="@+id/syncedDate"
+            android:minHeight="32dp"
+            android:gravity="center_vertical"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:layout_weight="0" />
+        <View style="@style/VerticalDivider"/>
+        <TextView
+            android:id="@+id/syncFailedTimesCount"
+            android:minHeight="32dp"
+            android:gravity="center_vertical"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@string/sync_failed"
+            android:layout_weight="5" />
+        <TextView
+            android:id="@+id/syncFailedDate"
+            android:minHeight="32dp"
+            android:gravity="center_vertical"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:layout_weight="0" />
+        <TextView
+            android:id="@+id/errorMessage"
+            android:minHeight="32dp"
+            android:gravity="center_vertical"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@string/error"
+            android:layout_weight="10" />
     </LinearLayout>
 
     <View android:id="@+id/divider" style="@style/Divider"/>

@@ -139,6 +139,10 @@ public enum TimelineType {
         switch (this) {
             case UNKNOWN:
             case MESSAGES_TO_ACT:
+            case USER:
+            case FRIENDS:
+            case FOLLOWERS:
+            case REPLIES:
                 return false;
             default:
                 return true;

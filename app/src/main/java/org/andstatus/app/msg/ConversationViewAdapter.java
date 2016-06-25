@@ -198,7 +198,7 @@ public class ConversationViewAdapter extends MyBaseAdapter {
 
     private void showMessageBody(ConversationViewItem item, View messageView) {
         TextView body = (TextView) messageView.findViewById(R.id.message_body);
-        MyUrlSpan.showText(body, item.mBody, true);
+        MyUrlSpan.showText(body, item.mBody, true, true);
     }
 
     private void showMessageDetails(ConversationViewItem item, View messageView) {

@@ -449,6 +449,16 @@ public class Timeline implements Comparable<Timeline> {
         return timelines;
     }
 
+    public static List<Timeline> addDefaultCombined(MyContext myContext) {
+        List<Timeline> timelines = new ArrayList<>();
+        for (TimelineType timelineType : TimelineType.values()) {
+            if (timelineType.isSelectable()) {
+                saveNewDefaultTimeline(new Timeline(myContext, timelineType, null, 0, null));
+            }
+        }
+        return timelines;
+    }
+
     protected static void saveNewDefaultTimeline(Timeline timeline) {
         timeline.displayedInSelector = true;
         timeline.selectorOrder = timeline.getTimelineType().ordinal();
@@ -735,5 +745,70 @@ public class Timeline implements Comparable<Timeline> {
 
     public boolean isSyncable() {
         return !isCombined && timelineType.isSyncable();
+    }
+
+
+    public long getNewItemsCount() {
+        return newItemsCount;
+    }
+
+    public void setNewItemsCount(long newItemsCount) {
+        this.newItemsCount = newItemsCount;
+    }
+
+    public long getNewItemsCountTotal() {
+        return newItemsCountTotal;
+    }
+
+    public void setNewItemsCountTotal(long newItemsCountTotal) {
+        this.newItemsCountTotal = newItemsCountTotal;
+    }
+
+    public long getSyncedTimesCount() {
+        return syncedTimesCount;
+    }
+
+    public void setSyncedTimesCount(long syncedTimesCount) {
+        this.syncedTimesCount = syncedTimesCount;
+    }
+
+    public long getSyncedTimesCountTotal() {
+        return syncedTimesCountTotal;
+    }
+
+    public void setSyncedTimesCountTotal(long syncedTimesCountTotal) {
+        this.syncedTimesCountTotal = syncedTimesCountTotal;
+    }
+
+    public long getSyncFailedDate() {
+        return syncFailedDate;
+    }
+
+    public void setSyncFailedDate(long syncFailedDate) {
+        this.syncFailedDate = syncFailedDate;
+    }
+
+    public long getSyncFailedTimesCount() {
+        return syncFailedTimesCount;
+    }
+
+    public void setSyncFailedTimesCount(long syncFailedTimesCount) {
+        this.syncFailedTimesCount = syncFailedTimesCount;
+    }
+
+    public long getSyncFailedTimesCountTotal() {
+        return syncFailedTimesCountTotal;
+    }
+
+    public void setSyncFailedTimesCountTotal(long syncFailedTimesCountTotal) {
+        this.syncFailedTimesCountTotal = syncFailedTimesCountTotal;
+    }
+
+    public String getErrorMessage() {
+        return errorMessage;
+    }
+
+    public long getLastSyncedDate() {
+        return syncedDate > 0 ? syncedDate : syncFailedDate;
     }
 }

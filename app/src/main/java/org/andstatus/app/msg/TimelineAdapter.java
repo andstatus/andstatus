@@ -90,10 +90,10 @@ public class TimelineAdapter extends MyBaseAdapter {
         view.setOnClickListener(this);
         setPosition(view, position);
         TimelineViewItem item = getItem(position);
-        MyUrlSpan.showText(view, R.id.message_author, item.authorName, false);
+        MyUrlSpan.showText(view, R.id.message_author, item.authorName, false, false);
         showRebloggers(item, view);
         showMessageBody(item, view);
-        MyUrlSpan.showText(view, R.id.message_details, item.getDetails(contextMenu.getActivity()), false);
+        MyUrlSpan.showText(view, R.id.message_details, item.getDetails(contextMenu.getActivity()), false, false);
         if (showAvatars) {
             showAvatar(item, view);
         }
@@ -126,7 +126,7 @@ public class TimelineAdapter extends MyBaseAdapter {
                 }
                 rebloggers += name;
             }
-            MyUrlSpan.showText(viewGroup, R.id.rebloggers, rebloggers, false);
+            MyUrlSpan.showText(viewGroup, R.id.rebloggers, rebloggers, false, false);
         } else {
             viewGroup.setVisibility(View.GONE);
         }
@@ -134,7 +134,7 @@ public class TimelineAdapter extends MyBaseAdapter {
 
     private void showMessageBody(TimelineViewItem item, View messageView) {
         TextView body = (TextView) messageView.findViewById(R.id.message_body);
-        MyUrlSpan.showText(body, item.body, true);
+        MyUrlSpan.showText(body, item.body, true, true);
     }
 
     private void preloadAttachments(int position) {

@@ -58,7 +58,7 @@ public class MyUrlSpanTest extends ActivityInstrumentationTestCase2<HelpActivity
             @Override
             public void run() {
                 mFlipper.setDisplayedChild(HelpActivity.PAGE_INDEX_LOGO);
-                MyUrlSpan.showText(textView, text, true);
+                MyUrlSpan.showText(textView, text, true, false);
                 if (SpannableString.class.isAssignableFrom(textView.getClass())) {
                     SpannableString spannable = (SpannableString) textView.getText();
                     URLSpan[] spans = spannable.getSpans(0, spannable.length(), URLSpan.class);
