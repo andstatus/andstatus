@@ -79,11 +79,11 @@ public final class CommandTable implements BaseColumns {
                 + CommandTable.TIMELINE_TYPE + " STRING,"
                 + CommandTable.ACCOUNT_ID + " INTEGER,"
                 + CommandTable.USER_ID + " INTEGER,"
-                + CommandTable.USERNAME + " TEXT,"
                 + CommandTable.ORIGIN_ID + " INTEGER,"
                 + CommandTable.SEARCH_QUERY + " TEXT,"
 
                 + CommandTable.ITEM_ID + " INTEGER,"
+                + CommandTable.USERNAME + " TEXT,"
 
                 + CommandTable.LAST_EXECUTED_DATE + " INTEGER,"
                 + CommandTable.EXECUTION_COUNT + " INTEGER DEFAULT 0 NOT NULL,"

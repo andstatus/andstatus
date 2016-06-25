@@ -68,6 +68,8 @@ public class CommandData implements Comparable<CommandData> {
     /** This is: 1. Generally: Message ID ({@link MsgTable#MSG_ID} of the {@link MsgTable})...
      */
     protected long itemId = 0;
+    /** Sometimes we don't know {@link #timeline#getUserId} yet... */
+    private String userName = "";
 
     private volatile int result = 0;
     private CommandResult commandResult = new CommandResult();
@@ -104,7 +106,7 @@ public class CommandData implements Comparable<CommandData> {
     @NonNull
     public static CommandData newUserCommand(CommandEnum command, @NonNull Origin origin, long userId, String userName) {
         CommandData commandData = newTimelineCommand(command, null, TimelineType.UNKNOWN, userId, origin);
-        commandData.timeline.setUserName(userName);
+        commandData.setUserName(userName);
         commandData.description = commandData.getUserName();
         return commandData;
     }
@@ -173,6 +175,7 @@ public class CommandData implements Comparable<CommandData> {
                             Timeline.fromBundle(bundle)),
                         bundle.getLong(IntentExtra.CREATED_DATE.key));
                 commandData.itemId = bundle.getLong(IntentExtra.ITEM_ID.key);
+                commandData.setUserName(BundleUtils.getString(bundle, IntentExtra.USER_NAME));
                 commandData.description = BundleUtils.getString(bundle, IntentExtra.COMMAND_DESCRIPTION);
                 commandData.mInForeground = bundle.getBoolean(IntentExtra.IN_FOREGROUND.key);
                 commandData.mManuallyLaunched = bundle.getBoolean(IntentExtra.MANUALLY_LAUNCHED.key);
@@ -199,15 +202,12 @@ public class CommandData implements Comparable<CommandData> {
         BundleUtils.putNotEmpty(bundle, IntentExtra.COMMAND, command.save());
         timeline.toBundle(bundle);
         BundleUtils.putNotZero(bundle, IntentExtra.ITEM_ID, itemId);
+        BundleUtils.putNotEmpty(bundle, IntentExtra.USER_NAME, userName);
         BundleUtils.putNotEmpty(bundle, IntentExtra.COMMAND_DESCRIPTION, description);
         bundle.putBoolean(IntentExtra.IN_FOREGROUND.key, mInForeground);
         bundle.putBoolean(IntentExtra.MANUALLY_LAUNCHED.key, mManuallyLaunched);
         bundle.putParcelable(IntentExtra.COMMAND_RESULT.key, commandResult);
         return bundle;
-    }
-
-    public void accumulateOneStep(CommandData commandData) {
-        commandResult.accumulateOneStep(commandData.getResult());
     }
 
     public void toContentValues(ContentValues values) {
@@ -219,6 +219,7 @@ public class CommandData implements Comparable<CommandData> {
         values.put(CommandTable.MANUALLY_LAUNCHED, mManuallyLaunched);
         timeline.toCommandContentValues(values);
         ContentValuesUtils.putNotZero(values, CommandTable.ITEM_ID, itemId);
+        values.put(CommandTable.USERNAME, userName);
         commandResult.toContentValues(values);
     }
 
@@ -237,6 +238,7 @@ public class CommandData implements Comparable<CommandData> {
         commandData.mInForeground = DbUtils.getBoolean(cursor, CommandTable.IN_FOREGROUND);
         commandData.mManuallyLaunched = DbUtils.getBoolean(cursor, CommandTable.MANUALLY_LAUNCHED);
         commandData.itemId = DbUtils.getLong(cursor, CommandTable.ITEM_ID);
+        commandData.setUserName(DbUtils.getString(cursor, CommandTable.USERNAME));
         commandData.commandResult = CommandResult.fromCursor(cursor);
         return commandData;
     }
@@ -290,6 +292,9 @@ public class CommandData implements Comparable<CommandData> {
         builder.append(getTimeline().toString() + ",");
         if (itemId != 0) {
             builder.append("itemId:" + itemId + ",");
+        }
+        if (!TextUtils.isEmpty(userName)) {
+            builder.append(", userName:'" + userName + "'");
         }
         builder.append("hashCode:" + hashCode() + ",");
         builder.append(CommandResult.toString(commandResult));
@@ -523,6 +528,12 @@ public class CommandData implements Comparable<CommandData> {
     }
 
     public String getUserName() {
-        return timeline.getUserName();
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        if (TextUtils.isEmpty(this.userName) && !TextUtils.isEmpty(userName)) {
+            this.userName = userName;
+        }
     }
 }

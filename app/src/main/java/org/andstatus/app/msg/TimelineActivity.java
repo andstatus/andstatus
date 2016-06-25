@@ -954,7 +954,7 @@ public class TimelineActivity extends LoadableListActivity implements
                 Timeline timeline = MyContextHolder.get().persistentTimelines()
                         .fromId(data.getLongExtra(IntentExtra.TIMELINE_ID.key, 0));
                 if (timeline.isValid()) {
-                    mContextMenu.switchTimelineActivity(paramsLoaded.getTimeline(), timeline, null);
+                    mContextMenu.switchTimelineActivity(getParamsLoaded().getTimeline(), timeline, null);
                 }
                 break;
             default:
@@ -966,9 +966,10 @@ public class TimelineActivity extends LoadableListActivity implements
     private void accountSelected(Intent data) {
         MyAccount ma = myContext.persistentAccounts().fromAccountName(data.getStringExtra(IntentExtra.ACCOUNT_NAME.key));
         if (ma.isValid()) {
-            setCurrentMyAccount(ma, ma.getOrigin());
             mContextMenu.switchTimelineActivity(getParamsLoaded().getTimeline(),
-                    getParamsLoaded().getTimeline().fromMyAccount(ma), getCurrentMyAccount());
+                    getParamsLoaded().getTimeline().isCombined() ?
+                            getParamsLoaded().getTimeline() :
+                            getParamsLoaded().getTimeline().fromMyAccount(ma), ma);
         }
     }
 

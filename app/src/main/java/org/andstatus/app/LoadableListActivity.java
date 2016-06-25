@@ -195,7 +195,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
                 myContext.persistentOrigins().fromId(originId));
     }
 
-    protected void setCurrentMyAccount(MyAccount ma, Origin origin) {
+    public void setCurrentMyAccount(MyAccount ma, Origin origin) {
         if (ma != null && ma.isValid()) {
             this.ma = ma;
         } else {

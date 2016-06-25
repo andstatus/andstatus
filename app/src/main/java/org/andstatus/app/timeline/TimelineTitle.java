@@ -64,7 +64,11 @@ public class TimelineTitle {
         }
         if (timeline.getUserId() != 0 && (timeline.isUserDifferentFromAccount() ||
                 timeline.getTimelineType().isAtOrigin())) {
-            I18n.appendWithSpace(title, MyQuery.userIdToWebfingerId(timeline.getUserId()));
+            if (timeline.isUserDifferentFromAccount()) {
+                I18n.appendWithSpace(title, MyQuery.userIdToWebfingerId(timeline.getUserId()));
+            } else {
+                I18n.appendWithSpace(title, timeline.getMyAccount().toAccountButtonText());
+            }
         }
         if (timeline.isCombined()) {
             I18n.appendWithSpace(title,

@@ -285,10 +285,15 @@ public class MessageContextMenu extends MyContextMenu {
     }
 
     public void switchTimelineActivity(Timeline timelinePrev, Timeline timeline, MyAccount currentMyAccount) {
+        MyAccount currentMyAccountToSet = MyAccount.getEmpty();
         if (currentMyAccount != null && currentMyAccount.isValid()) {
-            MyContextHolder.get().persistentAccounts().setCurrentAccount(timeline.getMyAccount());
+            currentMyAccountToSet = currentMyAccount;
         } else if (timeline.getMyAccount().isValid()) {
-            MyContextHolder.get().persistentAccounts().setCurrentAccount(timeline.getMyAccount());
+            currentMyAccountToSet = timeline.getMyAccount();
+        }
+        if (currentMyAccountToSet.isValid()) {
+            getActivity().setCurrentMyAccount(currentMyAccountToSet, currentMyAccountToSet.getOrigin());
+            MyContextHolder.get().persistentAccounts().setCurrentAccount(currentMyAccountToSet);
         }
         if (!timeline.equals(timelinePrev)) {
             if (MyLog.isVerboseEnabled()) {
