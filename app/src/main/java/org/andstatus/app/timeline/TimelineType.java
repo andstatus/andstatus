@@ -120,7 +120,7 @@ public enum TimelineType {
         }
     }
 
-    public boolean isSyncable() {
+    public boolean canBeSynced() {
         return getConnectionApiRoutine() != Connection.ApiRoutineEnum.DUMMY;
     }
 
@@ -217,10 +217,6 @@ public enum TimelineType {
             default:
                 return true;
         }
-    }
-
-    public boolean canBeSynced() {
-        return connectionApiRoutine != Connection.ApiRoutineEnum.DUMMY;
     }
 
     public Connection.ApiRoutineEnum getConnectionApiRoutine() {

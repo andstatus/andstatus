@@ -46,6 +46,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         if (!MyServiceManager.isServiceAvailable()) {
             MyLog.d(this, account.name + " Service unavailable");
             syncResult.stats.numIoExceptions++;
+            return;
         }
 
         new MyServiceCommandsRunner(MyContextHolder.initialize(mContext, this)).

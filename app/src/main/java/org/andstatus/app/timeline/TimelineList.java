@@ -149,7 +149,7 @@ public class TimelineList extends LoadableListActivity {
                                 result = compareCheckbox(lhs.timeline.isSynced(), rhs.timeline.isSynced());
                             }
                             if (result == 0) {
-                                result = compareCheckbox(lhs.timeline.isSyncable(), rhs.timeline.isSyncable());
+                                result = compareCheckbox(lhs.timeline.canBeSynced(), rhs.timeline.canBeSynced());
                             }
                             return result;
                         }
@@ -236,7 +236,7 @@ public class TimelineList extends LoadableListActivity {
                             }
                         });
                 MyUrlSpan.showCheckBox(view, R.id.synced, item.timeline.isSynced(),
-                        item.timeline.isSyncable() ? new View.OnClickListener() {
+                        item.timeline.canBeSynced() ? new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
                                 boolean isChecked = ((CheckBox) v).isChecked();

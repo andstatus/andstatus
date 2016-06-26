@@ -19,7 +19,6 @@ package org.andstatus.app.service;
 import android.text.TextUtils;
 
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
@@ -97,14 +96,14 @@ class CommandExecutorStrategy implements CommandExecutorParent {
                 if (execContext.getMyAccount().isValidAndSucceeded()) {
                     switch (execContext.getCommandData().getCommand()) {
                         case FETCH_TIMELINE:
-                            if (execContext.getCommandData().getTimeline().isSyncable()) {
+                            if (execContext.getCommandData().getTimeline().canBeSynced()) {
                                 strategy = new CommandExecutorLoadTimeline();
                             } else {
                                 strategy = new CommandExecutorStrategy();
                             }
                             break;
                         case SEARCH_MESSAGE:
-                            if (execContext.getCommandData().getTimeline().isSyncable()) {
+                            if (execContext.getCommandData().getTimeline().canBeSynced()) {
                                 strategy = new CommandExecutorSearch();
                             } else {
                                 strategy = new CommandExecutorStrategy();

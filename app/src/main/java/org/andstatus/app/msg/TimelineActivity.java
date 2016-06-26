@@ -860,12 +860,14 @@ public class TimelineActivity extends LoadableListActivity implements
     }
 
     protected void syncWithInternet(Timeline timelineToSync, boolean manuallyLaunched) {
-        if (getParamsNew().isTimelineCombined() && timelineToSync.getTimelineType().canBeCombinedForOrigins()) {
+        if (timelineToSync.canBeSyncedForOrigins()) {
             syncForAllOrigins(timelineToSync, manuallyLaunched);
-        } else if (getParamsNew().isTimelineCombined() && timelineToSync.getTimelineType().canBeCombinedForMyAccounts()) {
+        } else if (timelineToSync.canBeSyncedForAccounts()) {
             syncForAllAccounts(timelineToSync, manuallyLaunched);
-        } else {
+        } else if (timelineToSync.canBeSynced()) {
             syncOneTimeline(timelineToSync, manuallyLaunched);
+        } else {
+            hideSyncing("SyncWithInternet");
         }
     }
 
@@ -892,7 +894,7 @@ public class TimelineActivity extends LoadableListActivity implements
 
     private void syncOneTimeline(Timeline timeline, boolean manuallyLaunched) {
         final String method = "syncOneTimeline";
-        if (timeline.getMyAccount().isValidAndSucceeded() && timeline.getTimelineType().canBeSynced() ) {
+        if (timeline.canBeSynced()) {
             setCircularSyncIndicator(method, true);
             showSyncing(method, getText(R.string.options_menu_sync));
             MyServiceManager.sendForegroundCommand(

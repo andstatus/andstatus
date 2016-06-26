@@ -138,7 +138,9 @@ public class ParsedUri {
     public long getOriginId() {
         long originId = 0;
         try {
-            originId = Long.parseLong(uri.getPathSegments().get(5));
+            if (uri.getPathSegments().size() > 4) {
+                originId = Long.parseLong(uri.getPathSegments().get(5));
+            }
         } catch (Exception e) {
             MyLog.d(this, toString(), e);
         }

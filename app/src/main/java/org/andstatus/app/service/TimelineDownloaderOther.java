@@ -25,7 +25,6 @@ import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.ConnectionException.StatusCode;
-import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.net.social.MbTimelineItem;
 import org.andstatus.app.net.social.TimelinePosition;
 import org.andstatus.app.timeline.LatestTimelineItem;
@@ -41,8 +40,8 @@ class TimelineDownloaderOther extends TimelineDownloader {
 
     @Override
     public void download() throws ConnectionException {
-        if (!getTimeline().isSyncable()) {
-            throw new IllegalArgumentException("Invalid Timeline for download: " + getTimeline());
+        if (!getTimeline().canBeSynced()) {
+            throw new IllegalArgumentException("Timeline cannot be synced: " + getTimeline());
         }
 
         LatestTimelineItem latestTimelineItem = new LatestTimelineItem(getTimeline());

@@ -26,6 +26,7 @@ import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextImpl;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.database.OriginTable;
+import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.MyLog;
 
 import java.util.ArrayList;
@@ -168,5 +169,15 @@ public class PersistentOrigins {
             }
         }
         return origins;
+    }
+
+    // TODO: implement
+    public boolean canBeSynced(TimelineType timelineType, long originId) {
+        switch (timelineType) {
+            case PUBLIC:
+                return true;
+            default:
+                return false;
+        }
     }
 }
