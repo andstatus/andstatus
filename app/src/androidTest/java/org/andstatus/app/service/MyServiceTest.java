@@ -20,12 +20,15 @@ import android.content.SyncResult;
 import android.test.InstrumentationTestCase;
 
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.timeline.Timeline;
 import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
+import org.andstatus.app.util.TriState;
 
 import java.net.MalformedURLException;
 import java.util.Queue;
@@ -87,26 +90,48 @@ public class MyServiceTest extends InstrumentationTestCase {
         MyAccount myAccount = MyContextHolder.get().persistentAccounts().getFirstSucceededForOriginId(0);
         assertTrue("No successful account", myAccount != null);
 
+        MyContext myContext = MyContextHolder.get();
+        for (Timeline timeline : myContext.persistentTimelines().getFiltered(false, TriState.FALSE,
+                myAccount, null)) {
+            if (timeline.isSynced()) {
+                if (timeline.isTimeToAutoSync()) {
+                    timeline.setSyncSucceededDate(System.currentTimeMillis());
+                }
+            }
+        }
         SyncResult syncResult = new SyncResult();
-        MyServiceCommandsRunner runner = new MyServiceCommandsRunner(getInstrumentation().getTargetContext());
-        runner.syncAccount(myAccount.getAccountName(), syncResult);
-        assertFalse(runner.toString(), runner.isSyncCompleted());
-        assertTrue(mService.httpConnectionMock.getRequestsCounter() + " requests were sent" +
-                " while service was unavailable. " +
-                mService.httpConnectionMock.toString(),
-                mService.httpConnectionMock.getRequestsCounter() == 0);
-
-        syncResult = new SyncResult();
-        runner = new MyServiceCommandsRunner(getInstrumentation().getTargetContext());
+        MyServiceCommandsRunner runner = new MyServiceCommandsRunner(myContext);
         runner.setIgnoreServiceAvailability(true);
-        runner.syncAccount(myAccount.getAccountName(), syncResult);
+        runner.autoSyncAccount(myAccount.getAccountName(), syncResult);
         assertTrue(runner.toString(), runner.isSyncCompleted());
-        assertTrue(runner.toString() + "; " + mService.httpConnectionMock.toString(),
-                mService.httpConnectionMock.getRequestsCounter() > 1);
+        assertEquals("Requests were sent while all timelines just synced " +
+                runner.toString() + "; " + mService.httpConnectionMock.toString(),
+                0, mService.httpConnectionMock.getRequestsCounter());
+
+        myContext = MyContextHolder.get();
+        Timeline timelineToSync = null;
+        for (Timeline timeline : myContext.persistentTimelines().getFiltered(false, TriState.FALSE,
+                myAccount, null)) {
+            if (timeline.isSynced()) {
+                timelineToSync = timeline;
+                break;
+            }
+        }
+        timelineToSync.setSyncSucceededDate(0);
+
+        runner = new MyServiceCommandsRunner(myContext);
+        runner.setIgnoreServiceAvailability(true);
+        syncResult = new SyncResult();
+        runner.autoSyncAccount(myAccount.getAccountName(), syncResult);
+        assertTrue(runner.toString(), runner.isSyncCompleted());
+        assertEquals("Timeline was not synced: " + timelineToSync + "; " +
+                runner.toString() + "; " + mService.httpConnectionMock.toString(),
+                1, mService.httpConnectionMock.getRequestsCounter());
 
         assertTrue("Service stopped", mService.waitForServiceStopped(true));
         MyLog.v(this, method + " ended");
     }
+
 
     public void testHomeTimeline() {
         final String method = "testHomeTimeline";

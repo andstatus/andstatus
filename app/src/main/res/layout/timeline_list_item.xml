@@ -48,7 +48,7 @@
         style="@style/messageBodyAppearance"/>
     <View style="@style/VerticalDivider"/>
     <TextView
-        android:id="@+id/syncedDate"
+        android:id="@+id/syncSucceededDate"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         tools:text="3 days ago"

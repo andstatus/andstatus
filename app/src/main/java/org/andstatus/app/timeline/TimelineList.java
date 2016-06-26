@@ -26,7 +26,6 @@ import android.widget.LinearLayout;
 import org.andstatus.app.LoadableListActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.WhichPage;
-import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyUrlSpan;
@@ -112,9 +111,9 @@ public class TimelineList extends LoadableListActivity {
                                     return compareCheckbox(lhs.timeline.isDisplayedInSelector(), rhs.timeline.isDisplayedInSelector());
                                 case R.id.synced:
                                     return compareSynced(lhs, rhs);
-                                case R.id.syncedDate:
+                                case R.id.syncSucceededDate:
                                 case R.id.syncedTimesCount:
-                                    result = compareDate(lhs.timeline.getSyncedDate(), rhs.timeline.getSyncedDate());
+                                    result = compareDate(lhs.timeline.getSyncSucceededDate(), rhs.timeline.getSyncSucceededDate());
                                     if (result == 0) {
                                         return compareSynced(lhs, rhs);
                                     }
@@ -247,8 +246,8 @@ public class TimelineList extends LoadableListActivity {
                         } : null);
                 MyUrlSpan.showText(view, R.id.syncedTimesCount, I18n.notZero(item.timeline.getSyncedTimesCount()), false, true);
                 MyUrlSpan.showText(view, R.id.newItemsCount, I18n.notZero(item.timeline.getNewItemsCount()), false, true);
-                MyUrlSpan.showText(view, R.id.syncedDate,
-                        RelativeTime.getDifference(TimelineList.this, item.timeline.getSyncedDate()),
+                MyUrlSpan.showText(view, R.id.syncSucceededDate,
+                        RelativeTime.getDifference(TimelineList.this, item.timeline.getSyncSucceededDate()),
                         false, true);
                 MyUrlSpan.showText(view, R.id.syncFailedTimesCount, I18n.notZero(item.timeline.getSyncFailedTimesCount()), false, true);
                 MyUrlSpan.showText(view, R.id.syncFailedDate,

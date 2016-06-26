@@ -16,11 +16,10 @@
 
 package org.andstatus.app.service;
 
-import android.content.Context;
 import android.content.SyncResult;
 
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MyContext;
 import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.timeline.Timeline;
 import org.andstatus.app.util.MyLog;
@@ -32,35 +31,27 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class MyServiceCommandsRunner implements MyServiceEventsListener {
 
-    private final Context mContext;
+    private final MyContext myContext;
     private boolean syncStarted = false;
     private final Map<CommandData, Boolean> commands = new ConcurrentHashMap<>();
     private final Object syncLock = new Object();
     private final MyServiceEventsReceiver eventsReceiver;
     private boolean ignoreServiceAvailability = false;
 
-    public MyServiceCommandsRunner(Context context) {
-        this.mContext = context;
+    public MyServiceCommandsRunner(MyContext myContext) {
+        this.myContext = myContext;
         eventsReceiver = new MyServiceEventsReceiver(this);
     }
 
-    public void syncAccount(String accountName, SyncResult syncResult) {
+    public void autoSyncAccount(String accountName, SyncResult syncResult) {
         final String method = "syncAccount " + accountName;
         syncStarted = false;
-        if (!MyServiceManager.isServiceAvailable()) {
-            MyLog.d(this, method + "; Service unavailable");
-            if (!ignoreServiceAvailability) {
-                syncResult.stats.numIoExceptions++;
-                return;
-            }
-        }
-        MyContextHolder.initialize(mContext, this);
-        if (!MyContextHolder.get().isReady()) {
+        if (!myContext.isReady()) {
             syncResult.stats.numIoExceptions++;
             MyLog.d(this, method + "; Context is not ready");
             return;
         }
-        MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(accountName);
+        MyAccount ma = myContext.persistentAccounts().fromAccountName(accountName);
         if (!ma.isValid()) {
             syncResult.stats.numIoExceptions++;
             MyLog.d(this, method + "; The account was not loaded");
@@ -72,8 +63,8 @@ public class MyServiceCommandsRunner implements MyServiceEventsListener {
         }
 
         List<CommandData> commandsOnly = new ArrayList<>();
-        for (Timeline timeline : MyContextHolder.get().persistentTimelines()
-                .toSyncForAccount(MyContextHolder.get().persistentAccounts()
+        for (Timeline timeline : myContext.persistentTimelines()
+                .toAutoSyncForAccount(myContext.persistentAccounts()
                         .fromAccountName(accountName))) {
             commandsOnly.add(CommandData.newTimelineCommand(CommandEnum.FETCH_TIMELINE, timeline));
         }
@@ -107,7 +98,7 @@ public class MyServiceCommandsRunner implements MyServiceEventsListener {
                 commands.put(commandData, false);
             }
         }
-        eventsReceiver.registerReceiver(mContext);
+        eventsReceiver.registerReceiver(myContext.context());
         for (CommandData commandData : commands.keySet()) {
             if (ignoreServiceAvailability) {
                 MyServiceManager.sendCommandEvenForUnavailable(commandData);
@@ -157,7 +148,7 @@ public class MyServiceCommandsRunner implements MyServiceEventsListener {
     }
 
     public void unregisterReceiver() {
-        eventsReceiver.unregisterReceiver(mContext);
+        eventsReceiver.unregisterReceiver(myContext.context());
     }
 
     int getCompletedCount() {

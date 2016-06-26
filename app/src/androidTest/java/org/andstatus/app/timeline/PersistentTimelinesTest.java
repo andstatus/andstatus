@@ -83,7 +83,9 @@ public class PersistentTimelinesTest extends InstrumentationTestCase {
             for (TimelineType timelineType : TimelineType.defaultOriginTimelineTypes) {
                 long count = 0;
                 for (Timeline timeline : MyContextHolder.get().persistentTimelines().getList()) {
-                    if (timeline.getOrigin().equals(origin) && timeline.getTimelineType().equals(timelineType)) {
+                    if (timeline.getOrigin().equals(origin) &&
+                            timeline.getTimelineType().equals(timelineType) &&
+                            timeline.getSearchQuery().isEmpty()) {
                         count++;
                     }
                 }

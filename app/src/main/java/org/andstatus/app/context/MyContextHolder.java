@@ -90,17 +90,16 @@ public final class MyContextHolder {
     /**
      * Reinitializes in a case preferences have been changed
      * Blocks on initialization
-     * @return preferencesChangeTime or 0 in a case of error
      */
-    public static long initialize(Context context, Object initializedBy) {
+    public static MyContext initialize(Context context, Object initializedBy) {
         if (DatabaseConverterController.isUpgrading()) {
             MyLog.v(TAG, "Skipping initialization: upgrade in progress (called by: " + initializedBy + ")");
-            return 0;
+            return get();
         }
         return initializeDuringUpgrade(context, initializedBy);
     }
 
-    public static long initializeDuringUpgrade(Context context, Object initializedBy) {
+    public static MyContext initializeDuringUpgrade(Context context, Object initializedBy) {
         if (get().initialized() && isConfigChanged()) {
             synchronized(CONTEXT_LOCK) {
                 if (get().initialized() && isConfigChanged()) {
@@ -118,14 +117,14 @@ public final class MyContextHolder {
             MyLog.v(TAG, "Already initialized by " + get().initializedBy() +  " (called by: " + initializedBy + ")");
         }
         try {
-            return getBlocking(context, initializedBy).preferencesChangeTime();
+            return getBlocking(context, initializedBy);
         } catch (InterruptedException e) {
             MyLog.d(TAG, "Initialize was interrupted, releasing resources...", e);
             synchronized(CONTEXT_LOCK) {
                 get().setExpired();
             }
             Thread.currentThread().interrupt();
-            return 0;
+            return get();
         }
     }
 
@@ -136,7 +135,7 @@ public final class MyContextHolder {
     /**
      *  Wait till the MyContext instance is available. Start the initialization if necessary. 
      */
-    public static MyContext getBlocking(Context context, Object calledBy) throws InterruptedException {
+    private static MyContext getBlocking(Context context, Object calledBy) throws InterruptedException {
         MyContext myContext =  myInitializedContext;
         while (myContext == null || !myContext.initialized() || myContext.isExpired()) {
             MyFutureTaskExpirable<MyContext> myFutureContextCopy = myFutureContext;

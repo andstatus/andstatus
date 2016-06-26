@@ -75,7 +75,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
     protected final long mInstanceId = InstanceId.next();
     protected MyContext myContext = MyContextHolder.get();
     private long configChangeTime = 0;
-    private boolean configChanged = false;
+    private volatile boolean configChanged = false;
     MyServiceEventsReceiver myServiceReceiver;
 
     private final Object loaderLock = new Object();
@@ -102,7 +102,8 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
         super.onCreate(savedInstanceState);
         textualSyncIndicator = findViewById(R.id.sync_indicator);
 
-        configChangeTime = MyContextHolder.initialize(this, this);
+        myContext = MyContextHolder.initialize(this, this);
+        configChangeTime = myContext.preferencesChangeTime();
         if (MyLog.isDebugEnabled()) {
             MyLog.d(this, "onCreate instanceId=" + mInstanceId
                             + " , config changed " + RelativeTime.secondsAgo(configChangeTime)
@@ -110,7 +111,6 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
                             + (MyContextHolder.get().isReady() ? "" : ", MyContext is not ready")
             );
         }
-        myContext = MyContextHolder.get();
 
         MyServiceManager.setServiceAvailable();
         myServiceReceiver = new MyServiceEventsReceiver(this);
@@ -391,12 +391,12 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
         MyLog.v(this, method + ", instanceId=" + mInstanceId
                 + (mFinishing ? ", finishing" : "") );
         if (!mFinishing) {
-            long configChangeTimeNew = MyContextHolder.initialize(this, this);
-            if (configChangeTimeNew != configChangeTime) {
+            MyContext myContextNew = MyContextHolder.initialize(this, this);
+            if (this.myContext != myContextNew || configChangeTime != myContextNew.preferencesChangeTime()) {
                 configChanged = true;
             }
             myServiceReceiver.registerReceiver(this);
-            MyContextHolder.get().setInForeground(true);
+            myContextNew.setInForeground(true);
             if (size() == 0 && !isLoading()) {
                 showList(WhichPage.ANY);
             }

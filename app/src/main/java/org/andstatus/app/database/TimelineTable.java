@@ -49,7 +49,7 @@ public class TimelineTable implements BaseColumns {
     public static final String SELECTOR_ORDER = "selector_order";
 
     /** When this timeline was last time successfully synced */
-    public static final String SYNCED_DATE = "synced_date";
+    public static final String SYNC_SUCCEEDED_DATE = "sync_succeeded_date";
     /** When last sync error occurred */
     public static final String SYNC_FAILED_DATE = "sync_failed_date";
     /** Error message at {@link #SYNC_FAILED_DATE} */
@@ -104,7 +104,7 @@ public class TimelineTable implements BaseColumns {
                 + TimelineTable.DISPLAY_IN_SELECTOR + " BOOLEAN DEFAULT 1 NOT NULL,"
                 + TimelineTable.SELECTOR_ORDER + " INTEGER DEFAULT 1 NOT NULL,"
 
-                + TimelineTable.SYNCED_DATE + " INTEGER,"
+                + TimelineTable.SYNC_SUCCEEDED_DATE + " INTEGER,"
                 + TimelineTable.SYNC_FAILED_DATE + " INTEGER,"
                 + TimelineTable.ERROR_MESSAGE + " TEXT,"
 

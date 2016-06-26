@@ -79,7 +79,7 @@ public class Timeline implements Comparable<Timeline> {
     private long selectorOrder = 100;
 
     /** When this timeline was last time successfully synced */
-    private long syncedDate = 0;
+    private long syncSucceededDate = 0;
     /** When last sync error occurred */
     private long syncFailedDate = 0;
     /** Error message at {@link #syncFailedDate} */
@@ -248,7 +248,7 @@ public class Timeline implements Comparable<Timeline> {
         values.put(TimelineTable.DISPLAY_IN_SELECTOR, displayedInSelector);
         values.put(TimelineTable.SELECTOR_ORDER, selectorOrder);
 
-        values.put(TimelineTable.SYNCED_DATE, syncedDate);
+        values.put(TimelineTable.SYNC_SUCCEEDED_DATE, syncSucceededDate);
         values.put(TimelineTable.SYNC_FAILED_DATE, syncFailedDate);
         values.put(TimelineTable.ERROR_MESSAGE, errorMessage);
 
@@ -308,7 +308,7 @@ public class Timeline implements Comparable<Timeline> {
         timeline.displayedInSelector = DbUtils.getBoolean(cursor, TimelineTable.DISPLAY_IN_SELECTOR);
         timeline.selectorOrder = DbUtils.getLong(cursor, TimelineTable.SELECTOR_ORDER);
 
-        timeline.syncedDate = DbUtils.getLong(cursor, TimelineTable.SYNCED_DATE);
+        timeline.syncSucceededDate = DbUtils.getLong(cursor, TimelineTable.SYNC_SUCCEEDED_DATE);
         timeline.syncFailedDate = DbUtils.getLong(cursor, TimelineTable.SYNC_FAILED_DATE);
         timeline.errorMessage = DbUtils.getString(cursor, TimelineTable.ERROR_MESSAGE);
 
@@ -625,6 +625,23 @@ public class Timeline implements Comparable<Timeline> {
         return userId != 0 && myAccount.getUserId() != userId;
     }
 
+    /**
+     * @return true if it's time to auto update this timeline
+     */
+    public boolean isTimeToAutoSync() {
+        long frequencyMs = MyPreferences.getSyncFrequencyMs();
+        long passedMs = System.currentTimeMillis() - getSyncSucceededDate();
+        boolean blnOut = passedMs > frequencyMs;
+
+        if (blnOut && MyLog.isVerboseEnabled()) {
+            MyLog.v(this, "It's time to auto update " + this +
+                    ". " +
+                    java.util.concurrent.TimeUnit.MILLISECONDS.toMinutes(passedMs) +
+                    " minutes passed.");
+        }
+        return blnOut;
+    }
+
     public String getYoungestPosition() {
         return youngestPosition;
     }
@@ -729,7 +746,7 @@ public class Timeline implements Comparable<Timeline> {
             syncFailedTimesCount++;
             syncFailedTimesCountTotal++;
         } else {
-            syncedDate = System.currentTimeMillis();
+            syncSucceededDate = System.currentTimeMillis();
             syncedTimesCount++;
             syncedTimesCountTotal++;
         }
@@ -740,8 +757,12 @@ public class Timeline implements Comparable<Timeline> {
         changed = true;
     }
 
-    public long getSyncedDate() {
-        return syncedDate;
+    public long getSyncSucceededDate() {
+        return syncSucceededDate;
+    }
+
+    public void setSyncSucceededDate(long syncSucceededDate) {
+        this.syncSucceededDate = syncSucceededDate;
     }
 
     public boolean isSyncable() {
@@ -810,7 +831,7 @@ public class Timeline implements Comparable<Timeline> {
     }
 
     public long getLastSyncedDate() {
-        return syncedDate > 0 ? syncedDate : syncFailedDate;
+        return syncSucceededDate > 0 ? syncSucceededDate : syncFailedDate;
     }
 
     @NonNull

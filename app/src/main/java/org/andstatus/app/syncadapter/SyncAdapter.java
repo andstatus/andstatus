@@ -25,7 +25,9 @@ import android.content.Context;
 import android.content.SyncResult;
 import android.os.Bundle;
 
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.service.MyServiceCommandsRunner;
+import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
 
 public class SyncAdapter extends AbstractThreadedSyncAdapter {
@@ -41,7 +43,12 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     public void onPerformSync(Account account, Bundle extras, String authority,
             ContentProviderClient provider, SyncResult syncResult) {
 
-        MyServiceCommandsRunner runner = new MyServiceCommandsRunner(mContext);
-        runner.syncAccount(account.name, syncResult);
+        if (!MyServiceManager.isServiceAvailable()) {
+            MyLog.d(this, account.name + " Service unavailable");
+            syncResult.stats.numIoExceptions++;
+        }
+
+        new MyServiceCommandsRunner(MyContextHolder.initialize(mContext, this)).
+                autoSyncAccount(account.name, syncResult);
     }
 }

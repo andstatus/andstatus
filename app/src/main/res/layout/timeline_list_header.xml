@@ -62,7 +62,7 @@
             android:text=""
             android:layout_weight="0" />
         <TextView
-            android:id="@+id/syncedDate"
+            android:id="@+id/syncSucceededDate"
             android:minHeight="32dp"
             android:gravity="center_vertical"
             android:layout_width="0dp"

@@ -16,34 +16,27 @@
 
 package org.andstatus.app.timeline;
 
-import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.net.social.TimelinePosition;
 import org.andstatus.app.util.MyLog;
 
 import java.util.Date;
 
-
 /**
- * Retrieve and save information about position of the latest downloaded timeline item. 
- * E.g. the "timeline item" is a "message" for Twitter and an "Activity" for Pump.Io.  
+ * Retrieve and save information about position in a Timeline of the latest downloaded timeline item.
+ * The "timeline item" is e.g. a "message" for Twitter and an "Activity" for Pump.Io.
  */
 public class LatestTimelineItem {
     private static final String TAG = LatestTimelineItem.class.getSimpleName();
 
     private final Timeline timeline;
-    /**
-     * The timeline is of this User, for all timeline types.
-     */
+    /** The timeline is of this User, for all timeline types. */
     private long userId = 0;
     
     private boolean maySaveThis = false;
     
     TimelinePosition position = TimelinePosition.getEmpty();
-    /**
-     * 
-     * 0 - none were downloaded
-     */
+    /** 0 - none were downloaded */
     long timelineItemDate = 0;
     /**
      * Last date when this timeline was successfully downloaded.
@@ -106,9 +99,7 @@ public class LatestTimelineItem {
         timelineDateChanged = true;
     }
     
-    /**
-     * Persist the info into the Database
-     */
+    /** Save to the Timeline (not to the Database yet... */
     public void save() {
         if (MyLog.isVerboseEnabled()) {
             MyLog.v(this, this.toString());
@@ -141,23 +132,6 @@ public class LatestTimelineItem {
             timeline.setYoungestItemDate(timelineItemDate);
             timeline.setYoungestPosition(position.getPosition());
         }
-    }
-    
-    /**
-     * @return true if it's time to auto update this timeline
-     */
-    public boolean isTimeToAutoUpdate() {
-        long frequencyMs = MyPreferences.getSyncFrequencyMs();
-        long passedMs = System.currentTimeMillis() - getTimelineDownloadedDate(); 
-        boolean blnOut = passedMs > frequencyMs;
-        
-        if (blnOut && MyLog.isVerboseEnabled()) {
-            MyLog.v(this, "It's time to auto update " + timeline.toString() +
-                    ". " +
-                    java.util.concurrent.TimeUnit.MILLISECONDS.toMinutes(passedMs) +
-                    " minutes passed.");
-        }
-        return blnOut;
     }
 
     public void clearPosition() {

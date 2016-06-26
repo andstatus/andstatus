@@ -25,9 +25,7 @@ import org.andstatus.app.WhichPage;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.timeline.LatestTimelineItem;
 import org.andstatus.app.timeline.Timeline;
-import org.andstatus.app.timeline.TimelineTitle;
 import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
@@ -123,8 +121,7 @@ public class TimelineLoader implements LoadableListActivity.SyncLoader {
                 }
             } else {
                 // This timeline doesn't update automatically so let's do it now if necessary
-                LatestTimelineItem latestTimelineItem = new LatestTimelineItem(getParams().getTimeline());
-                if (latestTimelineItem.isTimeToAutoUpdate()) {
+                if (getParams().getTimeline().isTimeToAutoSync()) {
                     getParams().timelineToSync = getParams().getTimeline();
                 }
             }
