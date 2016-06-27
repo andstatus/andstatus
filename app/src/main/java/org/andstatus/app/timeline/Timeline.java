@@ -303,12 +303,12 @@ public class Timeline implements Comparable<Timeline> {
             return MyAccount.getEmpty();
         }
         MyAccount myAccount = myAccountIn == null ? MyAccount.getEmpty() : myAccountIn;
-        long userId = timelineType.requiresUserToBeDefined() ? userIdIn : 0;
+        long userId = timelineType.isForUser() ? userIdIn : 0;
         if (myContext.persistentAccounts().isAccountUserId(userId)) {
             myAccount = myContext.persistentAccounts().fromUserId(userId);
         }
         if (timelineType.isAtOrigin() &&
-                !timelineType.requiresUserToBeDefined() &&
+                !timelineType.isForUser() &&
                 userId == 0 || (userId != 0 && !myContext.persistentAccounts().isAccountUserId(userId))
                 ) {
             return MyAccount.getEmpty();
@@ -317,7 +317,7 @@ public class Timeline implements Comparable<Timeline> {
     }
 
     private long fixedUserId(TimelineType timelineType, long userId) {
-        if (userId == 0 && myAccount.isValid() && timelineType.requiresUserToBeDefined()) {
+        if (userId == 0 && myAccount.isValid() && timelineType.isForUser()) {
             return myAccount.getUserId();
         }
         return userId;
@@ -354,14 +354,14 @@ public class Timeline implements Comparable<Timeline> {
                 isCombined = true;
             }
         }
-        if (timelineType.requiresUserToBeDefined() && userId == 0) {
+        if (timelineType.isForUser() && userId == 0) {
             isCombined = true;
         }
         if (isCombined != calcIsCombined(timelineType, origin, myAccount)) {
             return TimelineType.UNKNOWN;
         }
 
-        if (timelineType.requiresUserToBeDefined()) {
+        if (timelineType.isForUser()) {
             if (myAccount.getUserId() == userId) {
                 switch (timelineType) {
                     case USER:

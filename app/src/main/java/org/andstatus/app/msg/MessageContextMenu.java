@@ -16,7 +16,6 @@
 
 package org.andstatus.app.msg;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.ContextMenu;
@@ -29,11 +28,9 @@ import org.andstatus.app.ContextMenuHeader;
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.MyContextMenu;
 import org.andstatus.app.R;
-import org.andstatus.app.WhichPage;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DownloadStatus;
-import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MessageForAccount;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.timeline.Timeline;
@@ -229,7 +226,7 @@ public class MessageContextMenu extends MyContextMenu {
         if (ma1.isValid() && !forceFirstUser
                 && !msg.isTiedToThisAccount()
                 && ma1.getUserId() != currentMyAccount.getUserId()
-                && !messageList.getTimeline().getTimelineType().requiresUserToBeDefined()) {
+                && !messageList.getTimeline().getTimelineType().isForUser()) {
             if (currentMyAccount.isValid() && ma1.getOriginId() == currentMyAccount.getOriginId()) {
                 msg = new MessageForAccount(mMsgId, currentMyAccount);
             }

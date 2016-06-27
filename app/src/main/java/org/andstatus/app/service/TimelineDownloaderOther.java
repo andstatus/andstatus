@@ -66,7 +66,7 @@ class TimelineDownloaderOther extends TimelineDownloader {
             MyLog.d(this, strLog);
         }
         String userOid =  MyQuery.idToOid(OidEnum.USER_OID, execContext.getCommandData().getUserId(), 0);
-        if (TextUtils.isEmpty(userOid) && getTimeline().getTimelineType().requiresUserToBeDefined()) {
+        if (TextUtils.isEmpty(userOid) && getTimeline().getTimelineType().isForUser()) {
             throw new ConnectionException("User oId is not found for id=" + execContext.getCommandData().getUserId());
         }
         int toDownload = MAXIMUM_NUMBER_OF_MESSAGES_TO_DOWNLOAD;

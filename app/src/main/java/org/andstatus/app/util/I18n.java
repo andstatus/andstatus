@@ -163,4 +163,13 @@ public class I18n {
             return Long.toString(value);
         }
     }
+
+    public static void appendAtNewLine(StringBuilder builder, String string) {
+        if (!TextUtils.isEmpty(string)) {
+            if (builder.length() > 0) {
+                builder.append(", \n");
+            }
+            builder.append(string);
+        }
+    }
 }

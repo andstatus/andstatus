@@ -75,7 +75,7 @@ public class CommandData implements Comparable<CommandData> {
     private CommandResult commandResult = new CommandResult();
 
     public static CommandData newSearch(Origin origin, String queryString) {
-        Timeline timeline =  new Timeline(TimelineType.PUBLIC, null, 0, origin);
+        Timeline timeline =  new Timeline(TimelineType.SEARCH, null, 0, origin);
         timeline.setSearchQuery(queryString);
         CommandData commandData = new CommandData(0, CommandEnum.SEARCH_MESSAGE, timeline, 0);
         return commandData;

@@ -16,10 +16,9 @@
 
 package org.andstatus.app.service;
 
-import android.text.TextUtils;
-
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.net.http.ConnectionException;
+import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
 
@@ -96,15 +95,22 @@ class CommandExecutorStrategy implements CommandExecutorParent {
                 if (execContext.getMyAccount().isValidAndSucceeded()) {
                     switch (execContext.getCommandData().getCommand()) {
                         case FETCH_TIMELINE:
-                            if (execContext.getCommandData().getTimeline().canBeSynced()) {
-                                strategy = new CommandExecutorLoadTimeline();
-                            } else {
-                                strategy = new CommandExecutorStrategy();
-                            }
-                            break;
                         case SEARCH_MESSAGE:
                             if (execContext.getCommandData().getTimeline().canBeSynced()) {
-                                strategy = new CommandExecutorSearch();
+                                switch (execContext.getCommandData().getTimelineType()) {
+                                    case FOLLOWERS:
+                                    case MY_FOLLOWERS:
+                                    case FRIENDS:
+                                    case MY_FRIENDS:
+                                        strategy = new TimelineDownloaderFollowers();
+                                        break;
+                                    case SEARCH:
+                                        strategy = new TimelineDownloaderSearch();
+                                        break;
+                                    default:
+                                        strategy = new TimelineDownloaderOther();
+                                        break;
+                                }
                             } else {
                                 strategy = new CommandExecutorStrategy();
                             }
@@ -150,22 +156,13 @@ class CommandExecutorStrategy implements CommandExecutorParent {
             execContext.getResult().incrementNumIoExceptions();
         }
         StringBuilder builder = new StringBuilder(100);
-        appendAtNewLine(builder, detailedMessage);
+        I18n.appendAtNewLine(builder, detailedMessage);
         if (e != null) {
-            appendAtNewLine(builder, e.toString());
+            I18n.appendAtNewLine(builder, e.toString());
         }
-        appendAtNewLine(builder, execContext.toExceptionContext());
+        I18n.appendAtNewLine(builder, execContext.toExceptionContext());
         execContext.getResult().setMessage(builder.toString());
         MyLog.e(this, builder.toString());
-    }
-
-    public static void appendAtNewLine(StringBuilder builder, String string) {
-        if (!TextUtils.isEmpty(string)) {
-            if (builder.length() > 0) {
-                builder.append(", \n");
-            }
-            builder.append(string);
-        }
     }
 
     void execute() {

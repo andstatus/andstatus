@@ -51,6 +51,7 @@ public enum TimelineType {
     /** Same as {@link #FOLLOWERS} but for my accounts only */
     MY_FOLLOWERS("my_followers", R.string.followers, Connection.ApiRoutineEnum.GET_FOLLOWERS),
     PUBLIC("public", R.string.timeline_title_public, Connection.ApiRoutineEnum.PUBLIC_TIMELINE),
+    SEARCH("search", R.string.options_menu_search, Connection.ApiRoutineEnum.SEARCH_MESSAGES),
     EVERYTHING("everything", R.string.timeline_title_everything, Connection.ApiRoutineEnum.DUMMY),
     DRAFTS("drafts", R.string.timeline_title_drafts, Connection.ApiRoutineEnum.DUMMY),
     OUTBOX("outbox", R.string.timeline_title_outbox, Connection.ApiRoutineEnum.DUMMY),
@@ -172,8 +173,41 @@ public enum TimelineType {
             case FRIENDS:
             case FOLLOWERS:
             case PUBLIC:
+            case SEARCH:
             case EVERYTHING:
             case MESSAGES_TO_ACT:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    public boolean isForUser() {
+        switch (this) {
+            case UNKNOWN:
+            case PUBLIC:
+            case EVERYTHING:
+            case SEARCH:
+                return false;
+            default:
+                return true;
+        }
+    }
+
+    public boolean isForSearchQuery() {
+        switch (this) {
+            case SEARCH:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    public boolean canBeCombinedForOrigins() {
+        switch (this) {
+            case PUBLIC:
+            case SEARCH:
+            case EVERYTHING:
                 return true;
             default:
                 return false;
@@ -195,27 +229,6 @@ public enum TimelineType {
                 return true;
             default:
                 return false;
-        }
-    }
-
-    public boolean canBeCombinedForOrigins() {
-        switch (this) {
-            case PUBLIC:
-            case EVERYTHING:
-                return true;
-            default:
-                return false;
-        }
-    }
-
-    public boolean requiresUserToBeDefined() {
-        switch (this) {
-            case UNKNOWN:
-            case PUBLIC:
-            case EVERYTHING:
-                return false;
-            default:
-                return true;
         }
     }
 

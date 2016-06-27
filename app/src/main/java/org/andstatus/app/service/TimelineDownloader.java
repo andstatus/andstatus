@@ -16,9 +16,12 @@
 
 package org.andstatus.app.service;
 
+import android.database.sqlite.SQLiteConstraintException;
+
 import org.andstatus.app.data.DataInserter;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.timeline.Timeline;
+import org.andstatus.app.util.MyLog;
 
 /**
  * Downloads ("loads") different types of Timelines 
@@ -27,24 +30,26 @@ import org.andstatus.app.timeline.Timeline;
  * 
  * @author yvolk@yurivolkov.com
  */
-abstract class TimelineDownloader {
-    protected CommandExecutionContext execContext;
-    
-    protected static TimelineDownloader getStrategy(CommandExecutionContext execContext) {
-        TimelineDownloader td;
-        switch (execContext.getTimeline().getTimelineType()) {
-            case FOLLOWERS:
-            case MY_FOLLOWERS:
-            case FRIENDS:
-            case MY_FRIENDS:
-                td = new TimelineDownloaderFollowers();
-                break;
-            default:
-                td = new TimelineDownloaderOther();
-                break;
+abstract class TimelineDownloader extends CommandExecutorStrategy {
+
+    @Override
+    void execute() {
+        try {
+            if (execContext.getMyAccount().getConnection().isApiSupported(execContext.getTimeline().getTimelineType().getConnectionApiRoutine())) {
+                MyLog.d(this, "Getting " + execContext.getCommandData().toCommandSummary(execContext.getMyContext()) +
+                        " by " + execContext.getMyAccount().getAccountName() );
+                download();
+                onSyncEnded();
+            } else {
+                MyLog.v(this, execContext.getTimeline() + " is not supported for "
+                        + execContext.getMyAccount().getAccountName());
+            }
+            logOk(true);
+        } catch (ConnectionException e) {
+            logConnectionException(e, "Load Timeline");
+        } catch (SQLiteConstraintException e) {
+            MyLog.e(this, execContext.getTimeline().toString(), e);
         }
-        td.execContext = execContext;
-        return td;
     }
 
     public abstract void download() throws ConnectionException;
