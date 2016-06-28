@@ -344,4 +344,8 @@ public class TimelineListParameters {
     public Uri getContentUri() {
         return MatchedUri.getTimelineUri(timeline);
     }
+
+    public MyContext getMyContext() {
+        return myContext;
+    }
 }

@@ -4,6 +4,7 @@ import android.support.annotation.NonNull;
 import android.test.InstrumentationTestCase;
 
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.net.social.TimelinePosition;
@@ -35,10 +36,11 @@ public class LatestTimelineItemTest extends InstrumentationTestCase {
     }
 
     private void oneTimelineType(TimelineType timelineType, String accountName) {
-        MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(accountName);
+        MyContext myContext = MyContextHolder.get();
+        MyAccount ma = myContext.persistentAccounts().fromAccountName(accountName);
         assertTrue(ma.isValid());
         assertEquals("Account was found", ma.getAccountName(), accountName);
-        Timeline timeline = getTimeline(timelineType, ma);
+        Timeline timeline = getTimeline(myContext, timelineType, ma);
         if (timelineType.isAtOrigin()) {
             assertEquals("Timeline persistence " + timeline,
                     Arrays.asList(TimelineType.defaultOriginTimelineTypes).contains(timelineType)
@@ -55,10 +57,9 @@ public class LatestTimelineItemTest extends InstrumentationTestCase {
                 new TimelinePosition("position_" + timelineType.save() + "_" + accountName),
                 System.currentTimeMillis() - LATEST_ITEM_MILLIS_AGO);
         latest.save();
-        timeline.saveIfChanged();
+        timeline.save(myContext);
 
-        MyContextHolder.get().persistentTimelines().initialize();
-        timeline = getTimeline(timelineType, ma);
+        timeline = getTimeline(myContext, timelineType, ma);
 
         latest = new LatestTimelineItem(timeline);
         long time2 = System.currentTimeMillis();
@@ -78,8 +79,8 @@ public class LatestTimelineItemTest extends InstrumentationTestCase {
     }
 
     @NonNull
-    private Timeline getTimeline(TimelineType timelineType, MyAccount ma) {
-        return MyContextHolder.get().persistentTimelines()
+    private Timeline getTimeline(MyContext myContext, TimelineType timelineType, MyAccount ma) {
+        return myContext.persistentTimelines()
                 .fromNewTimeLine(new Timeline(timelineType, ma, 0, null));
     }
 }

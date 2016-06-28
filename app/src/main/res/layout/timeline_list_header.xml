@@ -9,7 +9,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:weightSum="30">
+        android:weightSum="36">
 
         <TextView
             android:id="@+id/displayedInSelector"
@@ -27,7 +27,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:text="@string/title"
-            android:layout_weight="3" />
+            android:layout_weight="4" />
         <TextView
             android:id="@+id/subTitle"
             android:minHeight="32dp"
@@ -93,7 +93,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:text="@string/error"
-            android:layout_weight="10" />
+            android:layout_weight="15" />
     </LinearLayout>
 
     <View android:id="@+id/divider" style="@style/Divider"/>

@@ -57,6 +57,7 @@ import org.andstatus.app.service.MyServiceState;
 import org.andstatus.app.service.QueueViewer;
 import org.andstatus.app.test.SelectorActivityMock;
 import org.andstatus.app.timeline.Timeline;
+import org.andstatus.app.timeline.TimelineList;
 import org.andstatus.app.timeline.TimelineSelector;
 import org.andstatus.app.timeline.TimelineTitle;
 import org.andstatus.app.timeline.TimelineType;
@@ -446,6 +447,9 @@ public class TimelineActivity extends LoadableListActivity implements
                 break;
             case R.id.commands_queue_id:
                 startActivity(new Intent(getActivity(), QueueViewer.class));
+                break;
+            case R.id.manage_timelines:
+                startActivity(new Intent(getActivity(), TimelineList.class));
                 break;
             case R.id.preferences_menu_id:
                 startMyPreferenceActivity();

@@ -4,7 +4,7 @@
               android:orientation="horizontal"
               android:layout_width="match_parent"
               android:layout_height="wrap_content"
-              android:weightSum="30" >
+              android:weightSum="36" >
 
     <CheckBox
         android:id="@+id/displayedInSelector"
@@ -16,7 +16,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         tools:text="Home"
-        android:layout_weight="3"
+        android:layout_weight="4"
         style="@style/messageBodyAppearance"/>
     <TextView
         android:id="@+id/subTitle"
@@ -76,5 +76,5 @@
         android:layout_height="wrap_content"
         tools:text="Error: not found something"
         android:id="@+id/errorMessage"
-        android:layout_weight="10" />
+        android:layout_weight="15" />
 </LinearLayout>

@@ -33,17 +33,20 @@ import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * @author yvolk@yurivolkov.com
  */
 public class PersistentTimelines {
-    private final List<Timeline> timelines = new ArrayList<>();
+    private final ConcurrentMap<Long, Timeline> timelines = new ConcurrentHashMap<>();
     private final MyContext myContext;
 
     public static PersistentTimelines newEmpty(MyContext myContext) {
@@ -71,7 +74,7 @@ public class PersistentTimelines {
                     if (!timeline.isValid()) {
                         MyLog.e(context, method + "; invalid skipped " + timeline);
                     } else {
-                        timelines.add(timeline);
+                        timelines.put(timeline.getId(), timeline);
                         if (MyLog.isVerboseEnabled() && timelines.size() < 5) {
                             MyLog.v(context, method + "; " + timeline);
                         }
@@ -80,7 +83,6 @@ public class PersistentTimelines {
             } finally {
                 DbUtils.closeSilently(c);
             }
-            sort(timelines);
             MyLog.v(this, "Timelines initialized, " + timelines.size() + " timelines");
         }
         return this;
@@ -88,16 +90,11 @@ public class PersistentTimelines {
 
     @NonNull
     public Timeline fromId(long id) {
-        Timeline timelineFound = Timeline.getEmpty(MyAccount.getEmpty(myContext));
-        if (id != 0) {
-            for (Timeline timeline : timelines) {
-                if (timeline.getId() == id) {
-                    timelineFound = timeline;
-                    break;
-                }
-            }
+        Timeline timeline = timelines.get(id);
+        if (timeline == null) {
+            timeline = Timeline.getEmpty(MyAccount.getEmpty(myContext));
         }
-        return timelineFound;
+        return timeline;
     }
 
     @NonNull
@@ -110,7 +107,7 @@ public class PersistentTimelines {
     @NonNull
     public Timeline fromNewTimeLine(Timeline newTimeline) {
         Timeline found = newTimeline;
-        for (Timeline timeline : timelines) {
+        for (Timeline timeline : values()) {
             if (timeline.equals(newTimeline)) {
                 found = timeline;
                 break;
@@ -119,14 +116,14 @@ public class PersistentTimelines {
         return found;
     }
 
-    public List<Timeline> getList() {
-        return timelines;
+    public Collection<Timeline> values() {
+        return timelines.values();
     }
 
     @NonNull
     public List<Timeline> toAutoSyncForAccount(MyAccount ma) {
         List<Timeline> timelines = new ArrayList<>();
-        for (Timeline timeline : getList()) {
+        for (Timeline timeline : values()) {
             if (timeline.isSynced() && timeline.getMyAccount().equals(ma) && timeline.isTimeToAutoSync()) {
                 timelines.add(timeline);
             }
@@ -140,7 +137,7 @@ public class PersistentTimelines {
                                       MyAccount currentMyAccount,
                                       Origin origin) {
         List<Timeline> timelines = new ArrayList<>();
-        for (Timeline timeline : getList()) {
+        for (Timeline timeline : values()) {
             boolean include = (!isForSelector || timeline.isDisplayedInSelector()) &&
                     isTimelineCombined.isBoolean(timeline.isCombined()) &&
                     (currentMyAccount == null || !currentMyAccount.isValid() ||
@@ -154,6 +151,7 @@ public class PersistentTimelines {
         }
         if (isForSelector) {
             removeDuplicatesForSelector(timelines);
+            sortForSelector(timelines);
         }
         return timelines;
     }
@@ -169,7 +167,7 @@ public class PersistentTimelines {
         timelines.retainAll(map.values());
     }
 
-    private void sort(List<Timeline> timelines) {
+    private static void sortForSelector(List<Timeline> timelines) {
         Collections.sort(timelines, new Comparator<Timeline>() {
             @Override
             public int compare(Timeline lhs, Timeline rhs) {
@@ -189,15 +187,14 @@ public class PersistentTimelines {
     }
 
     public void addDefaultMyAccountTimelinesIfNoneFound(MyAccount ma) {
-        if (ma.isValid() && getFiltered(false, TriState.UNKNOWN, ma, null).isEmpty()) {
+        if (ma.isValid() && getFiltered(false, TriState.FALSE, ma, null).isEmpty()) {
             addDefaultCombinedTimelinesIfNoneFound();
             addDefaultOriginTimelinesIfNoneFound(ma.getOrigin());
 
             long timelineId = MyQuery.conditionToLongColumnValue(TimelineTable.TABLE_NAME,
                     TimelineTable._ID, TimelineTable.ACCOUNT_ID + "=" + ma.getUserId());
             if (timelineId == 0) {
-                timelines.addAll(Timeline.addDefaultForAccount(myContext, ma));
-                sort(timelines);
+                Timeline.addDefaultForAccount(myContext, ma);
             }
         }
     }
@@ -210,8 +207,7 @@ public class PersistentTimelines {
                 TimelineTable._ID,
                 TimelineTable.ACCOUNT_ID + "=0 AND " + TimelineTable.ORIGIN_ID + "=0");
         if (timelineId == 0) {
-            timelines.addAll(Timeline.addDefaultCombined(myContext));
-            sort(timelines);
+            Timeline.addDefaultCombined(myContext);
         }
     }
 
@@ -222,21 +218,22 @@ public class PersistentTimelines {
                     TimelineTable.ORIGIN_ID + "=" + origin.getId() + " AND " +
                             TimelineTable.TIMELINE_TYPE + "='" + TimelineType.EVERYTHING.save() + "'");
             if (timelineId == 0) {
-                timelines.addAll(Timeline.addDefaultForOrigin(myContext, origin));
-                sort(timelines);
+                Timeline.addDefaultForOrigin(myContext, origin);
             }
         }
     }
 
     public void onAccountDelete(MyAccount ma) {
         List<Timeline> toRemove = new ArrayList<>();
-        for (Timeline timeline : getList()) {
+        for (Timeline timeline : values()) {
             if (timeline.getMyAccount().equals(ma)) {
                 timeline.delete();
                 toRemove.add(timeline);
             }
         }
-        timelines.removeAll(toRemove);
+        for (Timeline timeline : toRemove) {
+            timelines.remove(timeline.getId());
+        }
     }
 
     @NonNull
@@ -245,13 +242,19 @@ public class PersistentTimelines {
     }
 
     public void saveChanged() {
-        for (Timeline timeline : getList()) {
-            timeline.saveIfChanged();
+        for (Timeline timeline : values()) {
+            timeline.save(myContext);
         }
     }
 
     public Timeline getHome() {
         return fromNewTimeLine(getDefaultForCurrentAccount().
                 fromIsCombined(MyPreferences.isTimelineCombinedByDefault()));
+    }
+
+    public void addNew(Timeline timeline) {
+        if (timeline.getId() != 0) {
+            timelines.putIfAbsent(timeline.getId(), timeline);
+        }
     }
 }

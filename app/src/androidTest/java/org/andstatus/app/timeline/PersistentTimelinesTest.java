@@ -24,6 +24,7 @@ import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.TriState;
 
+import java.util.Collection;
 import java.util.List;
 
 public class PersistentTimelinesTest extends InstrumentationTestCase {
@@ -35,12 +36,12 @@ public class PersistentTimelinesTest extends InstrumentationTestCase {
     }
 
     public void testList() throws Exception {
-        List<Timeline> timelines = MyContextHolder.get().persistentTimelines().getList();
+        Collection<Timeline> timelines = MyContextHolder.get().persistentTimelines().values();
         assertTrue(timelines.size() > 0);
     }
 
     public void testFilteredList() throws Exception {
-        List<Timeline> timelines = MyContextHolder.get().persistentTimelines().getList();
+        Collection<Timeline> timelines = MyContextHolder.get().persistentTimelines().values();
         List<Timeline> filtered = MyContextHolder.get().persistentTimelines().getFiltered(false, TriState.UNKNOWN, null, null);
         assertEquals(timelines.size(), filtered.size());
 
@@ -67,7 +68,7 @@ public class PersistentTimelinesTest extends InstrumentationTestCase {
         for (MyAccount myAccount : MyContextHolder.get().persistentAccounts().collection()) {
             for (TimelineType timelineType : TimelineType.defaultMyAccountTimelineTypes) {
                 long count = 0;
-                for (Timeline timeline : MyContextHolder.get().persistentTimelines().getList()) {
+                for (Timeline timeline : MyContextHolder.get().persistentTimelines().values()) {
                     if (timeline.getMyAccount().equals(myAccount) && timeline.getTimelineType().equals(timelineType)) {
                         count++;
                     }
@@ -82,7 +83,7 @@ public class PersistentTimelinesTest extends InstrumentationTestCase {
             MyAccount myAccount = MyContextHolder.get().persistentAccounts().getFirstSucceededForOriginId(origin.getId());
             for (TimelineType timelineType : TimelineType.defaultOriginTimelineTypes) {
                 long count = 0;
-                for (Timeline timeline : MyContextHolder.get().persistentTimelines().getList()) {
+                for (Timeline timeline : MyContextHolder.get().persistentTimelines().values()) {
                     if (timeline.getOrigin().equals(origin) &&
                             timeline.getTimelineType().equals(timelineType) &&
                             timeline.getSearchQuery().isEmpty()) {

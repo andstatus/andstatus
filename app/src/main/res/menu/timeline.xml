@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- 
-    Copyright (c) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
-	Copyright (C) 2008 Torgny Bjers
-	
+    Copyright (c) 2016 yvolk (Yuri Volkov), http://yurivolkov.com
+
 	Licensed under the Apache License, Version 2.0 (the "License");
 	you may not use this file except in compliance with the License.
 	You may obtain a copy of the License at
@@ -78,6 +77,11 @@
         android:id="@+id/commands_queue_id"
         app:showAsAction="never"
         android:title="@string/title_preference_notifications_queue">
+    </item>
+    <item
+        android:id="@+id/manage_timelines"
+        app:showAsAction="never"
+        android:title="@string/manage_timelines">
     </item>
     <item
         android:id="@+id/preferences_menu_id"

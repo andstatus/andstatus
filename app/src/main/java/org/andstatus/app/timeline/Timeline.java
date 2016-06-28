@@ -228,7 +228,7 @@ public class Timeline implements Comparable<Timeline> {
     public static List<Timeline> addDefaultForAccount(MyContext myContext, MyAccount myAccount) {
         List<Timeline> timelines = new ArrayList<>();
         for (TimelineType timelineType : TimelineType.defaultMyAccountTimelineTypes) {
-            saveNewDefaultTimeline(new Timeline(myContext, timelineType, myAccount, 0, null));
+            saveNewDefaultTimeline(myContext, new Timeline(myContext, timelineType, myAccount, 0, null));
         }
         return timelines;
     }
@@ -236,7 +236,7 @@ public class Timeline implements Comparable<Timeline> {
     public static Collection<Timeline> addDefaultForOrigin(MyContext myContext, Origin origin) {
         List<Timeline> timelines = new ArrayList<>();
         for (TimelineType timelineType : TimelineType.defaultOriginTimelineTypes) {
-            saveNewDefaultTimeline(new Timeline(myContext, timelineType, null, 0, origin));
+            saveNewDefaultTimeline(myContext, new Timeline(myContext, timelineType, null, 0, origin));
         }
         return timelines;
     }
@@ -245,17 +245,17 @@ public class Timeline implements Comparable<Timeline> {
         List<Timeline> timelines = new ArrayList<>();
         for (TimelineType timelineType : TimelineType.values()) {
             if (timelineType.isSelectable()) {
-                saveNewDefaultTimeline(new Timeline(myContext, timelineType, null, 0, null));
+                saveNewDefaultTimeline(myContext, new Timeline(myContext, timelineType, null, 0, null));
             }
         }
         return timelines;
     }
 
-    protected static void saveNewDefaultTimeline(Timeline timeline) {
+    protected static void saveNewDefaultTimeline(MyContext myContext, Timeline timeline) {
         timeline.displayedInSelector = true;
         timeline.selectorOrder = timeline.getTimelineType().ordinal();
         timeline.setSynced(timeline.getTimelineType().isSyncableByDefault());
-        timeline.save();
+        timeline.save(myContext);
     }
 
     public static Timeline fromBundle(Bundle bundle) {
@@ -534,18 +534,21 @@ public class Timeline implements Comparable<Timeline> {
         return selectorOrder;
     }
 
-    public long saveIfChanged() {
+    public long save(MyContext myContext) {
         if (needToLoadUserInTimeline()) {
             changed = true;
         }
-        if (id != 0 && !changed) {
-            return id;
-        } else {
-            return save();
+        if (id == 0 || changed) {
+            boolean isNew = id == 0;
+            saveInternal();
+            if (isNew && id != 0) {
+                myContext.persistentTimelines().addNew(this);
+            }
         }
+        return id;
     }
 
-    public long save() {
+    private long saveInternal() {
         if (needToLoadUserInTimeline()) {
             userInTimeline = MyQuery.userIdToName(userId, MyPreferences.getUserInTimeline());
         }

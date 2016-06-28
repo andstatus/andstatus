@@ -60,6 +60,6 @@ abstract class TimelineDownloader extends CommandExecutorStrategy {
 
     public void onSyncEnded() {
         getTimeline().onSyncEnded(execContext.getCommandData().getResult());
-        getTimeline().save();
+        getTimeline().save(execContext.getMyContext());
     }
 }
