@@ -130,7 +130,7 @@ public class TimelineLoader implements LoadableListActivity.SyncLoader {
 
     private boolean noMessagesInATimeline(Cursor cursor) {
         return getParams().whichPage.isYoungest()
-                && !getParams().hasSearchQuery()
+                && !getParams().getTimeline().hasSearchQuery()
                 && cursor != null && !cursor.isClosed() && cursor.getCount() == 0;
     }
 

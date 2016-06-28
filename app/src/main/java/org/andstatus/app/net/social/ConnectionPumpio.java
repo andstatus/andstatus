@@ -618,7 +618,7 @@ public class ConnectionPumpio extends Connection {
     }
     
     @Override
-    public List<MbTimelineItem> search(String searchQuery, int limit)
+    public List<MbTimelineItem> search(TimelinePosition youngestPosition, int limit, String searchQuery)
             throws ConnectionException {
         return new ArrayList<MbTimelineItem>();
     }

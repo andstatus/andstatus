@@ -95,7 +95,6 @@ class CommandExecutorStrategy implements CommandExecutorParent {
                 if (execContext.getMyAccount().isValidAndSucceeded()) {
                     switch (execContext.getCommandData().getCommand()) {
                         case FETCH_TIMELINE:
-                        case SEARCH_MESSAGE:
                             if (execContext.getCommandData().getTimeline().canBeSynced()) {
                                 switch (execContext.getCommandData().getTimelineType()) {
                                     case FOLLOWERS:
@@ -103,9 +102,6 @@ class CommandExecutorStrategy implements CommandExecutorParent {
                                     case FRIENDS:
                                     case MY_FRIENDS:
                                         strategy = new TimelineDownloaderFollowers();
-                                        break;
-                                    case SEARCH:
-                                        strategy = new TimelineDownloaderSearch();
                                         break;
                                     default:
                                         strategy = new TimelineDownloaderOther();

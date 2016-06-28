@@ -236,11 +236,6 @@ public class PersistentTimelines {
         }
     }
 
-    @NonNull
-    public Timeline fromParsedUri(ParsedUri parsedUri, String searchQuery) {
-        return fromNewTimeLine(Timeline.fromParsedUri(myContext, parsedUri, searchQuery));
-    }
-
     public void saveChanged() {
         for (Timeline timeline : values()) {
             timeline.save(myContext);

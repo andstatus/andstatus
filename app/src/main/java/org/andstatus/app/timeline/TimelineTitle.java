@@ -16,6 +16,8 @@
 
 package org.andstatus.app.timeline;
 
+import android.text.TextUtils;
+
 import org.andstatus.app.MyActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
@@ -45,10 +47,11 @@ public class TimelineTitle {
 
     @Override
     public String toString() {
-        StringBuilder stringBuilder = new StringBuilder(title);
-        I18n.appendWithSpace(stringBuilder, ";");
-        I18n.appendWithSpace(stringBuilder, subTitle);
-        return stringBuilder.toString();
+        StringBuilder builder = new StringBuilder(title);
+        if (!TextUtils.isEmpty(subTitle)) {
+            I18n.appendWithSpace(builder, subTitle);
+        }
+        return builder.toString();
     }
 
     public static TimelineTitle load(MyContext myContext, Timeline timeline, MyAccount currentMyAccount) {
@@ -93,7 +96,7 @@ public class TimelineTitle {
                 nameAdded = true;
             }
         }
-        if (currentMyAccount.isValid()) {
+        if (currentMyAccount != null && currentMyAccount.isValid()) {
             if (nameAdded) {
                 subTitle.append(";");
             }

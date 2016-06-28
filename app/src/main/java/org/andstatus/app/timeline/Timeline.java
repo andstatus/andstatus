@@ -47,7 +47,7 @@ import java.util.List;
  * @author yvolk@yurivolkov.com
  */
 public class Timeline implements Comparable<Timeline> {
-    private long id;
+    private volatile long id;
 
     private final TimelineType timelineType;
     /** "Authenticated User" used to retrieve/post to... this Timeline */
@@ -81,58 +81,58 @@ public class Timeline implements Comparable<Timeline> {
     private final boolean canBeSyncedForOrigins;
 
     /** If the timeline is synced automatically */
-    private boolean synced = false;
+    private volatile boolean synced = false;
 
     /** If the timeline should be shown in a Timeline selector */
-    private boolean displayedInSelector = false;
+    private volatile boolean displayedInSelector = false;
     /** Used for sorting timelines in a selector */
-    private long selectorOrder = 100;
+    private volatile long selectorOrder = 100;
 
     /** When this timeline was last time successfully synced */
-    private long syncSucceededDate = 0;
+    private volatile long syncSucceededDate = 0;
     /** When last sync error occurred */
-    private long syncFailedDate = 0;
+    private volatile long syncFailedDate = 0;
     /** Error message at {@link #syncFailedDate} */
-    private String errorMessage = "";
+    private volatile String errorMessage = "";
 
     /** Number of successful sync operations: "Synced {@link #syncedTimesCount} times" */
-    private long syncedTimesCount = 0;
+    private volatile long syncedTimesCount = 0;
     /** Number of failed sync operations */
-    private long syncFailedTimesCount = 0;
-    private long newItemsCount = 0;
-    private long countSince = 0;
+    private volatile long syncFailedTimesCount = 0;
+    private volatile long newItemsCount = 0;
+    private volatile long countSince = 0;
 
     /** Accumulated numbers for statistics. They are reset by a user's request */
-    private long syncedTimesCountTotal = 0;
-    private long syncFailedTimesCountTotal = 0;
-    private long newItemsCountTotal = 0;
+    private volatile long syncedTimesCountTotal = 0;
+    private volatile long syncFailedTimesCountTotal = 0;
+    private volatile long newItemsCountTotal = 0;
 
     /** Timeline position of the youngest ever downloaded message */
-    private String youngestPosition = "";
+    private volatile String youngestPosition = "";
     /** Date of the item corresponding to the {@link #youngestPosition} */
-    private long youngestItemDate = 0;
+    private volatile long youngestItemDate = 0;
     /** Last date when youngest items of this timeline were successfully synced
      * (even if there were no new item at that time).
      * It may be used to calculate when it will be time for the next automatic update
      */
-    private long youngestSyncedDate = 0;
+    private volatile long youngestSyncedDate = 0;
 
     /** Timeline position of the oldest ever downloaded message */
-    private String oldestPosition = "";
+    private volatile String oldestPosition = "";
     /** Date of the item corresponding to the {@link #oldestPosition} */
-    private long oldestItemDate = 0;
+    private volatile long oldestItemDate = 0;
     /** Last date when oldest items of this timeline were successfully synced
      * (even if there were no new item at that time).
      * It may be used to calculate when it will be time for the next automatic update
      */
-    private long oldestSyncedDate = 0;
+    private volatile long oldestSyncedDate = 0;
 
     /** Position of the timeline, which a User viewed  */
-    private long visibleItemId = 0;
-    private int visibleY = 0;
-    private long visibleOldestDate = 0;
+    private volatile long visibleItemId = 0;
+    private volatile int visibleY = 0;
+    private volatile long visibleOldestDate = 0;
 
-    private boolean changed = false;
+    private volatile boolean changed = false;
 
     public Timeline(TimelineType timelineType, MyAccount myAccount, long userId, Origin origin) {
         this(MyContextHolder.get(), timelineType, myAccount, userId, origin);

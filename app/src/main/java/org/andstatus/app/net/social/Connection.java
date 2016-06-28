@@ -354,7 +354,7 @@ public abstract class Connection {
     public abstract List<MbTimelineItem> getTimeline(ApiRoutineEnum apiRoutine, TimelinePosition sinceId, int limit, String userId)
             throws ConnectionException;
 
-    public abstract List<MbTimelineItem> search(String searchQuery, int limit)
+    public abstract List<MbTimelineItem> search(TimelinePosition youngestPosition, int limit, String searchQuery)
             throws ConnectionException;
     
     /**

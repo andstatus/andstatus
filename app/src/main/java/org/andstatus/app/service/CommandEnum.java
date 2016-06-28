@@ -61,8 +61,6 @@ public enum CommandEnum {
     /** see http://gstools.org/api/doc/ */
     GET_OPEN_INSTANCES("get_open_instances", R.string.get_open_instances_title, -1, ConnectionRequired.SYNC),
 
-    SEARCH_MESSAGE("search-message", R.string.options_menu_search, 4, ConnectionRequired.SYNC),
-    
     REBLOG("reblog", R.string.menu_item_reblog, -9, ConnectionRequired.SYNC),
     DESTROY_REBLOG("destroy-reblog", R.string.menu_item_destroy_reblog, -3, ConnectionRequired.SYNC),
 

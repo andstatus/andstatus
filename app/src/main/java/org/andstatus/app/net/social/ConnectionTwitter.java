@@ -208,13 +208,13 @@ public abstract class ConnectionTwitter extends Connection {
     }
 
     @Override
-    public List<MbTimelineItem> getTimeline(ApiRoutineEnum apiRoutine, TimelinePosition sinceId, int limit, String userId)
+    public List<MbTimelineItem> getTimeline(ApiRoutineEnum apiRoutine, TimelinePosition youngestPosition, int limit, String userId)
             throws ConnectionException {
         String url = this.getApiPath(apiRoutine);
         Uri sUri = Uri.parse(url);
         Uri.Builder builder = sUri.buildUpon();
-        if (!sinceId.isEmpty()) {
-            builder.appendQueryParameter("since_id", sinceId.getPosition());
+        if (!youngestPosition.isEmpty()) {
+            builder.appendQueryParameter("since_id", youngestPosition.getPosition());
         }
         if (fixedDownloadLimitForApiRoutine(limit, apiRoutine) > 0) {
             builder.appendQueryParameter("count", String.valueOf(fixedDownloadLimitForApiRoutine(limit, apiRoutine)));
@@ -390,7 +390,7 @@ public abstract class ConnectionTwitter extends Connection {
     }
 
     @Override
-    public List<MbTimelineItem> search(String searchQuery, int limit)
+    public List<MbTimelineItem> search(TimelinePosition youngestPosition, int limit, String searchQuery)
             throws ConnectionException {
         ApiRoutineEnum apiRoutine = ApiRoutineEnum.SEARCH_MESSAGES;
         String url = this.getApiPath(apiRoutine);
@@ -401,6 +401,9 @@ public abstract class ConnectionTwitter extends Connection {
         }
         if (!TextUtils.isEmpty(searchQuery)) {
             builder.appendQueryParameter("q", searchQuery);
+        }
+        if (!youngestPosition.isEmpty()) {
+            builder.appendQueryParameter("since_id", youngestPosition.getPosition());
         }
         JSONArray jArr = http.getRequestAsArray(builder.build().toString());
         return jArrToTimeline(jArr, apiRoutine, url);

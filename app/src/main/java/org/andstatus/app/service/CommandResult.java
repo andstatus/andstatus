@@ -322,7 +322,6 @@ public final class CommandResult implements Parcelable {
         switch (command) {
             case FETCH_TIMELINE:
             case RATE_LIMIT_STATUS:
-            case SEARCH_MESSAGE:
                 retriesLeft = 0;
                 break;
             default:

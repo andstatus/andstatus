@@ -31,6 +31,7 @@ import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyQuery;
+import org.andstatus.app.timeline.TimelineTitle;
 import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.database.CommandTable;
 import org.andstatus.app.database.MsgTable;
@@ -77,7 +78,7 @@ public class CommandData implements Comparable<CommandData> {
     public static CommandData newSearch(Origin origin, String queryString) {
         Timeline timeline =  new Timeline(TimelineType.SEARCH, null, 0, origin);
         timeline.setSearchQuery(queryString);
-        CommandData commandData = new CommandData(0, CommandEnum.SEARCH_MESSAGE, timeline, 0);
+        CommandData commandData = new CommandData(0, CommandEnum.FETCH_TIMELINE, timeline, 0);
         return commandData;
     }
 
@@ -365,7 +366,8 @@ public class CommandData implements Comparable<CommandData> {
     }
 
     private String toUserFriendlyForm(MyContext myContext, boolean summaryOnly) {
-        StringBuilder builder = new StringBuilder(toShortCommandName(myContext));
+        StringBuilder builder = new StringBuilder(command == CommandEnum.FETCH_TIMELINE ? "" :
+                toShortCommandName(myContext));
         if (!summaryOnly) {
             if (mInForeground) {
                 I18n.appendWithSpace(builder, ", foreground");
@@ -395,27 +397,13 @@ public class CommandData implements Comparable<CommandData> {
                 builder.append("\"");
                 break;
             case FETCH_TIMELINE:
-                if (getTimeline().getMyAccount().isValid()) {
-                    if (timeline.isUserDifferentFromAccount()) {
-                        I18n.appendWithSpace(builder, MyQuery.userIdToWebfingerId(timeline.getUserId()));
-                    }
-                    I18n.appendWithSpace(builder, 
-                            getTimelineType().getPrepositionForNotCombinedTimeline(myContext
-                            .context()));
-                    I18n.appendWithSpace(builder, getTimeline().getMyAccount().toAccountButtonText());
-                }
+                builder.append(TimelineTitle.load(myContext, timeline, null).toString());
                 break;
             case FOLLOW_USER:
             case STOP_FOLLOWING_USER:
             case GET_FOLLOWERS:
             case GET_FRIENDS:
                 I18n.appendWithSpace(builder, MyQuery.userIdToWebfingerId(timeline.getUserId()));
-                break;
-            case SEARCH_MESSAGE:
-                I18n.appendWithSpace(builder, " \"");
-                builder.append(trimConditionally(getSearchQuery(), summaryOnly));
-                builder.append("\"");
-                appendAccountName(myContext, builder);
                 break;
             case GET_USER:
                 if (!TextUtils.isEmpty(getUserName())) {

@@ -117,7 +117,7 @@ public class CommandDataTest extends InstrumentationTestCase {
         assertEquals(CommandEnum.UPDATE_STATUS, queue.poll().getCommand());
         assertEquals(CommandEnum.UPDATE_STATUS, queue.poll().getCommand());
         assertEquals(CommandEnum.GET_STATUS, queue.poll().getCommand());
-        assertEquals(CommandEnum.SEARCH_MESSAGE, queue.poll().getCommand());
+        assertEquals(CommandEnum.FETCH_TIMELINE, queue.poll().getCommand());
         assertEquals(CommandEnum.FETCH_TIMELINE, queue.poll().getCommand());
     }
     

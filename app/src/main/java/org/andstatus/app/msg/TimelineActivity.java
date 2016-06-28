@@ -531,7 +531,7 @@ public class TimelineActivity extends LoadableListActivity implements
 
     private String timelineTypeButtonText() {
         CharSequence timelineName = getParamsNew().getTimelineType().getTitle(this);
-        return timelineName + (getParamsNew().hasSearchQuery() ? " *" : "");
+        return timelineName + (getParamsNew().getTimeline().hasSearchQuery() ? " *" : "");
     }
 
     private void updateAccountButtonText(ViewGroup mDrawerList) {
@@ -586,7 +586,7 @@ public class TimelineActivity extends LoadableListActivity implements
         if (appSearchData != null
                 && getParamsNew().parseUri(Uri.parse(appSearchData.getString(
                         IntentExtra.TIMELINE_URI.key, "")), searchQuery)) {
-            if (getParamsNew().hasSearchQuery()
+            if (getParamsNew().getTimeline().hasSearchQuery()
                     && appSearchData.getBoolean(IntentExtra.GLOBAL_SEARCH.key, false)) {
                 showSyncing(method, "Global search: " + getParamsNew().getTimeline().getSearchQuery());
                 for (Origin origin : myContext.persistentOrigins().originsForGlobalSearch(
@@ -787,7 +787,7 @@ public class TimelineActivity extends LoadableListActivity implements
     }
 
     private void saveSearchQuery() {
-        if (getParamsNew().hasSearchQuery()) {
+        if (getParamsNew().getTimeline().hasSearchQuery()) {
             // Record the query string in the recent queries
             // of the Suggestion Provider
             SearchRecentSuggestions suggestions = new SearchRecentSuggestions(this,
@@ -1009,7 +1009,6 @@ public class TimelineActivity extends LoadableListActivity implements
     protected boolean isCommandToShowInSyncIndicator(CommandData commandData) {
         switch (commandData.getCommand()) {
             case FETCH_TIMELINE:
-            case SEARCH_MESSAGE:
             case FETCH_ATTACHMENT:
             case FETCH_AVATAR:
             case UPDATE_STATUS:
@@ -1072,7 +1071,6 @@ public class TimelineActivity extends LoadableListActivity implements
                         || getParamsLoaded().getTimelineType() != commandData.getTimelineType()) {
                     break;
                 }
-            case SEARCH_MESSAGE:
                 if (commandData.getResult().getDownloadedCount() > 0) {
                     needed = true;
                 }

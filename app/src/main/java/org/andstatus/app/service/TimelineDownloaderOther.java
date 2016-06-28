@@ -80,8 +80,16 @@ class TimelineDownloaderOther extends TimelineDownloader {
             try {
                 int limit = execContext.getMyAccount().getConnection().fixedDownloadLimitForApiRoutine(
                         toDownload, getTimeline().getTimelineType().getConnectionApiRoutine());
-                List<MbTimelineItem> messages = execContext.getMyAccount().getConnection().getTimeline(
-                        getTimeline().getTimelineType().getConnectionApiRoutine(), lastPosition, limit, userOid);
+                List<MbTimelineItem> messages;
+                switch (getTimeline().getTimelineType()) {
+                    case SEARCH:
+                        messages = execContext.getMyAccount().getConnection().search(lastPosition, limit, getTimeline().getSearchQuery());
+                        break;
+                    default:
+                        messages = execContext.getMyAccount().getConnection().getTimeline(
+                                getTimeline().getTimelineType().getConnectionApiRoutine(), lastPosition, limit, userOid);
+                        break;
+                }
                 for (MbTimelineItem item : messages) {
                     toDownload--;
                     latestTimelineItem.onNewMsg(item.timelineItemPosition, item.timelineItemDate);

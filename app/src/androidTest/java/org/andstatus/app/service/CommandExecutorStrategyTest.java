@@ -71,7 +71,7 @@ public class CommandExecutorStrategyTest extends InstrumentationTestCase {
 
         commandData = CommandData.newSearch(ma.getOrigin(), TestSuite.GLOBAL_PUBLIC_MESSAGE_TEXT);
         strategy = CommandExecutorStrategy.getStrategy(commandData, null);
-        assertEquals(TimelineDownloaderSearch.class, strategy.getClass());
+        assertEquals(TimelineDownloaderOther.class, strategy.getClass());
         strategy.execute();
         assertTrue("Requested '" + Arrays.toString(httpConnectionMock.getResults().toArray()) + "'",
                 httpConnectionMock.getResults().get(0).getUrl().contains(TestSuite.GLOBAL_PUBLIC_MESSAGE_TEXT) );

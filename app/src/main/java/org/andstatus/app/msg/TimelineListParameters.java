@@ -27,7 +27,6 @@ import org.andstatus.app.IntentExtra;
 import org.andstatus.app.WhichPage;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.ParsedUri;
 import org.andstatus.app.data.ProjectionMap;
@@ -140,7 +139,7 @@ public class TimelineListParameters {
     }
 
     public boolean isAtHome() {
-        return  timeline.equals(MyContextHolder.get().persistentTimelines().getHome());
+        return  timeline.equals(myContext.persistentTimelines().getHome());
     }
 
     @Override
@@ -179,10 +178,6 @@ public class TimelineListParameters {
 
     public boolean isTimelineCombined() {
         return timeline.isCombined();
-    }
-
-    public boolean hasSearchQuery() {
-        return timeline.hasSearchQuery();
     }
 
     public void saveState(Bundle outState) {
@@ -225,7 +220,8 @@ public class TimelineListParameters {
     /** @return true if parsed successfully */
     boolean parseUri(Uri uri, String searchQuery) {
         ParsedUri parsedUri = ParsedUri.fromUri(uri);
-        timeline = MyContextHolder.get().persistentTimelines().fromParsedUri(parsedUri, searchQuery);
+        timeline = myContext.persistentTimelines().fromNewTimeLine(
+                Timeline.fromParsedUri(myContext, parsedUri, searchQuery));
         return !timeline.isEmpty();
     }
 
