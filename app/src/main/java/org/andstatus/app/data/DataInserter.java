@@ -293,9 +293,12 @@ public class DataInserter {
 
             if (isNewerThanInDatabase && !keywordsFilter.matched(message.getBody())) {
                 // This message is newer than already stored in our database, so count it!
-                execContext.getResult().incrementMessagesCount(execContext.getTimeline());
+                execContext.getResult().incrementMessagesCount();
                 if (mentioned) {
                     execContext.getResult().incrementMentionsCount();
+                }
+                if (isDirectMessage) {
+                    execContext.getResult().incrementDirectCount();
                 }
             }
             if (senderId != 0) {

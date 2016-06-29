@@ -13,7 +13,7 @@
 
         <TextView
             android:id="@+id/displayedInSelector"
-            android:minHeight="32dp"
+            android:minHeight="48dp"
             android:gravity="center_vertical"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -22,7 +22,7 @@
             android:layout_weight="1" />
         <TextView
             android:id="@+id/title"
-            android:minHeight="32dp"
+            android:minHeight="48dp"
             android:gravity="center_vertical"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -30,7 +30,7 @@
             android:layout_weight="4" />
         <TextView
             android:id="@+id/subTitle"
-            android:minHeight="32dp"
+            android:minHeight="48dp"
             android:gravity="center_vertical"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -38,41 +38,42 @@
             android:layout_weight="4" />
         <TextView
             android:id="@+id/synced"
-            android:minHeight="32dp"
+            android:minHeight="48dp"
             android:gravity="center_vertical"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:text="@string/synced_abbreviated"
             android:layout_weight="1" />
-        <View style="@style/VerticalDivider"/>
         <TextView
             android:id="@+id/syncedTimesCount"
-            android:minHeight="32dp"
+            android:minHeight="48dp"
             android:gravity="center_vertical"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginLeft="7dp"
             android:text="@string/successfully_synced"
             android:layout_weight="6" />
         <TextView
             android:id="@+id/newItemsCount"
-            android:minHeight="32dp"
+            android:minHeight="48dp"
             android:gravity="center_vertical"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginLeft="7dp"
             android:text=""
             android:layout_weight="0" />
         <TextView
             android:id="@+id/syncSucceededDate"
-            android:minHeight="32dp"
+            android:minHeight="48dp"
             android:gravity="center_vertical"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginLeft="7dp"
             android:text=""
             android:layout_weight="0" />
-        <View style="@style/VerticalDivider"/>
         <TextView
             android:id="@+id/syncFailedTimesCount"
-            android:minHeight="32dp"
+            android:minHeight="48dp"
             android:gravity="center_vertical"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -80,7 +81,7 @@
             android:layout_weight="5" />
         <TextView
             android:id="@+id/syncFailedDate"
-            android:minHeight="32dp"
+            android:minHeight="48dp"
             android:gravity="center_vertical"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -88,10 +89,11 @@
             android:layout_weight="0" />
         <TextView
             android:id="@+id/errorMessage"
-            android:minHeight="32dp"
+            android:minHeight="48dp"
             android:gravity="center_vertical"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
             android:text="@string/error"
             android:layout_weight="15" />
     </LinearLayout>

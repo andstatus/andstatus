@@ -1,80 +1,89 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               xmlns:tools="http://schemas.android.com/tools"
-              android:orientation="horizontal"
+              android:orientation="vertical"
               android:layout_width="match_parent"
-              android:layout_height="wrap_content"
-              android:weightSum="36" >
-
-    <CheckBox
-        android:id="@+id/displayedInSelector"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_weight="1" />
-    <TextView
-        android:id="@+id/title"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        tools:text="Home"
-        android:layout_weight="4"
-        style="@style/messageBodyAppearance"/>
-    <TextView
-        android:id="@+id/subTitle"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        tools:text="for AndStatus/LoadAverage"
-        android:layout_weight="4"
-        style="@style/messageBodyAppearance" />
-    <CheckBox
-        android:id="@+id/synced"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_weight="1" />
-    <View style="@style/VerticalDivider"/>
-    <TextView
-        android:id="@+id/syncedTimesCount"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        tools:text="234"
-        android:layout_weight="1"
-        style="@style/messageBodyAppearance"/>
-    <View style="@style/VerticalDivider"/>
-    <TextView
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        tools:text="1500"
-        android:id="@+id/newItemsCount"
-        android:layout_weight="1"
-        style="@style/messageBodyAppearance"/>
-    <View style="@style/VerticalDivider"/>
-    <TextView
-        android:id="@+id/syncSucceededDate"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        tools:text="3 days ago"
-        android:layout_weight="4"
-        style="@style/messageBodyAppearance"/>
-    <View style="@style/VerticalDivider"/>
-    <TextView
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        tools:text="15"
-        android:id="@+id/syncFailedTimesCount"
-        android:layout_weight="1"
-        style="@style/messageBodyAppearance"/>
-    <View style="@style/VerticalDivider"/>
-    <TextView
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        tools:text="15 minutes ago"
-        android:id="@+id/syncFailedDate"
-        android:layout_weight="4"
-        style="@style/messageBodyAppearance"/>
-    <View style="@style/VerticalDivider"/>
-    <TextView
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        tools:text="Error: not found something"
-        android:id="@+id/errorMessage"
-        android:layout_weight="15" />
+              android:layout_height="wrap_content" >
+    <LinearLayout android:orientation="horizontal"
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:weightSum="36" >
+        <CheckBox
+            android:id="@+id/displayedInSelector"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            tools:text="Home"
+            android:layout_weight="4"
+            style="@style/messageBodyAppearance"/>
+        <TextView
+            android:id="@+id/subTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            tools:text="for AndStatus/LoadAverage"
+            android:layout_weight="4"
+            style="@style/messageBodyAppearance" />
+        <CheckBox
+            android:id="@+id/synced"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+        <View style="@style/VerticalDivider"/>
+        <TextView
+            android:id="@+id/syncedTimesCount"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            tools:text="234"
+            android:layout_weight="1"
+            style="@style/messageBodyAppearance"
+            android:gravity="end"/>
+        <View style="@style/VerticalDivider"/>
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            tools:text="12"
+            android:id="@+id/newItemsCount"
+            android:layout_weight="1"
+            style="@style/messageBodyAppearance"
+            android:gravity="end"/>
+        <View style="@style/VerticalDivider"/>
+        <TextView
+            android:id="@+id/syncSucceededDate"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            tools:text="3 days ago"
+            android:layout_weight="4"
+            style="@style/messageBodyAppearance"
+            />
+        <View style="@style/VerticalDivider"/>
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            tools:text="10"
+            android:id="@+id/syncFailedTimesCount"
+            android:layout_weight="1"
+            style="@style/messageBodyAppearance"
+            android:gravity="end"/>
+        <View style="@style/VerticalDivider"/>
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            tools:text="15 minutes ago"
+            android:id="@+id/syncFailedDate"
+            android:layout_weight="4"
+            style="@style/messageBodyAppearance"
+            />
+        <View style="@style/VerticalDivider"/>
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            tools:text="Error: not found something"
+            android:id="@+id/errorMessage"
+            android:layout_weight="15" />
+    </LinearLayout>
+    <View style="@style/Divider"/>
 </LinearLayout>

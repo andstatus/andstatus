@@ -108,7 +108,20 @@ public class TimelineList extends LoadableListActivity {
                             int result = 0;
                             switch (sortByField) {
                                 case R.id.displayedInSelector:
-                                    return compareCheckbox(lhs.timeline.isDisplayedInSelector(), rhs.timeline.isDisplayedInSelector());
+                                    result = compareCheckbox(lhs.timeline.isDisplayedInSelector(), rhs.timeline.isDisplayedInSelector());
+                                    if (result != 0) {
+                                        break;
+                                    }
+                                case R.id.title:
+                                    result = compareString(lhs.timelineTitle.title, rhs.timelineTitle.title);
+                                    if (result != 0) {
+                                        break;
+                                    }
+                                case R.id.subTitle:
+                                    result = compareString(lhs.timelineTitle.subTitle, rhs.timelineTitle.subTitle);
+                                    if (result != 0) {
+                                        break;
+                                    }
                                 case R.id.synced:
                                     return compareSynced(lhs, rhs);
                                 case R.id.syncSucceededDate:
@@ -125,10 +138,11 @@ public class TimelineList extends LoadableListActivity {
                                         return compareSynced(lhs, rhs);
                                     }
                                     break;
-                                case R.id.subTitle:
-                                    return compareString(lhs.timelineTitle.subTitle, rhs.timelineTitle.subTitle);
                                 case R.id.errorMessage:
-                                    return compareString(lhs.timeline.getErrorMessage(), rhs.timeline.getErrorMessage());
+                                    result = compareString(lhs.timeline.getErrorMessage(), rhs.timeline.getErrorMessage());
+                                    if (result == 0) {
+                                        return compareSynced(lhs, rhs);
+                                    }
                                 default:
                                     break;
                             }
