@@ -82,7 +82,7 @@ public class PersistentTimelinesTest extends InstrumentationTestCase {
         for (Origin origin : MyContextHolder.get().persistentOrigins().collection()) {
             MyAccount myAccount = MyContextHolder.get().persistentAccounts().getFirstSucceededForOriginId(origin.getId());
             for (TimelineType timelineType : TimelineType.defaultOriginTimelineTypes) {
-                long count = 0;
+                int count = 0;
                 for (Timeline timeline : MyContextHolder.get().persistentTimelines().values()) {
                     if (timeline.getOrigin().equals(origin) &&
                             timeline.getTimelineType().equals(timelineType) &&
@@ -90,7 +90,9 @@ public class PersistentTimelinesTest extends InstrumentationTestCase {
                         count++;
                     }
                 }
-                assertEquals( origin.toString() + " " + timelineType , myAccount.isValid() ? 1 : 0, count);
+                assertEquals( origin.toString() + " " + timelineType , myAccount.isValid() ?
+                        (origin.getOriginType().isTimelineTypeSupported(timelineType) ? 1 : 0) :
+                        0, count);
             }
         }
     }

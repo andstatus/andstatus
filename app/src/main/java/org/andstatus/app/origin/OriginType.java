@@ -26,6 +26,7 @@ import org.andstatus.app.net.social.ConnectionPumpio;
 import org.andstatus.app.net.social.ConnectionTwitter1p1;
 import org.andstatus.app.net.social.ConnectionTwitterGnuSocial;
 import org.andstatus.app.net.social.MbUser;
+import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UrlUtils;
 
@@ -64,21 +65,15 @@ public enum OriginType {
     private final Class<? extends org.andstatus.app.net.http.HttpConnection> httpConnectionClassOauth;
     private final Class<? extends org.andstatus.app.net.http.HttpConnection> httpConnectionClassBasic;
 
-    /**
-     * Default OAuth setting
-     */
+    /** Default OAuth setting */
     protected boolean isOAuthDefault = true;
-    /**
-     * Can OAuth connection setting can be turned on/off from the default setting
-     */
+    /** Can OAuth connection setting can be turned on/off from the default setting */
     protected boolean canChangeOAuth = false;
 
     protected boolean shouldSetNewUsernameManuallyIfOAuth = false;
 
-    /**
-     * Can user set username for the new user manually?
-     * This is only for no OAuth
-     */
+    /** Can user set username for the new user manually?
+     * This is only for no OAuth */
     protected boolean shouldSetNewUsernameManuallyNoOAuth = false;
     protected String usernameRegEx = USERNAME_REGEX_DEFAULT;
     /**
@@ -92,16 +87,17 @@ public enum OriginType {
     protected boolean canChangeSsl = false;
 
     protected boolean allowHtmlDefault = true;
-    /**
-     * Maximum number of characters in the message
-     */
+    /** Maximum number of characters in the message */
     protected int textLimitDefault = 0;
     protected URL urlDefault = null;
     protected String basicPath = BASIC_PATH_DEFAULT;
     protected String oauthPath = OAUTH_PATH_DEFAULT;
     private final boolean mAllowAttachmentForDirectMessage;
 
-    private OriginType(long id, String title, ApiEnum api) {
+    public boolean isPublicTimeLineSupported = false;
+    public boolean isSearchSupported = true;
+
+    OriginType(long id, String title, ApiEnum api) {
         this.id = id;
         this.title = title;
         this.api = api;
@@ -142,6 +138,7 @@ public enum OriginType {
                 httpConnectionClassOauth = HttpConnectionOAuthJavaNet.class;
                 httpConnectionClassBasic = HttpConnectionEmpty.class;
                 mAllowAttachmentForDirectMessage = true;
+                isSearchSupported = false;
                 break;
             case GNUSOCIAL_TWITTER:
                 isOAuthDefault = false;  
@@ -158,6 +155,7 @@ public enum OriginType {
                 httpConnectionClassOauth = HttpConnectionOAuthApache.class;
                 httpConnectionClassBasic = HttpConnectionBasic.class;
                 mAllowAttachmentForDirectMessage = false;
+                isPublicTimeLineSupported = true;
                 break;
             default:
                 canSetUrlOfOrigin = false;
@@ -258,5 +256,21 @@ public enum OriginType {
             }
         }
         return obj;
+    }
+
+    public boolean isTimelineTypeSupported(TimelineType timelineType) {
+        switch(timelineType) {
+            case PUBLIC:
+                return isPublicTimeLineSupported;
+            case SEARCH:
+                return isSearchSupported;
+            case USER:
+            case FRIENDS:
+            case FOLLOWERS:
+            case EVERYTHING:
+                return true;
+            default:
+                return false;
+        }
     }
 }

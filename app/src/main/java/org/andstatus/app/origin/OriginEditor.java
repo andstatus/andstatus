@@ -39,6 +39,7 @@ import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.net.http.SslModeEnum;
 import org.andstatus.app.service.MyServiceManager;
+import org.andstatus.app.util.MyCheckBox;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UrlUtils;
@@ -120,7 +121,7 @@ public class OriginEditor extends MyActivity {
 
         Origin origin = builder.build();
         MyLog.v(this, "processNewIntent: " + origin.toString());
-        spinnerOriginType.setSelection(origin.originType.getEntriesPosition());
+        spinnerOriginType.setSelection(origin.getOriginType().getEntriesPosition());
         editTextOriginName.setText(origin.getName());
         
         String strHost = "";
@@ -131,8 +132,7 @@ public class OriginEditor extends MyActivity {
         }
         editTextHost.setText(strHost);
         
-        checkBoxIsSsl.setChecked(origin.isSsl());
-        checkBoxIsSsl.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        MyCheckBox.show(this, R.id.is_ssl, origin.isSsl() , new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 showSslMode(isChecked);
@@ -153,16 +153,18 @@ public class OriginEditor extends MyActivity {
         });
         showSslModeSummary(origin.getSslMode());
         showSslMode(origin.isSsl());
-        ((CheckBox) findViewById(R.id.allow_html)).setChecked(origin.isHtmlContentAllowed());
+        MyCheckBox.show(this, R.id.allow_html, origin.isHtmlContentAllowed(), true);
 
         spinnerMentionAsWebFingerId.setSelection(origin.getMentionAsWebFingerId().getEntriesPosition());
         spinnerUseLegacyHttpProtocol.setSelection(origin.useLegacyHttpProtocol().getEntriesPosition());
         
         buttonDelete.setVisibility(origin.hasChildren() ? View.GONE : View.VISIBLE);
 
-        ((CheckBox) findViewById(R.id.in_combined_global_search)).setChecked(origin.isInCombinedGlobalSearch());
-        ((CheckBox) findViewById(R.id.in_combined_public_reload)).setChecked(origin.isInCombinedPublicReload());
-        
+        MyCheckBox.show(this, R.id.in_combined_global_search, origin.isInCombinedGlobalSearch(),
+                origin.getOriginType().isSearchSupported);
+        MyCheckBox.show(this, R.id.in_combined_public_reload, origin.isInCombinedPublicReload(),
+                origin.getOriginType().isPublicTimeLineSupported);
+
         String title = getText(R.string.label_origin_system).toString();
         if (origin.isPersistent()) {
             title = origin.getName() + " - " + title;
@@ -204,13 +206,13 @@ public class OriginEditor extends MyActivity {
         builder.setHostOrUrl(editTextHost.getText().toString());
         builder.setSsl(checkBoxIsSsl.isChecked());
         builder.setSslMode(SslModeEnum.fromEntriesPosition(spinnerSslMode.getSelectedItemPosition()));
-        builder.setHtmlContentAllowed(((CheckBox) findViewById(R.id.allow_html)).isChecked());
+        builder.setHtmlContentAllowed(MyCheckBox.isChecked(this, R.id.allow_html, false));
         builder.setMentionAsWebFingerId(TriState.fromEntriesPosition(spinnerMentionAsWebFingerId
                 .getSelectedItemPosition()));
         builder.setUseLegacyHttpProtocol(TriState.fromEntriesPosition(spinnerUseLegacyHttpProtocol
                 .getSelectedItemPosition()));
-        builder.setInCombinedGlobalSearch(((CheckBox) findViewById(R.id.in_combined_global_search)).isChecked());
-        builder.setInCombinedPublicReload(((CheckBox) findViewById(R.id.in_combined_public_reload)).isChecked());
+        builder.setInCombinedGlobalSearch(MyCheckBox.isChecked(this, R.id.in_combined_global_search, false));
+        builder.setInCombinedPublicReload(MyCheckBox.isChecked(this, R.id.in_combined_public_reload, false));
         builder.save();
         MyLog.v(this, (builder.isSaved() ? "Saved" : "Not saved") + ": " + builder.build().toString());
         if (builder.isSaved()) {

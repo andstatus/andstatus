@@ -125,7 +125,6 @@ public class TimelineSql {
             case OUTBOX:
                 where = MsgTable.MSG_STATUS + "=" + DownloadStatus.SENDING.save();
                 break;
-            case EVERYTHING:
             default:
                 break;
         }

@@ -23,7 +23,7 @@ public class AddedMessagesNotifierTest extends InstrumentationTestCase {
 
     public void testCreateNotification() {
     	CommandResult result = new CommandResult();
-    	result.incrementMessagesCount(new Timeline(TimelineType.DIRECT, TestSuite.getConversationMyAccount(), 0, null));
+    	result.incrementDirectCount();
     	TestSuite.getMyContextForTest().getNotifications().clear();
         AddedMessagesNotifier.newInstance(MyContextHolder.get()).update(result);
         assertNull(TestSuite.getMyContextForTest().getNotifications().get(TimelineType.HOME));
@@ -36,7 +36,7 @@ public class AddedMessagesNotifierTest extends InstrumentationTestCase {
         assertNotNull(TestSuite.getMyContextForTest().getNotifications().get(TimelineType.MENTIONS));
         assertNotNull(TestSuite.getMyContextForTest().getNotifications().get(TimelineType.DIRECT));
 
-    	result.incrementMessagesCount(new Timeline(TimelineType.HOME, TestSuite.getConversationMyAccount(), 0, null));
+    	result.incrementMessagesCount();
         AddedMessagesNotifier.newInstance(MyContextHolder.get()).update(result);
         assertNotNull(TestSuite.getMyContextForTest().getNotifications().get(TimelineType.HOME));
         assertNotNull(TestSuite.getMyContextForTest().getNotifications().get(TimelineType.MENTIONS));

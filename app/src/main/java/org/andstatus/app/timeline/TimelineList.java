@@ -20,13 +20,14 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.LinearLayout;
 
 import org.andstatus.app.LoadableListActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.WhichPage;
 import org.andstatus.app.util.I18n;
+import org.andstatus.app.util.MyCheckBox;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyUrlSpan;
 import org.andstatus.app.util.RelativeTime;
@@ -239,24 +240,23 @@ public class TimelineList extends LoadableListActivity {
                 final TimelineListViewItem item = mItems.get(position);
                 MyUrlSpan.showText(view, R.id.title, item.timelineTitle.title, false, true);
                 MyUrlSpan.showText(view, R.id.subTitle, item.timelineTitle.subTitle, false, true);
-                MyUrlSpan.showCheckBox(view, R.id.displayedInSelector, item.timeline.isDisplayedInSelector(),
-                        new View.OnClickListener() {
+                MyCheckBox.show(view, R.id.displayedInSelector, item.timeline.isDisplayedInSelector(),
+                        new CompoundButton.OnCheckedChangeListener() {
                             @Override
-                            public void onClick(View v) {
-                                boolean isChecked = ((CheckBox) v).isChecked();
+                            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                                 item.timeline.setDisplayedInSelector(isChecked);
                                 MyLog.v("isDisplayedInSelector", (isChecked ? "+ " : "- ") +
                                         item.timelineTitle.toString());
                             }
                         });
-                MyUrlSpan.showCheckBox(view, R.id.synced, item.timeline.isSynced(),
-                        item.timeline.canBeSynced() ? new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                boolean isChecked = ((CheckBox) v).isChecked();
-                                item.timeline.setSynced(isChecked);
-                                MyLog.v("isSynced", (isChecked ? "+ " : "- ") + item.timelineTitle);
-                            }
+                MyCheckBox.show(view, R.id.synced, item.timeline.isSynced(),
+                        item.timeline.canBeSynced() ?
+                                new CompoundButton.OnCheckedChangeListener() {
+                                    @Override
+                                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                                        item.timeline.setSynced(isChecked);
+                                        MyLog.v("isSynced", (isChecked ? "+ " : "- ") + item.timelineTitle);
+                                }
                         } : null);
                 MyUrlSpan.showText(view, R.id.syncedTimesCount, I18n.notZero(item.timeline.getSyncedTimesCount()), false, true);
                 MyUrlSpan.showText(view, R.id.newItemsCount, I18n.notZero(item.timeline.getNewItemsCount()), false, true);

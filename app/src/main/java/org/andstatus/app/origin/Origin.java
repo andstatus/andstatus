@@ -56,7 +56,7 @@ public class Origin {
     /** See {@link OriginType#shortUrlLengthDefault} */
     protected int shortUrlLength = 0;
 
-    protected OriginType originType = OriginType.UNKNOWN;
+    private OriginType originType = OriginType.UNKNOWN;
 
     @NonNull
     protected String name = "";
@@ -80,9 +80,8 @@ public class Origin {
 
     
     /** Include this system in Global Search while in Combined Timeline */
-    private boolean inCombinedGlobalSearch = true;
-    /** Include this system in Reload while in Combined Public Timeline */
-    private boolean inCombinedPublicReload = true;
+    private boolean inCombinedGlobalSearch = false;
+    private boolean inCombinedPublicReload = false;
     
     private TriState mMentionAsWebFingerId = TriState.UNKNOWN;
     
@@ -260,6 +259,12 @@ public class Origin {
         return false;
     }
 
+    public void setInCombinedGlobalSearch(boolean inCombinedGlobalSearch) {
+        if (originType.isSearchSupported) {
+            this.inCombinedGlobalSearch = inCombinedGlobalSearch;
+        }
+    }
+
     public boolean isInCombinedGlobalSearch() {
         return inCombinedGlobalSearch;
     }
@@ -341,6 +346,8 @@ public class Origin {
         origin.allowHtml = origin.originType.allowHtmlDefault;
         origin.shortUrlLength = origin.originType.shortUrlLengthDefault;
         origin.textLimit = origin.originType.textLimitDefault;
+        origin.setInCombinedGlobalSearch(true);
+        origin.setInCombinedPublicReload(true);
         return origin;
     }
 
@@ -374,6 +381,12 @@ public class Origin {
         int result = name.hashCode();
         result = 31 * result + (int) (id ^ (id >>> 32));
         return result;
+    }
+
+    public void setInCombinedPublicReload(boolean inCombinedPublicReload) {
+        if (originType.isPublicTimeLineSupported) {
+            this.inCombinedPublicReload = inCombinedPublicReload;
+        }
     }
 
     public static final class Builder {
@@ -412,10 +425,10 @@ public class Origin {
             if (originType1.textLimitDefault == 0) {
                 setTextLimit(DbUtils.getInt(cursor, OriginTable.TEXT_LIMIT));
             }
-            origin.inCombinedGlobalSearch = DbUtils.getBoolean(cursor,
-                    OriginTable.IN_COMBINED_GLOBAL_SEARCH);
-            origin.inCombinedPublicReload = DbUtils.getBoolean(cursor,
-                    OriginTable.IN_COMBINED_PUBLIC_RELOAD);
+            origin.setInCombinedGlobalSearch(DbUtils.getBoolean(cursor,
+                    OriginTable.IN_COMBINED_GLOBAL_SEARCH));
+            origin.setInCombinedPublicReload(DbUtils.getBoolean(cursor,
+                    OriginTable.IN_COMBINED_PUBLIC_RELOAD));
             setMentionAsWebFingerId(TriState.fromId(DbUtils.getLong(cursor,
                     OriginTable.MENTION_AS_WEBFINGER_ID)));
             setUseLegacyHttpProtocol(TriState.fromId(DbUtils.getLong(cursor,
@@ -507,12 +520,12 @@ public class Origin {
         }
 
         public Builder setInCombinedGlobalSearch(boolean inCombinedGlobalSearch) {
-            origin.inCombinedGlobalSearch = inCombinedGlobalSearch;
+            origin.setInCombinedGlobalSearch(inCombinedGlobalSearch);
             return this;
         }
 
         public Builder setInCombinedPublicReload(boolean inCombinedPublicReload) {
-            origin.inCombinedPublicReload = inCombinedPublicReload;
+            origin.setInCombinedPublicReload(inCombinedPublicReload);
             return this;
         }
 

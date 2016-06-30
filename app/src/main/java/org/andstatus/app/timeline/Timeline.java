@@ -150,9 +150,15 @@ public class Timeline implements Comparable<Timeline> {
     }
 
     private boolean calcCanBeSynced(MyContext myContext) {
-        return !isCombined && timelineType.canBeSynced() && (myAccount.isValidAndSucceeded() ||
-                myContext.persistentAccounts().getFirstSucceededForOriginId(origin.getId()).
-                        isValidAndSucceeded());
+        if (isCombined() || !timelineType.canBeSynced()) {
+            return false;
+        }
+        if (timelineType.isAtOrigin()) {
+            return origin.getOriginType().isTimelineTypeSupported(timelineType) &&
+                    myContext.persistentAccounts().getFirstSucceededForOriginId(origin.getId()).isValidAndSucceeded();
+        } else {
+            return myAccount.isValidAndSucceeded();
+        }
     }
 
     private boolean calcCanBeSyncedForAccounts(MyContext myContext) {
@@ -236,7 +242,9 @@ public class Timeline implements Comparable<Timeline> {
     public static Collection<Timeline> addDefaultForOrigin(MyContext myContext, Origin origin) {
         List<Timeline> timelines = new ArrayList<>();
         for (TimelineType timelineType : TimelineType.defaultOriginTimelineTypes) {
-            saveNewDefaultTimeline(myContext, new Timeline(myContext, timelineType, null, 0, origin));
+            if (origin.getOriginType().isTimelineTypeSupported(timelineType)) {
+                saveNewDefaultTimeline(myContext, new Timeline(myContext, timelineType, null, 0, origin));
+            }
         }
         return timelines;
     }
@@ -444,7 +452,7 @@ public class Timeline implements Comparable<Timeline> {
     public Timeline fromSearch(boolean globalSearch) {
         Timeline timeline = this;
         if (globalSearch) {
-            timeline = new Timeline(TimelineType.EVERYTHING,
+            timeline = new Timeline(TimelineType.SEARCH,
                     this.getMyAccount(), this.getUserId(), this.getOrigin());
             timeline.setSearchQuery(this.getSearchQuery());
         }

@@ -42,9 +42,11 @@ public class LatestTimelineItemTest extends InstrumentationTestCase {
         assertEquals("Account was found", ma.getAccountName(), accountName);
         Timeline timeline = getTimeline(myContext, timelineType, ma);
         if (timelineType.isAtOrigin()) {
-            assertEquals("Timeline persistence " + timeline,
-                    Arrays.asList(TimelineType.defaultOriginTimelineTypes).contains(timelineType)
-                    , timeline.getId() != 0);
+            if (timeline.getOrigin().getOriginType().isTimelineTypeSupported(timelineType)) {
+                assertEquals("Timeline persistence " + timeline,
+                        Arrays.asList(TimelineType.defaultOriginTimelineTypes).contains(timelineType)
+                        , timeline.getId() != 0);
+            }
         } else {
             assertEquals("Timeline persistence " + timeline,
                     Arrays.asList(TimelineType.defaultMyAccountTimelineTypes).contains(timelineType)

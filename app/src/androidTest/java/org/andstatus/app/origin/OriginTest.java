@@ -31,11 +31,11 @@ public class OriginTest extends InstrumentationTestCase {
 
         Origin origin = MyContextHolder.get().persistentOrigins()
                 .firstOfType(OriginType.ORIGIN_TYPE_DEFAULT);
-        assertEquals(origin.originType, OriginType.TWITTER);
+        assertEquals(origin.getOriginType(), OriginType.TWITTER);
 
         origin = MyContextHolder.get().persistentOrigins()
                 .firstOfType(OriginType.TWITTER);
-        assertEquals(origin.originType, OriginType.TWITTER);
+        assertEquals(origin.getOriginType(), OriginType.TWITTER);
         int textLimit = 140;
         assertEquals("Textlimit", textLimit, origin.getTextLimit());
         assertEquals("Short URL length", 23, origin.shortUrlLength);
@@ -169,7 +169,7 @@ public class OriginTest extends InstrumentationTestCase {
 
     public void testPermalink() {
         Origin origin = MyContextHolder.get().persistentOrigins().firstOfType(OriginType.TWITTER);
-        assertEquals(origin.originType, OriginType.TWITTER);
+        assertEquals(origin.getOriginType(), OriginType.TWITTER);
         String body = "Posting to Twitter " + TestSuite.TESTRUN_UID;
         String messageOid = "2578909845023" + TestSuite.TESTRUN_UID;
         long msgId = MessageInserter.addMessageForAccount(

@@ -164,7 +164,8 @@ public enum TimelineType {
 
     public static final TimelineType[] defaultOriginTimelineTypes = {
             PUBLIC,
-            EVERYTHING
+            EVERYTHING,
+            SEARCH
     };
 
     public boolean isAtOrigin() {

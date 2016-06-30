@@ -101,7 +101,7 @@ public class PersistentOrigins {
      */
     public Origin firstOfType(OriginType originType) {
         for (Origin origin : mOrigins.values()) {
-            if (origin.originType == originType) {
+            if (origin.getOriginType() == originType) {
                 return origin;
             }
         }

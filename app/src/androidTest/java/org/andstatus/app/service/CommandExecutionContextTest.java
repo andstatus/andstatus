@@ -25,7 +25,7 @@ public class CommandExecutionContextTest extends InstrumentationTestCase {
         final int MESSAGES = 4;
         final int MENTIONS = 2;
         for (int ind=0; ind < MESSAGES; ind++) {
-            execContext.getResult().incrementMessagesCount(execContext.getTimeline());
+            execContext.getResult().incrementMessagesCount();
         }
         for (int ind=0; ind < MENTIONS; ind++) {
             execContext.getResult().incrementMentionsCount();
@@ -40,7 +40,7 @@ public class CommandExecutionContextTest extends InstrumentationTestCase {
                 CommandData.newTimelineCommand(CommandEnum.EMPTY, ma, TimelineType.DIRECT));
         final int MESSAGES = 4;
         for (int ind=0; ind < MESSAGES; ind++) {
-            execContext.getResult().incrementMessagesCount(execContext.getTimeline());
+            execContext.getResult().incrementDirectCount();
         }
         assertEquals(0, execContext.getResult().getMessagesAdded());
         assertEquals(0, execContext.getResult().getMentionsAdded());
