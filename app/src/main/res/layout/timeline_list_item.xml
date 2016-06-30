@@ -7,7 +7,7 @@
     <LinearLayout android:orientation="horizontal"
                   android:layout_width="match_parent"
                   android:layout_height="wrap_content"
-                  android:weightSum="36" >
+                  android:weightSum="40" >
         <CheckBox
             android:id="@+id/displayedInSelector"
             android:layout_width="0dp"
@@ -22,10 +22,17 @@
             android:layout_weight="4"
             style="@style/messageBodyAppearance"/>
         <TextView
-            android:id="@+id/subTitle"
+            android:id="@+id/account"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            tools:text="for AndStatus/LoadAverage"
+            tools:text="AndStatus"
+            android:layout_weight="4"
+            style="@style/messageBodyAppearance" />
+        <TextView
+            android:id="@+id/origin"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            tools:text="LoadAverage"
             android:layout_weight="4"
             style="@style/messageBodyAppearance" />
         <CheckBox

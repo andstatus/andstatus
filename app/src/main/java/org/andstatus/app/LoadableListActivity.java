@@ -209,6 +209,10 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
         }
     }
 
+    public MyContext getMyContext() {
+        return myContext;
+    }
+
     public interface SyncLoader {
         void allowLoadingFromInternet();
         void load(ProgressPublisher publisher);

@@ -536,7 +536,7 @@ public class TimelineActivity extends LoadableListActivity implements
 
     private void updateAccountButtonText(ViewGroup mDrawerList) {
         TextView selectAccountButton = (TextView) mDrawerList.findViewById(R.id.selectAccountButton);
-        String accountButtonText = getCurrentMyAccount().toAccountButtonText();
+        String accountButtonText = getCurrentMyAccount().toAccountButtonText(myContext);
         selectAccountButton.setText(accountButtonText);
     }
 

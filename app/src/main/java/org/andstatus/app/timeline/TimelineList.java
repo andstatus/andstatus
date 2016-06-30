@@ -28,6 +28,8 @@ import android.widget.TextView;
 import org.andstatus.app.LoadableListActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.WhichPage;
+import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyCheckBox;
 import org.andstatus.app.util.MyLog;
@@ -148,8 +150,24 @@ public class TimelineList extends LoadableListActivity {
                                     if (result != 0) {
                                         break;
                                     }
-                                case R.id.subTitle:
-                                    result = compareString(lhs.timelineTitle.subTitle, rhs.timelineTitle.subTitle);
+                                case R.id.account:
+                                    result = compareString(lhs.timelineTitle.accountName, rhs.timelineTitle.accountName);
+                                    if (result != 0) {
+                                        break;
+                                    }
+                                    return compareString(lhs.timelineTitle.originName, rhs.timelineTitle.originName);
+                                case R.id.origin:
+                                    result = compareString(lhs.timelineTitle.originName, rhs.timelineTitle.originName);
+                                    if (result != 0) {
+                                        break;
+                                    } else {
+                                        result = compareString(lhs.timelineTitle.accountName, rhs.timelineTitle.accountName);
+                                    }
+                                    if (result != 0) {
+                                        break;
+                                    } else {
+                                        result = compareString(lhs.timelineTitle.title, rhs.timelineTitle.title);
+                                    }
                                     if (result != 0) {
                                         break;
                                     }
@@ -260,7 +278,12 @@ public class TimelineList extends LoadableListActivity {
                 setPosition(view, position);
                 final TimelineListViewItem item = mItems.get(position);
                 MyUrlSpan.showText(view, R.id.title, item.timelineTitle.title, false, true);
-                MyUrlSpan.showText(view, R.id.subTitle, item.timelineTitle.subTitle, false, true);
+                MyAccount myAccount = item.timeline.getMyAccount();
+                MyUrlSpan.showText(view, R.id.account, myAccount.isValid() ?
+                        myAccount.toAccountButtonText(myContext) : "", false, true);
+                Origin origin = item.timeline.getOrigin();
+                MyUrlSpan.showText(view, R.id.origin, origin.isValid() ?
+                        origin.getName() : "", false, true);
                 MyCheckBox.show(view, R.id.displayedInSelector, item.timeline.isDisplayedInSelector(),
                         new CompoundButton.OnCheckedChangeListener() {
                             @Override

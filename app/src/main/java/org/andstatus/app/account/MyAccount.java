@@ -680,13 +680,14 @@ public final class MyAccount {
     /**
      * Are authenticated users from more than one different Originating system?
      * @return count
+     * @param myContext
      */
-    public String shortestUniqueAccountName() {
+    public String shortestUniqueAccountName(MyContext myContext) {
         String uniqueName = getAccountName();
 
         boolean found = false;
         String possiblyUnique = getUsername();
-        for (MyAccount persistentAccount : MyContextHolder.get().persistentAccounts().collection()) {
+        for (MyAccount persistentAccount : myContext.persistentAccounts().collection()) {
             if (!persistentAccount.toString().equalsIgnoreCase(toString()) 
                     && persistentAccount.getUsername().equalsIgnoreCase(possiblyUnique) ) {
                 found = true;
@@ -698,7 +699,7 @@ public final class MyAccount {
             int indAt = uniqueName.indexOf('@');
             if (indAt > 0) {
                 possiblyUnique = uniqueName.substring(0, indAt);
-                for (MyAccount persistentAccount : MyContextHolder.get().persistentAccounts().collection()) {
+                for (MyAccount persistentAccount : myContext.persistentAccounts().collection()) {
                     if (!persistentAccount.toString().equalsIgnoreCase(toString()) ) {
                         String toCompareWith = persistentAccount.getUsername();
                         indAt = toCompareWith.indexOf('@');
@@ -948,8 +949,8 @@ public final class MyAccount {
         return jso;
     }
 
-    public String toAccountButtonText() {
-        String accountButtonText = shortestUniqueAccountName();
+    public String toAccountButtonText(MyContext myContext) {
+        String accountButtonText = shortestUniqueAccountName(myContext);
         if (!isValidAndSucceeded()) {
             accountButtonText = "(" + accountButtonText + ")";
         }

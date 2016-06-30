@@ -9,7 +9,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:weightSum="36">
+        android:weightSum="40">
 
         <TextView
             android:id="@+id/displayedInSelector"
@@ -29,12 +29,20 @@
             android:text="@string/title"
             android:layout_weight="4" />
         <TextView
-            android:id="@+id/subTitle"
+            android:id="@+id/account"
             android:minHeight="48dp"
             android:gravity="center_vertical"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="@string/subtitle"
+            android:text="@string/title_account"
+            android:layout_weight="4" />
+        <TextView
+            android:id="@+id/origin"
+            android:minHeight="48dp"
+            android:gravity="center_vertical"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@string/label_origin_system"
             android:layout_weight="4" />
         <TextView
             android:id="@+id/synced"

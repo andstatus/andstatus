@@ -166,7 +166,7 @@ public class MessageContextMenu extends MyContextMenu {
                         MessageListContextMenuItem.ACT_AS_USER.addTo(menu, order++,
                                 String.format(
                                         getActivity().getText(R.string.menu_item_act_as_user).toString(),
-                                        msg.myAccount().firstOtherAccountOfThisOrigin().shortestUniqueAccountName()));
+                                        msg.myAccount().firstOtherAccountOfThisOrigin().shortestUniqueAccountName(getActivity().getMyContext())));
                         break;
                     default:
                         MessageListContextMenuItem.ACT_AS.addTo(menu, order++, R.string.menu_item_act_as);

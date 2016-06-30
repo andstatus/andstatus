@@ -22,8 +22,10 @@ import org.andstatus.app.MyActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
+import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.MyUrlSpan;
 
 /**
  * Data to show on UI. May be create on UI thread
@@ -32,6 +34,9 @@ import org.andstatus.app.util.MyLog;
 public class TimelineTitle {
     public String title = "";
     public String subTitle = "";
+
+    public String accountName = "";
+    public String originName = "";
 
     private TimelineTitle() {
         // Empty
@@ -58,6 +63,12 @@ public class TimelineTitle {
         TimelineTitle timelineTitle = new TimelineTitle();
         timelineTitle.title = toTimelineTitle(myContext, timeline);
         timelineTitle.subTitle = toTimelineSubtitle(myContext, timeline, currentMyAccount);
+
+        timelineTitle.accountName = timeline.getMyAccount().isValid() ?
+                timeline.getMyAccount().toAccountButtonText(myContext) : "";
+        timelineTitle.originName = timeline.getOrigin().isValid() ?
+                timeline.getOrigin().getName() : "";
+
         return timelineTitle;
     }
 
@@ -72,7 +83,7 @@ public class TimelineTitle {
             if (timeline.isUserDifferentFromAccount()) {
                 I18n.appendWithSpace(title, timeline.getUserInTimeline());
             } else {
-                I18n.appendWithSpace(title, timeline.getMyAccount().toAccountButtonText());
+                I18n.appendWithSpace(title, timeline.getMyAccount().toAccountButtonText(myContext));
             }
         }
         if (timeline.isCombined()) {
@@ -92,7 +103,7 @@ public class TimelineTitle {
                 I18n.appendWithSpace(subTitle, timeline.getOrigin().getName());
                 nameAdded = true;
             } else if (!timeline.getMyAccount().equals(currentMyAccount)) {
-                I18n.appendWithSpace(subTitle, timeline.getMyAccount().toAccountButtonText());
+                I18n.appendWithSpace(subTitle, timeline.getMyAccount().toAccountButtonText(myContext));
                 nameAdded = true;
             }
         }
@@ -100,7 +111,7 @@ public class TimelineTitle {
             if (nameAdded) {
                 subTitle.append(";");
             }
-            I18n.appendWithSpace(subTitle, currentMyAccount.toAccountButtonText());
+            I18n.appendWithSpace(subTitle, currentMyAccount.toAccountButtonText(myContext));
         }
         return subTitle.toString();
     }
