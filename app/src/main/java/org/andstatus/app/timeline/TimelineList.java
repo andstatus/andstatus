@@ -17,11 +17,13 @@
 package org.andstatus.app.timeline;
 
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CompoundButton;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import org.andstatus.app.LoadableListActivity;
 import org.andstatus.app.R;
@@ -44,12 +46,40 @@ import java.util.List;
  */
 public class TimelineList extends LoadableListActivity {
     private int sortByField = R.id.synced;
+    private int sortFieldPrev = 0;
     private boolean sortDefault = true;
+    private ViewGroup columnHeadersParent = null;
 
     @Override
     protected void onPause() {
         myContext.persistentTimelines().saveChanged();
         super.onPause();
+    }
+
+    @Override
+    public void onLoadFinished(boolean keepCurrentPosition) {
+        showSortColumn();
+        int sortFieldNew = sortDefault ? sortByField : 0 - sortByField;
+        super.onLoadFinished(sortFieldPrev == sortFieldNew);
+        sortFieldPrev = sortFieldNew;
+    }
+
+    private void showSortColumn() {
+        for (int i = 0; i < columnHeadersParent.getChildCount(); i++) {
+            View view = columnHeadersParent.getChildAt(i);
+            if (!TextView.class.isAssignableFrom(view.getClass())) {
+                continue;
+            }
+            TextView textView = (TextView) view;
+            String text = textView.getText().toString();
+            if (!TextUtils.isEmpty(text) && "▲▼↑↓".indexOf(text.charAt(0)) >= 0) {
+                text = text.substring(1);
+                textView.setText(text);
+            }
+            if (textView.getId() == sortByField) {
+                textView.setText((sortDefault ? '▲' : '▼') + text);
+            }
+        }
     }
 
     @Override
@@ -62,7 +92,7 @@ public class TimelineList extends LoadableListActivity {
         View listHeader = inflater.inflate(R.layout.timeline_list_header, linearLayout, false);
         linearLayout.addView(listHeader, 0);
 
-        ViewGroup columnHeadersParent = (ViewGroup) listHeader.findViewById(R.id.columnHeadersParent);
+        columnHeadersParent = (ViewGroup) listHeader.findViewById(R.id.columnHeadersParent);
         for (int i = 0; i < columnHeadersParent.getChildCount(); i++) {
             View view = columnHeadersParent.getChildAt(i);
             view.setOnClickListener(new View.OnClickListener() {
