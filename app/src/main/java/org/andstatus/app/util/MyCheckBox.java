@@ -27,7 +27,7 @@ import org.andstatus.app.R;
  * @author yvolk@yurivolkov.com
  */
 public class MyCheckBox {
-    public final static CompoundButton.OnCheckedChangeListener ON_CHECKED_CHANGE_LISTENER =
+    private final static CompoundButton.OnCheckedChangeListener EMPTY_ON_CHECKED_CHANGE_LISTENER =
             new CompoundButton.OnCheckedChangeListener() {
         @Override
         public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -48,7 +48,7 @@ public class MyCheckBox {
     }
 
     public static void show(Activity activity, int viewId, boolean checked, boolean enabled) {
-        show(activity, viewId, checked, enabled ? ON_CHECKED_CHANGE_LISTENER : null);
+        show(activity, viewId, checked, enabled ? EMPTY_ON_CHECKED_CHANGE_LISTENER : null);
     }
 
     public static void show(Activity activity, int viewId, boolean checked,
@@ -60,10 +60,12 @@ public class MyCheckBox {
                             CompoundButton.OnCheckedChangeListener onCheckedChangeListener) {
         CheckBox checkBox = (CheckBox) parentView.findViewById(viewId);
         if (checkBox != null) {
+            checkBox.setOnCheckedChangeListener(null);
             checkBox.setChecked(checked);
             checkBox.setEnabled(onCheckedChangeListener != null);
-            checkBox.setOnCheckedChangeListener(
-                    onCheckedChangeListener == ON_CHECKED_CHANGE_LISTENER ? null : onCheckedChangeListener);
+            if (onCheckedChangeListener != null && onCheckedChangeListener != EMPTY_ON_CHECKED_CHANGE_LISTENER) {
+                checkBox.setOnCheckedChangeListener(onCheckedChangeListener);
+            }
         }
     }
 }

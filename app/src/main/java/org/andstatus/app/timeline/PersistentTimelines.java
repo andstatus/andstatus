@@ -123,9 +123,14 @@ public class PersistentTimelines {
     @NonNull
     public List<Timeline> toAutoSyncForAccount(MyAccount ma) {
         List<Timeline> timelines = new ArrayList<>();
-        for (Timeline timeline : values()) {
-            if (timeline.isSynced() && timeline.getMyAccount().equals(ma) && timeline.isTimeToAutoSync()) {
-                timelines.add(timeline);
+        if (ma.isValidAndSucceeded()) {
+            for (Timeline timeline : values()) {
+                if (timeline.isSynced() &&
+                        ((!timeline.getTimelineType().isAtOrigin() && timeline.getMyAccount().equals(ma)) ||
+                                timeline.getTimelineType().isAtOrigin() && timeline.getOrigin().equals(ma.getOrigin())) &&
+                        timeline.isTimeToAutoSync()) {
+                    timelines.add(timeline);
+                }
             }
         }
         return timelines;

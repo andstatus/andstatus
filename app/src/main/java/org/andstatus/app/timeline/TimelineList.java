@@ -44,7 +44,7 @@ import java.util.List;
  */
 public class TimelineList extends LoadableListActivity {
     private int sortByField = R.id.synced;
-    private TriState sortDesc = TriState.UNKNOWN;
+    private boolean sortDefault = true;
 
     @Override
     protected void onPause() {
@@ -54,7 +54,7 @@ public class TimelineList extends LoadableListActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        mLayoutId = R.layout.my_list_wide;
+        mLayoutId = R.layout.timeline_list;
         super.onCreate(savedInstanceState);
 
         LinearLayout linearLayout = (LinearLayout) findViewById(R.id.linear_list_wrapper);
@@ -76,9 +76,9 @@ public class TimelineList extends LoadableListActivity {
 
     private void sortBy(int fieldId) {
         if (sortByField == fieldId) {
-            sortDesc = sortDesc.not();
+            sortDefault = !sortDefault;
         } else {
-            sortDesc = TriState.UNKNOWN;
+            sortDefault = true;
         }
         sortByField = fieldId;
         showList(WhichPage.CURRENT);
@@ -151,11 +151,8 @@ public class TimelineList extends LoadableListActivity {
                         }
 
                         private int compareString(String lhs, String rhs) {
-                            if (sortDesc == TriState.UNKNOWN) {
-                                sortDesc = TriState.FALSE;
-                            }
                             int result = lhs == null ? 0 : lhs.compareTo(rhs);
-                            return result == 0 ? 0 : sortDesc.toBoolean(false) ? 0 - result : result;
+                            return result == 0 ? 0 : sortDefault ? result : 0 - result;
                         }
 
                         private int compareSynced(TimelineListViewItem lhs, TimelineListViewItem rhs) {
@@ -170,19 +167,13 @@ public class TimelineList extends LoadableListActivity {
                         }
 
                         private int compareDate(long lhs, long rhs) {
-                            if (sortDesc == TriState.UNKNOWN) {
-                                sortDesc = TriState.TRUE;
-                            }
                             int result = lhs == rhs ? 0 : lhs > rhs ? 1 : -1;
-                            return result == 0 ? 0 : sortDesc.toBoolean(false) ? 0 - result : result;
+                            return result == 0 ? 0 : !sortDefault ? result : 0 - result;
                         }
 
                         private int compareCheckbox(boolean lhs, boolean rhs) {
-                            if (sortDesc == TriState.UNKNOWN) {
-                                sortDesc = TriState.TRUE;
-                            }
                             int result = lhs == rhs ? 0 : lhs ? 1 : -1;
-                            return result == 0 ? 0 : sortDesc.toBoolean(false) ? 0 - result : result;
+                            return result == 0 ? 0 : !sortDefault ? result : 0 - result;
                         }
 
                     });

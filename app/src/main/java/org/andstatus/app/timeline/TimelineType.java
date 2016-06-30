@@ -130,6 +130,7 @@ public enum TimelineType {
             case HOME:
             case MENTIONS:
             case DIRECT:
+            case SENT:
                 return true;
             default:
                 return false;

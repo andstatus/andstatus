@@ -21,7 +21,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".service.QueueViewer">
+    tools:context=".timeline.TimelineList">
 
     <include layout="@layout/action_bar" />
 
@@ -43,7 +43,7 @@
 
                 <ListView
                     android:id="@android:id/list"
-                    android:layout_width="1400dp"
+                    android:layout_width="1500dp"
                     android:layout_height="match_parent"
                     android:scrollbars="vertical"
                     tools:listheader="@layout/timeline_list_header"
