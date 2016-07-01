@@ -116,7 +116,7 @@ public class DataInserterTest extends InstrumentationTestCase {
         assertEquals("Url of the sender " + somebody.getUserName(), somebody.getProfileUrl(), url);
 
         Uri contentUri = MatchedUri.getTimelineUri(
-                new Timeline(TimelineType.MY_FRIENDS, TestSuite.getConversationMyAccount(), 0, null));
+                Timeline.getTimeline(TimelineType.MY_FRIENDS, TestSuite.getConversationMyAccount(), 0, null));
         SelectionAndArgs sa = new SelectionAndArgs();
         String sortOrder = MsgTable.DESC_SORT_ORDER;
         sa.addSelection("fUserId = ?",
@@ -172,7 +172,7 @@ public class DataInserterTest extends InstrumentationTestCase {
                 .addMessage(message);
 
         Uri contentUri = MatchedUri.getTimelineUri(
-                new Timeline(TimelineType.HOME, TestSuite.getConversationMyAccount(), 0, null));
+                Timeline.getTimeline(TimelineType.HOME, TestSuite.getConversationMyAccount(), 0, null));
         SelectionAndArgs sa = new SelectionAndArgs();
         String sortOrder = MsgTable.DESC_SORT_ORDER;
         sa.addSelection(MsgTable.MSG_ID + " = ?",
@@ -224,7 +224,7 @@ public class DataInserterTest extends InstrumentationTestCase {
         assertTrue("Message added", messageId != 0);
 
         Uri contentUri = MatchedUri.getTimelineUri(
-                new Timeline(TimelineType.HOME, TestSuite.getConversationMyAccount(), 0, null));
+                Timeline.getTimeline(TimelineType.HOME, TestSuite.getConversationMyAccount(), 0, null));
         SelectionAndArgs sa = new SelectionAndArgs();
         String sortOrder = MsgTable.DESC_SORT_ORDER;
         sa.addSelection(MsgTable.MSG_ID + " = ?",
@@ -274,7 +274,7 @@ public class DataInserterTest extends InstrumentationTestCase {
         assertTrue("Message added", messageId != 0);
 
         Uri contentUri = MatchedUri.getTimelineUri(
-                new Timeline(TimelineType.HOME, TestSuite.getConversationMyAccount(), 0, null));
+                Timeline.getTimeline(TimelineType.HOME, TestSuite.getConversationMyAccount(), 0, null));
         SelectionAndArgs sa = new SelectionAndArgs();
         String sortOrder = MsgTable.DESC_SORT_ORDER;
         sa.addSelection(MsgTable.MSG_ID + " = ?",

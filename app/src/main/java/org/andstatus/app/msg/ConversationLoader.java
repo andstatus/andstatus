@@ -135,7 +135,8 @@ public class ConversationLoader<T extends ConversationItem> implements SyncLoade
     }
     
     private void loadMessageFromDatabase(ConversationItem oMsg) {
-        Uri uri = MatchedUri.getTimelineItemUri(new Timeline(TimelineType.EVERYTHING, ma, 0, null), oMsg.getMsgId());
+        Uri uri = MatchedUri.getTimelineItemUri(
+                Timeline.getTimeline(TimelineType.EVERYTHING, ma, 0, null), oMsg.getMsgId());
         Cursor cursor = null;
         try {
             cursor = context.getContentResolver().query(uri, oMsg.getProjection(), null, null, null);

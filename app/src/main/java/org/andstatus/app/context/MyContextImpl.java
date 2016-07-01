@@ -257,6 +257,7 @@ public final class MyContextImpl implements MyContext {
     @Override
     public void setExpired() {
         mExpired = true;
+        mState = MyContextState.EXPIRED;
     }
 
     @Override

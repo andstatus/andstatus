@@ -37,7 +37,6 @@ public class CommandDataTest extends InstrumentationTestCase {
     
     public void testQueue() throws InterruptedException {
         long time0 = System.currentTimeMillis(); 
-        String body = "Some text to send " + time0 + "ms";
         CommandData commandData = CommandData.newUpdateStatus(TestSuite.getConversationMyAccount(), 1);
         testQueueOneCommandData(commandData, time0);
 
@@ -90,8 +89,8 @@ public class CommandDataTest extends InstrumentationTestCase {
     }
 
     public void testEquals() {
-        CommandData data1 = CommandData.newSearch(null, "andstatus");
-        CommandData data2 = CommandData.newSearch(null, "mustard");
+        CommandData data1 = CommandData.newSearch(MyContextHolder.get(), null, "andstatus");
+        CommandData data2 = CommandData.newSearch(MyContextHolder.get(), null, "mustard");
         assertTrue("Hashcodes: " + data1.hashCode() + " and " + data2.hashCode(), data1.hashCode() != data2.hashCode());
         assertFalse(data1.equals(data2));
         
@@ -99,7 +98,7 @@ public class CommandDataTest extends InstrumentationTestCase {
         data1.getResult().incrementNumIoExceptions();
         data1.getResult().afterExecutionEnded();
         assertFalse(data1.getResult().shouldWeRetry());
-        CommandData data3 = CommandData.newSearch(null, "andstatus");
+        CommandData data3 = CommandData.newSearch(MyContextHolder.get(), null, "andstatus");
         assertTrue(data1.equals(data3));
         assertTrue(data1.hashCode() == data3.hashCode());
         assertEquals(data1, data3);
@@ -108,7 +107,7 @@ public class CommandDataTest extends InstrumentationTestCase {
     public void testPriority() {
         Queue<CommandData> queue = new PriorityBlockingQueue<CommandData>(100);
         queue.add(CommandData.newSearch(
-                TestSuite.getMyAccount(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME).getOrigin(), "q1"));
+                MyContextHolder.get(), TestSuite.getMyAccount(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME).getOrigin(), "q1"));
         queue.add(CommandData.newUpdateStatus(null, 2));
         queue.add(CommandData.newCommand(CommandEnum.FETCH_TIMELINE));
         queue.add(CommandData.newUpdateStatus(null, 3));

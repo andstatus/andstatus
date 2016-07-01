@@ -186,8 +186,9 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
         @Override
         void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
             if (editorData.recipientId != 0) {
-                menu.switchTimelineActivityView( new Timeline(TimelineType.USER,
-                        null, editorData.recipientId, null));
+                menu.switchTimelineActivityView(
+                        Timeline.getTimeline(menu.getActivity().getMyContext(), TimelineType.USER,
+                        null, editorData.recipientId, null, ""));
             }
         }
     },
@@ -200,8 +201,9 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
         @Override
         void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
             if (editorData.recipientId != 0) {
-                menu.switchTimelineActivityView( new Timeline(TimelineType.USER,
-                        null, editorData.recipientId, null));
+                menu.switchTimelineActivityView(
+                        Timeline.getTimeline(menu.getActivity().getMyContext(), TimelineType.USER,
+                        null, editorData.recipientId, null, ""));
             }
         }
     },
@@ -288,7 +290,8 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
         @Override
         void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
             Uri uri = MatchedUri.getTimelineItemUri(
-                    menu.messageList.getTimeline().fromMyAccount(editorData.ma),
+                    menu.messageList.getTimeline().fromMyAccount(menu.getActivity().getMyContext(),
+                            editorData.ma),
                     menu.getMsgId());
             String action = menu.getActivity().getIntent().getAction();
             if (Intent.ACTION_PICK.equals(action) || Intent.ACTION_GET_CONTENT.equals(action)) {
@@ -348,7 +351,8 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
         MyLog.v(this, "text='" + editorData.body + "'");
         if (!TextUtils.isEmpty(editorData.body)) {
             // http://developer.android.com/guide/topics/text/copy-paste.html
-            ClipboardManager clipboard = (ClipboardManager) MyContextHolder.get().context().getSystemService(Context.CLIPBOARD_SERVICE);
+            ClipboardManager clipboard = (ClipboardManager) MyContextHolder.get().context().
+                    getSystemService(Context.CLIPBOARD_SERVICE);
             ClipData clip = ClipData.newPlainText(I18n.trimTextAt(editorData.body, 40), editorData.body);
             clipboard.setPrimaryClip(clip);
             MyLog.v(this, "clip='" + clip.toString() + "'");

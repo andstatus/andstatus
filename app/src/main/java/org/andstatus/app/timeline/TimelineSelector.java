@@ -28,6 +28,7 @@ import org.andstatus.app.ActivityRequestCode;
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
 import org.andstatus.app.SelectorDialog;
+import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.widget.MySimpleAdapter;
@@ -79,7 +80,7 @@ public class TimelineSelector extends SelectorDialog {
             return;
         }
 
-        setListAdapter(newListAdapter(listData));
+        setListAdapter(newListAdapter(myContext, listData));
 
         getListView().setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -91,11 +92,11 @@ public class TimelineSelector extends SelectorDialog {
         });
     }
 
-    private MySimpleAdapter newListAdapter(Collection<Timeline> listData) {
+    private MySimpleAdapter newListAdapter(MyContext myContext, Collection<Timeline> listData) {
         List<Map<String, String>> list = new ArrayList<>();
         for (Timeline timeline : listData) {
             Map<String, String> map = new HashMap<>();
-            String visibleName = timeline.getNameForSelector();
+            String visibleName = TimelineTitle.load(myContext, timeline, null).title;
             map.put(KEY_VISIBLE_NAME, visibleName);
             map.put(BaseColumns._ID, Long.toString(timeline.getId()));
             map.put(KEY_TYPE, TYPE_TIMELINE);

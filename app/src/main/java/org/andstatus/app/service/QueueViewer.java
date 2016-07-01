@@ -30,6 +30,7 @@ import android.widget.ListAdapter;
 
 import org.andstatus.app.MyListActivity;
 import org.andstatus.app.R;
+import org.andstatus.app.context.MyContext;
 import org.andstatus.app.widget.MySimpleAdapter;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.timeline.TimelineType;
@@ -47,6 +48,7 @@ public class QueueViewer extends MyListActivity implements MyServiceEventsListen
     private static final String KEY_RESULT_SUMMARY = "result_summary";
     MyServiceEventsReceiver mServiceConnector;
     private List<QueueData> mListData = null;
+    private MyContext myContext = MyContextHolder.get();
 
     private static class QueueData implements Comparable<QueueData> {
         QueueType queueType;
@@ -88,7 +90,7 @@ public class QueueViewer extends MyListActivity implements MyServiceEventsListen
     protected void onCreate(Bundle savedInstanceState) {
         mLayoutId = R.layout.my_list;
         super.onCreate(savedInstanceState);
-        mServiceConnector = new MyServiceEventsReceiver(this);
+        mServiceConnector = new MyServiceEventsReceiver(myContext, this);
         showList();
         registerForContextMenu(getListView());
     }

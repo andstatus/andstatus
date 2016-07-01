@@ -113,11 +113,11 @@ public class TimelineLoader implements LoadableListActivity.SyncLoader {
     private void checkIfReloadIsNeeded(Cursor cursor) {
         if (noMessagesInATimeline(cursor)) {
             if (getParams().getTimeline().isSynced()) {
-                if ( MyContextHolder.get().persistentTimelines().fromNewTimeLine(
-                        new Timeline(TimelineType.HOME, getParams().getMyAccount(), 0, null)).
+                if (Timeline.getTimeline(TimelineType.HOME, getParams().getMyAccount(), 0, null).
                         getYoungestSyncedDate() == 0) {
                     // This is supposed to be a one time task.
-                    getParams().timelineToSync = new Timeline(TimelineType.EVERYTHING, getParams().getMyAccount(), 0, null);
+                    getParams().timelineToSync = Timeline.getTimeline(TimelineType.EVERYTHING,
+                            getParams().getMyAccount(), 0, null);
                 }
             } else {
                 // This timeline doesn't update automatically so let's do it now if necessary

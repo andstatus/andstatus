@@ -23,6 +23,7 @@ import android.content.IntentFilter;
 
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.MyAction;
+import org.andstatus.app.context.MyContext;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
 
@@ -32,9 +33,11 @@ import org.andstatus.app.util.MyLog;
 public final class MyServiceEventsReceiver extends BroadcastReceiver {
     private final long mInstanceId = InstanceId.next();
     private final MyServiceEventsListener listener;
+    private final MyContext myContext;
 
-    public MyServiceEventsReceiver(MyServiceEventsListener listener) {
+    public MyServiceEventsReceiver(MyContext myContext, MyServiceEventsListener listener) {
         super();
+        this.myContext = myContext;
         this.listener = listener;
         MyLog.v(this, "Created, instanceId=" + mInstanceId + (listener != null ? "; listener='"
                 + listener.toString() + "'" : ""));
@@ -60,6 +63,6 @@ public final class MyServiceEventsReceiver extends BroadcastReceiver {
             return;
         }
         MyLog.v(this, "onReceive " + event + " for " + MyLog.objTagToString(listener) + ", instanceId:" + mInstanceId);
-        listener.onReceive(CommandData.fromIntent(intent), event);
+        listener.onReceive(CommandData.fromIntent(myContext, intent), event);
     }
 }

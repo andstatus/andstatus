@@ -65,11 +65,11 @@ public class CommandExecutorStrategyTest extends InstrumentationTestCase {
     }
 
     public void testSearch() {
-        CommandData commandData = CommandData.newSearch(null, TestSuite.GLOBAL_PUBLIC_MESSAGE_TEXT);
+        CommandData commandData = CommandData.newSearch(MyContextHolder.get(), null, TestSuite.GLOBAL_PUBLIC_MESSAGE_TEXT);
         CommandExecutorStrategy strategy = CommandExecutorStrategy.getStrategy(commandData, null);
         assertEquals(CommandExecutorStrategy.class, strategy.getClass());
 
-        commandData = CommandData.newSearch(ma.getOrigin(), TestSuite.GLOBAL_PUBLIC_MESSAGE_TEXT);
+        commandData = CommandData.newSearch(MyContextHolder.get(), ma.getOrigin(), TestSuite.GLOBAL_PUBLIC_MESSAGE_TEXT);
         strategy = CommandExecutorStrategy.getStrategy(commandData, null);
         assertEquals(TimelineDownloaderOther.class, strategy.getClass());
         strategy.execute();

@@ -21,6 +21,7 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.MenuItem;
 
 import org.andstatus.app.R;
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceEvent;
@@ -29,7 +30,7 @@ import org.andstatus.app.service.MyServiceEventsReceiver;
 import org.andstatus.app.service.MyServiceManager;
 
 public class DiscoveredOriginList extends OriginList implements MyServiceEventsListener {
-    MyServiceEventsReceiver mServiceConnector = new MyServiceEventsReceiver(this);
+    MyServiceEventsReceiver mServiceConnector = new MyServiceEventsReceiver(MyContextHolder.get(), this);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

@@ -34,7 +34,7 @@ import java.net.MalformedURLException;
 import java.util.Queue;
 
 public class MyServiceTest extends InstrumentationTestCase {
-    private final MyServiceTestHelper mService = new MyServiceTestHelper();
+    private MyServiceTestHelper mService;
     private volatile MyAccount ma;
 
     @Override
@@ -43,6 +43,7 @@ public class MyServiceTest extends InstrumentationTestCase {
         MyLog.i(this, "setUp started");
         TestSuite.initializeWithData(this);
 
+        mService = new MyServiceTestHelper();
         mService.setUp(null);
         ma = MyContextHolder.get().persistentAccounts().getFirstSucceededForOriginId(0);
         assertTrue("No successfully verified accounts", ma.isValidAndSucceeded());

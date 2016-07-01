@@ -246,7 +246,7 @@ public class TimelineActivity extends LoadableListActivity implements
      */
     public void onCombinedTimelineToggleClick(View item) {
         closeDrawer();
-        switchView( paramsLoaded.getTimeline().fromIsCombined(!paramsLoaded.isTimelineCombined()),
+        switchView( paramsLoaded.getTimeline().fromIsCombined(myContext, !paramsLoaded.isTimelineCombined()),
                 null);
 
     }
@@ -289,7 +289,7 @@ public class TimelineActivity extends LoadableListActivity implements
         Bundle appSearchData = new Bundle();
         appSearchData.putString(IntentExtra.TIMELINE_URI.key,
                 MatchedUri.getTimelineUri(
-                        getParamsLoaded().getTimeline().fromSearch(appGlobalSearch)).toString());
+                        getParamsLoaded().getTimeline().fromSearch(myContext, appGlobalSearch)).toString());
         appSearchData.putBoolean(IntentExtra.GLOBAL_SEARCH.key, appGlobalSearch);
         MyLog.v(this, method + ": " + appSearchData);
         startSearch(null, false, appSearchData, false);
@@ -483,7 +483,7 @@ public class TimelineActivity extends LoadableListActivity implements
             return;
         }
         Uri uri = MatchedUri.getTimelineItemUri(
-                getParamsLoaded().getTimeline().fromIsCombined(false).fromMyAccount(ma),
+                getParamsLoaded().getTimeline().fromIsCombined(myContext, false).fromMyAccount(myContext, ma),
                 item.msgId);
 
         String action = getIntent().getAction();
@@ -592,7 +592,7 @@ public class TimelineActivity extends LoadableListActivity implements
                 for (Origin origin : myContext.persistentOrigins().originsForGlobalSearch(
                         getParamsNew().getTimeline().getOrigin(), getParamsNew().getTimeline().isCombined())) {
                     MyServiceManager.sendManualForegroundCommand(
-                            CommandData.newSearch(origin,
+                            CommandData.newSearch(myContext, origin,
                                     getParamsNew().getTimeline().getSearchQuery()));
                 }
             }
@@ -878,9 +878,7 @@ public class TimelineActivity extends LoadableListActivity implements
     private void syncForAllOrigins(Timeline timelineToSync, boolean manuallyLaunched) {
         for (Origin origin : myContext.persistentOrigins().originsToSync(
                 timelineToSync.getMyAccount().getOrigin(), true, timelineToSync.hasSearchQuery())) {
-            syncOneTimeline(myContext.persistentTimelines()
-                            .fromNewTimeLine(timelineToSync.cloneForOrigin(origin)),
-                    manuallyLaunched);
+            syncOneTimeline(timelineToSync.cloneForOrigin(myContext, origin), manuallyLaunched);
         }
     }
 
@@ -889,9 +887,7 @@ public class TimelineActivity extends LoadableListActivity implements
             if (timelineToSync.getTimelineType() == TimelineType.EVERYTHING) {
                 ma.requestSync();
             } else {
-                syncOneTimeline(myContext.persistentTimelines()
-                        .fromNewTimeLine(timelineToSync.cloneForAccount(ma)),
-                        manuallyLaunched);
+                syncOneTimeline(timelineToSync.cloneForAccount(myContext, ma), manuallyLaunched);
             }
         }
     }
@@ -975,7 +971,7 @@ public class TimelineActivity extends LoadableListActivity implements
         if (ma.isValid()) {
             switchView(getParamsLoaded().getTimeline().isCombined() ?
                     getParamsLoaded().getTimeline() :
-                    getParamsLoaded().getTimeline().fromMyAccount(ma), ma);
+                    getParamsLoaded().getTimeline().fromMyAccount(myContext, ma), ma);
         }
     }
 
@@ -1116,10 +1112,10 @@ public class TimelineActivity extends LoadableListActivity implements
         return getParamsLoaded().getTimeline();
     }
 
-    public void switchView(Timeline timeline, MyAccount currentMyAccount) {
+    public void switchView(Timeline timeline, MyAccount newCurrentMyAccount) {
         MyAccount currentMyAccountToSet = MyAccount.getEmpty();
-        if (currentMyAccount != null && currentMyAccount.isValid()) {
-            currentMyAccountToSet = currentMyAccount;
+        if (newCurrentMyAccount != null && newCurrentMyAccount.isValid()) {
+            currentMyAccountToSet = newCurrentMyAccount;
         } else if (timeline.getMyAccount().isValid()) {
             currentMyAccountToSet = timeline.getMyAccount();
         }

@@ -113,7 +113,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
         }
 
         MyServiceManager.setServiceAvailable();
-        myServiceReceiver = new MyServiceEventsReceiver(this);
+        myServiceReceiver = new MyServiceEventsReceiver(myContext, this);
 
         mParsedUri = ParsedUri.fromUri(getIntent().getData());
         setCurrentMyAccount(getParsedUri().getAccountUserId(), getParsedUri().getOriginId());

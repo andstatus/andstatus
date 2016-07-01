@@ -53,7 +53,8 @@ public class PersistentTimelinesTest extends InstrumentationTestCase {
         assertTrue(timelines.size() > filtered.size());
 
         List<Timeline> filtered2 = MyContextHolder.get().persistentTimelines().getFiltered(true, TriState.UNKNOWN, null, null);
-        assertEquals(filtered, filtered2);
+        assertTrue(timelines.size() > filtered2.size());
+        assertTrue(filtered2.size() > filtered.size());
 
         MyAccount myAccount = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.CONVERSATION_ACCOUNT_NAME);
         filtered = MyContextHolder.get().persistentTimelines().getFiltered(true, TriState.FALSE, myAccount, null);
@@ -90,9 +91,9 @@ public class PersistentTimelinesTest extends InstrumentationTestCase {
                         count++;
                     }
                 }
-                assertEquals( origin.toString() + " " + timelineType , myAccount.isValid() ?
-                        (origin.getOriginType().isTimelineTypeSupported(timelineType) ? 1 : 0) :
-                        0, count);
+                if (myAccount.isValid() && origin.getOriginType().isTimelineTypeSupported(timelineType)) {
+                    assertTrue(origin.toString() + " " + timelineType, count > 0);
+                }
             }
         }
     }

@@ -26,7 +26,7 @@ import org.andstatus.app.util.MyLog;
 import java.util.Arrays;
 
 public class SharingMediaToThisAppTest extends ActivityInstrumentationTestCase2<TimelineActivity> {
-    final MyServiceTestHelper mService = new MyServiceTestHelper();
+    MyServiceTestHelper mService;
     MyAccount ma;
 
     public SharingMediaToThisAppTest() {
@@ -38,6 +38,7 @@ public class SharingMediaToThisAppTest extends ActivityInstrumentationTestCase2<
         super.setUp();
         TestSuite.initializeWithData(this);
 
+        mService = new MyServiceTestHelper();
         mService.setUp(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME);
         ma = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME);
         assertTrue(ma.isValid());

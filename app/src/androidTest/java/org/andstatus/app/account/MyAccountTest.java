@@ -55,14 +55,14 @@ public class MyAccountTest  extends InstrumentationTestCase {
     }
     
 
-    public static void fixPersistentAccounts() {
-        for (MyAccount ma : MyContextHolder.get().persistentAccounts().collection()) {
-            fixAccountByName(ma.getAccountName());
+    public static void fixPersistentAccounts(MyContext myContext) {
+        for (MyAccount ma : myContext.persistentAccounts().collection()) {
+            fixAccountByName(myContext, ma.getAccountName());
         }
     }
     
-    public static void fixAccountByName(String accountName) {
-        MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(accountName);
+    public static void fixAccountByName(MyContext myContext, String accountName) {
+        MyAccount ma = myContext.persistentAccounts().fromAccountName(accountName);
         assertTrue("Account " + accountName + " is valid", ma.isValid());
         if (ma.getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED ) {
             return;

@@ -32,6 +32,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 
+import org.andstatus.app.context.MyContext;
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.widget.MySimpleAdapter;
 import org.andstatus.app.context.MyTheme;
 
@@ -43,6 +45,7 @@ public class SelectorDialog extends DialogFragment {
     Toolbar toolbar = null;
     ListView listView = null;
     private int mLayoutId = R.layout.my_list_dialog;
+    protected MyContext myContext = MyContextHolder.get();
 
     public Bundle setRequestCode(ActivityRequestCode requestCode) {
         Bundle args = new Bundle();

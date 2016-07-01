@@ -166,7 +166,7 @@ class MyRemoteViewData {
         // "rnd" is necessary to actually bring Extra to the target intent
         // see http://stackoverflow.com/questions/1198558/how-to-send-parameters-from-a-notification-click-to-an-activity
         intent.setData(Uri.withAppendedPath(MatchedUri.getTimelineUri(
-                new Timeline(timeLineType,
+                Timeline.getTimeline(timeLineType,
                         MyContextHolder.get().persistentAccounts().getCurrentAccount(), 0, null)),
                 "rnd/" + android.os.SystemClock.elapsedRealtime()));
         return PendingIntent.getActivity(context, timeLineType.hashCode(), intent, 

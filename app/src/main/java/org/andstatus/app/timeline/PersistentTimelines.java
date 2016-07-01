@@ -26,7 +26,6 @@ import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.data.ParsedUri;
 import org.andstatus.app.database.TimelineTable;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.MyLog;
@@ -99,13 +98,12 @@ public class PersistentTimelines {
 
     @NonNull
     public Timeline getDefaultForCurrentAccount() {
-        return fromNewTimeLine(
-                new Timeline(MyPreferences.getDefaultTimeline(),
-                        myContext.persistentAccounts().getCurrentAccount(), 0, null));
+        return Timeline.getTimeline(myContext, MyPreferences.getDefaultTimeline(),
+                        myContext.persistentAccounts().getCurrentAccount(), 0, null, "");
     }
 
     @NonNull
-    public Timeline fromNewTimeLine(Timeline newTimeline) {
+    Timeline fromNewTimeLine(Timeline newTimeline) {
         Timeline found = newTimeline;
         for (Timeline timeline : values()) {
             if (timeline.equals(newTimeline)) {
@@ -164,7 +162,7 @@ public class PersistentTimelines {
     private void removeDuplicatesForSelector(List<Timeline> timelines) {
         Map<String, Timeline> map = new HashMap<>();
         for (Timeline timeline : timelines) {
-            String key = timeline.getNameForSelector();
+            String key = TimelineTitle.load(myContext, timeline, null).title;
             if (!map.containsKey(key)) {
                 map.put(key, timeline);
             }
@@ -248,8 +246,8 @@ public class PersistentTimelines {
     }
 
     public Timeline getHome() {
-        return fromNewTimeLine(getDefaultForCurrentAccount().
-                fromIsCombined(MyPreferences.isTimelineCombinedByDefault()));
+        return getDefaultForCurrentAccount().
+                fromIsCombined(myContext, MyPreferences.isTimelineCombinedByDefault());
     }
 
     public void addNew(Timeline timeline) {

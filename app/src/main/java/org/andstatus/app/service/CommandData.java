@@ -31,13 +31,13 @@ import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.timeline.TimelineTitle;
-import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.database.CommandTable;
 import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.database.UserTable;
-import org.andstatus.app.timeline.Timeline;
 import org.andstatus.app.origin.Origin;
+import org.andstatus.app.timeline.Timeline;
+import org.andstatus.app.timeline.TimelineTitle;
+import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.BundleUtils;
 import org.andstatus.app.util.ContentValuesUtils;
 import org.andstatus.app.util.I18n;
@@ -75,9 +75,8 @@ public class CommandData implements Comparable<CommandData> {
     private volatile int result = 0;
     private CommandResult commandResult = new CommandResult();
 
-    public static CommandData newSearch(Origin origin, String queryString) {
-        Timeline timeline =  new Timeline(TimelineType.SEARCH, null, 0, origin);
-        timeline.setSearchQuery(queryString);
+    public static CommandData newSearch(MyContext myContext, Origin origin, String queryString) {
+        Timeline timeline =  Timeline.getTimeline(myContext, TimelineType.SEARCH, null, 0, origin, queryString);
         CommandData commandData = new CommandData(0, CommandEnum.FETCH_TIMELINE, timeline, 0);
         return commandData;
     }
@@ -127,17 +126,17 @@ public class CommandData implements Comparable<CommandData> {
     }
 
     public static CommandData newAccountCommand(CommandEnum command, MyAccount myAccount) {
-        return newTimelineCommand(command, new Timeline(TimelineType.HOME, myAccount, 0, null));
+        return newTimelineCommand(command, Timeline.getTimeline(TimelineType.HOME, myAccount, 0, null));
     }
 
     public static CommandData newTimelineCommand(CommandEnum command, MyAccount myAccount,
                                                  TimelineType timelineType) {
-        return newTimelineCommand(command, new Timeline(timelineType, myAccount, 0, null));
+        return newTimelineCommand(command, Timeline.getTimeline(timelineType, myAccount, 0, null));
     }
 
     public static CommandData newTimelineCommand(CommandEnum command, MyAccount myAccount,
                                                  TimelineType timelineType, long userId, Origin origin) {
-        return newTimelineCommand(command, new Timeline(timelineType, myAccount, userId, origin));
+        return newTimelineCommand(command, Timeline.getTimeline(timelineType, myAccount, userId, origin));
     }
 
     public static CommandData newTimelineCommand(CommandEnum command, Timeline timeline) {
@@ -147,7 +146,7 @@ public class CommandData implements Comparable<CommandData> {
     private CommandData(long commandId, CommandEnum command, Timeline timeline, long createdDate) {
         this.commandId = commandId == 0 ? MyLog.uniqueCurrentTimeMS() : commandId;
         this.command = command;
-        this.timeline = MyContextHolder.get().persistentTimelines().fromNewTimeLine(timeline);
+        this.timeline = timeline;
         this.createdDate = createdDate > 0 ? createdDate : this.commandId;
         resetRetries();
     }
@@ -156,11 +155,11 @@ public class CommandData implements Comparable<CommandData> {
      * Used to decode command from the Intent upon receiving it
      */
     @NonNull
-    public static CommandData fromIntent(Intent intent) {
-        return intent == null  ? getEmpty() : fromBundle(intent.getExtras());
+    public static CommandData fromIntent(MyContext myContext, Intent intent) {
+        return intent == null  ? getEmpty() : fromBundle(myContext, intent.getExtras());
     }
 
-    public static CommandData fromBundle(Bundle bundle) {
+    public static CommandData fromBundle(MyContext myContext, Bundle bundle) {
         CommandData commandData;
         CommandEnum command = CommandEnum.fromBundle(bundle);
         switch (command) {
@@ -172,8 +171,7 @@ public class CommandData implements Comparable<CommandData> {
                 commandData = new CommandData(
                         bundle.getLong(IntentExtra.COMMAND_ID.key, 0),
                         command,
-                        MyContextHolder.get().persistentTimelines().fromNewTimeLine(
-                            Timeline.fromBundle(bundle)),
+                        Timeline.fromBundle(myContext, bundle),
                         bundle.getLong(IntentExtra.CREATED_DATE.key));
                 commandData.itemId = bundle.getLong(IntentExtra.ITEM_ID.key);
                 commandData.setUserName(BundleUtils.getString(bundle, IntentExtra.USER_NAME));
@@ -232,8 +230,7 @@ public class CommandData implements Comparable<CommandData> {
         CommandData commandData = new CommandData(
                 DbUtils.getLong(cursor, CommandTable._ID),
                 command,
-                myContext.persistentTimelines().fromNewTimeLine(
-                        Timeline.fromCommandCursor(myContext, cursor)),
+                Timeline.fromCommandCursor(myContext, cursor),
                 DbUtils.getLong(cursor, CommandTable.CREATED_DATE));
         commandData.description = DbUtils.getString(cursor, CommandTable.DESCRIPTION);
         commandData.mInForeground = DbUtils.getBoolean(cursor, CommandTable.IN_FOREGROUND);

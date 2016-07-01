@@ -6,6 +6,7 @@ import junit.framework.TestCase;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.account.MyAccountTest;
+import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.TestSuite;
@@ -22,6 +23,7 @@ public class MyServiceTestHelper implements MyServiceEventsListener {
     public volatile long executionStartCount = 0;
     public volatile long executionEndCount = 0;
     public volatile boolean serviceStopped = false;
+    private MyContext myContext = MyContextHolder.get();
     
     public void setUp(String accountName) {
         MyLog.i(this, "setUp started");
@@ -37,19 +39,19 @@ public class MyServiceTestHelper implements MyServiceEventsListener {
             TestSuite.setHttpConnectionMockClass(HttpConnectionMock.class);
         }
         TestSuite.getMyContextForTest().setConnectionState(ConnectionState.WIFI);
-        MyAccountTest.fixPersistentAccounts();
+        MyAccountTest.fixPersistentAccounts(myContext);
         // In order for the mocked connection to have an effect:
-        MyContextHolder.get().persistentAccounts().initialize();
-        MyContextHolder.get().persistentTimelines().initialize();
-        MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(accountName);
+        myContext.persistentAccounts().initialize();
+        myContext.persistentTimelines().initialize();
+        MyAccount ma = myContext.persistentAccounts().fromAccountName(accountName);
         TestCase.assertTrue("HttpConnection mocked", ma.getConnection().getHttp() instanceof HttpConnectionMock);
         if (!isSingleMockedInstance) {
             httpConnectionMock = (HttpConnectionMock) ma.getConnection().getHttp();
         }
         connectionInstanceId = httpConnectionMock.getInstanceId();
 
-        serviceConnector = new MyServiceEventsReceiver(this);
-        serviceConnector.registerReceiver(MyContextHolder.get().context());
+        serviceConnector = new MyServiceEventsReceiver(myContext, this);
+        serviceConnector.registerReceiver(myContext.context());
         
         dropQueues();
         httpConnectionMock.clearPostedData();
@@ -162,12 +164,12 @@ public class MyServiceTestHelper implements MyServiceEventsListener {
         SharedPreferencesUtil.getDefaultSharedPreferences().edit()
                 .putBoolean(MyPreferences.KEY_SYNC_WHILE_USING_APPLICATION, true).commit();
         
-        serviceConnector.unregisterReceiver(MyContextHolder.get().context());
+        serviceConnector.unregisterReceiver(myContext.context());
         TestSuite.setHttpConnectionMockClass(null);
         TestSuite.setHttpConnectionMockInstance(null);
         TestSuite.getMyContextForTest().setConnectionState(ConnectionState.UNKNOWN);
-        MyContextHolder.get().persistentAccounts().initialize();
-        MyContextHolder.get().persistentTimelines().initialize();
+        myContext.persistentAccounts().initialize();
+        myContext.persistentTimelines().initialize();
         MyLog.v(this, "tearDown ended");
     }
 

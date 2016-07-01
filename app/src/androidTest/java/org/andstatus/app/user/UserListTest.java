@@ -53,7 +53,7 @@ public class UserListTest extends ActivityInstrumentationTestCase2<TimelineActiv
         MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
 
         Intent intent = new Intent(Intent.ACTION_VIEW,
-                MatchedUri.getTimelineUri(new Timeline(TimelineType.HOME, ma, 0, null)));
+                MatchedUri.getTimelineUri(Timeline.getTimeline(TimelineType.HOME, ma, 0, null)));
         setActivityIntent(intent);
 
         MyLog.i(this, "setUp ended");

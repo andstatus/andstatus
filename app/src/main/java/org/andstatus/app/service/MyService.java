@@ -28,6 +28,7 @@ import net.jcip.annotations.GuardedBy;
 
 import org.andstatus.app.MyAction;
 import org.andstatus.app.appwidget.AppWidgets;
+import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.notification.CommandsQueueNotifier;
@@ -50,6 +51,7 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class MyService extends Service {
 
+    private MyContext myContext = MyContextHolder.get();
     private final Object serviceStateLock = new Object();
     /** We are going to finish this service. But may rethink...  */
     @GuardedBy("serviceStateLock")
@@ -60,9 +62,7 @@ public class MyService extends Service {
     private final static long START_TO_STOP_CHANGE_MIN_PERIOD_SECONDS = 10;
     @GuardedBy("serviceStateLock")
     private long decidedToChangeIsStoppingAt = 0;
-    /**
-     * Flag to control the Service state persistence
-     */
+    /** Flag to control the Service state persistence */
     @GuardedBy("serviceStateLock")
     private boolean mInitialized = false;
 
@@ -133,14 +133,14 @@ public class MyService extends Service {
     };
     
     private void receiveCommand(Intent intent, int startId) {
-        CommandData commandData = CommandData.fromIntent(intent);
+        CommandData commandData = CommandData.fromIntent(myContext, intent);
         switch (commandData.getCommand()) {
             case STOP_SERVICE:
                 MyLog.v(this, "Command " + commandData.getCommand() + " received");
                 stopDelayed(false);
                 break;
             case BROADCAST_SERVICE_STATE:
-                MyServiceEventsBroadcaster.newInstance(MyContextHolder.get(), getServiceState())
+                MyServiceEventsBroadcaster.newInstance(myContext, getServiceState())
                         .broadcast();
                 break;
             case UNKNOWN:
@@ -211,7 +211,7 @@ public class MyService extends Service {
     }
 
     private void broadcastAfterExecutingCommand(CommandData commandData) {
-        MyServiceEventsBroadcaster.newInstance(MyContextHolder.get(), getServiceState())
+        MyServiceEventsBroadcaster.newInstance(myContext, getServiceState())
         .setCommandData(commandData).setEvent(MyServiceEvent.AFTER_EXECUTING_COMMAND).broadcast();
     }
     
@@ -229,13 +229,13 @@ public class MyService extends Service {
         }
         if (wasNotInitialized) {
             if (!widgetsInitialized) {
-                AppWidgets.updateWidgets(MyContextHolder.get());
+                AppWidgets.updateWidgets(myContext);
                 widgetsInitialized = true;
             }
             reviveHeartBeat();
         }
         if (changed) {
-            MyServiceEventsBroadcaster.newInstance(MyContextHolder.get(), getServiceState()).broadcast();
+            MyServiceEventsBroadcaster.newInstance(myContext, getServiceState()).broadcast();
         }
     }
     private void reviveHeartBeat() {
@@ -268,7 +268,7 @@ public class MyService extends Service {
     }
 
     private TriState shouldStop() {
-        boolean doStop = !MyContextHolder.get().isReady() || isForcedToStop()
+        boolean doStop = !myContext.isReady() || isForcedToStop()
                 || !isAnythingToExecuteNow();
         if (!setIsStopping(doStop, false)) {
             return TriState.UNKNOWN;
@@ -456,7 +456,7 @@ public class MyService extends Service {
             return;
         }
         unInitialize();
-        MyServiceEventsBroadcaster.newInstance(MyContextHolder.get(), getServiceState())
+        MyServiceEventsBroadcaster.newInstance(myContext, getServiceState())
                 .setEvent(MyServiceEvent.ON_STOP).broadcast();
     }
 
@@ -489,7 +489,7 @@ public class MyService extends Service {
         AsyncTaskLauncher.shutdownExecutors(Collections.singleton(MyAsyncTask.PoolEnum.SYNC));
         releaseWakeLock();
         stopSelfResult(latestProcessedStartId);
-        CommandsQueueNotifier.newInstance(MyContextHolder.get()).update(
+        CommandsQueueNotifier.newInstance(myContext).update(
                 mainQueueSize, retryQueueSize);
     }
 
@@ -566,10 +566,10 @@ public class MyService extends Service {
                     breakReason = "No more commands";
                     break;
                 }
-                ConnectionState connectionState = MyContextHolder.get().getConnectionState();
+                ConnectionState connectionState = myContext.getConnectionState();
                 if (commandData.getCommand().getConnectionRequired()
                         .isConnectionStateOk(connectionState)) {
-                    MyServiceEventsBroadcaster.newInstance(MyContextHolder.get(), getServiceState())
+                    MyServiceEventsBroadcaster.newInstance(myContext, getServiceState())
                             .setCommandData(commandData)
                             .setEvent(MyServiceEvent.BEFORE_EXECUTING_COMMAND).broadcast();
                     CommandExecutorStrategy.executeCommand(commandData, this);
@@ -608,7 +608,7 @@ public class MyService extends Service {
                     commandData = findInErrorQueue(commandData);
                 }
                 if (commandData != null && !commandData.isInForeground()
-                        && MyContextHolder.get().isInForeground()
+                        && myContext.isInForeground()
                         && !MyPreferences.isSyncWhileUsingApplicationEnabled()) {
                     tempQueue.add(commandData);
                     commandData = null;
@@ -623,7 +623,7 @@ public class MyService extends Service {
                 }
             }
             MyLog.v(this, "Polled in "
-                    + (MyContextHolder.get().isInForeground() ? "foreground"
+                    + (myContext.isInForeground() ? "foreground"
                             + " "
                             + (MyPreferences.isSyncWhileUsingApplicationEnabled() ? "enabled"
                                     : "disabled")

@@ -82,7 +82,6 @@ public class LatestTimelineItemTest extends InstrumentationTestCase {
 
     @NonNull
     private Timeline getTimeline(MyContext myContext, TimelineType timelineType, MyAccount ma) {
-        return myContext.persistentTimelines()
-                .fromNewTimeLine(new Timeline(timelineType, ma, 0, null));
+        return Timeline.getTimeline(myContext, timelineType, ma, 0, null, "");
     }
 }

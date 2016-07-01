@@ -220,8 +220,7 @@ public class TimelineListParameters {
     /** @return true if parsed successfully */
     boolean parseUri(Uri uri, String searchQuery) {
         ParsedUri parsedUri = ParsedUri.fromUri(uri);
-        timeline = myContext.persistentTimelines().fromNewTimeLine(
-                Timeline.fromParsedUri(myContext, parsedUri, searchQuery));
+        timeline = Timeline.fromParsedUri(myContext, parsedUri, searchQuery);
         return !timeline.isEmpty();
     }
 

@@ -55,7 +55,7 @@ public class PublicTimelineActivityTest extends android.test.ActivityInstrumenta
         assertEquals(ma.getUserId(), MyContextHolder.get().persistentAccounts().getCurrentAccountUserId());
         
         Intent intent = new Intent(Intent.ACTION_VIEW, 
-                MatchedUri.getTimelineUri(new Timeline(TimelineType.PUBLIC, ma, 0, null)));
+                MatchedUri.getTimelineUri(Timeline.getTimeline(TimelineType.PUBLIC, ma, 0, null)));
         setActivityIntent(intent);
         
         mActivity = getActivity();

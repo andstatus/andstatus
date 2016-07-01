@@ -40,7 +40,7 @@ public class MyServiceCommandsRunner implements MyServiceEventsListener {
 
     public MyServiceCommandsRunner(MyContext myContext) {
         this.myContext = myContext;
-        eventsReceiver = new MyServiceEventsReceiver(this);
+        eventsReceiver = new MyServiceEventsReceiver(myContext, this);
     }
 
     public void autoSyncAccount(String accountName, SyncResult syncResult) {

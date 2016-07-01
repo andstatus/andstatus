@@ -75,7 +75,7 @@ public class TimeLineActivityLayoutToggleTest extends android.test.ActivityInstr
         MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
         
         Intent intent = new Intent(Intent.ACTION_VIEW, 
-                MatchedUri.getTimelineUri(new Timeline(TimelineType.HOME, ma, 0, null)));
+                MatchedUri.getTimelineUri(Timeline.getTimeline(TimelineType.HOME, ma, 0, null)));
         setActivityIntent(intent);
         
         activity = getActivity();
