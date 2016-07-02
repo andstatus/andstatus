@@ -221,7 +221,7 @@ public class SharedPreferencesUtil {
                 longValue = longValueStored;
             }
         } catch (NumberFormatException e) {
-            MyLog.v(TAG, e);
+            MyLog.ignored(TAG, e);
         }
         return longValue;
     }

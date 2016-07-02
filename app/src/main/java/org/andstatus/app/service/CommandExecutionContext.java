@@ -26,13 +26,7 @@ public class CommandExecutionContext {
     }
 
     public MyAccount getMyAccount() {
-        MyAccount myAccount = getTimeline().getMyAccount();
-        if (!myAccount.isValid()) {
-            Origin origin = getTimeline().getOrigin();
-            if (origin.isValid()) {
-                myAccount = myContext.persistentAccounts().getFirstSucceededForOriginId(origin.getId());
-            }
-        }
+        MyAccount myAccount = getTimeline().getMyAccountToSync(myContext);
         if (!myAccount.isValid()) {
             myAccount = myContext.persistentAccounts().getFirstSucceededForOriginId(0);
         }

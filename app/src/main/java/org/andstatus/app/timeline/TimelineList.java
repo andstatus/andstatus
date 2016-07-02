@@ -206,10 +206,10 @@ public class TimelineList extends LoadableListActivity {
                         private int compareSynced(TimelineListViewItem lhs, TimelineListViewItem rhs) {
                             int result = compareDate(lhs.timeline.getLastSyncedDate(), rhs.timeline.getLastSyncedDate());
                             if (result == 0) {
-                                result = compareCheckbox(lhs.timeline.isSynced(), rhs.timeline.isSynced());
+                                result = compareCheckbox(lhs.timeline.isSyncedAutomatically(), rhs.timeline.isSyncedAutomatically());
                             }
                             if (result == 0) {
-                                result = compareCheckbox(lhs.timeline.canBeSynced(), rhs.timeline.canBeSynced());
+                                result = compareCheckbox(lhs.timeline.isSyncable(), rhs.timeline.isSyncable());
                             }
                             return result;
                         }
@@ -289,17 +289,16 @@ public class TimelineList extends LoadableListActivity {
                             @Override
                             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                                 item.timeline.setDisplayedInSelector(isChecked);
-                                MyLog.v("isDisplayedInSelector", (isChecked ? "+ " : "- ") +
-                                        item.timelineTitle.toString());
+                                MyLog.v("isDisplayedInSelector", (isChecked ? "+ " : "- ") + item.timeline);
                             }
                         });
-                MyCheckBox.show(view, R.id.synced, item.timeline.isSynced(),
-                        item.timeline.canBeSynced() ?
+                MyCheckBox.show(view, R.id.synced, item.timeline.isSyncedAutomatically(),
+                        item.timeline.isSyncable() ?
                                 new CompoundButton.OnCheckedChangeListener() {
                                     @Override
                                     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                                        item.timeline.setSynced(isChecked);
-                                        MyLog.v("isSynced", (isChecked ? "+ " : "- ") + item.timelineTitle);
+                                        item.timeline.setSyncedAutomatically(isChecked);
+                                        MyLog.v("isSyncedAutomatically", (isChecked ? "+ " : "- ") + item.timeline);
                                 }
                         } : null);
                 MyUrlSpan.showText(view, R.id.syncedTimesCount, I18n.notZero(item.timeline.getSyncedTimesCount()), false, true);

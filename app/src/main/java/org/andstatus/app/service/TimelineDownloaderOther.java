@@ -40,7 +40,7 @@ class TimelineDownloaderOther extends TimelineDownloader {
 
     @Override
     public void download() throws ConnectionException {
-        if (!getTimeline().canBeSynced()) {
+        if (!getTimeline().isSyncable()) {
             throw new IllegalArgumentException("Timeline cannot be synced: " + getTimeline());
         }
 

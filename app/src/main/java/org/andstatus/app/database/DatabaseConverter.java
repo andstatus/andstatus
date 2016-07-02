@@ -55,7 +55,7 @@ class DatabaseConverter {
             MyLog.ignored(this, e);
             mySleepWithLogging(30000);
         } finally {
-            mySleepWithLogging(1500);
+            mySleepWithLogging(2000);
             upgradeEnded();
             if (MyContextHolder.get().isTestRun()) {
                 activity.finish();
@@ -415,7 +415,7 @@ class DatabaseConverter {
         protected void execute2() {
             versionTo = 25;
 
-            sql = "CREATE TABLE timeline (_id INTEGER PRIMARY KEY AUTOINCREMENT,timeline_type STRING NOT NULL,account_id INTEGER,user_id INTEGER,user_in_timeline TEXT,origin_id INTEGER,search_query TEXT,synced BOOLEAN DEFAULT 1 NOT NULL,display_in_selector BOOLEAN DEFAULT 1 NOT NULL,selector_order INTEGER DEFAULT 1 NOT NULL,sync_succeeded_date INTEGER,sync_failed_date INTEGER,error_message TEXT,synced_times_count INTEGER DEFAULT 0 NOT NULL,sync_failed_times_count INTEGER DEFAULT 0 NOT NULL,new_items_count INTEGER DEFAULT 0 NOT NULL,count_since INTEGER,synced_times_count_total INTEGER DEFAULT 0 NOT NULL,sync_failed_times_count_total INTEGER DEFAULT 0 NOT NULL,new_items_count_total INTEGER DEFAULT 0 NOT NULL,youngest_position TEXT,youngest_item_date INTEGER,youngest_synced_date INTEGER,oldest_position TEXT,oldest_item_date INTEGER,oldest_synced_date INTEGER,visible_item_id INTEGER,visible_y INTEGER,visible_oldest_date INTEGER)";
+            sql = "CREATE TABLE timeline (_id INTEGER PRIMARY KEY AUTOINCREMENT,timeline_type STRING NOT NULL,account_id INTEGER,user_id INTEGER,user_in_timeline TEXT,origin_id INTEGER,search_query TEXT,is_synced_automatically BOOLEAN DEFAULT 1 NOT NULL,is_displayed_in_selector BOOLEAN DEFAULT 1 NOT NULL,selector_order INTEGER DEFAULT 1 NOT NULL,sync_succeeded_date INTEGER,sync_failed_date INTEGER,error_message TEXT,synced_times_count INTEGER DEFAULT 0 NOT NULL,sync_failed_times_count INTEGER DEFAULT 0 NOT NULL,new_items_count INTEGER DEFAULT 0 NOT NULL,count_since INTEGER,synced_times_count_total INTEGER DEFAULT 0 NOT NULL,sync_failed_times_count_total INTEGER DEFAULT 0 NOT NULL,new_items_count_total INTEGER DEFAULT 0 NOT NULL,youngest_position TEXT,youngest_item_date INTEGER,youngest_synced_date INTEGER,oldest_position TEXT,oldest_item_date INTEGER,oldest_synced_date INTEGER,visible_item_id INTEGER,visible_y INTEGER,visible_oldest_date INTEGER)";
             DbUtils.execSQL(db, sql);
 
             sql = "CREATE TABLE command (_id INTEGER PRIMARY KEY NOT NULL,queue_type TEXT NOT NULL,command_code TEXT NOT NULL,command_created_date INTEGER NOT NULL,command_description TEXT,in_foreground BOOLEAN DEFAULT 0 NOT NULL,manually_launched BOOLEAN DEFAULT 0 NOT NULL,timeline_id INTEGER,timeline_type STRING,account_id INTEGER,user_id INTEGER,origin_id INTEGER,search_query TEXT,item_id INTEGER,username TEXT,last_executed_date INTEGER,execution_count INTEGER DEFAULT 0 NOT NULL,retries_left INTEGER DEFAULT 0 NOT NULL,num_auth_exceptions INTEGER DEFAULT 0 NOT NULL,num_io_exceptions INTEGER DEFAULT 0 NOT NULL,num_parse_exceptions INTEGER DEFAULT 0 NOT NULL,error_message TEXT,downloaded_count INTEGER DEFAULT 0 NOT NULL,progress_text TEXT)";

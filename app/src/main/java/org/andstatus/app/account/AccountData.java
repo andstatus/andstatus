@@ -39,9 +39,7 @@ import java.util.List;
 public class AccountData implements Parcelable, AccountDataWriter {
     private static final String TAG = AccountData.class.getSimpleName();
 
-    /**
-     * The Key for the android.accounts.Account bundle;
-     */
+    /** The Key for the android.accounts.Account bundle */
     public static final String KEY_ACCOUNT = "account";
     
     private final JSONObject data;
@@ -63,7 +61,7 @@ public class AccountData implements Parcelable, AccountDataWriter {
         AccountData accountData = fromJsonString(am.getUserData(androidAccount, KEY_ACCOUNT), true);
         accountData.setDataBoolean(MyAccount.KEY_IS_SYNCABLE,
                 ContentResolver.getIsSyncable(androidAccount, MatchedUri.AUTHORITY) != 0);
-        accountData.setDataBoolean(MyAccount.KEY_SYNC_AUTOMATICALLY,
+        accountData.setDataBoolean(MyAccount.KEY_IS_SYNCED_AUTOMATICALLY,
                 ContentResolver.getSyncAutomatically(androidAccount, MatchedUri.AUTHORITY));
         accountData.setDataLong(MyPreferences.KEY_SYNC_FREQUENCY_SECONDS, getSyncFrequencySeconds(androidAccount));
         return accountData;
@@ -107,7 +105,7 @@ public class AccountData implements Parcelable, AccountDataWriter {
      * @param result 
      * @return true if Android account changed
      */
-    void saveDataToAccount(MyContext myContext, Account androidAccount, SaveResult result) {
+    void saveDataToAndroidAccount(MyContext myContext, Account androidAccount, SaveResult result) {
         AccountData oldData = fromAndroidAccount(myContext, androidAccount);
         result.changed = !this.equals(oldData);
         if (result.changed) {
@@ -122,7 +120,7 @@ public class AccountData implements Parcelable, AccountDataWriter {
                 ContentResolver.setIsSyncable(androidAccount, MatchedUri.AUTHORITY, isSyncable ? 1
                         : 0);
             }
-            boolean syncAutomatically = getDataBoolean(MyAccount.KEY_SYNC_AUTOMATICALLY, true);
+            boolean syncAutomatically = getDataBoolean(MyAccount.KEY_IS_SYNCED_AUTOMATICALLY, true);
             if (syncAutomatically != ContentResolver.getSyncAutomatically(androidAccount,
                     MatchedUri.AUTHORITY)) {
                 // We need to preserve sync on/off during backup/restore.

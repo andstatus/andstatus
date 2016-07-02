@@ -58,7 +58,10 @@ import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.service.MyServiceState;
 import org.andstatus.app.util.DialogFactory;
+import org.andstatus.app.util.MyCheckBox;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.MyUrlSpan;
+import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.TriState;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -282,6 +285,8 @@ public class AccountSettingsActivity extends MyActivity {
         showAddAccountButton();
         showVerifyCredentialsButton();
         showDefaultAccountCheckbox();
+        showIsSyncedAutomatically();
+        showLastSyncSucceededDate();
     }
 
     private void showTitle() {
@@ -475,6 +480,25 @@ public class AccountSettingsActivity extends MyActivity {
                 }
             });
         }
+    }
+
+    private void showIsSyncedAutomatically() {
+        MyCheckBox.show(findFragmentViewById(R.id.synced_automatically),
+                state.builder.getAccount().isSyncedAutomatically(),
+                new CompoundButton.OnCheckedChangeListener() {
+
+                    @Override
+                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                        state.builder.setSyncedAutomatically(isChecked);
+                    }
+                });
+    }
+
+    private void showLastSyncSucceededDate() {
+        long lastSyncSucceededDate = state.getAccount().getLastSyncSucceededDate(MyContextHolder.get());
+        MyUrlSpan.showText((TextView) findFragmentViewById(R.id.last_synced),
+                lastSyncSucceededDate == 0 ? getText(R.string.never).toString() :
+                        RelativeTime.getDifference(this, lastSyncSucceededDate), false, false);
     }
 
     private TextView showTextView(int textViewId, int textResourceId, boolean isVisible) {

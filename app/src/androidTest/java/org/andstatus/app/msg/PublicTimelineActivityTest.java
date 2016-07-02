@@ -85,11 +85,11 @@ public class PublicTimelineActivityTest extends android.test.ActivityInstrumenta
         helper.clickMenuItem("Global search", R.id.global_search_menu_id);
         getInstrumentation().sendStringSync(TestSuite.GLOBAL_PUBLIC_MESSAGE_TEXT);
         getInstrumentation().sendKeyDownUpSync(KeyEvent.KEYCODE_ENTER);
-        waitForButtonClickedEvidence("Global search menu item clicked");
+        waitForButtonClickedEvidence("Global search menu item clicked", TestSuite.GLOBAL_PUBLIC_MESSAGE_TEXT);
         assertMessagesArePublic(TestSuite.GLOBAL_PUBLIC_MESSAGE_TEXT);
     }
 
-    private void waitForButtonClickedEvidence(String caption) throws InterruptedException {
+    private void waitForButtonClickedEvidence(String caption, String queryString) throws InterruptedException {
         boolean found = false;
         final StringBuilder sb = new StringBuilder();
         for (int attempt = 0; attempt < 6; attempt++) {
@@ -110,7 +110,7 @@ public class PublicTimelineActivityTest extends android.test.ActivityInstrumenta
             mActivity.runOnUiThread(clicker);
             
             
-            if (sb.toString().contains(" *")) {
+            if (sb.toString().contains(queryString)) {
                 found = true;
                 break;
             } else {
@@ -127,7 +127,7 @@ public class PublicTimelineActivityTest extends android.test.ActivityInstrumenta
         helper.clickMenuItem("Global search", R.id.search_menu_id);
         getInstrumentation().sendStringSync(TestSuite.PUBLIC_MESSAGE_TEXT);
         getInstrumentation().sendKeyDownUpSync(KeyEvent.KEYCODE_ENTER);
-        waitForButtonClickedEvidence("Search menu item clicked");
+        waitForButtonClickedEvidence("Search menu item clicked", TestSuite.PUBLIC_MESSAGE_TEXT);
         assertMessagesArePublic(TestSuite.PUBLIC_MESSAGE_TEXT);
     }
 

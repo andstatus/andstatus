@@ -187,7 +187,7 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
         void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
             if (editorData.recipientId != 0) {
                 menu.switchTimelineActivityView(
-                        Timeline.getTimeline(menu.getActivity().getMyContext(), TimelineType.USER,
+                        Timeline.getTimeline(menu.getActivity().getMyContext(), 0, TimelineType.USER,
                         null, editorData.recipientId, null, ""));
             }
         }
@@ -202,7 +202,7 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
         void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
             if (editorData.recipientId != 0) {
                 menu.switchTimelineActivityView(
-                        Timeline.getTimeline(menu.getActivity().getMyContext(), TimelineType.USER,
+                        Timeline.getTimeline(menu.getActivity().getMyContext(), 0, TimelineType.USER,
                         null, editorData.recipientId, null, ""));
             }
         }

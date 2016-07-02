@@ -69,7 +69,7 @@ public enum UserListContextMenuItem implements ContextMenuItem {
             MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
             Intent intent = new Intent(menu.getActivity(), TimelineActivity.class);
             intent.setData(MatchedUri.getTimelineUri(
-                    Timeline.getTimeline(menu.getActivity().getMyContext(), TimelineType.USER, ma,
+                    Timeline.getTimeline(menu.getActivity().getMyContext(), 0, TimelineType.USER, ma,
                             menu.getViewItem().getUserId(), null, "")));
             menu.getActivity().startActivity(intent);
         }

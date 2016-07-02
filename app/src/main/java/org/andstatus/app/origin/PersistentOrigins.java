@@ -170,14 +170,4 @@ public class PersistentOrigins {
         }
         return origins;
     }
-
-    // TODO: implement
-    public boolean canBeSynced(TimelineType timelineType, long originId) {
-        switch (timelineType) {
-            case PUBLIC:
-                return true;
-            default:
-                return false;
-        }
-    }
 }

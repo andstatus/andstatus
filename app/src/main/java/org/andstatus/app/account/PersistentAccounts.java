@@ -265,26 +265,30 @@ public class PersistentAccounts {
     }
 
     /**
-     * Return first verified MyAccount of the provided originId.
+     * Return first verified and autoSynced MyAccount of the provided originId.
+     * If not auto synced, at least verified and succeeded,
      * If there is no verified account, any account of this Origin is been returned.
+     * Otherwise invalid account is returned;
      * @param originId May be 0 to search in any Origin
      * @return Invalid account if not found
      */
     public MyAccount getFirstSucceededForOriginId(long originId) {
-        MyAccount ma = null;
+        MyAccount ma = MyAccount.getEmpty(myContext, "");
         for (MyAccount persistentAccount : mAccounts.values()) {
             if (originId==0 || persistentAccount.getOriginId() == originId) {
-                if (persistentAccount.isValidAndSucceeded()) {
+                if (!ma.isValid()) {
                     ma = persistentAccount;
-                    break;
                 }
-                if (ma == null) {
-                    ma = persistentAccount;
+                if (persistentAccount.isValidAndSucceeded()) {
+                    if (!ma.isValidAndSucceeded()) {
+                        ma = persistentAccount;
+                    }
+                    if (persistentAccount.isSyncedAutomatically()) {
+                        ma = persistentAccount;
+                        break;
+                    }
                 }
             }
-        }
-        if (ma == null) {
-            ma = MyAccount.getEmpty(myContext, "");
         }
         return ma;
     }

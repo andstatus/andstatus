@@ -121,11 +121,11 @@ public enum TimelineType {
         }
     }
 
-    public boolean canBeSynced() {
+    public boolean isSyncable() {
         return getConnectionApiRoutine() != Connection.ApiRoutineEnum.DUMMY;
     }
 
-    public boolean isSyncableByDefault() {
+    public boolean isSyncedAutomaticallyByDefault() {
         switch (this) {
             case HOME:
             case MENTIONS:

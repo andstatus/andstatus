@@ -259,6 +259,7 @@
   <string name="menu_item_view_profile">View Profile</string>
   <string name="message_sent">Your message has been sent.</string>
   <string name="messages_activity">Direct Messages</string>
+  <string name="never">Never</string>
   <string name="no">No</string>
   <string name="nothing_in_the_loadable_list">Nothing here so far. Try to tap \"Sync with Internet\" to update this list.</string>
   <string name="not_set">not set</string>
@@ -356,7 +357,7 @@
   <string name="show_buttons_below_message">Show Reply, Repost and Favorite buttons below message</string>
   <string name="status_destroyed">The message has been removed.</string>
   <string name="subtitle">Subtitle</string>
-  <string name="successfully_synced">Successfully synced</string>
+  <string name="last_synced">Last synced</string>
   <string name="summary_preference_accounts_absent">No AndStatus accounts yet</string>
   <string name="summary_preference_accounts_present">Number of AndStatus Accounts</string>
   <string name="summary_preference_add_account_oauth">Tap here to open a site of the Social network in a browser.</string>
@@ -409,7 +410,7 @@
   <string name="switch_to_default_timeline">Switch to Default Timeline</string>
   <string name="sync_over_wifi_only">Sync over WiFi only</string>
   <string name="sync_failed">Sync failed</string>
-  <string name="synced">Synced</string>
+  <string name="synced_automatically">Synced automatically</string>
   <string name="synced_abbreviated">Sync</string>
   <string name="system_is_busy_try_later">The system is busy. Please try again later.</string>
   <string name="tap_on_a_timeline_title_behaviour">Tap on a Timeline Title behaviour</string>

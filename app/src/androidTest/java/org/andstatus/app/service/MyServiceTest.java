@@ -94,7 +94,7 @@ public class MyServiceTest extends InstrumentationTestCase {
         MyContext myContext = MyContextHolder.get();
         for (Timeline timeline : myContext.persistentTimelines().getFiltered(false, TriState.FALSE,
                 myAccount, null)) {
-            if (timeline.isSynced()) {
+            if (timeline.isSyncedAutomatically()) {
                 if (timeline.isTimeToAutoSync()) {
                     timeline.setSyncSucceededDate(System.currentTimeMillis());
                 }
@@ -113,7 +113,7 @@ public class MyServiceTest extends InstrumentationTestCase {
         Timeline timelineToSync = null;
         for (Timeline timeline : myContext.persistentTimelines().getFiltered(false, TriState.FALSE,
                 myAccount, null)) {
-            if (timeline.isSynced()) {
+            if (timeline.isSyncedAutomatically()) {
                 timelineToSync = timeline;
                 break;
             }

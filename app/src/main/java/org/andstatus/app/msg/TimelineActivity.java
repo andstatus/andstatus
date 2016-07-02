@@ -530,8 +530,7 @@ public class TimelineActivity extends LoadableListActivity implements
     }
 
     private String timelineTypeButtonText() {
-        CharSequence timelineName = getParamsNew().getTimelineType().getTitle(this);
-        return timelineName + (getParamsNew().getTimeline().hasSearchQuery() ? " *" : "");
+        return TimelineTitle.load(myContext, getParamsLoaded().getTimeline(), getCurrentMyAccount()).title;
     }
 
     private void updateAccountButtonText(ViewGroup mDrawerList) {
@@ -864,11 +863,11 @@ public class TimelineActivity extends LoadableListActivity implements
     }
 
     protected void syncWithInternet(Timeline timelineToSync, boolean manuallyLaunched) {
-        if (timelineToSync.canBeSyncedForOrigins()) {
+        if (timelineToSync.isSyncableForOrigins()) {
             syncForAllOrigins(timelineToSync, manuallyLaunched);
-        } else if (timelineToSync.canBeSyncedForAccounts()) {
+        } else if (timelineToSync.isSyncableForAccounts()) {
             syncForAllAccounts(timelineToSync, manuallyLaunched);
-        } else if (timelineToSync.canBeSynced()) {
+        } else if (timelineToSync.isSyncable()) {
             syncOneTimeline(timelineToSync, manuallyLaunched);
         } else {
             hideSyncing("SyncWithInternet");
@@ -894,7 +893,7 @@ public class TimelineActivity extends LoadableListActivity implements
 
     private void syncOneTimeline(Timeline timeline, boolean manuallyLaunched) {
         final String method = "syncOneTimeline";
-        if (timeline.canBeSynced()) {
+        if (timeline.isSyncable()) {
             setCircularSyncIndicator(method, true);
             showSyncing(method, getText(R.string.options_menu_sync));
             MyServiceManager.sendForegroundCommand(

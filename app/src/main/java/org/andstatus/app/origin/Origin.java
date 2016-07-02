@@ -260,7 +260,7 @@ public class Origin {
     }
 
     public void setInCombinedGlobalSearch(boolean inCombinedGlobalSearch) {
-        if (originType.isSearchSupported) {
+        if (originType.isSearchTimelineSyncable) {
             this.inCombinedGlobalSearch = inCombinedGlobalSearch;
         }
     }
@@ -384,7 +384,7 @@ public class Origin {
     }
 
     public void setInCombinedPublicReload(boolean inCombinedPublicReload) {
-        if (originType.isPublicTimeLineSupported) {
+        if (originType.isPublicTimeLineSyncable) {
             this.inCombinedPublicReload = inCombinedPublicReload;
         }
     }

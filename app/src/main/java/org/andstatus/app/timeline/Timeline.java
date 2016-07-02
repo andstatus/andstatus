@@ -72,19 +72,19 @@ public class Timeline implements Comparable<Timeline> {
     private final boolean isCombined;
 
     /** If this timeline can be synced */
-    private final boolean canBeSynced;
+    private final boolean isSyncable;
     /** Is it possible to sync this timeline via usage of one or more (child, not combined...)
      * timelines for individual accounts */
-    private final boolean canBeSyncedForAccounts;
+    private final boolean isSyncableForAccounts;
     /** Is it possible to sync this timeline via usage of one or more (child, not combined...)
      * timelines for individual Social networks */
-    private final boolean canBeSyncedForOrigins;
+    private final boolean isSyncableForOrigins;
 
     /** If the timeline is synced automatically */
-    private volatile boolean synced = false;
+    private volatile boolean isSyncedAutomatically = false;
 
     /** If the timeline should be shown in a Timeline selector */
-    private volatile boolean displayedInSelector = false;
+    private volatile boolean isDisplayedInSelector = false;
     /** Used for sorting timelines in a selector */
     private volatile long selectorOrder = 100;
 
@@ -135,59 +135,71 @@ public class Timeline implements Comparable<Timeline> {
     private volatile boolean changed = false;
 
     public static Timeline getTimeline(TimelineType timelineType, MyAccount myAccount, long userId, Origin origin) {
-        return getTimeline(MyContextHolder.get(), timelineType, myAccount, userId, origin, "");
+        return getTimeline(MyContextHolder.get(), 0, timelineType, myAccount, userId, origin, "");
     }
 
-    public static Timeline getTimeline(MyContext myContext, TimelineType timelineType,
+    public static Timeline getTimeline(MyContext myContext, long id, TimelineType timelineType,
                                        MyAccount myAccount, long userId, Origin origin,
                                        String searchQuery) {
-        Timeline timeline = new Timeline(myContext, timelineType, myAccount, userId, origin, searchQuery);
+        Timeline timeline = new Timeline(myContext, id, timelineType, myAccount, userId, origin, searchQuery);
         if (timeline.isValid()) {
             return myContext.persistentTimelines().fromNewTimeLine(timeline);
         }
         return timeline;
     }
 
-    private Timeline(MyContext myContext, TimelineType timelineType, MyAccount myAccount, long userId, Origin origin, String searchQuery) {
+    private Timeline(MyContext myContext, long id, TimelineType timelineType, MyAccount myAccount,
+                     long userId, Origin origin, String searchQuery) {
+        this.id = id;
         this.myAccount = fixedMyAccount(myContext, timelineType, myAccount, userId);
         this.userId = fixedUserId(timelineType, userId);
         this.origin = fixedOrigin(myContext, timelineType, myAccount, userId, origin);
         this.searchQuery = TextUtils.isEmpty(searchQuery) ? "" : searchQuery;
         this.timelineType = fixedTimelineType(timelineType);
         this.isCombined = calcIsCombined(this.timelineType, this.origin, this.myAccount);
-        this.canBeSynced = calcCanBeSynced(myContext);
-        this.canBeSyncedForAccounts = calcCanBeSyncedForAccounts(myContext);
-        this.canBeSyncedForOrigins = calcCanBeSyncedForOrigins(myContext);
+        this.isSyncable = calcIsSyncable(myContext);
+        this.isSyncableForAccounts = calcIsSyncableForAccounts(myContext);
+        this.isSyncableForOrigins = calcIsSyncableForOrigins(myContext);
     }
 
-    private boolean calcCanBeSynced(MyContext myContext) {
-        if (isCombined() || !timelineType.canBeSynced()) {
+    private boolean calcIsSyncable(MyContext myContext) {
+        if (isCombined() || !timelineType.isSyncable()) {
             return false;
         }
-        if (timelineType.isAtOrigin()) {
-            return origin.getOriginType().isTimelineTypeSupported(timelineType) &&
-                    myContext.persistentAccounts().getFirstSucceededForOriginId(origin.getId()).isValidAndSucceeded();
-        } else {
-            return myAccount.isValidAndSucceeded();
+        MyAccount myAccountToSync = getMyAccountToSync(myContext);
+        return myAccountToSync.isValidAndSucceeded() && myAccountToSync.isSyncedAutomatically()
+                && myAccountToSync.getOrigin().getOriginType().isTimelineTypeSyncable(timelineType);
+    }
+
+    /** Returns the best MyAccount to be used to sync this Timeline */
+    @NonNull
+    public MyAccount getMyAccountToSync(MyContext myContext) {
+        MyAccount myAccount = getMyAccount();
+        if (!myAccount.isValid()) {
+            Origin origin = getOrigin();
+            if (origin.isValid()) {
+                myAccount = myContext.persistentAccounts().getFirstSucceededForOriginId(origin.getId());
+            }
         }
+        return myAccount;
     }
 
-    private boolean calcCanBeSyncedForAccounts(MyContext myContext) {
+    private boolean calcIsSyncableForAccounts(MyContext myContext) {
         return isCombined &&
-                timelineType.canBeSynced() && timelineType.canBeCombinedForMyAccounts() &&
-                myContext.persistentAccounts().hasSyncedAutomatically();
+                timelineType.isSyncable() && timelineType.canBeCombinedForMyAccounts() &&
+                myContext.persistentAccounts().getFirstSucceededForOriginId(0).isValidAndSucceeded();
     }
 
-    private boolean calcCanBeSyncedForOrigins(MyContext myContext) {
+    private boolean calcIsSyncableForOrigins(MyContext myContext) {
         return isCombined &&
-                timelineType.canBeSynced() && timelineType.canBeCombinedForOrigins() &&
-                myContext.persistentOrigins().canBeSynced(timelineType, 0);
+                timelineType.isSyncable() && timelineType.canBeCombinedForOrigins() &&
+                myContext.persistentAccounts().getFirstSucceededForOriginId(0).isValidAndSucceeded();
     }
 
     public static Timeline fromCursor(MyContext myContext, Cursor cursor) {
-        Timeline timeline = getTimeline(
+        Timeline timeline = new Timeline(
                 myContext,
-                TimelineType.load(DbUtils.getString(cursor, TimelineTable.TIMELINE_TYPE)),
+                0, TimelineType.load(DbUtils.getString(cursor, TimelineTable.TIMELINE_TYPE)),
                 myContext.persistentAccounts()
                         .fromUserId(DbUtils.getLong(cursor, TimelineTable.ACCOUNT_ID)),
                 DbUtils.getLong(cursor, TimelineTable.USER_ID),
@@ -197,8 +209,8 @@ public class Timeline implements Comparable<Timeline> {
 
         timeline.id = DbUtils.getLong(cursor, TimelineTable._ID);
         timeline.userInTimeline = DbUtils.getString(cursor, TimelineTable.USER_IN_TIMELINE);
-        timeline.setSynced(DbUtils.getBoolean(cursor, TimelineTable.SYNCED));
-        timeline.displayedInSelector = DbUtils.getBoolean(cursor, TimelineTable.DISPLAY_IN_SELECTOR);
+        timeline.setSyncedAutomatically(DbUtils.getBoolean(cursor, TimelineTable.IS_SYNCED_AUTOMATICALLY));
+        timeline.isDisplayedInSelector = DbUtils.getBoolean(cursor, TimelineTable.IS_DISPLAYED_IN_SELECTOR);
         timeline.selectorOrder = DbUtils.getLong(cursor, TimelineTable.SELECTOR_ORDER);
 
         timeline.syncSucceededDate = DbUtils.getLong(cursor, TimelineTable.SYNC_SUCCEEDED_DATE);
@@ -228,16 +240,15 @@ public class Timeline implements Comparable<Timeline> {
     }
 
     public static Timeline fromCommandCursor(MyContext myContext, Cursor cursor) {
-        Timeline timeline = getTimeline(
+        return getTimeline(
                 myContext,
+                DbUtils.getLong(cursor, CommandTable.TIMELINE_ID),
                 TimelineType.load(DbUtils.getString(cursor, CommandTable.TIMELINE_TYPE)),
                 myContext.persistentAccounts().fromUserId(DbUtils.getLong(cursor, CommandTable.ACCOUNT_ID)),
                 DbUtils.getLong(cursor, CommandTable.USER_ID),
                 myContext.persistentOrigins().fromId(DbUtils.getLong(cursor, CommandTable.ORIGIN_ID)),
                 DbUtils.getString(cursor, CommandTable.SEARCH_QUERY)
         );
-        timeline.id = DbUtils.getLong(cursor, CommandTable.TIMELINE_ID);
-        return timeline;
     }
 
     public static Timeline getEmpty(MyAccount myAccount) {
@@ -247,7 +258,7 @@ public class Timeline implements Comparable<Timeline> {
     public static List<Timeline> addDefaultForAccount(MyContext myContext, MyAccount myAccount) {
         List<Timeline> timelines = new ArrayList<>();
         for (TimelineType timelineType : TimelineType.defaultMyAccountTimelineTypes) {
-            saveNewDefaultTimeline(myContext, getTimeline(myContext, timelineType, myAccount, 0, null, ""));
+            saveNewDefaultTimeline(myContext, getTimeline(myContext, 0, timelineType, myAccount, 0, null, ""));
         }
         return timelines;
     }
@@ -255,8 +266,8 @@ public class Timeline implements Comparable<Timeline> {
     public static Collection<Timeline> addDefaultForOrigin(MyContext myContext, Origin origin) {
         List<Timeline> timelines = new ArrayList<>();
         for (TimelineType timelineType : TimelineType.defaultOriginTimelineTypes) {
-            if (origin.getOriginType().isTimelineTypeSupported(timelineType)) {
-                saveNewDefaultTimeline(myContext, getTimeline(myContext, timelineType, null, 0, origin, ""));
+            if (origin.getOriginType().isTimelineTypeSyncable(timelineType)) {
+                saveNewDefaultTimeline(myContext, getTimeline(myContext, 0, timelineType, null, 0, origin, ""));
             }
         }
         return timelines;
@@ -266,16 +277,16 @@ public class Timeline implements Comparable<Timeline> {
         List<Timeline> timelines = new ArrayList<>();
         for (TimelineType timelineType : TimelineType.values()) {
             if (timelineType.isSelectable()) {
-                saveNewDefaultTimeline(myContext, getTimeline(myContext, timelineType, null, 0, null, ""));
+                saveNewDefaultTimeline(myContext, getTimeline(myContext, 0, timelineType, null, 0, null, ""));
             }
         }
         return timelines;
     }
 
     protected static void saveNewDefaultTimeline(MyContext myContext, Timeline timeline) {
-        timeline.displayedInSelector = true;
+        timeline.isDisplayedInSelector = true;
         timeline.selectorOrder = timeline.getTimelineType().ordinal();
-        timeline.setSynced(timeline.getTimelineType().isSyncableByDefault());
+        timeline.setSyncedAutomatically(timeline.getTimelineType().isSyncedAutomaticallyByDefault());
         timeline.save(myContext);
     }
 
@@ -286,26 +297,23 @@ public class Timeline implements Comparable<Timeline> {
             timeline = MyContextHolder.get().persistentTimelines().fromId(
                     bundle.getLong(IntentExtra.TIMELINE_ID.key));
             if (timeline.isEmpty()) {
-                timeline = getTimeline(
-                        myContext,
+                timeline = getTimeline(myContext, 0,
                         TimelineType.load(bundle.getString(IntentExtra.TIMELINE_TYPE.key)),
-                        myAccount,
-                        bundle.getLong(IntentExtra.USER_ID.key),
-                        MyContextHolder.get().persistentOrigins().fromId(BundleUtils.fromBundle(bundle, IntentExtra.ORIGIN_ID)),
+                        myAccount, bundle.getLong(IntentExtra.USER_ID.key),
+                        MyContextHolder.get().persistentOrigins().fromId(
+                                BundleUtils.fromBundle(bundle, IntentExtra.ORIGIN_ID)),
                         BundleUtils.getString(bundle, IntentExtra.SEARCH_QUERY));
             }
         }
         return timeline;
     }
 
-    // TODO: Find a Timeline by ID?!
     public static Timeline fromParsedUri(MyContext myContext, ParsedUri parsedUri, String searchQueryIn) {
-        String searchQuery = parsedUri.getSearchQuery();
+        String searchQuery = searchQueryIn;
         if (TextUtils.isEmpty(searchQuery)) {
-            searchQuery = searchQueryIn;
+            searchQuery = parsedUri.getSearchQuery();
         }
-        Timeline timeline = getTimeline(
-                myContext,
+        Timeline timeline = getTimeline(myContext, 0,
                 parsedUri.getTimelineType(),
                 myContext.persistentAccounts().fromUserId(parsedUri.getAccountUserId()),
                 parsedUri.getUserId(),
@@ -439,8 +447,8 @@ public class Timeline implements Comparable<Timeline> {
         values.put(TimelineTable.ORIGIN_ID, origin.getId());
         values.put(TimelineTable.SEARCH_QUERY, searchQuery);
 
-        values.put(TimelineTable.SYNCED, synced);
-        values.put(TimelineTable.DISPLAY_IN_SELECTOR, displayedInSelector);
+        values.put(TimelineTable.IS_SYNCED_AUTOMATICALLY, isSyncedAutomatically);
+        values.put(TimelineTable.IS_DISPLAYED_IN_SELECTOR, isDisplayedInSelector);
         values.put(TimelineTable.SELECTOR_ORDER, selectorOrder);
 
         values.put(TimelineTable.SYNC_SUCCEEDED_DATE, syncSucceededDate);
@@ -479,7 +487,7 @@ public class Timeline implements Comparable<Timeline> {
     public Timeline fromSearch(MyContext myContext, boolean globalSearch) {
         Timeline timeline = this;
         if (globalSearch) {
-            timeline = getTimeline(myContext, TimelineType.SEARCH,
+            timeline = getTimeline(myContext, 0, TimelineType.SEARCH,
                     this.getMyAccount(), this.getUserId(), this.getOrigin(),
                     this.getSearchQuery());
         }
@@ -499,7 +507,7 @@ public class Timeline implements Comparable<Timeline> {
             origin = myContext.persistentAccounts().getCurrentAccount().getOrigin();
             myAccount = myContext.persistentAccounts().getCurrentAccount();
         }
-        return getTimeline(myContext, timelineType, myAccount, 0, origin, searchQuery);
+        return getTimeline(myContext, 0, timelineType, myAccount, 0, origin, searchQuery);
     }
 
     public Timeline fromMyAccount(MyContext myContext, MyAccount myAccount) {
@@ -515,7 +523,7 @@ public class Timeline implements Comparable<Timeline> {
         if (!this.myAccount.getOrigin().equals(myAccount.getOrigin())) {
             origin = Origin.getEmpty();
         }
-        return getTimeline(myContext, getTimelineType(), myAccount, userId, origin, searchQuery);
+        return getTimeline(myContext, 0, getTimelineType(), myAccount, userId, origin, searchQuery);
     }
 
     public boolean isEmpty() {
@@ -547,12 +555,12 @@ public class Timeline implements Comparable<Timeline> {
     }
 
     public boolean isDisplayedInSelector() {
-        return displayedInSelector;
+        return isDisplayedInSelector;
     }
 
     public void setDisplayedInSelector(boolean displayedInSelector) {
-        if (this.displayedInSelector != displayedInSelector) {
-            this.displayedInSelector = displayedInSelector;
+        if (this.isDisplayedInSelector != displayedInSelector) {
+            this.isDisplayedInSelector = displayedInSelector;
             changed = true;
         }
     }
@@ -583,6 +591,7 @@ public class Timeline implements Comparable<Timeline> {
         toContentValues(contentValues);
         if (getId() == 0) {
             id = DbUtils.addRowWithRetry(TimelineTable.TABLE_NAME, contentValues, 3);
+            MyLog.v(this, "Added " + this);
         } else {
             DbUtils.updateRowWithRetry(TimelineTable.TABLE_NAME, getId(), contentValues, 3);
         }
@@ -628,6 +637,9 @@ public class Timeline implements Comparable<Timeline> {
         }
         if (hasSearchQuery()) {
             builder.append(" search:'" + getSearchQuery() + "'");
+        }
+        if ( id != 0) {
+            builder.append(", id:" + id);
         }
         builder.append('}');
         return builder.toString();
@@ -764,13 +776,13 @@ public class Timeline implements Comparable<Timeline> {
         }
     }
 
-    public boolean isSynced() {
-        return synced;
+    public boolean isSyncedAutomatically() {
+        return isSyncedAutomatically;
     }
 
-    public void setSynced(boolean synced) {
-        if (this.synced != synced && canBeSynced()) {
-            this.synced = synced;
+    public void setSyncedAutomatically(boolean isSyncedAutomatically) {
+        if (this.isSyncedAutomatically != isSyncedAutomatically && isSyncable()) {
+            this.isSyncedAutomatically = isSyncedAutomatically;
             changed = true;
         }
     }
@@ -781,11 +793,11 @@ public class Timeline implements Comparable<Timeline> {
 
     public Timeline cloneForAccount(MyContext myContext, MyAccount ma) {
         long userId = getMyAccount().getUserId() != getUserId() ? getUserId() : 0;
-        return getTimeline(myContext, getTimelineType(), ma, userId, null, getSearchQuery());
+        return getTimeline(myContext, 0, getTimelineType(), ma, userId, null, getSearchQuery());
     }
 
     public Timeline cloneForOrigin(MyContext myContext, Origin origin) {
-        return getTimeline(myContext, getTimelineType(), null, 0, origin, getSearchQuery());
+        return getTimeline(myContext, 0, getTimelineType(), null, 0, origin, getSearchQuery());
     }
 
     public void onSyncEnded(CommandResult result) {
@@ -816,16 +828,16 @@ public class Timeline implements Comparable<Timeline> {
         this.syncSucceededDate = syncSucceededDate;
     }
 
-    public boolean canBeSynced() {
-        return canBeSynced;
+    public boolean isSyncable() {
+        return isSyncable;
     }
 
-    public boolean canBeSyncedForAccounts() {
-        return canBeSyncedForAccounts;
+    public boolean isSyncableForAccounts() {
+        return isSyncableForAccounts;
     }
 
-    public boolean canBeSyncedForOrigins() {
-        return canBeSyncedForOrigins;
+    public boolean isSyncableForOrigins() {
+        return isSyncableForOrigins;
     }
 
     public long getNewItemsCount() {

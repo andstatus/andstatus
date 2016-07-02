@@ -91,7 +91,7 @@ public class PersistentTimelinesTest extends InstrumentationTestCase {
                         count++;
                     }
                 }
-                if (myAccount.isValid() && origin.getOriginType().isTimelineTypeSupported(timelineType)) {
+                if (myAccount.isValid() && origin.getOriginType().isTimelineTypeSyncable(timelineType)) {
                     assertTrue(origin.toString() + " " + timelineType, count > 0);
                 }
             }

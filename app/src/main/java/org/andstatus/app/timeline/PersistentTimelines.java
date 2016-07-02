@@ -98,7 +98,7 @@ public class PersistentTimelines {
 
     @NonNull
     public Timeline getDefaultForCurrentAccount() {
-        return Timeline.getTimeline(myContext, MyPreferences.getDefaultTimeline(),
+        return Timeline.getTimeline(myContext, 0, MyPreferences.getDefaultTimeline(),
                         myContext.persistentAccounts().getCurrentAccount(), 0, null, "");
     }
 
@@ -106,7 +106,12 @@ public class PersistentTimelines {
     Timeline fromNewTimeLine(Timeline newTimeline) {
         Timeline found = newTimeline;
         for (Timeline timeline : values()) {
-            if (timeline.equals(newTimeline)) {
+            if (newTimeline.getId() == 0) {
+                if (timeline.equals(newTimeline)) {
+                    found = timeline;
+                    break;
+                }
+            } else if (timeline.getId() == newTimeline.getId()) {
                 found = timeline;
                 break;
             }
@@ -123,7 +128,7 @@ public class PersistentTimelines {
         List<Timeline> timelines = new ArrayList<>();
         if (ma.isValidAndSucceeded()) {
             for (Timeline timeline : values()) {
-                if (timeline.isSynced() &&
+                if (timeline.isSyncedAutomatically() &&
                         ((!timeline.getTimelineType().isAtOrigin() && timeline.getMyAccount().equals(ma)) ||
                                 timeline.getTimelineType().isAtOrigin() && timeline.getOrigin().equals(ma.getOrigin())) &&
                         timeline.isTimeToAutoSync()) {

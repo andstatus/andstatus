@@ -2,8 +2,10 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/my_layout_parent"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content" >
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:paddingStart="4dp"
+    android:paddingEnd="4dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -98,6 +100,27 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/title_preference_verify_credentials" />
+
+        <LinearLayout android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <TextView android:labelFor="@+id/last_synced"
+                  android:text="@string/last_synced"
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"/>
+
+            <TextView android:id="@+id/last_synced"
+                      android:layout_width="wrap_content"
+                      android:layout_height="wrap_content"
+                      tools:text="15 minute ago"
+                      android:layout_marginLeft="4dp"/>
+        </LinearLayout>
+
+        <CheckBox
+            android:id="@+id/synced_automatically"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/synced_automatically" />
 
         <CheckBox
             android:id="@+id/is_default_account"

@@ -35,7 +35,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:text="@string/title_account"
-            android:layout_weight="4" />
+            android:layout_weight="5" />
         <TextView
             android:id="@+id/origin"
             android:minHeight="48dp"
@@ -43,7 +43,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:text="@string/label_origin_system"
-            android:layout_weight="4" />
+            android:layout_weight="3" />
         <TextView
             android:id="@+id/synced"
             android:minHeight="48dp"
@@ -59,7 +59,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginLeft="7dp"
-            android:text="@string/successfully_synced"
+            android:text="@string/last_synced"
             android:layout_weight="6" />
         <TextView
             android:id="@+id/newItemsCount"

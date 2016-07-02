@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2010-2014 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2010-2016 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,6 +46,7 @@ import org.andstatus.app.net.social.MbConfig;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginConnectionData;
+import org.andstatus.app.timeline.Timeline;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TriState;
@@ -111,12 +112,12 @@ public final class MyAccount {
      */
     public static final String KEY_DELETED = "deleted";
     
-    /** @see {@link ContentResolver#getIsSyncable(Account, String)} */
+    /** @see {@link android.content.ContentResolver#getIsSyncable(Account, String)} */
     public static final String KEY_IS_SYNCABLE = "is_syncable";
 
     /** This corresponds to turning syncing on/off in Android Accounts
-     * @see {@link ContentResolver#getSyncAutomatically(Account, String)} */
-    public static final String KEY_SYNC_AUTOMATICALLY = "sync_automatically";
+     * @see {@link android.content.ContentResolver#getSyncAutomatically(Account, String)} */
+    public static final String KEY_IS_SYNCED_AUTOMATICALLY = "sync_automatically";
     
     /** Companion class used to load/create/change/delete {@link MyAccount}'s data */
     public static final class Builder implements Parcelable {
@@ -124,7 +125,7 @@ public final class MyAccount {
 
         private MyContext myContext;
         private final MyAccount myAccount;
-        
+
         /**
          * If MyAccount with this name didn't exist yet, new temporary MyAccount will be created.
          */
@@ -271,6 +272,10 @@ public final class MyAccount {
             myAccount.accountData.setDataBoolean(KEY_DELETED, true);
         }
 
+        public void setSyncedAutomatically(boolean syncedAutomatically) {
+            myAccount.isSyncedAutomatically = syncedAutomatically;
+        }
+
         static class SaveResult {
             boolean success = false;
             boolean changed = false;
@@ -304,15 +309,15 @@ public final class MyAccount {
                     myAccount.connection.save(myAccount.accountData);
                 }
                 myAccount.accountData.setPersistent(true);
-                myAccount.accountData.setDataBoolean(MyAccount.KEY_IS_SYNCABLE, myAccount.mIsSyncable);
-                myAccount.accountData.setDataBoolean(MyAccount.KEY_SYNC_AUTOMATICALLY, myAccount.mSyncAutomatically);
+                myAccount.accountData.setDataBoolean(MyAccount.KEY_IS_SYNCABLE, myAccount.isSyncable);
+                myAccount.accountData.setDataBoolean(MyAccount.KEY_IS_SYNCED_AUTOMATICALLY, myAccount.isSyncedAutomatically);
                 if (myAccount.syncFrequencySeconds == 0) {
                     setSyncFrequency(MyPreferences.getSyncFrequencySeconds());
                 }
                 myAccount.accountData.setDataLong(MyPreferences.KEY_SYNC_FREQUENCY_SECONDS, myAccount.syncFrequencySeconds);
                 myAccount.accountData.setDataInt(KEY_VERSION, myAccount.version);
                 if (androidAccount != null) {
-                    myAccount.accountData.saveDataToAccount(myContext, androidAccount, result);
+                    myAccount.accountData.saveDataToAndroidAccount(myContext, androidAccount, result);
                 }
                 MyLog.v(this, (result.savedToAccountManager ? " Saved " 
                         : ( result.changed ? " Didn't save?! " : " Didn't change") ) + this.toString());
@@ -326,7 +331,7 @@ public final class MyAccount {
         }
 
         private Account getNewOrExistingAndroidAccount() {
-            Account androidAccount = myAccount.getExisingAndroidAccount();
+            Account androidAccount = myAccount.getExistingAndroidAccount();
             if ((androidAccount == null) && myAccount.isValidAndSucceeded()) {
                 try {
                     /**
@@ -584,8 +589,8 @@ public final class MyAccount {
     /** Is this user authenticated with OAuth? */
     private boolean isOAuth = true;
     private long syncFrequencySeconds;
-    private boolean mIsSyncable = true;
-    private boolean mSyncAutomatically = true;
+    private boolean isSyncable = true;
+    private boolean isSyncedAutomatically = true;
     private final int version;
     public static final int ACCOUNT_VERSION = 16;
     private boolean deleted;
@@ -740,8 +745,8 @@ public final class MyAccount {
         version = accountData.getDataInt(KEY_VERSION, ACCOUNT_VERSION);
         deleted = accountData.getDataBoolean(KEY_DELETED, false);
         syncFrequencySeconds = accountData.getDataLong(MyPreferences.KEY_SYNC_FREQUENCY_SECONDS, 0L);
-        mIsSyncable = accountData.getDataBoolean(KEY_IS_SYNCABLE, true);
-        mSyncAutomatically = accountData.getDataBoolean(KEY_SYNC_AUTOMATICALLY, true);
+        isSyncable = accountData.getDataBoolean(KEY_IS_SYNCABLE, true);
+        isSyncedAutomatically = accountData.getDataBoolean(KEY_IS_SYNCED_AUTOMATICALLY, true);
         userId = accountData.getDataLong(KEY_USER_ID, 0L);
         userOid = accountData.getDataString(KEY_USER_OID, "");
         setOAuth(TriState.UNKNOWN);
@@ -868,11 +873,11 @@ public final class MyAccount {
     
     public void requestSync() {
         if (isPersistent()) {
-           ContentResolver.requestSync(getExisingAndroidAccount(), MatchedUri.AUTHORITY, new Bundle()); 
+           ContentResolver.requestSync(getExistingAndroidAccount(), MatchedUri.AUTHORITY, new Bundle());
         }
     }
 
-    private Account getExisingAndroidAccount() {
+    private Account getExistingAndroidAccount() {
         Account androidAccount = null;
         // Let's check if there is such an Android Account already
         android.accounts.AccountManager am = AccountManager.get(MyContextHolder.get().context());
@@ -912,10 +917,10 @@ public final class MyAccount {
                 members += "connection:null,";
             }
             members += "syncFrequency:" + syncFrequencySeconds + ",";
-            if (mIsSyncable) {
+            if (isSyncable) {
                 members += "syncable,";
             }
-            if (mSyncAutomatically) {
+            if (isSyncedAutomatically) {
                 members += "syncauto,";
             }
             if (deleted) {
@@ -943,8 +948,8 @@ public final class MyAccount {
             connection.save(jso);
         }
         jso.put(MyPreferences.KEY_SYNC_FREQUENCY_SECONDS, syncFrequencySeconds);
-        jso.put(KEY_IS_SYNCABLE, mIsSyncable);
-        jso.put(KEY_SYNC_AUTOMATICALLY, mSyncAutomatically);
+        jso.put(KEY_IS_SYNCABLE, isSyncable);
+        jso.put(KEY_IS_SYNCED_AUTOMATICALLY, isSyncedAutomatically);
         jso.put(KEY_VERSION, version);
         return jso;
     }
@@ -1000,6 +1005,16 @@ public final class MyAccount {
     }
 
     public boolean isSyncedAutomatically() {
-        return mSyncAutomatically;
+        return isSyncedAutomatically;
+    }
+
+    public long getLastSyncSucceededDate(MyContext myContext) {
+        long lastSyncedDate = 0;
+        for (Timeline timeline : myContext.persistentTimelines().getFiltered(false, TriState.UNKNOWN, this, null)) {
+            if (timeline.getSyncSucceededDate() > lastSyncedDate) {
+                lastSyncedDate = timeline.getSyncSucceededDate();
+            }
+        }
+        return lastSyncedDate;
     }
 }

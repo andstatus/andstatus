@@ -94,8 +94,10 @@ public enum OriginType {
     protected String oauthPath = OAUTH_PATH_DEFAULT;
     private final boolean mAllowAttachmentForDirectMessage;
 
-    public boolean isPublicTimeLineSupported = false;
-    public boolean isSearchSupported = true;
+    public boolean isPublicTimeLineSyncable = false;
+    public boolean isSearchTimelineSyncable = true;
+    public boolean isDirectTimelineSyncable = true;
+    public boolean isMentionsTimelineSyncable = true;
 
     OriginType(long id, String title, ApiEnum api) {
         this.id = id;
@@ -138,7 +140,9 @@ public enum OriginType {
                 httpConnectionClassOauth = HttpConnectionOAuthJavaNet.class;
                 httpConnectionClassBasic = HttpConnectionEmpty.class;
                 mAllowAttachmentForDirectMessage = true;
-                isSearchSupported = false;
+                isSearchTimelineSyncable = false;
+                isDirectTimelineSyncable = false;
+                isMentionsTimelineSyncable = false;
                 break;
             case GNUSOCIAL_TWITTER:
                 isOAuthDefault = false;  
@@ -155,7 +159,7 @@ public enum OriginType {
                 httpConnectionClassOauth = HttpConnectionOAuthApache.class;
                 httpConnectionClassBasic = HttpConnectionBasic.class;
                 mAllowAttachmentForDirectMessage = false;
-                isPublicTimeLineSupported = true;
+                isPublicTimeLineSyncable = true;
                 break;
             default:
                 canSetUrlOfOrigin = false;
@@ -258,19 +262,23 @@ public enum OriginType {
         return obj;
     }
 
-    public boolean isTimelineTypeSupported(TimelineType timelineType) {
+    public boolean isTimelineTypeSyncable(TimelineType timelineType) {
+        if (timelineType == null || !timelineType.isSyncable()) {
+            return false;
+        }
         switch(timelineType) {
-            case PUBLIC:
-                return isPublicTimeLineSupported;
-            case SEARCH:
-                return isSearchSupported;
-            case USER:
-            case FRIENDS:
-            case FOLLOWERS:
-            case EVERYTHING:
-                return true;
-            default:
+            case MESSAGES_TO_ACT:
                 return false;
+            case PUBLIC:
+                return isPublicTimeLineSyncable;
+            case SEARCH:
+                return isSearchTimelineSyncable;
+            case MENTIONS:
+                return isMentionsTimelineSyncable;
+            case DIRECT:
+                return isDirectTimelineSyncable;
+            default:
+                return true;
         }
     }
 }

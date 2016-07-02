@@ -58,8 +58,13 @@ public class MyCheckBox {
 
     public static void show(View parentView, int viewId, boolean checked,
                             CompoundButton.OnCheckedChangeListener onCheckedChangeListener) {
-        CheckBox checkBox = (CheckBox) parentView.findViewById(viewId);
-        if (checkBox != null) {
+        show(parentView.findViewById(viewId), checked, onCheckedChangeListener);
+    }
+
+    public static void show(View checkBoxIn, boolean checked,
+                            CompoundButton.OnCheckedChangeListener onCheckedChangeListener) {
+        if (checkBoxIn != null && CheckBox.class.isAssignableFrom(checkBoxIn.getClass())) {
+            CheckBox checkBox = (CheckBox) checkBoxIn;
             checkBox.setOnCheckedChangeListener(null);
             checkBox.setChecked(checked);
             checkBox.setEnabled(onCheckedChangeListener != null);
@@ -68,4 +73,5 @@ public class MyCheckBox {
             }
         }
     }
+
 }

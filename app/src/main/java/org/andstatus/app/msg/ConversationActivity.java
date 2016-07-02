@@ -169,8 +169,8 @@ public class ConversationActivity extends LoadableListActivity implements Action
 
     @Override
     public Timeline getTimeline() {
-        return Timeline.getTimeline(myContext, TimelineType.MESSAGES_TO_ACT, getCurrentMyAccount(),
-                0, getCurrentMyAccount().getOrigin(), "");
+        return Timeline.getTimeline(myContext, 0, TimelineType.MESSAGES_TO_ACT,
+                getCurrentMyAccount(), 0, getCurrentMyAccount().getOrigin(), "");
     }
 
     @SuppressWarnings("unchecked")
