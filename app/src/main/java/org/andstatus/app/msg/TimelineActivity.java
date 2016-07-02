@@ -696,8 +696,11 @@ public class TimelineActivity extends LoadableListActivity implements
         return paramsLoaded == null ? getParamsNew() : paramsLoaded;
     }
 
-    private void setParamsLoaded(TimelineListParameters paramsLoaded) {
+    /** @return Previous value */
+    private TimelineListParameters setParamsLoaded(TimelineListParameters paramsLoaded) {
+        TimelineListParameters parametersPrev = this.paramsLoaded;
         this.paramsLoaded = paramsLoaded;
+        return parametersPrev;
     }
 
     @Override
@@ -801,12 +804,14 @@ public class TimelineActivity extends LoadableListActivity implements
     public void onLoadFinished(boolean keepCurrentPosition_in) {
         final String method = "onLoadFinished";
         TimelineLoader myLoader = (TimelineLoader) getLoaded();
-        setParamsLoaded(myLoader.getParams());
+        TimelineListParameters parametersPrev = setParamsLoaded(myLoader.getParams());
+        boolean sameTimeline = parametersPrev != null &&
+                getParamsLoaded().getTimeline().equals(parametersPrev.getTimeline());
         MyLog.v(this, method + "; " + getParamsLoaded().toSummary());
 
         // TODO start: Move this inside superclass
-        boolean keepCurrentPosition = keepCurrentPosition_in && isPositionRestored()
-                && getParamsLoaded().whichPage != WhichPage.TOP;
+        boolean keepCurrentPosition = keepCurrentPosition_in  && sameTimeline &&
+                isPositionRestored() && getParamsLoaded().whichPage != WhichPage.TOP;
         super.onLoadFinished(keepCurrentPosition);
         if (getParamsLoaded().whichPage == WhichPage.TOP) {
             TimelineListPositionStorage.setPosition(getListView(), 0);
