@@ -44,9 +44,7 @@ import java.util.Map;
  */
 public class TimelineSelector extends SelectorDialog {
     private static final String KEY_VISIBLE_NAME = "visible_name";
-    private static final String KEY_TYPE = "type";
-
-    private static final String TYPE_TIMELINE = "timeline";
+    private static final String KEY_SYNC_AUTO = "sync_auto";
 
     public static void selectTimeline(FragmentActivity activity, ActivityRequestCode requestCode,
                                       Timeline timeline) {
@@ -98,16 +96,16 @@ public class TimelineSelector extends SelectorDialog {
             Map<String, String> map = new HashMap<>();
             String visibleName = TimelineTitle.load(myContext, timeline, null).title;
             map.put(KEY_VISIBLE_NAME, visibleName);
+            map.put(KEY_SYNC_AUTO, timeline.isSyncedAutomatically() ? "X" : "");
             map.put(BaseColumns._ID, Long.toString(timeline.getId()));
-            map.put(KEY_TYPE, TYPE_TIMELINE);
             list.add(map);
         }
 
         return new MySimpleAdapter(getActivity(),
                 list,
                 R.layout.accountlist_item,
-                new String[] {KEY_VISIBLE_NAME, BaseColumns._ID, KEY_TYPE},
-                new int[] {R.id.visible_name, R.id.id, R.id.type}, true);
+                new String[] {KEY_VISIBLE_NAME, KEY_SYNC_AUTO, BaseColumns._ID},
+                new int[] {R.id.visible_name, R.id.sync_auto, R.id.id}, true);
     }
 
     private void returnSelectedTimeline(Timeline timeline) {

@@ -43,11 +43,7 @@ import java.util.TreeMap;
  */
 public class AccountSelector extends SelectorDialog {
     private static final String KEY_VISIBLE_NAME = "visible_name";
-    private static final String KEY_CREDENTIALS_VERIFIED = "credentials_verified";
     private static final String KEY_SYNC_AUTO = "sync_auto";
-    private static final String KEY_TYPE = "type";
-
-    private static final String TYPE_ACCOUNT = "account";
 
     public static void selectAccount(FragmentActivity activity, ActivityRequestCode requestCode, long originId) {
         SelectorDialog selector = new AccountSelector();
@@ -98,21 +94,20 @@ public class AccountSelector extends SelectorDialog {
         for (MyAccount ma : listData.values()) {
             Map<String, String> map = new HashMap<String, String>();
             String visibleName = ma.getAccountName();
+            if (!ma.isValidAndSucceeded()) {
+                visibleName = "(" + visibleName + ")";
+            }
             map.put(KEY_VISIBLE_NAME, visibleName);
-            map.put(KEY_CREDENTIALS_VERIFIED,
-                    ma.isValidAndSucceeded() ? ""
-                            : ma.getCredentialsVerified().name().substring(0, 1));
-            map.put(KEY_SYNC_AUTO, ma.isSyncedAutomatically() ? "" : getText(R.string.off).toString());
+            map.put(KEY_SYNC_AUTO, ma.isSyncedAutomatically() && ma.isValidAndSucceeded() ? "X" : "");
             map.put(BaseColumns._ID, Long.toString(ma.getUserId()));
-            map.put(KEY_TYPE, TYPE_ACCOUNT);
             list.add(map);
         }
 
         return new MySimpleAdapter(getActivity(),
                 list,
                 R.layout.accountlist_item,
-                new String[] {KEY_VISIBLE_NAME, KEY_CREDENTIALS_VERIFIED, KEY_SYNC_AUTO, BaseColumns._ID, KEY_TYPE},
-                new int[] {R.id.visible_name, R.id.credentials_verified, R.id.sync_auto, R.id.id, R.id.type}, true);
+                new String[] {KEY_VISIBLE_NAME, KEY_SYNC_AUTO, BaseColumns._ID},
+                new int[] {R.id.visible_name, R.id.sync_auto, R.id.id}, true);
     }
 
     private void returnSelectedAccount(MyAccount ma) {
