@@ -85,10 +85,10 @@ public abstract class HttpConnection {
         HttpReadResult result = new HttpReadResult(pathToUrlString(path)).setFormParams(formParams)
                 .setLegacyHttpProtocol(isLegacyHttpProtocol);
         if( result.hasFormParams()) {
-            MyLog.logNetworkLevelMessage(this, "postRequest_formParams", result.getFormParams());
+            MyLog.logNetworkLevelMessage(this, "post_form", result.getFormParams());
         }
         postRequest(result);
-        MyLog.logNetworkLevelMessage(this, "postRequest_response", result.strResponse);
+        MyLog.logNetworkLevelMessage(this, "post_response", result.strResponse);
         result.parseAndThrow();
         return result.getJsonObject();
     }
@@ -110,7 +110,7 @@ public abstract class HttpConnection {
         HttpReadResult result = new HttpReadResult(pathToUrlString(path));
         result.authenticate = authenticated;
         getRequest(result);
-        MyLog.logNetworkLevelMessage(this, "getRequest_response", result.strResponse);
+        MyLog.logNetworkLevelMessage(this, "get_response", result.strResponse);
         result.parseAndThrow();
         return result;
     }
