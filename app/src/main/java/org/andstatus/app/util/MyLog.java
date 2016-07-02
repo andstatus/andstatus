@@ -375,11 +375,11 @@ public class MyLog {
         return writeStringToFile(string, filename, false, true);
     }
     
-    static boolean writeStringToFile(String string, String filename, boolean append, boolean logged) {
+    private static boolean writeStringToFile(String string, String filename, boolean append, boolean logged) {
         boolean ok = false;
         if (TextUtils.isEmpty(filename)) {
             if (logged) {
-                MyLog.v("writeStringToFile", "Empy filename");
+                MyLog.v("writeStringToFile", "Empty filename");
             }
             return false;
         }
@@ -504,10 +504,10 @@ public class MyLog {
             builder.append(getStackTrace(tr));
         }
         builder.append("\n");
-        witeRawStringToLogFile(builder);
+        writeRawStringToLogFile(builder);
     }
 
-    private static void witeRawStringToLogFile(StringBuilder builder)
+    private static void writeRawStringToLogFile(StringBuilder builder)
     {
         synchronized (logFileWriterLock)
         {
@@ -518,7 +518,7 @@ public class MyLog {
     
     private static String getMostRecentLogFileName() {
         String filename = getLogFilename();
-        if (FileUtils.exists(getFileInLogDir(filename, false))) {
+        if (!FileUtils.exists(getFileInLogDir(filename, false))) {
             setNextLogFileName(true);
             filename = getLogFilename();
         }
