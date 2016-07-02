@@ -100,7 +100,7 @@ public class Timeline implements Comparable<Timeline> {
     /** Number of failed sync operations */
     private volatile long syncFailedTimesCount = 0;
     private volatile long newItemsCount = 0;
-    private volatile long countSince = 0;
+    private volatile long countSince = System.currentTimeMillis();
 
     /** Accumulated numbers for statistics. They are reset by a user's request */
     private volatile long syncedTimesCountTotal = 0;
@@ -915,5 +915,14 @@ public class Timeline implements Comparable<Timeline> {
         } else {
             return userInTimeline;
         }
+    }
+
+    public void resetCounters() {
+        errorMessage = "";
+        syncFailedTimesCount = 0;
+        syncedTimesCount = 0;
+        newItemsCount = 0;
+        countSince = System.currentTimeMillis();
+        changed = true;
     }
 }

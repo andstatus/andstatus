@@ -260,4 +260,10 @@ public class PersistentTimelines {
             timelines.putIfAbsent(timeline.getId(), timeline);
         }
     }
+
+    public void resetCounters() {
+        for (Timeline timeline : values()) {
+            timeline.resetCounters();
+        }
+    }
 }

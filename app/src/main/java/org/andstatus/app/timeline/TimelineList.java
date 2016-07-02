@@ -19,6 +19,8 @@ package org.andstatus.app.timeline;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CompoundButton;
@@ -51,6 +53,7 @@ public class TimelineList extends LoadableListActivity {
     private int sortFieldPrev = 0;
     private boolean sortDefault = true;
     private ViewGroup columnHeadersParent = null;
+    private TimelineListContextMenu contextMenu = null;
 
     @Override
     protected void onPause() {
@@ -89,6 +92,7 @@ public class TimelineList extends LoadableListActivity {
         mLayoutId = R.layout.timeline_list;
         super.onCreate(savedInstanceState);
 
+        contextMenu = new TimelineListContextMenu(this);
         LinearLayout linearLayout = (LinearLayout) findViewById(R.id.linear_list_wrapper);
         LayoutInflater inflater = getLayoutInflater();
         View listHeader = inflater.inflate(R.layout.timeline_list_header, linearLayout, false);
@@ -274,6 +278,7 @@ public class TimelineList extends LoadableListActivity {
             @Override
             public View getView(int position, View convertView, ViewGroup parent) {
                 View view = convertView == null ? newView() : convertView;
+                view.setOnCreateContextMenuListener(contextMenu);
                 view.setOnClickListener(this);
                 setPosition(view, position);
                 final TimelineListViewItem item = mItems.get(position);
@@ -318,5 +323,36 @@ public class TimelineList extends LoadableListActivity {
                 return LayoutInflater.from(TimelineList.this).inflate(R.layout.timeline_list_item, null);
             }
         };
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        super.onCreateOptionsMenu(menu);
+        getMenuInflater().inflate(R.menu.timeline_list, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.refresh_menu_item:
+                showList(WhichPage.CURRENT);
+                break;
+            case R.id.reset_counters_menu_item:
+                myContext.persistentTimelines().resetCounters();
+                showList(WhichPage.CURRENT);
+                break;
+            default:
+                break;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+        if (contextMenu != null) {
+            contextMenu.onContextItemSelected(item);
+        }
+        return super.onContextItemSelected(item);
     }
 }

@@ -47,6 +47,7 @@ abstract class TimelineDownloader extends CommandExecutorStrategy {
             logOk(true);
         } catch (ConnectionException e) {
             logConnectionException(e, "Load Timeline");
+            onSyncEnded();
         } catch (SQLiteConstraintException e) {
             MyLog.e(this, execContext.getTimeline().toString(), e);
         }

@@ -8,6 +8,12 @@
                   android:layout_width="match_parent"
                   android:layout_height="wrap_content"
                   android:weightSum="40" >
+        <TextView
+            android:id="@+id/position"
+            android:layout_width="0dip"
+            android:layout_weight="0"
+            android:layout_height="wrap_content"
+            android:visibility="gone" />
         <CheckBox
             android:id="@+id/displayedInSelector"
             android:layout_width="0dp"
