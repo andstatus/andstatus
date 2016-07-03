@@ -42,7 +42,6 @@ import org.andstatus.app.widget.MyBaseAdapter;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -139,96 +138,7 @@ public class TimelineList extends LoadableListActivity {
                     mItems.add(viewItem);
                 }
                 if (sortByField != 0) {
-                    Collections.sort(mItems, new Comparator<TimelineListViewItem>() {
-                        @Override
-                        public int compare(TimelineListViewItem lhs, TimelineListViewItem rhs) {
-                            int result = 0;
-                            switch (sortByField) {
-                                case R.id.displayedInSelector:
-                                    result = compareCheckbox(lhs.timeline.isDisplayedInSelector(), rhs.timeline.isDisplayedInSelector());
-                                    if (result != 0) {
-                                        break;
-                                    }
-                                case R.id.title:
-                                    result = compareString(lhs.timelineTitle.title, rhs.timelineTitle.title);
-                                    if (result != 0) {
-                                        break;
-                                    }
-                                case R.id.account:
-                                    result = compareString(lhs.timelineTitle.accountName, rhs.timelineTitle.accountName);
-                                    if (result != 0) {
-                                        break;
-                                    }
-                                    return compareString(lhs.timelineTitle.originName, rhs.timelineTitle.originName);
-                                case R.id.origin:
-                                    result = compareString(lhs.timelineTitle.originName, rhs.timelineTitle.originName);
-                                    if (result != 0) {
-                                        break;
-                                    } else {
-                                        result = compareString(lhs.timelineTitle.accountName, rhs.timelineTitle.accountName);
-                                    }
-                                    if (result != 0) {
-                                        break;
-                                    } else {
-                                        result = compareString(lhs.timelineTitle.title, rhs.timelineTitle.title);
-                                    }
-                                    if (result != 0) {
-                                        break;
-                                    }
-                                case R.id.synced:
-                                    return compareSynced(lhs, rhs);
-                                case R.id.syncSucceededDate:
-                                case R.id.syncedTimesCount:
-                                    result = compareDate(lhs.timeline.getSyncSucceededDate(), rhs.timeline.getSyncSucceededDate());
-                                    if (result == 0) {
-                                        return compareSynced(lhs, rhs);
-                                    }
-                                    break;
-                                case R.id.syncFailedDate:
-                                case R.id.syncFailedTimesCount:
-                                    result = compareDate(lhs.timeline.getSyncFailedDate(), rhs.timeline.getSyncFailedDate());
-                                    if (result == 0) {
-                                        return compareSynced(lhs, rhs);
-                                    }
-                                    break;
-                                case R.id.errorMessage:
-                                    result = compareString(lhs.timeline.getErrorMessage(), rhs.timeline.getErrorMessage());
-                                    if (result == 0) {
-                                        return compareSynced(lhs, rhs);
-                                    }
-                                default:
-                                    break;
-                            }
-                            return result;
-                        }
-
-                        private int compareString(String lhs, String rhs) {
-                            int result = lhs == null ? 0 : lhs.compareTo(rhs);
-                            return result == 0 ? 0 : sortDefault ? result : 0 - result;
-                        }
-
-                        private int compareSynced(TimelineListViewItem lhs, TimelineListViewItem rhs) {
-                            int result = compareDate(lhs.timeline.getLastSyncedDate(), rhs.timeline.getLastSyncedDate());
-                            if (result == 0) {
-                                result = compareCheckbox(lhs.timeline.isSyncedAutomatically(), rhs.timeline.isSyncedAutomatically());
-                            }
-                            if (result == 0) {
-                                result = compareCheckbox(lhs.timeline.isSyncable(), rhs.timeline.isSyncable());
-                            }
-                            return result;
-                        }
-
-                        private int compareDate(long lhs, long rhs) {
-                            int result = lhs == rhs ? 0 : lhs > rhs ? 1 : -1;
-                            return result == 0 ? 0 : !sortDefault ? result : 0 - result;
-                        }
-
-                        private int compareCheckbox(boolean lhs, boolean rhs) {
-                            int result = lhs == rhs ? 0 : lhs ? 1 : -1;
-                            return result == 0 ? 0 : !sortDefault ? result : 0 - result;
-                        }
-
-                    });
+                    Collections.sort(mItems, new TimelineListViewItemComparator(sortByField, sortDefault));
                 }
             }
 
@@ -355,4 +265,5 @@ public class TimelineList extends LoadableListActivity {
         }
         return super.onContextItemSelected(item);
     }
+
 }

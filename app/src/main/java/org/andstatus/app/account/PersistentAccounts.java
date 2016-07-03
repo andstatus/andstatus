@@ -302,14 +302,8 @@ public class PersistentAccounts {
         return false;
     }
 
-    /** Should not be called from UI thread */
-    public MyAccount getAccountForThisMessage(long messageId, long firstUserId,
-                                              long preferredUserId, boolean succeededOnly) {
-        return getAccountForThisMessage(MyQuery.msgIdToOriginId(messageId), messageId, firstUserId, preferredUserId, succeededOnly);
-    }
-
-    /**
-     * Find MyAccount, which may be linked to this message. 
+    /** Should not be called from UI thread
+     * Find MyAccount, which may be linked to this message.
      * First try two supplied user IDs, then try any other existing account
      * @return Invalid account if nothing suitable found
      */

@@ -37,6 +37,7 @@ import org.andstatus.app.util.MyHtml;
  */
 public class MessageForAccount {
     public final long msgId;
+    public final long originId;
     public DownloadStatus status = DownloadStatus.UNKNOWN;
     public String bodyTrimmed = "";
     public long authorId = 0;
@@ -57,9 +58,14 @@ public class MessageForAccount {
     public boolean senderFollowed = false;
     public boolean authorFollowed = false;
     
-    public MessageForAccount(long msgId, MyAccount ma) {
+    public MessageForAccount(long msgId, long originId, MyAccount ma) {
         this.msgId = msgId;
-        this.ma = ma;
+        this.originId = originId;
+        if (ma == null || ma.getOrigin().getId() != originId) {
+            this.ma = MyAccount.getEmpty();
+        } else {
+            this.ma = ma;
+        }
         this.userId = ma.getUserId();
         if (ma.isValid()) {
             getData();

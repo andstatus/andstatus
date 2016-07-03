@@ -25,7 +25,7 @@ public class MessageForAccountTest extends InstrumentationTestCase {
         MbMessage msg1 = mi.buildMessage(author1, "My testing message", null, null, DownloadStatus.LOADED);
         long mgs1Id = mi.addMessage(msg1);
         
-        MessageForAccount mfa = new MessageForAccount(mgs1Id, ma);
+        MessageForAccount mfa = new MessageForAccount(mgs1Id, ma.getOriginId(), ma);
         assertTrue(mfa.isAuthor);
         assertTrue(mfa.isSender);
         assertTrue(mfa.isSubscribed);
@@ -40,7 +40,7 @@ public class MessageForAccountTest extends InstrumentationTestCase {
         replyTo1.setPublic(true);
         long replyTo1Id = mi.addMessage(replyTo1);
         
-        mfa = new MessageForAccount(replyTo1Id, ma);
+        mfa = new MessageForAccount(replyTo1Id, ma.getOriginId(), ma);
         assertFalse(mfa.isAuthor);
         assertFalse(mfa.isSender);
         assertFalse(mfa.isSubscribed);
@@ -56,7 +56,7 @@ public class MessageForAccountTest extends InstrumentationTestCase {
         replyTo2.setPublic(true);
         long replyTo2Id = mi.addMessage(replyTo2);
         
-        mfa = new MessageForAccount(replyTo2Id, ma);
+        mfa = new MessageForAccount(replyTo2Id, ma.getOriginId(), ma);
         assertFalse(mfa.isAuthor);
         assertFalse(mfa.isSender);
         assertFalse(mfa.isSubscribed);

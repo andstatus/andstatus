@@ -28,13 +28,12 @@ import org.andstatus.app.ActivityRequestCode;
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
 import org.andstatus.app.SelectorDialog;
-import org.andstatus.app.context.MyContext;
-import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.widget.MySimpleAdapter;
 
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,12 +46,11 @@ public class TimelineSelector extends SelectorDialog {
     private static final String KEY_SYNC_AUTO = "sync_auto";
 
     public static void selectTimeline(FragmentActivity activity, ActivityRequestCode requestCode,
-                                      Timeline timeline) {
+                                      Timeline timeline, MyAccount currentMyAccount) {
         SelectorDialog selector = new TimelineSelector();
         selector.setRequestCode(requestCode);
-        selector.getArguments().putLong(IntentExtra.ORIGIN_ID.key, timeline.getOrigin().getId());
-        selector.getArguments().putString(IntentExtra.ACCOUNT_NAME.key, timeline.getMyAccount().getAccountName());
-        selector.getArguments().putBoolean(IntentExtra.TIMELINE_IS_COMBINED.key, timeline.isCombined());
+        selector.getArguments().putLong(IntentExtra.TIMELINE_ID.key, timeline.getId());
+        selector.getArguments().putString(IntentExtra.ACCOUNT_NAME.key, currentMyAccount.getAccountName());
         selector.show(activity);
     }
 
@@ -61,43 +59,67 @@ public class TimelineSelector extends SelectorDialog {
         super.onActivityCreated(savedInstanceState);
 
         setTitle(R.string.dialog_title_select_timeline);
+        Timeline timeline = myContext.persistentTimelines().fromId(getArguments().
+                getLong(IntentExtra.TIMELINE_ID.key, 0));
+        MyAccount currentMyAccount = myContext.persistentAccounts().fromAccountName(
+                getArguments().getString(IntentExtra.ACCOUNT_NAME.key));
 
-        List<Timeline> listData = MyContextHolder.get().persistentTimelines().getFiltered(
+        List<Timeline> timelines = myContext.persistentTimelines().getFiltered(
                 true,
-                TriState.fromBoolean(getArguments().getBoolean(IntentExtra.TIMELINE_IS_COMBINED.key)),
-                MyContextHolder.get().persistentAccounts().fromAccountName(
-                        getArguments().getString(IntentExtra.ACCOUNT_NAME.key)),
-                MyContextHolder.get().persistentOrigins().fromId(
-                getArguments().getLong(IntentExtra.ORIGIN_ID.key, 0))
-        );
-        if (listData.isEmpty()) {
+                TriState.fromBoolean(timeline.isCombined()),
+                currentMyAccount,
+                timeline.getOrigin());
+        if (timelines.isEmpty()) {
             returnSelectedTimeline(Timeline.getEmpty(null));
             return;
-        } else if (listData.size() == 1) {
-            returnSelectedTimeline(listData.get(0));
+        } else if (timelines.size() == 1) {
+            returnSelectedTimeline(timelines.get(0));
             return;
         }
 
-        setListAdapter(newListAdapter(myContext, listData));
+        final List<TimelineListViewItem> items = new ArrayList<>();
+        for (Timeline timeline2 : timelines) {
+            TimelineListViewItem viewItem = new TimelineListViewItem(myContext, timeline2);
+            items.add(viewItem);
+        }
+        Collections.sort(items, new TimelineListViewItemComparator(R.id.displayedInSelector, true));
+        removeDuplicates(items);
+
+        setListAdapter(newListAdapter(items));
 
         getListView().setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 long timelineId = Long.parseLong(((TextView) view.findViewById(R.id.id)).getText()
                         .toString());
-                returnSelectedTimeline(MyContextHolder.get().persistentTimelines().fromId(timelineId));
+                returnSelectedTimeline(myContext.persistentTimelines().fromId(timelineId));
             }
         });
     }
 
-    private MySimpleAdapter newListAdapter(MyContext myContext, Collection<Timeline> listData) {
+    private void removeDuplicates(List<TimelineListViewItem> timelines) {
+        Map<String, TimelineListViewItem> unique = new HashMap<>();
+        boolean removeSomething = false;
+        for (TimelineListViewItem viewItem : timelines) {
+            String key = viewItem.timelineTitle.toString();
+            if (unique.containsKey(key)) {
+                removeSomething =  true;
+            } else {
+                unique.put(key, viewItem);
+            }
+        }
+        if (removeSomething) {
+            timelines.retainAll(unique.values());
+        }
+    }
+
+    private MySimpleAdapter newListAdapter(List<TimelineListViewItem> listData) {
         List<Map<String, String>> list = new ArrayList<>();
-        for (Timeline timeline : listData) {
+        for (TimelineListViewItem viewItem : listData) {
             Map<String, String> map = new HashMap<>();
-            String visibleName = TimelineTitle.load(myContext, timeline, null).title;
-            map.put(KEY_VISIBLE_NAME, visibleName);
-            map.put(KEY_SYNC_AUTO, timeline.isSyncedAutomatically() ? "X" : "");
-            map.put(BaseColumns._ID, Long.toString(timeline.getId()));
+            map.put(KEY_VISIBLE_NAME, viewItem.timelineTitle.toString());
+            map.put(KEY_SYNC_AUTO, viewItem.timeline.isSyncedAutomatically() ? "X" : "");
+            map.put(BaseColumns._ID, Long.toString(viewItem.timeline.getId()));
             list.add(map);
         }
 

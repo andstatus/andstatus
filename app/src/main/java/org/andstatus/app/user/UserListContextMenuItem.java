@@ -16,7 +16,6 @@
 
 package org.andstatus.app.user;
 
-import android.content.Intent;
 import android.net.Uri;
 import android.view.Menu;
 
@@ -25,18 +24,16 @@ import org.andstatus.app.ContextMenuItem;
 import org.andstatus.app.MyAction;
 import org.andstatus.app.account.AccountSelector;
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.MatchedUri;
-import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.timeline.Timeline;
-import org.andstatus.app.timeline.TimelineType;
-import org.andstatus.app.database.UserTable;
 import org.andstatus.app.msg.TimelineActivity;
+import org.andstatus.app.origin.Origin;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
+import org.andstatus.app.timeline.Timeline;
+import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.MyLog;
 
 public enum UserListContextMenuItem implements ContextMenuItem {
@@ -45,7 +42,7 @@ public enum UserListContextMenuItem implements ContextMenuItem {
         void executeOnUiThread(UserListContextMenu menu, MyAccount ma) {
             CommandData commandData = CommandData.newUserCommand(
                     CommandEnum.GET_USER,
-                    MyContextHolder.get().persistentOrigins().fromId(menu.getViewItem().mbUser.originId),
+                    menu.getOrigin(),
                     menu.getViewItem().getUserId(),
                     menu.getViewItem().mbUser.getUserName());
             MyServiceManager.sendManualForegroundCommand(commandData);
@@ -66,24 +63,22 @@ public enum UserListContextMenuItem implements ContextMenuItem {
     USER_MESSAGES() {
         @Override
         void executeOnUiThread(UserListContextMenu menu, MyAccount ma) {
-            MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
-            Intent intent = new Intent(menu.getActivity(), TimelineActivity.class);
-            intent.setData(MatchedUri.getTimelineUri(
-                    Timeline.getTimeline(menu.getActivity().getMyContext(), 0, TimelineType.USER, ma,
-                            menu.getViewItem().getUserId(), null, "")));
-            menu.getActivity().startActivity(intent);
+            TimelineActivity.startForTimeline(menu.getActivity().getMyContext(),
+                    menu.getActivity(),
+                    Timeline.getTimeline(menu.getActivity().getMyContext(), 0, TimelineType.USER,
+                            null, menu.getViewItem().getUserId(), menu.getOrigin(), ""), ma);
         }
     },
     FOLLOW() {
         @Override
         void executeOnUiThread(UserListContextMenu menu, MyAccount ma) {
-            sendUserCommand(CommandEnum.FOLLOW_USER, menu.getViewItem());
+            sendUserCommand(CommandEnum.FOLLOW_USER, menu);
         }
     },
     STOP_FOLLOWING() {
         @Override
         void executeOnUiThread(UserListContextMenu menu, MyAccount ma) {
-            sendUserCommand(CommandEnum.STOP_FOLLOWING_USER, menu.getViewItem());
+            sendUserCommand(CommandEnum.STOP_FOLLOWING_USER, menu);
         }
     },
     ACT_AS_USER() {
@@ -96,7 +91,8 @@ public enum UserListContextMenuItem implements ContextMenuItem {
     ACT_AS() {
         @Override
         void executeOnUiThread(UserListContextMenu menu, MyAccount ma) {
-            AccountSelector.selectAccount(menu.getActivity(), ActivityRequestCode.SELECT_ACCOUNT_TO_ACT_AS, ma.getOriginId());
+            AccountSelector.selectAccount(menu.getActivity(),
+                    ActivityRequestCode.SELECT_ACCOUNT_TO_ACT_AS, ma.getOriginId());
         }
     },
     FOLLOWERS(true) {
@@ -107,7 +103,7 @@ public enum UserListContextMenuItem implements ContextMenuItem {
 
         @Override
         void executeOnUiThread(UserListContextMenu menu, MyAccount ma) {
-            startFollowersList(menu, ma, UserListType.FOLLOWERS);
+            startUserListActivity(menu, ma, UserListType.FOLLOWERS);
         }
     },
     FRIENDS(true) {
@@ -118,7 +114,7 @@ public enum UserListContextMenuItem implements ContextMenuItem {
 
         @Override
         void executeOnUiThread(UserListContextMenu menu, MyAccount ma) {
-            startFollowersList(menu, ma, UserListType.FRIENDS);
+            startUserListActivity(menu, ma, UserListType.FRIENDS);
         }
     },
     NONEXISTENT(),
@@ -213,23 +209,23 @@ public enum UserListContextMenuItem implements ContextMenuItem {
 
     void setMaForUserId(Params params) {
         long userId = params.menu.getViewItem().getUserId();
-        long originId = MyQuery.userIdToLongColumnValue(UserTable.ORIGIN_ID, userId);
-        if (originId == 0) {
-            MyLog.e(this, "Unknown origin for userId=" + userId);
+        Origin origin = params.menu.getOrigin();
+        if (!origin.isValid()) {
+            MyLog.e(this, "Unknown origin for " + params.menu.getViewItem().mbUser);
             return;
         }
-        if (!params.ma.isValid() || params.ma.getOriginId() != originId) {
-            params.ma = MyContextHolder.get().persistentAccounts().fromUserId(userId);
+        if (!params.ma.isValid() || !params.ma.getOrigin().equals(origin)) {
+            params.ma = params.menu.getActivity().getMyContext().persistentAccounts().fromUserId(userId);
             if (!params.ma.isValid()) {
-                params.ma = MyContextHolder.get().persistentAccounts().getFirstSucceededForOriginId(originId);
+                params.ma = params.menu.getActivity().getMyContext().persistentAccounts().getFirstSucceededForOriginId(origin.getId());
             }
         }
     }
 
-    void startFollowersList(UserListContextMenu menu, MyAccount ma, UserListType userListType) {
+    void startUserListActivity(UserListContextMenu menu, MyAccount ma, UserListType userListType) {
         Uri uri = MatchedUri.getUserListUri(ma.getUserId(),
                 userListType,
-                ma.getOriginId(),
+                menu.getOrigin().getId(),
                 menu.getViewItem().getUserId());
         if (MyLog.isVerboseEnabled()) {
             MyLog.d(this, "startFollowersList, uri:" + uri);
@@ -237,14 +233,8 @@ public enum UserListContextMenuItem implements ContextMenuItem {
         menu.getActivity().startActivity(MyAction.VIEW_FOLLOWERS.getIntent(uri));
     }
 
-    void sendUserCommand(CommandEnum command, UserListViewItem viewItem) {
+    void sendUserCommand(CommandEnum command, UserListContextMenu menu) {
         MyServiceManager.sendManualForegroundCommand(
-                CommandData.newUserCommand(
-                        command,
-                        MyContextHolder.get().persistentOrigins().fromId(viewItem.mbUser.originId),
-                        viewItem.getUserId(),
-                        ""
-                )
-        );
+                CommandData.newUserCommand(command, menu.getOrigin(), menu.getViewItem().getUserId(), ""));
     }
 }

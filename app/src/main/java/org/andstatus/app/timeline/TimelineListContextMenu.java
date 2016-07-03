@@ -45,8 +45,12 @@ public class TimelineListContextMenu extends MyContextMenu {
             new ContextMenuHeader(getActivity(), menu)
                     .setTitle(getViewItem().timelineTitle.title)
                     .setSubtitle(getViewItem().timelineTitle.subTitle);
+            TimelineListContextMenuItem.SHOW_MESSAGES.addTo(menu, order++, R.string.show_timeline_messages);
             if (getViewItem().timeline.isSyncable()) {
                 TimelineListContextMenuItem.SYNC_NOW.addTo(menu, order++, R.string.options_menu_sync);
+            }
+            if (!getViewItem().timeline.isRequired()) {
+                TimelineListContextMenuItem.DELETE.addTo(menu, order++, R.string.button_delete);
             }
         } catch (Exception e) {
             MyLog.e(this, method, e);

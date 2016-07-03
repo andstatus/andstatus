@@ -26,6 +26,7 @@ import org.andstatus.app.MyContextMenu;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.MyLog;
 
 public class UserListContextMenu extends MyContextMenu {
@@ -94,4 +95,8 @@ public class UserListContextMenu extends MyContextMenu {
         return (UserListViewItem) oViewItem;
     }
 
+    public Origin getOrigin() {
+        return getActivity().getMyContext().persistentOrigins().fromId(
+                getViewItem().mbUser.originId);
+    }
 }

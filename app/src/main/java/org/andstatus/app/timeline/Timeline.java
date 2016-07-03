@@ -86,7 +86,7 @@ public class Timeline implements Comparable<Timeline> {
     /** If the timeline should be shown in a Timeline selector */
     private volatile boolean isDisplayedInSelector = false;
     /** Used for sorting timelines in a selector */
-    private volatile long selectorOrder = 100;
+    private volatile long selectorOrder = 0;
 
     /** When this timeline was last time successfully synced */
     private volatile long syncSucceededDate = 0;
@@ -285,7 +285,6 @@ public class Timeline implements Comparable<Timeline> {
 
     protected static void saveNewDefaultTimeline(MyContext myContext, Timeline timeline) {
         timeline.isDisplayedInSelector = true;
-        timeline.selectorOrder = timeline.getTimelineType().ordinal();
         timeline.setSyncedAutomatically(timeline.getTimelineType().isSyncedAutomaticallyByDefault());
         timeline.save(myContext);
     }
@@ -604,6 +603,10 @@ public class Timeline implements Comparable<Timeline> {
     }
 
     public void delete() {
+        if (isRequired()) {
+            MyLog.d(this, "Cannot delete required timeline: " + this);
+            return;
+        }
         SQLiteDatabase db = MyContextHolder.get().getDatabase();
         if (db == null) {
             MyLog.d(this, "delete; Database is unavailable");
@@ -612,6 +615,11 @@ public class Timeline implements Comparable<Timeline> {
             db.execSQL(sql);
             MyLog.v(this, "Timeline deleted: " + this);
         }
+    }
+
+    /** Required timeline cannot be deleted */
+    public boolean isRequired() {
+        return isCombined() && timelineType.isSelectable();
     }
 
     @Override

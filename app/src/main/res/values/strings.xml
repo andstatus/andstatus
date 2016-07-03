@@ -282,6 +282,7 @@
   <string name="oauth_activity_label">OAuth</string>
   <string name="off">off</string>
   <string name="on">on</string>
+  <string name="show_timeline_messages">Show timeline messages</string>
   <string name="options_menu_about">About AndStatus</string>
   <string name="options_menu_about_cond">About</string>
   <string name="options_menu_attach">Attach</string>

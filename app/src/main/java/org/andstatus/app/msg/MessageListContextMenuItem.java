@@ -180,7 +180,7 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
     SENDER_MESSAGES(true) {
         @Override
         MessageEditorData executeAsync(MyAccount ma, long msgId) {
-            return getUserId(ma, msgId, MsgTable.SENDER_ID);
+            return fillUserId(ma, msgId, MsgTable.SENDER_ID);
         }
 
         @Override
@@ -188,14 +188,14 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
             if (editorData.recipientId != 0) {
                 menu.switchTimelineActivityView(
                         Timeline.getTimeline(menu.getActivity().getMyContext(), 0, TimelineType.USER,
-                        null, editorData.recipientId, null, ""));
+                        null, editorData.recipientId, menu.getOrigin(), ""));
             }
         }
     },
     AUTHOR_MESSAGES(true) {
         @Override
         MessageEditorData executeAsync(MyAccount ma, long msgId) {
-            return getUserId(ma, msgId, MsgTable.AUTHOR_ID);
+            return fillUserId(ma, msgId, MsgTable.AUTHOR_ID);
         }
 
         @Override
@@ -203,14 +203,14 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
             if (editorData.recipientId != 0) {
                 menu.switchTimelineActivityView(
                         Timeline.getTimeline(menu.getActivity().getMyContext(), 0, TimelineType.USER,
-                        null, editorData.recipientId, null, ""));
+                        null, editorData.recipientId, menu.getOrigin(), ""));
             }
         }
     },
     FOLLOW_SENDER(true) {
         @Override
         MessageEditorData executeAsync(MyAccount ma, long msgId) {
-            return getUserId(ma, msgId, MsgTable.SENDER_ID);
+            return fillUserId(ma, msgId, MsgTable.SENDER_ID);
         }
 
         @Override
@@ -221,7 +221,7 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
     STOP_FOLLOWING_SENDER(true) {
         @Override
         MessageEditorData executeAsync(MyAccount ma, long msgId) {
-            return getUserId(ma, msgId, MsgTable.SENDER_ID);
+            return fillUserId(ma, msgId, MsgTable.SENDER_ID);
         }
 
         @Override
@@ -232,7 +232,7 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
     FOLLOW_AUTHOR(true) {
         @Override
         MessageEditorData executeAsync(MyAccount ma, long msgId) {
-            return getUserId(ma, msgId, MsgTable.AUTHOR_ID);
+            return fillUserId(ma, msgId, MsgTable.AUTHOR_ID);
         }
 
         @Override
@@ -243,7 +243,7 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
     STOP_FOLLOWING_AUTHOR(true) {
         @Override
         MessageEditorData executeAsync(MyAccount ma, long msgId) {
-            return getUserId(ma, msgId, MsgTable.AUTHOR_ID);
+            return fillUserId(ma, msgId, MsgTable.AUTHOR_ID);
         }
 
         @Override
@@ -311,7 +311,7 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
         @Override
         void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
             Uri uri = MatchedUri.getUserListUri(editorData.ma.getUserId(),
-                    UserListType.USERS_OF_MESSAGE, menu.messageList.getTimeline().getOrigin().getId(),
+                    UserListType.USERS_OF_MESSAGE, menu.getOrigin().getId(),
                     menu.getMsgId());
             if (MyLog.isLoggable(this, MyLog.DEBUG)) {
                 MyLog.d(this, "onItemClick, startActivity=" + uri);
@@ -399,7 +399,7 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
         return MessageEditorData.newEmpty(ma);
     }
 
-    MessageEditorData getUserId(MyAccount ma, long msgId, String msgUserIdColumnName) {
+    MessageEditorData fillUserId(MyAccount ma, long msgId, String msgUserIdColumnName) {
         return MessageEditorData.newEmpty(ma)
                 .setRecipientId(MyQuery.msgIdToUserId(msgUserIdColumnName, msgId));
     }

@@ -33,6 +33,7 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MessageForAccount;
 import org.andstatus.app.data.MyQuery;
+import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.Timeline;
 import org.andstatus.app.util.MyLog;
 
@@ -217,18 +218,19 @@ public class MessageContextMenu extends MyContextMenu {
     }
 
     private MessageForAccount getMessageForAccount(long linkedUserId, MyAccount currentMyAccount) {
+        long originId = MyQuery.msgIdToOriginId(mMsgId);
         MyAccount ma1 = MyContextHolder.get().persistentAccounts()
-                .getAccountForThisMessage(mMsgId, linkedUserId,
+                .getAccountForThisMessage(originId, mMsgId, linkedUserId,
                         currentMyAccount.getUserId(),
                         false);
-        MessageForAccount msg = new MessageForAccount(mMsgId, ma1);
+        MessageForAccount msg = new MessageForAccount(mMsgId, originId, ma1);
         boolean forceFirstUser = otherAccountUserIdToActAs !=0;
         if (ma1.isValid() && !forceFirstUser
                 && !msg.isTiedToThisAccount()
                 && ma1.getUserId() != currentMyAccount.getUserId()
                 && !messageList.getTimeline().getTimelineType().isForUser()) {
             if (currentMyAccount.isValid() && ma1.getOriginId() == currentMyAccount.getOriginId()) {
-                msg = new MessageForAccount(mMsgId, currentMyAccount);
+                msg = new MessageForAccount(mMsgId, originId, currentMyAccount);
             }
         }
         return msg;
@@ -284,6 +286,8 @@ public class MessageContextMenu extends MyContextMenu {
     public void switchTimelineActivityView(Timeline timeline) {
         if (TimelineActivity.class.isAssignableFrom(getActivity().getClass())) {
             ((TimelineActivity) getActivity()).switchView(timeline, null);
+        } else {
+            TimelineActivity.startForTimeline(getActivity().getMyContext(), getActivity(),  timeline, null);
         }
     }
 
@@ -300,6 +304,10 @@ public class MessageContextMenu extends MyContextMenu {
 
     public long getMsgId() {
         return mMsgId;
+    }
+
+    public Origin getOrigin() {
+        return MyContextHolder.get().persistentOrigins().fromId(msg == null ? 0 : msg.originId);
     }
 
     public long getActorUserIdForCurrentMessage() {

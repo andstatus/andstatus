@@ -70,10 +70,9 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
 
     ParsedUri mParsedUri = ParsedUri.fromUri(Uri.EMPTY);
 
-    private MyAccount ma = MyAccount.getEmpty(MyContextHolder.get(), "");
-
     protected final long mInstanceId = InstanceId.next();
     protected MyContext myContext = MyContextHolder.get();
+    private MyAccount ma = MyAccount.getEmpty(myContext, "");
     private long configChangeTime = 0;
     private volatile boolean configChanged = false;
     MyServiceEventsReceiver myServiceReceiver;

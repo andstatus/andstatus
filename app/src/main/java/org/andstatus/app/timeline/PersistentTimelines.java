@@ -157,35 +157,7 @@ public class PersistentTimelines {
                 timelines.add(timeline);
             }
         }
-        if (isForSelector) {
-            removeDuplicatesForSelector(timelines);
-            sortForSelector(timelines);
-        }
         return timelines;
-    }
-
-    private void removeDuplicatesForSelector(List<Timeline> timelines) {
-        Map<String, Timeline> map = new HashMap<>();
-        for (Timeline timeline : timelines) {
-            String key = TimelineTitle.load(myContext, timeline, null).title;
-            if (!map.containsKey(key)) {
-                map.put(key, timeline);
-            }
-        }
-        timelines.retainAll(map.values());
-    }
-
-    private static void sortForSelector(List<Timeline> timelines) {
-        Collections.sort(timelines, new Comparator<Timeline>() {
-            @Override
-            public int compare(Timeline lhs, Timeline rhs) {
-                if (lhs.getSelectorOrder() == rhs.getSelectorOrder()) {
-                    return lhs.getTimelineType().compareTo(rhs.getTimelineType());
-                } else {
-                    return lhs.getSelectorOrder() > rhs.getSelectorOrder() ? 1 : -1;
-                }
-            }
-        });
     }
 
     public void addDefaultTimelinesIfNoneFound() {
@@ -240,6 +212,13 @@ public class PersistentTimelines {
             }
         }
         for (Timeline timeline : toRemove) {
+            timelines.remove(timeline.getId());
+        }
+    }
+
+    public void delete(Timeline timeline) {
+        if (myContext.isReady()) {
+            timeline.delete();
             timelines.remove(timeline.getId());
         }
     }

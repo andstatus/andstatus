@@ -1,4 +1,5 @@
-package org.andstatus.app.timeline;/*
+package org.andstatus.app.timeline;
+/*
  * Copyright (c) 2016 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,16 +18,34 @@ package org.andstatus.app.timeline;/*
 import android.view.Menu;
 
 import org.andstatus.app.ContextMenuItem;
+import org.andstatus.app.WhichPage;
+import org.andstatus.app.msg.TimelineActivity;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
 
 public enum TimelineListContextMenuItem implements ContextMenuItem {
+    SHOW_MESSAGES() {
+        @Override
+        public boolean execute(TimelineListContextMenu menu, TimelineListViewItem viewItem) {
+            TimelineActivity.startForTimeline(menu.getActivity().getMyContext(), menu.getActivity(),
+                    viewItem.timeline, null);
+            return true;
+        }
+    },
     SYNC_NOW() {
         @Override
-        public boolean execute(TimelineListContextMenu timelineListContextMenu, TimelineListViewItem viewItem) {
+        public boolean execute(TimelineListContextMenu menu, TimelineListViewItem viewItem) {
             MyServiceManager.sendManualForegroundCommand(
                     CommandData.newTimelineCommand(CommandEnum.FETCH_TIMELINE, viewItem.timeline));
+            return true;
+        }
+    },
+    DELETE() {
+        @Override
+        public boolean execute(TimelineListContextMenu menu, TimelineListViewItem viewItem) {
+            menu.getActivity().getMyContext().persistentTimelines().delete(viewItem.timeline);
+            menu.getActivity().showList(WhichPage.CURRENT);
             return true;
         }
     },
@@ -50,7 +69,7 @@ public enum TimelineListContextMenuItem implements ContextMenuItem {
         menu.add(Menu.NONE, this.getId(), order, titleRes);
     }
 
-    public boolean execute(TimelineListContextMenu timelineListContextMenu, TimelineListViewItem viewItem) {
+    public boolean execute(TimelineListContextMenu menu, TimelineListViewItem viewItem) {
         return false;
     }
 }
