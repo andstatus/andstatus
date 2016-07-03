@@ -37,7 +37,7 @@ class TimelineListViewItemComparator implements Comparator<TimelineListViewItem>
         int result = 0;
         switch (sortByField) {
             case R.id.displayedInSelector:
-                result = compareCheckbox(lhs.timeline.isDisplayedInSelector(), rhs.timeline.isDisplayedInSelector());
+                result = lhs.timeline.isDisplayedInSelector().compareTo(rhs.timeline.isDisplayedInSelector());
                 if (result != 0) {
                     break;
                 }

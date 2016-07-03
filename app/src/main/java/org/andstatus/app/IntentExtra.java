@@ -89,6 +89,7 @@ public enum IntentExtra{
      */
     TIMELINE_TYPE("TIMELINE_TYPE"),
     TIMELINE_ID("TIMELINE_ID"),
+    SELECTABLE_ENUM("SELECTABLE_ENUM"),
     /**
      * Is the timeline combined
      */

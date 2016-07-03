@@ -84,7 +84,7 @@ public class Timeline implements Comparable<Timeline> {
     private volatile boolean isSyncedAutomatically = false;
 
     /** If the timeline should be shown in a Timeline selector */
-    private volatile boolean isDisplayedInSelector = false;
+    private volatile DisplayedInSelector isDisplayedInSelector = DisplayedInSelector.NO;
     /** Used for sorting timelines in a selector */
     private volatile long selectorOrder = 0;
 
@@ -210,7 +210,7 @@ public class Timeline implements Comparable<Timeline> {
         timeline.id = DbUtils.getLong(cursor, TimelineTable._ID);
         timeline.userInTimeline = DbUtils.getString(cursor, TimelineTable.USER_IN_TIMELINE);
         timeline.setSyncedAutomatically(DbUtils.getBoolean(cursor, TimelineTable.IS_SYNCED_AUTOMATICALLY));
-        timeline.isDisplayedInSelector = DbUtils.getBoolean(cursor, TimelineTable.IS_DISPLAYED_IN_SELECTOR);
+        timeline.isDisplayedInSelector = DisplayedInSelector.load(DbUtils.getString(cursor, TimelineTable.DISPLAYED_IN_SELECTOR));
         timeline.selectorOrder = DbUtils.getLong(cursor, TimelineTable.SELECTOR_ORDER);
 
         timeline.syncSucceededDate = DbUtils.getLong(cursor, TimelineTable.SYNC_SUCCEEDED_DATE);
@@ -284,7 +284,7 @@ public class Timeline implements Comparable<Timeline> {
     }
 
     protected static void saveNewDefaultTimeline(MyContext myContext, Timeline timeline) {
-        timeline.isDisplayedInSelector = true;
+        timeline.isDisplayedInSelector = DisplayedInSelector.IN_CONTEXT;
         timeline.setSyncedAutomatically(timeline.getTimelineType().isSyncedAutomaticallyByDefault());
         timeline.save(myContext);
     }
@@ -447,7 +447,7 @@ public class Timeline implements Comparable<Timeline> {
         values.put(TimelineTable.SEARCH_QUERY, searchQuery);
 
         values.put(TimelineTable.IS_SYNCED_AUTOMATICALLY, isSyncedAutomatically);
-        values.put(TimelineTable.IS_DISPLAYED_IN_SELECTOR, isDisplayedInSelector);
+        values.put(TimelineTable.DISPLAYED_IN_SELECTOR, isDisplayedInSelector.save());
         values.put(TimelineTable.SELECTOR_ORDER, selectorOrder);
 
         values.put(TimelineTable.SYNC_SUCCEEDED_DATE, syncSucceededDate);
@@ -553,11 +553,11 @@ public class Timeline implements Comparable<Timeline> {
         return myAccount;
     }
 
-    public boolean isDisplayedInSelector() {
+    public DisplayedInSelector isDisplayedInSelector() {
         return isDisplayedInSelector;
     }
 
-    public void setDisplayedInSelector(boolean displayedInSelector) {
+    public void setDisplayedInSelector(DisplayedInSelector displayedInSelector) {
         if (this.isDisplayedInSelector != displayedInSelector) {
             this.isDisplayedInSelector = displayedInSelector;
             changed = true;

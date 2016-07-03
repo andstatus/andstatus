@@ -44,7 +44,7 @@ public class TimelineTable implements BaseColumns {
     /** If the timeline is synced automatically */
     public static final String IS_SYNCED_AUTOMATICALLY = "is_synced_automatically";
     /** If the timeline should be shown in a Timeline selector */
-    public static final String IS_DISPLAYED_IN_SELECTOR = "is_displayed_in_selector";
+    public static final String DISPLAYED_IN_SELECTOR = "displayed_in_selector";
     /** Used for sorting timelines in a selector */
     public static final String SELECTOR_ORDER = "selector_order";
 
@@ -100,9 +100,9 @@ public class TimelineTable implements BaseColumns {
                 + TimelineTable.ORIGIN_ID + " INTEGER,"
                 + TimelineTable.SEARCH_QUERY + " TEXT,"
 
-                + TimelineTable.IS_SYNCED_AUTOMATICALLY + " BOOLEAN DEFAULT 1 NOT NULL,"
-                + TimelineTable.IS_DISPLAYED_IN_SELECTOR + " BOOLEAN DEFAULT 1 NOT NULL,"
-                + TimelineTable.SELECTOR_ORDER + " INTEGER DEFAULT 1 NOT NULL,"
+                + TimelineTable.IS_SYNCED_AUTOMATICALLY + " BOOLEAN DEFAULT 0 NOT NULL,"
+                + TimelineTable.DISPLAYED_IN_SELECTOR + " INTEGER DEFAULT 0 NOT NULL,"
+                + TimelineTable.SELECTOR_ORDER + " INTEGER DEFAULT 0 NOT NULL,"
 
                 + TimelineTable.SYNC_SUCCEEDED_DATE + " INTEGER,"
                 + TimelineTable.SYNC_FAILED_DATE + " INTEGER,"

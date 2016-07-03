@@ -16,6 +16,7 @@
 
 package org.andstatus.app.timeline;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -23,10 +24,14 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import org.andstatus.app.ActivityRequestCode;
+import org.andstatus.app.EnumSelector;
+import org.andstatus.app.IntentExtra;
 import org.andstatus.app.LoadableListActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.WhichPage;
@@ -53,11 +58,36 @@ public class TimelineList extends LoadableListActivity {
     private boolean sortDefault = true;
     private ViewGroup columnHeadersParent = null;
     private TimelineListContextMenu contextMenu = null;
+    private TimelineListViewItem selectedItem = null;
 
     @Override
     protected void onPause() {
         myContext.persistentTimelines().saveChanged();
         super.onPause();
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (resultCode != RESULT_OK || data == null) {
+            return;
+        }
+        switch (ActivityRequestCode.fromId(requestCode)) {
+            case SELECT_DISPLAYED_IN_SELECTOR:
+                if (selectedItem != null) {
+                    final DisplayedInSelector displayedInSelector = DisplayedInSelector.load(
+                            data.getStringExtra(IntentExtra.SELECTABLE_ENUM.key));
+                    selectedItem.timeline.setDisplayedInSelector(displayedInSelector);
+                    MyLog.v("isDisplayedInSelector", displayedInSelector.save() + " " +
+                            selectedItem.timeline);
+                    if (displayedInSelector != DisplayedInSelector.IN_CONTEXT || sortByField == R.id.displayedInSelector) {
+                        showList(WhichPage.CURRENT);
+                    }
+                }
+                break;
+            default:
+                super.onActivityResult(requestCode, resultCode, data);
+                break;
+        }
     }
 
     @Override
@@ -199,14 +229,7 @@ public class TimelineList extends LoadableListActivity {
                 Origin origin = item.timeline.getOrigin();
                 MyUrlSpan.showText(view, R.id.origin, origin.isValid() ?
                         origin.getName() : "", false, true);
-                MyCheckBox.show(view, R.id.displayedInSelector, item.timeline.isDisplayedInSelector(),
-                        new CompoundButton.OnCheckedChangeListener() {
-                            @Override
-                            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                                item.timeline.setDisplayedInSelector(isChecked);
-                                MyLog.v("isDisplayedInSelector", (isChecked ? "+ " : "- ") + item.timeline);
-                            }
-                        });
+                showDisplayedInSelector(view, item);
                 MyCheckBox.show(view, R.id.synced, item.timeline.isSyncedAutomatically(),
                         item.timeline.isSyncable() ?
                                 new CompoundButton.OnCheckedChangeListener() {
@@ -227,6 +250,27 @@ public class TimelineList extends LoadableListActivity {
                         false, true);
                 MyUrlSpan.showText(view, R.id.errorMessage, item.timeline.getErrorMessage(), false, true);
                 return view;
+            }
+
+            protected void showDisplayedInSelector(View parentView, final TimelineListViewItem item) {
+                CheckBox view = (CheckBox) parentView.findViewById(R.id.displayedInSelector);
+                MyCheckBox.show(parentView, R.id.displayedInSelector, item.timeline.isDisplayedInSelector() != DisplayedInSelector.NO,
+                        new CompoundButton.OnCheckedChangeListener() {
+                            @Override
+                            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                                if (isChecked) {
+                                    selectedItem = item;
+                                    EnumSelector.newInstance(
+                                            ActivityRequestCode.SELECT_DISPLAYED_IN_SELECTOR,
+                                            DisplayedInSelector.class).show(TimelineList.this);
+                                } else {
+                                    item.timeline.setDisplayedInSelector(DisplayedInSelector.NO);
+                                    buttonView.setText("");
+                                    MyLog.v("isDisplayedInSelector", (isChecked ? "+ " : "- ") + item.timeline);
+                                }
+                            }
+                        });
+                view.setText(item.timeline.isDisplayedInSelector() == DisplayedInSelector.ALWAYS ? "*" : "");
             }
 
             private View newView() {

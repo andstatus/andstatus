@@ -19,12 +19,12 @@ package org.andstatus.app.timeline;
 import android.content.Context;
 import android.support.annotation.NonNull;
 
+import org.andstatus.app.SelectableEnum;
 import org.andstatus.app.R;
-import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.database.FriendshipTable;
 import org.andstatus.app.net.social.Connection;
 
-public enum TimelineType {
+public enum TimelineType implements SelectableEnum {
     /** The type is unknown */
     UNKNOWN("unknown", R.string.timeline_title_unknown, Connection.ApiRoutineEnum.DUMMY),
     /** The Home timeline and other information (replies...). */
@@ -76,20 +76,12 @@ public enum TimelineType {
     /** Returns the enum or UNKNOWN */
     @NonNull
     public static TimelineType load(String strCode) {
-        for (TimelineType tt : TimelineType.values()) {
-            if (tt.code.equals(strCode)) {
-                return tt;
+        for (TimelineType value : TimelineType.values()) {
+            if (value.code.equals(strCode)) {
+                return value;
             }
         }
         return UNKNOWN;
-    }
-
-    public static TimelineType toSelectableType(TimelineType typeSelected) {
-        if (typeSelected == null || !typeSelected.isSelectable()) {
-            return MyPreferences.getDefaultTimeline();
-        } else {
-            return typeSelected;
-        }
     }
 
     /** String to be used for persistence */
@@ -102,7 +94,13 @@ public enum TimelineType {
         return "timelineType:" + code;
     }
 
+    @Override
+    public String getCode() {
+        return code;
+    }
+
     /** Localized title for UI */
+    @Override
     public CharSequence getTitle(Context context) {
         if (titleResId == 0 || context == null) {
             return this.code;
@@ -231,6 +229,11 @@ public enum TimelineType {
             default:
                 return false;
         }
+    }
+
+    @Override
+    public int getDialogTitleResId() {
+        return R.string.dialog_title_select_timeline;
     }
 
     public Connection.ApiRoutineEnum getConnectionApiRoutine() {

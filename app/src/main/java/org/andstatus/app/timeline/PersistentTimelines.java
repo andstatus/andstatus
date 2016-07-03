@@ -146,13 +146,19 @@ public class PersistentTimelines {
                                       Origin origin) {
         List<Timeline> timelines = new ArrayList<>();
         for (Timeline timeline : values()) {
-            boolean include = (!isForSelector || timeline.isDisplayedInSelector()) &&
-                    isTimelineCombined.isBoolean(timeline.isCombined()) &&
-                    (currentMyAccount == null || !currentMyAccount.isValid() ||
-                            timeline.isCombined() ||
-                            timeline.getMyAccount().equals(currentMyAccount)) &&
-                    (origin == null || !origin.isValid() ||
-                            timeline.isCombined() || timeline.getOrigin().equals(origin));
+            boolean include;
+            if (isForSelector && timeline.isDisplayedInSelector() == DisplayedInSelector.ALWAYS) {
+                include = true;
+            } else if (isForSelector && timeline.isDisplayedInSelector() == DisplayedInSelector.NO) {
+                include = false;
+            } else {
+                include = isTimelineCombined.isBoolean(timeline.isCombined()) &&
+                        (currentMyAccount == null || !currentMyAccount.isValid() ||
+                                timeline.isCombined() ||
+                                timeline.getMyAccount().equals(currentMyAccount)) &&
+                        (origin == null || !origin.isValid() ||
+                                timeline.isCombined() || timeline.getOrigin().equals(origin));
+            }
             if (include) {
                 timelines.add(timeline);
             }

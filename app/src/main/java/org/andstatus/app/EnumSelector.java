@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.andstatus.app.timeline;
+package org.andstatus.app;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -23,14 +23,10 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.TextView;
 
-import org.andstatus.app.ActivityRequestCode;
-import org.andstatus.app.IntentExtra;
-import org.andstatus.app.R;
-import org.andstatus.app.SelectorDialog;
 import org.andstatus.app.widget.MySimpleAdapter;
-import org.andstatus.app.context.MyPreferences;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,12 +34,20 @@ import java.util.Map;
 /**
  * @author yvolk@yurivolkov.com
  */
-public class TimelineTypeSelector extends org.andstatus.app.SelectorDialog {
+public class EnumSelector<E extends Enum<E>> extends org.andstatus.app.SelectorDialog {
     private static final String KEY_VISIBLE_NAME = "visible_name";
+    private int dialogTitleResId;
+    private EnumSet<E> enumSet;
 
-    static SelectorDialog newInstance(ActivityRequestCode requestCode) {
-        SelectorDialog selector = new TimelineTypeSelector();
+    public static <E extends Enum<E>> SelectorDialog newInstance(ActivityRequestCode requestCode, Class<E> clazz) {
+        if (!SelectableEnum.class.isAssignableFrom(clazz)) {
+            throw new IllegalArgumentException("Class '" + clazz.getName() +
+                    "' doesn't implement SelectableEnum");
+        }
+        EnumSelector selector = new EnumSelector();
         selector.setRequestCode(requestCode);
+        selector.enumSet =  EnumSet.allOf(clazz);
+        selector.dialogTitleResId = ((SelectableEnum) selector.enumSet.iterator().next()).getDialogTitleResId();
         return selector;
     }
 
@@ -51,26 +55,34 @@ public class TimelineTypeSelector extends org.andstatus.app.SelectorDialog {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        setTitle(R.string.dialog_title_select_timeline);
+        setTitle(dialogTitleResId);
         setListAdapter(newListAdapter());
 
         getListView().setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                int userId = Integer.parseInt(((TextView) view.findViewById(R.id.id)).getText()
-                        .toString());
-                returnSelectedAccount(TimelineType.values()[userId]);
+                int idSelected = Integer.parseInt(((TextView) view.findViewById(R.id.id)).getText().toString());
+                String code = "";
+                for(E en : enumSet){
+                    if (en.ordinal() == idSelected) {
+                        code = ((SelectableEnum) en).getCode();
+                    }
+                }
+                returnSelected(new Intent().putExtra(IntentExtra.SELECTABLE_ENUM.key, code));
             }
         });
     }
 
     private MySimpleAdapter newListAdapter() {
-        List<Map<String, String>> list = new ArrayList<Map<String, String>>();
-        for (TimelineType timelineType : TimelineType.values()) {
-            Map<String, String> map = new HashMap<String, String>();
-            map.put(KEY_VISIBLE_NAME, timelineType.getTitle(getActivity()).toString());
-            map.put(BaseColumns._ID, Long.toString(timelineType.ordinal()));
-            list.add(map);
+        List<Map<String, String>> list = new ArrayList<>();
+        for(E en : enumSet){
+            SelectableEnum value = (SelectableEnum) en;
+            if (value.isSelectable()) {
+                Map<String, String> map = new HashMap<>();
+                map.put(KEY_VISIBLE_NAME, value.getTitle(getActivity()).toString());
+                map.put(BaseColumns._ID, Integer.toString(en.ordinal()));
+                list.add(map);
+            }
         }
 
         return new MySimpleAdapter(getActivity(),
@@ -79,9 +91,4 @@ public class TimelineTypeSelector extends org.andstatus.app.SelectorDialog {
                 new String[] {KEY_VISIBLE_NAME, BaseColumns._ID},
                 new int[] {R.id.visible_name, R.id.id}, true);
     }
-
-    private void returnSelectedAccount(TimelineType timelineType) {
-        returnSelected(new Intent().putExtra(IntentExtra.TIMELINE_TYPE.key, timelineType.save()));
-    }
-
 }
