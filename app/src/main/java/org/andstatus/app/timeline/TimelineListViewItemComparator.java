@@ -77,16 +77,30 @@ class TimelineListViewItemComparator implements Comparator<TimelineListViewItem>
                 }
             case R.id.synced:
                 return compareSynced(lhs, rhs);
-            case R.id.syncSucceededDate:
             case R.id.syncedTimesCount:
-                result = compareDate(lhs.timeline.getSyncSucceededDate(), rhs.timeline.getSyncSucceededDate());
+                result = compareLongDescending(lhs.timeline.getSyncedTimesCount(), rhs.timeline.getSyncedTimesCount());
+                if (result != 0) {
+                    break;
+                }
+            case R.id.downloadedItemsCount:
+                result = compareLongDescending(lhs.timeline.getDownloadedItemsCount(), rhs.timeline.getDownloadedItemsCount());
+                if (result != 0) {
+                    break;
+                }
+            case R.id.newItemsCount:
+                result = compareLongDescending(lhs.timeline.getNewItemsCount(), rhs.timeline.getNewItemsCount());
+                if (result != 0) {
+                    break;
+                }
+            case R.id.syncSucceededDate:
+                result = compareLongDescending(lhs.timeline.getSyncSucceededDate(), rhs.timeline.getSyncSucceededDate());
                 if (result == 0) {
                     return compareSynced(lhs, rhs);
                 }
                 break;
             case R.id.syncFailedDate:
             case R.id.syncFailedTimesCount:
-                result = compareDate(lhs.timeline.getSyncFailedDate(), rhs.timeline.getSyncFailedDate());
+                result = compareLongDescending(lhs.timeline.getSyncFailedDate(), rhs.timeline.getSyncFailedDate());
                 if (result == 0) {
                     return compareSynced(lhs, rhs);
                 }
@@ -108,7 +122,7 @@ class TimelineListViewItemComparator implements Comparator<TimelineListViewItem>
     }
 
     private int compareSynced(TimelineListViewItem lhs, TimelineListViewItem rhs) {
-        int result = compareDate(lhs.timeline.getLastSyncedDate(), rhs.timeline.getLastSyncedDate());
+        int result = compareLongDescending(lhs.timeline.getLastSyncedDate(), rhs.timeline.getLastSyncedDate());
         if (result == 0) {
             result = compareCheckbox(lhs.timeline.isSyncedAutomatically(), rhs.timeline.isSyncedAutomatically());
         }
@@ -118,7 +132,7 @@ class TimelineListViewItemComparator implements Comparator<TimelineListViewItem>
         return result;
     }
 
-    private int compareDate(long lhs, long rhs) {
+    private int compareLongDescending(long lhs, long rhs) {
         int result = lhs == rhs ? 0 : lhs > rhs ? 1 : -1;
         return result == 0 ? 0 : !sortDefault ? result : 0 - result;
     }

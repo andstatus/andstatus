@@ -59,12 +59,14 @@ public class TimelineTable implements BaseColumns {
     public static final String SYNCED_TIMES_COUNT = "synced_times_count";
     /** Number of failed sync operations */
     public static final String SYNC_FAILED_TIMES_COUNT = "sync_failed_times_count";
+    public static final String DOWNLOADED_ITEMS_COUNT = "downloaded_items_count";
     public static final String NEW_ITEMS_COUNT = "new_items_count";
     public static final String COUNT_SINCE = "count_since";
 
     /** Accumulated numbers for statistics. They are reset by a user's request */
     public static final String SYNCED_TIMES_COUNT_TOTAL = "synced_times_count_total";
     public static final String SYNC_FAILED_TIMES_COUNT_TOTAL = "sync_failed_times_count_total";
+    public static final String DOWNLOADED_ITEMS_COUNT_TOTAL = "downloaded_items_count_total";
     public static final String NEW_ITEMS_COUNT_TOTAL = "new_items_count_total";
 
     /** Timeline position of the youngest ever downloaded message */
@@ -110,11 +112,13 @@ public class TimelineTable implements BaseColumns {
 
                 + TimelineTable.SYNCED_TIMES_COUNT + " INTEGER DEFAULT 0 NOT NULL,"
                 + TimelineTable.SYNC_FAILED_TIMES_COUNT + " INTEGER DEFAULT 0 NOT NULL,"
+                + TimelineTable.DOWNLOADED_ITEMS_COUNT + " INTEGER DEFAULT 0 NOT NULL,"
                 + TimelineTable.NEW_ITEMS_COUNT + " INTEGER DEFAULT 0 NOT NULL,"
                 + TimelineTable.COUNT_SINCE + " INTEGER,"
 
                 + TimelineTable.SYNCED_TIMES_COUNT_TOTAL + " INTEGER DEFAULT 0 NOT NULL,"
                 + TimelineTable.SYNC_FAILED_TIMES_COUNT_TOTAL + " INTEGER DEFAULT 0 NOT NULL,"
+                + TimelineTable.DOWNLOADED_ITEMS_COUNT_TOTAL + " INTEGER DEFAULT 0 NOT NULL,"
                 + TimelineTable.NEW_ITEMS_COUNT_TOTAL + " INTEGER DEFAULT 0 NOT NULL,"
 
                 + TimelineTable.YOUNGEST_POSITION + " TEXT,"

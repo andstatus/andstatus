@@ -240,6 +240,7 @@ public class TimelineList extends LoadableListActivity {
                                 }
                         } : null);
                 MyUrlSpan.showText(view, R.id.syncedTimesCount, I18n.notZero(item.timeline.getSyncedTimesCount()), false, true);
+                MyUrlSpan.showText(view, R.id.downloadedItemsCount, I18n.notZero(item.timeline.getDownloadedItemsCount()), false, true);
                 MyUrlSpan.showText(view, R.id.newItemsCount, I18n.notZero(item.timeline.getNewItemsCount()), false, true);
                 MyUrlSpan.showText(view, R.id.syncSucceededDate,
                         RelativeTime.getDifference(TimelineList.this, item.timeline.getSyncSucceededDate()),

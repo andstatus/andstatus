@@ -140,6 +140,7 @@
   <string name="dont_synchronize_old_messages">Don\'t synchronize old messages, if previous sync was more than ... hours ago</string>
   <string name="download_status_draft">draft</string>
   <string name="download_status_unsent">unsent</string>
+  <string name="downloaded_items_count_abbreviated">Dnl.</string>
   <string name="drawer_close">Close navigation drawer</string>
   <string name="drawer_open">Open navigation drawer</string>
   <string name="empty_in_parenthesis">(empty)</string>
@@ -262,6 +263,7 @@
   <string name="message_sent">Your message has been sent.</string>
   <string name="messages_activity">Direct Messages</string>
   <string name="never">Never</string>
+  <string name="new_items_count_abbreviated">New</string>
   <string name="no">No</string>
   <string name="nothing_in_the_loadable_list">Nothing here so far. Try to tap \"Sync with Internet\" to update this list.</string>
   <string name="not_set">not set</string>

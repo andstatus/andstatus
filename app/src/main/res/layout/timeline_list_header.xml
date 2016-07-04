@@ -9,7 +9,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:weightSum="40">
+        android:weightSum="41">
 
         <TextView
             android:id="@+id/displayedInSelector"
@@ -59,8 +59,17 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginLeft="7dp"
-            android:text="@string/last_synced"
-            android:layout_weight="6" />
+            android:text=""
+            android:layout_weight="1" />
+        <TextView
+            android:id="@+id/downloadedItemsCount"
+            android:minHeight="48dp"
+            android:gravity="center_vertical"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="7dp"
+            android:text="@string/downloaded_items_count_abbreviated"
+            android:layout_weight="1" />
         <TextView
             android:id="@+id/newItemsCount"
             android:minHeight="48dp"
@@ -68,8 +77,8 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginLeft="7dp"
-            android:text=""
-            android:layout_weight="0" />
+            android:text="@string/new_items_count_abbreviated"
+            android:layout_weight="1" />
         <TextView
             android:id="@+id/syncSucceededDate"
             android:minHeight="48dp"
@@ -77,8 +86,8 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginLeft="7dp"
-            android:text=""
-            android:layout_weight="0" />
+            android:text="@string/last_synced"
+            android:layout_weight="4" />
         <TextView
             android:id="@+id/syncFailedTimesCount"
             android:minHeight="48dp"

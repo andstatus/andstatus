@@ -33,7 +33,7 @@
                 Individual timelines can now be managed separately. For each timeline you
                 can define, if it's shown in a list of available timelines and if it's synced
                 automatically. For each timeline sync statistics is shown:<br/>
-                * Number of syncs and accumulated number of new messages loaded.<br/>
+                * Number of syncs and accumulated numbers of all downloaded and new messages.<br/>
                 * Time of last successful and of last failed syncs.<br/>
                 * The last error encountered during syncing.<br/>
                 The "Manage Timelines" table scrolls vertically and horizontally and its content
