@@ -74,14 +74,14 @@
         android:title="@string/options_menu_sync">
     </item>
     <item
-        android:id="@+id/commands_queue_id"
-        app:showAsAction="never"
-        android:title="@string/title_preference_notifications_queue">
-    </item>
-    <item
         android:id="@+id/manage_timelines"
         app:showAsAction="never"
         android:title="@string/manage_timelines">
+    </item>
+    <item
+        android:id="@+id/commands_queue_id"
+        app:showAsAction="never"
+        android:title="@string/title_preference_notifications_queue">
     </item>
     <item
         android:id="@+id/preferences_menu_id"

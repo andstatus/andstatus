@@ -17,6 +17,7 @@
             android:id="@+id/origin_label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:labelFor="@+id/origin_name"
             android:text="@string/label_origin_system" />
 
         <TextView
@@ -32,6 +33,7 @@
             android:id="@+id/username_label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:labelFor="@+id/username"
             android:text="@string/title_preference_username" />
 
         <EditText
@@ -121,6 +123,21 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/synced_automatically" />
+
+
+        <TextView
+            android:id="@+id/label_sync_frequency"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:labelFor="@+id/sync_frequency"
+            android:text="@string/sync_frequency_minutes" />
+
+        <EditText
+            android:id="@+id/sync_frequency"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:hint="@string/sync_frequency_minutes" />
 
         <CheckBox
             android:id="@+id/is_default_account"

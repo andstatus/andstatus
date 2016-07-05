@@ -215,9 +215,6 @@ public final class MyAccount {
                 assignUserId();
                 MyLog.e(TAG, "MyAccount '" + myAccount.getAccountName() + "' was not connected to the User table. UserId=" + myAccount.userId);
             }
-            if (myAccount.syncFrequencySeconds == 0) {
-                changed = true;
-            }
             if (!myAccount.getCredentialsPresent()
                     && myAccount.getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED) {
                 MyLog.e(TAG, "User's credentials were lost?! Fixing...");
@@ -311,9 +308,6 @@ public final class MyAccount {
                 myAccount.accountData.setPersistent(true);
                 myAccount.accountData.setDataBoolean(MyAccount.KEY_IS_SYNCABLE, myAccount.isSyncable);
                 myAccount.accountData.setDataBoolean(MyAccount.KEY_IS_SYNCED_AUTOMATICALLY, myAccount.isSyncedAutomatically);
-                if (myAccount.syncFrequencySeconds == 0) {
-                    setSyncFrequency(MyPreferences.getSyncFrequencySeconds());
-                }
                 myAccount.accountData.setDataLong(MyPreferences.KEY_SYNC_FREQUENCY_SECONDS, myAccount.syncFrequencySeconds);
                 myAccount.accountData.setDataInt(KEY_VERSION, myAccount.version);
                 if (androidAccount != null) {
@@ -553,7 +547,7 @@ public final class MyAccount {
             return myAccount.version;
         }
 
-        void setSyncFrequency(long syncFrequencySeconds) {
+        void setSyncFrequencySeconds(long syncFrequencySeconds) {
             myAccount.syncFrequencySeconds = syncFrequencySeconds;
         }
         
@@ -588,7 +582,7 @@ public final class MyAccount {
     private CredentialsVerificationStatus credentialsVerified = CredentialsVerificationStatus.NEVER;
     /** Is this user authenticated with OAuth? */
     private boolean isOAuth = true;
-    private long syncFrequencySeconds;
+    private long syncFrequencySeconds = 0;
     private boolean isSyncable = true;
     private boolean isSyncedAutomatically = true;
     private final int version;
@@ -877,7 +871,7 @@ public final class MyAccount {
         }
     }
 
-    private Account getExistingAndroidAccount() {
+    Account getExistingAndroidAccount() {
         Account androidAccount = null;
         // Let's check if there is such an Android Account already
         android.accounts.AccountManager am = AccountManager.get(MyContextHolder.get().context());
@@ -890,7 +884,19 @@ public final class MyAccount {
         }
         return androidAccount;
     }
-    
+
+    public long getSyncFrequencySeconds() {
+        return syncFrequencySeconds;
+    }
+
+    public long getEffectiveSyncFrequencySeconds() {
+        long effectiveSyncFrequencySeconds = getSyncFrequencySeconds();
+        if (effectiveSyncFrequencySeconds <= 0) {
+            effectiveSyncFrequencySeconds= MyPreferences.getSyncFrequencySeconds();
+        }
+        return effectiveSyncFrequencySeconds;
+    }
+
     @Override
     public String toString() {
         String members = (isValid() ? "" : "(invalid) ") + "accountName:" + getAccountName() + ",";
@@ -916,7 +922,9 @@ public final class MyAccount {
             if (connection == null) {
                 members += "connection:null,";
             }
-            members += "syncFrequency:" + syncFrequencySeconds + ",";
+            if (syncFrequencySeconds > 0) {
+                members += "syncFrequency:" + syncFrequencySeconds + ",";
+            }
             if (isSyncable) {
                 members += "syncable,";
             }

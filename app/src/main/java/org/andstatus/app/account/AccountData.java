@@ -63,7 +63,6 @@ public class AccountData implements Parcelable, AccountDataWriter {
                 ContentResolver.getIsSyncable(androidAccount, MatchedUri.AUTHORITY) != 0);
         accountData.setDataBoolean(MyAccount.KEY_IS_SYNCED_AUTOMATICALLY,
                 ContentResolver.getSyncAutomatically(androidAccount, MatchedUri.AUTHORITY));
-        accountData.setDataLong(MyPreferences.KEY_SYNC_FREQUENCY_SECONDS, getSyncFrequencySeconds(androidAccount));
         return accountData;
     }
 
@@ -109,12 +108,13 @@ public class AccountData implements Parcelable, AccountDataWriter {
         AccountData oldData = fromAndroidAccount(myContext, androidAccount);
         result.changed = !this.equals(oldData);
         if (result.changed) {
+
             long syncFrequencySeconds = getDataLong(MyPreferences.KEY_SYNC_FREQUENCY_SECONDS, 0);
-            if (syncFrequencySeconds > 0
-                    && syncFrequencySeconds != getSyncFrequencySeconds(androidAccount)) {
-                result.changed = true;
-                setSyncFrequencySeconds(androidAccount, syncFrequencySeconds);
+            if (syncFrequencySeconds <= 0) {
+                syncFrequencySeconds = MyPreferences.getSyncFrequencySeconds();
             }
+            setSyncFrequencySeconds(androidAccount, syncFrequencySeconds);
+
             boolean isSyncable = getDataBoolean(MyAccount.KEY_IS_SYNCABLE, true);
             if (isSyncable != (ContentResolver.getIsSyncable(androidAccount, MatchedUri.AUTHORITY) != 0)) {
                 ContentResolver.setIsSyncable(androidAccount, MatchedUri.AUTHORITY, isSyncable ? 1
@@ -156,14 +156,16 @@ public class AccountData implements Parcelable, AccountDataWriter {
         return text.hashCode();
     }
 
-    private void setSyncFrequencySeconds(Account androidAccount, long syncFrequencySeconds) {
+    public static void setSyncFrequencySeconds(Account androidAccount, long syncFrequencySeconds) {
         // See
         // http://developer.android.com/reference/android/content/ContentResolver.html#addPeriodicSync(android.accounts.Account, java.lang.String, android.os.Bundle, long)
         // and
         // http://stackoverflow.com/questions/11090604/android-syncadapter-automatically-initialize-syncing
-        ContentResolver.removePeriodicSync(androidAccount, MatchedUri.AUTHORITY, new Bundle());
-        if (syncFrequencySeconds > 0) {
-            ContentResolver.addPeriodicSync(androidAccount, MatchedUri.AUTHORITY, new Bundle(), syncFrequencySeconds);
+        if (syncFrequencySeconds != getSyncFrequencySeconds(androidAccount)) {
+            ContentResolver.removePeriodicSync(androidAccount, MatchedUri.AUTHORITY, new Bundle());
+            if (syncFrequencySeconds > 0) {
+                ContentResolver.addPeriodicSync(androidAccount, MatchedUri.AUTHORITY, new Bundle(), syncFrequencySeconds);
+            }
         }
     }
     

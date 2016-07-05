@@ -47,6 +47,7 @@ import org.andstatus.app.MyActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.MySettingsActivity;
 import org.andstatus.app.msg.TimelineActivity;
 import org.andstatus.app.net.http.ConnectionException;
@@ -62,6 +63,8 @@ import org.andstatus.app.util.MyCheckBox;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyUrlSpan;
 import org.andstatus.app.util.RelativeTime;
+import org.andstatus.app.util.SharedPreferencesUtil;
+import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -286,6 +289,7 @@ public class AccountSettingsActivity extends MyActivity {
         showVerifyCredentialsButton();
         showDefaultAccountCheckbox();
         showIsSyncedAutomatically();
+        showSyncFrequency();
         showLastSyncSucceededDate();
     }
 
@@ -492,6 +496,40 @@ public class AccountSettingsActivity extends MyActivity {
                         state.builder.setSyncedAutomatically(isChecked);
                     }
                 });
+    }
+
+    private void showSyncFrequency() {
+        TextView label = (TextView) findFragmentViewById(R.id.label_sync_frequency);
+        EditText view = (EditText) findFragmentViewById(R.id.sync_frequency);
+        if (label != null && view != null) {
+            String labelText = getText(R.string.sync_frequency_minutes).toString() + " " +
+                    SharedPreferencesUtil.getSummaryForListPreference(this, Long.toString(MyPreferences.getSyncFrequencySeconds()),
+                    R.array.fetch_frequency_values, R.array.fetch_frequency_entries,
+                    R.string.summary_preference_frequency);
+            label.setText(labelText);
+
+            String value = state.builder.getAccount().getSyncFrequencySeconds() <= 0 ? "" :
+                    Long.toString(state.builder.getAccount().getSyncFrequencySeconds() / 60);
+            view.setText(value);
+            view.setHint(labelText);
+            view.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                    // Empty
+                }
+
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    // Empty
+                }
+
+                @Override
+                public void afterTextChanged(Editable s) {
+                    long value = StringUtils.toLong(s.toString());
+                    state.builder.setSyncFrequencySeconds(value > 0 ? value * 60 : 0);
+                }
+            });
+        }
     }
 
     private void showLastSyncSucceededDate() {

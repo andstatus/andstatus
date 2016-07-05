@@ -372,7 +372,7 @@ public class MySettingsFragment extends PreferenceFragment implements
                     showDontSynchronizeOldMessages();
                     break;
                 case MyPreferences.KEY_SYNC_FREQUENCY_SECONDS:
-                    MyContextHolder.get().persistentAccounts().onMyPreferencesChanged(MyContextHolder.get());
+                    MyContextHolder.get().persistentAccounts().onDefaultSyncFrequencyChanged();
                     showFrequency();
                     break;
                 case MyPreferences.KEY_CONNECTION_TIMEOUT_SECONDS:

@@ -30,4 +30,14 @@ public class StringUtils {
     public static String notNull(String value) {
         return value == null ? "" : value;
     }
+
+    public static long toLong(String s) {
+        long value = 0;
+        try {
+            value = Long.parseLong(s);
+        } catch (NumberFormatException e) {
+            MyLog.ignored(s, e);
+        }
+        return value;
+    }
 }

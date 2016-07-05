@@ -91,23 +91,28 @@ public class SharedPreferencesUtil {
                                           int valuesR, int entriesR, int summaryR) {
         ListPreference listPref = (ListPreference) fragment.findPreference(preferenceKey);
         if (listPref != null) {
-            String[] values = fragment.getResources().getStringArray(valuesR);
-            String[] entries = fragment.getResources().getStringArray(entriesR);
-            String summary = entries[0];
-            String listValue = listPref.getValue();
-            for (int i = 0; i < values.length; i++) {
-                if (listValue.equals(values[i])) {
-                    summary = entries[i];
-                    break;
-                }
-            }
-            if (summaryR != 0) {
-                MessageFormat messageFormat = new MessageFormat(fragment.getText(summaryR)
-                        .toString());
-                summary = messageFormat.format(new Object[] { summary });
-            }
-            listPref.setSummary(summary);
+            listPref.setSummary(getSummaryForListPreference(fragment.getActivity(),
+                    listPref.getValue(), valuesR, entriesR, summaryR));
         }
+    }
+
+    public static String getSummaryForListPreference(Context context, String listValue,
+                                                        int valuesR, int entriesR, int summaryR) {
+        String[] values = context.getResources().getStringArray(valuesR);
+        String[] entries = context.getResources().getStringArray(entriesR);
+        String summary = entries[0];
+        for (int i = 0; i < values.length; i++) {
+            if (listValue.equals(values[i])) {
+                summary = entries[i];
+                break;
+            }
+        }
+        if (summaryR != 0) {
+            MessageFormat messageFormat = new MessageFormat(context.getText(summaryR)
+                    .toString());
+            summary = messageFormat.format(new Object[] { summary });
+        }
+        return summary;
     }
 
     /**

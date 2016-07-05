@@ -255,7 +255,7 @@ public class TimelineList extends LoadableListActivity {
 
             protected void showDisplayedInSelector(View parentView, final TimelineListViewItem item) {
                 CheckBox view = (CheckBox) parentView.findViewById(R.id.displayedInSelector);
-                MyCheckBox.show(parentView, R.id.displayedInSelector, item.timeline.isDisplayedInSelector() != DisplayedInSelector.NO,
+                MyCheckBox.show(parentView, R.id.displayedInSelector, item.timeline.isDisplayedInSelector() != DisplayedInSelector.NEVER,
                         new CompoundButton.OnCheckedChangeListener() {
                             @Override
                             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -265,7 +265,7 @@ public class TimelineList extends LoadableListActivity {
                                             ActivityRequestCode.SELECT_DISPLAYED_IN_SELECTOR,
                                             DisplayedInSelector.class).show(TimelineList.this);
                                 } else {
-                                    item.timeline.setDisplayedInSelector(DisplayedInSelector.NO);
+                                    item.timeline.setDisplayedInSelector(DisplayedInSelector.NEVER);
                                     buttonView.setText("");
                                     MyLog.v("isDisplayedInSelector", (isChecked ? "+ " : "- ") + item.timeline);
                                 }

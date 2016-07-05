@@ -417,6 +417,7 @@
   <string name="switch_to_default_timeline">Switch to Default Timeline</string>
   <string name="sync_over_wifi_only">Sync over WiFi only</string>
   <string name="sync_failed">Sync failed</string>
+  <string name="sync_frequency_minutes">Sync frequency in minutes. Leave it blank to have the default value: </string>
   <string name="synced_automatically">Synced automatically</string>
   <string name="synced_abbreviated">Sync</string>
   <string name="system_is_busy_try_later">The system is busy. Please try again later.</string>
@@ -457,7 +458,7 @@
   <string name="title_preference_download_attachments_over_wifi_only">Download attachments over Wi-Fi only</string>
   <string name="title_preference_enable_android_backup">Enable automatic Android backup</string>
   <string name="title_preference_enter_sends_message">ENTER key sends message</string>
-  <string name="title_preference_frequency">Sync frequency</string>
+  <string name="title_preference_frequency">Default sync frequency</string>
   <string name="title_preference_history_size">History Size</string>
   <string name="title_preference_history_time">History Time</string>
   <string name="title_preference_is_default_account">This is a default account</string>

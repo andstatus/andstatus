@@ -84,7 +84,7 @@ public class Timeline implements Comparable<Timeline> {
     private volatile boolean isSyncedAutomatically = false;
 
     /** If the timeline should be shown in a Timeline selector */
-    private volatile DisplayedInSelector isDisplayedInSelector = DisplayedInSelector.NO;
+    private volatile DisplayedInSelector isDisplayedInSelector = DisplayedInSelector.NEVER;
     /** Used for sorting timelines in a selector */
     private volatile long selectorOrder = 0;
 
@@ -717,9 +717,9 @@ public class Timeline implements Comparable<Timeline> {
      * @return true if it's time to auto update this timeline
      */
     public boolean isTimeToAutoSync() {
-        long frequencyMs = MyPreferences.getSyncFrequencyMs();
+        long syncFrequencyMs = myAccount.getEffectiveSyncFrequencySeconds() * 1000;
         long passedMs = System.currentTimeMillis() - getSyncSucceededDate();
-        boolean blnOut = passedMs > frequencyMs;
+        boolean blnOut = passedMs > syncFrequencyMs;
 
         if (blnOut && MyLog.isVerboseEnabled()) {
             MyLog.v(this, "It's time to auto update " + this +

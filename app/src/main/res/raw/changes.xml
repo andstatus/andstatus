@@ -26,8 +26,8 @@
 		</subtitle>
     </header>
     <release android:versionName="27.00" android:versionCode="180"
-             versionDate="2016-07-02"
-             versionTitle="Automatic syncing of individual timelines. New custom timelines">
+             versionDate="2016-07-05"
+             versionTitle="Automatic syncing of individual timelines. New custom search timelines">
         <changes>
             <change>
                 Individual timelines can now be managed separately. For each timeline you
@@ -44,9 +44,15 @@
                 improvements, including creation of custom syncable timelines, e.g. for scheduled
                 searches. Thus user can effectively "subscribe" to groups/tags, creating
                 automatically synced Search timelines e.g. for "#andstatus".
+                <a href="https://github.com/andstatus/andstatus/issues/248">#248</a>
             </change>
-            <change>Added to Account settings: "Synced automatically" checkbox and "Last synced" time.
-                This simplifies changes of sync setting for AndStatus accounts.
+            <change>Additions to Account settings done to simplify management of Account syncing:<br/>
+                * "Synced automatically" checkbox.<br/>
+                * "Last synced" time.<br/>
+                * An option to set Sync frequency of any individual account to a custom value or
+                to a common default value set for all accounts
+                in Settings->Syncing->Default Sync frequency.
+                <a href="https://github.com/andstatus/andstatus/issues/77">#77</a>
             </change>
         </changes>
     </release>

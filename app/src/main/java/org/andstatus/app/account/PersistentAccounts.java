@@ -1,5 +1,6 @@
 package org.andstatus.app.account;
 
+import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -369,12 +370,15 @@ public class PersistentAccounts {
                 .putString(KEY_DEFAULT_ACCOUNT_NAME, defaultAccountName).commit();
     }
     
-    public void onMyPreferencesChanged(MyContext myContext) {
+    public void onDefaultSyncFrequencyChanged() {
         long syncFrequencySeconds = MyPreferences.getSyncFrequencySeconds();
         for (MyAccount ma : mAccounts.values()) {
-            Builder builder = Builder.fromMyAccount(myContext, ma, "onMyPreferencesChanged", false);
-            builder.setSyncFrequency(syncFrequencySeconds);
-            builder.save();
+            if (ma.getSyncFrequencySeconds() <= 0) {
+                Account account = ma.getExistingAndroidAccount();
+                if (account != null) {
+                    AccountData.setSyncFrequencySeconds(account, syncFrequencySeconds);
+                }
+            }
         }
     }
 

@@ -25,7 +25,7 @@ import org.andstatus.app.R;
 public enum DisplayedInSelector implements SelectableEnum {
     ALWAYS("always", R.string.always),
     IN_CONTEXT("in_context", R.string.in_context),
-    NO("no", R.string.no);
+    NEVER("no", R.string.never);
 
     /** Code - identifier of the type */
     private final String code;
@@ -37,7 +37,7 @@ public enum DisplayedInSelector implements SelectableEnum {
         this.titleResId = titleResId;
     }
 
-    /** Returns the enum or NO */
+    /** Returns the enum or NEVER */
     @NonNull
     public static DisplayedInSelector load(String strCode) {
         for (DisplayedInSelector value : DisplayedInSelector.values()) {
@@ -45,7 +45,7 @@ public enum DisplayedInSelector implements SelectableEnum {
                 return value;
             }
         }
-        return NO;
+        return NEVER;
     }
 
     /** String to be used for persistence */
