@@ -148,14 +148,12 @@ class MyRemoteViewData {
         } else if (widgetData.numHomeTimeline > 0) {
             timeLineType = TimelineType.HOME;
         }
-        boolean isTimelineCombined;
+        Timeline timeline;
         if (timeLineType == TimelineType.UNKNOWN) {
-            timeLineType = MyPreferences.getDefaultTimeline();
-            isTimelineCombined = MyPreferences.isTimelineCombinedByDefault();
+            timeline = MyContextHolder.get().persistentTimelines().getDefault();
         } else {
-            // There are more than one account,
-            // so turn Combined timeline on in order to show all the new messages.
-            isTimelineCombined = MyContextHolder.get().persistentAccounts().size() > 1;
+            timeline = Timeline.getTimeline(timeLineType,
+                    MyContextHolder.get().persistentAccounts().getCurrentAccount(), 0, null);
         }
 
         Intent intent = new Intent(context, TimelineActivity.class);
@@ -165,9 +163,7 @@ class MyRemoteViewData {
 
         // "rnd" is necessary to actually bring Extra to the target intent
         // see http://stackoverflow.com/questions/1198558/how-to-send-parameters-from-a-notification-click-to-an-activity
-        intent.setData(Uri.withAppendedPath(MatchedUri.getTimelineUri(
-                Timeline.getTimeline(timeLineType,
-                        MyContextHolder.get().persistentAccounts().getCurrentAccount(), 0, null)),
+        intent.setData(Uri.withAppendedPath(MatchedUri.getTimelineUri(timeline),
                 "rnd/" + android.os.SystemClock.elapsedRealtime()));
         return PendingIntent.getActivity(context, timeLineType.hashCode(), intent, 
                 PendingIntent.FLAG_UPDATE_CURRENT);

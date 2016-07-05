@@ -20,7 +20,6 @@ import android.app.backup.BackupManager;
 import android.content.Context;
 
 import org.andstatus.app.R;
-import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.msg.TapOnATimelineTitleBehaviour;
 import org.andstatus.app.util.SharedPreferencesUtil;
 
@@ -49,7 +48,6 @@ public class MyPreferences {
     // Timeline
     public static final String KEY_DEFAULT_TIMELINE = "default_timeline";
     public static final String KEY_TAP_ON_A_TIMELINE_TITLE_BEHAVIOUR = "tap_on_a_timeline_title";
-    public static final String KEY_TIMELINE_IS_COMBINED_BY_DEFAULT = "timeline_is_combined_by_default";
     public static final String KEY_USER_IN_TIMELINE = "user_in_timeline";
     public static final String KEY_SHOW_AVATARS = "show_avatars";
     public static final String KEY_SHOW_ORIGIN = "show_origin";
@@ -183,10 +181,6 @@ public class MyPreferences {
         return SharedPreferencesUtil.getBoolean(KEY_LONG_PRESS_TO_OPEN_CONTEXT_MENU, false);
     }
 
-    public static boolean isTimelineCombinedByDefault() {
-        return SharedPreferencesUtil.getBoolean(KEY_TIMELINE_IS_COMBINED_BY_DEFAULT, true);
-    }
-
     public static boolean getShowAvatars() {
         return SharedPreferencesUtil.getBoolean(KEY_SHOW_AVATARS, true);
     }
@@ -210,11 +204,6 @@ public class MyPreferences {
 
     public static boolean getShowDebuggingInfoInUi() {
         return SharedPreferencesUtil.getBoolean(KEY_DEBUGGING_INFO_IN_UI, false);
-    }
-
-    public static TimelineType getDefaultTimeline() {
-        return TimelineType.load(
-                SharedPreferencesUtil.getString(KEY_DEFAULT_TIMELINE, TimelineType.HOME.save()));
     }
 
     public static int getActionBarTextHomeIconResourceId() {

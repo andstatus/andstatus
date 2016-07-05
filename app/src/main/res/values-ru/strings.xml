@@ -110,7 +110,7 @@
   <string name="dialog_summary_service_unavailable">Сервис микроблогов сейчас перегружен. Пожалуйста, попробуйте обратиться позже.</string>
   <string name="dialog_summary_timeline_loading">Подождите завершения обновления ленты времени. Эта процедура может занять несколько минут, в зависимости от качества соединения.</string>
   <string name="default_timeline_title">Лента времени по умолчанию</string>
-  <string name="default_timeline_summary">Лента времени, которая будет открыта при запуске приложения: \"{0}\"</string>
+  <string name="default_timeline_summary">Лента времени, которая будет открыта при запуске приложения: \"%s\"</string>
   <string name="dialog_title_acquiring_an_access_token">Получаем токен доступа</string>
   <string name="dialog_title_acquiring_a_request_token">Получаем токен запроса</string>
   <string name="dialog_title_authentication_failed">Аутентификация (проверка имени пользователя и пароля) завершилась неудачей</string>

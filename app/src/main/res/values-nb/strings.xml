@@ -108,7 +108,7 @@
   <string name="dialog_summary_service_unavailable">Twitter er overbelastet. Prøv igjen senere.</string>
   <string name="dialog_summary_timeline_loading">Vent mens tidslinjen oppdateres. Dette kan ta flere minutter avhengig av tilkoblingen.</string>
   <string name="default_timeline_title">Standard tidslinje</string>
-  <string name="default_timeline_summary">Tidslinjen som vil bli åpnet av en launcher:\"{0}\"</string>
+  <string name="default_timeline_summary">Tidslinjen som vil bli åpnet av en launcher:\"%s\"</string>
   <string name="dialog_title_acquiring_an_access_token">Anskaffe et tilgangstoken</string>
   <string name="dialog_title_acquiring_a_request_token">Anskaffe en forespørselstoken</string>
   <string name="dialog_title_authentication_failed">Godkjenning mislyktes</string>

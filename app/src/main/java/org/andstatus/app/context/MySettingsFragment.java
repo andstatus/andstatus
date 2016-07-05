@@ -44,7 +44,9 @@ import org.andstatus.app.graphics.MyImageCache;
 import org.andstatus.app.msg.KeywordsFilter;
 import org.andstatus.app.origin.PersistentOriginList;
 import org.andstatus.app.service.QueueViewer;
+import org.andstatus.app.timeline.Timeline;
 import org.andstatus.app.timeline.TimelineList;
+import org.andstatus.app.timeline.TimelineTitle;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 
@@ -111,7 +113,7 @@ public class MySettingsFragment extends PreferenceFragment implements
         showBackgroundColor();
         showThemeSize();
         showFilterHideMessagesBasedOnKeywords();
-        showDefaultTimeline();
+        showManageTimelines();
     }
 
     private void showManageAccounts() {
@@ -276,10 +278,13 @@ public class MySettingsFragment extends PreferenceFragment implements
         showListPreference(MyPreferences.KEY_ACTION_BAR_TEXT_COLOR);
     }
 
-    private void showDefaultTimeline() {
-        SharedPreferencesUtil.showListPreference(this, MyPreferences.KEY_DEFAULT_TIMELINE,
-                R.array.timeline_type_values, R.array.timeline_type_entries,
-                R.string.default_timeline_summary);
+    private void showManageTimelines() {
+        Timeline timeline = MyContextHolder.get().persistentTimelines().getDefault();
+        Preference preference = findPreference(KEY_MANAGE_TIMELINES);
+        if (preference != null) {
+            preference.setSummary(String.format(getText(R.string.default_timeline_summary).toString(),
+                    TimelineTitle.load(MyContextHolder.get(), timeline, null).toString()));
+        }
     }
 
     private void showListPreference(String key) {
@@ -400,7 +405,7 @@ public class MySettingsFragment extends PreferenceFragment implements
                     showFilterHideMessagesBasedOnKeywords();
                     break;
                 case MyPreferences.KEY_DEFAULT_TIMELINE:
-                    showDefaultTimeline();
+                    showManageTimelines();
                     break;
                 case MyPreferences.KEY_ROUNDED_AVATARS:
                     MyImageCache.setAvatarsRounded();

@@ -110,7 +110,7 @@
   <string name="dialog_summary_service_unavailable">Neste momento, o Twitter está sobrecarregado. Por favor tente mais tarde.</string>
   <string name="dialog_summary_timeline_loading">Por favor aguarde pela atualização da cronologia. Esta operação poderá ser demorada, tendo em conta o seu tipo de ligação.</string>
   <string name="default_timeline_title">Cronologia padrão</string>
-  <string name="default_timeline_summary">A cronologia que será aberta pelo \'launcher\': \"{0}\"</string>
+  <string name="default_timeline_summary">A cronologia que será aberta pelo \'launcher\': \"%s\"</string>
   <string name="dialog_title_acquiring_an_access_token">Obtendo um \"token\" de acesso</string>
   <string name="dialog_title_acquiring_a_request_token">Obtendo um \"token\" de pedido</string>
   <string name="dialog_title_authentication_failed">Falha de autenticação</string>

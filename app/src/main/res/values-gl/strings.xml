@@ -110,7 +110,7 @@
   <string name="dialog_summary_service_unavailable">Twitter está petado. Por favor, inténtao máis tarde.</string>
   <string name="dialog_summary_timeline_loading">Por favor agarde mentras se renova a liña de tempo. Esto pode levar uns minutos dependendo da súa conexión.</string>
   <string name="default_timeline_title">Liña de tempo por defecto</string>
-  <string name="default_timeline_summary">Liña de tempo que abrirá o Lanzador: \"{0}\"</string>
+  <string name="default_timeline_summary">Liña de tempo que abrirá o Lanzador: \"%s\"</string>
   <string name="dialog_title_acquiring_an_access_token">Adquirindo un testemuño de acceso</string>
   <string name="dialog_title_acquiring_a_request_token">Adquirindo o testemuño solicitado</string>
   <string name="dialog_title_authentication_failed">Fallou a autenticación</string>

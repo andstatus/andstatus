@@ -111,7 +111,7 @@
   <string name="dialog_summary_service_unavailable">Twitter ist derzeit überlastet. Bitte versuche es später noch einmal.</string>
   <string name="dialog_summary_timeline_loading">Bitte warten, während die Chronik aktualisiert wird. Dies kann, je nach Verbindung, einige Minuten dauern.</string>
   <string name="default_timeline_title">Standard-Timeline</string>
-  <string name="default_timeline_summary">Timeline, die durch einen Launcher geöffnet wird: \"{0}\"</string>
+  <string name="default_timeline_summary">Timeline, die durch einen Launcher geöffnet wird: \"%s\"</string>
   <string name="dialog_title_acquiring_an_access_token">Hole ein Access Token</string>
   <string name="dialog_title_acquiring_a_request_token">Hole ein Request Token</string>
   <string name="dialog_title_authentication_failed">Anmeldung fehlgeschlagen</string>

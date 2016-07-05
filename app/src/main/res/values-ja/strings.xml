@@ -110,7 +110,7 @@
   <string name="dialog_summary_service_unavailable">Twitter は現在容量を超過しました。後でもう一度やり直してください。</string>
   <string name="dialog_summary_timeline_loading">タイムラインが更新されるまでお待ちください。接続状況によって数分かかることがあります。</string>
   <string name="default_timeline_title">デフォルトのタイムライン</string>
-  <string name="default_timeline_summary">ランチャーで開かれるタイムライン: \"{0}\"</string>
+  <string name="default_timeline_summary">ランチャーで開かれるタイムライン: \"%s\"</string>
   <string name="dialog_title_acquiring_an_access_token">アクセス トークンの取得中</string>
   <string name="dialog_title_acquiring_a_request_token">リクエスト トークンの取得中</string>
   <string name="dialog_title_authentication_failed">認証に失敗しました</string>

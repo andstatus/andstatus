@@ -110,7 +110,7 @@
   <string name="dialog_summary_service_unavailable">Twitter está actualmente por encima de su capacidad. Por favor, inténtelo de nuevo más tarde.</string>
   <string name="dialog_summary_timeline_loading">Por favor, espere mientras la línea de tiempo está siendo refrescada. Esto puede tardar varios minutos dependiendo de su conexión.</string>
   <string name="default_timeline_title">Línea temporal predeterminada</string>
-  <string name="default_timeline_summary">Línea temporal que será abierta por un lanzador: \"{0}\"</string>
+  <string name="default_timeline_summary">Línea temporal que será abierta por un lanzador: \"%s\"</string>
   <string name="dialog_title_acquiring_an_access_token">Adquiriendo una prueba de acceso</string>
   <string name="dialog_title_acquiring_a_request_token">Adquiriendo una prueba de respuesta</string>
   <string name="dialog_title_authentication_failed">Error de autenticación</string>

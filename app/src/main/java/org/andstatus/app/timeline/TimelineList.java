@@ -189,6 +189,7 @@ public class TimelineList extends LoadableListActivity {
 
         return new MyBaseAdapter() {
             final List<TimelineListViewItem> mItems;
+            Timeline defaultTimeline = myContext.persistentTimelines().getDefault();
 
             {
                 mItems = (List<TimelineListViewItem>) getLoaded().getList();
@@ -271,7 +272,8 @@ public class TimelineList extends LoadableListActivity {
                                 }
                             }
                         });
-                view.setText(item.timeline.isDisplayedInSelector() == DisplayedInSelector.ALWAYS ? "*" : "");
+                view.setText(item.timeline.equals(defaultTimeline) ? "D" :
+                        (item.timeline.isDisplayedInSelector() == DisplayedInSelector.ALWAYS ? "*" : ""));
             }
 
             private View newView() {

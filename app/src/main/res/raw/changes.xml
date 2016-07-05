@@ -30,9 +30,10 @@
              versionTitle="Automatic syncing of individual timelines. New custom search timelines">
         <changes>
             <change>
-                Individual timelines can now be managed separately. For each timeline you
-                can define, if it's shown in a list of available timelines and if it's synced
-                automatically. For each timeline sync statistics is shown:<br/>
+                Individual timelines can now be managed separately in the "Manage Timelines" table
+                (in a menu of a Messages timeline and also in Settings->Timeline).
+                For each timeline you can define, if it's shown in a list of available timelines
+                and if it's synced automatically. For each timeline sync statistics is shown:<br/>
                 * Number of syncs and accumulated numbers of all downloaded and new messages.<br/>
                 * Time of last successful and of last failed syncs.<br/>
                 * The last error encountered during syncing.<br/>
@@ -46,6 +47,14 @@
                 automatically synced Search timelines e.g. for "#andstatus".
                 <a href="https://github.com/andstatus/andstatus/issues/248">#248</a>
             </change>
+            <change>List of timelines for selection is now fully customizable. You can define, which
+                timelines are shown always, which are shown "in a context" only
+                (i.e. only when an account of this timeline selected), and which timelines are
+                never shown in this list.<br/>
+                In any case, any timeline may be opened from the "Manage timelines" list.
+            </change>
+            <change>Default timeline, which is shown on Application start, is selected in
+                the "Manage Timelines" list.</change>
             <change>Additions to Account settings done to simplify management of Account syncing:<br/>
                 * "Synced automatically" checkbox.<br/>
                 * "Last synced" time.<br/>

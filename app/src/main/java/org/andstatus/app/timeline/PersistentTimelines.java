@@ -29,6 +29,7 @@ import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.TimelineTable;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TriState;
 
 import java.util.ArrayList;
@@ -94,8 +95,7 @@ public class PersistentTimelines {
 
     @NonNull
     public Timeline getDefaultForCurrentAccount() {
-        return Timeline.getTimeline(myContext, 0, MyPreferences.getDefaultTimeline(),
-                        myContext.persistentAccounts().getCurrentAccount(), 0, null, "");
+        return getDefault().fromMyAccount(myContext, myContext.persistentAccounts().getCurrentAccount());
     }
 
     @NonNull
@@ -232,8 +232,7 @@ public class PersistentTimelines {
     }
 
     public Timeline getHome() {
-        return getDefaultForCurrentAccount().
-                fromIsCombined(myContext, MyPreferences.isTimelineCombinedByDefault());
+        return getDefaultForCurrentAccount();
     }
 
     public void addNew(Timeline timeline) {
@@ -246,5 +245,20 @@ public class PersistentTimelines {
         for (Timeline timeline : values()) {
             timeline.resetCounters();
         }
+    }
+
+    public Timeline getDefault() {
+        long id = SharedPreferencesUtil.getLong(MyPreferences.KEY_DEFAULT_TIMELINE);
+        Timeline timeline = Timeline.getEmpty(null);
+        if (id != 0) {
+            timeline = fromId(id);
+        }
+        if (!timeline.isValid()) {
+            List<Timeline> timelines = getFiltered(false, TriState.TRUE, null, null);
+            if (!timelines.isEmpty()) {
+                timeline = timelines.get(0);
+            }
+        }
+        return timeline;
     }
 }

@@ -19,23 +19,14 @@
     <Preference
         android:key="manage_timelines"
         android:persistent="false"
-        android:title="@string/manage_timelines" >
+        android:title="@string/manage_timelines"
+        android:summary="@string/default_timeline_summary" >
     </Preference>
-    <org.andstatus.app.context.MultilineListPreference android:key="default_timeline"
-        android:entries="@array/timeline_type_entries"
-        android:entryValues="@array/timeline_type_values"
-        android:defaultValue="home"
-        android:title="@string/default_timeline_title"
-        android:summary="@string/default_timeline_summary"
-        android:dialogTitle="@string/dialog_title_select_timeline" />
     <org.andstatus.app.context.MultilineListPreference android:key="tap_on_a_timeline_title"
         android:entries="@array/tap_on_a_timeline_title_entries"
         android:entryValues="@array/tap_on_a_timeline_title_values"
         android:defaultValue="1"
         android:title="@string/tap_on_a_timeline_title_behaviour" />
-    <org.andstatus.app.context.MultilineCheckBoxPreference android:key="timeline_is_combined_by_default"
-        android:title="@string/timeline_is_combined_by_default"
-        android:defaultValue="true" />
     <org.andstatus.app.context.MultilineListPreference android:key="user_in_timeline"
         android:entries="@array/user_in_timeline_entries"
         android:entryValues="@array/user_in_timeline_values"
