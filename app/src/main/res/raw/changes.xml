@@ -26,25 +26,25 @@
 		</subtitle>
     </header>
     <release android:versionName="27.00" android:versionCode="180"
-             versionDate="2016-07-05"
+             versionDate="2016-07-06"
              versionTitle="Automatic syncing of individual timelines. New custom search timelines">
         <changes>
             <change>
                 Individual timelines can now be managed separately in the "Manage Timelines" table
-                (in a menu of a Messages timeline and also in Settings->Timeline).
-                For each timeline you can define, if it's shown in a list of available timelines
-                and if it's synced automatically. For each timeline sync statistics is shown:<br/>
-                * Number of syncs and accumulated numbers of all downloaded and new messages.<br/>
+                (in a menu of a list of messages and also in Settings->Timeline).
+                For each timeline you can define: if it's shown in a list of available timelines
+                and if it's synced automatically.<br/>
+                For each timeline sync statistics is shown:<br/>
+                * Number of syncs and accumulated numbers of all downloaded and of new messages.<br/>
                 * Time of last successful and of last failed syncs.<br/>
                 * The last error encountered during syncing.<br/>
                 The "Manage Timelines" table scrolls vertically and horizontally and its content
                 can be sorted by different columns: just click a column header.
                 <a href="https://github.com/andstatus/andstatus/issues/384">#384</a>
             </change>
-            <change>This change actually opens a way for further application
-                improvements, including creation of custom syncable timelines, e.g. for scheduled
-                searches. Thus user can effectively "subscribe" to groups/tags, creating
-                automatically synced Search timelines e.g. for "#andstatus".
+            <change>Now you can create custom syncable timelines, e.g. for scheduled
+                searches. Thus you can effectively "subscribe" to groups/tags, creating
+                automatically synced Search timelines e.g. for "#andstatus" or for "!gnusocial".
                 <a href="https://github.com/andstatus/andstatus/issues/248">#248</a>
             </change>
             <change>List of timelines for selection is now fully customizable. You can define, which
