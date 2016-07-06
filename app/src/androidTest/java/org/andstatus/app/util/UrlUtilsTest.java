@@ -32,6 +32,8 @@ public class UrlUtilsTest extends InstrumentationTestCase {
         assertHostOnly("http://example.com", host, isUrl);
         assertHostOnly("https://example.com", host, isUrl);
         assertHostOnly("http://example.com", host, isUrl);
+        host = "gs.kawa-kun.com";
+        assertHostOnly("http://gs.kawa-kun.com", host, isUrl);
     }
 
     private void assertHostOnly(String hostOrUrl, String host, boolean isUrl) throws ConnectionException {

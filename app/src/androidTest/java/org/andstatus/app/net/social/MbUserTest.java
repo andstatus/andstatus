@@ -79,6 +79,7 @@ public class MbUserTest extends InstrumentationTestCase {
         checkWebFingerId("t131t@identi.ca/PumpIo", false);
         checkWebFingerId("some@example.com.", false);
         checkWebFingerId("some@user", false);
+        checkWebFingerId("someuser@gs.kawa-kun.com", true);
     }
 
     private void checkWebFingerId(String userName, boolean valid) {

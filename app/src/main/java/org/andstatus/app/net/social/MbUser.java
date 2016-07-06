@@ -40,7 +40,7 @@ import java.util.List;
  */
 public class MbUser implements Comparable<MbUser> {
     // RegEx from http://www.mkyong.com/regular-expressions/how-to-validate-email-address-with-regular-expression/
-    public static final String WEBFINGER_ID_REGEX = "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
+    public static final String WEBFINGER_ID_REGEX = "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)*(\\.[A-Za-z]{2,})$";
     private static final String TEMP_OID_PREFIX = "andstatustemp:";
     public String oid = "";
     private String userName = "";
