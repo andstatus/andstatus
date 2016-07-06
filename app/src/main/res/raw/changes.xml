@@ -63,6 +63,10 @@
                 in Settings->Syncing->Default Sync frequency.
                 <a href="https://github.com/andstatus/andstatus/issues/77">#77</a>
             </change>
+            <change>Added "Sync over WiFi only" option to Settings->Syncing. Setting this option to
+                "on" allows any syncing / downloading over WiFi only.
+                <a href="https://github.com/andstatus/andstatus/issues/259">#259</a>
+            </change>
         </changes>
     </release>
     <release android:versionName="26.07" android:versionCode="179"
