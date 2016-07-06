@@ -542,8 +542,8 @@ public class MessageEditor {
         hide();
         if (!command.isEmpty()) {
             MyLog.v(MessageEditorData.TAG, "Requested: " + command);
-            new AsyncTaskLauncher<MessageEditorCommand>().execute(this,
-                    new MessageEditorSaver(this), true, command);
+            new AsyncTaskLauncher<MessageEditorCommand>().execute(this, true,
+                    new MessageEditorSaver(this), command);
         } else {
             if (command.showAfterSave) {
                 showData(command.currentData);
@@ -564,8 +564,9 @@ public class MessageEditor {
             return;
         }
         MyLog.v(MessageEditorData.TAG, "loadCurrentDraft requested, msgId=" + msgId);
-        new AsyncTaskLauncher<Long>().execute(this,
-                new MyAsyncTask<Long, Void, MessageEditorData>(MessageEditor.this.toString(), MyAsyncTask.PoolEnum.QUICK_UI) {
+        new AsyncTaskLauncher<Long>().execute(this, true,
+                new MyAsyncTask<Long, Void, MessageEditorData>(MessageEditor.this.toString(),
+                        MyAsyncTask.PoolEnum.QUICK_UI) {
                     volatile MessageEditorLock lock = MessageEditorLock.EMPTY;
 
                     @Override
@@ -608,7 +609,7 @@ public class MessageEditor {
                         lock.release();
                     }
                 }
-                , true, msgId);
+                , msgId);
     }
 
     public void onAttach() {

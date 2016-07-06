@@ -175,7 +175,7 @@ public enum UserListContextMenuItem implements ContextMenuItem {
     }
     
     private void executeAsync1(final Params params) {
-        AsyncTaskLauncher.execute(TAG,
+        AsyncTaskLauncher.execute(TAG, true,
                 new MyAsyncTask<Void, Void, Void>(TAG + name(), MyAsyncTask.PoolEnum.QUICK_UI) {
                     @Override
                     protected Void doInBackground2(Void... params2) {

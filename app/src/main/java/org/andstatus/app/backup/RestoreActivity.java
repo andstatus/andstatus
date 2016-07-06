@@ -50,7 +50,7 @@ public class RestoreActivity extends MyActivity {
                 if (asyncTask == null || !asyncTask.needsBackgroundWork()) {
                     resetProgress();
                     asyncTask = new RestoreTask();
-                    new AsyncTaskLauncher<File>().execute(this, asyncTask, true, backupFile);
+                    new AsyncTaskLauncher<File>().execute(this, true, asyncTask, backupFile);
                 }
             }
         });

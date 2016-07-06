@@ -96,7 +96,7 @@ public class DatabaseConverterController {
     }
 
     private static void doUpgrade(Activity upgradeRequestor) {
-        new AsyncTaskLauncher<Activity>().execute(TAG, new AsyncUpgrade(), true, upgradeRequestor);
+        new AsyncTaskLauncher<Activity>().execute(TAG, true, new AsyncUpgrade(), upgradeRequestor);
     }
     
     private static class AsyncUpgrade extends MyAsyncTask<Activity, Void, Void> {

@@ -143,7 +143,7 @@ public class AttachedImageFile {
     private void setImageDrawableAsync(final ActionableMessageList messageList,
                                        @Nullable final ImageView imageView, final String path,
                                        final String taskSuffix) {
-        AsyncTaskLauncher.execute(this,
+        AsyncTaskLauncher.execute(this, false,
                 new MyAsyncTask<Void, Void, Drawable>(TAG + downloadRowId + taskSuffix,
                         MyAsyncTask.PoolEnum.QUICK_UI) {
                     @Override

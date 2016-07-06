@@ -96,18 +96,13 @@ public class AsyncTaskLauncher<Params> {
         return executor;
     }
 
-    public static boolean execute(Object objTag, MyAsyncTask<Void, ?, ?> asyncTask) {
-        return execute(objTag, asyncTask, true);
-    }
-
-    public static boolean execute(Object objTag, MyAsyncTask<Void, ?, ?> asyncTask,
-                                  boolean throwOnFail) {
+    public static boolean execute(Object objTag, boolean throwOnFail, MyAsyncTask<Void, ?, ?> asyncTask) {
         AsyncTaskLauncher<Void> launcher = new AsyncTaskLauncher<>();
-        return launcher.execute(objTag, asyncTask, throwOnFail, (Void) null);
+        return launcher.execute(objTag, throwOnFail, asyncTask, (Void) null);
     }
 
-    public boolean execute(Object objTag, MyAsyncTask<Params, ?, ?> asyncTask,
-                           boolean throwOnFail, Params... params) {
+    public boolean execute(Object objTag, boolean throwOnFail, MyAsyncTask<Params, ?, ?> asyncTask,
+                           Params... params) {
         boolean launched = false;
         try {
             checkForStalledTasks();

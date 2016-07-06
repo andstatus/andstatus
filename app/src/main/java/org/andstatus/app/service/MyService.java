@@ -246,7 +246,7 @@ public class MyService extends Service {
             }
             if (mHeartBeat == null) {
                 mHeartBeat = new HeartBeat();
-                if (!AsyncTaskLauncher.execute(this, mHeartBeat, false)) {
+                if (!AsyncTaskLauncher.execute(this, false, mHeartBeat)) {
                     mHeartBeat = null;
                 }
             }
@@ -372,7 +372,7 @@ public class MyService extends Service {
                 // (it seems there is some problem in parallel execution...)
                 QueueExecutor newExecutor = new QueueExecutor();
                 logMessageBuilder.append(" Adding and starting new Executor " + newExecutor);
-                if (AsyncTaskLauncher.execute(this, newExecutor)) {
+                if (AsyncTaskLauncher.execute(this, false, newExecutor)) {
                     mExecutor = newExecutor;
                 } else {
                     logMessageBuilder.append(" New executor was not added");

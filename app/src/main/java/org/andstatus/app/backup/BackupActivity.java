@@ -52,7 +52,7 @@ public class BackupActivity extends MyActivity {
                 if (asyncTask == null || !asyncTask.needsBackgroundWork()) {
                     resetProgress();
                     asyncTask = new BackupTask();
-                    new AsyncTaskLauncher<File>().execute(this, asyncTask, true, backupFolder);
+                    new AsyncTaskLauncher<File>().execute(this, true, asyncTask, backupFolder);
                 }
             }
         });

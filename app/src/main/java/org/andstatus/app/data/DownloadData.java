@@ -449,7 +449,7 @@ public class DownloadData {
     }
 
     public static void asyncRequestDownload(final long downloadId) {
-        AsyncTaskLauncher.execute(TAG,
+        AsyncTaskLauncher.execute(TAG, false,
                 new MyAsyncTask<Void, Void, Void>(TAG + downloadId, MyAsyncTask.PoolEnum.FILE_DOWNLOAD) {
                     @Override
                     protected Void doInBackground2(Void... params) {

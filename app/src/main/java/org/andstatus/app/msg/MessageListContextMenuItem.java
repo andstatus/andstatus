@@ -378,7 +378,7 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
     }
     
     private void executeAsync1(final MessageContextMenu menu, final MyAccount ma) {
-        AsyncTaskLauncher.execute(TAG,
+        AsyncTaskLauncher.execute(TAG, true,
                 new MyAsyncTask<Void, Void, MessageEditorData>(TAG + name(), MyAsyncTask.PoolEnum.QUICK_UI) {
                     @Override
                     protected MessageEditorData doInBackground2(Void... params) {

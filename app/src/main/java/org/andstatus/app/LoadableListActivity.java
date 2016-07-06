@@ -143,7 +143,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
                     msgLog = "Ignored " + msgLog + ", " + mWorkingLoader;
                 } else {
                     AsyncLoader newLoader = new AsyncLoader(MyLog.objTagToString(this) + mInstanceId);
-                    if (new AsyncTaskLauncher<Bundle>().execute(this, newLoader, true, args)) {
+                    if (new AsyncTaskLauncher<Bundle>().execute(this, true, newLoader, args)) {
                         mWorkingLoader = newLoader;
                         loaderIsWorking = true;
                         msgLog = "Launched, " + msgLog;
@@ -448,7 +448,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
     }
 
     private void showSyncing(final CommandData commandData) {
-        new AsyncTaskLauncher<CommandData>().execute(this,
+        new AsyncTaskLauncher<CommandData>().execute(this, true,
                 new MyAsyncTask<CommandData, Void, String>("ShowSyncing" + mInstanceId, MyAsyncTask.PoolEnum.QUICK_UI) {
 
                     @Override
@@ -468,7 +468,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
                     }
 
                 }
-                , true, commandData);
+                , commandData);
     }
 
     protected boolean isCommandToShowInSyncIndicator(CommandData commandData) {
