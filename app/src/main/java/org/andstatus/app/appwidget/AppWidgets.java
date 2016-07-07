@@ -74,7 +74,8 @@ public class AppWidgets {
     }
 
     public void updateViews(){
-        MyLog.v(this, "Sending update to " +  size() + " remote views");
+        MyLog.v(this, "Sending update to " +  size() + " remote view" + (size() > 1 ? "s" : "") +
+        " " + mAppWidgets.values());
         for (MyAppWidgetData widgetData : mAppWidgets.values()) {
             updateView(AppWidgetManager.getInstance(myContext.context()), widgetData);
         }

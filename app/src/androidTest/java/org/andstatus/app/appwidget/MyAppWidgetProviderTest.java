@@ -153,28 +153,28 @@ public class MyAppWidgetProviderTest extends InstrumentationTestCase {
 
         long dateSinceMin = System.currentTimeMillis();  
     	// To set dateSince correctly!
-        updateWidgets(1, TimelineType.HOME, 0);
+        updateWidgets(1, 0, 0);
         Thread.sleep(5000);
         long dateSinceMax = System.currentTimeMillis();  
         Thread.sleep(5000);
         AppWidgets.clearAndUpdateWidgets(myContext);
         checkWidgetData(0, 0, 0);
         checkDateChecked(dateSinceMin, dateSinceMax);
-    	
+
     	int numMentions = 3;
-        updateWidgets(0, TimelineType.HOME, numMentions);
+        updateWidgets(0, 0, numMentions);
     	
     	int numDirect = 1;
-        updateWidgets(numDirect, TimelineType.DIRECT, 0);
+        updateWidgets(0, numDirect, 0);
     	
     	int numHome = 7;
-        updateWidgets(numHome, TimelineType.HOME, 0);
+        updateWidgets(numHome, 0, 0);
     	
         checkWidgetData(numMentions, numDirect, numHome);
         
         long dateCheckedMin = System.currentTimeMillis();  
         numMentions++;
-        updateWidgets(0, TimelineType.HOME, 1);
+        updateWidgets(0, 0, 1);
         checkWidgetData(numMentions, numDirect, numHome);
         long dateCheckedMax = System.currentTimeMillis();
         
@@ -253,17 +253,15 @@ public class MyAppWidgetProviderTest extends InstrumentationTestCase {
 	 * @throws InterruptedException 
 	 * @see MyAppWidgetProvider
 	 */
-	private void updateWidgets(int msgAdded, TimelineType timelineType, int mentionsAdded) throws InterruptedException{
+	private void updateWidgets(int msgAdded, int msgDirectAdded, int mentionsAdded) throws InterruptedException{
         Thread.sleep(500);
         AppWidgets appWidgets = AppWidgets.newInstance(myContext);
         CommandResult result = new CommandResult();
         for (int count = 0; count < msgAdded; count++) {
             result.incrementMessagesCount();
         }
-        if (timelineType == TimelineType.DIRECT) {
-            for (int count = 0; count < msgAdded; count++) {
-                result.incrementDirectCount();
-            }
+        for (int count = 0; count < msgDirectAdded; count++) {
+            result.incrementDirectCount();
         }
         for (int count = 0; count < mentionsAdded; count++) {
             result.incrementMentionsCount();

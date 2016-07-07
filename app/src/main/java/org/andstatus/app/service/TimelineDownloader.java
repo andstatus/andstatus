@@ -18,8 +18,11 @@ package org.andstatus.app.service;
 
 import android.database.sqlite.SQLiteConstraintException;
 
+import org.andstatus.app.appwidget.AppWidgets;
 import org.andstatus.app.data.DataInserter;
+import org.andstatus.app.data.DataPruner;
 import org.andstatus.app.net.http.ConnectionException;
+import org.andstatus.app.notification.AddedMessagesNotifier;
 import org.andstatus.app.timeline.Timeline;
 import org.andstatus.app.util.MyLog;
 
@@ -62,5 +65,23 @@ abstract class TimelineDownloader extends CommandExecutorStrategy {
     public void onSyncEnded() {
         getTimeline().onSyncEnded(execContext.getCommandData().getResult());
         getTimeline().save(execContext.getMyContext());
+        if (!execContext.getResult().hasError() && !isStopping()) {
+            new DataPruner(execContext.getMyContext()).prune();
+        }
+        if (execContext.getResult().getDownloadedCount() > 0) {
+            MyLog.v(this, "Notifying of timeline changes");
+
+            notifyViaWidgets();
+
+            AddedMessagesNotifier.newInstance(execContext.getMyContext()).update(
+                    execContext.getResult());
+        }
     }
+
+    private void notifyViaWidgets() {
+        AppWidgets appWidgets = AppWidgets.newInstance(execContext.getMyContext());
+        appWidgets.updateData(execContext.getResult());
+        appWidgets.updateViews();
+    }
+
 }

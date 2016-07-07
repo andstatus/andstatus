@@ -62,9 +62,9 @@ public class DataPruner {
         final String method = "prune";
         boolean pruned = false;
         if (!isTimeToPrune()) {
-            MyLog.v(this, method + " skipped");
             return pruned;
         }
+        MyLog.v(this, method + " started");
 
         mDeleted = 0;
         int nDeletedTime = 0;

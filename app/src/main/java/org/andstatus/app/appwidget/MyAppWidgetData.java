@@ -18,6 +18,7 @@ package org.andstatus.app.appwidget;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.text.TextUtils;
 
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
@@ -109,8 +110,7 @@ public class MyAppWidgetData {
         } else {
             nothingPref = prefs.getString(PREF_NOTHING_KEY, null);
             if (nothingPref == null) {
-                nothingPref = mContext
-                        .getString(R.string.appwidget_nothingnew_default);
+                nothingPref = mContext.getString(R.string.appwidget_nothingnew_default);
                 if (MyPreferences.getShowDebuggingInfoInUi()) {
                     nothingPref += " (" + mAppWidgetId + ")";
                 }
@@ -190,10 +190,14 @@ public class MyAppWidgetData {
 
     @Override
     public String toString() {
-        return "MyAppWidgetData [appWidgetId=" + mAppWidgetId + ", numHomeTimeline="
-                + numHomeTimeline + ", numMentions=" + numMentions + ", numDirectMessages="
-                + numDirectMessages + ", dateLastChecked=" + dateLastChecked + ", dateSince="
-                + dateSince + ", nothingPref=" + nothingPref + "]";
+        return "MyAppWidgetData:{id:" + mAppWidgetId +
+                (numHomeTimeline > 0 ? ", home:" + numHomeTimeline : "") +
+                (numMentions > 0 ? ", mentions:" + numMentions : "") +
+                (numDirectMessages > 0 ? ", direct:" + numDirectMessages : "") +
+                (dateLastChecked > 0 ? ", checked:" + dateLastChecked : "") +
+                (dateSince > 0 ? ", since:" + dateSince : "") +
+                (TextUtils.isEmpty(nothingPref) ? "" : ", nothing:" + nothingPref) +
+                "}";
     }
 
     public void update(CommandResult result) {
