@@ -19,12 +19,17 @@ package org.andstatus.app.data;
 import android.net.Uri;
 import android.test.InstrumentationTestCase;
 
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.user.UserListType;
 
 public class ParsedUriTest extends InstrumentationTestCase {
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        TestSuite.initializeWithData(this);
+    }
 
     public void testUserList() {
         assertOneUserList(TestSuite.getConversationOriginId());

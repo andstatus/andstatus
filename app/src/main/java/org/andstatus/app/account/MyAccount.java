@@ -305,7 +305,7 @@ public final class MyAccount {
                 if (myAccount.connection != null) {
                     myAccount.connection.save(myAccount.accountData);
                 }
-                myAccount.accountData.setPersistent(true);
+                myAccount.accountData.setPersistent(androidAccount != null);
                 myAccount.accountData.setDataBoolean(MyAccount.KEY_IS_SYNCABLE, myAccount.isSyncable);
                 myAccount.accountData.setDataBoolean(MyAccount.KEY_IS_SYNCED_AUTOMATICALLY, myAccount.isSyncedAutomatically);
                 myAccount.accountData.setDataLong(MyPreferences.KEY_SYNC_FREQUENCY_SECONDS, myAccount.syncFrequencySeconds);
@@ -314,12 +314,12 @@ public final class MyAccount {
                     myAccount.accountData.saveDataToAndroidAccount(myContext, androidAccount, result);
                 }
                 MyLog.v(this, (result.savedToAccountManager ? " Saved " 
-                        : ( result.changed ? " Didn't save?! " : " Didn't change") ) + this.toString());
+                        : ( result.changed ? " Didn't save?! " : " Didn't change ") ) + this.toString());
                 if (result.savedToAccountManager && result.changed) {
                     myContext.persistentTimelines().addDefaultMyAccountTimelinesIfNoneFound(myAccount);
                 }
             } catch (Exception e) {
-                MyLog.e(this, "Saving " + myAccount.getAccountName(), e);
+                MyLog.e(this, "Saving " + myAccount, e);
             }
             return result;
         }
@@ -339,16 +339,18 @@ public final class MyAccount {
                             AuthenticatorService.ANDROID_ACCOUNT_TYPE);
                     android.accounts.AccountManager am = AccountManager.get(
                             myContext.context());
-                    am.addAccountExplicitly(androidAccount, myAccount.getPassword(), null);
-
-                    // Without SyncAdapter we got the error:
-                    // SyncManager(865): can't find a sync adapter for SyncAdapterType Key
-                    // {name=org.andstatus.app.data.MyProvider, type=org.andstatus.app}, 
-                    // removing settings for it
-
-                    MyLog.v(TAG, "Persisted " + myAccount.getAccountName());
+                    if (am.addAccountExplicitly(androidAccount, myAccount.getPassword(), null)) {
+                        // Without SyncAdapter we got the error:
+                        // SyncManager(865): can't find a sync adapter for SyncAdapterType Key
+                        // {name=org.andstatus.app.data.MyProvider, type=org.andstatus.app},
+                        // removing settings for it
+                        MyLog.v(TAG, "Persisted " + myAccount.getAccountName());
+                    } else {
+                        MyLog.e(TAG, "Account was not added to AccountManager: " + androidAccount);
+                        androidAccount = null;
+                    }
                 } catch (Exception e) {
-                    MyLog.e(TAG, "Adding Account to AccountManager", e);
+                    MyLog.e(TAG, "Adding Account to AccountManager: " + androidAccount, e);
                     androidAccount = null;
                 }
             }

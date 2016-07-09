@@ -14,19 +14,21 @@
  * limitations under the License.
  */
 
-package org.andstatus.app.data;
+package org.andstatus.app.account;
 
+import android.accounts.AccountManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.test.InstrumentationTestCase;
 import android.text.TextUtils;
 
-import org.andstatus.app.account.AccountName;
-import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
 import org.andstatus.app.context.MyContextForTest;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.data.ConversationInserter;
+import org.andstatus.app.data.MyQuery;
+import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.SslModeEnum;
 import org.andstatus.app.net.social.MbUser;
@@ -95,6 +97,7 @@ public class OriginsAndAccountsInserter extends InstrumentationTestCase {
         }
         assertEquals("Data path", "ok", TestSuite.checkDataPath(this));
         AccountName accountName = AccountName.fromAccountName(myContext, accountNameString);
+        MyLog.v(this, "Adding account " + accountName);
         assertTrue("Name '" + accountNameString + "' is valid for " + originType, accountName.isValid());
         assertEquals("Origin for '" + accountNameString + "' account created", accountName.getOrigin().getOriginType(), originType);
         long accountUserId_existing = MyQuery.oidToId(myContext.getDatabase(), OidEnum.USER_OID,
@@ -113,7 +116,23 @@ public class OriginsAndAccountsInserter extends InstrumentationTestCase {
         assertTrue("Account " + userOid + " is persistent", ma != null);
         assertTrue("Account UserOid", ma.getUserOid().equalsIgnoreCase(userOid));
         assertTrue("Account is successfully verified", ma.getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED);
+
+        assertAccountIsAddedToAccountManager(ma);
+
         return ma;
+    }
+
+    private void assertAccountIsAddedToAccountManager(MyAccount maExpected) {
+            android.accounts.AccountManager am = AccountManager.get(myContext.context());
+            android.accounts.Account[] aa = am.getAccountsByType( AuthenticatorService.ANDROID_ACCOUNT_TYPE );
+            MyAccount ma = null;
+            for (android.accounts.Account account : aa) {
+                ma = MyAccount.Builder.fromAndroidAccount(myContext, account).getAccount();
+                if (maExpected.getAccountName().equals(ma.getAccountName())) {
+                    break;
+                }
+            }
+            assertEquals("MyAccount was not found in AccountManager among " + aa.length + " accounts.", maExpected, ma);
     }
 
     private MyAccount addAccountFromMbUser(MbUser mbUser) throws ConnectionException {

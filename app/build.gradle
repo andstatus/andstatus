@@ -1,15 +1,15 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 23
+    compileSdkVersion 24
     buildToolsVersion '24.0.0'
 
     defaultConfig {
         applicationId "org.andstatus.app"
         minSdkVersion 16
-        targetSdkVersion 23
-        versionName "27.00"
-        versionCode 180
+        targetSdkVersion 24
+        versionName "27.01"
+        versionCode 181
 
         testApplicationId "org.andstatus.app.tests"
         testInstrumentationRunner "android.test.InstrumentationTestRunner"

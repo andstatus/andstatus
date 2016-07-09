@@ -25,8 +25,8 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
 		</subtitle>
     </header>
-    <release android:versionName="27.00" android:versionCode="180"
-             versionDate="2016-07-06"
+    <release android:versionName="27.01" android:versionCode="181"
+             versionDate="2016-07-09"
              versionTitle="Automatic syncing of individual timelines. New custom search timelines">
         <changes>
             <change>
@@ -67,6 +67,7 @@
                 "on" allows any syncing / downloading over WiFi only.
                 <a href="https://github.com/andstatus/andstatus/issues/259">#259</a>
             </change>
+            <change>Fixed incompatibility with Android N (caused by a bug in Android N).</change>
         </changes>
     </release>
     <release android:versionName="26.07" android:versionCode="179"

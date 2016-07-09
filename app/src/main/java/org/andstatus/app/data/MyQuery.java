@@ -72,7 +72,7 @@ public class MyQuery {
         return oidToId(null, oidEnum, originId, oid);
     }
 
-    static long oidToId(SQLiteDatabase database, OidEnum oidEnum, long originId, String oid) {
+    public static long oidToId(SQLiteDatabase database, OidEnum oidEnum, long originId, String oid) {
         if (TextUtils.isEmpty(oid)) {
             return 0;
         }
@@ -185,7 +185,7 @@ public class MyQuery {
      *         {@link MsgTable#MSG_OID} empty string in case of an error
      */
     @NonNull
-    static String idToOid(SQLiteDatabase db, OidEnum oe, long entityId, long rebloggerUserId) {
+    public static String idToOid(SQLiteDatabase db, OidEnum oe, long entityId, long rebloggerUserId) {
         String method = "idToOid";
         String oid = "";
         SQLiteStatement prog = null;

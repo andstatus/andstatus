@@ -34,7 +34,7 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.data.ConversationInserter;
 import org.andstatus.app.data.GnuSocialMessagesInserter;
 import org.andstatus.app.data.MessageInserter;
-import org.andstatus.app.data.OriginsAndAccountsInserter;
+import org.andstatus.app.account.OriginsAndAccountsInserter;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.origin.Origin;

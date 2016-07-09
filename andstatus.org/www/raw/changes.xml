@@ -25,9 +25,53 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
 		</subtitle>
     </header>
-
-    <release android:versionName="26.03" android:versionCode="175"
-             versionDate="2016-04-24"
+    <release android:versionName="27.01" android:versionCode="181"
+             versionDate="2016-07-09"
+             versionTitle="Automatic syncing of individual timelines. New custom search timelines">
+        <changes>
+            <change>
+                Individual timelines can now be managed separately in the "Manage Timelines" table
+                (in a menu of a list of messages and also in Settings->Timeline).
+                For each timeline you can define: if it's shown in a list of available timelines
+                and if it's synced automatically.<br/>
+                For each timeline sync statistics is shown:<br/>
+                * Number of syncs and accumulated numbers of all downloaded and of new messages.<br/>
+                * Time of last successful and of last failed syncs.<br/>
+                * The last error encountered during syncing.<br/>
+                The "Manage Timelines" table scrolls vertically and horizontally and its content
+                can be sorted by different columns: just click a column header.
+                <a href="https://github.com/andstatus/andstatus/issues/384">#384</a>
+            </change>
+            <change>Now you can create custom syncable timelines, e.g. for scheduled
+                searches. Thus you can effectively "subscribe" to groups/tags, creating
+                automatically synced Search timelines e.g. for "#andstatus" or for "!gnusocial".
+                <a href="https://github.com/andstatus/andstatus/issues/248">#248</a>
+            </change>
+            <change>List of timelines for selection is now fully customizable. You can define, which
+                timelines are shown always, which are shown "in a context" only
+                (i.e. only when an account of this timeline selected), and which timelines are
+                never shown in this list.<br/>
+                In any case, any timeline may be opened from the "Manage timelines" list.
+            </change>
+            <change>Default timeline, which is shown on Application start, is selected in
+                the "Manage Timelines" list.</change>
+            <change>Additions to Account settings done to simplify management of Account syncing:<br/>
+                * "Synced automatically" checkbox.<br/>
+                * "Last synced" time.<br/>
+                * An option to set Sync frequency of any individual account to a custom value or
+                to a common default value set for all accounts
+                in Settings->Syncing->Default Sync frequency.
+                <a href="https://github.com/andstatus/andstatus/issues/77">#77</a>
+            </change>
+            <change>Added "Sync over WiFi only" option to Settings->Syncing. Setting this option to
+                "on" allows any syncing / downloading over WiFi only.
+                <a href="https://github.com/andstatus/andstatus/issues/259">#259</a>
+            </change>
+            <change>Fixed incompatibility with Android N (caused by a bug in Android N).</change>
+        </changes>
+    </release>
+    <release android:versionName="26.07" android:versionCode="179"
+             versionDate="2016-05-15"
              versionTitle="Familiar look for New Users">
         <changes>
             <change>Light Theme is the default one in AndStatus now.
@@ -95,6 +139,10 @@
                     <li>Text box with a text of the new message is scrollable vertically now.</li>
                     <li>Fullscreen mode toggle by tapping on not editable parts of the Editor.</li>
                 </ul>
+            </change>
+            <change>Fixed "Locally downloaded messages and images are lost after turning Power off",
+                which we noticed in Android 6.
+                <a href="https://github.com/andstatus/andstatus/issues/382">#382</a>
             </change>
         </changes>
     </release>
