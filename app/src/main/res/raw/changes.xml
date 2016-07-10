@@ -67,7 +67,9 @@
                 "on" allows any syncing / downloading over WiFi only.
                 <a href="https://github.com/andstatus/andstatus/issues/259">#259</a>
             </change>
-            <change>Fixed incompatibility with Android N (caused by a bug in Android N).</change>
+            <change>Fixed incompatibility with Android N (caused by
+                <a href="https://code.google.com/p/android/issues/detail?id=215525">the bug in Android N</a>).
+            </change>
         </changes>
     </release>
     <release android:versionName="26.07" android:versionCode="179"
