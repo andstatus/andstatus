@@ -718,8 +718,11 @@ public class Timeline implements Comparable<Timeline> {
      */
     public boolean isTimeToAutoSync() {
         long syncFrequencyMs = myAccount.getEffectiveSyncFrequencySeconds() * 1000;
+        // This correction is needed to take into account that we remembered time, when sync ended,
+        // and not time, when Android initiated it.
+        long correctionForExecutionTime = syncFrequencyMs / 10;
         long passedMs = System.currentTimeMillis() - getSyncSucceededDate();
-        boolean blnOut = passedMs > syncFrequencyMs;
+        boolean blnOut = passedMs > syncFrequencyMs - correctionForExecutionTime;
 
         if (blnOut && MyLog.isVerboseEnabled()) {
             MyLog.v(this, "It's time to auto update " + this +

@@ -168,7 +168,8 @@ public class TimelineList extends LoadableListActivity {
                 for (Timeline timeline : myContext.persistentTimelines().
                         getFiltered(false, TriState.UNKNOWN, null, null)) {
                     TimelineListViewItem viewItem = new TimelineListViewItem(myContext, timeline);
-                    if (viewItem.timeline.getCountSince() > 0 && viewItem.timeline.getCountSince() > countersSince) {
+                    if (viewItem.timeline.getCountSince() > 0 &&
+                            (viewItem.timeline.getCountSince() < countersSince || countersSince == 0)) {
                         countersSince = viewItem.timeline.getCountSince();
                     }
                     mItems.add(viewItem);
