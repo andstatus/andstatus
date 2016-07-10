@@ -241,9 +241,9 @@ public class PersistentTimelines {
         }
     }
 
-    public void resetCounters() {
+    public void resetCounters(boolean all) {
         for (Timeline timeline : values()) {
-            timeline.resetCounters();
+            timeline.resetCounters(all);
         }
     }
 

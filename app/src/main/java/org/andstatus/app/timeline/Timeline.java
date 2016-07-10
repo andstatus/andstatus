@@ -915,7 +915,13 @@ public class Timeline implements Comparable<Timeline> {
         }
     }
 
-    public void resetCounters() {
+    public void resetCounters(boolean all) {
+        if (all) {
+            syncFailedTimesCountTotal = 0;
+            syncedTimesCountTotal = 0;
+            downloadedItemsCountTotal = 0;
+            newItemsCountTotal = 0;
+        }
         errorMessage = "";
         syncFailedTimesCount = 0;
         syncedTimesCount = 0;
@@ -923,5 +929,9 @@ public class Timeline implements Comparable<Timeline> {
         newItemsCount = 0;
         countSince = System.currentTimeMillis();
         changed = true;
+    }
+
+    public long getCountSince() {
+        return countSince;
     }
 }

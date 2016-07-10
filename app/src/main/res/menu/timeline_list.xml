@@ -26,6 +26,12 @@
         android:title="@string/refresh_title">
     </item>
     <item
+        android:id="@+id/total_counters"
+        app:showAsAction="never"
+        android:checkable="true"
+        android:title="@string/total_counters">
+    </item>
+    <item
         android:id="@+id/reset_counters_menu_item"
         app:showAsAction="never"
         android:title="@string/reset_counters">

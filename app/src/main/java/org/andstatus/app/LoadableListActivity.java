@@ -358,11 +358,6 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
     
     protected void updateTitle(String progress) {
         StringBuilder title = new StringBuilder(getCustomTitle());
-        if (ma.isValid()) {
-            I18n.appendWithSpace(title, "/ " + ma.getOrigin().getName());
-        } else if (centralItemId != 0) {
-            I18n.appendWithSpace(title, "/ ? (" + centralItemId + ")");
-        }
         if (!TextUtils.isEmpty(progress)) {
             I18n.appendWithSpace(title, progress);
         }

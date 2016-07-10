@@ -59,6 +59,8 @@ public class TimelineList extends LoadableListActivity {
     private ViewGroup columnHeadersParent = null;
     private TimelineListContextMenu contextMenu = null;
     private TimelineListViewItem selectedItem = null;
+    private boolean isTotalCounters = false;
+    private volatile long countersSince = 0;
 
     @Override
     protected void onPause() {
@@ -162,9 +164,13 @@ public class TimelineList extends LoadableListActivity {
             @Override
             public void load(ProgressPublisher publisher) {
                 // TODO: Implement filter parameters in this activity
+                countersSince = 0;
                 for (Timeline timeline : myContext.persistentTimelines().
                         getFiltered(false, TriState.UNKNOWN, null, null)) {
                     TimelineListViewItem viewItem = new TimelineListViewItem(myContext, timeline);
+                    if (viewItem.timeline.getCountSince() > 0 && viewItem.timeline.getCountSince() > countersSince) {
+                        countersSince = viewItem.timeline.getCountSince();
+                    }
                     mItems.add(viewItem);
                 }
                 if (sortByField != 0) {
@@ -240,13 +246,17 @@ public class TimelineList extends LoadableListActivity {
                                         MyLog.v("isSyncedAutomatically", (isChecked ? "+ " : "- ") + item.timeline);
                                 }
                         } : null);
-                MyUrlSpan.showText(view, R.id.syncedTimesCount, I18n.notZero(item.timeline.getSyncedTimesCount()), false, true);
-                MyUrlSpan.showText(view, R.id.downloadedItemsCount, I18n.notZero(item.timeline.getDownloadedItemsCount()), false, true);
-                MyUrlSpan.showText(view, R.id.newItemsCount, I18n.notZero(item.timeline.getNewItemsCount()), false, true);
+                MyUrlSpan.showText(view, R.id.syncedTimesCount, I18n.notZero(
+                        isTotalCounters ? item.timeline.getSyncedTimesCountTotal() : item.timeline.getSyncedTimesCount()), false, true);
+                MyUrlSpan.showText(view, R.id.downloadedItemsCount, I18n.notZero(
+                        isTotalCounters ? item.timeline.getDownloadedItemsCountTotal() : item.timeline.getDownloadedItemsCount()), false, true);
+                MyUrlSpan.showText(view, R.id.newItemsCount, I18n.notZero(
+                        isTotalCounters ? item.timeline.getNewItemsCountTotal() : item.timeline.getNewItemsCount()), false, true);
                 MyUrlSpan.showText(view, R.id.syncSucceededDate,
                         RelativeTime.getDifference(TimelineList.this, item.timeline.getSyncSucceededDate()),
                         false, true);
-                MyUrlSpan.showText(view, R.id.syncFailedTimesCount, I18n.notZero(item.timeline.getSyncFailedTimesCount()), false, true);
+                MyUrlSpan.showText(view, R.id.syncFailedTimesCount, I18n.notZero(
+                        isTotalCounters ? item.timeline.getSyncFailedTimesCountTotal() : item.timeline.getSyncFailedTimesCount()), false, true);
                 MyUrlSpan.showText(view, R.id.syncFailedDate,
                         RelativeTime.getDifference(TimelineList.this, item.timeline.getSyncFailedDate()),
                         false, true);
@@ -290,19 +300,35 @@ public class TimelineList extends LoadableListActivity {
     }
 
     @Override
+    protected CharSequence getCustomTitle() {
+        StringBuilder title = new StringBuilder(getTitle() + " / ");
+        if (isTotalCounters) {
+            title.append(getText(R.string.total_counters));
+        } else if (countersSince > 0) {
+            title.append(String.format(getText(R.string.since).toString(),
+                    RelativeTime.getDifference(this, countersSince)));
+        }
+        return title;
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.refresh_menu_item:
                 showList(WhichPage.CURRENT);
-                break;
+                return true;
             case R.id.reset_counters_menu_item:
-                myContext.persistentTimelines().resetCounters();
+                myContext.persistentTimelines().resetCounters(isTotalCounters);
                 showList(WhichPage.CURRENT);
-                break;
+                return true;
+            case R.id.total_counters:
+                isTotalCounters = !isTotalCounters;
+                item.setChecked(isTotalCounters);
+                showList(WhichPage.CURRENT);
+                return true;
             default:
-                break;
+                return super.onOptionsItemSelected(item);
         }
-        return super.onOptionsItemSelected(item);
     }
 
     @Override

@@ -149,8 +149,9 @@ public class MySettingsFragment extends PreferenceFragment implements
         long hours = MyPreferences.getDontSynchronizeOldMessages();
         Preference preference = findPreference(MyPreferences.KEY_DONT_SYNCHRONIZE_OLD_MESSAGES);
         if (preference != null) {
-            preference.setSummary( hours > 0 ? Long.toString(hours) + "h"
-                    : getString(R.string.this_option_is_turned_off));
+            preference.setSummary( hours > 0 ?
+                    String.format(getText(R.string.dont_synchronize_old_messages_summary).toString(),
+                            Long.toString(hours)) : getString(R.string.this_option_is_turned_off));
         }
     }
 
