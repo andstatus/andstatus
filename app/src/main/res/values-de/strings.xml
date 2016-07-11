@@ -27,13 +27,6 @@
   <string name="account_settings_summary">Synchronisation Frequenz, Benachrichtigungen etc.</string>
   <string name="action_bar_background_color_preference_title">Hintergrundfarbe der Aktionsleiste</string>
   <string name="action_bar_text_preference_title">Text- und Symbolfarbe der Aktionsleiste</string>
-  <string name="attach_images_summary_off">\"Büroklammer+\" Button, mit dem Bilder an deine Beiträge angehängt werden, ist ausgeblendet</string>
-  <string name="attach_images_summary_on">Verwende \"Büroklammer +\" Button (Menüpunkt \"Anhängen\") um Bilder an die Nachricht anzufügen. Oder teile ein Bild aus einer anderen Anwendung mit AndStatus</string>
-  <string name="attach_images_title">Bilder an meine Nachrichten anhängen</string>
-  <string name="attachments">Anhänge</string>
-  <string name="automatic">Auto</string>
-  <string name="settings_action">Einstellungen</string>
-  <string name="settings_activity_title">Einstellungen</string>
   <string name="action_menu_overflow_description">Weitere Aktionen&#8230;</string>
   <string name="appwidget_configure_instructions">Passe die Mitteilung an, die im AndStatus
     Widget gezeigt wird, falls sich nichts geändert hat:</string>
@@ -45,8 +38,13 @@
   <string name="appwidget_directmessage_formats_2">{0} direct</string>
   <string name="appwidget_nothingnew_default">Nichts Neues seit:</string>
   <string name="appwidget_nodata">Noch keine Daten.</string>
+  <string name="attach_images_summary_off">\"Büroklammer+\" Button, mit dem Bilder an deine Beiträge angehängt werden, ist ausgeblendet</string>
+  <string name="attach_images_summary_on">Verwende \"Büroklammer +\" Button (Menüpunkt \"Anhängen\") um Bilder an die Nachricht anzufügen. Oder teile ein Bild aus einer anderen Anwendung mit AndStatus</string>
+  <string name="attach_images_title">Bilder an meine Nachrichten anhängen</string>
+  <string name="attachments">Anhänge</string>
   <string name="authentication_never">Bisher nicht angemeldet</string>
   <string name="authentication_successful">Anmeldung erfolgreich!</string>
+  <string name="automatic">Auto</string>
   <string name="background_color_preference_title">Hintergrundfarbe für das dunkle Thema</string>
   <string name="button_add">Hinzufügen</string>
   <string name="button_add_origin">Neues System hinzufügen</string>
@@ -97,6 +95,7 @@
   <string name="crash_dialog_comment_prompt">Bitte gib unten deine Kommentare zum Problem an. Es wäre sehr hilfreich für eine Korrektur zu wissen, wann es aufgetreten ist und vielleicht sogar wie es reproduziert werden könnte.</string>
   <string name="created_label">Erstellt</string>
   <string name="custom_locale_title">Sprache der Anwendung</string>
+  <string name="default_timeline_title">Standard-Timeline</string>
   <string name="device_default">Gerätestandard</string>
   <string name="dialog_summary_acquiring_an_access_token">Bitte warten, während AndStatus OAuth Request Token und Access Token austauscht</string>
   <string name="dialog_summary_acquiring_a_request_token">Bitte warten, während AndStatus ein Request Token für OAuth abholt</string>
@@ -110,8 +109,6 @@
   <string name="dialog_summary_sending_message">Bitte warten, während die Nachricht gesendet wird.</string>
   <string name="dialog_summary_service_unavailable">Twitter ist derzeit überlastet. Bitte versuche es später noch einmal.</string>
   <string name="dialog_summary_timeline_loading">Bitte warten, während die Chronik aktualisiert wird. Dies kann, je nach Verbindung, einige Minuten dauern.</string>
-  <string name="default_timeline_title">Standard-Timeline</string>
-  <string name="default_timeline_summary">Timeline, die durch einen Launcher geöffnet wird: \"%s\"</string>
   <string name="dialog_title_acquiring_an_access_token">Hole ein Access Token</string>
   <string name="dialog_title_acquiring_a_request_token">Hole ein Request Token</string>
   <string name="dialog_title_authentication_failed">Anmeldung fehlgeschlagen</string>
@@ -136,6 +133,7 @@
   <string name="dialog_title_service_unavailable">Service nicht erreichbar</string>
   <string name="dialog_title_timeline_loading">Aktualisiere eine Timeline&#8230;</string>
   <string name="discover_open_instances_title">Überblick öffentlicher Server</string>
+  <string name="dont_synchronize_old_messages">Alte Nachrichten nicht synchronisieren, falls seit dem letzten Sync mehr als ... Tage vergangen sind</string>
   <string name="download_status_draft">Entwurf</string>
   <string name="download_status_unsent">ungesendet</string>
   <string name="drawer_close">Navigationsfeld schließen</string>
@@ -224,11 +222,6 @@
   <string name="long_press_to_open_context_menu_on">Drücke lange um das Kontextmenü des Objekts zu öffnen</string>
   <string name="long_press_to_open_context_menu_off">Objekt antippen um sein Kontextmenü zu öffnen</string>
   <string name="malformed_link">Fehlerhafter Link</string>
-  <string name="message">Nachricht</string>
-  <string name="message_twitter">Tweet</string>
-  <string name="message_edit_hint">Gib hier deinen Nachricht ein!</string>
-  <string name="message_characters_left">Zeichen übrig:</string>
-  <string name="message_is_too_long">Nachricht ist zu lang.</string>
   <string name="mention_as_webfingerid_title">Erwähnung als @webFingerId</string>
   <string name="menu_item_act_as">Handle als&#8230;</string>
   <string name="menu_item_act_as_user">Handle als \"%1s\"</string>
@@ -255,11 +248,19 @@
   <string name="menu_item_stop_following_user">\"%1s\" nicht mehr folgen</string>
   <string name="menu_item_user_messages">Nachrichten von \"%1s\"</string>
   <string name="menu_item_view_profile">Profil anzeigen</string>
+  <string name="message">Nachricht</string>
+  <string name="message_characters_left">Zeichen übrig:</string>
+  <string name="message_edit_hint">Gib hier deinen Nachricht ein!</string>
+  <string name="message_is_too_long">Nachricht ist zu lang.</string>
   <string name="message_sent">Deine Nachricht wurde verschickt.</string>
+  <string name="message_source_from">von %1$s</string>
+  <string name="message_source_in_reply_to">als Antwort auf %1$s</string>
+  <string name="message_source_to">an %1$s</string>
+  <string name="message_twitter">Tweet</string>
   <string name="messages_activity">Direktnachrichten</string>
   <string name="no">Nein</string>
-  <string name="nothing_in_the_loadable_list">Noch nichts zu sehen. Versuche \"Mit dem Internet synchronisieren\" anzutippen um diese Liste zu aktualisieren.</string>
   <string name="not_set">nicht festgelegt</string>
+  <string name="nothing_in_the_loadable_list">Noch nichts zu sehen. Versuche \"Mit dem Internet synchronisieren\" anzutippen um diese Liste zu aktualisieren.</string>
   <string name="notification_message_formats_1">{0} neuen Message</string>
   <string name="notification_message_formats_2">{0} neue Messages</string>
   <string name="notification_mention_formats_1">{0} neue Erwähnung</string>
@@ -317,6 +318,8 @@
   <string name="preference_notification_icon_alternative_on">Symbol als Kreis</string>
   <string name="preference_true_black_title">Rein schwarzer Hintergrund</string>
   <string name="preference_use_kitkat_media_chooser_title">KitKat Medienauswahl verwenden</string>
+  <string name="reblogged_by">reblogged von %1$s</string>
+  <string name="reblogged_by_twitter">retweeted von %1$s</string>
   <string name="refresh_title">Aus Cache aktualisieren</string>
   <string name="refresh_timeline_automatically_title">Timeline automatisch aktualisieren</string>
   <string name="refresh_timeline_automatically_summary">Timeline wird aus einem lokalen Cache aktualisiert. Kein Internetzugang ist erforderlich.</string>
@@ -338,16 +341,19 @@
   <string name="remove_account_dialog_title">Konto entfernen?</string>
   <string name="remove_account_dialog_text">Das Entfernen des Kontos wird alle seine Daten vom Gerät löschen? Fortfahren?</string>
   <string name="resolve_view">Nachricht anzeigen</string>
-  <string name="splash_button_learn_more">Mehr erfahren</string>
-  <string name="splash_button_get_started">Loslegen</string>
-  <string name="splash_payoff_line">Dateneffizienter Microblogging Client für Twitter, 
-	    StatusNet (GNU social) und pump.io.\n Open Source Lizenz.</string>
-  <string name="syncing">Synchronisiere&#8230;</string>
-  <string name="syncing_timeline_for_somebody">Synchronisiere %1$s für %2$s</string>
+  <string name="rounded_avatars">Runde Avatare</string>
   <string name="search_timeline_label">Nachrichten, User und Hashtags durchsuchen</string>
   <string name="search_timeline_hint">Username/Stichwort eingeben</string>
   <string name="search_direct_messages_label">Direktnachrichten durchsuchen</string>
   <string name="search_direct_messages_hint">Usernamen oder Stichwort eingeben</string>
+  <string name="select_social_network">Soziales Netzwerk wählen</string>
+  <string name="settings_action">Einstellungen</string>
+  <string name="settings_activity_title">Einstellungen</string>
+  <string name="show_buttons_below_message">Buttons für Antwort, Repost und Favorit unter der Nachricht zeigen</string>
+  <string name="splash_button_learn_more">Mehr erfahren</string>
+  <string name="splash_button_get_started">Loslegen</string>
+  <string name="splash_payoff_line">Dateneffizienter Microblogging Client für Twitter, 
+	    StatusNet (GNU social) und pump.io.\n Open Source Lizenz.</string>
   <string name="status_destroyed">Die Nachricht wurde gelöscht.</string>
   <string name="summary_preference_accounts_absent">Noch keine AndStatus Accounts</string>
   <string name="summary_preference_accounts_present">Anzahl der AndStatus Accounts</string>
@@ -399,7 +405,10 @@
   <string name="summary_preference_vibration_off">Vibration ist abgeschaltet</string>
   <string name="summary_preference_vibration_on">Vibrieren bei eingehender Nachricht</string>
   <string name="switch_to_default_timeline">Zur Standard-Timeline wechseln</string>
+  <string name="syncing">Synchronisiere&#8230;</string>
+  <string name="syncing_timeline_for_somebody">Synchronisiere %1$s für %2$s</string>
   <string name="system_is_busy_try_later">Das System ist beschäftigt. Bitte versuche es später erneut.</string>
+  <string name="tap_on_a_timeline_title_behaviour">Verhalten beim Antippen der Timeline</string>
   <string name="theme_color_entries_default">Gerätestandard</string>
   <string name="theme_color_entries_light">Hell</string>
   <string name="theme_color_entries_dark">Dunkel</string>
@@ -435,7 +444,6 @@
   <string name="title_preference_download_attachments_over_wifi_only">Anhänge nur über Wi-Fi herunterladen</string>
   <string name="title_preference_enable_android_backup">Automatisches Android Backup aktivieren</string>
   <string name="title_preference_enter_sends_message">ENTER-Taste schickt Nachricht ab</string>
-  <string name="title_preference_frequency">Synchronisationsfrequenz</string>
   <string name="title_preference_history_size">Verlauf Größe</string>
   <string name="title_preference_history_time">Verlauf Zeitraum</string>
   <string name="title_preference_is_default_account">Dies ist das Standardkonto</string>
@@ -474,11 +482,6 @@
   <string name="title_sending_messages_log_enabled">Gesendete Mitteilungen in eine Datei loggen</string>
   <string name="title_timeline">Timeline</string>
   <string name="translator_credits">Übersetzer-Impressum</string>
-  <string name="message_source_from">von %1$s</string>
-  <string name="message_source_in_reply_to">als Antwort auf %1$s</string>
-  <string name="message_source_to">an %1$s</string>
-  <string name="reblogged_by">reblogged von %1$s</string>
-  <string name="reblogged_by_twitter">retweeted von %1$s</string>
   <string name="unimplemented">Nicht implementiert.</string>
   <string name="unknown_userlist">(Unbekannte Benutzerliste)</string>
   <string name="use_legacy_http_protocol_title">Veraltetes HTTP-Protokoll verwenden</string>
