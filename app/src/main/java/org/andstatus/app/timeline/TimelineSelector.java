@@ -82,7 +82,7 @@ public class TimelineSelector extends SelectorDialog {
             TimelineListViewItem viewItem = new TimelineListViewItem(myContext, timeline2);
             items.add(viewItem);
         }
-        Collections.sort(items, new TimelineListViewItemComparator(R.id.displayedInSelector, true));
+        Collections.sort(items, new TimelineListViewItemComparator(R.id.displayedInSelector, true, false));
         removeDuplicates(items);
 
         setListAdapter(newListAdapter(items));

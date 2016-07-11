@@ -26,10 +26,12 @@ import java.util.Comparator;
 class TimelineListViewItemComparator implements Comparator<TimelineListViewItem> {
     private final int sortByField;
     private final boolean sortDefault;
+    private final boolean isTotal;
 
-    TimelineListViewItemComparator(int sortByField, boolean sortDefault) {
+    TimelineListViewItemComparator(int sortByField, boolean sortDefault, boolean isTotal) {
         this.sortByField = sortByField;
         this.sortDefault = sortDefault;
+        this.isTotal = isTotal;
     }
 
     @Override
@@ -78,29 +80,34 @@ class TimelineListViewItemComparator implements Comparator<TimelineListViewItem>
             case R.id.synced:
                 return compareSynced(lhs, rhs);
             case R.id.syncedTimesCount:
-                result = compareLongDescending(lhs.timeline.getSyncedTimesCount(), rhs.timeline.getSyncedTimesCount());
+                result = compareLongDescending(lhs.timeline.getSyncedTimesCount(isTotal),
+                        rhs.timeline.getSyncedTimesCount(isTotal));
                 if (result != 0) {
                     break;
                 }
             case R.id.downloadedItemsCount:
-                result = compareLongDescending(lhs.timeline.getDownloadedItemsCount(), rhs.timeline.getDownloadedItemsCount());
+                result = compareLongDescending(lhs.timeline.getDownloadedItemsCount(isTotal),
+                        rhs.timeline.getDownloadedItemsCount(isTotal));
                 if (result != 0) {
                     break;
                 }
             case R.id.newItemsCount:
-                result = compareLongDescending(lhs.timeline.getNewItemsCount(), rhs.timeline.getNewItemsCount());
+                result = compareLongDescending(lhs.timeline.getNewItemsCount(isTotal),
+                        rhs.timeline.getNewItemsCount(isTotal));
                 if (result != 0) {
                     break;
                 }
             case R.id.syncSucceededDate:
-                result = compareLongDescending(lhs.timeline.getSyncSucceededDate(), rhs.timeline.getSyncSucceededDate());
+                result = compareLongDescending(lhs.timeline.getSyncSucceededDate(),
+                        rhs.timeline.getSyncSucceededDate());
                 if (result == 0) {
                     return compareSynced(lhs, rhs);
                 }
                 break;
             case R.id.syncFailedDate:
             case R.id.syncFailedTimesCount:
-                result = compareLongDescending(lhs.timeline.getSyncFailedDate(), rhs.timeline.getSyncFailedDate());
+                result = compareLongDescending(lhs.timeline.getSyncFailedDate(),
+                        rhs.timeline.getSyncFailedDate());
                 if (result == 0) {
                     return compareSynced(lhs, rhs);
                 }
@@ -122,9 +129,11 @@ class TimelineListViewItemComparator implements Comparator<TimelineListViewItem>
     }
 
     private int compareSynced(TimelineListViewItem lhs, TimelineListViewItem rhs) {
-        int result = compareLongDescending(lhs.timeline.getLastSyncedDate(), rhs.timeline.getLastSyncedDate());
+        int result = compareLongDescending(lhs.timeline.getLastSyncedDate(),
+                rhs.timeline.getLastSyncedDate());
         if (result == 0) {
-            result = compareCheckbox(lhs.timeline.isSyncedAutomatically(), rhs.timeline.isSyncedAutomatically());
+            result = compareCheckbox(lhs.timeline.isSyncedAutomatically(),
+                    rhs.timeline.isSyncedAutomatically());
         }
         if (result == 0) {
             result = compareCheckbox(lhs.timeline.isSyncable(), rhs.timeline.isSyncable());

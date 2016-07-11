@@ -861,40 +861,24 @@ public class Timeline implements Comparable<Timeline> {
         return isSyncableForOrigins;
     }
 
-    public long getDownloadedItemsCount() {
-        return downloadedItemsCount;
+    public long getDownloadedItemsCount(boolean isTotal) {
+        return isTotal ? downloadedItemsCountTotal : downloadedItemsCount;
     }
 
-    public long getNewItemsCount() {
-        return newItemsCount;
+    public long getNewItemsCount(boolean isTotal) {
+        return isTotal ? newItemsCountTotal : newItemsCount;
     }
 
-    public long getDownloadedItemsCountTotal() {
-        return downloadedItemsCountTotal;
-    }
-
-    public long getNewItemsCountTotal() {
-        return newItemsCountTotal;
-    }
-
-    public long getSyncedTimesCount() {
-        return syncedTimesCount;
-    }
-
-    public long getSyncedTimesCountTotal() {
-        return syncedTimesCountTotal;
+    public long getSyncedTimesCount(boolean isTotal) {
+        return isTotal ? syncedTimesCountTotal : syncedTimesCount;
     }
 
     public long getSyncFailedDate() {
         return syncFailedDate;
     }
 
-    public long getSyncFailedTimesCount() {
-        return syncFailedTimesCount;
-    }
-
-    public long getSyncFailedTimesCountTotal() {
-        return syncFailedTimesCountTotal;
+    public long getSyncFailedTimesCount(boolean isTotal) {
+        return isTotal ? syncFailedTimesCountTotal : syncFailedTimesCount;
     }
 
     public String getErrorMessage() {
