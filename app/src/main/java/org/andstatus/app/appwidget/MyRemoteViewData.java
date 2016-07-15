@@ -148,19 +148,22 @@ class MyRemoteViewData {
         } else if (widgetData.numHomeTimeline > 0) {
             timeLineType = TimelineType.HOME;
         }
+
+        // TODO: MyAccount in the intent is not necessarily the one, which got new messages
+        // But so far this looks better than Combined timeline for most users...
         Timeline timeline;
-        if (timeLineType == TimelineType.UNKNOWN) {
-            timeline = MyContextHolder.get().persistentTimelines().getDefault();
-        } else {
-            timeline = Timeline.getTimeline(timeLineType,
-                    MyContextHolder.get().persistentAccounts().getCurrentAccount(), 0, null);
+        switch(timeLineType) {
+            case MENTIONS:
+            case DIRECT:
+                timeline = Timeline.getTimeline(timeLineType,
+                        MyContextHolder.get().persistentAccounts().getCurrentAccount(), 0, null);
+                break;
+            default:
+                timeline = MyContextHolder.get().persistentTimelines().getDefault();
+                break;
         }
 
         Intent intent = new Intent(context, TimelineActivity.class);
-        // TODO: We don't mention exact MyAccount in the intent
-        // On the other hand the Widget is not Account aware yet also,
-        //   so for now this is correct.
-
         // "rnd" is necessary to actually bring Extra to the target intent
         // see http://stackoverflow.com/questions/1198558/how-to-send-parameters-from-a-notification-click-to-an-activity
         intent.setData(Uri.withAppendedPath(MatchedUri.getTimelineUri(timeline),
