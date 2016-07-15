@@ -258,7 +258,7 @@ public class TimelineActivity extends LoadableListActivity implements
      */
     public void onCombinedTimelineToggleClick(View item) {
         closeDrawer();
-        switchView( paramsLoaded.getTimeline().fromIsCombined(myContext, !paramsLoaded.isTimelineCombined()),
+        switchView( getParamsLoaded().getTimeline().fromIsCombined(myContext, !getParamsLoaded().isTimelineCombined()),
                 null);
 
     }
@@ -313,7 +313,7 @@ public class TimelineActivity extends LoadableListActivity implements
                 if (isConfigChanged()) {
                     MyLog.v(this, method + "; Restarting this Activity to apply all new changes of configuration");
                     finish();
-                    switchView(paramsLoaded.getTimeline(), null);
+                    switchView(getParamsLoaded().getTimeline(), null);
                 }
             } else { 
                 MyLog.v(this, method + "; Finishing this Activity because there is no Account selected");
@@ -822,52 +822,51 @@ public class TimelineActivity extends LoadableListActivity implements
     public void onLoadFinished(boolean keepCurrentPosition_in) {
         final String method = "onLoadFinished";
         TimelineLoader myLoader = (TimelineLoader) getLoaded();
-        TimelineListParameters parametersPrev = setParamsLoaded(myLoader.getParams());
-        boolean sameTimeline = parametersPrev != null &&
-                getParamsLoaded().getTimeline().equals(parametersPrev.getTimeline());
-        MyLog.v(this, method + "; " + getParamsLoaded().toSummary());
+        TimelineListParameters paramsLoaded = myLoader.getParams();
+        boolean isSameTimeline = paramsLoaded.isSameTimeline(setParamsLoaded(paramsLoaded));
+        MyLog.v(this, method + "; " + paramsLoaded.toSummary());
 
         // TODO start: Move this inside superclass
-        boolean keepCurrentPosition = keepCurrentPosition_in  && sameTimeline &&
-                isPositionRestored() && getParamsLoaded().whichPage != WhichPage.TOP;
+        boolean keepCurrentPosition = keepCurrentPosition_in  && isSameTimeline &&
+                isPositionRestored() && paramsLoaded.whichPage != WhichPage.TOP;
         super.onLoadFinished(keepCurrentPosition);
-        if (getParamsLoaded().whichPage == WhichPage.TOP) {
+        if (paramsLoaded.whichPage == WhichPage.TOP) {
             TimelineListPositionStorage.setPosition(getListView(), 0);
             getListAdapter().setPositionRestored(true);
         }
         // TODO end: Move this inside superclass
 
         if (!isPositionRestored()) {
-            new TimelineListPositionStorage(getListAdapter(), getListView(), getParamsLoaded())
+            new TimelineListPositionStorage(getListAdapter(), getListView(), paramsLoaded)
                     .restore();
         }
 
-        TimelineListParameters anotherParams = paramsToLoad;
-        boolean parametersChanged = anotherParams != null && !getParamsLoaded().equals(anotherParams);
-        WhichPage anotherPageToRequest = WhichPage.EMPTY;
-        if (!parametersChanged) {
+        TimelineListParameters otherParams = paramsToLoad;
+        boolean isParamsChanged = otherParams != null && !paramsLoaded.equals(otherParams);
+        WhichPage otherPageToRequest = WhichPage.EMPTY;
+        if (!isParamsChanged) {
             TimelineAdapter adapter = getListAdapter();
             if ( adapter.getCount() == 0) {
                 if (adapter.getPages().mayHaveYoungerPage()) {
-                    anotherPageToRequest = WhichPage.YOUNGER;
+                    otherPageToRequest = WhichPage.YOUNGER;
                 } else if (adapter.getPages().mayHaveOlderPage()) {
-                    anotherPageToRequest = WhichPage.OLDER;
-                } else if (!getParamsLoaded().whichPage.isYoungest()) {
-                    anotherPageToRequest = WhichPage.YOUNGEST;
-                } else if (getParamsLoaded().rowsLoaded == 0) {
-                    launchSyncIfNeeded(getParamsLoaded().timelineToSync);
+                    otherPageToRequest = WhichPage.OLDER;
+                } else if (!paramsLoaded.whichPage.isYoungest()) {
+                    otherPageToRequest = WhichPage.YOUNGEST;
+                } else if (paramsLoaded.rowsLoaded == 0) {
+                    launchSyncIfNeeded(paramsLoaded.timelineToSync);
                 }
             }
         }
         hideLoading(method);
         updateScreen();
         clearNotifications();
-        if (parametersChanged) {
-            MyLog.v(this, method + "; Parameters changed, requesting " + anotherParams.toSummary());
-            showList(anotherParams, TriState.TRUE);
-        } else if (anotherPageToRequest != WhichPage.EMPTY) {
-            MyLog.v(this, method + "; Nothing loaded, requesting " + anotherPageToRequest);
-            showList(anotherPageToRequest, TriState.TRUE);
+        if (isParamsChanged) {
+            MyLog.v(this, method + "; Parameters changed, requesting " + otherParams.toSummary());
+            showList(otherParams, TriState.TRUE);
+        } else if (otherPageToRequest != WhichPage.EMPTY) {
+            MyLog.v(this, method + "; Nothing loaded, requesting " + otherPageToRequest);
+            showList(otherPageToRequest, TriState.TRUE);
         }
     }
 

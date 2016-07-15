@@ -343,4 +343,8 @@ public class TimelineListParameters {
     public MyContext getMyContext() {
         return myContext;
     }
+
+    public boolean isSameTimeline(TimelineListParameters other) {
+        return other != null &&  getTimeline().equals(other.getTimeline());
+    }
 }
