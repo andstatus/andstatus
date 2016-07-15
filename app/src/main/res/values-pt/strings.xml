@@ -137,6 +137,9 @@
   <string name="displayed_in_selector">Mostrar no seletor</string>
   <string name="displayed_in_selector_abbreviated">Mostrar</string>
   <string name="dont_synchronize_old_messages">Não sincronizar mensagens antigas se a sincronização anterior tiver sido há menos de ... horas</string>
+  <string name="dont_synchronize_old_messages_summary">Se não decorrerem %s desde a última sincronização,
+ o AndStatus não tentará sincronizar todas as mensagens desde a última descarga,
+ mas tentará descarregar as 200 mensagens mais recentes. Se o número de novas mensagens for superior a 200, a cronologia não mostrará todas as mensagens.</string>
   <string name="download_status_draft">rascunho</string>
   <string name="download_status_unsent">não enviada</string>
   <string name="downloaded_items_count_abbreviated">Desc.</string>
@@ -363,6 +366,7 @@
   <string name="settings_activity_title">Definições</string>
   <string name="show_buttons_below_message">Mostrar botões Responder, Favoritos e Republicar abaixo da mensagem</string>
   <string name="show_timeline_messages">Mostrar mensagens da cronologia</string>
+  <string name="since">Desde %s</string>
   <string name="splash_button_learn_more">Saber mais</string>
   <string name="splash_button_get_started">Iniciar</string>
   <string name="splash_payoff_line">Aplicação Open Source para redes sociais e conversas com tipologia de árvore.
@@ -502,6 +506,7 @@ Com suporte a GNU social, Twitter e Pump.io.</string>
   <string name="title_preference_vibration">Vibração</string>
   <string name="title_sending_messages_log_enabled">Registar envio de mensagens no ficheiro</string>
   <string name="title_timeline">Cronologia</string>
+  <string name="total_counters">Total de contadores</string>
   <string name="translator_credits">Créditos do tradutor</string>
   <string name="unimplemented">Não implementado.</string>
   <string name="unknown_userlist">(Lista de utilizador desconhecida)</string>
