@@ -66,6 +66,11 @@ public class ActAsUserTest extends android.test.ActivityInstrumentationTestCase2
         long userId1 = getActivity().getContextMenu().getActorUserIdForCurrentMessage();
         logMsg += "; userId1=" + userId1;
         assertTrue(logMsg, userId1 != 0 );
+        getActivity().closeContextMenu();
+
+        MyAccount ma1 = MyContextHolder.get().persistentAccounts().fromUserId(userId1);
+        logMsg += "; " + ma1;
+        assertTrue(logMsg, ma1.getUserId() != ma1.firstOtherAccountOfThisOrigin().getUserId());
 
         helper.invokeContextMenuAction4ListItemId(method, msgId, MessageListContextMenuItem.ACT_AS_USER);
         long userId2 = getActivity().getContextMenu().getActorUserIdForCurrentMessage();
