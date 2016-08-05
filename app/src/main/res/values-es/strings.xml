@@ -28,6 +28,7 @@
   <string name="action_bar_background_color_preference_title">Color de fondo de la barra de herramientas</string>
   <string name="action_bar_text_preference_title">Color del texto e icono de la barra de herramientas</string>
   <string name="action_menu_overflow_description">Más opciones&#8230;</string>
+  <string name="always">Siempre</string>
   <string name="appwidget_configure_instructions">Personalizar el mensaje de AndStatus, que se muestra en el caso de que no haya nada nuevo:</string>
   <string name="appwidget_message_formats_1">{0} mensaje</string>
   <string name="appwidget_message_formats_2">{0} mensajes</string>
@@ -95,6 +96,7 @@
   <string name="created_label">Creado</string>
   <string name="custom_locale_title">Idioma de la aplicación</string>
   <string name="default_timeline_title">Línea temporal predeterminada</string>
+  <string name="default_timeline_summary">Línea temporal que será abierta por un lanzador: \"%s\"</string>
   <string name="device_default">Predeterminado</string>
   <string name="dialog_summary_acquiring_an_access_token">Por favor, espere mientras AndStatus intercambia una solicitud de prueba de OAuth para la prueba de acceso</string>
   <string name="dialog_summary_acquiring_a_request_token">Por favor espere mientras AndStatus adquiere una prueba de solicitud de OAuth</string>
@@ -132,9 +134,16 @@
   <string name="dialog_title_service_unavailable">Servicio no disponible</string>
   <string name="dialog_title_timeline_loading">Actualizando la línea de tiempo&#8230;</string>
   <string name="discover_open_instances_title">Descubre nodos abiertos</string>
+  <string name="displayed_in_selector">Mostrado para elegir</string>
+  <string name="displayed_in_selector_abbreviated">Most.</string>
   <string name="dont_synchronize_old_messages">No sincronizar mensajes antiguos si la anterior sincronización fue hace más de ... horas</string>
+  <string name="dont_synchronize_old_messages_summary">Después de horas de %s desde la sincronización anterior 
+   AndStatus no intentará sincronizar todos los mensajes desde el último mensaje descargado, 
+   sino que solicitará sólo 200 últimos mensajes desde un servidor. Si el número de nuevos mensajes es más de 200, 
+    no se verán en una línea temporal algunos mensajes antiguos.</string>
   <string name="download_status_draft">borrador</string>
   <string name="download_status_unsent">sin enviar</string>
+  <string name="downloaded_items_count_abbreviated">Desc.</string>
   <string name="drawer_close">Cerrar panel de navegación</string>
   <string name="drawer_open">Abrir panel de navegación</string>
   <string name="empty_in_parenthesis">(vacío)</string>
@@ -200,6 +209,7 @@
   <string name="id_of_this_message_was_not_specified">No se especificó la Id de este mensaje</string>
   <string name="in_combined_global_search_label">Incluir en la \"Búsqueda global\" las líneas temporales combinadas</string>
   <string name="in_combined_public_reload_label">Incluir en \"Sincronizando\" mientras esté activada la línea temporal combinada</string>
+  <string name="in_context">En contexto</string>
   <string name="label_accountselector">Seleciona una cuenta</string>
   <string name="label_allow_html_content">Permitir el contenido HTML</string>
   <string name="label_backup">Copia de seguridad en la tarjeta microSD</string>
@@ -215,12 +225,14 @@
   <string name="label_restore">Restaurar información desde una copia de seguridad</string>
   <string name="label_upgrading">Actualización en curso. Por favor, espere.</string>
   <string name="label_with_media">con multimedia</string>
+  <string name="last_synced">Última sincronización</string>
   <string name="latest_error_label">Último error</string>
   <string name="loading">Cargando</string>
   <string name="long_press_to_open_context_menu">Dejar pulsado para abrir el menú contextual</string>
   <string name="long_press_to_open_context_menu_on">Deja pulsado un objeto para abrir su menú contextual</string>
   <string name="long_press_to_open_context_menu_off">Pulsa un objeto para abrir su menú contextual</string>
   <string name="malformed_link">Enlace mal formado</string>
+  <string name="manage_timelines">Gestionar líneas de tiempo</string>
   <string name="mention_as_webfingerid_title">Mencionar como @Identificador</string>
   <string name="menu_item_act_as">Actuar como&#8230;</string>
   <string name="menu_item_act_as_user">Actuar como \"%1s\"</string>
@@ -257,6 +269,8 @@
   <string name="message_source_to">para %1$s</string>
   <string name="message_twitter">Tweet</string>
   <string name="messages_activity">Mensajes directos</string>
+  <string name="never">Nunca</string>
+  <string name="new_items_count_abbreviated">Nuevo</string>
   <string name="no">No</string>
   <string name="not_set">no establecido</string>
   <string name="nothing_in_the_loadable_list">Nada por aquí. Prueba pulsando \"Sincronizar con Internet\" para actualizar la lista.</string>
@@ -339,22 +353,28 @@
   <string name="remove_account_menu_item">Eliminar cuenta</string>
   <string name="remove_account_dialog_title">¿Eliminar cuenta?</string>
   <string name="remove_account_dialog_text">Al eliminar la cuenta se borrará toda la información en el dispositivo. ¿Desea continuar?</string>
+  <string name="reset_counters">Restablecer contadores</string>
   <string name="resolve_view">Ver mensaje</string>
   <string name="rounded_avatars">Avatares redondeados</string>
   <string name="search_timeline_label">Búsqueda de mensajes, usuarios y hashtags</string>
   <string name="search_timeline_hint">Introduzca un nombre de usuario/frase</string>
   <string name="search_direct_messages_label">Buscar mensajes directos</string>
   <string name="search_direct_messages_hint">Introduzca un nombre de usuario o frase</string>
+  <string name="select_displayed_in_selector">Seleccionar si se muestra y cuando esta línea temporal</string>
+  <string name="sent">Enviado</string>
   <string name="select_social_network">Seleccionar red social</string>
   <string name="settings_action">Configuración</string>
   <string name="settings_activity_title">Configuración</string>
   <string name="show_buttons_below_message">Mostrar botones de respuesta, repetición y favorito debajo del mensaje</string>
+  <string name="show_timeline_messages">Mostrar mensajes de línea temporal</string>
+  <string name="since">Desde %s</string>
   <string name="splash_button_learn_more">Más información</string>
   <string name="splash_button_get_started">Comenzar</string>
   <string name="splash_payoff_line">Cliente liviano para Twitter, pump.io y 
 	    GNU social para Android.\n
 	    Licencia Open Source (de código abierto).</string>
   <string name="status_destroyed">El mensaje ha sido eliminado.</string>
+  <string name="subtitle">Subtítulo</string>
   <string name="summary_preference_accounts_absent">Aún no tiene cuentas en AndStatus</string>
   <string name="summary_preference_accounts_present">Número de cuentas en AndStatus</string>
   <string name="summary_preference_add_account_oauth">Pulsa aquí para abrir la red social en un navegador.</string>
@@ -405,6 +425,11 @@
   <string name="summary_preference_vibration_off">Vibración desactivada</string>
   <string name="summary_preference_vibration_on">Vibración para los mensajes entrantes</string>
   <string name="switch_to_default_timeline">Cambiar a la línea temporal predefinida</string>
+  <string name="sync_over_wifi_only">Sincronizar por WiFi solamente</string>
+  <string name="sync_failed">Error de sincronización</string>
+  <string name="sync_frequency_minutes">Sincronizar la frecuencia en minutos. Déjelo en blanco para tener el valor por defecto: </string>
+  <string name="synced_automatically">Sincronizar automáticamente</string>
+  <string name="synced_abbreviated">Sinc.</string>
   <string name="syncing">Sincronizando&#8230;</string>
   <string name="syncing_timeline_for_somebody">Sincronizando %1$s para %2$s</string>
   <string name="system_is_busy_try_later">El sistema está ocupado. Por favor, inténtelo de nuevo más tarde.</string>
@@ -430,6 +455,7 @@
   <string name="timeline_title_replies">Respuestas</string>
   <string name="timeline_title_unknown">(Línea temporal desconocida)</string>
   <string name="timeline_title_user">Usuario</string>
+  <string name="title">Titulo</string>
   <string name="title_account">Cuenta</string>
   <string name="title_command_fetch_attachment">Añadir adjunto</string>
   <string name="title_command_fetch_avatar">Avatar</string>
@@ -444,6 +470,7 @@
   <string name="title_preference_download_attachments_over_wifi_only">Descargar adjuntos solamente con Wi-Fi</string>
   <string name="title_preference_enable_android_backup">Activar copias de seguridad automáticas</string>
   <string name="title_preference_enter_sends_message">Enviar mensaje pulsando INTRO</string>
+  <string name="title_preference_frequency">Frecuencia de sincronización por defecto</string>
   <string name="title_preference_history_size">Tamaño del historial</string>
   <string name="title_preference_history_time">Tiempo del historial</string>
   <string name="title_preference_is_default_account">Usar como predeterminada</string>
@@ -481,6 +508,7 @@
   <string name="title_preference_vibration">Vibración</string>
   <string name="title_sending_messages_log_enabled">Registrar los mensajes enviados en un archivo</string>
   <string name="title_timeline">Línea temporal</string>
+  <string name="total_counters">Contadores totales</string>
   <string name="translator_credits">Traductores</string>
   <string name="unimplemented">No implementado.</string>
   <string name="unknown_userlist">(Lista de usuario desconocida)</string>
