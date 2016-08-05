@@ -20,6 +20,7 @@
     <style name="Base.V24.Theme.AndStatus.Dark" parent="Base.V21.Theme.AndStatus.Dark">
         <!-- Due to Android N bug in the ContextMenuBuilder colorAccent item cannot be defined via attribute,
             so this item is not customizable in AndStatus
+            See https://code.google.com/p/android/issues/detail?id=215525
          -->
         <item name="colorAccent">@color/accent_material_dark</item>
     </style>

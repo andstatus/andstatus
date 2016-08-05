@@ -2,14 +2,14 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 24
-    buildToolsVersion '24.0.0'
+    buildToolsVersion '24.0.1'
 
     defaultConfig {
         applicationId "org.andstatus.app"
         minSdkVersion 16
         targetSdkVersion 24
-        versionName "27.03"
-        versionCode 183
+        versionName "27.04"
+        versionCode 184
 
         testApplicationId "org.andstatus.app.tests"
         testInstrumentationRunner "android.test.InstrumentationTestRunner"
@@ -34,7 +34,7 @@ android {
 dependencies {
     compile 'com.github.stephenc.jcip:jcip-annotations:1.0-1'
     // http://stephenc.github.io/jcip-annotations/dependency-info.html
-    compile 'com.android.support:appcompat-v7:23.3.0'
+    compile 'com.android.support:appcompat-v7:24.1.1'
     compile 'ch.acra:acra:4.8.5'
     // https://github.com/ACRA/acra/wiki/AdvancedUsage
     compile 'cz.msebera.android:httpclient:4.4.1.2'

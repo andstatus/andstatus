@@ -25,8 +25,8 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
 		</subtitle>
     </header>
-    <release android:versionName="27.03" android:versionCode="183"
-             versionDate="2016-07-15"
+    <release android:versionName="27.04" android:versionCode="184"
+             versionDate="2016-08-05"
              versionTitle="Automatic syncing of individual timelines. New custom search timelines">
         <changes>
             <change>
