@@ -207,7 +207,7 @@ public class MySettingsActivity extends AppCompatPreferenceActivity {
         logEvent("finish", startTimelineActivity ? " and return" : "");
         super.finish();
         if (startTimelineActivity) {
-            MyContextHolder.release();
+            MyContextHolder.setExpiredIfConfigChanged();
             // On modifying activity back stack see http://stackoverflow.com/questions/11366700/modification-of-the-back-stack-in-android
             Intent i = new Intent(this, TimelineActivity.class);
             i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP);

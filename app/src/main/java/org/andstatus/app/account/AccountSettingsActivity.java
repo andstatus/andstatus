@@ -663,7 +663,7 @@ public class AccountSettingsActivity extends MyActivity {
         super.onPause();
         state.save();
         if (mIsFinishing) {
-            MyContextHolder.release();
+            MyContextHolder.setExpiredIfConfigChanged();
             if (overrideBackActivity) {
                 returnToOurActivity();
             }

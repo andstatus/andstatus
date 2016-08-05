@@ -100,19 +100,6 @@ public final class MyContextHolder {
     }
 
     public static MyContext initializeDuringUpgrade(Context context, Object initializedBy) {
-        if (get().initialized() && isConfigChanged()) {
-            synchronized(CONTEXT_LOCK) {
-                if (get().initialized() && isConfigChanged()) {
-                    long preferencesChangeTimeLast = MyPreferences.getPreferencesChangeTime() ;
-                    if (get().preferencesChangeTime() != preferencesChangeTimeLast) {
-                        MyLog.v(TAG, "Preferences changed "
-                                + RelativeTime.secondsAgo(preferencesChangeTimeLast)
-                                + " seconds ago, refreshing...");
-                        get().setExpired();
-                    }
-                }
-            }
-        }
         if (get().initialized() && !get().isExpired()) {
             MyLog.v(TAG, "Already initialized by " + get().initializedBy() +  " (called by: " + initializedBy + ")");
         }
@@ -125,6 +112,22 @@ public final class MyContextHolder {
             }
             Thread.currentThread().interrupt();
             return get();
+        }
+    }
+
+    public static void setExpiredIfConfigChanged() {
+        if (get().initialized() && isConfigChanged()) {
+            synchronized(CONTEXT_LOCK) {
+                if (get().initialized() && isConfigChanged()) {
+                    long preferencesChangeTimeLast = MyPreferences.getPreferencesChangeTime() ;
+                    if (get().preferencesChangeTime() != preferencesChangeTimeLast) {
+                        MyLog.v(TAG, "Preferences changed "
+                                + RelativeTime.secondsAgo(preferencesChangeTimeLast)
+                                + " seconds ago, refreshing...");
+                        get().setExpired();
+                    }
+                }
+            }
         }
     }
 

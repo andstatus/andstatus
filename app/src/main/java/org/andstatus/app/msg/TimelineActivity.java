@@ -46,6 +46,7 @@ import org.andstatus.app.WhichPage;
 import org.andstatus.app.account.AccountSelector;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.MySettingsActivity;
 import org.andstatus.app.data.MatchedUri;
@@ -313,6 +314,7 @@ public class TimelineActivity extends LoadableListActivity implements
                 if (isConfigChanged()) {
                     MyLog.v(this, method + "; Restarting this Activity to apply all new changes of configuration");
                     finish();
+                    MyContextHolder.setExpiredIfConfigChanged();
                     switchView(getParamsLoaded().getTimeline(), null);
                 }
             } else { 
