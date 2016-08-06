@@ -625,7 +625,7 @@ public class Timeline implements Comparable<Timeline> {
 
     /** Required timeline cannot be deleted */
     public boolean isRequired() {
-        return isCombined() && timelineType.isSelectable();
+        return isCombined() && timelineType.isSelectable() && !hasSearchQuery();
     }
 
     @Override
