@@ -61,9 +61,22 @@ public class TimelineViewItemTest extends InstrumentationTestCase {
         item2.createdDate = 1468509658000L;
         assertDuplicates(item1, item2, DuplicationLink.DUPLICATES);
         assertDuplicates(item2, item1, DuplicationLink.IS_DUPLICATED);
+        item2.createdDate = item1.createdDate;
+
+        item2.favorited = true;
+        assertDuplicates(item1, item2, DuplicationLink.DUPLICATES);
+        assertDuplicates(item2, item1, DuplicationLink.IS_DUPLICATED);
+
+        item1.reblogged = true;
+        assertDuplicates(item1, item2, DuplicationLink.DUPLICATES);
+        assertDuplicates(item2, item1, DuplicationLink.IS_DUPLICATED);
+
+        item2.favorited = false;
+        assertDuplicates(item2, item1, DuplicationLink.DUPLICATES);
+        assertDuplicates(item1, item2, DuplicationLink.IS_DUPLICATED);
     }
 
     protected void assertDuplicates(TimelineViewItem item1, TimelineViewItem item2, DuplicationLink duplicates) {
-        assertEquals(item1.toString() + " vs " + item2, item1.duplicates(item2), duplicates);
+        assertEquals(item1.toString() + " vs " + item2, duplicates, item1.duplicates(item2));
     }
 }

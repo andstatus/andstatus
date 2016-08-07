@@ -218,14 +218,16 @@ public class TimelineViewItem {
             return link;
         }
         if (msgId == other.msgId) {
-            link = DuplicationLink.DUPLICATES;
+            link = duplicatesByFavoritedAndReblogged(other);
         }
         if (link == DuplicationLink.NONE) {
             if (Math.abs(createdDate - other.createdDate) < 10000L) {
                 String thisBody = getCleanedBody(body);
                 String otherBody = getCleanedBody(other.body);
                 if (thisBody.equals(otherBody)) {
-                    if (createdDate < other.createdDate) {
+                    if (createdDate == other.createdDate) {
+                        link = duplicatesByFavoritedAndReblogged(other);
+                    } else if (createdDate < other.createdDate) {
                         link = DuplicationLink.IS_DUPLICATED;
                     } else {
                         link = DuplicationLink.DUPLICATES;
@@ -236,6 +238,18 @@ public class TimelineViewItem {
                     link = DuplicationLink.IS_DUPLICATED;
                 }
             }
+        }
+        return link;
+    }
+
+    public DuplicationLink duplicatesByFavoritedAndReblogged(TimelineViewItem other) {
+        DuplicationLink link;
+        if (favorited != other.favorited) {
+            link = favorited ? DuplicationLink.IS_DUPLICATED : DuplicationLink.DUPLICATES;
+        } else if (reblogged != other.reblogged) {
+            link = reblogged ? DuplicationLink.IS_DUPLICATED : DuplicationLink.DUPLICATES;
+        } else {
+            link = rebloggers.size() > other.rebloggers.size() ? DuplicationLink.IS_DUPLICATED : DuplicationLink.DUPLICATES;
         }
         return link;
     }
