@@ -20,7 +20,9 @@ import org.andstatus.app.WhichPage;
 import org.andstatus.app.util.MyLog;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -34,6 +36,7 @@ public class TimelinePages {
         this.list = isSameTimeline(oldPages, thisPage) ? oldPages.list : new ArrayList<TimelinePage>();
         if (thisPage != null) {
             addThisPage(thisPage);
+            collapseDuplicatedPosts();
             dropExcessivePage(thisPage);
         }
     }
@@ -223,5 +226,34 @@ public class TimelinePages {
             s += "\nPage count:" + page.items.size() + ", items: " + page.parameters + ",";
         }
         return MyLog.formatKeyValue(this, s );
+    }
+
+    private void collapseDuplicatedPosts() {
+        Map<TimelineViewItem, TimelinePage> toCollapse = new HashMap<>();
+        TimelinePage prevPage = null;
+        TimelineViewItem prevItem = null;
+        for (TimelinePage page : list) {
+            for (TimelineViewItem item : page.items) {
+                switch (item.duplicates(prevItem)) {
+                    case DUPLICATES:
+                        toCollapse.put(item, page);
+                        prevItem.collapse(item);
+                        break;
+                    case IS_DUPLICATED:
+                        toCollapse.put(prevItem, prevPage);
+                        item.collapse(prevItem);
+                        prevPage = page;
+                        prevItem = item;
+                        break;
+                    default:
+                        prevPage = page;
+                        prevItem = item;
+                        break;
+                }
+            }
+        }
+        for (Map.Entry<TimelineViewItem, TimelinePage> entry : toCollapse.entrySet()) {
+            entry.getValue().items.remove(entry.getKey());
+        }
     }
 }

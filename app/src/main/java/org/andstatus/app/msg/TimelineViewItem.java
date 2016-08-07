@@ -18,6 +18,7 @@ package org.andstatus.app.msg;
 import android.content.Context;
 import android.database.Cursor;
 import android.graphics.drawable.Drawable;
+import android.support.annotation.NonNull;
 import android.text.Html;
 import android.text.TextUtils;
 
@@ -39,8 +40,11 @@ import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.SharedPreferencesUtil;
+import org.apache.commons.lang3.StringEscapeUtils;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -74,6 +78,8 @@ public class TimelineViewItem {
 
     private final static TimelineViewItem EMPTY = new TimelineViewItem();
     private Drawable avatarDrawable = null;
+
+    private List<TimelineViewItem> children = new ArrayList<>();
 
     public static TimelineViewItem getEmpty() {
         return EMPTY;
@@ -154,6 +160,7 @@ public class TimelineViewItem {
         setRecipientName(context, messageDetails);
         setMessageSource(context, messageDetails);
         setMessageStatus(context, messageDetails);
+        setCollapsedStatus(context, messageDetails);
         return messageDetails.toString();
     }
 
@@ -161,6 +168,12 @@ public class TimelineViewItem {
         if (!SharedPreferencesUtil.isEmpty(messageSource) && !"ostatus".equals(messageSource)) {
             messageDetails.append(" " + String.format(
                     context.getText(R.string.message_source_from).toString(), messageSource));
+        }
+    }
+
+    private void setCollapsedStatus(Context context, StringBuilder messageDetails) {
+        if (isCollapsed()) {
+            I18n.appendWithSpace(messageDetails, "(+" + children.size() + ")");
         }
     }
 
@@ -197,5 +210,50 @@ public class TimelineViewItem {
     public String toString() {
         return MyLog.formatKeyValue(this, I18n.trimTextAt(MyHtml.fromHtml(body), 40) + ","
                 + getDetails(MyContextHolder.get().context()));
+    }
+
+    public DuplicationLink duplicates(TimelineViewItem other) {
+        DuplicationLink link = DuplicationLink.NONE;
+        if (other == null) {
+            return link;
+        }
+        if (msgId == other.msgId) {
+            link = DuplicationLink.DUPLICATES;
+        }
+        if (link == DuplicationLink.NONE) {
+            if (Math.abs(createdDate - other.createdDate) < 10000L) {
+                String thisBody = getCleanedBody(body);
+                String otherBody = getCleanedBody(other.body);
+                if (thisBody.equals(otherBody)) {
+                    if (createdDate < other.createdDate) {
+                        link = DuplicationLink.IS_DUPLICATED;
+                    } else {
+                        link = DuplicationLink.DUPLICATES;
+                    }
+                } else if (thisBody.contains(otherBody)) {
+                    link = DuplicationLink.DUPLICATES;
+                } else if (otherBody.contains(thisBody)) {
+                    link = DuplicationLink.IS_DUPLICATED;
+                }
+            }
+        }
+        return link;
+    }
+
+    @NonNull
+    protected static String getCleanedBody(String body) {
+        String out = MyHtml.fromHtml(body).toLowerCase();
+        out = StringEscapeUtils.unescapeHtml4(out);
+        return out.replaceAll("\n", " ").replaceAll("  ", " ");
+    }
+
+    public void collapse(TimelineViewItem child) {
+        this.children.addAll(child.children);
+        child.children.clear();
+        this.children.add(child);
+    }
+
+    public boolean isCollapsed() {
+        return !children.isEmpty();
     }
 }

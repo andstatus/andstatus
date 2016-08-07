@@ -43,11 +43,9 @@ public class TimelineLoader implements LoadableListActivity.SyncLoader {
     private final TimelineListParameters params;
     private volatile TimelinePage pageLoaded;
     private final long instanceId;
-    private final MyAccount currentMyAccount;
 
     public TimelineLoader(@NonNull TimelineListParameters params, MyAccount currentMyAccount, long instanceId) {
         this.params = params;
-        this.currentMyAccount = currentMyAccount;
         this.pageLoaded = new TimelinePage(new ArrayList<TimelineViewItem>(), getParams());
         this.instanceId = instanceId;
     }
