@@ -63,5 +63,17 @@
         style="@style/drawerListItem"
         android:onClick="onSelectAccountButtonClick"
         android:text="@string/title_preference_username" />
-    
+
+    <View style="@style/Divider"/>
+
+    <CheckBox
+        android:id="@+id/collapseDuplicatesToggle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="?android:attr/listPreferredItemHeightSmall"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:onClick="onCollapseDuplicatesToggleClick"
+        android:text="@string/collapse_duplicates"
+        android:checked="true"/>
+
 </LinearLayout>

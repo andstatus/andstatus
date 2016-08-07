@@ -34,6 +34,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.CheckBox;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import org.andstatus.app.ActivityRequestCode;
@@ -95,7 +96,6 @@ public class TimelineActivity extends LoadableListActivity implements
     DrawerLayout mDrawerLayout;
     ActionBarDrawerToggle mDrawerToggle;
     protected volatile SelectorActivityMock selectorActivityMock;
-
 
     public static void startForTimeline(MyContext myContext, Activity activity, Timeline timeline,
                                         MyAccount newCurrentMyAccount) {
@@ -267,6 +267,32 @@ public class TimelineActivity extends LoadableListActivity implements
     private void closeDrawer() {
         ViewGroup mDrawerList = (ViewGroup) findViewById(R.id.navigation_drawer);
         mDrawerLayout.closeDrawer(mDrawerList);
+    }
+
+    public void onCollapseDuplicatesToggleClick(View view) {
+        closeDrawer();
+        TimelineAdapter adapter = getListAdapter();
+        if (adapter != null) {
+            // TODO: unify this with saving position in org.andstatus.app.LoadableListActivity.onLoadFinished()
+            ListView list = getListView();
+            long itemIdOfListPosition = centralItemId;
+            int y = 0;
+            if (list.getChildCount() > 0) {
+                int firstVisiblePosition = list.getFirstVisiblePosition();
+                itemIdOfListPosition = list.getAdapter().getItemId(firstVisiblePosition);
+                y = getYOfPosition(list, getListAdapter(), firstVisiblePosition);
+            }
+            adapter.setCollapseDuplicates(isCollapseDuplicates());
+            int firstListPosition = getListAdapter().getPositionById(itemIdOfListPosition);
+            if (firstListPosition >= 0) {
+                list.setSelectionFromTop(firstListPosition, y);
+            }
+        }
+    }
+
+    public boolean isCollapseDuplicates() {
+        View view = findViewById(R.id.collapseDuplicatesToggle);
+        return view == null ? true : ((CheckBox) view).isChecked();
     }
 
     /** View.OnClickListener */

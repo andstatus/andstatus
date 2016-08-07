@@ -266,4 +266,27 @@ public class TimelineAdapter extends MyBaseAdapter {
             super.onClick(v);
         }
     }
+
+    public void setCollapseDuplicates(boolean collapse) {
+        pages.setCollapseDuplicates(collapse);
+        notifyDataSetChanged();
+    }
+
+    @Override
+    public int getPositionById(long itemId) {
+        int position = super.getPositionById(itemId);
+        if (position < 0 && pages.isCollapseDuplicates()) {
+            for (int position2 = 0; position2 < getCount(); position2++) {
+                TimelineViewItem item = getItem(position2);
+                if (item.isCollapsed()) {
+                    for (TimelineViewItem child : item.getChildren()) {
+                        if (child.msgId == itemId) {
+                            return position2;
+                        }
+                    }
+                }
+            }
+        }
+        return position;
+    }
 }

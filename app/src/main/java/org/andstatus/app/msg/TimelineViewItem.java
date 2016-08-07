@@ -256,4 +256,8 @@ public class TimelineViewItem {
     public boolean isCollapsed() {
         return !children.isEmpty();
     }
+
+    public List<TimelineViewItem> getChildren() {
+        return children;
+    }
 }

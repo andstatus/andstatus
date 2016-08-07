@@ -32,11 +32,13 @@ public class TimelinePages {
     final List<TimelinePage> list;
     final long updatedAt = MyLog.uniqueCurrentTimeMS();
 
+    private boolean collapseDuplicates;
+
     public TimelinePages(TimelinePages oldPages, TimelinePage thisPage) {
         this.list = isSameTimeline(oldPages, thisPage) ? oldPages.list : new ArrayList<TimelinePage>();
         if (thisPage != null) {
             addThisPage(thisPage);
-            collapseDuplicatedPosts();
+            setCollapseDuplicates(oldPages == null ? true : oldPages.isCollapseDuplicates());
             dropExcessivePage(thisPage);
         }
     }
@@ -228,7 +230,22 @@ public class TimelinePages {
         return MyLog.formatKeyValue(this, s );
     }
 
-    private void collapseDuplicatedPosts() {
+    public boolean isCollapseDuplicates() {
+        return collapseDuplicates;
+    }
+
+    public void setCollapseDuplicates(boolean collapse) {
+        if (this.collapseDuplicates != collapse) {
+            this.collapseDuplicates = collapse;
+            if (this.collapseDuplicates) {
+                collapseDuplicates();
+            } else {
+                showDuplicates();
+            }
+        }
+    }
+
+    private void collapseDuplicates() {
         Map<TimelineViewItem, TimelinePage> toCollapse = new HashMap<>();
         TimelinePage prevPage = null;
         TimelineViewItem prevItem = null;
@@ -256,4 +273,20 @@ public class TimelinePages {
             entry.getValue().items.remove(entry.getKey());
         }
     }
+
+    private void showDuplicates() {
+        for (TimelinePage page : list) {
+            for (int ind = page.items.size() - 1; ind >= 0; ind--) {
+                TimelineViewItem item = page.items.get(ind);
+                int ind2 = ind + 1;
+                if (item.isCollapsed()) {
+                    for (TimelineViewItem child : item.getChildren()) {
+                        page.items.add(ind2++, child);
+                    }
+                    item.getChildren().clear();
+                }
+            }
+        }
+    }
+
 }
