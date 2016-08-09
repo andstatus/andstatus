@@ -305,7 +305,6 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
     }
 
     public void onLoadFinished(boolean keepCurrentPosition) {
-        updateTitle("");
         boolean positionRestored = false;
         if (keepCurrentPosition) {
             ListView list = getListView();
@@ -327,6 +326,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
             setListAdapter(newListAdapter());
         }
         getListAdapter().setPositionRestored(positionRestored);
+        updateTitle("");
     }
 
     public static int getYOfPosition(ListView list, MyBaseAdapter myBaseAdapter, int position) {
