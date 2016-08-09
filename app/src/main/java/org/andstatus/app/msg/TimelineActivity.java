@@ -494,7 +494,8 @@ public class TimelineActivity extends LoadableListActivity implements
             return;
         }
         Uri uri = MatchedUri.getTimelineItemUri(
-                getParamsLoaded().getTimeline().fromIsCombined(myContext, false).fromMyAccount(myContext, ma),
+                Timeline.getTimeline(TimelineType.EVERYTHING, null, 0,
+                        myContext.persistentOrigins().fromId(item.originId)),
                 item.msgId);
 
         String action = getIntent().getAction();
