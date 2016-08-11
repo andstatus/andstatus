@@ -16,7 +16,6 @@
 
 package org.andstatus.app.account;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -25,19 +24,20 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
 import org.andstatus.app.ClassInApplicationPackage;
+import org.andstatus.app.MyActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.util.MyLog;
 
-public class AccountSettingsWebActivity extends Activity {
+public class AccountSettingsWebActivity extends MyActivity {
     private static final String TAG = AccountSettingsWebActivity.class.getSimpleName();
     public static final String EXTRA_URLTOOPEN = ClassInApplicationPackage.PACKAGE_NAME + ".URLTOOPEN";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        mLayoutId = R.layout.account_settings_web;
         super.onCreate(savedInstanceState);
         try {
-            setContentView(R.layout.account_settings_web);
             String url = getIntent().getStringExtra(EXTRA_URLTOOPEN);
             MyLog.d(TAG, "Loading the URL: " + url);
             WebView webView = (WebView) findViewById(R.id.accountSettingsWebView);
