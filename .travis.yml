@@ -9,7 +9,7 @@ jdk: oraclejdk8
 env:
   global:
     # Looks like android-24 doesn't work yet...
-    - ANDROID_TARGET=android-23
+    - ANDROID_TARGET=android-24
     - ANDROID_ABI=armeabi-v7a
 android:
   components:
@@ -30,6 +30,7 @@ before_install:
   - chmod +x gradlew
 before_script:
   - uname -a
+  - android list targets
   - echo no | android create avd --force --name test --target $ANDROID_TARGET --abi $ANDROID_ABI
   - emulator -avd test -no-skin -no-audio -no-window &
 script:
