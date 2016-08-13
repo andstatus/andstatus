@@ -41,6 +41,7 @@ script:
   # Instead of this (which doesn't give any output during tests execution):
   # - ./gradlew connectedCheck -PdisablePreDex --continue --stacktrace
   # run:
+  ./gradlew :app:installDebugAndroidTest :app:installDebug
   - adb shell am instrument -w -e func true org.andstatus.app.tests/android.test.InstrumentationTestRunner
   # See http://stackoverflow.com/questions/21294945/error-unable-to-find-instrumentation-info-for-componentinfo
 after_success:
