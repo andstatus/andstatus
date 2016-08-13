@@ -167,7 +167,7 @@ public class DownloadData {
     }
 
     private void fixFieldsAfterLoad() {
-        if ((userId == 0) && (msgId == 0) || uri.equals(Uri.EMPTY)) {
+        if ((userId == 0) && (msgId == 0) || UriUtils.isEmpty(uri)) {
             hardError = true;
         }
         if (fileStored == null) {

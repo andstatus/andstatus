@@ -111,13 +111,13 @@ public abstract class FileDownloader {
     }
 
     private Connection getConnection(MyAccount ma, Uri uri) throws ConnectionException {
-        if (uri == null || Uri.EMPTY == uri) {
-            throw new ConnectionException(ConnectionException.StatusCode.NOT_FOUND, "No Uri to download from: '" + uri + "'");
+        if (UriUtils.isEmpty(uri)) {
+            throw new ConnectionException(ConnectionException.StatusCode.NOT_FOUND, "No Uri to (down)load from: '" + uri + "'");
         }
-        if (UriUtils.isLocal(uri)) {
-            return new ConnectionLocal();
-        } else {
+        if (UriUtils.isDownloadable(uri)) {
             return ma.getConnection();
+        } else {
+            return new ConnectionLocal();
         }
     }
 

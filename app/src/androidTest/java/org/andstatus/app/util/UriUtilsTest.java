@@ -23,12 +23,13 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class UriUtilsTest extends InstrumentationTestCase {
+    private static Uri[] EMPTY_URIS = { (Uri) null, Uri.EMPTY, Uri.parse(""),
+            UriUtils.fromString(""), UriUtils.fromString(" ")};
+
     public void testIsEmpty() {
-        assertTrue(UriUtils.isEmpty(null));
-        assertTrue(UriUtils.isEmpty(Uri.EMPTY));
-        assertTrue(UriUtils.isEmpty(Uri.parse("")));
-        assertTrue(UriUtils.isEmpty(UriUtils.fromString("")));
-        assertTrue(UriUtils.isEmpty(UriUtils.fromString(" ")));
+        for (Uri uri : EMPTY_URIS) {
+            assertTrue(UriUtils.isEmpty(uri));
+        }
         assertFalse(UriUtils.isEmpty(UriUtils.fromString(".")));
     }
 
@@ -56,6 +57,19 @@ public class UriUtilsTest extends InstrumentationTestCase {
 
         uri = UriUtils.fromAlternativeTags(jso, "unknown1", "unknown2");
         assertEquals("", uri.toString());
+    }
+
+    public void testIsDownloadable() {
+        for (Uri uri : EMPTY_URIS) {
+            assertFalse(UriUtils.isDownloadable(uri));
+        }
+        assertFalse(UriUtils.isDownloadable(UriUtils.fromString(".")));
+        assertFalse(UriUtils.isDownloadable(UriUtils.fromString("something")));
+        assertFalse(UriUtils.isDownloadable(UriUtils.fromString("something")));
+        assertFalse("We cannot download ftp", UriUtils.isDownloadable(UriUtils.fromString("ftp://somedomain.example.com")));
+        assertFalse(UriUtils.isDownloadable(UriUtils.fromString("content://somedomain.example.com")));
+        assertTrue(UriUtils.isDownloadable(UriUtils.fromString("http://somedomain.example.com")));
+        assertTrue(UriUtils.isDownloadable(UriUtils.fromString("https://somedomain.example.com")));
     }
 
 }
