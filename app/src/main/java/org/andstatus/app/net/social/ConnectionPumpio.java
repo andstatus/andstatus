@@ -269,7 +269,7 @@ public class ConnectionPumpio extends Connection {
 
     ConnectionAndUrl getConnectionAndUrl(ApiRoutineEnum apiRoutine, String userId) throws ConnectionException {
         if (TextUtils.isEmpty(userId)) {
-            throw new IllegalArgumentException(apiRoutine + ": userId is required");
+            throw new ConnectionException(StatusCode.BAD_REQUEST, apiRoutine + ": userId is required");
         }
         return  getConnectionAndUrlForUsername(apiRoutine, userOidToUsername(userId));
     }
@@ -281,16 +281,16 @@ public class ConnectionPumpio extends Connection {
             throw new ConnectionException(StatusCode.UNSUPPORTED_API, "The API is not supported yet: " + apiRoutine);
         }
         if (TextUtils.isEmpty(username)) {
-            throw new IllegalArgumentException(apiRoutine + ": userName is required");
+            throw new ConnectionException(StatusCode.BAD_REQUEST, apiRoutine + ": userName is required");
         }
         String nickname = usernameToNickname(username);
         if (TextUtils.isEmpty(nickname)) {
-            throw new IllegalArgumentException(apiRoutine + ": wrong userName=" + username);
+            throw new ConnectionException(StatusCode.BAD_REQUEST, apiRoutine + ": wrong userName='" + username + "'");
         }
         String host = usernameToHost(username);
         conu.httpConnection = http;
         if (TextUtils.isEmpty(host)) {
-            throw new IllegalArgumentException(apiRoutine + ": host is empty for the userName=" + username);
+            throw new ConnectionException(StatusCode.BAD_REQUEST, apiRoutine + ": host is empty for the userName='" + username + "'");
         } else if (http.data.originUrl == null || host.compareToIgnoreCase(http.data.originUrl.getHost()) != 0) {
             MyLog.v(this, "Requesting data from the host: " + host);
             HttpConnectionData connectionData1 = http.data.clone();
