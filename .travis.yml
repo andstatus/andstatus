@@ -3,6 +3,7 @@
 # https://github.com/codecov/example-android/blob/master/.travis.yml
 # https://github.com/codepath/android_guides/wiki/Setting-up-Travis-CI
 # http://stackoverflow.com/questions/34621124/using-travis-ci-with-android
+# http://panavtec.me/continous-integration-on-android-with-travis-ci
 language: android
 jdk: oraclejdk8
 env:
