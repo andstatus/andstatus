@@ -38,6 +38,10 @@ script:
   - android-wait-for-emulator
   - adb devices
   - adb shell input keyevent 82 &
-  - ./gradlew connectedCheck -PdisablePreDex --continue --stacktrace
+  # Instead of this (which doesn't give any output during tests execution):
+  # - ./gradlew connectedCheck -PdisablePreDex --continue --stacktrace
+  # run:
+  - adb shell am instrument -w -e func true org.andstatus.app.tests/android.test.InstrumentationTestRunner
+  # See http://stackoverflow.com/questions/21294945/error-unable-to-find-instrumentation-info-for-componentinfo
 after_success:
   # TODO: SonarQube
