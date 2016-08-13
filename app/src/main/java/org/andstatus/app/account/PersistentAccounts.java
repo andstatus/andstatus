@@ -18,7 +18,6 @@ import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.database.FriendshipTable;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.SharedPreferencesUtil;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -29,26 +28,17 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class PersistentAccounts {
-    /**
-     * Persistence key for the Name of the default account
-     */
-    public static final String KEY_DEFAULT_ACCOUNT_NAME = "default_account_name";
-    /**
-     * Name of the default account. The name is the same for this class and for {@link android.accounts.Account}
-     */
-    private volatile String defaultAccountName = "";
     /**
      * Name of "current" account: it is not stored when application is killed
      */
     private volatile String currentAccountName = "";
 
     private final MyContext myContext;
-    private final Map<String,MyAccount> mAccounts = new ConcurrentHashMap<>();
+    private final List<MyAccount> mAccounts = new CopyOnWriteArrayList<>();
     private int distinctOriginsCount = 0;
     private volatile Set<Long> myFriends = null;
 
@@ -64,9 +54,7 @@ public class PersistentAccounts {
      * @return not null 
      */
     public List<MyAccount> list() {
-        List<MyAccount> list = new ArrayList<>(mAccounts.values());
-        Collections.sort(list);
-        return list;
+        return mAccounts;
     }
     
     public boolean isEmpty() {
@@ -78,36 +66,28 @@ public class PersistentAccounts {
     }
     
     public PersistentAccounts initialize() {
-        defaultAccountName = getDefaultAccountName();
-        mAccounts.clear();
         myFriends = null;
         android.accounts.AccountManager am = AccountManager.get(myContext.context());
         android.accounts.Account[] aa = am.getAccountsByType( AuthenticatorService.ANDROID_ACCOUNT_TYPE );
+        List<MyAccount> myAccounts = new ArrayList<>();
         for (android.accounts.Account account : aa) {
             MyAccount ma = Builder.fromAndroidAccount(myContext, account).getAccount();
             if (ma.isValid()) {
-                mAccounts.put(ma.getAccountName(), ma);
+                myAccounts.add(ma);
             } else {
                 MyLog.e(this, "The account is not valid: " + ma);
             }
         }
+        Collections.sort(myAccounts);
+        mAccounts.clear();
+        mAccounts.addAll(myAccounts);
         calculateDistinctOriginsCount();
         MyLog.v(this, "Account list initialized, " + mAccounts.size() + " accounts in " + distinctOriginsCount + " origins");
         return this;
     }
 
-    public static Set<AccountData> getAccountDataFromAccountManager(MyContext myContext) {
-        Set<AccountData> accountDataSet = new HashSet<>();
-        android.accounts.AccountManager am = AccountManager.get(myContext.context());
-        android.accounts.Account[] aa = am.getAccountsByType( AuthenticatorService.ANDROID_ACCOUNT_TYPE );
-        for (android.accounts.Account androidAccount : aa) {
-            accountDataSet.add(AccountData.fromAndroidAccount(myContext, androidAccount));
-        }
-        return accountDataSet;
-    }
-
-    public String getDefaultAccountName() {
-        return SharedPreferencesUtil.getString(KEY_DEFAULT_ACCOUNT_NAME, "");
+    public MyAccount getDefaultAccount() {
+        return mAccounts.isEmpty() ? MyAccount.getEmpty(myContext) : list().get(0);
     }
 
     public int getDistinctOriginsCount() {
@@ -116,7 +96,7 @@ public class PersistentAccounts {
     
     private void calculateDistinctOriginsCount() {
         Set<Long> originIds = new HashSet<>();
-        for (MyAccount ma : mAccounts.values()) {
+        for (MyAccount ma : mAccounts) {
             originIds.add(ma.getOriginId());
         }
         distinctOriginsCount = originIds.size();
@@ -135,18 +115,18 @@ public class PersistentAccounts {
         boolean isDeleted = false;
 
         // Delete the User's object from the list
-        boolean found = false;
-        for (MyAccount persistentAccount : mAccounts.values()) {
+        MyAccount toDelete = null;
+        for (MyAccount persistentAccount : mAccounts) {
             if (persistentAccount.equals(ma)) {
-                found = true;
+                toDelete = persistentAccount;
                 break;
             }
         }
-        if (found) {
+        if (toDelete != null) {
             MyAccount.Builder.fromMyAccount(myContext, ma, "delete", false).deleteData();
 
             // And delete the object from the list
-            mAccounts.remove(ma.getAccountName());
+            mAccounts.remove(toDelete);
 
             isDeleted = true;
             MyPreferences.onPreferencesChanged();
@@ -166,7 +146,7 @@ public class PersistentAccounts {
             return myAccount;
         }
 
-        for (MyAccount persistentAccount : mAccounts.values()) {
+        for (MyAccount persistentAccount : mAccounts) {
             if (persistentAccount.getAccountName().compareTo(myAccount.getAccountName()) == 0) {
                 myAccount = persistentAccount;
                 break;
@@ -181,7 +161,8 @@ public class PersistentAccounts {
                 if (myAccount.getAccountName().compareTo(androidAccount.name) == 0) {
                     myAccount = Builder.fromAndroidAccount(myContext, androidAccount)
                             .getAccount();
-                    mAccounts.put(myAccount.getAccountName(), myAccount);
+                    mAccounts.add(myAccount);
+                    Collections.sort(mAccounts);
                     MyPreferences.onPreferencesChanged();
                     break;
                 }
@@ -202,10 +183,9 @@ public class PersistentAccounts {
             return ma;
         }
         currentAccountName = "";
-        ma = fromAccountName(defaultAccountName);
+        ma = getDefaultAccount();
         if (!ma.isValid()) {
-            defaultAccountName = "";
-            for (MyAccount myAccount : mAccounts.values()) {
+            for (MyAccount myAccount : mAccounts) {
                 if (myAccount.isValid()) {
                     ma = myAccount;
                     break;
@@ -213,12 +193,9 @@ public class PersistentAccounts {
             }
         }
         if (ma.isValid()) {
-            // Correct Current and Default Accounts if needed
+            // Correct Current Account if needed
             if (TextUtils.isEmpty(currentAccountName)) {
                 setCurrentAccount(ma);
-            }
-            if (TextUtils.isEmpty(defaultAccountName)) {
-                setDefaultAccount(ma);
             }
         }
         return ma;
@@ -254,7 +231,7 @@ public class PersistentAccounts {
     public MyAccount fromUserId(long userId) {
         MyAccount ma = MyAccount.getEmpty(myContext, "(id=" + userId +")");
         if (userId != 0) {
-            for (MyAccount persistentAccount : mAccounts.values()) {
+            for (MyAccount persistentAccount : mAccounts) {
                 if (persistentAccount.getUserId() == userId) {
                     ma = persistentAccount;
                     break;
@@ -274,7 +251,7 @@ public class PersistentAccounts {
      */
     public MyAccount getFirstSucceededForOriginId(long originId) {
         MyAccount ma = MyAccount.getEmpty(myContext, "");
-        for (MyAccount persistentAccount : mAccounts.values()) {
+        for (MyAccount persistentAccount : mAccounts) {
             if (originId==0 || persistentAccount.getOriginId() == originId) {
                 if (!ma.isValid()) {
                     ma = persistentAccount;
@@ -294,7 +271,7 @@ public class PersistentAccounts {
     }
 
     public boolean hasSyncedAutomatically() {
-        for (MyAccount ma : mAccounts.values()) {
+        for (MyAccount ma : mAccounts) {
             if (ma.isValidAndSucceeded() && ma.isSyncedAutomatically()) {
                 return true;
             }
@@ -357,21 +334,9 @@ public class PersistentAccounts {
         }
     }
 
-    /**
-     * Set provided MyAccount as a default one.
-     * Default account selection is persistent
-     */
-    public void setDefaultAccount(MyAccount ma) {
-        if (ma != null) {
-            defaultAccountName = ma.getAccountName();
-        }
-        SharedPreferencesUtil.getDefaultSharedPreferences().edit()
-                .putString(KEY_DEFAULT_ACCOUNT_NAME, defaultAccountName).commit();
-    }
-    
     public void onDefaultSyncFrequencyChanged() {
         long syncFrequencySeconds = MyPreferences.getSyncFrequencySeconds();
-        for (MyAccount ma : mAccounts.values()) {
+        for (MyAccount ma : mAccounts) {
             if (ma.getSyncFrequencySeconds() <= 0) {
                 Account account = ma.getExistingAndroidAccount();
                 if (account != null) {
@@ -411,7 +376,7 @@ public class PersistentAccounts {
         long backedUpCount = 0;
         JSONArray jsa = new JSONArray();
         try {
-            for (MyAccount ma : mAccounts.values()) {
+            for (MyAccount ma : mAccounts) {
                 jsa.put(ma.toJson());
                 backedUpCount++;
             }
@@ -534,7 +499,21 @@ public class PersistentAccounts {
         myFriends = friends;
     }
 
-    public MyAccount getDefaultAccount() {
-        return fromAccountName(defaultAccountName);
+    public void reorderAccounts(List<MyAccount> reorderedItems) {
+        int order = 0;
+        boolean changed = false;
+        for (MyAccount myAccount : reorderedItems) {
+            order++;
+            if (myAccount.getOrder() != order) {
+                changed = true;
+                MyAccount.Builder builder = Builder.fromMyAccount(myContext, myAccount, "reorder", false);
+                builder.setOrder(order);
+                builder.save();
+            }
+        }
+        if (changed) {
+            Collections.sort(mAccounts);
+            MyPreferences.onPreferencesChanged();
+        }
     }
 }

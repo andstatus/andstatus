@@ -35,8 +35,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedMap;
-import java.util.TreeMap;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -57,12 +55,12 @@ public class AccountSelector extends SelectorDialog {
 
         setTitle(R.string.label_accountselector);
 
-        Map<String, MyAccount> listData = newListData();
+        List<MyAccount> listData = newListData();
         if (listData.isEmpty()) {
             returnSelectedAccount(null);
             return;
         } else if (listData.size() == 1) {
-            returnSelectedAccount(listData.entrySet().iterator().next().getValue());
+            returnSelectedAccount(listData.get(0));
             return;
         }
 
@@ -78,27 +76,28 @@ public class AccountSelector extends SelectorDialog {
         });
     }
 
-    private Map<String, MyAccount> newListData() {
+    private List<MyAccount> newListData() {
         long originId = getArguments().getLong(IntentExtra.ORIGIN_ID.key, 0);
-        SortedMap<String, MyAccount> listData = new TreeMap<String, MyAccount>();
+        List<MyAccount> listData = new ArrayList<>();
         for (MyAccount ma : MyContextHolder.get().persistentAccounts().list()) {
             if (originId==0 || ma.getOriginId() == originId) {
-                listData.put(ma.getAccountName(), ma);
+                listData.add(ma);
             }
         }
         return listData;
     }
 
-    private MySimpleAdapter newListAdapter(Map<String, MyAccount> listData) {
-        List<Map<String, String>> list = new ArrayList<Map<String, String>>();
-        for (MyAccount ma : listData.values()) {
-            Map<String, String> map = new HashMap<String, String>();
+    private MySimpleAdapter newListAdapter(List<MyAccount> listData) {
+        List<Map<String, String>> list = new ArrayList<>();
+        final String syncText = getText(R.string.synced_abbreviated).toString();
+        for (MyAccount ma : listData) {
+            Map<String, String> map = new HashMap<>();
             String visibleName = ma.getAccountName();
             if (!ma.isValidAndSucceeded()) {
                 visibleName = "(" + visibleName + ")";
             }
             map.put(KEY_VISIBLE_NAME, visibleName);
-            map.put(KEY_SYNC_AUTO, ma.isSyncedAutomatically() && ma.isValidAndSucceeded() ? "X" : "");
+            map.put(KEY_SYNC_AUTO, ma.isSyncedAutomatically() && ma.isValidAndSucceeded() ? syncText : "");
             map.put(BaseColumns._ID, Long.toString(ma.getUserId()));
             list.add(map);
         }

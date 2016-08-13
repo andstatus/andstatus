@@ -100,8 +100,6 @@ public final class MyAccount implements Comparable<MyAccount> {
      */
     public static final String KEY_OAUTH = "oauth";
 
-    public static final String KEY_IS_DEFAULT_ACCOUNT = "is_default_account";
-    
     /**
      * Storing version of the account data
      */
@@ -118,6 +116,7 @@ public final class MyAccount implements Comparable<MyAccount> {
     /** This corresponds to turning syncing on/off in Android Accounts
      * @see {@link android.content.ContentResolver#getSyncAutomatically(Account, String)} */
     public static final String KEY_IS_SYNCED_AUTOMATICALLY = "sync_automatically";
+    public static final String KEY_ORDER = "order";
 
     /** Companion class used to load/create/change/delete {@link MyAccount}'s data */
     public static final class Builder implements Parcelable {
@@ -273,6 +272,10 @@ public final class MyAccount implements Comparable<MyAccount> {
             myAccount.isSyncedAutomatically = syncedAutomatically;
         }
 
+        public void setOrder(int order) {
+            this.myAccount.order = order;
+        }
+
         static class SaveResult {
             boolean success = false;
             boolean changed = false;
@@ -310,6 +313,7 @@ public final class MyAccount implements Comparable<MyAccount> {
                 myAccount.accountData.setDataBoolean(MyAccount.KEY_IS_SYNCED_AUTOMATICALLY, myAccount.isSyncedAutomatically);
                 myAccount.accountData.setDataLong(MyPreferences.KEY_SYNC_FREQUENCY_SECONDS, myAccount.syncFrequencySeconds);
                 myAccount.accountData.setDataInt(KEY_VERSION, myAccount.version);
+                myAccount.accountData.setDataInt(KEY_ORDER, myAccount.order);
                 if (androidAccount != null) {
                     myAccount.accountData.saveDataToAndroidAccount(myContext, androidAccount, result);
                 }
@@ -759,6 +763,7 @@ public final class MyAccount implements Comparable<MyAccount> {
         userOid = accountData.getDataString(KEY_USER_OID, "");
         setOAuth(TriState.UNKNOWN);
         credentialsVerified = CredentialsVerificationStatus.load(accountData);
+        order = accountData.getDataInt(KEY_ORDER, 1);
     }
 
     private void setOAuth(TriState isOAuthTriState) {
@@ -835,6 +840,10 @@ public final class MyAccount implements Comparable<MyAccount> {
     
     public OAuthConsumerAndProvider getOAuthConsumerAndProvider() {
         return connection.getOAuthConsumerAndProvider();
+    }
+
+    public int getOrder() {
+        return order;
     }
 
     public int charactersLeftForMessage(String message) {
@@ -973,6 +982,7 @@ public final class MyAccount implements Comparable<MyAccount> {
         jso.put(KEY_IS_SYNCABLE, isSyncable);
         jso.put(KEY_IS_SYNCED_AUTOMATICALLY, isSyncedAutomatically);
         jso.put(KEY_VERSION, version);
+        jso.put(KEY_ORDER, order);
         return jso;
     }
 

@@ -22,13 +22,12 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.ListFragment;
-import android.support.v4.util.Pair;
+import android.support.v7.app.ActionBar;
 import android.support.v7.widget.LinearLayoutManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.woxthebox.draglistview.DragItem;
 import com.woxthebox.draglistview.DragItemAdapter;
@@ -39,15 +38,17 @@ import org.andstatus.app.MyActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.util.MyResources;
+import org.andstatus.app.util.MyUrlSpan;
 
-import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * @author yvolk@yurivolkov.com
  */
 public class AccountListFragment extends Fragment {
 
-    private ArrayList<Pair<Long, String>> mItemArray;
+    private List<MyAccount> mItems;
     private DragListView mDragListView;
 
     public static ListFragment newInstance() {
@@ -65,25 +66,8 @@ public class AccountListFragment extends Fragment {
         View view = inflater.inflate(R.layout.drag_list_layout, container, false);
         mDragListView = (DragListView) view.findViewById(R.id.drag_list_view);
         mDragListView.getRecyclerView().setVerticalScrollBarEnabled(true);
-        mDragListView.setDragListListener(new DragListView.DragListListenerAdapter() {
-            @Override
-            public void onItemDragStarted(int position) {
-                Toast.makeText(mDragListView.getContext(), "Start - position: " + position, Toast.LENGTH_SHORT).show();
-            }
 
-            @Override
-            public void onItemDragEnded(int fromPosition, int toPosition) {
-                if (fromPosition != toPosition) {
-                    Toast.makeText(mDragListView.getContext(), "End - position: " + toPosition, Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
-
-        mItemArray = new ArrayList<>();
-        for (MyAccount myAccount : MyContextHolder.get().persistentAccounts().list()) {
-            mItemArray.add(new Pair<>(myAccount.getUserId(), myAccount.getAccountName()));
-        }
-
+        mItems = new CopyOnWriteArrayList<>(MyContextHolder.get().persistentAccounts().list());
         setupListRecyclerView();
         return view;
     }
@@ -91,12 +75,24 @@ public class AccountListFragment extends Fragment {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        ((MyActivity) getActivity()).getSupportActionBar().setTitle(R.string.header_manage_existing_accounts);
+        MyActivity activity = (MyActivity) getActivity();
+        if (activity != null) {
+            ActionBar actionBar = activity.getSupportActionBar();
+            if (actionBar != null) {
+                actionBar.setTitle(R.string.header_manage_existing_accounts);
+            }
+        }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        MyContextHolder.get().persistentAccounts().reorderAccounts(mItems);
     }
 
     private void setupListRecyclerView() {
         mDragListView.setLayoutManager(new LinearLayoutManager(getContext()));
-        ItemAdapter listAdapter = new ItemAdapter(mItemArray, R.layout.drag_accountlist_item, R.id.dragHandle, false);
+        ItemAdapter listAdapter = new ItemAdapter(mItems, R.layout.drag_accountlist_item, R.id.dragHandle, false);
         mDragListView.setAdapter(listAdapter, true);
         mDragListView.setCanDragHorizontally(false);
         mDragListView.setCustomDragItem(new MyDragItem(getContext(), R.layout.drag_accountlist_item));
@@ -118,12 +114,12 @@ public class AccountListFragment extends Fragment {
         }
     }
 
-    class ItemAdapter extends DragItemAdapter<Pair<Long, String>, ItemAdapter.ViewHolder> {
+    class ItemAdapter extends DragItemAdapter<MyAccount, ItemAdapter.ViewHolder> {
 
         private int mLayoutId;
         private int mGrabHandleId;
 
-        public ItemAdapter(ArrayList<Pair<Long, String>> list, int layoutId, int grabHandleId, boolean dragOnLongPress) {
+        public ItemAdapter(List<MyAccount> list, int layoutId, int grabHandleId, boolean dragOnLongPress) {
             super(dragOnLongPress);
             mLayoutId = layoutId;
             mGrabHandleId = grabHandleId;
@@ -140,27 +136,31 @@ public class AccountListFragment extends Fragment {
         @Override
         public void onBindViewHolder(ViewHolder holder, int position) {
             super.onBindViewHolder(holder, position);
-            String text = mItemList.get(position).second;
-            holder.mText.setText(text);
-            holder.itemView.setTag(text);
+            MyAccount ma = mItemList.get(position);
+            String visibleName = ma.getAccountName();
+            if (!ma.isValidAndSucceeded()) {
+                visibleName = "(" + visibleName + ")";
+            }
+            MyUrlSpan.showText(holder.itemView, R.id.visible_name, visibleName, false, true);
+            MyUrlSpan.showText(holder.itemView, R.id.sync_auto,
+                    ma.isSyncedAutomatically() && ma.isValidAndSucceeded() ?
+                            getText(R.string.synced_abbreviated).toString() : "", false, true);
+            holder.itemView.setTag(visibleName);
         }
 
         @Override
         public long getItemId(int position) {
-            return mItemList.get(position).first;
+            return mItemList.get(position).getUserId();
         }
 
-        public class ViewHolder extends DragItemAdapter<Pair<Long, String>, ItemAdapter.ViewHolder>.ViewHolder {
-            public TextView mText;
+        public class ViewHolder extends DragItemAdapter<MyAccount, ItemAdapter.ViewHolder>.ViewHolder {
 
             public ViewHolder(final View itemView) {
                 super(itemView, mGrabHandleId);
-                mText = (TextView) itemView.findViewById(R.id.visible_name);
             }
 
             @Override
             public void onItemClicked(View view) {
-                Toast.makeText(view.getContext(), "Item " + mItemId + " clicked", Toast.LENGTH_SHORT).show();
                 Intent intent = new Intent(getActivity(), AccountSettingsActivity.class);
                 intent.putExtra(IntentExtra.ACCOUNT_NAME.key,
                         MyContextHolder.get().persistentAccounts().fromUserId(mItemId).getAccountName());
@@ -169,7 +169,6 @@ public class AccountListFragment extends Fragment {
 
             @Override
             public boolean onItemLongClicked(View view) {
-                Toast.makeText(view.getContext(), "Item " + mItemId + " long clicked", Toast.LENGTH_SHORT).show();
                 return true;
             }
         }

@@ -34,9 +34,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.WindowManager;
-import android.widget.CheckBox;
 import android.widget.CompoundButton;
-import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -296,7 +294,7 @@ public class AccountSettingsActivity extends MyActivity {
         showAccountState();
         showAddAccountButton();
         showVerifyCredentialsButton();
-        showDefaultAccountCheckbox();
+        showIsDefaultAccount();
         showIsSyncedAutomatically();
         showSyncFrequency();
         showLastSyncSucceededDate();
@@ -474,24 +472,11 @@ public class AccountSettingsActivity extends MyActivity {
         });
     }
     
-    private void showDefaultAccountCheckbox() {
-        MyAccount ma = state.getAccount();
-        boolean isDefaultAccount = ma.equals(MyContextHolder.get().persistentAccounts().getDefaultAccount());
-        CheckBox checkBox= (CheckBox) findFragmentViewById(R.id.is_default_account);
-        if (checkBox != null) {
-            checkBox.setVisibility(state.builder.isPersistent() ? View.VISIBLE : View.GONE);
-            checkBox.setEnabled(!isDefaultAccount);
-            checkBox.setChecked(isDefaultAccount);
-            checkBox.setOnCheckedChangeListener(new OnCheckedChangeListener() {
-
-                @Override
-                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                    if (isChecked) {
-                        MyContextHolder.get().persistentAccounts().setDefaultAccount(state.getAccount());
-                        updateScreen();
-                    }
-                }
-            });
+    private void showIsDefaultAccount() {
+        boolean isDefaultAccount = state.getAccount().equals(MyContextHolder.get().persistentAccounts().getDefaultAccount());
+        View view= findFragmentViewById(R.id.is_default_account);
+        if (view != null) {
+            view.setVisibility(isDefaultAccount ? View.VISIBLE : View.GONE);
         }
     }
 

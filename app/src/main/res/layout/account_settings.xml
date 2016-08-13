@@ -139,7 +139,7 @@
             android:ems="10"
             android:hint="@string/sync_frequency_minutes" />
 
-        <CheckBox
+        <TextView
             android:id="@+id/is_default_account"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
