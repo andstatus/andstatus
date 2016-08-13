@@ -42,7 +42,9 @@ script:
   # - ./gradlew connectedCheck -PdisablePreDex --continue --stacktrace
   # run:
   - ./gradlew :app:installDebugAndroidTest :app:installDebug
-  - adb shell am instrument -w -e func true org.andstatus.app.tests/android.test.InstrumentationTestRunner
+  - adb shell am instrument -w -r -e debug false org.andstatus.app.tests/android.test.InstrumentationTestRunner
   # See http://stackoverflow.com/questions/21294945/error-unable-to-find-instrumentation-info-for-componentinfo
+  # For one method:
+  # - adb shell am instrument -w -r -e debug false -e class org.andstatus.app.msg.ActAsUserTest#testActAsUser org.andstatus.app.tests/android.test.InstrumentationTestRunner
 after_success:
   # TODO: SonarQube
