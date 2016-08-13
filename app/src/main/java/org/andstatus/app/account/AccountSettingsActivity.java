@@ -19,11 +19,11 @@ package org.andstatus.app.account;
 
 import android.accounts.AccountManager;
 import android.app.Activity;
-import android.app.Fragment;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -114,11 +114,16 @@ public class AccountSettingsActivity extends MyActivity {
         if (HelpActivity.startFromActivity(this)) {
             return;
         }
+
+        if (savedInstanceState == null) {
+            showFragment(AccountSettingsFragment.class);
+        }
+
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
     }
     
     private View findFragmentViewById(int id) {
-        Fragment fragment = getFragmentManager().findFragmentById(R.id.fragmentOne);
+        Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.fragmentOne);
         if (fragment != null) {
             View view = fragment.getView();
             if (view != null) {
@@ -262,7 +267,9 @@ public class AccountSettingsActivity extends MyActivity {
                 startMyPreferenceActivity();
                 break;
             case R.id.remove_account_menu_id:
-                DialogFactory.showYesCancelDialog(getFragmentManager().findFragmentById(R.id.fragmentOne), R.string.remove_account_dialog_title,
+                DialogFactory.showYesCancelDialog(
+                        getSupportFragmentManager().findFragmentById(R.id.fragmentOne),
+                        R.string.remove_account_dialog_title,
                         R.string.remove_account_dialog_text, 
                         ActivityRequestCode.REMOVE_ACCOUNT);                
             default:
@@ -277,7 +284,7 @@ public class AccountSettingsActivity extends MyActivity {
     }
     
     private void updateScreen() {
-        if (getFragmentManager().findFragmentById(R.id.fragmentOne) == null) {
+        if (getSupportFragmentManager().findFragmentById(R.id.fragmentOne) == null) {
             MyLog.v(this, "No fragment found");
             return;
         }

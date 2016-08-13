@@ -53,132 +53,19 @@
 		<provider android:name="org.andstatus.app.data.MyProvider"
 			android:authorities="org.andstatus.app.data.MyProvider" 
 			android:exported="false" />
-
-		<provider android:name="org.andstatus.app.data.TimelineSearchSuggestionsProvider" 
+		<provider android:name="org.andstatus.app.data.TimelineSearchSuggestionsProvider"
 			android:authorities="org.andstatus.app.data.TimelineSuggestionProvider"
 			android:permission="android.permission.INTERNET"/>
-
 		<provider android:name="org.andstatus.app.data.FileProvider"
 			android:authorities="org.andstatus.app.data.FileProvider" 
 			android:exported="true" />
 				
 		<service android:name="org.andstatus.app.service.MyService"
 		    android:exported="false" />
-
         <service
             android:name="org.acra.sender.SenderService"
             android:exported="false"
             android:process=":acra" />
-
-		<receiver android:name="org.andstatus.app.service.MyServiceManager" 
-		    android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.ACTION_SHUTDOWN" />
-                <action android:name="android.intent.action.BOOT_COMPLETED" />
-                <action android:name="org.andstatus.app.action.SERVICE_STATE" />
-            </intent-filter>
-		</receiver>
-
-		<activity android:name=".msg.TimelineActivity" android:label="@string/app_name" 
-		    android:launchMode="singleTask" android:windowSoftInputMode="adjustResize">
-			<intent-filter>
-				<action android:name="android.intent.action.MAIN" />
-				<category android:name="android.intent.category.LAUNCHER" />
-			</intent-filter>
-			<intent-filter>
-				<action android:name="android.intent.action.VIEW"/>
-				<action android:name="android.intent.action.PICK"/>
-				<category android:name="android.intent.category.DEFAULT"/>
-				<data android:mimeType="vnd.android.cursor.dir/org.andstatus.app.provider.msg"/>
-			</intent-filter>
-			<intent-filter>
-			    <action android:name="android.intent.action.SEND" />
-			    <category android:name="android.intent.category.DEFAULT" />
-			    <data android:mimeType="text/plain" />
-                <data android:mimeType="image/*" />
-			</intent-filter>
-            <intent-filter>
-				<action android:name="android.intent.action.SEARCH"/>
-			</intent-filter>
-			<meta-data android:name="android.app.searchable" android:resource="@xml/searchable_timeline"/>
-		</activity>
-
-		<activity android:name=".msg.ConversationActivity"
-			android:label="@string/label_conversation"
-            android:parentActivityName=".msg.TimelineActivity">
-            <!-- 
-    mimeType attribute is required for intent-filter of .ConversationActivity 
-    as it has both custom action and Uri present in Intent, 
-    see http://stackoverflow.com/questions/12297407/custom-actions-using-implicit-intents-between-applications
-    BTW, any concrete MIME types for our Uri-s are returned by MyProvider 
-             -->
-			<intent-filter android:label="@string/resolve_view">
-                <action android:name="org.andstatus.app.action.VIEW_CONVERSATION" />
-				<category android:name="android.intent.category.DEFAULT"/>
-				<data android:mimeType="vnd.android.cursor.item/org.andstatus.app.provider.msg"/>
-			</intent-filter>
-		</activity>
-
-        <activity android:name=".user.UserList"
-                  android:label="@string/user_list"
-                  android:parentActivityName=".msg.TimelineActivity">
-            <intent-filter>
-                <action android:name="org.andstatus.app.action.VIEW_USERS" />
-                <category android:name="android.intent.category.DEFAULT"/>
-                <data android:mimeType="vnd.android.cursor.dir/org.andstatus.app.provider.user"/>
-            </intent-filter>
-        </activity>
-
-        <activity android:name=".user.FollowersList"
-                  android:label="@string/followers"
-                  android:parentActivityName=".msg.TimelineActivity">
-            <intent-filter>
-                <action android:name="org.andstatus.app.action.VIEW_FOLLOWERS" />
-                <category android:name="android.intent.category.DEFAULT"/>
-                <data android:mimeType="vnd.android.cursor.dir/org.andstatus.app.provider.user"/>
-            </intent-filter>
-        </activity>
-
-        <activity android:name=".context.MySettingsActivity"
-            android:label="@string/settings_activity_title"
-            android:launchMode="standard"
-            android:parentActivityName=".msg.TimelineActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-            </intent-filter>
-        </activity>
-
-		<activity android:name=".HelpActivity"
-			android:launchMode="singleTop"
-            android:parentActivityName=".context.MySettingsActivity">
-			<intent-filter>
-				<action android:name="android.intent.action.MAIN"/>
-				<category android:name="android.intent.category.DEFAULT"/>
-			</intent-filter>
-		</activity>
-
-		<activity android:name=".account.AccountSelector"
-            android:label="@string/label_accountselector">
-		</activity>
-		
-        <receiver android:name="org.andstatus.app.appwidget.MyAppWidgetProvider"
-			android:exported="true">
-            <meta-data android:name="android.appwidget.provider"
-                    android:resource="@xml/appwidget_info" />
-            <intent-filter>
-				<action android:name="android.appwidget.action.APPWIDGET_DELETED" />
-                <action android:name="android.appwidget.action.APPWIDGET_DISABLED" />
-				<action android:name="android.appwidget.action.APPWIDGET_ENABLED" />
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-			</intent-filter>
-        </receiver>
-
-        <activity android:name=".appwidget.MyAppWidgetConfigure">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
-            </intent-filter>
-        </activity>
-
         <service
             android:name="org.andstatus.app.account.AuthenticatorService"
             android:exported="true"
@@ -192,7 +79,6 @@
                 android:resource="@xml/authenticator"
                 />
         </service>
-
         <service
             android:name="org.andstatus.app.syncadapter.SyncService"
             android:exported="true"
@@ -205,7 +91,107 @@
                 android:name="android.content.SyncAdapter"
                 android:resource="@xml/syncadapter" />
         </service>
-        
+
+        <receiver android:name="org.andstatus.app.service.MyServiceManager"
+		    android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.ACTION_SHUTDOWN" />
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="org.andstatus.app.action.SERVICE_STATE" />
+            </intent-filter>
+		</receiver>
+        <receiver android:name="org.andstatus.app.appwidget.MyAppWidgetProvider"
+			android:exported="true">
+            <meta-data android:name="android.appwidget.provider"
+                    android:resource="@xml/appwidget_info" />
+            <intent-filter>
+				<action android:name="android.appwidget.action.APPWIDGET_DELETED" />
+                <action android:name="android.appwidget.action.APPWIDGET_DISABLED" />
+				<action android:name="android.appwidget.action.APPWIDGET_ENABLED" />
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+			</intent-filter>
+        </receiver>
+
+        <activity android:name=".msg.TimelineActivity" android:label="@string/app_name"
+                  android:launchMode="singleTask" android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <action android:name="android.intent.action.PICK"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:mimeType="vnd.android.cursor.dir/org.andstatus.app.provider.msg"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
+                <data android:mimeType="image/*" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEARCH"/>
+            </intent-filter>
+            <meta-data android:name="android.app.searchable" android:resource="@xml/searchable_timeline"/>
+        </activity>
+        <activity android:name=".msg.ConversationActivity"
+                  android:label="@string/label_conversation"
+                  android:parentActivityName=".msg.TimelineActivity">
+            <!--
+    mimeType attribute is required for intent-filter of .ConversationActivity
+    as it has both custom action and Uri present in Intent,
+    see http://stackoverflow.com/questions/12297407/custom-actions-using-implicit-intents-between-applications
+    BTW, any concrete MIME types for our Uri-s are returned by MyProvider
+             -->
+            <intent-filter android:label="@string/resolve_view">
+                <action android:name="org.andstatus.app.action.VIEW_CONVERSATION" />
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:mimeType="vnd.android.cursor.item/org.andstatus.app.provider.msg"/>
+            </intent-filter>
+        </activity>
+        <activity android:name=".user.UserList"
+                  android:label="@string/user_list"
+                  android:parentActivityName=".msg.TimelineActivity">
+            <intent-filter>
+                <action android:name="org.andstatus.app.action.VIEW_USERS" />
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:mimeType="vnd.android.cursor.dir/org.andstatus.app.provider.user"/>
+            </intent-filter>
+        </activity>
+        <activity android:name=".user.FollowersList"
+                  android:label="@string/followers"
+                  android:parentActivityName=".msg.TimelineActivity">
+            <intent-filter>
+                <action android:name="org.andstatus.app.action.VIEW_FOLLOWERS" />
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:mimeType="vnd.android.cursor.dir/org.andstatus.app.provider.user"/>
+            </intent-filter>
+        </activity>
+        <activity android:name=".context.MySettingsActivity"
+                  android:label="@string/settings_activity_title"
+                  android:launchMode="standard"
+                  android:parentActivityName=".msg.TimelineActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+            </intent-filter>
+        </activity>
+        <activity android:name=".HelpActivity"
+                  android:launchMode="singleTop"
+                  android:parentActivityName=".context.MySettingsActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+        </activity>
+        <activity android:name=".account.AccountSelector"
+                  android:label="@string/label_accountselector">
+        </activity>
+        <activity android:name=".appwidget.MyAppWidgetConfigure">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
+            </intent-filter>
+        </activity>
         <activity
             android:name=".account.AccountSettingsActivity"
             android:label="@string/account_settings_activity_title"
@@ -238,46 +224,42 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
-        <activity 
+        <activity
             android:name=".account.AccountSettingsWebActivity" 
             android:noHistory="true">
         </activity>
-
         <activity android:name=".origin.DiscoveredOriginList"
             android:label="@string/discover_open_instances_title"
             android:parentActivityName=".origin.PersistentOriginList">
         </activity>
-        
         <activity android:name=".origin.PersistentOriginList"
             android:label="@string/label_origin_list"
             android:parentActivityName=".context.MySettingsActivity">
         </activity>
-
         <activity android:name=".origin.OriginEditor"
             android:label="@string/label_origin_system"
             android:parentActivityName=".context.MySettingsActivity">
         </activity>
-
         <activity android:name=".backup.BackupActivity"
             android:label="@string/label_backup"
             android:parentActivityName=".context.MySettingsActivity">
         </activity>
-
         <activity android:name=".backup.RestoreActivity"
             android:label="@string/label_restore"
             android:parentActivityName=".context.MySettingsActivity">
         </activity>
-        
         <activity android:name=".service.QueueViewer"
             android:label="@string/title_preference_notifications_queue"
             android:exported="true"
             android:parentActivityName=".msg.TimelineActivity">
         </activity>
-
         <activity android:name=".timeline.TimelineList"
             android:label="@string/manage_timelines"
             android:parentActivityName=".context.MySettingsActivity">
         </activity>
-
+        <activity android:name=".account.ManageAccountsActivity"
+            android:label="@string/header_manage_existing_accounts"
+            android:parentActivityName=".context.MySettingsActivity">
+        </activity>
     </application>
 </manifest>

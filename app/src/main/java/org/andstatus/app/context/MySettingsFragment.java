@@ -38,6 +38,7 @@ import org.andstatus.app.ActivityRequestCode;
 import org.andstatus.app.HelpActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.account.AccountSettingsActivity;
+import org.andstatus.app.account.ManageAccountsActivity;
 import org.andstatus.app.backup.BackupActivity;
 import org.andstatus.app.backup.RestoreActivity;
 import org.andstatus.app.graphics.MyImageCache;
@@ -308,7 +309,7 @@ public class MySettingsFragment extends PreferenceFragment implements
                 AccountSettingsActivity.startAddNewAccount(getActivity());
                 break;
             case KEY_MANAGE_EXISTING_ACCOUNTS:
-                AccountSettingsActivity.startManageExistingAccounts(getActivity());
+                startActivity(new Intent(getActivity(), ManageAccountsActivity.class));
                 break;
             case KEY_BACKUP_RESTORE:
                 if (MyContextHolder.get().persistentAccounts().isEmpty()) {

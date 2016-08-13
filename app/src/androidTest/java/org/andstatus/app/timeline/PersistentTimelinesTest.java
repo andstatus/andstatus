@@ -66,7 +66,7 @@ public class PersistentTimelinesTest extends InstrumentationTestCase {
     }
 
     public void testDefaultMyAccountTimelinesCreation() {
-        for (MyAccount myAccount : MyContextHolder.get().persistentAccounts().collection()) {
+        for (MyAccount myAccount : MyContextHolder.get().persistentAccounts().list()) {
             for (TimelineType timelineType : TimelineType.defaultMyAccountTimelineTypes) {
                 long count = 0;
                 for (Timeline timeline : MyContextHolder.get().persistentTimelines().values()) {

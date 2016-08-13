@@ -163,7 +163,7 @@ public class PersistentTimelines {
     }
 
     public void addDefaultTimelinesIfNoneFound() {
-        for (MyAccount ma : myContext.persistentAccounts().collection()) {
+        for (MyAccount ma : myContext.persistentAccounts().list()) {
             addDefaultMyAccountTimelinesIfNoneFound(ma);
         }
     }

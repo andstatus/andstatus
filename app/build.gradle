@@ -1,15 +1,15 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 23
+    compileSdkVersion 24
     buildToolsVersion '24.0.1'
 
     defaultConfig {
         applicationId "org.andstatus.app"
         minSdkVersion 16
         targetSdkVersion 24
-        versionName "27.04"
-        versionCode 184
+        versionName "28.00"
+        versionCode 187
 
         testApplicationId "org.andstatus.app.tests"
         testInstrumentationRunner "android.test.InstrumentationTestRunner"
@@ -47,4 +47,5 @@ dependencies {
     compile files('libs/signpost-httpclient-android-1.2.1.2.jar')
     compile files('libs/signpost-core-1.2.1.2.jar')
     compile 'org.apache.commons:commons-lang3:3.4'
+    compile 'com.github.woxthebox:draglistview:1.2.8'
 }

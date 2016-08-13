@@ -48,6 +48,7 @@
 
 		<attr name="homeIcon" format="reference" />
         <attr name="attachIcon" format="reference" />
+		<attr name="dragHandleIcon" format="reference" />
         <attr name="globalSearchIcon" format="reference" />
         <attr name="helpIcon" format="reference" />
         <attr name="saveMessageIcon" format="reference" />

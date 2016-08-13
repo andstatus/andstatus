@@ -56,7 +56,7 @@ public class MyAccountTest  extends InstrumentationTestCase {
     
 
     public static void fixPersistentAccounts(MyContext myContext) {
-        for (MyAccount ma : myContext.persistentAccounts().collection()) {
+        for (MyAccount ma : myContext.persistentAccounts().list()) {
             fixAccountByName(myContext, ma.getAccountName());
         }
     }

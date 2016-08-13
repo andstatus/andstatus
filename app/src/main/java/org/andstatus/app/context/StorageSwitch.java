@@ -31,7 +31,7 @@ import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.service.MyServiceState;
-import org.andstatus.app.util.DialogFactory;
+import org.andstatus.app.nosupport.util.DialogFactory;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TriState;
@@ -49,18 +49,18 @@ public class StorageSwitch {
     @GuardedBy("moveLock")
     private static volatile boolean mDataBeingMoved = false;
 
-    private final MySettingsFragment parentActivity;
+    private final MySettingsFragment parentFragment;
     private final Context mContext;
     private boolean mUseExternalStorageNew = false;
 
     public StorageSwitch(MySettingsFragment myPreferenceFragment) {
-        this.parentActivity = myPreferenceFragment;
+        this.parentFragment = myPreferenceFragment;
         this.mContext = myPreferenceFragment.getActivity();
     }
 
     public void showSwitchStorageDialog(final ActivityRequestCode requestCode, boolean useExternalStorageNew) {
         this.mUseExternalStorageNew = useExternalStorageNew;
-        DialogFactory.showYesCancelDialog(parentActivity, R.string.dialog_title_external_storage, 
+        DialogFactory.showYesCancelDialog(parentFragment, R.string.dialog_title_external_storage,
                 useExternalStorageNew ? R.string.summary_preference_storage_external_on
                         : R.string.summary_preference_storage_external_off, 
                         requestCode);
@@ -72,7 +72,7 @@ public class StorageSwitch {
             AsyncTaskLauncher.execute(this, true, new MoveDataBetweenStoragesTask());
         } else {
             MyServiceManager.stopService();
-            Toast.makeText(parentActivity.getActivity(),
+            Toast.makeText(parentFragment.getActivity(),
                     mContext.getText(R.string.system_is_busy_try_later),
                     Toast.LENGTH_LONG).show();
         }
@@ -413,7 +413,7 @@ public class StorageSwitch {
                 result.messageBuilder.insert(0, mContext.getString(R.string.error) + ": ");
             }
             Toast.makeText(mContext, result.getMessage(), Toast.LENGTH_LONG).show();
-            parentActivity.showUseExternalStorage();
+            parentFragment.showUseExternalStorage();
         }
 
         @Override

@@ -15,9 +15,7 @@ import org.andstatus.app.backup.MyBackupDescriptor;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.FriendshipTable;
-import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
@@ -28,8 +26,7 @@ import org.json.JSONObject;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -66,8 +63,10 @@ public class PersistentAccounts {
      * 
      * @return not null 
      */
-    public Collection<MyAccount> collection() {
-        return mAccounts.values();
+    public List<MyAccount> list() {
+        List<MyAccount> list = new ArrayList<>(mAccounts.values());
+        Collections.sort(list);
+        return list;
     }
     
     public boolean isEmpty() {
@@ -386,7 +385,7 @@ public class PersistentAccounts {
         boolean hasSyncedAutomatically = hasSyncedAutomatically();
         List<MyAccount> accounts = new ArrayList<>();
         if (forAllAccounts) {
-            for (MyAccount account : collection()) {
+            for (MyAccount account : list()) {
                 addMyAccountToSync(accounts, account, hasSyncedAutomatically);
             }
         } else {

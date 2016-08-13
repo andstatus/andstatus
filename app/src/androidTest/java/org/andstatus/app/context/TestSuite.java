@@ -277,7 +277,7 @@ public class TestSuite extends TestCase {
         boolean found = (MyContextHolder.get().persistentAccounts().getCurrentAccount().getCredentialsVerified() 
                 == MyAccount.CredentialsVerificationStatus.SUCCEEDED);
         if (!found) {
-            for (MyAccount ma : MyContextHolder.get().persistentAccounts().collection()) {
+            for (MyAccount ma : MyContextHolder.get().persistentAccounts().list()) {
                 MyLog.i(TAG, ma.toString());
                 if (ma.getCredentialsVerified() 
                 == MyAccount.CredentialsVerificationStatus.SUCCEEDED) {

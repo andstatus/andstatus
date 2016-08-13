@@ -36,6 +36,7 @@
         <item name="replyIcon">@drawable/ic_reply_white_24dp</item>
         <item name="reblogIcon">@drawable/ic_repeat_white_24dp</item>
         <item name="favoriteBorderIcon">@drawable/ic_favorite_border_white_24dp</item>
+        <item name="dragHandleIcon">@drawable/ic_drag_handle_white_24dp</item>
     </style>
     <style name="Theme.AndStatus.DeviceDefault" parent="Theme.AndStatus.Min.Dark">
         <item name="andStatusActionBarTheme">@style/ThemeOverlay.AppCompat</item>
@@ -69,6 +70,7 @@
         <item name="replyIcon">@drawable/ic_reply_black_24dp</item>
         <item name="reblogIcon">@drawable/ic_repeat_black_24dp</item>
         <item name="favoriteBorderIcon">@drawable/ic_favorite_border_black_24dp</item>
+        <item name="dragHandleIcon">@drawable/ic_drag_handle_black_24dp</item>
     </style>
     <style name="Base.Theme.AndStatus.Light" parent="Base.VMIN.Theme.AndStatus.Light"/>
 	<style name="Theme.AndStatus.Light" parent="Base.Theme.AndStatus.Light"/>

@@ -14,18 +14,24 @@
  * limitations under the License.
  */
 
-package org.andstatus.app.util;
+package org.andstatus.app.nosupport.util;
 
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.app.DialogFragment;
+import android.app.Fragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.support.v4.app.DialogFragment;
-import android.support.v4.app.Fragment;
 
 import org.andstatus.app.ActivityRequestCode;
+import org.andstatus.app.util.MyLog;
 
+/**
+ * The class doesn't use android support libraries.
+ * The need for it is due to {@link org.andstatus.app.context.MySettingsActivity}
+ * @author yvolk@yurivolkov.com
+ */
 public class DialogFactory {
     public static final String OK_DIALOG_TAG = "ok";
     public static final String YES_CANCEL_DIALOG_TAG = "yes_cancel";
@@ -33,7 +39,7 @@ public class DialogFactory {
 
     public static final String DIALOG_TITLE_KEY = "title";
     public static final String DIALOG_MESSAGE_KEY = "message";
-    
+
     private DialogFactory() {
     }
 
@@ -46,7 +52,7 @@ public class DialogFactory {
                         new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog,
-                                    int whichButton) {
+                                                int whichButton) {
                                 dialog.dismiss();
                             }
                         }).create();
@@ -56,8 +62,8 @@ public class DialogFactory {
         if (dlg != null) {
             try {
                 dlg.dismiss();
-            } catch (Exception e) { 
-                MyLog.v("Dialog dismiss", e);  
+            } catch (Exception e) {
+                MyLog.v("Dialog dismiss", e);
             }
         }
     }
@@ -127,13 +133,13 @@ public class DialogFactory {
                         new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int id) {
-                                dialogFragment.getTargetFragment().onActivityResult(dialogFragment.getTargetRequestCode(), Activity.RESULT_OK, null);                                
+                                dialogFragment.getTargetFragment().onActivityResult(dialogFragment.getTargetRequestCode(), Activity.RESULT_OK, null);
                             }
                         })
                 .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
-                        dialogFragment.getTargetFragment().onActivityResult(dialogFragment.getTargetRequestCode(), Activity.RESULT_CANCELED, null);                                
+                        dialogFragment.getTargetFragment().onActivityResult(dialogFragment.getTargetRequestCode(), Activity.RESULT_CANCELED, null);
                     }
                 });
         dlg = builder.create();

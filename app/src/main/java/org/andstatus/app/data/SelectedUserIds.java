@@ -44,7 +44,7 @@ public class SelectedUserIds {
             }
         } else if (timeline.isCombined()) {
             StringBuilder sb = new StringBuilder();
-            for (MyAccount ma : MyContextHolder.get().persistentAccounts().collection()) {
+            for (MyAccount ma : MyContextHolder.get().persistentAccounts().list()) {
                 if (!timeline.getOrigin().isValid() || timeline.getOrigin().equals(ma.getOrigin())) {
                     if (sb.length() > 0) {
                         sb.append(", ");

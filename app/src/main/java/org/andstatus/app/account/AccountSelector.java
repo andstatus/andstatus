@@ -81,7 +81,7 @@ public class AccountSelector extends SelectorDialog {
     private Map<String, MyAccount> newListData() {
         long originId = getArguments().getLong(IntentExtra.ORIGIN_ID.key, 0);
         SortedMap<String, MyAccount> listData = new TreeMap<String, MyAccount>();
-        for (MyAccount ma : MyContextHolder.get().persistentAccounts().collection()) {
+        for (MyAccount ma : MyContextHolder.get().persistentAccounts().list()) {
             if (originId==0 || ma.getOriginId() == originId) {
                 listData.put(ma.getAccountName(), ma);
             }

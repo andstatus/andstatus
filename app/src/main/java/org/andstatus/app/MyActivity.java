@@ -19,6 +19,8 @@ package org.andstatus.app;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -137,5 +139,11 @@ public class MyActivity extends AppCompatActivity {
             }
         }
         getWindow().getDecorView().setSystemUiVisibility(uiOptionsNew);
+    }
+
+    protected void showFragment(Class<? extends Fragment> fragmentClass) {
+        Fragment fragment = Fragment.instantiate(this, fragmentClass.getName());
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.fragmentOne, fragment, "fragment").commit();
     }
 }

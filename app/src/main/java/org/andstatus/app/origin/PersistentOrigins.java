@@ -26,7 +26,6 @@ import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextImpl;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.database.OriginTable;
-import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.MyLog;
 
 import java.util.ArrayList;
@@ -155,7 +154,7 @@ public class PersistentOrigins {
     public List<Origin> originsForGlobalSearch(Origin originIn, boolean forAllOrigins) {
         List<Origin> origins = new ArrayList<>();
         if (forAllOrigins) {
-            for (MyAccount account : myContext.persistentAccounts().collection()) {
+            for (MyAccount account : myContext.persistentAccounts().list()) {
                 if (account.getOrigin().isInCombinedGlobalSearch() &&
                         account.isValidAndSucceeded() && account.isGlobalSearchSupported()
                         && !origins.contains(account.getOrigin())) {

@@ -60,7 +60,7 @@ import org.json.JSONObject;
  * 
  * @author yvolk@yurivolkov.com
  */
-public final class MyAccount {
+public final class MyAccount implements Comparable<MyAccount> {
     private static final String TAG = MyAccount.class.getSimpleName();
 
     //------------------------------------------------------------
@@ -118,7 +118,7 @@ public final class MyAccount {
     /** This corresponds to turning syncing on/off in Android Accounts
      * @see {@link android.content.ContentResolver#getSyncAutomatically(Account, String)} */
     public static final String KEY_IS_SYNCED_AUTOMATICALLY = "sync_automatically";
-    
+
     /** Companion class used to load/create/change/delete {@link MyAccount}'s data */
     public static final class Builder implements Parcelable {
         private static final String TAG = MyAccount.TAG + "." + Builder.class.getSimpleName();
@@ -590,6 +590,7 @@ public final class MyAccount {
     private final int version;
     public static final int ACCOUNT_VERSION = 16;
     private boolean deleted;
+    private int order = 0;
     
     public enum CredentialsVerificationStatus {
         /** 
@@ -662,6 +663,17 @@ public final class MyAccount {
                         bundle.getString(IntentExtra.ACCOUNT_NAME.key));
     }
 
+    @Override
+    public int compareTo(MyAccount another) {
+        if (this == another) {
+            return 0;
+        }
+        if (another == null) {
+            return 1;
+        }
+        return order > another.order ? 1 : (order < another.order ? -1 : getAccountName().compareTo(another.getAccountName()) );
+    }
+
     public boolean getCredentialsPresent() {
         return getConnection().getCredentialsPresent();
     }    
@@ -683,12 +695,12 @@ public final class MyAccount {
      * @return count
      * @param myContext
      */
-    public String shortestUniqueAccountName(MyContext myContext) {
+    public String getShortestUniqueAccountName(MyContext myContext) {
         String uniqueName = getAccountName();
 
         boolean found = false;
         String possiblyUnique = getUsername();
-        for (MyAccount persistentAccount : myContext.persistentAccounts().collection()) {
+        for (MyAccount persistentAccount : myContext.persistentAccounts().list()) {
             if (!persistentAccount.toString().equalsIgnoreCase(toString()) 
                     && persistentAccount.getUsername().equalsIgnoreCase(possiblyUnique) ) {
                 found = true;
@@ -700,7 +712,7 @@ public final class MyAccount {
             int indAt = uniqueName.indexOf('@');
             if (indAt > 0) {
                 possiblyUnique = uniqueName.substring(0, indAt);
-                for (MyAccount persistentAccount : myContext.persistentAccounts().collection()) {
+                for (MyAccount persistentAccount : myContext.persistentAccounts().list()) {
                     if (!persistentAccount.toString().equalsIgnoreCase(toString()) ) {
                         String toCompareWith = persistentAccount.getUsername();
                         indAt = toCompareWith.indexOf('@');
@@ -965,7 +977,7 @@ public final class MyAccount {
     }
 
     public String toAccountButtonText(MyContext myContext) {
-        String accountButtonText = shortestUniqueAccountName(myContext);
+        String accountButtonText = getShortestUniqueAccountName(myContext);
         if (!isValidAndSucceeded()) {
             accountButtonText = "(" + accountButtonText + ")";
         }
@@ -974,7 +986,7 @@ public final class MyAccount {
 
     public int numberOfAccountsOfThisOrigin() {
         int count = 0;
-        for (MyAccount persistentAccount : MyContextHolder.get().persistentAccounts().collection()) {
+        for (MyAccount persistentAccount : MyContextHolder.get().persistentAccounts().list()) {
             if (persistentAccount.getOriginId() == this.getOriginId()) {
                 count++;
             }
@@ -986,7 +998,7 @@ public final class MyAccount {
      * @return this account if there are no others
      */
     public MyAccount firstOtherAccountOfThisOrigin() {
-        for (MyAccount persistentAccount : MyContextHolder.get().persistentAccounts().collection()) {
+        for (MyAccount persistentAccount : MyContextHolder.get().persistentAccounts().list()) {
             if (persistentAccount.getOriginId() == this.getOriginId() 
                     && persistentAccount != this) {
                 return persistentAccount;
