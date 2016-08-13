@@ -278,14 +278,19 @@ public class DataInserter {
                     DownloadData dd = DownloadData.getThisForMessage(msgId, attachment.contentType, attachment.getUri());
                     dd.saveToDatabase();
                     downloadIds.add(dd.getDownloadId());
-                    if (dd.getStatus() != DownloadStatus.LOADED) {
-                        if (UriUtils.isLocal(dd.getUri())) {
-                            AttachmentDownloader.load(dd.getDownloadId(), execContext.getCommandData());
-                        } else {
-                            if (attachment.contentType == MyContentType.IMAGE && MyPreferences.getDownloadAndDisplayAttachedImages()) {
-                                dd.requestDownload();
+                    switch (dd.getStatus()) {
+                        case LOADED:
+                        case HARD_ERROR:
+                            break;
+                        default:
+                            if (UriUtils.isDownloadable(dd.getUri())) {
+                                if (attachment.contentType == MyContentType.IMAGE && MyPreferences.getDownloadAndDisplayAttachedImages()) {
+                                    dd.requestDownload();
+                                }
+                            } else {
+                                AttachmentDownloader.load(dd.getDownloadId(), execContext.getCommandData());
                             }
-                        }
+                            break;
                     }
                 }
                 DownloadData.deleteOtherOfThisMsg(msgId, downloadIds);

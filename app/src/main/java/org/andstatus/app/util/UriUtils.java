@@ -106,18 +106,20 @@ public class UriUtils {
         }
     }
 
-    /**
-     * @return true for null and EMPTY also
-     */
-    public static boolean isLocal(Uri uri) {
-        switch (notNull(uri).getScheme()) {
-            case "http":
-            case "https":
-                return false;
-            default:
-                break;
+    public static boolean isDownloadable(Uri uri) {
+        if (uri != null) {
+            String scheme = uri.getScheme();
+            if (scheme != null) {
+                switch (scheme) {
+                    case "http":
+                    case "https":
+                        return true;
+                    default:
+                        break;
+                }
+            }
         }
-        return true;
+        return false;
     }
 
 }
