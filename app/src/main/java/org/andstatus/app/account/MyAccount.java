@@ -673,7 +673,10 @@ public final class MyAccount implements Comparable<MyAccount> {
             return 0;
         }
         if (another == null) {
-            return 1;
+            return -1;
+        }
+        if (isValid() != another.isValid()) {
+            return isValid() ? -1 : 1;
         }
         return order > another.order ? 1 : (order < another.order ? -1 : getAccountName().compareTo(another.getAccountName()) );
     }

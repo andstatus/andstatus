@@ -236,6 +236,10 @@ public class TimelineViewItem extends MessageViewItem {
             link = favorited ? DuplicationLink.IS_DUPLICATED : DuplicationLink.DUPLICATES;
         } else if (reblogged != other.reblogged) {
             link = reblogged ? DuplicationLink.IS_DUPLICATED : DuplicationLink.DUPLICATES;
+        } else if (getLinkedUserId() != other.getLinkedUserId()) {
+            link = MyContextHolder.get().persistentAccounts().fromUserId(getLinkedUserId()).
+                    compareTo(MyContextHolder.get().persistentAccounts().fromUserId(other.getLinkedUserId())) <= 0 ?
+                    DuplicationLink.IS_DUPLICATED : DuplicationLink.DUPLICATES;
         } else {
             link = rebloggers.size() > other.rebloggers.size() ? DuplicationLink.IS_DUPLICATED : DuplicationLink.DUPLICATES;
         }
