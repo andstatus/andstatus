@@ -17,8 +17,4 @@ allprojects {
     }
 }
 
-task clean(type: Delete) {
-    delete rootProject.buildDir
-}
-
 apply from: 'dump.gradle'
