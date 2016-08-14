@@ -37,7 +37,6 @@ import java.util.Set;
 import org.andstatus.app.util.*;
 
 public class ConversationViewItem extends ConversationItem {
-    long mLinkedUserId = 0;
     boolean mFavorited = false;
     String mAuthor = "";
     
@@ -94,8 +93,8 @@ public class ConversationViewItem extends ConversationItem {
                 rebloggers.add(senderId);
             }
             if (linkedUserId != 0) {
-                if (mLinkedUserId == 0) {
-                    mLinkedUserId = linkedUserId;
+                if (getLinkedUserId() == 0) {
+                    setLinkedUserId(linkedUserId);
                 }
                 if (DbUtils.getInt(cursor, MsgOfUserTable.REBLOGGED) == 1
                         && linkedUserId != authorId) {

@@ -42,16 +42,13 @@ import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.apache.commons.lang3.StringEscapeUtils;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
  * @author yvolk@yurivolkov.com
  */
-public class TimelineViewItem {
-    long msgId = 0;
+public class TimelineViewItem extends MessageViewItem {
     long originId = 0;
     long createdDate = 0;
     long sentDate = 0;
@@ -74,12 +71,9 @@ public class TimelineViewItem {
     boolean favorited = false;
 
     AttachedImageFile attachedImageFile = AttachedImageFile.EMPTY;
-    long linkedUserId = 0;
 
     private final static TimelineViewItem EMPTY = new TimelineViewItem();
     private Drawable avatarDrawable = null;
-
-    private List<TimelineViewItem> children = new ArrayList<>();
 
     public static TimelineViewItem getEmpty() {
         return EMPTY;
@@ -87,7 +81,7 @@ public class TimelineViewItem {
 
     public static TimelineViewItem fromCursorRow(Cursor cursor) {
         TimelineViewItem item = new TimelineViewItem();
-        item.msgId = DbUtils.getLong(cursor, MsgTable._ID);
+        item.setMsgId(DbUtils.getLong(cursor, MsgTable._ID));
         item.authorName = TimelineSql.userColumnIndexToNameAtTimeline(cursor,
                 cursor.getColumnIndex(UserTable.AUTHOR_NAME), MyPreferences.getShowOrigin());
         item.body = MyHtml.htmlifyIfPlain(DbUtils.getString(cursor, MsgTable.BODY));
@@ -98,7 +92,7 @@ public class TimelineViewItem {
         item.sentDate = DbUtils.getLong(cursor, MsgTable.SENT_DATE);
         item.createdDate = DbUtils.getLong(cursor, MsgTable.CREATED_DATE);
         item.msgStatus = DownloadStatus.load(DbUtils.getLong(cursor, MsgTable.MSG_STATUS));
-        item.linkedUserId = DbUtils.getLong(cursor, UserTable.LINKED_USER_ID);
+        item.setLinkedUserId(DbUtils.getLong(cursor, UserTable.LINKED_USER_ID));
         item.authorId = DbUtils.getLong(cursor, MsgTable.AUTHOR_ID);
 
         long senderId = DbUtils.getLong(cursor, MsgTable.SENDER_ID);
@@ -110,13 +104,13 @@ public class TimelineViewItem {
             addReblogger(item, senderId, senderName);
         }
 
-        if (item.linkedUserId != 0) {
+        if (item.getLinkedUserId() != 0) {
             if (DbUtils.getInt(cursor, MsgOfUserTable.REBLOGGED) == 1
-                    &&  !item.rebloggers.containsKey(item.linkedUserId)) {
+                    &&  !item.rebloggers.containsKey(item.getLinkedUserId())) {
                 MyAccount myAccount = MyContextHolder.get().persistentAccounts()
-                        .fromUserId(item.linkedUserId);
+                        .fromUserId(item.getLinkedUserId());
                 if (myAccount.isValid()) {
-                    addReblogger(item, item.linkedUserId, myAccount.getAccountName());
+                    addReblogger(item, item.getLinkedUserId(), myAccount.getAccountName());
                 }
             }
         }
@@ -171,12 +165,6 @@ public class TimelineViewItem {
         }
     }
 
-    private void setCollapsedStatus(Context context, StringBuilder messageDetails) {
-        if (isCollapsed()) {
-            I18n.appendWithSpace(messageDetails, "(+" + children.size() + ")");
-        }
-    }
-
     private void setInReplyTo(Context context, StringBuilder messageDetails) {
         if (inReplyToMsgId != 0 && TextUtils.isEmpty(inReplyToName)) {
             inReplyToName = "...";
@@ -217,7 +205,7 @@ public class TimelineViewItem {
         if (other == null) {
             return link;
         }
-        if (msgId == other.msgId) {
+        if (getMsgId() == other.getMsgId()) {
             link = duplicatesByFavoritedAndReblogged(other);
         }
         if (link == DuplicationLink.NONE) {
@@ -261,17 +249,4 @@ public class TimelineViewItem {
         return out.replaceAll("\n", " ").replaceAll("  ", " ");
     }
 
-    public void collapse(TimelineViewItem child) {
-        this.children.addAll(child.children);
-        child.children.clear();
-        this.children.add(child);
-    }
-
-    public boolean isCollapsed() {
-        return !children.isEmpty();
-    }
-
-    public List<TimelineViewItem> getChildren() {
-        return children;
-    }
 }

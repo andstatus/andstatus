@@ -79,7 +79,7 @@ public class AccountListFragment extends Fragment {
         if (activity != null) {
             ActionBar actionBar = activity.getSupportActionBar();
             if (actionBar != null) {
-                actionBar.setTitle(R.string.header_manage_existing_accounts);
+                actionBar.setTitle(R.string.manage_accounts);
             }
         }
     }

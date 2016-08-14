@@ -38,7 +38,7 @@ public class TimelinePages {
         this.list = isSameTimeline(oldPages, thisPage) ? oldPages.list : new ArrayList<TimelinePage>();
         if (thisPage != null) {
             addThisPage(thisPage);
-            setCollapseDuplicates(oldPages == null ? true : oldPages.isCollapseDuplicates());
+            setCollapseDuplicates(oldPages == null ? true : oldPages.isCollapseDuplicates(), 0);
             dropExcessivePage(thisPage);
         }
     }
@@ -139,7 +139,7 @@ public class TimelinePages {
                     if (eItem.sentDate > item.sentDate) {
                         break;
                     }
-                    if (eItem.msgId == item.msgId) {
+                    if (eItem.getMsgId() == item.getMsgId()) {
                         mergeWithExisting(item, eItem);
                         toRemove.add(item);
                         break;
@@ -180,7 +180,7 @@ public class TimelinePages {
                     if (eItem.sentDate < item.sentDate) {
                         break;
                     }
-                    if (eItem.msgId == item.msgId) {
+                    if (eItem.getMsgId() == item.getMsgId()) {
                         mergeWithExisting(item, eItem);
                         toRemove.add(item);
                         break;
@@ -234,18 +234,21 @@ public class TimelinePages {
         return collapseDuplicates;
     }
 
-    public void setCollapseDuplicates(boolean collapse) {
-        if (this.collapseDuplicates != collapse) {
-            this.collapseDuplicates = collapse;
-            if (this.collapseDuplicates) {
-                collapseDuplicates();
+    /** For all or for only one item */
+    public void setCollapseDuplicates(boolean collapse, long itemId) {
+        if (itemId != 0 || this.collapseDuplicates != collapse) {
+            if (itemId == 0) {
+                this.collapseDuplicates = collapse;
+            }
+            if (collapse) {
+                collapseDuplicates(itemId);
             } else {
-                showDuplicates();
+                showDuplicates(itemId);
             }
         }
     }
 
-    private void collapseDuplicates() {
+    private void collapseDuplicates(long itemId) {
         Map<TimelineViewItem, TimelinePage> toCollapse = new HashMap<>();
         TimelinePage prevPage = null;
         TimelineViewItem prevItem = null;
@@ -253,12 +256,16 @@ public class TimelinePages {
             for (TimelineViewItem item : page.items) {
                 switch (item.duplicates(prevItem)) {
                     case DUPLICATES:
-                        toCollapse.put(item, page);
-                        prevItem.collapse(item);
+                        if (itemId == 0 || (prevItem != null && itemId == prevItem.getMsgId()) || itemId == item.getMsgId()) {
+                            toCollapse.put(item, page);
+                            prevItem.collapse(item);
+                        }
                         break;
                     case IS_DUPLICATED:
-                        toCollapse.put(prevItem, prevPage);
-                        item.collapse(prevItem);
+                        if (itemId == 0 || (prevItem != null && itemId == prevItem.getMsgId()) || itemId == item.getMsgId()) {
+                            toCollapse.put(prevItem, prevPage);
+                            item.collapse(prevItem);
+                        }
                         prevPage = page;
                         prevItem = item;
                         break;
@@ -274,16 +281,18 @@ public class TimelinePages {
         }
     }
 
-    private void showDuplicates() {
+    private void showDuplicates(long itemId) {
         for (TimelinePage page : list) {
             for (int ind = page.items.size() - 1; ind >= 0; ind--) {
                 TimelineViewItem item = page.items.get(ind);
-                int ind2 = ind + 1;
-                if (item.isCollapsed()) {
-                    for (TimelineViewItem child : item.getChildren()) {
-                        page.items.add(ind2++, child);
+                if (itemId == 0 || itemId == item.getMsgId()) {
+                    int ind2 = ind + 1;
+                    if (item.isCollapsed()) {
+                        for (TimelineViewItem child : item.getChildren()) {
+                            page.items.add(ind2++, child);
+                        }
+                        item.getChildren().clear();
                     }
-                    item.getChildren().clear();
                 }
             }
         }

@@ -21,8 +21,7 @@ import android.database.Cursor;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.database.MsgTable;
 
-public abstract class ConversationItem  implements Comparable<ConversationItem> {
-    private long mMsgId;
+public abstract class ConversationItem extends MessageViewItem implements Comparable<ConversationItem> {
     long mInReplyToMsgId = 0;
     long mCreatedDate = 0;
 
@@ -61,14 +60,6 @@ public abstract class ConversationItem  implements Comparable<ConversationItem> 
             }
         }
         return compared;
-    }
-
-    long getMsgId() {
-        return mMsgId;
-    }
-
-    void setMsgId(long mMsgId) {
-        this.mMsgId = mMsgId;
     }
 
     public boolean isLoaded() {

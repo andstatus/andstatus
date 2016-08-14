@@ -24,8 +24,8 @@ public class MySettingsActivityTest extends ActivityInstrumentationTestCase2<MyS
         PreferenceFragment fragment = (PreferenceFragment) mActivity.getFragmentManager().findFragmentByTag(MySettingsFragment.class.getSimpleName());
         if (fragment != null) {
             Preference preference = fragment.findPreference(
-                    MySettingsFragment.KEY_MANAGE_EXISTING_ACCOUNTS);
-            assertTrue(MySettingsFragment.KEY_MANAGE_EXISTING_ACCOUNTS, preference != null);
+                    MySettingsFragment.KEY_MANAGE_ACCOUNTS);
+            assertTrue(MySettingsFragment.KEY_MANAGE_ACCOUNTS, preference != null);
         }
         Thread.sleep(500);
         assertFalse("MyService is not available", MyServiceManager.isServiceAvailable());

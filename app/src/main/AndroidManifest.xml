@@ -258,7 +258,7 @@
             android:parentActivityName=".context.MySettingsActivity">
         </activity>
         <activity android:name=".account.ManageAccountsActivity"
-            android:label="@string/header_manage_existing_accounts"
+            android:label="@string/manage_accounts"
             android:parentActivityName=".context.MySettingsActivity">
         </activity>
     </application>

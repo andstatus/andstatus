@@ -76,7 +76,7 @@ public class TimelineAdapter extends MyBaseAdapter {
 
     @Override
     public long getItemId(int position) {
-        return getItem(position).msgId;
+        return getItem(position).getMsgId();
     }
 
     public TimelinePages getPages() {
@@ -148,8 +148,8 @@ public class TimelineAdapter extends MyBaseAdapter {
                 break;
             }
             TimelineViewItem item = getItem(positionToPreload);
-            if (!preloadedImages.contains(item.msgId)) {
-                preloadedImages.add(item.msgId);
+            if (!preloadedImages.contains(item.getMsgId())) {
+                preloadedImages.add(item.getMsgId());
                 item.getAttachedImageFile().preloadAttachedImage(contextMenu.messageList);
                 break;
             }
@@ -186,14 +186,14 @@ public class TimelineAdapter extends MyBaseAdapter {
     private void onButtonClick(View v, MessageListContextMenuItem contextMenuItemIn) {
         TimelineViewItem item = getItem(v);
         if (item != null && item.msgStatus == DownloadStatus.LOADED) {
-            long actorId =  item.linkedUserId;
+            long actorId = item.getLinkedUserId();
             // Currently selected account is the best candidate as an actor
             MyAccount ma = MyContextHolder.get().persistentAccounts().fromUserId(
                     contextMenu.getCurrentMyAccountUserId());
             if (ma.isValid() && ma.getOriginId() == item.originId) {
                 actorId = ma.getUserId();
             }
-            contextMenu.onContextMenuItemSelected(contextMenuItemIn, item.msgId, actorId);
+            contextMenu.onContextMenuItemSelected(contextMenuItemIn, item.getMsgId(), actorId);
         }
     }
 
@@ -203,7 +203,7 @@ public class TimelineAdapter extends MyBaseAdapter {
     }
 
     private void showAttachedImage(TimelineViewItem item, View view) {
-        preloadedImages.add(item.msgId);
+        preloadedImages.add(item.getMsgId());
         item.getAttachedImageFile().showAttachedImage(contextMenu.messageList,
                 (ImageView) view.findViewById(R.id.attached_image));
     }
@@ -267,9 +267,15 @@ public class TimelineAdapter extends MyBaseAdapter {
         }
     }
 
-    public void setCollapseDuplicates(boolean collapse) {
-        pages.setCollapseDuplicates(collapse);
-        notifyDataSetChanged();
+    @Override
+    public void setCollapseDuplicates(boolean collapse, long itemId) {
+        pages.setCollapseDuplicates(collapse, itemId);
+        super.setCollapseDuplicates(collapse, itemId);
+    }
+
+    @Override
+    public boolean isCollapseDuplicates() {
+        return pages.isCollapseDuplicates();
     }
 
     @Override
@@ -280,7 +286,7 @@ public class TimelineAdapter extends MyBaseAdapter {
                 TimelineViewItem item = getItem(position2);
                 if (item.isCollapsed()) {
                     for (TimelineViewItem child : item.getChildren()) {
-                        if (child.msgId == itemId) {
+                        if (child.getMsgId() == itemId) {
                             return position2;
                         }
                     }

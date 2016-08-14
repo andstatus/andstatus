@@ -39,7 +39,7 @@ public class TimelineViewItemTest extends InstrumentationTestCase {
         item2.body = "Some other text";
         assertDuplicates(item1, item2, DuplicationLink.DUPLICATES);
 
-        item2.msgId = 2;
+        item2.setMsgId(2);
         assertDuplicates(item1, item2, DuplicationLink.NONE);
 
         item2.body = "thisUser favorited something by thatUser: " + item1.body;

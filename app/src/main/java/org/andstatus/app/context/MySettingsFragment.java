@@ -58,7 +58,7 @@ public class MySettingsFragment extends PreferenceFragment implements
     private static final String KEY_ADD_NEW_ACCOUNT = "add_new_account";
     private static final String KEY_BACKUP_RESTORE = "backup_restore";
     private static final String KEY_CHANGE_LOG = "change_log";
-    static final String KEY_MANAGE_EXISTING_ACCOUNTS = "manage_existing_accounts";
+    static final String KEY_MANAGE_ACCOUNTS = "manage_accounts";
     private static final String KEY_MANAGE_ORIGIN_SYSTEMS = "manage_origin_systems";
     private static final String KEY_MANAGE_TIMELINES = "manage_timelines";
 
@@ -118,7 +118,7 @@ public class MySettingsFragment extends PreferenceFragment implements
     }
 
     private void showManageAccounts() {
-        Preference preference = findPreference(KEY_MANAGE_EXISTING_ACCOUNTS);
+        Preference preference = findPreference(KEY_MANAGE_ACCOUNTS);
         if (preference != null) {
             CharSequence summary;
             if (MyContextHolder.get().persistentAccounts().isEmpty()) {
@@ -308,7 +308,7 @@ public class MySettingsFragment extends PreferenceFragment implements
             case KEY_ADD_NEW_ACCOUNT:
                 AccountSettingsActivity.startAddNewAccount(getActivity());
                 break;
-            case KEY_MANAGE_EXISTING_ACCOUNTS:
+            case KEY_MANAGE_ACCOUNTS:
                 startActivity(new Intent(getActivity(), ManageAccountsActivity.class));
                 break;
             case KEY_BACKUP_RESTORE:

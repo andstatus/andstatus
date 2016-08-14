@@ -34,7 +34,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.CheckBox;
-import android.widget.ListView;
 import android.widget.TextView;
 
 import org.andstatus.app.ActivityRequestCode;
@@ -271,23 +270,7 @@ public class TimelineActivity extends LoadableListActivity implements
 
     public void onCollapseDuplicatesToggleClick(View view) {
         closeDrawer();
-        TimelineAdapter adapter = getListAdapter();
-        if (adapter != null) {
-            // TODO: unify this with saving position in org.andstatus.app.LoadableListActivity.onLoadFinished()
-            ListView list = getListView();
-            long itemIdOfListPosition = centralItemId;
-            int y = 0;
-            if (list.getChildCount() > 0) {
-                int firstVisiblePosition = list.getFirstVisiblePosition();
-                itemIdOfListPosition = list.getAdapter().getItemId(firstVisiblePosition);
-                y = getYOfPosition(list, getListAdapter(), firstVisiblePosition);
-            }
-            adapter.setCollapseDuplicates(isCollapseDuplicates());
-            int firstListPosition = getListAdapter().getPositionById(itemIdOfListPosition);
-            if (firstListPosition >= 0) {
-                list.setSelectionFromTop(firstListPosition, y);
-            }
-        }
+        updateList(TriState.fromBoolean(isCollapseDuplicates()), 0);
     }
 
     public boolean isCollapseDuplicates() {
@@ -508,7 +491,7 @@ public class TimelineActivity extends LoadableListActivity implements
 
     public void onItemClick(TimelineViewItem item) {
         MyAccount ma = myContext.persistentAccounts().getAccountForThisMessage(item.originId,
-                item.msgId, item.linkedUserId,
+                item.getMsgId(), item.getLinkedUserId(),
                 getParamsNew().getMyAccount().getUserId(), false);
         if (MyLog.isVerboseEnabled()) {
             MyLog.v(this,
@@ -516,13 +499,13 @@ public class TimelineActivity extends LoadableListActivity implements
                             + "; " + item
                             + " account=" + ma.getAccountName());
         }
-        if (item.msgId <= 0) {
+        if (item.getMsgId() <= 0) {
             return;
         }
         Uri uri = MatchedUri.getTimelineItemUri(
                 Timeline.getTimeline(TimelineType.EVERYTHING, null, 0,
                         myContext.persistentOrigins().fromId(item.originId)),
-                item.msgId);
+                item.getMsgId());
 
         String action = getIntent().getAction();
         if (Intent.ACTION_PICK.equals(action) || Intent.ACTION_GET_CONTENT.equals(action)) {

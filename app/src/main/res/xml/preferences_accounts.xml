@@ -17,9 +17,9 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
                   android:title="@string/header_accounts">
     <Preference
-        android:key="manage_existing_accounts"
+        android:key="manage_accounts"
         android:persistent="false"
-        android:title="@string/header_manage_existing_accounts" >
+        android:title="@string/manage_accounts" >
     </Preference>
     <Preference
         android:key="add_new_account"

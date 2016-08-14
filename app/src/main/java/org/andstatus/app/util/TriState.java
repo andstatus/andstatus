@@ -87,6 +87,10 @@ public enum TriState {
         }
     }
 
+    public static boolean isKnown(TriState triState) {
+        return triState == TRUE || triState == FALSE;
+    }
+
     public Bundle toBundle(String key) {
         return toBundle(new Bundle(), key);
     }

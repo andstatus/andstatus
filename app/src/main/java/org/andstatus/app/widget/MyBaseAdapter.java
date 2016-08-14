@@ -17,7 +17,6 @@
 package org.andstatus.app.widget;
 
 import android.view.View;
-import android.view.ViewParent;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
@@ -65,6 +64,14 @@ public abstract class MyBaseAdapter extends BaseAdapter  implements View.OnClick
         if (positionView != null) {
             positionView.setText(Integer.toString(position));
         }
+    }
+
+    public void setCollapseDuplicates(boolean collapse, long itemId) {
+        notifyDataSetChanged();
+    }
+
+    public boolean isCollapseDuplicates() {
+        return false;
     }
 
     public int getPositionById(long itemId) {

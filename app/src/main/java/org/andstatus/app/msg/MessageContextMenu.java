@@ -72,12 +72,18 @@ public class MessageContextMenu extends MyContextMenu {
             return;
         }
 
+        MessageViewItem viewItem = (MessageViewItem) oViewItem;
         int order = 0;
         try {
             new ContextMenuHeader(getActivity(), menu).setTitle(msg.bodyTrimmed)
                     .setSubtitle(msg.myAccount().getAccountName());
 
             MessageListContextMenuItem.OPEN_CONVERSATION.addTo(menu, order++, R.string.menu_item_open_conversation);
+            if (viewItem.isCollapsed()) {
+                MessageListContextMenuItem.SHOW_DUPLICATES.addTo(menu, order++, R.string.show_duplicates);
+            } else if (getActivity().getListAdapter().isCollapseDuplicates()) {
+                MessageListContextMenuItem.COLLAPSE_DUPLICATES.addTo(menu, order++, R.string.collapse_duplicates);
+            }
             MessageListContextMenuItem.USERS_OF_MESSAGE.addTo(menu, order++, R.string.users_of_message);
 
             if (msg.status != DownloadStatus.LOADED) {
@@ -190,21 +196,11 @@ public class MessageContextMenu extends MyContextMenu {
 
         long userIdForThisMessage = otherAccountUserIdToActAs;
         String logMsg = method;
-        // TODO: Extract superclass
-        if (TimelineViewItem.class.isAssignableFrom(oViewItem.getClass())) {
-            TimelineViewItem viewItem = (TimelineViewItem) oViewItem;
-            mMsgId = viewItem.msgId;
-            logMsg += "; id=" + mMsgId;
-            if (userIdForThisMessage == 0) {
-                userIdForThisMessage = viewItem.linkedUserId;
-            }
-        } else {
-            ConversationViewItem viewItem = (ConversationViewItem) oViewItem;
-            mMsgId = viewItem.getMsgId();
-            logMsg += "; id=" + mMsgId;
-            if (userIdForThisMessage == 0) {
-                userIdForThisMessage = viewItem.mLinkedUserId;
-            }
+        MessageViewItem viewItem = (MessageViewItem) oViewItem;
+        mMsgId = viewItem.getMsgId();
+        logMsg += "; id=" + mMsgId;
+        if (userIdForThisMessage == 0) {
+            userIdForThisMessage = viewItem.getLinkedUserId();
         }
         mActorUserIdForCurrentMessage = 0;
         MyLog.v(this, logMsg);

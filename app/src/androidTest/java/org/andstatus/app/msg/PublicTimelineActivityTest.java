@@ -151,7 +151,7 @@ public class PublicTimelineActivityTest extends android.test.ActivityInstrumenta
         for (int index = 0; index < list.getChildCount(); index++) {
             View messageView = list.getChildAt(index);
             TextView bodyView = (TextView) messageView.findViewById(R.id.message_body);
-            long id = mActivity.getListAdapter().getItem(messageView).msgId;
+            long id = mActivity.getListAdapter().getItem(messageView).getMsgId();
             if (bodyView != null) {
                 assertTrue("Message #" + id + " '" + bodyView.getText() + "' contains '" + publicMessageText + "'",
                         String.valueOf(bodyView.getText()).contains(publicMessageText));

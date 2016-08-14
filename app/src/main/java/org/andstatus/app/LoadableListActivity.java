@@ -342,6 +342,28 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
         return y;
     }
 
+    public void updateList(TriState collapseDuplicates, long itemId) {
+        MyBaseAdapter adapter = getListAdapter();
+        if (adapter != null) {
+            // TODO: unify this with saving position in #onLoadFinished()
+            ListView list = getListView();
+            long itemIdOfListPosition = centralItemId;
+            int y = 0;
+            if (list.getChildCount() > 0) {
+                int firstVisiblePosition = list.getFirstVisiblePosition();
+                itemIdOfListPosition = adapter.getItemId(firstVisiblePosition);
+                y = getYOfPosition(list, adapter, firstVisiblePosition);
+            }
+            if (TriState.isKnown(collapseDuplicates)) {
+                adapter.setCollapseDuplicates(collapseDuplicates.toBoolean(true), itemId);
+            }
+            int firstListPosition = adapter.getPositionById(itemIdOfListPosition);
+            if (firstListPosition >= 0) {
+                list.setSelectionFromTop(firstListPosition, y);
+            }
+        }
+    }
+
     protected abstract MyBaseAdapter newListAdapter();
 
     @Override
