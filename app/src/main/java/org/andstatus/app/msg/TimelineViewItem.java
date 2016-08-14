@@ -209,7 +209,7 @@ public class TimelineViewItem extends MessageViewItem {
             link = duplicatesByFavoritedAndReblogged(other);
         }
         if (link == DuplicationLink.NONE) {
-            if (Math.abs(createdDate - other.createdDate) < 10000L) {
+            if (Math.abs(createdDate - other.createdDate) < 1000000L) {
                 String thisBody = getCleanedBody(body);
                 String otherBody = getCleanedBody(other.body);
                 if (thisBody.equals(otherBody)) {
