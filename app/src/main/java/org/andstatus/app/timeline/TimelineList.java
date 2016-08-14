@@ -194,7 +194,7 @@ public class TimelineList extends LoadableListActivity {
     @Override
     protected MyBaseAdapter newListAdapter() {
 
-        return new MyBaseAdapter() {
+        return new MyBaseAdapter(myContext) {
             final List<TimelineListViewItem> mItems;
             Timeline defaultTimeline = myContext.persistentTimelines().getDefault();
 

@@ -161,9 +161,7 @@ public class TimelineActivity extends LoadableListActivity implements
 
     @Override
     protected MyBaseAdapter newListAdapter() {
-        return new TimelineAdapter(mContextMenu,
-                MyPreferences.getShowAvatars() ? R.layout.message_avatar : R.layout.message_basic,
-                getListAdapter(),
+        return new TimelineAdapter(mContextMenu, getListAdapter(),
                 (TimelinePage) getLoaded().getList().get(0));
     }
 

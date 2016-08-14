@@ -98,4 +98,15 @@
         android:scaleType="fitCenter"
         tools:src="@drawable/icon"/>
 
+    <TextView
+        android:id="@+id/message_number"
+        android:layout_marginTop="4dp"
+        android:layout_marginRight="4dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        style="@style/messageUsernameAppearance"
+        tools:text="Top"/>
+
 </RelativeLayout>

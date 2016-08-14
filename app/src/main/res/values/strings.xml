@@ -508,6 +508,7 @@
   <string name="title_preference_vibration">Vibration</string>
   <string name="title_sending_messages_log_enabled">Log Sending messages to a file</string>
   <string name="title_timeline">Timeline</string>
+  <string name="top">Top</string>
   <string name="total_counters">Total counters</string>
   <string name="translator_credits">Translator credits</string>
   <string name="unimplemented">Not implemented.</string>

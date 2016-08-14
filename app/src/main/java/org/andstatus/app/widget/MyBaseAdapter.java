@@ -21,11 +21,23 @@ import android.widget.BaseAdapter;
 import android.widget.TextView;
 
 import org.andstatus.app.R;
+import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.util.MyLog;
 
 public abstract class MyBaseAdapter extends BaseAdapter  implements View.OnClickListener {
 
+    protected final float displayDensity;
     private volatile boolean positionRestored = false;
+    protected final MyContext myContext;
+
+    public MyBaseAdapter(MyContext myContext) {
+        this.myContext = myContext;
+        displayDensity = myContext.context().getResources().getDisplayMetrics().density;
+        if (MyLog.isVerboseEnabled()) {
+            MyLog.v(this,"density=" + displayDensity);
+        }
+    }
 
     public Object getItem(View view) {
         return getItem(getPosition(view));
@@ -98,5 +110,10 @@ public abstract class MyBaseAdapter extends BaseAdapter  implements View.OnClick
         if (!MyPreferences.isLongPressToOpenContextMenu()) {
             v.showContextMenu();
         }
+    }
+
+    // See  http://stackoverflow.com/questions/2238883/what-is-the-correct-way-to-specify-dimensions-in-dip-from-java-code
+    protected int dpToPixes(int dp) {
+        return (int) (dp * displayDensity);
     }
 }

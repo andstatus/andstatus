@@ -30,7 +30,6 @@ import android.widget.TextView;
 
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.graphics.MyImageCache;
@@ -52,9 +51,10 @@ public class ConversationViewAdapter extends MyBaseAdapter {
     public ConversationViewAdapter(MessageContextMenu contextMenu,
             long selectedMessageId,
             List<ConversationViewItem> oMsgs) {
+        super(contextMenu.getActivity().getMyContext());
         this.contextMenu = contextMenu;
         this.context = this.contextMenu.getActivity();
-        this.ma = MyContextHolder.get().persistentAccounts().fromUserId(this.contextMenu.getCurrentMyAccountUserId());
+        this.ma = myContext.persistentAccounts().fromUserId(this.contextMenu.getCurrentMyAccountUserId());
         this.selectedMessageId = selectedMessageId;
         this.oMsgs = oMsgs;
     }
@@ -105,10 +105,7 @@ public class ConversationViewAdapter extends MyBaseAdapter {
     }
     
     private void showIndent(ConversationViewItem item, View messageView) {
-        float displayDensity = context.getResources().getDisplayMetrics().density;
-        // See  http://stackoverflow.com/questions/2238883/what-is-the-correct-way-to-specify-dimensions-in-dip-from-java-code
-        int indent0 = (int)( 10 * displayDensity);
-        int indentPixels = indent0 * item.mIndentLevel;
+        int indentPixels = dpToPixes(10) * item.mIndentLevel;
 
         LinearLayout messageIndented = (LinearLayout) messageView.findViewById(R.id.message_indented);
         if (item.getMsgId() == selectedMessageId  && oMsgs.size() > 1) {
@@ -131,9 +128,6 @@ public class ConversationViewAdapter extends MyBaseAdapter {
         layoutParams.leftMargin = indentPixels > 3 ? indentPixels - 4 : 0;
         divider.setLayoutParams(layoutParams);
 
-        if (MyLog.isVerboseEnabled()) {
-            MyLog.v(this,"density=" + displayDensity);
-        }
         setIndentView(messageIndented, indentPixels);
 
         if (MyPreferences.getShowAvatars()) {

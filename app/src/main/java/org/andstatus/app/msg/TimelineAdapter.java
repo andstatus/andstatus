@@ -24,7 +24,6 @@ import android.widget.TextView;
 
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.graphics.MyImageCache;
@@ -51,12 +50,16 @@ public class TimelineAdapter extends MyBaseAdapter {
             MyPreferences.KEY_MARK_REPLIES_IN_TIMELINE, false);
     private int positionPrev = -1;
     private Set<Long> preloadedImages = new HashSet<>(100);
+    private int messageNumberShownCounter = 0;
+    private final String TOP_TEXT;
 
-    public TimelineAdapter(MessageContextMenu contextMenu, int listItemLayoutId,
+    public TimelineAdapter(MessageContextMenu contextMenu,
                            TimelineAdapter oldAdapter, TimelinePage loadedPage) {
+        super(contextMenu.getActivity().getMyContext());
         this.contextMenu = contextMenu;
-        this.listItemLayoutId = listItemLayoutId;
+        this.listItemLayoutId = R.layout.message_avatar;
         this.pages = new TimelinePages( oldAdapter == null ? null : oldAdapter.getPages(), loadedPage);
+        TOP_TEXT = myContext.context().getText(R.string.top).toString();
     }
 
     @Override
@@ -109,6 +112,7 @@ public class TimelineAdapter extends MyBaseAdapter {
             showFavorited(item, view);
         }
         preloadAttachments(position);
+        showMessageNumber(position, view);
         positionPrev = position;
         return view;
     }
@@ -156,6 +160,23 @@ public class TimelineAdapter extends MyBaseAdapter {
         }
     }
 
+    private void showMessageNumber(int position, View view) {
+        String text;
+        switch (position) {
+            case 0:
+                text = getPages().mayHaveYoungerPage() ? "1" : TOP_TEXT;
+                break;
+            case 1:
+                text = "2";
+                break;
+            default:
+                text = messageNumberShownCounter < 2 ? Integer.toString(position + 1) : "";
+                break;
+        }
+        MyUrlSpan.showText(view, R.id.message_number, text, false, false);
+        messageNumberShownCounter++;
+    }
+
     private View newView() {
         View view = LayoutInflater.from(contextMenu.getActivity()).inflate(listItemLayoutId, null);
         if (showButtonsBelowMessages) {
@@ -167,6 +188,12 @@ public class TimelineAdapter extends MyBaseAdapter {
                 setOnButtonClick(buttons, R.id.reblog_button_tinted, MessageListContextMenuItem.DESTROY_REBLOG);
                 setOnButtonClick(buttons, R.id.favorite_button, MessageListContextMenuItem.FAVORITE);
                 setOnButtonClick(buttons, R.id.favorite_button_tinted, MessageListContextMenuItem.DESTROY_FAVORITE);
+            }
+        }
+        if (!showAvatars) {
+            View message = view.findViewById(R.id.message_indented);
+            if (view != null) {
+                message.setPadding(dpToPixes(2), 0, dpToPixes(6), dpToPixes(2));
             }
         }
         return view;
@@ -188,7 +215,7 @@ public class TimelineAdapter extends MyBaseAdapter {
         if (item != null && item.msgStatus == DownloadStatus.LOADED) {
             long actorId = item.getLinkedUserId();
             // Currently selected account is the best candidate as an actor
-            MyAccount ma = MyContextHolder.get().persistentAccounts().fromUserId(
+            MyAccount ma = myContext.persistentAccounts().fromUserId(
                     contextMenu.getCurrentMyAccountUserId());
             if (ma.isValid() && ma.getOriginId() == item.originId) {
                 actorId = ma.getUserId();
@@ -214,7 +241,7 @@ public class TimelineAdapter extends MyBaseAdapter {
     }
 
     private void showMarkReplies(TimelineViewItem item, View view) {
-        if (item.inReplyToUserId != 0 && MyContextHolder.get().persistentAccounts().
+        if (item.inReplyToUserId != 0 && myContext.persistentAccounts().
                 fromUserId(item.inReplyToUserId).isValid()) {
             // For some reason, referring to the style drawable doesn't work
             // (to "?attr:replyBackground" )

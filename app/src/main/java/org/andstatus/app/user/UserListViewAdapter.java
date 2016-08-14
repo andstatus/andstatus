@@ -22,7 +22,6 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import org.andstatus.app.R;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.UserInTimeline;
 import org.andstatus.app.util.MyUrlSpan;
@@ -39,6 +38,7 @@ class UserListViewAdapter extends MyBaseAdapter {
             MyPreferences.getUserInTimeline().equals(UserInTimeline.WEBFINGER_ID);
 
     public UserListViewAdapter(UserListContextMenu contextMenu, int listItemLayoutId, List<UserListViewItem> items) {
+        super(contextMenu.getActivity().getMyContext());
         this.contextMenu = contextMenu;
         this.listItemLayoutId = listItemLayoutId;
         this.items = items;
@@ -112,7 +112,7 @@ class UserListViewAdapter extends MyBaseAdapter {
                 } else {
                     builder.append(", ");
                 }
-                builder.append(MyContextHolder.get().persistentAccounts().fromUserId(userId).getAccountName());
+                builder.append(myContext.persistentAccounts().fromUserId(userId).getAccountName());
                 count++;
             }
         }
