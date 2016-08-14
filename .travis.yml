@@ -38,7 +38,9 @@ script:
   - android-wait-for-emulator
   # Previous command seems to end too early, so wait a bit more
   # See http://stackoverflow.com/questions/28195080/unknown-api-level-error-when-trying-to-run-instrumentation-test
-  - while ! adb shell getprop init.svc.bootanim; do
+  # On multilined commands: https://gitlab.com/gitlab-org/gitlab-ci/issues/258 and http://stackoverflow.com/questions/3790454/in-yaml-how-do-i-break-a-string-over-multiple-lines
+  - |
+    while ! adb shell getprop init.svc.bootanim; do
       echo Waiting for boot animation to end
       sleep 20
     done
