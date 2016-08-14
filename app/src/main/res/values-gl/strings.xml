@@ -173,7 +173,7 @@
   <string name="header_accounts">Contas</string>
   <string name="header_accounts_summary">Xestionar contas e redes sociais</string>
   <string name="header_add_new_account">Engadir nova conta</string>
-  <string name="header_manage_existing_accounts">Xestionar contas existentes</string>
+  <string name="manage_accounts">Xestionar contas existentes</string>
   <string name="hide_messages_based_on_keywords_title">Ocultar mensaxes basadas en palabras chave ou frases</string>
   <string name="hide_messages_based_on_keywords_dialog_message">Separar palabras chave por espazos. Por frases en comiñas dobles ex.:\npalabra chave \"frase exacta\"</string>
   <string name="hide_replies_not_to_me_or_friends_title">Ocultar respostas na liña de tempo Inicio que non son para min ou os meus amigos</string>

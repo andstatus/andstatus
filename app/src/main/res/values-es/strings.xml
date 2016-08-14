@@ -183,7 +183,7 @@
   <string name="header_accounts">Administrar cuentas</string>
   <string name="header_accounts_summary">Gestionar cuentas y redes sociales</string>
   <string name="header_add_new_account">Añade una cuenta nueva</string>
-  <string name="header_manage_existing_accounts">Administra las cuentas existentes</string>
+  <string name="manage_accounts">Administra las cuentas existentes</string>
   <string name="hide_messages_based_on_keywords_title">Ocultar mensajes basados en palabras o frases exactas</string>
   <string name="hide_messages_based_on_keywords_dialog_message">Separar palabras por espacios. Pon frases entre comillas dobles, por ejemplo:\npalabra \"frase exacta\"</string>
   <string name="hide_replies_not_to_me_or_friends_title">Oculta las respuestas que no son para mí o mis amigos de la línea temporal principal</string>

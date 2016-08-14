@@ -123,7 +123,7 @@
   <string name="get_open_instances_title">Obter instâncias abertas</string>
   <string name="header_accounts">Contas</string>
   <string name="header_add_new_account">Adicionar nova conta</string>
-  <string name="header_manage_existing_accounts">Gerir contas existentes</string>
+  <string name="manage_accounts">Gerir contas existentes</string>
   <string name="history_size_entries_500">500 mensagens</string>
   <string name="history_size_entries_1000">1 000 mensagens</string>
   <string name="history_size_entries_2000">2 000 mensagens</string>

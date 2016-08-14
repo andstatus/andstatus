@@ -184,7 +184,7 @@
   <string name="header_accounts">Konten</string>
   <string name="header_accounts_summary">Konten und Soziale Netzwerke verwalten</string>
   <string name="header_add_new_account">Neuen Account hinzufügen</string>
-  <string name="header_manage_existing_accounts">Bestehende Accounts verwalten</string>
+  <string name="manage_accounts">Bestehende Accounts verwalten</string>
   <string name="hide_messages_based_on_keywords_title">Verstecke Nachrichten anhand von Schlüsselwörtern oder genauen Phrasen</string>
   <string name="hide_messages_based_on_keywords_dialog_message">Trenne die Schlüsselwörter durch Leerzeichen. Setze Ausdrücke in doppelte Anführungszeichen z.B.:\nSchlüsselwort \"Exakter Ausdruck\"</string>
   <string name="hide_replies_not_to_me_or_friends_title">Antworten in der Home-Timeline ausblenden, die nicht an mich oder meine Freunde gerichtet sind</string>

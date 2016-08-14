@@ -130,7 +130,7 @@
   <string name="get_open_instances_title">Obtenir des Instances ouvertes</string>
   <string name="header_accounts">Gestion des comptes</string>
   <string name="header_add_new_account">Ajouter un compte</string>
-  <string name="header_manage_existing_accounts">Gérer les comptes existants</string>
+  <string name="manage_accounts">Gérer les comptes existants</string>
   <string name="history_size_entries_500">500 messages</string>
   <string name="history_size_entries_1000">1000 messages</string>
   <string name="history_size_entries_2000">2000 messages</string>

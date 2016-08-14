@@ -125,7 +125,7 @@
   <string name="get_open_instances_title">الحصول على مثيلات مفتوحة</string>
   <string name="header_accounts">الحسابات</string>
   <string name="header_add_new_account">إضافة حساب جديد</string>
-  <string name="header_manage_existing_accounts">إدارة الحسابات الموجودة</string>
+  <string name="manage_accounts">إدارة الحسابات الموجودة</string>
   <string name="history_size_entries_500">500 رسالة</string>
   <string name="history_size_entries_1000">1000 رسالة</string>
   <string name="history_size_entries_2000">2000 رسالة</string>

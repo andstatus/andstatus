@@ -183,7 +183,7 @@ AndStatus は、最後のメッセージのダウンロード以降のすべて�
   <string name="header_accounts">アカウント</string>
   <string name="header_accounts_summary">アカウントとソーシャル ネットワークを管理します</string>
   <string name="header_add_new_account">新しいアカウントを追加</string>
-  <string name="header_manage_existing_accounts">既存のアカウントを管理</string>
+  <string name="manage_accounts">既存のアカウントを管理</string>
   <string name="hide_messages_based_on_keywords_title">キーワードまたはフレーズに基づいてメッセージを非表示</string>
   <string name="hide_messages_based_on_keywords_dialog_message">スペースで複数のキーワードを分離します。フレーズは二重引用符で囲みます。例:\nキーワード \"exact phrase\"</string>
   <string name="hide_replies_not_to_me_or_friends_title">ホーム タイムラインから、私または私の友達以外への返信を非表示</string>

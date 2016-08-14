@@ -180,7 +180,7 @@
   <string name="header_accounts">Аккаунты (Учётные записи)</string>
   <string name="header_accounts_summary">Управление учётными записями и социальными сетями</string>
   <string name="header_add_new_account">Добавить новый аккаунт</string>
-  <string name="header_manage_existing_accounts">Управление существующими аккаунтами</string>
+  <string name="manage_accounts">Управление существующими аккаунтами</string>
   <string name="hide_messages_based_on_keywords_title">Скрыть сообщения, в которых есть ключевые слова или точные фразы</string>
   <string name="hide_messages_based_on_keywords_dialog_message">Разделяйте слова пробелами. Помещайте фразы в двойные кавычки, например:\n слово \"Точная фраза\"</string>
   <string name="hide_replies_not_to_me_or_friends_title">Скрыть ответы не мне или моим друзьям из ленты времени Дом</string>

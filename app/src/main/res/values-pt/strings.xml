@@ -182,7 +182,7 @@
   <string name="header_accounts">Contas</string>
   <string name="header_accounts_summary">Gerir contas e redes sociais</string>
   <string name="header_add_new_account">Adicionar nova conta</string>
-  <string name="header_manage_existing_accounts">Gerir contas existentes</string>
+  <string name="manage_accounts">Gerir contas existentes</string>
   <string name="hide_messages_based_on_keywords_title">Ocultar mensagens tendo por base palavras-chave ou frases</string>
   <string name="hide_messages_based_on_keywords_dialog_message">Separe as palavras-chave com espaços. Coloque as frases com aspas\nExemplo: palavra-chave \"frase\"</string>
   <string name="hide_replies_not_to_me_or_friends_title">Ocultar da cronologia as respostas não dirigidas a mim ou aos meus amigos</string>

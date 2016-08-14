@@ -131,7 +131,7 @@
   <string name="fetch_frequency_entries_1_day">dag</string>
   <string name="header_accounts">Konton</string>
   <string name="header_add_new_account">Lägg till nytt konto</string>
-  <string name="header_manage_existing_accounts">Hantera befintliga konton</string>
+  <string name="manage_accounts">Hantera befintliga konton</string>
   <string name="history_size_entries_500">500 meddelanden</string>
   <string name="history_size_entries_1000">1000 meddelanden</string>
   <string name="history_size_entries_2000">2000 meddelanden</string>

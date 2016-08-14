@@ -164,7 +164,7 @@
   <string name="go_to_the_top_title">Gå til toppen</string>
   <string name="header_accounts">Kontoer</string>
   <string name="header_add_new_account">Legge til ny konto</string>
-  <string name="header_manage_existing_accounts">Administrer eksisterende kontoer</string>
+  <string name="manage_accounts">Administrer eksisterende kontoer</string>
   <string name="hide_messages_based_on_keywords_title">Skjule meldinger basert på nøkkelord eller nøyaktig uttrykk</string>
   <string name="hide_messages_based_on_keywords_dialog_message">Separer nøkkelord med mellomrom. Benytt dobbel anførselstegn for fraser f.eks:\nnøkkelord \"eksakt frase\"</string>
   <string name="hide_replies_not_to_me_or_friends_title">Skjul svar som ikke er for meg eller mine venner på hjemme tidslinjen</string>
