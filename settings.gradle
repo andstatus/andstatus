@@ -1,2 +1,2 @@
-include 'app'
-include 'local'
+include ':app'
+include ':local'
