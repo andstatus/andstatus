@@ -32,18 +32,24 @@ before_script:
   - uname -a
   - android list targets
   - echo no | android create avd --force --name test --target $ANDROID_TARGET --abi $ANDROID_ABI
-  - emulator -avd test -netdelay none -netspeed full &
+  - emulator -avd test -no-skin -no-audio -no-window &
 script:
   - ./gradlew build assembleAndroidTest
   - android-wait-for-emulator
   - adb devices
   - adb shell input keyevent 82 &
+  # See http://stackoverflow.com/questions/21294945/error-unable-to-find-instrumentation-info-for-componentinfo
   # Instead of this (which doesn't give any output during tests execution):
   # - ./gradlew connectedCheck -PdisablePreDex --continue --stacktrace
   # run:
   - ./gradlew :app:installDebugAndroidTest :app:installDebug
-  - adb shell am instrument -w -r -e debug false org.andstatus.app.tests/android.test.InstrumentationTestRunner
-  # See http://stackoverflow.com/questions/21294945/error-unable-to-find-instrumentation-info-for-componentinfo
+  #
+  # The below line causes Process crash due to absense of video device
+  #- adb shell am instrument -w -r -e debug false org.andstatus.app.tests/android.test.InstrumentationTestRunner
+  #
+  # Run only tests, marked with a special annotation:
+  # See https://developer.android.com/reference/android/test/InstrumentationTestRunner.html
+  - adb shell am instrument -w -r -e annotation org.andstatus.app.context.Travis org.andstatus.app.tests/android.test.InstrumentationTestRunner
   # For one method:
   # - adb shell am instrument -w -r -e debug false -e class org.andstatus.app.msg.ActAsUserTest#testActAsUser org.andstatus.app.tests/android.test.InstrumentationTestRunner
 after_success:

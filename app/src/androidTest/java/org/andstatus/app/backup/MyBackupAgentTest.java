@@ -14,6 +14,7 @@ import org.andstatus.app.account.PersistentAccounts;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyStorage;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.context.Travis;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.FileUtils;
@@ -29,6 +30,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
+@Travis
 public class MyBackupAgentTest extends InstrumentationTestCase {
 
     @Override

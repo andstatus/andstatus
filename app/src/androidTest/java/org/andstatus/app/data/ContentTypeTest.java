@@ -3,8 +3,11 @@ package org.andstatus.app.data;
 import android.test.InstrumentationTestCase;
 
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.context.Travis;
+
 import cz.msebera.android.httpclient.entity.ContentType;
 
+@Travis
 public class ContentTypeTest extends InstrumentationTestCase {
     public void testApacheContentType() {
         ContentType contentType = ContentType.parse("image/png");

@@ -24,6 +24,7 @@ import org.andstatus.app.service.ConnectionState;
 /**
  * @author yvolk@yurivolkov.com
  */
+@Travis
 public class ConnectionStateTest extends InstrumentationTestCase {
 
     @Override
