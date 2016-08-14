@@ -60,6 +60,6 @@ script:
   - adb shell am instrument -w -r -e annotation org.andstatus.app.context.Travis org.andstatus.app.tests/android.test.InstrumentationTestRunner
   # For one method:
   # - adb shell am instrument -w -r -e debug false -e class org.andstatus.app.msg.ActAsUserTest#testActAsUser org.andstatus.app.tests/android.test.InstrumentationTestRunner
-  - ./gradlew sonarqube -Dsonar.host.url=https://sonarqube.com -Dsonar.login=$SONAR_TOKEN -Dsonar.verbose=true --debug
+  - ./gradlew sonarqube -Dsonar.host.url=https://sonarqube.com -Dsonar.login=andstatus -Dsonar.verbose=true --debug
 after_success:
   # Nothing so far...
