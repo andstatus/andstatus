@@ -39,9 +39,9 @@ script:
   # Previous command seems to end too early, so wait a bit more
   # See http://stackoverflow.com/questions/28195080/unknown-api-level-error-when-trying-to-run-instrumentation-test
   - while ! adb shell getprop init.svc.bootanim; do
-  -   echo Waiting for boot animation to end
-  -   sleep 20
-  - done
+      echo Waiting for boot animation to end
+      sleep 20
+    done
   - adb devices
   - adb shell input keyevent 82 &
   # See http://stackoverflow.com/questions/21294945/error-unable-to-find-instrumentation-info-for-componentinfo
