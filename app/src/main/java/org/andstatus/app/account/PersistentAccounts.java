@@ -16,6 +16,7 @@ import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.database.FriendshipTable;
+import org.andstatus.app.util.CollectionsUtil;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
 import org.json.JSONArray;
@@ -25,7 +26,6 @@ import org.json.JSONObject;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -78,7 +78,7 @@ public class PersistentAccounts {
                 MyLog.e(this, "The account is not valid: " + ma);
             }
         }
-        Collections.sort(myAccounts);
+        CollectionsUtil.sort(myAccounts);
         mAccounts.clear();
         mAccounts.addAll(myAccounts);
         calculateDistinctOriginsCount();
@@ -162,7 +162,7 @@ public class PersistentAccounts {
                     myAccount = Builder.fromAndroidAccount(myContext, androidAccount)
                             .getAccount();
                     mAccounts.add(myAccount);
-                    Collections.sort(mAccounts);
+                    CollectionsUtil.sort(mAccounts);
                     MyPreferences.onPreferencesChanged();
                     break;
                 }
@@ -512,7 +512,7 @@ public class PersistentAccounts {
             }
         }
         if (changed) {
-            Collections.sort(mAccounts);
+            CollectionsUtil.sort(mAccounts);
             MyPreferences.onPreferencesChanged();
         }
     }
