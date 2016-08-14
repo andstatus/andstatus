@@ -32,7 +32,7 @@ before_script:
   - uname -a
   - android list targets
   - echo no | android create avd --force --name test --target $ANDROID_TARGET --abi $ANDROID_ABI
-  - emulator -avd test -no-skin -no-audio -no-window &
+  - emulator -avd test -netdelay none -netspeed full &
 script:
   - ./gradlew build assembleAndroidTest
   - android-wait-for-emulator
