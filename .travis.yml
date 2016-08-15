@@ -37,12 +37,18 @@ script:
   - ./gradlew build assembleAndroidTest
   - android-wait-for-emulator
   # Previous command seems to end too early, so wait a bit more
-  # See http://stackoverflow.com/questions/28195080/unknown-api-level-error-when-trying-to-run-instrumentation-test
   # On multilined commands: https://gitlab.com/gitlab-org/gitlab-ci/issues/258 and http://stackoverflow.com/questions/3790454/in-yaml-how-do-i-break-a-string-over-multiple-lines
   - |
     while ! adb shell getprop init.svc.bootanim; do
       echo Waiting for boot animation to end
-      sleep 20
+      sleep 10
+    done
+  # Another method. Should print SDK version number to console
+  # See http://stackoverflow.com/questions/28195080/unknown-api-level-error-when-trying-to-run-instrumentation-test
+  - |
+    while ! adb shell getprop ro.build.version.sdk; do
+      echo Waiting for ro.build.version.sdk value from device
+      sleep 10
     done
   - adb devices
   - adb shell input keyevent 82 &
@@ -58,8 +64,7 @@ script:
   # Run only tests, marked with a special annotation:
   # See https://developer.android.com/reference/android/test/InstrumentationTestRunner.html
   - adb shell am instrument -w -r -e annotation org.andstatus.app.context.Travis org.andstatus.app.tests/android.test.InstrumentationTestRunner
-  # For one method:
+  # For testing one method only:
   # - adb shell am instrument -w -r -e debug false -e class org.andstatus.app.msg.ActAsUserTest#testActAsUser org.andstatus.app.tests/android.test.InstrumentationTestRunner
-  - ./gradlew sonarqube -Dsonar.host.url=https://sonarqube.com -Dsonar.login=$SONAR_TOKEN -Dsonar.verbose=true --debug
 after_success:
-  # Nothing so far...
+  - ./gradlew sonarqube -Dsonar.host.url=https://sonarqube.com -Dsonar.login=$SONAR_TOKEN -Dsonar.verbose=true
