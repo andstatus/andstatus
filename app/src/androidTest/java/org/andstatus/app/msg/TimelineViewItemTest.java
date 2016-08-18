@@ -19,6 +19,7 @@ package org.andstatus.app.msg;
 import android.test.InstrumentationTestCase;
 
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.widget.DuplicationLink;
 
 /**
  * @author yvolk@yurivolkov.com

@@ -192,11 +192,11 @@ public class ConversationViewAdapter extends MyBaseAdapter {
 
     private void showMessageBody(ConversationViewItem item, View messageView) {
         TextView body = (TextView) messageView.findViewById(R.id.message_body);
-        MyUrlSpan.showText(body, item.mBody, true, true);
+        MyUrlSpan.showText(body, item.body, true, true);
     }
 
     private void showMessageDetails(ConversationViewItem item, View messageView) {
-        String messageDetails = RelativeTime.getDifference(context, item.mCreatedDate);
+        String messageDetails = RelativeTime.getDifference(context, item.createdDate);
         if (!SharedPreferencesUtil.isEmpty(item.messageSource)) {
             messageDetails += " " + String.format(
                     context.getText(R.string.message_source_from).toString(),
@@ -214,16 +214,25 @@ public class ConversationViewAdapter extends MyBaseAdapter {
                             inReplyToName)
                     + (item.mInReplyToMsgId != 0 ? " (" + msgIdToHistoryOrder(item.mInReplyToMsgId) + ")" : "");
         }
-        if (!SharedPreferencesUtil.isEmpty(item.mRebloggersString)
-                && !item.mRebloggersString.equals(item.mAuthor)) {
+
+        String rebloggersString = "";
+        for (String reblogger : item.rebloggers.values()) {
+            if (!TextUtils.isEmpty(rebloggersString)) {
+                rebloggersString += ", ";
+            }
+            rebloggersString += reblogger;
+        }
+        if (!SharedPreferencesUtil.isEmpty(rebloggersString)
+                && !rebloggersString.equals(item.mAuthor)) {
             if (!TextUtils.isEmpty(inReplyToName)) {
                 messageDetails += ";";
             }
             messageDetails += " "
                     + String.format(
                             context.getText(ma.alternativeTermForResourceId(R.string.reblogged_by))
-                                    .toString(), item.mRebloggersString);
+                                    .toString(), rebloggersString);
         }
+
         if (!SharedPreferencesUtil.isEmpty(item.mRecipientName)) {
             messageDetails += " "
                     + String.format(
@@ -241,7 +250,7 @@ public class ConversationViewAdapter extends MyBaseAdapter {
 
     private void showFavorited(ConversationViewItem item, View messageView) {
         ImageView favorited = (ImageView) messageView.findViewById(R.id.message_favorited);
-        favorited.setVisibility(item.mFavorited ? View.VISIBLE : View.GONE );
+        favorited.setVisibility(item.favorited ? View.VISIBLE : View.GONE );
     }
     
     private int msgIdToHistoryOrder(long msgId) {

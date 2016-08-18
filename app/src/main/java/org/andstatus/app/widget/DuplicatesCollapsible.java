@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-package org.andstatus.app.msg;
+package org.andstatus.app.widget;
 
-public enum DuplicationLink {
-    DUPLICATES,
-    IS_DUPLICATED,
-    NONE;
+public interface DuplicatesCollapsible<T> {
+
+    DuplicationLink duplicates(T other);
 }

@@ -18,7 +18,6 @@ package org.andstatus.app.msg;
 import android.content.Context;
 import android.database.Cursor;
 import android.graphics.drawable.Drawable;
-import android.support.annotation.NonNull;
 import android.text.Html;
 import android.text.TextUtils;
 
@@ -40,25 +39,17 @@ import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.SharedPreferencesUtil;
-import org.apache.commons.lang3.StringEscapeUtils;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * @author yvolk@yurivolkov.com
  */
 public class TimelineViewItem extends MessageViewItem {
     long originId = 0;
-    long createdDate = 0;
     long sentDate = 0;
     DownloadStatus msgStatus = DownloadStatus.UNKNOWN;
 
     String authorName = "";
     long authorId = 0;
-
-    Map<Long, String> rebloggers = new HashMap<>();
-    boolean reblogged = false;
 
     String recipientName = "";
 
@@ -66,9 +57,7 @@ public class TimelineViewItem extends MessageViewItem {
     long inReplyToUserId = 0;
     String inReplyToName = "";
 
-    String body = "";
     String messageSource = "";
-    boolean favorited = false;
 
     AttachedImageFile attachedImageFile = AttachedImageFile.EMPTY;
 
@@ -198,59 +187,6 @@ public class TimelineViewItem extends MessageViewItem {
     public String toString() {
         return MyLog.formatKeyValue(this, I18n.trimTextAt(MyHtml.fromHtml(body), 40) + ","
                 + getDetails(MyContextHolder.get().context()));
-    }
-
-    public DuplicationLink duplicates(TimelineViewItem other) {
-        DuplicationLink link = DuplicationLink.NONE;
-        if (other == null) {
-            return link;
-        }
-        if (getMsgId() == other.getMsgId()) {
-            link = duplicatesByFavoritedAndReblogged(other);
-        }
-        if (link == DuplicationLink.NONE) {
-            if (Math.abs(createdDate - other.createdDate) < 1000000L) {
-                String thisBody = getCleanedBody(body);
-                String otherBody = getCleanedBody(other.body);
-                if (thisBody.equals(otherBody)) {
-                    if (createdDate == other.createdDate) {
-                        link = duplicatesByFavoritedAndReblogged(other);
-                    } else if (createdDate < other.createdDate) {
-                        link = DuplicationLink.IS_DUPLICATED;
-                    } else {
-                        link = DuplicationLink.DUPLICATES;
-                    }
-                } else if (thisBody.contains(otherBody)) {
-                    link = DuplicationLink.DUPLICATES;
-                } else if (otherBody.contains(thisBody)) {
-                    link = DuplicationLink.IS_DUPLICATED;
-                }
-            }
-        }
-        return link;
-    }
-
-    private DuplicationLink duplicatesByFavoritedAndReblogged(TimelineViewItem other) {
-        DuplicationLink link;
-        if (favorited != other.favorited) {
-            link = favorited ? DuplicationLink.IS_DUPLICATED : DuplicationLink.DUPLICATES;
-        } else if (reblogged != other.reblogged) {
-            link = reblogged ? DuplicationLink.IS_DUPLICATED : DuplicationLink.DUPLICATES;
-        } else if (getLinkedUserId() != other.getLinkedUserId()) {
-            link = MyContextHolder.get().persistentAccounts().fromUserId(getLinkedUserId()).
-                    compareTo(MyContextHolder.get().persistentAccounts().fromUserId(other.getLinkedUserId())) <= 0 ?
-                    DuplicationLink.IS_DUPLICATED : DuplicationLink.DUPLICATES;
-        } else {
-            link = rebloggers.size() > other.rebloggers.size() ? DuplicationLink.IS_DUPLICATED : DuplicationLink.DUPLICATES;
-        }
-        return link;
-    }
-
-    @NonNull
-    protected static String getCleanedBody(String body) {
-        String out = MyHtml.fromHtml(body).toLowerCase();
-        out = StringEscapeUtils.unescapeHtml4(out);
-        return out.replaceAll("\n", " ").replaceAll("  ", " ");
     }
 
 }

@@ -37,14 +37,8 @@ import java.util.Set;
 import org.andstatus.app.util.*;
 
 public class ConversationViewItem extends ConversationItem {
-    boolean mFavorited = false;
     String mAuthor = "";
     
-    /**
-     * Comma separated list of the names of all known rebloggers of the message
-     */
-    String mRebloggersString = "";
-    String mBody = "";
     String messageSource = "";
     String mInReplyToName = "";
     String mRecipientName = "";
@@ -64,7 +58,7 @@ public class ConversationViewItem extends ConversationItem {
          * IDs of all known senders of this message except for the Author
          * These "senders" reblogged the message
          */
-        Set<Long> rebloggers = new HashSet<>();
+        Set<Long> rebloggerIds = new HashSet<>();
         int ind=0;
         do {
             long senderId = DbUtils.getLong(cursor, MsgTable.SENDER_ID);
@@ -76,7 +70,7 @@ public class ConversationViewItem extends ConversationItem {
                 super.load(cursor);
                 mStatus = DownloadStatus.load(DbUtils.getLong(cursor, MsgTable.MSG_STATUS));
                 mAuthor = TimelineSql.userColumnNameToNameAtTimeline(cursor, UserTable.AUTHOR_NAME, false);
-                mBody = MyHtml.htmlifyIfPlain(DbUtils.getString(cursor, MsgTable.BODY));
+                body = MyHtml.htmlifyIfPlain(DbUtils.getString(cursor, MsgTable.BODY));
                 String via = DbUtils.getString(cursor, MsgTable.VIA);
                 if (!TextUtils.isEmpty(via)) {
                     messageSource = Html.fromHtml(via).toString().trim();
@@ -90,7 +84,7 @@ public class ConversationViewItem extends ConversationItem {
             }
     
             if (senderId != authorId) {
-                rebloggers.add(senderId);
+                rebloggerIds.add(senderId);
             }
             if (linkedUserId != 0) {
                 if (getLinkedUserId() == 0) {
@@ -98,10 +92,10 @@ public class ConversationViewItem extends ConversationItem {
                 }
                 if (DbUtils.getInt(cursor, MsgOfUserTable.REBLOGGED) == 1
                         && linkedUserId != authorId) {
-                    rebloggers.add(linkedUserId);
+                    rebloggerIds.add(linkedUserId);
                 }
                 if (DbUtils.getInt(cursor, MsgOfUserTable.FAVORITED) == 1) {
-                    mFavorited = true;
+                    favorited = true;
                 }
             }
             
@@ -109,16 +103,13 @@ public class ConversationViewItem extends ConversationItem {
         } while (cursor.moveToNext());
 
         for (long rebloggerId : MyQuery.getRebloggers(getMsgId())) {
-            if (!rebloggers.contains(rebloggerId)) {
-                rebloggers.add(rebloggerId);
+            if (!rebloggerIds.contains(rebloggerId)) {
+                rebloggerIds.add(rebloggerId);
             }
         }
 
-        for (long rebloggerId : rebloggers) {
-            if (!TextUtils.isEmpty(mRebloggersString)) {
-                mRebloggersString += ", ";
-            }
-            mRebloggersString += MyQuery.userIdToWebfingerId(rebloggerId);
+        for (long rebloggerId : rebloggerIds) {
+            rebloggers.put(rebloggerId, MyQuery.userIdToWebfingerId(rebloggerId));
         }
     }
 }

@@ -301,11 +301,6 @@ public class TimelineAdapter extends MyBaseAdapter {
     }
 
     @Override
-    public boolean isCollapseDuplicates() {
-        return pages.isCollapseDuplicates();
-    }
-
-    @Override
     public int getPositionById(long itemId) {
         int position = super.getPositionById(itemId);
         if (position < 0 && pages.isCollapseDuplicates()) {

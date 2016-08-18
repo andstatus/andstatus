@@ -17,15 +17,32 @@
 package org.andstatus.app.msg;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.util.I18n;
+import org.andstatus.app.util.MyHtml;
+import org.andstatus.app.widget.DuplicatesCollapsible;
+import org.andstatus.app.widget.DuplicationLink;
+import org.apache.commons.lang3.StringEscapeUtils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-public class MessageViewItem {
+public class MessageViewItem implements DuplicatesCollapsible<MessageViewItem> {
+
+    long createdDate = 0;
 
     private long mMsgId;
+
+    String body = "";
+
+    boolean favorited = false;
+    Map<Long, String> rebloggers = new HashMap<>();
+    boolean reblogged = false;
+
     private long linkedUserId = 0;
     private List<TimelineViewItem> children = new ArrayList<>();
 
@@ -63,5 +80,59 @@ public class MessageViewItem {
 
     public List<TimelineViewItem> getChildren() {
         return children;
+    }
+
+    @Override
+    public DuplicationLink duplicates(MessageViewItem other) {
+        DuplicationLink link = DuplicationLink.NONE;
+        if (other == null) {
+            return link;
+        }
+        if (getMsgId() == other.getMsgId()) {
+            link = duplicatesByFavoritedAndReblogged(other);
+        }
+        if (link == DuplicationLink.NONE) {
+            if (Math.abs(createdDate - other.createdDate) < 1000000L) {
+                String thisBody = getCleanedBody(body);
+                String otherBody = getCleanedBody(other.body);
+                if (thisBody.equals(otherBody)) {
+                    if (createdDate == other.createdDate) {
+                        link = duplicatesByFavoritedAndReblogged(other);
+                    } else if (createdDate < other.createdDate) {
+                        link = DuplicationLink.IS_DUPLICATED;
+                    } else {
+                        link = DuplicationLink.DUPLICATES;
+                    }
+                } else if (thisBody.contains(otherBody)) {
+                    link = DuplicationLink.DUPLICATES;
+                } else if (otherBody.contains(thisBody)) {
+                    link = DuplicationLink.IS_DUPLICATED;
+                }
+            }
+        }
+        return link;
+    }
+
+    @NonNull
+    protected static String getCleanedBody(String body) {
+        String out = MyHtml.fromHtml(body).toLowerCase();
+        out = StringEscapeUtils.unescapeHtml4(out);
+        return out.replaceAll("\n", " ").replaceAll("  ", " ");
+    }
+
+    private DuplicationLink duplicatesByFavoritedAndReblogged(MessageViewItem other) {
+        DuplicationLink link;
+        if (favorited != other.favorited) {
+            link = favorited ? DuplicationLink.IS_DUPLICATED : DuplicationLink.DUPLICATES;
+        } else if (reblogged != other.reblogged) {
+            link = reblogged ? DuplicationLink.IS_DUPLICATED : DuplicationLink.DUPLICATES;
+        } else if (getLinkedUserId() != other.getLinkedUserId()) {
+            link = MyContextHolder.get().persistentAccounts().fromUserId(getLinkedUserId()).
+                    compareTo(MyContextHolder.get().persistentAccounts().fromUserId(other.getLinkedUserId())) <= 0 ?
+                    DuplicationLink.IS_DUPLICATED : DuplicationLink.DUPLICATES;
+        } else {
+            link = rebloggers.size() > other.rebloggers.size() ? DuplicationLink.IS_DUPLICATED : DuplicationLink.DUPLICATES;
+        }
+        return link;
     }
 }

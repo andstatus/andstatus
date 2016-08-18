@@ -23,8 +23,6 @@ import android.widget.TextView;
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.msg.DuplicationLink;
-import org.andstatus.app.msg.TimelineViewItem;
 import org.andstatus.app.util.MyLog;
 
 public abstract class MyBaseAdapter extends BaseAdapter  implements View.OnClickListener {
@@ -84,10 +82,6 @@ public abstract class MyBaseAdapter extends BaseAdapter  implements View.OnClick
         notifyDataSetChanged();
     }
 
-    public boolean isCollapseDuplicates() {
-        return false;
-    }
-
     public int getPositionById(long itemId) {
         if (itemId != 0) {
             for (int position = 0; position < getCount(); position++) {
@@ -123,14 +117,14 @@ public abstract class MyBaseAdapter extends BaseAdapter  implements View.OnClick
         int position = getPositionById(itemId);
         if (position >= 0) {
             Object item = getItem(position);
-            if (item != null && TimelineViewItem.class.isAssignableFrom(item.getClass())) {
-                TimelineViewItem viewItem = (TimelineViewItem) item;
+            if (item != null && DuplicatesCollapsible.class.isAssignableFrom(item.getClass())) {
+                DuplicatesCollapsible viewItem = (DuplicatesCollapsible) item;
                 if (position > 0) {
-                    if (viewItem.duplicates((TimelineViewItem) getItem(position - 1)) != DuplicationLink.NONE) {
+                    if (viewItem.duplicates(getItem(position - 1)) != DuplicationLink.NONE) {
                         return true;
                     }
                 }
-                if (viewItem.duplicates((TimelineViewItem) getItem(position + 1)) != DuplicationLink.NONE) {
+                if (viewItem.duplicates(getItem(position + 1)) != DuplicationLink.NONE) {
                     return true;
                 }
             }

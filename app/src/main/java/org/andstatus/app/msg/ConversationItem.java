@@ -23,7 +23,6 @@ import org.andstatus.app.database.MsgTable;
 
 public abstract class ConversationItem extends MessageViewItem implements Comparable<ConversationItem> {
     long mInReplyToMsgId = 0;
-    long mCreatedDate = 0;
 
     /** Numeration starts from 0 **/
     int mListOrder = 0;
@@ -49,21 +48,21 @@ public abstract class ConversationItem extends MessageViewItem implements Compar
     public int compareTo(ConversationItem another) {
         int compared = mListOrder - another.mListOrder;
         if (compared == 0) {
-            if (mCreatedDate == another.mCreatedDate) {
+            if (createdDate == another.createdDate) {
                 if ( getMsgId() == another.getMsgId()) {
                     compared = 0;
                 } else {
                     compared = (another.getMsgId() - getMsgId() > 0 ? 1 : -1);
                 }
             } else {
-                compared = (another.mCreatedDate - mCreatedDate > 0 ? 1 : -1);
+                compared = (another.createdDate - createdDate > 0 ? 1 : -1);
             }
         }
         return compared;
     }
 
     public boolean isLoaded() {
-        return mCreatedDate > 0;
+        return createdDate > 0;
     }
 
     @Override
@@ -87,7 +86,7 @@ public abstract class ConversationItem extends MessageViewItem implements Compar
     
     void load(Cursor cursor) {
         mInReplyToMsgId = DbUtils.getLong(cursor, MsgTable.IN_REPLY_TO_MSG_ID);
-        mCreatedDate = DbUtils.getLong(cursor, MsgTable.CREATED_DATE);
+        createdDate = DbUtils.getLong(cursor, MsgTable.CREATED_DATE);
     }
     
 }

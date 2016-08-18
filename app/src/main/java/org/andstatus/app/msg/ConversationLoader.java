@@ -175,14 +175,14 @@ public class ConversationLoader<T extends ConversationItem> implements SyncLoade
         public int compare(T lhs, T rhs) {
             int compared = rhs.mReplyLevel - lhs.mReplyLevel;
             if (compared == 0) {
-                if (lhs.mCreatedDate == rhs.mCreatedDate) {
+                if (lhs.createdDate == rhs.createdDate) {
                     if ( lhs.getMsgId() == rhs.getMsgId()) {
                         compared = 0;
                     } else {
                         compared = (rhs.getMsgId() - lhs.getMsgId() > 0 ? 1 : -1);
                     }
                 } else {
-                    compared = (rhs.mCreatedDate - lhs.mCreatedDate > 0 ? 1 : -1);
+                    compared = (rhs.createdDate - lhs.createdDate > 0 ? 1 : -1);
                 }
             }
             return compared;
