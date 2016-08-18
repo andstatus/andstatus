@@ -16,13 +16,16 @@
 
 package org.andstatus.app.msg;
 
+import android.support.v4.util.Pair;
+
 import org.andstatus.app.WhichPage;
 import org.andstatus.app.util.MyLog;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -249,36 +252,73 @@ public class TimelinePages {
     }
 
     private void collapseDuplicates(long itemId) {
-        Map<TimelineViewItem, TimelinePage> toCollapse = new HashMap<>();
-        TimelinePage prevPage = null;
-        TimelineViewItem prevItem = null;
+        Collection<Pair<TimelinePage, TimelineViewItem>> toCollapse = new HashSet<>();
+        innerCollapseDuplicates(itemId, toCollapse);
+        if (itemId != 0) {
+            collapseThese(toCollapse);
+        }
+        for (Pair<TimelinePage, TimelineViewItem> pair : toCollapse) {
+            pair.first.items.remove(pair.second);
+        }
+    }
+
+    private void innerCollapseDuplicates(long itemId, Collection<Pair<TimelinePage, TimelineViewItem>> toCollapse) {
+        Pair<TimelinePage, TimelineViewItem> parent = new Pair<>(null, null);
+        Set<Long> ids = new HashSet<>();
         for (TimelinePage page : list) {
             for (TimelineViewItem item : page.items) {
-                switch (item.duplicates(prevItem)) {
+                switch (item.duplicates(parent.second)) {
                     case DUPLICATES:
-                        if (itemId == 0 || (prevItem != null && itemId == prevItem.getMsgId()) || itemId == item.getMsgId()) {
-                            toCollapse.put(item, page);
-                            prevItem.collapse(item);
+                        if (itemId == 0) {
+                            parent.second.collapse(item);
+                        } else {
+                            ids.add(item.getMsgId());
                         }
+                        toCollapse.add(new Pair<>(page, item));
                         break;
                     case IS_DUPLICATED:
-                        if (itemId == 0 || (prevItem != null && itemId == prevItem.getMsgId()) || itemId == item.getMsgId()) {
-                            toCollapse.put(prevItem, prevPage);
-                            item.collapse(prevItem);
+                        if (itemId == 0) {
+                            item.collapse(parent.second);
+                        } else {
+                            ids.add(item.getMsgId());
                         }
-                        prevPage = page;
-                        prevItem = item;
+                        toCollapse.add(parent);
+                        parent = new Pair<>(page, item);
                         break;
                     default:
-                        prevPage = page;
-                        prevItem = item;
+                        parent = new Pair<>(page, item);
+                        if (itemId != 0) {
+                            if (ids.contains(itemId)) {
+                                return;
+                            }
+                            ids.clear();
+                            toCollapse.clear();
+                            ids.add(parent.second.getMsgId());
+                            toCollapse.add(parent);
+                        }
                         break;
                 }
             }
         }
-        for (Map.Entry<TimelineViewItem, TimelinePage> entry : toCollapse.entrySet()) {
-            entry.getValue().items.remove(entry.getKey());
+    }
+
+    private void collapseThese(Collection<Pair<TimelinePage, TimelineViewItem>> toCollapse) {
+        Pair<TimelinePage, TimelineViewItem> parent = new Pair<>(null, null);
+        for (Pair<TimelinePage, TimelineViewItem> pair : toCollapse) {
+            switch (pair.second.duplicates(parent.second)) {
+                case DUPLICATES:
+                    parent.second.collapse(pair.second);
+                    break;
+                case IS_DUPLICATED:
+                    pair.second.collapse(parent.second);
+                    parent = pair;
+                    break;
+                default:
+                    parent = pair;
+                    break;
+            }
         }
+        toCollapse.remove(parent);
     }
 
     private void showDuplicates(long itemId) {

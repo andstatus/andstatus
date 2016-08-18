@@ -230,7 +230,7 @@ public class TimelineViewItem extends MessageViewItem {
         return link;
     }
 
-    public DuplicationLink duplicatesByFavoritedAndReblogged(TimelineViewItem other) {
+    private DuplicationLink duplicatesByFavoritedAndReblogged(TimelineViewItem other) {
         DuplicationLink link;
         if (favorited != other.favorited) {
             link = favorited ? DuplicationLink.IS_DUPLICATED : DuplicationLink.DUPLICATES;

@@ -23,6 +23,8 @@ import android.widget.TextView;
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.msg.DuplicationLink;
+import org.andstatus.app.msg.TimelineViewItem;
 import org.andstatus.app.util.MyLog;
 
 public abstract class MyBaseAdapter extends BaseAdapter  implements View.OnClickListener {
@@ -115,5 +117,24 @@ public abstract class MyBaseAdapter extends BaseAdapter  implements View.OnClick
     // See  http://stackoverflow.com/questions/2238883/what-is-the-correct-way-to-specify-dimensions-in-dip-from-java-code
     protected int dpToPixes(int dp) {
         return (int) (dp * displayDensity);
+    }
+
+    public boolean canBeCollapsed(long itemId) {
+        int position = getPositionById(itemId);
+        if (position >= 0) {
+            Object item = getItem(position);
+            if (item != null && TimelineViewItem.class.isAssignableFrom(item.getClass())) {
+                TimelineViewItem viewItem = (TimelineViewItem) item;
+                if (position > 0) {
+                    if (viewItem.duplicates((TimelineViewItem) getItem(position - 1)) != DuplicationLink.NONE) {
+                        return true;
+                    }
+                }
+                if (viewItem.duplicates((TimelineViewItem) getItem(position + 1)) != DuplicationLink.NONE) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }
