@@ -75,6 +75,10 @@ public class TimelineViewItemTest extends InstrumentationTestCase {
         item2.favorited = false;
         assertDuplicates(item2, item1, DuplicationLink.DUPLICATES);
         assertDuplicates(item1, item2, DuplicationLink.IS_DUPLICATED);
+
+        item1.body = "cat favorited something by nstr: test from andstatus on freshly r00ted phone";
+        item2.body = "mmn favorited something by nstr: test from andstatus on freshly r00ted phone";
+        assertDuplicates(item1, item2, DuplicationLink.IS_DUPLICATED);
     }
 
     protected void assertDuplicates(TimelineViewItem item1, TimelineViewItem item2, DuplicationLink duplicates) {

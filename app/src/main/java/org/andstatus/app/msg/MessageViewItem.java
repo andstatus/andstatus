@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 public class MessageViewItem implements DuplicatesCollapsible<MessageViewItem> {
 
@@ -92,7 +93,7 @@ public class MessageViewItem implements DuplicatesCollapsible<MessageViewItem> {
             link = duplicatesByFavoritedAndReblogged(other);
         }
         if (link == DuplicationLink.NONE) {
-            if (Math.abs(createdDate - other.createdDate) < 1000000L) {
+            if (Math.abs(createdDate - other.createdDate) < TimeUnit.HOURS.toMillis(24)) {
                 String thisBody = getCleanedBody(body);
                 String otherBody = getCleanedBody(other.body);
                 if (thisBody.equals(otherBody)) {
@@ -114,10 +115,12 @@ public class MessageViewItem implements DuplicatesCollapsible<MessageViewItem> {
     }
 
     @NonNull
-    protected static String getCleanedBody(String body) {
+    private String getCleanedBody(String body) {
         String out = MyHtml.fromHtml(body).toLowerCase();
         out = StringEscapeUtils.unescapeHtml4(out);
-        return out.replaceAll("\n", " ").replaceAll("  ", " ");
+        return out.replaceAll("\n", " ").
+                replaceAll("  ", " ").
+                replaceFirst(".*(favorited something by.*)","$1");
     }
 
     private DuplicationLink duplicatesByFavoritedAndReblogged(MessageViewItem other) {
