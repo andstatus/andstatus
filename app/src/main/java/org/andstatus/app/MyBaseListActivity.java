@@ -54,8 +54,10 @@ public abstract class MyBaseListActivity extends MyActivity implements MySwipeRe
     }
 
     protected void setListAdapter(ListAdapter adapter) {
-        mAdapter = adapter;
-        getListView().setAdapter(mAdapter);
+        if (adapter != null) {
+            mAdapter = adapter;
+            getListView().setAdapter(mAdapter);
+        }
     }
 
     @Nullable

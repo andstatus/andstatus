@@ -64,12 +64,15 @@ import org.andstatus.app.timeline.TimelineSelector;
 import org.andstatus.app.timeline.TimelineTitle;
 import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.BundleUtils;
+import org.andstatus.app.util.MyCheckBox;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyUrlSpan;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
 import org.andstatus.app.widget.MyBaseAdapter;
+
+import java.util.Collections;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -82,7 +85,7 @@ public class TimelineActivity extends LoadableListActivity implements
     private volatile TimelineListParameters paramsNew = null;
     /** Last parameters, requested to load. Thread safe. They are taken by a Loader at some time */
     private volatile TimelineListParameters paramsToLoad;
-    private TimelineListParameters paramsLoaded;
+    private volatile TimelineData listData;
 
     private MessageContextMenu mContextMenu;
     private MessageEditor mMessageEditor;
@@ -161,8 +164,7 @@ public class TimelineActivity extends LoadableListActivity implements
 
     @Override
     protected MyBaseAdapter newListAdapter() {
-        return new TimelineAdapter(mContextMenu, getListAdapter(),
-                (TimelinePage) getLoaded().getList().get(0));
+        return new TimelineAdapter(mContextMenu, getListData());
     }
 
     @Override
@@ -189,6 +191,8 @@ public class TimelineActivity extends LoadableListActivity implements
             if (getParamsNew().restoreState(savedInstanceState)) {
                 mContextMenu.loadState(savedInstanceState);
             }
+            getListData().collapseDuplicates(savedInstanceState.getBoolean(
+                    IntentExtra.COLLAPSE_DUPLICATES.key, MyPreferences.isCollapseDuplicates()), 0);
             if (MyLog.isVerboseEnabled()) {
                 MyLog.v(this, "restoreActivityState; " + getParamsNew());
             }
@@ -230,8 +234,7 @@ public class TimelineActivity extends LoadableListActivity implements
      */
     public void onGoToTheTopButtonClick(View item) {
         closeDrawer();
-        TimelineAdapter adapter = getListAdapter();
-        if (adapter == null || adapter.getPages().mayHaveYoungerPage()) {
+        if (getListData().mayHaveYoungerPage()) {
             showList(WhichPage.TOP);
         } else {
             TimelineListPositionStorage.setPosition(getListView(), 0);
@@ -243,8 +246,7 @@ public class TimelineActivity extends LoadableListActivity implements
      */
     public void onRefreshButtonClick(View item) {
         closeDrawer();
-        TimelineAdapter adapter = getListAdapter();
-        if (adapter == null || adapter.getPages().mayHaveYoungerPage()) {
+        if (getListData().mayHaveYoungerPage()) {
             showList(WhichPage.CURRENT);
         } else {
             showList(WhichPage.TOP);
@@ -268,12 +270,8 @@ public class TimelineActivity extends LoadableListActivity implements
 
     public void onCollapseDuplicatesToggleClick(View view) {
         closeDrawer();
-        updateList(TriState.fromBoolean(isCollapseDuplicates()), 0);
-    }
-
-    public boolean isCollapseDuplicates() {
-        View view = findViewById(R.id.collapseDuplicatesToggle);
-        return view == null ? true : ((CheckBox) view).isChecked();
+        getListData().collapseDuplicates(((CheckBox) view).isChecked(), 0);
+        updateList();
     }
 
     /** View.OnClickListener */
@@ -527,24 +525,21 @@ public class TimelineActivity extends LoadableListActivity implements
     @Override
     public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount,
                          int totalItemCount) {
-        TimelineAdapter adapter = getListAdapter();
-        if (adapter != null) {
-            boolean up = false;
-            if (firstVisibleItem == 0) {
-                View v = getListView().getChildAt(0);
-                int offset = (v == null) ? 0 : v.getTop();
-                up = offset == 0;
-                if (up && adapter.getPages().mayHaveYoungerPage()) {
-                    showList(WhichPage.YOUNGER);
-                }
+        boolean up = false;
+        if (firstVisibleItem == 0) {
+            View v = getListView().getChildAt(0);
+            int offset = (v == null) ? 0 : v.getTop();
+            up = offset == 0;
+            if (up && getListData().mayHaveYoungerPage()) {
+                showList(WhichPage.YOUNGER);
             }
-            // Idea from http://stackoverflow.com/questions/1080811/android-endless-list
-            if ( !up && (visibleItemCount > 0)
-                    && (firstVisibleItem + visibleItemCount >= totalItemCount - 1)
-                    && adapter.getPages().mayHaveOlderPage()) {
-                MyLog.d(this, "Start Loading older items, rows=" + totalItemCount);
-                showList(WhichPage.OLDER);
-            }
+        }
+        // Idea from http://stackoverflow.com/questions/1080811/android-endless-list
+        if ( !up && (visibleItemCount > 0)
+                && (firstVisibleItem + visibleItemCount >= totalItemCount - 1)
+                && getListData().mayHaveOlderPage()) {
+            MyLog.d(this, "Start Loading older items, rows=" + totalItemCount);
+            showList(WhichPage.OLDER);
         }
     }
 
@@ -581,7 +576,7 @@ public class TimelineActivity extends LoadableListActivity implements
         }
         super.onNewIntent(intent);
         parseNewIntent(intent);
-		if (!isPaused() || size() > 0 || isLoading()) {
+		if (!isPaused() || getListData().getCount() > 0 || isLoading()) {
             showList(getParamsNew().whichPage);
 		}
     }
@@ -706,6 +701,8 @@ public class TimelineActivity extends LoadableListActivity implements
         mDrawerToggle.setDrawerIndicatorEnabled(!getParamsLoaded().isAtHome());
         MyUrlSpan.showView(
                 findViewById(R.id.switchToDefaultTimelineButton), !getParamsLoaded().isAtHome());
+        MyCheckBox.showEnabled(this, R.id.collapseDuplicatesToggle,
+                getListData().isCollapseDuplicates());
     }
 
     @Override
@@ -721,14 +718,25 @@ public class TimelineActivity extends LoadableListActivity implements
     /** Parameters of currently shown Timeline */
     @NonNull
     private TimelineListParameters getParamsLoaded() {
-        return paramsLoaded == null ? getParamsNew() : paramsLoaded;
+        return getListData().params;
+    }
+
+    @Override
+    @NonNull
+    public TimelineData getListData() {
+        if (listData == null) {
+            listData = new TimelineData(null, new TimelinePage(
+                    getParamsNew(), Collections.<TimelineViewItem>emptyList()
+            ));
+        }
+        return listData;
     }
 
     /** @return Previous value */
-    private TimelineListParameters setParamsLoaded(TimelineListParameters paramsLoaded) {
-        TimelineListParameters parametersPrev = this.paramsLoaded;
-        this.paramsLoaded = paramsLoaded;
-        return parametersPrev;
+    private TimelineData setPageLoaded(TimelinePage pageLoaded) {
+        TimelineData dataNew = new TimelineData(listData, pageLoaded);
+        listData = dataNew;
+        return dataNew;
     }
 
     @Override
@@ -743,16 +751,15 @@ public class TimelineActivity extends LoadableListActivity implements
 
     @NonNull
     private TimelineListParameters getReferenceParametersFor(WhichPage whichPage) {
-        TimelineAdapter adapter = getListAdapter();
         switch (whichPage) {
             case OLDER:
-                if (adapter != null && adapter.getPages().getItemsCount() > 0) {
-                    return adapter.getPages().list.get(adapter.getPages().list.size()-1).parameters;
+                if (getListData().getCount() > 0) {
+                    return getListData().pages.get(getListData().pages.size()-1).params;
                 }
                 return getParamsLoaded();
             case YOUNGER:
-                if (adapter != null && adapter.getPages().getItemsCount() > 0) {
-                    return adapter.getPages().list.get(0).parameters;
+                if (getListData().getCount() > 0) {
+                    return getListData().pages.get(0).params;
                 }
                 return getParamsLoaded();
             case EMPTY:
@@ -812,8 +819,7 @@ public class TimelineActivity extends LoadableListActivity implements
             }
             saveSearchQuery();
         }
-        return new TimelineLoader(params, getCurrentMyAccount(),
-                BundleUtils.fromBundle(args, IntentExtra.INSTANCE_ID));
+        return new TimelineLoader(params, BundleUtils.fromBundle(args, IntentExtra.INSTANCE_ID));
     }
 
     private void saveSearchQuery() {
@@ -831,41 +837,36 @@ public class TimelineActivity extends LoadableListActivity implements
     @Override
     public void onLoadFinished(boolean keepCurrentPosition_in) {
         final String method = "onLoadFinished";
-        TimelineLoader myLoader = (TimelineLoader) getLoaded();
-        TimelineListParameters paramsLoaded = myLoader.getParams();
-        boolean isSameTimeline = paramsLoaded.isSameTimeline(setParamsLoaded(paramsLoaded));
-        MyLog.v(this, method + "; " + paramsLoaded.toSummary());
+        TimelineData dataLoaded = setPageLoaded(((TimelineLoader) getLoaded()).getPage());
+        MyLog.v(this, method + "; " + dataLoaded.params.toSummary());
 
         // TODO start: Move this inside superclass
-        boolean keepCurrentPosition = keepCurrentPosition_in  && isSameTimeline &&
-                isPositionRestored() && paramsLoaded.whichPage != WhichPage.TOP;
+        boolean keepCurrentPosition = keepCurrentPosition_in && getListData().isSameTimeline &&
+                isPositionRestored() && dataLoaded.params.whichPage != WhichPage.TOP;
         super.onLoadFinished(keepCurrentPosition);
-        if (paramsLoaded.whichPage == WhichPage.TOP) {
+        if (dataLoaded.params.whichPage == WhichPage.TOP) {
             TimelineListPositionStorage.setPosition(getListView(), 0);
             getListAdapter().setPositionRestored(true);
         }
         // TODO end: Move this inside superclass
 
         if (!isPositionRestored()) {
-            new TimelineListPositionStorage(getListAdapter(), getListView(), paramsLoaded)
+            new TimelineListPositionStorage(getListAdapter(), getListView(), dataLoaded.params)
                     .restore();
         }
 
         TimelineListParameters otherParams = paramsToLoad;
-        boolean isParamsChanged = otherParams != null && !paramsLoaded.equals(otherParams);
+        boolean isParamsChanged = otherParams != null && !dataLoaded.params.equals(otherParams);
         WhichPage otherPageToRequest = WhichPage.EMPTY;
-        if (!isParamsChanged) {
-            TimelineAdapter adapter = getListAdapter();
-            if ( adapter.getCount() == 0) {
-                if (adapter.getPages().mayHaveYoungerPage()) {
-                    otherPageToRequest = WhichPage.YOUNGER;
-                } else if (adapter.getPages().mayHaveOlderPage()) {
-                    otherPageToRequest = WhichPage.OLDER;
-                } else if (!paramsLoaded.whichPage.isYoungest()) {
-                    otherPageToRequest = WhichPage.YOUNGEST;
-                } else if (paramsLoaded.rowsLoaded == 0) {
-                    launchSyncIfNeeded(paramsLoaded.timelineToSync);
-                }
+        if (!isParamsChanged && getListData().getCount() == 0) {
+            if (getListData().mayHaveYoungerPage()) {
+                otherPageToRequest = WhichPage.YOUNGER;
+            } else if (getListData().mayHaveOlderPage()) {
+                otherPageToRequest = WhichPage.OLDER;
+            } else if (!dataLoaded.params.whichPage.isYoungest()) {
+                otherPageToRequest = WhichPage.YOUNGEST;
+            } else if (dataLoaded.params.rowsLoaded == 0) {
+                launchSyncIfNeeded(dataLoaded.params.timelineToSync);
             }
         }
         hideLoading(method);
@@ -944,6 +945,8 @@ public class TimelineActivity extends LoadableListActivity implements
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         getParamsNew().saveState(outState);
+        outState.putBoolean(IntentExtra.COLLAPSE_DUPLICATES.key,
+                getListData().isCollapseDuplicates());
         mContextMenu.saveState(outState);
     }
 
@@ -1057,7 +1060,7 @@ public class TimelineActivity extends LoadableListActivity implements
         if ((mMessageEditor != null && mMessageEditor.isVisible()) ||  super.canSwipeRefreshChildScrollUp()) {
             return true;
         }
-        if (getListAdapter() == null || getListAdapter().getPages().mayHaveYoungerPage()) {
+        if (getListData().mayHaveYoungerPage()) {
             return true;
         }
         return false;
@@ -1112,12 +1115,9 @@ public class TimelineActivity extends LoadableListActivity implements
     protected boolean isAutoRefreshAllowedAfterExecuting(CommandData commandData) {
         boolean allowed = super.isAutoRefreshAllowedAfterExecuting(commandData)
                 && SharedPreferencesUtil.getBoolean(MyPreferences.KEY_REFRESH_TIMELINE_AUTOMATICALLY, true);
-        if (allowed) {
-            TimelineAdapter adapter = getListAdapter();
-            if (adapter == null || adapter.getPages().mayHaveYoungerPage()) {
-                // Update a list only if we already show the youngest page
-                allowed = false;
-            }
+        if (allowed && getListData().mayHaveYoungerPage()) {
+            // Update a list only if we already show the youngest page
+            allowed = false;
         }
         return allowed;
     }

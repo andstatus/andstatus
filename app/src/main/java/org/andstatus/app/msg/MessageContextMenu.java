@@ -81,7 +81,7 @@ public class MessageContextMenu extends MyContextMenu {
             MessageListContextMenuItem.OPEN_CONVERSATION.addTo(menu, order++, R.string.menu_item_open_conversation);
             if (viewItem.isCollapsed()) {
                 MessageListContextMenuItem.SHOW_DUPLICATES.addTo(menu, order++, R.string.show_duplicates);
-            } else if (getActivity().getListAdapter().canBeCollapsed(getMsgId())) {
+            } else if (getActivity().getListData().canBeCollapsed(getActivity().getPositionOfContextMenu())) {
                 MessageListContextMenuItem.COLLAPSE_DUPLICATES.addTo(menu, order++, R.string.collapse_duplicates);
             }
             MessageListContextMenuItem.USERS_OF_MESSAGE.addTo(menu, order++, R.string.users_of_message);

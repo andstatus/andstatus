@@ -16,9 +16,11 @@
 
 package org.andstatus.app.msg;
 
+import android.support.annotation.NonNull;
 import android.support.v4.util.Pair;
 
 import org.andstatus.app.WhichPage;
+import org.andstatus.app.list.ListData;
 import org.andstatus.app.util.MyLog;
 
 import java.util.ArrayList;
@@ -30,75 +32,65 @@ import java.util.Set;
 /**
  * @author yvolk@yurivolkov.com
  */
-public class TimelinePages {
+public class TimelineData extends ListData {
     private static final int MAX_PAGES_COUNT = 5;
-    final List<TimelinePage> list;
+    final List<TimelinePage> pages;
     final long updatedAt = MyLog.uniqueCurrentTimeMS();
+    final TimelineListParameters params;
+    final boolean isSameTimeline;
 
-    private boolean collapseDuplicates;
-
-    public TimelinePages(TimelinePages oldPages, TimelinePage thisPage) {
-        this.list = isSameTimeline(oldPages, thisPage) ? oldPages.list : new ArrayList<TimelinePage>();
-        if (thisPage != null) {
-            addThisPage(thisPage);
-            setCollapseDuplicates(oldPages == null ? true : oldPages.isCollapseDuplicates(), 0);
-            dropExcessivePage(thisPage);
-        }
+    public TimelineData(TimelineData oldData, @NonNull TimelinePage thisPage) {
+        super(oldData);
+        this.params = thisPage.params;
+        isSameTimeline = oldData == null ? false :
+                params.getContentUri().equals(oldData.params.getContentUri());
+        this.pages = isSameTimeline ? oldData.pages : new ArrayList<TimelinePage>();
+        addThisPage(thisPage);
+        dropExcessivePage(thisPage);
     }
 
     private void dropExcessivePage(TimelinePage lastLoadedPage) {
-        if (list.size() > MAX_PAGES_COUNT) {
-            if (lastLoadedPage.parameters.whichPage == WhichPage.YOUNGER) {
-                list.remove(list.size() - 1);
+        if (pages.size() > MAX_PAGES_COUNT) {
+            if (lastLoadedPage.params.whichPage == WhichPage.YOUNGER) {
+                pages.remove(pages.size() - 1);
             } else {
-                list.remove(0);
+                pages.remove(0);
             }
         }
     }
 
-    private boolean isSameTimeline(TimelinePages oldPages, TimelinePage thisPage) {
-        if (oldPages == null) {
-            return false;
-        }
-        if (thisPage == null) {
-            return true;
-        }
-        return oldPages.list.size() > 0
-                && thisPage.parameters.getContentUri().equals(oldPages.list.get(0).parameters.getContentUri());
-    }
-
     private void addThisPage(TimelinePage page) {
-        switch (page.parameters.whichPage) {
+        switch (page.params.whichPage) {
             case YOUNGEST:
                 if (!mayHaveYoungerPage()) {
                     removeDuplicatesWithOlder(page, 1);
-                    list.remove(0);
-                    list.add(0, page);
+                    pages.remove(0);
+                    pages.add(0, page);
                     break;
                 }
             case CURRENT:
             case TOP:
-                list.clear();
-                list.add(page);
+                pages.clear();
+                pages.add(page);
                 break;
             case OLDER:
-                removeDuplicatesWithYounger(page, list.size() - 1);
-                list.add(page);
+                removeDuplicatesWithYounger(page, pages.size() - 1);
+                pages.add(page);
                 break;
             case YOUNGER:
                 removeDuplicatesWithOlder(page, 0);
-                list.add(0, page);
+                pages.add(0, page);
                 break;
             default:
-                if (list.size() < 2) {
-                    list.clear();
-                    list.add(page);
+                if (pages.size() < 2) {
+                    pages.clear();
+                    pages.add(page);
                 } else {
                     int found = -1;
-                    for (int ind = 0; ind < list.size(); ind++) {
-                        TimelinePage p = list.get(ind);
-                        if (p.parameters.maxSentDate == page.parameters.maxSentDate
-                                && p.parameters.minSentDate == page.parameters.minSentDate) {
+                    for (int ind = 0; ind < pages.size(); ind++) {
+                        TimelinePage p = pages.get(ind);
+                        if (p.params.maxSentDate == page.params.maxSentDate
+                                && p.params.minSentDate == page.params.minSentDate) {
                             found = ind;
                             break;
                         }
@@ -106,10 +98,10 @@ public class TimelinePages {
                     if (found >= 0) {
                         removeDuplicatesWithYounger(page, found - 1);
                         removeDuplicatesWithOlder(page, found + 1);
-                        list.remove(found);
-                        list.add(found, page);
+                        pages.remove(found);
+                        pages.add(found, page);
                     } else {
-                        list.add(page);
+                        pages.add(page);
                     }
                 }
                 break;
@@ -117,17 +109,17 @@ public class TimelinePages {
     }
 
     private void removeDuplicatesWithYounger(TimelinePage page, int indExistingPage) {
-        if (indExistingPage < 0 || indExistingPage >= list.size()
-                || list.get(indExistingPage).items.isEmpty() || page.items.isEmpty()) {
+        if (indExistingPage < 0 || indExistingPage >= pages.size()
+                || pages.get(indExistingPage).items.isEmpty() || page.items.isEmpty()) {
             return;
         }
-        TimelinePage ePage = list.get(indExistingPage);
-        if (ePage.parameters.maxSentDate > 0 && page.parameters.maxSentDate >= ePage.parameters.maxSentDate) {
+        TimelinePage ePage = pages.get(indExistingPage);
+        if (ePage.params.maxSentDate > 0 && page.params.maxSentDate >= ePage.params.maxSentDate) {
             MyLog.v(this, "Previous younger page removed");
-            list.remove(indExistingPage);
+            pages.remove(indExistingPage);
             return;
         }
-        long edgeDate =  ePage.parameters.minSentDateLoaded;
+        long edgeDate =  ePage.params.minSentDateLoaded;
         List<TimelineViewItem> toRemove = new ArrayList<>();
         for (int ind = 0; ind < page.items.size(); ind++) {
             TimelineViewItem item = page.items.get(ind);
@@ -158,17 +150,17 @@ public class TimelinePages {
     }
 
     private void removeDuplicatesWithOlder(TimelinePage page, int indExistingPage) {
-        if (indExistingPage < 0 || indExistingPage >= list.size()
-                || list.get(indExistingPage).items.isEmpty() || page.items.isEmpty()) {
+        if (indExistingPage < 0 || indExistingPage >= pages.size()
+                || pages.get(indExistingPage).items.isEmpty() || page.items.isEmpty()) {
             return;
         }
-        TimelinePage ePage = list.get(indExistingPage);
-        if (page.parameters.minSentDate <= ePage.parameters.minSentDate) {
+        TimelinePage ePage = pages.get(indExistingPage);
+        if (page.params.minSentDate <= ePage.params.minSentDate) {
             MyLog.v(this, "Previous older page removed");
-            list.remove(indExistingPage);
+            pages.remove(indExistingPage);
             return;
         }
-        long edgeDate = ePage.parameters.maxSentDateLoaded;
+        long edgeDate = ePage.params.maxSentDateLoaded;
         List<TimelineViewItem> toRemove = new ArrayList<>();
         for (int ind = page.items.size() - 1; ind >= 0; ind--) {
             TimelineViewItem item = page.items.get(ind);
@@ -194,17 +186,19 @@ public class TimelinePages {
         page.items.removeAll(toRemove);
     }
 
-    public int getItemsCount() {
+    @Override
+    public int getCount() {
         int count = 0;
-        for (TimelinePage page : list) {
+        for (TimelinePage page : pages) {
             count += page.items.size();
         }
         return count;
     }
 
+    @Override
     public TimelineViewItem getItem(int position) {
         int firstPosition = 0;
-        for (TimelinePage page : list) {
+        for (TimelinePage page : pages) {
             if (position < firstPosition) {
                 break;
             }
@@ -217,28 +211,25 @@ public class TimelinePages {
     }
 
     public boolean mayHaveYoungerPage() {
-        return list.size() == 0 || list.get(0).parameters.mayHaveYoungerPage();
+        return pages.size() == 0 || pages.get(0).params.mayHaveYoungerPage();
     }
 
     public boolean mayHaveOlderPage() {
-        return list.size() == 0 || list.get(list.size() - 1).parameters.mayHaveOlderPage();
+        return pages.size() == 0 || pages.get(pages.size() - 1).params.mayHaveOlderPage();
     }
 
     @Override
     public String toString() {
-        String s = "pagesCount:" + list.size() + ", itemsCount:" + getItemsCount() + ",";
-        for (TimelinePage page : list) {
-            s += "\nPage count:" + page.items.size() + ", items: " + page.parameters + ",";
+        String s = "pagesCount:" + pages.size() + ", itemsCount:" + getCount() + ",";
+        for (TimelinePage page : pages) {
+            s += "\nPage count:" + page.items.size() + ", items: " + page.params + ",";
         }
         return MyLog.formatKeyValue(this, s );
     }
 
-    public boolean isCollapseDuplicates() {
-        return collapseDuplicates;
-    }
-
     /** For all or for only one item */
-    public void setCollapseDuplicates(boolean collapse, long itemId) {
+    @Override
+    public void collapseDuplicates(boolean collapse, long itemId) {
         if (itemId != 0 || this.collapseDuplicates != collapse) {
             if (itemId == 0) {
                 this.collapseDuplicates = collapse;
@@ -265,7 +256,7 @@ public class TimelinePages {
     private void innerCollapseDuplicates(long itemId, Collection<Pair<TimelinePage, TimelineViewItem>> toCollapse) {
         Pair<TimelinePage, TimelineViewItem> parent = new Pair<>(null, null);
         Set<Long> ids = new HashSet<>();
-        for (TimelinePage page : list) {
+        for (TimelinePage page : pages) {
             for (TimelineViewItem item : page.items) {
                 switch (item.duplicates(parent.second)) {
                     case DUPLICATES:
@@ -322,7 +313,7 @@ public class TimelinePages {
     }
 
     private void showDuplicates(long itemId) {
-        for (TimelinePage page : list) {
+        for (TimelinePage page : pages) {
             for (int ind = page.items.size() - 1; ind >= 0; ind--) {
                 TimelineViewItem item = page.items.get(ind);
                 if (itemId == 0 || itemId == item.getMsgId()) {

@@ -22,7 +22,6 @@ import android.text.TextUtils;
 
 import org.andstatus.app.LoadableListActivity;
 import org.andstatus.app.WhichPage;
-import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.timeline.Timeline;
@@ -33,7 +32,6 @@ import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -41,12 +39,13 @@ import java.util.List;
 */
 public class TimelineLoader implements LoadableListActivity.SyncLoader {
     private final TimelineListParameters params;
-    private volatile TimelinePage pageLoaded;
+    private final TimelinePage page;
+
     private final long instanceId;
 
-    public TimelineLoader(@NonNull TimelineListParameters params, MyAccount currentMyAccount, long instanceId) {
+    public TimelineLoader(@NonNull TimelineListParameters params, long instanceId) {
         this.params = params;
-        this.pageLoaded = new TimelinePage(new ArrayList<TimelineViewItem>(), getParams());
+        this.page = new TimelinePage(getParams(), new ArrayList<TimelineViewItem>());
         this.instanceId = instanceId;
     }
 
@@ -61,20 +60,20 @@ public class TimelineLoader implements LoadableListActivity.SyncLoader {
         if (params.whichPage != WhichPage.EMPTY) {
             Cursor cursor = queryDatabase();
             checkIfReloadIsNeeded(cursor);
-            pageLoaded = pageFromCursor(cursor);
+            loadFromCursor(cursor);
         }
         params.endTime = System.nanoTime();
         logExecutionStats();
     }
 
     @Override
-    public List<TimelinePage> getList() {
-        return Collections.singletonList(pageLoaded);
+    public List<TimelineViewItem> getList() {
+        return page.items;
     }
 
     @Override
     public int size() {
-        return pageLoaded.items.size();
+        return page.items.size();
     }
 
     void markStart() {
@@ -133,8 +132,7 @@ public class TimelineLoader implements LoadableListActivity.SyncLoader {
     }
 
     @NonNull
-    private TimelinePage pageFromCursor(Cursor cursor) {
-        TimelinePage page = new TimelinePage(new ArrayList<TimelineViewItem>(), getParams());
+    private void loadFromCursor(Cursor cursor) {
         KeywordsFilter keywordsFilter = new KeywordsFilter(
                 SharedPreferencesUtil.getString(MyPreferences.KEY_FILTER_HIDE_MESSAGES_BASED_ON_KEYWORDS, ""));
         boolean hideRepliesNotToMeOrFriends = getParams().getTimelineType() == TimelineType.HOME
@@ -179,7 +177,6 @@ public class TimelineLoader implements LoadableListActivity.SyncLoader {
         MyLog.d(this, "Filtered out " + filteredOutCount + " of " + rowsCount + " rows, "
                 + (System.currentTimeMillis() - startTime) + "ms" );
         getParams().rowsLoaded = rowsCount;
-        return page;
     }
 
     public TimelineListParameters getParams() {
@@ -190,9 +187,9 @@ public class TimelineLoader implements LoadableListActivity.SyncLoader {
         if (MyLog.isVerboseEnabled()) {
             StringBuilder text = new StringBuilder(getParams().cancelled ? "cancelled" : "ended");
             if (!getParams().cancelled) {
-                text.append(", " + pageLoaded.items.size() + " rows");
-                text.append(", dates from " + pageLoaded.parameters.minSentDateLoaded + " to "
-                        + pageLoaded.parameters.maxSentDateLoaded);
+                text.append(", " + page.items.size() + " rows");
+                text.append(", dates from " + page.params.minSentDateLoaded + " to "
+                        + page.params.maxSentDateLoaded);
             }
             text.append(", " + java.util.concurrent.TimeUnit.NANOSECONDS.toMillis(getParams().endTime
                     - getParams().startTime) + " ms");
@@ -214,5 +211,10 @@ public class TimelineLoader implements LoadableListActivity.SyncLoader {
     @Override
     public String toString() {
         return MyLog.formatKeyValue(this, getParams().toString());
+    }
+
+    @NonNull
+    public TimelinePage getPage() {
+        return page;
     }
 }

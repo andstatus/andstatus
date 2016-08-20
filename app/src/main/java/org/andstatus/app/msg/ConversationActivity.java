@@ -29,10 +29,10 @@ import org.andstatus.app.LoadableListActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.timeline.Timeline;
-import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.QueueViewer;
+import org.andstatus.app.timeline.Timeline;
+import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.UriUtils;
 import org.andstatus.app.widget.MyBaseAdapter;
@@ -193,7 +193,7 @@ public class ConversationActivity extends LoadableListActivity implements Action
     @Override
     protected CharSequence getCustomTitle() {
         final StringBuilder title = new StringBuilder(
-                getText(size() > 1 ? R.string.label_conversation : R.string.message));
+                getText(getListData().getCount() > 1 ? R.string.label_conversation : R.string.message));
         I18n.appendWithSpace(title, getText(R.string.combined_timeline_off_origin));
         I18n.appendWithSpace(title, getCurrentMyAccount().getOrigin().getName());
         return title;

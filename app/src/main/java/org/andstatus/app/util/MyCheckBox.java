@@ -47,6 +47,10 @@ public class MyCheckBox {
         return ((CheckBox)view).isChecked();
     }
 
+    public static void showEnabled(Activity activity, int viewId, boolean checked) {
+        show(activity, viewId, checked, true);
+    }
+
     public static void show(Activity activity, int viewId, boolean checked, boolean enabled) {
         show(activity, viewId, checked, enabled ? EMPTY_ON_CHECKED_CHANGE_LISTENER : null);
     }

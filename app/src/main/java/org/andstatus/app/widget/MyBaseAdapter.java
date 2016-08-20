@@ -78,10 +78,6 @@ public abstract class MyBaseAdapter extends BaseAdapter  implements View.OnClick
         }
     }
 
-    public void setCollapseDuplicates(boolean collapse, long itemId) {
-        notifyDataSetChanged();
-    }
-
     public int getPositionById(long itemId) {
         if (itemId != 0) {
             for (int position = 0; position < getCount(); position++) {
@@ -111,24 +107,5 @@ public abstract class MyBaseAdapter extends BaseAdapter  implements View.OnClick
     // See  http://stackoverflow.com/questions/2238883/what-is-the-correct-way-to-specify-dimensions-in-dip-from-java-code
     protected int dpToPixes(int dp) {
         return (int) (dp * displayDensity);
-    }
-
-    public boolean canBeCollapsed(long itemId) {
-        int position = getPositionById(itemId);
-        if (position >= 0) {
-            Object item = getItem(position);
-            if (item != null && DuplicatesCollapsible.class.isAssignableFrom(item.getClass())) {
-                DuplicatesCollapsible viewItem = (DuplicatesCollapsible) item;
-                if (position > 0) {
-                    if (viewItem.duplicates(getItem(position - 1)) != DuplicationLink.NONE) {
-                        return true;
-                    }
-                }
-                if (viewItem.duplicates(getItem(position + 1)) != DuplicationLink.NONE) {
-                    return true;
-                }
-            }
-        }
-        return false;
     }
 }

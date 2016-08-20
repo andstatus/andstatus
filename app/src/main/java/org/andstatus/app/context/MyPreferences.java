@@ -128,6 +128,8 @@ public class MyPreferences {
     public static final String KEY_VERSION_CODE_LAST = "version_code_last";
     public static final String KEY_BEING_EDITED_MESSAGE_ID = "draft_message_id";
 
+    private static final boolean COLLAPSE_DUPLICATES_DEFAULT_VALUE = true;
+
     private MyPreferences(){
         // Non instantiable
     }
@@ -230,5 +232,9 @@ public class MyPreferences {
         if (context != null && SharedPreferencesUtil.getBoolean(KEY_ENABLE_ANDROID_BACKUP, false)) {
             new BackupManager(context).dataChanged();
         }
+    }
+
+    public static boolean isCollapseDuplicates() {
+        return COLLAPSE_DUPLICATES_DEFAULT_VALUE;
     }
 }

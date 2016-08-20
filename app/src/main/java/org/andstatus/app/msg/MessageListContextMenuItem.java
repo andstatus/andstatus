@@ -46,7 +46,6 @@ import org.andstatus.app.user.UserListType;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.TriState;
 
 public enum MessageListContextMenuItem implements ContextMenuItem {
     REPLY(true) {
@@ -322,13 +321,15 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
     SHOW_DUPLICATES {
         @Override
         void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
-            menu.getActivity().updateList(TriState.FALSE, menu.getMsgId());
+            menu.getActivity().getListData().collapseDuplicates(false, menu.getMsgId());
+            menu.getActivity().updateList();
         }
     },
     COLLAPSE_DUPLICATES {
         @Override
         void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
-            menu.getActivity().updateList(TriState.TRUE, menu.getMsgId());
+            menu.getActivity().getListData().collapseDuplicates(true, menu.getMsgId());
+            menu.getActivity().updateList();
         }
     },
     NONEXISTENT(),

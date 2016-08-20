@@ -118,7 +118,7 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
         new ListActivityTestHelper<TimelineActivity>(this, getActivity()).selectListPosition(method, position0);
         int position1 = getListView().getFirstVisiblePosition();
         long maxDateLoaded1 = getActivity().getListAdapter().getItem(0).sentDate;
-        long updatedAt1 = getActivity().getListAdapter().getPages().updatedAt;
+        long updatedAt1 = getActivity().getListData().updatedAt;
         long itemId = getListView().getAdapter().getItemId(position1);
         int count1 = getListView().getAdapter().getCount();
 
@@ -133,7 +133,7 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
         for (int attempt = 0; attempt < 6; attempt++) {
             TestSuite.waitForIdleSync(this);
             count2 = getListView().getAdapter().getCount();
-            updatedAt2 = getActivity().getListAdapter().getPages().updatedAt;
+            updatedAt2 = getActivity().getListData().updatedAt;
             maxDateLoaded2 = getActivity().getListAdapter().getItem(0).sentDate;
             if (updatedAt2 > updatedAt1) {
                 position2 = getListView().getFirstVisiblePosition();

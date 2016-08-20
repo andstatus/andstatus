@@ -22,11 +22,11 @@ import java.util.List;
  * @author yvolk@yurivolkov.com
  */
 public class TimelinePage {
+    final TimelineListParameters params;
     final List<TimelineViewItem> items;
-    final TimelineListParameters parameters;
 
-    public TimelinePage(List<TimelineViewItem> items, TimelineListParameters parameters) {
+    public TimelinePage(TimelineListParameters params, List<TimelineViewItem> items) {
+        this.params = params;
         this.items = items;
-        this.parameters = parameters;
     }
 }

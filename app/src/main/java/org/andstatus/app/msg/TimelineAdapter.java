@@ -41,7 +41,7 @@ import java.util.Set;
 public class TimelineAdapter extends MyBaseAdapter {
     private final MessageContextMenu contextMenu;
     private final int listItemLayoutId;
-    private final TimelinePages pages;
+    private final TimelineData listData;
     private final boolean showAvatars = MyPreferences.getShowAvatars();
     private final boolean showAttachedImages = MyPreferences.getDownloadAndDisplayAttachedImages();
     private final boolean showButtonsBelowMessages =
@@ -53,18 +53,17 @@ public class TimelineAdapter extends MyBaseAdapter {
     private int messageNumberShownCounter = 0;
     private final String TOP_TEXT;
 
-    public TimelineAdapter(MessageContextMenu contextMenu,
-                           TimelineAdapter oldAdapter, TimelinePage loadedPage) {
+    public TimelineAdapter(MessageContextMenu contextMenu, TimelineData listData) {
         super(contextMenu.getActivity().getMyContext());
         this.contextMenu = contextMenu;
         this.listItemLayoutId = R.layout.message_avatar;
-        this.pages = new TimelinePages( oldAdapter == null ? null : oldAdapter.getPages(), loadedPage);
+        this.listData = listData;
         TOP_TEXT = myContext.context().getText(R.string.top).toString();
     }
 
     @Override
     public int getCount() {
-        return pages.getItemsCount();
+        return listData.getCount();
     }
 
     @Override
@@ -74,16 +73,12 @@ public class TimelineAdapter extends MyBaseAdapter {
 
     @Override
     public TimelineViewItem getItem(int position) {
-        return pages.getItem(position);
+        return listData.getItem(position);
     }
 
     @Override
     public long getItemId(int position) {
         return getItem(position).getMsgId();
-    }
-
-    public TimelinePages getPages() {
-        return pages;
     }
 
     @Override
@@ -148,7 +143,7 @@ public class TimelineAdapter extends MyBaseAdapter {
         Integer positionToPreload = position;
         for (int i = 0; i < 5; i++) {
             positionToPreload = positionToPreload + (position > positionPrev ? 1 : -1);
-            if (positionToPreload < 0 || positionToPreload >= pages.getItemsCount()) {
+            if (positionToPreload < 0 || positionToPreload >= listData.getCount()) {
                 break;
             }
             TimelineViewItem item = getItem(positionToPreload);
@@ -164,7 +159,7 @@ public class TimelineAdapter extends MyBaseAdapter {
         String text;
         switch (position) {
             case 0:
-                text = getPages().mayHaveYoungerPage() ? "1" : TOP_TEXT;
+                text = listData.mayHaveYoungerPage() ? "1" : TOP_TEXT;
                 break;
             case 1:
                 text = "2";
@@ -276,7 +271,7 @@ public class TimelineAdapter extends MyBaseAdapter {
 
     @Override
     public String toString() {
-        return MyLog.formatKeyValue(this, pages);
+        return MyLog.formatKeyValue(this, listData);
     }
 
     @Override
@@ -295,15 +290,9 @@ public class TimelineAdapter extends MyBaseAdapter {
     }
 
     @Override
-    public void setCollapseDuplicates(boolean collapse, long itemId) {
-        pages.setCollapseDuplicates(collapse, itemId);
-        super.setCollapseDuplicates(collapse, itemId);
-    }
-
-    @Override
     public int getPositionById(long itemId) {
         int position = super.getPositionById(itemId);
-        if (position < 0 && pages.isCollapseDuplicates()) {
+        if (position < 0 && listData.isCollapseDuplicates()) {
             for (int position2 = 0; position2 < getCount(); position2++) {
                 TimelineViewItem item = getItem(position2);
                 if (item.isCollapsed()) {

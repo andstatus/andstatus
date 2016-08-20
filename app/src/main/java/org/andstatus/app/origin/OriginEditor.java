@@ -153,7 +153,7 @@ public class OriginEditor extends MyActivity {
         });
         showSslModeSummary(origin.getSslMode());
         showSslMode(origin.isSsl());
-        MyCheckBox.show(this, R.id.allow_html, origin.isHtmlContentAllowed(), true);
+        MyCheckBox.showEnabled(this, R.id.allow_html, origin.isHtmlContentAllowed());
 
         spinnerMentionAsWebFingerId.setSelection(origin.getMentionAsWebFingerId().getEntriesPosition());
         spinnerUseLegacyHttpProtocol.setSelection(origin.useLegacyHttpProtocol().getEntriesPosition());

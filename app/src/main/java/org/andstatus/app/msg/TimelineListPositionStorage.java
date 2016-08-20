@@ -33,7 +33,7 @@ class TimelineListPositionStorage {
     public static final String TAG = TimelineListPositionStorage.class.getSimpleName();
     private static final int NOT_STORED = -1;
 
-    private final TimelineAdapter mAdapter;
+    private final TimelineAdapter adapter;
     private final ListView mListView;
     private final TimelineListParameters mListParameters;
 
@@ -44,20 +44,19 @@ class TimelineListPositionStorage {
     }
 
     TimelineListPositionStorage(TimelineAdapter listAdapter, ListView listView, TimelineListParameters listParameters) {
-        this.mAdapter = listAdapter;
+        this.adapter = listAdapter;
         this.mListView = listView;
         this.mListParameters = listParameters;
     }
 
     void save() {
         final String method = "save";
-        if (mListView == null || mAdapter == null || mListParameters.isEmpty() || mAdapter.getCount() == 0) {
+        if (mListView == null || adapter == null || mListParameters.isEmpty() || adapter.getCount() == 0) {
             MyLog.v(this, method + "; skipped");
             return;
         }
-        TimelineAdapter la = mAdapter;
         int firstVisiblePosition = mListView.getFirstVisiblePosition();
-        int itemCount = la.getCount();
+        int itemCount = adapter.getCount();
         if (firstVisiblePosition >= itemCount) {
             firstVisiblePosition = itemCount - 1;
         }
@@ -66,15 +65,15 @@ class TimelineListPositionStorage {
         long minSentDate = 0;
         int y = 0;
         if (firstVisiblePosition >= 0) {
-            firstVisibleItemId = la.getItemId(firstVisiblePosition);
-            y = LoadableListActivity.getYOfPosition(mListView, la, firstVisiblePosition);
+            firstVisibleItemId = adapter.getItemId(firstVisiblePosition);
+            y = LoadableListActivity.getYOfPosition(mListView, adapter, firstVisiblePosition);
             MyLog.v(this, method + "; firstVisiblePos:" + firstVisiblePosition + " of " + itemCount
                     + ", id:" + firstVisibleItemId + ", y:" + y);
             lastPosition = mListView.getLastVisiblePosition() + 10;
             if (lastPosition >= itemCount) {
                 lastPosition = itemCount - 1;
             }
-            minSentDate = la.getItem(lastPosition).sentDate;
+            minSentDate = adapter.getItem(lastPosition).sentDate;
         }
 
         if (firstVisibleItemId <= 0) {
@@ -129,7 +128,7 @@ class TimelineListPositionStorage {
      */
     public void restore() {
         final String method = "restore";
-        if (mListView == null || mAdapter == null || mListParameters.isEmpty() || mAdapter.getCount() == 0) {
+        if (mListView == null || adapter == null || mListParameters.isEmpty() || adapter.getCount() == 0) {
             MyLog.v(this, method + "; skipped");
             return;
         }
@@ -170,7 +169,7 @@ class TimelineListPositionStorage {
         if (!restored) {
             clear();
         }
-        mAdapter.setPositionRestored(true);
+        adapter.setPositionRestored(true);
     }
 
     public static void setPosition(ListView listView, int position) {
@@ -190,9 +189,9 @@ class TimelineListPositionStorage {
      * @return the position in the list or -1 if the item was not found
      */
     private int getPositionById(long itemId) {
-        if (mAdapter == null) {
+        if (adapter == null) {
             return -1;
         }
-        return mAdapter.getPositionById(itemId);
+        return adapter.getPositionById(itemId);
     }
 }

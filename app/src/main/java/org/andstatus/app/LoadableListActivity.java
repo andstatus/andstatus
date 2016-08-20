@@ -24,7 +24,6 @@ import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -34,6 +33,7 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.ParsedUri;
+import org.andstatus.app.list.ListData;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
@@ -121,6 +121,16 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
 
     protected ParsedUri getParsedUri() {
         return mParsedUri;
+    }
+
+    @NonNull
+    public ListData getListData() {
+        return new ListData(null) {
+            @Override
+            public int getCount() {
+                return getListAdapter() == null ? 0 : getListAdapter().getCount();
+            }
+        };
     }
 
     public void showList(WhichPage whichPage) {
@@ -215,6 +225,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
     public interface SyncLoader {
         void allowLoadingFromInternet();
         void load(ProgressPublisher publisher);
+        @NonNull
         List<? extends Object> getList();
         int size();
     }
@@ -342,7 +353,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
         return y;
     }
 
-    public void updateList(TriState collapseDuplicates, long itemId) {
+    public void updateList() {
         MyBaseAdapter adapter = getListAdapter();
         if (adapter != null) {
             // TODO: unify this with saving position in #onLoadFinished()
@@ -354,9 +365,9 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
                 itemIdOfListPosition = adapter.getItemId(firstVisiblePosition);
                 y = getYOfPosition(list, adapter, firstVisiblePosition);
             }
-            if (TriState.isKnown(collapseDuplicates)) {
-                adapter.setCollapseDuplicates(collapseDuplicates.toBoolean(true), itemId);
-            }
+
+            adapter.notifyDataSetChanged();
+
             int firstListPosition = adapter.getPositionById(itemIdOfListPosition);
             if (firstListPosition >= 0) {
                 list.setSelectionFromTop(firstListPosition, y);
@@ -391,11 +402,6 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
         return getTitle();
     }
     
-    protected int size() {
-        ListAdapter adapter = getListAdapter();
-        return adapter == null ? 0 : adapter.getCount();
-    }
-
     @NonNull
     protected SyncLoader getLoaded() {
         synchronized(loaderLock) {
@@ -417,7 +423,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
             }
             myServiceReceiver.registerReceiver(this);
             myContextNew.setInForeground(true);
-            if (size() == 0 && !isLoading()) {
+            if (getListData().getCount() == 0 && !isLoading()) {
                 showList(WhichPage.ANY);
             }
         }
