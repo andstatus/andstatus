@@ -49,7 +49,8 @@ public class ListData {
         return false;
     }
 
-    public int getCount() {
+    // See http://stackoverflow.com/questions/300522/count-vs-length-vs-size-in-a-collection
+    public int size() {
         return 0;
     }
 

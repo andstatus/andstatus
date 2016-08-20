@@ -127,7 +127,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
     public ListData getListData() {
         return new ListData(null) {
             @Override
-            public int getCount() {
+            public int size() {
                 return getListAdapter() == null ? 0 : getListAdapter().getCount();
             }
         };
@@ -423,7 +423,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
             }
             myServiceReceiver.registerReceiver(this);
             myContextNew.setInForeground(true);
-            if (getListData().getCount() == 0 && !isLoading()) {
+            if (getListData().size() == 0 && !isLoading()) {
                 showList(WhichPage.ANY);
             }
         }

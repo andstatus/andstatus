@@ -193,7 +193,7 @@ public class ConversationActivity extends LoadableListActivity implements Action
     @Override
     protected CharSequence getCustomTitle() {
         final StringBuilder title = new StringBuilder(
-                getText(getListData().getCount() > 1 ? R.string.label_conversation : R.string.message));
+                getText(getListData().size() > 1 ? R.string.label_conversation : R.string.message));
         I18n.appendWithSpace(title, getText(R.string.combined_timeline_off_origin));
         I18n.appendWithSpace(title, getCurrentMyAccount().getOrigin().getName());
         return title;

@@ -187,7 +187,7 @@ public class TimelineData extends ListData {
     }
 
     @Override
-    public int getCount() {
+    public int size() {
         int count = 0;
         for (TimelinePage page : pages) {
             count += page.items.size();
@@ -220,9 +220,9 @@ public class TimelineData extends ListData {
 
     @Override
     public String toString() {
-        String s = "pagesCount:" + pages.size() + ", itemsCount:" + getCount() + ",";
+        String s = "pages:" + pages.size() + ", total items:" + size() + ",";
         for (TimelinePage page : pages) {
-            s += "\nPage count:" + page.items.size() + ", items: " + page.params + ",";
+            s += "\nPage size:" + page.items.size() + ", params: " + page.params + ",";
         }
         return MyLog.formatKeyValue(this, s );
     }

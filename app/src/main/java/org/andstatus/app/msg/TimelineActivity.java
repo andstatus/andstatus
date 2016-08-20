@@ -576,7 +576,7 @@ public class TimelineActivity extends LoadableListActivity implements
         }
         super.onNewIntent(intent);
         parseNewIntent(intent);
-		if (!isPaused() || getListData().getCount() > 0 || isLoading()) {
+		if (!isPaused() || getListData().size() > 0 || isLoading()) {
             showList(getParamsNew().whichPage);
 		}
     }
@@ -753,12 +753,12 @@ public class TimelineActivity extends LoadableListActivity implements
     private TimelineListParameters getReferenceParametersFor(WhichPage whichPage) {
         switch (whichPage) {
             case OLDER:
-                if (getListData().getCount() > 0) {
+                if (getListData().size() > 0) {
                     return getListData().pages.get(getListData().pages.size()-1).params;
                 }
                 return getParamsLoaded();
             case YOUNGER:
-                if (getListData().getCount() > 0) {
+                if (getListData().size() > 0) {
                     return getListData().pages.get(0).params;
                 }
                 return getParamsLoaded();
@@ -858,7 +858,7 @@ public class TimelineActivity extends LoadableListActivity implements
         TimelineListParameters otherParams = paramsToLoad;
         boolean isParamsChanged = otherParams != null && !dataLoaded.params.equals(otherParams);
         WhichPage otherPageToRequest = WhichPage.EMPTY;
-        if (!isParamsChanged && getListData().getCount() == 0) {
+        if (!isParamsChanged && getListData().size() == 0) {
             if (getListData().mayHaveYoungerPage()) {
                 otherPageToRequest = WhichPage.YOUNGER;
             } else if (getListData().mayHaveOlderPage()) {

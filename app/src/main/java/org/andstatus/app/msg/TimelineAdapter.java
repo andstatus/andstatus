@@ -63,7 +63,7 @@ public class TimelineAdapter extends MyBaseAdapter {
 
     @Override
     public int getCount() {
-        return listData.getCount();
+        return listData.size();
     }
 
     @Override
@@ -143,7 +143,7 @@ public class TimelineAdapter extends MyBaseAdapter {
         Integer positionToPreload = position;
         for (int i = 0; i < 5; i++) {
             positionToPreload = positionToPreload + (position > positionPrev ? 1 : -1);
-            if (positionToPreload < 0 || positionToPreload >= listData.getCount()) {
+            if (positionToPreload < 0 || positionToPreload >= listData.size()) {
                 break;
             }
             TimelineViewItem item = getItem(positionToPreload);
