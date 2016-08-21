@@ -270,8 +270,7 @@ public class TimelineActivity extends LoadableListActivity implements
 
     public void onCollapseDuplicatesToggleClick(View view) {
         closeDrawer();
-        getListData().collapseDuplicates(((CheckBox) view).isChecked(), 0);
-        updateList();
+        updateList(TriState.fromBoolean(((CheckBox) view).isChecked()), 0, false);
     }
 
     /** View.OnClickListener */
@@ -732,8 +731,7 @@ public class TimelineActivity extends LoadableListActivity implements
         return listData;
     }
 
-    /** @return Previous value */
-    private TimelineData setPageLoaded(TimelinePage pageLoaded) {
+    private TimelineData setAndGetListData(TimelinePage pageLoaded) {
         TimelineData dataNew = new TimelineData(listData, pageLoaded);
         listData = dataNew;
         return dataNew;
@@ -837,7 +835,8 @@ public class TimelineActivity extends LoadableListActivity implements
     @Override
     public void onLoadFinished(boolean keepCurrentPosition_in) {
         final String method = "onLoadFinished";
-        TimelineData dataLoaded = setPageLoaded(((TimelineLoader) getLoaded()).getPage());
+        verboseListPositionLog(method, "started");
+        TimelineData dataLoaded = setAndGetListData(((TimelineLoader) getLoaded()).getPage());
         MyLog.v(this, method + "; " + dataLoaded.params.toSummary());
 
         // TODO start: Move this inside superclass

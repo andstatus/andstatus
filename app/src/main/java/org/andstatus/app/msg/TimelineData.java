@@ -44,9 +44,17 @@ public class TimelineData extends ListData {
         this.params = thisPage.params;
         isSameTimeline = oldData == null ? false :
                 params.getContentUri().equals(oldData.params.getContentUri());
-        this.pages = isSameTimeline ? oldData.pages : new ArrayList<TimelinePage>();
+        this.pages = isSameTimeline ? copyPages(oldData.pages) : new ArrayList<TimelinePage>();
         addThisPage(thisPage);
         dropExcessivePage(thisPage);
+    }
+
+    private List<TimelinePage> copyPages(List<TimelinePage> pages) {
+        ArrayList<TimelinePage> copiedPages = new ArrayList<>();
+        for (TimelinePage page : pages) {
+            copiedPages.add(page);
+        }
+        return copiedPages;
     }
 
     private void dropExcessivePage(TimelinePage lastLoadedPage) {

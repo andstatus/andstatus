@@ -316,28 +316,63 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
     }
 
     public void onLoadFinished(boolean keepCurrentPosition) {
-        boolean positionRestored = false;
         if (keepCurrentPosition) {
-            ListView list = getListView();
-            // TODO: for a finer position restore see http://stackoverflow.com/questions/3014089/maintain-save-restore-scroll-position-when-returning-to-a-listview?rq=1
-            long itemIdOfListPosition = centralItemId;
-            int y = 0;
-            if (list.getChildCount() > 0) {
-                int firstVisiblePosition = list.getFirstVisiblePosition();
-                itemIdOfListPosition = list.getAdapter().getItemId(firstVisiblePosition);
-                y = getYOfPosition(list, getListAdapter(), firstVisiblePosition);
-            }
-            setListAdapter(newListAdapter());
-            int firstListPosition = getListAdapter().getPositionById(itemIdOfListPosition);
-            if (firstListPosition >= 0) {
-                list.setSelectionFromTop(firstListPosition, y);
-                positionRestored = true;
-            }
+            updateList(TriState.UNKNOWN, 0, true);
         } else {
             setListAdapter(newListAdapter());
         }
-        getListAdapter().setPositionRestored(positionRestored);
         updateTitle("");
+    }
+
+    public void updateList(TriState collapseDuplicates, long itemId, boolean newAdapter) {
+        final String method = "updateList";
+        MyBaseAdapter adapter = getListAdapter();
+        ListView list = getListView();
+        // For a finer position restore see http://stackoverflow.com/questions/3014089/maintain-save-restore-scroll-position-when-returning-to-a-listview?rq=1
+        long itemIdOfListPosition = centralItemId;
+        int y = 0;
+        if (list.getChildCount() > 0 && adapter != null) {
+            int firstVisiblePosition = list.getFirstVisiblePosition();
+            itemIdOfListPosition = adapter.getItemId(firstVisiblePosition);
+            y = getYOfPosition(list, adapter, firstVisiblePosition);
+        }
+
+        if (!TriState.UNKNOWN.equals(collapseDuplicates)) {
+            getListData().collapseDuplicates(collapseDuplicates.toBoolean(true), itemId);
+        }
+
+        if (newAdapter) {
+            adapter = newListAdapter();
+            verboseListPositionLog(method, "Before setting new adapter");
+            setListAdapter(adapter);
+        } else if (adapter != null) {
+            adapter.notifyDataSetChanged();
+        }
+
+        if (adapter != null) {
+            boolean positionRestored = false;
+            if (itemIdOfListPosition >= 0) {
+                int firstListPosition = adapter.getPositionById(itemIdOfListPosition);
+                if (firstListPosition >= 0) {
+                    list.setSelectionFromTop(firstListPosition, y);
+                    positionRestored = true;
+                    verboseListPositionLog(method, "After setting position:" + firstListPosition);
+                }
+            }
+            adapter.setPositionRestored(positionRestored);
+        }
+    }
+
+    protected void verboseListPositionLog(String method, String description) {
+        if (MyLog.isVerboseEnabled()) {
+            int firstVisiblePosition = getListView().getFirstVisiblePosition();
+            MyLog.d(this, method + "; " + description +
+                    ", adapter count:" + (getListAdapter() == null ? "(no adapter)" : getListAdapter().getCount()) +
+                    ", items:" + getListView().getChildCount() +
+                    ", first position:" + firstVisiblePosition +
+                    ", itemId:" + (getListAdapter() == null ? "(no adapter)" : getListAdapter().getItemId(firstVisiblePosition))
+            );
+        }
     }
 
     public static int getYOfPosition(ListView list, MyBaseAdapter myBaseAdapter, int position) {
@@ -351,28 +386,6 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
             y  = viewOfPosition.getTop() - list.getPaddingTop();
         }
         return y;
-    }
-
-    public void updateList() {
-        MyBaseAdapter adapter = getListAdapter();
-        if (adapter != null) {
-            // TODO: unify this with saving position in #onLoadFinished()
-            ListView list = getListView();
-            long itemIdOfListPosition = centralItemId;
-            int y = 0;
-            if (list.getChildCount() > 0) {
-                int firstVisiblePosition = list.getFirstVisiblePosition();
-                itemIdOfListPosition = adapter.getItemId(firstVisiblePosition);
-                y = getYOfPosition(list, adapter, firstVisiblePosition);
-            }
-
-            adapter.notifyDataSetChanged();
-
-            int firstListPosition = adapter.getPositionById(itemIdOfListPosition);
-            if (firstListPosition >= 0) {
-                list.setSelectionFromTop(firstListPosition, y);
-            }
-        }
     }
 
     protected abstract MyBaseAdapter newListAdapter();
