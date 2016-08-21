@@ -145,7 +145,7 @@ public class CommandQueue {
                             (queue.isEmpty() ? "" : ", " + queue.size() + " left"));
                 }
             }
-        } catch (Throwable e) {
+        } catch (Exception e) {
             String msgLog = method + "; " + count + " saved, " + queue.size() + " left.\n"
                     + MyContextHolder.getSystemInfo(context);
             MyLog.e(context, msgLog, e);

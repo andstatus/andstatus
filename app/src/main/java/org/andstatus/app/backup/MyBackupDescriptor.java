@@ -145,10 +145,11 @@ public class MyBackupDescriptor {
     
     private void writeStringToFileDescriptor(String string, FileDescriptor fd, boolean logged) throws IOException {
         final String method = "writeStringToFileDescriptor";
+        FileOutputStream fileOutputStream = null;
         Writer out = null;
         try {
-            out = new BufferedWriter(new OutputStreamWriter(
-                    new FileOutputStream(fd), "UTF-8"));
+            fileOutputStream = new FileOutputStream(fd);
+            out = new BufferedWriter(new OutputStreamWriter(fileOutputStream, "UTF-8"));
             out.write(string);
         } catch (IOException e) {
             if (logged) {
@@ -157,7 +158,8 @@ public class MyBackupDescriptor {
             throw new FileNotFoundException(method + "; " + e.getLocalizedMessage());
         } finally {
             DbUtils.closeSilently(out, method);
-        }        
+            DbUtils.closeSilently(fileOutputStream, method);
+        }
     }
     
     @Override

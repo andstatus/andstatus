@@ -384,10 +384,11 @@ public class MyLog {
             return false;
         }
         File file = getFileInLogDir(filename, logged);
+        FileOutputStream fileOutputStream = null;
         Writer out = null;
         try {
-            out = new BufferedWriter(new OutputStreamWriter(
-                    new FileOutputStream(file.getAbsolutePath(), append), "UTF-8"));
+            fileOutputStream = new FileOutputStream(file.getAbsolutePath(), append);
+            out = new BufferedWriter(new OutputStreamWriter(fileOutputStream, "UTF-8"));
             out.write(string);
             ok = true;
         } catch (Exception e) {
@@ -396,7 +397,8 @@ public class MyLog {
             }
         } finally {
             DbUtils.closeSilently(out, filename);
-        }        
+            DbUtils.closeSilently(fileOutputStream, filename);
+        }
         return ok;
     }
 

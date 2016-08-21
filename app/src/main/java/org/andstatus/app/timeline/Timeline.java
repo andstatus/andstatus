@@ -261,7 +261,7 @@ public class Timeline implements Comparable<Timeline> {
 
     public static List<Timeline> addDefaultForAccount(MyContext myContext, MyAccount myAccount) {
         List<Timeline> timelines = new ArrayList<>();
-        for (TimelineType timelineType : TimelineType.defaultMyAccountTimelineTypes) {
+        for (TimelineType timelineType : TimelineType.getDefaultMyAccountTimelineTypes()) {
             saveNewDefaultTimeline(myContext, getTimeline(myContext, 0, timelineType, myAccount, 0, null, ""));
         }
         return timelines;
@@ -269,7 +269,7 @@ public class Timeline implements Comparable<Timeline> {
 
     public static Collection<Timeline> addDefaultForOrigin(MyContext myContext, Origin origin) {
         List<Timeline> timelines = new ArrayList<>();
-        for (TimelineType timelineType : TimelineType.defaultOriginTimelineTypes) {
+        for (TimelineType timelineType : TimelineType.getDefaultOriginTimelineTypes()) {
             if (origin.getOriginType().isTimelineTypeSyncable(timelineType)) {
                 saveNewDefaultTimeline(myContext, getTimeline(myContext, 0, timelineType, null, 0, origin, ""));
             }

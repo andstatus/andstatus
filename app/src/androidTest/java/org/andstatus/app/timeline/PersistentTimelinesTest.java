@@ -67,7 +67,7 @@ public class PersistentTimelinesTest extends InstrumentationTestCase {
 
     public void testDefaultMyAccountTimelinesCreation() {
         for (MyAccount myAccount : MyContextHolder.get().persistentAccounts().list()) {
-            for (TimelineType timelineType : TimelineType.defaultMyAccountTimelineTypes) {
+            for (TimelineType timelineType : TimelineType.getDefaultMyAccountTimelineTypes()) {
                 long count = 0;
                 for (Timeline timeline : MyContextHolder.get().persistentTimelines().values()) {
                     if (timeline.getMyAccount().equals(myAccount) && timeline.getTimelineType().equals(timelineType)) {
@@ -82,7 +82,7 @@ public class PersistentTimelinesTest extends InstrumentationTestCase {
     public void testDefaultOriginTimelinesCreation() {
         for (Origin origin : MyContextHolder.get().persistentOrigins().collection()) {
             MyAccount myAccount = MyContextHolder.get().persistentAccounts().getFirstSucceededForOriginId(origin.getId());
-            for (TimelineType timelineType : TimelineType.defaultOriginTimelineTypes) {
+            for (TimelineType timelineType : TimelineType.getDefaultOriginTimelineTypes()) {
                 int count = 0;
                 for (Timeline timeline : MyContextHolder.get().persistentTimelines().values()) {
                     if (timeline.getOrigin().equals(origin) &&

@@ -193,13 +193,17 @@ public class FileUtils {
         byte[] buffer = new byte[BUFFER_LENGTH];
         int count;
         try {
-            OutputStream out = new BufferedOutputStream(new FileOutputStream(file));
+            FileOutputStream fileOutputStream = null;
+            OutputStream out = null;
             try {
+                fileOutputStream = new FileOutputStream(file);
+                out = new BufferedOutputStream(fileOutputStream);
                 while ((count = in.read(buffer)) != -1) {
                     out.write(buffer, 0, count);
                 }
             } finally {
                 DbUtils.closeSilently(out);
+                DbUtils.closeSilently(fileOutputStream);
             }
         } finally {
             DbUtils.closeSilently(in);

@@ -37,10 +37,14 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class ConversationInserter extends InstrumentationTestCase {
     private static volatile int iteration = 0;
-    public static final Map<String, MbUser> users = new ConcurrentHashMap<>();
+    private static final Map<String, MbUser> users = new ConcurrentHashMap<>();
 
     private MyAccount ma;
     private String bodySuffix = "";
+
+    public static Map<String, MbUser> getUsers() {
+        return users;
+    }
 
     public void insertConversation(String bodySuffixIn) throws Exception {
         if (TextUtils.isEmpty(bodySuffixIn)) {

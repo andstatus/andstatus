@@ -65,7 +65,7 @@ public class ActivityTestHelper<T extends MyActivity> extends InstrumentationTes
                 break;
             }
         }
-        MyLog.v(method, (ok ? "Visible" : "Invisible"));
+        MyLog.v(method, ok ? "Visible" : "Invisible");
         assertTrue(method + "; View is visible", ok);
         return ok;
     }

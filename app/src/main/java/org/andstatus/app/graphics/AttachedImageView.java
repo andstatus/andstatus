@@ -104,7 +104,7 @@ public class AttachedImageView extends ImageView {
                         + (refWidthPixels == null ? "" : " refWidth=" + refWidthPixels + ",")
                 );
             }
-        } catch (Throwable e) {
+        } catch (Exception e) {
             Log.i(AttachedImageView.class.getSimpleName(), method + "; MyLog class was not found", e);
         }
     }

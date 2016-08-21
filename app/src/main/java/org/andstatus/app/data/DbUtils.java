@@ -118,13 +118,16 @@ public final class DbUtils {
         if (Build.VERSION.SDK_INT >= 21) {
             delay = (delay/2) + ThreadLocalRandom.current().nextLong(0, delay);
         }
-        Object localLock = new Object();
-        synchronized (localLock) {
-            try {
-                localLock.wait(delay);
-            } catch (InterruptedException e) {
-                MyLog.v(method + "; Interrupted waiting " + delay + "ms", e);
-                Thread.currentThread().interrupt();
+        Long startTime = System.currentTimeMillis();
+        synchronized (startTime) {
+            while (System.currentTimeMillis() < startTime + delay && System.currentTimeMillis() >= startTime) {
+                try {
+                    startTime.wait(delay);
+                } catch (InterruptedException e) {
+                    MyLog.v(method + "; Interrupted waiting " + delay + "ms", e);
+                    Thread.currentThread().interrupt();
+                    break;
+                }
             }
         }
     }

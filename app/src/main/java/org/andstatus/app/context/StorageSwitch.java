@@ -37,6 +37,8 @@ import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TriState;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 
 public class StorageSwitch {
@@ -282,17 +284,22 @@ public class StorageSwitch {
                 } else if (src.getCanonicalPath().compareTo(dst.getCanonicalPath()) == 0) {
                     MyLog.d(this, "Cannot copy to itself: '" + src.getCanonicalPath() + "'");
                 } else {
+                    FileInputStream fileInputStream = null;
                     java.nio.channels.FileChannel inChannel = null;
+                    FileOutputStream fileOutputStream = null;
                     java.nio.channels.FileChannel outChannel = null;
                     try {
-                        inChannel = new java.io.FileInputStream(src).getChannel();
-                        outChannel = new java.io.FileOutputStream(dst)
-                                .getChannel();
+                        fileInputStream = new FileInputStream(src);
+                        inChannel = fileInputStream.getChannel();
+                        fileOutputStream = new FileOutputStream(dst);
+                        outChannel = fileOutputStream.getChannel();
                         sizeCopied = inChannel.transferTo(0, inChannel.size(), outChannel);
                         ok = (sizeIn == sizeCopied);
                     } finally {
-                        DbUtils.closeSilently(inChannel);
                         DbUtils.closeSilently(outChannel);
+                        DbUtils.closeSilently(fileOutputStream);
+                        DbUtils.closeSilently(inChannel);
+                        DbUtils.closeSilently(fileInputStream);
                     }
 
                 }

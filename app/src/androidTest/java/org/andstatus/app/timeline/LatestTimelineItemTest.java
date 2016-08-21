@@ -44,12 +44,12 @@ public class LatestTimelineItemTest extends InstrumentationTestCase {
         if (timelineType.isAtOrigin()) {
             if (timeline.getOrigin().getOriginType().isTimelineTypeSyncable(timelineType)) {
                 assertEquals("Timeline persistence " + timeline,
-                        Arrays.asList(TimelineType.defaultOriginTimelineTypes).contains(timelineType)
+                        Arrays.asList(TimelineType.getDefaultOriginTimelineTypes()).contains(timelineType)
                         , timeline.getId() != 0);
             }
         } else {
             assertEquals("Timeline persistence " + timeline,
-                    Arrays.asList(TimelineType.defaultMyAccountTimelineTypes).contains(timelineType)
+                    Arrays.asList(TimelineType.getDefaultMyAccountTimelineTypes()).contains(timelineType)
                     , timeline.getId() != 0);
         }
         long time1 = System.currentTimeMillis();

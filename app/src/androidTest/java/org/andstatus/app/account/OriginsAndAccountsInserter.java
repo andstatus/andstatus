@@ -164,7 +164,7 @@ public class OriginsAndAccountsInserter extends InstrumentationTestCase {
                 MyQuery.idToOid(myContext.getDatabase(), OidEnum.USER_OID, userId, 0));
         assertEquals("Account name", mbUser.getUserName() + "/" + origin.getName(), ma.getAccountName());
         MyLog.v(this, ma.getAccountName() + " added, id=" + ma.getUserId());
-        ConversationInserter.users.put(mbUser.oid, mbUser);
+        ConversationInserter.getUsers().put(mbUser.oid, mbUser);
         return ma;
     }
 }

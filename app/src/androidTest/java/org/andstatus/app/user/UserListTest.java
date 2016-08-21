@@ -81,7 +81,7 @@ public class UserListTest extends ActivityInstrumentationTestCase2<TimelineActiv
         List<UserListViewItem> listItems = userList.getListLoader().getList();
         assertEquals(listItems.toString(), 5, listItems.size());
 
-        MbUser userE = ConversationInserter.users.get(TestSuite.CONVERSATION_MEMBER_USER_OID);
+        MbUser userE = ConversationInserter.getUsers().get(TestSuite.CONVERSATION_MEMBER_USER_OID);
         assertTrue("Found " + TestSuite.CONVERSATION_MEMBER_USER_OID + " cached ", userE != null);
         MbUser userA = getByUserOid(listItems, TestSuite.CONVERSATION_MEMBER_USER_OID);
         assertTrue("Found " + TestSuite.CONVERSATION_MEMBER_USER_OID + ", " + logMsg, userA != null);

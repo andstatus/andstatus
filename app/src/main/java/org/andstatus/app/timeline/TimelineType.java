@@ -84,6 +84,14 @@ public enum TimelineType implements SelectableEnum {
         return UNKNOWN;
     }
 
+    public static TimelineType[] getDefaultMyAccountTimelineTypes() {
+        return defaultMyAccountTimelineTypes;
+    }
+
+    public static TimelineType[] getDefaultOriginTimelineTypes() {
+        return defaultOriginTimelineTypes;
+    }
+
     /** String to be used for persistence */
     public String save() {
         return code;
@@ -149,7 +157,7 @@ public enum TimelineType implements SelectableEnum {
         }
     }
 
-    public static final TimelineType[] defaultMyAccountTimelineTypes = {
+    private static final TimelineType[] defaultMyAccountTimelineTypes = {
             HOME,
             FAVORITES,
             MENTIONS,
@@ -161,7 +169,7 @@ public enum TimelineType implements SelectableEnum {
             OUTBOX
     };
 
-    public static final TimelineType[] defaultOriginTimelineTypes = {
+    private static final TimelineType[] defaultOriginTimelineTypes = {
             PUBLIC,
             EVERYTHING
     };

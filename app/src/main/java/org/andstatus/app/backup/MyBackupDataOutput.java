@@ -137,13 +137,16 @@ public class MyBackupDataOutput {
 
     private int appendBytesToFile(File file, byte[] data, int size) throws IOException {
         MyLog.v(this, "Appending data to file='" + file.getName() + "', size=" + size);
+        FileOutputStream fileOutputStream = null;
         OutputStream out = null;
         try {
-            out = new BufferedOutputStream(new FileOutputStream(file, true));
+            fileOutputStream = new FileOutputStream(file, true);
+            out = new BufferedOutputStream(fileOutputStream);
             out.write(data, 0, size);
         } finally {
             DbUtils.closeSilently(out, file.getAbsolutePath());
-        }        
+            DbUtils.closeSilently(fileOutputStream, file.getAbsolutePath());
+        }
         return 0;
     }
 
