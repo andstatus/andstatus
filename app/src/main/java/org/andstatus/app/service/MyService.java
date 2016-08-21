@@ -777,6 +777,7 @@ public class MyService extends Service {
                     }
                 } catch (InterruptedException e) {
                     breakReason = "InterruptedException";
+                    Thread.currentThread().interrupt();
                     break;
                 }
                 synchronized(serviceStateLock) {

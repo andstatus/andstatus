@@ -16,12 +16,10 @@
 
 package org.andstatus.app.msg;
 
-import android.os.Build;
-
+import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.util.MyLog;
 
 import java.util.Date;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicReference;
 
 class MessageEditorLock {
@@ -69,15 +67,8 @@ class MessageEditorLock {
                 acquired = false;
                 break;
             }
-            try {
-                // http://stackoverflow.com/questions/363681/generating-random-integers-in-a-range-with-java
-                if (Build.VERSION.SDK_INT >= 21) {
-                    Thread.sleep(250 + ThreadLocalRandom.current().nextInt(0, 500));
-                } else {
-                    Thread.sleep(500);
-                }
-            } catch (InterruptedException e) {
-                MyLog.v(this, "Wait interrupted", e);
+            DbUtils.waitBetweenRetries("acquire");
+            if (Thread.currentThread().isInterrupted()) {
                 acquired = false;
                 break;
             }

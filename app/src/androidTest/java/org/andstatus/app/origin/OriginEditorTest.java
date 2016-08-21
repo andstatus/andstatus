@@ -27,6 +27,7 @@ import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.net.http.SslModeEnum;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
@@ -112,8 +113,8 @@ public class OriginEditorTest extends ActivityInstrumentationTestCase2<OriginEdi
         }
         );
         getInstrumentation().waitForIdleSync();
-        Thread.sleep(200);
-        
+        DbUtils.waitMs(method, 200);
+
         final Button buttonSave = (Button) activity.findViewById(R.id.button_save);
         final Spinner spinnerOriginType = (Spinner) activity.findViewById(R.id.origin_type);
         final EditText editTextOriginName = (EditText) activity.findViewById(R.id.origin_name);
@@ -141,9 +142,7 @@ public class OriginEditorTest extends ActivityInstrumentationTestCase2<OriginEdi
                         setChecked(inCombinedGlobalSearch);
                 ((CheckBox) activity.findViewById(R.id.in_combined_public_reload)).
                         setChecked(inCombinedPublicReload);
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException ignored) { }
+                DbUtils.waitMs(method, 1000);
                 MyLog.v(this, method + "-Log before click");
                 buttonSave.performClick();
             }
@@ -152,7 +151,7 @@ public class OriginEditorTest extends ActivityInstrumentationTestCase2<OriginEdi
         MyLog.v(this, method + "-Log before run clicker 1");
         activity.runOnUiThread(clicker);
         getInstrumentation().waitForIdleSync();
-        Thread.sleep(200);
+        DbUtils.waitMs(method, 200);
 
         Origin origin = MyContextHolder.get().persistentOrigins().fromName(originName);
         assertEquals("Origin '" + originName + "' added", originName, origin.getName());

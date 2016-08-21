@@ -29,6 +29,7 @@ import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.MyPreferencesGroupsEnum;
 import org.andstatus.app.context.MyStorage;
 import org.andstatus.app.data.DataPruner;
+import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.database.DatabaseHolder;
 import org.andstatus.app.data.MyDataChecker;
 import org.andstatus.app.data.TimelineSearchSuggestionsProvider;
@@ -134,11 +135,7 @@ public class MyBackupAgent extends BackupAgent {
             if (ind > 5) {
                 throw new FileNotFoundException(getString(R.string.system_is_busy_try_later));
             }
-            try {
-                Thread.sleep(5000);
-            } catch (Exception e2) {
-                MyLog.d(this, "while sleeping", e2);
-            }
+            DbUtils.waitMs("checkAndSetServiceUnavailable", 5000);
         }
         return isServiceAvailableStored;
     }

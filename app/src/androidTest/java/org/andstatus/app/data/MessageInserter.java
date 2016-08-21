@@ -109,6 +109,7 @@ public class MessageInserter extends InstrumentationTestCase {
     }
 
     public MbMessage buildMessage(MbUser author, String body, MbMessage inReplyToMessage, String messageOidIn, DownloadStatus messageStatus) {
+        final String method = "buildMessage";
         String messageOid = messageOidIn;
         if (TextUtils.isEmpty(messageOid) && messageStatus != DownloadStatus.SENDING) {
             if (origin.getOriginType() == OriginType.PUMPIO) {
@@ -126,11 +127,8 @@ public class MessageInserter extends InstrumentationTestCase {
         message.inReplyToMessage = inReplyToMessage;
         if (origin.getOriginType() == OriginType.PUMPIO) {
             message.url = message.oid;
-        }        
-        try {
-            Thread.sleep(2);
-        } catch (InterruptedException ignored) {
         }
+        DbUtils.waitMs(method, 10);
         return message;
     }
 

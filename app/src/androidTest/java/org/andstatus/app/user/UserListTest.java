@@ -24,6 +24,7 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.ConversationInserter;
+import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
@@ -88,7 +89,7 @@ public class UserListTest extends ActivityInstrumentationTestCase2<TimelineActiv
 
         ListActivityTestHelper<UserList> userListHelper = new ListActivityTestHelper<>(this, userList);
         userListHelper.clickListAtPosition(method, userListHelper.getPositionOfListItemId(listItems.get(2).getUserId()));
-        Thread.sleep(500);
+        DbUtils.waitMs(method, 500);
     }
 
     private void compareAttributes(MbUser expected, MbUser actual, boolean forUserList) {

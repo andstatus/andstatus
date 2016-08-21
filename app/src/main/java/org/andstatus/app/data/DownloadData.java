@@ -347,11 +347,7 @@ public class DownloadData {
                 DbUtils.closeSilently(cursor);
             }
             if (!done) {
-                try {
-                    Thread.sleep(Math.round((Math.random() + 1) * 500));
-                } catch (InterruptedException e) {
-                    MyLog.e(DownloadData.class, e);
-                }
+                DbUtils.waitMs(method, 500);
             }
         }
         if (!done || rowsDeleted>0) {

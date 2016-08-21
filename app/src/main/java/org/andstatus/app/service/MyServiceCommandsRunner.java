@@ -122,6 +122,7 @@ public class MyServiceCommandsRunner implements MyServiceEventsListener {
             }
         } catch (InterruptedException e) {
             MyLog.d(this, method + "; Interrupted", e);
+            Thread.currentThread().interrupt();
         }
     }
 

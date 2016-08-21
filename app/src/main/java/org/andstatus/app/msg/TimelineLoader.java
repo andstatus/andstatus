@@ -24,6 +24,7 @@ import org.andstatus.app.LoadableListActivity;
 import org.andstatus.app.WhichPage;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.timeline.Timeline;
 import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.I18n;
@@ -94,12 +95,10 @@ public class TimelineLoader implements LoadableListActivity.SyncLoader {
                 cursor = getParams().queryDatabase();
                 break;
             } catch (IllegalStateException e) {
-                logD(method, "Attempt " + attempt + " to prepare cursor", e);
-                try {
-                    Thread.sleep(500);
-                } catch (InterruptedException e2) {
-                    logD(method, "Attempt " + attempt + " to prepare cursor was interrupted",
-                            e2);
+                String message = "Attempt " + attempt + " to prepare cursor";
+                logD(method, message, e);
+                DbUtils.waitBetweenRetries(message);
+                if (Thread.currentThread().isInterrupted()) {
                     break;
                 }
             }

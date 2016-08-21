@@ -53,14 +53,14 @@ class DatabaseConverter {
             msgLog = e.getMessage();
             showProgressDialog(msgLog);
             MyLog.ignored(this, e);
-            mySleepWithLogging(30000);
+            DbUtils.waitMs("execute, on ApplicationUpgradeException", 30000);
         } finally {
-            mySleepWithLogging(2000);
+            DbUtils.waitMs("execute finally", 2000);
             upgradeEnded();
             if (MyContextHolder.get().isTestRun()) {
                 activity.finish();
             }
-            mySleepWithLogging(500);
+            DbUtils.waitMs("execute finally 2", 500);
         }
         if (success) {
             MyLog.w(this, "Upgrade successfully completed in "
@@ -73,14 +73,6 @@ class DatabaseConverter {
             MyLog.e(this, msgLog2);
         }
         return success;
-    }
-
-    private void mySleepWithLogging(long ms) {
-        try {
-            Thread.sleep(ms);
-        } catch (Exception e) {
-            MyLog.d(this, "while sleeping", e);
-        }
     }
 
     private void upgradeStarted() {

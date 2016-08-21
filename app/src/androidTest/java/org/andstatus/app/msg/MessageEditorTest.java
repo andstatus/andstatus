@@ -38,6 +38,7 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
@@ -217,7 +218,7 @@ public class MessageEditorTest extends ActivityInstrumentationTestCase2<Timeline
         Activity selectorActivity = getInstrumentation().waitForMonitorWithTimeout(activityMonitor, 15000);
         assertTrue(selectorActivity != null);
         ActivityTestHelper.waitViewInvisible(method, editorView);
-        Thread.sleep(4000);
+        DbUtils.waitMs(method, 4000);
         selectorActivity.finish();
 
         MyLog.i(method, "Callback from a selector");
@@ -232,7 +233,10 @@ public class MessageEditorTest extends ActivityInstrumentationTestCase2<Timeline
             if (TestSuite.LOCAL_IMAGE_TEST_URI2.equals(editor.getData().getMediaUri())) {
                 break;
             }
-            Thread.sleep(2000);
+            DbUtils.waitMs(method, 2000);
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
         }
         assertEquals("Image attached", TestSuite.LOCAL_IMAGE_TEST_URI2, editor.getData().getMediaUri());
         assertEquals("Text is the same", body, editText.getText().toString().trim());

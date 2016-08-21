@@ -18,6 +18,7 @@ package org.andstatus.app.net.http;
 
 import android.text.TextUtils;
 
+import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.util.FileUtils;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
@@ -105,14 +106,6 @@ public class HttpConnectionMock extends HttpConnection {
         throwExceptionIfSet();
     }
 
-    private void networkDelay() {
-        try {
-            Thread.sleep(networkDelayMs);
-        } catch (InterruptedException e) {
-            MyLog.v(this, "networkDelay", e);
-        }
-    }
-
     private void throwExceptionIfSet() throws ConnectionException {
         if (exception != null) {
             throw exception;
@@ -148,7 +141,7 @@ public class HttpConnectionMock extends HttpConnection {
         MyLog.v(this, method + " num:" + results.size() + "; path:'" + result.getUrl()
                 + "', originUrl:'" + data.originUrl + "', instanceId:" + mInstanceId );
         MyLog.v(this, Arrays.toString(Thread.currentThread().getStackTrace()));
-        networkDelay();
+        DbUtils.waitMs("networkDelay", networkDelayMs);
     }
 
     private void getRequestInner(String method, HttpReadResult result) throws ConnectionException {

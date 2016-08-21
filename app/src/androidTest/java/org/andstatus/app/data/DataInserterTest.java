@@ -320,6 +320,7 @@ public class DataInserterTest extends InstrumentationTestCase {
     }
 
     public void testUnsentMessageWithAttachment() throws Exception {
+        final String method = "testUnsentMessageWithAttachment";
         MyAccount ma = MyContextHolder.get().persistentAccounts()
                 .getFirstSucceededForOriginId(0);
         MbMessage message = MbMessage.fromOriginAndOid(ma.getOriginId(), "",
@@ -342,7 +343,7 @@ public class DataInserterTest extends InstrumentationTestCase {
         assertEquals("Image URI stored", message.attachments.get(0).getUri(), dd.getUri());
         assertEquals("Local image immediately loaded " + dd, DownloadStatus.LOADED, dd.getStatus());
 
-        Thread.sleep(1000);
+        DbUtils.waitMs(method, 1000);
 
         final String oid = "unsentMsgOid" + TestSuite.TESTRUN_UID;
         MbMessage message2 = MbMessage.fromOriginAndOid(ma.getOriginId(), oid,

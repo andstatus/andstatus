@@ -27,6 +27,7 @@ import android.widget.ListAdapter;
 import android.widget.ListView;
 
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.MsgTable;
@@ -290,6 +291,7 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> extends Instru
     }
 
     public SelectorDialog waitForSelectorDialog(String methodExt, int timeout) throws InterruptedException {
+        final String method = "waitForSelectorDialog";
         SelectorDialog selectorDialog = null;
         boolean isVisible = false;
         for (int ind=0; ind<20; ind++) {
@@ -299,7 +301,10 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> extends Instru
                 isVisible = true;
                 break;
             }
-            Thread.sleep(1000);
+            DbUtils.waitMs(method, 1000);
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
         }
         assertTrue(selectorDialog != null);
         assertTrue(isVisible);
@@ -309,7 +314,10 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> extends Instru
         int itemsCount = 0;
         int minCount = 1;
         for (int ind=0; ind<60; ind++) {
-            Thread.sleep(2000);
+            DbUtils.waitMs(method, 2000);
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
             mInstrumentation.waitForIdleSync();
             int itemsCountNew = list.getCount();
             MyLog.v(methodExt, "waitForSelectorDialog; countNew=" + itemsCountNew + ", prev=" + itemsCount + ", min=" + minCount);

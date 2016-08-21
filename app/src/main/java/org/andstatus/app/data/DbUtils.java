@@ -21,6 +21,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteStatement;
+import android.os.Build;
 import android.provider.BaseColumns;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
@@ -36,6 +37,7 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
 import java.nio.channels.FileChannel;
+import java.util.concurrent.ThreadLocalRandom;
 
 public final class DbUtils {
     private static final int MS_BETWEEN_RETRIES = 500;
@@ -103,11 +105,27 @@ public final class DbUtils {
         return rowsUpdated;
     }
 
-    private static void waitBetweenRetries(String method) {
-        try {
-            Thread.sleep(Math.round((Math.random() + 1) * MS_BETWEEN_RETRIES));
-        } catch (InterruptedException e2) {
-            MyLog.e(method, e2);
+    public static void waitBetweenRetries(String method) {
+        waitMs(method, MS_BETWEEN_RETRIES);
+    }
+
+    public static void waitMs(String method, long delayMs) {
+        if (delayMs < 2) {
+            return;
+        }
+        long delay = delayMs;
+        // http://stackoverflow.com/questions/363681/generating-random-integers-in-a-range-with-java
+        if (Build.VERSION.SDK_INT >= 21) {
+            delay = (delay/2) + ThreadLocalRandom.current().nextLong(0, delay);
+        }
+        Object localLock = new Object();
+        synchronized (localLock) {
+            try {
+                localLock.wait(delay);
+            } catch (InterruptedException e) {
+                MyLog.v(method + "; Interrupted waiting " + delay + "ms", e);
+                Thread.currentThread().interrupt();
+            }
         }
     }
 

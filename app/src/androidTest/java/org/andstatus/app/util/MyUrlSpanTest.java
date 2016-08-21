@@ -25,6 +25,7 @@ import android.widget.ViewFlipper;
 import org.andstatus.app.HelpActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.data.DbUtils;
 
 /** See https://github.com/andstatus/andstatus/issues/300 */
 public class MyUrlSpanTest extends ActivityInstrumentationTestCase2<HelpActivity> {
@@ -51,6 +52,7 @@ public class MyUrlSpanTest extends ActivityInstrumentationTestCase2<HelpActivity
     }
 
     private void forOneString(final String text) throws Throwable {
+        final String method = "forOneString";
         final ViewFlipper mFlipper = ((ViewFlipper) getActivity().findViewById(R.id.help_flipper));
         assertTrue(mFlipper != null);
         final TextView textView = (TextView) getActivity().findViewById(R.id.splash_payoff_line);
@@ -69,7 +71,7 @@ public class MyUrlSpanTest extends ActivityInstrumentationTestCase2<HelpActivity
                 }
             }
         });
-        Thread.sleep(10000);
+        DbUtils.waitMs(method, 1000);
     }
 
     public void testSoftHyphen() throws Throwable {

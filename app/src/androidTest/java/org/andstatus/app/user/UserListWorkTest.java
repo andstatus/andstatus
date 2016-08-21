@@ -24,6 +24,7 @@ import org.andstatus.app.MyAction;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.data.MyQuery;
@@ -78,6 +79,6 @@ public class UserListWorkTest extends ActivityInstrumentationTestCase2<UserList>
         ListActivityTestHelper<FollowersList> followersHelper = new ListActivityTestHelper<>(this, userList);
         followersHelper.clickListAtPosition(method,
                 followersHelper.getPositionOfListItemId(followersItems.get(0).getUserId()));
-        Thread.sleep(500);
+        DbUtils.waitMs(method, 500);
     }
 }

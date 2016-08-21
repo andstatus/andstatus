@@ -27,6 +27,7 @@ import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.MsgTable;
@@ -90,6 +91,7 @@ public class PublicTimelineActivityTest extends android.test.ActivityInstrumenta
     }
 
     private void waitForButtonClickedEvidence(String caption, String queryString) throws InterruptedException {
+        final String method = "waitForButtonClickedEvidence";
         boolean found = false;
         final StringBuilder sb = new StringBuilder();
         for (int attempt = 0; attempt < 6; attempt++) {
@@ -114,7 +116,10 @@ public class PublicTimelineActivityTest extends android.test.ActivityInstrumenta
                 found = true;
                 break;
             } else {
-                Thread.sleep(2000 * (attempt + 1));
+                DbUtils.waitMs(method, 2000 * (attempt + 1));
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
             }
         }
         assertTrue(caption + " '" + (sb.toString()) + "'", found);
@@ -132,7 +137,7 @@ public class PublicTimelineActivityTest extends android.test.ActivityInstrumenta
     }
 
     private void assertMessagesArePublic(String publicMessageText) throws InterruptedException {
-        
+        final String method = "assertMessagesArePublic";
         int msgCount = 0;
         for (int attempt=0; attempt < 3; attempt++) {
             TestSuite.waitForIdleSync(this);
@@ -140,7 +145,10 @@ public class PublicTimelineActivityTest extends android.test.ActivityInstrumenta
             if (msgCount > 0) {
                 break;
             }
-            Thread.sleep(2000 * (attempt + 1));
+            DbUtils.waitMs(method, 2000 * (attempt + 1));
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
         }
         assertTrue("Messages found", msgCount > 0);
     }

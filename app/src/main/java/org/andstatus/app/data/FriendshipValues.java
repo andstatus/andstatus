@@ -92,10 +92,9 @@ public class FriendshipValues {
                 break;
             } catch (SQLiteDatabaseLockedException e) {
                 MyLog.i(this, "update, Database is locked, pass=" + pass, e);
-                try {
-                    Thread.sleep(Math.round((Math.random() + 1) * 200));
-                } catch (InterruptedException e2) {
-                    MyLog.e(this, e2);
+                DbUtils.waitBetweenRetries("update");
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
                 }
             }
         }

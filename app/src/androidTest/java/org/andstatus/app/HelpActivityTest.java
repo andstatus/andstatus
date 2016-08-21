@@ -24,6 +24,7 @@ import android.widget.ViewFlipper;
 
 import org.andstatus.app.context.MySettingsActivity;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.data.DbUtils;
 
 public class HelpActivityTest extends ActivityInstrumentationTestCase2<HelpActivity> {
 
@@ -54,12 +55,12 @@ public class HelpActivityTest extends ActivityInstrumentationTestCase2<HelpActiv
         assertEquals("At Changelog page", HelpActivity.PAGE_INDEX_CHANGELOG, mFlipper.getDisplayedChild());
         View changeLogView = getActivity().findViewById(R.id.changelog);
         assertTrue(changeLogView != null);
-        Thread.sleep(500);
+        DbUtils.waitMs("test", 500);
 
         ActivityTestHelper<HelpActivity> helper = new ActivityTestHelper<HelpActivity>(this, MySettingsActivity.class);
         assertTrue("Click on ActionBar item", helper.clickMenuItem("Clicking on Settings menu item", R.id.preferences_menu_id));
         Activity nextActivity = helper.waitForNextActivity("Clicking on Settings menu item", 10000);
-        Thread.sleep(500);
+        DbUtils.waitMs("test", 500);
         nextActivity.finish();
     }
 

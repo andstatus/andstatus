@@ -28,6 +28,7 @@ import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MySettingsActivity;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.origin.PersistentOriginList;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
@@ -61,18 +62,19 @@ public class AccountSettingsActivityTest extends ActivityInstrumentationTestCase
     }
     
     public void test() throws InterruptedException {
+        final String method = "test";
         Button addAccountOrVerifyCredentials = (Button) mActivity.findViewById(R.id.add_account);
         assertTrue(addAccountOrVerifyCredentials != null);
         assertUsernameTextField(R.id.username);
         assertUsernameTextField(R.id.username_readonly);
-        Thread.sleep(500);
+        DbUtils.waitMs(method, 500);
         assertFalse("MyService is not available", MyServiceManager.isServiceAvailable());
         openingOriginList();
-        Thread.sleep(500);
+        DbUtils.waitMs(method, 500);
         mActivity.finish();
-        Thread.sleep(500);
+        DbUtils.waitMs(method, 500);
         MySettingsActivity.closeAllActivities(getInstrumentation().getTargetContext());
-        Thread.sleep(500);
+        DbUtils.waitMs(method, 500);
     }
 
     private void assertUsernameTextField(int viewId) {
@@ -100,8 +102,8 @@ public class AccountSettingsActivityTest extends ActivityInstrumentationTestCase
                 + nextActivity);
         assertNotNull("Next activity is opened and captured", nextActivity);
         TestSuite.waitForListLoaded(this, nextActivity, 8);
-        Thread.sleep(500);
-        nextActivity.finish();        
+        DbUtils.waitMs(method, 500);
+        nextActivity.finish();
     }
     
 }

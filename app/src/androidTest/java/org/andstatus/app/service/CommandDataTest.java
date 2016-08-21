@@ -21,6 +21,7 @@ import android.test.InstrumentationTestCase;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.util.MyLog;
@@ -50,6 +51,7 @@ public class CommandDataTest extends InstrumentationTestCase {
 
     private void testQueueOneCommandData(CommandData commandData, long time0)
             throws InterruptedException {
+        final String method = "testQueueOneCommandData";
         assertEquals(0, commandData.getResult().getExecutionCount());
         assertEquals(0, commandData.getResult().getLastExecutedDate());
         assertEquals(CommandResult.INITIAL_NUMBER_OF_RETRIES, commandData.getResult().getRetriesLeft());
@@ -58,7 +60,7 @@ public class CommandDataTest extends InstrumentationTestCase {
         commandData.getResult().incrementNumIoExceptions();
         commandData.getResult().setMessage("Error in " + commandData.hashCode());
         commandData.getResult().afterExecutionEnded();
-        Thread.sleep(50);
+        DbUtils.waitMs(method, 50);
         long time1 = System.currentTimeMillis();
         assertTrue(commandData.getResult().getLastExecutedDate() >= time0);
         assertTrue(commandData.getResult().getLastExecutedDate() < time1);

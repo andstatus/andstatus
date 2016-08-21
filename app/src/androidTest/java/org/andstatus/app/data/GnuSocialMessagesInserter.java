@@ -31,7 +31,6 @@ import org.andstatus.app.origin.Origin;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.CommandExecutionContext;
-import org.andstatus.app.timeline.TimelineType;
 
 public class GnuSocialMessagesInserter extends InstrumentationTestCase {
     private static volatile int iteration = 0;
@@ -122,6 +121,7 @@ public class GnuSocialMessagesInserter extends InstrumentationTestCase {
     }
     
     private MbMessage buildMessage(MbUser author, String body, MbMessage inReplyToMessage, String messageOidIn) {
+        final String method = "buildMessage";
         String messageOid = messageOidIn;
         if (TextUtils.isEmpty(messageOid)) {
             messageOid = author.getProfileUrl()  + "/" + (inReplyToMessage == null ? "note" : "comment") + "thisisfakeuri" + System.nanoTime();
@@ -133,10 +133,7 @@ public class GnuSocialMessagesInserter extends InstrumentationTestCase {
         message.sender = author;
         message.actor = accountMbUser;
         message.inReplyToMessage = inReplyToMessage;
-        try {
-            Thread.sleep(2);
-        } catch (InterruptedException ignored) {
-        }
+        DbUtils.waitMs(method, 10);
         return message;
     }
     

@@ -29,6 +29,7 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.ConversationInserter;
+import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.timeline.Timeline;
@@ -85,8 +86,8 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
         helper.selectListPosition(method, helper.getPositionOfListItemId(msgId));
         helper.invokeContextMenuAction4ListItemId(method, msgId, MessageListContextMenuItem.OPEN_CONVERSATION);
         Activity nextActivity = helper.waitForNextActivity(method, 40000);
-        Thread.sleep(500);
-        nextActivity.finish();        
+        DbUtils.waitMs(method, 500);
+        nextActivity.finish();
     }
 
     private ListView getListView() {
@@ -152,7 +153,10 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
                     MyLog.v(this, "New messages were not loaded, repeating broadcast command executed");
                     broadcastCommandExecuted();
                 }
-                Thread.sleep(2000 * (attempt + 1));
+                DbUtils.waitMs(method, 2000 * (attempt + 1));
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
             }
             if (found) {
                 break;
@@ -183,7 +187,7 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
                 ListActivityTestHelper.newForSelectorDialog(this, AccountSelector.getDialogTag());
         helper.clickView(method, R.id.selectAccountButton);
         SelectorDialog selectorDialog = helper.waitForSelectorDialog(method, 15000);
-        Thread.sleep(500);
+        DbUtils.waitMs(method, 500);
         selectorDialog.dismiss();
     }
 
@@ -208,7 +212,7 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
         assertNotSame(logMsg, ma, ma2);
 
         helper.selectIdFromSelectorDialog(method, ma2.getUserId());
-        Thread.sleep(500);
+        DbUtils.waitMs(method, 500);
 
         long userId3 = getActivity().getContextMenu().getActorUserIdForCurrentMessage();
         MyAccount ma3 = MyContextHolder.get().persistentAccounts().fromUserId(userId3);

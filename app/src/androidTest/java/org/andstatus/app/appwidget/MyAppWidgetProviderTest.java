@@ -24,8 +24,7 @@ import android.text.format.Time;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.timeline.Timeline;
-import org.andstatus.app.timeline.TimelineType;
+import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.service.CommandResult;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
@@ -154,9 +153,9 @@ public class MyAppWidgetProviderTest extends InstrumentationTestCase {
         long dateSinceMin = System.currentTimeMillis();  
     	// To set dateSince correctly!
         updateWidgets(1, 0, 0);
-        Thread.sleep(5000);
-        long dateSinceMax = System.currentTimeMillis();  
-        Thread.sleep(5000);
+        DbUtils.waitMs(method, 5000);
+        long dateSinceMax = System.currentTimeMillis();
+        DbUtils.waitMs(method, 5000);
         AppWidgets.clearAndUpdateWidgets(myContext);
         checkWidgetData(0, 0, 0);
         checkDateChecked(dateSinceMin, dateSinceMax);
@@ -185,8 +184,8 @@ public class MyAppWidgetProviderTest extends InstrumentationTestCase {
     private void checkWidgetData(int numMentions, int numDirect, int numHome)
             throws InterruptedException {
         final String method = "checkWidgetData";
-    	Thread.sleep(500);
-    	
+        DbUtils.waitMs(method, 500);
+
     	AppWidgets appWidgets = AppWidgets.newInstance(myContext);
     	if (appWidgets.isEmpty()) {
             MyLog.i(this, method + "; No appWidgets found");
@@ -201,8 +200,8 @@ public class MyAppWidgetProviderTest extends InstrumentationTestCase {
     private void checkDateSince(long dateMin, long dateMax)
             throws InterruptedException {
         final String method = "checkDateSince";
-        Thread.sleep(500);
-        
+        DbUtils.waitMs(method, 500);
+
         AppWidgets appWidgets = AppWidgets.newInstance(myContext);
         if (appWidgets.isEmpty()) {
             MyLog.i(this, method + "; No appWidgets found");
@@ -215,7 +214,7 @@ public class MyAppWidgetProviderTest extends InstrumentationTestCase {
     private void checkDateChecked(long dateMin, long dateMax)
             throws InterruptedException {
         final String method = "checkDateChecked";
-        Thread.sleep(500);
+        DbUtils.waitMs(method, 500);
 
         AppWidgets appWidgets = AppWidgets.newInstance(myContext);
         if (appWidgets.isEmpty()) {
@@ -254,7 +253,8 @@ public class MyAppWidgetProviderTest extends InstrumentationTestCase {
 	 * @see MyAppWidgetProvider
 	 */
 	private void updateWidgets(int msgAdded, int msgDirectAdded, int mentionsAdded) throws InterruptedException{
-        Thread.sleep(500);
+        final String method = "updateWidgets";
+        DbUtils.waitMs(method, 500);
         AppWidgets appWidgets = AppWidgets.newInstance(myContext);
         CommandResult result = new CommandResult();
         for (int count = 0; count < msgAdded; count++) {

@@ -32,6 +32,7 @@ import junit.framework.TestCase;
 import org.andstatus.app.HelpActivity;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.data.ConversationInserter;
+import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.GnuSocialMessagesInserter;
 import org.andstatus.app.data.MessageInserter;
 import org.andstatus.app.account.OriginsAndAccountsInserter;
@@ -66,6 +67,7 @@ public class TestSuite extends TestCase {
     }
     
     public static synchronized Context initialize(InstrumentationTestCase testCase) throws InterruptedException {
+        final String method = "initialize";
         if (initialized) {
             MyLog.d(TAG, "Already initialized");
             return context;
@@ -96,11 +98,7 @@ public class TestSuite extends TestCase {
             } catch (IllegalStateException e) {
                 MyLog.i(TAG, "Error caught, iteration=" + iter, e);
             }
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
+            DbUtils.waitMs(method, 100);
         }
         MyLog.d(TAG, "After Initializing Test Suite loop");
         assertTrue("MyContext state=" + MyContextHolder.get().state(), MyContextHolder.get().state() != MyContextState.EMPTY);
@@ -121,7 +119,7 @@ public class TestSuite extends TestCase {
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             MyContextHolder.get().context().startActivity(intent);
             waitTillUpgradeEnded();
-            Thread.sleep(500);
+            DbUtils.waitMs(method, 500);
         }
         MyLog.d(TAG, "Before check isReady " + MyContextHolder.get());
         initialized =  MyContextHolder.get().isReady();
@@ -154,16 +152,13 @@ public class TestSuite extends TestCase {
     }
     
     public static void waitTillUpgradeEnded() {
+        final String method = "waitTillUpgradeEnded";
         for (int i=1; i < 100; i++) {
             if(MyContextHolder.get().isReady()) {
                 break;
             }
             MyLog.d(TAG, "Waiting for upgrade to end " + i);
-            try {
-                Thread.sleep(2000);
-            } catch(InterruptedException ex) {
-                Thread.currentThread().interrupt();
-            }            
+            DbUtils.waitMs(method, 2000);
         }
         assertTrue("Is Ready now", MyContextHolder.get().isReady());
     }
@@ -305,11 +300,12 @@ public class TestSuite extends TestCase {
     }
 
     public static int waitForListLoaded(Instrumentation instrumentation, Activity activity, int minCount) throws InterruptedException {
+        final String method = "waitForListLoaded";
         final ViewGroup list = (ViewGroup) activity.findViewById(android.R.id.list);
         assertTrue(list != null);
         int itemsCount = 0;
         for (int ind=0; ind<60; ind++) {
-            Thread.sleep(2000);
+            DbUtils.waitMs(method, 2000);
             instrumentation.waitForIdleSync();
             int itemsCountNew = list.getChildCount();
             if (ListView.class.isInstance(list)) {
@@ -331,9 +327,10 @@ public class TestSuite extends TestCase {
     }
 
     public static void waitForIdleSync(Instrumentation instrumentation) throws InterruptedException {
-        Thread.sleep(200);
+        final String method = "waitForIdleSync";
+        DbUtils.waitMs(method, 200);
         instrumentation.waitForIdleSync();
-        Thread.sleep(2000);
+        DbUtils.waitMs(method, 2000);
     }
     
     public static boolean isScreenLocked(Context context) {
@@ -342,15 +339,14 @@ public class TestSuite extends TestCase {
     }
 
     public static boolean setAndWaitForIsInForeground(boolean isInForeground) {
+        final String method = "setAndWaitForIsInForeground";
         MyContextHolder.get().setInForeground(isInForeground);
         for (int pass = 0; pass < 300; pass++) {
             if (MyContextHolder.get().isInForeground() == isInForeground) {
                 return true;
             }
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+            DbUtils.waitMs(method, 100);
+            if (Thread.currentThread().isInterrupted()) {
                 return false;
             }
         }

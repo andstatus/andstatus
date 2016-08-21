@@ -4,6 +4,7 @@ import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.test.ActivityInstrumentationTestCase2;
 
+import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.service.MyServiceManager;
 
 public class MySettingsActivityTest extends ActivityInstrumentationTestCase2<MySettingsActivity> {
@@ -21,13 +22,14 @@ public class MySettingsActivityTest extends ActivityInstrumentationTestCase2<MyS
     }
     
     public void test() throws InterruptedException {
+        final String method = "test";
         PreferenceFragment fragment = (PreferenceFragment) mActivity.getFragmentManager().findFragmentByTag(MySettingsFragment.class.getSimpleName());
         if (fragment != null) {
             Preference preference = fragment.findPreference(
                     MySettingsFragment.KEY_MANAGE_ACCOUNTS);
             assertTrue(MySettingsFragment.KEY_MANAGE_ACCOUNTS, preference != null);
         }
-        Thread.sleep(500);
+        DbUtils.waitMs(method, 500);
         assertFalse("MyService is not available", MyServiceManager.isServiceAvailable());
     }
 }

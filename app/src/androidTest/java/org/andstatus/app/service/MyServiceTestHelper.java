@@ -10,6 +10,7 @@ import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.net.http.HttpConnectionMock;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
@@ -69,6 +70,7 @@ public class MyServiceTestHelper implements MyServiceEventsListener {
     }
     
     public boolean waitForCommandExecutionStarted(long count0) {
+        final String method = "waitForCommandExecutionStarted";
         boolean found = false;
         String locEvent = "none";
         for (int pass = 0; pass < 1000; pass++) {
@@ -77,10 +79,8 @@ public class MyServiceTestHelper implements MyServiceEventsListener {
                 locEvent = "count: " + executionStartCount + " > " + count0;
                 break;
             }
-            try {
-                Thread.sleep(30);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+            DbUtils.waitMs(method, 30);
+            if (Thread.currentThread().isInterrupted()) {
                 locEvent = "interrupted";
                 break;
             }
@@ -91,6 +91,7 @@ public class MyServiceTestHelper implements MyServiceEventsListener {
     }
 
     public boolean waitForCommandExecutionEnded(long count0) {
+        final String method = "waitForCommandExecutionEnded";
         boolean found = false;
         String locEvent = "none";
         for (int pass = 0; pass < 1000; pass++) {
@@ -99,10 +100,8 @@ public class MyServiceTestHelper implements MyServiceEventsListener {
                 locEvent = "count: " + executionEndCount + " > " + count0;
                 break;
             }
-            try {
-                Thread.sleep(30);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+            DbUtils.waitMs(method, 30);
+            if (Thread.currentThread().isInterrupted()) {
                 locEvent = "interrupted";
                 break;
             }
@@ -113,6 +112,7 @@ public class MyServiceTestHelper implements MyServiceEventsListener {
     }
 
     public boolean waitForServiceStopped(boolean clearQueue) {
+        final String method = "waitForServiceStopped";
         for (int pass = 0; pass < 10000; pass++) {
             if (serviceStopped) {
                 if (clearQueue) {
@@ -120,10 +120,8 @@ public class MyServiceTestHelper implements MyServiceEventsListener {
                 }
                 return true;
             }
-            try {
-                Thread.sleep(10);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+            DbUtils.waitMs(method, 10);
+            if (Thread.currentThread().isInterrupted()) {
                 return false;
             }
         }

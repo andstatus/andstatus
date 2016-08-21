@@ -27,6 +27,7 @@ import android.view.View;
 import android.widget.TextView;
 
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.test.SelectorActivityMock;
 import org.andstatus.app.util.MyLog;
 
@@ -59,7 +60,10 @@ public class ActivityTestHelper<T extends MyActivity> extends InstrumentationTes
                 ok = true;
                 break;
             }
-            Thread.sleep(2000);
+            DbUtils.waitMs(method, 2000);
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
         }
         MyLog.v(method, (ok ? "Visible" : "Invisible"));
         assertTrue(method + "; View is visible", ok);
@@ -74,7 +78,10 @@ public class ActivityTestHelper<T extends MyActivity> extends InstrumentationTes
                 ok = true;
                 break;
             }
-            Thread.sleep(2000);
+            DbUtils.waitMs(method, 2000);
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
         }
         MyLog.v(method, (ok ? "Invisible" : "Visible"));
         assertTrue(method + "; View is invisible", ok);
@@ -90,7 +97,10 @@ public class ActivityTestHelper<T extends MyActivity> extends InstrumentationTes
                 ok = true;
                 break;
             }
-            Thread.sleep(2000);
+            DbUtils.waitMs(method, 2000);
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
         }
         MyLog.v(method, (ok ? "Found" : "Not found") + " text '" + textToFind + "' in '" + textFound + "'");
         assertTrue(method + "; Not found text '" + textToFind + "' in '" + textFound + "'", ok);
@@ -159,7 +169,10 @@ public class ActivityTestHelper<T extends MyActivity> extends InstrumentationTes
                 ok = true;
                 break;
             }
-            Thread.sleep(2000);
+            DbUtils.waitMs(method, 2000);
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
         }
         MyLog.v(method, (ok ? "Request received: " + selectorIntent.toString() : "Request wasn't received"));
         selectorRequestCode = 0;
