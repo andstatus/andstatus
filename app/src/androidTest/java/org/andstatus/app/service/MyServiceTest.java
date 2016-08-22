@@ -118,6 +118,7 @@ public class MyServiceTest extends InstrumentationTestCase {
                 break;
             }
         }
+        assertTrue(timelineToSync != null);
         timelineToSync.setSyncSucceededDate(0);
 
         runner = new MyServiceCommandsRunner(myContext);
