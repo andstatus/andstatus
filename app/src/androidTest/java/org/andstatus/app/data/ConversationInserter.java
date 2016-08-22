@@ -126,7 +126,7 @@ public class ConversationInserter extends InstrumentationTestCase {
         addPublicMessage(reply7, true);
         
         MbMessage reply8 = buildMessage(author4, "<b>Reply 8</b> to Reply 7", reply7, null);
-        
+
         MbMessage reply9 = buildMessage(author2, "Reply 9 to Reply 7", reply7, null);
         reply9.attachments
                 .add(MbAttachment
@@ -135,6 +135,7 @@ public class ConversationInserter extends InstrumentationTestCase {
                                         "http://www.publicdomainpictures.net/pictures/100000/nahled/autumn-tree-in-a-park.jpg"),
                                 MyContentType.IMAGE));
         addMessage(reply9);
+        addMessage(buildMessage(author4, "A duplicate of " + reply9.getBody(), null, null));
 
         // Message downloaded by another account
         MyAccount acc2 = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.CONVERSATION_ACCOUNT2_NAME);

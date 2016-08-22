@@ -46,6 +46,7 @@ public class TimelineData extends ListData {
                 params.getContentUri().equals(oldData.params.getContentUri());
         this.pages = isSameTimeline ? copyPages(oldData.pages) : new ArrayList<TimelinePage>();
         addThisPage(thisPage);
+        collapseDuplicates(isCollapseDuplicates(), 0);
         dropExcessivePage(thisPage);
     }
 
@@ -238,15 +239,13 @@ public class TimelineData extends ListData {
     /** For all or for only one item */
     @Override
     public void collapseDuplicates(boolean collapse, long itemId) {
-        if (itemId != 0 || this.collapseDuplicates != collapse) {
-            if (itemId == 0) {
-                this.collapseDuplicates = collapse;
-            }
-            if (collapse) {
-                collapseDuplicates(itemId);
-            } else {
-                showDuplicates(itemId);
-            }
+        if (itemId == 0) {
+            this.collapseDuplicates = collapse;
+        }
+        if (collapse) {
+            collapseDuplicates(itemId);
+        } else {
+            showDuplicates(itemId);
         }
     }
 

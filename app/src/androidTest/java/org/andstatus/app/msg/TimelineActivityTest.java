@@ -18,6 +18,7 @@ package org.andstatus.app.msg;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.widget.CheckBox;
 import android.widget.ListView;
 
 import org.andstatus.app.ListActivityTestHelper;
@@ -27,6 +28,7 @@ import org.andstatus.app.WhichPage;
 import org.andstatus.app.account.AccountSelector;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.ConversationInserter;
 import org.andstatus.app.data.DbUtils;
@@ -105,7 +107,7 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
         onePositionOnContentChange(10, 2);
     }
     
-    private void onePositionOnContentChange(int position0, int iterationId) throws InterruptedException, Exception {
+    private void onePositionOnContentChange(int position0, int iterationId) throws Exception {
         final String method = "testPositionOnContentChange" + iterationId;
         TestSuite.waitForListLoaded(this, getActivity(), 1);
         getInstrumentation().runOnMainSync(new Runnable() {
@@ -116,7 +118,11 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
         });
         TestSuite.waitForListLoaded(this, getActivity(), position0 + 2);
 
-        new ListActivityTestHelper<TimelineActivity>(this, getActivity()).selectListPosition(method, position0);
+        boolean collapseDuplicates = MyPreferences.isCollapseDuplicates();
+        assertEquals(collapseDuplicates, ((CheckBox) getActivity().findViewById(R.id.collapseDuplicatesToggle)).isChecked());
+        assertEquals(collapseDuplicates, getActivity().getListData().isCollapseDuplicates());
+
+        new ListActivityTestHelper<>(this, getActivity()).selectListPosition(method, position0);
         int position1 = getListView().getFirstVisiblePosition();
         long maxDateLoaded1 = getActivity().getListAdapter().getItem(0).sentDate;
         long updatedAt1 = getActivity().getListData().updatedAt;
@@ -125,6 +131,7 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
 
         new ConversationInserter().insertConversation("p" + iterationId);
         broadcastCommandExecuted();
+
         long updatedAt2 = 0;
         long maxDateLoaded2 = 0;
         int count2 = 0;
@@ -168,7 +175,21 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
                 + ", updated in " + (updatedAt2 - updatedAt1) + "ms";
         MyLog.v(this, logText);
         assertTrue(logText, found);
-        assertTrue("Newer items loaded; " + logText, maxDateLoaded2 > maxDateLoaded1);
+        assertTrue("Newer items weren't loaded; " + logText, maxDateLoaded2 > maxDateLoaded1);
+
+        assertEquals(collapseDuplicates, ((CheckBox) getActivity().findViewById(R.id.collapseDuplicatesToggle)).isChecked());
+        assertEquals(collapseDuplicates, getActivity().getListData().isCollapseDuplicates());
+        if (collapseDuplicates) {
+            found = false;
+            for (int ind = 0; ind < getActivity().getListData().size(); ind++) {
+                TimelineViewItem item = getActivity().getListData().getItem(ind);
+                if (item.isCollapsed()) {
+                    found = true;
+                    break;
+                }
+            }
+            assertTrue("Collapsed not found", found);
+        }
     }
 
     private void broadcastCommandExecuted() {
