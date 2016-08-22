@@ -24,6 +24,7 @@ import android.test.InstrumentationTestCase;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.context.Travis;
 import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.database.MsgOfUserTable;
 import org.andstatus.app.database.UserTable;
@@ -43,6 +44,7 @@ import org.andstatus.app.util.TriState;
 
 import java.util.Set;
 
+@Travis
 public class DataInserterTest extends InstrumentationTestCase {
     private Context context;
 

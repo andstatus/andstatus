@@ -2,6 +2,9 @@ package org.andstatus.app.data;
 
 import android.test.InstrumentationTestCase;
 
+import org.andstatus.app.context.Travis;
+
+@Travis
 public class MyProviderTest extends InstrumentationTestCase {
     public void testQuoteIfNotQuoted() {
         assertEquals("Empty string", String.valueOf('\'') + String.valueOf('\''), MyQuery.quoteIfNotQuoted(""));

@@ -7,6 +7,7 @@ import android.test.InstrumentationTestCase;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.context.Travis;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.SharedPreferencesUtil;
@@ -15,6 +16,7 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.util.Date;
 
+@Travis
 public class DataPrunerTest extends InstrumentationTestCase  {
 
     @Override
