@@ -115,11 +115,8 @@ public class PublicTimelineActivityTest extends android.test.ActivityInstrumenta
             if (sb.toString().contains(queryString)) {
                 found = true;
                 break;
-            } else {
-                DbUtils.waitMs(method, 2000 * (attempt + 1));
-                if (Thread.currentThread().isInterrupted()) {
-                    break;
-                }
+            } else if (DbUtils.waitMs(method, 2000 * (attempt + 1))) {
+                break;
             }
         }
         assertTrue(caption + " '" + (sb.toString()) + "'", found);
@@ -142,11 +139,7 @@ public class PublicTimelineActivityTest extends android.test.ActivityInstrumenta
         for (int attempt=0; attempt < 3; attempt++) {
             TestSuite.waitForIdleSync(this);
             msgCount = oneAttempt(publicMessageText);
-            if (msgCount > 0) {
-                break;
-            }
-            DbUtils.waitMs(method, 2000 * (attempt + 1));
-            if (Thread.currentThread().isInterrupted()) {
+            if (msgCount > 0 || DbUtils.waitMs(method, 2000 * (attempt + 1))) {
                 break;
             }
         }

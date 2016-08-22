@@ -41,7 +41,7 @@ import org.andstatus.app.util.TriState;
 
 public class OriginsAndAccountsInserter extends InstrumentationTestCase {
     MyContextForTest myContext;
-    private static String firstAccountUserOid = null;
+    private String firstAccountUserOid = null;
     
     public OriginsAndAccountsInserter(MyContextForTest myContextForTest) {
         myContext = myContextForTest;

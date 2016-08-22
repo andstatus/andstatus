@@ -63,12 +63,7 @@ class MessageEditorLock {
                     break;
                 }
             }
-            if (!doWait) {
-                acquired = false;
-                break;
-            }
-            DbUtils.waitBetweenRetries("acquire");
-            if (Thread.currentThread().isInterrupted()) {
+            if (!doWait || DbUtils.waitBetweenRetries("acquire")) {
                 acquired = false;
                 break;
             }

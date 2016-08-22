@@ -97,8 +97,7 @@ public class TimelineLoader implements LoadableListActivity.SyncLoader {
             } catch (IllegalStateException e) {
                 String message = "Attempt " + attempt + " to prepare cursor";
                 logD(method, message, e);
-                DbUtils.waitBetweenRetries(message);
-                if (Thread.currentThread().isInterrupted()) {
+                if (DbUtils.waitBetweenRetries(message)) {
                     break;
                 }
             }

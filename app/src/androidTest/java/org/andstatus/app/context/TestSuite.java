@@ -345,8 +345,7 @@ public class TestSuite extends TestCase {
             if (MyContextHolder.get().isInForeground() == isInForeground) {
                 return true;
             }
-            DbUtils.waitMs(method, 100);
-            if (Thread.currentThread().isInterrupted()) {
+            if (DbUtils.waitMs(method, 100)) {
                 return false;
             }
         }

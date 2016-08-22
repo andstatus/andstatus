@@ -157,8 +157,12 @@ public class MyBackupAgentTest extends InstrumentationTestCase {
 
     private void deleteBackup(File dataFolder) {
         for (File dataFile : dataFolder.listFiles()) {
-            dataFile.delete();
+            if (!dataFile.delete()) {
+                MyLog.e(this, "Couldn't delete file " + dataFile.getAbsolutePath());
+            }
         }
-        dataFolder.delete();
+        if (!dataFolder.delete()) {
+            MyLog.e(this, "Couldn't delete folder " + dataFolder.getAbsolutePath());
+        }
     }
 }

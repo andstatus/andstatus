@@ -301,8 +301,7 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> extends Instru
                 isVisible = true;
                 break;
             }
-            DbUtils.waitMs(method, 1000);
-            if (Thread.currentThread().isInterrupted()) {
+            if (DbUtils.waitMs(method, 1000)) {
                 break;
             }
         }
@@ -314,8 +313,7 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> extends Instru
         int itemsCount = 0;
         int minCount = 1;
         for (int ind=0; ind<60; ind++) {
-            DbUtils.waitMs(method, 2000);
-            if (Thread.currentThread().isInterrupted()) {
+            if (DbUtils.waitMs(method, 2000)) {
                 break;
             }
             mInstrumentation.waitForIdleSync();

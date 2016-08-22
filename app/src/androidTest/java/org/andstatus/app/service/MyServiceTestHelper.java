@@ -79,8 +79,7 @@ public class MyServiceTestHelper implements MyServiceEventsListener {
                 locEvent = "count: " + executionStartCount + " > " + count0;
                 break;
             }
-            DbUtils.waitMs(method, 30);
-            if (Thread.currentThread().isInterrupted()) {
+            if (DbUtils.waitMs(method, 30)) {
                 locEvent = "interrupted";
                 break;
             }
@@ -100,8 +99,7 @@ public class MyServiceTestHelper implements MyServiceEventsListener {
                 locEvent = "count: " + executionEndCount + " > " + count0;
                 break;
             }
-            DbUtils.waitMs(method, 30);
-            if (Thread.currentThread().isInterrupted()) {
+            if (DbUtils.waitMs(method, 30)) {
                 locEvent = "interrupted";
                 break;
             }
@@ -120,8 +118,7 @@ public class MyServiceTestHelper implements MyServiceEventsListener {
                 }
                 return true;
             }
-            DbUtils.waitMs(method, 10);
-            if (Thread.currentThread().isInterrupted()) {
+            if (DbUtils.waitMs(method, 10)) {
                 return false;
             }
         }

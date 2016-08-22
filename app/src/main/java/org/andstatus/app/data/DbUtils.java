@@ -105,31 +105,34 @@ public final class DbUtils {
         return rowsUpdated;
     }
 
-    public static void waitBetweenRetries(String method) {
-        waitMs(method, MS_BETWEEN_RETRIES);
+    /** @return true if current thread was interrupted */
+    public static boolean waitBetweenRetries(String method) {
+        return waitMs(method, MS_BETWEEN_RETRIES);
     }
 
-    public static void waitMs(String method, long delayMs) {
-        if (delayMs < 2) {
-            return;
-        }
-        long delay = delayMs;
-        // http://stackoverflow.com/questions/363681/generating-random-integers-in-a-range-with-java
-        if (Build.VERSION.SDK_INT >= 21) {
-            delay = (delay/2) + ThreadLocalRandom.current().nextLong(0, delay);
-        }
-        Long startTime = System.currentTimeMillis();
-        synchronized (startTime) {
-            while (System.currentTimeMillis() < startTime + delay && System.currentTimeMillis() >= startTime) {
-                try {
-                    startTime.wait(delay);
-                } catch (InterruptedException e) {
-                    MyLog.v(method + "; Interrupted waiting " + delay + "ms", e);
-                    Thread.currentThread().interrupt();
-                    break;
+    /** @return true if current thread was interrupted */
+    public static boolean waitMs(String method, long delayMs) {
+        if (delayMs > 1) {
+            long delay = delayMs;
+            // http://stackoverflow.com/questions/363681/generating-random-integers-in-a-range-with-java
+            if (Build.VERSION.SDK_INT >= 21) {
+                delay = (delay/2) + ThreadLocalRandom.current().nextLong(0, delay);
+            }
+            Long startTime = System.currentTimeMillis();
+            Object lock = new Object();
+            synchronized (lock) {
+                while (System.currentTimeMillis() < startTime + delay && System.currentTimeMillis() >= startTime) {
+                    try {
+                        lock.wait(delay);
+                    } catch (InterruptedException e) {
+                        MyLog.v(method + "; Interrupted waiting " + delay + "ms", e);
+                        Thread.currentThread().interrupt();
+                        break;
+                    }
                 }
             }
         }
+        return Thread.currentThread().isInterrupted();
     }
 
     // Couldn't use "Closeable" as a Type due to incompatibility with API <= 10

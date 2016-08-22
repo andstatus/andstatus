@@ -233,8 +233,7 @@ public class MessageEditorTest extends ActivityInstrumentationTestCase2<Timeline
             if (TestSuite.LOCAL_IMAGE_TEST_URI2.equals(editor.getData().getMediaUri())) {
                 break;
             }
-            DbUtils.waitMs(method, 2000);
-            if (Thread.currentThread().isInterrupted()) {
+            if (DbUtils.waitMs(method, 2000)) {
                 break;
             }
         }

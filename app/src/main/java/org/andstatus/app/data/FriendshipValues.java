@@ -92,8 +92,7 @@ public class FriendshipValues {
                 break;
             } catch (SQLiteDatabaseLockedException e) {
                 MyLog.i(this, "update, Database is locked, pass=" + pass, e);
-                DbUtils.waitBetweenRetries("update");
-                if (Thread.currentThread().isInterrupted()) {
+                if (DbUtils.waitBetweenRetries("update")) {
                     break;
                 }
             }

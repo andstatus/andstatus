@@ -60,8 +60,7 @@ public class ActivityTestHelper<T extends MyActivity> extends InstrumentationTes
                 ok = true;
                 break;
             }
-            DbUtils.waitMs(method, 2000);
-            if (Thread.currentThread().isInterrupted()) {
+            if (DbUtils.waitMs(method, 2000)) {
                 break;
             }
         }
@@ -78,8 +77,7 @@ public class ActivityTestHelper<T extends MyActivity> extends InstrumentationTes
                 ok = true;
                 break;
             }
-            DbUtils.waitMs(method, 2000);
-            if (Thread.currentThread().isInterrupted()) {
+            if (DbUtils.waitMs(method, 2000)) {
                 break;
             }
         }
@@ -97,8 +95,7 @@ public class ActivityTestHelper<T extends MyActivity> extends InstrumentationTes
                 ok = true;
                 break;
             }
-            DbUtils.waitMs(method, 2000);
-            if (Thread.currentThread().isInterrupted()) {
+            if (DbUtils.waitMs(method, 2000)) {
                 break;
             }
         }
@@ -169,8 +166,7 @@ public class ActivityTestHelper<T extends MyActivity> extends InstrumentationTes
                 ok = true;
                 break;
             }
-            DbUtils.waitMs(method, 2000);
-            if (Thread.currentThread().isInterrupted()) {
+            if (DbUtils.waitMs(method, 2000)) {
                 break;
             }
         }

@@ -153,8 +153,7 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
                     MyLog.v(this, "New messages were not loaded, repeating broadcast command executed");
                     broadcastCommandExecuted();
                 }
-                DbUtils.waitMs(method, 2000 * (attempt + 1));
-                if (Thread.currentThread().isInterrupted()) {
+                if (DbUtils.waitMs(method, 2000 * (attempt + 1))) {
                     break;
                 }
             }
