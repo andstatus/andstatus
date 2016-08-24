@@ -7,10 +7,12 @@ import android.text.TextUtils;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.context.Travis;
 import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.UserTable;
 
+@Travis
 public class MessageEditorDataTest extends InstrumentationTestCase {
 
     @Override

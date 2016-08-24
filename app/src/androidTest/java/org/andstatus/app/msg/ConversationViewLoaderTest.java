@@ -7,12 +7,14 @@ import org.andstatus.app.LoadableListActivity.ProgressPublisher;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.context.Travis;
 import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.util.MyLog;
 
 import java.util.List;
 
+@Travis
 public class ConversationViewLoaderTest extends InstrumentationTestCase implements ProgressPublisher {
     private MyAccount ma;
     private long selectedMessageId;

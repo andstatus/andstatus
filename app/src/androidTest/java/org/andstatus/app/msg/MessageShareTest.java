@@ -21,6 +21,7 @@ import android.test.InstrumentationTestCase;
 
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.context.Travis;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.HtmlContentInserter;
 import org.andstatus.app.data.MessageInserter;
@@ -29,6 +30,7 @@ import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.MyHtml;
 
+@Travis
 public class MessageShareTest extends InstrumentationTestCase {
 
     @Override

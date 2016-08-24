@@ -20,13 +20,16 @@ import android.test.InstrumentationTestCase;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.context.Travis;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.TriState;
 
 import java.util.Collection;
 import java.util.List;
 
+@Travis
 public class PersistentTimelinesTest extends InstrumentationTestCase {
 
     @Override
@@ -96,5 +99,24 @@ public class PersistentTimelinesTest extends InstrumentationTestCase {
                 }
             }
         }
+    }
+
+    public void testDefaultTimeline() {
+        MyPreferences.setDefaultTimelineId(0);
+        MyAccount myAccount = MyContextHolder.get().persistentAccounts().getDefaultAccount();
+        assertTrue(myAccount.isValid());
+        Timeline timeline = MyContextHolder.get().persistentTimelines().getDefault();
+        assertEquals(timeline.toString(), myAccount, timeline.getMyAccount());
+        assertEquals(timeline.toString(), TimelineType.HOME, timeline.getTimelineType());
+        assertFalse(timeline.toString(), timeline.isCombined());
+
+        Origin origin = MyContextHolder.get().persistentOrigins().fromName(TestSuite.GNUSOCIAL_TEST_ORIGIN_NAME);
+        myAccount = MyContextHolder.get().persistentAccounts().getFirstSucceededForOriginId(origin.getId());
+        timeline = MyContextHolder.get().persistentTimelines().
+                getFiltered(false, TriState.FALSE, myAccount, null).get(2);
+        MyPreferences.setDefaultTimelineId(timeline.getId());
+
+        Timeline timeline2 = MyContextHolder.get().persistentTimelines().getDefault();
+        assertEquals(timeline, timeline2);
     }
 }

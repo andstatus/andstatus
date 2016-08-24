@@ -19,11 +19,13 @@ package org.andstatus.app.msg;
 import android.test.InstrumentationTestCase;
 
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.context.Travis;
 import org.andstatus.app.widget.DuplicationLink;
 
 /**
  * @author yvolk@yurivolkov.com
  */
+@Travis
 public class TimelineViewItemTest extends InstrumentationTestCase {
 
     @Override

@@ -21,10 +21,12 @@ import android.test.InstrumentationTestCase;
 
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.WhichPage;
+import org.andstatus.app.context.Travis;
 
 /**
  * @author yvolk@yurivolkov.com
  */
+@Travis
 public class WhichPageTest extends InstrumentationTestCase {
 
     public void testSaveLoad() {

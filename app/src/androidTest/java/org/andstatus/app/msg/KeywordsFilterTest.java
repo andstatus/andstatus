@@ -18,9 +18,12 @@ package org.andstatus.app.msg;
 
 import android.test.InstrumentationTestCase;
 
+import org.andstatus.app.context.Travis;
+
 /**
  * @author yvolk@yurivolkov.com
  */
+@Travis
 public class KeywordsFilterTest extends InstrumentationTestCase {
     public void testPhrases() {
         String string1 = "\"deleted notice\"";

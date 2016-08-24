@@ -29,7 +29,6 @@ import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.TimelineTable;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TriState;
 
 import java.util.ArrayList;
@@ -96,6 +95,25 @@ public class PersistentTimelines {
     @NonNull
     public Timeline getDefaultForCurrentAccount() {
         return getDefault().fromMyAccount(myContext, myContext.persistentAccounts().getCurrentAccount());
+    }
+
+    public Timeline getDefault() {
+        long id = MyPreferences.getDefaultTimelineId();
+        Timeline timeline = Timeline.getEmpty(null);
+        if (id != 0) {
+            timeline = fromId(id);
+        }
+        if (!timeline.isValid()) {
+            timeline = fromNewTimeLine(Timeline.getTimeline(myContext, 0, TimelineType.HOME,
+                    myContext.persistentAccounts().getDefaultAccount(), 0, null, null));
+        }
+        if (!timeline.isValid()) {
+            List<Timeline> timelines = getFiltered(false, TriState.TRUE, null, null);
+            if (!timelines.isEmpty()) {
+                timeline = timelines.get(0);
+            }
+        }
+        return timeline;
     }
 
     @NonNull
@@ -245,20 +263,5 @@ public class PersistentTimelines {
         for (Timeline timeline : values()) {
             timeline.resetCounters(all);
         }
-    }
-
-    public Timeline getDefault() {
-        long id = SharedPreferencesUtil.getLong(MyPreferences.KEY_DEFAULT_TIMELINE);
-        Timeline timeline = Timeline.getEmpty(null);
-        if (id != 0) {
-            timeline = fromId(id);
-        }
-        if (!timeline.isValid()) {
-            List<Timeline> timelines = getFiltered(false, TriState.TRUE, null, null);
-            if (!timelines.isEmpty()) {
-                timeline = timelines.get(0);
-            }
-        }
-        return timeline;
     }
 }

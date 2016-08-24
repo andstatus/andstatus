@@ -237,4 +237,13 @@ public class MyPreferences {
     public static boolean isCollapseDuplicates() {
         return COLLAPSE_DUPLICATES_DEFAULT_VALUE;
     }
+
+    public static long getDefaultTimelineId() {
+        return SharedPreferencesUtil.getLong(KEY_DEFAULT_TIMELINE);
+    }
+
+    public static void setDefaultTimelineId(long id) {
+        SharedPreferencesUtil.putLong(KEY_DEFAULT_TIMELINE, id);
+    }
+
 }

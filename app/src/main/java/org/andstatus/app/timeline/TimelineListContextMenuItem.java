@@ -24,7 +24,6 @@ import org.andstatus.app.msg.TimelineActivity;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
-import org.andstatus.app.util.SharedPreferencesUtil;
 
 public enum TimelineListContextMenuItem implements ContextMenuItem {
     SHOW_MESSAGES() {
@@ -54,7 +53,7 @@ public enum TimelineListContextMenuItem implements ContextMenuItem {
     MAKE_DEFAULT() {
         @Override
         public boolean execute(TimelineListContextMenu menu, TimelineListViewItem viewItem) {
-            SharedPreferencesUtil.putLong(MyPreferences.KEY_DEFAULT_TIMELINE, viewItem.timeline.getId());
+            MyPreferences.setDefaultTimelineId(viewItem.timeline.getId());
             menu.getActivity().showList(WhichPage.CURRENT);
             return true;
         }

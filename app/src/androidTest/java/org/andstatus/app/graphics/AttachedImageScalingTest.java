@@ -6,9 +6,11 @@ import android.test.InstrumentationTestCase;
 
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.context.Travis;
 import org.andstatus.app.graphics.MyDrawableCache;
 import org.andstatus.app.graphics.MyImageCache;
 
+@Travis
 public class AttachedImageScalingTest extends InstrumentationTestCase {
     @Override
     public void setUp() throws Exception {
