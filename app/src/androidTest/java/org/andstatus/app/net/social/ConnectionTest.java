@@ -3,10 +3,12 @@ package org.andstatus.app.net.social;
 import android.test.InstrumentationTestCase;
 
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.context.Travis;
 
 import java.util.Calendar;
 import java.util.Date;
 
+@Travis
 public class ConnectionTest extends InstrumentationTestCase {
     
     public void testParseDate() {

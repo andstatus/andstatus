@@ -20,11 +20,13 @@ import android.test.InstrumentationTestCase;
 
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.context.Travis;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UrlUtils;
 
+@Travis
 public class OAuthClientKeysTest extends InstrumentationTestCase {
 
     @Override

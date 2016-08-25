@@ -20,6 +20,7 @@ import android.content.Context;
 import android.test.InstrumentationTestCase;
 
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.context.Travis;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
 import org.andstatus.app.util.RawResourceUtils;
@@ -28,6 +29,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 
+@Travis
 public class ConnectionGnuSocialTest extends InstrumentationTestCase {
     private ConnectionTwitterGnuSocialMock connection;
     String accountUserOid = TestSuite.GNUSOCIAL_TEST_ACCOUNT_USER_OID;

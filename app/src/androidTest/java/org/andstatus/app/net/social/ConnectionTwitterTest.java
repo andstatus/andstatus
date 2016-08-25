@@ -21,6 +21,7 @@ import android.test.InstrumentationTestCase;
 import org.andstatus.app.account.AccountDataReaderEmpty;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.context.Travis;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.net.http.HttpConnectionMock;
@@ -37,6 +38,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+@Travis
 public class ConnectionTwitterTest extends InstrumentationTestCase {
     private Connection connection;
     private HttpConnectionMock httpConnection;

@@ -18,10 +18,12 @@ package org.andstatus.app.net.http;
 
 import android.test.InstrumentationTestCase;
 
+import org.andstatus.app.context.Travis;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+@Travis
 public class HttpReadResultTest extends InstrumentationTestCase {
     
     public void testResultToArray() throws ConnectionException, JSONException {

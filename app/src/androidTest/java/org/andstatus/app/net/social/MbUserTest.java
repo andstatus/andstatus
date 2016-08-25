@@ -20,10 +20,12 @@ import android.test.InstrumentationTestCase;
 
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.context.Travis;
 import org.andstatus.app.origin.Origin;
 
 import java.util.List;
 
+@Travis
 public class MbUserTest extends InstrumentationTestCase {
 
     @Override

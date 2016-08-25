@@ -24,6 +24,7 @@ import org.andstatus.app.account.AccountDataReaderEmpty;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.context.Travis;
 import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.data.MyQuery;
@@ -39,6 +40,7 @@ import org.andstatus.app.util.UrlUtils;
 
 import java.io.IOException;
 
+@Travis
 public class VerifyCredentialsTest extends InstrumentationTestCase {
     Context context;
     Connection connection;

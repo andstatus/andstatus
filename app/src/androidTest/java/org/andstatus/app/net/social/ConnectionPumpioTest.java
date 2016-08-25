@@ -23,6 +23,7 @@ import android.text.TextUtils;
 import org.andstatus.app.account.AccountDataReaderEmpty;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.context.Travis;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnectionMock;
@@ -42,6 +43,7 @@ import java.net.URL;
 import java.util.Calendar;
 import java.util.List;
 
+@Travis
 public class ConnectionPumpioTest extends InstrumentationTestCase {
     Context context;
     ConnectionPumpio connection;
