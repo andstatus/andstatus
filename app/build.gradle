@@ -36,6 +36,7 @@ sonarqube {
     properties {
         property "sonar.projectName", "AndStatus"
         property "sonar.projectKey", "andstatus"
+        property "sonar.projectVersion", "$versionName"
 
         property "sonar.sourceEncoding","UTF-8"
         property "sonar.sources","."
