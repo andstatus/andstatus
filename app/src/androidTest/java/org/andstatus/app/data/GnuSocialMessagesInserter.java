@@ -32,20 +32,23 @@ import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.CommandExecutionContext;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 public class GnuSocialMessagesInserter extends InstrumentationTestCase {
-    private static volatile int iteration = 0;
+    private static AtomicInteger iterationCounter = new AtomicInteger(0);
+    private int iteration = 0;
 
     private MbUser accountMbUser;
     private MyAccount ma;
     private Origin origin;
 
-    public void insertData() throws Exception {
+    public void insertData() throws ConnectionException {
         mySetup();
         addConversation();
     }
     
-    private void mySetup() throws Exception {
-        iteration++;
+    private void mySetup() {
+        iteration = iterationCounter.incrementAndGet();
         origin = MyContextHolder.get().persistentOrigins().fromName(TestSuite.GNUSOCIAL_TEST_ORIGIN_NAME);
         assertTrue(TestSuite.GNUSOCIAL_TEST_ORIGIN_NAME + " exists", origin != null);
         ma = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME); 

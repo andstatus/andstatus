@@ -55,6 +55,7 @@ public class PersistentTimelinesTest extends InstrumentationTestCase {
         assertTrue(!filtered.isEmpty());
         assertTrue(timelines.size() > filtered.size());
 
+        ensureAtLeastOneNotDisplayedTimeline();
         List<Timeline> filtered2 = MyContextHolder.get().persistentTimelines().getFiltered(true, TriState.UNKNOWN, null, null);
         assertTrue(timelines.size() > filtered2.size());
         assertTrue(filtered2.size() > filtered.size());
@@ -66,6 +67,25 @@ public class PersistentTimelinesTest extends InstrumentationTestCase {
         filtered = MyContextHolder.get().persistentTimelines().getFiltered(true, TriState.FALSE, null, myAccount.getOrigin());
         assertTrue(!filtered.isEmpty());
 
+    }
+
+    protected void ensureAtLeastOneNotDisplayedTimeline() {
+        Collection<Timeline> timelines = MyContextHolder.get().persistentTimelines().values();
+        boolean found = false;
+        Timeline timeline1 = null;
+        for (Timeline timeline : timelines) {
+            if (timeline.isDisplayedInSelector().equals(DisplayedInSelector.NEVER)) {
+                found = true;
+                break;
+            }
+            if (timeline1 == null && timeline.getTimelineType().equals(TimelineType.MY_FOLLOWERS)) {
+                timeline1 = timeline;
+            }
+        }
+        if (!found && timeline1 != null) {
+            timeline1.setDisplayedInSelector(DisplayedInSelector.NEVER);
+            MyContextHolder.get().persistentTimelines().saveChanged();
+        }
     }
 
     public void testDefaultMyAccountTimelinesCreation() {

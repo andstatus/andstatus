@@ -41,7 +41,7 @@ public class HtmlContentInserter extends InstrumentationTestCase {
         testCase = parent;
     }
     
-    private void mySetup() throws Exception {
+    private void mySetup() {
         origin = MyContextHolder.get().persistentOrigins().fromName(TestSuite.CONVERSATION_ORIGIN_NAME);
         assertTrue(TestSuite.CONVERSATION_ORIGIN_NAME + " exists", origin.getOriginType() != OriginType.UNKNOWN);
         ma = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.CONVERSATION_ACCOUNT_NAME); 

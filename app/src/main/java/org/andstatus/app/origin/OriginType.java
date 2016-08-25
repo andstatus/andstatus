@@ -94,10 +94,10 @@ public enum OriginType {
     protected String oauthPath = OAUTH_PATH_DEFAULT;
     private final boolean mAllowAttachmentForDirectMessage;
 
-    public boolean isPublicTimeLineSyncable = false;
-    public boolean isSearchTimelineSyncable = true;
-    public boolean isDirectTimelineSyncable = true;
-    public boolean isMentionsTimelineSyncable = true;
+    private boolean isPublicTimeLineSyncable = false;
+    private boolean isSearchTimelineSyncable = true;
+    private boolean isDirectTimelineSyncable = true;
+    private boolean isMentionsTimelineSyncable = true;
 
     OriginType(long id, String title, ApiEnum api) {
         this.id = id;
@@ -280,5 +280,13 @@ public enum OriginType {
             default:
                 return true;
         }
+    }
+
+    public boolean isPublicTimeLineSyncable() {
+        return isPublicTimeLineSyncable;
+    }
+
+    public boolean isSearchTimelineSyncable() {
+        return isSearchTimelineSyncable;
     }
 }

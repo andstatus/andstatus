@@ -52,7 +52,7 @@ public class MyLogTest extends InstrumentationTestCase {
         
         MyLog.setLogToFile(false);
         assertTrue(TextUtils.isEmpty(MyLog.getLogFilename()));
-        file.delete();
+        assertTrue(file.delete());
         MyLog.v(this, method);
         assertEquals(MyLog.getLogFilename(), null);
         assertFalse(file.exists());

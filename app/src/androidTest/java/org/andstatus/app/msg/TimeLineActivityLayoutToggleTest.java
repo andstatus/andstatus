@@ -29,12 +29,14 @@ import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 public class TimeLineActivityLayoutToggleTest extends android.test.ActivityInstrumentationTestCase2<TimelineActivity> {
     private TimelineActivity activity;
-    private static int iteration = 0;
-    static boolean showAttachedImagesOld = false;
+    private static final AtomicInteger iteration = new AtomicInteger();
+    static final boolean showAttachedImagesOld = MyPreferences.getDownloadAndDisplayAttachedImages();
     boolean showAttachedImages = false;
-    static boolean showAvatarsOld = false;
+    static final boolean showAvatarsOld = MyPreferences.getShowAvatars();
     boolean showAvatars = false;
 
     public TimeLineActivityLayoutToggleTest() {
@@ -45,8 +47,7 @@ public class TimeLineActivityLayoutToggleTest extends android.test.ActivityInstr
     protected void setUp() throws Exception {
         super.setUp();
         TestSuite.initializeWithData(this);
-        iteration = (iteration >= 4 ? 1 : iteration + 1);
-        switch (iteration) {
+        switch (iteration.incrementAndGet()) {
             case 2:
                 showAttachedImages = showAttachedImagesOld;
                 showAvatars = !showAvatarsOld;
@@ -58,11 +59,10 @@ public class TimeLineActivityLayoutToggleTest extends android.test.ActivityInstr
             case 4:
                 showAttachedImages = !showAttachedImagesOld;
                 showAvatars = !showAvatarsOld;
+                iteration.set(0);
                 break;
             default:
-                showAttachedImagesOld = MyPreferences.getDownloadAndDisplayAttachedImages();
-                showAvatarsOld = MyPreferences.getShowAvatars();
-                showAttachedImages = showAttachedImagesOld; 
+                showAttachedImages = showAttachedImagesOld;
                 showAvatars = showAvatarsOld;
                 break;
         }
@@ -86,7 +86,7 @@ public class TimeLineActivityLayoutToggleTest extends android.test.ActivityInstr
 
     private void logStartStop(String text) {
         MyLog.i(this, text + ";" 
-                + " iteration " + iteration 
+                + " iteration " + iteration.get()
                 + (showAvatars ? " avatars;" : "")
                 + (showAttachedImages ? " attached images;" : ""));
     }

@@ -45,6 +45,8 @@ import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.service.MyServiceState;
 import org.andstatus.app.util.MyLog;
 
+import java.net.MalformedURLException;
+
 /**
  * On activity testing: http://developer.android.com/tools/testing/activity_testing.html
  * @author yvolk@yurivolkov.com
@@ -99,15 +101,15 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
     /** It really makes difference if we are near the end of the list or not
      *  This is why we have two similar methods
      */
-    public void testPositionOnContentChange1() throws Exception {
+    public void testPositionOnContentChange1() throws MalformedURLException, InterruptedException {
         onePositionOnContentChange(10, 1);
     }
 
-    public void testPositionOnContentChange2() throws Exception {
+    public void testPositionOnContentChange2() throws MalformedURLException, InterruptedException {
         onePositionOnContentChange(10, 2);
     }
     
-    private void onePositionOnContentChange(int position0, int iterationId) throws Exception {
+    private void onePositionOnContentChange(int position0, int iterationId) throws InterruptedException, MalformedURLException {
         final String method = "testPositionOnContentChange" + iterationId;
         TestSuite.waitForListLoaded(this, getActivity(), 1);
         getInstrumentation().runOnMainSync(new Runnable() {

@@ -34,11 +34,13 @@ import java.net.URL;
 import java.util.GregorianCalendar;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class ConversationInserter extends InstrumentationTestCase {
-    private static volatile int iteration = 0;
+    private static AtomicInteger iterationCounter = new AtomicInteger(0);
     private static final Map<String, MbUser> users = new ConcurrentHashMap<>();
 
+    private int iteration = 0;
     private MyAccount ma;
     private String bodySuffix = "";
 
@@ -46,7 +48,7 @@ public class ConversationInserter extends InstrumentationTestCase {
         return users;
     }
 
-    public void insertConversation(String bodySuffixIn) throws Exception {
+    public void insertConversation(String bodySuffixIn) throws MalformedURLException {
         if (TextUtils.isEmpty(bodySuffixIn)) {
             bodySuffix = "";
         } else {
@@ -57,7 +59,7 @@ public class ConversationInserter extends InstrumentationTestCase {
     }
 
     private void mySetup() {
-        iteration++;
+        iteration = iterationCounter.incrementAndGet();
         ma = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.CONVERSATION_ACCOUNT_NAME);
         assertTrue(TestSuite.CONVERSATION_ACCOUNT_NAME + " exists", ma.isValid());
     }

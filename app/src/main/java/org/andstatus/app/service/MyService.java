@@ -43,6 +43,7 @@ import org.andstatus.app.util.TriState;
 import java.util.Collections;
 import java.util.Queue;
 import java.util.concurrent.PriorityBlockingQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -89,7 +90,7 @@ public class MyService extends Service {
     private static final long RETRY_QUEUE_PROCESSING_PERIOD_SECONDS = 900; 
     private final AtomicLong mRetryQueueProcessedAt = new AtomicLong();
     
-    private static volatile boolean widgetsInitialized = false;
+    private static final AtomicBoolean widgetsInitialized = new AtomicBoolean(false);
 
     private MyServiceState getServiceState() {
         MyServiceState state = MyServiceState.STOPPED; 
@@ -228,9 +229,8 @@ public class MyService extends Service {
             }
         }
         if (wasNotInitialized) {
-            if (!widgetsInitialized) {
+            if (widgetsInitialized.compareAndSet(false, true)) {
                 AppWidgets.updateWidgets(myContext);
-                widgetsInitialized = true;
             }
             reviveHeartBeat();
         }

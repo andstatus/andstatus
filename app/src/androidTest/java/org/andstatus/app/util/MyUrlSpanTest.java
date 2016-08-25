@@ -40,7 +40,7 @@ public class MyUrlSpanTest extends ActivityInstrumentationTestCase2<HelpActivity
         TestSuite.initialize(this);
     }
 
-    public void testMyUrlSpan() throws Throwable {
+    public void testMyUrlSpan() {
         String text = "The string has malformed links "
                 + MyUrlSpan.SOFT_HYPHEN + " "
                 + "Details: /press-release/nasa-confirms-evidence-that-liquid-water-flows-on-today-s-mars/ #MarsAnnouncement"
@@ -51,30 +51,35 @@ public class MyUrlSpanTest extends ActivityInstrumentationTestCase2<HelpActivity
         forOneString(text);
     }
 
-    private void forOneString(final String text) throws Throwable {
+    private void forOneString(final String text) {
         final String method = "forOneString";
         final ViewFlipper mFlipper = ((ViewFlipper) getActivity().findViewById(R.id.help_flipper));
         assertTrue(mFlipper != null);
         final TextView textView = (TextView) getActivity().findViewById(R.id.splash_payoff_line);
-        runTestOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                mFlipper.setDisplayedChild(HelpActivity.PAGE_INDEX_LOGO);
-                MyUrlSpan.showText(textView, text, true, false);
-                if (SpannableString.class.isAssignableFrom(textView.getClass())) {
-                    SpannableString spannable = (SpannableString) textView.getText();
-                    URLSpan[] spans = spannable.getSpans(0, spannable.length(), URLSpan.class);
-                    for (URLSpan span : spans) {
-                        MyLog.i(this, "Clicking on: " + span.getURL());
-                        span.onClick(textView);
+        try {
+            runTestOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    mFlipper.setDisplayedChild(HelpActivity.PAGE_INDEX_LOGO);
+                    MyUrlSpan.showText(textView, text, true, false);
+                    if (SpannableString.class.isAssignableFrom(textView.getClass())) {
+                        SpannableString spannable = (SpannableString) textView.getText();
+                        URLSpan[] spans = spannable.getSpans(0, spannable.length(), URLSpan.class);
+                        for (URLSpan span : spans) {
+                            MyLog.i(this, "Clicking on: " + span.getURL());
+                            span.onClick(textView);
+                        }
                     }
                 }
-            }
-        });
+            });
+        } catch (Throwable throwable) {
+            MyLog.e(this, throwable);
+            fail();
+        }
         DbUtils.waitMs(method, 1000);
     }
 
-    public void testSoftHyphen() throws Throwable {
+    public void testSoftHyphen() {
         String text = MyUrlSpan.SOFT_HYPHEN;
         forOneString(text);
     }

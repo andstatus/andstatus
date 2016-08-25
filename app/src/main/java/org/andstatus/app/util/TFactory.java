@@ -37,7 +37,7 @@ public class TFactory<T> {
         try {
             return mTClass.newInstance();
         } catch (Exception e) {
-            throw new RuntimeException("Creating instance", e);
+            throw new IllegalStateException("Creating instance", e);
         }
     }
 }

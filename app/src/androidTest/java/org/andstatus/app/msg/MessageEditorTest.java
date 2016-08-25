@@ -49,13 +49,15 @@ import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 /**
  * On activity testing: http://developer.android.com/tools/testing/activity_testing.html
  * @author yvolk@yurivolkov.com
  */
 public class MessageEditorTest extends ActivityInstrumentationTestCase2<TimelineActivity> {
     private MessageEditorData data = null;
-    private static int editingStep = 0;
+    private static final AtomicInteger editingStep = new AtomicInteger();
 
     public MessageEditorTest() {
         super(TimelineActivity.class);
@@ -68,7 +70,7 @@ public class MessageEditorTest extends ActivityInstrumentationTestCase2<Timeline
         TestSuite.initializeWithData(this);
         MyLog.setLogToFile(true);
 
-        if (editingStep == 0) {
+        if (editingStep.get() == 0) {
             SharedPreferencesUtil.putLong(MyPreferences.KEY_BEING_EDITED_MESSAGE_ID, 0);
         }
 
@@ -116,16 +118,15 @@ public class MessageEditorTest extends ActivityInstrumentationTestCase2<Timeline
     }
 
     private void editingTester() throws InterruptedException {
-        editingStep++;
         TestSuite.waitForListLoaded(this, getActivity(), 2);
-        switch (editingStep) {
+        switch (editingStep.incrementAndGet()) {
             case 1:
                 openEditor();
                 editingStep1();
                 break;
             default:
                 editingStep2();
-                editingStep = 0;
+                editingStep.set(0);
                 break;
         }
         MyLog.v(this, "After step " + editingStep + " ended");

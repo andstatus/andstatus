@@ -161,9 +161,9 @@ public class OriginEditor extends MyActivity {
         buttonDelete.setVisibility(origin.hasChildren() ? View.GONE : View.VISIBLE);
 
         MyCheckBox.show(this, R.id.in_combined_global_search, origin.isInCombinedGlobalSearch(),
-                origin.getOriginType().isSearchTimelineSyncable);
+                origin.getOriginType().isSearchTimelineSyncable());
         MyCheckBox.show(this, R.id.in_combined_public_reload, origin.isInCombinedPublicReload(),
-                origin.getOriginType().isPublicTimeLineSyncable);
+                origin.getOriginType().isPublicTimeLineSyncable());
 
         String title = getText(R.string.label_origin_system).toString();
         if (origin.isPersistent()) {

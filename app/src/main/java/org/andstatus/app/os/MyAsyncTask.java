@@ -52,7 +52,7 @@ public abstract class MyAsyncTask<Params, Progress, Result> extends AsyncTask<Pa
         LONG_UI(1),
         DEFAULT(0);
 
-        public int corePoolSize;
+        protected int corePoolSize;
 
         PoolEnum(int corePoolSize) {
             this.corePoolSize = corePoolSize;

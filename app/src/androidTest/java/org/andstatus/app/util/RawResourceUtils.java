@@ -16,20 +16,6 @@ import java.io.InputStream;
 import java.nio.charset.Charset;
 
 public class RawResourceUtils {
-    
-    public static JSONObject getJSONObject(Context context, int id) {
-        JSONObject jso = null;
-        try {
-            jso = new JSONObject(RawResourceUtils.getString(context, id));
-        } catch (JSONException e) {
-            e.printStackTrace();
-            throw new IllegalArgumentException(e.getMessage());
-        } catch (IOException e) {
-            e.printStackTrace();
-            throw new IllegalArgumentException(e.getMessage());
-        }
-        return jso;
-    }
 
     public static String getString(Context context, int id) throws IOException {
         return new String(getBytes(id, context), Charset.forName("UTF-8"));

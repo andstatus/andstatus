@@ -7,6 +7,7 @@ import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnectionMock;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginConnectionData;
+import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
 
 public class ConnectionTwitterGnuSocialMock extends ConnectionTwitterGnuSocial {
@@ -28,9 +29,9 @@ public class ConnectionTwitterGnuSocialMock extends ConnectionTwitterGnuSocial {
         try {
             setAccountData(connectionData);
         } catch (InstantiationException e) {
-            e.printStackTrace();
+            MyLog.e(this, e);
         } catch (IllegalAccessException e) {
-            e.printStackTrace();
+            MyLog.e(this, e);
         }
         http.data.originUrl = origin.getUrl();
     }
