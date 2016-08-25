@@ -21,6 +21,7 @@ import android.test.InstrumentationTestCase;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.context.Travis;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.data.MyQuery;
@@ -29,6 +30,7 @@ import org.andstatus.app.util.MyLog;
 import java.util.Queue;
 import java.util.concurrent.PriorityBlockingQueue;
 
+@Travis
 public class CommandDataTest extends InstrumentationTestCase {
 
     @Override

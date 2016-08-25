@@ -19,7 +19,9 @@ package org.andstatus.app.util;
 import android.test.InstrumentationTestCase;
 
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.context.Travis;
 
+@Travis
 public class MyHtmlTest extends InstrumentationTestCase {
 
     @Override

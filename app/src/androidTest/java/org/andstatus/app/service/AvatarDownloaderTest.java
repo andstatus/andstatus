@@ -22,6 +22,7 @@ import android.test.InstrumentationTestCase;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.context.Travis;
 import org.andstatus.app.data.AvatarData;
 import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.data.DownloadFile;
@@ -37,6 +38,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+@Travis
 public class AvatarDownloaderTest extends InstrumentationTestCase {
     private MyAccount ma = MyAccount.getEmpty(MyContextHolder.get(), "");
 

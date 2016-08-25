@@ -7,10 +7,12 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.context.Travis;
 import org.andstatus.app.net.social.TimelinePosition;
 
 import java.util.Arrays;
 
+@Travis
 public class LatestTimelineItemTest extends InstrumentationTestCase {
 
     public static final int LATEST_ITEM_MILLIS_AGO = 10000;

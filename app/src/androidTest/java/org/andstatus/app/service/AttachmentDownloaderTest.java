@@ -22,6 +22,7 @@ import android.test.InstrumentationTestCase;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.context.Travis;
 import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.FileProvider;
@@ -37,6 +38,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 
+@Travis
 public class AttachmentDownloaderTest extends InstrumentationTestCase {
     MyAccount ma;
     

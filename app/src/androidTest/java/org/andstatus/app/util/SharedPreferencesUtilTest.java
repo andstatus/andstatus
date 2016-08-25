@@ -22,12 +22,14 @@ import android.test.InstrumentationTestCase;
 
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.context.Travis;
 
 import java.io.File;
 
 /**
  * @author yvolk@yurivolkov.com
  */
+@Travis
 public class SharedPreferencesUtilTest extends InstrumentationTestCase {
 
     @Override

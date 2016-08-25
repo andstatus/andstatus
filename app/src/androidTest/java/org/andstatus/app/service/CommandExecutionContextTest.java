@@ -5,9 +5,11 @@ import android.test.InstrumentationTestCase;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.context.Travis;
 import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.TriState;
 
+@Travis
 public class CommandExecutionContextTest extends InstrumentationTestCase {
     MyAccount ma;
 

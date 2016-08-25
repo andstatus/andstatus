@@ -21,6 +21,7 @@ import android.test.InstrumentationTestCase;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.context.Travis;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MessageInserter;
 import org.andstatus.app.net.http.ConnectionException;
@@ -34,6 +35,7 @@ import org.andstatus.app.util.RawResourceUtils;
 import java.io.IOException;
 import java.util.Arrays;
 
+@Travis
 public class CommandExecutorStrategyTest extends InstrumentationTestCase {
 
     private HttpConnectionMock httpConnectionMock;

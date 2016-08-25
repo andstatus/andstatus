@@ -18,10 +18,12 @@ package org.andstatus.app.util;
 
 import android.test.InstrumentationTestCase;
 
+import org.andstatus.app.context.Travis;
 import org.andstatus.app.net.http.ConnectionException;
 
 import java.net.URL;
 
+@Travis
 public class UrlUtilsTest extends InstrumentationTestCase {
 
     public void testHostOnly() throws ConnectionException {

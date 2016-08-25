@@ -20,6 +20,7 @@ import android.test.InstrumentationTestCase;
 
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.context.Travis;
 import org.andstatus.app.data.AttachedImageFile;
 import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.data.DownloadStatus;
@@ -33,6 +34,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 
+@Travis
 public class LargeImageTest extends InstrumentationTestCase {
     
     @Override

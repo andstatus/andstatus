@@ -18,6 +18,9 @@ package org.andstatus.app.util;
 
 import android.test.InstrumentationTestCase;
 
+import org.andstatus.app.context.Travis;
+
+@Travis
 public class I18nTest extends InstrumentationTestCase {
     public void testTrimTextAt() {
         // Length of this string is 20 chars:

@@ -5,11 +5,13 @@ import android.test.InstrumentationTestCase;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.context.Travis;
 import org.andstatus.app.timeline.Timeline;
 import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.service.CommandResult;
 import org.andstatus.app.util.SharedPreferencesUtil;
 
+@Travis
 public class AddedMessagesNotifierTest extends InstrumentationTestCase {
     
     @Override

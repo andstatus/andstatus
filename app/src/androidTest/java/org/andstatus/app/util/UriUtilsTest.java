@@ -19,9 +19,11 @@ package org.andstatus.app.util;
 import android.net.Uri;
 import android.test.InstrumentationTestCase;
 
+import org.andstatus.app.context.Travis;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+@Travis
 public class UriUtilsTest extends InstrumentationTestCase {
     private static Uri[] EMPTY_URIS = { (Uri) null, Uri.EMPTY, Uri.parse(""),
             UriUtils.fromString(""), UriUtils.fromString(" ")};

@@ -20,9 +20,11 @@ import android.test.InstrumentationTestCase;
 import android.text.TextUtils;
 
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.context.Travis;
 
 import java.io.File;
 
+@Travis
 public class MyLogTest extends InstrumentationTestCase {
 
     @Override

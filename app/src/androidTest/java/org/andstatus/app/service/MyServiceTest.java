@@ -24,6 +24,7 @@ import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.context.Travis;
 import org.andstatus.app.timeline.Timeline;
 import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.MyLog;
@@ -33,6 +34,7 @@ import org.andstatus.app.util.TriState;
 import java.net.MalformedURLException;
 import java.util.Queue;
 
+@Travis
 public class MyServiceTest extends InstrumentationTestCase {
     private MyServiceTestHelper mService;
     private volatile MyAccount ma;
