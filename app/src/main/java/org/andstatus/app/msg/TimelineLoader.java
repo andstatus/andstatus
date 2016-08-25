@@ -146,7 +146,7 @@ public class TimelineLoader implements LoadableListActivity.SyncLoader {
                     boolean reversedOrder = getParams().isSortOrderAscending();
                     do {
                         rowsCount++;
-                        TimelineViewItem item = TimelineViewItem.fromCursorRow(cursor);
+                        TimelineViewItem item = TimelineViewItem.fromCursorRow(params.getMyContext(), cursor);
                         getParams().rememberSentDateLoaded(item.sentDate);
                         String body = MyHtml.fromHtml(item.body).toLowerCase();
                         boolean skip = keywordsFilter.matched(body);

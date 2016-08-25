@@ -26,15 +26,15 @@ import org.andstatus.app.data.AttachedImageFile;
 import org.andstatus.app.data.AvatarFile;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.DownloadStatus;
-import org.andstatus.app.database.MsgTable;
-import org.andstatus.app.database.MsgOfUserTable;
-import org.andstatus.app.database.UserTable;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.TimelineSql;
+import org.andstatus.app.database.MsgOfUserTable;
+import org.andstatus.app.database.MsgTable;
+import org.andstatus.app.database.UserTable;
+import org.andstatus.app.util.MyHtml;
 
 import java.util.HashSet;
 import java.util.Set;
-import org.andstatus.app.util.*;
 
 public class ConversationViewItem extends ConversationItem {
     String mAuthor = "";
@@ -88,7 +88,7 @@ public class ConversationViewItem extends ConversationItem {
             }
             if (linkedUserId != 0) {
                 if (getLinkedUserId() == 0) {
-                    setLinkedUserId(linkedUserId);
+                    setLinkedUserAndAccount(linkedUserId);
                 }
                 if (DbUtils.getInt(cursor, MsgOfUserTable.REBLOGGED) == 1
                         && linkedUserId != authorId) {

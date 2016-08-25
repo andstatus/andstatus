@@ -19,6 +19,7 @@ package org.andstatus.app.data;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.BaseColumns;
+import android.support.annotation.NonNull;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
@@ -47,7 +48,7 @@ public class MessageForAccount {
     public boolean mayBePrivate = false;
     public String imageFilename = null;
 
-    private final MyAccount ma;
+    private final MyAccount myAccount;
     private final long userId;
     public boolean isSubscribed = false;
     public boolean isAuthor = false;
@@ -58,24 +59,32 @@ public class MessageForAccount {
     public boolean senderFollowed = false;
     public boolean authorFollowed = false;
     
-    public MessageForAccount(long msgId, long originId, MyAccount ma) {
+    public MessageForAccount(long msgId, long originId, MyAccount myAccount) {
         this.msgId = msgId;
         this.originId = originId;
-        if (ma == null || ma.getOrigin().getId() != originId) {
-            this.ma = MyAccount.getEmpty();
-        } else {
-            this.ma = ma;
-        }
-        this.userId = ma.getUserId();
-        if (ma.isValid()) {
+        this.myAccount = calculateMyAccount(originId, myAccount);
+        this.userId = myAccount.getUserId();
+        if (myAccount.isValid()) {
             getData();
         }
+    }
+
+    @NonNull
+    private MyAccount calculateMyAccount(long originId, MyAccount maIn) {
+        MyAccount ma = maIn;
+        if (ma == null || ma.getOrigin().getId() != originId || !ma.isValid()) {
+            ma = MyContextHolder.get().persistentAccounts().getFirstSucceededForOriginId(originId);
+        }
+        if (ma == null) {
+            ma = MyAccount.getEmpty();
+        }
+        return ma;
     }
 
     private void getData() {
         // Get a database raw for the currently selected item
         Uri uri = MatchedUri.getTimelineItemUri(
-                Timeline.getTimeline(TimelineType.MESSAGES_TO_ACT, ma, 0, null), msgId);
+                Timeline.getTimeline(TimelineType.MESSAGES_TO_ACT, myAccount, 0, null), msgId);
         Cursor cursor = null;
         try {
             cursor = MyContextHolder.get().context().getContentResolver().query(uri, new String[]{
@@ -117,8 +126,8 @@ public class MessageForAccount {
         }
     }
 
-    public MyAccount myAccount() {
-        return ma;
+    public MyAccount getMyAccount() {
+        return myAccount;
     }
     
     public boolean isDirect() {

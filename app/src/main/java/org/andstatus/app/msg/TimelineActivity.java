@@ -485,7 +485,7 @@ public class TimelineActivity extends LoadableListActivity implements
     }
 
     public void onItemClick(TimelineViewItem item) {
-        MyAccount ma = myContext.persistentAccounts().getAccountForThisMessage(item.originId,
+        MyAccount ma = myContext.persistentAccounts().getAccountForThisMessage(item.getOriginId(),
                 item.getMsgId(), item.getLinkedUserId(),
                 getParamsNew().getMyAccount().getUserId(), false);
         if (MyLog.isVerboseEnabled()) {
@@ -499,7 +499,7 @@ public class TimelineActivity extends LoadableListActivity implements
         }
         Uri uri = MatchedUri.getTimelineItemUri(
                 Timeline.getTimeline(TimelineType.EVERYTHING, null, 0,
-                        myContext.persistentOrigins().fromId(item.originId)),
+                        myContext.persistentOrigins().fromId(item.getOriginId())),
                 item.getMsgId());
 
         String action = getIntent().getAction();

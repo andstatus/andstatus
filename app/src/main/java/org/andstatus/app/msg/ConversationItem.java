@@ -37,10 +37,6 @@ public abstract class ConversationItem extends MessageViewItem implements Compar
     int mIndentLevel = 0;
     int mReplyLevel = 0;
     
-    public ConversationItem() {
-        super();
-    }
-
     /**
      * The newest replies are first, "branches" look up
      */

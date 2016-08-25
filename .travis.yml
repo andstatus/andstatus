@@ -8,7 +8,6 @@ language: android
 jdk: oraclejdk8
 env:
   global:
-    # Looks like android-24 doesn't work yet...
     - ANDROID_TARGET=android-24
     - ANDROID_ABI=armeabi-v7a
 android:
@@ -67,4 +66,4 @@ script:
   # For testing one method only:
   # - adb shell am instrument -w -r -e debug false -e class org.andstatus.app.msg.ActAsUserTest#testActAsUser org.andstatus.app.tests/android.test.InstrumentationTestRunner
 after_success:
-  - ./gradlew sonarqube -Dsonar.host.url=https://sonarqube.com -Dsonar.login=$SONAR_TOKEN -Dsonar.verbose=true
+  - ./gradlew sonarqube -Dsonar.host.url=https://sonarqube.com -Dsonar.login=$SONAR_TOKEN -Dsonar.verbose=true --debug

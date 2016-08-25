@@ -271,7 +271,7 @@ public class MessageEditorData {
         }
         ConversationLoader<ConversationMemberItem> loader = new ConversationLoader<>(
                 ConversationMemberItem.class,
-                MyContextHolder.get().context(), ma, inReplyToId);
+                MyContextHolder.get(), ma, inReplyToId);
         loader.load(null);
         List<Long> mentioned = new ArrayList<>();
         mentioned.add(ma.getUserId());  // Skip an authorName of this message

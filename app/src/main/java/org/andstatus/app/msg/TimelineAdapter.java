@@ -212,7 +212,7 @@ public class TimelineAdapter extends MyBaseAdapter {
             // Currently selected account is the best candidate as an actor
             MyAccount ma = myContext.persistentAccounts().fromUserId(
                     contextMenu.getCurrentMyAccountUserId());
-            if (ma.isValid() && ma.getOriginId() == item.originId) {
+            if (ma.isValid() && ma.getOriginId() == item.getOriginId()) {
                 actorId = ma.getUserId();
             }
             contextMenu.onContextMenuItemSelected(contextMenuItemIn, item.getMsgId(), actorId);

@@ -279,6 +279,7 @@ public class TimelineSql {
     private static List<String> getBaseProjection() {
         List<String> columnNames = new ArrayList<>();
         columnNames.add(MsgTable._ID);
+        columnNames.add(MsgTable.ORIGIN_ID);
         columnNames.add(UserTable.AUTHOR_NAME);
         columnNames.add(MsgTable.BODY);
         columnNames.add(MsgTable.IN_REPLY_TO_MSG_ID);
@@ -301,9 +302,6 @@ public class TimelineSql {
                 || SharedPreferencesUtil.getBoolean(
                 MyPreferences.KEY_FILTER_HIDE_REPLIES_NOT_TO_ME_OR_FRIENDS, false)) {
             columnNames.add(MsgTable.IN_REPLY_TO_USER_ID);
-        }
-        if (MyPreferences.getShowOrigin()) {
-            columnNames.add(MsgTable.ORIGIN_ID);
         }
         return columnNames;
     }

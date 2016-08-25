@@ -305,7 +305,7 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> extends Instru
                 break;
             }
         }
-        assertTrue(selectorDialog != null);
+        assertTrue("Didn't find SelectorDialog with tag:'" + dialogTagToMonitor + "'", selectorDialog != null);
         assertTrue(isVisible);
 
         final ListView list = selectorDialog.getListView();

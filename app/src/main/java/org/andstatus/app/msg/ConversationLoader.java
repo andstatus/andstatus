@@ -16,7 +16,6 @@
 
 package org.andstatus.app.msg;
 
-import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 
@@ -24,15 +23,16 @@ import org.andstatus.app.LoadableListActivity;
 import org.andstatus.app.LoadableListActivity.ProgressPublisher;
 import org.andstatus.app.LoadableListActivity.SyncLoader;
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.timeline.Timeline;
-import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
+import org.andstatus.app.timeline.Timeline;
+import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TFactory;
@@ -46,7 +46,7 @@ import java.util.List;
 public class ConversationLoader<T extends ConversationItem> implements SyncLoader {
     private static final int MAX_INDENT_LEVEL = 19;
     
-    private final Context context;
+    private final MyContext myContext;
     private final MyAccount ma;
     private final long selectedMessageId;
     private boolean mAllowLoadingFromInternet = false;
@@ -62,9 +62,9 @@ public class ConversationLoader<T extends ConversationItem> implements SyncLoade
 
     final List<Long> idsOfTheMessagesToFind = new ArrayList<>();
 
-    public ConversationLoader(Class<T> tClass, Context context, MyAccount ma, long selectedMessageId) {
+    public ConversationLoader(Class<T> tClass, MyContext myContext, MyAccount ma, long selectedMessageId) {
         tFactory = new TFactory<>(tClass);
-        this.context = context;
+        this.myContext = myContext;
         this.ma = ma;
         this.selectedMessageId = selectedMessageId;
     }
@@ -129,6 +129,7 @@ public class ConversationLoader<T extends ConversationItem> implements SyncLoade
     
     private T newOMsg(long msgId, int replyLevel) {
         T oMsg = tFactory.newT();
+        oMsg.setMyContext(myContext);
         oMsg.setMsgId(msgId);
         oMsg.mReplyLevel = replyLevel;
         return oMsg;
@@ -139,7 +140,7 @@ public class ConversationLoader<T extends ConversationItem> implements SyncLoade
                 Timeline.getTimeline(TimelineType.EVERYTHING, ma, 0, null), oMsg.getMsgId());
         Cursor cursor = null;
         try {
-            cursor = context.getContentResolver().query(uri, oMsg.getProjection(), null, null, null);
+            cursor = myContext.context().getContentResolver().query(uri, oMsg.getProjection(), null, null, null);
             if (cursor != null && cursor.moveToFirst()) {
                 oMsg.load(cursor);
             }

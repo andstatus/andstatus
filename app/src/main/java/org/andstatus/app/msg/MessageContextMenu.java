@@ -76,7 +76,7 @@ public class MessageContextMenu extends MyContextMenu {
         int order = 0;
         try {
             new ContextMenuHeader(getActivity(), menu).setTitle(msg.bodyTrimmed)
-                    .setSubtitle(msg.myAccount().getAccountName());
+                    .setSubtitle(msg.getMyAccount().getAccountName());
 
             MessageListContextMenuItem.OPEN_CONVERSATION.addTo(menu, order++, R.string.menu_item_open_conversation);
             if (viewItem.isCollapsed()) {
@@ -140,12 +140,12 @@ public class MessageContextMenu extends MyContextMenu {
                 }
                 if (msg.reblogged) {
                     MessageListContextMenuItem.DESTROY_REBLOG.addTo(menu, order++,
-                            msg.myAccount().alternativeTermForResourceId(R.string.menu_item_destroy_reblog));
+                            msg.getMyAccount().alternativeTermForResourceId(R.string.menu_item_destroy_reblog));
                 } else {
                     // Don't allow a User to reblog himself
                     if (mActorUserIdForCurrentMessage != msg.senderId) {
                         MessageListContextMenuItem.REBLOG.addTo(menu, order++,
-                                msg.myAccount().alternativeTermForResourceId(R.string.menu_item_reblog));
+                                msg.getMyAccount().alternativeTermForResourceId(R.string.menu_item_reblog));
                     }
                 }
             }
@@ -166,14 +166,14 @@ public class MessageContextMenu extends MyContextMenu {
             }
 
             if (msg.isLoaded()) {
-                switch (msg.myAccount().numberOfAccountsOfThisOrigin()) {
+                switch (msg.getMyAccount().numberOfAccountsOfThisOrigin()) {
                     case 1:
                         break;
                     case 2:
                         MessageListContextMenuItem.ACT_AS_USER.addTo(menu, order++,
                                 String.format(
                                         getActivity().getText(R.string.menu_item_act_as_user).toString(),
-                                        msg.myAccount().firstOtherAccountOfThisOrigin().getShortestUniqueAccountName(getActivity().getMyContext())));
+                                        msg.getMyAccount().firstOtherAccountOfThisOrigin().getShortestUniqueAccountName(getActivity().getMyContext())));
                         break;
                     default:
                         MessageListContextMenuItem.ACT_AS.addTo(menu, order++, R.string.menu_item_act_as);
@@ -206,11 +206,11 @@ public class MessageContextMenu extends MyContextMenu {
         MyLog.v(this, logMsg);
 
         MessageForAccount msg2 = getMessageForAccount(userIdForThisMessage, messageList.getCurrentMyAccount());
-        if (!msg2.myAccount().isValid()) {
+        if (!msg2.getMyAccount().isValid()) {
             return;
         }
         msg = msg2;
-        mActorUserIdForCurrentMessage = msg.myAccount().getUserId();
+        mActorUserIdForCurrentMessage = msg.getMyAccount().getUserId();
     }
 
     private MessageForAccount getMessageForAccount(long linkedUserId, MyAccount currentMyAccount) {

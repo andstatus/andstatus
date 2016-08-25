@@ -19,6 +19,8 @@ package org.andstatus.app.msg;
 import android.content.Context;
 import android.support.annotation.NonNull;
 
+import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
@@ -34,9 +36,11 @@ import java.util.concurrent.TimeUnit;
 
 public class MessageViewItem implements DuplicatesCollapsible<MessageViewItem> {
 
+    private MyContext myContext = MyContextHolder.get();
     long createdDate = 0;
 
     private long mMsgId;
+    private long originId;
 
     String body = "";
 
@@ -45,7 +49,18 @@ public class MessageViewItem implements DuplicatesCollapsible<MessageViewItem> {
     boolean reblogged = false;
 
     private long linkedUserId = 0;
+    private MyAccount myAccount = MyAccount.getEmpty();
+
     private List<TimelineViewItem> children = new ArrayList<>();
+
+    @NonNull
+    public MyContext getMyContext() {
+        return myContext;
+    }
+
+    public void setMyContext(MyContext myContext) {
+        this.myContext = myContext;
+    }
 
     long getMsgId() {
         return mMsgId;
@@ -55,12 +70,32 @@ public class MessageViewItem implements DuplicatesCollapsible<MessageViewItem> {
         this.mMsgId = mMsgId;
     }
 
+    public long getOriginId() {
+        return originId;
+    }
+
+    void setOriginId(long originId) {
+        this.originId = originId;
+    }
+
     public long getLinkedUserId() {
         return linkedUserId;
     }
 
-    public void setLinkedUserId(long linkedUserId) {
+    public void setLinkedUserAndAccount(long linkedUserId) {
         this.linkedUserId = linkedUserId;
+        myAccount = getMyContext().persistentAccounts().fromUserId(linkedUserId);
+        if (!myAccount.isValid()) {
+            myAccount = getMyContext().persistentAccounts().getFirstSucceededForOriginId(originId);
+        }
+    }
+
+    public MyAccount getMyAccount() {
+        return myAccount;
+    }
+
+    public boolean isLinkedToMyAccount() {
+        return linkedUserId != 0 && myAccount.getUserId() == linkedUserId;
     }
 
     protected void setCollapsedStatus(Context context, StringBuilder messageDetails) {
@@ -129,9 +164,8 @@ public class MessageViewItem implements DuplicatesCollapsible<MessageViewItem> {
             link = favorited ? DuplicationLink.IS_DUPLICATED : DuplicationLink.DUPLICATES;
         } else if (reblogged != other.reblogged) {
             link = reblogged ? DuplicationLink.IS_DUPLICATED : DuplicationLink.DUPLICATES;
-        } else if (getLinkedUserId() != other.getLinkedUserId()) {
-            link = MyContextHolder.get().persistentAccounts().fromUserId(getLinkedUserId()).
-                    compareTo(MyContextHolder.get().persistentAccounts().fromUserId(other.getLinkedUserId())) <= 0 ?
+        } else if (!getMyAccount().equals(other.getMyAccount())) {
+            link = getMyAccount().compareTo(other.getMyAccount()) <= 0 ?
                     DuplicationLink.IS_DUPLICATED : DuplicationLink.DUPLICATES;
         } else {
             link = rebloggers.size() > other.rebloggers.size() ? DuplicationLink.IS_DUPLICATED : DuplicationLink.DUPLICATES;

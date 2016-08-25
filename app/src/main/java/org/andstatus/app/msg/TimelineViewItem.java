@@ -22,8 +22,7 @@ import android.text.Html;
 import android.text.TextUtils;
 
 import org.andstatus.app.R;
-import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.AttachedImageFile;
 import org.andstatus.app.data.AvatarFile;
@@ -44,7 +43,7 @@ import org.andstatus.app.util.SharedPreferencesUtil;
  * @author yvolk@yurivolkov.com
  */
 public class TimelineViewItem extends MessageViewItem {
-    long originId = 0;
+
     long sentDate = 0;
     DownloadStatus msgStatus = DownloadStatus.UNKNOWN;
 
@@ -68,20 +67,24 @@ public class TimelineViewItem extends MessageViewItem {
         return EMPTY;
     }
 
-    public static TimelineViewItem fromCursorRow(Cursor cursor) {
+    public static TimelineViewItem fromCursorRow(MyContext myContext, Cursor cursor) {
         TimelineViewItem item = new TimelineViewItem();
+        item.setMyContext(myContext);
         item.setMsgId(DbUtils.getLong(cursor, MsgTable._ID));
+        item.setOriginId(DbUtils.getLong(cursor, MsgTable.ORIGIN_ID));
+        item.setLinkedUserAndAccount(DbUtils.getLong(cursor, UserTable.LINKED_USER_ID));
+
         item.authorName = TimelineSql.userColumnIndexToNameAtTimeline(cursor,
                 cursor.getColumnIndex(UserTable.AUTHOR_NAME), MyPreferences.getShowOrigin());
         item.body = MyHtml.htmlifyIfPlain(DbUtils.getString(cursor, MsgTable.BODY));
         item.inReplyToMsgId = DbUtils.getLong(cursor, MsgTable.IN_REPLY_TO_MSG_ID);
         item.inReplyToName = DbUtils.getString(cursor, UserTable.IN_REPLY_TO_NAME);
         item.recipientName = DbUtils.getString(cursor, UserTable.RECIPIENT_NAME);
-        item.favorited = DbUtils.getLong(cursor, MsgOfUserTable.FAVORITED) == 1;
+        item.favorited = item.isLinkedToMyAccount() && DbUtils.getLong(cursor, MsgOfUserTable.FAVORITED) == 1;
         item.sentDate = DbUtils.getLong(cursor, MsgTable.SENT_DATE);
         item.createdDate = DbUtils.getLong(cursor, MsgTable.CREATED_DATE);
         item.msgStatus = DownloadStatus.load(DbUtils.getLong(cursor, MsgTable.MSG_STATUS));
-        item.setLinkedUserId(DbUtils.getLong(cursor, UserTable.LINKED_USER_ID));
+
         item.authorId = DbUtils.getLong(cursor, MsgTable.AUTHOR_ID);
 
         long senderId = DbUtils.getLong(cursor, MsgTable.SENDER_ID);
@@ -90,17 +93,13 @@ public class TimelineViewItem extends MessageViewItem {
             if (TextUtils.isEmpty(senderName)) {
                 senderName = "(id" + senderId + ")";
             }
-            addReblogger(item, senderId, senderName);
+            item.addReblogger(senderId, senderName);
         }
 
-        if (item.getLinkedUserId() != 0) {
-            if (DbUtils.getInt(cursor, MsgOfUserTable.REBLOGGED) == 1
-                    &&  !item.rebloggers.containsKey(item.getLinkedUserId())) {
-                MyAccount myAccount = MyContextHolder.get().persistentAccounts()
-                        .fromUserId(item.getLinkedUserId());
-                if (myAccount.isValid()) {
-                    addReblogger(item, item.getLinkedUserId(), myAccount.getAccountName());
-                }
+        if (item.isLinkedToMyAccount()) {
+            if (DbUtils.getInt(cursor, MsgOfUserTable.REBLOGGED) == 1) {
+                item.addReblogger(item.getMyAccount().getUserId(), item.getMyAccount().getAccountName());
+                item.reblogged = true;
             }
         }
 
@@ -116,16 +115,11 @@ public class TimelineViewItem extends MessageViewItem {
                     DbUtils.getString(cursor, DownloadTable.IMAGE_FILE_NAME));
         }
         item.inReplyToUserId = DbUtils.getLong(cursor, MsgTable.IN_REPLY_TO_USER_ID);
-        item.originId = DbUtils.getLong(cursor, MsgTable.ORIGIN_ID);
         return item;
     }
 
-    private static void addReblogger(TimelineViewItem item, long userId, String userName) {
-        MyAccount myAccount = MyContextHolder.get().persistentAccounts().fromUserId(userId);
-        if (myAccount.isValid()) {
-            item.reblogged = true;
-        }
-        item.rebloggers.put(userId, userName);
+    private void addReblogger(long userId, String userName) {
+        rebloggers.put(userId, userName);
     }
 
     public Drawable getAvatar() {
@@ -186,7 +180,7 @@ public class TimelineViewItem extends MessageViewItem {
     @Override
     public String toString() {
         return MyLog.formatKeyValue(this, I18n.trimTextAt(MyHtml.fromHtml(body), 40) + ","
-                + getDetails(MyContextHolder.get().context()));
+                + getDetails(getMyContext().context()));
     }
 
 }

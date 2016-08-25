@@ -33,10 +33,9 @@ public class ConversationViewLoaderTest extends InstrumentationTestCase implemen
     }
 
     public void testLoad() {
-        Context context = MyContextHolder.get().context();
         ConversationLoader<ConversationViewItem> loader = new ConversationLoader<>(
                 ConversationViewItem.class,
-                context, ma, selectedMessageId);
+                MyContextHolder.get(), ma, selectedMessageId);
         progressCounter = 0;
         loader.load(this);
         List<ConversationViewItem> list = loader.getList();
