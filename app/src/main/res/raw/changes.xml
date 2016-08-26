@@ -26,7 +26,7 @@
 		</subtitle>
     </header>
     <release android:versionName="28.00" android:versionCode="187"
-             versionDate="2016-08-14"
+             versionDate="2016-08-26"
              versionTitle="Collapse duplicated posts. Accounts reodering. Continuous quality checking">
         <changes>
             <change>Implemented ”Collapse duplicates” feature, which is switchable in the Navigation
@@ -53,6 +53,9 @@
                 "Top" shown instead of "1" means that there are no newer messages downloaded, and
                 an attempt to "pull to refresh" will result in "sync with Internet".
             </change>
+            <change>If not set explicitly in the "Manage Timelines" view, Home Timeline of the
+                Default Account is now the Default Timeline - it opens on the Application launch.
+                This is natural for new users and simplifies initial configuration.</change>
             <change>Continuous quality checking of AndStatus started, with actual and historical
                 results and diagrams publicly available. AndStatus is being built automatically by
                 <a href="https://travis-ci.org/andstatus/andstatus">Travis CI</a> and its quality
