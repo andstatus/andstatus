@@ -246,10 +246,10 @@ public class TimelineActivity extends LoadableListActivity implements
      */
     public void onRefreshButtonClick(View item) {
         closeDrawer();
-        if (getListData().mayHaveYoungerPage()) {
+        if (getListData().mayHaveYoungerPage() || getListView().getLastVisiblePosition() > TimelineListParameters.PAGE_SIZE / 2) {
             showList(WhichPage.CURRENT);
         } else {
-            showList(WhichPage.TOP);
+            showList(WhichPage.YOUNGEST);
         }
     }
 

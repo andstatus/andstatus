@@ -42,7 +42,7 @@ public class TimelineData extends ListData {
     public TimelineData(TimelineData oldData, @NonNull TimelinePage thisPage) {
         super(oldData);
         this.params = thisPage.params;
-        isSameTimeline = oldData == null ? false :
+        isSameTimeline = oldData != null &&
                 params.getContentUri().equals(oldData.params.getContentUri());
         this.pages = isSameTimeline ? copyPages(oldData.pages) : new ArrayList<TimelinePage>();
         addThisPage(thisPage);
@@ -239,9 +239,7 @@ public class TimelineData extends ListData {
     /** For all or for only one item */
     @Override
     public void collapseDuplicates(boolean collapse, long itemId) {
-        if (itemId == 0) {
-            this.collapseDuplicates = collapse;
-        }
+        super.collapseDuplicates(collapse, itemId);
         if (collapse) {
             collapseDuplicates(itemId);
         } else {
@@ -250,11 +248,8 @@ public class TimelineData extends ListData {
     }
 
     private void collapseDuplicates(long itemId) {
-        Collection<Pair<TimelinePage, TimelineViewItem>> toCollapse = new HashSet<>();
+        Set<Pair<TimelinePage, TimelineViewItem>> toCollapse = new HashSet<>();
         innerCollapseDuplicates(itemId, toCollapse);
-        if (itemId != 0) {
-            collapseThese(toCollapse);
-        }
         for (Pair<TimelinePage, TimelineViewItem> pair : toCollapse) {
             pair.first.items.remove(pair.second);
         }
@@ -262,78 +257,117 @@ public class TimelineData extends ListData {
 
     private void innerCollapseDuplicates(long itemId, Collection<Pair<TimelinePage, TimelineViewItem>> toCollapse) {
         Pair<TimelinePage, TimelineViewItem> parent = new Pair<>(null, null);
-        Set<Long> ids = new HashSet<>();
+        Set<Pair<TimelinePage, TimelineViewItem>> group = new HashSet<>();
         for (TimelinePage page : pages) {
             for (TimelineViewItem item : page.items) {
+                Pair<TimelinePage, TimelineViewItem> itemPair =new Pair<>(page, item);
                 switch (item.duplicates(parent.second)) {
                     case DUPLICATES:
-                        if (itemId == 0) {
-                            parent.second.collapse(item);
-                        } else {
-                            ids.add(item.getMsgId());
-                        }
-                        toCollapse.add(new Pair<>(page, item));
                         break;
                     case IS_DUPLICATED:
-                        if (itemId == 0) {
-                            item.collapse(parent.second);
-                        } else {
-                            ids.add(item.getMsgId());
-                        }
-                        toCollapse.add(parent);
-                        parent = new Pair<>(page, item);
+                        parent = itemPair;
                         break;
                     default:
-                        parent = new Pair<>(page, item);
-                        if (itemId != 0) {
-                            if (ids.contains(itemId)) {
-                                return;
-                            }
-                            ids.clear();
-                            toCollapse.clear();
-                            ids.add(parent.second.getMsgId());
-                            toCollapse.add(parent);
+                        if (collapseThisGroup(itemId, parent, group, toCollapse)) {
+                            return;
                         }
+                        group.clear();
+                        parent = itemPair;
                         break;
+                }
+                group.add(itemPair);
+            }
+        }
+        collapseThisGroup(itemId, parent, group, toCollapse);
+    }
+
+    private boolean collapseThisGroup(long itemId, Pair<TimelinePage, TimelineViewItem> parent, Set<Pair<TimelinePage, TimelineViewItem>> group, Collection<Pair<TimelinePage, TimelineViewItem>> toCollapse) {
+        if (group.isEmpty()) {
+            return false;
+        }
+
+        boolean groupOfSelectedItem = false;
+        if (itemId != 0) {
+            for (Pair<TimelinePage, TimelineViewItem> itemPair : group) {
+                if (itemId == itemPair.second.getMsgId()) {
+                    groupOfSelectedItem = true;
+                    break;
                 }
             }
         }
-    }
-
-    private void collapseThese(Collection<Pair<TimelinePage, TimelineViewItem>> toCollapse) {
-        Pair<TimelinePage, TimelineViewItem> parent = new Pair<>(null, null);
-        for (Pair<TimelinePage, TimelineViewItem> pair : toCollapse) {
-            switch (pair.second.duplicates(parent.second)) {
-                case DUPLICATES:
-                    parent.second.collapse(pair.second);
-                    break;
-                case IS_DUPLICATED:
-                    pair.second.collapse(parent.second);
-                    parent = pair;
-                    break;
-                default:
-                    parent = pair;
-                    break;
+        if (groupOfSelectedItem) {
+            for (Pair<TimelinePage, TimelineViewItem> itemPair : group) {
+                setIndividualCollapsedStatus(true, itemPair.second.getMsgId());
             }
         }
-        toCollapse.remove(parent);
+
+        boolean hasIndividualCollapseState = false;
+        if (!groupOfSelectedItem && !individualCollapsedStateIds.isEmpty()) {
+            for (Pair<TimelinePage, TimelineViewItem> itemPair : group) {
+                if (individualCollapsedStateIds.contains(itemPair.second.getMsgId())) {
+                    hasIndividualCollapseState = true;
+                    break;
+                }
+            }
+        }
+        if (!hasIndividualCollapseState) {
+            for (Pair<TimelinePage, TimelineViewItem> itemPair : group) {
+                if (!parent.equals(itemPair)) {
+                    parent.second.collapse(itemPair.second);
+                    toCollapse.add(itemPair);
+                }
+            }
+        }
+        return groupOfSelectedItem;
     }
 
     private void showDuplicates(long itemId) {
         for (TimelinePage page : pages) {
             for (int ind = page.items.size() - 1; ind >= 0; ind--) {
-                TimelineViewItem item = page.items.get(ind);
-                if (itemId == 0 || itemId == item.getMsgId()) {
-                    int ind2 = ind + 1;
-                    if (item.isCollapsed()) {
-                        for (TimelineViewItem child : item.getChildren()) {
-                            page.items.add(ind2++, child);
-                        }
-                        item.getChildren().clear();
+                if (page.items.get(ind).isCollapsed()) {
+                    if (showDuplicatesOfOneItem(itemId, page, ind)) {
+                        return;
                     }
                 }
             }
         }
+    }
+
+    private boolean showDuplicatesOfOneItem(long itemId, TimelinePage page, int ind) {
+        TimelineViewItem item = page.items.get(ind);
+        boolean groupOfSelectedItem = itemId == item.getMsgId();
+        if (itemId != 0 && !groupOfSelectedItem) {
+            for (TimelineViewItem child : item.getChildren()) {
+                if (itemId == child.getMsgId()) {
+                    groupOfSelectedItem = true;
+                    break;
+                }
+            }
+        }
+        if (groupOfSelectedItem) {
+            setIndividualCollapsedStatus(false, item.getMsgId());
+            for (TimelineViewItem child : item.getChildren()) {
+                setIndividualCollapsedStatus(false, child.getMsgId());
+            }
+        }
+
+        boolean hasIndividualCollapseState = false;
+        if (!groupOfSelectedItem && !individualCollapsedStateIds.isEmpty()) {
+            for (TimelineViewItem child : item.getChildren()) {
+                if (individualCollapsedStateIds.contains(child.getMsgId())) {
+                    hasIndividualCollapseState = true;
+                    break;
+                }
+            }
+        }
+        if (!hasIndividualCollapseState && (itemId == 0 || groupOfSelectedItem)) {
+            int ind2 = ind + 1;
+            for (TimelineViewItem child : item.getChildren()) {
+                page.items.add(ind2++, child);
+            }
+            item.getChildren().clear();
+        }
+        return groupOfSelectedItem;
     }
 
 }

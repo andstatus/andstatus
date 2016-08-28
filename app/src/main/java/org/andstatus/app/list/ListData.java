@@ -20,18 +20,24 @@ import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.widget.DuplicatesCollapsible;
 import org.andstatus.app.widget.DuplicationLink;
 
+import java.util.Collections;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
 public class ListData {
     // Parameters, which may be changed during presentation of the timeline
     protected volatile boolean collapseDuplicates = MyPreferences.isCollapseDuplicates();
+    protected final Set<Long> individualCollapsedStateIds = Collections.newSetFromMap(new ConcurrentHashMap<Long, Boolean>());
 
     public ListData(ListData oldData) {
         if (oldData != null) {
             this.collapseDuplicates = oldData.collapseDuplicates;
+            this.individualCollapsedStateIds.addAll(oldData.individualCollapsedStateIds);
         }
     }
 
     public boolean isCollapseDuplicates() {
-        return this.collapseDuplicates;
+        return collapseDuplicates;
     }
 
     public boolean canBeCollapsed(int position) {
@@ -59,6 +65,17 @@ public class ListData {
     }
 
     public void collapseDuplicates(boolean collapse, long itemId) {
-        // Empty
+        if (itemId == 0 && this.collapseDuplicates != collapse) {
+            this.collapseDuplicates = collapse;
+            individualCollapsedStateIds.clear();
+        }
+    }
+
+    protected void setIndividualCollapsedStatus(boolean collapse, long itemId) {
+        if (collapse == isCollapseDuplicates()) {
+            individualCollapsedStateIds.remove(itemId);
+        } else {
+            individualCollapsedStateIds.add(itemId);
+        }
     }
 }
