@@ -17,10 +17,12 @@
 <LinearLayout
 	xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:tools="http://schemas.android.com/tools"
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	tools:theme="@style/Theme.AndStatus.FullyDefined"
+	tools:context=".msg.TimelineActivity"
 	android:id="@+id/my_layout_parent"
 	android:layout_width="match_parent"
 	android:layout_height="match_parent"
-	tools:context=".msg.TimelineActivity"
 	android:orientation="vertical">
 
 	<include layout="@layout/action_bar" />
@@ -55,6 +57,12 @@
 
             <include layout="@layout/message_editor" />
         </RelativeLayout>
-    	<include layout="@layout/navigation_drawer" />
+		<android.support.design.widget.NavigationView
+			android:id="@+id/navigation_drawer"
+			android:layout_width="240dp"
+			android:layout_height="match_parent"
+			android:layout_gravity="start"
+			android:background="?android:attr/colorBackground"
+            app:headerLayout="@layout/timeline_navigation_drawer_header" />
 	</android.support.v4.widget.DrawerLayout>
 </LinearLayout>

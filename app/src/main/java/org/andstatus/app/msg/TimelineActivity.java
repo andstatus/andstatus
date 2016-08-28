@@ -417,18 +417,18 @@ public class TimelineActivity extends LoadableListActivity implements
     }
 
     private void prepareDrawer() {
-        ViewGroup mDrawerList = (ViewGroup) findViewById(R.id.navigation_drawer);
-        if (mDrawerList == null) {
+        View drawerView = findViewById(R.id.navigation_drawer);
+        if (drawerView == null) {
             return;
         }
-        TextView item = (TextView) mDrawerList.findViewById(R.id.timelineTypeButton);
+        TextView item = (TextView) drawerView.findViewById(R.id.timelineTypeButton);
         item.setText(timelineTypeButtonText());
-        prepareCombinedTimelineToggle(mDrawerList);
-        updateAccountButtonText(mDrawerList);
+        prepareCombinedTimelineToggle(drawerView);
+        updateAccountButtonText(drawerView);
     }
 
-    private void prepareCombinedTimelineToggle(ViewGroup list) {
-        CheckBox combinedTimelineToggle = (CheckBox) list.findViewById(R.id.combinedTimelineToggle);
+    private void prepareCombinedTimelineToggle(View drawerView) {
+        CheckBox combinedTimelineToggle = (CheckBox) drawerView.findViewById(R.id.combinedTimelineToggle);
         combinedTimelineToggle.setChecked(getParamsLoaded().getTimeline().isCombined());
         // Show the "Combined" toggle even for one account to see messages,
         // which are not on the timeline.
@@ -546,8 +546,8 @@ public class TimelineActivity extends LoadableListActivity implements
         return TimelineTitle.load(myContext, getParamsLoaded().getTimeline(), getCurrentMyAccount()).title;
     }
 
-    private void updateAccountButtonText(ViewGroup mDrawerList) {
-        TextView selectAccountButton = (TextView) mDrawerList.findViewById(R.id.selectAccountButton);
+    private void updateAccountButtonText(View drawerView) {
+        TextView selectAccountButton = (TextView) drawerView.findViewById(R.id.selectAccountButton);
         String accountButtonText = getCurrentMyAccount().toAccountButtonText(myContext);
         selectAccountButton.setText(accountButtonText);
     }

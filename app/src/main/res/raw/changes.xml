@@ -26,8 +26,8 @@
 		</subtitle>
     </header>
     <release android:versionName="28.00" android:versionCode="187"
-             versionDate="2016-08-26"
-             versionTitle="Collapse duplicated posts. Accounts reodering. Continuous quality checking">
+             versionDate="2016-08-28"
+             versionTitle="Collapse duplicated posts. Accounts reodering. Continuous automatic application quality checking">
         <changes>
             <change>Implemented ”Collapse duplicates” feature, which is switchable in the Navigation
                 Drawer of a Timeline. This allows to see several crossposted messages as one entry
