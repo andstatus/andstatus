@@ -1,75 +1,74 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/navigation_drawer_list_item"
+xmlns:android="http://schemas.android.com/apk/res/android"
+android:layout_width="match_parent"
+android:layout_height="wrap_content"
+android:choiceMode="singleChoice"
+android:orientation="vertical">
+
+<TextView
+    android:id="@+id/switchToDefaultTimelineButton"
+    style="@style/drawerListItem"
+    android:onClick="onSwitchToDefaultTimelineButtonClick"
+    android:text="@string/switch_to_default_timeline"/>
+
+<TextView
+    android:id="@+id/goToTheTopButton"
+    style="@style/drawerListItem"
+    android:onClick="onGoToTheTopButtonClick"
+    android:text="@string/go_to_the_top_title"/>
+
+<View style="@style/Divider"/>
+
+<TextView
+    android:id="@+id/refreshButton"
+    style="@style/drawerListItem"
+    android:onClick="onRefreshButtonClick"
+    android:text="@string/refresh_title"/>
+
+<View style="@style/Divider"/>
+
+<CheckBox
+    android:id="@+id/combinedTimelineToggle"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:choiceMode="singleChoice"
-    android:orientation="vertical">
+    android:minHeight="?android:attr/listPreferredItemHeightSmall"
+    android:textAppearance="?android:attr/textAppearanceMedium"
+    android:onClick="onCombinedTimelineToggleClick"
+    android:text="@string/combined_timeline_on"/>
 
-    <TextView
-        android:id="@+id/switchToDefaultTimelineButton"
-        style="@style/drawerListItem"
-        android:onClick="onSwitchToDefaultTimelineButtonClick"
-        android:text="@string/switch_to_default_timeline"/>
+<TextView
+    android:id="@+id/timelineTypeHeader"
+    style="?attr/sectionHeaderStyle"
+    android:text="@string/title_timeline"/>
 
-    <TextView
-        android:id="@+id/goToTheTopButton"
-        style="@style/drawerListItem"
-        android:onClick="onGoToTheTopButtonClick"
-        android:text="@string/go_to_the_top_title"/>
+<TextView
+    android:id="@+id/timelineTypeButton"
+    style="@style/drawerListItem"
+    android:onClick="onTimelineTypeButtonClick"
+    android:text="@string/timeline_title_home"/>
 
-    <View style="@style/Divider"/>
+<TextView
+    android:id="@+id/accountHeader"
+    style="?attr/sectionHeaderStyle"
+    android:text="@string/title_account"/>
 
-    <TextView
-        android:id="@+id/refreshButton"
-        style="@style/drawerListItem"
-        android:onClick="onRefreshButtonClick"
-        android:text="@string/refresh_title"/>
+<TextView
+    android:id="@+id/selectAccountButton"
+    style="@style/drawerListItem"
+    android:onClick="onSelectAccountButtonClick"
+    android:text="@string/title_preference_username"/>
 
-    <View style="@style/Divider"/>
+<View style="@style/Divider"/>
 
-    <CheckBox
-        android:id="@+id/combinedTimelineToggle"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:minHeight="?android:attr/listPreferredItemHeightSmall"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:onClick="onCombinedTimelineToggleClick"
-        android:text="@string/combined_timeline_on"/>
-
-    <TextView
-        android:id="@+id/timelineTypeHeader"
-        style="?attr/sectionHeaderStyle"
-        android:text="@string/title_timeline"/>
-
-    <TextView
-        android:id="@+id/timelineTypeButton"
-        style="@style/drawerListItem"
-        android:onClick="onTimelineTypeButtonClick"
-        android:text="@string/timeline_title_home"/>
-
-    <TextView
-        android:id="@+id/accountHeader"
-        style="?attr/sectionHeaderStyle"
-        android:text="@string/title_account"/>
-
-    <TextView
-        android:id="@+id/selectAccountButton"
-        style="@style/drawerListItem"
-        android:onClick="onSelectAccountButtonClick"
-        android:text="@string/title_preference_username"/>
-
-    <View style="@style/Divider"/>
-
-    <CheckBox
-        android:id="@+id/collapseDuplicatesToggle"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:minHeight="?android:attr/listPreferredItemHeightSmall"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:onClick="onCollapseDuplicatesToggleClick"
-        android:text="@string/collapse_duplicates"
-        android:checked="true"/>
+<CheckBox
+    android:id="@+id/collapseDuplicatesToggle"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:minHeight="?android:attr/listPreferredItemHeightSmall"
+    android:textAppearance="?android:attr/textAppearanceMedium"
+    android:onClick="onCollapseDuplicatesToggleClick"
+    android:text="@string/collapse_duplicates"
+    android:checked="true"/>
 
 </LinearLayout>
