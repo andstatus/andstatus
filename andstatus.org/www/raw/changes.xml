@@ -25,8 +25,48 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
 		</subtitle>
     </header>
-    <release android:versionName="27.04" android:versionCode="184"
-             versionDate="2016-08-05"
+    <release android:versionName="28.00" android:versionCode="187"
+             versionDate="2016-08-29"
+             versionTitle="Collapse duplicated posts. Accounts reodering. Continuous automatic application quality checking">
+        <changes>
+            <change>Implemented ”Collapse duplicates” feature, which is switchable in the Navigation
+                Drawer of a Timeline. This allows to see several crossposted messages as one entry
+                in a Timeline.<br/>
+                When duplicated posts are collapsed (by default),
+                visible "main" post shows number of hidden duplicated posts as e.g. ”(+3)".<br/>
+                When ”Collapse duplicates” checkbox is checked, a User can "Show/Hide duplicates" of
+                any individual message via its context menu. This may be needed e.g. to follow a
+                discussion in a Social Network whose (duplicated) message was hidden ("collapsed").
+                <a href="https://github.com/andstatus/andstatus/issues/337">#337</a>
+            </change>
+            <change>Accounts reodering implemented. Reorder accounts using drag-and-drop in a new
+                "Manage Accounts" view. The topmost account becomes the "Default account".<br/>
+                This sorting order of accounts is used everywhere in the application, including
+                showing in the "Select account" dialog and making a decision, what message to show
+                among several collapsed duplicates...
+            </change>
+            <change>In order to ease navigation in a Timeline, "Top", "1", "2", "3" and positions
+                of three first shown messages are displayed in the top right corner of a message.
+                This frees a User from unnecessary attempts to scroll a list.<br/>
+                "1" means that this message is the topmost currently shown, but there may be more
+                messages in the local cache (i.e. already downloaded to your Device).<br/>
+                "Top" shown instead of "1" means that there are no newer messages downloaded, and
+                an attempt to "pull to refresh" will result in "sync with Internet".
+            </change>
+            <change>If not set explicitly in the "Manage Timelines" view, Home Timeline of the
+                Default Account is now the Default Timeline - it opens on the Application launch.
+                This is natural for new users and simplifies initial configuration.</change>
+            <change>Continuous quality checking of AndStatus started, with actual and historical
+                results and diagrams publicly available. AndStatus is being built automatically by
+                <a href="https://travis-ci.org/andstatus/andstatus">Travis CI</a> and its quality
+                is being analysed by <a href="https://sonarqube.com/dashboard?id=andstatus">SonarQube</a>.
+                Both services are free for Open Source projects.
+                <a href="https://github.com/andstatus/andstatus/issues/408">#408</a>
+            </change>
+        </changes>
+    </release>
+    <release android:versionName="27.06" android:versionCode="186"
+             versionDate="2016-08-13"
              versionTitle="Automatic syncing of individual timelines. New custom search timelines">
         <changes>
             <change>
