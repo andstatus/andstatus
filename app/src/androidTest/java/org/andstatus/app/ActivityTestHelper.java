@@ -104,6 +104,17 @@ public class ActivityTestHelper<T extends MyActivity> extends InstrumentationTes
         return ok;
     }
 
+    public static void closeContextMenu(final ActivityInstrumentationTestCase2<?> testCase) throws InterruptedException {
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                testCase.getActivity().closeContextMenu();
+            }
+        };
+        testCase.getActivity().runOnUiThread(runnable);
+        TestSuite.waitForIdleSync(testCase);
+    }
+
     public ActivityMonitor addMonitor(Class<? extends Activity> classOfActivity) {
         activityMonitor = mTestCase.getInstrumentation().addMonitor(classOfActivity.getName(), null, false);
         return activityMonitor;

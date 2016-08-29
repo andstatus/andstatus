@@ -18,6 +18,7 @@ package org.andstatus.app.msg;
 
 import android.content.Intent;
 
+import org.andstatus.app.ActivityTestHelper;
 import org.andstatus.app.ListActivityTestHelper;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
@@ -62,11 +63,12 @@ public class ActAsUserTest extends android.test.ActivityInstrumentationTestCase2
         long msgId = helper.getListItemIdOfLoadedReply();
         String logMsg = "msgId=" + msgId;
 
-        helper.invokeContextMenuAction4ListItemId(method, msgId, MessageListContextMenuItem.NONEXISTENT);
+        helper.invokeContextMenuAction4ListItemId(method, msgId, MessageListContextMenuItem.ACT_AS_USER);
         long userId1 = getActivity().getContextMenu().getActorUserIdForCurrentMessage();
         logMsg += "; userId1=" + userId1;
         assertTrue(logMsg, userId1 != 0 );
-        getActivity().closeContextMenu();
+
+        ActivityTestHelper.closeContextMenu(this);
 
         MyAccount ma1 = MyContextHolder.get().persistentAccounts().fromUserId(userId1);
         logMsg += "; " + ma1;
@@ -77,4 +79,5 @@ public class ActAsUserTest extends android.test.ActivityInstrumentationTestCase2
         logMsg += "; userId2=" + userId2;
         assertTrue(logMsg, userId1 != userId2 );
     }
+
 }
