@@ -104,54 +104,54 @@ Das Widget informiert über neue Nachrichten und kann verwendet werden, um die A
     <title>
         <p>3. Senden und Antworten</p>
     </title>
-    <p>
+    <p>1. Um deinen Status zu aktualisieren, tippe auf den "Post"-Knopf ("Tweet" für Twitter). Er sieht aus wie ein "Briefumschlag+". In der unteren Bildschirmhälfte öffnet sich nun der Nachrichteneditor.
     </p>
-    <p>
+    <p>2. Gebe in das Textfeld eine Nachricht ein.
     </p>
-    <p>
+    <p>3. Zusätzlich kannst du ein Bild an deinen Post anhängen. Da gerade der Nachrichteneditor geöffnet ist, ist ein weiterer Knopf in der Aktionsleiste erschienen: "Büroklammer+". (Der "Anhängen" Menüeintrag ist eventuell im Überlaufmenü versteckt: "Drei vertikale Punkte"). Tippe den "Anhängen"-Knopf und wähle ein Bild aus. Nachdem das Bild erfolgreich angehängt wurde, erscheint "(mit Medien)" oberhalb des Textfeldes, indem du deine Nachricht verfasst hast.
     </p>
-    <p>
+    <p>4. Tippe <strong>Senden</strong> um deine Nachricht zu versenden. Wenn du offline bist wird deine Nachricht automatisch zum späteren Versand eingereiht. (Nutze den "Befehle in der Warteschlange" Menüeintrag, um die Warteschlange nicht gesendeter Nachrichten anzusehen)
     </p>
-    <p>
+    <p>Um auf eine Nachricht zu antworten, <strong>tippe länger</strong> auf die Nachricht und wähle <strong>Antworten</strong> im Kontextmenü aus. Tippe anschließend deine Antwort in das Textfeld in der unteren Bildschirmhälfte.
     </p>
-    <p></p>
+    <p>Unterbreche das Verfassen eines Posts oder einer Antwort, indem du auf den "Verstecken"-Knopf tippst, um das Textfeld zu verstecken.</p>
 </section>
 <section>
     <title>
-        <p></p>
+        <p>4. Angehängte Bilder: Senden und anzeigen</p>
     </title>
     <section>
         <title>
-            <p></p>
+            <p>4.1. Bilder senden</p>
         </title>
-        <p>
+        <p>Ein Weg, Bilder an einen Post anzuhängen ist in der vorigen Sektion beschrieben: Du kannst Bilder während des Verfassens einer Nachricht anhängen.
         </p>
-        <p>
+        <p>Ein anderer Weg, Bilder zu versenden besteht darin, das Bild per AndStatus zu "teilen": Beginne dazu mit einem Bild in einer anderen Anwendung. Nehmen wir beispielsweise an, du willst ein Foto schießen und es anschließend an ein soziales Netzwerk verschicken. Geh dazu wie folgt vor:
         </p>
-        <p>
+        <p>1. Mach ein Foto / finde es in einer Galerie und klicke auf das Vorschaubild, um es zu öffnen.
         </p>
-        <p>
+        <p>2. Wähle im Menü den Eintrag "Teilen". Die meisten Anwendungen bieten eine "Teilen" Funktion an...
         </p>
-        <p>
+        <p>3. Wähle "AndStatus" in der Liste von Anwendungen, die in der Lage sind, Fotos zu teilen.
         </p>
-        <p></p>
-        <p>
+        <p>4. Jetzt bist du wieder in AndStatus. Wenn du mehr als einen Account hast, wähle den gewünschten Account aus. Andererseits erscheint direkt ein Nachrichteneditor.</p>
+        <p>5. Du befindest dich nun im Nachrichteneditor und das Bild ist bereits angehängt (Du solltest den "(mit Medien)" Text über dem Eingabefeld sehen).
         </p>
-        <p>
+        <p>6. Gebe nun noch eine Nachricht ein und tippe auf "Senden". (Es ist nicht erlaubt, ein Bild ohne Textnachricht zu senden)
         </p>
     </section>
     <section>
         <title>
-            <p></p>
+            <p>4.2. Angehängte Bilder anzeigen</p>
         </title>
-        <p></p>
-        <p>
+        <p>Wir haben diese Einstellungsmöglichkeiten (In Einstellungen->Anhänge):</p>
+        <p>1. "Angehängte Bilder herunterladen und anzeigen" Checkbox. Wenn hier kein Häkchen gesetzt ist werden Bilder nicht einmal heruntergeladen und dadurch Datenverkehr vermieden.
         </p>
-        <p>
+        <p>Bitte beachte, dass Bilder nicht sofort angezeigt werden, wenn diese Option aktiviert wird. Das liegt daran, dass AndStatus Zeit benötigt, um die Bilder im Hintergrund herunterzuladen.
         </p>
-        <p>
+        <p>2. "Bilder an meine Nachrichten anhängen". Wenn diese Option aktiviert ist kannst du den "Büroklammer+"-Knopf ("Anhänge" Menüeintrag) benutzen, um Bilder an deine Nachrichten anzuhängen. Anderenfalls ist der Knopf ausgeblendet.
         </p>
-        <p>.</p>
+        <p>Siehe <a xlink:href="https://github.com/andstatus/andstatus/issues/288">hier für mehr Infos</a>.</p>
     </section>
 </section>
 <section>
