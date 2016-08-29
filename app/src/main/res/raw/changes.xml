@@ -26,7 +26,7 @@
 		</subtitle>
     </header>
     <release android:versionName="28.00" android:versionCode="187"
-             versionDate="2016-08-28"
+             versionDate="2016-08-29"
              versionTitle="Collapse duplicated posts. Accounts reodering. Continuous automatic application quality checking">
         <changes>
             <change>Implemented ”Collapse duplicates” feature, which is switchable in the Navigation
@@ -45,8 +45,8 @@
                 showing in the "Select account" dialog and making a decision, what message to show
                 among several collapsed duplicates...
             </change>
-            <change>In order to ease navigation in a Timeline, "Top", "1" and positions of two first
-                shown messages are displayed in the top right corner of a message.
+            <change>In order to ease navigation in a Timeline, "Top", "1", "2", "3" and positions
+                of three first shown messages are displayed in the top right corner of a message.
                 This frees a User from unnecessary attempts to scroll a list.<br/>
                 "1" means that this message is the topmost currently shown, but there may be more
                 messages in the local cache (i.e. already downloaded to your Device).<br/>

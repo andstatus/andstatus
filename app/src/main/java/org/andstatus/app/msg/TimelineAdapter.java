@@ -162,10 +162,11 @@ public class TimelineAdapter extends MyBaseAdapter {
                 text = listData.mayHaveYoungerPage() ? "1" : TOP_TEXT;
                 break;
             case 1:
-                text = "2";
+            case 2:
+                text = Integer.toString(position + 1);
                 break;
             default:
-                text = messageNumberShownCounter < 2 ? Integer.toString(position + 1) : "";
+                text = messageNumberShownCounter < 3 ? Integer.toString(position + 1) : "";
                 break;
         }
         MyUrlSpan.showText(view, R.id.message_number, text, false, false);
