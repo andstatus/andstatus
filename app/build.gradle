@@ -9,8 +9,8 @@ android {
         applicationId "org.andstatus.app"
         minSdkVersion 16
         targetSdkVersion 24
-        versionName "28.00"
-        versionCode 187
+        versionName "28.01"
+        versionCode 188
 
         testApplicationId "org.andstatus.app.tests"
         testInstrumentationRunner "android.test.InstrumentationTestRunner"

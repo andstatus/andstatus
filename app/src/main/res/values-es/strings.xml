@@ -69,6 +69,7 @@
   <string name="category_title_preference_notifications">Notificaciones</string>
   <string name="category_title_preference_origin">Red social</string>
   <string name="category_title_preference_settings">Configuración</string>
+  <string name="collapse_duplicates">Compactar duplicados</string>
   <string name="color_black">Negro</string>
   <string name="color_black_cat">Gato negro</string>
   <string name="color_blue">Azul</string>
@@ -183,7 +184,6 @@
   <string name="header_accounts">Administrar cuentas</string>
   <string name="header_accounts_summary">Gestionar cuentas y redes sociales</string>
   <string name="header_add_new_account">Añade una cuenta nueva</string>
-  <string name="manage_accounts">Administra las cuentas existentes</string>
   <string name="hide_messages_based_on_keywords_title">Ocultar mensajes basados en palabras o frases exactas</string>
   <string name="hide_messages_based_on_keywords_dialog_message">Separar palabras por espacios. Pon frases entre comillas dobles, por ejemplo:\npalabra \"frase exacta\"</string>
   <string name="hide_replies_not_to_me_or_friends_title">Oculta las respuestas que no son para mí o mis amigos de la línea temporal principal</string>
@@ -232,6 +232,7 @@
   <string name="long_press_to_open_context_menu_on">Deja pulsado un objeto para abrir su menú contextual</string>
   <string name="long_press_to_open_context_menu_off">Pulsa un objeto para abrir su menú contextual</string>
   <string name="malformed_link">Enlace mal formado</string>
+  <string name="manage_accounts">Administrar cuentas</string>
   <string name="manage_timelines">Gestionar líneas de tiempo</string>
   <string name="mention_as_webfingerid_title">Mencionar como @Identificador</string>
   <string name="menu_item_act_as">Actuar como&#8230;</string>
@@ -366,6 +367,7 @@
   <string name="settings_action">Configuración</string>
   <string name="settings_activity_title">Configuración</string>
   <string name="show_buttons_below_message">Mostrar botones de respuesta, repetición y favorito debajo del mensaje</string>
+  <string name="show_duplicates">Mostrar duplicados</string>
   <string name="show_timeline_messages">Mostrar mensajes de línea temporal</string>
   <string name="since">Desde %s</string>
   <string name="splash_button_learn_more">Más información</string>
@@ -508,6 +510,7 @@
   <string name="title_preference_vibration">Vibración</string>
   <string name="title_sending_messages_log_enabled">Registrar los mensajes enviados en un archivo</string>
   <string name="title_timeline">Línea temporal</string>
+  <string name="top">Arriba</string>
   <string name="total_counters">Contadores totales</string>
   <string name="translator_credits">Traductores</string>
   <string name="unimplemented">No implementado.</string>

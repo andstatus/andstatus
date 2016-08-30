@@ -69,6 +69,7 @@
   <string name="category_title_preference_notifications">通知</string>
   <string name="category_title_preference_origin">ソーシャル ネットワーク</string>
   <string name="category_title_preference_settings">設定</string>
+  <string name="collapse_duplicates">重複を折りたたむ</string>
   <string name="color_black">黒</string>
   <string name="color_black_cat">ブラック キャット</string>
   <string name="color_blue">青</string>
@@ -183,7 +184,6 @@ AndStatus は、最後のメッセージのダウンロード以降のすべて�
   <string name="header_accounts">アカウント</string>
   <string name="header_accounts_summary">アカウントとソーシャル ネットワークを管理します</string>
   <string name="header_add_new_account">新しいアカウントを追加</string>
-  <string name="manage_accounts">既存のアカウントを管理</string>
   <string name="hide_messages_based_on_keywords_title">キーワードまたはフレーズに基づいてメッセージを非表示</string>
   <string name="hide_messages_based_on_keywords_dialog_message">スペースで複数のキーワードを分離します。フレーズは二重引用符で囲みます。例:\nキーワード \"exact phrase\"</string>
   <string name="hide_replies_not_to_me_or_friends_title">ホーム タイムラインから、私または私の友達以外への返信を非表示</string>
@@ -232,6 +232,7 @@ AndStatus は、最後のメッセージのダウンロード以降のすべて�
   <string name="long_press_to_open_context_menu_on">項目を長押しして、コンテキスト メニューを開きます</string>
   <string name="long_press_to_open_context_menu_off">項目をタップして、コンテキスト メニューを開きます</string>
   <string name="malformed_link">不正なリンク</string>
+  <string name="manage_accounts">アカウントの管理</string>
   <string name="manage_timelines">タイムラインの管理</string>
   <string name="mention_as_webfingerid_title">\@webFingerId としてメンション</string>
   <string name="menu_item_act_as">&#8230;として活動</string>
@@ -366,6 +367,7 @@ AndStatus は、最後のメッセージのダウンロード以降のすべて�
   <string name="settings_action">設定</string>
   <string name="settings_activity_title">設定</string>
   <string name="show_buttons_below_message">メッセージの下に返信、再投稿、お気に入りボタンを表示</string>
+  <string name="show_duplicates">重複を表示</string>
   <string name="show_timeline_messages">タイムラインメッセージを表示</string>
   <string name="since">%s 以降</string>
   <string name="splash_button_learn_more">もっと詳しく</string>
@@ -506,6 +508,7 @@ AndStatus は、最後のメッセージのダウンロード以降のすべて�
   <string name="title_preference_vibration">バイブレーション</string>
   <string name="title_sending_messages_log_enabled">送信メッセージをファイルにロギング</string>
   <string name="title_timeline">タイムライン</string>
+  <string name="top">トップ</string>
   <string name="total_counters">合計カウンター</string>
   <string name="translator_credits">翻訳者クレジット</string>
   <string name="unimplemented">実装されていません。</string>

@@ -422,18 +422,23 @@ public class TimelineActivity extends LoadableListActivity implements
             return;
         }
         TextView item = (TextView) drawerView.findViewById(R.id.timelineTypeButton);
-        item.setText(timelineTypeButtonText());
+        if (item !=  null) {
+            item.setText(timelineTypeButtonText());
+        }
         prepareCombinedTimelineToggle(drawerView);
         updateAccountButtonText(drawerView);
     }
 
     private void prepareCombinedTimelineToggle(View drawerView) {
-        CheckBox combinedTimelineToggle = (CheckBox) drawerView.findViewById(R.id.combinedTimelineToggle);
-        combinedTimelineToggle.setChecked(getParamsLoaded().getTimeline().isCombined());
+        CheckBox checkBox = (CheckBox) drawerView.findViewById(R.id.combinedTimelineToggle);
+        if (checkBox == null) {
+            return;
+        }
+        checkBox.setChecked(getParamsLoaded().getTimeline().isCombined());
         // Show the "Combined" toggle even for one account to see messages,
         // which are not on the timeline.
         // E.g. messages by users, downloaded on demand.
-        MyUrlSpan.showView(combinedTimelineToggle,
+        MyUrlSpan.showView(checkBox,
                 getParamsNew().getSelectedUserId() == 0 ||
                         getParamsNew().getSelectedUserId() == getParamsNew().getMyAccount().getUserId());
     }
@@ -547,9 +552,12 @@ public class TimelineActivity extends LoadableListActivity implements
     }
 
     private void updateAccountButtonText(View drawerView) {
-        TextView selectAccountButton = (TextView) drawerView.findViewById(R.id.selectAccountButton);
+        TextView textView = (TextView) drawerView.findViewById(R.id.selectAccountButton);
+        if (textView == null) {
+            return;
+        }
         String accountButtonText = getCurrentMyAccount().toAccountButtonText(myContext);
-        selectAccountButton.setText(accountButtonText);
+        textView.setText(accountButtonText);
     }
 
     @Override

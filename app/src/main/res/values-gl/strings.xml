@@ -28,6 +28,7 @@
   <string name="action_bar_background_color_preference_title">Cor de fondo da barra de accións</string>
   <string name="action_bar_text_preference_title">Cor da icona e o texto da barra de acción</string>
   <string name="action_menu_overflow_description">Máis accións&#8230;</string>
+  <string name="always">Sempre</string>
   <string name="appwidget_configure_instructions">Personalice a mensaxe do Widget de AndStatus, mostrado e caso de que non haxa nada novo:</string>
   <string name="appwidget_message_formats_1">{0} mensaxe</string>
   <string name="appwidget_message_formats_2">{0} mensaxes</string>
@@ -68,6 +69,7 @@
   <string name="category_title_preference_notifications">Notificacións</string>
   <string name="category_title_preference_origin">Rede social</string>
   <string name="category_title_preference_settings">Preferencias</string>
+  <string name="collapse_duplicates">Xuntar duplicados</string>
   <string name="color_black">Negro</string>
   <string name="color_black_cat">Gato Negro</string>
   <string name="color_blue">Azul</string>
@@ -95,6 +97,7 @@
   <string name="created_label">Creado</string>
   <string name="custom_locale_title">Idioma do aplicativo</string>
   <string name="default_timeline_title">Liña de tempo por defecto</string>
+  <string name="default_timeline_summary">Liña temporal que será aberta por un Lanzador: \"%s\"</string>
   <string name="device_default">Por omisión do dispositivo</string>
   <string name="dialog_summary_acquiring_an_access_token">Por favor espere mentras AndStatus intercambia una petición de testemuño OAuth de autorización</string>
   <string name="dialog_summary_acquiring_a_request_token">Por favor agarde mentras AndStatus recibe a autorización OAuth pedida</string>
@@ -132,8 +135,16 @@
   <string name="dialog_title_service_unavailable">Servizo non dispoñible</string>
   <string name="dialog_title_timeline_loading">Actualizando liña de tempo&#8230;</string>
   <string name="discover_open_instances_title">Mostrar instancias abertas</string>
+  <string name="displayed_in_selector">Mostrado nun selector</string>
+  <string name="displayed_in_selector_abbreviated">Most.</string>
+  <string name="dont_synchronize_old_messages">Non sincronizar mensaxes vellas, se a última sincr. foi hai máis de ... horas</string>
+  <string name="dont_synchronize_old_messages_summary">Despois de %s horas desde a sincr. anterior
+AndStatus non intentará sincronizar todas as mensaxes desde a última mensaxe descargada,
+só pedirá as 200 últimas mensaxes do servidor. Se o número de mensaxes é maior de 200 mensaxes,
+non verá na liña temporal algunhas mensaxes antiguas.</string>
   <string name="download_status_draft">borrador</string>
   <string name="download_status_unsent">non enviado</string>
+  <string name="downloaded_items_count_abbreviated">Desc.</string>
   <string name="drawer_close">Pechar esquema de navegación</string>
   <string name="drawer_open">Abrir esquema de navegación</string>
   <string name="empty_in_parenthesis">(baldeiro)</string>
@@ -173,7 +184,6 @@
   <string name="header_accounts">Contas</string>
   <string name="header_accounts_summary">Xestionar contas e redes sociais</string>
   <string name="header_add_new_account">Engadir nova conta</string>
-  <string name="manage_accounts">Xestionar contas existentes</string>
   <string name="hide_messages_based_on_keywords_title">Ocultar mensaxes basadas en palabras chave ou frases</string>
   <string name="hide_messages_based_on_keywords_dialog_message">Separar palabras chave por espazos. Por frases en comiñas dobles ex.:\npalabra chave \"frase exacta\"</string>
   <string name="hide_replies_not_to_me_or_friends_title">Ocultar respostas na liña de tempo Inicio que non son para min ou os meus amigos</string>
@@ -199,6 +209,7 @@
   <string name="id_of_this_message_was_not_specified">Non se indicou a Id de esta mensaxe</string>
   <string name="in_combined_global_search_label">Incluir en \"Busca Global\" mentras está en Liña de tempo combinada</string>
   <string name="in_combined_public_reload_label">Incluir en \"Recargar\" mentras está en Liña de tempo pública combinada</string>
+  <string name="in_context">No contexto</string>
   <string name="label_accountselector">Escolla unha Conta</string>
   <string name="label_allow_html_content">Permitir contido HTML</string>
   <string name="label_backup">Respaldar datos do aplicativo a tarxeta SD</string>
@@ -214,12 +225,15 @@
   <string name="label_restore">Recuperar datos do aplicativo desde Respaldo</string>
   <string name="label_upgrading">Anovación en progreso. Por favor agarde.</string>
   <string name="label_with_media">con medios</string>
+  <string name="last_synced">Última sincr</string>
   <string name="latest_error_label">Último erro</string>
   <string name="loading">Cargando</string>
   <string name="long_press_to_open_context_menu">Pulsación longa para abrir menú contextual</string>
   <string name="long_press_to_open_context_menu_on">Pulsación longa nun elemento para abrir o seu menú contextual</string>
   <string name="long_press_to_open_context_menu_off">Tocar un elemento para abrir o seu menú contextual</string>
   <string name="malformed_link">Ligazón defectuosa</string>
+  <string name="manage_accounts">Xestionar contas</string>
+  <string name="manage_timelines">Xestionar liñas temporáis</string>
   <string name="mention_as_webfingerid_title">Mención como @webFingerId</string>
   <string name="menu_item_act_as">Actuar como&#8230;</string>
   <string name="menu_item_act_as_user">Actuar como \"%1s\"</string>
@@ -256,6 +270,8 @@
   <string name="message_source_to">a %1$s</string>
   <string name="message_twitter">Chío</string>
   <string name="messages_activity">Mensaxes directas</string>
+  <string name="never">Nunca</string>
+  <string name="new_items_count_abbreviated">Novo</string>
   <string name="no">Non</string>
   <string name="not_set">non establecido</string>
   <string name="nothing_in_the_loadable_list">Nada por aquí ate o momento. Intente tocando \"Sincronizar con internet\" para actualizar a lista.</string>
@@ -338,18 +354,28 @@
   <string name="remove_account_menu_item">Quitar conta</string>
   <string name="remove_account_dialog_title">Eliminar a conta?</string>
   <string name="remove_account_dialog_text">Quitando a conta borrará todos os datos do dispositivo. Continuar?</string>
+  <string name="reset_counters">Restablecer contadores</string>
   <string name="resolve_view">Ver mensaxe</string>
+  <string name="rounded_avatars">Avatares redondos</string>
   <string name="search_timeline_label">Buscar mensaxes, usuarios e etiquetas</string>
   <string name="search_timeline_hint">Introduza un usuario/frase</string>
   <string name="search_direct_messages_label">Buscar mensaxes directas</string>
   <string name="search_direct_messages_hint">Introduza un usuario ou frase</string>
+  <string name="select_displayed_in_selector">Escolla si e cando deben ser mostrada esta liña temporal</string>
+  <string name="sent">Enviado</string>
+  <string name="select_social_network">Escolla rede social</string>
   <string name="settings_action">Preferencias</string>
   <string name="settings_activity_title">Preferencias</string>
+  <string name="show_buttons_below_message">Mostrar botón Resposta, Repetir e Favorito debaixo da mensaxe</string>
+  <string name="show_duplicates">Mostrar duplicados</string>
+  <string name="show_timeline_messages">Mostrar mensaxes da liña temoral</string>
+  <string name="since">Desde %s</string>
   <string name="splash_button_learn_more">Saber máis</string>
   <string name="splash_button_get_started">Comezando</string>
   <string name="splash_payoff_line">Cliente de redes sociais de código aberto, baixo consumo de datos e con conversas ramificadas.
 Admite GNU social, Twitter e Pump.io.</string>
   <string name="status_destroyed">Eliminouse a mensaxe.</string>
+  <string name="subtitle">Subtítulo</string>
   <string name="summary_preference_accounts_absent">Ainda non engadiu contas a AndStatus</string>
   <string name="summary_preference_accounts_present">Número de contas en AndStatus</string>
   <string name="summary_preference_add_account_oauth">Toque aquí para abrir o sitio web da rede social nun navegador.</string>
@@ -400,9 +426,15 @@ Admite GNU social, Twitter e Pump.io.</string>
   <string name="summary_preference_vibration_off">Apagouse a vibración</string>
   <string name="summary_preference_vibration_on">Vibrar en mensaxes entrantes</string>
   <string name="switch_to_default_timeline">Cambiar a liña de tempo por defecto</string>
+  <string name="sync_over_wifi_only">Sincronizar só con WiFi</string>
+  <string name="sync_failed">Fallou a Sincr.</string>
+  <string name="sync_frequency_minutes">Frecuencia de Sincronización. Deixe baleiro para ter o valor por omisión: </string>
+  <string name="synced_automatically">Sincronizado automáticamente</string>
+  <string name="synced_abbreviated">Sincr</string>
   <string name="syncing">Sincronizando&#8230;</string>
   <string name="syncing_timeline_for_somebody">Sincronizando %1$s de %2$s</string>
   <string name="system_is_busy_try_later">O sistema está ocupado. Por favor, inténteo máis tarde.</string>
+  <string name="tap_on_a_timeline_title_behaviour">Toque no título da liña temporal</string>
   <string name="theme_color_entries_default">Por omisión no dispositivo</string>
   <string name="theme_color_entries_light">Claro</string>
   <string name="theme_color_entries_dark">Escuro</string>
@@ -424,6 +456,7 @@ Admite GNU social, Twitter e Pump.io.</string>
   <string name="timeline_title_replies">Respostas</string>
   <string name="timeline_title_unknown">(Liña temporal descoñecida)</string>
   <string name="timeline_title_user">Usuario</string>
+  <string name="title">Título</string>
   <string name="title_account">Conta</string>
   <string name="title_command_fetch_attachment">Obter anexo</string>
   <string name="title_command_fetch_avatar">Avatar</string>
@@ -438,6 +471,7 @@ Admite GNU social, Twitter e Pump.io.</string>
   <string name="title_preference_download_attachments_over_wifi_only">Baixar anexos so baixo conexión Wi-Fi</string>
   <string name="title_preference_enable_android_backup">Habilitar o respaldo automático de Android</string>
   <string name="title_preference_enter_sends_message">Tecla ENTER envía a mensaxe</string>
+  <string name="title_preference_frequency">Frecuencia de sincronización por omisión</string>
   <string name="title_preference_history_size">Tamaño do historial</string>
   <string name="title_preference_history_time">Tempo do historial</string>
   <string name="title_preference_is_default_account">Esta é unha conta por omisión</string>
@@ -475,6 +509,8 @@ Admite GNU social, Twitter e Pump.io.</string>
   <string name="title_preference_vibration">Vibración</string>
   <string name="title_sending_messages_log_enabled">Rexistar envío de mensaxes nun ficheiro</string>
   <string name="title_timeline">Liña de tempo</string>
+  <string name="top">Arriba</string>
+  <string name="total_counters">Contadores totales</string>
   <string name="translator_credits">Traducido ao galego</string>
   <string name="unimplemented">Non implementado.</string>
   <string name="unknown_userlist">(Lista de usuario descoñecido)</string>
