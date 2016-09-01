@@ -88,11 +88,9 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
             } else {
                 String response = HttpConnectionUtils.readStreamToString(conn.getInputStream());
                 JSONObject jso = new JSONObject(response);
-                if (jso != null) {
-                    consumerKey = jso.getString("client_id");
-                    consumerSecret = jso.getString("client_secret");
-                    data.oauthClientKeys.setConsumerKeyAndSecret(consumerKey, consumerSecret);
-                }
+                consumerKey = jso.getString("client_id");
+                consumerSecret = jso.getString("client_secret");
+                data.oauthClientKeys.setConsumerKeyAndSecret(consumerKey, consumerSecret);
             }
         } catch (IOException e) {
             MyLog.i(this, logmsg, e);

@@ -21,7 +21,6 @@ import android.app.Instrumentation;
 import android.app.KeyguardManager;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.test.InstrumentationTestCase;
@@ -32,12 +31,11 @@ import junit.framework.TestCase;
 
 import org.andstatus.app.HelpActivity;
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.account.OriginsAndAccountsInserter;
 import org.andstatus.app.data.ConversationInserter;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.GnuSocialMessagesInserter;
 import org.andstatus.app.data.MessageInserter;
-import org.andstatus.app.account.OriginsAndAccountsInserter;
-import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.origin.Origin;
@@ -47,7 +45,6 @@ import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 
-import java.net.MalformedURLException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -63,13 +60,13 @@ public class TestSuite extends TestCase {
     private static volatile Context context;
     private static volatile String dataPath;
     
-    public static Context initializeWithData(InstrumentationTestCase testCase) throws Exception {
+    public static Context initializeWithData(InstrumentationTestCase testCase) {
         initialize(testCase);
         ensureDataAdded();
         return getMyContextForTest().context();
     }
     
-    public static synchronized Context initialize(InstrumentationTestCase testCase) throws InterruptedException {
+    public static synchronized Context initialize(InstrumentationTestCase testCase) {
         final String method = "initialize";
         if (initialized) {
             MyLog.d(TAG, "Already initialized");
@@ -197,7 +194,7 @@ public class TestSuite extends TestCase {
      * This method mimics execution of one test case before another
      * @throws Exception 
      */
-    public static void ensureDataAdded() throws PackageManager.NameNotFoundException, ConnectionException, MalformedURLException {
+    public static void ensureDataAdded() {
         String method = "ensureDataAdded";
         MyLog.v(TAG, method + ": started");
         if (!dataAdded) {

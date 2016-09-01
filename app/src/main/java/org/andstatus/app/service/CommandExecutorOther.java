@@ -29,7 +29,6 @@ import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
-import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.database.MsgOfUserTable;
 import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.net.http.ConnectionException;
@@ -154,9 +153,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                     // the flag manually.
                     message.favoritedByActor = TriState.fromBoolean(create);
 
-                    MyLog.d(this,
-                            (create ? "create" : "destroy")
-                                    + ". Favorited flag didn't change yet.");
+                    MyLog.d(this, "create. Favorited flag didn't change yet.");
 
                     // Let's try to assume that everything was
                     // Ok:
@@ -169,9 +166,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                     // works even for the "Unfavorited" tweet :-)
                     ok = false;
 
-                    MyLog.e(this,
-                            (create ? "create" : "destroy")
-                                    + ". Favorited flag didn't change yet.");
+                    MyLog.e(this, "destroy. Favorited flag didn't change yet.");
                 }
             }
 
@@ -212,17 +207,13 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                     // Act just like for creating favorite...
                     user.followedByActor = TriState.fromBoolean(follow);
 
-                    MyLog.d(this,
-                            (follow ? "Follow" : "Stop following") + " User. 'following' flag didn't change yet.");
+                    MyLog.d(this, "Follow a User. 'following' flag didn't change yet.");
 
-                    // Let's try to assume that everything was
-                    // Ok:
+                    // Let's try to assume that everything was OK:
                     ok = true;
                 } else {
                     ok = false;
-
-                    MyLog.e(this,
-                            (follow ? "Follow" : "Stop following") + " User. 'following' flag didn't change yet.");
+                    MyLog.e(this, "Stop following a User. 'following' flag didn't change yet.");
                 }
             }
             if (ok) {

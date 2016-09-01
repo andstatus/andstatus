@@ -63,17 +63,14 @@ public class MbAttachment {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
+    public boolean equals(Object o) {
+        if (this == o) {
             return true;
         }
-        if (obj == null) {
+        if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        MbAttachment other = (MbAttachment) obj;
+        MbAttachment other = (MbAttachment) o;
         if (contentType != other.contentType) {
             return false;
         }

@@ -142,7 +142,7 @@ public class AccountData implements Parcelable, AccountDataWriter {
         if (o == this) {
             return true;
         }
-        if (!(o instanceof AccountData)) {
+        if (o == null || !(o instanceof AccountData)) {
             return false;
         }
         final AccountData other = (AccountData)o;

@@ -395,7 +395,7 @@ class DatabaseConverter {
                 sql = "CREATE UNIQUE INDEX idx_user_origin ON user (origin_id, user_oid)";
                 DbUtils.execSQL(db, sql);
             } catch (Exception e) {
-                MyLog.e(this, "Couldn't create unique constraint");
+                MyLog.i(this, "Couldn't create unique constraint", e);
                 sql = "CREATE INDEX idx_user_origin ON user (origin_id, user_oid)";
                 DbUtils.execSQL(db, sql);
             }

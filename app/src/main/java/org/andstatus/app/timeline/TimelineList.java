@@ -279,8 +279,8 @@ public class TimelineList extends LoadableListActivity {
                                 } else {
                                     item.timeline.setDisplayedInSelector(DisplayedInSelector.NEVER);
                                     buttonView.setText("");
-                                    MyLog.v("isDisplayedInSelector", (isChecked ? "+ " : "- ") + item.timeline);
                                 }
+                                MyLog.v("isDisplayedInSelector", (isChecked ? "+ " : "- ") + item.timeline);
                             }
                         });
                 view.setText(item.timeline.equals(defaultTimeline) ? "D" :

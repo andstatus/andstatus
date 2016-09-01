@@ -28,9 +28,8 @@ import org.andstatus.app.net.social.MbMessage;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.TriState;
+import org.andstatus.app.util.UrlUtils;
 
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.GregorianCalendar;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -48,7 +47,7 @@ public class ConversationInserter extends InstrumentationTestCase {
         return users;
     }
 
-    public void insertConversation(String bodySuffixIn) throws MalformedURLException {
+    public void insertConversation(String bodySuffixIn) {
         if (TextUtils.isEmpty(bodySuffixIn)) {
             bodySuffix = "";
         } else {
@@ -71,7 +70,7 @@ public class ConversationInserter extends InstrumentationTestCase {
         mySetup();
     }
     
-    private void insertAndTestConversation() throws MalformedURLException {
+    private void insertAndTestConversation() {
         assertEquals("Only PumpIo supported in this test", OriginType.PUMPIO, TestSuite.CONVERSATION_ORIGIN_TYPE  );
         
         MbUser author2 = buildUserFromOid("acct:second@identi.ca");
@@ -97,9 +96,8 @@ public class ConversationInserter extends InstrumentationTestCase {
         MbMessage reply3 = buildMessage(getAuthor1(), "Reply 3 to selected by the same author", selected, null);
         reply3.attachments
         .add(MbAttachment
-                .fromUrlAndContentType(
-                        new URL(
-                                "http://www.publicdomainpictures.net/pictures/100000/nahled/broadcasting-tower-14081029181fC.jpg"),
+                .fromUrlAndContentType(UrlUtils.fromString(
+                        "http://www.publicdomainpictures.net/pictures/100000/nahled/broadcasting-tower-14081029181fC.jpg"),
                         MyContentType.IMAGE));
         addMessage(selected);
         addMessage(reply3);
@@ -132,9 +130,8 @@ public class ConversationInserter extends InstrumentationTestCase {
         MbMessage reply9 = buildMessage(author2, "Reply 9 to Reply 7", reply7, null);
         reply9.attachments
                 .add(MbAttachment
-                        .fromUrlAndContentType(
-                                new URL(
-                                        "http://www.publicdomainpictures.net/pictures/100000/nahled/autumn-tree-in-a-park.jpg"),
+                        .fromUrlAndContentType( UrlUtils.fromString(
+                                "http://www.publicdomainpictures.net/pictures/100000/nahled/autumn-tree-in-a-park.jpg"),
                                 MyContentType.IMAGE));
         addMessage(reply9);
         addMessage(buildMessage(author4, "A duplicate of " + reply9.getBody(), null, null));

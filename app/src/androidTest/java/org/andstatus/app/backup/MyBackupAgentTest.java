@@ -125,14 +125,14 @@ public class MyBackupAgentTest extends InstrumentationTestCase {
         android.accounts.AccountManager am = AccountManager.get(MyContextHolder.get().context());
         android.accounts.Account[] aa = am.getAccountsByType( AuthenticatorService.ANDROID_ACCOUNT_TYPE );
         for (android.accounts.Account androidAccount : aa) {
-            MyLog.i(this, "Removing old account: " + androidAccount.name);
+            String logMsg = "Removing old account: " + androidAccount.name;
+            MyLog.i(this, logMsg);
             AccountManagerFuture<Boolean> amf = am.removeAccount(androidAccount, null, null);
             try {
                 amf.getResult(10, TimeUnit.SECONDS);
-            } catch (OperationCanceledException e) {
-                throw new FileNotFoundException(e.getMessage());
-            } catch (AuthenticatorException e) {
-                throw new FileNotFoundException(e.getMessage());
+            } catch (OperationCanceledException | AuthenticatorException e) {
+                MyLog.e(this, logMsg, e);
+                throw new FileNotFoundException(logMsg + ", " + e.getMessage());
             }
         }
     }

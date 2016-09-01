@@ -24,7 +24,6 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.database.MsgTable;
-import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.social.MbMessage;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.origin.Origin;
@@ -42,7 +41,7 @@ public class GnuSocialMessagesInserter extends InstrumentationTestCase {
     private MyAccount ma;
     private Origin origin;
 
-    public void insertData() throws ConnectionException {
+    public void insertData() {
         mySetup();
         addConversation();
     }
@@ -64,7 +63,7 @@ public class GnuSocialMessagesInserter extends InstrumentationTestCase {
         mySetup();
     }
     
-    public void addConversation() throws ConnectionException {
+    public void addConversation() {
         MbUser author1 = userFromOidAndAvatar("1",
                 "https://raw.github.com/andstatus/andstatus/master/app/src/main/res/drawable/splash_logo.png");
         MbUser author2 = userFromOidAndAvatar("2",

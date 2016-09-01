@@ -363,19 +363,16 @@ public final class MyAccount implements Comparable<MyAccount> {
         
         public boolean getOriginConfig() throws ConnectionException {
             boolean ok = false;
-            if (!ok) {
-                MbConfig config = null;
-                try {
-                    config = myAccount.getConnection().getConfig();
-                    ok = (!config.isEmpty());
-                    if (ok) {
-                        Origin.Builder originBuilder = new Origin.Builder(
-                                myContext.persistentOrigins().fromId(myAccount.getOriginId())); 
-                        originBuilder.save(config);
-                    }
-                } finally {
-                    MyLog.v(this, "Get Origin config " + (ok ? "succeeded" : "failed"));
+            try {
+                MbConfig config = myAccount.getConnection().getConfig();
+                ok = (!config.isEmpty());
+                if (ok) {
+                    Origin.Builder originBuilder = new Origin.Builder(
+                            myContext.persistentOrigins().fromId(myAccount.getOriginId()));
+                    originBuilder.save(config);
                 }
+            } finally {
+                MyLog.v(this, "Get Origin config " + (ok ? "succeeded" : "failed"));
             }
             return ok;
         }
@@ -386,22 +383,18 @@ public final class MyAccount implements Comparable<MyAccount> {
          * 
          * @see CredentialsVerificationStatus
          * @param reVerify Verify even if it was verified already
-         * @return boolean
+         * @return true if verified successfully
          */
         public boolean verifyCredentials(boolean reVerify) throws ConnectionException {
-            boolean ok = false;
             if (!reVerify && myAccount.isValidAndSucceeded()) {
-                ok = true;
+                return true;
             }
-            if (!ok) {
-                try {
-                    MbUser user = myAccount.getConnection().verifyCredentials();
-                    ok = onCredentialsVerified(user, null);
-                } catch (ConnectionException e) {
-                    ok = onCredentialsVerified(null, e);
-                }
+            try {
+                MbUser user = myAccount.getConnection().verifyCredentials();
+                return onCredentialsVerified(user, null);
+            } catch (ConnectionException e) {
+                return onCredentialsVerified(null, e);
             }
-            return ok;
         }
         
         public boolean onCredentialsVerified(MbUser user, ConnectionException ce) throws ConnectionException {
@@ -1013,7 +1006,7 @@ public final class MyAccount implements Comparable<MyAccount> {
     public MyAccount firstOtherAccountOfThisOrigin() {
         for (MyAccount persistentAccount : MyContextHolder.get().persistentAccounts().list()) {
             if (persistentAccount.getOriginId() == this.getOriginId() 
-                    && persistentAccount != this) {
+                    && !persistentAccount.equals(this)) {
                 return persistentAccount;
             }
         }
@@ -1023,7 +1016,7 @@ public final class MyAccount implements Comparable<MyAccount> {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof MyAccount)) return false;
+        if (o == null || !(o instanceof MyAccount)) return false;
 
         MyAccount myAccount = (MyAccount) o;
 

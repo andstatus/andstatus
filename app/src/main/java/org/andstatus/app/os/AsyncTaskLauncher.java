@@ -252,7 +252,8 @@ public class AsyncTaskLauncher<Params> {
                 executor.awaitTermination(5, TimeUnit.SECONDS);
             }
             catch (InterruptedException e) {
-                MyLog.d(TAG, "Interrupted: Shutting down executor:" + executor);
+                MyLog.d(TAG, "Interrupted: Shutting down executor:" + executor, e);
+                Thread.currentThread().interrupt();
             }
             finally {
                 if (!executor.isTerminated()) {

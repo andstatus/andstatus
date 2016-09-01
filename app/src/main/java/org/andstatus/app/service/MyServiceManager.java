@@ -42,19 +42,33 @@ public class MyServiceManager extends BroadcastReceiver {
         MyLog.v(this, "Created, instanceId=" + instanceId );
     }
 
-    /**
-     * Is the service started.
-     * @See <a href="http://groups.google.com/group/android-developers/browse_thread/thread/8c4bd731681b8331/bf3ae8ef79cad75d">here</a>
-     */
-    private static volatile MyServiceState mServiceState = MyServiceState.UNKNOWN;
-    /**
-     * {@link System#nanoTime()} when the state was queued or received last time ( 0 - never )  
-     */
-    private static volatile long stateQueuedTime = 0;
-    /**
-     * If true, we sent state request and are waiting for reply from {@link MyService} 
-     */
-    private static volatile boolean waitingForServiceState = false;
+    private static class MyServiceStateInTime {
+        /** Is the service started.
+         * @See <a href="http://groups.google.com/group/android-developers/browse_thread/thread/8c4bd731681b8331/bf3ae8ef79cad75d">here</a>
+         */
+        private volatile MyServiceState stateEnum = MyServiceState.UNKNOWN;
+        /**
+         * {@link System#nanoTime()} when the state was queued or received last time ( 0 - never )
+         */
+        private volatile long stateQueuedTime = 0;
+        /** If true, we sent state request and are waiting for reply from {@link MyService} */
+        private volatile boolean isWaiting = false;
+
+        public static MyServiceStateInTime getUnknown() {
+            return new MyServiceStateInTime();
+        }
+
+        public static MyServiceStateInTime fromIntent(Intent intent) {
+            MyServiceStateInTime state = new MyServiceStateInTime();
+            state.stateQueuedTime = System.nanoTime();
+            state.stateEnum = MyServiceState.load(intent
+                    .getStringExtra(IntentExtra.SERVICE_STATE.key));
+            return state;
+        }
+
+    }
+    private static volatile MyServiceStateInTime stateInTime = MyServiceStateInTime.getUnknown();
+
     /**
      * How long are we waiting for {@link MyService} response before deciding that the service is stopped
      */
@@ -65,13 +79,8 @@ public class MyServiceManager extends BroadcastReceiver {
         String action = intent.getAction();
         if (action.equals(MyAction.SERVICE_STATE.getAction())) {
             MyContextHolder.initialize(context, this);
-            synchronized (mServiceState) {
-                stateQueuedTime = System.nanoTime();
-                waitingForServiceState = false;
-                mServiceState = MyServiceState.load(intent
-                        .getStringExtra(IntentExtra.SERVICE_STATE.key));
-            }
-            MyLog.d(this, "Notification received: Service state=" + mServiceState);
+            stateInTime = MyServiceStateInTime.fromIntent(intent);
+            MyLog.d(this, "Notification received: Service state=" + stateInTime.stateEnum);
         } else if ("android.intent.action.BOOT_COMPLETED".equals(action)) {
             MyLog.d(this, "Trying to start service on boot");
             sendCommand(CommandData.getEmpty());            
@@ -143,23 +152,25 @@ public class MyServiceManager extends BroadcastReceiver {
      * @See <a href="http://groups.google.com/group/android-developers/browse_thread/thread/8c4bd731681b8331/bf3ae8ef79cad75d">here</a>
      */
     public static MyServiceState getServiceState() {
-        synchronized(mServiceState) {
-            long time = System.nanoTime();
-            if ( waitingForServiceState && (time - stateQueuedTime) > java.util.concurrent.TimeUnit.SECONDS.toMillis(STATE_QUERY_TIMEOUT_SECONDS)) {
-                // Timeout expired
-                waitingForServiceState = false;
-                mServiceState = MyServiceState.STOPPED;
-            } else if ( !waitingForServiceState && mServiceState == MyServiceState.UNKNOWN ) {
-                // State is unknown, we need to query the Service again
-                waitingForServiceState = true;
-                stateQueuedTime = time;
-                mServiceState = MyServiceState.UNKNOWN;
-                MyContextHolder.get().context()
-                        .sendBroadcast(CommandData.newCommand(CommandEnum.BROADCAST_SERVICE_STATE)
-                                .toIntent(MyAction.EXECUTE_COMMAND.getIntent()));
-            }
+        long time = System.nanoTime();
+        MyServiceStateInTime state = stateInTime;
+        if ( state.isWaiting && (time - state.stateQueuedTime) > java.util.concurrent.TimeUnit.SECONDS.toMillis(STATE_QUERY_TIMEOUT_SECONDS)) {
+            // Timeout expired
+            state = new MyServiceStateInTime();
+            state.stateEnum = MyServiceState.STOPPED;
+            stateInTime = state;
+        } else if ( !state.isWaiting && state.stateEnum == MyServiceState.UNKNOWN ) {
+            // State is unknown, we need to query the Service again
+            state = new MyServiceStateInTime();
+            state.stateEnum = MyServiceState.UNKNOWN;
+            state.isWaiting = true;
+            state.stateQueuedTime = time;
+            stateInTime = state;
+            MyContextHolder.get().context()
+                    .sendBroadcast(CommandData.newCommand(CommandEnum.BROADCAST_SERVICE_STATE)
+                            .toIntent(MyAction.EXECUTE_COMMAND.getIntent()));
         }
-        return mServiceState;
+        return state.stateEnum;
     }
 
     private static Object serviceAvailableLock = new Object();
@@ -209,7 +220,7 @@ public class MyServiceManager extends BroadcastReceiver {
         synchronized (serviceAvailableLock) {
             mServiceAvailable = false;
             timeWhenTheServiceWillBeAvailable = System.currentTimeMillis() + 
-                    java.util.concurrent.TimeUnit.SECONDS.toMillis(15 * 60);
+                    java.util.concurrent.TimeUnit.SECONDS.toMillis(15L * 60L);
         }
     }
 }

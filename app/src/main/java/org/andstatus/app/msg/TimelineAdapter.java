@@ -188,7 +188,7 @@ public class TimelineAdapter extends MyBaseAdapter {
         }
         if (!showAvatars) {
             View message = view.findViewById(R.id.message_indented);
-            if (view != null) {
+            if (message != null) {
                 message.setPadding(dpToPixes(2), 0, dpToPixes(6), dpToPixes(2));
             }
         }

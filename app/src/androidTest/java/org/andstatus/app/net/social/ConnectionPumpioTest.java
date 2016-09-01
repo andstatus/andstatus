@@ -32,6 +32,7 @@ import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
 import org.andstatus.app.net.social.ConnectionPumpio.ConnectionAndUrl;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginConnectionData;
+import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RawResourceUtils;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UrlUtils;
@@ -281,6 +282,7 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         try {
             connection.destroyStatus("");
         } catch (IllegalArgumentException e) {
+            MyLog.v(this, e);
             thrown = true;
         }
         assertTrue(thrown);

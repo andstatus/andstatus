@@ -301,7 +301,8 @@ public class CommandData implements Comparable<CommandData> {
 
     @Override
     public boolean equals(Object o) {
-        if (!(o instanceof CommandData)) {
+        if (this == o) return true;
+        if (o == null || !(o instanceof CommandData)) {
             return false;
         }
         CommandData other = (CommandData) o;

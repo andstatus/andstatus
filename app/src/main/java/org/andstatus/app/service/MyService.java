@@ -31,6 +31,7 @@ import org.andstatus.app.appwidget.AppWidgets;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.notification.CommandsQueueNotifier;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
@@ -762,22 +763,19 @@ public class MyService extends Service {
             MyLog.v(this, "Started instance " + instanceId);
             String breakReason = "";
             for (long iteration = 1; iteration < 10000; iteration++) {
-                try {
-                    synchronized(heartBeatLock) {
-                        if (mHeartBeat != null && mHeartBeat != this && mHeartBeat.isReallyWorking() ) {
-                            breakReason = "Other instance found: " + mHeartBeat;
-                            break;
-                        }
-                        if (isCancelled()) {
-                            breakReason = "Cancelled";
-                            break;
-                        }
-                        heartBeatLock.wait(
-                            java.util.concurrent.TimeUnit.SECONDS.toMillis(HEARTBEAT_PERIOD_SECONDS));
+                synchronized(heartBeatLock) {
+                    if (mHeartBeat != null && mHeartBeat != this && mHeartBeat.isReallyWorking() ) {
+                        breakReason = "Other instance found: " + mHeartBeat;
+                        break;
                     }
-                } catch (InterruptedException e) {
+                }
+                if (isCancelled()) {
+                    breakReason = "Cancelled";
+                    break;
+                }
+                if (DbUtils.waitMs("HeartBeatSleeping",
+                    java.util.concurrent.TimeUnit.SECONDS.toMillis(HEARTBEAT_PERIOD_SECONDS))) {
                     breakReason = "InterruptedException";
-                    Thread.currentThread().interrupt();
                     break;
                 }
                 synchronized(serviceStateLock) {

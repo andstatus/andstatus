@@ -62,7 +62,7 @@ public class MyContextMenu implements View.OnCreateContextMenuListener {
                     try {
                         viewOfTheContext.showContextMenu();
                     } catch (NullPointerException e) {
-                        MyLog.d(this, "on showContextMenu; " + (viewOfTheContext != null ? "viewOfTheContext is not null" : ""), e);
+                        MyLog.d(this, "on showContextMenu", e);
                     }
                 }
             });

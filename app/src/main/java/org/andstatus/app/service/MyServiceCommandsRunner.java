@@ -110,7 +110,7 @@ public class MyServiceCommandsRunner implements MyServiceEventsListener {
 
     public void waitForCompletion(String method) {
         try {
-            final long numIterations = commands.size() * 3;
+            final long numIterations = commands.size() * 3L;
             synchronized(syncLock) {
                 for (int iteration = 0; iteration < numIterations; iteration++) {
                     if (isSyncCompleted()) {

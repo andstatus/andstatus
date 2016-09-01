@@ -249,6 +249,7 @@ public class PersistentAccounts {
      * @param originId May be 0 to search in any Origin
      * @return Invalid account if not found
      */
+    @NonNull
     public MyAccount getFirstSucceededForOriginId(long originId) {
         MyAccount ma = MyAccount.getEmpty(myContext, "");
         for (MyAccount persistentAccount : mAccounts) {
@@ -313,11 +314,11 @@ public class PersistentAccounts {
                 && (originId == 0 || ma.getOriginId() == originId);
     }
     
-    private MyAccount betterFit(MyAccount oldMa, MyAccount newMa, long originId, boolean succeededOnly) {
+    private MyAccount betterFit(@NonNull MyAccount oldMa, @NonNull MyAccount newMa, long originId, boolean succeededOnly) {
         if (accountFits(oldMa, originId, succeededOnly) || !accountFits(newMa, originId, false)) {
             return oldMa;
         }
-        if ((oldMa == null || !oldMa.isValid()) && newMa.isValid()) {
+        if (!oldMa.isValid() && newMa.isValid()) {
             return newMa;
         }
         return oldMa;
@@ -437,33 +438,19 @@ public class PersistentAccounts {
 
     @Override
     public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result
-                + ((mAccounts == null) ? 0 : mAccounts.hashCode());
-        return result;
+        return mAccounts.hashCode();
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
+    public boolean equals(Object o) {
+        if (this == o) {
             return true;
         }
-        if (obj == null) {
+        if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        PersistentAccounts other = (PersistentAccounts) obj;
-        if (mAccounts == null) {
-            if (other.mAccounts != null) {
-                return false;
-            }
-        } else if (!mAccounts.equals(other.mAccounts)) {
-            return false;
-        }
-        return true;
+        PersistentAccounts other = (PersistentAccounts) o;
+        return mAccounts.equals(other.mAccounts);
     }
 
     public boolean isMeOrMyFriend(long inReplyToUserId) {

@@ -53,7 +53,8 @@ public class TimelinePosition {
 
     @Override
     public boolean equals(Object o) {
-        if (!(o instanceof TimelinePosition)) {
+        if (this == o) return true;
+        if (o == null || !(o instanceof TimelinePosition)) {
             return false;
         }
         return hashCode() == ((TimelinePosition) o).hashCode();

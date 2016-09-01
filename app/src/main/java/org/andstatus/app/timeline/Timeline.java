@@ -662,7 +662,7 @@ public class Timeline implements Comparable<Timeline> {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof Timeline)) return false;
+        if (o == null || !(o instanceof Timeline)) return false;
 
         Timeline timeline = (Timeline) o;
 

@@ -29,8 +29,8 @@ import android.text.TextUtils;
 
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.database.MsgOfUserTable;
+import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.database.OriginTable;
 import org.andstatus.app.database.UserTable;
 import org.andstatus.app.util.MyLog;
@@ -399,13 +399,10 @@ public class MyProvider extends ContentProvider {
     }
 
     private String[] addBeforeArray(String[] array, String s) {
-        int length = 0;
-        if (array != null) {
-            length = array.length;
-        }
+        int length = array == null ? 0 : array.length;
         String[] ans = new String[length + 1];
         if (length > 0) {
-            System.arraycopy(array, 0, ans, 1, array.length);
+            System.arraycopy(array, 0, ans, 1, length);
         }
         ans[0] = s;
         return ans;

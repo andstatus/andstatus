@@ -122,7 +122,7 @@ public class MyImageCache {
             ActivityManager actManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
             memoryClass = actManager.getMemoryClass();
         }
-        return memoryClass * 1024 * 1024;
+        return memoryClass * 1024L * 1024L;
     }
 
     @NonNull

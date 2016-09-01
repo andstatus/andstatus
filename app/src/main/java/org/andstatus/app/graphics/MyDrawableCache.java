@@ -216,7 +216,6 @@ public class MyDrawableCache extends LruCache<String, BitmapSubsetDrawable> {
             } catch (OutOfMemoryError e) {
                 MyLog.w(objTag, getInfo(), e);
                 evictAll();
-                System.gc();
             }
         }
         if (MyLog.isVerboseEnabled()) {

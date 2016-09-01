@@ -98,17 +98,14 @@ public class DownloadFile {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
+    public boolean equals(Object o) {
+        if (this == o) {
             return true;
         }
-        if (obj == null) {
+        if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        DownloadFile other = (DownloadFile) obj;
+        DownloadFile other = (DownloadFile) o;
         if (filename == null) {
             if (other.filename != null) {
                 return false;

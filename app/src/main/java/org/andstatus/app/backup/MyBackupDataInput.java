@@ -84,17 +84,14 @@ public class MyBackupDataInput {
         }
 
         @Override
-        public boolean equals(Object obj) {
-            if (this == obj) {
+        public boolean equals(Object o) {
+            if (this == o) {
                 return true;
             }
-            if (obj == null) {
+            if (o == null || getClass() != o.getClass()) {
                 return false;
             }
-            if (getClass() != obj.getClass()) {
-                return false;
-            }
-            BackupHeader other = (BackupHeader) obj;
+            BackupHeader other = (BackupHeader) o;
             if (dataSize != other.dataSize) {
                 return false;
             }

@@ -31,10 +31,10 @@ import android.widget.ListAdapter;
 import org.andstatus.app.MyListActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.widget.MySimpleAdapter;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.widget.MySimpleAdapter;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -51,14 +51,16 @@ public class QueueViewer extends MyListActivity implements MyServiceEventsListen
     private MyContext myContext = MyContextHolder.get();
 
     private static class QueueData implements Comparable<QueueData> {
-        QueueType queueType;
-        CommandData commandData;
-        
+        final QueueType queueType;
+        final CommandData commandData;
+
         static QueueData getNew(QueueType queueType, CommandData commandData) {
-            QueueData queueData = new QueueData();
-            queueData.queueType = queueType;
-            queueData.commandData = commandData;
-            return queueData;
+            return new QueueData(queueType, commandData);
+        }
+
+        public QueueData(@NonNull QueueType queueType, @NonNull CommandData commandData) {
+            this.queueType = queueType;
+            this.commandData = commandData;
         }
 
         public long getId() {
@@ -83,6 +85,23 @@ public class QueueViewer extends MyListActivity implements MyServiceEventsListen
                 return 1;
             }
             return -longCompare(commandData.getCreatedDate(), commandData.getCreatedDate());
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            QueueData queueData = (QueueData) o;
+            if (queueType != queueData.queueType) return false;
+            return commandData.getCreatedDate() == queueData.commandData.getCreatedDate();
+        }
+
+        @Override
+        public int hashCode() {
+            int result = queueType.hashCode();
+            result = 31 * result + (int) (commandData.getCreatedDate() ^ (commandData.getCreatedDate() >>> 32));
+            return result;
         }
     }
 

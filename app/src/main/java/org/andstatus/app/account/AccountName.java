@@ -146,7 +146,7 @@ public class AccountName {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof AccountName)) return false;
+        if (o == null || !(o instanceof AccountName)) return false;
 
         AccountName that = (AccountName) o;
 

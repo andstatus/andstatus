@@ -59,12 +59,12 @@ public class HtmlContentInserter extends InstrumentationTestCase {
         return new MessageInserter(ma).buildUserFromOid(userOid);
     }
     
-    public void insertHtml() throws Exception {
+    public void insertHtml() {
         mySetup();
         testHtmlContent();
     }
     
-    private void testHtmlContent() throws Exception {
+    private void testHtmlContent() {
         boolean isHtmlContentAllowedStored = origin.isHtmlContentAllowed(); 
         MbUser author1 = buildUserFromOid("acct:html@example.com");
         author1.avatarUrl = "http://png-5.findicons.com/files/icons/2198/dark_glass/128/html.png";
@@ -81,7 +81,7 @@ public class HtmlContentInserter extends InstrumentationTestCase {
         setHtmlContentAllowed(isHtmlContentAllowedStored);
     }
 
-    private void setHtmlContentAllowed(boolean allowed) throws Exception {
+    private void setHtmlContentAllowed(boolean allowed) {
         new Origin.Builder(origin).setHtmlContentAllowed(allowed).save();
         TestSuite.forget();
         TestSuite.initialize(testCase);
@@ -89,14 +89,14 @@ public class HtmlContentInserter extends InstrumentationTestCase {
         assertEquals(allowed, origin.isHtmlContentAllowed());
     }
     
-    private void assertHtmlMessage(MbUser author, String bodyString, String messageOid) throws Exception {
+    private void assertHtmlMessage(MbUser author, String bodyString, String messageOid) {
         assertHtmlMessageContentAllowed(author, bodyString, messageOid, true);
         assertHtmlMessageContentAllowed(author, bodyString + " no HTML", 
         		TextUtils.isEmpty(messageOid) ? null : messageOid + "-noHtml", false);
     }
 
 	private MessageInserter assertHtmlMessageContentAllowed(MbUser author,
-			String bodyString, String messageOid, boolean htmlContentAllowed) throws Exception {
+			String bodyString, String messageOid, boolean htmlContentAllowed) {
 		setHtmlContentAllowed(htmlContentAllowed);
         MessageInserter mi = new MessageInserter(ma);
         long msgId1 = mi.addMessage(mi.buildMessage(author, bodyString, null, messageOid, DownloadStatus.LOADED));

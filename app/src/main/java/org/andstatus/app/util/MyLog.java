@@ -420,7 +420,7 @@ public class MyLog {
             return key;
         }
         String value = "null";
-        if (value != null) {
+        if (valueIn != null) {
             value = valueIn.toString();
         }
         return formatKeyValue(key, value);

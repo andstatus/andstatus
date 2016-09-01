@@ -261,7 +261,7 @@ public class SharedPreferencesUtil {
             try {
                 value = sp.getLong(key, 0);
             } catch (ClassCastException e) {
-                // Ignore
+                MyLog.ignored("getLong", e);
             }
         }
         return value;

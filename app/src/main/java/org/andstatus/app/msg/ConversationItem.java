@@ -62,11 +62,11 @@ public abstract class ConversationItem extends MessageViewItem implements Compar
     }
 
     @Override
-    public boolean equals(Object o) {
+    public final boolean equals(Object o) {
         if (o == this) {
             return true;
         }
-        if (!(ConversationItem.class.isAssignableFrom(o.getClass()))) {
+        if (o == null || !(o instanceof ConversationItem)) {
             return false;
         }
         final ConversationItem other = (ConversationItem) o;
@@ -74,7 +74,7 @@ public abstract class ConversationItem extends MessageViewItem implements Compar
     }
 
     @Override
-    public int hashCode() {
+    public final int hashCode() {
         return Long.valueOf(getMsgId()).hashCode();
     }
 

@@ -801,7 +801,7 @@ public class AccountSettingsActivity extends MyActivity {
                 if (!requestSucceeded) {
                     message2 = AccountSettingsActivity.this
                             .getString(R.string.dialog_title_authentication_failed);
-                    if (message != null && message.length() > 0) {
+                    if (!TextUtils.isEmpty(message)) {
                         message2 = message2 + ": " + message;
                     }
                     MyLog.d(TAG, message2);

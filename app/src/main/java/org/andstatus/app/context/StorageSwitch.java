@@ -25,13 +25,13 @@ import net.jcip.annotations.GuardedBy;
 import org.andstatus.app.ActivityRequestCode;
 import org.andstatus.app.R;
 import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.database.DatabaseHolder;
 import org.andstatus.app.data.TimelineSearchSuggestionsProvider;
+import org.andstatus.app.database.DatabaseHolder;
+import org.andstatus.app.nosupport.util.DialogFactory;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.service.MyServiceState;
-import org.andstatus.app.nosupport.util.DialogFactory;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TriState;
@@ -187,16 +187,13 @@ public class StorageSwitch {
             File dbFileOld = null;
             File dbFileNew = null;
             try {
-
-                if (!done) {
-                    dbFileOld = MyContextHolder.get().context().getDatabasePath(
-                            databaseName);
-                    dbFileNew = MyStorage.getDatabasePath(
-                            databaseName, TriState.fromBoolean(useExternalStorageNew));
-                    if (dbFileOld == null) {
-                        messageToAppend.append(" No old database " + databaseName);
-                        done = true;
-                    }
+                dbFileOld = MyContextHolder.get().context().getDatabasePath(
+                        databaseName);
+                dbFileNew = MyStorage.getDatabasePath(
+                        databaseName, TriState.fromBoolean(useExternalStorageNew));
+                if (dbFileOld == null) {
+                    messageToAppend.append(" No old database " + databaseName);
+                    done = true;
                 }
                 if (!done) {
                     if (dbFileNew == null) {
@@ -232,7 +229,6 @@ public class StorageSwitch {
                         messageToAppend.insert(0, " Couldn't copy database " 
                                 + databaseName + ": " + e.getMessage()  + ". ");
                     }
-                    done = true;
                 }
             } catch (Exception e) {
                 MyLog.v(this, e);

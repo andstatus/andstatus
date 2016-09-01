@@ -54,6 +54,7 @@ public class MyUrlSpan extends URLSpan {
         try {
             super.onClick(widget);
         } catch (ActivityNotFoundException e) {
+            MyLog.v(this, e);
             try {
                 MyLog.i(this, "Malformed link:'" + getURL() + "'");
                 Context context = MyContextHolder.get().context();

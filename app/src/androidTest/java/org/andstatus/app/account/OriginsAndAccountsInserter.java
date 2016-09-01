@@ -17,7 +17,6 @@
 package org.andstatus.app.account;
 
 import android.accounts.AccountManager;
-import android.content.pm.PackageManager.NameNotFoundException;
 import android.test.InstrumentationTestCase;
 import android.text.TextUtils;
 
@@ -42,12 +41,12 @@ import org.andstatus.app.util.TriState;
 public class OriginsAndAccountsInserter extends InstrumentationTestCase {
     MyContextForTest myContext;
     private String firstAccountUserOid = null;
-    
+
     public OriginsAndAccountsInserter(MyContextForTest myContextForTest) {
         myContext = myContextForTest;
     }
 
-    public void insert() throws NameNotFoundException, ConnectionException {
+    public void insert() {
         assertEquals("Data path", "ok", TestSuite.checkDataPath(this));
         addOrigins();
         addAccounts();
@@ -76,7 +75,7 @@ public class OriginsAndAccountsInserter extends InstrumentationTestCase {
         myContext.persistentOrigins().initialize();
     }
 
-    private void addAccounts() throws ConnectionException {
+    private void addAccounts() {
         addAccount(TestSuite.PUMPIO_TEST_ACCOUNT_USER_OID, TestSuite.PUMPIO_TEST_ACCOUNT_NAME,
                 "", OriginType.PUMPIO);
         addAccount(TestSuite.TWITTER_TEST_ACCOUNT_USER_OID, TestSuite.TWITTER_TEST_ACCOUNT_NAME,
@@ -91,7 +90,7 @@ public class OriginsAndAccountsInserter extends InstrumentationTestCase {
                 "", TestSuite.CONVERSATION_ORIGIN_TYPE);
     }
 
-    private MyAccount addAccount(String userOid, String accountNameString, String avatarUrl, OriginType originType) throws ConnectionException {
+    private MyAccount addAccount(String userOid, String accountNameString, String avatarUrl, OriginType originType) {
         if (firstAccountUserOid == null) {
             firstAccountUserOid = userOid;
         }
@@ -123,8 +122,8 @@ public class OriginsAndAccountsInserter extends InstrumentationTestCase {
     }
 
     private void assertAccountIsAddedToAccountManager(MyAccount maExpected) {
-            android.accounts.AccountManager am = AccountManager.get(myContext.context());
-            android.accounts.Account[] aa = am.getAccountsByType( AuthenticatorService.ANDROID_ACCOUNT_TYPE );
+        android.accounts.AccountManager am = AccountManager.get(myContext.context());
+        android.accounts.Account[] aa = am.getAccountsByType(AuthenticatorService.ANDROID_ACCOUNT_TYPE);
             MyAccount ma = null;
             for (android.accounts.Account account : aa) {
                 ma = MyAccount.Builder.fromAndroidAccount(myContext, account).getAccount();
@@ -135,7 +134,7 @@ public class OriginsAndAccountsInserter extends InstrumentationTestCase {
             assertEquals("MyAccount was not found in AccountManager among " + aa.length + " accounts.", maExpected, ma);
     }
 
-    private MyAccount addAccountFromMbUser(MbUser mbUser) throws ConnectionException {
+    private MyAccount addAccountFromMbUser(MbUser mbUser) {
         Origin origin = myContext.persistentOrigins().fromId(mbUser.originId);
         MyAccount.Builder builder = MyAccount.Builder.newOrExistingFromAccountName(myContext, mbUser.getUserName() + "/" + origin.getName(), TriState.TRUE);
         if (builder.getAccount().isOAuth()) {
@@ -144,7 +143,12 @@ public class OriginsAndAccountsInserter extends InstrumentationTestCase {
             builder.setPassword("samplePasswordFor" + mbUser.getUserName());
         }
         assertTrue("Credentials of " + mbUser + " are present (origin name=" + origin.getName() + ")", builder.getAccount().getCredentialsPresent());
-        builder.onCredentialsVerified(mbUser, null);
+        try {
+            builder.onCredentialsVerified(mbUser, null);
+        } catch (ConnectionException e) {
+            MyLog.e(this, e);
+            fail(e.getMessage());
+        }
 
         assertTrue("Account is persistent", builder.isPersistent());
         MyAccount ma = builder.getAccount();

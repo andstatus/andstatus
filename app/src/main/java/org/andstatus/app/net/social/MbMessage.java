@@ -120,17 +120,14 @@ public class MbMessage {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
+    public boolean equals(Object o) {
+        if (this == o) {
             return true;
         }
-        if (obj == null) {
+        if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        MbMessage other = (MbMessage) obj;
+        MbMessage other = (MbMessage) o;
         if (hashCode() != other.hashCode()) {
             return false;
         }
