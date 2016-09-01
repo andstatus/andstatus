@@ -19,12 +19,11 @@ package org.andstatus.app.net.http;
 import org.andstatus.app.account.AccountDataReader;
 import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.origin.OriginType;
-import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
 
 import java.net.URL;
 
-public class HttpConnectionData implements Cloneable {
+public class HttpConnectionData {
     protected OriginType originType;
     protected long originId;
     public boolean isSsl;
@@ -63,14 +62,20 @@ public class HttpConnectionData implements Cloneable {
         return data;
     }
 
-    @Override
-    public HttpConnectionData clone() {
-        try {
-            return (HttpConnectionData) super.clone();
-        } catch (CloneNotSupportedException e) {
-            MyLog.e(this, "Clone failed", e);
-            return new HttpConnectionData();
-        }
+    public HttpConnectionData copy() {
+        HttpConnectionData data = new HttpConnectionData();
+        data.originType = originType;
+        data.originId = originId;
+        data.isSsl = isSsl;
+        data.sslMode = sslMode;
+        data.useLegacyHttpProtocol = useLegacyHttpProtocol;
+        data.basicPath = basicPath;
+        data.oauthPath = oauthPath;
+        data.accountUsername = accountUsername;
+        data.originUrl = originUrl;
+        data.urlForUserToken = urlForUserToken;
+        data.dataReader = dataReader;
+        return data;
     }
 
     @Override

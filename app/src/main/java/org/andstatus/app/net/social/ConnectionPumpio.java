@@ -293,7 +293,7 @@ public class ConnectionPumpio extends Connection {
             throw new ConnectionException(StatusCode.BAD_REQUEST, apiRoutine + ": host is empty for the userName='" + username + "'");
         } else if (http.data.originUrl == null || host.compareToIgnoreCase(http.data.originUrl.getHost()) != 0) {
             MyLog.v(this, "Requesting data from the host: " + host);
-            HttpConnectionData connectionData1 = http.data.clone();
+            HttpConnectionData connectionData1 = http.data.copy();
             connectionData1.oauthClientKeys = null;
             connectionData1.originUrl = UrlUtils.buildUrl(host, connectionData1.isSsl);
             conu.httpConnection = http.getNewInstance();
