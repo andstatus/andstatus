@@ -285,13 +285,11 @@ public class PersistentAccounts {
      * First try two supplied user IDs, then try any other existing account
      * @return Invalid account if nothing suitable found
      */
+    @NonNull
     public MyAccount getAccountForThisMessage(long originId, long messageId, long firstUserId,
             long preferredUserId, boolean succeededOnly)  {
         final String method = "getAccountForThisMessage";
-        MyAccount ma = null;
-        if (originId != 0) {
-            ma = fromUserId(firstUserId);
-        }
+        MyAccount ma = fromUserId(firstUserId);
         if (!accountFits(ma, originId, succeededOnly)) {
             ma = betterFit(ma, fromUserId(preferredUserId), originId, succeededOnly);
         }
@@ -313,7 +311,8 @@ public class PersistentAccounts {
                 && (succeededOnly ? ma.isValidAndSucceeded() : ma.isValid())
                 && (originId == 0 || ma.getOriginId() == originId);
     }
-    
+
+    @NonNull
     private MyAccount betterFit(@NonNull MyAccount oldMa, @NonNull MyAccount newMa, long originId, boolean succeededOnly) {
         if (accountFits(oldMa, originId, succeededOnly) || !accountFits(newMa, originId, false)) {
             return oldMa;
