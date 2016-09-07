@@ -31,6 +31,7 @@ import org.acra.ReportingInteractionMode;
 import org.acra.annotation.ReportsCrashes;
 import org.andstatus.app.R;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.TamperingDetector;
 
 import java.io.File;
 import java.util.List;
@@ -75,6 +76,7 @@ public class MyApplication extends Application {
         MyLog.v(this, "attachBaseContext started" + (isAcraProcess ? ". ACRA process" : ""));
         super.attachBaseContext(base);
         ACRA.init(this);
+        TamperingDetector.initialize(this);
     }
 
     @Override

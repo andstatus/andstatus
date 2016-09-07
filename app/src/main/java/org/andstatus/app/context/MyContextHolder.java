@@ -31,6 +31,7 @@ import org.andstatus.app.graphics.MyImageCache;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
+import org.andstatus.app.util.TamperingDetector;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -270,7 +271,8 @@ public final class MyContextHolder {
         try {
             PackageManager pm = context.getPackageManager();
             PackageInfo pi = pm.getPackageInfo(context.getPackageName(), 0);
-            return pi.packageName + " v." + pi.versionName + " (" + pi.versionCode + ")";
+            return pi.packageName + " v." + pi.versionName + " (" + pi.versionCode + ") " +
+                    TamperingDetector.getAppSignatureInfo();
         } catch (PackageManager.NameNotFoundException e) {
             MyLog.e(TAG, "Unable to obtain package information", e);
         }
