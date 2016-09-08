@@ -58,7 +58,7 @@ public class TamperingDetector {
                 I18n.appendWithSpace(builder, signature);
             }
         }
-        ACRA.getErrorReporter().putCustomData("apkSignatures", builder.toString());;
+        ACRA.getErrorReporter().putCustomData("apkSignatures", builder.toString());
     }
 
     private static List<String> getAppSignatures(Context context) {

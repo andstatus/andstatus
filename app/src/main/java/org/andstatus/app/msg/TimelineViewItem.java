@@ -142,7 +142,8 @@ public class TimelineViewItem extends MessageViewItem {
     }
 
     private void setMessageSource(Context context, StringBuilder messageDetails) {
-        if (!SharedPreferencesUtil.isEmpty(messageSource) && !"ostatus".equals(messageSource)) {
+        if (!SharedPreferencesUtil.isEmpty(messageSource) && !"ostatus".equals(messageSource)
+                && !"unknown".equals(messageSource)) {
             messageDetails.append(" " + String.format(
                     context.getText(R.string.message_source_from).toString(), messageSource));
         }
