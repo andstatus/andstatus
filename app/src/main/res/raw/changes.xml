@@ -25,8 +25,28 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
 		</subtitle>
     </header>
-    <release android:versionName="28.00" android:versionCode="187"
-             versionDate="2016-08-29"
+    <release android:versionName="29.00" android:versionCode="189"
+             versionDate="2016-09-10"
+             versionTitle="Pump.io support enhancements">
+        <changes>
+            <change>Implementation of Pump.io's "share" activity made more familiar for accustomed
+                Pump'io users:
+                <ul>
+                    <li>"Reblog" action for Pump.io account is renamed to "Share via Pump.io".
+                        (Simply "Share" already has another meaning in AndStatus and
+                        in Android in general for millions of users...).
+                        This is similar to Twitter, for which the same
+                        action is renamed in a User Interface to "Retweet".</li>
+                    <li>A User's Followers "collection" is automatically added to "cc" field
+                        of the activity
+                        in order for the Followers to see the shares in the User's feed.</li>
+                </ul>
+                <a href="https://github.com/andstatus/andstatus/issues/376">#376</a>
+            </change>
+        </changes>
+    </release>
+    <release android:versionName="28.01" android:versionCode="188"
+             versionDate="2016-08-31"
              versionTitle="Collapse duplicated posts. Accounts reodering. Continuous automatic application quality checking">
         <changes>
             <change>Implemented ”Collapse duplicates” feature, which is switchable in the Navigation

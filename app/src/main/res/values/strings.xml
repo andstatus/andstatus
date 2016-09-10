@@ -241,6 +241,7 @@
   <string name="menu_item_copy_author">Copy @author to clipboard</string>
   <string name="menu_item_destroy_favorite">Undo favorite</string>
   <string name="menu_item_destroy_reblog">Undo repost</string>
+  <string name="menu_item_destroy_reblog_pumpio">Undo share</string>
   <string name="menu_item_destroy_reblog_twitter">Undo retweet</string>
   <string name="menu_item_destroy_status">Remove message</string>
   <string name="menu_item_direct_message">Direct Message</string>
@@ -253,6 +254,7 @@
   <string name="menu_item_reply">Reply</string>
   <string name="menu_item_reply_all">Reply to All</string>
   <string name="menu_item_reblog">Repost</string>
+  <string name="menu_item_reblog_pumpio">Share via Pump.io</string>
   <string name="menu_item_reblog_twitter">Retweet</string>
   <string name="menu_item_resend">Resend</string>
   <string name="menu_item_share">Share</string>
@@ -332,6 +334,7 @@
   <string name="preference_true_black_title">True black background</string>
   <string name="preference_use_kitkat_media_chooser_title">Modern interface to select an attachment</string>
   <string name="reblogged_by">reposted by %1$s</string>
+  <string name="reblogged_by_pumpio">shared by %1$s</string>
   <string name="reblogged_by_twitter">retweeted by %1$s</string>
   <string name="refresh_title">Refresh from cache</string>
   <string name="refresh_timeline_automatically_title">Refresh timeline automatically</string>

@@ -34,6 +34,15 @@ class OriginPumpio extends Origin {
             case R.string.summary_preference_username:
                 resIdOut = R.string.summary_preference_username_pumpio;
                 break;
+            case R.string.menu_item_destroy_reblog:
+                resIdOut = R.string.menu_item_destroy_reblog_pumpio;
+                break;
+            case R.string.menu_item_reblog:
+                resIdOut = R.string.menu_item_reblog_pumpio;
+                break;
+            case R.string.reblogged_by:
+                resIdOut = R.string.reblogged_by_pumpio;
+                break;
             default:
                 resIdOut = resId;
                 break;
