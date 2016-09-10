@@ -36,6 +36,7 @@ import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RawResourceUtils;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UrlUtils;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -88,24 +89,28 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
     }
 
     public void testOidToObjectType() {
-        String oids[] = {"https://identi.ca/api/activity/L4v5OL93RrabouQc9_QGfg", 
+        String oids[] = {"https://identi.ca/api/activity/L4v5OL93RrabouQc9_QGfg",
                 "https://identi.ca/api/comment/ibpUqhU1TGCE2yHNbUv54g",
                 "https://identi.ca/api/note/nlF5jl1HQciIs_zP85EeYg",
                 "https://identi.ca/obj/ibpcomment",
                 "http://identi.ca/notice/95772390",
                 "acct:t131t@identi.ca",
-                "http://identi.ca/user/46155"};
-        String objectTypes[] = {"activity", 
-                "comment", 
+                "http://identi.ca/user/46155",
+                "https://identi.ca/api/user/andstatus/followers",
+                ActivitySender.PUBLIC_COLLECTION_ID};
+        String objectTypes[] = {"activity",
+                "comment",
                 "note",
                 "unknown object type: https://identi.ca/obj/ibpcomment",
                 "note",
                 "person",
-                "person"};
+                "person",
+                "collection",
+                "collection"};
         for (int ind=0; ind < oids.length; ind++) {
             String oid = oids[ind];
             String objectType = objectTypes[ind];
-            assertEquals("Expecting '" + objectType + "'", objectType, connection.oidToObjectType(oid));
+            assertEquals("Expecting'" + oid + "' to be '" + objectType + "'", objectType, connection.oidToObjectType(oid));
         }
     }
 
@@ -252,7 +257,24 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         
         assertTrue("InReplyTo is not present", !obj.has("inReplyTo"));
     }
-    
+
+    public void testReblog() throws ConnectionException, JSONException {
+        String rebloggedId = "https://identi.ca/api/note/94893FsdsdfFdgtjuk38ErKv";
+        httpConnectionMock.setResponse("");
+        connection.data.setAccountUserOid("acct:mytester@" + originUrl.getHost());
+        connection.postReblog(rebloggedId);
+        JSONObject activity = httpConnectionMock.getPostedJSONObject();
+        assertTrue("Object present", activity.has("object"));
+        JSONObject obj = activity.getJSONObject("object");
+        assertEquals("Sharing a note", PumpioObjectType.NOTE.id(), obj.getString("objectType"));
+        JSONArray recipients = activity.getJSONArray("to");
+        assertEquals("Nothing in TO", 1, recipients.length());
+        assertEquals("Public collection", ActivitySender.PUBLIC_COLLECTION_ID, ((JSONObject) recipients.get(0)).get("id"));
+        recipients = activity.getJSONArray("cc");
+        assertEquals("No followers in CC", 1, recipients.length());
+        assertEquals("Followers id", "https://identi.ca/api/user/mytester/followers", ((JSONObject) recipients.get(0)).get("id"));
+    }
+
     public void testUnfollowUser() throws IOException {
         String jso = RawResourceUtils.getString(this.getInstrumentation().getContext(), 
                 org.andstatus.app.tests.R.raw.unfollow_pumpio);

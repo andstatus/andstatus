@@ -248,6 +248,8 @@ public class ConnectionPumpio extends Connection {
             objectType = "note";
         } else if (oid.contains("/person/")) {
             objectType = "person";
+        } else if (oid.contains("/collection/") || oid.endsWith("/followers")) {
+            objectType = "collection";
         } else if (oid.contains("/user/")) {
             objectType = "person";
         } else {

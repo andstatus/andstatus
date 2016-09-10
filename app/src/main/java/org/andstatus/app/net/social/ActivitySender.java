@@ -35,6 +35,7 @@ import org.json.JSONObject;
  */
 class ActivitySender {
     private static final String TAG = ActivitySender.class.getSimpleName();
+    public static final String PUBLIC_COLLECTION_ID = "http://activityschema.org/collection/public";
     ConnectionPumpio connection;
     String objectId = "";
     String inReplyToId = "";
@@ -109,7 +110,7 @@ class ActivitySender {
         return jso;
     }
 
-    private JSONObject newActivityOfThisAccount(String verb) throws JSONException {
+    private JSONObject newActivityOfThisAccount(String verb) throws JSONException, ConnectionException {
         JSONObject activity = new JSONObject();
         activity.put("objectType", "activity");
         activity.put("verb", verb);
@@ -120,7 +121,10 @@ class ActivitySender {
         generator.put("objectType", "application");
         activity.put("generator", generator);
 
-        addRecipient(activity);
+        addMainRecipient(activity);
+        if ("share".equals(verb)) {
+            addRecipient(activity, "cc", getFollowersCollectionId());
+        }
         
         JSONObject author = new JSONObject();
         author.put("id", connection.data.getAccountUserOid());
@@ -130,22 +134,30 @@ class ActivitySender {
         return activity;
     }
 
-    private void addRecipient(JSONObject activity) throws JSONException {
-        boolean skip = false;
-        JSONObject recipient = new JSONObject();
+    private String getFollowersCollectionId() throws ConnectionException {
+        ConnectionAndUrl conu = connection.getConnectionAndUrl(ApiRoutineEnum.GET_FOLLOWERS,
+                connection.data.getAccountUserOid());
+        return conu.httpConnection.pathToUrlString(conu.url);
+    }
+
+    private void addMainRecipient(JSONObject activity) throws JSONException {
+        String id = recipientId;
+        if (TextUtils.isEmpty(id) && TextUtils.isEmpty(inReplyToId)) {
+            id = PUBLIC_COLLECTION_ID;
+        }
+        addRecipient(activity, "to", id);
+    }
+
+    private void addRecipient(JSONObject activity, String recipientField, String recipientId) throws JSONException {
         if (!TextUtils.isEmpty(recipientId)) {
+            JSONObject recipient = new JSONObject();
             recipient.put("id", recipientId);
             recipient.put("objectType", connection.oidToObjectType(recipientId));
-        } else if (!TextUtils.isEmpty(inReplyToId)) {
-            skip = true;
-        } else {
-            recipient.put("id", "http://activityschema.org/collection/public");
-            recipient.put("objectType", "collection");
-        }
-        if (!skip) {
-            JSONArray to = new JSONArray();
-            to.put(recipient);
-            activity.put("to", to);
+
+            JSONArray field = activity.has(recipientField) ? activity.getJSONArray(recipientField) :
+                    new JSONArray();
+            field.put(recipient);
+            activity.put(recipientField, field);
         }
     }
 

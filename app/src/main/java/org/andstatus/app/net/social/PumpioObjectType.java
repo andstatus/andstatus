@@ -39,6 +39,7 @@ enum PumpioObjectType {
     COMMENT("comment", null),
     IMAGE("image", COMMENT),
     NOTE("note", COMMENT),
+    COLLECTION("collection", null),
     UNKNOWN("unknown", null);
     
     private String id;
