@@ -630,7 +630,7 @@ public class ConnectionPumpio extends Connection {
     @Override
     public List<MbTimelineItem> search(TimelinePosition youngestPosition, int limit, String searchQuery)
             throws ConnectionException {
-        return new ArrayList<MbTimelineItem>();
+        return new ArrayList<>();
     }
 
     @Override
@@ -651,4 +651,9 @@ public class ConnectionPumpio extends Connection {
         MyLog.v(this, "getUser oid='" + userId + "', userName='" + userName + "' -> " + mbUser.getRealName());
         return mbUser;
     }
+
+    protected OriginConnectionData getData() {
+        return data;
+    }
+
 }

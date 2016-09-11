@@ -73,7 +73,7 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         connection.enrichConnectionData(connectionData);
         connectionData.setHttpConnectionClass(HttpConnectionMock.class);
         connection.setAccountData(connectionData);
-        httpConnectionMock = (HttpConnectionMock) connection.http;
+        httpConnectionMock = connection.getHttpMock();
 
         httpConnectionMock.data.originUrl = originUrl;
         httpConnectionMock.data.oauthClientKeys = OAuthClientKeys.fromConnectionData(httpConnectionMock.data);
@@ -239,7 +239,7 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         String body = "@peter Do you think it's true?";
         String inReplyToId = "https://identi.ca/api/note/94893FsdsdfFdgtjuk38ErKv";
         httpConnectionMock.setResponse("");
-        connection.data.setAccountUserOid("acct:mytester@" + originUrl.getHost());
+        connection.getData().setAccountUserOid("acct:mytester@" + originUrl.getHost());
         connection.updateStatus(body, inReplyToId, null);
         JSONObject activity = httpConnectionMock.getPostedJSONObject();
         assertTrue("Object present", activity.has("object"));
@@ -266,7 +266,7 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
     public void testReblog() throws ConnectionException, JSONException {
         String rebloggedId = "https://identi.ca/api/note/94893FsdsdfFdgtjuk38ErKv";
         httpConnectionMock.setResponse("");
-        connection.data.setAccountUserOid("acct:mytester@" + originUrl.getHost());
+        connection.getData().setAccountUserOid("acct:mytester@" + originUrl.getHost());
         connection.postReblog(rebloggedId);
         JSONObject activity = httpConnectionMock.getPostedJSONObject();
         assertTrue("Object present", activity.has("object"));
@@ -284,11 +284,11 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         String jso = RawResourceUtils.getString(this.getInstrumentation().getContext(), 
                 org.andstatus.app.tests.R.raw.unfollow_pumpio);
         httpConnectionMock.setResponse(jso);
-        connection.data.setAccountUserOid("acct:t131t@" + originUrl.getHost());
+        connection.getData().setAccountUserOid("acct:t131t@" + originUrl.getHost());
         String userOid = "acct:evan@e14n.com";
         MbUser user = connection.followUser(userOid, false);
         assertTrue("User is present", !user.isEmpty());
-        assertEquals("Our account acted", connection.data.getAccountUserOid(), user.actor.oid);
+        assertEquals("Our account acted", connection.getData().getAccountUserOid(), user.actor.oid);
         assertEquals("Object of action", userOid, user.oid);
         assertEquals("Unfollowed", TriState.FALSE, user.followedByActor);
     }
@@ -302,7 +302,7 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         String jso = RawResourceUtils.getString(this.getInstrumentation().getContext(), 
                 org.andstatus.app.tests.R.raw.destroy_status_response_pumpio);
         httpConnectionMock.setResponse(jso);
-        connection.data.setAccountUserOid(TestSuite.CONVERSATION_ACCOUNT_USER_OID);
+        connection.getData().setAccountUserOid(TestSuite.CONVERSATION_ACCOUNT_USER_OID);
         assertTrue("Success", connection.destroyStatus("https://identi.ca.example.com/api/comment/xf0WjLeEQSlyi8jwHJ0ttre"));
 
         boolean thrown = false;
@@ -320,7 +320,7 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
                 org.andstatus.app.tests.R.raw.pumpio_activity_with_image);
         httpConnectionMock.setResponse(jso);
         
-        connection.data.setAccountUserOid("acct:mymediatester@" + originUrl.getHost());
+        connection.getData().setAccountUserOid("acct:mymediatester@" + originUrl.getHost());
         MbMessage message2 = connection.updateStatus("Test post message with media", "", TestSuite.LOCAL_IMAGE_TEST_URI);
         message2.setPublic(true); 
         assertEquals("Message returned", privateGetMessageWithAttachment(this.getInstrumentation().getContext(), false), message2);

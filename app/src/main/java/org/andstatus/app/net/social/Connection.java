@@ -27,6 +27,7 @@ import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.ConnectionException.StatusCode;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.net.http.HttpConnectionData;
+import org.andstatus.app.net.http.HttpConnectionMock;
 import org.andstatus.app.net.http.OAuthConsumerAndProvider;
 import org.andstatus.app.net.social.MbTimelineItem.ItemType;
 import org.andstatus.app.origin.OriginConnectionData;
@@ -53,7 +54,7 @@ import java.util.Locale;
 public abstract class Connection {
     public static final String KEY_PASSWORD = "password";
     protected static final String EXTENSION = ".json";
-    
+
     /**
      * Connection APIs known
      */
@@ -148,8 +149,8 @@ public abstract class Connection {
         }
     }
 
-    public HttpConnection http; // TODO: change to protected
-    public OriginConnectionData data; // TODO: change to protected
+    protected HttpConnection http;
+    protected OriginConnectionData data;
     
     protected Connection() {
     }
@@ -210,7 +211,7 @@ public abstract class Connection {
     /**
      * Set User's password if the Connection object needs it
      */
-    public final void setPassword(String password) { 
+    public final void setPassword(String password) {
         http.setPassword(password);
     }
 
@@ -527,8 +528,13 @@ public abstract class Connection {
         http.downloadFile(url, file);
     }
 
-    public HttpConnection getHttp() {
-        return http;
+    @NonNull
+    public HttpConnectionMock getHttpMock() {
+        if (http != null && HttpConnectionMock.class.isAssignableFrom(http.getClass())) {
+            return (HttpConnectionMock) http;
+        }
+        throw new IllegalStateException(http == null ? "http is null" : "http is " +
+                http.getClass().getName());
     }
 
     protected String prependWithBasicPath(String url) {

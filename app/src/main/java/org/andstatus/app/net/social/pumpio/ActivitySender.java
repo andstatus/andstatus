@@ -95,7 +95,8 @@ class ActivitySender {
             }
             activity.put("object", obj);
 
-            ConnectionAndUrl conu = connection.getConnectionAndUrl(ApiRoutineEnum.POST_MESSAGE, connection.data.getAccountUserOid());
+            ConnectionAndUrl conu = connection.getConnectionAndUrl(ApiRoutineEnum.POST_MESSAGE,
+                    connection.getData().getAccountUserOid());
             jso = conu.httpConnection.postRequest(conu.url, activity);
             if (jso != null) {
                 if (MyLog.isVerboseEnabled()) {
@@ -129,7 +130,7 @@ class ActivitySender {
         }
         
         JSONObject author = new JSONObject();
-        author.put("id", connection.data.getAccountUserOid());
+        author.put("id", connection.getData().getAccountUserOid());
         author.put("objectType", "person");
 
         activity.put("actor", author);
@@ -138,7 +139,7 @@ class ActivitySender {
 
     private String getFollowersCollectionId() throws ConnectionException {
         ConnectionAndUrl conu = connection.getConnectionAndUrl(ApiRoutineEnum.GET_FOLLOWERS,
-                connection.data.getAccountUserOid());
+                connection.getData().getAccountUserOid());
         return conu.httpConnection.pathToUrlString(conu.url);
     }
 
@@ -172,7 +173,8 @@ class ActivitySender {
         try {
             JSONObject formParams = new JSONObject();
             formParams.put(HttpConnection.KEY_MEDIA_PART_URI, mMediaUri.toString());
-            ConnectionAndUrl conu = connection.getConnectionAndUrl(ApiRoutineEnum.POST_WITH_MEDIA, connection.data.getAccountUserOid());
+            ConnectionAndUrl conu = connection.getConnectionAndUrl(ApiRoutineEnum.POST_WITH_MEDIA,
+                    connection.getData().getAccountUserOid());
             obj1 = conu.httpConnection.postRequest(conu.url, formParams);
             if (obj1 != null) {
                 if (MyLog.isVerboseEnabled()) {

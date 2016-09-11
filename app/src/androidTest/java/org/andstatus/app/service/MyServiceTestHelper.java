@@ -45,9 +45,9 @@ public class MyServiceTestHelper implements MyServiceEventsListener {
         myContext.persistentAccounts().initialize();
         myContext.persistentTimelines().initialize();
         MyAccount ma = myContext.persistentAccounts().fromAccountName(accountName);
-        TestCase.assertTrue("HttpConnection mocked", ma.getConnection().getHttp() instanceof HttpConnectionMock);
+        HttpConnectionMock http = ma.getConnection().getHttpMock();
         if (!isSingleMockedInstance) {
-            httpConnectionMock = (HttpConnectionMock) ma.getConnection().getHttp();
+            httpConnectionMock = http;
         }
         connectionInstanceId = httpConnectionMock.getInstanceId();
 
