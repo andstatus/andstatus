@@ -125,7 +125,7 @@ public class ConnectionPumpio extends Connection {
     }
 
     private MbUser userFromJson(JSONObject jso) throws ConnectionException {
-        if (!PumpioObjectType.PERSON.isMyType(jso)) {
+        if (!ObjectType.PERSON.isMyType(jso)) {
             return MbUser.getEmpty();
         }
         String oid = jso.optString("id");
@@ -169,22 +169,22 @@ public class ConnectionPumpio extends Connection {
     
     @Override
     public MbMessage destroyFavorite(String messageId) throws ConnectionException {
-        return verbWithMessage("unfavorite", messageId);
+        return actOnMessage(ActivityType.UNFAVORITE, messageId);
     }
 
     @Override
     public MbMessage createFavorite(String messageId) throws ConnectionException {
-        return verbWithMessage("favorite", messageId);
+        return actOnMessage(ActivityType.FAVORITE, messageId);
     }
 
     @Override
     public boolean destroyStatus(String messageId) throws ConnectionException {
-        MbMessage message = verbWithMessage("delete", messageId);
+        MbMessage message = actOnMessage(ActivityType.DELETE, messageId);
         return !message.isEmpty();
     }
 
-    private MbMessage verbWithMessage(String verb, String messageId) throws ConnectionException {
-        return ActivitySender.fromId(this, messageId).sendMessage(verb);
+    private MbMessage actOnMessage(ActivityType activityType, String messageId) throws ConnectionException {
+        return ActivitySender.fromId(this, messageId).sendMessage(activityType);
     }
 
     @Override
@@ -236,7 +236,7 @@ public class ConnectionPumpio extends Connection {
         ActivitySender sender = ActivitySender.fromContent(this, message);
         sender.setInReplyTo(inReplyToId);
         sender.setMediaUri(mediaUri);
-        return messageFromJson(sender.sendMe("post"));
+        return messageFromJson(sender.sendMe(ActivityType.POST));
     }
     
     protected String toHtmlIfAllowed(String message) {
@@ -330,12 +330,12 @@ public class ConnectionPumpio extends Connection {
         ActivitySender sender = ActivitySender.fromContent(this, message);
         sender.setRecipient(recipientId);
         sender.setMediaUri(mediaUri);
-        return messageFromJson(sender.sendMe("post"));
+        return messageFromJson(sender.sendMe(ActivityType.POST));
     }
 
     @Override
     public MbMessage postReblog(String rebloggedId) throws ConnectionException {
-        return verbWithMessage("share", rebloggedId);
+        return actOnMessage(ActivityType.SHARE, rebloggedId);
     }
 
     @Override
@@ -354,7 +354,7 @@ public class ConnectionPumpio extends Connection {
         }
         String url = builder.build().toString();
         JSONArray jArr = conu.httpConnection.getRequestAsArray(url);
-        List<MbTimelineItem> timeline = new ArrayList<MbTimelineItem>();
+        List<MbTimelineItem> timeline = new ArrayList<>();
         if (jArr != null) {
             // Read the activities in chronological order
             for (int index = jArr.length() - 1; index >= 0; index--) {
@@ -383,12 +383,12 @@ public class ConnectionPumpio extends Connection {
 
     private MbTimelineItem timelineItemFromJson(JSONObject activity) throws ConnectionException {
         MbTimelineItem item = new MbTimelineItem();
-        if (PumpioObjectType.ACTIVITY.isMyType(activity)) {
+        if (ObjectType.ACTIVITY.isMyType(activity)) {
             try {
                 item.timelineItemPosition = new TimelinePosition(activity.optString("id"));
                 item.timelineItemDate = dateFromJson(activity, "updated");
                 
-                if (PumpioObjectType.PERSON.isMyType(activity.getJSONObject("object"))) {
+                if (ObjectType.PERSON.isMyType(activity.getJSONObject("object"))) {
                     item.mbUser = userFromJsonActivity(activity);
                 } else {
                     item.mbMessage = messageFromJsonActivity(activity);
@@ -406,7 +406,7 @@ public class ConnectionPumpio extends Connection {
     public MbUser userFromJsonActivity(JSONObject activity) throws ConnectionException {
         MbUser mbUser;
         try {
-            String verb = activity.getString("verb");
+            ActivityType activityType = ActivityType.load(activity.getString("verb"));
             String oid = activity.optString("id");
             if (TextUtils.isEmpty(oid)) {
                 MyLog.d(TAG, "Pumpio activity has no id:" + activity.toString(2));
@@ -416,11 +416,10 @@ public class ConnectionPumpio extends Connection {
             if (activity.has("actor")) {
                 mbUser.actor = userFromJson(activity.getJSONObject("actor"));
             }
-            
-            if ("follow".equalsIgnoreCase(verb)) {
+
+            if (activityType.equals(ActivityType.FOLLOW)) {
                 mbUser.followedByActor = TriState.TRUE;
-            } else if ("unfollow".equalsIgnoreCase(verb) 
-                    || "stop-following".equalsIgnoreCase(verb)) {
+            } else if (activityType.equals(ActivityType.STOP_FOLLOWING)) {
                 mbUser.followedByActor = TriState.FALSE;
             }
         } catch (JSONException e) {
@@ -437,9 +436,9 @@ public class ConnectionPumpio extends Connection {
                 ConnectionException.loggedJsonException(this, "messageFromJson", e, jso);
             }
         }
-        if (PumpioObjectType.ACTIVITY.isMyType(jso)) {
+        if (ObjectType.ACTIVITY.isMyType(jso)) {
             return messageFromJsonActivity(jso);
-        } else if (PumpioObjectType.compatibleWith(jso) == PumpioObjectType.COMMENT) { 
+        } else if (ObjectType.compatibleWith(jso) == ObjectType.COMMENT) {
             return messageFromJsonComment(jso);
         } else {
             return MbMessage.getEmpty();
@@ -449,7 +448,7 @@ public class ConnectionPumpio extends Connection {
     private MbMessage messageFromJsonActivity(JSONObject activity) throws ConnectionException {
         MbMessage message;
         try {
-            String verb = activity.getString("verb");
+            ActivityType activityType = ActivityType.load(activity.getString("verb"));
             String oid = activity.optString("id");
             if (TextUtils.isEmpty(oid)) {
                 MyLog.d(this, "Pumpio activity has no id:" + activity.toString(2));
@@ -490,20 +489,20 @@ public class ConnectionPumpio extends Connection {
             
             JSONObject jso = activity.getJSONObject("object");
             // Is this a reblog ("Share" in terms of Activity streams)?
-            if ("share".equalsIgnoreCase(verb)) {
+            if (activityType.equals(ActivityType.SHARE)) {
                 message.rebloggedMessage = messageFromJson(jso);
                 if (message.rebloggedMessage.isEmpty()) {
                     MyLog.d(TAG, "No reblogged message " + jso.toString(2));
                     return message.markAsEmpty();
                 }
             } else {
-                if ("favorite".equalsIgnoreCase(verb)) {
+                if (activityType.equals(ActivityType.FAVORITE)) {
                     message.favoritedByActor = TriState.TRUE;
-                } else if ("unfavorite".equalsIgnoreCase(verb) || "unlike".equalsIgnoreCase(verb)) {
+                } else if (activityType.equals(ActivityType.UNFAVORITE)) {
                     message.favoritedByActor = TriState.FALSE;
                 }
                 
-                if (PumpioObjectType.compatibleWith(jso) == PumpioObjectType.COMMENT) {
+                if (ObjectType.compatibleWith(jso) == ObjectType.COMMENT) {
                     parseComment(message, jso);
                 } else {
                     return message.markAsEmpty();
@@ -635,11 +634,11 @@ public class ConnectionPumpio extends Connection {
 
     @Override
     public MbUser followUser(String userId, Boolean follow) throws ConnectionException {
-        return verbWithUser(follow ? "follow" : "stop-following", userId);
+        return actOnUser(follow ? ActivityType.FOLLOW : ActivityType.STOP_FOLLOWING, userId);
     }
 
-    private MbUser verbWithUser(String verb, String userId) throws ConnectionException {
-        return ActivitySender.fromId(this, userId).sendUser(verb);
+    private MbUser actOnUser(ActivityType activityType, String userId) throws ConnectionException {
+        return ActivitySender.fromId(this, userId).sendUser(activityType);
     }
     
     @Override

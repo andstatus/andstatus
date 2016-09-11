@@ -245,7 +245,7 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         assertTrue("Object present", activity.has("object"));
         JSONObject obj = activity.getJSONObject("object");
         assertEquals("Message content", body, obj.getString("content"));
-        assertEquals("Reply is comment", PumpioObjectType.COMMENT.id(), obj.getString("objectType"));
+        assertEquals("Reply is comment", ObjectType.COMMENT.id(), obj.getString("objectType"));
         
         assertTrue("InReplyTo is present", obj.has("inReplyTo"));
         JSONObject inReplyToObject = obj.getJSONObject("inReplyTo");
@@ -258,7 +258,7 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         assertTrue("Object present", activity.has("object"));
         obj = activity.getJSONObject("object");
         assertEquals("Message content", body, obj.getString("content"));
-        assertEquals("Message without reply is a note", PumpioObjectType.NOTE.id(), obj.getString("objectType"));
+        assertEquals("Message without reply is a note", ObjectType.NOTE.id(), obj.getString("objectType"));
         
         assertTrue("InReplyTo is not present", !obj.has("inReplyTo"));
     }
@@ -271,7 +271,7 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         JSONObject activity = httpConnectionMock.getPostedJSONObject();
         assertTrue("Object present", activity.has("object"));
         JSONObject obj = activity.getJSONObject("object");
-        assertEquals("Sharing a note", PumpioObjectType.NOTE.id(), obj.getString("objectType"));
+        assertEquals("Sharing a note", ObjectType.NOTE.id(), obj.getString("objectType"));
         JSONArray recipients = activity.getJSONArray("to");
         assertEquals("Nothing in TO", 1, recipients.length());
         assertEquals("Public collection", ActivitySender.PUBLIC_COLLECTION_ID, ((JSONObject) recipients.get(0)).get("id"));

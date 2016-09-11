@@ -74,18 +74,18 @@ class ActivitySender {
         return this;
     }
     
-    MbMessage sendMessage(String verb) throws ConnectionException {
-        return connection.messageFromJson(sendMe(verb));
+    MbMessage sendMessage(ActivityType activityType) throws ConnectionException {
+        return connection.messageFromJson(sendMe(activityType));
     }
 
-    MbUser sendUser(String verb) throws ConnectionException {
-        return connection.userFromJsonActivity(sendMe(verb));
+    MbUser sendUser(ActivityType activityType) throws ConnectionException {
+        return connection.userFromJsonActivity(sendMe(activityType));
     }
 
-    JSONObject sendMe(String verb) throws ConnectionException {
+    JSONObject sendMe(ActivityType activityType) throws ConnectionException {
         JSONObject jso = null;
         try {
-            JSONObject activity = newActivityOfThisAccount(verb);
+            JSONObject activity = newActivityOfThisAccount(activityType);
             JSONObject obj = UriUtils.isEmpty(mMediaUri) ? newTextObject(activity) : uploadMedia();
             if (!TextUtils.isEmpty(inReplyToId)) {
                 JSONObject inReplyToObject = new JSONObject();
@@ -100,32 +100,32 @@ class ActivitySender {
             jso = conu.httpConnection.postRequest(conu.url, activity);
             if (jso != null) {
                 if (MyLog.isVerboseEnabled()) {
-                    MyLog.v(this, "verb '" + verb + "' object id='" + objectId + "' " + jso.toString(2));
+                    MyLog.v(this, "activityType:" + activityType + "' objectId:'" + objectId + "' " + jso.toString(2));
                 }
-                if ("post".equals(verb) && !TextUtils.isEmpty(objectId)) {
-                    activity.put("verb", "update");
+                if (ActivityType.POST.equals(activityType) && !TextUtils.isEmpty(objectId)) {
+                    activity.put("verb", ActivityType.UPDATE.code);
                     jso = conu.httpConnection.postRequest(conu.url, activity);
                 }
             }
         } catch (JSONException e) {
-            throw ConnectionException.loggedJsonException(this, "Error '" + verb + "' object id='" + objectId + "'", e, jso);
+            throw ConnectionException.loggedJsonException(this, "Error '" + activityType + "' object id='" + objectId + "'", e, jso);
         }
         return jso;
     }
 
-    private JSONObject newActivityOfThisAccount(String verb) throws JSONException, ConnectionException {
+    private JSONObject newActivityOfThisAccount(ActivityType activityType) throws JSONException, ConnectionException {
         JSONObject activity = new JSONObject();
         activity.put("objectType", "activity");
-        activity.put("verb", verb);
+        activity.put("verb", activityType.code);
 
         JSONObject generator = new JSONObject();
         generator.put("id", ConnectionPumpio.APPLICATION_ID);
         generator.put("displayName", HttpConnection.USER_AGENT);
-        generator.put("objectType", "application");
+        generator.put("objectType", ObjectType.APPLICATION.id());
         activity.put("generator", generator);
 
-        addMainRecipient(activity);
-        if ("share".equals(verb)) {
+        addMainRecipient(activity, activityType);
+        if (activityType.addFollowers) {
             addRecipient(activity, "cc", getFollowersCollectionId());
         }
         
@@ -143,9 +143,9 @@ class ActivitySender {
         return conu.httpConnection.pathToUrlString(conu.url);
     }
 
-    private void addMainRecipient(JSONObject activity) throws JSONException {
+    private void addMainRecipient(JSONObject activity, ActivityType activityType) throws JSONException {
         String id = recipientId;
-        if (TextUtils.isEmpty(id) && TextUtils.isEmpty(inReplyToId)) {
+        if (TextUtils.isEmpty(id) && TextUtils.isEmpty(inReplyToId) && activityType.addPublic) {
             id = PUBLIC_COLLECTION_ID;
         }
         addRecipient(activity, "to", id);
@@ -196,7 +196,7 @@ class ActivitySender {
                 throw new IllegalArgumentException("Nothing to send");
             }
             obj.put("content", content);
-            PumpioObjectType objectType = TextUtils.isEmpty(inReplyToId) ? PumpioObjectType.NOTE : PumpioObjectType.COMMENT;
+            ObjectType objectType = TextUtils.isEmpty(inReplyToId) ? ObjectType.NOTE : ObjectType.COMMENT;
             obj.put("objectType", objectType.id());
             obj.put("author", activity.getJSONObject("actor"));
         } else {

@@ -18,7 +18,9 @@ package org.andstatus.app.net.social.pumpio;
 
 import org.json.JSONObject;
 
-enum PumpioObjectType {
+/** @see <a href="https://www.w3.org/TR/activitystreams-vocabulary/#activity-types">Object Types</a>
+ * */
+enum ObjectType {
     ACTIVITY("activity", null) {
         @Override
         public boolean isMyType(JSONObject jso) {
@@ -35,6 +37,7 @@ enum PumpioObjectType {
             return is;
         }
     },
+    APPLICATION("application", null),
     PERSON("person", null),
     COMMENT("comment", null),
     IMAGE("image", COMMENT),
@@ -43,8 +46,9 @@ enum PumpioObjectType {
     UNKNOWN("unknown", null);
     
     private String id;
-    private PumpioObjectType compatibleType = this;
-    PumpioObjectType(String fieldName, PumpioObjectType compatibleType) {
+    private ObjectType compatibleType = this;
+
+    ObjectType(String fieldName, ObjectType compatibleType) {
         this.id = fieldName;
         if (compatibleType != null) {
             this.compatibleType = compatibleType;
@@ -63,8 +67,8 @@ enum PumpioObjectType {
         return is;
     }
     
-    public static PumpioObjectType compatibleWith(JSONObject jso) {
-        for(PumpioObjectType type : PumpioObjectType.values()) {
+    public static ObjectType compatibleWith(JSONObject jso) {
+        for(ObjectType type : ObjectType.values()) {
             if (type.isMyType(jso)) {
                 return type.compatibleType;
             }

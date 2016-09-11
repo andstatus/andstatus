@@ -305,7 +305,7 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> extends Instru
                 break;
             }
         }
-        assertTrue("Didn't find SelectorDialog with tag:'" + dialogTagToMonitor + "'", selectorDialog != null);
+        assertTrue(methodExt + ": Didn't find SelectorDialog with tag:'" + dialogTagToMonitor + "'", selectorDialog != null);
         assertTrue(isVisible);
 
         final ListView list = selectorDialog.getListView();
@@ -332,7 +332,7 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> extends Instru
     public void selectIdFromSelectorDialog(String method, long id) throws InterruptedException {
         SelectorDialog selector = waitForSelectorDialog(method, 15000);
         int position = selector.getListAdapter().getPositionById(id);
-        assertTrue("Item id:" + id + " found", position >= 0);
+        assertTrue(method + "; Item id:" + id + " found", position >= 0);
         selectListPosition(method, position, selector.getListView(), selector.getListAdapter());
         clickListAtPosition(method, position, selector.getListView(), selector.getListAdapter());
     }
