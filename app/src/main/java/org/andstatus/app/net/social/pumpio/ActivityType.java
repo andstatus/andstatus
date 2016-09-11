@@ -27,7 +27,7 @@ enum ActivityType {
     FAVORITE("favorite", false, false),
     FOLLOW("follow", false, false),
     POST("post", true, false),
-    SHARE("share", true, true),
+    SHARE("share", false, false),
     STOP_FOLLOWING("stop-following", false, false),
     UNFAVORITE("unfavorite", false, false),
     UNKNOWN("unknown", false, false),
