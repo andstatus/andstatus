@@ -48,8 +48,9 @@ public class MbMessage {
     public String via = "";
     public String url="";
     private boolean isPublic = false;
+    private TriState isSubscribed = TriState.UNKNOWN;
 
-    public List<MbAttachment> attachments = new ArrayList<MbAttachment>();
+    public List<MbAttachment> attachments = new ArrayList<>();
     
     public boolean isPublic() {
         return isPublic;
@@ -128,10 +129,7 @@ public class MbMessage {
             return false;
         }
         MbMessage other = (MbMessage) o;
-        if (hashCode() != other.hashCode()) {
-            return false;
-        }
-        return true;
+        return hashCode() == other.hashCode();
     }
 
     @Override
@@ -186,4 +184,11 @@ public class MbMessage {
         return MyLog.formatKeyValue(this, builder.toString());
     }
 
+    public TriState isSubscribed() {
+        return isSubscribed;
+    }
+
+    public void setSubscribed(TriState isSubscribed) {
+        this.isSubscribed = isSubscribed;
+    }
 }

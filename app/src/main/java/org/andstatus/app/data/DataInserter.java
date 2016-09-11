@@ -56,9 +56,9 @@ import java.util.List;
  */
 public class DataInserter {
     private static final String TAG = DataInserter.class.getSimpleName();
-    public static final String MSG_ASSERTION_KEY = "insertOrUpdateMsg";
+    static final String MSG_ASSERTION_KEY = "insertOrUpdateMsg";
     private final CommandExecutionContext execContext;
-    KeywordsFilter keywordsFilter = new KeywordsFilter(
+    private KeywordsFilter keywordsFilter = new KeywordsFilter(
             SharedPreferencesUtil.getString(MyPreferences.KEY_FILTER_HIDE_MESSAGES_BASED_ON_KEYWORDS, ""));
 
     public DataInserter(MyAccount ma) {
@@ -175,9 +175,8 @@ public class DataInserter {
                         || message.getStatus() == DownloadStatus.DRAFT);
 
             long sentDateStored = 0;
-            DownloadStatus statusStored = DownloadStatus.UNKNOWN;
             if (msgId != 0) {
-                statusStored = DownloadStatus.load(MyQuery.msgIdToLongColumnValue(MsgTable.MSG_STATUS, msgId));
+                DownloadStatus statusStored = DownloadStatus.load(MyQuery.msgIdToLongColumnValue(MsgTable.MSG_STATUS, msgId));
                 sentDateStored = MyQuery.msgIdToLongColumnValue(MsgTable.SENT_DATE, msgId);
                 if (isFirstTimeLoaded) {
                     isFirstTimeLoaded = statusStored != DownloadStatus.LOADED;
@@ -222,8 +221,13 @@ public class DataInserter {
                             + execContext.getMyAccount().getAccountName() );
                 }
             }
-            if (execContext.getTimeline().getTimelineType() == TimelineType.HOME
-                    || (!isDirectMessage && senderId == execContext.getMyAccount().getUserId())) {
+            if (!message.isSubscribed().equals(TriState.FALSE)) {
+                if (execContext.getTimeline().getTimelineType() == TimelineType.HOME
+                        || (!isDirectMessage && senderId == execContext.getMyAccount().getUserId())) {
+                    message.setSubscribed(TriState.TRUE);
+                }
+            }
+            if (message.isSubscribed().equals(TriState.TRUE)) {
                 values.put(MsgOfUserTable.SUBSCRIBED, 1);
             }
             if (!TextUtils.isEmpty(message.via)) {
@@ -325,11 +329,10 @@ public class DataInserter {
         boolean mentioned = execContext.getTimeline().getTimelineType() == TimelineType.MENTIONS;
         Long inReplyToUserId = 0L;
         if (message.inReplyToMessage != null) {
-            // If the Msg is a Reply to another message
-            Long inReplyToMessageId = 0L;
             // Type of the timeline is ALL meaning that message does not belong to this timeline
             DataInserter di = new DataInserter(execContext);
-            inReplyToMessageId = di.insertOrUpdateMsg(message.inReplyToMessage, lum);
+            // If the Msg is a Reply to another message
+            Long inReplyToMessageId = di.insertOrUpdateMsg(message.inReplyToMessage, lum);
             if (message.inReplyToMessage.sender != null) {
                 inReplyToUserId = MyQuery.oidToId(OidEnum.USER_OID, message.originId, message.inReplyToMessage.sender.oid);
             } else if (inReplyToMessageId != 0) {

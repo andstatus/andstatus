@@ -52,14 +52,14 @@ import java.util.List;
 
 @Travis
 public class ConnectionPumpioTest extends InstrumentationTestCase {
-    Context context;
-    ConnectionPumpio connection;
-    URL originUrl = UrlUtils.fromString("https://identi.ca");
-    HttpConnectionMock httpConnectionMock;
-    OriginConnectionData connectionData;
+    private Context context;
+    private ConnectionPumpio connection;
+    private URL originUrl = UrlUtils.fromString("https://identi.ca");
+    private HttpConnectionMock httpConnectionMock;
+    private OriginConnectionData connectionData;
 
-    String keyStored;
-    String secretStored;
+    private String keyStored;
+    private String secretStored;
     
     @Override
     protected void setUp() throws Exception {
@@ -212,8 +212,10 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
 
         ind++;
         mbMessage = timeline.get(ind).mbMessage;
+        assertEquals(mbMessage.isSubscribed(), TriState.UNKNOWN);
         assertTrue("Is a reply", mbMessage.inReplyToMessage != null);
         assertEquals("Is a reply to this user", mbMessage.inReplyToMessage.sender.getUserName(), "jankusanagi@identi.ca");
+        assertEquals(mbMessage.inReplyToMessage.isSubscribed(), TriState.FALSE);
     }
 
     public void testGetUsersFollowedBy() throws IOException {
@@ -259,7 +261,10 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         obj = activity.getJSONObject("object");
         assertEquals("Message content", body, obj.getString("content"));
         assertEquals("Message without reply is a note", ObjectType.NOTE.id(), obj.getString("objectType"));
-        
+
+        JSONArray recipients = activity.optJSONArray("to");
+        assertEquals("To Public collection", ActivitySender.PUBLIC_COLLECTION_ID, ((JSONObject) recipients.get(0)).get("id"));
+
         assertTrue("InReplyTo is not present", !obj.has("inReplyTo"));
     }
 
@@ -272,12 +277,8 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         assertTrue("Object present", activity.has("object"));
         JSONObject obj = activity.getJSONObject("object");
         assertEquals("Sharing a note", ObjectType.NOTE.id(), obj.getString("objectType"));
-        JSONArray recipients = activity.getJSONArray("to");
-        assertEquals("Nothing in TO", 1, recipients.length());
-        assertEquals("Public collection", ActivitySender.PUBLIC_COLLECTION_ID, ((JSONObject) recipients.get(0)).get("id"));
-        recipients = activity.getJSONArray("cc");
-        assertEquals("No followers in CC", 1, recipients.length());
-        assertEquals("Followers id", "https://identi.ca/api/user/mytester/followers", ((JSONObject) recipients.get(0)).get("id"));
+        assertEquals("Nothing in TO", null, activity.optJSONArray("to"));
+        assertEquals("No followers in CC", null, activity.optJSONArray("cc"));
     }
 
     public void testUnfollowUser() throws IOException {

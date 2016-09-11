@@ -26,7 +26,7 @@
 		</subtitle>
     </header>
     <release android:versionName="29.00" android:versionCode="189"
-             versionDate="2016-09-10"
+             versionDate="2016-09-11"
              versionTitle="Pump.io support enhancements">
         <changes>
             <change>Implementation of Pump.io's "share" activity made more familiar for accustomed
@@ -37,11 +37,18 @@
                         in Android in general for millions of users...).
                         This is similar to Twitter, for which the same
                         action is renamed in a User Interface to "Retweet".</li>
-                    <li>A User's Followers "collection" is automatically added to "cc" field
-                        of the activity
-                        in order for the Followers to see the shares in the User's feed.</li>
+                    <li>No recipients are added to the activity.</li>
                 </ul>
                 <a href="https://github.com/andstatus/andstatus/issues/376">#376</a>
+            </change>
+            <change>Fixed <a href="https://github.com/andstatus/andstatus/issues/271">#271</a>:
+                This is a server, that decides in almost all cases, if the message is public or not.
+                (Now "Public" is added to "to" field in a case no other recipients are found only
+                for "post" activity)
+            </change>
+            <change>Fixed <a href="https://github.com/andstatus/andstatus/issues/275">#275</a>:
+                Message, to which a subscribed message is a reply, is explicitly marked as not subscribed
+                in order for the latter not to be shown in the Home timeline.
             </change>
         </changes>
     </release>

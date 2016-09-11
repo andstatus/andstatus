@@ -239,7 +239,7 @@ public class ConnectionPumpio extends Connection {
         return messageFromJson(sender.sendMe(ActivityType.POST));
     }
     
-    protected String toHtmlIfAllowed(String message) {
+    private String toHtmlIfAllowed(String message) {
         return MyContextHolder.get().persistentOrigins().isHtmlContentAllowed(data.getOriginId()) ?
             MyHtml.htmlify(message) : message;
     }
@@ -284,7 +284,7 @@ public class ConnectionPumpio extends Connection {
         return  getConnectionAndUrlForUsername(apiRoutine, userOidToUsername(userId));
     }
 
-    ConnectionAndUrl getConnectionAndUrlForUsername(ApiRoutineEnum apiRoutine, String username) throws ConnectionException {
+    private ConnectionAndUrl getConnectionAndUrlForUsername(ApiRoutineEnum apiRoutine, String username) throws ConnectionException {
         ConnectionAndUrl conu = new ConnectionAndUrl();
         conu.url = this.getApiPath(apiRoutine);
         if (TextUtils.isEmpty(conu.url)) {
@@ -403,7 +403,7 @@ public class ConnectionPumpio extends Connection {
         return item;
     }
     
-    public MbUser userFromJsonActivity(JSONObject activity) throws ConnectionException {
+    MbUser userFromJsonActivity(JSONObject activity) throws ConnectionException {
         MbUser mbUser;
         try {
             ActivityType activityType = ActivityType.load(activity.getString("verb"));
@@ -433,7 +433,7 @@ public class ConnectionPumpio extends Connection {
             try {
                 MyLog.v(this, "messageFromJson: " + jso.toString(2));
             } catch (NullPointerException | JSONException e) {
-                ConnectionException.loggedJsonException(this, "messageFromJson", e, jso);
+                throw ConnectionException.loggedJsonException(this, "messageFromJson", e, jso);
             }
         }
         if (ObjectType.ACTIVITY.isMyType(jso)) {
@@ -481,7 +481,7 @@ public class ConnectionPumpio extends Connection {
                 }
             }
             if (activity.has("generator")) {
-                JSONObject generator = activity.getJSONObject("generator");
+                JSONObject generator = activity.getJSONObject(Properties.GENERATOR.code);
                 if (generator.has("displayName")) {
                     message.via = generator.getString("displayName");
                 }
@@ -531,8 +531,8 @@ public class ConnectionPumpio extends Connection {
             }
             message.sentDate = dateFromJson(jso, "published");
 
-            if (jso.has("generator")) {
-                JSONObject generator = jso.getJSONObject("generator");
+            if (jso.has(Properties.GENERATOR.code)) {
+                JSONObject generator = jso.getJSONObject(Properties.GENERATOR.code);
                 if (generator.has("displayName")) {
                     message.via = generator.getString("displayName");
                 }
@@ -556,6 +556,7 @@ public class ConnectionPumpio extends Connection {
             if (jso.has("inReplyTo")) {
                 JSONObject inReplyToObject = jso.getJSONObject("inReplyTo");
                 message.inReplyToMessage = messageFromJson(inReplyToObject);
+                message.inReplyToMessage.setSubscribed(TriState.FALSE);
             }
         } catch (JSONException e) {
             throw ConnectionException.loggedJsonException(this, "Parsing comment/note", e, jso);
