@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.andstatus.app.net.social;
+package org.andstatus.app.net.social.pumpio;
 
 import android.net.Uri;
 import android.support.annotation.NonNull;
@@ -27,6 +27,13 @@ import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.ConnectionException.StatusCode;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.net.http.HttpConnectionData;
+import org.andstatus.app.net.social.Connection;
+import org.andstatus.app.net.social.MbAttachment;
+import org.andstatus.app.net.social.MbMessage;
+import org.andstatus.app.net.social.MbRateLimitStatus;
+import org.andstatus.app.net.social.MbTimelineItem;
+import org.andstatus.app.net.social.MbUser;
+import org.andstatus.app.net.social.TimelinePosition;
 import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.util.JsonUtils;
 import org.andstatus.app.util.MyHtml;
@@ -51,6 +58,7 @@ import java.util.Locale;
  */
 public class ConnectionPumpio extends Connection {
     private static final String TAG = ConnectionPumpio.class.getSimpleName();
+    static final String  APPLICATION_ID = "http://andstatus.org/andstatus";
 
     @Override
     public void enrichConnectionData(OriginConnectionData connectionData) {

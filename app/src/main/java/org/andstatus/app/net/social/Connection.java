@@ -51,8 +51,6 @@ import java.util.Locale;
  * @author yvolk@yurivolkov.com, torgny.bjers
  */
 public abstract class Connection {
-
-    static final String  APPLICATION_ID = "http://andstatus.org/andstatus";
     public static final String KEY_PASSWORD = "password";
     protected static final String EXTENSION = ".json";
     
@@ -150,8 +148,8 @@ public abstract class Connection {
         }
     }
 
-    protected HttpConnection http;
-    protected OriginConnectionData data;
+    public HttpConnection http; // TODO: change to protected
+    public OriginConnectionData data; // TODO: change to protected
     
     protected Connection() {
     }

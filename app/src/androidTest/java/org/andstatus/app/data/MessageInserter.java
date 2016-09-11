@@ -23,7 +23,7 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.database.MsgOfUserTable;
-import org.andstatus.app.net.social.ConnectionPumpio;
+import org.andstatus.app.net.social.pumpio.ConnectionPumpio;
 import org.andstatus.app.net.social.MbMessage;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.origin.Origin;

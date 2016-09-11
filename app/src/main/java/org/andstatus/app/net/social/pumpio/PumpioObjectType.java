@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.andstatus.app.net.social;
+package org.andstatus.app.net.social.pumpio;
 
 import org.json.JSONObject;
 

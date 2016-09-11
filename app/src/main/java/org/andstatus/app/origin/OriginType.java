@@ -22,7 +22,7 @@ import org.andstatus.app.net.http.HttpConnectionOAuthApache;
 import org.andstatus.app.net.http.HttpConnectionOAuthJavaNet;
 import org.andstatus.app.net.social.Connection.ApiEnum;
 import org.andstatus.app.net.social.ConnectionEmpty;
-import org.andstatus.app.net.social.ConnectionPumpio;
+import org.andstatus.app.net.social.pumpio.ConnectionPumpio;
 import org.andstatus.app.net.social.ConnectionTwitter1p1;
 import org.andstatus.app.net.social.ConnectionTwitterGnuSocial;
 import org.andstatus.app.net.social.MbUser;

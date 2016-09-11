@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.andstatus.app.net.social;
+package org.andstatus.app.net.social.pumpio;
 
 import android.net.Uri;
 import android.text.TextUtils;
@@ -22,7 +22,9 @@ import android.text.TextUtils;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
-import org.andstatus.app.net.social.ConnectionPumpio.ConnectionAndUrl;
+import org.andstatus.app.net.social.pumpio.ConnectionPumpio.ConnectionAndUrl;
+import org.andstatus.app.net.social.MbMessage;
+import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.UriUtils;
 import org.json.JSONArray;

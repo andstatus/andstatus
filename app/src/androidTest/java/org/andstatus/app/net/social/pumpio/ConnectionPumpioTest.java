@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.andstatus.app.net.social;
+package org.andstatus.app.net.social.pumpio;
 
 import android.content.Context;
 import android.test.InstrumentationTestCase;
@@ -29,7 +29,12 @@ import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnectionMock;
 import org.andstatus.app.net.http.OAuthClientKeys;
 import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
-import org.andstatus.app.net.social.ConnectionPumpio.ConnectionAndUrl;
+import org.andstatus.app.net.social.MbAttachment;
+import org.andstatus.app.net.social.MbMessage;
+import org.andstatus.app.net.social.MbTimelineItem;
+import org.andstatus.app.net.social.MbUser;
+import org.andstatus.app.net.social.TimelinePosition;
+import org.andstatus.app.net.social.pumpio.ConnectionPumpio.ConnectionAndUrl;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.util.MyLog;
