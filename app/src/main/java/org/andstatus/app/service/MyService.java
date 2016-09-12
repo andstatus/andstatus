@@ -223,6 +223,7 @@ public class MyService extends Service {
         synchronized (serviceStateLock) {
             if (!mInitialized) {
                 wasNotInitialized = true;
+                myContext = MyContextHolder.get();
                 queues.load();
                 registerReceiver(intentReceiver, new IntentFilter(MyAction.EXECUTE_COMMAND.getAction()));
                 mInitialized = true;
@@ -431,7 +432,7 @@ public class MyService extends Service {
     
     @Override
     public void onDestroy() {
-        boolean initialized = false;
+        boolean initialized;
         synchronized (serviceStateLock) {
             mForcedToStop = true;
             initialized = mInitialized;
@@ -499,9 +500,8 @@ public class MyService extends Service {
         StringBuilder logMessageBuilder = new StringBuilder();
         boolean could = true;
         synchronized(executorLock) {
-            if (mExecutor == null || !mExecutor.needsBackgroundWork()) {
-                // Ok
-            } else if ( mExecutor.isReallyWorking() ) {
+            if (mExecutor != null && mExecutor.needsBackgroundWork() &&
+                    mExecutor.isReallyWorking() ) {
                 if (forceNow) {
                     logMessageBuilder.append(" Cancelling working Executor;");
                 } else {
@@ -533,7 +533,7 @@ public class MyService extends Service {
         private volatile CommandData currentlyExecuting = null;
         private static final long MAX_EXECUTION_TIME_SECONDS = 60;
 
-        public QueueExecutor() {
+        QueueExecutor() {
             super(PoolEnum.SYNC);
         }
 
@@ -594,7 +594,7 @@ public class MyService extends Service {
 
         private CommandData pollQueue() {
             Queue<CommandData> tempQueue = new PriorityBlockingQueue<>(queues.get(QueueType.CURRENT).size()+1);
-            CommandData commandData = null;
+            CommandData commandData;
             do {
                 commandData = queues.get(QueueType.CURRENT).poll();
                 if (commandData == null && isAnythingToRetryNow()) {
@@ -754,7 +754,7 @@ public class MyService extends Service {
         private volatile long previousBeat = createdAt;
         private volatile long mIteration = 0;
 
-        public HeartBeat() {
+        HeartBeat() {
             super(PoolEnum.SYNC);
         }
 
@@ -816,11 +816,8 @@ public class MyService extends Service {
 
         @Override
         public boolean isReallyWorking() {
-            if ( !needsBackgroundWork()
-                    || RelativeTime.wasButMoreSecondsAgoThan(previousBeat, HEARTBEAT_PERIOD_SECONDS + 3)) {
-                return false;
-            }
-            return true;
+            return needsBackgroundWork() && !RelativeTime.
+                    wasButMoreSecondsAgoThan(previousBeat, HEARTBEAT_PERIOD_SECONDS + 3);
         }
     }
     
