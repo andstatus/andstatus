@@ -25,8 +25,35 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
 		</subtitle>
     </header>
-    <release android:versionName="28.00" android:versionCode="187"
-             versionDate="2016-08-29"
+    <release android:versionName="29.00" android:versionCode="190"
+             versionDate="2016-09-13"
+             versionTitle="Pump.io support enhancements">
+        <changes>
+            <change>Implementation of Pump.io's "share" activity made more familiar for accustomed
+                Pump'io users:
+                <ul>
+                    <li>"Reblog" action for Pump.io account is renamed to "Share via Pump.io".
+                        (Simply "Share" already has another meaning in AndStatus and
+                        in Android in general for millions of users...).
+                        This is similar to Twitter, for which the same
+                        action is renamed in a User Interface to "Retweet".</li>
+                    <li>No recipients are added to the activity.</li>
+                </ul>
+                <a href="https://github.com/andstatus/andstatus/issues/376">#376</a>
+            </change>
+            <change>Fixed <a href="https://github.com/andstatus/andstatus/issues/271">#271</a>:
+                This is a server, that decides in almost all cases, if a message is public or not.
+                Now "Public" is added to "to" field for "post" activity only in a case no other
+                recipients are found and if the message is not a reply.
+            </change>
+            <change>Fixed <a href="https://github.com/andstatus/andstatus/issues/275">#275</a>:
+                Message, to which a subscribed message is a reply, is explicitly marked as not subscribed
+                in order for the latter not to be shown in the Home timeline.
+            </change>
+        </changes>
+    </release>
+    <release android:versionName="28.01" android:versionCode="188"
+             versionDate="2016-08-31"
              versionTitle="Collapse duplicated posts. Accounts reodering. Continuous automatic application quality checking">
         <changes>
             <change>Implemented ”Collapse duplicates” feature, which is switchable in the Navigation
