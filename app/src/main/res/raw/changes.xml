@@ -42,9 +42,9 @@
                 <a href="https://github.com/andstatus/andstatus/issues/376">#376</a>
             </change>
             <change>Fixed <a href="https://github.com/andstatus/andstatus/issues/271">#271</a>:
-                This is a server, that decides in almost all cases, if the message is public or not.
-                (Now "Public" is added to "to" field in a case no other recipients are found only
-                for "post" activity)
+                This is a server, that decides in almost all cases, if a message is public or not.
+                Now "Public" is added to "to" field for "post" activity only in a case no other
+                recipients are found and if the message is not a reply.
             </change>
             <change>Fixed <a href="https://github.com/andstatus/andstatus/issues/275">#275</a>:
                 Message, to which a subscribed message is a reply, is explicitly marked as not subscribed
