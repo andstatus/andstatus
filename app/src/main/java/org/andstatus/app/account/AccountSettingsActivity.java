@@ -239,19 +239,17 @@ public class AccountSettingsActivity extends MyActivity {
     
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        super.onCreateOptionsMenu(menu);
-
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.account_settings, menu);
-        return true;
+        getMenuInflater().inflate(R.menu.account_settings, menu);
+        return super.onCreateOptionsMenu(menu);
     }
     
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         MenuItem item = menu.findItem(R.id.remove_account_menu_id);
-        item.setEnabled(state.builder.isPersistent());
-        item.setVisible(state.builder.isPersistent());
-        
+        if (item != null) {
+            item.setEnabled(state.builder.isPersistent());
+            item.setVisible(state.builder.isPersistent());
+        }
         return super.onPrepareOptionsMenu(menu);
     }
 

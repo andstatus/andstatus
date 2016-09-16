@@ -150,10 +150,8 @@ public abstract class OriginList extends MyListActivity {
     
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        super.onCreateOptionsMenu(menu);
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(getMenuResourceId(), menu);
-        return true;
+        getMenuInflater().inflate(getMenuResourceId(), menu);
+        return super.onCreateOptionsMenu(menu);
     }
 
     protected abstract int getMenuResourceId();

@@ -37,9 +37,10 @@ public class PersistentOriginList extends OriginList {
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         MenuItem item = menu.findItem(R.id.addOriginButton);
-        item.setEnabled(addEnabled);
-        item.setVisible(addEnabled);
-
+        if (item != null) {
+            item.setEnabled(addEnabled);
+            item.setVisible(addEnabled);
+        }
         return super.onPrepareOptionsMenu(menu);
     }
     

@@ -193,11 +193,8 @@ public class HelpActivity extends MyActivity implements SwipeInterface {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        super.onCreateOptionsMenu(menu);
-        
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.help, menu);
-        return true;
+        getMenuInflater().inflate(R.menu.help, menu);
+        return super.onCreateOptionsMenu(menu);
     }
 
     @Override

@@ -295,9 +295,8 @@ public class TimelineList extends LoadableListActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        super.onCreateOptionsMenu(menu);
         getMenuInflater().inflate(R.menu.timeline_list, menu);
-        return true;
+        return super.onCreateOptionsMenu(menu);
     }
 
     @Override

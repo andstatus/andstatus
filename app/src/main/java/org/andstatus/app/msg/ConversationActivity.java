@@ -122,15 +122,11 @@ public class ConversationActivity extends LoadableListActivity implements Action
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        super.onCreateOptionsMenu(menu);
-
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.conversation, menu);
-
+        getMenuInflater().inflate(R.menu.conversation, menu);
         if (mMessageEditor != null) {
             mMessageEditor.onCreateOptionsMenu(menu);
         }
-        return true;
+        return super.onCreateOptionsMenu(menu);
     }
 
     @Override

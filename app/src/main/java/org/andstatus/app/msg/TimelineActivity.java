@@ -381,12 +381,11 @@ public class TimelineActivity extends LoadableListActivity implements
     
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        super.onCreateOptionsMenu(menu);
         getMenuInflater().inflate(R.menu.timeline, menu);
         if (mMessageEditor != null) {
             mMessageEditor.onCreateOptionsMenu(menu);
         }
-        return true;
+        return super.onCreateOptionsMenu(menu);
     }
 
     @Override
@@ -394,8 +393,10 @@ public class TimelineActivity extends LoadableListActivity implements
         MyAccount ma = myContext.persistentAccounts().getCurrentAccount();
         boolean enableSync = getParamsLoaded().getTimeline().isCombined() || ma.isValidAndSucceeded();
         MenuItem item = menu.findItem(R.id.sync_menu_item);
-        item.setEnabled(enableSync);
-        item.setVisible(enableSync);
+        if (item != null) {
+            item.setEnabled(enableSync);
+            item.setVisible(enableSync);
+        }
 
         prepareDrawer();
 
@@ -410,9 +411,10 @@ public class TimelineActivity extends LoadableListActivity implements
         boolean enableGlobalSearch = myContext.persistentOrigins()
                 .isGlobalSearchSupported(ma.getOrigin(), getParamsLoaded().getTimeline().isCombined());
         item = menu.findItem(R.id.global_search_menu_id);
-        item.setEnabled(enableGlobalSearch);
-        item.setVisible(enableGlobalSearch);
-
+        if (item != null) {
+            item.setEnabled(enableGlobalSearch);
+            item.setVisible(enableGlobalSearch);
+        }
         return super.onPrepareOptionsMenu(menu);
     }
 
