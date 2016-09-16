@@ -242,6 +242,7 @@ AndStatus は、最後のメッセージのダウンロード以降のすべて�
   <string name="menu_item_copy_author">\"@author\" をクリップボードにコピー</string>
   <string name="menu_item_destroy_favorite">お気に入りを元に戻す</string>
   <string name="menu_item_destroy_reblog">再投稿を元に戻す</string>
+  <string name="menu_item_destroy_reblog_pumpio">共有を元に戻す</string>
   <string name="menu_item_destroy_reblog_twitter">リツイートを元に戻す</string>
   <string name="menu_item_destroy_status">メッセージを削除</string>
   <string name="menu_item_direct_message">ダイレクトメッセージ</string>
@@ -254,6 +255,7 @@ AndStatus は、最後のメッセージのダウンロード以降のすべて�
   <string name="menu_item_reply">返信</string>
   <string name="menu_item_reply_all">全員に返信</string>
   <string name="menu_item_reblog">再投稿</string>
+  <string name="menu_item_reblog_pumpio">Pump.io 経由で共有</string>
   <string name="menu_item_reblog_twitter">リツイート</string>
   <string name="menu_item_resend">再送信</string>
   <string name="menu_item_share">共有</string>
@@ -333,6 +335,7 @@ AndStatus は、最後のメッセージのダウンロード以降のすべて�
   <string name="preference_true_black_title">真黒の背景</string>
   <string name="preference_use_kitkat_media_chooser_title">添付ファイルを選択するモダンインターフェイス</string>
   <string name="reblogged_by">%1$s が再投稿</string>
+  <string name="reblogged_by_pumpio">%1$s で共有</string>
   <string name="reblogged_by_twitter">%1$s がリツイート</string>
   <string name="refresh_title">キャッシュから更新</string>
   <string name="refresh_timeline_automatically_title">タイムラインを自動的に更新します</string>

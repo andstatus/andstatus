@@ -244,6 +244,7 @@
   <string name="menu_item_copy_author">Kopiere @autor in die Zwischenablage</string>
   <string name="menu_item_destroy_favorite">Favorit zurücknehmen</string>
   <string name="menu_item_destroy_reblog">Reblog zurücknehmen</string>
+  <string name="menu_item_destroy_reblog_pumpio">Teilen rückgängig machen</string>
   <string name="menu_item_destroy_reblog_twitter">Retweet zurücknehmen</string>
   <string name="menu_item_destroy_status">Nachricht entfernen</string>
   <string name="menu_item_direct_message">Direktnachricht</string>
@@ -256,6 +257,7 @@
   <string name="menu_item_reply">Antworten</string>
   <string name="menu_item_reply_all">Allen antworten</string>
   <string name="menu_item_reblog">Reblog</string>
+  <string name="menu_item_reblog_pumpio">Mit Pump.io teilen</string>
   <string name="menu_item_reblog_twitter">Retweet</string>
   <string name="menu_item_resend">Erneut senden</string>
   <string name="menu_item_share">Teilen</string>
@@ -335,6 +337,7 @@
   <string name="preference_true_black_title">Rein schwarzer Hintergrund</string>
   <string name="preference_use_kitkat_media_chooser_title">KitKat Medienauswahl verwenden</string>
   <string name="reblogged_by">reblogged von %1$s</string>
+  <string name="reblogged_by_pumpio">geteilt von %1$s</string>
   <string name="reblogged_by_twitter">retweeted von %1$s</string>
   <string name="refresh_title">Aus Cache aktualisieren</string>
   <string name="refresh_timeline_automatically_title">Timeline automatisch aktualisieren</string>

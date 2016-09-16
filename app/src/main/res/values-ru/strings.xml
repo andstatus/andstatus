@@ -239,6 +239,7 @@
   <string name="menu_item_copy_author">Копировать @автор в буфер</string>
   <string name="menu_item_destroy_favorite">Удалить из избранного</string>
   <string name="menu_item_destroy_reblog">Удалить пересказ</string>
+  <string name="menu_item_destroy_reblog_pumpio">Удалить \"поделиться\"</string>
   <string name="menu_item_destroy_reblog_twitter">Удалить ретвит</string>
   <string name="menu_item_destroy_status">Удалить сообщение</string>
   <string name="menu_item_direct_message">Личное сообщение</string>
@@ -251,6 +252,7 @@
   <string name="menu_item_reply">Ответить</string>
   <string name="menu_item_reply_all">Ответить всем</string>
   <string name="menu_item_reblog">Пересказать</string>
+  <string name="menu_item_reblog_pumpio">Поделиться через Pump.io</string>
   <string name="menu_item_reblog_twitter">Ретвитнуть</string>
   <string name="menu_item_resend">Отправить повторно</string>
   <string name="menu_item_share">Поделиться</string>
@@ -330,6 +332,7 @@
   <string name="preference_true_black_title">Черный фон</string>
   <string name="preference_use_kitkat_media_chooser_title">Используйте средства выбора изображений KitKat</string>
   <string name="reblogged_by">пересказано %1$s</string>
+  <string name="reblogged_by_pumpio">поделился %1$s</string>
   <string name="reblogged_by_twitter">ретвитнуто %1$s</string>
   <string name="refresh_title">Обновить из кэша</string>
   <string name="refresh_timeline_automatically_title">Обновлять Ленту времени автоматически</string>
