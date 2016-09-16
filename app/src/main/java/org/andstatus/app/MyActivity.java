@@ -16,6 +16,7 @@
 
 package org.andstatus.app;
 
+import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
@@ -87,6 +88,15 @@ public class MyActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         toggleFullscreen(TriState.FALSE);
+    }
+
+    @Override
+    public void startActivityForResult(Intent intent, int requestCode) {
+        try {
+            super.startActivityForResult(intent, requestCode);
+        } catch (ActivityNotFoundException e) {
+            MyLog.e(this, "requestCode=" + requestCode, e);
+        }
     }
 
     @Override
