@@ -25,6 +25,10 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
 		</subtitle>
     </header>
+    <release android:versionName="29.01" android:versionCode="191"
+             versionDate="2016-09-16"
+             versionTitle="Bug fixes and translation updates">
+    </release>
     <release android:versionName="29.00" android:versionCode="190"
              versionDate="2016-09-13"
              versionTitle="Pump.io support enhancements">
