@@ -132,13 +132,10 @@ public class TimelineSql {
         String tables = msgTable;
         if (!tables.contains(" AS " + ProjectionMap.MSG_TABLE_ALIAS)) {
             if (timeline.getTimelineType().isAtOrigin() && !timeline.isCombined()) {
-                MyAccount ma = MyContextHolder.get().persistentAccounts().fromUserId(uriParser.getAccountUserId());
-                if (ma.isValid()) {
-                    if (!TextUtils.isEmpty(where)) {
-                        where += " AND ";
-                    }
-                    where += MsgTable.ORIGIN_ID + "=" + ma.getOriginId();
+                if (!TextUtils.isEmpty(where)) {
+                    where += " AND ";
                 }
+                where += MsgTable.ORIGIN_ID + "=" + timeline.getOrigin().getId();
             }
             tables = "(SELECT * FROM (" + msgTable + ")"
                             + (TextUtils.isEmpty(where) ? "" : " WHERE (" + where + ")")
