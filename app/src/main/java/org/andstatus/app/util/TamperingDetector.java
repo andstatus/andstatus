@@ -44,7 +44,7 @@ public class TamperingDetector {
     static {
         knownSignatures.put("Q2LVj1MPgZdoNckr4g0WbOmi7nE=", "release-keys");
         knownSignatures.put("U+TELzORnTCJ/2OZKoIbcNhVMPg=", "debug-keys");
-        knownSignatures.put("TODO: to capture", "f-droid-keys");
+        knownSignatures.put("qhfrV6COj1j+fUrohD3xVZpfhYg=", "f-droid-keys");
     }
 
     public static void initialize(Context context) {
