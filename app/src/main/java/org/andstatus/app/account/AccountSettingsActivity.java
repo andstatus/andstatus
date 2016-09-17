@@ -224,9 +224,7 @@ public class AccountSettingsActivity extends MyActivity {
                 // If we have changed the System, we should recreate the Account
                 state.builder = MyAccount.Builder.newOrExistingFromAccountName(
                         MyContextHolder.get(), 
-                        AccountName.fromOriginAndUserNames(
-                                MyContextHolder.get(),
-                                origin.getName(),
+                        AccountName.fromOriginAndUserName(origin,
                                 state.getAccount().getUsername()).toString(),
                         TriState.fromBoolean(state.getAccount().isOAuth()));
                 updateScreen();
@@ -620,11 +618,10 @@ public class AccountSettingsActivity extends MyActivity {
                 String username = usernameEditable.getText().toString();
                 if (username.compareTo(state.getAccount().getUsername()) != 0) {
                     boolean isOAuth = state.getAccount().isOAuth();
-                    String originName = state.getAccount().getOrigin().getName();
                     state.builder = MyAccount.Builder.newOrExistingFromAccountName(
                             MyContextHolder.get(),
-                            AccountName.fromOriginAndUserNames(MyContextHolder.get(),
-                                    originName, username).toString(),
+                            AccountName.fromOriginAndUserName(
+                                    state.getAccount().getOrigin(), username).toString(),
                             TriState.fromBoolean(isOAuth));
                 }
             }

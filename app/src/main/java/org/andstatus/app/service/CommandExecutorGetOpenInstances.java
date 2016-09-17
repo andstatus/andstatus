@@ -36,10 +36,10 @@ public class CommandExecutorGetOpenInstances extends CommandExecutorStrategy {
     @Override
     void execute() {
         boolean ok = false;
-        OriginType originType = OriginType.fromId(execContext.getCommandData().itemId);
+        Origin execOrigin = execContext.getCommandData().getTimeline().getOrigin();
         List<MbOrigin> result = null;
         try {
-            result = newConnection(originType).getOpenInstances();
+            result = newConnection(execOrigin).getOpenInstances();
             ok = !result.isEmpty();
             logOk(ok);
         } catch (ConnectionException e) {
@@ -49,7 +49,7 @@ public class CommandExecutorGetOpenInstances extends CommandExecutorStrategy {
             List<Origin> newOrigins = new ArrayList<Origin>();
             for (MbOrigin mbOrigin : result) {
                 execContext.getResult().incrementDownloadedCount();
-                Origin origin = new Origin.Builder(originType).setName(mbOrigin.name)
+                Origin origin = new Origin.Builder(execOrigin.getOriginType()).setName(mbOrigin.name)
                         .setHostOrUrl(mbOrigin.urlString)
                         .build();
                 if (origin.isValid()
@@ -65,9 +65,8 @@ public class CommandExecutorGetOpenInstances extends CommandExecutorStrategy {
         }
     }
 
-    private Connection newConnection(OriginType originType) throws ConnectionException {
-        Origin origin1 = (new Origin.Builder(originType)).setName("non-existent").build();
-        OriginConnectionData connectionData = origin1.getConnectionData(TriState.UNKNOWN);
+    private Connection newConnection(Origin execOrigin) throws ConnectionException {
+        OriginConnectionData connectionData = execOrigin.getConnectionData(TriState.UNKNOWN);
         Connection connection;
         try {
             connection = connectionData.getConnectionClass().newInstance();
@@ -75,9 +74,9 @@ public class CommandExecutorGetOpenInstances extends CommandExecutorStrategy {
             connection.setAccountData(connectionData);
         // TODO: Since API19 we will use ReflectiveOperationException as a common superclass of these two exceptions: InstantiationException and IllegalAccessException
         } catch (InstantiationException e) {
-            throw new ConnectionException(origin1.toString(), e);
+            throw new ConnectionException(execOrigin.toString(), e);
         } catch (IllegalAccessException e) {
-            throw new ConnectionException(origin1.toString(), e);
+            throw new ConnectionException(execOrigin.toString(), e);
         }
         return connection;
     }

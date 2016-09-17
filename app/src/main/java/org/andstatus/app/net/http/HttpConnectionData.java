@@ -17,6 +17,7 @@
 package org.andstatus.app.net.http;
 
 import org.andstatus.app.account.AccountDataReader;
+import org.andstatus.app.account.AccountName;
 import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.TriState;
@@ -24,6 +25,7 @@ import org.andstatus.app.util.TriState;
 import java.net.URL;
 
 public class HttpConnectionData {
+    private AccountName accountName = null;
     protected OriginType originType;
     protected long originId;
     public boolean isSsl;
@@ -48,6 +50,7 @@ public class HttpConnectionData {
     
     public static HttpConnectionData fromConnectionData(OriginConnectionData oConnectionData) {
         HttpConnectionData data = new HttpConnectionData();
+        data.accountName = oConnectionData.getAccountName();
         data.originType = oConnectionData.getOriginType();
         data.originId = oConnectionData.getOriginId();
         data.isSsl = oConnectionData.isSsl();
@@ -88,5 +91,9 @@ public class HttpConnectionData {
                 + ", oauthPath:" + oauthPath + ", accountUsername:" + accountUsername
                 + ", originUrl:" + originUrl + ", hostForUserToken:" + urlForUserToken + ", dataReader:"
                 + dataReader + ", oauthClientKeys:" + oauthClientKeys + "}";
+    }
+
+    public String getLogName() {
+        return accountName.prefsFilename();
     }
 }

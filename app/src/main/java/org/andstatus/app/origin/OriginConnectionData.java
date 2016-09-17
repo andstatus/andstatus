@@ -18,6 +18,7 @@ package org.andstatus.app.origin;
 
 import org.andstatus.app.account.AccountDataReader;
 import org.andstatus.app.account.AccountDataReaderEmpty;
+import org.andstatus.app.account.AccountName;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.net.http.HttpConnectionEmpty;
@@ -37,7 +38,8 @@ public class OriginConnectionData {
     private URL originUrl = null;
     private String basicPath = "";
     private String oauthPath = "oauth";
-    
+
+    private AccountName accountName = null;
     private String accountUsername = "";
     private String accountUserOid = "";
     private AccountDataReader dataReader = null;
@@ -50,6 +52,7 @@ public class OriginConnectionData {
         
     protected static OriginConnectionData fromOrigin(Origin origin, TriState triStateOAuth) {
         OriginConnectionData connectionData = new OriginConnectionData();
+        connectionData.accountName = AccountName.fromOriginAndUserName(origin,"");
         connectionData.originUrl = origin.getUrl();
         connectionData.basicPath = origin.getOriginType().basicPath;
         connectionData.oauthPath = origin.getOriginType().oauthPath;
@@ -64,6 +67,14 @@ public class OriginConnectionData {
                 .getHttpConnectionClass(connectionData.isOAuth());
         connectionData.dataReader = new AccountDataReaderEmpty();
         return connectionData;
+    }
+
+    public AccountName getAccountName() {
+        return accountName;
+    }
+
+    public void setAccountName(AccountName accountName) {
+        this.accountName = accountName;
     }
 
     public OriginType getOriginType() {

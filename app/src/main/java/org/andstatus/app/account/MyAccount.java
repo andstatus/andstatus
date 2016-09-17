@@ -188,7 +188,8 @@ public final class MyAccount implements Comparable<MyAccount> {
             Origin origin = myAccount.oAccountName.getOrigin();
             OriginConnectionData connectionData = origin.getConnectionData(TriState.fromBoolean(myAccount.isOAuth));
             connectionData.setAccountUserOid(myAccount.userOid);
-            connectionData.setAccountUsername(myAccount.getUsername());
+            connectionData.setAccountName(myAccount.oAccountName);
+            connectionData.setAccountUsername(myAccount.getUsername()); //TODO:Delete
             connectionData.setDataReader(myAccount.accountData);
             try {
                 myAccount.connection = connectionData.getConnectionClass().newInstance();
@@ -434,9 +435,8 @@ public final class MyAccount implements Comparable<MyAccount> {
                 // Now we know the name (or proper case of the name) of this User!
                 // We don't recreate MyAccount object for the new name
                 //   in order to preserve credentials.
-                myAccount.oAccountName = AccountName.fromOriginAndUserNames(
-                        myContext,
-                        myAccount.oAccountName.getOriginName(), newName);
+                myAccount.oAccountName = AccountName.fromOriginAndUserName(
+                        myAccount.oAccountName.getOrigin(), newName);
                 myAccount.connection.save(myAccount.accountData);
                 setConnection();
                 save();

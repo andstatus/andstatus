@@ -16,6 +16,8 @@
 
 package org.andstatus.app.account;
 
+import android.support.annotation.NonNull;
+
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.origin.Origin;
 
@@ -89,9 +91,15 @@ public class AccountName {
         return accountName;
     }
 
-    protected static AccountName fromOriginAndUserNames(MyContext myContext, String originName, String username) {
+    protected static AccountName fromOriginAndUserNames(MyContext myContext, String originName,
+                                                        String username) {
+        return fromOriginAndUserName(
+                myContext.persistentOrigins().fromName(fixOriginName(originName)), username);
+    }
+
+    public static AccountName fromOriginAndUserName(@NonNull Origin origin, String username) {
         AccountName accountName = new AccountName();
-        accountName.origin = myContext.persistentOrigins().fromName(fixOriginName(originName));
+        accountName.origin = origin;
         accountName.username = accountName.fixUsername(username);
         return accountName;
     }
@@ -139,7 +147,7 @@ public class AccountName {
      * Name of preferences file for this MyAccount
      * @return Name without path and extension
      */
-    String prefsFilename() {
+    public String prefsFilename() {
         return FILE_PREFIX + toString().replace("@", "-").replace(ORIGIN_SEPARATOR, "-");
     }
 
