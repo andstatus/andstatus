@@ -26,8 +26,14 @@
 		</subtitle>
     </header>
     <release android:versionName="29.01" android:versionCode="191"
-             versionDate="2016-09-16"
+             versionDate="2016-09-17"
              versionTitle="Bug fixes and translation updates">
+        <changes>
+            <change>
+                Fixed <a href="https://github.com/andstatus/andstatus/issues/416">#416</a>
+                "Everything" Timeline shows all social networks even if not Combined.
+            </change>
+        </changes>
     </release>
     <release android:versionName="29.00" android:versionCode="190"
              versionDate="2016-09-13"
