@@ -27,7 +27,7 @@ public class OAuthClientKeysOpenSource implements OAuthClientKeysStrategy {
 
     @Override
     public void initialize(HttpConnectionData connectionData) {
-        originType = connectionData.originType;
+        originType = connectionData.getAccountName().getOrigin().getOriginType();
     }
 
     @Override

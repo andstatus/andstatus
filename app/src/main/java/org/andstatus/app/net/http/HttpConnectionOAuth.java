@@ -69,16 +69,17 @@ abstract class HttpConnectionOAuth extends HttpConnection implements OAuthConsum
         String url;
         switch(routine) {
             case OAUTH_ACCESS_TOKEN:
-                url =  data.oauthPath + "/access_token";
+                url =  data.getOauthPath() + "/access_token";
                 break;
             case OAUTH_AUTHORIZE:
-                url = data.oauthPath + "/authorize";
+                url = data.getOauthPath() + "/authorize";
                 break;
             case OAUTH_REQUEST_TOKEN:
-                url = data.oauthPath + "/request_token";
+                url = data.getOauthPath() + "/request_token";
                 break;
             case OAUTH_REGISTER_CLIENT:
-                url = data.basicPath + "/client/register";
+                url = data.getBasicPath() +
+                        "/client/register";
                 break;
             default:
                 url = "";

@@ -21,13 +21,14 @@ import android.test.InstrumentationTestCase;
 import android.text.TextUtils;
 
 import org.andstatus.app.account.AccountDataReaderEmpty;
+import org.andstatus.app.account.AccountName;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.context.Travis;
-import org.andstatus.app.database.MsgTable;
-import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.data.MyQuery;
+import org.andstatus.app.data.OidEnum;
+import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.net.http.HttpConnectionMock;
 import org.andstatus.app.net.http.OAuthClientKeys;
 import org.andstatus.app.origin.Origin;
@@ -55,13 +56,12 @@ public class VerifyCredentialsTest extends InstrumentationTestCase {
         super.setUp();
         context = TestSuite.initialize(this);
 
-        Origin origin = MyContextHolder.get().persistentOrigins().firstOfType(OriginType.TWITTER);
-        connectionData = origin.getConnectionData(TriState.UNKNOWN);
+        TestSuite.setHttpConnectionMockClass(HttpConnectionMock.class);
+        connectionData = OriginConnectionData.fromAccountName( AccountName.fromOriginAndUserName(
+                MyContextHolder.get().persistentOrigins().firstOfType(OriginType.TWITTER), ""),
+                TriState.UNKNOWN);
         connectionData.setDataReader(new AccountDataReaderEmpty());
-        connection = connectionData.getConnectionClass().newInstance();
-        connection.enrichConnectionData(connectionData);
-        connectionData.setHttpConnectionClass(HttpConnectionMock.class);
-        connection.setAccountData(connectionData);
+        connection = connectionData.newConnection();
         httpConnection = (HttpConnectionMock) connection.http;
 
         httpConnection.data.originUrl = UrlUtils.fromString("https://twitter.com");
@@ -72,6 +72,7 @@ public class VerifyCredentialsTest extends InstrumentationTestCase {
         if (!httpConnection.data.oauthClientKeys.areKeysPresent()) {
             httpConnection.data.oauthClientKeys.setConsumerKeyAndSecret("keyForGetTimelineForTw", "thisIsASecret341232");
         }
+        TestSuite.setHttpConnectionMockClass(null);
     }
 
     @Override

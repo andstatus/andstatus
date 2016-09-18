@@ -64,7 +64,7 @@ public abstract class HttpConnection {
 
     public final JSONObject postRequest(String path, JSONObject formParams) throws ConnectionException {
         /** See https://github.com/andstatus/andstatus/issues/249 */
-        if (data.useLegacyHttpProtocol == TriState.UNKNOWN) {
+        if (data.getUseLegacyHttpProtocol() == TriState.UNKNOWN) {
             try {
                 return postRequestOneHttpProtocol(path, formParams, false);
             } catch (ConnectionException e) {
@@ -74,7 +74,7 @@ public abstract class HttpConnection {
                 MyLog.v(this, "Automatic fallback to legacy HTTP", e);
             }
         }
-        return postRequestOneHttpProtocol(path, formParams, data.useLegacyHttpProtocol.toBoolean(true));
+        return postRequestOneHttpProtocol(path, formParams, data.getUseLegacyHttpProtocol().toBoolean(true));
     }
 
     private JSONObject postRequestOneHttpProtocol(String path, JSONObject formParams, 
@@ -85,10 +85,10 @@ public abstract class HttpConnection {
         HttpReadResult result = new HttpReadResult(pathToUrlString(path)).setFormParams(formParams)
                 .setLegacyHttpProtocol(isLegacyHttpProtocol);
         if( result.hasFormParams()) {
-            MyLog.logNetworkLevelMessage(data.getLogName(), "post_form", result.getFormParams());
+            MyLog.logNetworkLevelMessage("post_form", data.getLogName(), result.getFormParams());
         }
         postRequest(result);
-        MyLog.logNetworkLevelMessage(data.getLogName(), "post_response", result.strResponse);
+        MyLog.logNetworkLevelMessage("post_response", data.getLogName(), result.strResponse);
         result.parseAndThrow();
         return result.getJsonObject();
     }
@@ -110,7 +110,7 @@ public abstract class HttpConnection {
         HttpReadResult result = new HttpReadResult(pathToUrlString(path));
         result.authenticate = authenticated;
         getRequest(result);
-        MyLog.logNetworkLevelMessage(data.getLogName(), "get_response", result.strResponse);
+        MyLog.logNetworkLevelMessage("get_response", data.getLogName(), result.strResponse);
         result.parseAndThrow();
         return result;
     }
@@ -168,7 +168,7 @@ public abstract class HttpConnection {
     public abstract boolean getCredentialsPresent();
 
     public SslModeEnum getSslMode() {
-        return data.sslMode;
+        return data.getSslMode();
     }
     
     public void setUserTokenWithSecret(String token, String secret) {

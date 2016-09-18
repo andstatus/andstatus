@@ -50,7 +50,7 @@ public class HttpConnectionBasic extends HttpConnection implements HttpConnectio
     @Override
     public void httpApachePostRequest(HttpPost postMethod, HttpReadResult result) throws ConnectionException {
         try {
-            HttpClient client = HttpConnectionApacheCommon.getHttpClient(data.sslMode);
+            HttpClient client = HttpConnectionApacheCommon.getHttpClient(data.getSslMode());
             postMethod.setHeader("User-Agent", HttpConnection.USER_AGENT);
             if (getCredentialsPresent()) {
                 postMethod.addHeader("Authorization", "Basic " + getCredentials());
@@ -69,13 +69,13 @@ public class HttpConnectionBasic extends HttpConnection implements HttpConnectio
 
     @Override
     public HttpResponse httpApacheGetResponse(HttpGet httpGet) throws IOException {
-        HttpClient client = HttpConnectionApacheCommon.getHttpClient(data.sslMode);
+        HttpClient client = HttpConnectionApacheCommon.getHttpClient(data.getSslMode());
         return client.execute(httpGet);
     }
 
     @Override
     public boolean getCredentialsPresent() {
-        return !TextUtils.isEmpty(data.accountUsername) 
+        return !TextUtils.isEmpty(data.getAccountName().getUsername())
                 && !TextUtils.isEmpty(mPassword);
     }
 
@@ -104,7 +104,8 @@ public class HttpConnectionBasic extends HttpConnection implements HttpConnectio
      */
     private String getCredentials() {
         return Base64.encodeToString(
-                (data.accountUsername + ":" + mPassword).getBytes(Charset.forName("UTF-8")),
+                (data.getAccountName().getUsername() + ":" + mPassword).
+                        getBytes(Charset.forName("UTF-8")),
                 Base64.NO_WRAP + Base64.NO_PADDING);
     }
 

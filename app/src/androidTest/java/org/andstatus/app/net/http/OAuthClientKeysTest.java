@@ -18,10 +18,12 @@ package org.andstatus.app.net.http;
 
 import android.test.InstrumentationTestCase;
 
+import org.andstatus.app.account.AccountName;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.context.Travis;
 import org.andstatus.app.origin.Origin;
+import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UrlUtils;
@@ -37,31 +39,36 @@ public class OAuthClientKeysTest extends InstrumentationTestCase {
     }
 
     public void testKeysSave() {
-       HttpConnectionData connectionData = HttpConnectionData.fromConnectionData(
-               MyContextHolder.get().persistentOrigins().firstOfType(OriginType.PUMPIO)
-               .getConnectionData(TriState.UNKNOWN));
-       final String consumerKey = "testConsumerKey" + Long.toString(System.nanoTime());
-       final String consumerSecret = "testConsumerSecret" + Long.toString(System.nanoTime());
+        HttpConnectionData connectionData = HttpConnectionData.fromConnectionData(
+                OriginConnectionData.fromAccountName(
+                        AccountName.fromOriginAndUserName(
+                                MyContextHolder.get().persistentOrigins().
+                                        firstOfType(OriginType.PUMPIO), ""), TriState.UNKNOWN)
+        );
+        final String consumerKey = "testConsumerKey" + Long.toString(System.nanoTime());
+        final String consumerSecret = "testConsumerSecret" + Long.toString(System.nanoTime());
 
-       connectionData.originUrl = UrlUtils.fromString("https://example.com");
-       OAuthClientKeys keys1 = OAuthClientKeys.fromConnectionData(connectionData);
-       keys1.clear();
-       assertEquals("Keys are cleared", false, keys1.areKeysPresent());
-       keys1.setConsumerKeyAndSecret(consumerKey, consumerSecret);
+        connectionData.originUrl = UrlUtils.fromString("https://example.com");
+        OAuthClientKeys keys1 = OAuthClientKeys.fromConnectionData(connectionData);
+        keys1.clear();
+        assertEquals("Keys are cleared", false, keys1.areKeysPresent());
+        keys1.setConsumerKeyAndSecret(consumerKey, consumerSecret);
 
-       OAuthClientKeys keys2 = OAuthClientKeys.fromConnectionData(connectionData);
-       assertEquals("Keys are loaded", true, keys2.areKeysPresent());
-       assertEquals(consumerKey, keys2.getConsumerKey());
-       assertEquals(consumerSecret, keys2.getConsumerSecret());
-       keys2.clear();
+        OAuthClientKeys keys2 = OAuthClientKeys.fromConnectionData(connectionData);
+        assertEquals("Keys are loaded", true, keys2.areKeysPresent());
+        assertEquals(consumerKey, keys2.getConsumerKey());
+        assertEquals(consumerSecret, keys2.getConsumerSecret());
+        keys2.clear();
 
-       OAuthClientKeys keys3 = OAuthClientKeys.fromConnectionData(connectionData);
-       assertEquals("Keys are cleared", false, keys3.areKeysPresent());
+        OAuthClientKeys keys3 = OAuthClientKeys.fromConnectionData(connectionData);
+        assertEquals("Keys are cleared", false, keys3.areKeysPresent());
     }
 
     public static void insertTestKeys(Origin origin) {
         HttpConnectionData connectionData = HttpConnectionData.fromConnectionData(
-                origin.getConnectionData(TriState.UNKNOWN));
+                OriginConnectionData.fromAccountName(
+                        AccountName.fromOriginAndUserName(origin, ""), TriState.UNKNOWN)
+        );
         final String consumerKey = "testConsumerKey" + Long.toString(System.nanoTime());
         final String consumerSecret = "testConsumerSecret" + Long.toString(System.nanoTime());
         if (connectionData.originUrl == null) {

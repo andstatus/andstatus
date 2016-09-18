@@ -19,6 +19,7 @@ package org.andstatus.app.net.social;
 import android.test.InstrumentationTestCase;
 
 import org.andstatus.app.account.AccountDataReaderEmpty;
+import org.andstatus.app.account.AccountName;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.context.Travis;
@@ -49,16 +50,15 @@ public class ConnectionTwitterTest extends InstrumentationTestCase {
         super.setUp();
         TestSuite.initializeWithData(this);
 
+        TestSuite.setHttpConnectionMockClass(HttpConnectionMock.class);
         Origin origin = MyContextHolder.get().persistentOrigins().fromName(TestSuite.TWITTER_TEST_ORIGIN_NAME);
-        
-        connectionData = origin.getConnectionData(TriState.UNKNOWN);
+
+        connectionData = OriginConnectionData.fromAccountName(
+                AccountName.fromOriginAndUserName(origin, TestSuite.TWITTER_TEST_ACCOUNT_USERNAME),
+                TriState.UNKNOWN);
         connectionData.setAccountUserOid(TestSuite.TWITTER_TEST_ACCOUNT_USER_OID);
-        connectionData.setAccountUsername(TestSuite.TWITTER_TEST_ACCOUNT_USERNAME);
         connectionData.setDataReader(new AccountDataReaderEmpty());
-        connection = connectionData.getConnectionClass().newInstance();
-        connection.enrichConnectionData(connectionData);
-        connectionData.setHttpConnectionClass(HttpConnectionMock.class);
-        connection.setAccountData(connectionData);
+        connection = connectionData.newConnection();
         httpConnection = (HttpConnectionMock) connection.http;
 
         httpConnection.data.originUrl = origin.getUrl();
@@ -67,6 +67,7 @@ public class ConnectionTwitterTest extends InstrumentationTestCase {
         if (!httpConnection.data.oauthClientKeys.areKeysPresent()) {
             httpConnection.data.oauthClientKeys.setConsumerKeyAndSecret("keyForGetTimelineForTw", "thisIsASecret341232");
         }
+        TestSuite.setHttpConnectionMockClass(null);
     }
 
     public void testGetTimeline() throws IOException {

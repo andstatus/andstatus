@@ -16,14 +16,13 @@
 
 package org.andstatus.app.service;
 
+import org.andstatus.app.account.AccountName;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.net.http.ConnectionException;
-import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.net.social.MbOrigin;
 import org.andstatus.app.origin.DiscoveredOrigins;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginConnectionData;
-import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
 
@@ -39,7 +38,9 @@ public class CommandExecutorGetOpenInstances extends CommandExecutorStrategy {
         Origin execOrigin = execContext.getCommandData().getTimeline().getOrigin();
         List<MbOrigin> result = null;
         try {
-            result = newConnection(execOrigin).getOpenInstances();
+            result = OriginConnectionData.fromAccountName(
+                    execContext.getMyAccount().getOAccountName(), TriState.UNKNOWN).
+                    newConnection().getOpenInstances();
             ok = !result.isEmpty();
             logOk(ok);
         } catch (ConnectionException e) {
@@ -63,22 +64,6 @@ public class CommandExecutorGetOpenInstances extends CommandExecutorStrategy {
             }
             DiscoveredOrigins.addAll(newOrigins);
         }
-    }
-
-    private Connection newConnection(Origin execOrigin) throws ConnectionException {
-        OriginConnectionData connectionData = execOrigin.getConnectionData(TriState.UNKNOWN);
-        Connection connection;
-        try {
-            connection = connectionData.getConnectionClass().newInstance();
-            connection.enrichConnectionData(connectionData);
-            connection.setAccountData(connectionData);
-        // TODO: Since API19 we will use ReflectiveOperationException as a common superclass of these two exceptions: InstantiationException and IllegalAccessException
-        } catch (InstantiationException e) {
-            throw new ConnectionException(execOrigin.toString(), e);
-        } catch (IllegalAccessException e) {
-            throw new ConnectionException(execOrigin.toString(), e);
-        }
-        return connection;
     }
 
     private boolean haveOriginsWithThisHostName(URL url) {

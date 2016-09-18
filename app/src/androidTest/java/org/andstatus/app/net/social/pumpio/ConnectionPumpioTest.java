@@ -21,6 +21,7 @@ import android.test.InstrumentationTestCase;
 import android.text.TextUtils;
 
 import org.andstatus.app.account.AccountDataReaderEmpty;
+import org.andstatus.app.account.AccountName;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.context.Travis;
@@ -35,7 +36,6 @@ import org.andstatus.app.net.social.MbTimelineItem;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.net.social.TimelinePosition;
 import org.andstatus.app.net.social.pumpio.ConnectionPumpio.ConnectionAndUrl;
-import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RawResourceUtils;
@@ -66,13 +66,12 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         super.setUp();
         context = TestSuite.initializeWithData(this);
 
-        Origin origin = MyContextHolder.get().persistentOrigins().fromName(TestSuite.PUMPIO_ORIGIN_NAME);
-        connectionData = origin.getConnectionData(TriState.UNKNOWN);
+        TestSuite.setHttpConnectionMockClass(HttpConnectionMock.class);
+        connectionData = OriginConnectionData.fromAccountName( AccountName.fromOriginAndUserName(
+                MyContextHolder.get().persistentOrigins().fromName(TestSuite.PUMPIO_ORIGIN_NAME), ""),
+                TriState.UNKNOWN);
         connectionData.setDataReader(new AccountDataReaderEmpty());
-        connection = (ConnectionPumpio) connectionData.getConnectionClass().newInstance();
-        connection.enrichConnectionData(connectionData);
-        connectionData.setHttpConnectionClass(HttpConnectionMock.class);
-        connection.setAccountData(connectionData);
+        connection = (ConnectionPumpio) connectionData.newConnection();
         httpConnectionMock = connection.getHttpMock();
 
         httpConnectionMock.data.originUrl = originUrl;
@@ -83,6 +82,7 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         if (!httpConnectionMock.data.oauthClientKeys.areKeysPresent()) {
             httpConnectionMock.data.oauthClientKeys.setConsumerKeyAndSecret("keyForThetestGetTimeline", "thisIsASecret02341");
         }
+        TestSuite.setHttpConnectionMockClass(null);
     }
     
     @Override

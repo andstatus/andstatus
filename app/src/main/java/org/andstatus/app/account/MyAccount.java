@@ -118,6 +118,10 @@ public final class MyAccount implements Comparable<MyAccount> {
     public static final String KEY_IS_SYNCED_AUTOMATICALLY = "sync_automatically";
     public static final String KEY_ORDER = "order";
 
+    public AccountName getOAccountName() {
+        return oAccountName;
+    }
+
     /** Companion class used to load/create/change/delete {@link MyAccount}'s data */
     public static final class Builder implements Parcelable {
         private static final String TAG = MyAccount.TAG + "." + Builder.class.getSimpleName();
@@ -185,21 +189,14 @@ public final class MyAccount implements Comparable<MyAccount> {
         }
 
         private void setConnection() {
-            Origin origin = myAccount.oAccountName.getOrigin();
-            OriginConnectionData connectionData = origin.getConnectionData(TriState.fromBoolean(myAccount.isOAuth));
+            OriginConnectionData connectionData = OriginConnectionData.fromAccountName(
+                    myAccount.oAccountName, TriState.fromBoolean(myAccount.isOAuth));
             connectionData.setAccountUserOid(myAccount.userOid);
-            connectionData.setAccountName(myAccount.oAccountName);
-            connectionData.setAccountUsername(myAccount.getUsername()); //TODO:Delete
             connectionData.setDataReader(myAccount.accountData);
             try {
-                myAccount.connection = connectionData.getConnectionClass().newInstance();
-                myAccount.connection.enrichConnectionData(connectionData);
-                myAccount.connection.setAccountData(connectionData);
+                myAccount.connection = connectionData.newConnection();
             // TODO: Since API19 we will use ReflectiveOperationException as a common superclass of these two exceptions: InstantiationException and IllegalAccessException
-            } catch (InstantiationException e) {
-                myAccount.connection = null;
-                MyLog.i(TAG, e);
-            } catch (IllegalAccessException e) {
+            } catch (ConnectionException e) {
                 myAccount.connection = null;
                 MyLog.i(TAG, e);
             }
@@ -253,9 +250,6 @@ public final class MyAccount implements Comparable<MyAccount> {
          */
         boolean deleteData() {
             boolean ok = true;
-
-            // Old preferences file may be deleted, if it exists...
-            ok = SharedPreferencesUtil.delete(myContext.context(), myAccount.oAccountName.prefsFilename());
 
             if (isPersistent() && myAccount.userId != 0) {
                 // TODO: Delete databases for this User
@@ -807,25 +801,6 @@ public final class MyAccount implements Comparable<MyAccount> {
         return oAccountName.getOrigin().getId();
     }
     
-    /**
-     * @return SharedPreferences of this MyAccount. Used to store preferences which are application specific
-     *   i.e. excluding data specific to Account. 
-     */
-    public SharedPreferences getAccountPreferences() {
-        SharedPreferences sp = null;
-        String prefsFileName = oAccountName.prefsFilename();
-        
-        if (prefsFileName.length() > 0) {
-            try {
-                sp = SharedPreferencesUtil.getSharedPreferences(prefsFileName);
-            } catch (Exception e) {
-                MyLog.e(this, "Cound't get preferences '" + prefsFileName + "'", e);
-                sp = null;
-            }
-        }
-        return sp;
-    }
-
     public Connection getConnection() {
         return connection;
     }

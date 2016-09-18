@@ -41,7 +41,8 @@ public class OAuthClientKeysDynamic implements OAuthClientKeysStrategy {
             MyLog.v(this, "OriginUrl is null; " + connectionData.toString());
             return;
         }
-        keySuffix = Long.toString(connectionData.originId) + "-" + connectionData.originUrl.getHost(); 
+        keySuffix = Long.toString(connectionData.getAccountName().getOrigin().getId()) +
+                "-" + connectionData.originUrl.getHost();
         keyConsumerKey = KEY_OAUTH_CLIENT_KEY + keySuffix;
         keyConsumerSecret = KEY_OAUTH_CLIENT_SECRET + keySuffix;
         consumerKey = SharedPreferencesUtil.getString(keyConsumerKey, "");

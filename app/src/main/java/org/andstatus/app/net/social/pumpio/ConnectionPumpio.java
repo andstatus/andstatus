@@ -63,8 +63,9 @@ public class ConnectionPumpio extends Connection {
     @Override
     public void enrichConnectionData(OriginConnectionData connectionData) {
         super.enrichConnectionData(connectionData);
-        if (!TextUtils.isEmpty(connectionData.getAccountUsername())) {
-            connectionData.setOriginUrl(UrlUtils.buildUrl(usernameToHost(connectionData.getAccountUsername()), connectionData.isSsl()));
+        if (!TextUtils.isEmpty(connectionData.getAccountName().getUsername())) {
+            connectionData.setOriginUrl(UrlUtils.buildUrl(usernameToHost(
+                    connectionData.getAccountName().getUsername()), connectionData.isSsl()));
         }
     }
     
@@ -305,7 +306,7 @@ public class ConnectionPumpio extends Connection {
             MyLog.v(this, "Requesting data from the host: " + host);
             HttpConnectionData connectionData1 = http.data.copy();
             connectionData1.oauthClientKeys = null;
-            connectionData1.originUrl = UrlUtils.buildUrl(host, connectionData1.isSsl);
+            connectionData1.originUrl = UrlUtils.buildUrl(host, connectionData1.isSsl());
             conu.httpConnection = http.getNewInstance();
             conu.httpConnection.setConnectionData(connectionData1);
         }

@@ -90,8 +90,8 @@ public enum OriginType {
     /** Maximum number of characters in the message */
     protected int textLimitDefault = 0;
     protected URL urlDefault = null;
-    protected String basicPath = BASIC_PATH_DEFAULT;
-    protected String oauthPath = OAUTH_PATH_DEFAULT;
+    private String basicPath = BASIC_PATH_DEFAULT;
+    private String oauthPath = OAUTH_PATH_DEFAULT;
     private final boolean mAllowAttachmentForDirectMessage;
 
     private boolean isPublicTimeLineSyncable = false;
@@ -288,5 +288,13 @@ public enum OriginType {
 
     public boolean isSearchTimelineSyncable() {
         return isSearchTimelineSyncable;
+    }
+
+    public String getBasicPath() {
+        return basicPath;
+    }
+
+    public String getOauthPath() {
+        return oauthPath;
     }
 }

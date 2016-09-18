@@ -185,10 +185,6 @@ public class Origin {
         return "";
     }
 
-    public OriginConnectionData getConnectionData(TriState triStateOAuth) {
-        return OriginConnectionData.fromOrigin(this, triStateOAuth);
-    }
-
     public boolean canSetUrlOfOrigin() {
         return originType.canSetUrlOfOrigin();
     }

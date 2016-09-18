@@ -26,24 +26,12 @@ import java.net.URL;
 
 public class HttpConnectionData {
     private AccountName accountName = null;
-    protected OriginType originType;
-    protected long originId;
-    public boolean isSsl;
-    public SslModeEnum sslMode;
-    public TriState useLegacyHttpProtocol;
-    public String basicPath;
-    protected String oauthPath;
-    protected String accountUsername;
     public URL originUrl;
     protected URL urlForUserToken;
     protected AccountDataReader dataReader;
 
     public OAuthClientKeys oauthClientKeys;
 
-    public boolean areOAuthClientKeysPresent() {
-        return oauthClientKeys != null && oauthClientKeys.areKeysPresent();
-    }
-    
     private HttpConnectionData() {
         // Empty
     }
@@ -51,14 +39,6 @@ public class HttpConnectionData {
     public static HttpConnectionData fromConnectionData(OriginConnectionData oConnectionData) {
         HttpConnectionData data = new HttpConnectionData();
         data.accountName = oConnectionData.getAccountName();
-        data.originType = oConnectionData.getOriginType();
-        data.originId = oConnectionData.getOriginId();
-        data.isSsl = oConnectionData.isSsl();
-        data.sslMode = oConnectionData.getSslMode();
-        data.useLegacyHttpProtocol = oConnectionData.useLegacyHttpProtocol();
-        data.basicPath = oConnectionData.getBasicPath();
-        data.oauthPath = oConnectionData.getOauthPath();
-        data.accountUsername = oConnectionData.getAccountUsername();
         data.originUrl = oConnectionData.getOriginUrl();
         data.urlForUserToken = oConnectionData.getOriginUrl();
         data.dataReader = oConnectionData.getDataReader();
@@ -67,33 +47,58 @@ public class HttpConnectionData {
 
     public HttpConnectionData copy() {
         HttpConnectionData data = new HttpConnectionData();
-        data.originType = originType;
-        data.originId = originId;
-        data.isSsl = isSsl;
-        data.sslMode = sslMode;
-        data.useLegacyHttpProtocol = useLegacyHttpProtocol;
-        data.basicPath = basicPath;
-        data.oauthPath = oauthPath;
-        data.accountUsername = accountUsername;
+        data.accountName = accountName;
         data.originUrl = originUrl;
         data.urlForUserToken = urlForUserToken;
         data.dataReader = dataReader;
         return data;
     }
 
+    public AccountName getAccountName() {
+        return accountName;
+    }
+
+    public boolean areOAuthClientKeysPresent() {
+        return oauthClientKeys != null && oauthClientKeys.areKeysPresent();
+    }
+
     @Override
     public String toString() {
-        return "HttpConnectionData {" + originId + ", " + originType + ", isSsl:" + isSsl
-                + ", sslMode:" + sslMode
-                + (useLegacyHttpProtocol != TriState.UNKNOWN ? 
-                        ", HTTP:" + (useLegacyHttpProtocol == TriState.TRUE ?  "legacy" : "latest") : "")
-                + ", basicPath:" + basicPath 
-                + ", oauthPath:" + oauthPath + ", accountUsername:" + accountUsername
+        return "HttpConnectionData {" + accountName + ", isSsl:" + isSsl()
+                + ", sslMode:" + getSslMode()
+                + (getUseLegacyHttpProtocol() != TriState.UNKNOWN ?
+                        ", HTTP:" + (getUseLegacyHttpProtocol() == TriState.TRUE ?  "legacy" : "latest") : "")
+                + ", basicPath:" + getBasicPath()
+                + ", oauthPath:" + getOauthPath()
                 + ", originUrl:" + originUrl + ", hostForUserToken:" + urlForUserToken + ", dataReader:"
                 + dataReader + ", oauthClientKeys:" + oauthClientKeys + "}";
     }
 
     public String getLogName() {
-        return accountName.prefsFilename();
+        return accountName.getLogName();
+    }
+
+    public OriginType getOriginType() {
+        return accountName.getOrigin().getOriginType();
+    }
+
+    public String getBasicPath() {
+        return getOriginType().getBasicPath();
+    }
+
+    public String getOauthPath() {
+        return getOriginType().getOauthPath();
+    }
+
+    public boolean isSsl() {
+        return accountName.getOrigin().isSsl();
+    }
+
+    public TriState getUseLegacyHttpProtocol() {
+        return accountName.getOrigin().useLegacyHttpProtocol();
+    }
+
+    public SslModeEnum getSslMode() {
+        return accountName.getOrigin().getSslMode();
     }
 }

@@ -20,83 +20,52 @@ import org.andstatus.app.account.AccountDataReader;
 import org.andstatus.app.account.AccountDataReaderEmpty;
 import org.andstatus.app.account.AccountName;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.net.http.HttpConnectionEmpty;
-import org.andstatus.app.net.http.SslModeEnum;
-import org.andstatus.app.net.social.ConnectionEmpty;
+import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.util.TriState;
 
 import java.net.URL;
 
 public class OriginConnectionData {
-    private OriginType originType;
-    private long originId = 0;
-    private boolean isSsl = true;
-    private SslModeEnum sslMode = SslModeEnum.SECURE;
-    private TriState useLegacyHttpProtocol = TriState.UNKNOWN;
+    private final AccountName accountName;
     private boolean isOAuth = true;
     private URL originUrl = null;
-    private String basicPath = "";
-    private String oauthPath = "oauth";
 
-    private AccountName accountName = null;
-    private String accountUsername = "";
     private String accountUserOid = "";
     private AccountDataReader dataReader = null;
     
-    private Class<? extends org.andstatus.app.net.social.Connection> connectionClass = ConnectionEmpty.class;
     private Class<? extends org.andstatus.app.net.http.HttpConnection> httpConnectionClass = HttpConnectionEmpty.class;
-    
-    private OriginConnectionData() {
+
+    public static OriginConnectionData fromAccountName(AccountName accountName, TriState triStateOAuth) {
+        return new OriginConnectionData(accountName, triStateOAuth);
     }
-        
-    protected static OriginConnectionData fromOrigin(Origin origin, TriState triStateOAuth) {
-        OriginConnectionData connectionData = new OriginConnectionData();
-        connectionData.accountName = AccountName.fromOriginAndUserName(origin,"");
-        connectionData.originUrl = origin.getUrl();
-        connectionData.basicPath = origin.getOriginType().basicPath;
-        connectionData.oauthPath = origin.getOriginType().oauthPath;
-        connectionData.isSsl = origin.isSsl();
-        connectionData.sslMode = origin.getSslMode();
-        connectionData.originType = origin.getOriginType();
-        connectionData.useLegacyHttpProtocol = origin.useLegacyHttpProtocol();
-        connectionData.originId = origin.getId();
-        connectionData.isOAuth = origin.getOriginType().fixIsOAuth(triStateOAuth);
-        connectionData.connectionClass = origin.getOriginType().getConnectionClass();
-        connectionData.httpConnectionClass = origin.getOriginType()
-                .getHttpConnectionClass(connectionData.isOAuth());
-        connectionData.dataReader = new AccountDataReaderEmpty();
-        return connectionData;
+
+    private OriginConnectionData(AccountName accountName, TriState triStateOAuth) {
+        this.accountName = accountName;
+        originUrl = accountName.getOrigin().getUrl();
+        isOAuth = accountName.getOrigin().getOriginType().fixIsOAuth(triStateOAuth);
+        httpConnectionClass = accountName.getOrigin().getOriginType().getHttpConnectionClass(isOAuth());
+        dataReader = new AccountDataReaderEmpty();
     }
 
     public AccountName getAccountName() {
         return accountName;
     }
 
-    public void setAccountName(AccountName accountName) {
-        this.accountName = accountName;
-    }
-
     public OriginType getOriginType() {
-        return originType;
+        return accountName.getOrigin().getOriginType();
     }
 
     public long getOriginId() {
-        return originId;
+        return accountName.getOrigin().getId();
     }
 
     public boolean isSsl() {
-        return isSsl;
+        return accountName.getOrigin().isSsl();
     }
 
-    public SslModeEnum getSslMode() {
-        return sslMode;
-    }
-
-    public TriState useLegacyHttpProtocol() {
-        return useLegacyHttpProtocol;
-    }
-    
     public boolean isOAuth() {
         return isOAuth;
     }
@@ -109,20 +78,19 @@ public class OriginConnectionData {
         this.originUrl = urlIn;
     }
 
-    public String getBasicPath() {
-        return basicPath;
-    }
-
-    public String getOauthPath() {
-        return oauthPath;
-    }
-
-    public String getAccountUsername() {
-        return accountUsername;
-    }
-
-    public void setAccountUsername(String accountUsername) {
-        this.accountUsername = accountUsername;
+    public Connection newConnection() throws ConnectionException {
+        Connection connection;
+        try {
+            connection = accountName.getOrigin().getOriginType().getConnectionClass().newInstance();
+            connection.enrichConnectionData(this);
+            connection.setAccountData(this);
+            // TODO: Since API19 we will use ReflectiveOperationException as a common superclass of these two exceptions: InstantiationException and IllegalAccessException
+        } catch (InstantiationException e) {
+            throw new ConnectionException(accountName.getOrigin().toString(), e);
+        } catch (IllegalAccessException e) {
+            throw new ConnectionException(accountName.getOrigin().toString(), e);
+        }
+        return connection;
     }
 
     public String getAccountUserOid() {
@@ -141,19 +109,18 @@ public class OriginConnectionData {
         this.dataReader = dataReader;
     }
 
-    public Class<? extends org.andstatus.app.net.social.Connection> getConnectionClass() {
-        return connectionClass;
-    }
-
-    public HttpConnection newHttpConnection() throws InstantiationException, IllegalAccessException {
+    public HttpConnection newHttpConnection(String logMsg) throws ConnectionException {
         HttpConnection http = MyContextHolder.get().getHttpConnectionMock();
         if (http == null) {
-            http = httpConnectionClass.newInstance();
+            try {
+                http = httpConnectionClass.newInstance();
+                // TODO: Since API19 we will use ReflectiveOperationException as a common superclass of these two exceptions: InstantiationException and IllegalAccessException
+            } catch (InstantiationException e) {
+                throw new ConnectionException(logMsg, e);
+            } catch (IllegalAccessException e) {
+                throw new ConnectionException(logMsg, e);
+            }
         }
         return http;
-    }
-
-    public void setHttpConnectionClass(Class<? extends org.andstatus.app.net.http.HttpConnection> httpConnectionClass) {
-        this.httpConnectionClass = httpConnectionClass;
     }
 }

@@ -29,10 +29,6 @@ import org.andstatus.app.origin.Origin;
  */
 public class AccountName {
 
-    /**
-     * Prefix of the user's Preferences file
-     */
-    public static final String FILE_PREFIX = "user_";
     public static final String ORIGIN_SEPARATOR = "/";
     
     /**
@@ -143,12 +139,8 @@ public class AccountName {
         return origin.getName();
     }
 
-    /**
-     * Name of preferences file for this MyAccount
-     * @return Name without path and extension
-     */
-    public String prefsFilename() {
-        return FILE_PREFIX + toString().replace("@", "-").replace(ORIGIN_SEPARATOR, "-");
+    public String getLogName() {
+        return toString().replace("@", "-").replace(ORIGIN_SEPARATOR, "-");
     }
 
     @Override
