@@ -59,4 +59,21 @@ public class MyLogTest extends InstrumentationTestCase {
         assertEquals(MyLog.getLogFilename(), null);
         assertFalse(file.exists());
     }
+
+    public void testUniqueDateTimeFormatted() {
+        String string1 = "";
+        String string2 = "";
+        for (int ind = 0; ind < 20; ind++) {
+            long time1 = MyLog.uniqueCurrentTimeMS();
+            string1 = MyLog.uniqueDateTimeFormatted();
+            long time2 = MyLog.uniqueCurrentTimeMS();
+            string2 = MyLog.uniqueDateTimeFormatted();
+            assertTrue("Time:" + time1, time2 > time1);
+            assertFalse(string1, string1.contains("SSS"));
+            assertFalse(string1, string1.contains("HH"));
+            assertTrue(string1, string1.contains("-"));
+            assertFalse(string1, string1.equals(string2));
+        }
+        MyLog.v("testUniqueDateTimeFormatted", string1 + " " + string2);
+    }
 }

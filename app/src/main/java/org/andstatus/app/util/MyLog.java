@@ -40,6 +40,8 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.text.FieldPosition;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -626,12 +628,18 @@ public class MyLog {
     
     public static String uniqueDateTimeFormatted() {
         long time = uniqueCurrentTimeMS();
-        String strTime = DateFormat.format("yyyy-MM-dd-HH-mm-ss", new Date(time)).toString();
-        if (strTime.contains("HH")) {
+        for (int ind = 0; ind < 2; ind++) {
             // see http://stackoverflow.com/questions/16763968/android-text-format-dateformat-hh-is-not-recognized-like-with-java-text-simple
-            strTime = DateFormat.format("yyyy-MM-dd-kk-mm-ss", new Date(time)).toString();
+            String formatString = ind==0 ? "yyyy-MM-dd-HH-mm-ss-SSS" : "yyyy-MM-dd-kk-mm-ss-SSS";
+            SimpleDateFormat format = new SimpleDateFormat(formatString);
+            StringBuffer buffer = new StringBuffer();
+            format.format(new Date(time), buffer, new FieldPosition(0));
+            String strTime = buffer.toString();
+            if (!strTime.contains("HH")) {
+                return strTime;
+            }
         }
-        return strTime + Long.toString(time);
+        return Long.toString(time); // Fallback for a case above doesn't work
     }
     
     // see http://stackoverflow.com/a/9191383/297710
