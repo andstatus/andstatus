@@ -178,6 +178,7 @@
   <string name="get_followers">Get followers</string>
   <string name="get_friends">Get friends</string>
   <string name="get_open_instances_title">Get Open Instances</string>
+  <string name="get_message">Get Message information</string>
   <string name="get_user">Get User information</string>
   <string name="go_to_the_top_title">Go to the Top</string>
   <string name="header_accounts">Accounts</string>

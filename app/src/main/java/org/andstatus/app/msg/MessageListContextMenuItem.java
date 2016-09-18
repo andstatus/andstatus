@@ -331,6 +331,15 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
             menu.getActivity().updateList(TriState.TRUE, menu.getMsgId(), false);
         }
     },
+    GET_MESSAGE {
+        @Override
+        void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
+            MyServiceManager.sendManualForegroundCommand(
+                    CommandData.newItemCommand(CommandEnum.GET_STATUS, menu.getMyAccountToActAs(),
+                    menu.getMsgId())
+            );
+        }
+    },
     NONEXISTENT(),
     UNKNOWN();
 

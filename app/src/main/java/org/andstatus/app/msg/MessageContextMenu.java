@@ -180,6 +180,7 @@ public class MessageContextMenu extends MyContextMenu {
                         break;
                 }
             }
+            MessageListContextMenuItem.GET_MESSAGE.addTo(menu, order++, R.string.get_message);
         } catch (Exception e) {
             MyLog.e(this, method, e);
         }
@@ -211,6 +212,11 @@ public class MessageContextMenu extends MyContextMenu {
         }
         msg = msg2;
         mActorUserIdForCurrentMessage = msg.getMyAccount().getUserId();
+
+        if (!getMyAccountToActAs().isValid() || !getMyAccountToActAs().getOrigin().
+                equals(msg.getMyAccount().getOrigin())) {
+            setAccountUserIdToActAs(msg.getMyAccount().getUserId());
+        }
     }
 
     private MessageForAccount getMessageForAccount(long linkedUserId, MyAccount currentMyAccount) {
