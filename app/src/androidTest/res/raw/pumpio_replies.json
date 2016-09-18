@@ -1,0 +1,749 @@
+{
+  "displayName": "Replies to https://identi.ca/api/note/Z-x96Q8rTHSxTthYYULRHA",
+  "url": "https://identi.ca/api/note/Z-x96Q8rTHSxTthYYULRHA/replies",
+  "items": [
+    {
+      "content": "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">&gt;&gt; <span style=\" font-weight:600; text-decoration: underline;\">AndStatus@Identi.ca:</span></p> <p style=\" margin-top:12px; margin-bottom:12px; margin-left:40px; margin-right:40px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:small; font-style:italic;\">“[...] BTW is Pump.io really used now?! [...]”</span></p> <p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:x-large; font-weight:600;\">YES</span> </p>",
+      "objectType": "comment",
+      "author": {
+        "preferredUsername": "jankusanagi",
+        "_user": true,
+        "url": "https://identi.ca/jankusanagi",
+        "displayName": "JanKusanagi",
+        "_uuid": "rrP0kzQRQ7WXJAbYd1xtbA",
+        "links": {
+          "self": {
+            "href": "https://identi.ca/api/user/jankusanagi/profile"
+          },
+          "activity-inbox": {
+            "href": "https://identi.ca/api/user/jankusanagi/inbox"
+          },
+          "activity-outbox": {
+            "href": "https://identi.ca/api/user/jankusanagi/feed"
+          }
+        },
+        "objectType": "person",
+        "_created": "2013-06-28T17:52:28Z",
+        "followers": {
+          "url": "https://identi.ca/api/user/jankusanagi/followers"
+        },
+        "following": {
+          "url": "https://identi.ca/api/user/jankusanagi/following"
+        },
+        "favorites": {
+          "url": "https://identi.ca/api/user/jankusanagi/favorites"
+        },
+        "lists": {
+          "url": "https://identi.ca/api/user/jankusanagi/lists/person"
+        },
+        "status_net": {
+          "avatarLinks": [
+            {
+              "url": "http://avatar3.status.net/i/identica/71227-90-20090803175211.png",
+              "rel": "avatar",
+              "type": "image/png",
+              "width": 90,
+              "height": 90
+            },
+            {
+              "url": "http://avatar3.status.net/i/identica/71227-96-20090803175211.png",
+              "rel": "avatar",
+              "type": "image/png",
+              "width": 96,
+              "height": 96
+            },
+            {
+              "url": "http://avatar3.status.net/i/identica/71227-48-20090803175212.png",
+              "rel": "avatar",
+              "type": "image/png",
+              "width": 48,
+              "height": 48
+            },
+            {
+              "url": "http://avatar3.status.net/i/identica/71227-24-20090803175212.png",
+              "rel": "avatar",
+              "type": "image/png",
+              "width": 24,
+              "height": 24
+            }
+          ],
+          "profile_info": {
+            "local_id": "71227"
+          }
+        },
+        "image": {
+          "height": 90,
+          "url": "https://identi.ca/uploads/jankusanagi/2014/2/27/qcCs-w.jpg",
+          "width": 90
+        },
+        "location": {
+          "displayName": "Between Jabberia and the Pumpiverse!",
+          "objectType": "place"
+        },
+        "portablecontacts_net": {
+          "preferredUsername": "jankusanagi",
+          "displayName": "JanKusanagi",
+          "note": "Mageia GNU/Linux + KDE Plasma user, Debian GNU/Linux user, Archlinux user, Jabber/XMPP user, Identi.ca user, Diaspora user, C/C++/Qt coder",
+          "addresses": {
+            "formatted": "Jabberia"
+          },
+          "urls": [
+            {
+              "type": "homepage",
+              "value": "http://jancoding.wordpress.com/",
+              "primary": "true"
+            }
+          ]
+        },
+        "upstreamDuplicates": [
+          "http://identi.ca/user/71227"
+        ],
+        "summary": "Developer of the Dianara pump.io client.\n\nMageia GNU/Linux + KDE Plasma user. I also use Debian GNU/Linux and Archlinux.\nJabber/XMPP chatter, Pumper, C/C++/Qt coder.\n\nPump.io User Guide:\nhttps://pumpio.readthedocs.org/en/latest/userguide.html\n\nUsers by language: https://github.com/e14n/pump.io/wiki/Users-by-language\n\nSome tips:\nhttp://communicationfreedom.wordpress.com/2014/03/17/pump-io-tips/\n\nAnd if your Pump.io server is identi.ca, check this out: https://identi.ca/jankusanagi/note/IpfiW7kBQYuXt6H7odMzQQ",
+        "updated": "2015-11-01T15:49:57Z",
+        "shares": {
+          "url": "https://identi.ca/api/person/rrP0kzQRQ7WXJAbYd1xtbA/shares"
+        },
+        "pump_io": {
+          "shared": false,
+          "followed": true
+        },
+        "liked": false,
+        "likes": {
+          "url": "https://identi.ca/api/person/rrP0kzQRQ7WXJAbYd1xtbA/likes"
+        },
+        "replies": {
+          "url": "https://identi.ca/api/person/rrP0kzQRQ7WXJAbYd1xtbA/replies"
+        },
+        "_user_confirmed": true,
+        "id": "acct:jankusanagi@identi.ca"
+      },
+      "_created": "2016-04-29T11:46:46Z",
+      "_uuid": "cJdi4cGWQT-Z9Rn3mjr5Bw",
+      "published": "2016-04-29T11:46:46Z",
+      "updated": "2016-04-29T11:46:46Z",
+      "links": {
+        "self": {
+          "href": "https://identi.ca/api/comment/cJdi4cGWQT-Z9Rn3mjr5Bw"
+        }
+      },
+      "likes": {
+        "url": "https://identi.ca/api/comment/cJdi4cGWQT-Z9Rn3mjr5Bw/likes",
+        "totalItems": 5,
+        "items": [
+          {
+            "preferredUsername": "clacke",
+            "url": "https://microca.st/clacke",
+            "displayName": "Claes Wallin (韋嘉誠)",
+            "links": {
+              "self": {
+                "href": "https://microca.st/api/user/clacke/profile"
+              },
+              "activity-inbox": {
+                "href": "https://microca.st/api/user/clacke/inbox"
+              },
+              "activity-outbox": {
+                "href": "https://microca.st/api/user/clacke/feed"
+              }
+            },
+            "objectType": "person",
+            "updated": "2016-09-06T19:52:07Z",
+            "published": "2013-04-02T13:03:17Z",
+            "followers": {
+              "url": "https://microca.st/api/user/clacke/followers",
+              "author": {
+                "id": "acct:clacke@microca.st",
+                "objectType": "person"
+              },
+              "links": {
+                "self": {
+                  "href": "https://microca.st/api/user/clacke/followers"
+                }
+              },
+              "displayName": "Followers",
+              "members": {
+                "url": "https://microca.st/api/user/clacke/followers"
+              },
+              "objectType": "collection",
+              "updated": "2013-07-02T19:06:26Z",
+              "published": "2013-04-02T13:03:17Z",
+              "id": "https://microca.st/api/user/clacke/followers"
+            },
+            "following": {
+              "url": "https://microca.st/api/user/clacke/following"
+            },
+            "favorites": {
+              "url": "https://microca.st/api/user/clacke/favorites"
+            },
+            "lists": {
+              "url": "https://microca.st/api/user/clacke/lists/person",
+              "displayName": "Collections of persons for Claes Wallin (韋嘉誠)",
+              "objectTypes": [
+                "collection"
+              ],
+              "links": {
+                "first": {
+                  "href": "https://microca.st/api/user/clacke/lists/person"
+                },
+                "self": {
+                  "href": "https://microca.st/api/user/clacke/lists/person"
+                },
+                "prev": {
+                  "href": "https://microca.st/api/user/clacke/lists/person?since=https%3A%2F%2Fmicroca.st%2Fapi%2Fcollection%2Fvf9sFAmoR3-eX8YVHdVJXQ"
+                }
+              },
+              "author": {
+                "id": "acct:clacke@microca.st",
+                "objectType": "person"
+              }
+            },
+            "pump_io": {
+              "followed": true,
+              "shared": false,
+              "fullImage": {
+                "url": "https://microca.st/uploads/clacke/2013/4/2/0Fo43Q.png",
+                "width": 215,
+                "height": 215
+              }
+            },
+            "location": {
+              "objectType": "place",
+              "displayName": "Hong Kong"
+            },
+            "summary": "Linux native since 1995. Working in Ruby, shell scripts, whatever gets the page up. Solving yesterday's problems tomorrow.",
+            "image": {
+              "url": "https://microca.st/uploads/clacke/2013/4/2/0Fo43Q_thumb.png",
+              "width": 96,
+              "height": 96
+            },
+            "liked": false,
+            "_created": "2013-07-11T07:45:43Z",
+            "id": "acct:clacke@microca.st"
+          },
+          {
+            "preferredUsername": "biny",
+            "_user": true,
+            "url": "https://identi.ca/biny",
+            "displayName": "Ilpo Nyyssönen",
+            "_uuid": "ZL5gL6pLS969KjJS3XQ-FQ",
+            "links": {
+              "self": {
+                "href": "https://identi.ca/api/user/biny/profile"
+              },
+              "activity-inbox": {
+                "href": "https://identi.ca/api/user/biny/inbox"
+              },
+              "activity-outbox": {
+                "href": "https://identi.ca/api/user/biny/feed"
+              }
+            },
+            "objectType": "person",
+            "_created": "2013-06-28T11:04:21Z",
+            "followers": {
+              "url": "https://identi.ca/api/user/biny/followers"
+            },
+            "following": {
+              "url": "https://identi.ca/api/user/biny/following"
+            },
+            "favorites": {
+              "url": "https://identi.ca/api/user/biny/favorites"
+            },
+            "lists": {
+              "url": "https://identi.ca/api/user/biny/lists/person"
+            },
+            "status_net": {
+              "avatarLinks": [
+                {
+                  "url": "http://avatar3.status.net/i/identica/54981-199-20090515182436.jpeg",
+                  "rel": "avatar",
+                  "type": "image/jpeg",
+                  "width": 199,
+                  "height": 199
+                },
+                {
+                  "url": "http://avatar3.status.net/i/identica/54981-96-20090515182436.jpeg",
+                  "rel": "avatar",
+                  "type": "image/jpeg",
+                  "width": 96,
+                  "height": 96
+                },
+                {
+                  "url": "http://avatar3.status.net/i/identica/54981-48-20090515182436.jpeg",
+                  "rel": "avatar",
+                  "type": "image/jpeg",
+                  "width": 48,
+                  "height": 48
+                },
+                {
+                  "url": "http://avatar3.status.net/i/identica/54981-24-20090515182436.jpeg",
+                  "rel": "avatar",
+                  "type": "image/jpeg",
+                  "width": 24,
+                  "height": 24
+                }
+              ],
+              "profile_info": {
+                "local_id": "54981"
+              }
+            },
+            "image": {
+              "url": "http://avatar3.status.net/i/identica/54981-96-20090515182436.jpeg",
+              "rel": "avatar",
+              "type": "image/jpeg",
+              "width": 96,
+              "height": 96
+            },
+            "location": {
+              "objectType": "place",
+              "position": "+60.20520+24.65220/",
+              "lat": "60.2052",
+              "lon": "24.6522",
+              "displayName": "Espoo, Finland",
+              "url": "http://www.geonames.org/660158"
+            },
+            "portablecontacts_net": {
+              "preferredUsername": "biny",
+              "displayName": "Ilpo Nyyssönen",
+              "addresses": {
+                "formatted": "Espoo, Finland"
+              },
+              "urls": [
+                {
+                  "type": "homepage",
+                  "value": "http://iny.iki.fi/",
+                  "primary": "true"
+                }
+              ]
+            },
+            "upstreamDuplicates": [
+              "http://identi.ca/user/54981"
+            ],
+            "updated": "2013-08-05T21:33:41Z",
+            "_user_confirmed": true,
+            "id": "acct:biny@identi.ca"
+          },
+          {
+            "preferredUsername": "frymo",
+            "url": "https://microca.st/frymo",
+            "displayName": "Efraim Flashner",
+            "links": {
+              "self": {
+                "href": "https://microca.st/api/user/frymo/profile"
+              },
+              "activity-inbox": {
+                "href": "https://microca.st/api/user/frymo/inbox"
+              },
+              "activity-outbox": {
+                "href": "https://microca.st/api/user/frymo/feed"
+              },
+              "dialback": {
+                "href": "https://microca.st/api/dialback"
+              },
+              "lists": {
+                "href": "https://microca.st/api/user/frymo/lists/person"
+              },
+              "http://webfinger.net/rel/profile-page": {
+                "href": "https://microca.st/frymo"
+              }
+            },
+            "objectType": "person",
+            "followers": {
+              "url": "https://microca.st/api/user/frymo/followers"
+            },
+            "following": {
+              "url": "https://microca.st/api/user/frymo/following"
+            },
+            "favorites": {
+              "url": "https://microca.st/api/user/frymo/favorites"
+            },
+            "lists": {
+              "url": "https://microca.st/api/user/frymo/lists/person"
+            },
+            "updated": "2016-07-13T13:00:00Z",
+            "liked": false,
+            "pump_io": {
+              "fullImage": {
+                "url": "https://microca.st/uploads/frymo/2014/7/27/f3vQXg.jpg",
+                "width": 1145,
+                "height": 1131
+              },
+              "shared": false,
+              "followed": true
+            },
+            "_created": "2014-07-27T11:34:44Z",
+            "location": {
+              "displayName": "Jerusalem",
+              "objectType": "place"
+            },
+            "summary": "",
+            "image": {
+              "height": 90,
+              "url": "https://microca.st/uploads/frymo/2014/7/27/813Kkg_thumb.jpg",
+              "width": 90
+            },
+            "id": "acct:frymo@microca.st"
+          },
+          {
+            "preferredUsername": "steve",
+            "url": "https://hub.polari.us/steve",
+            "displayName": "Stephen Sekula",
+            "links": {
+              "self": {
+                "href": "https://hub.polari.us/api/user/steve/profile"
+              },
+              "activity-inbox": {
+                "href": "https://hub.polari.us/api/user/steve/inbox"
+              },
+              "activity-outbox": {
+                "href": "https://hub.polari.us/api/user/steve/feed"
+              }
+            },
+            "objectType": "person",
+            "followers": {
+              "url": "https://hub.polari.us/steve/followers",
+              "author": {
+                "id": "acct:steve@hub.polari.us",
+                "objectType": "person"
+              },
+              "links": {
+                "self": {
+                  "href": "https://hub.polari.us/api/user/steve/followers"
+                }
+              },
+              "displayName": "Followers",
+              "members": {
+                "url": "https://hub.polari.us/api/user/steve/followers"
+              },
+              "objectType": "collection",
+              "id": "https://hub.polari.us/api/user/steve/followers",
+              "objectTypes": {
+                "0": "person"
+              }
+            },
+            "following": {
+              "url": "https://hub.polari.us/api/user/steve/following"
+            },
+            "favorites": {
+              "url": "https://hub.polari.us/api/user/steve/favorites",
+              "displayName": "Things that Stephen Sekula has favorited",
+              "links": {
+                "first": {
+                  "href": "https://hub.polari.us/api/user/steve/favorites"
+                },
+                "self": {
+                  "href": "https://hub.polari.us/api/user/steve/favorites"
+                }
+              },
+              "author": {
+                "id": "acct:steve@hub.polari.us",
+                "objectType": "person"
+              }
+            },
+            "lists": {
+              "url": "https://hub.polari.us/api/user/steve/lists/person",
+              "displayName": "Collections of persons for Stephen Sekula",
+              "objectTypes": {
+                "0": "collection"
+              },
+              "links": {
+                "first": {
+                  "href": "https://hub.polari.us/api/user/steve/lists/person"
+                },
+                "self": {
+                  "href": "https://hub.polari.us/api/user/steve/lists/person"
+                },
+                "prev": {
+                  "href": "https://hub.polari.us/api/user/steve/lists/person?since=https%3A%2F%2Fhub.polari.us%2Fapi%2Fcollection%2F0LSBKh_ySKWGxBIvMDdmLA"
+                }
+              },
+              "author": {
+                "id": "acct:steve@hub.polari.us",
+                "objectType": "person"
+              }
+            },
+            "pump_io": {
+              "fullImage": {
+                "url": "https://hub.polari.us/uploads/steve/2016/3/13/6k9Sxg.jpg",
+                "width": 1600,
+                "height": 2000
+              },
+              "shared": false,
+              "followed": true
+            },
+            "location": {
+              "displayName": "Dallas, TX, USA",
+              "objectType": "place"
+            },
+            "summary": "Husband; Associate Professor of Physics; I teach at SMU in Dallas, TX; I study the Higgs Particle with the ATLAS Experiment at the Large Hadron Collider at CERN; writer and blogger; drummer; programmer; teacher; scientist; traveler; runner; gardener; open-source aficionado.",
+            "updated": "2016-09-17T04:38:59Z",
+            "image": {
+              "url": "https://hub.polari.us/uploads/steve/2016/3/13/6k9Sxg_thumb.jpg",
+              "width": 96,
+              "height": 96
+            },
+            "liked": false,
+            "_created": "2013-07-24T13:15:21Z",
+            "ignore": false,
+            "id": "acct:steve@hub.polari.us"
+          }
+        ]
+      },
+      "replies": {
+        "url": "https://identi.ca/api/comment/cJdi4cGWQT-Z9Rn3mjr5Bw/replies",
+        "totalItems": 0
+      },
+      "shares": {
+        "url": "https://identi.ca/api/comment/cJdi4cGWQT-Z9Rn3mjr5Bw/shares",
+        "totalItems": 2
+      },
+      "url": "https://identi.ca/jankusanagi/comment/cJdi4cGWQT-Z9Rn3mjr5Bw",
+      "id": "https://identi.ca/api/comment/cJdi4cGWQT-Z9Rn3mjr5Bw",
+      "liked": false
+    },
+    {
+      "content": "<p>Hello, yes, well it works a bit different in pump.io. There are no special direct messages, just normal messages which are addressed in different ways with \"To\" and \"Cc\" fields.</p>\n<p>In the Pumpa client I have used \"Mentions\" to correspond to the <code>/api/user/$USERNAME/inbox/direct/minor</code> feed. These are e.g. comments that are directed to you (minor activities). Then I have used \"Direct\" to correspond the <code>/api/user/$USERNAME/inbox/direct/major</code> feed, these are major posts (not comments) directed to you.</p>\n<p>The ticket you mention are all replies to a post, not just those directed at you (i.e. mentions). And yes, those should show up in the conversations view.</p>\n<p>I think AndStatus is not well known yet among pump.io users, but I think it has potential to become the best pump.io client as well :-)</p>\n<p>There are a lot of people using pump.io, hard to say if more or less than in GNU Social, but there are definitely people here. You just need to know whom to follow I guess. Discovery is still a bit of a problem here.</p>\n<p>Anyway, thanks for making AndStatus! :-)</p>",
+      "objectType": "comment",
+      "published": "2016-04-28T20:13:36Z",
+      "updated": "2016-04-28T20:13:36Z",
+      "links": {
+        "self": {
+          "href": "https://pump.saz.im/api/comment/tbAw74TJT52dvffupRXa1w"
+        }
+      },
+      "likes": {
+        "url": "https://pump.saz.im/api/comment/tbAw74TJT52dvffupRXa1w/likes",
+        "totalItems": 1,
+        "items": [
+          {
+            "preferredUsername": "andstatus",
+            "_user": true,
+            "url": "https://identi.ca/andstatus",
+            "displayName": "AndStatus@Identi.ca",
+            "_uuid": "Tl-frMt9Rrqu0Vc9OfgjdQ",
+            "links": {
+              "self": {
+                "href": "https://identi.ca/api/user/andstatus/profile"
+              },
+              "activity-inbox": {
+                "href": "https://identi.ca/api/user/andstatus/inbox"
+              },
+              "activity-outbox": {
+                "href": "https://identi.ca/api/user/andstatus/feed"
+              }
+            },
+            "objectType": "person",
+            "_created": "2013-07-08T10:41:02Z",
+            "followers": {
+              "url": "https://identi.ca/api/user/andstatus/followers",
+              "displayName": "Followers for AndStatus Project",
+              "objectTypes": [
+                "person"
+              ],
+              "author": {
+                "id": "acct:andstatus@identi.ca",
+                "objectType": "person"
+              },
+              "links": {
+                "self": {
+                  "href": "https://identi.ca/api/user/andstatus/followers?offset=0&count="
+                },
+                "current": {
+                  "href": "https://identi.ca/api/user/andstatus/followers"
+                },
+                "prev": {
+                  "href": "https://identi.ca/api/user/andstatus/followers?since=acct%3Aafleck%40microca.st"
+                }
+              }
+            },
+            "following": {
+              "url": "https://identi.ca/api/user/andstatus/following",
+              "displayName": "Following for AndStatus Project",
+              "objectTypes": [
+                "person"
+              ],
+              "author": {
+                "id": "acct:andstatus@identi.ca",
+                "objectType": "person"
+              },
+              "links": {
+                "self": {
+                  "href": "https://identi.ca/api/user/andstatus/following?offset=0&count=20"
+                },
+                "current": {
+                  "href": "https://identi.ca/api/user/andstatus/following"
+                },
+                "prev": {
+                  "href": "https://identi.ca/api/user/andstatus/following?since=acct%3Amacno%40fmrl.me"
+                }
+              }
+            },
+            "favorites": {
+              "url": "https://identi.ca/api/user/andstatus/favorites"
+            },
+            "lists": {
+              "url": "https://identi.ca/api/user/andstatus/lists/person"
+            },
+            "status_net": {
+              "avatarLinks": [
+                {
+                  "url": "http://avatar3.status.net/i/identica/923870-124-20120728170222.png",
+                  "rel": "avatar",
+                  "type": "image/png",
+                  "width": 124,
+                  "height": 124
+                },
+                {
+                  "url": "http://avatar3.status.net/i/identica/923870-96-20120728170222.png",
+                  "rel": "avatar",
+                  "type": "image/png",
+                  "width": 96,
+                  "height": 96
+                },
+                {
+                  "url": "http://avatar3.status.net/i/identica/923870-48-20120728170222.png",
+                  "rel": "avatar",
+                  "type": "image/png",
+                  "width": 48,
+                  "height": 48
+                },
+                {
+                  "url": "http://avatar3.status.net/i/identica/923870-24-20120728170222.png",
+                  "rel": "avatar",
+                  "type": "image/png",
+                  "width": 24,
+                  "height": 24
+                }
+              ],
+              "profile_info": {
+                "local_id": "923870"
+              }
+            },
+            "image": {
+              "url": "https://identi.ca/uploads/andstatus/2015/8/6/C_k5cQ_thumb.png",
+              "width": 96,
+              "height": 96
+            },
+            "location": {
+              "objectType": "place",
+              "position": "-32.94132-60.66616/",
+              "lat": "-32.94132",
+              "lon": "-60.66616",
+              "displayName": "The Internet",
+              "url": "http://www.geonames.org/3846839"
+            },
+            "portablecontacts_net": {
+              "preferredUsername": "andstatus",
+              "displayName": "AndStatus Project",
+              "note": "Open Source community based project, creating AndStatus application for Android",
+              "addresses": {
+                "formatted": "Virtual"
+              },
+              "urls": [
+                {
+                  "type": "homepage",
+                  "value": "http://andstatus.org",
+                  "primary": "true"
+                }
+              ]
+            },
+            "upstreamDuplicates": [
+              "http://identi.ca/user/923870"
+            ],
+            "summary": "Open Source community based project, creating AndStatus application: Social networking client for Android... We post mainly from andstatus@loadaverage.org account. Please follow it.\n\nHomepage: http://andstatus.org",
+            "updated": "2016-02-07T05:21:06Z",
+            "_user_confirmed": true,
+            "pump_io": {
+              "followed": false
+            },
+            "id": "acct:andstatus@identi.ca"
+          }
+        ]
+      },
+      "replies": {
+        "url": "https://pump.saz.im/api/comment/tbAw74TJT52dvffupRXa1w/replies",
+        "totalItems": 0
+      },
+      "shares": {
+        "url": "https://pump.saz.im/api/comment/tbAw74TJT52dvffupRXa1w/shares",
+        "totalItems": 0
+      },
+      "url": "https://pump.saz.im/sazius/comment/tbAw74TJT52dvffupRXa1w",
+      "liked": true,
+      "pump_io": {
+        "shared": false
+      },
+      "author": {
+        "objectType": "person",
+        "published": "2013-12-03T19:04:01Z",
+        "updated": "2016-09-17T20:54:13Z",
+        "links": {
+          "self": {
+            "href": "https://pump.saz.im/api/user/sazius/profile"
+          },
+          "activity-inbox": {
+            "href": "https://pump.saz.im/api/user/sazius/inbox"
+          },
+          "activity-outbox": {
+            "href": "https://pump.saz.im/api/user/sazius/feed"
+          },
+          "dialback": {
+            "href": "https://pump.saz.im/api/dialback"
+          },
+          "lists": {
+            "href": "https://pump.saz.im/api/user/sazius/lists/person"
+          },
+          "http://webfinger.net/rel/profile-page": {
+            "href": "https://pump.saz.im/sazius"
+          }
+        },
+        "liked": false,
+        "pump_io": {
+          "followed": true,
+          "shared": false
+        },
+        "followers": {
+          "url": "https://pump.saz.im/api/user/sazius/followers"
+        },
+        "following": {
+          "url": "https://pump.saz.im/api/user/sazius/following"
+        },
+        "favorites": {
+          "url": "https://pump.saz.im/api/user/sazius/favorites"
+        },
+        "_created": "2013-12-03T19:04:08Z",
+        "_upgrade_remote_person_feeds": true,
+        "preferredUsername": "sazius",
+        "url": "https://pump.saz.im/sazius",
+        "displayName": "sazius",
+        "lists": {
+          "url": "https://pump.saz.im/api/user/sazius/lists/person"
+        },
+        "location": {
+          "displayName": "Espoo, Finland",
+          "objectType": "place"
+        },
+        "summary": "I’m a computer science researcher. I care about digital rights and social justice issues.\n\nIt might be a good idea to also follow my backup account: sazius@fmrl.me.",
+        "image": {
+          "url": "https://pump.saz.im/uploads/sazius/2013/12/3/owSqXg_thumb.jpg",
+          "width": 96,
+          "height": 96
+        },
+        "shares": {
+          "url": "https://pio.saz.im/api/person/shares?id=acct%3Asazius%40pump.saz.im"
+        },
+        "ignore": false,
+        "id": "acct:sazius@pump.saz.im"
+      },
+      "_created": "2016-04-28T20:13:38Z",
+      "id": "https://pump.saz.im/api/comment/tbAw74TJT52dvffupRXa1w"
+    }
+  ],
+  "links": {
+    "first": {
+      "href": "https://identi.ca/api/note/Z-x96Q8rTHSxTthYYULRHA/replies"
+    },
+    "self": {
+      "href": "https://identi.ca/api/note/Z-x96Q8rTHSxTthYYULRHA/replies"
+    }
+  },
+  "totalItems": 2
+}
