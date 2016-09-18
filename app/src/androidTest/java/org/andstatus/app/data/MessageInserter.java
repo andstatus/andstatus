@@ -23,6 +23,7 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.database.MsgOfUserTable;
+import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.net.social.pumpio.ConnectionPumpio;
 import org.andstatus.app.net.social.MbMessage;
 import org.andstatus.app.net.social.MbUser;
@@ -172,6 +173,15 @@ public class MessageInserter extends InstrumentationTestCase {
                     "t." + MsgOfUserTable.MSG_ID + "=" + messageId
             + " AND t." + MsgOfUserTable.REBLOGGED + "=1" );
             assertTrue("Reblogger found for msgId=" + messageId, rebloggerId != 0);
+        }
+
+        if (!messageIn.replies.isEmpty()) {
+            for (MbMessage reply : messageIn.replies) {
+                long inReplyToMsgId = MyQuery.conditionToLongColumnValue(MsgTable.TABLE_NAME,
+                        MsgTable.IN_REPLY_TO_MSG_ID,
+                        "t." + MsgTable.MSG_OID + "='" + reply.oid + "'" );
+                assertEquals("Inserting reply:<" + reply.getBody() + ">", messageId, inReplyToMsgId);
+            }
         }
 
         return messageId;

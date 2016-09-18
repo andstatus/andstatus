@@ -45,12 +45,13 @@ public class MbMessage {
 
     public MbMessage rebloggedMessage = null;
     public MbMessage inReplyToMessage = null;
+    public final List<MbMessage> replies = new ArrayList<>();
     public String via = "";
     public String url="";
     private boolean isPublic = false;
     private TriState isSubscribed = TriState.UNKNOWN;
 
-    public List<MbAttachment> attachments = new ArrayList<>();
+    public final List<MbAttachment> attachments = new ArrayList<>();
     
     public boolean isPublic() {
         return isPublic;

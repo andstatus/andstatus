@@ -317,6 +317,11 @@ public class DataInserter {
             if ( authorId != 0 && authorId != senderId ) {
                 lum.onNewUserMsg(new UserMsg(authorId, msgId, createdDate));
             }
+
+            for (MbMessage reply : message.replies) {
+                DataInserter di = new DataInserter(execContext);
+                di.insertOrUpdateMsg(reply, lum);
+            }
         } catch (Exception e) {
             MyLog.e(this, funcName, e);
         }

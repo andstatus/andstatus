@@ -317,7 +317,7 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
     }
     
     public void testPostWithMedia() throws IOException {
-        String jso = RawResourceUtils.getString(this.getInstrumentation().getContext(), 
+        String jso = RawResourceUtils.getString(this.getInstrumentation().getContext(),
                 org.andstatus.app.tests.R.raw.pumpio_activity_with_image);
         httpConnectionMock.setResponse(jso);
         
@@ -328,7 +328,7 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
     }
     
     private MbMessage privateGetMessageWithAttachment(Context context, boolean uniqueUid) throws IOException {
-        String jso = RawResourceUtils.getString(context, 
+        String jso = RawResourceUtils.getString(context,
                 org.andstatus.app.tests.R.raw.pumpio_activity_with_image);
         httpConnectionMock.setResponse(jso);
 
@@ -348,5 +348,19 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
     public void testGetMessageWithAttachment() throws IOException {
         privateGetMessageWithAttachment(this.getInstrumentation().getContext(), true);    
     }
-    
+
+    public void testGetMessageWithReplies() throws IOException {
+        String jso = RawResourceUtils.getString(this.getInstrumentation().getContext(),
+                org.andstatus.app.tests.R.raw.pumpio_note_self);
+        httpConnectionMock.setResponse(jso);
+
+        final String msgOid = "https://identi.ca/api/note/Z-x96Q8rTHSxTthYYULRHA";
+        MbMessage msg = connection.getMessage(msgOid);
+        assertNotNull("message returned", msg);
+        assertEquals("Message oid", msgOid, msg.oid);
+        assertEquals("Number of replies", 2, msg.replies.size());
+        MbMessage reply = msg.replies.get(0);
+        assertEquals("Reply oid", "https://identi.ca/api/comment/cJdi4cGWQT-Z9Rn3mjr5Bw", reply.oid);
+        assertEquals("Is a Reply to", msgOid, reply.inReplyToMessage.oid);
+    }
 }

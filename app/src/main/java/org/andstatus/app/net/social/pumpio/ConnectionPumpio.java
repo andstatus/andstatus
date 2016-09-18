@@ -559,6 +559,23 @@ public class ConnectionPumpio extends Connection {
                 message.inReplyToMessage = messageFromJson(inReplyToObject);
                 message.inReplyToMessage.setSubscribed(TriState.FALSE);
             }
+
+            if (jso.has("replies")) {
+                JSONObject replies = jso.getJSONObject("replies");
+                if (replies.has("items")) {
+                    JSONArray jArr = replies.getJSONArray("items");
+                    for (int index = 0; index < jArr.length(); index++) {
+                        try {
+                            MbMessage item = messageFromJson(jArr.getJSONObject(index));
+                            item.setSubscribed(TriState.FALSE);
+                            message.replies.add(item);
+                        } catch (JSONException e) {
+                            throw ConnectionException.loggedJsonException(this,
+                                    "Parsing list of replies", e, null);
+                        }
+                    }
+                }
+            }
         } catch (JSONException e) {
             throw ConnectionException.loggedJsonException(this, "Parsing comment/note", e, jso);
         }
