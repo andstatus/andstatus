@@ -17,24 +17,28 @@
 package org.andstatus.app.util;
 
 import android.text.Html;
+import android.text.SpannableString;
 import android.text.TextUtils;
+import android.text.util.Linkify;
 
 public class MyHtml {
     private MyHtml() {
         // Empty
     }
     
-	public static String htmlifyIfPlain(String messageIn) {
+	public static String htmlify(String messageIn) {
 		if (TextUtils.isEmpty(messageIn)) {
 			return "";
 		} else if (hasHtmlMarkup(messageIn)) {
 			return messageIn;
 		}
-        return htmlify(messageIn);
+        return htmlifyPlain(messageIn);
     }
 	
-    public static String htmlify(String messageIn) {
-        return messageIn.replaceAll("(\r\n|\n)", "<br />");
+    private static String htmlifyPlain(String textIn) {
+        SpannableString spannable = SpannableString.valueOf(textIn);
+        Linkify.addLinks(spannable, Linkify.ALL);
+        return Html.toHtml(spannable);
     }
 
     /** Strips HTML markup from the String */
