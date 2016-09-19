@@ -37,7 +37,7 @@ public class MyHtml {
 	
     private static String htmlifyPlain(String textIn) {
         SpannableString spannable = SpannableString.valueOf(textIn);
-        Linkify.addLinks(spannable, Linkify.ALL);
+        Linkify.addLinks(spannable, Linkify.WEB_URLS);
         return Html.toHtml(spannable);
     }
 

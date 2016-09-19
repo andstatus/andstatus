@@ -42,10 +42,10 @@ public class MyHtmlTest extends InstrumentationTestCase {
         String string2 = THIS_MESSAGE_HAS_NEWLINE_HTML;
         assertEquals(string2, MyHtml.htmlify(string1));
         assertEquals(string2, MyHtml.htmlify(string2));
-        assertEquals("<p dir=\"ltr\">This is a link " +
+        assertEquals("<p dir=\"ltr\">@auser@example.com This is a link " +
                 "<a href=\"https://example.com/page1.html#something\">https://example.com/page1.html#something</a><br>\n" +
                         "The second line</p>\n",
-                MyHtml.htmlify("This is a link https://example.com/page1.html#something\nThe second line"));
+                MyHtml.htmlify("@auser@example.com This is a link https://example.com/page1.html#something\nThe second line"));
     }
 
     public void testHasHtmlMarkup() {
