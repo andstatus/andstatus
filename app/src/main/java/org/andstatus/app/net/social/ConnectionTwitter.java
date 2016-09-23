@@ -470,7 +470,7 @@ public abstract class ConnectionTwitter extends Connection {
     }
     
     @Override
-    public MbMessage postDirectMessage(String message, String userId, Uri mediaUri) throws ConnectionException {
+    public MbMessage postDirectMessage(String message, String statusId, String userId, Uri mediaUri) throws ConnectionException {
         JSONObject formParams = new JSONObject();
         try {
             formParams.put("text", message);
@@ -533,7 +533,7 @@ public abstract class ConnectionTwitter extends Connection {
     }
     
     @Override
-    public MbMessage updateStatus(String message, String inReplyToId, Uri mediaUri) throws ConnectionException {
+    public MbMessage updateStatus(String message, String statusId, String inReplyToId, Uri mediaUri) throws ConnectionException {
         JSONObject formParams = new JSONObject();
         try {
             formParams.put("status", message);

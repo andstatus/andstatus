@@ -52,9 +52,10 @@ class ActivitySender {
         return sender;
     }
     
-    static ActivitySender fromContent(ConnectionPumpio connection, String content) {
+    static ActivitySender fromContent(ConnectionPumpio connection, String objectId, String content) {
         ActivitySender sender = new ActivitySender();
         sender.connection = connection;
+        sender.objectId = objectId;
         sender.content = content;
         return sender;
     }
@@ -82,11 +83,29 @@ class ActivitySender {
         return connection.userFromJsonActivity(sendMe(activityType));
     }
 
-    JSONObject sendMe(ActivityType activityType) throws ConnectionException {
+    JSONObject sendMe(ActivityType activityTypeIn) throws ConnectionException {
+        ActivityType activityType = isExisting() ?
+                (activityTypeIn.equals(ActivityType.POST) ? ActivityType.UPDATE : activityTypeIn) :
+                ActivityType.POST;
         JSONObject jso = null;
         try {
             JSONObject activity = newActivityOfThisAccount(activityType);
-            JSONObject obj = UriUtils.isEmpty(mMediaUri) ? newTextObject(activity) : uploadMedia();
+            JSONObject mediaObject = UriUtils.isEmpty(mMediaUri) ? null : uploadMedia();
+            JSONObject obj = isExisting() || mediaObject == null ? buildObject(activity) : mediaObject;
+            if (isExisting() && mediaObject != null) {
+                JSONObject image = obj.optJSONObject("image");
+                if (image != null) {
+                    // Replace an image in the existing object
+                    obj.put("image", image);
+                    image = obj.optJSONObject("fullImage");
+                    if (image != null) {
+                        obj.put("fullImage", image);
+                    }
+                }
+            }
+            if (!TextUtils.isEmpty(content)) {
+                obj.put("content", content);
+            }
             if (!TextUtils.isEmpty(inReplyToId)) {
                 JSONObject inReplyToObject = new JSONObject();
                 inReplyToObject.put("id", inReplyToId);
@@ -102,7 +121,8 @@ class ActivitySender {
                 if (MyLog.isVerboseEnabled()) {
                     MyLog.v(this, "activityType:" + activityType + "' objectId:'" + objectId + "' " + jso.toString(2));
                 }
-                if (ActivityType.POST.equals(activityType) && !TextUtils.isEmpty(objectId)) {
+                if (ActivityType.POST.equals(activityType) && mediaObject != null) {
+                    // Do we need this hack on 2016-09-23 ?
                     activity.put("verb", ActivityType.UPDATE.code);
                     jso = conu.httpConnection.postRequest(conu.url, activity);
                 }
@@ -180,8 +200,6 @@ class ActivitySender {
                 if (MyLog.isVerboseEnabled()) {
                     MyLog.v(this, "uploaded '" + mMediaUri.toString() + "' " + obj1.toString(2));
                 }
-                objectId = obj1.optString("id");
-                obj1.put("content", content);
             }
         } catch (JSONException e) {
             throw ConnectionException.loggedJsonException(this, "Error uploading '" + mMediaUri.toString() + "'", e, obj1);
@@ -189,20 +207,23 @@ class ActivitySender {
         return obj1;
     }
 
-    private JSONObject newTextObject(JSONObject activity) throws JSONException {
+    private JSONObject buildObject(JSONObject activity) throws JSONException {
         JSONObject obj = new JSONObject();
-        if (TextUtils.isEmpty(objectId)) {
+        if (isExisting()) {
+            obj.put("id", objectId);
+            obj.put("objectType", connection.oidToObjectType(objectId));
+        } else {
             if (TextUtils.isEmpty(content)) {
                 throw new IllegalArgumentException("Nothing to send");
             }
-            obj.put("content", content);
             ObjectType objectType = TextUtils.isEmpty(inReplyToId) ? ObjectType.NOTE : ObjectType.COMMENT;
             obj.put("objectType", objectType.id());
             obj.put("author", activity.getJSONObject("actor"));
-        } else {
-            obj.put("id", objectId);
-            obj.put("objectType", connection.oidToObjectType(objectId));
         }
         return obj;
+    }
+
+    private boolean isExisting() {
+        return TextUtils.isEmpty(objectId);
     }
 }

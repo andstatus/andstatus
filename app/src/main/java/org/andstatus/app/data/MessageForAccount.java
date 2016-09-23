@@ -27,6 +27,7 @@ import org.andstatus.app.database.DownloadTable;
 import org.andstatus.app.database.FriendshipTable;
 import org.andstatus.app.database.MsgOfUserTable;
 import org.andstatus.app.database.MsgTable;
+import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.Timeline;
 import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.I18n;
@@ -38,7 +39,7 @@ import org.andstatus.app.util.MyHtml;
  */
 public class MessageForAccount {
     public final long msgId;
-    public final long originId;
+    public final Origin origin;
     public DownloadStatus status = DownloadStatus.UNKNOWN;
     public String bodyTrimmed = "";
     public long authorId = 0;
@@ -61,8 +62,8 @@ public class MessageForAccount {
     
     public MessageForAccount(long msgId, long originId, MyAccount myAccount) {
         this.msgId = msgId;
-        this.originId = originId;
-        this.myAccount = calculateMyAccount(originId, myAccount);
+        this.origin = MyContextHolder.get().persistentOrigins().fromId(originId);
+        this.myAccount = calculateMyAccount(origin, myAccount);
         this.userId = myAccount.getUserId();
         if (myAccount.isValid()) {
             getData();
@@ -70,10 +71,10 @@ public class MessageForAccount {
     }
 
     @NonNull
-    private MyAccount calculateMyAccount(long originId, MyAccount maIn) {
+    private MyAccount calculateMyAccount(Origin origin, MyAccount maIn) {
         MyAccount ma = maIn;
-        if (ma == null || ma.getOrigin().getId() != originId || !ma.isValid()) {
-            ma = MyContextHolder.get().persistentAccounts().getFirstSucceededForOriginId(originId);
+        if (ma == null || !ma.getOrigin().equals(origin) || !ma.isValid()) {
+            ma = MyContextHolder.get().persistentAccounts().getFirstSucceededForOriginId(origin.getId());
         }
         if (ma == null) {
             ma = MyAccount.getEmpty();

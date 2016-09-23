@@ -297,4 +297,13 @@ public enum OriginType {
     public String getOauthPath() {
         return oauthPath;
     }
+
+    public boolean allowEditing() {
+        switch (this) {
+            case PUMPIO:
+                return true;
+            default:
+                return false;
+        }
+    }
 }

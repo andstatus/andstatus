@@ -37,10 +37,10 @@ import java.util.List;
 public class ConnectionTwitter1p1 extends ConnectionTwitter {
 
     @Override
-    public MbMessage updateStatus(String message, String inReplyToId, Uri mediaUri)
+    public MbMessage updateStatus(String message, String statusId, String inReplyToId, Uri mediaUri)
             throws ConnectionException {
         if (UriUtils.isEmpty(mediaUri)) {
-            return super.updateStatus(message, inReplyToId, mediaUri);
+            return super.updateStatus(message, statusId, inReplyToId, mediaUri);
         }
         return updateWithMedia(message, inReplyToId, mediaUri);
     }

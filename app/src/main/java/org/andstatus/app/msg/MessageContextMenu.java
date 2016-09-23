@@ -86,7 +86,7 @@ public class MessageContextMenu extends MyContextMenu {
             }
             MessageListContextMenuItem.USERS_OF_MESSAGE.addTo(menu, order++, R.string.users_of_message);
 
-            if (msg.status != DownloadStatus.LOADED) {
+            if (msg.status != DownloadStatus.LOADED || getOrigin().getOriginType().allowEditing()) {
                 MessageListContextMenuItem.EDIT.addTo(menu, order++, R.string.menu_item_edit);
             }
             if (msg.status.mayBeSent()) {
@@ -309,7 +309,7 @@ public class MessageContextMenu extends MyContextMenu {
     }
 
     public Origin getOrigin() {
-        return MyContextHolder.get().persistentOrigins().fromId(msg == null ? 0 : msg.originId);
+        return msg == null ? Origin.getEmpty() : msg.origin;
     }
 
     public long getActorUserIdForCurrentMessage() {

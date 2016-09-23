@@ -133,7 +133,7 @@ public class ConnectionGnuSocialTest extends InstrumentationTestCase {
                 org.andstatus.app.tests.R.raw.quitter_message_with_attachment);
         connection.getHttpMock().setResponse(jso);
         
-        MbMessage message2 = connection.updateStatus("Test post message with media", "", TestSuite.LOCAL_IMAGE_TEST_URI);
+        MbMessage message2 = connection.updateStatus("Test post message with media", "", "", TestSuite.LOCAL_IMAGE_TEST_URI);
         message2.setPublic(true); 
         assertEquals("Message returned", privateGetMessageWithAttachment(this.getInstrumentation().getContext(), false), message2);
     }

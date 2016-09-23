@@ -337,6 +337,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         boolean ok = false;
         MbMessage message = null;
         String status = MyQuery.msgIdToStringColumnValue(MsgTable.BODY, msgId);
+        String oid = MyQuery.idToOid(OidEnum.MSG_OID, msgId, 0);
         long recipientUserId = MyQuery.msgIdToLongColumnValue(MsgTable.RECIPIENT_ID, msgId);
         DownloadData dd = DownloadData.getSingleForMessage(msgId, MyContentType.IMAGE, Uri.EMPTY);
         Uri mediaUri = dd.getUri().equals(Uri.EMPTY) ? Uri.EMPTY : FileProvider.downloadFilenameToUri(dd.getFile().getFilename());
@@ -355,12 +356,12 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                         MsgTable.IN_REPLY_TO_MSG_ID, msgId);
                 String replyToMsgOid = MyQuery.idToOid(OidEnum.MSG_OID, replyToMsgId, 0);
                 message = execContext.getMyAccount().getConnection()
-                        .updateStatus(status.trim(), replyToMsgOid, mediaUri);
+                        .updateStatus(status.trim(), oid, replyToMsgOid, mediaUri);
             } else {
                 String recipientOid = MyQuery.idToOid(OidEnum.USER_OID, recipientUserId, 0);
                 // Currently we don't use Screen Name, I guess id is enough.
                 message = execContext.getMyAccount().getConnection()
-                        .postDirectMessage(status.trim(), recipientOid, mediaUri);
+                        .postDirectMessage(status.trim(), oid, recipientOid, mediaUri);
             }
             ok = (!message.isEmpty());
             logOk(ok);

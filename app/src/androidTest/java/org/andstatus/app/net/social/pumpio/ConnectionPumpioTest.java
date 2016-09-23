@@ -242,7 +242,7 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         String inReplyToId = "https://identi.ca/api/note/94893FsdsdfFdgtjuk38ErKv";
         httpConnectionMock.setResponse("");
         connection.getData().setAccountUserOid("acct:mytester@" + originUrl.getHost());
-        connection.updateStatus(body, inReplyToId, null);
+        connection.updateStatus(body, "", inReplyToId, null);
         JSONObject activity = httpConnectionMock.getPostedJSONObject();
         assertTrue("Object present", activity.has("object"));
         JSONObject obj = activity.getJSONObject("object");
@@ -255,7 +255,7 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
 
         body = "Testing the application...";
         inReplyToId = "";
-        connection.updateStatus(body, inReplyToId, null);
+        connection.updateStatus(body, "", inReplyToId, null);
         activity = httpConnectionMock.getPostedJSONObject();
         assertTrue("Object present", activity.has("object"));
         obj = activity.getJSONObject("object");
@@ -322,7 +322,7 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         httpConnectionMock.setResponse(jso);
         
         connection.getData().setAccountUserOid("acct:mymediatester@" + originUrl.getHost());
-        MbMessage message2 = connection.updateStatus("Test post message with media", "", TestSuite.LOCAL_IMAGE_TEST_URI);
+        MbMessage message2 = connection.updateStatus("Test post message with media", "", "", TestSuite.LOCAL_IMAGE_TEST_URI);
         message2.setPublic(true); 
         assertEquals("Message returned", privateGetMessageWithAttachment(this.getInstrumentation().getContext(), false), message2);
     }

@@ -232,9 +232,9 @@ public class ConnectionPumpio extends Connection {
     }
 
     @Override
-    public MbMessage updateStatus(String messageIn, String inReplyToId, Uri mediaUri) throws ConnectionException {
+    public MbMessage updateStatus(String messageIn, String statusId, String inReplyToId, Uri mediaUri) throws ConnectionException {
         String message = toHtmlIfAllowed(messageIn);
-        ActivitySender sender = ActivitySender.fromContent(this, message);
+        ActivitySender sender = ActivitySender.fromContent(this, statusId, message);
         sender.setInReplyTo(inReplyToId);
         sender.setMediaUri(mediaUri);
         return messageFromJson(sender.sendMe(ActivityType.POST));
@@ -326,9 +326,9 @@ public class ConnectionPumpio extends Connection {
     }
     
     @Override
-    public MbMessage postDirectMessage(String messageIn, String recipientId, Uri mediaUri) throws ConnectionException {
+    public MbMessage postDirectMessage(String messageIn, String statusId, String recipientId, Uri mediaUri) throws ConnectionException {
         String message = toHtmlIfAllowed(messageIn);
-        ActivitySender sender = ActivitySender.fromContent(this, message);
+        ActivitySender sender = ActivitySender.fromContent(this, statusId, message);
         sender.setRecipient(recipientId);
         sender.setMediaUri(mediaUri);
         return messageFromJson(sender.sendMe(ActivityType.POST));

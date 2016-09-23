@@ -310,15 +310,15 @@ public abstract class Connection {
      * To upload an image to accompany the tweet, use POST statuses/update_with_media.
      * 
      * @param message       Text of the "status"
+     * @param statusId      id is not empty, if we are updating existing "status"
      * @param inReplyToId   The ID of an existing status that the update is in reply to.
-     * @param mediaUri 
-     * @throws ConnectionException 
+     * @param mediaUri   @throws ConnectionException
      *
      * @see <a
      *      href="https://dev.twitter.com/docs/api/1/post/statuses/update">Twitter
      *      POST statuses/update</a>
      */
-    public abstract MbMessage updateStatus(String message, String inReplyToId, Uri mediaUri)
+    public abstract MbMessage updateStatus(String message, String statusId, String inReplyToId, Uri mediaUri)
             throws ConnectionException;
 
     /**
@@ -327,12 +327,13 @@ public abstract class Connection {
      *      href="https://dev.twitter.com/docs/api/1/post/direct_messages/new">POST direct_messages/new</a>
      * 
      * @param message
+     * @param statusId
      * @param userId {@link UserTable#USER_OID} - The ID of the user who should receive the direct message
-     * @param mediaUri 
+     * @param mediaUri
      * @return The sent message if successful (empty message if not)
      * @throws ConnectionException
      */
-    public abstract MbMessage postDirectMessage(String message, String userId, Uri mediaUri)
+    public abstract MbMessage postDirectMessage(String message, String statusId, String userId, Uri mediaUri)
             throws ConnectionException;
 
     /**
