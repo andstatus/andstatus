@@ -115,10 +115,11 @@ public class TimelineSelector extends SelectorDialog {
 
     private MySimpleAdapter newListAdapter(List<TimelineListViewItem> listData) {
         List<Map<String, String>> list = new ArrayList<>();
+        final String syncText = getText(R.string.synced_abbreviated).toString();
         for (TimelineListViewItem viewItem : listData) {
             Map<String, String> map = new HashMap<>();
             map.put(KEY_VISIBLE_NAME, viewItem.timelineTitle.toString());
-            map.put(KEY_SYNC_AUTO, viewItem.timeline.isSyncedAutomatically() ? "X" : "");
+            map.put(KEY_SYNC_AUTO, viewItem.timeline.isSyncedAutomatically() ? syncText : "");
             map.put(BaseColumns._ID, Long.toString(viewItem.timeline.getId()));
             list.add(map);
         }
