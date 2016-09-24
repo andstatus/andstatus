@@ -20,7 +20,6 @@ import org.andstatus.app.net.http.HttpConnectionBasic;
 import org.andstatus.app.net.http.HttpConnectionEmpty;
 import org.andstatus.app.net.http.HttpConnectionOAuthApache;
 import org.andstatus.app.net.http.HttpConnectionOAuthJavaNet;
-import org.andstatus.app.net.social.Connection.ApiEnum;
 import org.andstatus.app.net.social.ConnectionEmpty;
 import org.andstatus.app.net.social.pumpio.ConnectionPumpio;
 import org.andstatus.app.net.social.ConnectionTwitter1p1;
@@ -47,6 +46,21 @@ public enum OriginType {
     PUMPIO(2, "Pump.io", ApiEnum.PUMPIO),
     GNUSOCIAL(3, "GNU social", ApiEnum.GNUSOCIAL_TWITTER),
     UNKNOWN(0, "?", ApiEnum.UNKNOWN_API);
+
+    /**
+     * Connection APIs known
+     */
+    private enum ApiEnum {
+        UNKNOWN_API,
+        /** Twitter API v.1 https://dev.twitter.com/docs/api/1     */
+        TWITTER1P0,
+        /** Twitter API v.1.1 https://dev.twitter.com/docs/api/1.1 */
+        TWITTER1P1,
+        /** GNU social (former: Status Net) Twitter compatible API http://status.net/wiki/Twitter-compatible_API  */
+        GNUSOCIAL_TWITTER,
+        /** https://github.com/e14n/pump.io/blob/master/API.md */
+        PUMPIO
+    }
 
     private static final String BASIC_PATH_DEFAULT = "api";
     private static final String OAUTH_PATH_DEFAULT = "oauth";
@@ -198,10 +212,6 @@ public enum OriginType {
     
     public String getTitle() {
         return title;
-    }
-    
-    public ApiEnum getApi() {
-        return api;
     }
 
     public boolean canSetUrlOfOrigin() {

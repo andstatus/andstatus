@@ -56,21 +56,6 @@ public abstract class Connection {
     protected static final String EXTENSION = ".json";
 
     /**
-     * Connection APIs known
-     */
-    public enum ApiEnum {
-        UNKNOWN_API,
-        /** Twitter API v.1 https://dev.twitter.com/docs/api/1     */
-        TWITTER1P0,
-        /** Twitter API v.1.1 https://dev.twitter.com/docs/api/1.1 */
-        TWITTER1P1,
-        /** GNU social (former: Status Net) Twitter compatible API http://status.net/wiki/Twitter-compatible_API  */
-        GNUSOCIAL_TWITTER,
-        /** https://github.com/e14n/pump.io/blob/master/API.md */
-        PUMPIO
-    }
-    
-    /**
      * API routines (functions, "resources" in terms of Twitter)  enumerated
      */
     public enum ApiRoutineEnum {

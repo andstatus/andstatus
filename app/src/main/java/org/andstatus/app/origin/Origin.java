@@ -34,7 +34,6 @@ import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.database.OriginTable;
 import org.andstatus.app.database.UserTable;
 import org.andstatus.app.net.http.SslModeEnum;
-import org.andstatus.app.net.social.Connection.ApiEnum;
 import org.andstatus.app.net.social.MbConfig;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
@@ -106,10 +105,6 @@ public class Origin {
      */
     public long getId() {
         return id;
-    }
-
-    public ApiEnum getApi() {
-        return originType.getApi();
     }
 
     /**

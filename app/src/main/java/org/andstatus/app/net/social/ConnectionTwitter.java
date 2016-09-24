@@ -510,9 +510,8 @@ public abstract class ConnectionTwitter extends Connection {
         JSONObject result = http.getRequest(getApiPath(ApiRoutineEnum.ACCOUNT_RATE_LIMIT_STATUS));
         MbRateLimitStatus status = new MbRateLimitStatus();
         if (result != null) {
-            switch (data.getOriginType().getApi()) {
-                case TWITTER1P0:
-                case GNUSOCIAL_TWITTER:
+            switch (data.getOriginType()) {
+                case GNUSOCIAL:
                     status.remaining = result.optInt("remaining_hits");
                     status.limit = result.optInt("hourly_limit");
                     break;
