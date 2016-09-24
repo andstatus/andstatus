@@ -79,6 +79,8 @@ public enum OriginType {
     private final Class<? extends org.andstatus.app.net.http.HttpConnection> httpConnectionClassOauth;
     private final Class<? extends org.andstatus.app.net.http.HttpConnection> httpConnectionClassBasic;
 
+    private final boolean allowEditing;
+
     /** Default OAuth setting */
     protected boolean isOAuthDefault = true;
     /** Can OAuth connection setting can be turned on/off from the default setting */
@@ -137,6 +139,7 @@ public enum OriginType {
                 httpConnectionClassOauth = HttpConnectionOAuthApache.class;
                 httpConnectionClassBasic = HttpConnectionBasic.class;
                 mAllowAttachmentForDirectMessage = false;
+                allowEditing = false;
                 break;
             case PUMPIO:
                 isOAuthDefault = true;  
@@ -157,6 +160,7 @@ public enum OriginType {
                 isSearchTimelineSyncable = false;
                 isDirectTimelineSyncable = false;
                 isMentionsTimelineSyncable = false;
+                allowEditing = true;
                 break;
             case GNUSOCIAL_TWITTER:
                 isOAuthDefault = false;  
@@ -174,6 +178,7 @@ public enum OriginType {
                 httpConnectionClassBasic = HttpConnectionBasic.class;
                 mAllowAttachmentForDirectMessage = false;
                 isPublicTimeLineSyncable = true;
+                allowEditing = false;
                 break;
             default:
                 canSetUrlOfOrigin = false;
@@ -182,6 +187,7 @@ public enum OriginType {
                 httpConnectionClassOauth = HttpConnectionEmpty.class;
                 httpConnectionClassBasic = HttpConnectionEmpty.class;
                 mAllowAttachmentForDirectMessage = false;
+                allowEditing = false;
                 break;
         }
     }
@@ -309,11 +315,6 @@ public enum OriginType {
     }
 
     public boolean allowEditing() {
-        switch (this) {
-            case PUMPIO:
-                return true;
-            default:
-                return false;
-        }
+        return allowEditing;
     }
 }
