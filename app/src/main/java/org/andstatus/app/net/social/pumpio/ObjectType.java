@@ -66,11 +66,16 @@ enum ObjectType {
         }
         return is;
     }
-    
+
     public static ObjectType compatibleWith(JSONObject jso) {
+        ObjectType type = fromJson(jso);
+        return type.compatibleType == null ? UNKNOWN : type.compatibleType;
+    }
+
+    public static ObjectType fromJson(JSONObject jso) {
         for(ObjectType type : ObjectType.values()) {
             if (type.isMyType(jso)) {
-                return type.compatibleType;
+                return type;
             }
         }
         return UNKNOWN;

@@ -455,4 +455,11 @@ public class DownloadData {
                 }
         );
     }
+
+    public Uri mediaUriToBePosted() {
+      if (getUri().equals(Uri.EMPTY) || UriUtils.isDownloadable(getUri())) {
+          return Uri.EMPTY;
+      }
+      return FileProvider.downloadFilenameToUri(getFile().getFilename());
+    }
 }

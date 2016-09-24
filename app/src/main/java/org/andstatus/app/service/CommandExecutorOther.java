@@ -24,7 +24,6 @@ import org.andstatus.app.appwidget.AppWidgets;
 import org.andstatus.app.data.DataInserter;
 import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.data.DownloadStatus;
-import org.andstatus.app.data.FileProvider;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.data.MyQuery;
@@ -339,17 +338,19 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         String status = MyQuery.msgIdToStringColumnValue(MsgTable.BODY, msgId);
         String oid = MyQuery.idToOid(OidEnum.MSG_OID, msgId, 0);
         long recipientUserId = MyQuery.msgIdToLongColumnValue(MsgTable.RECIPIENT_ID, msgId);
-        DownloadData dd = DownloadData.getSingleForMessage(msgId, MyContentType.IMAGE, Uri.EMPTY);
-        Uri mediaUri = dd.getUri().equals(Uri.EMPTY) ? Uri.EMPTY : FileProvider.downloadFilenameToUri(dd.getFile().getFilename());
+        Uri mediaUri = DownloadData.getSingleForMessage(msgId, MyContentType.IMAGE, Uri.EMPTY).
+                mediaUriToBePosted();
         String msgLog = "text:'" + MyLog.trimmedString(status, 40) + "'"
-                + (mediaUri.equals(Uri.EMPTY) ? "" : "; uri:'" + mediaUri + "'");
+                + (mediaUri.equals(Uri.EMPTY) ? "" : "; mediaUri:'" + mediaUri + "'");
         try {
             if (MyLog.isVerboseEnabled()) {
                 MyLog.v(this, method + ";" + msgLog);
             }
-            DownloadStatus statusStored = DownloadStatus.load(MyQuery.msgIdToLongColumnValue(MsgTable.MSG_STATUS, msgId));
+            DownloadStatus statusStored = DownloadStatus.load(
+                    MyQuery.msgIdToLongColumnValue(MsgTable.MSG_STATUS, msgId));
             if (!statusStored.mayBeSent()) {
-                throw ConnectionException.hardConnectionException("Wrong message status: " + statusStored, null);
+                throw ConnectionException.hardConnectionException(
+                        "Wrong message status: " + statusStored, null);
             }
             if (recipientUserId == 0) {
                 long replyToMsgId = MyQuery.msgIdToLongColumnValue(
