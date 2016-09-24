@@ -86,7 +86,9 @@ public class MessageContextMenu extends MyContextMenu {
             }
             MessageListContextMenuItem.USERS_OF_MESSAGE.addTo(menu, order++, R.string.users_of_message);
 
-            if (msg.status != DownloadStatus.LOADED || getOrigin().getOriginType().allowEditing()) {
+            if (msg.senderIsMySucceededAccount &&
+                    (msg.status != DownloadStatus.LOADED ||
+                            getOrigin().getOriginType().allowEditing())) {
                 MessageListContextMenuItem.EDIT.addTo(menu, order++, R.string.menu_item_edit);
             }
             if (msg.status.mayBeSent()) {
@@ -154,8 +156,7 @@ public class MessageContextMenu extends MyContextMenu {
                 MessageListContextMenuItem.OPEN_MESSAGE_PERMALINK.addTo(menu, order++, R.string.menu_item_open_message_permalink);
             }
 
-            if (msg.isSender) {
-                // This message is by current User, hence we may delete it.
+            if (msg.senderIsMySucceededAccount) {
                 if (msg.isDirect()) {
                     // This is a Direct Message
                     // TODO: Delete Direct message

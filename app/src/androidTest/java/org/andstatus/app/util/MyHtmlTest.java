@@ -26,12 +26,26 @@ import org.andstatus.app.context.Travis;
 public class MyHtmlTest extends InstrumentationTestCase {
 
     public static final String THIS_MESSAGE_HAS_NEWLINE = "This message\nhas newline";
-    public static final String THIS_MESSAGE_HAS_NEWLINE_HTML = "<p dir=\"ltr\">This message<br>\nhas newline</p>\n";
+    public static final String THIS_MESSAGE_HAS_NEWLINE_PREPARED_FOR_VIEW =
+            "This message<br>\nhas newline";
+    public static final String THIS_MESSAGE_HAS_NEWLINE_HTML = "<p dir=\"ltr\">" +
+            THIS_MESSAGE_HAS_NEWLINE_PREPARED_FOR_VIEW + "</p>";
+    public static final String HTMLIFIED_STRING_PREPARED_FOR_VIEW = "@auser@example.com This is a link " +
+            "<a href=\"https://example.com/page1.html#something\">https://example.com/page1.html#something</a><br>\n" +
+            "The second line";
+    public static final String HTMLIFIED_STRING = "<p dir=\"ltr\">" +
+            HTMLIFIED_STRING_PREPARED_FOR_VIEW + "</p>";
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
         TestSuite.initialize(this);
+    }
+
+    public void testPrepareForView() {
+        assertEquals(THIS_MESSAGE_HAS_NEWLINE_PREPARED_FOR_VIEW,
+                MyHtml.prepareForView(THIS_MESSAGE_HAS_NEWLINE_HTML));
+        assertEquals(HTMLIFIED_STRING_PREPARED_FOR_VIEW, MyHtml.prepareForView(HTMLIFIED_STRING));
     }
 
     public void testHtmlify() {
@@ -42,9 +56,7 @@ public class MyHtmlTest extends InstrumentationTestCase {
         String string2 = THIS_MESSAGE_HAS_NEWLINE_HTML;
         assertEquals(string2, MyHtml.htmlify(string1));
         assertEquals(string2, MyHtml.htmlify(string2));
-        assertEquals("<p dir=\"ltr\">@auser@example.com This is a link " +
-                "<a href=\"https://example.com/page1.html#something\">https://example.com/page1.html#something</a><br>\n" +
-                        "The second line</p>\n",
+        assertEquals(HTMLIFIED_STRING,
                 MyHtml.htmlify("@auser@example.com This is a link https://example.com/page1.html#something\nThe second line"));
     }
 

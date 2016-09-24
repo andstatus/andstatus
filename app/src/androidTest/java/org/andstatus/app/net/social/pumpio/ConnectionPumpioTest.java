@@ -37,6 +37,7 @@ import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.net.social.TimelinePosition;
 import org.andstatus.app.net.social.pumpio.ConnectionPumpio.ConnectionAndUrl;
 import org.andstatus.app.origin.OriginConnectionData;
+import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RawResourceUtils;
 import org.andstatus.app.util.TriState;
@@ -246,7 +247,7 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         JSONObject activity = httpConnectionMock.getPostedJSONObject();
         assertTrue("Object present", activity.has("object"));
         JSONObject obj = activity.getJSONObject("object");
-        assertEquals("Message content", body, obj.getString("content"));
+        assertEquals("Message content", body, MyHtml.fromHtml(obj.getString("content")));
         assertEquals("Reply is comment", ObjectType.COMMENT.id(), obj.getString("objectType"));
         
         assertTrue("InReplyTo is present", obj.has("inReplyTo"));
@@ -259,7 +260,7 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         activity = httpConnectionMock.getPostedJSONObject();
         assertTrue("Object present", activity.has("object"));
         obj = activity.getJSONObject("object");
-        assertEquals("Message content", body, obj.getString("content"));
+        assertEquals("Message content", body, MyHtml.fromHtml(obj.getString("content")));
         assertEquals("Message without reply is a note", ObjectType.NOTE.id(), obj.getString("objectType"));
 
         JSONArray recipients = activity.optJSONArray("to");

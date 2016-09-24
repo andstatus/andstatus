@@ -93,7 +93,7 @@ public class MyUrlSpan extends URLSpan {
             Spanned spanned = Html.fromHtml(text);
             textView.setText(spanned);
             if (linkify && !hasUrlSpans(spanned)) {
-                Linkify.addLinks(textView, Linkify.ALL);
+                Linkify.addLinks(textView, Linkify.WEB_URLS);
             }
             fixUrlSpans(textView);
             if (linkify) {

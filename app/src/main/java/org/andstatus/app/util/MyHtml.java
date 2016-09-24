@@ -25,18 +25,25 @@ public class MyHtml {
     private MyHtml() {
         // Empty
     }
-    
-	public static String htmlify(String messageIn) {
-		if (TextUtils.isEmpty(messageIn)) {
+
+    public static String prepareForView(String text) {
+        String text2 = stripUnnecessaryNewlines(text);
+        if (text2.endsWith("</p>") && StringUtils.countOfOccurrences(text2, "<p") == 1) {
+            text2 = text2.replaceAll("<p[^>]*>","").replaceAll("</p>","");
+        }
+        return text2;
+    }
+
+	public static String htmlify(String text) {
+		if (TextUtils.isEmpty(text)) {
 			return "";
-		} else if (hasHtmlMarkup(messageIn)) {
-			return messageIn;
 		}
-        return htmlifyPlain(messageIn);
+        String text2 = hasHtmlMarkup(text) ? text : htmlifyPlain(text);
+        return stripUnnecessaryNewlines(text2);
     }
 	
-    private static String htmlifyPlain(String textIn) {
-        SpannableString spannable = SpannableString.valueOf(textIn);
+    private static String htmlifyPlain(String text) {
+        SpannableString spannable = SpannableString.valueOf(text);
         Linkify.addLinks(spannable, Linkify.WEB_URLS);
         return Html.toHtml(spannable);
     }
@@ -45,9 +52,20 @@ public class MyHtml {
     public static String fromHtml(String text) {
         if (TextUtils.isEmpty(text)) {
             return "";
-        } else if ( MyHtml.hasHtmlMarkup(text)) {
+        } else {
+            String text2 = text;
+            if ( MyHtml.hasHtmlMarkup(text2)) {
+                text2 = Html.fromHtml(text2).toString();
+            }
+            return stripUnnecessaryNewlines(text2);
+        }
+    }
+
+    public static String stripUnnecessaryNewlines(String text) {
+        if (TextUtils.isEmpty(text)) {
+            return "";
+        } else {
             String text2 = text.trim();
-            text2 = Html.fromHtml(text2).toString().trim();
             String NEWLINE_SEARCH = "\n";
             String NEWLINE_REPLACE = "\n";
             text2 = text2.replaceAll(NEWLINE_SEARCH + "\\s*" + NEWLINE_SEARCH, NEWLINE_REPLACE);
@@ -55,10 +73,9 @@ public class MyHtml {
                 text2 = text2.substring(0, text2.length() - NEWLINE_REPLACE.length());
             }
             return text2;
-        } else {
-            return text.trim();
         }
     }
+
 
     /** Very simple method  
      */

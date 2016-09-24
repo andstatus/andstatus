@@ -70,7 +70,7 @@ public class ConversationViewItem extends ConversationItem {
                 super.load(cursor);
                 mStatus = DownloadStatus.load(DbUtils.getLong(cursor, MsgTable.MSG_STATUS));
                 mAuthor = TimelineSql.userColumnNameToNameAtTimeline(cursor, UserTable.AUTHOR_NAME, false);
-                body = MyHtml.htmlify(DbUtils.getString(cursor, MsgTable.BODY));
+                body = MyHtml.prepareForView(DbUtils.getString(cursor, MsgTable.BODY));
                 String via = DbUtils.getString(cursor, MsgTable.VIA);
                 if (!TextUtils.isEmpty(via)) {
                     messageSource = Html.fromHtml(via).toString().trim();

@@ -103,7 +103,7 @@ public class MbMessage {
         if (TextUtils.isEmpty(body)) {
             this.body = "";
         } else if (MyContextHolder.get().persistentOrigins().isHtmlContentAllowed(originId)) {
-            this.body = body.trim();
+            this.body = MyHtml.stripUnnecessaryNewlines(body);
         } else {
             this.body = MyHtml.fromHtml(body);
         }

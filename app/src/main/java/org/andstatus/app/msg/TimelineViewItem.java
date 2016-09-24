@@ -76,7 +76,7 @@ public class TimelineViewItem extends MessageViewItem {
 
         item.authorName = TimelineSql.userColumnIndexToNameAtTimeline(cursor,
                 cursor.getColumnIndex(UserTable.AUTHOR_NAME), MyPreferences.getShowOrigin());
-        item.body = MyHtml.htmlify(DbUtils.getString(cursor, MsgTable.BODY));
+        item.body = MyHtml.prepareForView(DbUtils.getString(cursor, MsgTable.BODY));
         item.inReplyToMsgId = DbUtils.getLong(cursor, MsgTable.IN_REPLY_TO_MSG_ID);
         item.inReplyToName = DbUtils.getString(cursor, UserTable.IN_REPLY_TO_NAME);
         item.recipientName = DbUtils.getString(cursor, UserTable.RECIPIENT_NAME);
