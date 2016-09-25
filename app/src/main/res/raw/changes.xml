@@ -19,24 +19,52 @@
         <title>AndStatus Change Log</title>
         <subtitle>
             Get the latest release on
-            <a href="https://play.google.com/store/apps/details?id=org.andstatus.app" target="_blank">Google Play</a>
+            <a href="https://play.google.com/store/apps/details?id=org.andstatus.app"
+               target="_blank">Google Play</a>
             or
-            <a href="https://f-droid.org/repository/browse/?fdid=org.andstatus.app" target="_blank">F-Droid</a>.
+            <a href="https://f-droid.org/repository/browse/?fdid=org.andstatus.app"
+               target="_blank">F-Droid</a>.
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
 		</subtitle>
     </header>
-    <release android:versionName="29.01" android:versionCode="191"
-             versionDate="2016-09-17"
-             versionTitle="Bug fixes and translation updates">
+    <release android:versionName="29.02" android:versionCode="192"
+             versionDate="2016-09-25"
+             versionTitle="Pump.io support enhancements. Part 2">
         <changes>
-            <change>
-                Fixed <a href="https://github.com/andstatus/andstatus/issues/416">#416</a>
-                "Everything" Timeline shows all social networks even if not Combined.
+            <change>Implemented <a href="https://github.com/andstatus/andstatus/issues/221">#221</a>
+                Edit message [Pump.io]<br />
+                Messages with and without attachments can be edited. A User can change
+                both text and an attached image. What is not supported (and will fail on an attempt
+                to send an update): adding an attachment to a message that didn't have one.
+                Or removing an attachment. This is because messages
+                with and without attachments are two different types of objects in Pump.io.<br/>
+                "Edit" context menu item appears, when a Sender is my account and it is successfully
+                verified (i.e. the account can actually post the update).
             </change>
+            <change>
+                Added "Get Message Information" context menu item
+                <a href="https://github.com/andstatus/andstatus/issues/418">#418</a>.<br/>
+                We already have "Get User Information" for a User, which allows to update the User's
+                information, including information on Friends and Followers .
+                Similarly, the "Get Message Information" action allows to update information
+                on replies, likes and reblogs / retweets / shares.
+                In particular, for Pump.io this feature allows, in addition, retrieve Replies
+                to this message in order to see them in a Conversation view, see
+                <a href="https://github.com/andstatus/andstatus/issues/276">#276</a>.
+            </change>
+            <change>Implemented <a href="https://github.com/andstatus/andstatus/issues/375">#375</a>
+                [pump.io] Create proper HTML links.<br />
+                Actual text transformation is done in literary 3 lines of code using Android system
+                libraries. This gives an advantage of using better algorithm at each subsequent
+                version of Android libraries. Emails are not HTMLified.
+            </change>
+            <change>Size of text in Account and Timeline selectors enlarged.
+                Now it's the same as a body text of messages (and hence it can be changed in
+                Settings).</change>
         </changes>
     </release>
-    <release android:versionName="29.00" android:versionCode="190"
-             versionDate="2016-09-13"
+    <release android:versionName="29.01" android:versionCode="191"
+             versionDate="2016-09-17"
              versionTitle="Pump.io support enhancements">
         <changes>
             <change>Implementation of Pump.io's "share" activity made more familiar for accustomed
@@ -59,6 +87,10 @@
             <change>Fixed <a href="https://github.com/andstatus/andstatus/issues/275">#275</a>:
                 Message, to which a subscribed message is a reply, is explicitly marked as not subscribed
                 in order for the latter not to be shown in the Home timeline.
+            </change>
+            <change>
+                Fixed <a href="https://github.com/andstatus/andstatus/issues/416">#416</a>
+                "Everything" Timeline shows all social networks even if not Combined.
             </change>
         </changes>
     </release>

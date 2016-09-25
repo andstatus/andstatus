@@ -10,7 +10,7 @@ android {
         minSdkVersion 16
         targetSdkVersion 24
         versionName "29.02"
-        versionCode 191
+        versionCode 192
 
         testApplicationId "org.andstatus.app.tests"
         testInstrumentationRunner "android.test.InstrumentationTestRunner"
@@ -52,8 +52,8 @@ sonarqube {
 dependencies {
     compile 'com.github.stephenc.jcip:jcip-annotations:1.0-1'
     // http://stephenc.github.io/jcip-annotations/dependency-info.html
-    compile 'com.android.support:appcompat-v7:24.2.0'
-    compile 'com.android.support:design:24.2.0'
+    compile 'com.android.support:appcompat-v7:24.2.1'
+    compile 'com.android.support:design:24.2.1'
     compile 'ch.acra:acra:4.8.5'
     // https://github.com/ACRA/acra/wiki/AdvancedUsage
     compile 'cz.msebera.android:httpclient:4.4.1.2'
