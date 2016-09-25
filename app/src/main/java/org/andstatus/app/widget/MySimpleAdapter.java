@@ -53,7 +53,7 @@ public class MySimpleAdapter extends SimpleAdapter implements View.OnClickListen
 
     @Override
     public void onClick(View v) {
-        if (!MyPreferences.isLongPressToOpenContextMenu()) {
+        if (!MyPreferences.isLongPressToOpenContextMenu() && v.getParent() != null) {
             v.showContextMenu();
         }
     }

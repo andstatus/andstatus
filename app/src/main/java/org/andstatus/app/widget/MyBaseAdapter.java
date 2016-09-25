@@ -99,7 +99,7 @@ public abstract class MyBaseAdapter extends BaseAdapter  implements View.OnClick
 
     @Override
     public void onClick(View v) {
-        if (!MyPreferences.isLongPressToOpenContextMenu()) {
+        if (!MyPreferences.isLongPressToOpenContextMenu() && v.getParent() != null) {
             v.showContextMenu();
         }
     }

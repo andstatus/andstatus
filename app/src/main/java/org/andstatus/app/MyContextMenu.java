@@ -54,7 +54,7 @@ public class MyContextMenu implements View.OnCreateContextMenuListener {
     }
 
     public void showContextMenu() {
-        if (viewOfTheContext != null) {
+        if (viewOfTheContext != null &&  viewOfTheContext.getParent() != null) {
             viewOfTheContext.post(new Runnable() {
 
                 @Override
