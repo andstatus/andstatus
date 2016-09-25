@@ -37,7 +37,7 @@ before_script:
   - emulator -avd test -no-skin -no-audio -no-window &
 script:
   - ./gradlew build assembleAndroidTest
-  - android-wait-for-emulator
+  - travis_wait android-wait-for-emulator
   # Previous command seems to end too early, so wait a bit more
   # On multilined commands: https://gitlab.com/gitlab-org/gitlab-ci/issues/258 and http://stackoverflow.com/questions/3790454/in-yaml-how-do-i-break-a-string-over-multiple-lines
   - |
