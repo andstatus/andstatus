@@ -6,5 +6,6 @@ public enum MyContextState {
     EXPIRED,
     UPGRADING,
     DATABASE_UNAVAILABLE,
-    ERROR
+    ERROR,
+    NO_PERMISSIONS
 }

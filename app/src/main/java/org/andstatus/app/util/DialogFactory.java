@@ -21,6 +21,7 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.annotation.StringRes;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 
@@ -37,7 +38,8 @@ public class DialogFactory {
     private DialogFactory() {
     }
 
-    public static Dialog newNoActionAlertDialog(Activity activity, int titleId, int summaryId) {
+    public static Dialog newNoActionAlertDialog(Activity activity, @StringRes int titleId,
+                                                @StringRes int summaryId) {
         return new AlertDialog.Builder(activity)
                 .setIcon(android.R.drawable.ic_dialog_alert)
                 .setTitle(titleId)

@@ -19,6 +19,7 @@ package org.andstatus.app.util;
 
 import android.content.ActivityNotFoundException;
 import android.content.Context;
+import android.os.Parcel;
 import android.support.annotation.NonNull;
 import android.text.Html;
 import android.text.Layout;
@@ -44,6 +45,18 @@ import org.andstatus.app.context.MyContextHolder;
 public class MyUrlSpan extends URLSpan {
 
     public static final String SOFT_HYPHEN = "\u00AD";
+
+    public static final Creator<MyUrlSpan> CREATOR = new Creator<MyUrlSpan>() {
+        @Override
+        public MyUrlSpan createFromParcel(Parcel in) {
+            return new MyUrlSpan(in.readString());
+        }
+
+        @Override
+        public MyUrlSpan[] newArray(int size) {
+            return new MyUrlSpan[size];
+        }
+    };
 
     private MyUrlSpan(String url) {
         super(url);
@@ -206,4 +219,5 @@ public class MyUrlSpan extends URLSpan {
         }
         textView.setText(spannable);
     }
+
 }

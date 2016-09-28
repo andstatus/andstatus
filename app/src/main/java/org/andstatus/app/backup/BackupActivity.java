@@ -42,7 +42,7 @@ public class BackupActivity extends MyActivity {
         mLayoutId = R.layout.backup;
         super.onCreate(savedInstanceState);
 
-        Permissions.checkAndRequest(this, Permissions.PermissionType.WRITE_EXTERNAL_STORAGE);
+        Permissions.checkPermissionAndRequestIt(this, Permissions.PermissionType.WRITE_EXTERNAL_STORAGE);
 
         setBackupFolder(MyBackupManager.getDefaultBackupDirectory(this));
 

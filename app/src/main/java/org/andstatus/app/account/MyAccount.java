@@ -48,7 +48,6 @@ import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.timeline.Timeline;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TriState;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -57,7 +56,7 @@ import org.json.JSONObject;
  * Immutable class that holds "AndStatus account"-specific information including: 
  * a Microblogging System (twitter.com, identi.ca etc.), 
  * Username in that system and {@link Connection} to it.
- * 
+ *
  * @author yvolk@yurivolkov.com
  */
 public final class MyAccount implements Comparable<MyAccount> {
@@ -65,7 +64,7 @@ public final class MyAccount implements Comparable<MyAccount> {
 
     //------------------------------------------------------------
     // Key names for MyAccount preferences are below:
-    
+
     /**
      * The Key for the android.accounts.Account bundle;
      */
@@ -109,7 +108,7 @@ public final class MyAccount implements Comparable<MyAccount> {
      * This account is in the process of deletion and should be ignored...
      */
     public static final String KEY_DELETED = "deleted";
-    
+
     /** @see {@link android.content.ContentResolver#getIsSyncable(Account, String)} */
     public static final String KEY_IS_SYNCABLE = "is_syncable";
 
@@ -140,7 +139,7 @@ public final class MyAccount implements Comparable<MyAccount> {
                 return newFromAccountName(myContext, accountName, isOAuthTriState);
             }
         }
-        
+
         /**
          * Creates new account, which is not Persistent yet
          * @param accountName
@@ -155,10 +154,10 @@ public final class MyAccount implements Comparable<MyAccount> {
         private static MyAccount getEmptyAccount(MyContext myContext, String accountName) {
             return newFromAccountName(myContext, accountName, TriState.UNKNOWN).getAccount();
         }
-        
+
         /**
          * Loads existing account from Persistence 
-         * @param myContext 
+         * @param myContext
          * @param account should not be null
          */
         protected static Builder fromAndroidAccount(MyContext myContext, android.accounts.Account account) {
@@ -172,7 +171,7 @@ public final class MyAccount implements Comparable<MyAccount> {
         static Builder fromAccountData(MyContext myContext, AccountData accountData, String method) {
             return fromMyAccount(myContext, new MyAccount(myContext, accountData), method, false);
         }
-        
+
         protected static Builder fromMyAccount(MyContext myContext, MyAccount ma, String method, boolean isNew) {
             Builder builder = new Builder(myContext, ma);
             builder.setConnection();
@@ -195,19 +194,19 @@ public final class MyAccount implements Comparable<MyAccount> {
             connectionData.setDataReader(myAccount.accountData);
             try {
                 myAccount.connection = connectionData.newConnection();
-            // TODO: Since API19 we will use ReflectiveOperationException as a common superclass of these two exceptions: InstantiationException and IllegalAccessException
+                // TODO: Since API19 we will use ReflectiveOperationException as a common superclass of these two exceptions: InstantiationException and IllegalAccessException
             } catch (ConnectionException e) {
                 myAccount.connection = null;
                 MyLog.i(TAG, e);
             }
         }
-        
+
         private void fixInconsistenciesWithChangedEnvironmentSilently() {
             if (myAccount.version != MyAccount.ACCOUNT_VERSION) {
                 return;
             }
             boolean changed = false;
-            if (isPersistent() && myAccount.userId==0) {
+            if (isPersistent() && myAccount.userId == 0) {
                 changed = true;
                 assignUserId();
                 MyLog.e(TAG, "MyAccount '" + myAccount.getAccountName() + "' was not connected to the User table. UserId=" + myAccount.userId);
@@ -224,7 +223,7 @@ public final class MyAccount implements Comparable<MyAccount> {
         }
 
         private void logLoadResult(String method) {
-            if (myAccount.isValid()) { 
+            if (myAccount.isValid()) {
                 if (MyLog.isVerboseEnabled()) {
                     MyLog.v(TAG, method + " Loaded " + this.toString());
                 }
@@ -232,7 +231,7 @@ public final class MyAccount implements Comparable<MyAccount> {
                 MyLog.i(TAG, method + " Failed to load: Invalid account; version=" + myAccount.version + "; " + this.toString());
             }
         }
-        
+
         public MyAccount getAccount() {
             return myAccount;
         }
@@ -258,7 +257,7 @@ public final class MyAccount implements Comparable<MyAccount> {
             setAndroidAccountDeleted();
             return ok;
         }
-        
+
         private void setAndroidAccountDeleted() {
             myAccount.accountData.setDataBoolean(KEY_DELETED, true);
         }
@@ -276,7 +275,7 @@ public final class MyAccount implements Comparable<MyAccount> {
             boolean changed = false;
             boolean savedToAccountManager = false;
         }
-        
+
         void save() {
             if (saveSilently().savedToAccountManager && myContext.isReady()) {
                 MyPreferences.onPreferencesChanged();
@@ -312,8 +311,8 @@ public final class MyAccount implements Comparable<MyAccount> {
                 if (androidAccount != null) {
                     myAccount.accountData.saveDataToAndroidAccount(myContext, androidAccount, result);
                 }
-                MyLog.v(this, (result.savedToAccountManager ? " Saved " 
-                        : ( result.changed ? " Didn't save?! " : " Didn't change ") ) + this.toString());
+                MyLog.v(this, (result.savedToAccountManager ? " Saved "
+                        : (result.changed ? " Didn't save?! " : " Didn't change ")) + this.toString());
                 if (result.savedToAccountManager && result.changed) {
                     myContext.persistentTimelines().addDefaultMyAccountTimelinesIfNoneFound(myAccount);
                 }
@@ -355,7 +354,7 @@ public final class MyAccount implements Comparable<MyAccount> {
             }
             return androidAccount;
         }
-        
+
         public boolean getOriginConfig() throws ConnectionException {
             boolean ok = false;
             try {
@@ -371,11 +370,11 @@ public final class MyAccount implements Comparable<MyAccount> {
             }
             return ok;
         }
-        
+
         /**
          * Verify the user's credentials. Returns true if authentication was
          * successful
-         * 
+         *
          * @see CredentialsVerificationStatus
          * @param reVerify Verify even if it was verified already
          * @return true if verified successfully
@@ -391,7 +390,7 @@ public final class MyAccount implements Comparable<MyAccount> {
                 return onCredentialsVerified(null, e);
             }
         }
-        
+
         public boolean onCredentialsVerified(MbUser user, ConnectionException ce) throws ConnectionException {
             boolean ok = (ce == null) && user != null && !user.isEmpty();
             if (ok && TextUtils.isEmpty(user.oid)) {
@@ -408,7 +407,7 @@ public final class MyAccount implements Comparable<MyAccount> {
             boolean credentialsOfOtherUser = false;
             // We are comparing user names ignoring case, but we fix correct case
             // as the Originating system tells us. 
-            if (ok  && !TextUtils.isEmpty(myAccount.getUsername()) 
+            if (ok && !TextUtils.isEmpty(myAccount.getUsername())
                     && myAccount.getUsername().compareToIgnoreCase(newName) != 0) {
                 // Credentials belong to other User ??
                 ok = false;
@@ -455,14 +454,14 @@ public final class MyAccount implements Comparable<MyAccount> {
             }
             return ok;
         }
-        
+
         public void setUserTokenWithSecret(String token, String secret) {
             myAccount.getConnection().setUserTokenWithSecret(token, secret);
         }
 
         public void setCredentialsVerificationStatus(CredentialsVerificationStatus cv) {
             myAccount.credentialsVerified = cv;
-            if (cv != CredentialsVerificationStatus.SUCCEEDED 
+            if (cv != CredentialsVerificationStatus.SUCCEEDED
                     && myAccount.connection != null) {
                 myAccount.connection.clearAuthInformation();
             }
@@ -476,7 +475,7 @@ public final class MyAccount implements Comparable<MyAccount> {
 
         /**
          * Password was moved to the connection object because it is needed there
-         * 
+         *
          * @param password
          */
         public void setPassword(String password) {
@@ -485,7 +484,7 @@ public final class MyAccount implements Comparable<MyAccount> {
                 myAccount.getConnection().setPassword(password);
             }
         }
-        
+
         private void assignUserId() {
             myAccount.userId = MyQuery.userNameToId(myAccount.getOriginId(), myAccount.getUsername());
             if (myAccount.userId == 0) {
@@ -503,7 +502,7 @@ public final class MyAccount implements Comparable<MyAccount> {
                 }
             }
         }
-        
+
         @Override
         public int describeContents() {
             return 0;
@@ -514,7 +513,7 @@ public final class MyAccount implements Comparable<MyAccount> {
             save();
             dest.writeParcelable(myAccount.accountData, flags);
         }
-        
+
         public static final Creator<Builder> CREATOR = new Creator<Builder>() {
             @Override
             public Builder createFromParcel(Parcel source) {
@@ -526,7 +525,7 @@ public final class MyAccount implements Comparable<MyAccount> {
                 return new Builder[size];
             }
         };
-        
+
         @Override
         public String toString() {
             return myAccount.toString();
@@ -543,16 +542,16 @@ public final class MyAccount implements Comparable<MyAccount> {
         void setSyncFrequencySeconds(long syncFrequencySeconds) {
             myAccount.syncFrequencySeconds = syncFrequencySeconds;
         }
-        
+
         /**
          * @return true if the old Android Account should be deleted
          */
         public boolean onOriginNameChanged(String originNameNew) {
-            if (myAccount.oAccountName.getOriginName().equals(originNameNew) 
+            if (myAccount.oAccountName.getOriginName().equals(originNameNew)
                     || TextUtils.isEmpty(originNameNew)) {
                 return false;
             }
-            MyLog.i(TAG, "renaming origin of " + myAccount.getAccountName() + " to " + originNameNew );
+            MyLog.i(TAG, "renaming origin of " + myAccount.getAccountName() + " to " + originNameNew);
             setAndroidAccountDeleted();
             myAccount.oAccountName = AccountName.fromOriginAndUserNames(
                     myContext,
@@ -562,7 +561,7 @@ public final class MyAccount implements Comparable<MyAccount> {
             return true;
         }
     }
-    
+
     private final AccountData accountData;
     private AccountName oAccountName;
     private String userOid;
@@ -582,21 +581,21 @@ public final class MyAccount implements Comparable<MyAccount> {
     public static final int ACCOUNT_VERSION = 16;
     private boolean deleted;
     private int order = 0;
-    
+
     public enum CredentialsVerificationStatus {
-        /** 
+        /**
          * NEVER - means that User was never successfully authenticated with current credentials.
          *  This is why we reset the state to NEVER every time credentials have been changed.
          */
-        NEVER(1), 
+        NEVER(1),
         FAILED(2),
         /** The User was successfully authenticated */
         SUCCEEDED(3);
 
         private int id;
-        
+
         static final String KEY = "credentials_verified";
-        
+
         private CredentialsVerificationStatus(int id) {
             this.id = id;
         }
@@ -604,19 +603,19 @@ public final class MyAccount implements Comparable<MyAccount> {
         public void put(AccountDataWriter dw) {
             dw.setDataInt(KEY, id);
         }
-        
+
         public void put(JSONObject jso) throws JSONException {
             jso.put(KEY, id);
         }
-        
+
         public static CredentialsVerificationStatus load(SharedPreferences sp) {
             int id = sp.getInt(KEY, NEVER.id);
             return fromId(id);
         }
 
-        public static CredentialsVerificationStatus fromId( long id) {
+        public static CredentialsVerificationStatus fromId(long id) {
             CredentialsVerificationStatus status = NEVER;
-            for(CredentialsVerificationStatus status1 : values()) {
+            for (CredentialsVerificationStatus status1 : values()) {
                 if (status1.id == id) {
                     status = status1;
                     break;
@@ -624,12 +623,12 @@ public final class MyAccount implements Comparable<MyAccount> {
             }
             return status;
         }
-        
+
         public static CredentialsVerificationStatus load(AccountDataReader dr) {
             int id = dr.getDataInt(KEY, NEVER.id);
             return fromId(id);
         }
-        
+
         public static CredentialsVerificationStatus load(JSONObject jso) {
             int id = jso.optInt(KEY, NEVER.id);
             return fromId(id);
@@ -645,7 +644,7 @@ public final class MyAccount implements Comparable<MyAccount> {
     }
 
     public static MyAccount getEmpty(MyContext myContext, String accountName) {
-        return Builder.getEmptyAccount(myContext, accountName); 
+        return Builder.getEmptyAccount(myContext, accountName);
     }
 
     public static MyAccount fromBundle(Bundle bundle) {
@@ -665,25 +664,25 @@ public final class MyAccount implements Comparable<MyAccount> {
         if (isValid() != another.isValid()) {
             return isValid() ? -1 : 1;
         }
-        return order > another.order ? 1 : (order < another.order ? -1 : getAccountName().compareTo(another.getAccountName()) );
+        return order > another.order ? 1 : (order < another.order ? -1 : getAccountName().compareTo(another.getAccountName()));
     }
 
     public boolean getCredentialsPresent() {
         return getConnection().getCredentialsPresent();
-    }    
-    
+    }
+
     public CredentialsVerificationStatus getCredentialsVerified() {
         return credentialsVerified;
     }
- 
+
     public boolean isValidAndSucceeded() {
-        return isValid() && getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED;        
+        return isValid() && getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED;
     }
-    
+
     private boolean isPersistent() {
         return accountData.isPersistent();
     }
-    
+
     /**
      * Are authenticated users from more than one different Originating system?
      * @return count
@@ -695,8 +694,8 @@ public final class MyAccount implements Comparable<MyAccount> {
         boolean found = false;
         String possiblyUnique = getUsername();
         for (MyAccount persistentAccount : myContext.persistentAccounts().list()) {
-            if (!persistentAccount.toString().equalsIgnoreCase(toString()) 
-                    && persistentAccount.getUsername().equalsIgnoreCase(possiblyUnique) ) {
+            if (!persistentAccount.toString().equalsIgnoreCase(toString())
+                    && persistentAccount.getUsername().equalsIgnoreCase(possiblyUnique)) {
                 found = true;
                 break;
             }
@@ -707,13 +706,13 @@ public final class MyAccount implements Comparable<MyAccount> {
             if (indAt > 0) {
                 possiblyUnique = uniqueName.substring(0, indAt);
                 for (MyAccount persistentAccount : myContext.persistentAccounts().list()) {
-                    if (!persistentAccount.toString().equalsIgnoreCase(toString()) ) {
+                    if (!persistentAccount.toString().equalsIgnoreCase(toString())) {
                         String toCompareWith = persistentAccount.getUsername();
                         indAt = toCompareWith.indexOf('@');
                         if (indAt > 0) {
                             toCompareWith = toCompareWith.substring(0, indAt);
                         }
-                        if (toCompareWith.equalsIgnoreCase(possiblyUnique) ) {
+                        if (toCompareWith.equalsIgnoreCase(possiblyUnique)) {
                             found = true;
                             break;
                         }
@@ -728,13 +727,13 @@ public final class MyAccount implements Comparable<MyAccount> {
     }
 
     public boolean isValid() {
-        return (!deleted && version == MyAccount.ACCOUNT_VERSION) 
+        return (!deleted && version == MyAccount.ACCOUNT_VERSION)
                 && userId != 0
                 && connection != null
                 && oAccountName.isValid()
                 && !TextUtils.isEmpty(userOid);
     }
-    
+
     private MyAccount(MyContext myContext, AccountData accountDataIn) {
         if (accountDataIn == null) {
             accountData = AccountData.fromJson(null, false);
@@ -742,7 +741,7 @@ public final class MyAccount implements Comparable<MyAccount> {
             accountData = accountDataIn;
         }
         oAccountName = AccountName.fromOriginAndUserNames(myContext,
-                accountData.getDataString(Origin.KEY_ORIGIN_NAME, ""), 
+                accountData.getDataString(Origin.KEY_ORIGIN_NAME, ""),
                 accountData.getDataString(KEY_USERNAME, ""));
         version = accountData.getDataInt(KEY_VERSION, ACCOUNT_VERSION);
         deleted = accountData.getDataBoolean(KEY_DELETED, false);
@@ -770,7 +769,7 @@ public final class MyAccount implements Comparable<MyAccount> {
     public String getUsername() {
         return oAccountName.getUsername();
     }
-    
+
     /**
      * @return account name, unique for this application and suitable for android.accounts.AccountManager
      * The name is permanent and cannot be changed. This is why it may be used as Id 
@@ -778,7 +777,7 @@ public final class MyAccount implements Comparable<MyAccount> {
     public String getAccountName() {
         return oAccountName.toString();
     }
-    
+
     /**
      * @return the {@link #userId}
      */
@@ -789,7 +788,7 @@ public final class MyAccount implements Comparable<MyAccount> {
     public String getUserOid() {
         return userOid;
     }
-    
+
     /**
      * @return The system in which the User is defined, see {@link OriginTable}
      */
@@ -800,15 +799,15 @@ public final class MyAccount implements Comparable<MyAccount> {
     public long getOriginId() {
         return oAccountName.getOrigin().getId();
     }
-    
+
     public Connection getConnection() {
         return connection;
     }
-    
+
     public boolean areClientKeysPresent() {
         return connection.areOAuthClientKeysPresent();
     }
-    
+
     public OAuthConsumerAndProvider getOAuthConsumerAndProvider() {
         return connection.getOAuthConsumerAndProvider();
     }
@@ -838,7 +837,7 @@ public final class MyAccount implements Comparable<MyAccount> {
     public String getPassword() {
         return getConnection().getPassword();
     }
-    
+
     /**
      * This is defined by Microblogging system
      * Starting from 2010-09 twitter.com allows OAuth only
@@ -846,7 +845,7 @@ public final class MyAccount implements Comparable<MyAccount> {
     public boolean canChangeOAuth() {
         return oAccountName.getOrigin().canChangeOAuth();
     }
-    
+
     public boolean isUsernameNeededToStartAddingNewAccount() {
         return oAccountName.getOrigin().isUsernameNeededToStartAddingNewAccount(isOAuth());
     }
@@ -854,22 +853,20 @@ public final class MyAccount implements Comparable<MyAccount> {
     public boolean isUsernameValid() {
         return oAccountName.getOrigin().isUsernameValid(getUsername());
     }
-    
+
     public boolean isGlobalSearchSupported() {
         return getConnection().isApiSupported(ApiRoutineEnum.SEARCH_MESSAGES);
     }
-    
+
     public void requestSync() {
         if (isPersistent()) {
-           ContentResolver.requestSync(getExistingAndroidAccount(), MatchedUri.AUTHORITY, new Bundle());
+            ContentResolver.requestSync(getExistingAndroidAccount(), MatchedUri.AUTHORITY, new Bundle());
         }
     }
 
     Account getExistingAndroidAccount() {
         Account androidAccount = null;
-        // Let's check if there is such an Android Account already
-        android.accounts.AccountManager am = AccountManager.get(MyContextHolder.get().context());
-        android.accounts.Account[] aa = am.getAccountsByType( AuthenticatorService.ANDROID_ACCOUNT_TYPE );
+        Account[] aa = PersistentAccounts.getAccounts(MyContextHolder.get().context());
         for (android.accounts.Account account : aa) {
             if (getAccountName().equals(account.name)) {
                 androidAccount = account;

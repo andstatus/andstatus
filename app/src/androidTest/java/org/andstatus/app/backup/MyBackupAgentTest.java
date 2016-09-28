@@ -8,7 +8,6 @@ import android.content.Context;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.test.InstrumentationTestCase;
 
-import org.andstatus.app.account.AuthenticatorService;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.account.PersistentAccounts;
 import org.andstatus.app.context.MyContextHolder;
@@ -123,7 +122,7 @@ public class MyBackupAgentTest extends InstrumentationTestCase {
 
     private void deleteAccounts() throws IOException {
         android.accounts.AccountManager am = AccountManager.get(MyContextHolder.get().context());
-        android.accounts.Account[] aa = am.getAccountsByType( AuthenticatorService.ANDROID_ACCOUNT_TYPE );
+        android.accounts.Account[] aa = PersistentAccounts.getAccounts(MyContextHolder.get().context());
         for (android.accounts.Account androidAccount : aa) {
             String logMsg = "Removing old account: " + androidAccount.name;
             MyLog.i(this, logMsg);

@@ -16,7 +16,6 @@
 
 package org.andstatus.app.account;
 
-import android.accounts.AccountManager;
 import android.test.InstrumentationTestCase;
 import android.text.TextUtils;
 
@@ -122,16 +121,16 @@ public class OriginsAndAccountsInserter extends InstrumentationTestCase {
     }
 
     private void assertAccountIsAddedToAccountManager(MyAccount maExpected) {
-        android.accounts.AccountManager am = AccountManager.get(myContext.context());
-        android.accounts.Account[] aa = am.getAccountsByType(AuthenticatorService.ANDROID_ACCOUNT_TYPE);
-            MyAccount ma = null;
-            for (android.accounts.Account account : aa) {
-                ma = MyAccount.Builder.fromAndroidAccount(myContext, account).getAccount();
-                if (maExpected.getAccountName().equals(ma.getAccountName())) {
-                    break;
-                }
+        android.accounts.Account[] aa = PersistentAccounts.getAccounts(myContext.context());
+        MyAccount ma = null;
+        for (android.accounts.Account account : aa) {
+            ma = MyAccount.Builder.fromAndroidAccount(myContext, account).getAccount();
+            if (maExpected.getAccountName().equals(ma.getAccountName())) {
+                break;
             }
-            assertEquals("MyAccount was not found in AccountManager among " + aa.length + " accounts.", maExpected, ma);
+        }
+        assertEquals("MyAccount was not found in AccountManager among " + aa.length + " accounts.",
+                maExpected, ma);
     }
 
     private MyAccount addAccountFromMbUser(MbUser mbUser) {

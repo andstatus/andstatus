@@ -2,6 +2,7 @@ package org.andstatus.app.account;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
+import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.support.annotation.NonNull;
@@ -19,6 +20,7 @@ import org.andstatus.app.database.FriendshipTable;
 import org.andstatus.app.util.CollectionsUtil;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.Permissions;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -45,7 +47,7 @@ public class PersistentAccounts {
     private PersistentAccounts(MyContext myContext) {
         this.myContext = myContext;
     }
-    
+
     /**
      * Get list of all persistent accounts
      * for the purpose of using these "accounts" elsewhere. Value of
@@ -67,8 +69,7 @@ public class PersistentAccounts {
     
     public PersistentAccounts initialize() {
         myFriends = null;
-        android.accounts.AccountManager am = AccountManager.get(myContext.context());
-        android.accounts.Account[] aa = am.getAccountsByType( AuthenticatorService.ANDROID_ACCOUNT_TYPE );
+        android.accounts.Account[] aa = getAccounts(myContext.context());
         List<MyAccount> myAccounts = new ArrayList<>();
         for (android.accounts.Account account : aa) {
             MyAccount ma = Builder.fromAndroidAccount(myContext, account).getAccount();
@@ -154,13 +155,9 @@ public class PersistentAccounts {
         }
         // Try to find persisted Account which was not loaded yet
         if (!myAccount.isValid()) {
-            android.accounts.Account[] androidAccounts = AccountManager.get(
-                    myContext.context()).getAccountsByType(
-                    AuthenticatorService.ANDROID_ACCOUNT_TYPE);
-            for (android.accounts.Account androidAccount : androidAccounts) {
+            for (android.accounts.Account androidAccount : getAccounts(myContext.context())) {
                 if (myAccount.getAccountName().compareTo(androidAccount.name) == 0) {
-                    myAccount = Builder.fromAndroidAccount(myContext, androidAccount)
-                            .getAccount();
+                    myAccount = Builder.fromAndroidAccount(myContext, androidAccount).getAccount();
                     mAccounts.add(myAccount);
                     CollectionsUtil.sort(mAccounts);
                     MyPreferences.onPreferencesChanged();
@@ -501,5 +498,14 @@ public class PersistentAccounts {
             CollectionsUtil.sort(mAccounts);
             MyPreferences.onPreferencesChanged();
         }
+    }
+
+    @NonNull
+    public static Account[] getAccounts(Context context) {
+        if (Permissions.checkPermission(context, Permissions.PermissionType.GET_ACCOUNTS) ) {
+            AccountManager am = AccountManager.get(context);
+            return am.getAccountsByType(AuthenticatorService.ANDROID_ACCOUNT_TYPE);
+        }
+        return new Account[]{};
     }
 }

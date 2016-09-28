@@ -23,14 +23,13 @@ import android.provider.BaseColumns;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
-import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.UserInTimeline;
 import org.andstatus.app.database.DownloadTable;
 import org.andstatus.app.database.FriendshipTable;
-import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.database.MsgOfUserTable;
+import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.database.UserTable;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
@@ -56,7 +55,6 @@ public class TimelineSql {
      */
     static String tablesForTimeline(Uri uri, String[] projection) {
         Timeline timeline = Timeline.fromParsedUri(MyContextHolder.get(), ParsedUri.fromUri(uri), "");
-        ParsedUri uriParser = ParsedUri.fromUri(uri);
         SelectedUserIds selectedAccounts = new SelectedUserIds(timeline);
     
         Collection<String> columns = new java.util.HashSet<>(Arrays.asList(projection));

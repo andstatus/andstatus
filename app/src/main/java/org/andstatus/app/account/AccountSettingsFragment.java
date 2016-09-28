@@ -35,7 +35,7 @@ public class AccountSettingsFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        
+
     }
 
     @Override
@@ -53,14 +53,12 @@ public class AccountSettingsFragment extends Fragment {
     }
 
     private void onRemoveAccount() {
-        android.accounts.AccountManager am = AccountManager.get(getActivity());
         StateOfAccountChangeProcess state = ((AccountSettingsActivity) getActivity()).getState();
         if (state.builder.isPersistent()) {
-            android.accounts.Account[] aa = am
-                    .getAccountsByType(AuthenticatorService.ANDROID_ACCOUNT_TYPE);
-            for (android.accounts.Account account : aa) {
+            for (android.accounts.Account account : PersistentAccounts.getAccounts(getActivity())) {
                 if (state.getAccount().getAccountName().equals(account.name)) {
                     MyLog.i(this, "Removing account: " + account.name);
+                    android.accounts.AccountManager am = AccountManager.get(getActivity());
                     if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1) {
                         am.removeAccount(account, getActivity(), null, null);
                     } else {

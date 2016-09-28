@@ -49,7 +49,7 @@ public class MyAccountConverter {
             myContext.persistentOrigins().initialize(db);
             
             android.accounts.AccountManager am = AccountManager.get(myContext.context());
-            android.accounts.Account[] aa = am.getAccountsByType( AuthenticatorService.ANDROID_ACCOUNT_TYPE );
+            android.accounts.Account[] aa = PersistentAccounts.getAccounts(myContext.context());
             Collection<android.accounts.Account> accountsToRemove = new ArrayList<android.accounts.Account>(); 
             for (android.accounts.Account androidAccount : aa) {
                 DatabaseConverterController.stillUpgrading();

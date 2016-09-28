@@ -18,7 +18,9 @@ package org.andstatus.app.util;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.Context;
 import android.content.pm.PackageManager;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 
@@ -27,11 +29,18 @@ import android.support.v4.content.ContextCompat;
  * See http://developer.android.com/training/permissions/index.html
  */
 public class Permissions {
+    private static volatile boolean allGranted = false;
+
+    public static void setAllGranted(boolean allGranted) {
+        Permissions.allGranted = allGranted;
+    }
+
     public enum PermissionType {
         READ_EXTERNAL_STORAGE(Manifest.permission.READ_EXTERNAL_STORAGE),
-        WRITE_EXTERNAL_STORAGE(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        WRITE_EXTERNAL_STORAGE(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+        GET_ACCOUNTS(Manifest.permission.GET_ACCOUNTS);
 
-        final String manifestPermission;
+        public final String manifestPermission;
         PermissionType(String manifestPermission) {
             this.manifestPermission = manifestPermission;
         }
@@ -41,12 +50,33 @@ public class Permissions {
         // Empty
     }
 
-    public static void checkAndRequest(Activity activity, PermissionType permissionType) {
-        int permissionCheck = ContextCompat.checkSelfPermission(activity, permissionType.manifestPermission );
-        if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(activity,
-                    new String[]{permissionType.manifestPermission},
-                    permissionType.ordinal());
+    /**
+     * See http://stackoverflow.com/questions/30719047/android-m-check-runtime-permission-how-to-determine-if-the-user-checked-nev
+     */
+    public static void checkPermissionAndRequestIt(@NonNull Activity activity,
+                                                   @NonNull PermissionType permissionType) {
+        if (checkPermission(activity, permissionType)) {
+            return;
         }
+        if (!ActivityCompat.OnRequestPermissionsResultCallback.
+                class.isAssignableFrom(activity.getClass())) {
+            throw new IllegalArgumentException("The activity " + activity.getClass().getName() +
+                    " should implement OnRequestPermissionsResultCallback");
+        }
+        MyLog.d(activity, "Requesting permission: " + permissionType);
+        ActivityCompat.requestPermissions(activity,
+                new String[]{permissionType.manifestPermission},
+                permissionType.ordinal());
     }
+
+    /**
+     * Always returns true for "GET_ACCOUNTS", because we actually don't need this permission
+     * to read accounts of this application
+     */
+    public static boolean checkPermission(@NonNull Context context, PermissionType permissionType) {
+        return allGranted || permissionType == PermissionType.GET_ACCOUNTS ||
+                ContextCompat.checkSelfPermission(context,
+                permissionType.manifestPermission ) == PackageManager.PERMISSION_GRANTED;
+    }
+
 }

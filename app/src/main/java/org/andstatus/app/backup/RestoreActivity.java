@@ -42,7 +42,7 @@ public class RestoreActivity extends MyActivity {
         mLayoutId = R.layout.restore;
         super.onCreate(savedInstanceState);
 
-        Permissions.checkAndRequest(this, Permissions.PermissionType.READ_EXTERNAL_STORAGE);
+        Permissions.checkPermissionAndRequestIt(this, Permissions.PermissionType.READ_EXTERNAL_STORAGE);
 
         findViewById(R.id.button_restore).setOnClickListener(new OnClickListener() {
             @Override

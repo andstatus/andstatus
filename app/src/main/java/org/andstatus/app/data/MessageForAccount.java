@@ -44,7 +44,7 @@ public class MessageForAccount {
     public String bodyTrimmed = "";
     public long authorId = 0;
     public long senderId = 0;
-    public boolean senderIsMySucceededAccount = false;
+    private boolean isSenderMySucceededAccount = false;
     public long inReplyToUserId = 0;
     public long recipientId = 0;
     public boolean mayBePrivate = false;
@@ -84,7 +84,7 @@ public class MessageForAccount {
     }
 
     private void getData() {
-        // Get a database raw for the currently selected item
+        // Get a database row for the currently selected item
         Uri uri = MatchedUri.getTimelineItemUri(
                 Timeline.getTimeline(TimelineType.MESSAGES_TO_ACT, myAccount, 0, null), msgId);
         Cursor cursor = null;
@@ -107,7 +107,7 @@ public class MessageForAccount {
                 status = DownloadStatus.load(DbUtils.getLong(cursor, MsgTable.MSG_STATUS));
                 authorId = DbUtils.getLong(cursor, MsgTable.AUTHOR_ID);
                 senderId = DbUtils.getLong(cursor, MsgTable.SENDER_ID);
-                senderIsMySucceededAccount = MyContextHolder.get().persistentAccounts().fromUserId(senderId).isValidAndSucceeded();
+                isSenderMySucceededAccount = MyContextHolder.get().persistentAccounts().fromUserId(senderId).isValidAndSucceeded();
                 recipientId = DbUtils.getLong(cursor, MsgTable.RECIPIENT_ID);
                 imageFilename = DbUtils.getString(cursor, DownloadTable.IMAGE_FILE_NAME);
                 bodyTrimmed = I18n.trimTextAt(MyHtml.fromHtml(
@@ -150,4 +150,7 @@ public class MessageForAccount {
         return status == DownloadStatus.LOADED;
     }
 
+    public boolean isSenderMySucceededAccount() {
+        return isSenderMySucceededAccount;
+    }
 }

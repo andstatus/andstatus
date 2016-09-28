@@ -31,17 +31,18 @@ import net.jcip.annotations.ThreadSafe;
 import org.andstatus.app.ClassInApplicationPackage;
 import org.andstatus.app.account.PersistentAccounts;
 import org.andstatus.app.data.AssertionData;
-import org.andstatus.app.database.DatabaseHolder;
 import org.andstatus.app.database.DatabaseConverterController;
-import org.andstatus.app.timeline.TimelineType;
+import org.andstatus.app.database.DatabaseHolder;
 import org.andstatus.app.graphics.MyImageCache;
-import org.andstatus.app.timeline.PersistentTimelines;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.net.http.TlsSniSocketFactory;
 import org.andstatus.app.origin.PersistentOrigins;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.service.ConnectionState;
+import org.andstatus.app.timeline.PersistentTimelines;
+import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.Permissions;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TriState;
@@ -90,45 +91,63 @@ public final class MyContextImpl implements MyContext {
     public MyContext newInitialized(Context context, String initializerName) {
         final String method = "newInitialized";
         MyContextImpl myContext = newNotInitialized(context, initializerName);
-        if ( myContext.mContext != null) {
-            boolean createApplicationData = MyStorage.isApplicationDataCreated().not().toBoolean(false);
+        if ( myContext.mContext == null) {
+            // Nothing to do
+        } else if (!Permissions.checkPermission(myContext.mContext,
+                Permissions.PermissionType.GET_ACCOUNTS)) {
+            myContext.mState = MyContextState.NO_PERMISSIONS;
+        } else {
             MyLog.v(TAG, method + " Starting initialization by " + initializerName);
-            if (createApplicationData) {
-                MyLog.i(TAG, method + " Creating application data");
-                MyPreferencesGroupsEnum.setDefaultValues();
-                tryToSetExternalStorageOnDataCreation();
-            }
-            myContext.mPreferencesChangeTime = MyPreferences.getPreferencesChangeTime();
-            DatabaseHolder newDb = new DatabaseHolder(myContext.mContext, createApplicationData);
-            try {
-                myContext.mState = newDb.checkState();
-                if (myContext.state() == MyContextState.READY
-                        && MyStorage.isApplicationDataCreated() != TriState.TRUE) {
-                    myContext.mState = MyContextState.ERROR;
-                }
-                switch (myContext.mState) {
-                    case READY:
-                        myContext.mDb = newDb;
-                        myContext.mPersistentOrigins.initialize();
-                        myContext.mPersistentAccounts.initialize();
-                        myContext.persistentTimelines.initialize();
-                        MyImageCache.initialize(myContext.context());
-                        break;
-                    default:
-                        break;
-                }
-            } catch (SQLiteException e) {
-                MyLog.e(TAG, method + " Error", e);
-                myContext.mState = MyContextState.ERROR;
-                newDb.close();
-                myContext.mDb = null;
-            }
-        }
 
+            initialize2(myContext);
+        }
         MyLog.v(this, toString());
         return myContext;
     }
-    
+
+    private void initialize2(MyContextImpl myContext) {
+        final String method = "initialize2";
+        boolean createApplicationData = MyStorage.isApplicationDataCreated().not().toBoolean(false);
+        if (createApplicationData) {
+            MyLog.i(TAG, method + " Creating application data");
+            MyPreferencesGroupsEnum.setDefaultValues();
+            tryToSetExternalStorageOnDataCreation();
+        }
+        myContext.mPreferencesChangeTime = MyPreferences.getPreferencesChangeTime();
+        initializeDatabase(myContext, createApplicationData);
+
+        switch (myContext.mState) {
+            case READY:
+                myContext.mPersistentOrigins.initialize();
+                myContext.mPersistentAccounts.initialize();
+                myContext.persistentTimelines.initialize();
+                MyImageCache.initialize(myContext.context());
+                break;
+            default:
+                break;
+        }
+    }
+
+    private void initializeDatabase(MyContextImpl myContext, boolean createApplicationData) {
+        final String method = "initializeDatabase";
+        DatabaseHolder newDb = new DatabaseHolder(myContext.mContext, createApplicationData);
+        try {
+            myContext.mState = newDb.checkState();
+            if (myContext.state() == MyContextState.READY
+                    && MyStorage.isApplicationDataCreated() != TriState.TRUE) {
+                myContext.mState = MyContextState.ERROR;
+            }
+        } catch (SQLiteException e) {
+            MyLog.e(TAG, method + " Error", e);
+            myContext.mState = MyContextState.ERROR;
+            newDb.close();
+            myContext.mDb = null;
+        }
+        if (myContext.state() == MyContextState.READY) {
+            myContext.mDb = newDb;
+        }
+    }
+
     private void tryToSetExternalStorageOnDataCreation() {
         boolean useExternalStorage = !Environment.isExternalStorageEmulated()
                 && MyStorage.isWritableExternalStorageAvailable(null);

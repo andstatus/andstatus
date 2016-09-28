@@ -23,8 +23,8 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -41,7 +41,9 @@ import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.MySettingsActivity;
 import org.andstatus.app.msg.TimelineActivity;
 import org.andstatus.app.util.ActivitySwipeDetector;
+import org.andstatus.app.util.DialogFactory;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.Permissions;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.SwipeInterface;
 import org.andstatus.app.util.Xslt;
@@ -60,6 +62,7 @@ public class HelpActivity extends MyActivity implements SwipeInterface {
      * to start {@link TimelineActivity} from this activity
      */
     public static final String EXTRA_IS_FIRST_ACTIVITY = ClassInApplicationPackage.PACKAGE_NAME + ".IS_FIRST_ACTIVITY";
+    public static final String EXTRA_CLOSE_ME = ClassInApplicationPackage.PACKAGE_NAME + ".CLOSE_ME";
 
     public static final int PAGE_INDEX_LOGO = 0;
     public static final int PAGE_INDEX_USER_GUIDE = 1;
@@ -80,6 +83,10 @@ public class HelpActivity extends MyActivity implements SwipeInterface {
         mLayoutId = R.layout.help;
         super.onCreate(savedInstanceState);
 
+        if (isCloseRequest(getIntent())) {
+            return;
+        }
+
         if (savedInstanceState != null) {
             mIsFirstActivity = savedInstanceState.getBoolean(EXTRA_IS_FIRST_ACTIVITY, false);
         }
@@ -93,6 +100,20 @@ public class HelpActivity extends MyActivity implements SwipeInterface {
         showRestoreButton();
         showGetStartedButton();
         setupHelpFlipper();
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        isCloseRequest(intent);
+    }
+
+    private boolean isCloseRequest(Intent intent) {
+        if (intent.hasExtra(EXTRA_CLOSE_ME)) {
+            finish();
+            return true;
+        }
+        return false;
     }
 
     private void showVersionText() {
@@ -141,15 +162,30 @@ public class HelpActivity extends MyActivity implements SwipeInterface {
         getStarted.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (MyContextHolder.get().isReady()) {
-                    checkAndUpdateLastOpenedAppVersion(HelpActivity.this, true);
-                    if (MyContextHolder.get().persistentAccounts().getCurrentAccount().isValid()) {
-                        startActivity(new Intent(HelpActivity.this, TimelineActivity.class));
-                    } else {
-                        startActivity(new Intent(HelpActivity.this, AccountSettingsActivity.class));
-                    }
+                switch (MyContextHolder.get().state()) {
+                    case READY:
+                        checkAndUpdateLastOpenedAppVersion(HelpActivity.this, true);
+                        if (MyContextHolder.get().persistentAccounts().getCurrentAccount().isValid()) {
+                            startActivity(new Intent(HelpActivity.this, TimelineActivity.class));
+                        } else {
+                            startActivity(new Intent(HelpActivity.this, AccountSettingsActivity.class));
+                        }
+                        finish();
+                        break;
+                    case NO_PERMISSIONS:
+                        // Actually this is not used for now...
+                        Permissions.checkPermissionAndRequestIt( HelpActivity.this,
+                                Permissions.PermissionType.GET_ACCOUNTS);
+                        break;
+                    case UPGRADING:
+                        DialogFactory.newNoActionAlertDialog(HelpActivity.this,
+                                R.string.app_name, R.string.label_upgrading);
+                        break;
+                    default:
+                        DialogFactory.newNoActionAlertDialog(HelpActivity.this,
+                                R.string.app_name, R.string.loading);
+                        break;
                 }
-                finish();
             }
         });
         if (MyContextHolder.get().persistentAccounts().getCurrentAccount().isValid()) {
@@ -318,6 +354,12 @@ public class HelpActivity extends MyActivity implements SwipeInterface {
             MyLog.e(TAG, "Unable to obtain package information", e);
         }
         return changed;
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        MyContextHolder.get().setExpired();
+        this.recreate();
     }
 
 }

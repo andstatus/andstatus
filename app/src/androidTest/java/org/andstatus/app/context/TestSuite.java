@@ -43,6 +43,7 @@ import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.Permissions;
 import org.andstatus.app.util.SharedPreferencesUtil;
 
 import java.util.Calendar;
@@ -113,14 +114,14 @@ public class TestSuite extends TestCase {
         assertTrue("Log level set to verbose", MyLog.isLoggable(TAG, MyLog.VERBOSE));
         MyServiceManager.setServiceUnavailable();
 
-        if (MyContextHolder.get().state() == MyContextState.UPGRADING) {
-            MyLog.d(TAG, "Upgrade is needed");
-            Intent intent = new Intent(MyContextHolder.get().context(), HelpActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            MyContextHolder.get().context().startActivity(intent);
-            waitTillUpgradeEnded();
-            DbUtils.waitMs(method, 500);
+        if (MyContextHolder.get().state() != MyContextState.READY) {
+            MyLog.d(TAG, "MyContext is not ready: " + MyContextHolder.get().state());
+            if (MyContextHolder.get().state() == MyContextState.NO_PERMISSIONS) {
+                Permissions.setAllGranted(true);
+            }
+            waitUntilContextIsReady();
         }
+
         MyLog.d(TAG, "Before check isReady " + MyContextHolder.get());
         initialized =  MyContextHolder.get().isReady();
         assertTrue("Test Suite initialized, MyContext state=" + MyContextHolder.get().state(), initialized);
@@ -151,16 +152,29 @@ public class TestSuite extends TestCase {
         initialized = false;
     }
     
-    public static void waitTillUpgradeEnded() {
-        final String method = "waitTillUpgradeEnded";
-        for (int i=1; i < 100; i++) {
-            if(MyContextHolder.get().isReady()) {
-                break;
-            }
-            MyLog.d(TAG, "Waiting for upgrade to end " + i);
+    public static void waitUntilContextIsReady() {
+        final String method = "waitUntilContextIsReady";
+        Intent intent = new Intent(MyContextHolder.get().context(), HelpActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        MyContextHolder.get().context().startActivity(intent);
+        for (int i=100; i > 0; i--) {
             DbUtils.waitMs(method, 2000);
+            MyLog.d(TAG, "Waiting for context " + i + " " + MyContextHolder.get().state());
+            switch (MyContextHolder.get().state()) {
+                case READY:
+                case ERROR:
+                    i = 0;
+                    break;
+                default:
+                    break;
+            }
         }
-        assertTrue("Is Ready now", MyContextHolder.get().isReady());
+        assertEquals("Is Not ready", MyContextState.READY, MyContextHolder.get().state());
+
+        intent = new Intent(MyContextHolder.get().context(), HelpActivity.class);
+        intent.putExtra(HelpActivity.EXTRA_CLOSE_ME, true);
+        MyContextHolder.get().context().startActivity(intent);
+        DbUtils.waitMs(method, 2000);
     }
 
     public static void clearAssertionData() {
