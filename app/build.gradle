@@ -41,7 +41,8 @@ sonarqube {
 
         property "sonar.sourceEncoding","UTF-8"
         property "sonar.sources","."
-        property "sonar.exclusions","build/**,**/*.png"
+        // See http://docs.sonarqube.org/display/SONAR/Narrowing+the+Focus
+        property "sonar.exclusions","build/**,libs/**,**/*.png,**/*.json,**/*.iml"
 
         property "sonar.import_unknown_files", true
 
