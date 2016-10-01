@@ -109,6 +109,13 @@ public class TimelineActivity extends LoadableListActivity implements
         activity.startActivity(intent);
     }
 
+    public static void goHome(Activity activity) {
+        // On modifying activity back stack see http://stackoverflow.com/questions/11366700/modification-of-the-back-stack-in-android
+        Intent i = new Intent(activity, TimelineActivity.class);
+        i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+        activity.startActivity(i);
+    }
+
     /**
      * This method is the first of the whole application to be called 
      * when the application starts for the very first time.
@@ -207,7 +214,7 @@ public class TimelineActivity extends LoadableListActivity implements
                 if (getParamsLoaded().isAtHome()) {
                     onTimelineTypeButtonClick(item);
                 } else {
-                    onSwitchToDefaultTimelineButtonClick(item);
+                    goHome(this);
                 }
                 break;
             case GO_TO_THE_TOP:
@@ -226,7 +233,7 @@ public class TimelineActivity extends LoadableListActivity implements
      */
     public void onSwitchToDefaultTimelineButtonClick(View item) {
         closeDrawer();
-        switchView(myContext.persistentTimelines().getHome(), null);
+        goHome(this);
     }
 
     /**
