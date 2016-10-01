@@ -33,13 +33,11 @@ before_install:
 before_script:
   - uname -a
   - android list targets
-  - ls -la ~/**/*
+  - ls -la $HOME/.android/**/*
   - ls -la $HOME/**/*
   - echo no | android create avd --force --name test --target $ANDROID_TARGET --abi $ANDROID_ABI
-  - ls -la ~/**/*
+  - ls -la $HOME/.android/**/*
   - ls -la $HOME/**/*
-  - cat ~/.android/avd/test.avd/config.ini
-  - cp res-src/avd_config.ini ~/.android/avd/test.avd/config.ini
   - cat $HOME/.android/avd/test.avd/config.ini
   - cp res-src/avd_config.ini $HOME/.android/avd/test.avd/config.ini
   - emulator -avd test -no-skin -no-audio -no-window &
