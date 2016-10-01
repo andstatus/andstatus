@@ -125,7 +125,7 @@ public class ActivityTestHelper<T extends MyActivity> extends InstrumentationTes
         MyLog.v(this, method + "-Log after waitForMonitor: " 
                 + nextActivity);
         assertNotNull("Next activity is opened and captured", nextActivity);
-        TestSuite.waitForListLoaded(mTestCase, nextActivity, 2);
+        TestSuite.waitForListLoaded(mTestCase, nextActivity, 1);
         activityMonitor = null;
         return nextActivity;
     }

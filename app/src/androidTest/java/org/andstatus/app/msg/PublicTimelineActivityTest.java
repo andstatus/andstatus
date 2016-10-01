@@ -80,36 +80,46 @@ public class PublicTimelineActivityTest extends android.test.ActivityInstrumenta
     }
     
     public void testGlobalSearchInOptionsMenu() throws InterruptedException {
-        assertFalse("Screen is locked", TestSuite.isScreenLocked(mActivity));
-
-        ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<TimelineActivity>(this, mActivity);
-        helper.clickMenuItem("Global search", R.id.global_search_menu_id);
-        getInstrumentation().sendStringSync(TestSuite.GLOBAL_PUBLIC_MESSAGE_TEXT);
-        getInstrumentation().sendKeyDownUpSync(KeyEvent.KEYCODE_ENTER);
-        waitForButtonClickedEvidence("Global search menu item clicked", TestSuite.GLOBAL_PUBLIC_MESSAGE_TEXT);
-        assertMessagesArePublic(TestSuite.GLOBAL_PUBLIC_MESSAGE_TEXT);
+        oneSearchTest("testGlobalSearchInOptionsMenu", R.id.global_search_menu_id, TestSuite.GLOBAL_PUBLIC_MESSAGE_TEXT);
     }
 
-    private void waitForButtonClickedEvidence(String caption, String queryString) throws InterruptedException {
+    public void testSearch() throws InterruptedException {
+        oneSearchTest("testSearch", R.id.search_menu_id, TestSuite.PUBLIC_MESSAGE_TEXT);
+    }
+
+    private void oneSearchTest(String method, int menu_id, String messageText) throws InterruptedException {
+        assertFalse("Screen is locked", TestSuite.isScreenLocked(mActivity));
+        ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<>(this, TimelineActivity.class);
+        helper.clickMenuItem(method, menu_id);
+        getInstrumentation().sendStringSync(messageText);
+        getInstrumentation().sendKeyDownUpSync(KeyEvent.KEYCODE_ENTER);
+        TimelineActivity nextActivity = (TimelineActivity) helper.waitForNextActivity(method, 40000);
+        waitForButtonClickedEvidence(nextActivity, method, messageText);
+        assertMessagesArePublic(nextActivity, messageText);
+        nextActivity.finish();
+    }
+
+    private void waitForButtonClickedEvidence(final TimelineActivity timelineActivity, String caption,
+                                              String queryString) throws InterruptedException {
         final String method = "waitForButtonClickedEvidence";
         boolean found = false;
         final StringBuilder sb = new StringBuilder();
         for (int attempt = 0; attempt < 6; attempt++) {
             TestSuite.waitForIdleSync(this);
             
-            Runnable clicker = new Runnable() {
+            Runnable probe = new Runnable() {
                 @Override
                 public void run() {
                     sb.setLength(0);
-                    if (mActivity != null) {
-                        TextView item = (TextView) mActivity.findViewById(R.id.timelineTypeButton);
+                    if (timelineActivity != null) {
+                        TextView item = (TextView) timelineActivity.findViewById(R.id.timelineTypeButton);
                         if (item != null) {
                             sb.append(item.getText());
                         }
                     }
                 }
             };
-            mActivity.runOnUiThread(clicker);
+            timelineActivity.runOnUiThread(probe);
             
             
             if (sb.toString().contains(queryString)) {
@@ -121,24 +131,13 @@ public class PublicTimelineActivityTest extends android.test.ActivityInstrumenta
         }
         assertTrue(caption + " '" + (sb.toString()) + "'", found);
     }
-    
-    public void testSearch() throws InterruptedException {
-        assertFalse("Screen is locked", TestSuite.isScreenLocked(mActivity));
 
-        ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<TimelineActivity>(this, mActivity);
-        helper.clickMenuItem("Global search", R.id.search_menu_id);
-        getInstrumentation().sendStringSync(TestSuite.PUBLIC_MESSAGE_TEXT);
-        getInstrumentation().sendKeyDownUpSync(KeyEvent.KEYCODE_ENTER);
-        waitForButtonClickedEvidence("Search menu item clicked", TestSuite.PUBLIC_MESSAGE_TEXT);
-        assertMessagesArePublic(TestSuite.PUBLIC_MESSAGE_TEXT);
-    }
-
-    private void assertMessagesArePublic(String publicMessageText) throws InterruptedException {
+    private void assertMessagesArePublic(TimelineActivity timelineActivity, String publicMessageText) throws InterruptedException {
         final String method = "assertMessagesArePublic";
         int msgCount = 0;
         for (int attempt=0; attempt < 3; attempt++) {
             TestSuite.waitForIdleSync(this);
-            msgCount = oneAttempt(publicMessageText);
+            msgCount = oneAttempt(timelineActivity, publicMessageText);
             if (msgCount > 0 || DbUtils.waitMs(method, 2000 * (attempt + 1))) {
                 break;
             }
@@ -146,13 +145,13 @@ public class PublicTimelineActivityTest extends android.test.ActivityInstrumenta
         assertTrue("Messages found", msgCount > 0);
     }
 
-    private int oneAttempt(String publicMessageText) {
-        final ViewGroup list = (ViewGroup) mActivity.findViewById(android.R.id.list);
+    private int oneAttempt(TimelineActivity timelineActivity, String publicMessageText) {
+        final ViewGroup list = (ViewGroup) timelineActivity.findViewById(android.R.id.list);
         int msgCount = 0;
         for (int index = 0; index < list.getChildCount(); index++) {
             View messageView = list.getChildAt(index);
             TextView bodyView = (TextView) messageView.findViewById(R.id.message_body);
-            long id = mActivity.getListAdapter().getItem(messageView).getMsgId();
+            long id = timelineActivity.getListAdapter().getItem(messageView).getMsgId();
             if (bodyView != null) {
                 assertTrue("Message #" + id + " '" + bodyView.getText() + "' contains '" + publicMessageText + "'",
                         String.valueOf(bodyView.getText()).contains(publicMessageText));
