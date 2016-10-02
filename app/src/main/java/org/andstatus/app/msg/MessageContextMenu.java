@@ -196,19 +196,18 @@ public class MessageContextMenu extends MyContextMenu {
             return;
         }
 
-        MyAccount userIdForThisMessage = getMyPotentialActor();
+        MyAccount myActorForThisMessage = getMyPotentialActor();
         String logMsg = method;
         MessageViewItem viewItem = (MessageViewItem) oViewItem;
         mMsgId = viewItem.getMsgId();
         logMsg += "; id=" + mMsgId;
-        if (!userIdForThisMessage.isValid()) {
-            userIdForThisMessage = messageList.getActivity().getMyContext().persistentAccounts().
-                    fromUserId(viewItem.getLinkedUserId());
+        if (!myActorForThisMessage.isValid()) {
+            myActorForThisMessage = viewItem.getLinkedMyAccount();
         }
         myActor = MyAccount.getEmpty();
         MyLog.v(this, logMsg);
 
-        MessageForAccount msg2 = getMessageForAccount(userIdForThisMessage, messageList.getCurrentMyAccount());
+        MessageForAccount msg2 = getMessageForAccount(myActorForThisMessage, messageList.getCurrentMyAccount());
         if (!msg2.getMyAccount().isValid()) {
             return;
         }

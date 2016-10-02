@@ -48,8 +48,9 @@ public class MessageViewItem implements DuplicatesCollapsible<MessageViewItem> {
     Map<Long, String> rebloggers = new HashMap<>();
     boolean reblogged = false;
 
+    /** A message can be linked to any user, MyAccount or not */
     private long linkedUserId = 0;
-    private MyAccount myAccount = MyAccount.getEmpty();
+    private MyAccount linkedMyAccount = MyAccount.getEmpty();
 
     private List<TimelineViewItem> children = new ArrayList<>();
 
@@ -84,18 +85,18 @@ public class MessageViewItem implements DuplicatesCollapsible<MessageViewItem> {
 
     public void setLinkedUserAndAccount(long linkedUserId) {
         this.linkedUserId = linkedUserId;
-        myAccount = getMyContext().persistentAccounts().fromUserId(linkedUserId);
-        if (!myAccount.isValid()) {
-            myAccount = getMyContext().persistentAccounts().getFirstSucceededForOriginId(originId);
+        linkedMyAccount = getMyContext().persistentAccounts().fromUserId(linkedUserId);
+        if (!linkedMyAccount.isValid()) {
+            linkedMyAccount = getMyContext().persistentAccounts().getFirstSucceededForOriginId(originId);
         }
     }
 
-    public MyAccount getMyAccount() {
-        return myAccount;
+    public MyAccount getLinkedMyAccount() {
+        return linkedMyAccount;
     }
 
     public boolean isLinkedToMyAccount() {
-        return linkedUserId != 0 && myAccount.getUserId() == linkedUserId;
+        return linkedUserId != 0 && linkedMyAccount.getUserId() == linkedUserId;
     }
 
     protected void setCollapsedStatus(Context context, StringBuilder messageDetails) {
@@ -164,8 +165,8 @@ public class MessageViewItem implements DuplicatesCollapsible<MessageViewItem> {
             link = favorited ? DuplicationLink.IS_DUPLICATED : DuplicationLink.DUPLICATES;
         } else if (reblogged != other.reblogged) {
             link = reblogged ? DuplicationLink.IS_DUPLICATED : DuplicationLink.DUPLICATES;
-        } else if (!getMyAccount().equals(other.getMyAccount())) {
-            link = getMyAccount().compareTo(other.getMyAccount()) <= 0 ?
+        } else if (!getLinkedMyAccount().equals(other.getLinkedMyAccount())) {
+            link = getLinkedMyAccount().compareTo(other.getLinkedMyAccount()) <= 0 ?
                     DuplicationLink.IS_DUPLICATED : DuplicationLink.DUPLICATES;
         } else {
             link = rebloggers.size() > other.rebloggers.size() ? DuplicationLink.IS_DUPLICATED : DuplicationLink.DUPLICATES;

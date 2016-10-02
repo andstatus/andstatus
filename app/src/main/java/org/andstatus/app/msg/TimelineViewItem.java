@@ -98,7 +98,7 @@ public class TimelineViewItem extends MessageViewItem {
 
         if (item.isLinkedToMyAccount()) {
             if (DbUtils.getInt(cursor, MsgOfUserTable.REBLOGGED) == 1) {
-                item.addReblogger(item.getMyAccount().getUserId(), item.getMyAccount().getAccountName());
+                item.addReblogger(item.getLinkedMyAccount().getUserId(), item.getLinkedMyAccount().getAccountName());
                 item.reblogged = true;
             }
         }
