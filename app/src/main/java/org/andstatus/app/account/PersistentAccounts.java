@@ -283,20 +283,20 @@ public class PersistentAccounts {
      * @return Invalid account if nothing suitable found
      */
     @NonNull
-    public MyAccount getAccountForThisMessage(long originId, long messageId, long firstUserId,
-            long preferredUserId, boolean succeededOnly)  {
+    public MyAccount getAccountForThisMessage(long originId, long messageId, MyAccount firstUser,
+            MyAccount preferredUser, boolean succeededOnly)  {
         final String method = "getAccountForThisMessage";
-        MyAccount ma = fromUserId(firstUserId);
+        MyAccount ma = firstUser;
         if (!accountFits(ma, originId, succeededOnly)) {
-            ma = betterFit(ma, fromUserId(preferredUserId), originId, succeededOnly);
+            ma = betterFit(ma, preferredUser, originId, succeededOnly);
         }
         if (!accountFits(ma, originId, succeededOnly)) {
             ma = betterFit(ma, getFirstSucceededForOriginId(originId), originId, succeededOnly);
         }
         if (MyLog.isVerboseEnabled()) {
             MyLog.v(this, method + "; msgId=" + messageId 
-                    + "; userId1=" + firstUserId 
-                    + "; userId2=" + preferredUserId
+                    + "; user1=" + firstUser
+                    + "; user2=" + preferredUser
                     + (succeededOnly ? "; succeeded only" : "")
                     + " -> account=" + ma.getAccountName());
         }

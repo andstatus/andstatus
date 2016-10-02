@@ -69,7 +69,7 @@ public class ConversationActivity extends LoadableListActivity implements Action
                 if (resultCode == RESULT_OK) {
                     MyAccount myAccount = MyContextHolder.get().persistentAccounts().fromAccountName(data.getStringExtra(IntentExtra.ACCOUNT_NAME.key));
                     if (myAccount.isValid()) {
-                        mContextMenu.setIdOfPotentialActor(myAccount.getUserId());
+                        mContextMenu.setMyPotentialActor(myAccount);
                         mContextMenu.showContextMenu();
                     }
                 }

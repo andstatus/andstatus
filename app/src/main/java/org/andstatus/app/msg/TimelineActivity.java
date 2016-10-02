@@ -408,7 +408,7 @@ public class TimelineActivity extends LoadableListActivity implements
         prepareDrawer();
 
         if (mContextMenu != null) {
-            mContextMenu.setIdOfPotentialActor(0);
+            mContextMenu.setMyPotentialActor(MyAccount.getEmpty());
         }
 
         if (mMessageEditor != null) {
@@ -500,8 +500,8 @@ public class TimelineActivity extends LoadableListActivity implements
 
     public void onItemClick(TimelineViewItem item) {
         MyAccount ma = myContext.persistentAccounts().getAccountForThisMessage(item.getOriginId(),
-                item.getMsgId(), item.getLinkedUserId(),
-                getParamsNew().getMyAccount().getUserId(), false);
+                item.getMsgId(), myContext.persistentAccounts().fromUserId(item.getLinkedUserId()),
+                getParamsNew().getMyAccount(), false);
         if (MyLog.isVerboseEnabled()) {
             MyLog.v(this,
                     "onItemClick, " + item
@@ -1028,7 +1028,7 @@ public class TimelineActivity extends LoadableListActivity implements
     private void accountToActAsSelected(Intent data) {
         MyAccount ma = myContext.persistentAccounts().fromAccountName(data.getStringExtra(IntentExtra.ACCOUNT_NAME.key));
         if (ma.isValid()) {
-            mContextMenu.setIdOfPotentialActor(ma.getUserId());
+            mContextMenu.setMyPotentialActor(ma);
             mContextMenu.showContextMenu();
         }
     }

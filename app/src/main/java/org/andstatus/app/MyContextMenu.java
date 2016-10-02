@@ -16,6 +16,7 @@
 
 package org.andstatus.app;
 
+import android.support.annotation.NonNull;
 import android.view.ContextMenu;
 import android.view.View;
 
@@ -30,7 +31,7 @@ public class MyContextMenu implements View.OnCreateContextMenuListener {
     protected final LoadableListActivity listActivity;
     protected View viewOfTheContext = null;
     protected Object oViewItem = null;
-    protected long otherAccountUserIdToActAs = 0;
+    protected MyAccount myPotentialActor = MyAccount.getEmpty();
 
     public MyContextMenu(LoadableListActivity listActivity) {
         this.listActivity = listActivity;
@@ -43,7 +44,7 @@ public class MyContextMenu implements View.OnCreateContextMenuListener {
 
     protected void saveContextOfSelectedItem(View v) {
         if (viewOfTheContext != v) {
-            otherAccountUserIdToActAs = 0;
+            myPotentialActor = MyAccount.getEmpty();
         }
         viewOfTheContext = v;
         oViewItem = listActivity.saveContextOfSelectedItem(v);
@@ -69,13 +70,16 @@ public class MyContextMenu implements View.OnCreateContextMenuListener {
         }
     }
 
-    public void setIdOfPotentialActor(long accountUserIdToActAs) {
-        this.otherAccountUserIdToActAs = accountUserIdToActAs;
+    public MyAccount getMyPotentialActor() {
+        return myPotentialActor;
     }
 
-    public MyAccount getPotentialActor() {
-        return otherAccountUserIdToActAs == 0 ?
-                MyContextHolder.get().persistentAccounts().getCurrentAccount() :
-                MyContextHolder.get().persistentAccounts().fromUserId(otherAccountUserIdToActAs);
+    public void setMyPotentialActor(@NonNull MyAccount myAccount) {
+        this.myPotentialActor = myAccount;
+    }
+
+    public MyAccount getPotentialActorOrCurrentAccount() {
+        return myPotentialActor.isValid() ? myPotentialActor :
+                MyContextHolder.get().persistentAccounts().getCurrentAccount();
     }
 }

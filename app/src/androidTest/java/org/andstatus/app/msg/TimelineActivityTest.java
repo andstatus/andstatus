@@ -222,7 +222,7 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
         long msgId = helper.getListItemIdOfLoadedReply();
         String logMsg = "msgId:" + msgId
                 + "; text:'" + MyQuery.msgIdToStringColumnValue(MsgTable.BODY, msgId) + "'";
-        assertTrue(logMsg, helper.invokeContextMenuAction4ListItemId(method, msgId, MessageListContextMenuItem.ACT_AS_USER));
+        assertTrue(logMsg, helper.invokeContextMenuAction4ListItemId(method, msgId, MessageListContextMenuItem.ACT_AS_FIRST_OTHER_USER));
         MyAccount actor1 = getActivity().getContextMenu().getMyActor();
         logMsg += "; actor1:" + actor1;
         assertTrue(logMsg, actor1.isValid());

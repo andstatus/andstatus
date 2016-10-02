@@ -63,7 +63,7 @@ public class ActAsUserTest extends android.test.ActivityInstrumentationTestCase2
         long msgId = helper.getListItemIdOfLoadedReply();
         String logMsg = "msgId=" + msgId;
 
-        helper.invokeContextMenuAction4ListItemId(method, msgId, MessageListContextMenuItem.ACT_AS_USER);
+        helper.invokeContextMenuAction4ListItemId(method, msgId, MessageListContextMenuItem.ACT_AS_FIRST_OTHER_USER);
         MyAccount actor1 = getActivity().getContextMenu().getMyActor();
         logMsg += "; actor1=" + actor1;
         assertTrue(logMsg, actor1.isValid());
@@ -72,7 +72,7 @@ public class ActAsUserTest extends android.test.ActivityInstrumentationTestCase2
 
         assertTrue(logMsg, actor1.getUserId() != actor1.firstOtherAccountOfThisOrigin().getUserId());
 
-        helper.invokeContextMenuAction4ListItemId(method, msgId, MessageListContextMenuItem.ACT_AS_USER);
+        helper.invokeContextMenuAction4ListItemId(method, msgId, MessageListContextMenuItem.ACT_AS_FIRST_OTHER_USER);
         MyAccount actor2 = getActivity().getContextMenu().getMyActor();
         logMsg += "; actor2=" + actor2;
         assertNotSame(logMsg, actor1, actor2);

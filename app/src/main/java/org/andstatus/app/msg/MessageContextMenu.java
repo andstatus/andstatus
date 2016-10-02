@@ -171,7 +171,7 @@ public class MessageContextMenu extends MyContextMenu {
                     case 1:
                         break;
                     case 2:
-                        MessageListContextMenuItem.ACT_AS_USER.addTo(menu, order++,
+                        MessageListContextMenuItem.ACT_AS_FIRST_OTHER_USER.addTo(menu, order++,
                                 String.format(
                                         getActivity().getText(R.string.menu_item_act_as_user).toString(),
                                         msg.getMyAccount().firstOtherAccountOfThisOrigin().getShortestUniqueAccountName(getActivity().getMyContext())));
@@ -196,13 +196,14 @@ public class MessageContextMenu extends MyContextMenu {
             return;
         }
 
-        long userIdForThisMessage = otherAccountUserIdToActAs;
+        MyAccount userIdForThisMessage = getMyPotentialActor();
         String logMsg = method;
         MessageViewItem viewItem = (MessageViewItem) oViewItem;
         mMsgId = viewItem.getMsgId();
         logMsg += "; id=" + mMsgId;
-        if (userIdForThisMessage == 0) {
-            userIdForThisMessage = viewItem.getLinkedUserId();
+        if (!userIdForThisMessage.isValid()) {
+            userIdForThisMessage = messageList.getActivity().getMyContext().persistentAccounts().
+                    fromUserId(viewItem.getLinkedUserId());
         }
         myActor = MyAccount.getEmpty();
         MyLog.v(this, logMsg);
@@ -214,20 +215,18 @@ public class MessageContextMenu extends MyContextMenu {
         msg = msg2;
         myActor = msg.getMyAccount();
 
-        if (!getPotentialActor().isValid() || !getPotentialActor().getOrigin().
+        if (!getPotentialActorOrCurrentAccount().isValid() || !getPotentialActorOrCurrentAccount().getOrigin().
                 equals(myActor.getOrigin())) {
-            setIdOfPotentialActor(myActor.getUserId());
+            setMyPotentialActor(myActor);
         }
     }
 
-    private MessageForAccount getMessageForAccount(long linkedUserId, MyAccount currentMyAccount) {
+    private MessageForAccount getMessageForAccount(MyAccount linkedUser, MyAccount currentMyAccount) {
         long originId = MyQuery.msgIdToOriginId(mMsgId);
         MyAccount ma1 = MyContextHolder.get().persistentAccounts()
-                .getAccountForThisMessage(originId, mMsgId, linkedUserId,
-                        currentMyAccount.getUserId(),
-                        false);
+                .getAccountForThisMessage(originId, mMsgId, linkedUser, currentMyAccount, false);
         MessageForAccount msg = new MessageForAccount(mMsgId, originId, ma1);
-        boolean forceFirstUser = otherAccountUserIdToActAs !=0;
+        boolean forceFirstUser = myPotentialActor.isValid();
         if (ma1.isValid() && !forceFirstUser
                 && !msg.isTiedToThisAccount()
                 && ma1.getUserId() != currentMyAccount.getUserId()

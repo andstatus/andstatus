@@ -77,7 +77,7 @@ public class UserListContextMenu extends MyContextMenu {
     }
 
     public boolean onContextItemSelected(MenuItem item) {
-        MyAccount ma = getPotentialActor();
+        MyAccount ma = getPotentialActorOrCurrentAccount();
         if (ma.isValid()) {
             UserListContextMenuItem contextMenuItem = UserListContextMenuItem.fromId(item.getItemId());
             MyLog.v(this, "onContextItemSelected: " + contextMenuItem + "; actor="

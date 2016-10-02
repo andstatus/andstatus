@@ -252,10 +252,10 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
     },
     PROFILE(),
     BLOCK(),
-    ACT_AS_USER() {
+    ACT_AS_FIRST_OTHER_USER() {
         @Override
         void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
-            menu.setIdOfPotentialActor(editorData.ma.firstOtherAccountOfThisOrigin().getUserId());
+            menu.setMyPotentialActor(editorData.ma.firstOtherAccountOfThisOrigin());
             menu.showContextMenu();
         }
     },
@@ -330,7 +330,7 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
         @Override
         void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
             MyServiceManager.sendManualForegroundCommand(
-                    CommandData.newItemCommand(CommandEnum.GET_STATUS, menu.getPotentialActor(),
+                    CommandData.newItemCommand(CommandEnum.GET_STATUS, menu.getMyActor(),
                     menu.getMsgId())
             );
         }
