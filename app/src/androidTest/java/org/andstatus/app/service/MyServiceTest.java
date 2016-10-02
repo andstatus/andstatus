@@ -47,7 +47,7 @@ public class MyServiceTest extends InstrumentationTestCase {
 
         mService = new MyServiceTestHelper();
         mService.setUp(null);
-        ma = MyContextHolder.get().persistentAccounts().getFirstSucceededForOriginId(0);
+        ma = MyContextHolder.get().persistentAccounts().getFirstSucceeded();
         assertTrue("No successfully verified accounts", ma.isValidAndSucceeded());
         
         MyLog.i(this, "setUp ended instanceId=" + mService.connectionInstanceId);
@@ -90,7 +90,7 @@ public class MyServiceTest extends InstrumentationTestCase {
         final String method = "testAccountSync";
         MyLog.v(this, method + " started");
 
-        MyAccount myAccount = MyContextHolder.get().persistentAccounts().getFirstSucceededForOriginId(0);
+        MyAccount myAccount = MyContextHolder.get().persistentAccounts().getFirstSucceeded();
         assertTrue("No successful account", myAccount != null);
 
         MyContext myContext = MyContextHolder.get();

@@ -21,7 +21,7 @@ import android.view.ContextMenu;
 import android.view.View;
 
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MyContext;
 import org.andstatus.app.util.MyLog;
 
 /**
@@ -31,7 +31,11 @@ public class MyContextMenu implements View.OnCreateContextMenuListener {
     protected final LoadableListActivity listActivity;
     protected View viewOfTheContext = null;
     protected Object oViewItem = null;
-    protected MyAccount myPotentialActor = MyAccount.getEmpty();
+    /**
+     *  Corresponding account information ( "Reply As..." ... )
+     *  oh whose behalf we are going to execute an action on this line in the list (message/user...)
+     */
+    protected MyAccount myActor = MyAccount.getEmpty();
 
     public MyContextMenu(LoadableListActivity listActivity) {
         this.listActivity = listActivity;
@@ -44,7 +48,7 @@ public class MyContextMenu implements View.OnCreateContextMenuListener {
 
     protected void saveContextOfSelectedItem(View v) {
         if (viewOfTheContext != v) {
-            myPotentialActor = MyAccount.getEmpty();
+            myActor = MyAccount.getEmpty();
         }
         viewOfTheContext = v;
         oViewItem = listActivity.saveContextOfSelectedItem(v);
@@ -70,16 +74,15 @@ public class MyContextMenu implements View.OnCreateContextMenuListener {
         }
     }
 
-    public MyAccount getMyPotentialActor() {
-        return myPotentialActor;
+    public MyAccount getMyActor() {
+        return myActor;
     }
 
-    public void setMyPotentialActor(@NonNull MyAccount myAccount) {
-        this.myPotentialActor = myAccount;
+    public void setMyActor(@NonNull MyAccount myAccount) {
+        this.myActor = myAccount;
     }
 
-    public MyAccount getPotentialActorOrCurrentAccount() {
-        return myPotentialActor.isValid() ? myPotentialActor :
-                MyContextHolder.get().persistentAccounts().getCurrentAccount();
+    public MyContext getMyContext() {
+        return getActivity().getMyContext();
     }
 }

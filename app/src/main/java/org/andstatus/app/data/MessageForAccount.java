@@ -75,7 +75,7 @@ public class MessageForAccount {
     private MyAccount calculateMyAccount(Origin origin, MyAccount maIn) {
         MyAccount ma = maIn;
         if (ma == null || !ma.getOrigin().equals(origin) || !ma.isValid()) {
-            ma = MyContextHolder.get().persistentAccounts().getFirstSucceededForOriginId(origin.getId());
+            ma = MyContextHolder.get().persistentAccounts().getFirstSucceededForOrigin(origin);
         }
         if (ma == null) {
             ma = MyAccount.getEmpty();

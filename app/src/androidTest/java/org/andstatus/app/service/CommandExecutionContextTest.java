@@ -16,7 +16,7 @@ public class CommandExecutionContextTest extends InstrumentationTestCase {
     @Override
     protected void setUp() throws Exception {
         TestSuite.initializeWithData(this);
-        ma = MyContextHolder.get().persistentAccounts().getFirstSucceededForOriginId(0);
+        ma = MyContextHolder.get().persistentAccounts().getFirstSucceeded();
     }
 
     public void testHomeAccumulation() {

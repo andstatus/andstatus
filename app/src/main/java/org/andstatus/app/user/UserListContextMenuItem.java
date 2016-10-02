@@ -84,7 +84,7 @@ public enum UserListContextMenuItem implements ContextMenuItem {
     ACT_AS_USER() {
         @Override
         void executeOnUiThread(UserListContextMenu menu, MyAccount ma) {
-            menu.setMyPotentialActor(ma.firstOtherAccountOfThisOrigin());
+            menu.setMyActor(ma.firstOtherAccountOfThisOrigin());
             menu.showContextMenu();
         }
     },
@@ -217,7 +217,8 @@ public enum UserListContextMenuItem implements ContextMenuItem {
         if (!params.ma.isValid() || !params.ma.getOrigin().equals(origin)) {
             params.ma = params.menu.getActivity().getMyContext().persistentAccounts().fromUserId(userId);
             if (!params.ma.isValid()) {
-                params.ma = params.menu.getActivity().getMyContext().persistentAccounts().getFirstSucceededForOriginId(origin.getId());
+                params.ma = params.menu.getActivity().getMyContext().persistentAccounts().
+                        getFirstSucceededForOrigin(origin);
             }
         }
     }

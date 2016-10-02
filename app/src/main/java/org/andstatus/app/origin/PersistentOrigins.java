@@ -162,7 +162,7 @@ public class PersistentOrigins {
                 }
             }
         } else if (originIn != null && originIn.isValid()) {
-            MyAccount account = myContext.persistentAccounts().getFirstSucceededForOriginId(originIn.getId());
+            MyAccount account = myContext.persistentAccounts().getFirstSucceededForOrigin(originIn);
             if (account.isValidAndSucceeded() && account.isGlobalSearchSupported()) {
                 origins.add(originIn);
             }

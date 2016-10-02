@@ -67,9 +67,10 @@ public class ConversationActivity extends LoadableListActivity implements Action
         switch (ActivityRequestCode.fromId(requestCode)) {
             case SELECT_ACCOUNT_TO_ACT_AS:
                 if (resultCode == RESULT_OK) {
-                    MyAccount myAccount = MyContextHolder.get().persistentAccounts().fromAccountName(data.getStringExtra(IntentExtra.ACCOUNT_NAME.key));
+                    MyAccount myAccount = MyContextHolder.get().persistentAccounts().fromAccountName(
+                            data.getStringExtra(IntentExtra.ACCOUNT_NAME.key));
                     if (myAccount.isValid()) {
-                        mContextMenu.setMyPotentialActor(myAccount);
+                        mContextMenu.setMyActor(myAccount);
                         mContextMenu.showContextMenu();
                     }
                 }

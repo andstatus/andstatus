@@ -49,8 +49,8 @@ public class CommandExecutorStrategyTest extends InstrumentationTestCase {
         // In order for the the mocked connection to have effect:
         MyContextHolder.get().persistentAccounts().initialize();
         MyContextHolder.get().persistentTimelines().initialize();
-        ma = MyContextHolder.get().persistentAccounts().getFirstSucceededForOriginId(
-                MyContextHolder.get().persistentOrigins().fromName(TestSuite.GNUSOCIAL_TEST_ORIGIN_NAME).getId());
+        ma = MyContextHolder.get().persistentAccounts().getFirstSucceededForOrigin(
+                MyContextHolder.get().persistentOrigins().fromName(TestSuite.GNUSOCIAL_TEST_ORIGIN_NAME));
         assertTrue(ma.toString(), ma.isValidAndSucceeded());
         httpConnectionMock = ma.getConnection().getHttpMock();
     }

@@ -29,7 +29,6 @@ import org.andstatus.app.IntentExtra;
 import org.andstatus.app.MyContextMenu;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MessageForAccount;
 import org.andstatus.app.data.MyQuery;
@@ -50,11 +49,6 @@ public class MessageContextMenu extends MyContextMenu {
      * was selected) TODO: clicked, restore position...
      */
     private long mMsgId = 0;
-    /**
-     *  Corresponding account information ( "Reply As..." ... ) 
-     *  oh whose behalf we are going to execute an action on this line in the list (message...) 
-     */
-    private MyAccount myActor = MyAccount.getEmpty();
     public String imageFilename = null;
 
     private MessageForAccount msg;
@@ -145,7 +139,7 @@ public class MessageContextMenu extends MyContextMenu {
                             msg.getMyAccount().alternativeTermForResourceId(R.string.menu_item_destroy_reblog));
                 } else {
                     // Don't allow a User to reblog himself
-                    if (myActor.getUserId() != msg.senderId) {
+                    if (getMyActor().getUserId() != msg.senderId) {
                         MessageListContextMenuItem.REBLOG.addTo(menu, order++,
                                 msg.getMyAccount().alternativeTermForResourceId(R.string.menu_item_reblog));
                     }
@@ -174,7 +168,7 @@ public class MessageContextMenu extends MyContextMenu {
                         MessageListContextMenuItem.ACT_AS_FIRST_OTHER_USER.addTo(menu, order++,
                                 String.format(
                                         getActivity().getText(R.string.menu_item_act_as_user).toString(),
-                                        msg.getMyAccount().firstOtherAccountOfThisOrigin().getShortestUniqueAccountName(getActivity().getMyContext())));
+                                        msg.getMyAccount().firstOtherAccountOfThisOrigin().getShortestUniqueAccountName(getMyContext())));
                         break;
                     default:
                         MessageListContextMenuItem.ACT_AS.addTo(menu, order++, R.string.menu_item_act_as);
@@ -196,7 +190,7 @@ public class MessageContextMenu extends MyContextMenu {
             return;
         }
 
-        MyAccount myActorForThisMessage = getMyPotentialActor();
+        MyAccount myActorForThisMessage = getMyActor();
         String logMsg = method;
         MessageViewItem viewItem = (MessageViewItem) oViewItem;
         mMsgId = viewItem.getMsgId();
@@ -204,28 +198,21 @@ public class MessageContextMenu extends MyContextMenu {
         if (!myActorForThisMessage.isValid()) {
             myActorForThisMessage = viewItem.getLinkedMyAccount();
         }
-        myActor = MyAccount.getEmpty();
         MyLog.v(this, logMsg);
 
         MessageForAccount msg2 = getMessageForAccount(myActorForThisMessage, messageList.getCurrentMyAccount());
-        if (!msg2.getMyAccount().isValid()) {
-            return;
-        }
-        msg = msg2;
-        myActor = msg.getMyAccount();
-
-        if (!getPotentialActorOrCurrentAccount().isValid() || !getPotentialActorOrCurrentAccount().getOrigin().
-                equals(myActor.getOrigin())) {
-            setMyPotentialActor(myActor);
+        setMyActor(msg2.getMyAccount());
+        if (msg2.getMyAccount().isValid()) {
+            msg = msg2;
         }
     }
 
     private MessageForAccount getMessageForAccount(MyAccount linkedUser, MyAccount currentMyAccount) {
         long originId = MyQuery.msgIdToOriginId(mMsgId);
-        MyAccount ma1 = MyContextHolder.get().persistentAccounts()
+        MyAccount ma1 = getMyContext().persistentAccounts()
                 .getAccountForThisMessage(originId, mMsgId, linkedUser, currentMyAccount, false);
         MessageForAccount msg = new MessageForAccount(mMsgId, originId, ma1);
-        boolean forceFirstUser = myPotentialActor.isValid();
+        boolean forceFirstUser = myActor.isValid();
         if (ma1.isValid() && !forceFirstUser
                 && !msg.isTiedToThisAccount()
                 && ma1.getUserId() != currentMyAccount.getUserId()
@@ -264,7 +251,7 @@ public class MessageContextMenu extends MyContextMenu {
             return;
         }
         onContextMenuItemSelected(MessageListContextMenuItem.fromId(item.getItemId()), mMsgId,
-                myActor);
+                getMyActor());
     }
 
     public void onContextMenuItemSelected(MessageListContextMenuItem contextMenuItem, long msgId,
@@ -275,7 +262,7 @@ public class MessageContextMenu extends MyContextMenu {
             return;
         }
         mMsgId = msgId;
-        this.myActor = actor;
+        setMyActor(actor);
         MyLog.v(this, method + "; " + contextMenuItem
                 + "; myActor=" + actor + "; msgId=" + msgId);
         contextMenuItem.execute(this);
@@ -285,7 +272,7 @@ public class MessageContextMenu extends MyContextMenu {
         if (TimelineActivity.class.isAssignableFrom(getActivity().getClass())) {
             ((TimelineActivity) getActivity()).switchView(timeline, null);
         } else {
-            TimelineActivity.startForTimeline(getActivity().getMyContext(), getActivity(),  timeline, null);
+            TimelineActivity.startForTimeline(getMyContext(), getActivity(),  timeline, null);
         }
     }
 
@@ -306,9 +293,5 @@ public class MessageContextMenu extends MyContextMenu {
 
     public Origin getOrigin() {
         return msg == null ? Origin.getEmpty() : msg.origin;
-    }
-
-    public MyAccount getMyActor() {
-        return myActor;
     }
 }

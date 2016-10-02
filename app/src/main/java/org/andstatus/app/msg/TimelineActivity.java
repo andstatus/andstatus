@@ -408,7 +408,7 @@ public class TimelineActivity extends LoadableListActivity implements
         prepareDrawer();
 
         if (mContextMenu != null) {
-            mContextMenu.setMyPotentialActor(MyAccount.getEmpty());
+            mContextMenu.setMyActor(MyAccount.getEmpty());
         }
 
         if (mMessageEditor != null) {
@@ -1025,9 +1025,10 @@ public class TimelineActivity extends LoadableListActivity implements
     }
 
     private void accountToActAsSelected(Intent data) {
-        MyAccount ma = myContext.persistentAccounts().fromAccountName(data.getStringExtra(IntentExtra.ACCOUNT_NAME.key));
+        MyAccount ma = myContext.persistentAccounts().fromAccountName(
+                data.getStringExtra(IntentExtra.ACCOUNT_NAME.key));
         if (ma.isValid()) {
-            mContextMenu.setMyPotentialActor(ma);
+            mContextMenu.setMyActor(ma);
             mContextMenu.showContextMenu();
         }
     }

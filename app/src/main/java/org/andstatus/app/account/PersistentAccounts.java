@@ -17,6 +17,7 @@ import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.database.FriendshipTable;
+import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.CollectionsUtil;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
@@ -236,6 +237,16 @@ public class PersistentAccounts {
             }
         }
         return ma;
+    }
+
+    @NonNull
+    public MyAccount getFirstSucceeded() {
+        return getFirstSucceededForOriginId(0);
+    }
+
+    @NonNull
+    public MyAccount getFirstSucceededForOrigin(@NonNull Origin origin) {
+        return getFirstSucceededForOriginId(origin.getId());
     }
 
     /**

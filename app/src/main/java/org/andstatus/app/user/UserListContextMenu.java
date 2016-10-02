@@ -25,7 +25,6 @@ import org.andstatus.app.LoadableListActivity;
 import org.andstatus.app.MyContextMenu;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.MyLog;
 
@@ -42,6 +41,8 @@ public class UserListContextMenu extends MyContextMenu {
         if (getViewItem() == null) {
             return;
         }
+        setMyActor(getMyContext().persistentAccounts().getFirstSucceededForOrigin(
+                getOrigin()));
 
         int order = 0;
         try {
@@ -59,7 +60,7 @@ public class UserListContextMenu extends MyContextMenu {
                         String.format(
                                 getActivity().getText(R.string.followers_of).toString(), shortName));
                 if (getViewItem().userIsFollowedBy(
-                        MyContextHolder.get().persistentAccounts().getCurrentAccount())) {
+                        getMyContext().persistentAccounts().getCurrentAccount())) {
                     UserListContextMenuItem.STOP_FOLLOWING.addTo(menu, order++,
                             String.format(
                                     getActivity().getText(R.string.menu_item_stop_following_user).toString(), shortName));
@@ -77,7 +78,7 @@ public class UserListContextMenu extends MyContextMenu {
     }
 
     public boolean onContextItemSelected(MenuItem item) {
-        MyAccount ma = getPotentialActorOrCurrentAccount();
+        MyAccount ma = getMyActor();
         if (ma.isValid()) {
             UserListContextMenuItem contextMenuItem = UserListContextMenuItem.fromId(item.getItemId());
             MyLog.v(this, "onContextItemSelected: " + contextMenuItem + "; actor="
@@ -96,7 +97,7 @@ public class UserListContextMenu extends MyContextMenu {
     }
 
     public Origin getOrigin() {
-        return getActivity().getMyContext().persistentOrigins().fromId(
+        return getMyContext().persistentOrigins().fromId(
                 getViewItem().mbUser.originId);
     }
 }

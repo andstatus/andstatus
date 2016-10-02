@@ -255,7 +255,7 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
     ACT_AS_FIRST_OTHER_USER() {
         @Override
         void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
-            menu.setMyPotentialActor(editorData.ma.firstOtherAccountOfThisOrigin());
+            menu.setMyActor(editorData.ma.firstOtherAccountOfThisOrigin());
             menu.showContextMenu();
         }
     },

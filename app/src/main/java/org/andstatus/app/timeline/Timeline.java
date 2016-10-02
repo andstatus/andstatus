@@ -180,7 +180,7 @@ public class Timeline implements Comparable<Timeline> {
         if (!myAccount.isValid()) {
             Origin origin = getOrigin();
             if (origin.isValid()) {
-                myAccount = myContext.persistentAccounts().getFirstSucceededForOriginId(origin.getId());
+                myAccount = myContext.persistentAccounts().getFirstSucceededForOrigin(origin);
             }
         }
         return myAccount;
@@ -189,13 +189,13 @@ public class Timeline implements Comparable<Timeline> {
     private boolean calcIsSyncableForAccounts(MyContext myContext) {
         return isCombined &&
                 timelineType.isSyncable() && timelineType.canBeCombinedForMyAccounts() &&
-                myContext.persistentAccounts().getFirstSucceededForOriginId(0).isValidAndSucceeded();
+                myContext.persistentAccounts().getFirstSucceeded().isValidAndSucceeded();
     }
 
     private boolean calcIsSyncableForOrigins(MyContext myContext) {
         return isCombined &&
                 timelineType.isSyncable() && timelineType.canBeCombinedForOrigins() &&
-                myContext.persistentAccounts().getFirstSucceededForOriginId(0).isValidAndSucceeded();
+                myContext.persistentAccounts().getFirstSucceeded().isValidAndSucceeded();
     }
 
     public static Timeline fromCursor(MyContext myContext, Cursor cursor) {

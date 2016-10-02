@@ -104,7 +104,8 @@ public class PersistentTimelinesTest extends InstrumentationTestCase {
 
     public void testDefaultOriginTimelinesCreation() {
         for (Origin origin : MyContextHolder.get().persistentOrigins().collection()) {
-            MyAccount myAccount = MyContextHolder.get().persistentAccounts().getFirstSucceededForOriginId(origin.getId());
+            MyAccount myAccount = MyContextHolder.get().persistentAccounts().
+                    getFirstSucceededForOrigin(origin);
             for (TimelineType timelineType : TimelineType.getDefaultOriginTimelineTypes()) {
                 int count = 0;
                 for (Timeline timeline : MyContextHolder.get().persistentTimelines().values()) {
@@ -131,7 +132,7 @@ public class PersistentTimelinesTest extends InstrumentationTestCase {
         assertFalse(timeline.toString(), timeline.isCombined());
 
         Origin origin = MyContextHolder.get().persistentOrigins().fromName(TestSuite.GNUSOCIAL_TEST_ORIGIN_NAME);
-        myAccount = MyContextHolder.get().persistentAccounts().getFirstSucceededForOriginId(origin.getId());
+        myAccount = MyContextHolder.get().persistentAccounts().getFirstSucceededForOrigin(origin);
         timeline = MyContextHolder.get().persistentTimelines().
                 getFiltered(false, TriState.FALSE, myAccount, null).get(2);
         MyPreferences.setDefaultTimelineId(timeline.getId());

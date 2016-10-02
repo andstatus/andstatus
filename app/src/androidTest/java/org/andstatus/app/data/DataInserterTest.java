@@ -323,8 +323,7 @@ public class DataInserterTest extends InstrumentationTestCase {
 
     public void testUnsentMessageWithAttachment() throws Exception {
         final String method = "testUnsentMessageWithAttachment";
-        MyAccount ma = MyContextHolder.get().persistentAccounts()
-                .getFirstSucceededForOriginId(0);
+        MyAccount ma = MyContextHolder.get().persistentAccounts().getFirstSucceeded();
         MbMessage message = MbMessage.fromOriginAndOid(ma.getOriginId(), "",
                 DownloadStatus.SENDING);
         message.actor = MbUser.fromOriginAndUserOid(ma.getOriginId(), ma.getUserOid());
