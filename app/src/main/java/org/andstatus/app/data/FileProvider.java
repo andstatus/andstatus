@@ -32,10 +32,9 @@ import java.io.FileNotFoundException;
 public class FileProvider extends ContentProvider {
 
     public static final String AUTHORITY = ClassInApplicationPackage.PACKAGE_NAME + ".data.FileProvider";
-    
     public static final String DOWNLOAD_FILE_PATH = "downloadfile";
     public static final Uri DOWNLOAD_FILE_URI = Uri.parse("content://" + AUTHORITY + "/" + DOWNLOAD_FILE_PATH);
-    
+
     @Override
     public ParcelFileDescriptor openFile(Uri uri, String mode) throws FileNotFoundException {
         DownloadFile downloadFile = new DownloadFile(uriToFilename(uri));
@@ -65,13 +64,6 @@ public class FileProvider extends ContentProvider {
         }
     }
 
-    public static void viewImage(Activity activity, String imageFilename) {
-        Intent intent = new Intent();                   
-        intent.setAction(android.content.Intent.ACTION_VIEW);
-        intent.setDataAndType(downloadFilenameToUri(imageFilename),"image/*");
-        activity.startActivity(intent);
-    }
-    
     @Override
     public boolean onCreate() {
         return false;

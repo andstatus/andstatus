@@ -19,6 +19,7 @@ package org.andstatus.app.msg;
 import android.content.Intent;
 import android.test.InstrumentationTestCase;
 
+import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.context.Travis;
@@ -46,8 +47,8 @@ public class MessageShareTest extends InstrumentationTestCase {
         assertTrue(TestSuite.CONVERSATION_ORIGIN_NAME + " exists", origin != null);
         long msgId = MyQuery.oidToId(OidEnum.MSG_OID, origin.getId(), TestSuite.HTML_MESSAGE_OID);
         assertTrue("origin=" + origin.getId() + "; oid=" + TestSuite.HTML_MESSAGE_OID, msgId != 0);
-        MessageShare messageShare = new MessageShare(msgId);
-        Intent intent = messageShare.intentForShare();
+        MessageShare messageShare = new MessageShare(origin, msgId, null);
+        Intent intent = messageShare.intentToViewAndShare(true);
         assertTrue(intent.getExtras().containsKey(Intent.EXTRA_TEXT));
         assertTrue(
                 intent.getStringExtra(Intent.EXTRA_TEXT),
@@ -62,10 +63,11 @@ public class MessageShareTest extends InstrumentationTestCase {
     
     public void testSharePlainText() {
         String body = "Posting as a plain Text " + TestSuite.TESTRUN_UID;
-        long msgId = MessageInserter.addMessageForAccount(TestSuite.getMyAccount(TestSuite.TWITTER_TEST_ACCOUNT_NAME), body,
+        final MyAccount myAccount = TestSuite.getMyAccount(TestSuite.TWITTER_TEST_ACCOUNT_NAME);
+        long msgId = MessageInserter.addMessageForAccount(myAccount, body,
                 TestSuite.PLAIN_TEXT_MESSAGE_OID, DownloadStatus.LOADED);
-        MessageShare messageShare = new MessageShare(msgId);
-        Intent intent = messageShare.intentForShare();
+        MessageShare messageShare = new MessageShare(myAccount.getOrigin(), msgId, null);
+        Intent intent = messageShare.intentToViewAndShare(true);
         assertTrue(intent.getExtras().containsKey(Intent.EXTRA_TEXT));
         assertTrue(
                 intent.getStringExtra(Intent.EXTRA_TEXT),

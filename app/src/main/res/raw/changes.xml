@@ -39,6 +39,11 @@
                 (and returns usually to the Home screen of the Device).
                 <a href="https://github.com/andstatus/andstatus/issues/253">#253</a>
             </change>
+            <change>Share message with its attachment.<br/>
+                "Share" message context menu item shares not only textual part of the message,
+                as before, but the attached image also.
+                <a href="https://github.com/andstatus/andstatus/issues/387">#387</a>
+            </change>
         </changes>
     </release>
     <release android:versionName="29.02" android:versionCode="192"

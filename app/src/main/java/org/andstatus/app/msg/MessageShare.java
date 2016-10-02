@@ -16,6 +16,7 @@
 
 package org.andstatus.app.msg;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -24,6 +25,7 @@ import android.text.TextUtils;
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.UserInTimeline;
+import org.andstatus.app.data.FileProvider;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.origin.Origin;
@@ -32,14 +34,20 @@ import org.andstatus.app.util.MyLog;
 
 public class MessageShare {
     Origin origin;
-    private long messageId;
+    private final long messageId;
+    private final String imageFilename;
     
-    public MessageShare(long messageId) {
+    public MessageShare(Origin origin, long messageId, String imageFilename) {
+        this.origin = origin;
         this.messageId = messageId;
-        origin = MyContextHolder.get().persistentOrigins().fromId(MyQuery.msgIdToOriginId(messageId));
+        this.imageFilename = imageFilename;
         if (origin == null) {
             MyLog.v(this, "Origin not found for messageId=" + messageId);
         }
+    }
+
+    public void viewImage(Activity activity) {
+        activity.startActivity(intentToViewAndShare(false));
     }
 
     /**
@@ -50,11 +58,11 @@ public class MessageShare {
             return false;
         }
         context.startActivity(
-                Intent.createChooser(intentForShare(), context.getText(R.string.menu_item_share)));
+                Intent.createChooser(intentToViewAndShare(true), context.getText(R.string.menu_item_share)));
         return true;
     }
 
-    Intent intentForShare() {
+    Intent intentToViewAndShare(boolean share) {
         StringBuilder subject = new StringBuilder();
         String msgBody = MyQuery.msgIdToStringColumnValue(MsgTable.BODY, messageId);
         String msgBodyPlainText = msgBody;
@@ -65,16 +73,22 @@ public class MessageShare {
         subject.append(MyContextHolder.get().context()
                 .getText(origin.alternativeTermForResourceId(R.string.message)));
         subject.append(" - " + msgBodyPlainText);
-        int maxlength = 80;
-        if (subject.length() > maxlength) {
-            subject.setLength(maxlength);
+        int maxLength = 80;
+        if (subject.length() > maxLength) {
+            subject.setLength(maxLength);
             // Truncate at the last space
             subject.setLength(subject.lastIndexOf(" "));
             subject.append("...");
         }
 
-        Intent intent = new Intent(android.content.Intent.ACTION_SEND);
-        intent.setType("text/plain");
+        Intent intent = new Intent(share ? android.content.Intent.ACTION_SEND : Intent.ACTION_VIEW);
+        if (TextUtils.isEmpty(imageFilename)) {
+            intent.setType("text/*");
+        } else {
+            intent.setDataAndType(FileProvider.downloadFilenameToUri(imageFilename),"image/*");
+            intent.putExtra(Intent.EXTRA_STREAM, FileProvider.downloadFilenameToUri(imageFilename));
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        }
         intent.putExtra(Intent.EXTRA_SUBJECT, subject.toString());
         intent.putExtra(Intent.EXTRA_TEXT, buildBody(origin, msgBodyPlainText, false));
         if (origin.isHtmlContentAllowed() && MyHtml.hasHtmlMarkup(msgBody) ) {

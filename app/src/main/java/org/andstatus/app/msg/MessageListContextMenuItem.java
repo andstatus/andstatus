@@ -31,7 +31,6 @@ import org.andstatus.app.MyAction;
 import org.andstatus.app.account.AccountSelector;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.data.FileProvider;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.MsgTable;
@@ -51,8 +50,8 @@ import org.andstatus.app.util.TriState;
 public enum MessageListContextMenuItem implements ContextMenuItem {
     REPLY(true) {
         @Override
-        MessageEditorData executeAsync(MyAccount ma, long msgId) {
-            return MessageEditorData.newEmpty(ma).setInReplyToId(msgId).addMentionsToText();
+        MessageEditorData executeAsync(MessageContextMenu menu, MyAccount ma) {
+            return MessageEditorData.newEmpty(ma).setInReplyToId(menu.getMsgId()).addMentionsToText();
         }
 
         @Override
@@ -62,8 +61,8 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
     },
     EDIT(true) {
         @Override
-        MessageEditorData executeAsync(MyAccount maIn, long msgId) {
-            return MessageEditorData.load(msgId);
+        MessageEditorData executeAsync(MessageContextMenu menu, MyAccount maIn) {
+            return MessageEditorData.load(menu.getMsgId());
         }
 
         @Override
@@ -73,18 +72,19 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
     },
     RESEND(true) {
         @Override
-        MessageEditorData executeAsync(MyAccount maIn, long msgId) {
+        MessageEditorData executeAsync(MessageContextMenu menu, MyAccount maIn) {
             MyAccount ma = MyContextHolder.get().persistentAccounts().fromUserId(
-                    MyQuery.msgIdToLongColumnValue(MsgTable.SENDER_ID, msgId));
-            CommandData commandData = CommandData.newUpdateStatus(ma, msgId);
+                    MyQuery.msgIdToLongColumnValue(MsgTable.SENDER_ID, menu.getMsgId()));
+            CommandData commandData = CommandData.newUpdateStatus(ma, menu.getMsgId());
             MyServiceManager.sendManualForegroundCommand(commandData);
             return null;
         }
     },
     REPLY_ALL(true) {
         @Override
-        MessageEditorData executeAsync(MyAccount ma, long msgId) {
-            return MessageEditorData.newEmpty(ma).setInReplyToId(msgId).setReplyAll(true).addMentionsToText();
+        MessageEditorData executeAsync(MessageContextMenu menu, MyAccount ma) {
+            return MessageEditorData.newEmpty(ma).setInReplyToId(menu.getMsgId()).setReplyAll(true).
+                    addMentionsToText();
         }
 
         @Override
@@ -94,9 +94,9 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
     },
     DIRECT_MESSAGE(true) {
         @Override
-        MessageEditorData executeAsync(MyAccount ma, long msgId) {
-            return MessageEditorData.newEmpty(ma).setInReplyToId(msgId)
-                    .setRecipientId(MyQuery.msgIdToUserId(MsgTable.AUTHOR_ID, msgId))
+        MessageEditorData executeAsync(MessageContextMenu menu, MyAccount ma) {
+            return MessageEditorData.newEmpty(ma).setInReplyToId(menu.getMsgId())
+                    .setRecipientId(MyQuery.msgIdToUserId(MsgTable.AUTHOR_ID, menu.getMsgId()))
                     .addMentionsToText();
         }
 
@@ -137,24 +137,18 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
             sendMsgCommand(CommandEnum.DESTROY_STATUS, editorData);
         }
     },
-    SHARE(true) {
-        private volatile MessageShare messageShare = null;
-
-        @Override
-        MessageEditorData executeAsync(MyAccount ma, long msgId) {
-            messageShare = new MessageShare(msgId);
-            return null;
-        }
-
+    SHARE(false) {
         @Override
         void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
+            MessageShare messageShare = new MessageShare(menu.getOrigin(), menu.getMsgId(),
+                    menu.imageFilename);
             messageShare.share(menu.getActivity());
         }
     },
     COPY_TEXT(true) {
         @Override
-        MessageEditorData executeAsync(MyAccount ma, long msgId) {
-            String body = MyQuery.msgIdToStringColumnValue(MsgTable.BODY, msgId);
+        MessageEditorData executeAsync(MessageContextMenu menu, MyAccount ma) {
+            String body = MyQuery.msgIdToStringColumnValue(MsgTable.BODY, menu.getMsgId());
             if (ma.getOrigin().isHtmlContentAllowed()) {
                 body = MyHtml.fromHtml(body);
             }
@@ -168,9 +162,9 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
     },
     COPY_AUTHOR(true) {
         @Override
-        MessageEditorData executeAsync(MyAccount ma, long msgId) {
+        MessageEditorData executeAsync(MessageContextMenu menu, MyAccount ma) {
             return MessageEditorData.newEmpty(ma).addMentionedUserToText(
-                    MyQuery.msgIdToUserId(MsgTable.AUTHOR_ID, msgId));
+                    MyQuery.msgIdToUserId(MsgTable.AUTHOR_ID, menu.getMsgId()));
         }
 
         @Override
@@ -180,8 +174,8 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
     },
     SENDER_MESSAGES(true) {
         @Override
-        MessageEditorData executeAsync(MyAccount ma, long msgId) {
-            return fillUserId(ma, msgId, MsgTable.SENDER_ID);
+        MessageEditorData executeAsync(MessageContextMenu menu, MyAccount ma) {
+            return fillUserId(ma, menu.getMsgId(), MsgTable.SENDER_ID);
         }
 
         @Override
@@ -195,8 +189,8 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
     },
     AUTHOR_MESSAGES(true) {
         @Override
-        MessageEditorData executeAsync(MyAccount ma, long msgId) {
-            return fillUserId(ma, msgId, MsgTable.AUTHOR_ID);
+        MessageEditorData executeAsync(MessageContextMenu menu, MyAccount ma) {
+            return fillUserId(ma, menu.getMsgId(), MsgTable.AUTHOR_ID);
         }
 
         @Override
@@ -210,8 +204,8 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
     },
     FOLLOW_SENDER(true) {
         @Override
-        MessageEditorData executeAsync(MyAccount ma, long msgId) {
-            return fillUserId(ma, msgId, MsgTable.SENDER_ID);
+        MessageEditorData executeAsync(MessageContextMenu menu, MyAccount ma) {
+            return fillUserId(ma, menu.getMsgId(), MsgTable.SENDER_ID);
         }
 
         @Override
@@ -221,8 +215,8 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
     },
     STOP_FOLLOWING_SENDER(true) {
         @Override
-        MessageEditorData executeAsync(MyAccount ma, long msgId) {
-            return fillUserId(ma, msgId, MsgTable.SENDER_ID);
+        MessageEditorData executeAsync(MessageContextMenu menu, MyAccount ma) {
+            return fillUserId(ma, menu.getMsgId(), MsgTable.SENDER_ID);
         }
 
         @Override
@@ -232,8 +226,8 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
     },
     FOLLOW_AUTHOR(true) {
         @Override
-        MessageEditorData executeAsync(MyAccount ma, long msgId) {
-            return fillUserId(ma, msgId, MsgTable.AUTHOR_ID);
+        MessageEditorData executeAsync(MessageContextMenu menu, MyAccount ma) {
+            return fillUserId(ma, menu.getMsgId(), MsgTable.AUTHOR_ID);
         }
 
         @Override
@@ -243,8 +237,8 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
     },
     STOP_FOLLOWING_AUTHOR(true) {
         @Override
-        MessageEditorData executeAsync(MyAccount ma, long msgId) {
-            return fillUserId(ma, msgId, MsgTable.AUTHOR_ID);
+        MessageEditorData executeAsync(MessageContextMenu menu, MyAccount ma) {
+            return fillUserId(ma, menu.getMsgId(), MsgTable.AUTHOR_ID);
         }
 
         @Override
@@ -264,27 +258,24 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
     ACT_AS() {
         @Override
         void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
-            AccountSelector.selectAccount(menu.getActivity(), ActivityRequestCode.SELECT_ACCOUNT_TO_ACT_AS, editorData.ma.getOriginId());
+            AccountSelector.selectAccount(menu.getActivity(),
+                    ActivityRequestCode.SELECT_ACCOUNT_TO_ACT_AS, editorData.ma.getOriginId());
         }
     },
-    OPEN_MESSAGE_PERMALINK(true) {
-        private volatile MessageShare messageShare = null;
-
-        @Override
-        MessageEditorData executeAsync(MyAccount ma, long msgId) {
-            messageShare = new MessageShare(msgId);
-            return null;
-        }
-
+    OPEN_MESSAGE_PERMALINK(false) {
         @Override
         void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
+            MessageShare messageShare = new MessageShare(menu.getOrigin(), menu.getMsgId(),
+                    menu.imageFilename);
             messageShare.openPermalink(menu.getActivity());
         }
     },
     VIEW_IMAGE() {
         @Override
         void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
-            FileProvider.viewImage(menu.getActivity(), menu.imageFilename);
+            MessageShare messageShare = new MessageShare(menu.getOrigin(), menu.getMsgId(),
+                    menu.imageFilename);
+            messageShare.viewImage(menu.getActivity());
         }
     },
     OPEN_CONVERSATION() {
@@ -403,8 +394,9 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
                 new MyAsyncTask<Void, Void, MessageEditorData>(TAG + name(), MyAsyncTask.PoolEnum.QUICK_UI) {
                     @Override
                     protected MessageEditorData doInBackground2(Void... params) {
-                        MyLog.v(MessageListContextMenuItem.this, "execute async started. msgId=" + menu.getMsgId());
-                        return executeAsync(ma, menu.getMsgId());
+                        MyLog.v(MessageListContextMenuItem.this,
+                                "execute async started. msgId=" + menu.getMsgId());
+                        return executeAsync(menu, ma);
                     }
 
                     @Override
@@ -416,7 +408,7 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
         );
     }
 
-    MessageEditorData executeAsync(MyAccount ma, long msgId) {
+    MessageEditorData executeAsync(MessageContextMenu menu, MyAccount ma) {
         return MessageEditorData.newEmpty(ma);
     }
 
