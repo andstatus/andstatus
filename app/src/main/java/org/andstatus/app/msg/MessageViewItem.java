@@ -35,7 +35,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 public class MessageViewItem implements DuplicatesCollapsible<MessageViewItem> {
-
+    public static final int MIN_LENGTH_TO_COMPARE = 5;
     private MyContext myContext = MyContextHolder.get();
     long createdDate = 0;
 
@@ -132,7 +132,10 @@ public class MessageViewItem implements DuplicatesCollapsible<MessageViewItem> {
             if (Math.abs(createdDate - other.createdDate) < TimeUnit.HOURS.toMillis(24)) {
                 String thisBody = getCleanedBody(body);
                 String otherBody = getCleanedBody(other.body);
-                if (thisBody.equals(otherBody)) {
+                if (thisBody.length() < MIN_LENGTH_TO_COMPARE ||
+                        otherBody.length() < MIN_LENGTH_TO_COMPARE) {
+                    // Too short to compare
+                } else if (thisBody.equals(otherBody)) {
                     if (createdDate == other.createdDate) {
                         link = duplicatesByFavoritedAndReblogged(other);
                     } else if (createdDate < other.createdDate) {
