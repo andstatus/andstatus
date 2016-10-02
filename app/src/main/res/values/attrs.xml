@@ -68,6 +68,7 @@
 		<attr name="replyIcon" format="reference" />
 		<attr name="reblogIcon" format="reference" />
         <attr name="favoriteBorderIcon" format="reference" />
+		<attr name="moreIcon" format="reference" />
 
     </declare-styleable>
 </resources>

@@ -184,6 +184,7 @@ public class TimelineAdapter extends MyBaseAdapter {
                 setOnButtonClick(buttons, R.id.reblog_button_tinted, MessageListContextMenuItem.DESTROY_REBLOG);
                 setOnButtonClick(buttons, R.id.favorite_button, MessageListContextMenuItem.FAVORITE);
                 setOnButtonClick(buttons, R.id.favorite_button_tinted, MessageListContextMenuItem.DESTROY_FAVORITE);
+                setOnButtonClick(buttons, R.id.more_button, MessageListContextMenuItem.UNKNOWN);
             }
         }
         if (!showAvatars) {
@@ -195,12 +196,16 @@ public class TimelineAdapter extends MyBaseAdapter {
         return view;
     }
 
-    private void setOnButtonClick(View viewGroup, int buttonId, final MessageListContextMenuItem menuItem) {
+    private void setOnButtonClick(final View viewGroup, int buttonId, final MessageListContextMenuItem menuItem) {
         viewGroup.findViewById(buttonId).setOnClickListener(
                 new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        onButtonClick(v, menuItem);
+                        if (menuItem.equals(MessageListContextMenuItem.UNKNOWN)) {
+                            viewGroup.showContextMenu();
+                        } else {
+                            onButtonClick(v, menuItem);
+                        }
                     }
                 }
         );
