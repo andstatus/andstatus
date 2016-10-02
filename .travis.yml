@@ -18,6 +18,7 @@ android:
   - tools # see https://github.com/travis-ci/travis-ci/issues/6040#issuecomment-219367943
   - platform-tools
   - build-tools-24.0.2
+  - android-23
   - android-24
   - extra-android-m2repository
   - sys-img-${ANDROID_ABI}-${ANDROID_TARGET}
