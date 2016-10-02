@@ -17,7 +17,6 @@
 package org.andstatus.app.origin;
 
 import android.os.Bundle;
-import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.MenuItem;
 
 import org.andstatus.app.R;
@@ -35,20 +34,15 @@ public class DiscoveredOriginList extends OriginList implements MyServiceEventsL
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        initializeSwipeRefresh();
         if (DiscoveredOrigins.get().isEmpty()) {
             mSwipeLayout.setRefreshing(true);
             manualSync();
         }
     }
 
-    private void initializeSwipeRefresh() {
-        mSwipeLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                manualSync();
-            }
-        });
+    @Override
+    public void onRefresh() {
+        manualSync();
     }
 
     protected Iterable<Origin> getOrigins() {

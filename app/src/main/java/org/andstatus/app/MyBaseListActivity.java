@@ -25,7 +25,9 @@ import android.widget.ListView;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.widget.MySwipeRefreshLayout;
 
-public abstract class MyBaseListActivity extends MyActivity implements MySwipeRefreshLayout.CanSwipeRefreshScrollUpCallback {
+public abstract class MyBaseListActivity extends MyActivity implements
+        MySwipeRefreshLayout.CanSwipeRefreshScrollUpCallback,
+        MySwipeRefreshLayout.OnRefreshListener{
 
     protected MySwipeRefreshLayout mSwipeLayout = null;
     private int mPositionOfContextMenu = -1;
@@ -35,6 +37,9 @@ public abstract class MyBaseListActivity extends MyActivity implements MySwipeRe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mSwipeLayout = findSwipeLayout();
+        if (mSwipeLayout != null) {
+            mSwipeLayout.setOnRefreshListener(this);
+        }
     }
 
     protected MySwipeRefreshLayout findSwipeLayout() {
@@ -87,6 +92,10 @@ public abstract class MyBaseListActivity extends MyActivity implements MySwipeRe
         return can;
     }
 
+    protected void hideSyncing(String source) {
+        setCircularSyncIndicator(source, false);
+    }
+
     protected void setCircularSyncIndicator(String source, boolean isSyncing) {
         if (mSwipeLayout != null
                 && mSwipeLayout.isRefreshing() != isSyncing
@@ -94,5 +103,11 @@ public abstract class MyBaseListActivity extends MyActivity implements MySwipeRe
             MyLog.v(this, source + " set Circular Syncing to " + isSyncing);
             mSwipeLayout.setRefreshing(isSyncing);
         }
+    }
+
+    /** Stub, which immediately hides the sync indicator */
+    @Override
+    public void onRefresh() {
+        hideSyncing("Syncing not implemented in " + this.getClass().getName());
     }
 }

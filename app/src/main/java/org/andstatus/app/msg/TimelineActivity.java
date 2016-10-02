@@ -116,6 +116,11 @@ public class TimelineActivity extends LoadableListActivity implements
         activity.startActivity(i);
     }
 
+    @Override
+    public void onRefresh() {
+        syncWithInternet(getParamsLoaded().getTimeline(), true);
+    }
+
     /**
      * This method is the first of the whole application to be called 
      * when the application starts for the very first time.
@@ -136,13 +141,6 @@ public class TimelineActivity extends LoadableListActivity implements
         getParamsNew().setTimeline(myContext.persistentTimelines().getHome());
         mContextMenu = new MessageContextMenu(this);
         mMessageEditor = new MessageEditor(this);
-
-        mSwipeLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                syncWithInternet(getParamsLoaded().getTimeline(), true);
-            }
-        });
 
         initializeDrawer();
         getListView().setOnScrollListener(this);

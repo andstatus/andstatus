@@ -67,6 +67,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
     protected View textualSyncIndicator = null;
     protected CharSequence syncingText = "";
     protected CharSequence loadingText = "";
+    private boolean onRefreshHandled = false;
 
     ParsedUri mParsedUri = ParsedUri.fromUri(Uri.EMPTY);
 
@@ -322,6 +323,10 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
             setListAdapter(newListAdapter());
         }
         updateTitle("");
+        if (onRefreshHandled) {
+            onRefreshHandled = false;
+            hideSyncing("onLoadFinished");
+        }
     }
 
     public void updateList(TriState collapseDuplicates, long itemId, boolean newAdapter) {
@@ -621,10 +626,11 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
         updateTextualSyncIndicator(source);
     }
 
+    @Override
     protected void hideSyncing(String source) {
         syncingText = "";
         updateTextualSyncIndicator(source);
-        setCircularSyncIndicator(source, false);
+        super.hideSyncing(source);
     }
 
     protected void showLoading(String source, String text) {
@@ -659,5 +665,11 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
 
     protected boolean isEditorVisible() {
         return false;
+    }
+
+    @Override
+    public void onRefresh() {
+        onRefreshHandled = true;
+        showList(WhichPage.CURRENT);
     }
 }
