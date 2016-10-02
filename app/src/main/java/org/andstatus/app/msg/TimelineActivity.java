@@ -408,7 +408,7 @@ public class TimelineActivity extends LoadableListActivity implements
         prepareDrawer();
 
         if (mContextMenu != null) {
-            mContextMenu.setAccountUserIdToActAs(0);
+            mContextMenu.setIdOfPotentialActor(0);
         }
 
         if (mMessageEditor != null) {
@@ -1028,7 +1028,7 @@ public class TimelineActivity extends LoadableListActivity implements
     private void accountToActAsSelected(Intent data) {
         MyAccount ma = myContext.persistentAccounts().fromAccountName(data.getStringExtra(IntentExtra.ACCOUNT_NAME.key));
         if (ma.isValid()) {
-            mContextMenu.setAccountUserIdToActAs(ma.getUserId());
+            mContextMenu.setIdOfPotentialActor(ma.getUserId());
             mContextMenu.showContextMenu();
         }
     }

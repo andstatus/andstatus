@@ -29,11 +29,12 @@ import org.andstatus.app.data.FileProvider;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.origin.Origin;
+import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
 
 public class MessageShare {
-    Origin origin;
+    private final Origin origin;
     private final long messageId;
     private final String imageFilename;
     
@@ -58,7 +59,8 @@ public class MessageShare {
             return false;
         }
         context.startActivity(
-                Intent.createChooser(intentToViewAndShare(true), context.getText(R.string.menu_item_share)));
+                Intent.createChooser(intentToViewAndShare(true),
+                        context.getText(R.string.menu_item_share)));
         return true;
     }
 
@@ -73,13 +75,6 @@ public class MessageShare {
         subject.append(MyContextHolder.get().context()
                 .getText(origin.alternativeTermForResourceId(R.string.message)));
         subject.append(" - " + msgBodyPlainText);
-        int maxLength = 80;
-        if (subject.length() > maxLength) {
-            subject.setLength(maxLength);
-            // Truncate at the last space
-            subject.setLength(subject.lastIndexOf(" "));
-            subject.append("...");
-        }
 
         Intent intent = new Intent(share ? android.content.Intent.ACTION_SEND : Intent.ACTION_VIEW);
         if (TextUtils.isEmpty(imageFilename)) {
@@ -89,7 +84,7 @@ public class MessageShare {
             intent.putExtra(Intent.EXTRA_STREAM, FileProvider.downloadFilenameToUri(imageFilename));
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         }
-        intent.putExtra(Intent.EXTRA_SUBJECT, subject.toString());
+        intent.putExtra(Intent.EXTRA_SUBJECT, I18n.trimTextAt(subject.toString(), 80));
         intent.putExtra(Intent.EXTRA_TEXT, buildBody(origin, msgBodyPlainText, false));
         if (origin.isHtmlContentAllowed() && MyHtml.hasHtmlMarkup(msgBody) ) {
             intent.putExtra(Intent.EXTRA_HTML_TEXT, buildBody(origin, msgBody, true));

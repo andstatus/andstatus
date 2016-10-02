@@ -39,9 +39,15 @@
                 (and returns usually to the Home screen of the Device).
                 <a href="https://github.com/andstatus/andstatus/issues/253">#253</a>
             </change>
-            <change>Share message with its attachment.<br/>
+            <change>Share a message with its attachment.<br/>
                 "Share" message context menu item shares not only textual part of the message,
-                as before, but the attached image also.
+                as before, but the attached image also. This way a message with an attachment can
+                be shared from one Social Network to another within AndStatus, or to some note
+                taking application, e.g. to
+                <a href="https://github.com/federicoiosue/Omni-Notes">Omni Notes</a>,
+                where it will be stored with the attachment.
+                Some file managers, e.g. <a href="http://www.ghisler.com/android.htm">Total
+                Commander</a>, allow to save shared attachment to a file.
                 <a href="https://github.com/andstatus/andstatus/issues/387">#387</a>
             </change>
         </changes>

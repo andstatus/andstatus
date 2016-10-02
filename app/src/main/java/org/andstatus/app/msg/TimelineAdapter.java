@@ -209,14 +209,14 @@ public class TimelineAdapter extends MyBaseAdapter {
     private void onButtonClick(View v, MessageListContextMenuItem contextMenuItemIn) {
         TimelineViewItem item = getItem(v);
         if (item != null && item.msgStatus == DownloadStatus.LOADED) {
-            long actorId = item.getLinkedUserId();
+            MyAccount actor = myContext.persistentAccounts().fromUserId(item.getLinkedUserId());
             // Currently selected account is the best candidate as an actor
             MyAccount ma = myContext.persistentAccounts().fromUserId(
                     contextMenu.getCurrentMyAccountUserId());
             if (ma.isValid() && ma.getOriginId() == item.getOriginId()) {
-                actorId = ma.getUserId();
+                actor = ma;
             }
-            contextMenu.onContextMenuItemSelected(contextMenuItemIn, item.getMsgId(), actorId);
+            contextMenu.onContextMenuItemSelected(contextMenuItemIn, item.getMsgId(), actor);
         }
     }
 

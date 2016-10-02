@@ -223,25 +223,23 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
         String logMsg = "msgId:" + msgId
                 + "; text:'" + MyQuery.msgIdToStringColumnValue(MsgTable.BODY, msgId) + "'";
         assertTrue(logMsg, helper.invokeContextMenuAction4ListItemId(method, msgId, MessageListContextMenuItem.ACT_AS_USER));
-        long userId1 = getActivity().getContextMenu().getActorUserIdForCurrentMessage();
-        logMsg += "; userId1=" + userId1;
-        assertTrue(logMsg, userId1 != 0);
+        MyAccount actor1 = getActivity().getContextMenu().getMyActor();
+        logMsg += "; actor1:" + actor1;
+        assertTrue(logMsg, actor1.isValid());
 
         ActivityTestHelper.closeContextMenu(this);
 
         helper.invokeContextMenuAction4ListItemId(method, msgId, MessageListContextMenuItem.ACT_AS);
 
-        MyAccount ma = MyContextHolder.get().persistentAccounts().fromUserId(userId1);
-        MyAccount ma2 = ma.firstOtherAccountOfThisOrigin();
-        logMsg += ", user1:" + ma.getAccountName() + ", user2:" + ma2.getAccountName();
-        assertNotSame(logMsg, ma, ma2);
+        MyAccount actor2 = actor1.firstOtherAccountOfThisOrigin();
+        logMsg += ", actor2:" + actor2.getAccountName();
+        assertNotSame(logMsg, actor1, actor2);
 
-        helper.selectIdFromSelectorDialog(logMsg, ma2.getUserId());
+        helper.selectIdFromSelectorDialog(logMsg, actor2.getUserId());
         DbUtils.waitMs(method, 500);
 
-        long userId3 = getActivity().getContextMenu().getActorUserIdForCurrentMessage();
-        MyAccount ma3 = MyContextHolder.get().persistentAccounts().fromUserId(userId3);
-        logMsg += ", userId2Actual:" + ma3.getAccountName();
-        assertEquals(logMsg, ma2.getUserId(), userId3);
+        MyAccount ma3 = getActivity().getContextMenu().getMyActor();
+        logMsg += ", actor2Actual:" + ma3.getAccountName();
+        assertEquals(logMsg, actor2, ma3);
     }
 }

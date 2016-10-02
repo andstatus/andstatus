@@ -84,7 +84,7 @@ public enum UserListContextMenuItem implements ContextMenuItem {
     ACT_AS_USER() {
         @Override
         void executeOnUiThread(UserListContextMenu menu, MyAccount ma) {
-            menu.setAccountUserIdToActAs(ma.firstOtherAccountOfThisOrigin().getUserId());
+            menu.setIdOfPotentialActor(ma.firstOtherAccountOfThisOrigin().getUserId());
             menu.showContextMenu();
         }
     },

@@ -20,7 +20,6 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 
 import org.andstatus.app.ActivityRequestCode;
@@ -70,7 +69,7 @@ public class ConversationActivity extends LoadableListActivity implements Action
                 if (resultCode == RESULT_OK) {
                     MyAccount myAccount = MyContextHolder.get().persistentAccounts().fromAccountName(data.getStringExtra(IntentExtra.ACCOUNT_NAME.key));
                     if (myAccount.isValid()) {
-                        mContextMenu.setAccountUserIdToActAs(myAccount.getUserId());
+                        mContextMenu.setIdOfPotentialActor(myAccount.getUserId());
                         mContextMenu.showContextMenu();
                     }
                 }

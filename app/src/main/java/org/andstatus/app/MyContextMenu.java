@@ -69,11 +69,11 @@ public class MyContextMenu implements View.OnCreateContextMenuListener {
         }
     }
 
-    public void setAccountUserIdToActAs(long accountUserIdToActAs) {
+    public void setIdOfPotentialActor(long accountUserIdToActAs) {
         this.otherAccountUserIdToActAs = accountUserIdToActAs;
     }
 
-    public MyAccount getMyAccountToActAs() {
+    public MyAccount getPotentialActor() {
         return otherAccountUserIdToActAs == 0 ?
                 MyContextHolder.get().persistentAccounts().getCurrentAccount() :
                 MyContextHolder.get().persistentAccounts().fromUserId(otherAccountUserIdToActAs);

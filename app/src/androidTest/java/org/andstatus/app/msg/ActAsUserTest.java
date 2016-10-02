@@ -64,20 +64,18 @@ public class ActAsUserTest extends android.test.ActivityInstrumentationTestCase2
         String logMsg = "msgId=" + msgId;
 
         helper.invokeContextMenuAction4ListItemId(method, msgId, MessageListContextMenuItem.ACT_AS_USER);
-        long userId1 = getActivity().getContextMenu().getActorUserIdForCurrentMessage();
-        logMsg += "; userId1=" + userId1;
-        assertTrue(logMsg, userId1 != 0 );
+        MyAccount actor1 = getActivity().getContextMenu().getMyActor();
+        logMsg += "; actor1=" + actor1;
+        assertTrue(logMsg, actor1.isValid());
 
         ActivityTestHelper.closeContextMenu(this);
 
-        MyAccount ma1 = MyContextHolder.get().persistentAccounts().fromUserId(userId1);
-        logMsg += "; " + ma1;
-        assertTrue(logMsg, ma1.getUserId() != ma1.firstOtherAccountOfThisOrigin().getUserId());
+        assertTrue(logMsg, actor1.getUserId() != actor1.firstOtherAccountOfThisOrigin().getUserId());
 
         helper.invokeContextMenuAction4ListItemId(method, msgId, MessageListContextMenuItem.ACT_AS_USER);
-        long userId2 = getActivity().getContextMenu().getActorUserIdForCurrentMessage();
-        logMsg += "; userId2=" + userId2;
-        assertTrue(logMsg, userId1 != userId2 );
+        MyAccount actor2 = getActivity().getContextMenu().getMyActor();
+        logMsg += "; actor2=" + actor2;
+        assertNotSame(logMsg, actor1, actor2);
     }
 
 }
