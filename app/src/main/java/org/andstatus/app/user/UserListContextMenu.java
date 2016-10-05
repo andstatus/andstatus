@@ -41,14 +41,17 @@ public class UserListContextMenu extends MyContextMenu {
         if (getViewItem() == null) {
             return;
         }
-        setMyActor(getMyContext().persistentAccounts().getFirstSucceededForOrigin(
-                getOrigin()));
+        MyAccount myActor = getMyActor();
+        if (!myActor.isValid() || !myActor.getOrigin().equals(getOrigin())) {
+            setMyActor(getMyContext().persistentAccounts().getFirstSucceededForOrigin(
+                    getOrigin()));
+        }
 
         int order = 0;
         try {
             new ContextMenuHeader(getActivity(), menu)
                     .setTitle(getViewItem().mbUser.toUserTitle(false))
-                    .setSubtitle(getViewItem().mbUser.getWebFingerId());
+                    .setSubtitle(getMyActor().getAccountName());
             String shortName = getViewItem().mbUser.getUserName();
             if (getViewItem().mbUser.isIdentified()) {
                 UserListContextMenuItem.USER_MESSAGES.addTo(menu, order++,
@@ -59,16 +62,30 @@ public class UserListContextMenu extends MyContextMenu {
                 UserListContextMenuItem.FOLLOWERS.addTo(menu, order++,
                         String.format(
                                 getActivity().getText(R.string.followers_of).toString(), shortName));
-                if (getViewItem().userIsFollowedBy(
-                        getMyContext().persistentAccounts().getCurrentAccount())) {
+                if (getViewItem().userIsFollowedBy(getMyActor())) {
                     UserListContextMenuItem.STOP_FOLLOWING.addTo(menu, order++,
                             String.format(
                                     getActivity().getText(R.string.menu_item_stop_following_user).toString(), shortName));
-                } else {
+                } else if (getViewItem().getUserId() != getMyActor().getUserId()) {
                     UserListContextMenuItem.FOLLOW.addTo(menu, order++,
                             String.format(
                                     getActivity().getText(R.string.menu_item_follow_user).toString(), shortName));
                 }
+                switch (getMyActor().numberOfAccountsOfThisOrigin()) {
+                    case 0:
+                    case 1:
+                        break;
+                    case 2:
+                        UserListContextMenuItem.ACT_AS_FIRST_OTHER_USER.addTo(menu, order++,
+                                String.format(
+                                        getActivity().getText(R.string.menu_item_act_as_user).toString(),
+                                        getMyActor().firstOtherAccountOfThisOrigin().getShortestUniqueAccountName(getMyContext())));
+                        break;
+                    default:
+                        UserListContextMenuItem.ACT_AS.addTo(menu, order++, R.string.menu_item_act_as);
+                        break;
+                }
+
             }
             UserListContextMenuItem.GET_USER.addTo(menu, order++, R.string.get_user);
         } catch (Exception e) {

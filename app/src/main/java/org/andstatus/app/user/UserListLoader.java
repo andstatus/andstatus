@@ -92,7 +92,7 @@ public class UserListLoader implements SyncLoader {
         MyServiceManager.sendForegroundCommand(
                 CommandData.newUserCommand(
                         CommandEnum.GET_USER,
-                        MyContextHolder.get().persistentOrigins().fromId(oUser.mbUser.originId),
+                        null, MyContextHolder.get().persistentOrigins().fromId(oUser.mbUser.originId),
                         oUser.getUserId(),
                         oUser.mbUser.getUserName()));
     }

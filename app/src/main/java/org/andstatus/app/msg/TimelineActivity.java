@@ -24,7 +24,6 @@ import android.os.Bundle;
 import android.provider.SearchRecentSuggestions;
 import android.support.annotation.NonNull;
 import android.support.v4.widget.DrawerLayout;
-import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.text.TextUtils;
 import android.view.Gravity;
@@ -87,7 +86,7 @@ public class TimelineActivity extends LoadableListActivity implements
     private volatile TimelineListParameters paramsToLoad;
     private volatile TimelineData listData;
 
-    private MessageContextMenu mContextMenu;
+    private MessageContextMenu contextMenu;
     private MessageEditor mMessageEditor;
 
     private String mTextToShareViaThisApp = "";
@@ -139,7 +138,7 @@ public class TimelineActivity extends LoadableListActivity implements
         }
 
         getParamsNew().setTimeline(myContext.persistentTimelines().getHome());
-        mContextMenu = new MessageContextMenu(this);
+        contextMenu = new MessageContextMenu(this);
         mMessageEditor = new MessageEditor(this);
 
         initializeDrawer();
@@ -169,7 +168,7 @@ public class TimelineActivity extends LoadableListActivity implements
 
     @Override
     protected MyBaseAdapter newListAdapter() {
-        return new TimelineAdapter(mContextMenu, getListData());
+        return new TimelineAdapter(contextMenu, getListData());
     }
 
     @Override
@@ -194,7 +193,7 @@ public class TimelineActivity extends LoadableListActivity implements
 
     private void restoreActivityState(@NonNull Bundle savedInstanceState) {
             if (getParamsNew().restoreState(savedInstanceState)) {
-                mContextMenu.loadState(savedInstanceState);
+                contextMenu.loadState(savedInstanceState);
             }
             getListData().collapseDuplicates(savedInstanceState.getBoolean(
                     IntentExtra.COLLAPSE_DUPLICATES.key, MyPreferences.isCollapseDuplicates()), 0);
@@ -380,7 +379,7 @@ public class TimelineActivity extends LoadableListActivity implements
 
     @Override
     public boolean onContextItemSelected(MenuItem item) {
-        mContextMenu.onContextItemSelected(item);
+        contextMenu.onContextItemSelected(item);
         return super.onContextItemSelected(item);
     }
     
@@ -405,8 +404,8 @@ public class TimelineActivity extends LoadableListActivity implements
 
         prepareDrawer();
 
-        if (mContextMenu != null) {
-            mContextMenu.setMyActor(MyAccount.getEmpty());
+        if (contextMenu != null) {
+            contextMenu.setMyActor(MyAccount.getEmpty());
         }
 
         if (mMessageEditor != null) {
@@ -725,7 +724,7 @@ public class TimelineActivity extends LoadableListActivity implements
     }
 
     MessageContextMenu getContextMenu() {
-        return mContextMenu;
+        return contextMenu;
     }
 
     /** Parameters of currently shown Timeline */
@@ -960,7 +959,7 @@ public class TimelineActivity extends LoadableListActivity implements
         getParamsNew().saveState(outState);
         outState.putBoolean(IntentExtra.COLLAPSE_DUPLICATES.key,
                 getListData().isCollapseDuplicates());
-        mContextMenu.saveState(outState);
+        contextMenu.saveState(outState);
     }
 
     protected void crashTest() {
@@ -1026,8 +1025,8 @@ public class TimelineActivity extends LoadableListActivity implements
         MyAccount ma = myContext.persistentAccounts().fromAccountName(
                 data.getStringExtra(IntentExtra.ACCOUNT_NAME.key));
         if (ma.isValid()) {
-            mContextMenu.setMyActor(ma);
-            mContextMenu.showContextMenu();
+            contextMenu.setMyActor(ma);
+            contextMenu.showContextMenu();
         }
     }
 

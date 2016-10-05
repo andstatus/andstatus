@@ -16,14 +16,19 @@
 
 package org.andstatus.app.user;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
 
+import org.andstatus.app.ActivityRequestCode;
+import org.andstatus.app.IntentExtra;
 import org.andstatus.app.LoadableListActivity;
 import org.andstatus.app.R;
+import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
+import org.andstatus.app.util.MyLog;
 import org.andstatus.app.widget.MyBaseAdapter;
 
 /**
@@ -97,4 +102,28 @@ public class UserList extends LoadableListActivity {
         }
     }
 
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        MyLog.v(this, "onActivityResult; request:" + requestCode + ", result:" + (resultCode == RESULT_OK ? "ok" : "fail"));
+        if (resultCode != RESULT_OK || data == null) {
+            return;
+        }
+        switch (ActivityRequestCode.fromId(requestCode)) {
+            case SELECT_ACCOUNT_TO_ACT_AS:
+                accountToActAsSelected(data);
+                break;
+            default:
+                super.onActivityResult(requestCode, resultCode, data);
+                break;
+        }
+    }
+
+    private void accountToActAsSelected(Intent data) {
+        MyAccount ma = myContext.persistentAccounts().fromAccountName(
+                data.getStringExtra(IntentExtra.ACCOUNT_NAME.key));
+        if (ma.isValid()) {
+            contextMenu.setMyActor(ma);
+            contextMenu.showContextMenu();
+        }
+    }
 }

@@ -62,7 +62,7 @@ public class MyServiceTest extends InstrumentationTestCase {
         
         mService.setListenedCommand(CommandData.newUserCommand(
                 CommandEnum.FETCH_AVATAR,
-                ma.getOrigin(),
+                null, ma.getOrigin(),
                 ma.getUserId(),
                 ""));
 

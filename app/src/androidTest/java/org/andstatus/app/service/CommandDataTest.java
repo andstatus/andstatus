@@ -136,7 +136,7 @@ public class CommandDataTest extends InstrumentationTestCase {
         long userId = MyQuery.oidToId(OidEnum.USER_OID, ma.getOrigin().getId(),
                 TestSuite.CONVERSATION_MEMBER_USER_OID);
         CommandData data = CommandData.newUserCommand(
-                command, TestSuite.getConversationMyAccount().getOrigin(), userId, "");
+                command, null, TestSuite.getConversationMyAccount().getOrigin(), userId, "");
         String summary = data.toCommandSummary(MyContextHolder.get());
         String msgLog = command.name() + "; Summary:'" + summary + "'";
         MyLog.v(this, msgLog);

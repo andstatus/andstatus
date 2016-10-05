@@ -162,6 +162,7 @@ public class MessageContextMenu extends MyContextMenu {
 
             if (msg.isLoaded()) {
                 switch (msg.getMyAccount().numberOfAccountsOfThisOrigin()) {
+                    case 0:
                     case 1:
                         break;
                     case 2:

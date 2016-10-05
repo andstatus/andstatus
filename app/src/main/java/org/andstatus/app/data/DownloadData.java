@@ -415,7 +415,7 @@ public class DownloadData {
         if (!DownloadStatus.LOADED.equals(status) && !hardError) {
             MyServiceManager.sendCommand(
                     userId != 0 ?
-                            CommandData.newUserCommand(CommandEnum.FETCH_AVATAR, null, userId, "")
+                            CommandData.newUserCommand(CommandEnum.FETCH_AVATAR, null, null, userId, "")
                             : CommandData.newFetchAttachment(msgId, downloadId));
         }
     }

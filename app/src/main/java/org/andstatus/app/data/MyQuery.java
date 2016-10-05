@@ -30,6 +30,7 @@ import org.andstatus.app.database.FriendshipTable;
 import org.andstatus.app.database.MsgOfUserTable;
 import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.database.UserTable;
+import org.andstatus.app.timeline.Timeline;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
 
@@ -508,8 +509,7 @@ public class MyQuery {
      */
     @NonNull
     public static Set<Long> getMyFollowersOf(long userId) {
-        SelectedUserIds selectedAccounts = new SelectedUserIds(
-                MyContextHolder.get().persistentAccounts().getCurrentAccountUserId());
+        SelectedUserIds selectedAccounts = new SelectedUserIds(Timeline.getEmpty(null));
 
         String where = FriendshipTable.USER_ID + selectedAccounts.getSql()
                 + " AND " + FriendshipTable.FRIEND_ID + "=" + userId
