@@ -234,7 +234,8 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
     public interface ProgressPublisher {
         void publish(String progress);
     }
-    
+
+    /** Called not in UI thread */
     protected abstract SyncLoader newSyncLoader(Bundle args);
     
     private class AsyncLoader extends MyAsyncTask<Bundle, String, SyncLoader> implements LoadableListActivity.ProgressPublisher {

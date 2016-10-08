@@ -267,7 +267,8 @@ public class MessageEditorData {
         if (!ma.isValid()) {
             return;
         }
-        ConversationLoader<ConversationMemberItem> loader = new ConversationLoader<>(
+        ConversationLoader<ConversationMemberItem> loader =
+                new ConversationLoaderFactory<ConversationMemberItem>().getLoader(
                 ConversationMemberItem.class,
                 MyContextHolder.get(), ma, inReplyToId);
         loader.load(null);

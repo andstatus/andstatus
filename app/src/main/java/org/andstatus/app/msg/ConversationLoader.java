@@ -43,13 +43,13 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-public class ConversationLoader<T extends ConversationItem> implements SyncLoader {
+public abstract class ConversationLoader<T extends ConversationItem> implements SyncLoader {
     private static final int MAX_INDENT_LEVEL = 19;
     
-    private final MyContext myContext;
-    private final MyAccount ma;
+    protected final MyContext myContext;
+    protected final MyAccount ma;
     private final long selectedMessageId;
-    private boolean mAllowLoadingFromInternet = false;
+    protected boolean mAllowLoadingFromInternet = false;
     private final ReplyLevelComparator<T> replyLevelComparator = new ReplyLevelComparator<>();
     private final TFactory<T> tFactory;
 
@@ -74,7 +74,7 @@ public class ConversationLoader<T extends ConversationItem> implements SyncLoade
         mProgress = publisher;
         idsOfTheMessagesToFind.clear();
         mMsgs.clear();
-        findPreviousMessagesRecursively(newOMsg(selectedMessageId, 0));
+        load2(newOMsg(selectedMessageId, 0));
         Collections.sort(mMsgs, replyLevelComparator);
         enumerateMessages();
         if (SharedPreferencesUtil.getBoolean(
@@ -84,29 +84,12 @@ public class ConversationLoader<T extends ConversationItem> implements SyncLoade
         Collections.sort(mMsgs);
     }
 
-    private void findPreviousMessagesRecursively(T oMsg) {
-        if (!addMessageIdToFind(oMsg.getMsgId())) {
-            return;
-        }
-        findRepliesRecursively(oMsg);
-        MyLog.v(this, "findPreviousMessages id=" + oMsg.getMsgId());
-        loadMessageFromDatabase(oMsg);
-        if (oMsg.isLoaded()) {
-            if (addMessageToList(oMsg)) {
-                if (oMsg.mInReplyToMsgId != 0) {
-                    findPreviousMessagesRecursively(newOMsg(oMsg.mInReplyToMsgId,
-                            oMsg.mReplyLevel - 1));
-                }
-            }
-        } else if (mAllowLoadingFromInternet) {
-            loadFromInternet(oMsg.getMsgId());
-        }
-    }
-    
-    /** Returns true if message was added 
+    protected abstract void load2(T oMsg);
+
+    /** Returns true if message was added
      *          false in a case the message existed already 
      * */
-    private boolean addMessageIdToFind(long msgId) {
+    protected boolean addMessageIdToFind(long msgId) {
         if (msgId == 0) {
             return false;
         } else if (idsOfTheMessagesToFind.contains(msgId)) {
@@ -117,17 +100,7 @@ public class ConversationLoader<T extends ConversationItem> implements SyncLoade
         return true;
     }
 
-    public void findRepliesRecursively(T oMsg) {
-        MyLog.v(this, "findReplies for id=" + oMsg.getMsgId());
-        List<Long> replies = MyQuery.getReplyIds(oMsg.getMsgId());
-        oMsg.mNReplies = replies.size();
-        for (long replyId : replies) {
-            T oMsgReply = newOMsg(replyId, oMsg.mReplyLevel + 1);
-            findPreviousMessagesRecursively(oMsgReply);
-        }
-    }
-    
-    private T newOMsg(long msgId, int replyLevel) {
+    protected T newOMsg(long msgId, int replyLevel) {
         T oMsg = tFactory.newT();
         oMsg.setMyContext(myContext);
         oMsg.setMsgId(msgId);
@@ -135,7 +108,7 @@ public class ConversationLoader<T extends ConversationItem> implements SyncLoade
         return oMsg;
     }
     
-    private void loadMessageFromDatabase(ConversationItem oMsg) {
+    protected void loadMessageFromDatabase(ConversationItem oMsg) {
         Uri uri = MatchedUri.getTimelineItemUri(
                 Timeline.getTimeline(TimelineType.EVERYTHING, ma, 0, null), oMsg.getMsgId());
         Cursor cursor = null;
@@ -149,7 +122,7 @@ public class ConversationLoader<T extends ConversationItem> implements SyncLoade
         }
     }
 
-    private boolean addMessageToList(T oMsg) {
+    protected boolean addMessageToList(T oMsg) {
         boolean added = false;
         if (mMsgs.contains(oMsg)) {
             MyLog.v(this, "Message id=" + oMsg.getMsgId() + " is in the list already");
@@ -163,7 +136,7 @@ public class ConversationLoader<T extends ConversationItem> implements SyncLoade
         return added;
     }
 
-    private void loadFromInternet(long msgId) {
+    protected void loadFromInternet(long msgId) {
         MyLog.v(this, "Message id=" + msgId + " will be loaded from the Internet");
         MyServiceManager.sendForegroundCommand(
                 CommandData.newItemCommand(CommandEnum.GET_STATUS, ma, msgId));

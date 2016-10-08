@@ -18,6 +18,7 @@ package org.andstatus.app.msg;
 
 import android.database.Cursor;
 import android.graphics.drawable.Drawable;
+import android.provider.BaseColumns;
 import android.text.Html;
 import android.text.TextUtils;
 
@@ -61,6 +62,13 @@ public class ConversationViewItem extends ConversationItem {
         Set<Long> rebloggerIds = new HashSet<>();
         int ind=0;
         do {
+            long msgId = DbUtils.getLong(cursor, BaseColumns._ID);
+            if (msgId != getMsgId()) {
+                if (ind > 0) {
+                    cursor.moveToPrevious();
+                }
+                break;
+            }
             long senderId = DbUtils.getLong(cursor, MsgTable.SENDER_ID);
             long authorId = DbUtils.getLong(cursor, MsgTable.AUTHOR_ID);
             long linkedUserId = DbUtils.getLong(cursor, UserTable.LINKED_USER_ID);

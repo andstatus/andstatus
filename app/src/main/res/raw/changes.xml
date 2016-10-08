@@ -31,6 +31,13 @@
              versionDate="2016-10-08"
              versionTitle="More UX enhancements">
         <changes>
+            <change>Implemented "Private conversation with selected recipient". Now clicking
+                "Open conversation" on a Direct message (for GNU Social and Twitter) opens a list
+                of messages between the two recipients. Pump.io supports private conversations
+                natively, so for Pump.io "Reply" to a Direct message is now enabled, which allows to
+                have different "conversations" with the same recipient (as for public conversations).
+                <a href="https://github.com/andstatus/andstatus/issues/181">#181</a>
+            </change>
             <change>"Act as..." added to User List views, like for a Timeline view.</change>
             <change>Additional (font) sizes added. In addition to the three existing "Size" values:
                 Large, Standard and Small, two more added to have intermediate values:

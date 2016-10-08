@@ -110,7 +110,8 @@ public class MessageContextMenu extends MyContextMenu {
                                 MyQuery.userIdToWebfingerId(msg.authorId)));
             }
 
-            if (msg.isLoaded() && !msg.isDirect() && !isEditorVisible()) {
+            if (msg.isLoaded() && (!msg.isDirect() ||
+                    msg.origin.getOriginType().isDirectMessageAllowsReply()) && !isEditorVisible()) {
                 MessageListContextMenuItem.REPLY.addTo(menu, order++, R.string.menu_item_reply);
                 MessageListContextMenuItem.REPLY_ALL.addTo(menu, order++, R.string.menu_item_reply_all);
             }

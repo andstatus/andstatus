@@ -71,7 +71,6 @@ public enum OriginType {
     private final long id;
     private final String title;
 
-    private final ApiEnum api;
     protected final boolean canSetUrlOfOrigin;
 
     private final Class<? extends Origin> originClass;
@@ -114,11 +113,11 @@ public enum OriginType {
     private boolean isSearchTimelineSyncable = true;
     private boolean isDirectTimelineSyncable = true;
     private boolean isMentionsTimelineSyncable = true;
+    private final boolean isDirectMessageAllowsReply;
 
     OriginType(long id, String title, ApiEnum api) {
         this.id = id;
         this.title = title;
-        this.api = api;
         switch (api) {
             case TWITTER1P1:
                 isOAuthDefault = true;
@@ -140,6 +139,7 @@ public enum OriginType {
                 httpConnectionClassBasic = HttpConnectionBasic.class;
                 mAllowAttachmentForDirectMessage = false;
                 allowEditing = false;
+                isDirectMessageAllowsReply = false;
                 break;
             case PUMPIO:
                 isOAuthDefault = true;  
@@ -161,6 +161,7 @@ public enum OriginType {
                 isDirectTimelineSyncable = false;
                 isMentionsTimelineSyncable = false;
                 allowEditing = true;
+                isDirectMessageAllowsReply = true;
                 break;
             case GNUSOCIAL_TWITTER:
                 isOAuthDefault = false;  
@@ -179,6 +180,7 @@ public enum OriginType {
                 mAllowAttachmentForDirectMessage = false;
                 isPublicTimeLineSyncable = true;
                 allowEditing = false;
+                isDirectMessageAllowsReply = false;
                 break;
             default:
                 canSetUrlOfOrigin = false;
@@ -188,6 +190,7 @@ public enum OriginType {
                 httpConnectionClassBasic = HttpConnectionEmpty.class;
                 mAllowAttachmentForDirectMessage = false;
                 allowEditing = false;
+                isDirectMessageAllowsReply = false;
                 break;
         }
     }
@@ -317,4 +320,9 @@ public enum OriginType {
     public boolean allowEditing() {
         return allowEditing;
     }
+
+    public boolean isDirectMessageAllowsReply() {
+        return isDirectMessageAllowsReply;
+    }
+
 }

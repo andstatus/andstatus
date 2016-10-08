@@ -177,7 +177,8 @@ public class ConversationActivity extends LoadableListActivity implements Action
     
     @Override
     protected SyncLoader newSyncLoader(Bundle args) {
-        return new ConversationLoader<>(ConversationViewItem.class,
+        return new ConversationLoaderFactory<ConversationViewItem>().
+                getLoader(ConversationViewItem.class,
                 getMyContext(), getCurrentMyAccount(), centralItemId);
     }
 

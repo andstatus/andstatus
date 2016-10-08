@@ -97,10 +97,8 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
     DIRECT_MESSAGE(true) {
         @Override
         MessageEditorData executeAsync(MessageContextMenu menu) {
-            return MessageEditorData.newEmpty(menu.getMyActor()).
-                    setInReplyToId(menu.getMsgId())
-                    .setRecipientId(MyQuery.msgIdToUserId(MsgTable.AUTHOR_ID, menu.getMsgId()))
-                    .addMentionsToText();
+            return MessageEditorData.newEmpty(menu.getMyActor())
+                    .setRecipientId(MyQuery.msgIdToUserId(MsgTable.AUTHOR_ID, menu.getMsgId()));
         }
 
         @Override
