@@ -27,6 +27,22 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
 		</subtitle>
     </header>
+    <release android:versionName="30.01" android:versionCode="194"
+             versionDate="2016-10-08"
+             versionTitle="More UX enhancements">
+        <changes>
+            <change>"Act as..." added to User List views, like for a Timeline view.</change>
+            <change>Additional (font) sizes added. In addition to the three existing "Size" values:
+                Large, Standard and Small, two more added to have intermediate values:
+                Larger and Smaller.
+                <a href="https://github.com/andstatus/andstatus/issues/411">#411</a>
+            </change>
+            <change>Fixed links to Direct messages in ”Open on Internet” and "Share" for GNU Social
+                and Twitter.
+                <a href="https://github.com/andstatus/andstatus/issues/423">#423</a>
+            </change>
+        </changes>
+    </release>
     <release android:versionName="30.00" android:versionCode="193"
              versionDate="2016-10-02"
              versionTitle="Back button navigates through the history and other UX enhancements">

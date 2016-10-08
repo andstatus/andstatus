@@ -166,9 +166,11 @@
         <item>@string/theme_color_entries_default</item>
     </string-array>
     <string-array name="theme_size_entries">
-        <item>@string/theme_size_entries_small</item>
-        <item>@string/theme_size_entries_standard</item>
         <item>@string/theme_size_entries_large</item>
+        <item>@string/theme_size_entries_larger</item>
+        <item>@string/theme_size_entries_standard</item>
+        <item>@string/theme_size_entries_smaller</item>
+        <item>@string/theme_size_entries_small</item>
     </string-array>
     <string-array name="action_bar_background_color_entries">
         <item>@string/color_red</item>

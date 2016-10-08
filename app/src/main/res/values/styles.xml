@@ -119,31 +119,53 @@
         <item name="settingsIcon">@drawable/ic_settings_white_24dp</item>
     </style>
 
+    <style name="TextAppearance.Larger" parent="TextAppearance.AppCompat">
+        <item name="android:textSize">20sp</item>
+    </style>
+
+    <style name="TextAppearance.Smaller" parent="TextAppearance.AppCompat">
+        <item name="android:textSize">16sp</item>
+    </style>
+
     <string-array name="theme_size_values">
-        <item>Small</item>
-        <item>StandardSize</item>
         <item>Large</item>
+        <item>Larger</item>
+        <item>StandardSize</item>
+        <item>Smaller</item>
+        <item>Small</item>
     </string-array>
     <style name="AndStatusBaseAttributes">
         <item name="messageUsernameColor">?android:attr/textColorSecondary</item>
         <item name="messageBodyColor">?android:attr/textColorPrimary</item>
         <item name="messageDetailsColor">?android:attr/textColorTertiary</item>
         <item name="sectionHeaderStyle">@style/sectionHeader</item>
+        <item name="textAppearanceLarger">@style/TextAppearance.Larger</item>
+        <item name="textAppearanceSmaller">@style/TextAppearance.Smaller</item>
+    </style>
+    <style name="Large" parent="@style/AndStatusBaseAttributes">
+        <item name="messageUsernameTextAppearance">?android:attr/textAppearanceMedium</item>
+        <item name="messageBodyTextAppearance">?android:attr/textAppearanceLarge</item>
+        <item name="messageDetailsTextAppearance">?android:attr/textAppearanceMedium</item>
+    </style>
+    <style name="Larger" parent="@style/AndStatusBaseAttributes">
+        <item name="messageUsernameTextAppearance">?android:attr/textAppearanceMedium</item>
+        <item name="messageBodyTextAppearance">?attr/textAppearanceLarger</item>
+        <item name="messageDetailsTextAppearance">?android:attr/textAppearanceMedium</item>
     </style>
     <style name="StandardSize" parent="@style/AndStatusBaseAttributes">
         <item name="messageUsernameTextAppearance">?android:attr/textAppearanceSmall</item>
         <item name="messageBodyTextAppearance">?android:attr/textAppearanceMedium</item>
         <item name="messageDetailsTextAppearance">?android:attr/textAppearanceSmall</item>
     </style>
+    <style name="Smaller" parent="@style/AndStatusBaseAttributes">
+        <item name="messageUsernameTextAppearance">?android:attr/textAppearanceSmall</item>
+        <item name="messageBodyTextAppearance">?attr/textAppearanceSmaller</item>
+        <item name="messageDetailsTextAppearance">?android:attr/textAppearanceSmall</item>
+    </style>
     <style name="Small" parent="@style/AndStatusBaseAttributes">
         <item name="messageUsernameTextAppearance">?android:attr/textAppearanceSmall</item>
         <item name="messageBodyTextAppearance">?android:attr/textAppearanceSmall</item>
         <item name="messageDetailsTextAppearance">?android:attr/textAppearanceSmall</item>
-    </style>
-    <style name="Large" parent="@style/AndStatusBaseAttributes">
-        <item name="messageUsernameTextAppearance">?android:attr/textAppearanceMedium</item>
-        <item name="messageBodyTextAppearance">?android:attr/textAppearanceLarge</item>
-        <item name="messageDetailsTextAppearance">?android:attr/textAppearanceMedium</item>
     </style>
 
     <string-array name="background_color_values">

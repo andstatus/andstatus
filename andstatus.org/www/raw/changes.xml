@@ -27,10 +27,71 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
 		</subtitle>
     </header>
+    <release android:versionName="30.00" android:versionCode="193"
+             versionDate="2016-10-02"
+             versionTitle="Back button navigates through the history and other UX enhancements">
+        <changes>
+            <change>"Back" system button now acts as most of Android users expect: navigation,
+                in reverse chronological order, through the history of screens the user has recently
+                worked with. See https://developer.android.com/design/patterns/navigation.html
+                Return to the Default timeline clears the whole history stack, so when a User
+                presses "Back" button on the Default timeline, he/she leaves AndStatus
+                (and returns usually to the Home screen of the Device).
+                <a href="https://github.com/andstatus/andstatus/issues/253">#253</a>
+            </change>
+            <change>Share a message with its attachment.<br/>
+                "Share" message context menu item shares not only textual part of the message,
+                as before, but the attached image also. This way a message with an attachment can
+                be shared from one Social Network to another within AndStatus, or to some note
+                taking application, e.g. to
+                <a href="https://github.com/federicoiosue/Omni-Notes">Omni Notes</a>,
+                where it will be stored with the attachment.
+                Some file managers, e.g. <a href="http://www.ghisler.com/android.htm">Total
+                Commander</a>, allow to save shared attachment to a file.
+                <a href="https://github.com/andstatus/andstatus/issues/387">#387</a>
+            </change>
+            <change>Added "Overflow" button to the row of buttons below
+                each message: to open message context menu.
+                This button may help new users to notice existence of the context menu.
+                It also may be used in a case you set "Long click to open context menu" option
+                in Settings -&gt; Gestures.
+                <a href="https://github.com/andstatus/andstatus/issues/332">#332</a>.<br/>
+                Clickable areas of these buttons made larger and wider to ease tapping the buttons.
+                <a href="https://github.com/andstatus/andstatus/issues/410">#410</a>.
+            </change>
+            <change>Styles of the Navigation drawer changed to make drawer items easier visible.
+            </change>
+        </changes>
+    </release>
     <release android:versionName="29.02" android:versionCode="192"
              versionDate="2016-09-25"
-             versionTitle="Pump.io support enhancements. Part 2">
+             versionTitle="Pump.io support enhancements">
         <changes>
+            <change>Implementation of Pump.io's "share" activity made more familiar for accustomed
+                Pump'io users:
+                <ul>
+                    <li>"Reblog" action for Pump.io account is renamed to "Share via Pump.io".
+                        (Simply "Share" already has another meaning in AndStatus and
+                        in Android in general for millions of users...).
+                        This is similar to Twitter, for which the same
+                        action is renamed in a User Interface to "Retweet".</li>
+                    <li>No recipients are added to the activity.</li>
+                </ul>
+                <a href="https://github.com/andstatus/andstatus/issues/376">#376</a>
+            </change>
+            <change>Fixed <a href="https://github.com/andstatus/andstatus/issues/271">#271</a>:
+                This is a server, that decides in almost all cases, if a message is public or not.
+                Now "Public" is added to "to" field for "post" activity only in a case no other
+                recipients are found and if the message is not a reply.
+            </change>
+            <change>Fixed <a href="https://github.com/andstatus/andstatus/issues/275">#275</a>:
+                Message, to which a subscribed message is a reply, is explicitly marked as not subscribed
+                in order for the latter not to be shown in the Home timeline.
+            </change>
+            <change>
+                Fixed <a href="https://github.com/andstatus/andstatus/issues/416">#416</a>
+                "Everything" Timeline shows all social networks even if not Combined.
+            </change>
             <change>Implemented <a href="https://github.com/andstatus/andstatus/issues/221">#221</a>
                 Edit message [Pump.io]<br />
                 Messages with and without attachments can be edited. A User can change
@@ -61,37 +122,6 @@
             <change>Size of text in Account and Timeline selectors enlarged.
                 Now it's the same as a body text of messages (and hence it can be changed in
                 Settings).</change>
-        </changes>
-    </release>
-    <release android:versionName="29.01" android:versionCode="191"
-             versionDate="2016-09-17"
-             versionTitle="Pump.io support enhancements">
-        <changes>
-            <change>Implementation of Pump.io's "share" activity made more familiar for accustomed
-                Pump'io users:
-                <ul>
-                    <li>"Reblog" action for Pump.io account is renamed to "Share via Pump.io".
-                        (Simply "Share" already has another meaning in AndStatus and
-                        in Android in general for millions of users...).
-                        This is similar to Twitter, for which the same
-                        action is renamed in a User Interface to "Retweet".</li>
-                    <li>No recipients are added to the activity.</li>
-                </ul>
-                <a href="https://github.com/andstatus/andstatus/issues/376">#376</a>
-            </change>
-            <change>Fixed <a href="https://github.com/andstatus/andstatus/issues/271">#271</a>:
-                This is a server, that decides in almost all cases, if a message is public or not.
-                Now "Public" is added to "to" field for "post" activity only in a case no other
-                recipients are found and if the message is not a reply.
-            </change>
-            <change>Fixed <a href="https://github.com/andstatus/andstatus/issues/275">#275</a>:
-                Message, to which a subscribed message is a reply, is explicitly marked as not subscribed
-                in order for the latter not to be shown in the Home timeline.
-            </change>
-            <change>
-                Fixed <a href="https://github.com/andstatus/andstatus/issues/416">#416</a>
-                "Everything" Timeline shows all social networks even if not Combined.
-            </change>
         </changes>
     </release>
     <release android:versionName="28.01" android:versionCode="188"

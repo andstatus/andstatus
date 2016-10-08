@@ -70,5 +70,8 @@
         <attr name="favoriteBorderIcon" format="reference" />
 		<attr name="moreIcon" format="reference" />
 
+		<attr name="textAppearanceLarger" format="reference" />
+		<attr name="textAppearanceSmaller" format="reference" />
+
     </declare-styleable>
 </resources>

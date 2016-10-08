@@ -441,9 +441,11 @@
   <string name="theme_color_entries_default">Device default</string>
   <string name="theme_color_entries_light">Light</string>
   <string name="theme_color_entries_dark">Dark</string>
-  <string name="theme_size_entries_small">Small</string>
-  <string name="theme_size_entries_standard">Standard</string>
   <string name="theme_size_entries_large">Large</string>
+  <string name="theme_size_entries_larger">Larger</string>
+  <string name="theme_size_entries_small">Small</string>
+  <string name="theme_size_entries_smaller">Smaller</string>
+  <string name="theme_size_entries_standard">Standard</string>
   <string name="this_option_is_turned_off">(disabled)</string>
   <string name="timeline_is_combined_by_default">Timeline is Combined by default</string>
   <string name="timeline_reloaded">Timeline has been reloaded.</string>
