@@ -64,11 +64,15 @@ class OriginTwitter extends Origin {
         if (url == null) {
             return "";
         }
-        String userName = MyQuery.msgIdToUsername(MsgTable.AUTHOR_ID, messageId,
-                UserInTimeline.USERNAME);
-        return Uri.withAppendedPath(fixUriforPermalink(UriUtils.fromUrl(url)), userName
-                + "/status/"
-                + MyQuery.msgIdToStringColumnValue(MsgTable.MSG_OID, messageId)).toString();
+        final Uri uri = fixUriforPermalink(UriUtils.fromUrl(url));
+        if (MyQuery.msgIdToLongColumnValue(MsgTable.RECIPIENT_ID, messageId) == 0) {
+            String userName = MyQuery.msgIdToUsername(MsgTable.AUTHOR_ID, messageId,
+                    UserInTimeline.USERNAME);
+            final String oid = MyQuery.msgIdToStringColumnValue(MsgTable.MSG_OID, messageId);
+            return Uri.withAppendedPath(uri, userName + "/status/" + oid).toString();
+        } else {
+            return Uri.withAppendedPath(uri, "messages").toString();
+        }
     }
 
     @Override

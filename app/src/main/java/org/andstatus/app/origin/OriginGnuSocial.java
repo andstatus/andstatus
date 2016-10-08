@@ -28,7 +28,9 @@ class OriginGnuSocial extends Origin {
     @Override
     public String messagePermalink(long messageId) {
         try {
-            return  new URL(url, "notice/"
+            return  new URL(url,
+                    (MyQuery.msgIdToLongColumnValue(MsgTable.RECIPIENT_ID, messageId) == 0 ?
+                    "notice" : "message") + "/"
                     + MyQuery.msgIdToStringColumnValue(MsgTable.MSG_OID, messageId)).toExternalForm();
         } catch (MalformedURLException e) {
             MyLog.d(this, "Malformed URL from '" + url.toExternalForm() + "'", e);
