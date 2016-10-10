@@ -17,11 +17,10 @@
 package org.andstatus.app.util;
 
 import android.app.Activity;
+import android.support.annotation.IdRes;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
-
-import org.andstatus.app.R;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -39,7 +38,7 @@ public class MyCheckBox {
         // Empty
     }
 
-    public static boolean isChecked(Activity activity, int checkBoxViewId, boolean defaultValue) {
+    public static boolean isChecked(Activity activity, @IdRes int checkBoxViewId, boolean defaultValue) {
         View view = activity.findViewById(checkBoxViewId);
         if (view == null || !CheckBox.class.isAssignableFrom(view.getClass())) {
             return defaultValue;
@@ -47,27 +46,35 @@ public class MyCheckBox {
         return ((CheckBox)view).isChecked();
     }
 
-    public static void showEnabled(Activity activity, int viewId, boolean checked) {
-        show(activity, viewId, checked, true);
+    public static boolean setEnabled(Activity activity, @IdRes int viewId, boolean checked) {
+        return set(activity, viewId, checked, true);
     }
 
-    public static void show(Activity activity, int viewId, boolean checked, boolean enabled) {
-        show(activity, viewId, checked, enabled ? EMPTY_ON_CHECKED_CHANGE_LISTENER : null);
+    public static boolean setEnabled(View parentView, @IdRes int viewId, boolean checked) {
+        return set(parentView, viewId, checked, EMPTY_ON_CHECKED_CHANGE_LISTENER);
     }
 
-    public static void show(Activity activity, int viewId, boolean checked,
-                            CompoundButton.OnCheckedChangeListener onCheckedChangeListener) {
-        show(activity.findViewById(R.id.my_layout_parent), viewId, checked, onCheckedChangeListener);
+    public static boolean set(Activity activity, @IdRes int viewId, boolean checked, boolean enabled) {
+        return set(activity, viewId, checked, enabled ? EMPTY_ON_CHECKED_CHANGE_LISTENER : null);
     }
 
-    public static void show(View parentView, int viewId, boolean checked,
-                            CompoundButton.OnCheckedChangeListener onCheckedChangeListener) {
-        show(parentView.findViewById(viewId), checked, onCheckedChangeListener);
+    public static boolean set(Activity activity, @IdRes int viewId, boolean checked,
+                              CompoundButton.OnCheckedChangeListener onCheckedChangeListener) {
+        return set(activity.findViewById(viewId), checked, onCheckedChangeListener);
     }
 
-    public static void show(View checkBoxIn, boolean checked,
-                            CompoundButton.OnCheckedChangeListener onCheckedChangeListener) {
-        if (checkBoxIn != null && CheckBox.class.isAssignableFrom(checkBoxIn.getClass())) {
+    public static boolean set(View parentView, @IdRes int viewId, boolean checked,
+                              CompoundButton.OnCheckedChangeListener onCheckedChangeListener) {
+        return set(parentView.findViewById(viewId), checked, onCheckedChangeListener);
+    }
+
+    /**
+     * @return true if succeeded
+     */
+    public static boolean set(View checkBoxIn, boolean checked,
+                              CompoundButton.OnCheckedChangeListener onCheckedChangeListener) {
+        boolean success = checkBoxIn != null && CheckBox.class.isAssignableFrom(checkBoxIn.getClass());
+        if (success) {
             CheckBox checkBox = (CheckBox) checkBoxIn;
             checkBox.setOnCheckedChangeListener(null);
             checkBox.setChecked(checked);
@@ -76,6 +83,7 @@ public class MyCheckBox {
                 checkBox.setOnCheckedChangeListener(onCheckedChangeListener);
             }
         }
+        return success;
     }
 
 }

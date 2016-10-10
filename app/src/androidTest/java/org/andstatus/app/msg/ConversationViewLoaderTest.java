@@ -1,6 +1,5 @@
 package org.andstatus.app.msg;
 
-import android.content.Context;
 import android.test.InstrumentationTestCase;
 
 import org.andstatus.app.LoadableListActivity.ProgressPublisher;
@@ -36,7 +35,7 @@ public class ConversationViewLoaderTest extends InstrumentationTestCase implemen
         ConversationLoader<ConversationViewItem> loader =
                 new ConversationLoaderFactory<ConversationViewItem>().getLoader(
                 ConversationViewItem.class,
-                MyContextHolder.get(), ma, selectedMessageId);
+                MyContextHolder.get(), ma, selectedMessageId, false);
         progressCounter = 0;
         loader.load(this);
         List<ConversationViewItem> list = loader.getList();

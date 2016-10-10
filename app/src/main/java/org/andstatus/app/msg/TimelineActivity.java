@@ -146,12 +146,7 @@ public class TimelineActivity extends LoadableListActivity implements
 
         View view = findViewById(R.id.my_action_bar);
         if (view != null) {
-            view.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    onTimelineTitleClick(v);
-                }
-            });
+            view.setOnClickListener(this::onTimelineTitleClick);
         }
 
         if (savedInstanceState != null) {
@@ -436,17 +431,15 @@ public class TimelineActivity extends LoadableListActivity implements
     }
 
     private void prepareCombinedTimelineToggle(View drawerView) {
-        CheckBox checkBox = (CheckBox) drawerView.findViewById(R.id.combinedTimelineToggle);
-        if (checkBox == null) {
-            return;
-        }
-        checkBox.setChecked(getParamsLoaded().getTimeline().isCombined());
-        // Show the "Combined" toggle even for one account to see messages,
-        // which are not on the timeline.
-        // E.g. messages by users, downloaded on demand.
-        MyUrlSpan.showView(checkBox,
+        if (MyUrlSpan.showView(drawerView, R.id.combinedTimelineToggle,
+                // Show the "Combined" toggle even for one account to see messages,
+                // which are not on the timeline.
+                // E.g. messages by users, downloaded on demand.
                 getParamsNew().getSelectedUserId() == 0 ||
-                        getParamsNew().getSelectedUserId() == getParamsNew().getMyAccount().getUserId());
+                        getParamsNew().getSelectedUserId() == getParamsNew().getMyAccount().getUserId())) {
+            MyCheckBox.setEnabled(drawerView, R.id.combinedTimelineToggle,
+                    getParamsLoaded().getTimeline().isCombined());
+        }
     }
 
     @Override
@@ -713,7 +706,7 @@ public class TimelineActivity extends LoadableListActivity implements
         mDrawerToggle.setDrawerIndicatorEnabled(!getParamsLoaded().isAtHome());
         MyUrlSpan.showView(
                 findViewById(R.id.switchToDefaultTimelineButton), !getParamsLoaded().isAtHome());
-        MyCheckBox.showEnabled(this, R.id.collapseDuplicatesToggle,
+        MyCheckBox.setEnabled(this, R.id.collapseDuplicatesToggle,
                 getListData().isCollapseDuplicates());
     }
 

@@ -182,19 +182,31 @@ public class MyUrlSpan extends URLSpan {
         return false;
     }
 
-    public static void showView(View view, boolean show) {
-        if (view == null) {
-            return;
-        }
-        if (show) {
-            if (view.getVisibility() != View.VISIBLE) {
-                view.setVisibility(View.VISIBLE);
+    /**
+     * @return true if succeeded
+     */
+    public static boolean showView(View parentView, int viewId, boolean show) {
+        return parentView != null &&
+            showView(parentView.findViewById(viewId), show);
+    }
+
+    /**
+     * @return true if succeeded
+     */
+    public static boolean showView(View view, boolean show) {
+        boolean success = view != null;
+        if (success) {
+            if (show) {
+                if (view.getVisibility() != View.VISIBLE) {
+                    view.setVisibility(View.VISIBLE);
+                }
+            } else {
+                if (view.getVisibility() != View.GONE) {
+                    view.setVisibility(View.GONE);
+                }
             }
-        } else {
-            if (view.getVisibility() != View.GONE) {
-                view.setVisibility(View.GONE);
-            }
         }
+        return success;
     }
 
     private static boolean hasUrlSpans (Spanned spanned) {

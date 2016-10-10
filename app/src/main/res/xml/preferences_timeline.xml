@@ -48,11 +48,14 @@
     <org.andstatus.app.context.MultilineCheckBoxPreference android:key="show_buttons_below_message"
         android:title="@string/show_buttons_below_message"
         android:defaultValue="true" />
-    <org.andstatus.app.context.MultilineCheckBoxPreference android:key="old_messages_first_in_conversation"
-        android:title="@string/title_preference_old_messages_first_in_conversation"
-        android:defaultValue="false" />
     <org.andstatus.app.context.MultilineCheckBoxPreference android:key="refresh_timeline_automatically"
         android:title="@string/refresh_timeline_automatically_title"
         android:summary="@string/refresh_timeline_automatically_summary"
         android:defaultValue="true" />
+    <org.andstatus.app.context.MultilineCheckBoxPreference android:key="show_threads_of_conversation"
+        android:title="@string/show_threads_of_conversation"
+        android:defaultValue="false" />
+    <org.andstatus.app.context.MultilineCheckBoxPreference android:key="old_messages_first_in_conversation"
+        android:title="@string/title_preference_old_messages_first_in_conversation"
+        android:defaultValue="false" />
 </PreferenceScreen>

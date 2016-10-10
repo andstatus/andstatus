@@ -48,6 +48,15 @@
                 and Twitter.
                 <a href="https://github.com/andstatus/andstatus/issues/423">#423</a>
             </change>
+            <change>Added an option "Show threads of a conversation" in addition to the existing
+                "Old messages first in a Conversation view". Both options are available in
+                two places: in Settings-&gt;Timeline and the new Navigation drawer of the
+                Conversation view.
+                <a href="https://github.com/andstatus/andstatus/issues/412">#412</a>
+            </change>
+            <change>In order to use Java 8 features in the application development,
+                source code build configuration switched to the
+                <a href="https://source.android.com/source/jack.html">Jack toolchain</a>.</change>
         </changes>
     </release>
     <release android:versionName="30.00" android:versionCode="193"

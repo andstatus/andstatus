@@ -136,8 +136,7 @@
             <meta-data android:name="android.app.searchable" android:resource="@xml/searchable_timeline"/>
         </activity>
         <activity android:name=".msg.ConversationActivity"
-                  android:label="@string/label_conversation"
-                  android:parentActivityName=".msg.TimelineActivity">
+                  android:label="@string/label_conversation">
             <!--
     mimeType attribute is required for intent-filter of .ConversationActivity
     as it has both custom action and Uri present in Intent,

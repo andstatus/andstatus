@@ -35,8 +35,9 @@ import org.andstatus.app.timeline.TimelineType;
  * @author yvolk@yurivolkov.com
  */
 public class DirectMessagesConversationLoader<T extends ConversationItem> extends ConversationLoader<T> {
-    public DirectMessagesConversationLoader(Class<T> tClass, MyContext myContext, MyAccount ma, long selectedMessageId) {
-        super(tClass, myContext, ma, selectedMessageId);
+    public DirectMessagesConversationLoader(Class<T> tClass, MyContext myContext, MyAccount ma,
+                                            long selectedMessageId, boolean oldMessagesFirst) {
+        super(tClass, myContext, ma, selectedMessageId, oldMessagesFirst);
     }
 
     @Override

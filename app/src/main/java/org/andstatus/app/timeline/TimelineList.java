@@ -113,7 +113,7 @@ public class TimelineList extends LoadableListActivity {
                 textView.setText(text);
             }
             if (textView.getId() == sortByField) {
-                textView.setText((sortDefault ? '▲' : '▼') + text);
+                textView.setText((sortDefault ? "▲" : "▼") + text);
             }
         }
     }
@@ -238,7 +238,7 @@ public class TimelineList extends LoadableListActivity {
                 MyUrlSpan.showText(view, R.id.origin, origin.isValid() ?
                         origin.getName() : "", false, true);
                 showDisplayedInSelector(view, item);
-                MyCheckBox.show(view, R.id.synced, item.timeline.isSyncedAutomatically(),
+                MyCheckBox.set(view, R.id.synced, item.timeline.isSyncedAutomatically(),
                         item.timeline.isSyncable() ?
                                 new CompoundButton.OnCheckedChangeListener() {
                                     @Override
@@ -267,7 +267,7 @@ public class TimelineList extends LoadableListActivity {
 
             protected void showDisplayedInSelector(View parentView, final TimelineListViewItem item) {
                 CheckBox view = (CheckBox) parentView.findViewById(R.id.displayedInSelector);
-                MyCheckBox.show(parentView, R.id.displayedInSelector, item.timeline.isDisplayedInSelector() != DisplayedInSelector.NEVER,
+                MyCheckBox.set(parentView, R.id.displayedInSelector, item.timeline.isDisplayedInSelector() != DisplayedInSelector.NEVER,
                         new CompoundButton.OnCheckedChangeListener() {
                             @Override
                             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {

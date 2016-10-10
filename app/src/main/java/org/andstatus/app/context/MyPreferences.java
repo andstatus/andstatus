@@ -55,6 +55,7 @@ public class MyPreferences {
     public static final String KEY_SHOW_BUTTONS_BELOW_MESSAGE = "show_buttons_below_message";
     public static final String KEY_OLD_MESSAGES_FIRST_IN_CONVERSATION = "old_messages_first_in_conversation";
     public static final String KEY_REFRESH_TIMELINE_AUTOMATICALLY = "refresh_timeline_automatically";
+    public static final String KEY_SHOW_THREADS_OF_CONVERSATION = "show_threads_of_conversation";
 
     // ----------------------------------------------------------
     // Gestures
@@ -246,4 +247,19 @@ public class MyPreferences {
         SharedPreferencesUtil.putLong(KEY_DEFAULT_TIMELINE, id);
     }
 
+    public static boolean isShowThreadsOfConversation() {
+        return SharedPreferencesUtil.getBoolean(KEY_SHOW_THREADS_OF_CONVERSATION, true);
+    }
+
+    public static void setShowThreadsOfConversation(boolean v) {
+        SharedPreferencesUtil.putBoolean(KEY_SHOW_THREADS_OF_CONVERSATION, v);
+    }
+
+    public static void setOldMessagesFirstInConversation(boolean v) {
+        SharedPreferencesUtil.putBoolean(KEY_OLD_MESSAGES_FIRST_IN_CONVERSATION, v);
+    }
+
+    public static boolean areOldMessagesFirstInConversation() {
+        return SharedPreferencesUtil.getBoolean(KEY_OLD_MESSAGES_FIRST_IN_CONVERSATION, false);
+    }
 }

@@ -47,16 +47,18 @@ public class ConversationViewAdapter extends MyBaseAdapter {
     private final MyAccount ma;
     private final long selectedMessageId;
     private final List<ConversationViewItem> oMsgs;
+    private final boolean showThreads;
 
     public ConversationViewAdapter(MessageContextMenu contextMenu,
-            long selectedMessageId,
-            List<ConversationViewItem> oMsgs) {
+                                   long selectedMessageId,
+                                   List<ConversationViewItem> oMsgs, boolean showThreads) {
         super(contextMenu.getActivity().getMyContext());
         this.contextMenu = contextMenu;
         this.context = this.contextMenu.getActivity();
         this.ma = myContext.persistentAccounts().fromUserId(this.contextMenu.getCurrentMyAccountUserId());
         this.selectedMessageId = selectedMessageId;
         this.oMsgs = oMsgs;
+        this.showThreads = showThreads;
     }
 
     @Override
@@ -105,7 +107,8 @@ public class ConversationViewAdapter extends MyBaseAdapter {
     }
     
     private void showIndent(ConversationViewItem item, View messageView) {
-        int indentPixels = dpToPixes(10) * item.mIndentLevel;
+        final int indentLevel = showThreads ? item.mIndentLevel : 0;
+        int indentPixels = dpToPixes(10) * indentLevel;
 
         LinearLayout messageIndented = (LinearLayout) messageView.findViewById(R.id.message_indented);
         if (item.getMsgId() == selectedMessageId  && oMsgs.size() > 1) {
@@ -120,7 +123,7 @@ public class ConversationViewAdapter extends MyBaseAdapter {
                 (ImageView) messageView.findViewById(R.id.attached_image));
 
         int viewToTheLeftId = 0;
-        if (item.mIndentLevel > 0) {
+        if (indentLevel > 0) {
             viewToTheLeftId = R.id.indent_image;
         }
         View divider = messageView.findViewById(R.id.divider);

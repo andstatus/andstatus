@@ -371,6 +371,7 @@
   <string name="settings_activity_title">Settings</string>
   <string name="show_buttons_below_message">Show Reply, Repost and Favorite buttons below message</string>
   <string name="show_duplicates">Show duplicates</string>
+  <string name="show_threads_of_conversation">Show threads of a conversation</string>
   <string name="show_timeline_messages">Show timeline messages</string>
   <string name="since">Since %s</string>
   <string name="splash_button_learn_more">Learn More</string>

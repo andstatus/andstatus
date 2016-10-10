@@ -29,7 +29,6 @@ import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.KeyEvent;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -477,7 +476,7 @@ public class AccountSettingsActivity extends MyActivity {
     }
 
     private void showIsSyncedAutomatically() {
-        MyCheckBox.show(findFragmentViewById(R.id.synced_automatically),
+        MyCheckBox.set(findFragmentViewById(R.id.synced_automatically),
                 state.builder.getAccount().isSyncedAutomatically(),
                 new CompoundButton.OnCheckedChangeListener() {
 

@@ -132,7 +132,7 @@ public class OriginEditor extends MyActivity {
         }
         editTextHost.setText(strHost);
         
-        MyCheckBox.show(this, R.id.is_ssl, origin.isSsl() , new CompoundButton.OnCheckedChangeListener() {
+        MyCheckBox.set(this, R.id.is_ssl, origin.isSsl() , new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 showSslMode(isChecked);
@@ -153,16 +153,16 @@ public class OriginEditor extends MyActivity {
         });
         showSslModeSummary(origin.getSslMode());
         showSslMode(origin.isSsl());
-        MyCheckBox.showEnabled(this, R.id.allow_html, origin.isHtmlContentAllowed());
+        MyCheckBox.setEnabled(this, R.id.allow_html, origin.isHtmlContentAllowed());
 
         spinnerMentionAsWebFingerId.setSelection(origin.getMentionAsWebFingerId().getEntriesPosition());
         spinnerUseLegacyHttpProtocol.setSelection(origin.useLegacyHttpProtocol().getEntriesPosition());
         
         buttonDelete.setVisibility(origin.hasChildren() ? View.GONE : View.VISIBLE);
 
-        MyCheckBox.show(this, R.id.in_combined_global_search, origin.isInCombinedGlobalSearch(),
+        MyCheckBox.set(this, R.id.in_combined_global_search, origin.isInCombinedGlobalSearch(),
                 origin.getOriginType().isSearchTimelineSyncable());
-        MyCheckBox.show(this, R.id.in_combined_public_reload, origin.isInCombinedPublicReload(),
+        MyCheckBox.set(this, R.id.in_combined_public_reload, origin.isInCombinedPublicReload(),
                 origin.getOriginType().isPublicTimeLineSyncable());
 
         String title = getText(R.string.label_origin_system).toString();

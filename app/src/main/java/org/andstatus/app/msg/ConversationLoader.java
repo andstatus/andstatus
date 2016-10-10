@@ -24,17 +24,14 @@ import org.andstatus.app.LoadableListActivity.ProgressPublisher;
 import org.andstatus.app.LoadableListActivity.SyncLoader;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MatchedUri;
-import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.timeline.Timeline;
 import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TFactory;
 
 import java.io.Serializable;
@@ -52,6 +49,7 @@ public abstract class ConversationLoader<T extends ConversationItem> implements 
     protected boolean mAllowLoadingFromInternet = false;
     private final ReplyLevelComparator<T> replyLevelComparator = new ReplyLevelComparator<>();
     private final TFactory<T> tFactory;
+    private final boolean oldMessagesFirst;
 
     final List<T> mMsgs = new ArrayList<>();
     LoadableListActivity.ProgressPublisher mProgress;
@@ -62,11 +60,14 @@ public abstract class ConversationLoader<T extends ConversationItem> implements 
 
     final List<Long> idsOfTheMessagesToFind = new ArrayList<>();
 
-    public ConversationLoader(Class<T> tClass, MyContext myContext, MyAccount ma, long selectedMessageId) {
+    public ConversationLoader(
+            Class<T> tClass, MyContext myContext, MyAccount ma, long selectedMessageId,
+            boolean oldMessagesFirst) {
         tFactory = new TFactory<>(tClass);
         this.myContext = myContext;
         this.ma = ma;
         this.selectedMessageId = selectedMessageId;
+        this.oldMessagesFirst = oldMessagesFirst;
     }
     
     @Override
@@ -77,10 +78,7 @@ public abstract class ConversationLoader<T extends ConversationItem> implements 
         load2(newOMsg(selectedMessageId, 0));
         Collections.sort(mMsgs, replyLevelComparator);
         enumerateMessages();
-        if (SharedPreferencesUtil.getBoolean(
-                MyPreferences.KEY_OLD_MESSAGES_FIRST_IN_CONVERSATION, false)) {
-            reverseListOrder();
-        }
+        if (oldMessagesFirst) reverseListOrder();
         Collections.sort(mMsgs);
     }
 

@@ -23,6 +23,8 @@ import android.preference.ListPreference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
+import android.view.View;
+import android.widget.CheckBox;
 
 import org.andstatus.app.context.MyContextHolder;
 
@@ -244,6 +246,12 @@ public class SharedPreferencesUtil {
         SharedPreferences sp = getDefaultSharedPreferences();
         if (sp != null) {
             sp.edit().putLong(key, value).apply();
+        }
+    }
+
+    public static void putBoolean(String key, View checkBox) {
+        if (checkBox != null && CheckBox.class.isAssignableFrom(checkBox.getClass())) {
+            putBoolean(key, ((CheckBox) checkBox).isChecked());
         }
     }
 

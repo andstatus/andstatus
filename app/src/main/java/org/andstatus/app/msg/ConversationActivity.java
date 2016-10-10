@@ -19,20 +19,28 @@ package org.andstatus.app.msg;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
 
 import org.andstatus.app.ActivityRequestCode;
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.LoadableListActivity;
 import org.andstatus.app.R;
+import org.andstatus.app.WhichPage;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.QueueViewer;
 import org.andstatus.app.timeline.Timeline;
 import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.I18n;
+import org.andstatus.app.util.MyCheckBox;
+import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
 import org.andstatus.app.widget.MyBaseAdapter;
 
@@ -45,13 +53,43 @@ public class ConversationActivity extends LoadableListActivity implements Action
     private MessageContextMenu mContextMenu;
     private MessageEditor mMessageEditor;
 
+    DrawerLayout mDrawerLayout;
+    ActionBarDrawerToggle mDrawerToggle;
+    private boolean showThreadsOfConversation;
+    private boolean oldMessagesFirstInConversation;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        mLayoutId = R.layout.my_list_swipe;
+        mLayoutId = R.layout.conversation;
         super.onCreate(savedInstanceState);
 
         mMessageEditor = new MessageEditor(this);
         mContextMenu = new MessageContextMenu(this);
+
+        showThreadsOfConversation = MyPreferences.isShowThreadsOfConversation();
+        oldMessagesFirstInConversation = MyPreferences.areOldMessagesFirstInConversation();
+
+        initializeDrawer();
+    }
+
+
+    @Override
+    protected void onPostCreate(Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+        mDrawerToggle.syncState();
+    }
+
+    private void initializeDrawer() {
+        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        mDrawerToggle = new ActionBarDrawerToggle(
+                this,
+                mDrawerLayout,
+                R.string.drawer_open,
+                R.string.drawer_close
+        ) {
+        };
+
+        mDrawerLayout.addDrawerListener(mDrawerToggle);
     }
 
     @Override
@@ -131,14 +169,30 @@ public class ConversationActivity extends LoadableListActivity implements Action
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
+        prepareDrawer();
+
         if (mMessageEditor != null) {
             mMessageEditor.onPrepareOptionsMenu(menu);
         }
         return super.onPrepareOptionsMenu(menu);
     }
 
+    private void prepareDrawer() {
+        View drawerView = findViewById(R.id.navigation_drawer);
+        if (drawerView == null) {
+            return;
+        }
+        MyCheckBox.set(drawerView, R.id.showThreadsOfConversation,
+                showThreadsOfConversation, this::onShowThreadsOfConversationChanged);
+        MyCheckBox.set(drawerView, R.id.oldMessagesFirstInConversation,
+                oldMessagesFirstInConversation, this::onOldMessagesFirstInConversationChanged);
+    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        if (mDrawerToggle.onOptionsItemSelected(item)) {
+            return true;
+        }
         switch (item.getItemId()) {
             case R.id.commands_queue_id:
                 startActivity(new Intent(getActivity(), QueueViewer.class));
@@ -148,7 +202,26 @@ public class ConversationActivity extends LoadableListActivity implements Action
         }
         return super.onOptionsItemSelected(item);
     }
-    
+
+    public void onShowThreadsOfConversationChanged(View v, boolean isChecked) {
+        closeDrawer();
+        showThreadsOfConversation = isChecked;
+        MyPreferences.setShowThreadsOfConversation(isChecked);
+        updateList(TriState.UNKNOWN, 0, true);
+    }
+
+    public void onOldMessagesFirstInConversationChanged(View v, boolean isChecked) {
+        closeDrawer();
+        oldMessagesFirstInConversation = isChecked;
+        MyPreferences.setOldMessagesFirstInConversation(isChecked);
+        showList(WhichPage.CURRENT);
+    }
+
+    private void closeDrawer() {
+        ViewGroup mDrawerList = (ViewGroup) findViewById(R.id.navigation_drawer);
+        mDrawerLayout.closeDrawer(mDrawerList);
+    }
+
     @Override
     public LoadableListActivity getActivity() {
         return this;
@@ -179,12 +252,14 @@ public class ConversationActivity extends LoadableListActivity implements Action
     protected SyncLoader newSyncLoader(Bundle args) {
         return new ConversationLoaderFactory<ConversationViewItem>().
                 getLoader(ConversationViewItem.class,
-                getMyContext(), getCurrentMyAccount(), centralItemId);
+                getMyContext(), getCurrentMyAccount(), centralItemId,
+                        oldMessagesFirstInConversation);
     }
 
     @Override
     protected MyBaseAdapter newListAdapter() {
-        return new ConversationViewAdapter(mContextMenu, centralItemId, getListLoader().getList());
+        return new ConversationViewAdapter(mContextMenu, centralItemId, getListLoader().getList(),
+                showThreadsOfConversation);
     }
 
     @Override
