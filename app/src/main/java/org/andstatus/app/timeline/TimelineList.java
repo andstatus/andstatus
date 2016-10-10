@@ -113,7 +113,7 @@ public class TimelineList extends LoadableListActivity {
                 textView.setText(text);
             }
             if (textView.getId() == sortByField) {
-                textView.setText((sortDefault ? "▲" : "▼") + text);
+                textView.setText((sortDefault ? '▲' : '▼') + text);
             }
         }
     }

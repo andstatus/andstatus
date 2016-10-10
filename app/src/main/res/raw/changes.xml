@@ -54,9 +54,6 @@
                 Conversation view.
                 <a href="https://github.com/andstatus/andstatus/issues/412">#412</a>
             </change>
-            <change>In order to use Java 8 features in the application development,
-                source code build configuration switched to the
-                <a href="https://source.android.com/source/jack.html">Jack toolchain</a>.</change>
         </changes>
     </release>
     <release android:versionName="30.00" android:versionCode="193"

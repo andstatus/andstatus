@@ -25,6 +25,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CompoundButton;
 
 import org.andstatus.app.ActivityRequestCode;
 import org.andstatus.app.IntentExtra;
@@ -40,6 +41,7 @@ import org.andstatus.app.timeline.Timeline;
 import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyCheckBox;
+import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
 import org.andstatus.app.widget.MyBaseAdapter;
@@ -183,9 +185,19 @@ public class ConversationActivity extends LoadableListActivity implements Action
             return;
         }
         MyCheckBox.set(drawerView, R.id.showThreadsOfConversation,
-                showThreadsOfConversation, this::onShowThreadsOfConversationChanged);
+                showThreadsOfConversation, new CompoundButton.OnCheckedChangeListener() {
+                    @Override
+                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                        onShowThreadsOfConversationChanged(buttonView, isChecked);
+                    }
+                });
         MyCheckBox.set(drawerView, R.id.oldMessagesFirstInConversation,
-                oldMessagesFirstInConversation, this::onOldMessagesFirstInConversationChanged);
+                oldMessagesFirstInConversation, new CompoundButton.OnCheckedChangeListener() {
+                    @Override
+                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                        onOldMessagesFirstInConversationChanged(buttonView, isChecked);
+                    }
+                });
     }
 
     @Override

@@ -146,7 +146,12 @@ public class TimelineActivity extends LoadableListActivity implements
 
         View view = findViewById(R.id.my_action_bar);
         if (view != null) {
-            view.setOnClickListener(this::onTimelineTitleClick);
+            view.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    onTimelineTitleClick(v);
+                }
+            });
         }
 
         if (savedInstanceState != null) {

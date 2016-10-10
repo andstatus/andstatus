@@ -16,10 +16,6 @@ android {
         testInstrumentationRunner "android.test.InstrumentationTestRunner"
         project.ext.set("archivesBaseName", "AndStatus-$versionName".toString());
         project.ext.set("versionName", "$versionName".toString());
-
-        jackOptions {
-            enabled true
-        }
     }
 
     buildTypes {
@@ -34,10 +30,6 @@ android {
     packagingOptions {
         exclude 'META-INF/NOTICE'
         exclude 'META-INF/LICENSE'
-    }
-    compileOptions {
-        targetCompatibility 1.8
-        sourceCompatibility 1.8
     }
 }
 
