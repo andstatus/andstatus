@@ -22,6 +22,7 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 import android.view.Menu;
 
@@ -333,9 +334,24 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
             );
         }
     },
+    MESSAGE_LINK {
+        @Override
+        void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
+            MessageShare.openLink(menu.getActivity(), extractUrlFromTitle(menu.getSelectedItemTitle()));
+        }
+
+        private String extractUrlFromTitle(@NonNull String title) {
+            int ind = title.indexOf(MESSAGE_LINK_SEPARATOR);
+            if (ind < 0) {
+                return title;
+            }
+            return title.substring(ind + MESSAGE_LINK_SEPARATOR.length());
+        }
+    },
     NONEXISTENT(),
     UNKNOWN();
 
+    public static final String MESSAGE_LINK_SEPARATOR = ": ";
     private static final String TAG = MessageListContextMenuItem.class.getSimpleName();
     private final boolean mIsAsync;
 

@@ -41,7 +41,7 @@ public class MessageForAccount {
     public final long msgId;
     public final Origin origin;
     public DownloadStatus status = DownloadStatus.UNKNOWN;
-    public String bodyTrimmed = "";
+    private String body = "";
     public long authorId = 0;
     public long senderId = 0;
     private boolean isSenderMySucceededAccount = false;
@@ -60,7 +60,7 @@ public class MessageForAccount {
     public boolean reblogged = false;
     public boolean senderFollowed = false;
     public boolean authorFollowed = false;
-    
+
     public MessageForAccount(long msgId, long originId, MyAccount myAccount) {
         this.msgId = msgId;
         this.origin = MyContextHolder.get().persistentOrigins().fromId(originId);
@@ -81,6 +81,10 @@ public class MessageForAccount {
             ma = MyAccount.getEmpty();
         }
         return ma;
+    }
+
+    public String getBodyTrimmed() {
+        return I18n.trimTextAt(MyHtml.fromHtml(body), 80).toString();
     }
 
     private void getData() {
@@ -110,8 +114,7 @@ public class MessageForAccount {
                 isSenderMySucceededAccount = MyContextHolder.get().persistentAccounts().fromUserId(senderId).isValidAndSucceeded();
                 recipientId = DbUtils.getLong(cursor, MsgTable.RECIPIENT_ID);
                 imageFilename = DbUtils.getString(cursor, DownloadTable.IMAGE_FILE_NAME);
-                bodyTrimmed = I18n.trimTextAt(MyHtml.fromHtml(
-                        DbUtils.getString(cursor, MsgTable.BODY)), 80).toString();
+                body = DbUtils.getString(cursor, MsgTable.BODY);
                 inReplyToUserId = DbUtils.getLong(cursor, MsgTable.IN_REPLY_TO_USER_ID);
                 mayBePrivate = (recipientId != 0) || (inReplyToUserId != 0);
                 

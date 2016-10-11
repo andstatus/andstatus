@@ -17,11 +17,15 @@
 package org.andstatus.app.msg;
 
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
+import android.text.style.URLSpan;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.MenuItem;
+import android.view.SubMenu;
 import android.view.View;
+import android.view.accessibility.AccessibilityManager;
 import android.widget.AdapterView;
 
 import org.andstatus.app.ContextMenuHeader;
@@ -35,13 +39,16 @@ import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.Timeline;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.MyUrlSpan;
+import org.andstatus.app.util.StringUtils;
+
+import static android.content.Context.ACCESSIBILITY_SERVICE;
 
 /**
  * Context menu and corresponding actions on messages from the list 
  * @author yvolk@yurivolkov.com
  */
 public class MessageContextMenu extends MyContextMenu {
-
     public final ActionableMessageList messageList;
     
     /**
@@ -52,6 +59,7 @@ public class MessageContextMenu extends MyContextMenu {
     public String imageFilename = null;
 
     private MessageForAccount msg;
+    private String selectedItemTitle = "";
 
     public MessageContextMenu(ActionableMessageList actionableMessageList) {
         super(actionableMessageList.getActivity());
@@ -69,9 +77,12 @@ public class MessageContextMenu extends MyContextMenu {
         MessageViewItem viewItem = (MessageViewItem) oViewItem;
         int order = 0;
         try {
-            new ContextMenuHeader(getActivity(), menu).setTitle(msg.bodyTrimmed)
+            new ContextMenuHeader(getActivity(), menu).setTitle(msg.getBodyTrimmed())
                     .setSubtitle(msg.getMyAccount().getAccountName());
-
+            if (((AccessibilityManager) getMyContext().context().
+                    getSystemService(ACCESSIBILITY_SERVICE)).isTouchExplorationEnabled()) {
+                addMessageLinksSubmenu(menu, v, order++);
+            }
             MessageListContextMenuItem.OPEN_CONVERSATION.addTo(menu, order++, R.string.menu_item_open_conversation);
             if (viewItem.isCollapsed()) {
                 MessageListContextMenuItem.SHOW_DUPLICATES.addTo(menu, order++, R.string.show_duplicates);
@@ -183,6 +194,30 @@ public class MessageContextMenu extends MyContextMenu {
         }
     }
 
+    private void addMessageLinksSubmenu(ContextMenu menu, View v, int order) {
+        URLSpan[] links = MyUrlSpan.getUrlSpans(v.findViewById(R.id.message_body));
+        switch (links.length) {
+            case 0:
+                break;
+            case 1:
+                menu.add(ContextMenu.NONE, MessageListContextMenuItem.MESSAGE_LINK.getId(),
+                            order, getActivity().getText(R.string.n_message_link).toString() +
+                                MessageListContextMenuItem.MESSAGE_LINK_SEPARATOR +
+                                links[0].getURL());
+                break;
+            default:
+                SubMenu subMenu = menu.addSubMenu(ContextMenu.NONE, ContextMenu.NONE, order,
+                        String.format(getActivity().getText(R.string.n_message_links).toString(),
+                                        links.length));
+                int orderSubmenu = 0;
+                for (URLSpan link : links) {
+                    subMenu.add(ContextMenu.NONE, MessageListContextMenuItem.MESSAGE_LINK.getId(),
+                            orderSubmenu++, link.getURL());
+                }
+                break;
+        }
+    }
+
     protected void saveContextOfSelectedItem(View v) {
         final String method = "saveContextOfSelectedItem";
         mMsgId = 0;
@@ -252,6 +287,7 @@ public class MessageContextMenu extends MyContextMenu {
             MyLog.e(this, "message id == 0" + msgInfo);
             return;
         }
+        setSelectedItemTitle(String.valueOf(item.getTitle()));
         onContextMenuItemSelected(MessageListContextMenuItem.fromId(item.getItemId()), mMsgId,
                 getMyActor());
     }
@@ -295,5 +331,14 @@ public class MessageContextMenu extends MyContextMenu {
 
     public Origin getOrigin() {
         return msg == null ? Origin.getEmpty() : msg.origin;
+    }
+
+    @NonNull
+    public String getSelectedItemTitle() {
+        return selectedItemTitle;
+    }
+
+    public void setSelectedItemTitle(String selectedItemTitle) {
+        this.selectedItemTitle = StringUtils.notNull(selectedItemTitle);
     }
 }

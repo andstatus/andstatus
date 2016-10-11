@@ -115,18 +115,18 @@ public class MessageShare {
      * @return true if succeeded
      */
     public boolean openPermalink(Context context) {
-        if (origin == null) {
-            return false;
-        }
-        Intent intent = new Intent(android.content.Intent.ACTION_VIEW);
-        String permalinkString = origin.messagePermalink(messageId);
-        if (TextUtils.isEmpty(permalinkString)) {
+        return origin == null ? false : openLink(context, origin.messagePermalink(messageId));
+    }
+
+    public static boolean openLink(Context context, String urlString) {
+        if (TextUtils.isEmpty(urlString)) {
             return false;
         } else {
-            intent.setData(Uri.parse(permalinkString));
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            intent.setData(Uri.parse(urlString));
             context.startActivity(intent);
             return true;
         }
     }
-    
+
 }

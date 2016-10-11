@@ -54,6 +54,13 @@
                 Conversation view.
                 <a href="https://github.com/andstatus/andstatus/issues/412">#412</a>
             </change>
+            <change>Accessibility. Implemented "Make links clickable for talkback users".<br/>
+                In a case "the touch exploration in the system is enabled" AndStatus adds new
+                item to the top of the message's context menu: "N message links", where "N" is
+                the actual number of clickable links.
+                Clicking on this item opens the submenu with an item for each link.
+                <a href="https://github.com/andstatus/andstatus/issues/392">#392</a>
+            </change>
         </changes>
     </release>
     <release android:versionName="30.00" android:versionCode="193"

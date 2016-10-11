@@ -222,14 +222,23 @@ public class MyUrlSpan extends URLSpan {
         CharSequence text = textView.getText();
         SpannableString spannable = SpannableString.class.isAssignableFrom(text.getClass())
                 ? (SpannableString) text : SpannableString.valueOf(text);
-        URLSpan[] spans= spannable.getSpans(0, spannable.length(), URLSpan.class);
+        URLSpan[] spans = spannable.getSpans(0, spannable.length(), URLSpan.class);
         for (URLSpan span : spans) {
-            int start=spannable.getSpanStart(span);
-            int end=spannable.getSpanEnd(span);
+            int start = spannable.getSpanStart(span);
+            int end = spannable.getSpanEnd(span);
             spannable.removeSpan(span);
             spannable.setSpan(new MyUrlSpan(span.getURL()), start, end, 0);
         }
         textView.setText(spannable);
     }
 
+    public static URLSpan[] getUrlSpans(View view) {
+        if (view != null && TextView.class.isAssignableFrom(view.getClass())) {
+            CharSequence text = ((TextView) view).getText();
+            if (Spanned.class.isAssignableFrom(text.getClass())) {
+                return ((Spanned) text).getSpans(0, text.length(), URLSpan.class);
+            }
+        }
+        return new URLSpan[] {};
+    }
 }
