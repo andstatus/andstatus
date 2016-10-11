@@ -24,6 +24,7 @@ import org.andstatus.app.database.MsgTable;
 public abstract class ConversationItem extends MessageViewItem implements Comparable<ConversationItem> {
     long mInReplyToMsgId = 0;
 
+    boolean reversedListOrder = false;
     /** Numeration starts from 0 **/
     int mListOrder = 0;
     /**
@@ -36,7 +37,11 @@ public abstract class ConversationItem extends MessageViewItem implements Compar
     int mNParentReplies = 0;
     int mIndentLevel = 0;
     int mReplyLevel = 0;
-    
+
+    public void setReversedListOrder(boolean reversedListOrder) {
+        this.reversedListOrder = reversedListOrder;
+    }
+
     /**
      * The newest replies are first, "branches" look up
      */
@@ -54,6 +59,7 @@ public abstract class ConversationItem extends MessageViewItem implements Compar
                 compared = (another.createdDate - createdDate > 0 ? 1 : -1);
             }
         }
+        if (reversedListOrder) compared = 0 - compared;
         return compared;
     }
 

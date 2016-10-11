@@ -28,8 +28,8 @@ import java.util.List;
  */
 public class RecursiveConversationLoader<T extends ConversationItem> extends ConversationLoader<T> {
     public RecursiveConversationLoader(Class<T> tClass, MyContext myContext, MyAccount ma,
-                                       long selectedMessageId, boolean oldMessagesFirst) {
-        super(tClass, myContext, ma, selectedMessageId, oldMessagesFirst);
+                                       long selectedMessageId) {
+        super(tClass, myContext, ma, selectedMessageId);
     }
 
     @Override

@@ -39,6 +39,7 @@ import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.widget.MyBaseAdapter;
 
+import java.util.Collections;
 import java.util.List;
 
 public class ConversationViewAdapter extends MyBaseAdapter {
@@ -51,7 +52,9 @@ public class ConversationViewAdapter extends MyBaseAdapter {
 
     public ConversationViewAdapter(MessageContextMenu contextMenu,
                                    long selectedMessageId,
-                                   List<ConversationViewItem> oMsgs, boolean showThreads) {
+                                   List<ConversationViewItem> oMsgs,
+                                   boolean showThreads,
+                                   boolean oldMessagesFirst) {
         super(contextMenu.getActivity().getMyContext());
         this.contextMenu = contextMenu;
         this.context = this.contextMenu.getActivity();
@@ -59,6 +62,14 @@ public class ConversationViewAdapter extends MyBaseAdapter {
         this.selectedMessageId = selectedMessageId;
         this.oMsgs = oMsgs;
         this.showThreads = showThreads;
+        setReversedListOrder(oldMessagesFirst);
+        Collections.sort(this.oMsgs);
+    }
+
+    private void setReversedListOrder(boolean oldMessagesFirst) {
+        for (ConversationItem oMsg : oMsgs) {
+            oMsg.setReversedListOrder(oldMessagesFirst);
+        }
     }
 
     @Override

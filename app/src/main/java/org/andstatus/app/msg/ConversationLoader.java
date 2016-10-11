@@ -49,7 +49,6 @@ public abstract class ConversationLoader<T extends ConversationItem> implements 
     protected boolean mAllowLoadingFromInternet = false;
     private final ReplyLevelComparator<T> replyLevelComparator = new ReplyLevelComparator<>();
     private final TFactory<T> tFactory;
-    private final boolean oldMessagesFirst;
 
     final List<T> mMsgs = new ArrayList<>();
     LoadableListActivity.ProgressPublisher mProgress;
@@ -61,13 +60,11 @@ public abstract class ConversationLoader<T extends ConversationItem> implements 
     final List<Long> idsOfTheMessagesToFind = new ArrayList<>();
 
     public ConversationLoader(
-            Class<T> tClass, MyContext myContext, MyAccount ma, long selectedMessageId,
-            boolean oldMessagesFirst) {
+            Class<T> tClass, MyContext myContext, MyAccount ma, long selectedMessageId) {
         tFactory = new TFactory<>(tClass);
         this.myContext = myContext;
         this.ma = ma;
         this.selectedMessageId = selectedMessageId;
-        this.oldMessagesFirst = oldMessagesFirst;
     }
     
     @Override
@@ -78,8 +75,6 @@ public abstract class ConversationLoader<T extends ConversationItem> implements 
         load2(newOMsg(selectedMessageId, 0));
         Collections.sort(mMsgs, replyLevelComparator);
         enumerateMessages();
-        if (oldMessagesFirst) reverseListOrder();
-        Collections.sort(mMsgs);
     }
 
     protected abstract void load2(T oMsg);

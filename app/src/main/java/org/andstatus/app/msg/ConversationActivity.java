@@ -41,7 +41,6 @@ import org.andstatus.app.timeline.Timeline;
 import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyCheckBox;
-import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
 import org.andstatus.app.widget.MyBaseAdapter;
@@ -226,7 +225,7 @@ public class ConversationActivity extends LoadableListActivity implements Action
         closeDrawer();
         oldMessagesFirstInConversation = isChecked;
         MyPreferences.setOldMessagesFirstInConversation(isChecked);
-        showList(WhichPage.CURRENT);
+        updateList(TriState.UNKNOWN, 0, true);
     }
 
     private void closeDrawer() {
@@ -264,14 +263,13 @@ public class ConversationActivity extends LoadableListActivity implements Action
     protected SyncLoader newSyncLoader(Bundle args) {
         return new ConversationLoaderFactory<ConversationViewItem>().
                 getLoader(ConversationViewItem.class,
-                getMyContext(), getCurrentMyAccount(), centralItemId,
-                        oldMessagesFirstInConversation);
+                getMyContext(), getCurrentMyAccount(), centralItemId);
     }
 
     @Override
     protected MyBaseAdapter newListAdapter() {
         return new ConversationViewAdapter(mContextMenu, centralItemId, getListLoader().getList(),
-                showThreadsOfConversation);
+                showThreadsOfConversation, oldMessagesFirstInConversation);
     }
 
     @Override
