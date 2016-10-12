@@ -61,6 +61,8 @@
                 Clicking on this item opens the submenu with an item for each link.
                 <a href="https://github.com/andstatus/andstatus/issues/392">#392</a>
             </change>
+            <change>Presentation of messages in the Timeline and in the Conversation view unified.
+                Most visible difference: avatars positioning and buttons below messages.</change>
         </changes>
     </release>
     <release android:versionName="30.00" android:versionCode="193"

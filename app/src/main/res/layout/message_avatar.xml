@@ -23,6 +23,11 @@
                 tools:context=".msg.TimelineActivity"
                 tools:theme="@style/Theme.AndStatus.FullyDefined" >
 
+    <ImageView android:id="@+id/indent_image"
+               android:visibility="gone"
+               android:layout_height="match_parent"
+               android:layout_width="wrap_content" />
+
     <View android:id="@+id/divider" style="@style/Divider"/>
 
     <LinearLayout

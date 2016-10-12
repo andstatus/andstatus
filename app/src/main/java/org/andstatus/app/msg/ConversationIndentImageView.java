@@ -17,7 +17,9 @@
 package org.andstatus.app.msg;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
@@ -29,17 +31,17 @@ import org.andstatus.app.util.MyLog;
  * @author yvolk@yurivolkov.com
  */
 public class ConversationIndentImageView extends ImageView {
-    private View referencedView;
-    private int widthPixels;
-    private static final int MIN_HEIGH = 80;
+    private final View referencedView;
+    private final int widthPixels;
+    private static final int MIN_HEIGHT = 80;
     /** It's a height of the underlying bitmap (not cropped) */
-    private static final int MAX_HEIGH = 2500;
+    private static final int MAX_HEIGHT = 2500;
     
     public ConversationIndentImageView(Context contextIn, View referencedViewIn, int widthPixelsIn) {
         super(contextIn);
         referencedView = referencedViewIn;
         widthPixels = widthPixelsIn;
-        RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(widthPixels, MIN_HEIGH);
+        RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(widthPixels, MIN_HEIGHT);
         setScaleType(ScaleType.MATRIX);
         layoutParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT, RelativeLayout.TRUE);
         setLayoutParams(layoutParams);
@@ -49,11 +51,12 @@ public class ConversationIndentImageView extends ImageView {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         final String method = "onMeasure";
-        int height = referencedView.getMeasuredHeight();
-        MyLog.v(this, method + "; indent=" + widthPixels + ", refHeight=" + height + ", spec=" + MeasureSpec.toString(heightMeasureSpec));
+        int height = getHeightWithMargins(referencedView);
+        MyLog.v(this, method + "; indent=" + widthPixels + ", refHeight=" + height + ", spec=" +
+                MeasureSpec.toString(heightMeasureSpec));
         int mode = MeasureSpec.EXACTLY;
         if (height == 0) {
-            height = MAX_HEIGH;
+            height = MAX_HEIGHT;
             mode = MeasureSpec.AT_MOST;
         } else {
             getLayoutParams().height = height;
@@ -61,5 +64,14 @@ public class ConversationIndentImageView extends ImageView {
         int measuredWidth = MeasureSpec.makeMeasureSpec(widthPixels,  MeasureSpec.EXACTLY);
         int measuredHeight = MeasureSpec.makeMeasureSpec(height, mode);
         setMeasuredDimension(measuredWidth, measuredHeight);
+    }
+
+    private static int getHeightWithMargins(@NonNull View view) {
+        int height = view.getMeasuredHeight();
+        if (height > 0 && ViewGroup.MarginLayoutParams.class.isAssignableFrom(view.getLayoutParams().getClass())) {
+            ViewGroup.MarginLayoutParams layoutParams = (ViewGroup.MarginLayoutParams) view.getLayoutParams();
+            height += layoutParams.topMargin + layoutParams.bottomMargin;
+        }
+        return height;
     }
 }

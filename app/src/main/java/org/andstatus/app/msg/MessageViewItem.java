@@ -22,6 +22,7 @@ import android.support.annotation.NonNull;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.widget.DuplicatesCollapsible;
@@ -38,6 +39,8 @@ public class MessageViewItem implements DuplicatesCollapsible<MessageViewItem> {
     public static final int MIN_LENGTH_TO_COMPARE = 5;
     private MyContext myContext = MyContextHolder.get();
     long createdDate = 0;
+
+    DownloadStatus msgStatus = DownloadStatus.UNKNOWN;
 
     private long mMsgId;
     private long originId;
@@ -175,5 +178,9 @@ public class MessageViewItem implements DuplicatesCollapsible<MessageViewItem> {
             link = rebloggers.size() > other.rebloggers.size() ? DuplicationLink.IS_DUPLICATED : DuplicationLink.DUPLICATES;
         }
         return link;
+    }
+
+    public boolean isReblogged() {
+        return !rebloggers.isEmpty();
     }
 }

@@ -45,7 +45,6 @@ import org.andstatus.app.util.SharedPreferencesUtil;
 public class TimelineViewItem extends MessageViewItem {
 
     long sentDate = 0;
-    DownloadStatus msgStatus = DownloadStatus.UNKNOWN;
 
     String authorName = "";
     long authorId = 0;
@@ -172,10 +171,6 @@ public class TimelineViewItem extends MessageViewItem {
         if (msgStatus != DownloadStatus.LOADED) {
             messageDetails.append(" (").append(msgStatus.getTitle(context)).append(")");
         }
-    }
-
-    public boolean isReblogged() {
-        return !rebloggers.isEmpty();
     }
 
     @Override

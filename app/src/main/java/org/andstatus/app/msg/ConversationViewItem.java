@@ -43,7 +43,6 @@ public class ConversationViewItem extends ConversationItem {
     String messageSource = "";
     String mInReplyToName = "";
     String mRecipientName = "";
-    DownloadStatus mStatus = DownloadStatus.UNKNOWN;
 
     Drawable mAvatarDrawable = null;
     AttachedImageFile mImageFile = AttachedImageFile.EMPTY;
@@ -76,7 +75,7 @@ public class ConversationViewItem extends ConversationItem {
             if (ind == 0) {
                 // This is the same for all retrieved rows
                 super.load(cursor);
-                mStatus = DownloadStatus.load(DbUtils.getLong(cursor, MsgTable.MSG_STATUS));
+                msgStatus = DownloadStatus.load(DbUtils.getLong(cursor, MsgTable.MSG_STATUS));
                 mAuthor = TimelineSql.userColumnNameToNameAtTimeline(cursor, UserTable.AUTHOR_NAME, false);
                 body = MyHtml.prepareForView(DbUtils.getString(cursor, MsgTable.BODY));
                 String via = DbUtils.getString(cursor, MsgTable.VIA);

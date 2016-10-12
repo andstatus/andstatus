@@ -37,13 +37,11 @@ import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyUrlSpan;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.SharedPreferencesUtil;
-import org.andstatus.app.widget.MyBaseAdapter;
 
 import java.util.Collections;
 import java.util.List;
 
-public class ConversationViewAdapter extends MyBaseAdapter {
-    private final MessageContextMenu contextMenu;
+public class ConversationViewAdapter extends MessageListAdapter {
     private final Context context;
     private final MyAccount ma;
     private final long selectedMessageId;
@@ -55,8 +53,7 @@ public class ConversationViewAdapter extends MyBaseAdapter {
                                    List<ConversationViewItem> oMsgs,
                                    boolean showThreads,
                                    boolean oldMessagesFirst) {
-        super(contextMenu.getActivity().getMyContext());
-        this.contextMenu = contextMenu;
+        super(contextMenu);
         this.context = this.contextMenu.getActivity();
         this.ma = myContext.persistentAccounts().fromUserId(this.contextMenu.getCurrentMyAccountUserId());
         this.selectedMessageId = selectedMessageId;
@@ -100,23 +97,25 @@ public class ConversationViewAdapter extends MyBaseAdapter {
         setPosition(view, position);
 
         showIndent(item, view);
+        showRebloggers(item, view);
         showMessageAuthor(item, view);
         showMessageNumber(item, view);
         showMessageBody(item, view);
         showMessageDetails(item, view);
-        showFavorited(item, view);
+        if (showButtonsBelowMessages) {
+            showButtonsBelowMessage(item, view);
+        } else {
+            showFavorited(item, view);
+        }
         return view;
     }
 
     private View newView() {
-        LayoutInflater inflater = LayoutInflater.from(context);
-        int layoutResource = R.layout.message_conversation;
-        if (!Activity.class.isAssignableFrom(context.getClass())) {
-            MyLog.w(this, "Context should be from an Activity");
-        }
-        return inflater.inflate(layoutResource, null);
+        View view = LayoutInflater.from(contextMenu.getActivity()).inflate(R.layout.message_avatar, null);
+        setupButtons(view);
+        return view;
     }
-    
+
     private void showIndent(ConversationViewItem item, View messageView) {
         final int indentLevel = showThreads ? item.mIndentLevel : 0;
         int indentPixels = dpToPixes(10) * indentLevel;
@@ -133,24 +132,18 @@ public class ConversationViewAdapter extends MyBaseAdapter {
         item.mImageFile.showAttachedImage(contextMenu.messageList,
                 (ImageView) messageView.findViewById(R.id.attached_image));
 
-        int viewToTheLeftId = 0;
-        if (indentLevel > 0) {
-            viewToTheLeftId = R.id.indent_image;
-        }
-        View divider = messageView.findViewById(R.id.divider);
-        RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 1);
-        layoutParams.leftMargin = indentPixels > 3 ? indentPixels - 4 : 0;
-        divider.setLayoutParams(layoutParams);
+        showIndentView(messageIndented, indentPixels);
 
-        setIndentView(messageIndented, indentPixels);
+        int viewToTheLeftId = indentLevel == 0 ? 0 : R.id.indent_image;
+        showDivider(messageView, viewToTheLeftId);
 
         if (MyPreferences.getShowAvatars()) {
-            indentPixels = setAvatar(item, messageIndented, viewToTheLeftId, indentPixels);
+            indentPixels = showAvatar(item, messageIndented, viewToTheLeftId, indentPixels);
         }
         messageIndented.setPadding(indentPixels + 6, 2, 6, 2);
     }
 
-    private void setIndentView(LinearLayout messageIndented, int indentPixels) {
+    private void showIndentView(LinearLayout messageIndented, int indentPixels) {
         ViewGroup parentView = ((ViewGroup) messageIndented.getParent());
         ImageView oldView = (ImageView) parentView.findViewById(R.id.indent_image);
         if (oldView != null) {
@@ -163,7 +156,14 @@ public class ConversationViewAdapter extends MyBaseAdapter {
         }
     }
 
-    private int setAvatar(ConversationViewItem oMsg, LinearLayout messageIndented, int viewToTheLeftId, int indentPixels) {
+    private void showDivider(View messageView, int viewToTheLeftId) {
+        RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 1);
+        setRightOf(layoutParams, viewToTheLeftId);
+        View divider = messageView.findViewById(R.id.divider);
+        divider.setLayoutParams(layoutParams);
+    }
+
+    private int showAvatar(ConversationViewItem oMsg, LinearLayout messageIndented, int viewToTheLeftId, int indentPixels) {
         ViewGroup parentView = ((ViewGroup) messageIndented.getParent());
         ImageView avatarView = (ImageView) parentView.findViewById(R.id.avatar_image);
         boolean newView = avatarView == null;
@@ -178,11 +178,7 @@ public class ConversationViewAdapter extends MyBaseAdapter {
         if (oMsg.mIndentLevel > 0) {
             layoutParams.leftMargin = 1;
         }
-        if (viewToTheLeftId == 0) {
-            layoutParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT, RelativeLayout.TRUE);
-        } else {
-            layoutParams.addRule(RelativeLayout.RIGHT_OF, viewToTheLeftId);
-        }
+        setRightOf(layoutParams, viewToTheLeftId);
         avatarView.setLayoutParams(layoutParams);
         if (oMsg.mAvatarDrawable != null) {
             avatarView.setImageDrawable(oMsg.mAvatarDrawable);
@@ -192,6 +188,14 @@ public class ConversationViewAdapter extends MyBaseAdapter {
             parentView.addView(avatarView);
         }
         return indentPixels;
+    }
+
+    private void setRightOf(RelativeLayout.LayoutParams layoutParams, int viewToTheLeftId) {
+        if (viewToTheLeftId == 0) {
+            layoutParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT, RelativeLayout.TRUE);
+        } else {
+            layoutParams.addRule(RelativeLayout.RIGHT_OF, viewToTheLeftId);
+        }
     }
 
     private void showMessageAuthor(ConversationViewItem item, View messageView) {
@@ -229,32 +233,14 @@ public class ConversationViewAdapter extends MyBaseAdapter {
                     + (item.mInReplyToMsgId != 0 ? " (" + msgIdToHistoryOrder(item.mInReplyToMsgId) + ")" : "");
         }
 
-        String rebloggersString = "";
-        for (String reblogger : item.rebloggers.values()) {
-            if (!TextUtils.isEmpty(rebloggersString)) {
-                rebloggersString += ", ";
-            }
-            rebloggersString += reblogger;
-        }
-        if (!SharedPreferencesUtil.isEmpty(rebloggersString)
-                && !rebloggersString.equals(item.mAuthor)) {
-            if (!TextUtils.isEmpty(inReplyToName)) {
-                messageDetails += ";";
-            }
-            messageDetails += " "
-                    + String.format(
-                            context.getText(ma.alternativeTermForResourceId(R.string.reblogged_by))
-                                    .toString(), rebloggersString);
-        }
-
         if (!SharedPreferencesUtil.isEmpty(item.mRecipientName)) {
             messageDetails += " "
                     + String.format(
                             context.getText(R.string.message_source_to)
                             .toString(), item.mRecipientName);
         }
-        if (item.mStatus != DownloadStatus.LOADED) {
-            messageDetails += " (" + item.mStatus.getTitle(context) + ")";
+        if (item.msgStatus != DownloadStatus.LOADED) {
+            messageDetails += " (" + item.msgStatus.getTitle(context) + ")";
         }
         if (MyPreferences.getShowDebuggingInfoInUi()) {
             messageDetails = messageDetails + " (i" + item.mIndentLevel + ",r" + item.mReplyLevel + ")";
@@ -262,11 +248,6 @@ public class ConversationViewAdapter extends MyBaseAdapter {
         ((TextView) messageView.findViewById(R.id.message_details)).setText(messageDetails);
     }
 
-    private void showFavorited(ConversationViewItem item, View messageView) {
-        ImageView favorited = (ImageView) messageView.findViewById(R.id.message_favorited);
-        favorited.setVisibility(item.favorited ? View.VISIBLE : View.GONE );
-    }
-    
     private int msgIdToHistoryOrder(long msgId) {
         for (ConversationViewItem oMsg : oMsgs) {
             if (oMsg.getMsgId() == msgId ) {

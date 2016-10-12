@@ -23,14 +23,11 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.andstatus.app.R;
-import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.graphics.MyImageCache;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyUrlSpan;
 import org.andstatus.app.util.SharedPreferencesUtil;
-import org.andstatus.app.widget.MyBaseAdapter;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -38,14 +35,10 @@ import java.util.Set;
 /**
  * @author yvolk@yurivolkov.com
  */
-public class TimelineAdapter extends MyBaseAdapter {
-    private final MessageContextMenu contextMenu;
-    private final int listItemLayoutId;
+public class TimelineAdapter extends MessageListAdapter {
     private final TimelineData listData;
     private final boolean showAvatars = MyPreferences.getShowAvatars();
     private final boolean showAttachedImages = MyPreferences.getDownloadAndDisplayAttachedImages();
-    private final boolean showButtonsBelowMessages =
-            SharedPreferencesUtil.getBoolean(MyPreferences.KEY_SHOW_BUTTONS_BELOW_MESSAGE, true);
     private final boolean markReplies = SharedPreferencesUtil.getBoolean(
             MyPreferences.KEY_MARK_REPLIES_IN_TIMELINE, false);
     private int positionPrev = -1;
@@ -54,9 +47,7 @@ public class TimelineAdapter extends MyBaseAdapter {
     private final String TOP_TEXT;
 
     public TimelineAdapter(MessageContextMenu contextMenu, TimelineData listData) {
-        super(contextMenu.getActivity().getMyContext());
-        this.contextMenu = contextMenu;
-        this.listItemLayoutId = R.layout.message_avatar;
+        super(contextMenu);
         this.listData = listData;
         TOP_TEXT = myContext.context().getText(R.string.top).toString();
     }
@@ -112,23 +103,16 @@ public class TimelineAdapter extends MyBaseAdapter {
         return view;
     }
 
-    private void showRebloggers(TimelineViewItem item, View view) {
-        View viewGroup = view.findViewById(R.id.reblogged);
-        if (viewGroup == null) {
-            return;
-        } else if (item.isReblogged()) {
-            viewGroup.setVisibility(View.VISIBLE);
-            String rebloggers = "";
-            for (String name : item.rebloggers.values()) {
-                if (!rebloggers.isEmpty()) {
-                    rebloggers += ", ";
-                }
-                rebloggers += name;
+    private View newView() {
+        View view = LayoutInflater.from(contextMenu.getActivity()).inflate(R.layout.message_avatar, null);
+        setupButtons(view);
+        if (!showAvatars) {
+            View message = view.findViewById(R.id.message_indented);
+            if (message != null) {
+                message.setPadding(dpToPixes(2), 0, dpToPixes(6), dpToPixes(2));
             }
-            MyUrlSpan.showText(viewGroup, R.id.rebloggers, rebloggers, false, false);
-        } else {
-            viewGroup.setVisibility(View.GONE);
         }
+        return view;
     }
 
     private void showMessageBody(TimelineViewItem item, View messageView) {
@@ -173,58 +157,6 @@ public class TimelineAdapter extends MyBaseAdapter {
         messageNumberShownCounter++;
     }
 
-    private View newView() {
-        View view = LayoutInflater.from(contextMenu.getActivity()).inflate(listItemLayoutId, null);
-        if (showButtonsBelowMessages) {
-            View buttons = view.findViewById(R.id.message_buttons);
-            if (buttons != null) {
-                buttons.setVisibility(View.VISIBLE);
-                setOnButtonClick(buttons, R.id.reply_button, MessageListContextMenuItem.REPLY);
-                setOnButtonClick(buttons, R.id.reblog_button, MessageListContextMenuItem.REBLOG);
-                setOnButtonClick(buttons, R.id.reblog_button_tinted, MessageListContextMenuItem.DESTROY_REBLOG);
-                setOnButtonClick(buttons, R.id.favorite_button, MessageListContextMenuItem.FAVORITE);
-                setOnButtonClick(buttons, R.id.favorite_button_tinted, MessageListContextMenuItem.DESTROY_FAVORITE);
-                setOnButtonClick(buttons, R.id.more_button, MessageListContextMenuItem.UNKNOWN);
-            }
-        }
-        if (!showAvatars) {
-            View message = view.findViewById(R.id.message_indented);
-            if (message != null) {
-                message.setPadding(dpToPixes(2), 0, dpToPixes(6), dpToPixes(2));
-            }
-        }
-        return view;
-    }
-
-    private void setOnButtonClick(final View viewGroup, int buttonId, final MessageListContextMenuItem menuItem) {
-        viewGroup.findViewById(buttonId).setOnClickListener(
-                new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        if (menuItem.equals(MessageListContextMenuItem.UNKNOWN)) {
-                            viewGroup.showContextMenu();
-                        } else {
-                            onButtonClick(v, menuItem);
-                        }
-                    }
-                }
-        );
-    }
-
-    private void onButtonClick(View v, MessageListContextMenuItem contextMenuItemIn) {
-        TimelineViewItem item = getItem(v);
-        if (item != null && item.msgStatus == DownloadStatus.LOADED) {
-            MyAccount actor = item.getLinkedMyAccount();
-            // Currently selected account is the best candidate as an actor
-            MyAccount ma = myContext.persistentAccounts().fromUserId(
-                    contextMenu.getCurrentMyAccountUserId());
-            if (ma.isValid() && ma.getOriginId() == item.getOriginId()) {
-                actor = ma;
-            }
-            contextMenu.onContextMenuItemSelected(contextMenuItemIn, item.getMsgId(), actor);
-        }
-    }
-
     private void showAvatar(TimelineViewItem item, View view) {
         ImageView avatar = (ImageView) view.findViewById(R.id.avatar_image);
         avatar.setImageDrawable(item.getAvatar());
@@ -234,11 +166,6 @@ public class TimelineAdapter extends MyBaseAdapter {
         preloadedImages.add(item.getMsgId());
         item.getAttachedImageFile().showAttachedImage(contextMenu.messageList,
                 (ImageView) view.findViewById(R.id.attached_image));
-    }
-
-    private void showFavorited(TimelineViewItem item, View view) {
-        View favorited = view.findViewById(R.id.message_favorited);
-        favorited.setVisibility(item.favorited ? View.VISIBLE : View.GONE );
     }
 
     private void showMarkReplies(TimelineViewItem item, View view) {
@@ -253,26 +180,6 @@ public class TimelineAdapter extends MyBaseAdapter {
             view.setBackgroundResource(0);
             view.setPadding(0, 0, 0, 0);
         }
-    }
-
-    private void showButtonsBelowMessage(TimelineViewItem item, View view) {
-        View viewGroup = view.findViewById(R.id.message_buttons);
-        if (viewGroup == null) {
-            return;
-        } else if (showButtonsBelowMessages && item.msgStatus == DownloadStatus.LOADED) {
-            viewGroup.setVisibility(View.VISIBLE);
-            tintIcon(viewGroup, item.reblogged, R.id.reblog_button, R.id.reblog_button_tinted);
-            tintIcon(viewGroup, item.favorited, R.id.favorite_button, R.id.favorite_button_tinted);
-        } else {
-            viewGroup.setVisibility(View.GONE);
-        }
-    }
-
-    private void tintIcon(View viewGroup, boolean colored, int viewId, int viewIdColored) {
-        ImageView imageView = (ImageView) viewGroup.findViewById(viewId);
-        ImageView imageViewTinted = (ImageView) viewGroup.findViewById(viewIdColored);
-        imageView.setVisibility(colored ? View.GONE : View.VISIBLE);
-        imageViewTinted.setVisibility(colored ? View.VISIBLE : View.GONE);
     }
 
     @Override
