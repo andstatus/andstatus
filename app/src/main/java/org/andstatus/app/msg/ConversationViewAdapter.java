@@ -16,10 +16,8 @@
 
 package org.andstatus.app.msg;
 
-import android.app.Activity;
 import android.content.Context;
 import android.text.TextUtils;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -107,12 +105,6 @@ public class ConversationViewAdapter extends MessageListAdapter {
         } else {
             showFavorited(item, view);
         }
-        return view;
-    }
-
-    private View newView() {
-        View view = LayoutInflater.from(contextMenu.getActivity()).inflate(R.layout.message_avatar, null);
-        setupButtons(view);
         return view;
     }
 

@@ -22,7 +22,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
-    tools:showIn="@layout/message_avatar">
+    tools:showIn="@layout/message">
 
     <TextView
         android:id="@+id/message_author"

@@ -103,9 +103,9 @@ public class TimelineAdapter extends MessageListAdapter {
         return view;
     }
 
-    private View newView() {
-        View view = LayoutInflater.from(contextMenu.getActivity()).inflate(R.layout.message_avatar, null);
-        setupButtons(view);
+    @Override
+    protected View newView() {
+        View view = super.newView();
         if (!showAvatars) {
             View message = view.findViewById(R.id.message_indented);
             if (message != null) {

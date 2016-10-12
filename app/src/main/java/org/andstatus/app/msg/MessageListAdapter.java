@@ -16,6 +16,7 @@
 
 package org.andstatus.app.msg;
 
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
 
@@ -38,6 +39,12 @@ public abstract class MessageListAdapter extends MyBaseAdapter {
     public MessageListAdapter(MessageContextMenu contextMenu) {
         super(contextMenu.getMyContext());
         this.contextMenu = contextMenu;
+    }
+
+    protected View newView() {
+        View view = LayoutInflater.from(contextMenu.getActivity()).inflate(R.layout.message, null);
+        setupButtons(view);
+        return view;
     }
 
     protected void showRebloggers(MessageViewItem item, View view) {
