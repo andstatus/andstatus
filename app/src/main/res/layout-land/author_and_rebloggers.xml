@@ -50,8 +50,8 @@
             android:id="@+id/rebloggers"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            style="@style/messageUsernameAppearance"
-            tools:text="reblogger@another.domain, myaccount/LoadAverage"/>
+            style="@style/messageDetailsAppearance"
+            tools:text="reblogger@another.domain, myAccount/LoadAverage"/>
 
     </LinearLayout>
 </LinearLayout>

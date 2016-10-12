@@ -24,13 +24,6 @@
     android:orientation="vertical"
     tools:showIn="@layout/message_avatar">
 
-    <TextView
-        android:id="@+id/message_author"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        style="@style/messageUsernameAppearance"
-        tools:text="author@some.domain"/>
-
     <LinearLayout
         android:id="@+id/reblogged"
         android:layout_width="wrap_content"
@@ -49,10 +42,17 @@
             android:id="@+id/rebloggers"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            style="@style/messageUsernameAppearance"
-            tools:text="reblogger@another.domain, myaccount/LoadAverage"/>
+            style="@style/messageDetailsAppearance"
+            tools:text="reblogger@another.domain, myAccount/LoadAverage"/>
 
     </LinearLayout>
+
+    <TextView
+        android:id="@+id/message_author"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        style="@style/messageUsernameAppearance"
+        tools:text="author@some.domain"/>
 </LinearLayout>
 
         
