@@ -83,7 +83,9 @@ public class MessageContextMenu extends MyContextMenu {
                     getSystemService(ACCESSIBILITY_SERVICE)).isTouchExplorationEnabled()) {
                 addMessageLinksSubmenu(menu, v, order++);
             }
-            MessageListContextMenuItem.OPEN_CONVERSATION.addTo(menu, order++, R.string.menu_item_open_conversation);
+            if (!ConversationActivity.class.isAssignableFrom(getActivity().getClass())) {
+                MessageListContextMenuItem.OPEN_CONVERSATION.addTo(menu, order++, R.string.menu_item_open_conversation);
+            }
             if (viewItem.isCollapsed()) {
                 MessageListContextMenuItem.SHOW_DUPLICATES.addTo(menu, order++, R.string.show_duplicates);
             } else if (getActivity().getListData().canBeCollapsed(getActivity().getPositionOfContextMenu())) {
