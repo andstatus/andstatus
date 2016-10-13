@@ -104,13 +104,25 @@ public class I18n {
     private static boolean isSpace(char charAt) {
         return " ,.;:()[]{}-_=+\"'".indexOf(charAt) >=0;
     }
-    
-    public static StringBuilder appendWithSpace(StringBuilder builder, CharSequence cs) {
-        if (builder != null && !TextUtils.isEmpty(cs)) {
+
+    @NonNull
+    public static StringBuilder appendWithComma(StringBuilder builder, CharSequence text) {
+        return appendWithSeparator(builder, text, ", ");
+    }
+
+    @NonNull
+    public static StringBuilder appendWithSpace(StringBuilder builder, CharSequence text) {
+        return appendWithSeparator(builder, text, " ");
+    }
+
+    @NonNull
+    public static StringBuilder appendWithSeparator(StringBuilder builderIn, CharSequence text, @NonNull String separator) {
+        StringBuilder builder = builderIn == null ? new StringBuilder() : builderIn;
+        if (!TextUtils.isEmpty(text)) {
             if (builder.length() > 0) {
-                builder.append(" ");
+                builder.append(separator);
             }
-            builder.append(cs);
+            builder.append(text);
         }
         return builder;
     }

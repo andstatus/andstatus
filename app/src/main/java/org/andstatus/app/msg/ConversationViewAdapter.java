@@ -27,7 +27,6 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import org.andstatus.app.R;
-import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.graphics.MyImageCache;
@@ -41,7 +40,6 @@ import java.util.List;
 
 public class ConversationViewAdapter extends MessageListAdapter {
     private final Context context;
-    private final MyAccount ma;
     private final long selectedMessageId;
     private final List<ConversationViewItem> oMsgs;
     private final boolean showThreads;
@@ -53,7 +51,6 @@ public class ConversationViewAdapter extends MessageListAdapter {
                                    boolean oldMessagesFirst) {
         super(contextMenu);
         this.context = this.contextMenu.getActivity();
-        this.ma = myContext.persistentAccounts().fromUserId(this.contextMenu.getCurrentMyAccountUserId());
         this.selectedMessageId = selectedMessageId;
         this.oMsgs = oMsgs;
         this.showThreads = showThreads;
@@ -212,9 +209,8 @@ public class ConversationViewAdapter extends MessageListAdapter {
                     context.getText(R.string.message_source_from).toString(),
                     item.messageSource);
         }
-        String inReplyToName = "";
         if (!TextUtils.isEmpty(item.mInReplyToName)) {
-            inReplyToName = item.mInReplyToName;
+            String inReplyToName = item.mInReplyToName;
             if (SharedPreferencesUtil.isEmpty(inReplyToName)) {
                 inReplyToName = "...";
             }

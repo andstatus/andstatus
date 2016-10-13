@@ -24,6 +24,7 @@ import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DownloadStatus;
+import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyUrlSpan;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.widget.MyBaseAdapter;
@@ -53,14 +54,11 @@ public abstract class MessageListAdapter extends MyBaseAdapter {
             return;
         } else if (item.isReblogged()) {
             viewGroup.setVisibility(View.VISIBLE);
-            String rebloggers = "";
+            StringBuilder rebloggers = new StringBuilder();
             for (String name : item.rebloggers.values()) {
-                if (!rebloggers.isEmpty()) {
-                    rebloggers += ", ";
-                }
-                rebloggers += name;
+                I18n.appendWithComma(rebloggers, name);
             }
-            MyUrlSpan.showText(viewGroup, R.id.rebloggers, rebloggers, false, false);
+            MyUrlSpan.showText(viewGroup, R.id.rebloggers, rebloggers.toString(), false, false);
         } else {
             viewGroup.setVisibility(View.GONE);
         }
