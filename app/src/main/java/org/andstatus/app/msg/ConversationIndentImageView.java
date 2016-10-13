@@ -17,14 +17,13 @@
 package org.andstatus.app.msg;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
-import org.andstatus.app.R;
+import org.andstatus.app.graphics.MyImageCache;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.ViewUtils;
 
 /**
  * This custom ImageView allows dynamically crop its image according to the height of the other view
@@ -37,7 +36,8 @@ public class ConversationIndentImageView extends ImageView {
     /** It's a height of the underlying bitmap (not cropped) */
     private static final int MAX_HEIGHT = 2500;
     
-    public ConversationIndentImageView(Context contextIn, View referencedViewIn, int widthPixelsIn) {
+    public ConversationIndentImageView(Context contextIn, View referencedViewIn, int widthPixelsIn, int imageResourceIdLight,
+                                       int imageResourceId) {
         super(contextIn);
         referencedView = referencedViewIn;
         widthPixels = widthPixelsIn;
@@ -45,13 +45,13 @@ public class ConversationIndentImageView extends ImageView {
         setScaleType(ScaleType.MATRIX);
         layoutParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT, RelativeLayout.TRUE);
         setLayoutParams(layoutParams);
-        setImageResource(R.drawable.conversation_indent3);
+        setImageDrawable(MyImageCache.getStyledDrawable(imageResourceIdLight, imageResourceId));
     }
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         final String method = "onMeasure";
-        int height = getHeightWithMargins(referencedView);
+        int height = ViewUtils.getHeightWithMargins(referencedView);
         MyLog.v(this, method + "; indent=" + widthPixels + ", refHeight=" + height + ", spec=" +
                 MeasureSpec.toString(heightMeasureSpec));
         int mode = MeasureSpec.EXACTLY;
@@ -66,12 +66,4 @@ public class ConversationIndentImageView extends ImageView {
         setMeasuredDimension(measuredWidth, measuredHeight);
     }
 
-    private static int getHeightWithMargins(@NonNull View view) {
-        int height = view.getMeasuredHeight();
-        if (height > 0 && ViewGroup.MarginLayoutParams.class.isAssignableFrom(view.getLayoutParams().getClass())) {
-            ViewGroup.MarginLayoutParams layoutParams = (ViewGroup.MarginLayoutParams) view.getLayoutParams();
-            height += layoutParams.topMargin + layoutParams.bottomMargin;
-        }
-        return height;
-    }
 }

@@ -26,6 +26,7 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.AttachedImageFile;
+import org.andstatus.app.data.AvatarFile;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
@@ -249,8 +250,9 @@ public class MessageViewItem implements DuplicatesCollapsible<MessageViewItem> {
         }
     }
 
+    @NonNull
     public Drawable getAvatar() {
-        return avatarDrawable;
+        return avatarDrawable == null ? AvatarFile.getDefaultDrawable() : avatarDrawable;
     }
 
     public AttachedImageFile getAttachedImageFile() {

@@ -72,7 +72,9 @@ public class ConversationInserter extends InstrumentationTestCase {
     
     private void insertAndTestConversation() {
         assertEquals("Only PumpIo supported in this test", OriginType.PUMPIO, TestSuite.CONVERSATION_ORIGIN_TYPE  );
-        
+
+        MbUser myAuthor = buildUserFromOid(ma.getUserOid());
+
         MbUser author2 = buildUserFromOid("acct:second@identi.ca");
         author2.avatarUrl = "http://png.findicons.com/files/icons/1780/black_and_orange/300/android_orange.png";
 
@@ -154,6 +156,10 @@ public class ConversationInserter extends InstrumentationTestCase {
 
         MbMessage reply11 = buildMessage(author2, "Reply 11 to Reply 7, " + TestSuite.GLOBAL_PUBLIC_MESSAGE_TEXT + " text", reply7, null);
         addPublicMessage(reply11, true);
+
+        MbMessage reply13 = buildMessage(myAuthor, "My reply to Reply 2", reply2, null);
+        MbMessage reply14 = buildMessage(author3, "Reply to my message 13", reply13, null);
+        addMessage(reply14);
     }
 
     private MbUser getAuthor1() {

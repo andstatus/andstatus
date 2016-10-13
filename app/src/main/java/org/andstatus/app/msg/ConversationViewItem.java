@@ -88,6 +88,8 @@ public class ConversationViewItem extends ConversationItem {
                 if (MyPreferences.getDownloadAndDisplayAttachedImages()) {
                     attachedImageFile = AttachedImageFile.fromCursor(cursor);
                 }
+                inReplyToMsgId = DbUtils.getLong(cursor, MsgTable.IN_REPLY_TO_MSG_ID);
+                inReplyToUserId = DbUtils.getLong(cursor, MsgTable.IN_REPLY_TO_USER_ID);
                 inReplyToName = TimelineSql.userColumnNameToNameAtTimeline(cursor, UserTable.IN_REPLY_TO_NAME, false);
                 recipientName = TimelineSql.userColumnNameToNameAtTimeline(cursor, UserTable.RECIPIENT_NAME, false);
             }

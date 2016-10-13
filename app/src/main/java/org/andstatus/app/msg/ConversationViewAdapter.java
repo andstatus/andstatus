@@ -20,14 +20,13 @@ import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.ImageView.ScaleType;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import org.andstatus.app.R;
 import org.andstatus.app.graphics.MyImageCache;
 import org.andstatus.app.util.MyUrlSpan;
+import org.andstatus.app.util.ViewUtils;
 
 import java.util.Collections;
 import java.util.List;
@@ -84,7 +83,7 @@ public class ConversationViewAdapter extends MessageListAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        View view = convertView == null ? newView() : convertView;
+        ViewGroup view = getEmptyView(convertView);
         view.setOnCreateContextMenuListener(contextMenu);
         view.setOnClickListener(this);
         setPosition(view, position);
@@ -93,7 +92,15 @@ public class ConversationViewAdapter extends MessageListAdapter {
         MyUrlSpan.showText(view, R.id.message_author, item.authorName, false, false);
         showMessageBody(item, view);
         MyUrlSpan.showText(view, R.id.message_details, item.getDetails(contextMenu.getActivity()).toString(), false, false);
-        showIndent(item, view);
+
+        int indentPixels = getIndentPixels(item);
+        showIndentImage(view, indentPixels);
+        showDivider(view, indentPixels == 0 ? 0 : R.id.indent_image);
+        if (showAvatars) {
+            indentPixels = showAvatar(item, view, indentPixels);
+        }
+        indentMessage(view, indentPixels);
+        showCentralItem(item, view);
         if (showAttachedImages) {
             showAttachedImage(item, view);
         }
@@ -109,75 +116,49 @@ public class ConversationViewAdapter extends MessageListAdapter {
         return view;
     }
 
-    private void showIndent(ConversationViewItem item, View messageView) {
+    public int getIndentPixels(ConversationViewItem item) {
         final int indentLevel = showThreads ? item.indentLevel : 0;
-        int indentPixels = dpToPixes(10) * indentLevel;
-
-        LinearLayout messageIndented = (LinearLayout) messageView.findViewById(R.id.message_indented);
-        if (item.getMsgId() == selectedMessageId  && oMsgs.size() > 1) {
-            messageIndented.setBackground(MyImageCache.getStyledDrawable(
-                    R.drawable.current_message_background_light,
-                    R.drawable.current_message_background));
-        } else {
-            messageIndented.setBackgroundResource(0);
-        }
-
-        showIndentView(messageIndented, indentPixels);
-
-        int viewToTheLeftId = indentLevel == 0 ? 0 : R.id.indent_image;
-        showDivider(messageView, viewToTheLeftId);
-
-        if (showAvatars) {
-            indentPixels = showAvatar(item, messageIndented, viewToTheLeftId, indentPixels);
-        }
-        messageIndented.setPadding(indentPixels + 6, 2, 6, 2);
+        return dpToPixes(10) * indentLevel;
     }
 
-    private void showIndentView(LinearLayout messageIndented, int indentPixels) {
-        ViewGroup parentView = ((ViewGroup) messageIndented.getParent());
+    private void showCentralItem(ConversationViewItem item, View view) {
+        if (item.getMsgId() == selectedMessageId  && oMsgs.size() > 1) {
+            view.findViewById(R.id.message_indented).setBackground(
+                    MyImageCache.getStyledDrawable(
+                            R.drawable.current_message_background_light,
+                            R.drawable.current_message_background));
+        }
+    }
+
+    private void showIndentImage(View view, int indentPixels) {
+        View referencedView = view.findViewById(R.id.message_indented);
+        ViewGroup parentView = ((ViewGroup) referencedView.getParent());
         ImageView oldView = (ImageView) parentView.findViewById(R.id.indent_image);
         if (oldView != null) {
             parentView.removeView(oldView);
         }
         if (indentPixels > 0) {
-            ImageView indentView = new ConversationIndentImageView(context, messageIndented, indentPixels);
+            ImageView indentView = new ConversationIndentImageView(context, referencedView, indentPixels,
+                    R.drawable.conversation_indent3, R.drawable.conversation_indent3);
             indentView.setId(R.id.indent_image);
             parentView.addView(indentView, 0);
         }
     }
 
-    private void showDivider(View messageView, int viewToTheLeftId) {
-        RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 1);
+    private void showDivider(View view, int viewToTheLeftId) {
+        View divider = view.findViewById(R.id.divider);
+        RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) divider.getLayoutParams();
         setRightOf(layoutParams, viewToTheLeftId);
-        View divider = messageView.findViewById(R.id.divider);
         divider.setLayoutParams(layoutParams);
     }
 
-    private int showAvatar(ConversationViewItem oMsg, LinearLayout messageIndented, int viewToTheLeftId, int indentPixels) {
-        ViewGroup parentView = ((ViewGroup) messageIndented.getParent());
-        ImageView avatarView = (ImageView) parentView.findViewById(R.id.avatar_image);
-        boolean newView = avatarView == null;
-        if (newView) {
-            avatarView = new ImageView(context);
-            avatarView.setId(R.id.avatar_image);
-        }
-        int size = MyImageCache.getAvatarWidthPixels();
-        avatarView.setScaleType(ScaleType.FIT_CENTER);
-        RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(size, size);
-        layoutParams.topMargin = 3;
-        if (oMsg.indentLevel > 0) {
-            layoutParams.leftMargin = 1;
-        }
-        setRightOf(layoutParams, viewToTheLeftId);
+    private int showAvatar(MessageViewItem item, View view, int indentPixels) {
+        ImageView avatarView = (ImageView) view.findViewById(R.id.avatar_image);
+        RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) avatarView.getLayoutParams();
+        layoutParams.leftMargin = dpToPixes(indentPixels == 0 ? 2 : 1) + indentPixels;
         avatarView.setLayoutParams(layoutParams);
-        if (oMsg.avatarDrawable != null) {
-            avatarView.setImageDrawable(oMsg.avatarDrawable);
-        }
-        indentPixels += size;
-        if (newView) {
-            parentView.addView(avatarView);
-        }
-        return indentPixels;
+        avatarView.setImageDrawable(item.getAvatar());
+        return ViewUtils.getWidthWithMargins(avatarView);
     }
 
     private void setRightOf(RelativeLayout.LayoutParams layoutParams, int viewToTheLeftId) {
@@ -188,8 +169,14 @@ public class ConversationViewAdapter extends MessageListAdapter {
         }
     }
 
-    private void showMessageNumber(ConversationViewItem item, View messageView) {
-        TextView number = (TextView) messageView.findViewById(R.id.message_number);
+    private void indentMessage(View view, int indentPixels) {
+        View messageIndented = view.findViewById(R.id.message_indented);
+        messageIndented.setPadding(indentPixels + 6, messageIndented.getPaddingTop(), messageIndented.getPaddingRight(),
+                messageIndented.getPaddingBottom());
+    }
+
+    private void showMessageNumber(ConversationViewItem item, View view) {
+        TextView number = (TextView) view.findViewById(R.id.message_number);
         number.setText(Integer.toString(item.historyOrder));
     }
 }

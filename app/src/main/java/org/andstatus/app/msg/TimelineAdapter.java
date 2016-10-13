@@ -64,7 +64,7 @@ public class TimelineAdapter extends MessageListAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        View view = convertView == null ? newView() : convertView;
+        ViewGroup view = getEmptyView(convertView);
         view.setOnCreateContextMenuListener(contextMenu);
         view.setOnClickListener(this);
         setPosition(view, position);
@@ -94,8 +94,8 @@ public class TimelineAdapter extends MessageListAdapter {
     }
 
     @Override
-    protected View newView() {
-        View view = super.newView();
+    protected ViewGroup newView() {
+        ViewGroup view = super.newView();
         if (!showAvatars) {
             View message = view.findViewById(R.id.message_indented);
             if (message != null) {
@@ -140,11 +140,6 @@ public class TimelineAdapter extends MessageListAdapter {
         }
         MyUrlSpan.showText(view, R.id.message_number, text, false, false);
         messageNumberShownCounter++;
-    }
-
-    private void showAvatar(MessageViewItem item, View view) {
-        ImageView avatar = (ImageView) view.findViewById(R.id.avatar_image);
-        avatar.setImageDrawable(item.getAvatar());
     }
 
     @Override

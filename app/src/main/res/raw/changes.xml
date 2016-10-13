@@ -28,7 +28,7 @@
 		</subtitle>
     </header>
     <release android:versionName="30.01" android:versionCode="194"
-             versionDate="2016-10-08"
+             versionDate="2016-10-13"
              versionTitle="More UX enhancements">
         <changes>
             <change>Implemented "Private conversation with selected recipient". Now clicking
@@ -62,7 +62,8 @@
                 <a href="https://github.com/andstatus/andstatus/issues/392">#392</a>
             </change>
             <change>Presentation of messages in the Timeline and in the Conversation view unified.
-                Most visible difference: avatars positioning and buttons below messages.</change>
+                Most visible difference: avatars positioning, buttons below messages, "Reply to me" marker on the left side of
+                a message.</change>
         </changes>
     </release>
     <release android:versionName="30.00" android:versionCode="193"

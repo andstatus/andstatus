@@ -56,7 +56,6 @@
         <attr name="newIcon" format="reference" />
         <attr name="postMessageIcon" format="reference" />
         <attr name="reloadIcon" format="reference" />
-        <attr name="replyBackground" format="reference" />
         <attr name="sendIcon" format="reference" />
 		<attr name="settingsIcon" format="reference" />
 

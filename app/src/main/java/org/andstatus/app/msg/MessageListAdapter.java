@@ -18,6 +18,7 @@ package org.andstatus.app.msg;
 
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -25,7 +26,6 @@ import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DownloadStatus;
-import org.andstatus.app.graphics.MyImageCache;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyUrlSpan;
 import org.andstatus.app.util.SharedPreferencesUtil;
@@ -44,7 +44,7 @@ public abstract class MessageListAdapter extends MyBaseAdapter {
     protected final boolean showAvatars = MyPreferences.getShowAvatars();
     protected final boolean showAttachedImages = MyPreferences.getDownloadAndDisplayAttachedImages();
     protected final boolean markReplies = SharedPreferencesUtil.getBoolean(
-            MyPreferences.KEY_MARK_REPLIES_IN_TIMELINE, false);
+            MyPreferences.KEY_MARK_REPLIES_IN_TIMELINE, true);
     protected Set<Long> preloadedImages = new HashSet<>(100);
 
     public MessageListAdapter(MessageContextMenu contextMenu) {
@@ -52,8 +52,16 @@ public abstract class MessageListAdapter extends MyBaseAdapter {
         this.contextMenu = contextMenu;
     }
 
-    protected View newView() {
-        View view = LayoutInflater.from(contextMenu.getActivity()).inflate(R.layout.message, null);
+    protected ViewGroup getEmptyView(View convertView) {
+        if (convertView == null) return newView();
+        convertView.setBackgroundResource(0);
+        View messageIndented = convertView.findViewById(R.id.message_indented);
+        messageIndented.setBackgroundResource(0);
+        return (ViewGroup) convertView;
+    }
+
+    protected ViewGroup newView() {
+        ViewGroup view = (ViewGroup) LayoutInflater.from(contextMenu.getActivity()).inflate(R.layout.message, null);
         setupButtons(view);
         return view;
     }
@@ -71,6 +79,38 @@ public abstract class MessageListAdapter extends MyBaseAdapter {
             MyUrlSpan.showText(viewGroup, R.id.rebloggers, rebloggers.toString(), false, false);
         } else {
             viewGroup.setVisibility(View.GONE);
+        }
+    }
+
+    protected void showMessageBody(MessageViewItem item, View view) {
+        TextView body = (TextView) view.findViewById(R.id.message_body);
+        MyUrlSpan.showText(body, item.body, true, true);
+    }
+
+    protected void showAvatar(MessageViewItem item, View view) {
+        ImageView avatar = (ImageView) view.findViewById(R.id.avatar_image);
+        avatar.setImageDrawable(item.getAvatar());
+    }
+
+    protected void showAttachedImage(MessageViewItem item, View view) {
+        preloadedImages.add(item.getMsgId());
+        item.getAttachedImageFile().showAttachedImage(contextMenu.messageList,
+                (ImageView) view.findViewById(R.id.attached_image));
+    }
+
+    protected void showMarkReplies(MessageViewItem item, ViewGroup view) {
+        boolean show = item.inReplyToUserId != 0 && myContext.persistentAccounts().
+                fromUserId(item.inReplyToUserId).isValid();
+        View oldView = view.findViewById(R.id.reply_timeline_marker);
+        if (oldView != null) {
+            view.removeView(oldView);
+        }
+        if (show) {
+            View referencedView = view.findViewById(R.id.message_indented);
+            ImageView indentView = new ConversationIndentImageView(myContext.context(), referencedView, dpToPixes(5),
+                    R.drawable.reply_timeline_marker_light, R.drawable.reply_timeline_marker);
+            indentView.setId(R.id.reply_timeline_marker);
+            view.addView(indentView);
         }
     }
 
@@ -141,30 +181,5 @@ public abstract class MessageListAdapter extends MyBaseAdapter {
     protected void showFavorited(MessageViewItem item, View view) {
         View favorited = view.findViewById(R.id.message_favorited);
         favorited.setVisibility(item.favorited ? View.VISIBLE : View.GONE );
-    }
-
-    protected void showAttachedImage(MessageViewItem item, View view) {
-        preloadedImages.add(item.getMsgId());
-        item.getAttachedImageFile().showAttachedImage(contextMenu.messageList,
-                (ImageView) view.findViewById(R.id.attached_image));
-    }
-
-    protected void showMarkReplies(MessageViewItem item, View view) {
-        if (item.inReplyToUserId != 0 && myContext.persistentAccounts().
-                fromUserId(item.inReplyToUserId).isValid()) {
-            // For some reason, referring to the style drawable doesn't work
-            // (to "?attr:replyBackground" )
-            view.setBackground( MyImageCache.getStyledDrawable(
-                    R.drawable.reply_timeline_background_light,
-                    R.drawable.reply_timeline_background));
-        } else {
-            view.setBackgroundResource(0);
-            view.setPadding(0, 0, 0, 0);
-        }
-    }
-
-    protected void showMessageBody(MessageViewItem item, View messageView) {
-        TextView body = (TextView) messageView.findViewById(R.id.message_body);
-        MyUrlSpan.showText(body, item.body, true, true);
     }
 }

@@ -1,8 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Copyright (c) 2016 yvolk (Yuri Volkov), http://yurivolkov.com
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+    The file also serves as a holder of unique IDs for some views: reply_timeline_marker and indent_image
+-->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical" >
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:orientation="vertical">
 
     <TextView
         android:layout_width="match_parent"
@@ -12,7 +29,6 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@drawable/reply_timeline_background"
         android:text="@string/dialog_summary_external_storage" />
 
     <TextView
@@ -31,6 +47,21 @@
         android:background="@drawable/current_message_background"
         android:text="@string/dialog_summary_external_storage" />
 
+    <ImageView android:id="@+id/indent_image"
+               android:visibility="gone"
+               android:layout_height="match_parent"
+               android:layout_width="wrap_content" />
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/dialog_summary_external_storage" />
+
+    <View android:id="@+id/reply_timeline_marker"
+          android:layout_height="20dp"
+          android:layout_width="6dp"
+          android:layout_alignParentLeft="true"
+          android:background="@drawable/reply_timeline_marker" />
+
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -39,18 +70,17 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@drawable/reply_timeline_background_light"
         android:text="@string/dialog_summary_external_storage" />
+
+    <View
+          android:layout_height="20dp"
+          android:layout_width="6dp"
+          android:layout_alignParentLeft="true"
+          android:background="@drawable/reply_timeline_marker_light" />
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/dialog_summary_external_storage" />
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="?attr/replyBackground"
         android:text="@string/dialog_summary_external_storage" />
 
 </LinearLayout>

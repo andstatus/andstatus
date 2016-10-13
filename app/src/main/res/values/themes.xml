@@ -27,7 +27,6 @@
         <item name="textColorLink">@color/link_text_light</item>
         <item name="dividerColor">@color/grey_700</item>
 
-        <item name="replyBackground">@drawable/reply_timeline_background</item>
         <item name="msgCountIcon">@drawable/ic_message_white_24dp</item>
         <item name="followingCountIcon">@drawable/ic_person_white_24dp</item>
         <item name="followersCountIcon">@drawable/ic_people_white_24dp</item>
@@ -62,7 +61,6 @@
 
         <item name="textColorLink">@color/link_text_dark</item>
 
-        <item name="replyBackground">@drawable/reply_timeline_background_light</item>
         <item name="msgCountIcon">@drawable/ic_message_black_24dp</item>
         <item name="followingCountIcon">@drawable/ic_person_black_24dp</item>
         <item name="followersCountIcon">@drawable/ic_people_black_24dp</item>
