@@ -20,6 +20,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import org.andstatus.app.R;
@@ -107,10 +108,12 @@ public abstract class MessageListAdapter extends MyBaseAdapter {
         }
         if (show) {
             View referencedView = view.findViewById(R.id.message_indented);
-            ImageView indentView = new ConversationIndentImageView(myContext.context(), referencedView, dpToPixes(5),
+            ImageView indentView = new ConversationIndentImageView(myContext.context(), referencedView, dpToPixes(6),
                     R.drawable.reply_timeline_marker_light, R.drawable.reply_timeline_marker);
             indentView.setId(R.id.reply_timeline_marker);
-            view.addView(indentView);
+            view.addView(indentView, 1);
+            RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams)  indentView.getLayoutParams();
+            layoutParams.leftMargin = dpToPixes(3);
         }
     }
 
