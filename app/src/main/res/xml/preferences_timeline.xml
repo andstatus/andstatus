@@ -44,7 +44,7 @@
         android:title="@string/title_preference_show_origin" />
     <org.andstatus.app.context.MultilineCheckBoxPreference android:key="mark_replies_in_timeline"
         android:title="@string/title_preference_mark_replies_in_timeline"
-        android:defaultValue="false" />
+        android:defaultValue="true" />
     <org.andstatus.app.context.MultilineCheckBoxPreference android:key="show_buttons_below_message"
         android:title="@string/show_buttons_below_message"
         android:defaultValue="true" />
