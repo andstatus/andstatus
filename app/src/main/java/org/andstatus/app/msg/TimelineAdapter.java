@@ -16,7 +16,6 @@
 
 package org.andstatus.app.msg;
 
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -27,22 +26,13 @@ import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.graphics.MyImageCache;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyUrlSpan;
-import org.andstatus.app.util.SharedPreferencesUtil;
-
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * @author yvolk@yurivolkov.com
  */
 public class TimelineAdapter extends MessageListAdapter {
     private final TimelineData listData;
-    private final boolean showAvatars = MyPreferences.getShowAvatars();
-    private final boolean showAttachedImages = MyPreferences.getDownloadAndDisplayAttachedImages();
-    private final boolean markReplies = SharedPreferencesUtil.getBoolean(
-            MyPreferences.KEY_MARK_REPLIES_IN_TIMELINE, false);
     private int positionPrev = -1;
-    private Set<Long> preloadedImages = new HashSet<>(100);
     private int messageNumberShownCounter = 0;
     private final String TOP_TEXT;
 
@@ -79,10 +69,10 @@ public class TimelineAdapter extends MessageListAdapter {
         view.setOnClickListener(this);
         setPosition(view, position);
         TimelineViewItem item = getItem(position);
-        MyUrlSpan.showText(view, R.id.message_author, item.authorName, false, false);
         showRebloggers(item, view);
+        MyUrlSpan.showText(view, R.id.message_author, item.authorName, false, false);
         showMessageBody(item, view);
-        MyUrlSpan.showText(view, R.id.message_details, item.getDetails(contextMenu.getActivity()), false, false);
+        MyUrlSpan.showText(view, R.id.message_details, item.getDetails(contextMenu.getActivity()).toString(), false, false);
         if (showAvatars) {
             showAvatar(item, view);
         }
@@ -113,11 +103,6 @@ public class TimelineAdapter extends MessageListAdapter {
             }
         }
         return view;
-    }
-
-    private void showMessageBody(TimelineViewItem item, View messageView) {
-        TextView body = (TextView) messageView.findViewById(R.id.message_body);
-        MyUrlSpan.showText(body, item.body, true, true);
     }
 
     private void preloadAttachments(int position) {
@@ -157,29 +142,9 @@ public class TimelineAdapter extends MessageListAdapter {
         messageNumberShownCounter++;
     }
 
-    private void showAvatar(TimelineViewItem item, View view) {
+    private void showAvatar(MessageViewItem item, View view) {
         ImageView avatar = (ImageView) view.findViewById(R.id.avatar_image);
         avatar.setImageDrawable(item.getAvatar());
-    }
-
-    private void showAttachedImage(TimelineViewItem item, View view) {
-        preloadedImages.add(item.getMsgId());
-        item.getAttachedImageFile().showAttachedImage(contextMenu.messageList,
-                (ImageView) view.findViewById(R.id.attached_image));
-    }
-
-    private void showMarkReplies(TimelineViewItem item, View view) {
-        if (item.inReplyToUserId != 0 && myContext.persistentAccounts().
-                fromUserId(item.inReplyToUserId).isValid()) {
-            // For some reason, referring to the style drawable doesn't work
-            // (to "?attr:replyBackground" )
-            view.setBackground( MyImageCache.getStyledDrawable(
-                    R.drawable.reply_timeline_background_light,
-                    R.drawable.reply_timeline_background));
-        } else {
-            view.setBackgroundResource(0);
-            view.setPadding(0, 0, 0, 0);
-        }
     }
 
     @Override

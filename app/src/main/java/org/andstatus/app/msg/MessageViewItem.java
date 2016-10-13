@@ -17,14 +17,20 @@
 package org.andstatus.app.msg;
 
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.support.annotation.NonNull;
+import android.text.TextUtils;
 
+import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.data.AttachedImageFile;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
+import org.andstatus.app.util.RelativeTime;
+import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.widget.DuplicatesCollapsible;
 import org.andstatus.app.widget.DuplicationLink;
 import org.apache.commons.lang3.StringEscapeUtils;
@@ -39,17 +45,32 @@ public class MessageViewItem implements DuplicatesCollapsible<MessageViewItem> {
     public static final int MIN_LENGTH_TO_COMPARE = 5;
     private MyContext myContext = MyContextHolder.get();
     long createdDate = 0;
+    long sentDate = 0;
 
     DownloadStatus msgStatus = DownloadStatus.UNKNOWN;
 
     private long mMsgId;
     private long originId;
 
+    String authorName = "";
+    long authorId = 0;
+
+    String recipientName = "";
+
+    long inReplyToMsgId = 0;
+    long inReplyToUserId = 0;
+    String inReplyToName = "";
+
+    String messageSource = "";
+
     String body = "";
 
     boolean favorited = false;
     Map<Long, String> rebloggers = new HashMap<>();
     boolean reblogged = false;
+
+    AttachedImageFile attachedImageFile = AttachedImageFile.EMPTY;
+    protected Drawable avatarDrawable = null;
 
     /** A message can be linked to any user, MyAccount or not */
     private long linkedUserId = 0;
@@ -182,5 +203,57 @@ public class MessageViewItem implements DuplicatesCollapsible<MessageViewItem> {
 
     public boolean isReblogged() {
         return !rebloggers.isEmpty();
+    }
+
+    public StringBuilder getDetails(Context context) {
+        StringBuilder messageDetails = new StringBuilder(
+                RelativeTime.getDifference(context, createdDate));
+        setInReplyTo(context, messageDetails);
+        setRecipientName(context, messageDetails);
+        setMessageSource(context, messageDetails);
+        setMessageStatus(context, messageDetails);
+        setCollapsedStatus(context, messageDetails);
+        return messageDetails;
+    }
+
+    protected void setInReplyTo(Context context, StringBuilder messageDetails) {
+        if (inReplyToMsgId != 0 && TextUtils.isEmpty(inReplyToName)) {
+            inReplyToName = "...";
+        }
+        if (!TextUtils.isEmpty(inReplyToName)) {
+            messageDetails.append(" ").append(String.format(
+                    context.getText(R.string.message_source_in_reply_to).toString(),
+                    inReplyToName));
+        }
+    }
+
+    private void setRecipientName(Context context, StringBuilder messageDetails) {
+        if (!TextUtils.isEmpty(recipientName)) {
+            messageDetails.append(" " + String.format(
+                    context.getText(R.string.message_source_to).toString(),
+                    recipientName));
+        }
+    }
+
+    private void setMessageSource(Context context, StringBuilder messageDetails) {
+        if (!SharedPreferencesUtil.isEmpty(messageSource) && !"ostatus".equals(messageSource)
+                && !"unknown".equals(messageSource)) {
+            messageDetails.append(" " + String.format(
+                    context.getText(R.string.message_source_from).toString(), messageSource));
+        }
+    }
+
+    private void setMessageStatus(Context context, StringBuilder messageDetails) {
+        if (msgStatus != DownloadStatus.LOADED) {
+            messageDetails.append(" (").append(msgStatus.getTitle(context)).append(")");
+        }
+    }
+
+    public Drawable getAvatar() {
+        return avatarDrawable;
+    }
+
+    public AttachedImageFile getAttachedImageFile() {
+        return attachedImageFile;
     }
 }

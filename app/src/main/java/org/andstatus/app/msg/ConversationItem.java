@@ -16,13 +16,15 @@
 
 package org.andstatus.app.msg;
 
+import android.content.Context;
 import android.database.Cursor;
 
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.database.MsgTable;
+import org.andstatus.app.util.I18n;
 
 public abstract class ConversationItem extends MessageViewItem implements Comparable<ConversationItem> {
-    long mInReplyToMsgId = 0;
+    ConversationItem inReplyToViewItem = null;
 
     boolean reversedListOrder = false;
     /** Numeration starts from 0 **/
@@ -32,11 +34,11 @@ public abstract class ConversationItem extends MessageViewItem implements Compar
      * First message in the conversation has it == 1.
      * The number is visible to the user.
      */
-    int mHistoryOrder = 0;
+    int historyOrder = 0;
     int mNReplies = 0;
     int mNParentReplies = 0;
-    int mIndentLevel = 0;
-    int mReplyLevel = 0;
+    int indentLevel = 0;
+    int replyLevel = 0;
 
     public void setReversedListOrder(boolean reversedListOrder) {
         this.reversedListOrder = reversedListOrder;
@@ -87,8 +89,16 @@ public abstract class ConversationItem extends MessageViewItem implements Compar
     abstract String[] getProjection();
     
     void load(Cursor cursor) {
-        mInReplyToMsgId = DbUtils.getLong(cursor, MsgTable.IN_REPLY_TO_MSG_ID);
+        inReplyToMsgId = DbUtils.getLong(cursor, MsgTable.IN_REPLY_TO_MSG_ID);
         createdDate = DbUtils.getLong(cursor, MsgTable.CREATED_DATE);
     }
-    
+
+    @Override
+    public StringBuilder getDetails(Context context) {
+        final StringBuilder builder = super.getDetails(context);
+        if (inReplyToViewItem != null) {
+            I18n.appendWithSpace(builder, "(" + inReplyToViewItem.historyOrder + ")");
+        }
+        return builder;
+    }
 }

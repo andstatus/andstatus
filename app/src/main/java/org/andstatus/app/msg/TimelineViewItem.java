@@ -15,13 +15,10 @@
  */
 package org.andstatus.app.msg;
 
-import android.content.Context;
 import android.database.Cursor;
-import android.graphics.drawable.Drawable;
 import android.text.Html;
 import android.text.TextUtils;
 
-import org.andstatus.app.R;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.AttachedImageFile;
@@ -36,31 +33,12 @@ import org.andstatus.app.database.UserTable;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.RelativeTime;
-import org.andstatus.app.util.SharedPreferencesUtil;
 
 /**
  * @author yvolk@yurivolkov.com
  */
 public class TimelineViewItem extends MessageViewItem {
-
-    long sentDate = 0;
-
-    String authorName = "";
-    long authorId = 0;
-
-    String recipientName = "";
-
-    long inReplyToMsgId = 0;
-    long inReplyToUserId = 0;
-    String inReplyToName = "";
-
-    String messageSource = "";
-
-    AttachedImageFile attachedImageFile = AttachedImageFile.EMPTY;
-
     private final static TimelineViewItem EMPTY = new TimelineViewItem();
-    private Drawable avatarDrawable = null;
 
     public static TimelineViewItem getEmpty() {
         return EMPTY;
@@ -119,58 +97,6 @@ public class TimelineViewItem extends MessageViewItem {
 
     private void addReblogger(long userId, String userName) {
         rebloggers.put(userId, userName);
-    }
-
-    public Drawable getAvatar() {
-        return avatarDrawable;
-    }
-
-    public AttachedImageFile getAttachedImageFile() {
-        return attachedImageFile;
-    }
-
-    public String getDetails(Context context) {
-        StringBuilder messageDetails = new StringBuilder(
-                RelativeTime.getDifference(context, createdDate));
-        setInReplyTo(context, messageDetails);
-        setRecipientName(context, messageDetails);
-        setMessageSource(context, messageDetails);
-        setMessageStatus(context, messageDetails);
-        setCollapsedStatus(context, messageDetails);
-        return messageDetails.toString();
-    }
-
-    private void setMessageSource(Context context, StringBuilder messageDetails) {
-        if (!SharedPreferencesUtil.isEmpty(messageSource) && !"ostatus".equals(messageSource)
-                && !"unknown".equals(messageSource)) {
-            messageDetails.append(" " + String.format(
-                    context.getText(R.string.message_source_from).toString(), messageSource));
-        }
-    }
-
-    private void setInReplyTo(Context context, StringBuilder messageDetails) {
-        if (inReplyToMsgId != 0 && TextUtils.isEmpty(inReplyToName)) {
-            inReplyToName = "...";
-        }
-        if (!TextUtils.isEmpty(inReplyToName)) {
-            messageDetails.append(" ").append(String.format(
-                    context.getText(R.string.message_source_in_reply_to).toString(),
-                    inReplyToName));
-        }
-    }
-
-    private void setRecipientName(Context context, StringBuilder messageDetails) {
-        if (!TextUtils.isEmpty(recipientName)) {
-            messageDetails.append(" " + String.format(
-                    context.getText(R.string.message_source_to).toString(),
-                    recipientName));
-        }
-    }
-
-    private void setMessageStatus(Context context, StringBuilder messageDetails) {
-        if (msgStatus != DownloadStatus.LOADED) {
-            messageDetails.append(" (").append(msgStatus.getTitle(context)).append(")");
-        }
     }
 
     @Override

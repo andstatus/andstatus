@@ -16,8 +16,8 @@
 
 package org.andstatus.app.msg;
 
+import android.content.Context;
 import android.database.Cursor;
-import android.graphics.drawable.Drawable;
 import android.provider.BaseColumns;
 import android.text.Html;
 import android.text.TextUtils;
@@ -32,24 +32,26 @@ import org.andstatus.app.data.TimelineSql;
 import org.andstatus.app.database.MsgOfUserTable;
 import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.database.UserTable;
+import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
 
 import java.util.HashSet;
 import java.util.Set;
 
 public class ConversationViewItem extends ConversationItem {
-    String mAuthor = "";
-    
-    String messageSource = "";
-    String mInReplyToName = "";
-    String mRecipientName = "";
-
-    Drawable mAvatarDrawable = null;
-    AttachedImageFile mImageFile = AttachedImageFile.EMPTY;
 
     @Override
     String[] getProjection() {
         return TimelineSql.getConversationProjection();        
+    }
+
+    @Override
+    public StringBuilder getDetails(Context context) {
+        StringBuilder builder = super.getDetails(context);
+        if (MyPreferences.getShowDebuggingInfoInUi()) {
+            I18n.appendWithSpace(builder, "(i" + indentLevel + ",r" + replyLevel + ")");
+        }
+        return builder;
     }
 
     @Override
@@ -69,25 +71,25 @@ public class ConversationViewItem extends ConversationItem {
                 break;
             }
             long senderId = DbUtils.getLong(cursor, MsgTable.SENDER_ID);
-            long authorId = DbUtils.getLong(cursor, MsgTable.AUTHOR_ID);
+            authorId = DbUtils.getLong(cursor, MsgTable.AUTHOR_ID);
             long linkedUserId = DbUtils.getLong(cursor, UserTable.LINKED_USER_ID);
     
             if (ind == 0) {
                 // This is the same for all retrieved rows
                 super.load(cursor);
                 msgStatus = DownloadStatus.load(DbUtils.getLong(cursor, MsgTable.MSG_STATUS));
-                mAuthor = TimelineSql.userColumnNameToNameAtTimeline(cursor, UserTable.AUTHOR_NAME, false);
+                authorName = TimelineSql.userColumnNameToNameAtTimeline(cursor, UserTable.AUTHOR_NAME, false);
                 body = MyHtml.prepareForView(DbUtils.getString(cursor, MsgTable.BODY));
                 String via = DbUtils.getString(cursor, MsgTable.VIA);
                 if (!TextUtils.isEmpty(via)) {
                     messageSource = Html.fromHtml(via).toString().trim();
                 }
-                mAvatarDrawable = AvatarFile.getDrawable(authorId, cursor);
+                avatarDrawable = AvatarFile.getDrawable(authorId, cursor);
                 if (MyPreferences.getDownloadAndDisplayAttachedImages()) {
-                    mImageFile = AttachedImageFile.fromCursor(cursor);
+                    attachedImageFile = AttachedImageFile.fromCursor(cursor);
                 }
-                mInReplyToName = TimelineSql.userColumnNameToNameAtTimeline(cursor, UserTable.IN_REPLY_TO_NAME, false);
-                mRecipientName = TimelineSql.userColumnNameToNameAtTimeline(cursor, UserTable.RECIPIENT_NAME, false);
+                inReplyToName = TimelineSql.userColumnNameToNameAtTimeline(cursor, UserTable.IN_REPLY_TO_NAME, false);
+                recipientName = TimelineSql.userColumnNameToNameAtTimeline(cursor, UserTable.RECIPIENT_NAME, false);
             }
     
             if (senderId != authorId) {

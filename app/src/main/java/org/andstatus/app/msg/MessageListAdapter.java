@@ -19,15 +19,20 @@ package org.andstatus.app.msg;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DownloadStatus;
+import org.andstatus.app.graphics.MyImageCache;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyUrlSpan;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.widget.MyBaseAdapter;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -36,6 +41,11 @@ public abstract class MessageListAdapter extends MyBaseAdapter {
     protected final boolean showButtonsBelowMessages =
             SharedPreferencesUtil.getBoolean(MyPreferences.KEY_SHOW_BUTTONS_BELOW_MESSAGE, true);
     protected final MessageContextMenu contextMenu;
+    protected final boolean showAvatars = MyPreferences.getShowAvatars();
+    protected final boolean showAttachedImages = MyPreferences.getDownloadAndDisplayAttachedImages();
+    protected final boolean markReplies = SharedPreferencesUtil.getBoolean(
+            MyPreferences.KEY_MARK_REPLIES_IN_TIMELINE, false);
+    protected Set<Long> preloadedImages = new HashSet<>(100);
 
     public MessageListAdapter(MessageContextMenu contextMenu) {
         super(contextMenu.getMyContext());
@@ -131,5 +141,30 @@ public abstract class MessageListAdapter extends MyBaseAdapter {
     protected void showFavorited(MessageViewItem item, View view) {
         View favorited = view.findViewById(R.id.message_favorited);
         favorited.setVisibility(item.favorited ? View.VISIBLE : View.GONE );
+    }
+
+    protected void showAttachedImage(MessageViewItem item, View view) {
+        preloadedImages.add(item.getMsgId());
+        item.getAttachedImageFile().showAttachedImage(contextMenu.messageList,
+                (ImageView) view.findViewById(R.id.attached_image));
+    }
+
+    protected void showMarkReplies(MessageViewItem item, View view) {
+        if (item.inReplyToUserId != 0 && myContext.persistentAccounts().
+                fromUserId(item.inReplyToUserId).isValid()) {
+            // For some reason, referring to the style drawable doesn't work
+            // (to "?attr:replyBackground" )
+            view.setBackground( MyImageCache.getStyledDrawable(
+                    R.drawable.reply_timeline_background_light,
+                    R.drawable.reply_timeline_background));
+        } else {
+            view.setBackgroundResource(0);
+            view.setPadding(0, 0, 0, 0);
+        }
+    }
+
+    protected void showMessageBody(MessageViewItem item, View messageView) {
+        TextView body = (TextView) messageView.findViewById(R.id.message_body);
+        MyUrlSpan.showText(body, item.body, true, true);
     }
 }

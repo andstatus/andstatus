@@ -97,7 +97,7 @@ public abstract class ConversationLoader<T extends ConversationItem> implements 
         T oMsg = tFactory.newT();
         oMsg.setMyContext(myContext);
         oMsg.setMsgId(msgId);
-        oMsg.mReplyLevel = replyLevel;
+        oMsg.replyLevel = replyLevel;
         return oMsg;
     }
     
@@ -140,7 +140,7 @@ public abstract class ConversationLoader<T extends ConversationItem> implements 
 
         @Override
         public int compare(T lhs, T rhs) {
-            int compared = rhs.mReplyLevel - lhs.mReplyLevel;
+            int compared = rhs.replyLevel - lhs.replyLevel;
             if (compared == 0) {
                 if (lhs.createdDate == rhs.createdDate) {
                     if ( lhs.getMsgId() == rhs.getMsgId()) {
@@ -165,7 +165,7 @@ public abstract class ConversationLoader<T extends ConversationItem> implements 
         idsOfTheMessagesToFind.clear();
         for (ConversationItem oMsg : mMsgs) {
             oMsg.mListOrder = 0;
-            oMsg.mHistoryOrder = 0;
+            oMsg.historyOrder = 0;
         }
         OrderCounters order = new OrderCounters();
         for (int ind = mMsgs.size()-1; ind >= 0; ind--) {
@@ -182,16 +182,16 @@ public abstract class ConversationLoader<T extends ConversationItem> implements 
             return;
         }
         int indentNext = indent;
-        oMsg.mHistoryOrder = order.history++;
+        oMsg.historyOrder = order.history++;
         oMsg.mListOrder = order.list--;
-        oMsg.mIndentLevel = indent;
+        oMsg.indentLevel = indent;
         if ((oMsg.mNReplies > 1 || oMsg.mNParentReplies > 1)
                 && indentNext < MAX_INDENT_LEVEL) {
             indentNext++;
         }
         for (int ind = mMsgs.size() - 1; ind >= 0; ind--) {
            ConversationItem reply = mMsgs.get(ind);
-           if (reply.mInReplyToMsgId == oMsg.getMsgId()) {
+           if (reply.inReplyToMsgId == oMsg.getMsgId()) {
                reply.mNParentReplies = oMsg.mNReplies;
                enumerateBranch(reply, order, indentNext);
            }

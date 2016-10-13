@@ -46,9 +46,9 @@ public class RecursiveConversationLoader<T extends ConversationItem> extends Con
         loadMessageFromDatabase(oMsg);
         if (oMsg.isLoaded()) {
             if (addMessageToList(oMsg)) {
-                if (oMsg.mInReplyToMsgId != 0) {
-                    findPreviousMessagesRecursively(newOMsg(oMsg.mInReplyToMsgId,
-                            oMsg.mReplyLevel - 1));
+                if (oMsg.inReplyToMsgId != 0) {
+                    findPreviousMessagesRecursively(newOMsg(oMsg.inReplyToMsgId,
+                            oMsg.replyLevel - 1));
                 }
             }
         } else if (mAllowLoadingFromInternet) {
@@ -61,7 +61,7 @@ public class RecursiveConversationLoader<T extends ConversationItem> extends Con
         List<Long> replies = MyQuery.getReplyIds(oMsg.getMsgId());
         oMsg.mNReplies = replies.size();
         for (long replyId : replies) {
-            T oMsgReply = newOMsg(replyId, oMsg.mReplyLevel + 1);
+            T oMsgReply = newOMsg(replyId, oMsg.replyLevel + 1);
             findPreviousMessagesRecursively(oMsgReply);
         }
     }

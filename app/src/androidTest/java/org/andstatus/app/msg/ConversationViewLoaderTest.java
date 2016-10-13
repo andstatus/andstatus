@@ -43,7 +43,7 @@ public class ConversationViewLoaderTest extends InstrumentationTestCase implemen
         boolean indentFound = false;
         boolean orderFound = false;
         for( ConversationViewItem oMsg : list) {
-            if (oMsg.mIndentLevel > 0) {
+            if (oMsg.indentLevel > 0) {
                 indentFound = true;
             }
             if (oMsg.mListOrder != 0) {
