@@ -30,7 +30,10 @@ import org.andstatus.app.database.FriendshipTable;
 import org.andstatus.app.database.MsgOfUserTable;
 import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.database.UserTable;
+import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.Timeline;
+import org.andstatus.app.util.I18n;
+import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
 
@@ -570,5 +573,17 @@ public class MyQuery {
             DbUtils.closeSilently(c);
         }
         return rebloggers;
+    }
+
+    public static String msgInfoForLog(long msgId) {
+        StringBuilder builder = new StringBuilder();
+        I18n.appendWithComma(builder, "msgId=" + msgId);
+        String oid = idToOid(OidEnum.MSG_OID, msgId, 0);
+        I18n.appendWithComma(builder, "oid" + (TextUtils.isEmpty(oid) ? " is empty" : "='" + oid + "'"));
+        String body = MyHtml.fromHtml(msgIdToStringColumnValue(MsgTable.BODY, msgId));
+        I18n.appendAtNewLine(builder, "text:'" + body + "'");
+        Origin origin = MyContextHolder.get().persistentOrigins().fromId(msgIdToLongColumnValue(MsgTable.ORIGIN_ID, msgId));
+        I18n.appendAtNewLine(builder, origin.toString());
+        return builder.toString();
     }
 }

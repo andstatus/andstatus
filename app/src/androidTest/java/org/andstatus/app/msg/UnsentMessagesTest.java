@@ -1,5 +1,6 @@
 package org.andstatus.app.msg;
 
+import android.content.Intent;
 import android.provider.BaseColumns;
 import android.test.ActivityInstrumentationTestCase2;
 import android.view.View;
@@ -12,12 +13,15 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DownloadStatus;
+import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.net.http.HttpConnectionMock;
 import org.andstatus.app.net.http.HttpReadResult;
 import org.andstatus.app.service.MyServiceTestHelper;
+import org.andstatus.app.timeline.Timeline;
+import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.MyLog;
 
 import java.util.List;
@@ -35,10 +39,14 @@ public class UnsentMessagesTest extends ActivityInstrumentationTestCase2<Timelin
         super.setUp();
         TestSuite.initializeWithData(this);
 
-        mService.setUp(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME);
+        mService.setUp(null);
         ma = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME);
         assertTrue(ma.isValid());
         MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
+
+        Intent intent = new Intent(Intent.ACTION_VIEW,
+                MatchedUri.getTimelineUri(Timeline.getTimeline(TimelineType.HOME, ma, 0, ma.getOrigin())));
+        setActivityIntent(intent);
     }
 
     @Override
@@ -100,13 +108,14 @@ public class UnsentMessagesTest extends ActivityInstrumentationTestCase2<Timelin
         ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<>(this, getActivity());
         long msgId = helper.getListItemIdOfLoadedReply();
         String msgOid = MyQuery.idToOid(OidEnum.MSG_OID, msgId, 0);
-        String logMsg = "msgId:" + msgId + "; text:'" + MyQuery.msgIdToStringColumnValue(MsgTable.BODY, msgId) + "'";
+        String logMsg = MyQuery.msgInfoForLog(msgId);
         assertTrue(logMsg, helper.invokeContextMenuAction4ListItemId(method, msgId, MessageListContextMenuItem.REBLOG));
         mService.serviceStopped = false;
         TestSuite.waitForIdleSync(this);
         mService.waitForServiceStopped(false);
 
-        List<HttpReadResult> results = ((HttpConnectionMock) TestSuite.getMyContextForTest().getHttpConnectionMock()).getResults();
+        List<HttpReadResult> results = mService.httpConnectionMock.getResults();
+        assertTrue("No results in " + mService.httpConnectionMock.toString(), !results.isEmpty());
         String urlFound = "";
         for (HttpReadResult result : results) {
             if (result.getUrl().contains("retweet")) {
@@ -116,7 +125,7 @@ public class UnsentMessagesTest extends ActivityInstrumentationTestCase2<Timelin
                 }
             }
         }
-        assertTrue("URL doesn't contain message oid: " + urlFound, urlFound.contains(msgOid));
+        assertTrue("URL '" + urlFound + "' doesn't contain message oid " + logMsg, urlFound.contains(msgOid));
 
         MyLog.v(this, method + " ended");
     }

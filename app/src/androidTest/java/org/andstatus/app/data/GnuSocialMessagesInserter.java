@@ -123,20 +123,9 @@ public class GnuSocialMessagesInserter extends InstrumentationTestCase {
     }
     
     private MbMessage buildMessage(MbUser author, String body, MbMessage inReplyToMessage, String messageOidIn) {
-        final String method = "buildMessage";
-        String messageOid = messageOidIn;
-        if (TextUtils.isEmpty(messageOid)) {
-            messageOid = author.getProfileUrl()  + "/" + (inReplyToMessage == null ? "note" : "comment") + "thisisfakeuri" + System.nanoTime();
-        }
-        MbMessage message = MbMessage.fromOriginAndOid(origin.getId(), messageOid, DownloadStatus.LOADED);
-        message.setBody(body + (inReplyToMessage != null ? " it" + iteration : "" ));
-        message.sentDate = System.currentTimeMillis();
-        message.via = "AndStatus";
-        message.sender = author;
-        message.actor = accountMbUser;
-        message.inReplyToMessage = inReplyToMessage;
-        DbUtils.waitMs(method, 10);
-        return message;
+        return new MessageInserter(ma).buildMessage(author, body
+                        + (inReplyToMessage != null ? " it" + iteration : ""),
+                inReplyToMessage, messageOidIn, DownloadStatus.LOADED);
     }
     
     private long addMessage(MbMessage message) {

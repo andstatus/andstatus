@@ -40,13 +40,12 @@ public class MyServiceTestHelper implements MyServiceEventsListener {
             TestSuite.setHttpConnectionMockClass(HttpConnectionMock.class);
         }
         TestSuite.getMyContextForTest().setConnectionState(ConnectionState.WIFI);
+        MyContextHolder.get().setExpired();
+        myContext = MyContextHolder.initialize(myContext.context(), this);
         MyAccountTest.fixPersistentAccounts(myContext);
-        // In order for the mocked connection to have an effect:
-        myContext.persistentAccounts().initialize();
-        myContext.persistentTimelines().initialize();
-        MyAccount ma = myContext.persistentAccounts().fromAccountName(accountName);
-        HttpConnectionMock http = ma.getConnection().getHttpMock();
         if (!isSingleMockedInstance) {
+            MyAccount ma = myContext.persistentAccounts().fromAccountName(accountName);
+            HttpConnectionMock http = ma.getConnection().getHttpMock();
             httpConnectionMock = http;
         }
         connectionInstanceId = httpConnectionMock.getInstanceId();

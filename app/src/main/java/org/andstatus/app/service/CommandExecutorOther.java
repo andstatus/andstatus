@@ -18,6 +18,7 @@ package org.andstatus.app.service;
 
 import android.content.ContentValues;
 import android.net.Uri;
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import org.andstatus.app.appwidget.AppWidgets;
@@ -63,7 +64,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 destroyReblog(execContext.getCommandData().itemId);
                 break;
             case GET_STATUS:
-                getStatus();
+                getStatus(execContext.getCommandData().itemId);
                 break;
             case GET_USER:
                 getUser(execContext.getCommandData().getUserId(), execContext.getCommandData().getUserName());
@@ -90,54 +91,47 @@ class CommandExecutorOther extends CommandExecutorStrategy{
     }
 
     private void getUser(long userId, String userName) {
-        boolean ok = false;
-        String oid = MyQuery.idToOid(OidEnum.USER_OID, userId, 0);
-        String msgLog = "Get user oid=" + oid + ", userName='" + userName + "'";
+        final String method = "getUser";
+        String oid = getUserOid(method, userId, false);
+        String msgLog = method + "; userName='" + userName + "'";
         MbUser user = null;
-        boolean errorLogged = false;
         if (MbUser.isOidReal(oid) || !TextUtils.isEmpty(userName)) {
             try {
                 user = execContext.getMyAccount().getConnection().getUser(oid, userName);
-                ok = !user.isEmpty();
+                logIfUserIsEmpty(msgLog, userId, user);
             } catch (ConnectionException e) {
-                errorLogged = true;
-                logConnectionException(e, msgLog);
+                logConnectionException(e, msgLog + userInfoLogged(userId));
             }
         } else {
-            MyLog.e(this, msgLog + "; userId not found: " + userId);
+            msgLog += ", invalid user IDs";
+            logExecutionError(true, msgLog + userInfoLogged(userId));
         }
-        if (ok) {
+        if (noErrors()) {
             new DataInserter(execContext).insertOrUpdateUser(user);
         }
-        logOk(ok || !errorLogged);
-        MyLog.d(this, (msgLog + (ok ? " succeeded" : " failed") ));
+        MyLog.d(this, (msgLog + (noErrors() ? " succeeded" : " failed") ));
     }
 
     /**
      * @param create true - create, false - destroy
      */
     private void createOrDestroyFavorite(long msgId, boolean create) {
-        boolean ok = false;
-        String oid = MyQuery.idToOid(OidEnum.MSG_OID, msgId, 0);
+        final String method = (create ? "create" : "destroy") + "Favorite";
+        String oid = getMsgOid(method, msgId, true);
         MbMessage message = null;
-        boolean errorLogged = false;
-        if (oid.length() > 0) {
+        if (noErrors()) {
             try {
                 if (create) {
                     message = execContext.getMyAccount().getConnection().createFavorite(oid);
                 } else {
                     message = execContext.getMyAccount().getConnection().destroyFavorite(oid);
                 }
-                ok = !message.isEmpty();
+                logIfEmptyMessage(method, msgId, message);
             } catch (ConnectionException e) {
-                errorLogged = true;
-                logConnectionException(e, (create ? "Create" : "Destroy") + " Favorite " + oid);
+                logConnectionException(e, method + "; " + MyQuery.msgInfoForLog(msgId));
             }
-        } else {
-            MyLog.e(this,
-                    (create ? "create" : "destroy") + "Favorite; msgId not found: " + msgId);
         }
-        if (ok) {
+        if (noErrors()) {
             if (message.favoritedByActor.toBoolean(!create) != create) {
                 /**
                  * yvolk: 2011-09-27 Twitter docs state that
@@ -152,31 +146,33 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                     // the flag manually.
                     message.favoritedByActor = TriState.fromBoolean(create);
 
-                    MyLog.d(this, "create. Favorited flag didn't change yet.");
-
-                    // Let's try to assume that everything was
-                    // Ok:
-                    ok = true;
+                    MyLog.d(this, method + "; Favorited flag didn't change yet.");
+                    // Let's try to assume that everything was OK
                 } else {
                     // yvolk: 2011-09-27 Sometimes this
                     // twitter.com 'async' process doesn't work
                     // so let's try another time...
                     // This is safe, because "delete favorite"
                     // works even for the "Unfavorited" tweet :-)
-                    ok = false;
-
-                    MyLog.e(this, "destroy. Favorited flag didn't change yet.");
+                    logExecutionError(false, method + "; Favorited flag didn't change yet. " + MyQuery.msgInfoForLog(msgId));
                 }
             }
 
-            if (ok) {
+            if (noErrors()) {
                 // Please note that the Favorited message may be NOT in the User's Home timeline!
                 new DataInserter(execContext).insertOrUpdateMsg(message);
             }
         }
-        logOk(ok || !errorLogged);
-        MyLog.d(this, (create ? "Creating" : "Destroying") + " favorite "
-                + (ok ? "succeeded" : "failed") + ", id=" + msgId);
+        MyLog.d(this, method + (noErrors() ? " succeeded" : " failed"));
+    }
+
+    @NonNull
+    private String getMsgOid(String method, long msgId, boolean required) {
+        String oid = MyQuery.idToOid(OidEnum.MSG_OID, msgId, 0);
+        if (required && TextUtils.isEmpty(oid)) {
+            logExecutionError(true, method + "; no Message ID in the Social Network " + MyQuery.msgInfoForLog(msgId));
+        }
+        return oid;
     }
 
     /**
@@ -184,52 +180,64 @@ class CommandExecutorOther extends CommandExecutorStrategy{
      * @param follow true - Follow, false - Stop following
      */
     private void followOrStopFollowingUser(long userId, boolean follow) {
-        boolean ok = false;
-        String oid = MyQuery.idToOid(OidEnum.USER_OID, userId, 0);
+        final String method = (follow ? "follow" : "stopFollowing") + "User";
+        String oid = getUserOid(method, userId, true);
         MbUser user = null;
-        boolean errorLogged = false;
-        if (oid.length() > 0) {
+        if (noErrors()) {
             try {
                 user = execContext.getMyAccount().getConnection().followUser(oid, follow);
-                ok = !user.isEmpty();
+                logIfUserIsEmpty(method, userId, user);
             } catch (ConnectionException e) {
-                errorLogged = true;
-                logConnectionException(e, follow ? "Follow" : "Stop following " + oid);
+                logConnectionException(e, method + userInfoLogged(userId));
             }
-        } else {
-            MyLog.e(this,
-                    (follow ? "Follow" : "Stop following") + " User; userId not found: " + userId);
         }
-        if (ok) {
+        if (noErrors()) {
             if (user.followedByActor != TriState.UNKNOWN &&  user.followedByActor.toBoolean(follow) != follow) {
                 if (follow) {
                     // Act just like for creating favorite...
                     user.followedByActor = TriState.fromBoolean(follow);
 
                     MyLog.d(this, "Follow a User. 'following' flag didn't change yet.");
-
                     // Let's try to assume that everything was OK:
-                    ok = true;
                 } else {
-                    ok = false;
-                    MyLog.e(this, "Stop following a User. 'following' flag didn't change yet.");
+                    logExecutionError(false, "'following' flag didn't change yet, " + method + userInfoLogged(userId));
                 }
             }
-            if (ok) {
+            if (noErrors()) {
                 new DataInserter(execContext).insertOrUpdateUser(user);
             }
         }
-        logOk(ok || !errorLogged);
-        MyLog.d(this, (follow ? "Follow" : "Stop following") + " User "
-                + (ok ? "succeeded" : "failed") + ", id=" + userId);
+        MyLog.d(this, method + (noErrors() ? " succeeded" : " failed"));
     }
-    
+
+    private void logIfUserIsEmpty(String method, long userId, MbUser user) {
+        if (user.isEmpty()) {
+            logExecutionError(false, "Received User is empty, " + method + userInfoLogged(userId));
+        }
+    }
+
+    @NonNull
+    private String getUserOid(String method, long userId, boolean required) {
+        String oid = MyQuery.idToOid(OidEnum.USER_OID, userId, 0);
+        if (required && TextUtils.isEmpty(oid)) {
+            logExecutionError(true, method + "; no User ID in the Social Network " + userInfoLogged(userId));
+        }
+        return oid;
+    }
+
+    private String userInfoLogged(long userId) {
+        String oid = MyQuery.idToOid(OidEnum.USER_OID, userId, 0);
+        return " userId=" + userId + ", oid" + (TextUtils.isEmpty(oid) ? " is empty" : "'" + oid + "'" +
+                ", webFingerId:'" + MyQuery.userIdToWebfingerId(userId) + "'");
+    }
+
     /**
      * @param msgId ID of the message to destroy
      */
     private void destroyStatus(long msgId) {
+        final String method = "destroyStatus";
         boolean ok = false;
-        String oid = MyQuery.idToOid(OidEnum.MSG_OID, msgId, 0);
+        String oid = getMsgOid(method, msgId, true);
         try {
             if (TextUtils.isEmpty(oid)) {
                 ok = true;
@@ -257,7 +265,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 MyLog.e(this, "Error destroying status locally", e);
             }
         }
-        MyLog.d(this, "Destroying status " + (ok ? "succeeded" : "failed") + ", id=" + msgId);
+        MyLog.d(this, method + (noErrors() ? " succeeded" : " failed"));
     }
 
 
@@ -265,22 +273,21 @@ class CommandExecutorOther extends CommandExecutorStrategy{
      * @param msgId ID of the message to destroy
      */
     private void destroyReblog(long msgId) {
-        boolean ok = false;
+        final String method = "destroyReblog";
         String oid = MyQuery.idToOid(OidEnum.REBLOG_OID, msgId, execContext.getMyAccount().getUserId());
         try {
-            ok = execContext.getMyAccount().getConnection().destroyStatus(oid);
-            logOk(ok);
+            if (!execContext.getMyAccount().getConnection().destroyStatus(oid)) {
+                logExecutionError(false, "Connection returned 'false' " + method + MyQuery.msgInfoForLog(msgId));
+            }
         } catch (ConnectionException e) {
             if (e.getStatusCode() == StatusCode.NOT_FOUND) {
                 // This means that there is no such "Status", so we may
                 // assume that it's Ok!
-                ok = true;
             } else {
-                logConnectionException(e, "Destroy Reblog " + oid);
+                logConnectionException(e, method + "; " + oid + MyQuery.msgInfoForLog(msgId));
             }
         }
-
-        if (ok) {
+        if (noErrors()) {
             // And delete the status from the local storage
             try {
                 ContentValues values = new ContentValues();
@@ -292,51 +299,42 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 MyLog.e(this, "Error destroying reblog locally", e);
             }
         }
-        MyLog.d(this, "Destroying reblog " + (ok ? "succeeded" : "failed") + ", id=" + msgId);
+        MyLog.d(this, method + (noErrors() ? " succeeded" : " failed"));
     }
 
-    private void getStatus() {
-        boolean ok = false;
-        String oid = MyQuery.idToOid(OidEnum.MSG_OID, execContext.getCommandData().itemId, 0);
-        if (TextUtils.isEmpty(oid)) {
-            execContext.getResult().incrementParseExceptions();
-            MyLog.w(this, "getStatus failed, no OID for id=" + execContext.getCommandData().itemId);
-            return;
-        }
-        try {
-            MbMessage message = execContext.getMyAccount().getConnection().getMessage(oid);
-            if (!message.isEmpty()) {
-                ok = addMessageToLocalStorage(message);
+    private void getStatus(long msgId) {
+        final String method = "getStatus";
+        String oid = getMsgOid(method, msgId, true);
+        if (noErrors()) {
+            try {
+                MbMessage message = execContext.getMyAccount().getConnection().getMessage(oid);
+                if (message.isEmpty()) {
+                    logExecutionError(false, "Received Message is empty, " + MyQuery.msgInfoForLog(msgId));
+                } else {
+                    try {
+                        new DataInserter(execContext).insertOrUpdateMsg(message);
+                    } catch (Exception e) {
+                        logExecutionError(false, "Error while saving to the local cache," + MyQuery.msgInfoForLog(msgId) +
+                        ", " + e.getMessage());
+                    }
+                }
+            } catch (ConnectionException e) {
+                if (e.getStatusCode() == StatusCode.NOT_FOUND) {
+                    execContext.getResult().incrementParseExceptions();
+                    // This means that there is no such "Status"
+                    // TODO: so we don't need to retry this command
+                }
+                logConnectionException(e, method + MyQuery.msgInfoForLog(msgId));
             }
-            logOk(ok);
-        } catch (ConnectionException e) {
-            if (e.getStatusCode() == StatusCode.NOT_FOUND) {
-                execContext.getResult().incrementParseExceptions();
-                // This means that there is no such "Status"
-                // TODO: so we don't need to retry this command
-            }
-            logConnectionException(e, "getStatus " + oid);
         }
-        MyLog.d(this, "getStatus " + (ok ? "succeeded" : "failed") + ", id=" + execContext.getCommandData().itemId);
+        MyLog.d(this, method + (noErrors() ? " succeeded" : " failed"));
     }
 
-    private boolean addMessageToLocalStorage(MbMessage message) {
-        boolean ok = false;
-        try {
-            new DataInserter(execContext).insertOrUpdateMsg(message);
-            ok = true;
-        } catch (Exception e) {
-            MyLog.e(this, "Error inserting status", e);
-        }
-        return ok;
-    }
-    
     private void updateStatus(long msgId) {
         final String method = "updateStatus";
-        boolean ok = false;
         MbMessage message = null;
         String status = MyQuery.msgIdToStringColumnValue(MsgTable.BODY, msgId);
-        String oid = MyQuery.idToOid(OidEnum.MSG_OID, msgId, 0);
+        String oid = getMsgOid(method, msgId, false);
         long recipientUserId = MyQuery.msgIdToLongColumnValue(MsgTable.RECIPIENT_ID, msgId);
         Uri mediaUri = DownloadData.getSingleForMessage(msgId, MyContentType.IMAGE, Uri.EMPTY).
                 mediaUriToBePosted();
@@ -355,7 +353,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
             if (recipientUserId == 0) {
                 long replyToMsgId = MyQuery.msgIdToLongColumnValue(
                         MsgTable.IN_REPLY_TO_MSG_ID, msgId);
-                String replyToMsgOid = MyQuery.idToOid(OidEnum.MSG_OID, replyToMsgId, 0);
+                String replyToMsgOid = getMsgOid(method, replyToMsgId, false);
                 message = execContext.getMyAccount().getConnection()
                         .updateStatus(status.trim(), oid, replyToMsgOid, mediaUri);
             } else {
@@ -364,37 +362,45 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 message = execContext.getMyAccount().getConnection()
                         .postDirectMessage(status.trim(), oid, recipientOid, mediaUri);
             }
-            ok = (!message.isEmpty());
-            logOk(ok);
+            logIfEmptyMessage(method, msgId, message);
         } catch (ConnectionException e) {
             logConnectionException(e, method + "; " + msgLog);
         }
-        if (ok) {
+        if (noErrors()) {
             // The message was sent successfully, so now update unsent message
             // New User's message should be put into the user's Home timeline.
             message.msgId = msgId;
             new DataInserter(execContext).insertOrUpdateMsg(message);
             execContext.getResult().setItemId(msgId);
         }
+        MyLog.d(this, method + (noErrors() ? " succeeded" : " failed"));
+    }
+
+    private void logIfEmptyMessage(String method, long msgId, MbMessage message) {
+        if (message.isEmpty()) {
+            logExecutionError(false, method + "; Received Message is empty, " + MyQuery.msgInfoForLog(msgId));
+        }
     }
 
     private void reblog(long rebloggedId) {
-        String oid = MyQuery.idToOid(OidEnum.MSG_OID, rebloggedId, 0);
-        boolean ok = false;
-        MbMessage result = null;
-        try {
-            result = execContext.getMyAccount().getConnection()
-                    .postReblog(oid);
-            ok = !result.isEmpty();
-            logOk(ok);
-        } catch (ConnectionException e) {
-            logConnectionException(e, "Reblog " + oid);
+        final String method = "Reblog";
+        String oid = getMsgOid(method, rebloggedId, true);
+        MbMessage message = null;
+        if (noErrors()) {
+            try {
+                message = execContext.getMyAccount().getConnection()
+                        .postReblog(oid);
+                logIfEmptyMessage(method, rebloggedId, message);
+            } catch (ConnectionException e) {
+                logConnectionException(e, "Reblog " + oid);
+            }
         }
-        if (ok) {
+        if (noErrors()) {
             // The tweet was sent successfully
             // Reblog should be put into the user's Home timeline!
-            new DataInserter(execContext).insertOrUpdateMsg(result);
+            new DataInserter(execContext).insertOrUpdateMsg(message);
         }
+        MyLog.d(this, method + (noErrors() ? " succeeded" : " failed"));
     }
     
     private void rateLimitStatus() {
