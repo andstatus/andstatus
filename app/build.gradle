@@ -10,7 +10,7 @@ android {
         minSdkVersion 16
         targetSdkVersion 24
         versionName "30.02"
-        versionCode 194
+        versionCode 195
 
         testApplicationId "org.andstatus.app.tests"
         testInstrumentationRunner "android.test.InstrumentationTestRunner"

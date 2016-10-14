@@ -179,6 +179,7 @@ AndStatus は、最後のメッセージのダウンロード以降のすべて�
   <string name="get_followers">フォロワーを取得</string>
   <string name="get_friends">友達になる</string>
   <string name="get_open_instances_title">オープン中のインスタンスを取得</string>
+  <string name="get_message">メッセージ情報を取得</string>
   <string name="get_user">ユーザー情報を取得</string>
   <string name="go_to_the_top_title">トップに戻る</string>
   <string name="header_accounts">アカウント</string>
@@ -272,6 +273,8 @@ AndStatus は、最後のメッセージのダウンロード以降のすべて�
   <string name="message_source_to">%1$s に</string>
   <string name="message_twitter">ツイート</string>
   <string name="messages_activity">ダイレクトメッセージ</string>
+  <string name="n_message_link">メッセージ リンク</string>
+  <string name="n_message_links">%d メッセージ リンク</string>
   <string name="never">しない</string>
   <string name="new_items_count_abbreviated">新規</string>
   <string name="no">いいえ</string>
@@ -371,6 +374,7 @@ AndStatus は、最後のメッセージのダウンロード以降のすべて�
   <string name="settings_activity_title">設定</string>
   <string name="show_buttons_below_message">メッセージの下に返信、再投稿、お気に入りボタンを表示</string>
   <string name="show_duplicates">重複を表示</string>
+  <string name="show_threads_of_conversation">会話のスレッドを表示</string>
   <string name="show_timeline_messages">タイムラインメッセージを表示</string>
   <string name="since">%s 以降</string>
   <string name="splash_button_learn_more">もっと詳しく</string>
@@ -440,9 +444,11 @@ AndStatus は、最後のメッセージのダウンロード以降のすべて�
   <string name="theme_color_entries_default">デバイス デフォルト</string>
   <string name="theme_color_entries_light">ライト</string>
   <string name="theme_color_entries_dark">ダーク</string>
-  <string name="theme_size_entries_small">小</string>
-  <string name="theme_size_entries_standard">標準</string>
   <string name="theme_size_entries_large">大</string>
+  <string name="theme_size_entries_larger">大きく</string>
+  <string name="theme_size_entries_small">小</string>
+  <string name="theme_size_entries_smaller">小さく</string>
+  <string name="theme_size_entries_standard">標準</string>
   <string name="this_option_is_turned_off">(無効)</string>
   <string name="timeline_is_combined_by_default">デフォルトでタイムラインをまとめる</string>
   <string name="timeline_reloaded">タイムラインを再読み込みしました。</string>

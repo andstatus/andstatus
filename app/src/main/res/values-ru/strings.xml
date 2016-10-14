@@ -176,6 +176,7 @@
   <string name="get_followers">Получить список фолловеров</string>
   <string name="get_friends">Просмотр друзей</string>
   <string name="get_open_instances_title">Получить открытые серверы</string>
+  <string name="get_message">Получить информацию о сообщении</string>
   <string name="get_user">Получить информацию о пользователе</string>
   <string name="go_to_the_top_title">Наверх</string>
   <string name="header_accounts">Аккаунты (Учётные записи)</string>
@@ -269,6 +270,8 @@
   <string name="message_source_to">для %1$s</string>
   <string name="message_twitter">Сообщение</string>
   <string name="messages_activity">Личные сообщения</string>
+  <string name="n_message_link">Ссылка из сообщения</string>
+  <string name="n_message_links">%d ссылок из сообщения</string>
   <string name="never">Никогда</string>
   <string name="new_items_count_abbreviated">Новый</string>
   <string name="no">Нет</string>
@@ -368,6 +371,7 @@
   <string name="settings_activity_title">Настройки</string>
   <string name="show_buttons_below_message">Показать кнопки \"Ответить\", \"Пересказать\" и \"Добавить в избранное\" под сообщением</string>
   <string name="show_duplicates">Показать дубликаты</string>
+  <string name="show_threads_of_conversation">Показать нити в обсуждении</string>
   <string name="show_timeline_messages">Показать сообщения этой Ленты</string>
   <string name="since">Начиная с: %s</string>
   <string name="splash_button_learn_more">Узнать больше</string>
@@ -438,9 +442,11 @@
   <string name="theme_color_entries_default">По умолчанию в устройстве</string>
   <string name="theme_color_entries_light">Светлая</string>
   <string name="theme_color_entries_dark">Тёмная</string>
-  <string name="theme_size_entries_small">Малый</string>
-  <string name="theme_size_entries_standard">Средний</string>
   <string name="theme_size_entries_large">Большой</string>
+  <string name="theme_size_entries_larger">Больше</string>
+  <string name="theme_size_entries_small">Малый</string>
+  <string name="theme_size_entries_smaller">Меньше</string>
+  <string name="theme_size_entries_standard">Средний</string>
   <string name="this_option_is_turned_off">(отключено)</string>
   <string name="timeline_is_combined_by_default">Линия времени - Объединённая по умолчанию</string>
   <string name="timeline_reloaded">Лента времени обновлена.</string>

@@ -178,6 +178,7 @@
   <string name="get_followers">Obter seguidores</string>
   <string name="get_friends">Obter amigos</string>
   <string name="get_open_instances_title">Obter instâncias abertas</string>
+  <string name="get_message">Obter informações da mensagem</string>
   <string name="get_user">Obter informações do utilizador</string>
   <string name="go_to_the_top_title">Ir para o topo</string>
   <string name="header_accounts">Contas</string>
@@ -241,6 +242,7 @@
   <string name="menu_item_copy_author">Copiar autor para a área de transferência</string>
   <string name="menu_item_destroy_favorite">Anular favorita</string>
   <string name="menu_item_destroy_reblog">Anular republicação</string>
+  <string name="menu_item_destroy_reblog_pumpio">Anular partilha</string>
   <string name="menu_item_destroy_reblog_twitter">Anular retweet</string>
   <string name="menu_item_destroy_status">Remover mensagem</string>
   <string name="menu_item_direct_message">Mensagem direta</string>
@@ -253,6 +255,7 @@
   <string name="menu_item_reply">Responder</string>
   <string name="menu_item_reply_all">Responder a todos</string>
   <string name="menu_item_reblog">Republicar</string>
+  <string name="menu_item_reblog_pumpio">Partilhar via Pump.io</string>
   <string name="menu_item_reblog_twitter">Retweet</string>
   <string name="menu_item_resend">Reenviar</string>
   <string name="menu_item_share">Partilhar</string>
@@ -269,6 +272,8 @@
   <string name="message_source_to">para %1$s</string>
   <string name="message_twitter">Tweet</string>
   <string name="messages_activity">Mensagens diretas</string>
+  <string name="n_message_link">Ligação da mensagem</string>
+  <string name="n_message_links">%d ligações da mensagem</string>
   <string name="never">Nunca</string>
   <string name="new_items_count_abbreviated">Novas</string>
   <string name="no">Não</string>
@@ -332,6 +337,7 @@
   <string name="preference_true_black_title">Cor de fundo escura</string>
   <string name="preference_use_kitkat_media_chooser_title">Interface moderna para selecionar um anexo</string>
   <string name="reblogged_by">republicada por %1$s</string>
+  <string name="reblogged_by_pumpio">partilhado por %1$s</string>
   <string name="reblogged_by_twitter">retweetada por %1$s</string>
   <string name="refresh_title">Recarregar da cache</string>
   <string name="refresh_timeline_automatically_title">Atualizar cronologia automaticamente</string>
@@ -367,6 +373,7 @@
   <string name="settings_activity_title">Definições</string>
   <string name="show_buttons_below_message">Mostrar botões Responder, Favoritos e Republicar abaixo da mensagem</string>
   <string name="show_duplicates">Mostrar duplicados</string>
+  <string name="show_threads_of_conversation">Mostrar tópicos de uma conversa</string>
   <string name="show_timeline_messages">Mostrar mensagens da cronologia</string>
   <string name="since">Desde %s</string>
   <string name="splash_button_learn_more">Saber mais</string>
@@ -437,9 +444,11 @@ Com suporte a GNU social, Twitter e Pump.io.</string>
   <string name="theme_color_entries_default">Predefinições</string>
   <string name="theme_color_entries_light">Claro</string>
   <string name="theme_color_entries_dark">Escuro</string>
-  <string name="theme_size_entries_small">Pequeno</string>
-  <string name="theme_size_entries_standard">Normal</string>
   <string name="theme_size_entries_large">Grande</string>
+  <string name="theme_size_entries_larger">Maior</string>
+  <string name="theme_size_entries_small">Pequeno</string>
+  <string name="theme_size_entries_smaller">Menor</string>
+  <string name="theme_size_entries_standard">Normal</string>
   <string name="this_option_is_turned_off">(inativa)</string>
   <string name="timeline_is_combined_by_default">Por definição, a cronologia é combinada</string>
   <string name="timeline_reloaded">A cronologia foi recarregada.</string>

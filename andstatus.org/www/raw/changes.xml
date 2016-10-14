@@ -27,6 +27,45 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
 		</subtitle>
     </header>
+    <release android:versionName="30.01" android:versionCode="194"
+             versionDate="2016-10-13"
+             versionTitle="More UX enhancements">
+        <changes>
+            <change>Implemented "Private conversation with selected recipient". Now clicking
+                "Open conversation" on a Direct message (for GNU Social and Twitter) opens a list
+                of messages between the two recipients. Pump.io supports private conversations
+                natively, so for Pump.io "Reply" to a Direct message is now enabled, which allows to
+                have different "conversations" with the same recipient (as for public conversations).
+                <a href="https://github.com/andstatus/andstatus/issues/181">#181</a>
+            </change>
+            <change>"Act as..." added to User List views, like for a Timeline view.</change>
+            <change>Additional (font) sizes added. In addition to the three existing "Size" values:
+                Large, Standard and Small, two more added to have intermediate values:
+                Larger and Smaller.
+                <a href="https://github.com/andstatus/andstatus/issues/411">#411</a>
+            </change>
+            <change>Fixed links to Direct messages in ”Open on Internet” and "Share" for GNU Social
+                and Twitter.
+                <a href="https://github.com/andstatus/andstatus/issues/423">#423</a>
+            </change>
+            <change>Added an option "Show threads of a conversation" in addition to the existing
+                "Old messages first in a Conversation view". Both options are available in
+                two places: in Settings-&gt;Timeline and the new Navigation drawer of the
+                Conversation view.
+                <a href="https://github.com/andstatus/andstatus/issues/412">#412</a>
+            </change>
+            <change>Accessibility. Implemented "Make links clickable for talkback users".<br/>
+                In a case "the touch exploration in the system is enabled" AndStatus adds new
+                item to the top of the message's context menu: "N message links", where "N" is
+                the actual number of clickable links.
+                Clicking on this item opens the submenu with an item for each link.
+                <a href="https://github.com/andstatus/andstatus/issues/392">#392</a>
+            </change>
+            <change>Presentation of messages in the Timeline and in the Conversation view unified.
+                Most visible difference: avatars positioning, buttons below messages, "Reply to me" marker on the left side of
+                a message.</change>
+        </changes>
+    </release>
     <release android:versionName="30.00" android:versionCode="193"
              versionDate="2016-10-02"
              versionTitle="Back button navigates through the history and other UX enhancements">
