@@ -59,7 +59,7 @@ public class HttpConnectionMock extends HttpConnection {
         return builder.toString();
     }
 
-    private final List<HttpReadResult> results = new CopyOnWriteArrayList<HttpReadResult>();
+    private final List<HttpReadResult> results = new CopyOnWriteArrayList<>();
     private volatile String responseString = "";
     private volatile InputStream responseFileStream = null;
     private volatile ConnectionException exception = null;

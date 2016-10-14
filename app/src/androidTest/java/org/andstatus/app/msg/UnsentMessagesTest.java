@@ -6,15 +6,21 @@ import android.view.View;
 import android.widget.EditText;
 
 import org.andstatus.app.ActivityTestHelper;
+import org.andstatus.app.ListActivityTestHelper;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyQuery;
+import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.database.MsgTable;
+import org.andstatus.app.net.http.HttpConnectionMock;
+import org.andstatus.app.net.http.HttpReadResult;
 import org.andstatus.app.service.MyServiceTestHelper;
 import org.andstatus.app.util.MyLog;
+
+import java.util.List;
 
 public class UnsentMessagesTest extends ActivityInstrumentationTestCase2<TimelineActivity> {
     final MyServiceTestHelper mService = new MyServiceTestHelper();
@@ -46,7 +52,7 @@ public class UnsentMessagesTest extends ActivityInstrumentationTestCase2<Timelin
         final String method = "testEditUnsentMessage";
         String step = "Start editing a message";
         MyLog.v(this, method + " started");
-        ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<TimelineActivity>(this, getActivity());
+        ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<>(this, getActivity());
         View editorView = getActivity().findViewById(R.id.message_editor);
         helper.clickMenuItem(method + "; " + step, R.id.createMessageButton);
         ActivityTestHelper.waitViewVisible(method + "; " + step, editorView);
@@ -87,4 +93,31 @@ public class UnsentMessagesTest extends ActivityInstrumentationTestCase2<Timelin
         MyLog.v(this, method + " ended");
     }
 
+    public void testGnuSocialReblog() throws InterruptedException {
+        final String method = "testGnuSocialReblog";
+        MyLog.v(this, method + " started");
+        TestSuite.waitForListLoaded(this, getActivity(), 1);
+        ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<>(this, getActivity());
+        long msgId = helper.getListItemIdOfLoadedReply();
+        String msgOid = MyQuery.idToOid(OidEnum.MSG_OID, msgId, 0);
+        String logMsg = "msgId:" + msgId + "; text:'" + MyQuery.msgIdToStringColumnValue(MsgTable.BODY, msgId) + "'";
+        assertTrue(logMsg, helper.invokeContextMenuAction4ListItemId(method, msgId, MessageListContextMenuItem.REBLOG));
+        mService.serviceStopped = false;
+        TestSuite.waitForIdleSync(this);
+        mService.waitForServiceStopped(false);
+
+        List<HttpReadResult> results = ((HttpConnectionMock) TestSuite.getMyContextForTest().getHttpConnectionMock()).getResults();
+        String urlFound = "";
+        for (HttpReadResult result : results) {
+            if (result.getUrl().contains("retweet")) {
+                urlFound = result.getUrl();
+                if (result.getUrl().contains(msgOid)) {
+                    break;
+                }
+            }
+        }
+        assertTrue("URL doesn't contain message oid: " + urlFound, urlFound.contains(msgOid));
+
+        MyLog.v(this, method + " ended");
+    }
 }

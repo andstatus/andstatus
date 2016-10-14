@@ -9,7 +9,7 @@ android {
         applicationId "org.andstatus.app"
         minSdkVersion 16
         targetSdkVersion 24
-        versionName "30.01"
+        versionName "30.02"
         versionCode 194
 
         testApplicationId "org.andstatus.app.tests"

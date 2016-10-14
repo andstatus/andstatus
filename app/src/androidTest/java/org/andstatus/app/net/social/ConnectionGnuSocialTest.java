@@ -22,6 +22,7 @@ import android.test.InstrumentationTestCase;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.context.Travis;
 import org.andstatus.app.data.MyContentType;
+import org.andstatus.app.net.http.HttpReadResult;
 import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
 import org.andstatus.app.util.RawResourceUtils;
 
@@ -31,6 +32,7 @@ import java.util.List;
 
 @Travis
 public class ConnectionGnuSocialTest extends InstrumentationTestCase {
+    private static final String MESSAGE_OID = "2215662";
     private ConnectionTwitterGnuSocialMock connection;
     String accountUserOid = TestSuite.GNUSOCIAL_TEST_ACCOUNT_USER_OID;
     
@@ -144,10 +146,9 @@ public class ConnectionGnuSocialTest extends InstrumentationTestCase {
 
     private MbMessage privateGetMessageWithAttachment(Context context, boolean uniqueUid) throws IOException {
         // Originally downloaded from https://quitter.se/api/statuses/show.json?id=2215662
-        String jso = RawResourceUtils.getString(context, 
-                org.andstatus.app.tests.R.raw.quitter_message_with_attachment);
+        String jso = RawResourceUtils.getString(context, org.andstatus.app.tests.R.raw.quitter_message_with_attachment);
         connection.getHttpMock().setResponse(jso);
-        MbMessage msg = connection.getMessage("2215662");
+        MbMessage msg = connection.getMessage(MESSAGE_OID);
         if (uniqueUid) {
             msg.oid += "_" + TestSuite.TESTRUN_UID;
         }
@@ -161,5 +162,16 @@ public class ConnectionGnuSocialTest extends InstrumentationTestCase {
                 , MyContentType.IMAGE);
         assertEquals("attachment", attachment, msg.attachments.get(0));
         return msg;
+    }
+
+    public void testReblog() throws IOException {
+        String jString = RawResourceUtils.getString(this.getInstrumentation().getContext(),
+                org.andstatus.app.tests.R.raw.quitter_message_with_attachment);
+        connection.getHttpMock().setResponse(jString);
+        MbMessage message = connection.postReblog(MESSAGE_OID);
+        assertEquals(message.toString(), MESSAGE_OID, message.oid);
+        assertEquals(1, connection.getHttpMock().getRequestsCounter());
+        HttpReadResult result = connection.getHttpMock().getResults().get(0);
+        assertTrue("URL doesn't contain message oid: " + result.getUrl(), result.getUrl().contains(MESSAGE_OID));
     }
 }
