@@ -425,8 +425,9 @@
   <string name="summary_preference_syncing">When to sync timeline and how to indicate this</string>
   <string name="summary_preference_theme_size">Select text size</string>
   <string name="summary_preference_user_in_timeline">User will be shown as \"{0}\"</string>
-  <string name="summary_preference_username">Your username in the Social network</string>
-  <string name="summary_preference_username_pumpio">Enter your ID on your pump.io site. It looks like an email address, with your username then \"@\" then your server; e.g.: andstatus@identi.ca</string>
+  <string name="summary_preference_username">Your username in the %1$s Social network; e.g.: %2$s</string>
+  <string name="summary_preference_username_webfinger_id">Enter your ID on your %1$s site. It is called \"Webfinger ID\" and it
+    looks like an email address, with your username then \"@\" then your server; e.g.: %2$s</string>
   <string name="summary_preference_verify_credentials">This Account is verified and enabled. Tap Back (&lt;) to continue or tap here to verify the user\'s credentials again.</string>
   <string name="summary_preference_verify_credentials_failed">Verification failed. Tap here to verify credentials and enable this User Account</string>
   <string name="summary_preference_vibration_off">Vibration is turned off</string>

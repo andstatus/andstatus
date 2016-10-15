@@ -379,7 +379,7 @@
   <string name="summary_preference_theme_size">Velg tekststørrelse</string>
   <string name="summary_preference_user_in_timeline">Brukeren vises som \"{0}\"</string>
   <string name="summary_preference_username">Ditt brukernavn i det sosiale nettverket</string>
-  <string name="summary_preference_username_pumpio">Angi ID på pump.io nettstedet. Det ser ut som en e-postadresse, med ditt brukernavn deretter \"@\" så serveren; eksempel: andstatus@identi.ca</string>
+  <string name="summary_preference_username_webfinger_id">Angi ID på %1$s nettstedet. Det ser ut som en e-postadresse, med ditt brukernavn deretter \"@\" så serveren; eksempel: %2$s</string>
   <string name="summary_preference_verify_credentials">Denne kontoen er bekreftet og aktivert. Trykk tilbake (&lt;) for å fortsette, eller velg for å bekrefte brukerens påloggingsinformasjon.</string>
   <string name="summary_preference_verify_credentials_failed">Bekreftelse mislykkes. Trykk her for å bekrefte påloggingsinformasjon og aktiverer denne brukerkontoen</string>
   <string name="summary_preference_vibration_off">Vibrasjon er deaktivert</string>

@@ -32,7 +32,7 @@ class OriginPumpio extends Origin {
                 resIdOut = R.string.title_preference_username_pumpio;
                 break;
             case R.string.summary_preference_username:
-                resIdOut = R.string.summary_preference_username_pumpio;
+                resIdOut = R.string.summary_preference_username_webfinger_id;
                 break;
             case R.string.menu_item_destroy_reblog:
                 resIdOut = R.string.menu_item_destroy_reblog_pumpio;

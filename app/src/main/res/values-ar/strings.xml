@@ -312,7 +312,7 @@
   <string name="summary_preference_theme_size">حدد حجم النص</string>
   <string name="summary_preference_user_in_timeline">سيتم عرض المستخدم على شكل \"{0}\"</string>
   <string name="summary_preference_username">اسم المستخدم الخاص بك في الموقع الاجتماعي</string>
-  <string name="summary_preference_username_pumpio">أدخل المعرف الخاص بك في موقعك  pump.io.  إنه يبدو كعنوان بريد كتروني، مع اسم المستخدم الخاص بك ثم \"@\" ثم الخادم؛ مثلاً: andstatus@identi.ca</string>
+  <string name="summary_preference_username_webfinger_id">أدخل المعرف الخاص بك في موقعك %1$s إنه يبدو كعنوان بريد كتروني، مع اسم المستخدم الخاص بك ثم \"@\" ثم الخادم؛ مثلاً: %2$s</string>
   <string name="summary_preference_verify_credentials">هذا الحساب مؤكد ومفعل. اضغط الخلف (&lt;) للمتابعة أو اضغط هنا للتحقق من بيانات الاعتماد للمستخدم مرة أخرى.</string>
   <string name="summary_preference_verify_credentials_failed">فشل التحقق. اضغط هنا للتحقق من بيانات الاعتماد وتفعيل \"حساب المستخدم\" هذا</string>
   <string name="summary_preference_vibration_off">الهزاز موقف</string>

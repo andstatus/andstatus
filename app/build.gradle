@@ -9,8 +9,8 @@ android {
         applicationId "org.andstatus.app"
         minSdkVersion 16
         targetSdkVersion 24
-        versionName "30.03"
-        versionCode 196
+        versionName "31.00"
+        versionCode 197
 
         testApplicationId "org.andstatus.app.tests"
         testInstrumentationRunner "android.test.InstrumentationTestRunner"
@@ -68,4 +68,5 @@ dependencies {
     compile files('libs/signpost-core-1.2.1.2.jar')
     compile 'org.apache.commons:commons-lang3:3.4'
     compile 'com.github.woxthebox:draglistview:1.2.8'
+    compile 'com.github.scribejava:scribejava-apis:2.8.1'
 }

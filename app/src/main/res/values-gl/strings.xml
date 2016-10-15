@@ -420,7 +420,7 @@ Admite GNU social, Twitter e Pump.io.</string>
   <string name="summary_preference_theme_size">Escolla tamaño do texto</string>
   <string name="summary_preference_user_in_timeline">Usuario será mostrado como \"{0}\"</string>
   <string name="summary_preference_username">O seu nome de usuario na Rede social</string>
-  <string name="summary_preference_username_pumpio">Introduza o seu ID no seu servidor pump.io. É como un correo-e, co seu nome de usuario logo \"@\" e despois o servidor; ex.: andstatus@identi.ca</string>
+  <string name="summary_preference_username_webfinger_id">Introduza o seu ID no seu servidor %1$s. É como un correo-e, co seu nome de usuario logo \"@\" e despois o servidor; ex.: %2$s</string>
   <string name="summary_preference_verify_credentials">Esta Conta foi validada e habilitada. Toque Atrás (&lt;) para continuar ou toque aquí para Validar novamente.</string>
   <string name="summary_preference_verify_credentials_failed">Fallou a validación. Toque aquí para validar as credenciais e habilitar esta conta de usuario</string>
   <string name="summary_preference_vibration_off">Apagouse a vibración</string>

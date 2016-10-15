@@ -424,7 +424,7 @@
   <string name="summary_preference_theme_size">Выберите размер текста</string>
   <string name="summary_preference_user_in_timeline">Пользователь будет показан как \"{0}\"</string>
   <string name="summary_preference_username">Ваше имя пользователя в этой Социальной сети</string>
-  <string name="summary_preference_username_pumpio">Введите Ваш ID на Вашем pump.io сайте. Он выглядит как email: пользователя \"@\" имя сервера; например: andstatus@identi.ca</string>
+  <string name="summary_preference_username_webfinger_id">Введите Ваш ID на Вашем %1$s сайте. Он выглядит как email: пользователя \"@\" имя сервера; например: %2$s</string>
   <string name="summary_preference_verify_credentials">Данный аккаунт успешно аутентифицирован. Щёлкните Назад (&lt;) для продолжения или щёлкните здесь для повторной проверки</string>
   <string name="summary_preference_verify_credentials_failed">Проверка завершилась неудачно. Щёлкните здесь для аутентификации пользователя и включения данной учётной записи</string>
   <string name="summary_preference_vibration_off">Виброзвонок отключён</string>

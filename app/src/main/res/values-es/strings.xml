@@ -421,7 +421,7 @@
   <string name="summary_preference_theme_size">Selecciona el tamaño del texto</string>
   <string name="summary_preference_user_in_timeline">Los usuarios se mostrarán como \"{0}\"</string>
   <string name="summary_preference_username">Tu nombre de usuario en la red social</string>
-  <string name="summary_preference_username_pumpio">Introduzca su ID de tu servidor pump.io. Se parece a una dirección de correo electrónico, con su nombre de usuario a continuación \"@\" después tu servidor, por ejemplo: andstatus@identi.ca</string>
+  <string name="summary_preference_username_webfinger_id">Introduzca su ID de tu servidor %1$s. Se parece a una dirección de correo electrónico, con su nombre de usuario a continuación \"@\" después tu servidor, por ejemplo: %2$s</string>
   <string name="summary_preference_verify_credentials">Esta cuenta está verificada y habilitada. Pulse Back (&lt;) para continuar o pulse aquí para verificar las credenciales del usuario nuevo..</string>
   <string name="summary_preference_verify_credentials_failed">Fallo en la verificación. Pulse aquí para verificar las credenciales y permitir esta cuenta de usuario</string>
   <string name="summary_preference_vibration_off">Vibración desactivada</string>

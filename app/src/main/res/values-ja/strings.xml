@@ -426,7 +426,7 @@ AndStatus は、最後のメッセージのダウンロード以降のすべて�
   <string name="summary_preference_theme_size">テキストサイズを選択します</string>
   <string name="summary_preference_user_in_timeline">ユーザーは \"{0}\" として表示されます</string>
   <string name="summary_preference_username">ソーシャル ネットワークのユーザー名</string>
-  <string name="summary_preference_username_pumpio">pump.io サイトのあなたの ID を入力してください。メールアドレスのような形式です。ユーザー名の後に \"@\" そしてサーバー。例えば: andstatus@identi.ca</string>
+  <string name="summary_preference_username_webfinger_id">%1$s サイトのあなたの ID を入力してください。メールアドレスのような形式です。ユーザー名の後に \"@\" そしてサーバー。例えば: %2$s</string>
   <string name="summary_preference_verify_credentials">このアカウントは確認済みで有効になっています。戻る (&lt;) をタップして続行するか、ここをタップして、ユーザーの資格情報を再度確認します。</string>
   <string name="summary_preference_verify_credentials_failed">確認に失敗しました。資格情報を確認し、このユーザーアカウントを有効にするには、ここをタップします。</string>
   <string name="summary_preference_vibration_off">バイブレーションはオフになっています</string>

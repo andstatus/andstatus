@@ -328,7 +328,7 @@
   <string name="summary_preference_theme_size">Sélectionnez la taille du texte</string>
   <string name="summary_preference_user_in_timeline">L\'utilisateur sera affiché comme \"{0}\"</string>
   <string name="summary_preference_username">Votre nom d\'utilisateur sur le réseau social</string>
-  <string name="summary_preference_username_pumpio">Saisissez votre ID sur votre site pump.io. Il ressemble à une adresse de courriel, avec votre nom d\'utilisateur puis \"@\" puis votre serveur ; par exemple : andstatus@identi.ca</string>
+  <string name="summary_preference_username_webfinger_id">Saisissez votre ID sur votre site %1$s. Il ressemble à une adresse de courriel, avec votre nom d\'utilisateur puis \"@\" puis votre serveur ; par exemple : %2$s</string>
   <string name="summary_preference_verify_credentials">Ce compte utilisateur est vérifié et activé. Appuyez isi pour vérifier à nouveau les identifiants.</string>
   <string name="summary_preference_verify_credentials_failed">Vérification échouée. Appuyez ici pour vérifier les identifiants et activer ce compte.</string>
   <string name="summary_preference_vibration_off">Vibration désactivée</string>

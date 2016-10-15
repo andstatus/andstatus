@@ -332,7 +332,9 @@ public class AccountSettingsActivity extends MyActivity {
                 usernameEditable.setVisibility(View.GONE);
             } else {
                 usernameEditable.setVisibility(View.VISIBLE);
-                usernameEditable.setHint(ma.alternativeTermForResourceId(R.string.summary_preference_username));
+                usernameEditable.setHint(
+                        String.format(getText(ma.alternativeTermForResourceId(R.string.summary_preference_username)).toString(),
+                                ma.getOrigin().getName(), ma.getOrigin().getOriginType().validUsernameExamples));
                 usernameEditable.addTextChangedListener(textWatcher);
             }
             if (ma.getUsername().compareTo(usernameEditable.getText().toString()) != 0) {

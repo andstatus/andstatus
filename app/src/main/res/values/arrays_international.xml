@@ -159,6 +159,7 @@
         <item>Twitter</item>
         <item>Pump.io</item>
         <item>GNU social</item>
+        <item>Mastodon</item>
     </string-array>
     <string-array name="theme_color_entries">
         <item>@string/theme_color_entries_dark</item>

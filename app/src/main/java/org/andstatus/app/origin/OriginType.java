@@ -20,11 +20,13 @@ import org.andstatus.app.net.http.HttpConnectionBasic;
 import org.andstatus.app.net.http.HttpConnectionEmpty;
 import org.andstatus.app.net.http.HttpConnectionOAuthApache;
 import org.andstatus.app.net.http.HttpConnectionOAuthJavaNet;
+import org.andstatus.app.net.http.HttpConnectionOAuthMastodon;
 import org.andstatus.app.net.social.ConnectionEmpty;
-import org.andstatus.app.net.social.pumpio.ConnectionPumpio;
+import org.andstatus.app.net.social.ConnectionMastodon;
 import org.andstatus.app.net.social.ConnectionTwitter1p1;
 import org.andstatus.app.net.social.ConnectionTwitterGnuSocial;
 import org.andstatus.app.net.social.MbUser;
+import org.andstatus.app.net.social.pumpio.ConnectionPumpio;
 import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UrlUtils;
@@ -45,6 +47,8 @@ public enum OriginType {
      */
     PUMPIO(2, "Pump.io", ApiEnum.PUMPIO),
     GNUSOCIAL(3, "GNU social", ApiEnum.GNUSOCIAL_TWITTER),
+    /** <a href="https://github.com/Gargron/mastodon">Mastodon at GitHub</a> */
+    MASTODON(4, "Mastodon", ApiEnum.MASTODON),
     UNKNOWN(0, "?", ApiEnum.UNKNOWN_API);
 
     /**
@@ -59,12 +63,15 @@ public enum OriginType {
         /** GNU social (former: Status Net) Twitter compatible API http://status.net/wiki/Twitter-compatible_API  */
         GNUSOCIAL_TWITTER,
         /** https://github.com/e14n/pump.io/blob/master/API.md */
-        PUMPIO
+        PUMPIO,
+        /** https://github.com/Gargron/mastodon/wiki/API */
+        MASTODON
     }
 
     private static final String BASIC_PATH_DEFAULT = "api";
     private static final String OAUTH_PATH_DEFAULT = "oauth";
-    private static final String USERNAME_REGEX_DEFAULT = "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*$";
+    private static final String USERNAME_REGEX_SIMPLE = "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*$";
+    private static final String USERNAME_EXAMPLES_SIMPLE = "AndStatus user357 peter";
     public static final OriginType ORIGIN_TYPE_DEFAULT = TWITTER;
     public static final int TEXT_LIMIT_MAXIMUM = 5000;
 
@@ -90,7 +97,8 @@ public enum OriginType {
     /** Can user set username for the new user manually?
      * This is only for no OAuth */
     protected boolean shouldSetNewUsernameManuallyNoOAuth = false;
-    protected String usernameRegEx = USERNAME_REGEX_DEFAULT;
+    protected String usernameRegEx = USERNAME_REGEX_SIMPLE;
+    public final String validUsernameExamples;
     /**
      * Length of the link after changing to the shortened link
      * 0 means that length doesn't change
@@ -128,7 +136,8 @@ public enum OriginType {
                 shouldSetNewUsernameManuallyNoOAuth = true;
                 // TODO: Read from Config
                 shortUrlLengthDefault = 23; 
-                usernameRegEx = USERNAME_REGEX_DEFAULT;
+                usernameRegEx = USERNAME_REGEX_SIMPLE;
+                validUsernameExamples = USERNAME_EXAMPLES_SIMPLE;
                 textLimitDefault = 140;
                 urlDefault = UrlUtils.fromString("https://api.twitter.com");
                 basicPath = "1.1";
@@ -148,6 +157,7 @@ public enum OriginType {
                 shouldSetNewUsernameManuallyIfOAuth = true;
                 shouldSetNewUsernameManuallyNoOAuth = false;
                 usernameRegEx = MbUser.WEBFINGER_ID_REGEX;
+                validUsernameExamples = "andstatus@identi.ca test425@1realtime.net";
                 // This is not a hard limit, just for convenience
                 textLimitDefault = TEXT_LIMIT_MAXIMUM;
                 basicPath = BASIC_PATH_DEFAULT;
@@ -169,7 +179,8 @@ public enum OriginType {
                 canSetUrlOfOrigin = true;
                 shouldSetNewUsernameManuallyIfOAuth = false;
                 shouldSetNewUsernameManuallyNoOAuth = true;
-                usernameRegEx = USERNAME_REGEX_DEFAULT;
+                usernameRegEx = USERNAME_REGEX_SIMPLE;
+                validUsernameExamples = USERNAME_EXAMPLES_SIMPLE;
                 canChangeSsl = true;
                 basicPath = BASIC_PATH_DEFAULT;
                 oauthPath = BASIC_PATH_DEFAULT;
@@ -182,6 +193,28 @@ public enum OriginType {
                 allowEditing = false;
                 isDirectMessageAllowsReply = false;
                 break;
+            case MASTODON:
+                isOAuthDefault = true;
+                canChangeOAuth = false;
+                canSetUrlOfOrigin = false;
+                shouldSetNewUsernameManuallyIfOAuth = false;
+                shouldSetNewUsernameManuallyNoOAuth = true;
+                usernameRegEx = MbUser.WEBFINGER_ID_REGEX;
+                validUsernameExamples = "andstatus@mastodon.social";
+                textLimitDefault = 500;
+                basicPath = "api/v1";
+                oauthPath = "oauth";
+                originClass = OriginMastodon.class;
+                connectionClass = ConnectionMastodon.class;
+                httpConnectionClassOauth = HttpConnectionOAuthMastodon.class;
+                httpConnectionClassBasic = HttpConnectionEmpty.class;
+                mAllowAttachmentForDirectMessage = false;
+                isSearchTimelineSyncable = false;
+                isDirectTimelineSyncable = false;
+                isMentionsTimelineSyncable = true;
+                allowEditing = false;
+                isDirectMessageAllowsReply = false;
+                break;
             default:
                 canSetUrlOfOrigin = false;
                 originClass = Origin.class;
@@ -191,6 +224,7 @@ public enum OriginType {
                 mAllowAttachmentForDirectMessage = false;
                 allowEditing = false;
                 isDirectMessageAllowsReply = false;
+                validUsernameExamples = USERNAME_EXAMPLES_SIMPLE;
                 break;
         }
     }
