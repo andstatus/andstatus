@@ -200,7 +200,7 @@ public enum OriginType {
                 shouldSetNewUsernameManuallyIfOAuth = false;
                 shouldSetNewUsernameManuallyNoOAuth = true;
                 usernameRegEx = MbUser.WEBFINGER_ID_REGEX;
-                validUsernameExamples = "andstatus@mastodon.social";
+                validUsernameExamples = "AndStatus@mastodon.social";
                 textLimitDefault = 500;
                 basicPath = "api/v1";
                 oauthPath = "oauth";
