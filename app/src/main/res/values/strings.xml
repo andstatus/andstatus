@@ -225,7 +225,7 @@
   <string name="label_restore">Restore application data from Backup</string>
   <string name="label_upgrading">Upgrade is in progress. Please wait.</string>
   <string name="label_with_media">with media</string>
-  <string name="last_synced">Last synced</string>
+  <string name="last_synced">Last time successfully synced</string>
   <string name="latest_error_label">Latest error</string>
   <string name="loading">Loading</string>
   <string name="long_press_to_open_context_menu">Long press to open Context Menu</string>
@@ -428,7 +428,8 @@
   <string name="summary_preference_username">Your username in the %1$s Social network; e.g.: %2$s</string>
   <string name="summary_preference_username_webfinger_id">Enter your ID on your %1$s site. It is called \"Webfinger ID\" and it
     looks like an email address, with your username then \"@\" then your server; e.g.: %2$s</string>
-  <string name="summary_preference_verify_credentials">This Account is verified and enabled. Tap Back (&lt;) to continue or tap here to verify the user\'s credentials again.</string>
+  <string name="summary_preference_verify_credentials">This Account is verified and enabled. Tap Back button to continue or
+    tap the button below to check the User\'s credentials again.</string>
   <string name="summary_preference_verify_credentials_failed">Verification failed. Tap here to verify credentials and enable this User Account</string>
   <string name="summary_preference_vibration_off">Vibration is turned off</string>
   <string name="summary_preference_vibration_on">Vibrate on incoming message</string>
@@ -483,7 +484,7 @@
   <string name="title_preference_frequency">Default sync frequency</string>
   <string name="title_preference_history_size">History Size</string>
   <string name="title_preference_history_time">History Time</string>
-  <string name="title_preference_is_default_account">This is a default account</string>
+  <string name="title_preference_is_default_account">This is the default account</string>
   <string name="title_preference_min_log_level">Minimum logging level</string>
   <string name="title_preference_notification_sound">Notification Ringtone</string>
   <string name="title_preference_notifications">Notifications</string>

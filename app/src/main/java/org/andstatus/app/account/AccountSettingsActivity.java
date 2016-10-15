@@ -364,7 +364,7 @@ public class AccountSettingsActivity extends MyActivity {
     
     private void showPassword() {
         MyAccount ma = state.getAccount();
-        boolean isNeeded = ma.getConnection().isPasswordNeeded();
+        boolean isNeeded = ma.getConnection().isPasswordNeeded() && !ma.isValidAndSucceeded();
         StringBuilder labelBuilder = new StringBuilder();
         if (isNeeded) {
             labelBuilder.append(this.getText(R.string.summary_preference_password));
