@@ -41,7 +41,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:ems="10"
-            android:hint="@string/title_preference_username" >
+            android:hint="@string/title_preference_username"
+            android:lines="5">
 
             <requestFocus />
         </EditText>

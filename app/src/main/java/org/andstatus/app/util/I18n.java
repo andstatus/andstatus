@@ -184,4 +184,9 @@ public class I18n {
             builder.append(string);
         }
     }
+
+    @NonNull
+    public static String succeededText(boolean succeeded) {
+        return succeeded ? " succeeded" : " failed";
+    }
 }

@@ -19,6 +19,7 @@ package org.andstatus.app.account;
 
 import android.accounts.AccountManager;
 import android.app.Activity;
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.net.Uri;
@@ -33,10 +34,16 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.WindowManager;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.github.scribejava.core.builder.ServiceBuilder;
+import com.github.scribejava.core.model.OAuth2AccessToken;
+import com.github.scribejava.core.oauth.OAuth20Service;
 
 import org.andstatus.app.ActivityRequestCode;
 import org.andstatus.app.HelpActivity;
@@ -50,6 +57,8 @@ import org.andstatus.app.context.MySettingsActivity;
 import org.andstatus.app.msg.TimelineActivity;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnection;
+import org.andstatus.app.net.http.MastodonApi;
+import org.andstatus.app.net.http.OAuthClientKeys;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.PersistentOriginList;
 import org.andstatus.app.os.AsyncTaskLauncher;
@@ -57,6 +66,7 @@ import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.service.MyServiceState;
 import org.andstatus.app.util.DialogFactory;
+import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyCheckBox;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyUrlSpan;
@@ -66,6 +76,8 @@ import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.io.IOException;
 
 import oauth.signpost.OAuth;
 import oauth.signpost.OAuthConsumer;
@@ -602,7 +614,7 @@ public class AccountSettingsActivity extends MyActivity {
                     if (!ma.areClientKeysPresent()) {
                         AsyncTaskLauncher.execute(this, true, new OAuthRegisterClientTask());
                     } else {
-                        AsyncTaskLauncher.execute(this, true, new OAuthAcquireRequestTokenTask());
+                        startAcquireRequestTokenStep();
                         // and return back to default screen
                         overrideBackActivity = true;
                     }
@@ -754,7 +766,7 @@ public class AccountSettingsActivity extends MyActivity {
     
     /**
      * Step 1 of 3 of the OAuth Authentication
-     * Needed in case we don't have the AndStatus Client keys for the Microblogging system
+     * Needed in a case we don't have the AndStatus Client keys for this Microblogging system
      */
     private class OAuthRegisterClientTask extends MyAsyncTask<Void, Void, JSONObject> {
         private ProgressDialog dlg;
@@ -770,7 +782,7 @@ public class AccountSettingsActivity extends MyActivity {
                     getText(R.string.dialog_summary_registering_client),
                 // duration indeterminate
                     true, 
-                // not cancel-able
+                // not cancelable
                     false); 
         }
 
@@ -779,8 +791,8 @@ public class AccountSettingsActivity extends MyActivity {
             JSONObject jso = null;
 
             boolean requestSucceeded = false;
-            String message = "";
-            String message2 = "";
+            String stepErrorMessage = "";
+            String connectionErrorMessage = "";
 
             try {
                 state.builder.getOriginConfig();
@@ -789,23 +801,23 @@ public class AccountSettingsActivity extends MyActivity {
                 } 
                 requestSucceeded = state.getAccount().areClientKeysPresent();
             } catch (ConnectionException e) {
-                message = e.getMessage();
+                connectionErrorMessage = e.getMessage();
                 MyLog.e(this, e);
             }
             
             try {
                 if (!requestSucceeded) {
-                    message2 = AccountSettingsActivity.this
-                            .getString(R.string.dialog_title_authentication_failed);
-                    if (!TextUtils.isEmpty(message)) {
-                        message2 = message2 + ": " + message;
+                    stepErrorMessage = AccountSettingsActivity.this
+                            .getString(R.string.client_registration_failed);
+                    if (!TextUtils.isEmpty(connectionErrorMessage)) {
+                        stepErrorMessage += ": " + connectionErrorMessage;
                     }
-                    MyLog.d(TAG, message2);
+                    MyLog.d(TAG, stepErrorMessage);
                 }
 
                 jso = new JSONObject();
                 jso.put("succeeded", requestSucceeded);
-                jso.put("message", message2);
+                jso.put("message", stepErrorMessage);
             } catch (JSONException e) {
                 MyLog.e(this, e);
             }
@@ -816,9 +828,10 @@ public class AccountSettingsActivity extends MyActivity {
         @Override
         protected void onPostExecute(JSONObject jso) {
             DialogFactory.dismissSafely(dlg);
+            boolean succeeded = false;
             if (jso != null) {
                 try {
-                    boolean succeeded = jso.getBoolean("succeeded");
+                    succeeded = jso.getBoolean("succeeded");
                     String message = jso.getString("message");
 
                     if (succeeded) {
@@ -828,7 +841,7 @@ public class AccountSettingsActivity extends MyActivity {
                         state.builder = MyAccount.Builder.newOrExistingFromAccountName(
                                 MyContextHolder.get(), accountName, TriState.TRUE);
                         updateScreen();
-                        AsyncTaskLauncher.execute(this, true, new OAuthAcquireRequestTokenTask());
+                        startAcquireRequestTokenStep();
                         // and return back to default screen
                         overrideBackActivity = true;
                     } else {
@@ -840,10 +853,53 @@ public class AccountSettingsActivity extends MyActivity {
                     MyLog.e(this, e);
                 }
             }
+            MyLog.v(this, I18n.succeededText(succeeded));
         }
     }
-    
-    
+
+    private void startAcquireRequestTokenStep() {
+        if (state.getAccount().getOAuthConsumerAndProvider().getConsumer() == null) {  // Indirect OAuth2 indication...
+            OAuthClientKeys oAuthClientKeys = state.getAccount().getConnection().getOAuthClientKeys();
+            final OAuth20Service service = new ServiceBuilder()
+                    .apiKey(oAuthClientKeys.getConsumerKey())
+                    .apiSecret(oAuthClientKeys.getConsumerSecret())
+                    .callback(HttpConnection.CALLBACK_URI.toString())
+                    .build(MastodonApi.instance(state.getAccount().getConnection().getHttpOAuth())); // TODO change this interface...
+            // OAuth2 flow
+            String authUrl = service.getAuthorizationUrl();
+
+            final Dialog authDialog = new Dialog(AccountSettingsActivity.this);
+            authDialog.setContentView(R.layout.auth_dialog);
+
+            WebView web = (WebView) authDialog.findViewById(R.id.webView);
+            web.getSettings().setJavaScriptEnabled(true);
+            web.setWebViewClient(new WebViewClient() {
+                @Override
+                public void onPageFinished(WebView view, String url) {
+                    super.onPageFinished(view, url);
+
+                    MyLog.d(this, "URL loaded: " + url);
+
+                    if(url.contains("?code=")) {
+                        Uri uri = Uri.parse(url);
+                        String authCode = uri.getQueryParameter("code");
+                        MyLog.d(this, "Auth code is: " + authCode);
+                        new AsyncTaskLauncher<Object>().execute(this, true, new OAuth2AcquireAccessTokenTask(), service, authCode);
+                        authDialog.dismiss();
+                    }
+                }
+            });
+
+            web.loadUrl(authUrl);
+
+            authDialog.show();
+            authDialog.setTitle("Authorize");
+            authDialog.setCancelable(true);
+        } else {
+            AsyncTaskLauncher.execute(this, true, new OAuthAcquireRequestTokenTask());
+        }
+    }
+
     /**
      * Task 2 of 3 required for OAuth Authentication.
      * See http://www.snipe.net/2009/07/writing-your-first-twitter-application-with-oauth/
@@ -890,11 +946,12 @@ public class AccountSettingsActivity extends MyActivity {
             JSONObject jso = null;
 
             boolean requestSucceeded = false;
-            String message = "";
-            String message2 = "";
+            String stepErrorMessage = "";
+            String connectionErrorMessage = "";
             try {
                 MyAccount ma = state.getAccount();
                 MyLog.v(this, "Retrieving request token for " + ma);
+
                 OAuthConsumer consumer = state.getAccount().getOAuthConsumerAndProvider().getConsumer();
 
                 // This is really important. If you were able to register your
@@ -923,25 +980,25 @@ public class AccountSettingsActivity extends MyActivity {
                     | OAuthExpectationFailedException
                     | OAuthCommunicationException
                     | ConnectionException e) {
-                message = e.getMessage();
+                connectionErrorMessage = e.getMessage();
                 MyLog.e(this, e);
             }
 
             try {
                 if (!requestSucceeded) {
-                    message2 = AccountSettingsActivity.this
-                            .getString(R.string.dialog_title_authentication_failed);
-                    if (message != null && message.length() > 0) {
-                        message2 = message2 + ": " + message;
+                    stepErrorMessage = AccountSettingsActivity.this
+                            .getString(R.string.acquiring_a_request_token_failed);
+                    if (connectionErrorMessage != null && connectionErrorMessage.length() > 0) {
+                        stepErrorMessage += ": " + connectionErrorMessage;
                     }
-                    MyLog.d(TAG, message2);
+                    MyLog.d(TAG, stepErrorMessage);
                     
                     state.builder.clearClientKeys();
                 }
 
                 jso = new JSONObject();
                 jso.put("succeeded", requestSucceeded);
-                jso.put("message", message2);
+                jso.put("message", stepErrorMessage);
             } catch (JSONException e) {
                 MyLog.i(this, e);
             }
@@ -952,9 +1009,10 @@ public class AccountSettingsActivity extends MyActivity {
         @Override
         protected void onPostExecute(JSONObject jso) {
             DialogFactory.dismissSafely(dlg);
+            boolean succeeded = false;
             if (jso != null) {
                 try {
-                    boolean succeeded = jso.getBoolean("succeeded");
+                    succeeded = jso.getBoolean("succeeded");
                     String message = jso.getString("message");
 
                     if (succeeded) {
@@ -971,6 +1029,7 @@ public class AccountSettingsActivity extends MyActivity {
                     MyLog.e(this, e);
                 }
             }
+            MyLog.v(this, I18n.succeededText(succeeded));
         }
     }
     
@@ -1019,22 +1078,23 @@ public class AccountSettingsActivity extends MyActivity {
                 message = "Connection is not OAuth";
                 MyLog.e(this, message);
             } else {
-                // We don't need to worry about any saved states: we can reconstruct
-                // the state
+                // We don't need to worry about any saved states: we can reconstruct the state
 
                 Uri uri = uris[0];
                 if (uri != null && HttpConnection.CALLBACK_URI.getHost().equals(uri.getHost())) {
-                    String token = state.getRequestToken();
-                    String secret = state.getRequestSecret();
+                    String accessToken = "";
+                    String accessSecret = "";
 
                     state.builder.setCredentialsVerificationStatus(CredentialsVerificationStatus.NEVER);
                     try {
+                        String requestToken = state.getRequestToken();
+                        String requestSecret = state.getRequestSecret();
                         // Clear the request stuff, we've used it already
                         state.setRequestTokenWithSecret(null, null);
 
                         OAuthConsumer consumer = state.getAccount().getOAuthConsumerAndProvider().getConsumer();
-                        if (!(token == null || secret == null)) {
-                            consumer.setTokenWithSecret(token, secret);
+                        if (!(requestToken == null || requestSecret == null)) {
+                            consumer.setTokenWithSecret(requestToken, requestSecret);
                         }
                         String otoken = uri.getQueryParameter(OAuth.OAUTH_TOKEN);
                         String verifier = uri.getQueryParameter(OAuth.OAUTH_VERIFIER);
@@ -1049,8 +1109,8 @@ public class AccountSettingsActivity extends MyActivity {
                             state.getAccount().getOAuthConsumerAndProvider().getProvider()
                                 .retrieveAccessToken(consumer, verifier);
                             // Now we can retrieve the goodies
-                            token = consumer.getToken();
-                            secret = consumer.getTokenSecret();
+                            accessToken = consumer.getToken();
+                            accessSecret = consumer.getTokenSecret();
                             authenticated = true;
                         }
                     } catch (OAuthMessageSignerException | OAuthNotAuthorizedException
@@ -1060,7 +1120,7 @@ public class AccountSettingsActivity extends MyActivity {
                         MyLog.e(this, e);
                     } finally {
                         if (authenticated) {
-                            state.builder.setUserTokenWithSecret(token, secret);
+                            state.builder.setUserTokenWithSecret(accessToken, accessSecret);
                         }
                     }
                 }
@@ -1080,10 +1140,11 @@ public class AccountSettingsActivity extends MyActivity {
         @Override
         protected void onPostExecute(JSONObject jso) {
             DialogFactory.dismissSafely(dlg);
+            boolean succeeded = false;
             if (jso != null) {
                 try {
-                    boolean succeeded = jso.getBoolean("succeeded");
-                    String message = jso.getString("message");
+                    succeeded = jso.getBoolean("succeeded");
+                    String connectionErrorMessage = jso.getString("message");
 
                     MyLog.d(TAG, this.getClass().getName() + " ended, "
                             + (succeeded ? "authenticated" : "authentication failed"));
@@ -1093,13 +1154,13 @@ public class AccountSettingsActivity extends MyActivity {
                         // This is needed even for OAuth - to know Twitter Username
                         AsyncTaskLauncher.execute(this, true, new VerifyCredentialsTask());
                     } else {
-                        String message2 = AccountSettingsActivity.this
-                        .getString(R.string.dialog_title_authentication_failed);
-                        if (message != null && message.length() > 0) {
-                            message2 = message2 + ": " + message;
-                            MyLog.d(TAG, message);
+                        String stepErrorMessage = AccountSettingsActivity.this
+                        .getString(R.string.acquiring_an_access_token_failed);
+                        if (!TextUtils.isEmpty(connectionErrorMessage)) {
+                            stepErrorMessage += ": " + connectionErrorMessage;
+                            MyLog.d(TAG, connectionErrorMessage);
                         }
-                        appendError(message2);
+                        appendError(stepErrorMessage);
                         state.builder.setCredentialsVerificationStatus(CredentialsVerificationStatus.FAILED);
                         updateScreen();
                     }
@@ -1107,8 +1168,56 @@ public class AccountSettingsActivity extends MyActivity {
                     MyLog.e(this, e);
                 }
             }
+            MyLog.v(this, I18n.succeededText(succeeded));
         }
     }
+
+    class OAuth2AcquireAccessTokenTask extends MyAsyncTask<Object, Void, OAuth20Service> {
+
+        public OAuth2AcquireAccessTokenTask() {
+            super(PoolEnum.QUICK_UI);
+        }
+
+        @Override
+        protected OAuth20Service doInBackground2(Object... params) {
+            OAuth20Service service = (OAuth20Service) params[0];
+            String authCode = (String) params[1];
+            String domain = Uri.parse(service.getAuthorizationUrl()).getHost();
+
+            try {
+                final OAuth2AccessToken token = service.getAccessToken(authCode);
+                state.builder.setUserTokenWithSecret(token.getAccessToken(), token.getAccessToken());
+                MyLog.d(this, "Access token for " + domain + ": " + token.getAccessToken());
+            } catch (IOException e) {
+                MyLog.d(this, state.getAccount().toString(), e);
+            }
+
+            return service;
+        }
+
+        @Override
+        protected void onPostExecute(OAuth20Service service) {
+            boolean succeeded = state.getAccount().getCredentialsPresent();
+            if (state.getAccount().getCredentialsPresent()) {
+                MyLog.d(TAG, this.getClass().getName() + " ended, "
+                        + (succeeded ? "authenticated" : "authentication failed"));
+
+                if (succeeded) {
+                    // Credentials are present, so we may verify them
+                    // This is needed even for OAuth - to know Username
+                    AsyncTaskLauncher.execute(this, true, new VerifyCredentialsTask());
+                } else {
+                    String stepErrorMessage = AccountSettingsActivity.this
+                            .getString(R.string.acquiring_an_access_token_failed);
+                    appendError(stepErrorMessage);
+                    state.builder.setCredentialsVerificationStatus(CredentialsVerificationStatus.FAILED);
+                    updateScreen();
+                }
+            }
+            MyLog.v(this, I18n.succeededText(succeeded));
+        }
+    }
+
 
     /**
      * Assuming we already have credentials to verify, verify them

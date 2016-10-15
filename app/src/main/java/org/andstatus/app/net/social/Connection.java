@@ -28,6 +28,8 @@ import org.andstatus.app.net.http.ConnectionException.StatusCode;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.net.http.HttpConnectionData;
 import org.andstatus.app.net.http.HttpConnectionMock;
+import org.andstatus.app.net.http.HttpConnectionOAuthJavaNet;
+import org.andstatus.app.net.http.OAuthClientKeys;
 import org.andstatus.app.net.http.OAuthConsumerAndProvider;
 import org.andstatus.app.net.social.MbTimelineItem.ItemType;
 import org.andstatus.app.origin.OriginConnectionData;
@@ -54,6 +56,14 @@ import java.util.Locale;
 public abstract class Connection {
     public static final String KEY_PASSWORD = "password";
     protected static final String EXTENSION = ".json";
+
+    // TODO: Change this interface
+    public HttpConnectionOAuthJavaNet getHttpOAuth() {
+        if (http != null && HttpConnectionOAuthJavaNet.class.isAssignableFrom(http.getClass())) {
+            return (HttpConnectionOAuthJavaNet) http;
+        }
+        return null;
+    }
 
     /**
      * API routines (functions, "resources" in terms of Twitter)  enumerated
@@ -397,11 +407,10 @@ public abstract class Connection {
     }
 
     public OAuthConsumerAndProvider getOAuthConsumerAndProvider() {
-        OAuthConsumerAndProvider oa = null;
-        if (data.isOAuth()) {
-            oa = (OAuthConsumerAndProvider) http;
+        if (data.isOAuth() && OAuthConsumerAndProvider.class.isAssignableFrom(http.getClass())) {
+            return (OAuthConsumerAndProvider) http;
         }
-        return oa;
+        return null;
     }
 
     public void registerClientForAccount() throws ConnectionException {
@@ -414,6 +423,10 @@ public abstract class Connection {
 
     public boolean areOAuthClientKeysPresent() {
         return http.data.areOAuthClientKeysPresent();
+    }
+
+    public OAuthClientKeys getOAuthClientKeys() {
+        return http.data.oauthClientKeys;
     }
 
     public void enrichConnectionData(OriginConnectionData connectionData2) {

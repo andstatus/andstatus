@@ -68,5 +68,5 @@ dependencies {
     compile files('libs/signpost-core-1.2.1.2.jar')
     compile 'org.apache.commons:commons-lang3:3.4'
     compile 'com.github.woxthebox:draglistview:1.2.8'
-    compile 'com.github.scribejava:scribejava-apis:2.8.1'
+    compile 'com.github.scribejava:scribejava-core:3.2.0'
 }

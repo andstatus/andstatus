@@ -20,9 +20,12 @@ import android.text.TextUtils;
 
 import org.andstatus.app.net.social.Connection;
 
+import oauth.signpost.OAuthConsumer;
+import oauth.signpost.OAuthProvider;
+
 public class HttpConnectionOAuthMastodon extends HttpConnectionOAuthJavaNet {
     @Override
-    protected String getApiUrl(Connection.ApiRoutineEnum routine) throws ConnectionException {
+    public String getApiUrl(Connection.ApiRoutineEnum routine) throws ConnectionException {
         String url;
 
         switch (routine) {
@@ -46,5 +49,15 @@ public class HttpConnectionOAuthMastodon extends HttpConnectionOAuthJavaNet {
         }
 
         return url;
+    }
+
+    @Override
+    public OAuthConsumer getConsumer() {
+        return null;
+    }
+
+    @Override
+    public OAuthProvider getProvider() throws ConnectionException {
+        return null;
     }
 }
