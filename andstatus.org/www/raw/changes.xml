@@ -27,7 +27,7 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
 		</subtitle>
     </header>
-    <release android:versionName="30.01" android:versionCode="194"
+    <release android:versionName="30.02" android:versionCode="195"
              versionDate="2016-10-13"
              versionTitle="More UX enhancements">
         <changes>
