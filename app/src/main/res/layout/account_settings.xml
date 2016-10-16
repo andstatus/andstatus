@@ -11,7 +11,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        tools:context=".account.AccountSettingsActivity" >
+        tools:context=".account.AccountSettingsActivity"
+        android:weightSum="1">
 
         <TextView
             android:id="@+id/origin_label"
@@ -27,7 +28,7 @@
             android:layout_marginLeft="12dp"
             android:layout_marginStart="12dp"
             android:hint="@string/label_origin_system"
-            android:textAppearance="?android:attr/textAppearanceMedium" />
+            android:textAppearance="?attr/messageBodyTextAppearance" />
 
         <TextView
             android:id="@+id/username_label"
@@ -40,9 +41,8 @@
             android:id="@+id/username"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:ems="10"
-            android:hint="@string/title_preference_username"
-            android:lines="5">
+            android:hint="@string/summary_preference_username_webfinger_id"
+            android:textAppearance="?attr/messageBodyTextAppearance" >
 
             <requestFocus />
         </EditText>
@@ -54,7 +54,7 @@
             android:layout_marginLeft="12dp"
             android:layout_marginStart="12dp"
             android:hint="@string/title_preference_username"
-            android:textAppearance="?android:attr/textAppearanceMedium" />
+            android:textAppearance="?attr/messageBodyTextAppearance" />
         
         <TextView
             android:id="@+id/password_label"
@@ -66,10 +66,9 @@
             android:id="@+id/password"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:ems="10"
             android:hint="@string/title_preference_password"
-            android:inputType="textPassword" >
-        </EditText>
+            android:inputType="textPassword"
+            android:textAppearance="?attr/messageBodyTextAppearance" />
 
         <TextView
             android:id="@+id/latest_error_label"
@@ -84,7 +83,7 @@
             android:layout_marginLeft="12dp"
             android:layout_marginStart="12dp"
             android:hint="@string/error"
-            android:textAppearance="?android:attr/textAppearanceMedium" />
+            android:textAppearance="?attr/messageBodyTextAppearance" />
 
         <TextView
             android:id="@+id/account_state"
@@ -125,7 +124,6 @@
             android:layout_height="wrap_content"
             android:text="@string/synced_automatically" />
 
-
         <TextView
             android:id="@+id/label_sync_frequency"
             android:layout_width="wrap_content"
@@ -137,7 +135,7 @@
             android:id="@+id/sync_frequency"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:ems="10"
+            android:textAppearance="?attr/messageBodyTextAppearance"
             android:hint="@string/sync_frequency_minutes" />
 
         <TextView

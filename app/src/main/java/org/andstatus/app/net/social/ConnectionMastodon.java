@@ -32,6 +32,9 @@ public class ConnectionMastodon extends ConnectionPumpio {
             case STATUSES_MENTIONS_TIMELINE:
                 url = "statuses/mentions";
                 break;
+            case ACCOUNT_VERIFY_CREDENTIALS:
+                url = "accounts/verify_credentials";
+                break;
             default:
                 url = "";
                 break;

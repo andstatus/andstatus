@@ -429,7 +429,7 @@
   <string name="summary_preference_theme_size">Select text size</string>
   <string name="summary_preference_user_in_timeline">User will be shown as \"{0}\"</string>
   <string name="summary_preference_username">Your username in the %1$s Social network; e.g.: %2$s</string>
-  <string name="summary_preference_username_webfinger_id">Enter your ID on your %1$s site. It is called \"Webfinger ID\" and it
+  <string name="summary_preference_username_webfinger_id">Your ID in %1$s. It
     looks like an email address, with your username then \"@\" then your server; e.g.: %2$s</string>
   <string name="summary_preference_verify_credentials">This Account is verified and enabled. Tap Back button to continue or
     tap the button below to check the User\'s credentials again.</string>
