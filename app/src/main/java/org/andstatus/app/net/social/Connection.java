@@ -29,8 +29,7 @@ import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.net.http.HttpConnectionData;
 import org.andstatus.app.net.http.HttpConnectionMock;
 import org.andstatus.app.net.http.HttpConnectionOAuthJavaNet;
-import org.andstatus.app.net.http.OAuthClientKeys;
-import org.andstatus.app.net.http.OAuthConsumerAndProvider;
+import org.andstatus.app.net.http.OAuthService;
 import org.andstatus.app.net.social.MbTimelineItem.ItemType;
 import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.util.MyLog;
@@ -406,9 +405,9 @@ public abstract class Connection {
         http.setUserTokenWithSecret(token, secret);
     }
 
-    public OAuthConsumerAndProvider getOAuthConsumerAndProvider() {
-        if (data.isOAuth() && OAuthConsumerAndProvider.class.isAssignableFrom(http.getClass())) {
-            return (OAuthConsumerAndProvider) http;
+    public OAuthService getOAuthService() {
+        if (data.isOAuth() && OAuthService.class.isAssignableFrom(http.getClass())) {
+            return (OAuthService) http;
         }
         return null;
     }
@@ -423,10 +422,6 @@ public abstract class Connection {
 
     public boolean areOAuthClientKeysPresent() {
         return http.data.areOAuthClientKeysPresent();
-    }
-
-    public OAuthClientKeys getOAuthClientKeys() {
-        return http.data.oauthClientKeys;
     }
 
     public void enrichConnectionData(OriginConnectionData connectionData2) {

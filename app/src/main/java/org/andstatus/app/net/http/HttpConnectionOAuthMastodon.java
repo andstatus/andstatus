@@ -79,7 +79,7 @@ public class HttpConnectionOAuthMastodon extends HttpConnectionOAuthJavaNet {
         }
         try {
             if (data.originUrl.getHost().contentEquals(data.urlForUserToken.getHost())) {
-                OAuth2AccessToken token = new OAuth2AccessToken(getUserToken(), null);
+                OAuth2AccessToken token = new OAuth2AccessToken(getUserToken(), getUserSecret());
                 service.signRequest(token, request);
             } else {
                 // See http://tools.ietf.org/html/draft-prodromou-dialback-00
@@ -103,7 +103,7 @@ public class HttpConnectionOAuthMastodon extends HttpConnectionOAuthJavaNet {
     @Override
     protected void postRequest(HttpReadResult result) throws ConnectionException {
         try {
-            OAuth20Service service = getService();
+            OAuth20Service service = getService(true);
             final OAuthRequest request = new OAuthRequest(Verb.POST, result.getUrlObj().toString(), service);
             if (!result.hasFormParams()) {
                 // Nothing to do at this step
@@ -129,11 +129,15 @@ public class HttpConnectionOAuthMastodon extends HttpConnectionOAuthJavaNet {
         }
     }
 
-    private OAuth20Service getService() {
-        OAuth20Service service = new ServiceBuilder()
+    @Override
+    public OAuth20Service getService(boolean redirect) {
+        final ServiceBuilder serviceBuilder = new ServiceBuilder()
                 .apiKey(data.oauthClientKeys.getConsumerKey())
-                .apiSecret(data.oauthClientKeys.getConsumerSecret())
-                .build(MastodonApi.instance(this));
+                .apiSecret(data.oauthClientKeys.getConsumerSecret());
+        if (redirect) {
+            serviceBuilder.callback(HttpConnection.CALLBACK_URI.toString());
+        }
+        OAuth20Service service = serviceBuilder.build(MastodonApi.instance(this));
         return service;
     }
 
@@ -143,7 +147,7 @@ public class HttpConnectionOAuthMastodon extends HttpConnectionOAuthJavaNet {
         StringBuilder logBuilder = new StringBuilder(method);
         try {
             logBuilder.append("URL='" + result.getUrl() + "';");
-            OAuth20Service service = getService();
+            OAuth20Service service = getService(true);
             OAuthRequest request;
             boolean redirected = false;
             boolean stop = false;
@@ -197,5 +201,10 @@ public class HttpConnectionOAuthMastodon extends HttpConnectionOAuthJavaNet {
         } catch(IOException e) {
             throw new ConnectionException(logBuilder.toString(), e);
         }
+    }
+
+    @Override
+    public boolean isOAuth2() {
+        return true;
     }
 }

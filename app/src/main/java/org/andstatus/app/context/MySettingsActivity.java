@@ -206,8 +206,8 @@ public class MySettingsActivity extends AppCompatPreferenceActivity {
     public void finish() {
         logEvent("finish", startTimelineActivity ? " and return" : "");
         super.finish();
+        MyContextHolder.setExpiredIfConfigChanged();
         if (startTimelineActivity) {
-            MyContextHolder.setExpiredIfConfigChanged();
             TimelineActivity.goHome(this);
         }
     }

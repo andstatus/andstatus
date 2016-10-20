@@ -16,13 +16,15 @@
 
 package org.andstatus.app.net.http;
 
+import com.github.scribejava.core.oauth.OAuth20Service;
+
 import oauth.signpost.OAuthConsumer;
 import oauth.signpost.OAuthProvider;
 
 /**
  * @author yvolk@yurivolkov.com
  */
-public interface OAuthConsumerAndProvider {
+public interface OAuthService {
     /**
      * @return OAuth Consumer for this connection
      */
@@ -31,4 +33,8 @@ public interface OAuthConsumerAndProvider {
      * @return OAuth Provider for this connection
      */
     OAuthProvider getProvider() throws ConnectionException;
+
+    OAuth20Service getService(boolean redirect);
+
+    boolean isOAuth2();
 }

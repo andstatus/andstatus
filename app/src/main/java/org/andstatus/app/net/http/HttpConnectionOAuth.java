@@ -18,13 +18,15 @@ package org.andstatus.app.net.http;
 
 import android.text.TextUtils;
 
+import com.github.scribejava.core.oauth.OAuth20Service;
+
 import org.andstatus.app.account.AccountDataWriter;
 import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
 import org.andstatus.app.util.MyLog;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-abstract class HttpConnectionOAuth extends HttpConnection implements OAuthConsumerAndProvider {
+abstract class HttpConnectionOAuth extends HttpConnection implements OAuthService {
     private static final String TAG = HttpConnectionOAuth.class.getSimpleName();
     public boolean logMe = false;
 
@@ -89,6 +91,16 @@ abstract class HttpConnectionOAuth extends HttpConnection implements OAuthConsum
             url = pathToUrlString(url);
         }
         return url;
+    }
+
+    @Override
+    public OAuth20Service getService(boolean redirect) {
+        return null;
+    }
+
+    @Override
+    public boolean isOAuth2() {
+        return false;
     }
 
     /**

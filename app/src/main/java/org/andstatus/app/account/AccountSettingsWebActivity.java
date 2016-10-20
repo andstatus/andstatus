@@ -55,7 +55,7 @@ public class AccountSettingsWebActivity extends MyActivity {
     }
     
     private class WebViewListener extends WebViewClient {
-        private boolean isFinishing = false;
+        private volatile boolean isFinishing = false;
 
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
@@ -63,8 +63,7 @@ public class AccountSettingsWebActivity extends MyActivity {
             if (isThisCallback(url)) {
                 return true;
             }
-            view.loadUrl(url);
-            return true;
+            return false;
         }
 
         private boolean isThisCallback(String url) {

@@ -39,7 +39,7 @@ import org.andstatus.app.database.OriginTable;
 import org.andstatus.app.database.UserTable;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.ConnectionException.StatusCode;
-import org.andstatus.app.net.http.OAuthConsumerAndProvider;
+import org.andstatus.app.net.http.OAuthService;
 import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
 import org.andstatus.app.net.social.MbConfig;
@@ -808,8 +808,8 @@ public final class MyAccount implements Comparable<MyAccount> {
         return connection.areOAuthClientKeysPresent();
     }
 
-    public OAuthConsumerAndProvider getOAuthConsumerAndProvider() {
-        return connection.getOAuthConsumerAndProvider();
+    public OAuthService getOAuthService() {
+        return connection.getOAuthService();
     }
 
     public int getOrder() {

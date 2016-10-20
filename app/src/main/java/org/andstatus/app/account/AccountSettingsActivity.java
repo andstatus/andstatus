@@ -19,7 +19,6 @@ package org.andstatus.app.account;
 
 import android.accounts.AccountManager;
 import android.app.Activity;
-import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.net.Uri;
@@ -34,14 +33,12 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.WindowManager;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.github.scribejava.core.builder.ServiceBuilder;
+import com.github.scribejava.core.exceptions.OAuthException;
 import com.github.scribejava.core.model.OAuth2AccessToken;
 import com.github.scribejava.core.oauth.OAuth20Service;
 
@@ -57,8 +54,6 @@ import org.andstatus.app.context.MySettingsActivity;
 import org.andstatus.app.msg.TimelineActivity;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnection;
-import org.andstatus.app.net.http.MastodonApi;
-import org.andstatus.app.net.http.OAuthClientKeys;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.PersistentOriginList;
 import org.andstatus.app.os.AsyncTaskLauncher;
@@ -152,7 +147,7 @@ public class AccountSettingsActivity extends MyActivity {
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
-
+        setIntent(intent);
         restoreState(intent, "onNewIntent");
     }
 
@@ -614,7 +609,7 @@ public class AccountSettingsActivity extends MyActivity {
                     if (!ma.areClientKeysPresent()) {
                         AsyncTaskLauncher.execute(this, true, new OAuthRegisterClientTask());
                     } else {
-                        startAcquireRequestTokenStep();
+                        AsyncTaskLauncher.execute(this, true, new OAuthAcquireRequestTokenTask());
                         // and return back to default screen
                         overrideBackActivity = true;
                     }
@@ -841,7 +836,7 @@ public class AccountSettingsActivity extends MyActivity {
                         state.builder = MyAccount.Builder.newOrExistingFromAccountName(
                                 MyContextHolder.get(), accountName, TriState.TRUE);
                         updateScreen();
-                        startAcquireRequestTokenStep();
+                        AsyncTaskLauncher.execute(this, true, new OAuthAcquireRequestTokenTask());
                         // and return back to default screen
                         overrideBackActivity = true;
                     } else {
@@ -854,49 +849,6 @@ public class AccountSettingsActivity extends MyActivity {
                 }
             }
             MyLog.v(this, I18n.succeededText(succeeded));
-        }
-    }
-
-    private void startAcquireRequestTokenStep() {
-        if (state.getAccount().getOAuthConsumerAndProvider().getConsumer() == null) {  // Indirect OAuth2 indication...
-            OAuthClientKeys oAuthClientKeys = state.getAccount().getConnection().getOAuthClientKeys();
-            final OAuth20Service service = new ServiceBuilder()
-                    .apiKey(oAuthClientKeys.getConsumerKey())
-                    .apiSecret(oAuthClientKeys.getConsumerSecret())
-                    .callback(HttpConnection.CALLBACK_URI.toString())
-                    .build(MastodonApi.instance(state.getAccount().getConnection().getHttpOAuth())); // TODO change this interface...
-            // OAuth2 flow
-            String authUrl = service.getAuthorizationUrl();
-
-            final Dialog authDialog = new Dialog(AccountSettingsActivity.this);
-            authDialog.setContentView(R.layout.auth_dialog);
-
-            WebView web = (WebView) authDialog.findViewById(R.id.webView);
-            web.getSettings().setJavaScriptEnabled(true);
-            web.setWebViewClient(new WebViewClient() {
-                @Override
-                public void onPageFinished(WebView view, String url) {
-                    super.onPageFinished(view, url);
-
-                    MyLog.d(this, "URL loaded: " + url);
-
-                    if(url.contains("?code=")) {
-                        Uri uri = Uri.parse(url);
-                        String authCode = uri.getQueryParameter("code");
-                        MyLog.d(this, "Auth code is: " + authCode);
-                        new AsyncTaskLauncher<Object>().execute(this, true, new OAuth2AcquireAccessTokenTask(), service, authCode);
-                        authDialog.dismiss();
-                    }
-                }
-            });
-
-            web.loadUrl(authUrl);
-
-            authDialog.show();
-            authDialog.setTitle("Authorize");
-            authDialog.setCancelable(true);
-        } else {
-            AsyncTaskLauncher.execute(this, true, new OAuthAcquireRequestTokenTask());
         }
     }
 
@@ -952,24 +904,30 @@ public class AccountSettingsActivity extends MyActivity {
                 MyAccount ma = state.getAccount();
                 MyLog.v(this, "Retrieving request token for " + ma);
 
-                OAuthConsumer consumer = state.getAccount().getOAuthConsumerAndProvider().getConsumer();
+                String authUrl;
+                if (state.getAccount().getOAuthService().isOAuth2()) {
+                    final OAuth20Service service = state.getAccount().getConnection().getHttpOAuth().getService(true);
+                    authUrl = service.getAuthorizationUrl();
+                } else {
+                    OAuthConsumer consumer = state.getAccount().getOAuthService().getConsumer();
 
-                // This is really important. If you were able to register your
-                // real callback Uri with Twitter, and not some fake Uri
-                // like I registered when I wrote this example, you need to send
-                // null as the callback Uri in this function call. Then
-                // Twitter will correctly process your callback redirection
-                String authUrl = state.getAccount().getOAuthConsumerAndProvider().getProvider()
-                        .retrieveRequestToken(consumer, HttpConnection.CALLBACK_URI.toString());
-                state.setRequestTokenWithSecret(consumer.getToken(), consumer.getTokenSecret());
+                    // This is really important. If you were able to register your
+                    // real callback Uri with Twitter, and not some fake Uri
+                    // like I registered when I wrote this example, you need to send
+                    // null as the callback Uri in this function call. Then
+                    // Twitter will correctly process your callback redirection
+                    authUrl = state.getAccount().getOAuthService().getProvider()
+                            .retrieveRequestToken(consumer, HttpConnection.CALLBACK_URI.toString());
+                    state.setRequestTokenWithSecret(consumer.getToken(), consumer.getTokenSecret());
+
+                    android.webkit.CookieManager cookieManager = android.webkit.CookieManager.getInstance();
+                    cookieManager.removeAllCookie();
+                }
 
                 // This is needed in order to complete the process after redirect
                 // from the Browser to the same activity.
                 state.actionCompleted = false;
                 
-                android.webkit.CookieManager cookieManager = android.webkit.CookieManager.getInstance();
-                cookieManager.removeAllCookie();                
-
                 // Start Web view (looking just like Web Browser)
                 Intent i = new Intent(AccountSettingsActivity.this, AccountSettingsWebActivity.class);
                 i.putExtra(AccountSettingsWebActivity.EXTRA_URLTOOPEN, authUrl);
@@ -1068,13 +1026,11 @@ public class AccountSettingsActivity extends MyActivity {
 
         @Override
         protected JSONObject doInBackground2(Uri... uris) {
-            JSONObject jso = null;
-
             String message = "";
-            
-            boolean authenticated = false;
+            String accessToken = "";
+            String accessSecret = "";
 
-            if (state.getAccount().getOAuthConsumerAndProvider() == null) {
+            if (state.getAccount().getOAuthService() == null) {
                 message = "Connection is not OAuth";
                 MyLog.e(this, message);
             } else {
@@ -1082,53 +1038,60 @@ public class AccountSettingsActivity extends MyActivity {
 
                 Uri uri = uris[0];
                 if (uri != null && HttpConnection.CALLBACK_URI.getHost().equals(uri.getHost())) {
-                    String accessToken = "";
-                    String accessSecret = "";
 
                     state.builder.setCredentialsVerificationStatus(CredentialsVerificationStatus.NEVER);
                     try {
-                        String requestToken = state.getRequestToken();
-                        String requestSecret = state.getRequestSecret();
-                        // Clear the request stuff, we've used it already
-                        state.setRequestTokenWithSecret(null, null);
+                        if (state.getAccount().getOAuthService().isOAuth2()) {
+                            String authCode = uri.getQueryParameter("code");
+                            MyLog.d(this, "Auth code is: " + authCode);
+                            final OAuth20Service service = state.getAccount().getConnection().getHttpOAuth().getService(true);
+                            final OAuth2AccessToken token = service.getAccessToken(authCode);
+                            accessToken = token.getAccessToken();
+                            accessSecret = token.getRawResponse();
+                        } else {
+                            String requestToken = state.getRequestToken();
+                            String requestSecret = state.getRequestSecret();
+                            // Clear the request stuff, we've used it already
+                            state.setRequestTokenWithSecret(null, null);
 
-                        OAuthConsumer consumer = state.getAccount().getOAuthConsumerAndProvider().getConsumer();
-                        if (!(requestToken == null || requestSecret == null)) {
-                            consumer.setTokenWithSecret(requestToken, requestSecret);
-                        }
-                        String otoken = uri.getQueryParameter(OAuth.OAUTH_TOKEN);
-                        String verifier = uri.getQueryParameter(OAuth.OAUTH_VERIFIER);
+                            OAuthConsumer consumer = state.getAccount().getOAuthService().getConsumer();
+                            if (!(requestToken == null || requestSecret == null)) {
+                                consumer.setTokenWithSecret(requestToken, requestSecret);
+                            }
+                            String oauthToken = uri.getQueryParameter(OAuth.OAUTH_TOKEN);
+                            String verifier = uri.getQueryParameter(OAuth.OAUTH_VERIFIER);
 
-                        /*
-                         * yvolk 2010-07-08: It appeared that this may be not true:
-                         * Assert.assertEquals(otoken, mConsumer.getToken()); (e.g.
-                         * if User denied access during OAuth...) hence this is not
-                         * Assert :-)
-                         */
-                        if (otoken != null || consumer.getToken() != null) {
-                            state.getAccount().getOAuthConsumerAndProvider().getProvider()
-                                .retrieveAccessToken(consumer, verifier);
-                            // Now we can retrieve the goodies
-                            accessToken = consumer.getToken();
-                            accessSecret = consumer.getTokenSecret();
-                            authenticated = true;
+                            /*
+                             * yvolk 2010-07-08: It appeared that this may be not true:
+                             * Assert.assertEquals(otoken, mConsumer.getToken()); (e.g.
+                             * if User denied access during OAuth...) hence this is not
+                             * Assert :-)
+                             */
+                            if (oauthToken != null || consumer.getToken() != null) {
+                                state.getAccount().getOAuthService().getProvider()
+                                        .retrieveAccessToken(consumer, verifier);
+                                // Now we can retrieve the goodies
+                                accessToken = consumer.getToken();
+                                accessSecret = consumer.getTokenSecret();
+                            }
                         }
                     } catch (OAuthMessageSignerException | OAuthNotAuthorizedException
                             | OAuthExpectationFailedException | OAuthCommunicationException
-                            | ConnectionException e) {
+                            | IOException | OAuthException e) {
                         message = e.getMessage();
                         MyLog.e(this, e);
                     } finally {
-                        if (authenticated) {
-                            state.builder.setUserTokenWithSecret(accessToken, accessSecret);
-                        }
+                        state.builder.setUserTokenWithSecret(accessToken, accessSecret);
+                        MyLog.d(this, "Access token for " + state.getAccount().getAccountName() + ": " + accessToken +
+                        ", " + accessSecret);
                     }
                 }
             }
 
+            JSONObject jso = null;
             try {
                 jso = new JSONObject();
-                jso.put("succeeded", authenticated);
+                jso.put("succeeded", !TextUtils.isEmpty(accessToken) && !TextUtils.isEmpty(accessSecret));
                 jso.put("message", message);
             } catch (JSONException e) {
                 MyLog.e(this, e);
@@ -1145,10 +1108,6 @@ public class AccountSettingsActivity extends MyActivity {
                 try {
                     succeeded = jso.getBoolean("succeeded");
                     String connectionErrorMessage = jso.getString("message");
-
-                    MyLog.d(TAG, this.getClass().getName() + " ended, "
-                            + (succeeded ? "authenticated" : "authentication failed"));
-                    
                     if (succeeded) {
                         // Credentials are present, so we may verify them
                         // This is needed even for OAuth - to know Twitter Username
@@ -1171,53 +1130,6 @@ public class AccountSettingsActivity extends MyActivity {
             MyLog.v(this, I18n.succeededText(succeeded));
         }
     }
-
-    class OAuth2AcquireAccessTokenTask extends MyAsyncTask<Object, Void, OAuth20Service> {
-
-        public OAuth2AcquireAccessTokenTask() {
-            super(PoolEnum.QUICK_UI);
-        }
-
-        @Override
-        protected OAuth20Service doInBackground2(Object... params) {
-            OAuth20Service service = (OAuth20Service) params[0];
-            String authCode = (String) params[1];
-            String domain = Uri.parse(service.getAuthorizationUrl()).getHost();
-
-            try {
-                final OAuth2AccessToken token = service.getAccessToken(authCode);
-                state.builder.setUserTokenWithSecret(token.getAccessToken(), token.getAccessToken());
-                MyLog.d(this, "Access token for " + domain + ": " + token.getAccessToken());
-            } catch (IOException e) {
-                MyLog.d(this, state.getAccount().toString(), e);
-            }
-
-            return service;
-        }
-
-        @Override
-        protected void onPostExecute(OAuth20Service service) {
-            boolean succeeded = state.getAccount().getCredentialsPresent();
-            if (state.getAccount().getCredentialsPresent()) {
-                MyLog.d(TAG, this.getClass().getName() + " ended, "
-                        + (succeeded ? "authenticated" : "authentication failed"));
-
-                if (succeeded) {
-                    // Credentials are present, so we may verify them
-                    // This is needed even for OAuth - to know Username
-                    AsyncTaskLauncher.execute(this, true, new VerifyCredentialsTask());
-                } else {
-                    String stepErrorMessage = AccountSettingsActivity.this
-                            .getString(R.string.acquiring_an_access_token_failed);
-                    appendError(stepErrorMessage);
-                    state.builder.setCredentialsVerificationStatus(CredentialsVerificationStatus.FAILED);
-                    updateScreen();
-                }
-            }
-            MyLog.v(this, I18n.succeededText(succeeded));
-        }
-    }
-
 
     /**
      * Assuming we already have credentials to verify, verify them
