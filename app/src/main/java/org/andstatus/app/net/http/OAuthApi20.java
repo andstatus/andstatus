@@ -7,15 +7,11 @@ import org.andstatus.app.util.MyLog;
 import static org.andstatus.app.net.social.Connection.ApiRoutineEnum.OAUTH_ACCESS_TOKEN;
 import static org.andstatus.app.net.social.Connection.ApiRoutineEnum.OAUTH_AUTHORIZE;
 
-public class MastodonApi extends DefaultApi20 {
+public class OAuthApi20 extends DefaultApi20 {
     private final HttpConnectionOAuth http;
 
-    private MastodonApi(HttpConnectionOAuth http) {
+    public OAuthApi20(HttpConnectionOAuth http) {
         this.http = http;
-    }
-
-    public static MastodonApi instance(HttpConnectionOAuth http) {
-        return new MastodonApi(http);
     }
 
     @Override

@@ -152,7 +152,7 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
         Uri mediaUri = Uri.parse(formParams.getString(KEY_MEDIA_PART_URI));
         conn.setChunkedStreamingMode(0);
         conn.setRequestProperty("Content-Type", MyContentType.uri2MimeType(mediaUri, null));
-        setAuthorization(conn, getConsumer(), false);
+        signConnection(conn, getConsumer(), false);
                 
         InputStream in = MyContextHolder.get().context().getContentResolver().openInputStream(mediaUri);
         try {
@@ -173,7 +173,7 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
 
     private void writeJson(HttpURLConnection conn, JSONObject formParams) throws IOException {
         conn.setRequestProperty("Content-Type", "application/json");
-        setAuthorization(conn, getConsumer(), false);
+        signConnection(conn, getConsumer(), false);
         OutputStreamWriter writer = null;
         try {
             OutputStream os = conn.getOutputStream();
@@ -209,7 +209,7 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
                 conn = (HttpURLConnection) result.getUrlObj().openConnection();
                 conn.setInstanceFollowRedirects(false);
                 if (result.authenticate) {
-                    setAuthorization(conn, consumer, redirected);
+                    signConnection(conn, consumer, redirected);
                 }
                 conn.connect();
                 result.setStatusCode(conn.getResponseCode());
@@ -259,7 +259,7 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
         }
     }
 
-    private void setAuthorization(HttpURLConnection conn, OAuthConsumer consumer, boolean redirected)
+    private void signConnection(HttpURLConnection conn, OAuthConsumer consumer, boolean redirected)
             throws ConnectionException {
         if (!getCredentialsPresent()) {
             return;

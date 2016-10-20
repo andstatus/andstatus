@@ -62,12 +62,13 @@ abstract class HttpConnectionOAuth extends HttpConnection implements OAuthServic
                 yes = true;
         }
         if (!yes && logMe) {
-            MyLog.v(this, "Credentials presence: clientKeys:" + data.oauthClientKeys.areKeysPresent() + "; userKeys:" + !TextUtils.isEmpty(userToken) + "," + !TextUtils.isEmpty(userSecret));
+            MyLog.v(this, "Credentials presence: clientKeys:" + data.oauthClientKeys.areKeysPresent() + "; userKeys:" +
+                    !TextUtils.isEmpty(userToken) + "," + !TextUtils.isEmpty(userSecret));
         }
         return yes;
     }
 
-    public String getApiUrl(ApiRoutineEnum routine) throws ConnectionException {
+    protected String getApiUrl(ApiRoutineEnum routine) throws ConnectionException {
         String url;
         switch(routine) {
             case OAUTH_ACCESS_TOKEN:
@@ -80,8 +81,7 @@ abstract class HttpConnectionOAuth extends HttpConnection implements OAuthServic
                 url = data.getOauthPath() + "/request_token";
                 break;
             case OAUTH_REGISTER_CLIENT:
-                url = data.getBasicPath() +
-                        "/client/register";
+                url = data.getBasicPath() + "/client/register";
                 break;
             default:
                 url = "";

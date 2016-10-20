@@ -56,14 +56,6 @@ public abstract class Connection {
     public static final String KEY_PASSWORD = "password";
     protected static final String EXTENSION = ".json";
 
-    // TODO: Change this interface
-    public HttpConnectionOAuthJavaNet getHttpOAuth() {
-        if (http != null && HttpConnectionOAuthJavaNet.class.isAssignableFrom(http.getClass())) {
-            return (HttpConnectionOAuthJavaNet) http;
-        }
-        return null;
-    }
-
     /**
      * API routines (functions, "resources" in terms of Twitter)  enumerated
      */

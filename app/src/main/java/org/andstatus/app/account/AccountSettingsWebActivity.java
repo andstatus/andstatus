@@ -80,6 +80,15 @@ public class AccountSettingsWebActivity extends MyActivity {
                     finish();
                 }
             }
+            if (uri != null && "/".equals(uri.getPath())) {
+                String url1 = getIntent().getStringExtra(EXTRA_URLTOOPEN);
+                if (url1 != null && url1.contains("authorize")) {
+                    WebView webView = (WebView) findViewById(R.id.accountSettingsWebView);
+                    MyLog.d(this, "A hack for misbehaving Mastodon.social");
+                    webView.loadUrl(getIntent().getStringExtra(EXTRA_URLTOOPEN));
+                    isCallback = true;
+                }
+            }
             return isCallback;
         }
 

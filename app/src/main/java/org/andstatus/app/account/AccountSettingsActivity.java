@@ -906,7 +906,7 @@ public class AccountSettingsActivity extends MyActivity {
 
                 String authUrl;
                 if (state.getAccount().getOAuthService().isOAuth2()) {
-                    final OAuth20Service service = state.getAccount().getConnection().getHttpOAuth().getService(true);
+                    final OAuth20Service service = state.getAccount().getOAuthService().getService(true);
                     authUrl = service.getAuthorizationUrl();
                 } else {
                     OAuthConsumer consumer = state.getAccount().getOAuthService().getConsumer();
@@ -919,10 +919,10 @@ public class AccountSettingsActivity extends MyActivity {
                     authUrl = state.getAccount().getOAuthService().getProvider()
                             .retrieveRequestToken(consumer, HttpConnection.CALLBACK_URI.toString());
                     state.setRequestTokenWithSecret(consumer.getToken(), consumer.getTokenSecret());
-
-                    android.webkit.CookieManager cookieManager = android.webkit.CookieManager.getInstance();
-                    cookieManager.removeAllCookie();
                 }
+
+                android.webkit.CookieManager cookieManager = android.webkit.CookieManager.getInstance();
+                cookieManager.removeAllCookie();
 
                 // This is needed in order to complete the process after redirect
                 // from the Browser to the same activity.
@@ -1044,7 +1044,7 @@ public class AccountSettingsActivity extends MyActivity {
                         if (state.getAccount().getOAuthService().isOAuth2()) {
                             String authCode = uri.getQueryParameter("code");
                             MyLog.d(this, "Auth code is: " + authCode);
-                            final OAuth20Service service = state.getAccount().getConnection().getHttpOAuth().getService(true);
+                            final OAuth20Service service = state.getAccount().getOAuthService().getService(true);
                             final OAuth2AccessToken token = service.getAccessToken(authCode);
                             accessToken = token.getAccessToken();
                             accessSecret = token.getRawResponse();

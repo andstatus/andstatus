@@ -37,15 +37,15 @@
             android:labelFor="@+id/username"
             android:text="@string/title_preference_username" />
 
-        <EditText
+        <org.andstatus.app.widget.LongHintEditText
             android:id="@+id/username"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="@string/summary_preference_username_webfinger_id"
-            android:textAppearance="?attr/messageBodyTextAppearance" >
+            android:textAppearance="?attr/messageBodyTextAppearance">
 
             <requestFocus />
-        </EditText>
+        </org.andstatus.app.widget.LongHintEditText>
 
         <TextView
             android:id="@+id/username_readonly"
@@ -62,7 +62,7 @@
             android:layout_height="wrap_content"
             android:text="@string/title_preference_password" />
 
-        <EditText
+        <org.andstatus.app.widget.LongHintEditText
             android:id="@+id/password"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -131,7 +131,7 @@
             android:labelFor="@+id/sync_frequency"
             android:text="@string/sync_frequency_minutes" />
 
-        <EditText
+        <org.andstatus.app.widget.LongHintEditText
             android:id="@+id/sync_frequency"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
