@@ -21,8 +21,8 @@ import android.text.TextUtils;
 
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.data.MyQuery;
+import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
@@ -329,7 +329,7 @@ public class MbUser implements Comparable<MbUser> {
                 if (!MbUser.isWebFingerIdValid(validWebFingerId)) {
                     // Try a host of the Author first
                     mbUser.userId = MyQuery.webFingerIdToId(origin.getId(), validUserName + "@" + getHost());
-                    if (mbUser.userId == 0) {
+                    if (mbUser.userId == 0 && (origin.getUrl() != null)) {
                         // Next try host of this Social network
                         mbUser.userId = MyQuery.webFingerIdToId(origin.getId(), validUserName 
                             + "@" + origin.getUrl().getHost());
