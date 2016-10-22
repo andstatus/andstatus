@@ -17,9 +17,11 @@
 
 package org.andstatus.app.util;
 
+import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.os.Parcel;
+import android.support.annotation.IdRes;
 import android.support.annotation.NonNull;
 import android.text.Html;
 import android.text.Layout;
@@ -81,14 +83,16 @@ public class MyUrlSpan extends URLSpan {
         }
     }
 
-    public static void showText(View parentView, int viewId, String text, boolean linkify, boolean showIfEmpty) {
-        TextView textView = (TextView) parentView.findViewById(viewId);
-        if (textView != null) {
-            showText(textView, text, linkify, showIfEmpty);
-        }
+    public static void showText(Activity activity, @IdRes int viewId, String text, boolean linkify, boolean showIfEmpty) {
+        showText((TextView) activity.findViewById(viewId), text, linkify, showIfEmpty);
+    }
+
+    public static void showText(View parentView, @IdRes int viewId, String text, boolean linkify, boolean showIfEmpty) {
+        showText((TextView) parentView.findViewById(viewId), text, linkify, showIfEmpty);
     }
 
     public static void showText(TextView textView, String text, boolean linkify, boolean showIfEmpty) {
+        if (textView == null) return;
         if (TextUtils.isEmpty(text)) {
             textView.setText("");
             showView(textView, showIfEmpty);
@@ -103,7 +107,7 @@ public class MyUrlSpan extends URLSpan {
             if (text.contains(SOFT_HYPHEN)) {
                 text = text.replace(SOFT_HYPHEN, "-");
             }
-            Spanned spanned = Html.fromHtml(text);
+            Spanned spanned = MyHtml.hasHtmlMarkup(text) ? Html.fromHtml(text) : new SpannableString(text);
             textView.setText(spanned);
             if (linkify && !hasUrlSpans(spanned)) {
                 Linkify.addLinks(textView, Linkify.WEB_URLS);

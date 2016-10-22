@@ -444,6 +444,7 @@
   <string name="synced_abbreviated">Sync</string>
   <string name="syncing">Syncing&#8230;</string>
   <string name="syncing_timeline_for_somebody">Syncing %1$s for %2$s</string>
+  <string name="system_information">System information</string>
   <string name="system_is_busy_try_later">The system is busy. Please try again later.</string>
   <string name="tap_on_a_timeline_title_behaviour">Tap on a Timeline Title behaviour</string>
   <string name="theme_color_entries_default">Device default</string>

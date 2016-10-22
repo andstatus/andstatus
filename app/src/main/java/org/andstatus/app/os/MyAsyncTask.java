@@ -89,7 +89,7 @@ public abstract class MyAsyncTask<Params, Progress, Result> extends AsyncTask<Pa
                 return doInBackground2(params);
             }
         } catch (Exception e) {
-            String msgLog = MyContextHolder.getSystemInfo(MyContextHolder.get().context());
+            String msgLog = MyContextHolder.getSystemInfo(MyContextHolder.get().context(), true);
             MyLog.e(this, msgLog, e);
             throw new IllegalStateException(msgLog, e);
         } finally {

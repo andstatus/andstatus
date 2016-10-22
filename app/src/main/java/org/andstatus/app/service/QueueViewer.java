@@ -194,7 +194,7 @@ public class QueueViewer extends MyListActivity implements MyServiceEventsListen
     }
     
     private void showList() {
-        mListData = newListData();
+        mListData = loadListData();
         setListAdapter(newListAdapter(mListData));
         MyContextHolder.get().clearNotification(TimelineType.EVERYTHING);
     }
@@ -204,12 +204,6 @@ public class QueueViewer extends MyListActivity implements MyServiceEventsListen
         return lhs < rhs ? -1 : (lhs == rhs ? 0 : 1);
     }
     
-    private List<QueueData> newListData() {
-        List<QueueData> listData = loadListData();
-        showSystemInfo(listData);
-        return listData;
-    }
-
     @NonNull
     private List<QueueData> loadListData() {
         List<QueueData> listData = new ArrayList<>();
@@ -222,12 +216,6 @@ public class QueueViewer extends MyListActivity implements MyServiceEventsListen
             }
         }
         return listData;
-    }
-
-    private void showSystemInfo(List<QueueData> listData) {
-        CommandData commandData = CommandData.newCommand(CommandEnum.EMPTY);
-        commandData.getResult().setMessage(MyContextHolder.getSystemInfo(this));
-        listData.add(QueueData.getNew(QueueType.TEST, commandData));
     }
 
     private ListAdapter newListAdapter(List<QueueData> listData) {

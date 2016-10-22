@@ -36,38 +36,12 @@
             android:layout_height="match_parent"
             android:autoStart="false" >
 
-            <LinearLayout
+            <ScrollView
                 android:id="@+id/splash_container"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:gravity="center"
-                android:orientation="vertical" >
-
-                <ImageView
-                    android:id="@+id/splash_logo_image"
-                    android:layout_width="wrap_content"
-                    android:layout_height="0dp"
-                    android:layout_weight="1"
-                    android:focusable="false"
-                    android:focusableInTouchMode="false"
-                    android:src="@drawable/splash_logo" />
-
-                <TextView
-                    android:id="@+id/splash_payoff_line"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:text="@string/splash_payoff_line" />
-
-                <TextView
-                    android:id="@+id/splash_application_version"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:text="(application version)" />
-
-            </LinearLayout>
-
+                android:layout_height="match_parent" >
+                <include layout="@layout/splash"/>
+            </ScrollView>
             <WebView
                 android:id="@+id/user_guide"
                 android:layout_width="match_parent"
@@ -85,6 +59,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:minHeight="36dp"
         android:gravity="center"
         android:paddingTop="3dp" >
 

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    android:orientation="vertical"
+    tools:showIn="@layout/help">
+
+    <ImageView
+        android:id="@+id/splash_logo_image"
+        android:layout_width="wrap_content"
+        android:layout_height="216dp"
+        android:focusable="false"
+        android:focusableInTouchMode="false"
+        android:src="@drawable/splash_logo"/>
+
+    <TextView
+        android:id="@+id/splash_payoff_line"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="@string/splash_payoff_line"/>
+
+    <TextView
+        android:id="@+id/splash_application_version"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="(application version)"/>
+
+    <View style="@style/Divider"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="@string/system_information"/>
+
+    <TextView
+        android:id="@+id/system_info"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        tools:text="Here some long system information
+will be shown.
+Memory, current objects etc."/>
+
+</LinearLayout>
+            

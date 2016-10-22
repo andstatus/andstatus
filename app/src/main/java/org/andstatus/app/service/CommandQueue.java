@@ -147,7 +147,7 @@ public class CommandQueue {
             }
         } catch (Exception e) {
             String msgLog = method + "; " + count + " saved, " + queue.size() + " left.\n"
-                    + MyContextHolder.getSystemInfo(context);
+                    + MyContextHolder.getSystemInfo(context, true);
             MyLog.e(context, msgLog, e);
             throw new IllegalStateException(msgLog, e);
         }

@@ -29,6 +29,7 @@ import net.jcip.annotations.ThreadSafe;
 import org.andstatus.app.database.DatabaseConverterController;
 import org.andstatus.app.graphics.MyImageCache;
 import org.andstatus.app.os.AsyncTaskLauncher;
+import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.TamperingDetector;
@@ -256,10 +257,10 @@ public final class MyContextHolder {
         }
     }
 
-    public static String getSystemInfo(Context context) {
+    public static String getSystemInfo(Context context, boolean showVersion) {
         StringBuilder builder = new StringBuilder();
-        builder.append(getVersionText(context));
-        builder.append(" started " + RelativeTime.getDifference(context, appStartedAt, SystemClock.elapsedRealtime()));
+        if (showVersion) builder.append(getVersionText(context));
+        I18n.appendWithSpace(builder, "started " + RelativeTime.getDifference(context, appStartedAt, SystemClock.elapsedRealtime()));
         builder.append("\n");
         builder.append(MyImageCache.getCacheInfo());
         builder.append("\n");

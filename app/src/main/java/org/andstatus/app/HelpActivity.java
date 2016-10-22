@@ -43,6 +43,7 @@ import org.andstatus.app.msg.TimelineActivity;
 import org.andstatus.app.util.ActivitySwipeDetector;
 import org.andstatus.app.util.DialogFactory;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.MyUrlSpan;
 import org.andstatus.app.util.Permissions;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.SwipeInterface;
@@ -95,6 +96,7 @@ public class HelpActivity extends MyActivity implements SwipeInterface {
         }
 
         showVersionText();
+        MyUrlSpan.showText(this, R.id.system_info, MyContextHolder.getSystemInfo(this, false), false, false);
         showChangeLog();
         showUserGuide();
         showRestoreButton();
