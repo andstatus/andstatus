@@ -22,7 +22,7 @@ android {
         release {
             minifyEnabled false
             lintOptions {
-                disable 'MissingTranslation'
+                warning 'MissingTranslation','InvalidPackage'
             }
         }
     }
