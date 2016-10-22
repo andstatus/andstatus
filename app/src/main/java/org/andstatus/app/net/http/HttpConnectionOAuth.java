@@ -26,6 +26,8 @@ import org.andstatus.app.util.MyLog;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.Map;
+
 abstract class HttpConnectionOAuth extends HttpConnection implements OAuthService {
     private static final String TAG = HttpConnectionOAuth.class.getSimpleName();
     public boolean logMe = false;
@@ -101,6 +103,11 @@ abstract class HttpConnectionOAuth extends HttpConnection implements OAuthServic
     @Override
     public boolean isOAuth2() {
         return false;
+    }
+
+    @Override
+    public Map<String, String> getAdditionalAuthorizationParams() {
+        return null;
     }
 
     /**

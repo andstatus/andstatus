@@ -18,6 +18,8 @@ package org.andstatus.app.net.http;
 
 import com.github.scribejava.core.oauth.OAuth20Service;
 
+import java.util.Map;
+
 import oauth.signpost.OAuthConsumer;
 import oauth.signpost.OAuthProvider;
 
@@ -37,4 +39,6 @@ public interface OAuthService {
     OAuth20Service getService(boolean redirect);
 
     boolean isOAuth2();
+
+    Map<String,String> getAdditionalAuthorizationParams();
 }

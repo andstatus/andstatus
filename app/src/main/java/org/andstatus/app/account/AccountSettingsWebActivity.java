@@ -57,15 +57,6 @@ public class AccountSettingsWebActivity extends MyActivity {
     private class WebViewListener extends WebViewClient {
         private volatile boolean isFinishing = false;
 
-        @Override
-        public boolean shouldOverrideUrlLoading(WebView view, String url) {
-            MyLog.v(this, "shouldOverrideUrlLoading to: " + url);
-            if (isThisCallback(url)) {
-                return true;
-            }
-            return false;
-        }
-
         private boolean isThisCallback(String url) {
             boolean isCallback = false;
             Uri uri = Uri.parse(url);
@@ -99,9 +90,7 @@ public class AccountSettingsWebActivity extends MyActivity {
         @Override
         public void onPageStarted(WebView view, String url, Bitmap favicon) {
             MyLog.v(this, "onPageStarted: " + url);
-            if (!isThisCallback(url)) {
-                super.onPageStarted(view, url, favicon);
-            }
+            isThisCallback(url);
         }
         
     }

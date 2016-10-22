@@ -18,7 +18,13 @@ package org.andstatus.app.net.http;
 
 import android.text.TextUtils;
 
+import com.github.scribejava.core.model.OAuthConstants;
+import com.github.scribejava.core.oauth.OAuth20Service;
+
 import org.andstatus.app.net.social.Connection;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class HttpConnectionOAuthMastodon extends HttpConnectionOAuth2JavaNet {
 
@@ -44,6 +50,16 @@ public class HttpConnectionOAuthMastodon extends HttpConnectionOAuth2JavaNet {
         }
 
         return url;
+    }
+
+    /**
+     * @see OAuth20Service#getAuthorizationUrl(java.util.Map)
+     */
+    @Override
+    public Map<String, String> getAdditionalAuthorizationParams() {
+        Map<String, String> additionalParams = new HashMap<>();
+        additionalParams.put(OAuthConstants.SCOPE, "read write follow");
+        return additionalParams;
     }
 
 }
