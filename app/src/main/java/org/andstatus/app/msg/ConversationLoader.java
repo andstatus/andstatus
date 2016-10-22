@@ -21,7 +21,7 @@ import android.net.Uri;
 
 import org.andstatus.app.LoadableListActivity;
 import org.andstatus.app.LoadableListActivity.ProgressPublisher;
-import org.andstatus.app.LoadableListActivity.SyncLoader;
+import org.andstatus.app.SyncLoader;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.data.DbUtils;
@@ -40,7 +40,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-public abstract class ConversationLoader<T extends ConversationItem> implements SyncLoader {
+public abstract class ConversationLoader<T extends ConversationItem> extends SyncLoader<T> {
     private static final int MAX_INDENT_LEVEL = 19;
     
     protected final MyContext myContext;

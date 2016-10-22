@@ -34,9 +34,10 @@
 	        android:layout_marginLeft="5dip" 
 	        android:layout_marginRight="5dip"
             style="@style/messageBodyAppearance" />
-	    <TextView android:id="@+id/id"
-	        android:layout_height="wrap_content"
-	        android:layout_width="0dip"
-	        android:visibility="gone" />    
+		<TextView
+			android:id="@+id/position"
+			android:layout_width="0dp"
+			android:layout_height="wrap_content"
+			android:visibility="gone" />
     </LinearLayout>
 </LinearLayout>

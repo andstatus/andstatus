@@ -34,6 +34,7 @@ import org.andstatus.app.EnumSelector;
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.LoadableListActivity;
 import org.andstatus.app.R;
+import org.andstatus.app.SyncLoader;
 import org.andstatus.app.WhichPage;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.origin.Origin;
@@ -45,7 +46,6 @@ import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.widget.MyBaseAdapter;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -153,14 +153,7 @@ public class TimelineList extends LoadableListActivity {
 
     @Override
     protected SyncLoader newSyncLoader(Bundle args) {
-        final List<TimelineListViewItem> mItems = new ArrayList<>();
-
-        return new SyncLoader() {
-            @Override
-            public void allowLoadingFromInternet() {
-
-            }
-
+        return new SyncLoader<TimelineListViewItem>() {
             @Override
             public void load(ProgressPublisher publisher) {
                 // TODO: Implement filter parameters in this activity
@@ -172,21 +165,11 @@ public class TimelineList extends LoadableListActivity {
                             (viewItem.timeline.getCountSince() < countersSince || countersSince == 0)) {
                         countersSince = viewItem.timeline.getCountSince();
                     }
-                    mItems.add(viewItem);
+                    items.add(viewItem);
                 }
                 if (sortByField != 0) {
-                    Collections.sort(mItems, new TimelineListViewItemComparator(sortByField, sortDefault, isTotal));
+                    Collections.sort(items, new TimelineListViewItemComparator(sortByField, sortDefault, isTotal));
                 }
-            }
-
-            @Override
-            public List<? extends Object> getList() {
-                return mItems;
-            }
-
-            @Override
-            public int size() {
-                return mItems.size();
             }
         };
     }

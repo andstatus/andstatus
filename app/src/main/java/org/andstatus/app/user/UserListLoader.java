@@ -6,8 +6,8 @@ import android.provider.BaseColumns;
 
 import org.andstatus.app.LoadableListActivity;
 import org.andstatus.app.LoadableListActivity.ProgressPublisher;
-import org.andstatus.app.LoadableListActivity.SyncLoader;
 import org.andstatus.app.R;
+import org.andstatus.app.SyncLoader;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.AvatarFile;
@@ -23,21 +23,13 @@ import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
 
-import java.util.ArrayList;
-import java.util.List;
-
-public class UserListLoader implements SyncLoader {
+public class UserListLoader extends SyncLoader<UserListViewItem> {
     protected final UserListType mUserListType;
     protected final MyAccount ma;
     protected final boolean mIsListCombined;
     protected boolean mAllowLoadingFromInternet = false;
     protected final long mCentralItemId;
 
-    public List<UserListViewItem> getList() {
-        return mItems;
-    }
-
-    private final List<UserListViewItem> mItems = new ArrayList<>();
     private LoadableListActivity.ProgressPublisher mProgress;
 
     public UserListLoader(UserListType userListType, MyAccount ma, long centralItemId, boolean isListCombined) {
@@ -59,14 +51,14 @@ public class UserListLoader implements SyncLoader {
         loadInternal();
         MyLog.v(this, "Loaded " + size() + " items");
 
-        if (mItems.isEmpty()) {
+        if (items.isEmpty()) {
             addEmptyItem(MyContextHolder.get().context()
                     .getText(R.string.nothing_in_the_loadable_list).toString());
         }
     }
 
     protected void addEmptyItem(String description) {
-        getList().add(UserListViewItem.getEmpty(description));
+        items.add(UserListViewItem.getEmpty(description));
     }
 
     protected UserListViewItem addUserIdToList(Origin origin, long userId) {
@@ -76,8 +68,8 @@ public class UserListLoader implements SyncLoader {
     }
 
     protected void addUserToList(UserListViewItem oUser) {
-        if (!oUser.isEmpty() && !mItems.contains(oUser)) {
-            mItems.add(oUser);
+        if (!oUser.isEmpty() && !items.contains(oUser)) {
+            items.add(oUser);
             if (oUser.mbUser.userId == 0 && mAllowLoadingFromInternet) {
                 loadFromInternet(oUser);
             }
@@ -148,7 +140,7 @@ public class UserListLoader implements SyncLoader {
     }
 
     private UserListViewItem getById(long userId) {
-        for (UserListViewItem item : mItems) {
+        for (UserListViewItem item : items) {
             if (item.getUserId() == userId) {
                 return item;
             }
@@ -159,7 +151,7 @@ public class UserListLoader implements SyncLoader {
     protected String getSqlUserIds() {
         StringBuilder sb = new StringBuilder();
         int size = 0;
-        for (UserListViewItem item : mItems) {
+        for (UserListViewItem item : items) {
             if (!item.populated) {
                 if (size > 0) {
                     sb.append(", ");
@@ -174,11 +166,6 @@ public class UserListLoader implements SyncLoader {
             return " IN (" + sb.toString() + ")";
         }
         return "";
-    }
-
-    @Override
-    public int size() {
-        return mItems.size();
     }
 
     protected String getTitle() {

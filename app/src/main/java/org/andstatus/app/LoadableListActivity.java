@@ -50,8 +50,6 @@ import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.widget.MyBaseAdapter;
 
-import java.util.List;
-
 /**
  * List, loaded asynchronously. Updated by MyService
  * 
@@ -223,14 +221,6 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
         return myContext;
     }
 
-    public interface SyncLoader {
-        void allowLoadingFromInternet();
-        void load(ProgressPublisher publisher);
-        @NonNull
-        List<? extends Object> getList();
-        int size();
-    }
-    
     public interface ProgressPublisher {
         void publish(String progress);
     }

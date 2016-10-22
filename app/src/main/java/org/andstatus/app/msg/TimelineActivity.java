@@ -41,6 +41,7 @@ import org.andstatus.app.IntentExtra;
 import org.andstatus.app.LoadableListActivity;
 import org.andstatus.app.MyAction;
 import org.andstatus.app.R;
+import org.andstatus.app.SyncLoader;
 import org.andstatus.app.WhichPage;
 import org.andstatus.app.account.AccountSelector;
 import org.andstatus.app.account.MyAccount;

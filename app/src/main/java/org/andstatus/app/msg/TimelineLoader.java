@@ -21,6 +21,7 @@ import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import org.andstatus.app.LoadableListActivity;
+import org.andstatus.app.SyncLoader;
 import org.andstatus.app.WhichPage;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
@@ -33,12 +34,11 @@ import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 
 import java.util.ArrayList;
-import java.util.List;
 
 /**
 * @author yvolk@yurivolkov.com
 */
-public class TimelineLoader implements LoadableListActivity.SyncLoader {
+public class TimelineLoader extends SyncLoader<TimelineViewItem> {
     private final TimelineListParameters params;
     private final TimelinePage page;
 
@@ -47,12 +47,8 @@ public class TimelineLoader implements LoadableListActivity.SyncLoader {
     public TimelineLoader(@NonNull TimelineListParameters params, long instanceId) {
         this.params = params;
         this.page = new TimelinePage(getParams(), new ArrayList<TimelineViewItem>());
+        this.items = page.items;
         this.instanceId = instanceId;
-    }
-
-    @Override
-    public void allowLoadingFromInternet() {
-        // Unused so far
     }
 
     @Override
@@ -65,16 +61,6 @@ public class TimelineLoader implements LoadableListActivity.SyncLoader {
         }
         params.endTime = System.nanoTime();
         logExecutionStats();
-    }
-
-    @Override
-    public List<TimelineViewItem> getList() {
-        return page.items;
-    }
-
-    @Override
-    public int size() {
-        return page.items.size();
     }
 
     void markStart() {
