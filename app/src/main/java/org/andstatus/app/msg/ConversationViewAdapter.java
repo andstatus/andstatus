@@ -25,13 +25,12 @@ import android.widget.TextView;
 
 import org.andstatus.app.R;
 import org.andstatus.app.graphics.MyImageCache;
-import org.andstatus.app.util.MyUrlSpan;
 import org.andstatus.app.util.ViewUtils;
 
 import java.util.Collections;
 import java.util.List;
 
-public class ConversationViewAdapter extends MessageListAdapter {
+public class ConversationViewAdapter extends MessageListAdapter<ConversationViewItem> {
     private final Context context;
     private final long selectedMessageId;
     private final List<ConversationViewItem> oMsgs;
@@ -72,48 +71,19 @@ public class ConversationViewAdapter extends MessageListAdapter {
     }
 
     @Override
-    public Object getItem(int position) {
+    public ConversationViewItem getItem(int position) {
         return oMsgs.get(position);
     }
 
-    @Override
-    public long getItemId(int position) {
-        return oMsgs.get(position).getMsgId();
-    }
-
-    @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
-        ViewGroup view = getEmptyView(convertView);
-        view.setOnCreateContextMenuListener(contextMenu);
-        view.setOnClickListener(this);
-        setPosition(view, position);
-        ConversationViewItem item = oMsgs.get(position);
-        showRebloggers(item, view);
-        MyUrlSpan.showText(view, R.id.message_author, item.authorName, false, false);
-        showMessageBody(item, view);
-        MyUrlSpan.showText(view, R.id.message_details, item.getDetails(contextMenu.getActivity()).toString(), false, false);
-
+    public void showAvatarEtc(ViewGroup view, ConversationViewItem item) {
         int indentPixels = getIndentPixels(item);
         showIndentImage(view, indentPixels);
         showDivider(view, indentPixels == 0 ? 0 : R.id.indent_image);
         if (showAvatars) {
-            indentPixels = showAvatar(item, view, indentPixels);
+            indentPixels = showAvatar(view, item, indentPixels);
         }
         indentMessage(view, indentPixels);
-        showCentralItem(item, view);
-        if (showAttachedImages) {
-            showAttachedImage(item, view);
-        }
-        if (markReplies) {
-            showMarkReplies(item, view);
-        }
-        if (showButtonsBelowMessages) {
-            showButtonsBelowMessage(item, view);
-        } else {
-            showFavorited(item, view);
-        }
-        showMessageNumber(item, view);
-        return view;
+        showCentralItem(view, item);
     }
 
     public int getIndentPixels(ConversationViewItem item) {
@@ -121,7 +91,7 @@ public class ConversationViewAdapter extends MessageListAdapter {
         return dpToPixes(10) * indentLevel;
     }
 
-    private void showCentralItem(ConversationViewItem item, View view) {
+    private void showCentralItem(View view, ConversationViewItem item) {
         if (item.getMsgId() == selectedMessageId  && oMsgs.size() > 1) {
             view.findViewById(R.id.message_indented).setBackground(
                     MyImageCache.getStyledDrawable(
@@ -152,7 +122,7 @@ public class ConversationViewAdapter extends MessageListAdapter {
         divider.setLayoutParams(layoutParams);
     }
 
-    private int showAvatar(MessageViewItem item, View view, int indentPixels) {
+    private int showAvatar(View view, MessageViewItem item, int indentPixels) {
         ImageView avatarView = (ImageView) view.findViewById(R.id.avatar_image);
         RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) avatarView.getLayoutParams();
         layoutParams.leftMargin = dpToPixes(indentPixels == 0 ? 2 : 1) + indentPixels;
@@ -175,7 +145,8 @@ public class ConversationViewAdapter extends MessageListAdapter {
                 messageIndented.getPaddingBottom());
     }
 
-    private void showMessageNumber(ConversationViewItem item, View view) {
+    @Override
+    protected void showMessageNumberEtc(ViewGroup view, ConversationViewItem item, int position) {
         TextView number = (TextView) view.findViewById(R.id.message_number);
         number.setText(Integer.toString(item.historyOrder));
     }

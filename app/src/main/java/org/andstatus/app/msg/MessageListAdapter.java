@@ -38,7 +38,7 @@ import java.util.Set;
 /**
  * @author yvolk@yurivolkov.com
  */
-public abstract class MessageListAdapter extends MyBaseAdapter {
+public abstract class MessageListAdapter<T extends MessageViewItem> extends MyBaseAdapter {
     protected final boolean showButtonsBelowMessages =
             SharedPreferencesUtil.getBoolean(MyPreferences.KEY_SHOW_BUTTONS_BELOW_MESSAGE, true);
     protected final MessageContextMenu contextMenu;
@@ -53,6 +53,40 @@ public abstract class MessageListAdapter extends MyBaseAdapter {
         this.contextMenu = contextMenu;
     }
 
+    @Override
+    public View getView(int position, View convertView, ViewGroup parent) {
+        ViewGroup view = getEmptyView(convertView);
+        view.setOnCreateContextMenuListener(contextMenu);
+        view.setOnClickListener(this);
+        setPosition(view, position);
+        T item = getItem(position);
+        showRebloggers(view, item);
+        MyUrlSpan.showText(view, R.id.message_author, item.authorName, false, false);
+        showMessageBody(view, item);
+        MyUrlSpan.showText(view, R.id.message_details, item.getDetails(contextMenu.getActivity()).toString(), false, false);
+
+        showAvatarEtc(view, item);
+
+        if (showAttachedImages) {
+            showAttachedImage(view, item);
+        }
+        if (markReplies) {
+            showMarkReplies(view, item);
+        }
+        if (showButtonsBelowMessages) {
+            showButtonsBelowMessage(view, item);
+        } else {
+            showFavorited(view, item);
+        }
+
+        showMessageNumberEtc(view, item, position);
+        return view;
+    }
+
+    protected abstract void showAvatarEtc(ViewGroup view, T item);
+
+    protected abstract void showMessageNumberEtc(ViewGroup view, T item, int position);
+
     protected ViewGroup getEmptyView(View convertView) {
         if (convertView == null) return newView();
         convertView.setBackgroundResource(0);
@@ -61,13 +95,18 @@ public abstract class MessageListAdapter extends MyBaseAdapter {
         return (ViewGroup) convertView;
     }
 
+    @Override
+    public long getItemId(int position) {
+        return getItem(position).getMsgId();
+    }
+
     protected ViewGroup newView() {
         ViewGroup view = (ViewGroup) LayoutInflater.from(contextMenu.getActivity()).inflate(R.layout.message, null);
         setupButtons(view);
         return view;
     }
 
-    protected void showRebloggers(MessageViewItem item, View view) {
+    protected void showRebloggers(View view, MessageViewItem item) {
         View viewGroup = view.findViewById(R.id.reblogged);
         if (viewGroup == null) {
             return;
@@ -83,23 +122,23 @@ public abstract class MessageListAdapter extends MyBaseAdapter {
         }
     }
 
-    protected void showMessageBody(MessageViewItem item, View view) {
+    protected void showMessageBody(View view, MessageViewItem item) {
         TextView body = (TextView) view.findViewById(R.id.message_body);
         MyUrlSpan.showText(body, item.body, true, true);
     }
 
-    protected void showAvatar(MessageViewItem item, View view) {
+    protected void showAvatar(View view, MessageViewItem item) {
         ImageView avatar = (ImageView) view.findViewById(R.id.avatar_image);
         avatar.setImageDrawable(item.getAvatar());
     }
 
-    protected void showAttachedImage(MessageViewItem item, View view) {
+    protected void showAttachedImage(View view, MessageViewItem item) {
         preloadedImages.add(item.getMsgId());
         item.getAttachedImageFile().showAttachedImage(contextMenu.messageList,
                 (ImageView) view.findViewById(R.id.attached_image));
     }
 
-    protected void showMarkReplies(MessageViewItem item, ViewGroup view) {
+    protected void showMarkReplies(ViewGroup view, MessageViewItem item) {
         boolean show = item.inReplyToUserId != 0 && myContext.persistentAccounts().
                 fromUserId(item.inReplyToUserId).isValid();
         View oldView = view.findViewById(R.id.reply_timeline_marker);
@@ -147,6 +186,14 @@ public abstract class MessageListAdapter extends MyBaseAdapter {
         );
     }
 
+    @Override
+    public T getItem(View view) {
+        return (T) super.getItem(view);
+    }
+
+    @Override
+    public abstract T getItem(int position);
+
     private void onButtonClick(View v, MessageListContextMenuItem contextMenuItemIn) {
         MessageViewItem item = (MessageViewItem) getItem(v);
         if (item != null && item.msgStatus == DownloadStatus.LOADED) {
@@ -161,7 +208,7 @@ public abstract class MessageListAdapter extends MyBaseAdapter {
         }
     }
 
-    protected void showButtonsBelowMessage(MessageViewItem item, View view) {
+    protected void showButtonsBelowMessage(View view, MessageViewItem item) {
         View viewGroup = view.findViewById(R.id.message_buttons);
         if (viewGroup == null) {
             return;
@@ -181,7 +228,7 @@ public abstract class MessageListAdapter extends MyBaseAdapter {
         imageViewTinted.setVisibility(colored ? View.VISIBLE : View.GONE);
     }
 
-    protected void showFavorited(MessageViewItem item, View view) {
+    protected void showFavorited(View view, MessageViewItem item) {
         View favorited = view.findViewById(R.id.message_favorited);
         favorited.setVisibility(item.favorited ? View.VISIBLE : View.GONE );
     }

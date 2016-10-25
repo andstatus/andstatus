@@ -18,19 +18,16 @@ package org.andstatus.app.msg;
 
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.TextView;
 
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.graphics.MyImageCache;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyUrlSpan;
 
 /**
  * @author yvolk@yurivolkov.com
  */
-public class TimelineAdapter extends MessageListAdapter {
+public class TimelineAdapter extends MessageListAdapter<TimelineViewItem> {
     private final TimelineData listData;
     private int positionPrev = -1;
     private int messageNumberShownCounter = 0;
@@ -48,61 +45,20 @@ public class TimelineAdapter extends MessageListAdapter {
     }
 
     @Override
-    public TimelineViewItem getItem(View view) {
-        return (TimelineViewItem) super.getItem(view);
-    }
-
-    @Override
     public TimelineViewItem getItem(int position) {
         return listData.getItem(position);
     }
 
     @Override
-    public long getItemId(int position) {
-        return getItem(position).getMsgId();
-    }
-
-    @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
-        ViewGroup view = getEmptyView(convertView);
-        view.setOnCreateContextMenuListener(contextMenu);
-        view.setOnClickListener(this);
-        setPosition(view, position);
-        TimelineViewItem item = getItem(position);
-        showRebloggers(item, view);
-        MyUrlSpan.showText(view, R.id.message_author, item.authorName, false, false);
-        showMessageBody(item, view);
-        MyUrlSpan.showText(view, R.id.message_details, item.getDetails(contextMenu.getActivity()).toString(), false, false);
+    protected void showAvatarEtc(ViewGroup view, TimelineViewItem item) {
         if (showAvatars) {
-            showAvatar(item, view);
-        }
-        if (showAttachedImages) {
-            showAttachedImage(item, view);
-        }
-        if (markReplies) {
-            showMarkReplies(item, view);
-        }
-        if (showButtonsBelowMessages) {
-            showButtonsBelowMessage(item, view);
+            showAvatar(view, item);
         } else {
-            showFavorited(item, view);
-        }
-        preloadAttachments(position);
-        showMessageNumber(position, view);
-        positionPrev = position;
-        return view;
-    }
-
-    @Override
-    protected ViewGroup newView() {
-        ViewGroup view = super.newView();
-        if (!showAvatars) {
             View message = view.findViewById(R.id.message_indented);
             if (message != null) {
                 message.setPadding(dpToPixes(2), 0, dpToPixes(6), dpToPixes(2));
             }
         }
-        return view;
     }
 
     private void preloadAttachments(int position) {
@@ -124,7 +80,9 @@ public class TimelineAdapter extends MessageListAdapter {
         }
     }
 
-    private void showMessageNumber(int position, View view) {
+    @Override
+    protected void showMessageNumberEtc(ViewGroup view, TimelineViewItem item, int position) {
+        preloadAttachments(position);
         String text;
         switch (position) {
             case 0:
@@ -140,6 +98,7 @@ public class TimelineAdapter extends MessageListAdapter {
         }
         MyUrlSpan.showText(view, R.id.message_number, text, false, false);
         messageNumberShownCounter++;
+        positionPrev = position;
     }
 
     @Override
