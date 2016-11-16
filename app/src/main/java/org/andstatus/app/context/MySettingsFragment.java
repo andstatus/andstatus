@@ -210,10 +210,8 @@ public class MySettingsFragment extends PreferenceFragment implements
                     && !preference.isChecked()) {
                 preference.setEnabled(false);
             }
-            StringBuilder summary = new StringBuilder(
-                    getActivity().getText(preference.isChecked()
-                    ? R.string.summary_preference_storage_external_on
-                    : R.string.summary_preference_storage_external_off));
+            StringBuilder summary = new StringBuilder( getText(preference.isChecked()
+                    ? R.string.summary_preference_storage_external_on : R.string.summary_preference_storage_external_off));
             summary.append(":\n ");
             summary.append(MyStorage.getDataFilesDir(null));
             preference.setSummary(summary);
