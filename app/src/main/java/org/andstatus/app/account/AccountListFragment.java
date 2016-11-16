@@ -92,7 +92,7 @@ public class AccountListFragment extends Fragment {
 
     private void setupListRecyclerView() {
         mDragListView.setLayoutManager(new LinearLayoutManager(getContext()));
-        ItemAdapter listAdapter = new ItemAdapter(mItems, R.layout.drag_accountlist_item, R.id.dragHandle, false);
+        ItemAdapter listAdapter = new ItemAdapter(mItems, R.layout.drag_accountlist_item, R.id.dragHandle);
         mDragListView.setAdapter(listAdapter, true);
         mDragListView.setCanDragHorizontally(false);
         mDragListView.setCustomDragItem(new MyDragItem(getContext(), R.layout.drag_accountlist_item));
@@ -119,8 +119,8 @@ public class AccountListFragment extends Fragment {
         private int mLayoutId;
         private int mGrabHandleId;
 
-        public ItemAdapter(List<MyAccount> list, int layoutId, int grabHandleId, boolean dragOnLongPress) {
-            super(dragOnLongPress);
+        public ItemAdapter(List<MyAccount> list, int layoutId, int grabHandleId) {
+            super();
             mLayoutId = layoutId;
             mGrabHandleId = grabHandleId;
             setHasStableIds(true);
@@ -130,7 +130,7 @@ public class AccountListFragment extends Fragment {
         @Override
         public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             View view = LayoutInflater.from(parent.getContext()).inflate(mLayoutId, parent, false);
-            return new ViewHolder(view);
+            return new ViewHolder(view, mGrabHandleId);
         }
 
         @Override
@@ -153,10 +153,10 @@ public class AccountListFragment extends Fragment {
             return mItemList.get(position).getUserId();
         }
 
-        public class ViewHolder extends DragItemAdapter<MyAccount, ItemAdapter.ViewHolder>.ViewHolder {
+        public class ViewHolder extends DragItemAdapter.ViewHolder {
 
-            public ViewHolder(final View itemView) {
-                super(itemView, mGrabHandleId);
+            public ViewHolder(final View itemView, int grabHandleId) {
+                super(itemView, grabHandleId, false);
             }
 
             @Override
