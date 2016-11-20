@@ -181,6 +181,7 @@
   <string name="get_followers">Erhalte Abonnenten</string>
   <string name="get_friends">Freunde laden</string>
   <string name="get_open_instances_title">Öffentliche Server</string>
+  <string name="get_message">Nachrichteninfos abrufen</string>
   <string name="get_user">Nutzerinfos abrufen</string>
   <string name="go_to_the_top_title">Gehe nach Oben</string>
   <string name="header_accounts">Konten</string>
@@ -274,6 +275,8 @@
   <string name="message_source_to">an %1$s</string>
   <string name="message_twitter">Tweet</string>
   <string name="messages_activity">Direktnachrichten</string>
+  <string name="n_message_link">Nachrichtenlink</string>
+  <string name="n_message_links">%d Nachrichtenlinks</string>
   <string name="never">Nie</string>
   <string name="new_items_count_abbreviated">Neu</string>
   <string name="no">Nein</string>
@@ -373,6 +376,7 @@
   <string name="settings_activity_title">Einstellungen</string>
   <string name="show_buttons_below_message">Buttons für Antwort, Repost und Favorit unter der Nachricht zeigen</string>
   <string name="show_duplicates">Duplikate anzeigen</string>
+  <string name="show_threads_of_conversation">Verlauf einer Unterhaltung zeigen</string>
   <string name="show_timeline_messages">Timeline-Nachrichten anzeigen</string>
   <string name="since">Seit %s</string>
   <string name="splash_button_learn_more">Mehr erfahren</string>
@@ -425,7 +429,7 @@
   <string name="summary_preference_theme_size">Schriftgröße wählen</string>
   <string name="summary_preference_user_in_timeline">Benutzer wird als \"{0}\" angezeigt</string>
   <string name="summary_preference_username">Ihr Benutzername in diesem Sozialen Netz</string>
-  <string name="summary_preference_username_webfinger_id">Trage deine ID auf deiner %1$s Seite ein. Diese sieht wie eine Emailadresse aus: dein Username, dann \"@\"  gefolgt von deinem Server; z.B.: %2$s</string>
+  <string name="summary_preference_username_pumpio">Trage deine ID auf deiner pump.io Seite ein. Diese sieht wie eine Emailadresse aus: dein Username, dann \"@\"  gefolgt von deinem Server; z.B.: andstatus@identi.ca</string>
   <string name="summary_preference_verify_credentials">Dieser Account ist überprüft und aktiviert. Tippe auf Zurück (&lt;) um fortzufahren or tippe hier um die Zugangsdaten des Users erneut zu prüfen.</string>
   <string name="summary_preference_verify_credentials_failed">Überprüfung fehlgeschlagen. Hier tippen zur überprüfen der Zugangsdaten und zum Aktivieren dieses Benutzerkontos</string>
   <string name="summary_preference_vibration_off">Vibration ist abgeschaltet</string>
@@ -443,9 +447,11 @@
   <string name="theme_color_entries_default">Gerätestandard</string>
   <string name="theme_color_entries_light">Hell</string>
   <string name="theme_color_entries_dark">Dunkel</string>
-  <string name="theme_size_entries_small">Klein</string>
-  <string name="theme_size_entries_standard">Normal</string>
   <string name="theme_size_entries_large">Groß</string>
+  <string name="theme_size_entries_larger">Größer</string>
+  <string name="theme_size_entries_small">Klein</string>
+  <string name="theme_size_entries_smaller">Kleiner</string>
+  <string name="theme_size_entries_standard">Normal</string>
   <string name="this_option_is_turned_off">(deaktiviert)</string>
   <string name="timeline_is_combined_by_default">Timeline ist standardmäßig kombiniert</string>
   <string name="timeline_reloaded">Timeline wurde neu geladen.</string>
