@@ -32,12 +32,13 @@ public class MyResources {
     }
 
     @ColorInt
-    public static int getColorByAttribute(@AttrRes int resId, @NonNull Resources.Theme theme) throws Resources.NotFoundException {
+    public static int getColorByAttribute(@AttrRes int resId, @AttrRes int altResId, @NonNull Resources.Theme theme)
+            throws Resources.NotFoundException {
         TypedValue value = new TypedValue();
-        if (!theme.resolveAttribute(resId, value, true)) {
+        if (!theme.resolveAttribute(resId, value, true) && !theme.resolveAttribute(altResId, value, true)) {
             throw new Resources.NotFoundException(
-                    "Failed to resolve attribute ID #0x" + Integer.toHexString(resId) + " type #0x"
-                            + Integer.toHexString(value.type));
+                    "Failed to resolve attribute IDs #0x" + Integer.toHexString(resId) + "and "  + Integer.toHexString(altResId)
+                            +  " type #0x" + Integer.toHexString(value.type));
         }
         return value.data;
     }
