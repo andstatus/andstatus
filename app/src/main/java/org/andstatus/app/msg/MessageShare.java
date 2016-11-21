@@ -77,10 +77,12 @@ public class MessageShare {
         subject.append(" - " + msgBodyPlainText);
 
         Intent intent = new Intent(share ? android.content.Intent.ACTION_SEND : Intent.ACTION_VIEW);
-        if (TextUtils.isEmpty(imageFilename)) {
+        if (share || TextUtils.isEmpty(imageFilename)) {
             intent.setType("text/*");
         } else {
             intent.setDataAndType(FileProvider.downloadFilenameToUri(imageFilename),"image/*");
+        }
+        if (!TextUtils.isEmpty(imageFilename)) {
             intent.putExtra(Intent.EXTRA_STREAM, FileProvider.downloadFilenameToUri(imageFilename));
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         }
