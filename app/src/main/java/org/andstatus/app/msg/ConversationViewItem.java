@@ -101,11 +101,15 @@ public class ConversationViewItem extends ConversationItem {
                 if (getLinkedUserId() == 0) {
                     setLinkedUserAndAccount(linkedUserId);
                 }
-                if (DbUtils.getInt(cursor, MsgOfUserTable.REBLOGGED) == 1
-                        && linkedUserId != authorId) {
-                    rebloggerIds.add(linkedUserId);
+                if (DbUtils.getInt(cursor, MsgOfUserTable.REBLOGGED) == 1) {
+                    if (linkedUserId != authorId) {
+                        rebloggerIds.add(linkedUserId);
+                    }
+                    if (isLinkedToMyAccount()) {
+                        reblogged = true;
+                    }
                 }
-                if (DbUtils.getInt(cursor, MsgOfUserTable.FAVORITED) == 1) {
+                if (isLinkedToMyAccount() & DbUtils.getInt(cursor, MsgOfUserTable.FAVORITED) == 1) {
                     favorited = true;
                 }
             }

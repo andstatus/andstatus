@@ -274,6 +274,13 @@ public class ConversationActivity extends LoadableListActivity implements Action
 
     @Override
     protected CharSequence getCustomTitle() {
+        MyAccount currentMyAccount = getCurrentMyAccount();
+        if (currentMyAccount != null && currentMyAccount.isValid()) {
+            mSubtitle = currentMyAccount.toAccountButtonText(myContext);
+        } else {
+            mSubtitle = "";
+        }
+
         final StringBuilder title = new StringBuilder(
                 getText(getListData().size() > 1 ? R.string.label_conversation : R.string.message));
         I18n.appendWithSpace(title, getText(R.string.combined_timeline_off_origin));
