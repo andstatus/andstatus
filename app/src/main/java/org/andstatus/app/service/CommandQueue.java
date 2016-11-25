@@ -20,6 +20,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.support.annotation.NonNull;
 
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
@@ -37,7 +38,42 @@ import java.util.concurrent.PriorityBlockingQueue;
  */
 public class CommandQueue {
     private final Context context;
-    private final Map<QueueType, Queue<CommandData>> queues = new HashMap<>();
+    private static class OneQueue {
+        Queue<CommandData> queue = new PriorityBlockingQueue<>(100);
+        volatile int savedCount = 0;
+        volatile boolean savedForegroundTasks = false;
+
+        public void clear() {
+            queue.clear();
+            savedCount = 0;
+            savedForegroundTasks = false;
+        }
+
+        public boolean isEmpty() {
+            return queue.isEmpty() && savedCount == 0;
+        }
+
+        private boolean hasForegroundTasks() {
+            if (savedForegroundTasks) {
+                return true;
+            }
+            boolean has = false;
+            for (CommandData commandData : queue) {
+                if (commandData.isInForeground()) {
+                    has = true;
+                    break;
+                }
+            }
+            return has;
+        }
+
+        public int size() {
+            return queue.size() + savedCount;
+        }
+    }
+    private final Map<QueueType, OneQueue> queues = new HashMap<>();
+    private volatile boolean loaded = false;
+    private volatile boolean saved = false;
 
     public CommandQueue() {
         this(MyContextHolder.get().context());
@@ -46,35 +82,40 @@ public class CommandQueue {
     public CommandQueue(Context context) {
         this.context = context;
         for (QueueType queueType : QueueType.values()) {
-            queues.put(queueType, new PriorityBlockingQueue<CommandData>(100));
+            queues.put(queueType, new OneQueue());
         }
     }
 
     public Queue<CommandData> get(QueueType queueType) {
-        return queues.get(queueType);
+        return queues.get(queueType).queue;
     }
 
-    public CommandQueue load() {
-        int count = load(QueueType.CURRENT) + load(QueueType.RETRY);
-        int countError = load(QueueType.ERROR);
-        MyLog.d(this, "State restored, " + (count > 0 ? Integer.toString(count) : "no ")
-                + " msg in the Queues, "
-                + (countError > 0 ? Integer.toString(countError) + " in Error queue" : "")
-        );
+    public synchronized CommandQueue load() {
+        if (loaded) {
+            MyLog.d(this, "Already loaded");
+        } else {
+            int count = load(QueueType.CURRENT) + load(QueueType.RETRY);
+            int countError = load(QueueType.ERROR);
+            MyLog.d(this, "State restored, " + (count > 0 ? Integer.toString(count) : "no ")
+                    + " msg in the Queues, "
+                    + (countError > 0 ? Integer.toString(countError) + " in Error queue" : "")
+            );
+            loaded = true;
+        }
         return this;
     }
 
     /** @return Number of items loaded */
-    public int load(QueueType queueType) {
+    protected int load(@NonNull QueueType queueType) {
         final String method = "loadQueue-" + queueType.save();
-        Queue<CommandData> queue = get(queueType);
+        OneQueue oneQueue = queues.get(queueType);
+        Queue<CommandData> queue = oneQueue.queue;
         int count = 0;
         SQLiteDatabase db = MyContextHolder.get().getDatabase();
         if (db == null) {
             MyLog.d(context, method + "; Database is unavailable");
             return 0;
         }
-        queue.clear();
         String sql = "SELECT * FROM " + CommandTable.TABLE_NAME + " WHERE " + CommandTable.QUEUE_TYPE + "='" + queueType.save() + "'";
         Cursor c = null;
         try {
@@ -100,22 +141,27 @@ public class CommandQueue {
             DbUtils.closeSilently(c);
         }
         MyLog.d(context, method + "; loaded " + count + " commands from '" + queueType + "'");
+        oneQueue.savedCount = 0;
+        oneQueue.savedForegroundTasks = false;
         return count;
     }
 
-    public void save() {
+    public synchronized void save() {
         int count = save(QueueType.CURRENT) + save(QueueType.RETRY);
         int countError = save(QueueType.ERROR);
-        MyLog.d(this, "State saved, " + (count > 0 ? Integer.toString(count) : "no ")
-                + " msg in the Queues, "
-                + (countError > 0 ? Integer.toString(countError) + " in Error queue" : "")
+        MyLog.d(this, (loaded ? "Queues saved" : "Saved new queued commands only") + ", "
+                + (count > 0 ? Integer.toString(count) : "no") + " commands"
+                + (countError > 0 ? ", including " + Integer.toString(countError) + " in Error queue" : "")
         );
+        saved |= loaded;
+        loaded = false;
     }
 
     /** @return Number of items persisted */
-    public int save(QueueType queueType) {
+    public int save(@NonNull QueueType queueType) {
         final String method = "saveQueue-" + queueType.save();
-        Queue<CommandData> queue = get(queueType);
+        OneQueue oneQueue = queues.get(queueType);
+        Queue<CommandData> queue = oneQueue.queue;
         int count = 0;
         try {
             SQLiteDatabase db = MyContextHolder.get().getDatabase();
@@ -123,12 +169,17 @@ public class CommandQueue {
                 MyLog.d(context, method + "; Database is unavailable");
                 return 0;
             }
-            String sql = "DELETE FROM " + CommandTable.TABLE_NAME + " WHERE " + CommandTable.QUEUE_TYPE + "='" + queueType.save() + "'";
-            DbUtils.execSQL(db, sql);
+            if (loaded) {
+                oneQueue.savedCount = 0;
+                oneQueue.savedForegroundTasks = false;
+                String sql = "DELETE FROM " + CommandTable.TABLE_NAME + " WHERE " + CommandTable.QUEUE_TYPE + "='" + queueType.save() + "'";
+                DbUtils.execSQL(db, sql);
+            }
 
             if (!queue.isEmpty()) {
                 while (!queue.isEmpty() && count < 300) {
                     CommandData cd = queue.poll();
+                    oneQueue.savedForegroundTasks |= cd.isInForeground();
                     ContentValues values = new ContentValues();
                     cd.toContentValues(values);
                     values.put(CommandTable.QUEUE_TYPE, queueType.save());
@@ -151,12 +202,14 @@ public class CommandQueue {
             MyLog.e(context, msgLog, e);
             throw new IllegalStateException(msgLog, e);
         }
+        oneQueue.savedCount += count;
         return count;
     }
 
     public void clear() {
+        loaded = true;
         // MyLog.v(this, MyLog.getStackTrace(new IllegalStateException("CommandQueue#clear called")));
-        for ( Map.Entry<QueueType,Queue<CommandData>> entry : queues.entrySet()) {
+        for ( Map.Entry<QueueType, OneQueue> entry : queues.entrySet()) {
             entry.getValue().clear();
             save(entry.getKey());
         }
@@ -164,36 +217,29 @@ public class CommandQueue {
     }
 
     public void deleteCommand(CommandData commandData) {
-        for (Queue<CommandData> queue : queues.values()) {
-            commandData.deleteCommandInTheQueue(queue);
+        if (!loaded) load();
+        for (OneQueue oneQueue : queues.values()) {
+            commandData.deleteCommandInTheQueue(oneQueue.queue);
         }
     }
 
-    public boolean hasForegroundTasks(QueueType queueType) {
-        boolean has = false;
-        for (CommandData commandData : get(queueType)) {
-            if (commandData.isInForeground()) {
-                has = true;
-                break;
-            }
+    public boolean isAnythingToExecuteNowIn(@NonNull QueueType queueType) {
+        if (!loaded && !saved) {
+            return true;
         }
-        return has;
-    }
-
-    public boolean isAnythingToExecuteNowIn(QueueType queueType) {
-        if (queues.get(queueType).isEmpty()) {
+        if ( queues.get(queueType).isEmpty()) {
             return false;
         }
         if (!MyPreferences.isSyncWhileUsingApplicationEnabled()
                 && MyContextHolder.get().isInForeground()) {
-            return hasForegroundTasks(queueType);
+            return queues.get(queueType).hasForegroundTasks();
         }
         return true;
     }
 
     public int totalSizeToExecute() {
         int size = 0;
-        for ( Map.Entry<QueueType,Queue<CommandData>> entry : queues.entrySet()) {
+        for ( Map.Entry<QueueType, OneQueue> entry : queues.entrySet()) {
             if (entry.getKey().isExecutable()) {
                 size += entry.getValue().size();
             }
@@ -207,5 +253,4 @@ public class CommandQueue {
             MyLog.e(this, queueType.name() + " is full?");
         }
     }
-
 }

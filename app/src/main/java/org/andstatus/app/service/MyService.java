@@ -224,7 +224,6 @@ public class MyService extends Service {
             if (!mInitialized) {
                 wasNotInitialized = true;
                 myContext = MyContextHolder.get();
-                queues.load();
                 registerReceiver(intentReceiver, new IntentFilter(MyAction.EXECUTE_COMMAND.getAction()));
                 mInitialized = true;
                 changed = true;
@@ -539,6 +538,7 @@ public class MyService extends Service {
 
         @Override
         protected Boolean doInBackground2(Void... arg0) {
+            queues.load();
             MyLog.d(this, "Started, " + queues.get(QueueType.CURRENT).size() + " commands to process");
             String breakReason = "";
             do {
@@ -589,6 +589,7 @@ public class MyService extends Service {
                 addSyncOfThisToQueue(commandData);
             } while (true);
             MyLog.d(this, "Ended, " + breakReason + ", " + queues.totalSizeToExecute() + " commands left");
+            queues.save();
             return true;
         }
 
