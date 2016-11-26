@@ -429,7 +429,7 @@
   <string name="summary_preference_theme_size">Schriftgröße wählen</string>
   <string name="summary_preference_user_in_timeline">Benutzer wird als \"{0}\" angezeigt</string>
   <string name="summary_preference_username">Ihr Benutzername in diesem Sozialen Netz</string>
-  <string name="summary_preference_username_pumpio">Trage deine ID auf deiner pump.io Seite ein. Diese sieht wie eine Emailadresse aus: dein Username, dann \"@\"  gefolgt von deinem Server; z.B.: andstatus@identi.ca</string>
+  <string name="summary_preference_username_webfinger_id">Trage deine ID auf deiner pump.io Seite ein. Diese sieht wie eine Emailadresse aus: dein Username, dann \"@\"  gefolgt von deinem Server; z.B.: andstatus@identi.ca</string>
   <string name="summary_preference_verify_credentials">Dieser Account ist überprüft und aktiviert. Tippe auf Zurück (&lt;) um fortzufahren or tippe hier um die Zugangsdaten des Users erneut zu prüfen.</string>
   <string name="summary_preference_verify_credentials_failed">Überprüfung fehlgeschlagen. Hier tippen zur überprüfen der Zugangsdaten und zum Aktivieren dieses Benutzerkontos</string>
   <string name="summary_preference_vibration_off">Vibration ist abgeschaltet</string>
