@@ -49,7 +49,7 @@ public class DatabaseConverterController {
     private static Activity upgradeRequestor = null;
     
     static final long SECONDS_BEFORE_UPGRADE_TRIGGERED = 5L;
-    static final long SECONDS_FOR_UPGRADE = 30L;
+    static final int UPGRADE_LENGTH_SECONDS_MAX = 90;
 
     public static void attemptToTriggerDatabaseUpgrade(Activity upgradeRequestorIn) {
         String requestorName = MyLog.objTagToString(upgradeRequestorIn);
@@ -108,10 +108,13 @@ public class DatabaseConverterController {
         @Override
         protected Void doInBackground2(Activity... activity) {
             boolean success = false;
+            boolean locUpgradeStarted = false;
+            Activity locUpgradeRequestor = null;
             try {
                 synchronized(UPGRADE_LOCK) {
                     upgradeRequestor = activity[0];
                 }
+                locUpgradeRequestor = upgradeRequestor;
                 MyLog.v(TAG, "Upgrade triggered by " + MyLog.objTagToString(activity[0]));
                 MyContextHolder.release();
                 // Upgrade will occur inside this call synchronously
@@ -125,24 +128,24 @@ public class DatabaseConverterController {
                 synchronized(UPGRADE_LOCK) {
                     success = upgradeEndedSuccessfully;
                     upgradeRequestor = null;
-                    if (upgradeStarted) {
-                        upgradeStarted = false;
-                    } else {
-                        MyLog.v(TAG, "Upgrade didn't start");                    
-                    }
+                    locUpgradeStarted = upgradeStarted;
+                    upgradeStarted = false;
                     upgradeEndTime = 0L;
                 }
             }
+            if (!locUpgradeStarted) {
+                MyLog.v(TAG, "Upgrade didn't start");
+            }
             if (success) {
-                MyPreferences.onPreferencesChanged();
-                if (!MyContextHolder.get().isReady()) {
-                    MyContextHolder.initialize(activity[0], activity[0]);
-                }
+                MyLog.v(TAG, "success");
+                MyContextHolder.release();
+                MyContextHolder.initialize(locUpgradeRequestor, locUpgradeRequestor);
+                MyLog.v(TAG, "After context initialization: " + MyContextHolder.get());
                 if (MyContextHolder.get().isReady()) {
                     MyContextHolder.get().persistentTimelines().addDefaultTimelinesIfNoneFound();
                 }
-                HelpActivity.startFromActivity(activity[0]);
             }
+            HelpActivity.startFromActivity(locUpgradeRequestor);
             return null;
         }
         
@@ -153,9 +156,9 @@ public class DatabaseConverterController {
         synchronized(UPGRADE_LOCK) {
             wasStarted = upgradeStarted;
             upgradeStarted = true;
-            upgradeEndTime = java.lang.System.currentTimeMillis() + java.util.concurrent.TimeUnit.SECONDS.toMillis(SECONDS_FOR_UPGRADE);
+            upgradeEndTime = java.lang.System.currentTimeMillis() + java.util.concurrent.TimeUnit.SECONDS.toMillis(UPGRADE_LENGTH_SECONDS_MAX);
         }
-        MyLog.w(TAG, (wasStarted ? "Still upgrading" : "Upgrade started") + ". Wait " + SECONDS_FOR_UPGRADE + " seconds");
+        MyLog.w(TAG, (wasStarted ? "Still upgrading" : "Upgrade started") + ". Wait " + UPGRADE_LENGTH_SECONDS_MAX + " seconds");
     }
     
     public static boolean isUpgradeError() {

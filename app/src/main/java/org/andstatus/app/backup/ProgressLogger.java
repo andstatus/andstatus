@@ -45,7 +45,7 @@ public class ProgressLogger {
     }
 
     public void logProgress(String message) {
-        MyLog.i(this, "Progress: " + message);
+        MyLog.d(this, "Progress: " + message);
         if (progressCallback != null) {
             progressCallback.onProgressMessage(message);
         }

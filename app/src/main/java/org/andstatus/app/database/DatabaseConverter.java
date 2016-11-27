@@ -414,4 +414,26 @@ class DatabaseConverter {
             DbUtils.execSQL(db, sql);
         }
     }
+
+    static class Convert25 extends OneStep {
+        @Override
+        protected void execute2() {
+            versionTo = 26;
+
+            sql = "DROP INDEX idx_msg_in_reply_to_msg_id";
+            DbUtils.execSQL(db, sql);
+
+            sql = "ALTER TABLE msg ADD COLUMN conversation_id INTEGER";
+            DbUtils.execSQL(db, sql);
+            sql = "ALTER TABLE msg ADD COLUMN conversation_oid TEXT";
+            DbUtils.execSQL(db, sql);
+            sql = "CREATE INDEX idx_msg_in_reply_to_msg_id ON msg (" + "in_reply_to_msg_id"
+                    + ") WHERE " + "in_reply_to_msg_id" + " IS NOT NULL";
+            DbUtils.execSQL(db, sql);
+            sql = "CREATE INDEX idx_msg_conversation_id ON msg (" + "conversation_id"
+                    + ") WHERE " + "conversation_id" + " IS NOT NULL";
+            DbUtils.execSQL(db, sql);
+        }
+    }
+
 }

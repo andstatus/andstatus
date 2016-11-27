@@ -54,6 +54,10 @@ public final class MsgTable implements BaseColumns {
      * See {@link DownloadStatus}. Defaults to {@link DownloadStatus#UNKNOWN}
      */
     public static final String MSG_STATUS = "msg_status";
+    /** Conversation ID, internal to AndStatus */
+    public static final String CONVERSATION_ID = "conversation_id";
+    /** ID of the conversation in the originating system (if the system supports this) */
+    public static final String CONVERSATION_OID = "conversation_oid";
     /**
      * A link to the representation of the resource. Currently this is simply URL to the HTML
      * representation of the resource (its "permalink")
@@ -133,6 +137,8 @@ public final class MsgTable implements BaseColumns {
                 + MsgTable.ORIGIN_ID + " INTEGER NOT NULL,"
                 + MsgTable.MSG_OID + " TEXT,"
                 + MsgTable.MSG_STATUS + " INTEGER NOT NULL DEFAULT 0,"
+                + MsgTable.CONVERSATION_ID + " INTEGER,"
+                + MsgTable.CONVERSATION_OID + " TEXT,"
                 + MsgTable.AUTHOR_ID + " INTEGER,"
                 + MsgTable.SENDER_ID + " INTEGER,"
                 + MsgTable.RECIPIENT_ID + " INTEGER,"
@@ -156,8 +162,11 @@ public final class MsgTable implements BaseColumns {
                 + MsgTable.SENT_DATE
                 + ")");
 
+        // Index not null rows only, see https://www.sqlite.org/partialindex.html
         DbUtils.execSQL(db, "CREATE INDEX idx_msg_in_reply_to_msg_id ON " + MsgTable.TABLE_NAME + " ("
-                + MsgTable.IN_REPLY_TO_MSG_ID
-                + ")");
+                + MsgTable.IN_REPLY_TO_MSG_ID + ") WHERE " + MsgTable.IN_REPLY_TO_MSG_ID + " IS NOT NULL");
+
+        DbUtils.execSQL(db, "CREATE INDEX idx_msg_conversation_id ON " + MsgTable.TABLE_NAME + " ("
+                + MsgTable.CONVERSATION_ID + ") WHERE " + MsgTable.CONVERSATION_ID + " IS NOT NULL");
     }
 }

@@ -236,4 +236,12 @@ public final class DbUtils {
         MyLog.v("execSQL", sql);
         db.execSQL(sql);
     }
+
+    public static String sqlZeroToNull(long value) {
+        return value == 0 ? null : Long.toString(value);
+    }
+
+    public static String sqlEmptyToNull(String value) {
+        return TextUtils.isEmpty(value) ? null : "'" + value + "'";
+    }
 }

@@ -23,6 +23,11 @@ import android.text.TextUtils;
  */
 public class StringUtils {
 
+    /** empty and null strings are treated as the same */
+    public static boolean equalsNotEmpty(String first, String second) {
+        return notEmpty(first, "").equals(notEmpty(second, ""));
+    }
+
     public static String notEmpty(String value, String valueIfEmpty) {
         return TextUtils.isEmpty(value) ? valueIfEmpty : value;
     }

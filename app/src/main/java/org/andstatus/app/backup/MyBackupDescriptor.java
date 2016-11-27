@@ -23,6 +23,7 @@ import android.os.ParcelFileDescriptor;
 
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DbUtils;
+import org.andstatus.app.database.DatabaseCreator;
 import org.andstatus.app.util.FileDescriptorUtils;
 import org.andstatus.app.util.MyLog;
 import org.json.JSONException;
@@ -39,13 +40,14 @@ import java.util.Date;
 
 public class MyBackupDescriptor {
     private static final Object TAG = MyBackupDescriptor.class;
-    
+
     static final int BACKUP_SCHEMA_VERSION_UNKNOWN = -1;
-    /**
+    /** Depends, in particular, on @{@link DatabaseCreator#DATABASE_VERSION}
+     * v.6 2016-11-27 app.v.31 database schema changed
      * v.5 2016-05-22 app.v.27 database schema changed
      * v.4 2016-02-28 app.v.23 database schema changed
      */
-    static final int BACKUP_SCHEMA_VERSION = 5;
+    static final int BACKUP_SCHEMA_VERSION = 6;
     static final String KEY_ACCOUNTS_COUNT = "accounts_count";
     static final String KEY_CREATED_DATE = "created_date";
     static final String KEY_BACKUP_SCHEMA_VERSION = "backup_schema_version";

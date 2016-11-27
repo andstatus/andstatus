@@ -287,7 +287,7 @@ public class HelpActivity extends MyActivity implements SwipeInterface {
     }
 
     /**
-     * @return true if calling Activity is being finishing
+     * @return true if calling Activity is being finished
      */
     public static boolean startFromActivity(Activity activity) {
         boolean helpAsFirstActivity = false;

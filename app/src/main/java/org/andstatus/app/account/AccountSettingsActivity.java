@@ -114,7 +114,6 @@ public class AccountSettingsActivity extends MyActivity {
         super.onCreate(savedInstanceState);
 
         MyContextHolder.initialize(this, this);
-        MyContextHolder.upgradeIfNeeded(this);
         if (HelpActivity.startFromActivity(this)) {
             return;
         }
