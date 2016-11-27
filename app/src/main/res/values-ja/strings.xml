@@ -38,6 +38,8 @@
   <string name="appwidget_directmessage_formats_2">{0} ダイレクト</string>
   <string name="appwidget_nothingnew_default">新規はありません:</string>
   <string name="appwidget_nodata">まだデータはありません。</string>
+  <string name="acquiring_a_request_token_failed">リクエスト トークンの取得に失敗しました</string>
+  <string name="acquiring_an_access_token_failed">アクセス トークンの取得に失敗しました</string>
   <string name="attach_images_summary_off">投稿に画像を添付するために使用する \"クリップ+\" ボタンを非表示にします</string>
   <string name="attach_images_summary_on">メッセージに画像を添付する \"クリップ+\" ボタン (\"添付\" メニュー項目) を使用します。または別のアプリケーションから AndStatus に画像を共有します</string>
   <string name="attach_images_title">私のメッセージに画像を添付する</string>
@@ -69,6 +71,7 @@
   <string name="category_title_preference_notifications">通知</string>
   <string name="category_title_preference_origin">ソーシャル ネットワーク</string>
   <string name="category_title_preference_settings">設定</string>
+  <string name="client_registration_failed">AndStatus クライアント登録に失敗しました</string>
   <string name="collapse_duplicates">重複を折りたたむ</string>
   <string name="color_black">黒</string>
   <string name="color_black_cat">ブラック キャット</string>
@@ -226,7 +229,7 @@ AndStatus は、最後のメッセージのダウンロード以降のすべて�
   <string name="label_restore">バックアップからアプリケーション データを復元</string>
   <string name="label_upgrading">アップグレードを実行中です。お待ちください。</string>
   <string name="label_with_media">メディアで</string>
-  <string name="last_synced">前回の同期</string>
+  <string name="last_synced">前回、正常に同期しました</string>
   <string name="latest_error_label">最新のエラー</string>
   <string name="loading">読み込み中</string>
   <string name="long_press_to_open_context_menu">長押しでコンテキスト メニューを開く</string>
@@ -384,8 +387,8 @@ AndStatus は、最後のメッセージのダウンロード以降のすべて�
   <string name="subtitle">サブタイトル</string>
   <string name="summary_preference_accounts_absent">まだ AndStatus アカウントはありません</string>
   <string name="summary_preference_accounts_present">AndStatus アカウントの数</string>
-  <string name="summary_preference_add_account_oauth">ここをタップすると、ソーシャル ネットワークのサイトをブラウザーで開きます。</string>
-  <string name="summary_preference_add_account_basic">資格情報を確認し、アカウントを追加するには、ここをタップします。</string>
+  <string name="summary_preference_add_account_oauth">下のボタンをタップすると、ソーシャル ネットワークのサイトをブラウザーで開きます。</string>
+  <string name="summary_preference_add_account_basic">資格情報を確認し、アカウントを追加するには下のボタンをタップします。</string>
   <string name="summary_preference_appearance">AndStatus のルック アンド フィールを変更します。</string>
   <string name="summary_preference_enable_android_backup_off">Android のバックアップは要求されません</string>
   <string name="summary_preference_enable_android_backup_on">バックアップが必要になるデータの変更を AndStatus が Android に通知します (実験的)</string>
@@ -425,10 +428,11 @@ AndStatus は、最後のメッセージのダウンロード以降のすべて�
   <string name="summary_preference_syncing">タイムラインを同期するタイミングと、その表示方法</string>
   <string name="summary_preference_theme_size">テキストサイズを選択します</string>
   <string name="summary_preference_user_in_timeline">ユーザーは \"{0}\" として表示されます</string>
-  <string name="summary_preference_username">ソーシャル ネットワークのユーザー名</string>
-  <string name="summary_preference_username_webfinger_id">%1$s サイトのあなたの ID を入力してください。メールアドレスのような形式です。ユーザー名の後に \"@\" そしてサーバー。例えば: %2$s</string>
-  <string name="summary_preference_verify_credentials">このアカウントは確認済みで有効になっています。戻る (&lt;) をタップして続行するか、ここをタップして、ユーザーの資格情報を再度確認します。</string>
-  <string name="summary_preference_verify_credentials_failed">確認に失敗しました。資格情報を確認し、このユーザーアカウントを有効にするには、ここをタップします。</string>
+  <string name="summary_preference_username">%1$s ソーシャルネットワークのユーザー名。例えば: %2$s</string>
+  <string name="summary_preference_username_webfinger_id">%1$s の ID。
+メール アドレスのように、ユーザー名の後に \"@\" とサーバー。例えば: %2$s</string>
+  <string name="summary_preference_verify_credentials">このアカウントは確認済で有効になっています。戻るボタンをタップして続行するか、下のボタンをタップしてユーザーの資格情報をもう一度確認します。</string>
+  <string name="summary_preference_verify_credentials_failed">確認に失敗しました。資格情報を確認し、このユーザー アカウントを有効にするのには、下のボタンをタップします。</string>
   <string name="summary_preference_vibration_off">バイブレーションはオフになっています</string>
   <string name="summary_preference_vibration_on">着信メッセージでバイブレーションします</string>
   <string name="switch_to_default_timeline">既定のタイムラインに切り替え</string>
@@ -439,6 +443,7 @@ AndStatus は、最後のメッセージのダウンロード以降のすべて�
   <string name="synced_abbreviated">同期</string>
   <string name="syncing">同期中&#8230;</string>
   <string name="syncing_timeline_for_somebody">%2$s に %1$s を同期中</string>
+  <string name="system_information">システム情報</string>
   <string name="system_is_busy_try_later">システムがビジー状態です。後でもう一度やり直してください。</string>
   <string name="tap_on_a_timeline_title_behaviour">タイムラインのタイトルをタップした時の動作</string>
   <string name="theme_color_entries_default">デバイス デフォルト</string>

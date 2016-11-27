@@ -38,6 +38,8 @@
   <string name="appwidget_directmessage_formats_2">{0} личных</string>
   <string name="appwidget_nothingnew_default">Ничего нового после:</string>
   <string name="appwidget_nodata">Пока нет данных.</string>
+  <string name="acquiring_a_request_token_failed">Не удалось получить токен запроса</string>
+  <string name="acquiring_an_access_token_failed">Не удалось получить токен доступа</string>
   <string name="attach_images_summary_off">Кнопка «Скрепка+», используемая для прикрепления изображений к вашим сообщениям, скрыта</string>
   <string name="attach_images_summary_on">Используйте кнопку «Скрепка+» (пункт меню «Прикрепить») чтобы вложить изображение в ваше сообщение. Или \"поделитесь\" изображением с AndStatus-ом из другого приложения</string>
   <string name="attach_images_title">Прикреплять изображения к моим сообщениям</string>
@@ -69,6 +71,7 @@
   <string name="category_title_preference_notifications">Уведомления</string>
   <string name="category_title_preference_origin">Социальная сеть</string>
   <string name="category_title_preference_settings">Настройки</string>
+  <string name="client_registration_failed">Ошибка регистрации клиента AndStatus</string>
   <string name="collapse_duplicates">Скрыть дубликаты</string>
   <string name="color_black">Чёрный</string>
   <string name="color_black_cat">Чёрная кошка</string>
@@ -223,7 +226,7 @@
   <string name="label_restore">Восстановить данные приложения из Бэкапа</string>
   <string name="label_upgrading">Идёт обновление приложения. Пожалуйста подождите.</string>
   <string name="label_with_media">с медиа-контентом</string>
-  <string name="last_synced">Последняя синхронизация</string>
+  <string name="last_synced">Последний раз успешно синхронизировано</string>
   <string name="latest_error_label">Последняя ошибка</string>
   <string name="loading">Загрузка</string>
   <string name="long_press_to_open_context_menu">Длительно нажмите, чтобы открыть контекстное меню</string>
@@ -382,8 +385,8 @@
   <string name="subtitle">Подзаголовок</string>
   <string name="summary_preference_accounts_absent">Пока нет ни одного AndStatus-аккаунта</string>
   <string name="summary_preference_accounts_present">Количество AndStatus аккаунтов</string>
-  <string name="summary_preference_add_account_oauth">Нажмите здесь, чтобы открыть в браузере сайт Социальной сети.</string>
-  <string name="summary_preference_add_account_basic">Щёлкните здесь для аутентификации пользователя и добавления учётной записи (аккаунта).</string>
+  <string name="summary_preference_add_account_oauth">Нажмите кнопку ниже, чтобы открыть в браузере сайт Социальной сети.</string>
+  <string name="summary_preference_add_account_basic">Нажмите кнопку ниже для аутентификации пользователя и добавления учётной записи (аккаунта).</string>
   <string name="summary_preference_appearance">Изменить внешний вид программы AndStatus</string>
   <string name="summary_preference_enable_android_backup_off">AndStatus не будет запрашивать создание бэкапов данных</string>
   <string name="summary_preference_enable_android_backup_on">AndStatus сообщает Android-у об изменениях данных, требующих архивации (экспериментальная функция)</string>
@@ -423,10 +426,10 @@
   <string name="summary_preference_syncing">Когда синхронизировать Линии времени и как это показывать Пользователю</string>
   <string name="summary_preference_theme_size">Выберите размер текста</string>
   <string name="summary_preference_user_in_timeline">Пользователь будет показан как \"{0}\"</string>
-  <string name="summary_preference_username">Ваше имя пользователя в этой Социальной сети</string>
-  <string name="summary_preference_username_webfinger_id">Введите Ваш ID на Вашем %1$s сайте. Он выглядит как email: пользователя \"@\" имя сервера; например: %2$s</string>
-  <string name="summary_preference_verify_credentials">Данный аккаунт успешно аутентифицирован. Щёлкните Назад (&lt;) для продолжения или щёлкните здесь для повторной проверки</string>
-  <string name="summary_preference_verify_credentials_failed">Проверка завершилась неудачно. Щёлкните здесь для аутентификации пользователя и включения данной учётной записи</string>
+  <string name="summary_preference_username">Ваше имя пользователя в Социальной сети %1$s; например: %2$s</string>
+  <string name="summary_preference_username_webfinger_id">Введите Ваш ID в %1$s. Он выглядит как адрес электронной почты, с вашим именем пользователя \"@\" имя сервера. Например: %2$s</string>
+  <string name="summary_preference_verify_credentials">Этот аккаунт проверен и включён. Нажмите кнопку Назад для продолжения работы  или нажмите кнопку ниже для повторной проверки.</string>
+  <string name="summary_preference_verify_credentials_failed">Проверка завершилась неудачно. Нажмите кнопку ниже для аутентификации пользователя и включения данной учётной записи</string>
   <string name="summary_preference_vibration_off">Виброзвонок отключён</string>
   <string name="summary_preference_vibration_on">Виброзвонок при входящем сообщении включён</string>
   <string name="switch_to_default_timeline">Переключиться на Ленту времени по умолчанию</string>
@@ -437,6 +440,7 @@
   <string name="synced_abbreviated">Синх</string>
   <string name="syncing">Синхронизирую&#8230;</string>
   <string name="syncing_timeline_for_somebody">Синхронизирую %1$s для %2$s</string>
+  <string name="system_information">Информация о системе</string>
   <string name="system_is_busy_try_later">Система сейчас занята. Пожалуйста, попробуйте попозже.</string>
   <string name="tap_on_a_timeline_title_behaviour">Поведение при нажатии на заголовок Линии времени</string>
   <string name="theme_color_entries_default">По умолчанию в устройстве</string>

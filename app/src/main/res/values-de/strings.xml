@@ -39,6 +39,8 @@
   <string name="appwidget_directmessage_formats_2">{0} direct</string>
   <string name="appwidget_nothingnew_default">Nichts Neues seit:</string>
   <string name="appwidget_nodata">Noch keine Daten.</string>
+  <string name="acquiring_a_request_token_failed">Token Anfrage fehlgeschlagen</string>
+  <string name="acquiring_an_access_token_failed">Token-Anfrage fehlgeschlagen</string>
   <string name="attach_images_summary_off">\"Büroklammer+\" Button, mit dem Bilder an deine Beiträge angehängt werden, ist ausgeblendet</string>
   <string name="attach_images_summary_on">Verwende \"Büroklammer +\" Button (Menüpunkt \"Anhängen\") um Bilder an die Nachricht anzufügen. Oder teile ein Bild aus einer anderen Anwendung mit AndStatus</string>
   <string name="attach_images_title">Bilder an meine Nachrichten anhängen</string>
@@ -70,6 +72,7 @@
   <string name="category_title_preference_notifications">Benachrichtigungen</string>
   <string name="category_title_preference_origin">Soziales Netzwerk</string>
   <string name="category_title_preference_settings">Einstellungen</string>
+  <string name="client_registration_failed">AndStatus Client-Registrierung fehlgeschlagen</string>
   <string name="collapse_duplicates">Duplikate einklappen</string>
   <string name="color_black">Schwarz</string>
   <string name="color_black_cat">Schwarze Katze</string>
@@ -228,7 +231,7 @@
   <string name="label_restore">Anwendungsdaten aus einem Backup wiederherstellen</string>
   <string name="label_upgrading">Aktualisierung läuft. Bitte warte.</string>
   <string name="label_with_media">mit Anhang</string>
-  <string name="last_synced">Zuletzt synchronisiert</string>
+  <string name="last_synced">Letztes Mal erfolgreich synchronisiert</string>
   <string name="latest_error_label">Aktuelle Fehlermeldung</string>
   <string name="loading">Lade</string>
   <string name="long_press_to_open_context_menu">Lange drücken um das Kontextmenü zu öffnen</string>
@@ -387,8 +390,8 @@
   <string name="subtitle">Untertitel</string>
   <string name="summary_preference_accounts_absent">Noch keine AndStatus Accounts</string>
   <string name="summary_preference_accounts_present">Anzahl der AndStatus Accounts</string>
-  <string name="summary_preference_add_account_oauth">Tippen Sie hier, um eine Webseite des Sozialen Netzes in einem Browser zu öffnen.</string>
-  <string name="summary_preference_add_account_basic">Tippe hier um deine Zugangsdaten zu verifizieren und den Account hinzuzufügen.</string>
+  <string name="summary_preference_add_account_oauth">Tippen Sie auf die Schaltfläche unten, um eine Seite des sozialen Netzwerks in einem Browser öffnen.</string>
+  <string name="summary_preference_add_account_basic">Tippen Sie auf die Schaltfläche unten, um Ihre Anmeldeinformationen zu überprüfen und das Konto hinzuzufügen.</string>
   <string name="summary_preference_appearance">Aussehen und Verhalten von AndStatus verändern</string>
   <string name="summary_preference_enable_android_backup_off">Android Backups werden nicht angefordert</string>
   <string name="summary_preference_enable_android_backup_on">AndStatus benachrichtigt Android bei Datenveränderungen um Backups anzulegen (experimentell)</string>
@@ -428,10 +431,10 @@
   <string name="summary_preference_syncing">Zeitpunkt und Anzeige der Synchronisation der Timeline </string>
   <string name="summary_preference_theme_size">Schriftgröße wählen</string>
   <string name="summary_preference_user_in_timeline">Benutzer wird als \"{0}\" angezeigt</string>
-  <string name="summary_preference_username">Ihr Benutzername in diesem Sozialen Netz</string>
-  <string name="summary_preference_username_webfinger_id">Trage deine ID auf deiner pump.io Seite ein. Diese sieht wie eine Emailadresse aus: dein Username, dann \"@\"  gefolgt von deinem Server; z.B.: andstatus@identi.ca</string>
-  <string name="summary_preference_verify_credentials">Dieser Account ist überprüft und aktiviert. Tippe auf Zurück (&lt;) um fortzufahren or tippe hier um die Zugangsdaten des Users erneut zu prüfen.</string>
-  <string name="summary_preference_verify_credentials_failed">Überprüfung fehlgeschlagen. Hier tippen zur überprüfen der Zugangsdaten und zum Aktivieren dieses Benutzerkontos</string>
+  <string name="summary_preference_username">Ihr Benutzername für das soziale Netzwerk %1$s; z. B.: %2$s</string>
+  <string name="summary_preference_username_webfinger_id">Ihre ID für %1$s. Sie sieht aus wie eine e-Mail-Adresse mit Ihrem Benutzernamen dann \"@\" dann Ihr Server; z. B.: %2$s</string>
+  <string name="summary_preference_verify_credentials">Dieses Konto ist verifiziert und aktiviert. Tippen Sie auf die Schaltfläche \"zurück\", um fortzufahren, oder tippen Sie auf die Schaltfläche unten, um die Anmeldeinformationen des Benutzers noch einmal zu überprüfen.</string>
+  <string name="summary_preference_verify_credentials_failed">Die Überprüfung ist fehlgeschlagen. Tippen Sie auf die Schaltfläche unten, um Anmeldeinformationen überprüfen und diesen Benutzer-Account aktivieren</string>
   <string name="summary_preference_vibration_off">Vibration ist abgeschaltet</string>
   <string name="summary_preference_vibration_on">Vibrieren bei eingehender Nachricht</string>
   <string name="switch_to_default_timeline">Zur Standard-Timeline wechseln</string>
@@ -442,6 +445,7 @@
   <string name="synced_abbreviated">Synchronisation</string>
   <string name="syncing">Synchronisiere&#8230;</string>
   <string name="syncing_timeline_for_somebody">Synchronisiere %1$s für %2$s</string>
+  <string name="system_information">Systeminformationen</string>
   <string name="system_is_busy_try_later">Das System ist beschäftigt. Bitte versuche es später erneut.</string>
   <string name="tap_on_a_timeline_title_behaviour">Verhalten beim Antippen der Timeline</string>
   <string name="theme_color_entries_default">Gerätestandard</string>
