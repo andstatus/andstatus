@@ -251,8 +251,9 @@ public class AccountSettingsActivity extends MyActivity {
     public boolean onPrepareOptionsMenu(Menu menu) {
         MenuItem item = menu.findItem(R.id.remove_account_menu_id);
         if (item != null) {
-            item.setEnabled(state.builder.isPersistent());
-            item.setVisible(state.builder.isPersistent());
+            final boolean canRemove = state != null && state.builder != null && state.builder.isPersistent();
+            item.setEnabled(canRemove);
+            item.setVisible(canRemove);
         }
         return super.onPrepareOptionsMenu(menu);
     }
