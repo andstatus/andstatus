@@ -52,7 +52,6 @@
   <string name="button_backup">Backup</string>
   <string name="button_cancel">Cancel</string>
   <string name="button_change_folder">Change folder</string>
-  <string name="button_select_backup_file">Select backup file</string>
   <string name="button_create_message">Post</string>
   <string name="button_create_message_twitter">Tweet</string>
   <string name="button_delete">Delete</string>
@@ -369,6 +368,7 @@
   <string name="search_timeline_hint">Enter a username/phrase</string>
   <string name="search_direct_messages_label">Search direct messages</string>
   <string name="search_direct_messages_hint">Enter a username or phrase</string>
+  <string name="select_backup_folder">Select backup folder</string>
   <string name="select_displayed_in_selector">Select if and when this timeline is displayed</string>
   <string name="sent">Sent</string>
   <string name="select_social_network">Select social network</string>

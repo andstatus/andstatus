@@ -44,7 +44,6 @@
   <string name="button_backup">Sauvegarder</string>
   <string name="button_cancel">Annuler</string>
   <string name="button_change_folder">Modifier le dossier</string>
-  <string name="button_select_backup_file">Sélectionner le fichier de sauvegarde</string>
   <string name="button_create_message">Poster</string>
   <string name="button_create_message_twitter">Tweeter</string>
   <string name="button_delete">Supprimer </string>

@@ -20,6 +20,7 @@ import android.app.backup.BackupAgent;
 import android.content.Context;
 import android.os.Environment;
 import android.os.ParcelFileDescriptor;
+import android.support.annotation.NonNull;
 
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.util.MyLog;
@@ -95,7 +96,15 @@ class MyBackupManager {
     File getDescriptorFile() {
         return dataFolderToDescriptorFile(dataFolder);
     }
-    
+
+    public static boolean isBackupFolder(File dataFolder) {
+        if (dataFolder != null && dataFolder.exists() && dataFolder.isDirectory() ) {
+            return dataFolderToDescriptorFile(dataFolder).exists();
+        }
+        return false;
+    }
+
+    @NonNull
     static File dataFolderToDescriptorFile(File dataFolder) {
         return new File(dataFolder, DESCRIPTOR_FILE_NAME);
     }
@@ -131,7 +140,7 @@ class MyBackupManager {
     
     void prepareForRestore(File dataFolderOrFile) throws IOException {
         if (dataFolderOrFile == null) {
-            throw new FileNotFoundException("Data folder of file is not selected");
+            throw new FileNotFoundException("Data folder or file is not selected");
         }
         if (!dataFolderOrFile.exists()) {
             throw new FileNotFoundException("Data file doesn't exist:'" + dataFolderOrFile.getAbsolutePath() + "'");
@@ -181,6 +190,7 @@ class MyBackupManager {
         return MyLog.currentDateTimeFormatted() + "-AndStatusBackup";
     }
 
+    @NonNull
     static File getDefaultBackupDirectory(Context context) {
         File directory = Environment.getExternalStorageDirectory();
         if (!Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())) {

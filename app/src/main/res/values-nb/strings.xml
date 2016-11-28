@@ -48,7 +48,6 @@
   <string name="button_backup">Sikkerhetskopier</string>
   <string name="button_cancel">Avbryt</string>
   <string name="button_change_folder">Endre mappe</string>
-  <string name="button_select_backup_file">Velg sikkerhetskopifilen</string>
   <string name="button_create_message">Innlegg</string>
   <string name="button_create_message_twitter">Tweet</string>
   <string name="button_delete">Slett</string>

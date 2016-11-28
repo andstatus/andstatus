@@ -17,6 +17,7 @@
 package org.andstatus.app.backup;
 
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.TextView;
@@ -33,7 +34,7 @@ import org.andstatus.app.util.SimpleFileDialog;
 import java.io.File;
 
 public class RestoreActivity extends MyActivity {
-    File backupFile = null;
+    File selectedFolder = null;
     RestoreTask asyncTask = null;
     private int progressCounter = 0;
 
@@ -50,58 +51,69 @@ public class RestoreActivity extends MyActivity {
                 if (asyncTask == null || !asyncTask.needsBackgroundWork()) {
                     resetProgress();
                     asyncTask = new RestoreTask();
-                    new AsyncTaskLauncher<File>().execute(this, true, asyncTask, backupFile);
+                    new AsyncTaskLauncher<File>().execute(this, true, asyncTask, getSelectedFolder());
                 }
             }
         });
 
-        findViewById(R.id.button_select_backup_file).setOnClickListener(new OnClickListener() {
+        findViewById(R.id.button_select_backup_folder).setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
                 new SimpleFileDialog(RestoreActivity.this,
-                        SimpleFileDialog.TypeOfSelection.FILE_OPEN,
+                        SimpleFileDialog.TypeOfSelection.FOLDER_CHOOSE,
                         new SimpleFileDialog.SimpleFileDialogListener() {
                             @Override
-                            public void onChosenDir(String selectedFile) {
-                                setBackupFile(new File(selectedFile));
+                            public void onChosenDir(String chosenFolder) {
+                                setSelectedFolder(new File(chosenFolder));
                             }
                         })
-                        .chooseFileOrDir(getBackupFolder().getAbsolutePath());
+                        .chooseFileOrDir(getSelectedFolder().getAbsolutePath());
             }
         });
+
+        showBackupFolder();
     }
 
-    private File getBackupFolder() {
-        File backupFolder;
-        if (backupFile != null && backupFile.exists()) {
-            backupFolder = new File(backupFile.getParent());
+    @NonNull
+    private File getSelectedFolder() {
+        File folder;
+        if (selectedFolder != null && selectedFolder.exists()) {
+            folder = selectedFolder;
         } else {
-            backupFolder = MyBackupManager.getDefaultBackupDirectory(this);
+            folder = MyBackupManager.getDefaultBackupDirectory(this);
         }
-        if (!backupFolder.exists() || !backupFolder.isDirectory()) {
-            backupFolder = new File(SimpleFileDialog.getRootFolder());
+        if (!folder.exists() || !folder.isDirectory()) {
+            folder = new File(SimpleFileDialog.getRootFolder());
         }
-        return backupFolder;
+        return folder;
     }
     
-    void setBackupFile(File backupFileIn) {
-        if ( backupFileIn == null ) {
-            MyLog.i(this, "No backup file selected");
+    void setSelectedFolder(File backupFolderIn) {
+        if ( backupFolderIn == null ) {
+            MyLog.d(this, "No backup folder selected");
             return;
-        } else if ( backupFileIn.exists() ) {
-            if (backupFileIn.isDirectory()) {
-                MyLog.i(this, "Is not a file '" + backupFileIn.getAbsolutePath() + "'");
+        } else if ( backupFolderIn.exists() ) {
+            if (!backupFolderIn.isDirectory()) {
+                MyLog.d(this, "Is not a folder '" + backupFolderIn.getAbsolutePath() + "'");
                 return;
             }
         } else {
-            MyLog.i(this, "The file doesn't exist: '" + backupFileIn.getAbsolutePath() + "'");
+            MyLog.i(this, "The folder doesn't exist: '" + backupFolderIn.getAbsolutePath() + "'");
             return;
         }
-        TextView view = (TextView) findViewById(R.id.backup_file);
-        view.setText(backupFileIn.getAbsolutePath());
-        this.backupFile = backupFileIn;
+        this.selectedFolder = backupFolderIn;
+        showBackupFolder();
+        resetProgress();
     }
-    
+
+    private void showBackupFolder() {
+        TextView view = (TextView) findViewById(R.id.backup_folder);
+        if (view != null) {
+            File folder = getSelectedFolder();
+            view.setText(MyBackupManager.isBackupFolder(folder) ? folder.getAbsolutePath() : "");
+        }
+    }
+
     private class RestoreTask extends MyAsyncTask<File, String, Boolean> {
         Boolean success = false;
 

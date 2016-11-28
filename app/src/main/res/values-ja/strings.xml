@@ -53,7 +53,6 @@
   <string name="button_backup">バックアップ</string>
   <string name="button_cancel">キャンセル</string>
   <string name="button_change_folder">フォルダーの変更</string>
-  <string name="button_select_backup_file">バックアップ ファイルを選択</string>
   <string name="button_create_message">投稿</string>
   <string name="button_create_message_twitter">ツイート</string>
   <string name="button_delete">削除</string>

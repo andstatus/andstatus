@@ -51,7 +51,6 @@
   <string name="button_backup">Backup</string>
   <string name="button_cancel">Cancelar</string>
   <string name="button_change_folder">Mudar pasta</string>
-  <string name="button_select_backup_file">Selecione o arquivo de backup</string>
   <string name="button_create_message">Publicar</string>
   <string name="button_create_message_twitter">Tweet</string>
   <string name="button_delete">Apagar</string>

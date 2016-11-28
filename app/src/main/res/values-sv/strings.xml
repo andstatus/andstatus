@@ -43,7 +43,6 @@
   <string name="button_backup">Säkerhetskopiera</string>
   <string name="button_cancel">Avbryt</string>
   <string name="button_change_folder">Ändra mapp</string>
-  <string name="button_select_backup_file">Välj säkerhetskopia</string>
   <string name="button_create_message">Posta</string>
   <string name="button_create_message_twitter">Tweet</string>
   <string name="button_delete">Ta bort</string>

@@ -53,7 +53,6 @@
   <string name="button_backup">Бэкап</string>
   <string name="button_cancel">Отмена</string>
   <string name="button_change_folder">Изменить папку</string>
-  <string name="button_select_backup_file">Выбор файла бэкапа</string>
   <string name="button_create_message">Пост</string>
   <string name="button_create_message_twitter">Твит</string>
   <string name="button_delete">Удалить</string>
