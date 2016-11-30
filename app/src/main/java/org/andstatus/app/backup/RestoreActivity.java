@@ -114,7 +114,7 @@ public class RestoreActivity extends MyActivity {
         }
     }
 
-    private class RestoreTask extends MyAsyncTask<File, String, Boolean> {
+    private class RestoreTask extends MyAsyncTask<File, CharSequence, Boolean> {
         Boolean success = false;
 
         public RestoreTask() {
@@ -126,7 +126,7 @@ public class RestoreActivity extends MyActivity {
             MyBackupManager.restoreInteractively(params[0], new ProgressLogger.ProgressCallback() {
                 
                 @Override
-                public void onProgressMessage(String message) {
+                public void onProgressMessage(CharSequence message) {
                    publishProgress(message);
                 }
                 
@@ -140,7 +140,7 @@ public class RestoreActivity extends MyActivity {
         }
 
         @Override
-        protected void onProgressUpdate(String... values) {
+        protected void onProgressUpdate(CharSequence... values) {
             addProgressMessage(values[0]);
         }
     }
@@ -151,7 +151,7 @@ public class RestoreActivity extends MyActivity {
         progressLog.setText("");
     }
     
-    private void addProgressMessage(String message) {
+    private void addProgressMessage(CharSequence message) {
         progressCounter++;
         TextView progressLog = (TextView) findViewById(R.id.progress_log);
         String log = Integer.toString(progressCounter) + ". " + message + "\n" + progressLog.getText();

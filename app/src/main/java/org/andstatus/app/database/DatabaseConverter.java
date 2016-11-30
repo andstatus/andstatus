@@ -17,16 +17,14 @@
 package org.andstatus.app.database;
 
 import android.app.Activity;
-import android.app.ProgressDialog;
 import android.database.sqlite.SQLiteDatabase;
 
-import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccountConverter;
+import org.andstatus.app.backup.ProgressLogger;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyStorage;
 import org.andstatus.app.data.ApplicationUpgradeException;
 import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.util.DialogFactory;
 import org.andstatus.app.util.FileUtils;
 import org.andstatus.app.util.MyLog;
 
@@ -35,81 +33,45 @@ import java.io.File;
 class DatabaseConverter {
     long startTime = java.lang.System.currentTimeMillis();
     private Activity activity;
-    private ProgressDialog progress = null;
+    ProgressLogger.ProgressCallback progressCallback = ProgressLogger.getEmptyCallback();
 
     protected boolean execute(DatabaseConverterController.UpgradeParams params) {
         boolean success = false;
         activity = params.upgradeRequestor;
+        if (ProgressLogger.ProgressCallback.class.isAssignableFrom(params.upgradeRequestor.getClass())) {
+            progressCallback = (ProgressLogger.ProgressCallback) params.upgradeRequestor;
+        }
         String msgLog = "";
         long endTime = 0;
         try {
-            upgradeStarted();
             convertAll(params.db, params.oldVersion, params.newVersion);
             success = true;
             endTime = java.lang.System.currentTimeMillis();
         } catch (ApplicationUpgradeException e) {
             endTime = java.lang.System.currentTimeMillis();
-            closeProgressDialog();
             msgLog = e.getMessage();
-            showProgressDialog(msgLog);
+            progressCallback.onProgressMessage(msgLog);
             MyLog.ignored(this, e);
             DbUtils.waitMs("execute, on ApplicationUpgradeException", 30000);
         } finally {
             DbUtils.waitMs("execute finally", 2000);
-            upgradeEnded();
+            if (success) {
+                msgLog = "Upgrade successfully completed in "
+                        + java.util.concurrent.TimeUnit.MILLISECONDS.toSeconds(endTime - startTime)
+                        + " seconds";
+                MyLog.i(this, msgLog);
+            } else {
+                msgLog = "Upgrade failed in "
+                        + java.util.concurrent.TimeUnit.MILLISECONDS.toSeconds(endTime - startTime)
+                        + " seconds";
+                MyLog.e(this, msgLog);
+            }
+            DbUtils.waitMs("execute finally 2", 500);
             if (MyContextHolder.get().isTestRun()) {
                 activity.finish();
             }
-            DbUtils.waitMs("execute finally 2", 500);
-        }
-        if (success) {
-            MyLog.w(this, "Upgrade successfully completed in "
-                    + java.util.concurrent.TimeUnit.MILLISECONDS.toSeconds(endTime - startTime)
-                    + " seconds");
-        } else {
-            String msgLog2 = "Upgrade failed in "
-                    + java.util.concurrent.TimeUnit.MILLISECONDS.toSeconds(endTime - startTime)
-                    + " seconds";
-            MyLog.e(this, msgLog2);
         }
         return success;
-    }
-
-    private void upgradeStarted() {
-        showProgressDialog(activity.getText(R.string.label_upgrading));
-    }
-
-    private void showProgressDialog(final CharSequence message) {
-        try {
-            activity.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    progress = new ProgressDialog(activity, ProgressDialog.STYLE_SPINNER);
-                    progress.setTitle(R.string.app_name);
-                    progress.setMessage(message);
-                    progress.show();
-                }
-            });
-        } catch (Exception e) {
-            MyLog.d(this, "upgradeStarted", e);
-        }
-    }
-
-    private void upgradeEnded() {
-        closeProgressDialog();
-    }
-
-    private void closeProgressDialog() {
-        try {
-            activity.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    DialogFactory.dismissSafely(progress);
-                }
-              });
-        } catch (Exception e) {
-            MyLog.d(this, "upgradeEnded", e);
-        }
     }
 
     private void convertAll(SQLiteDatabase db, int oldVersion, int newVersion) throws ApplicationUpgradeException {
@@ -416,10 +378,12 @@ class DatabaseConverter {
     }
 
     static class Convert25 extends OneStep {
+        Convert25() {
+            versionTo = 26;
+        }
+
         @Override
         protected void execute2() {
-            versionTo = 26;
-
             sql = "DROP INDEX idx_msg_in_reply_to_msg_id";
             DbUtils.execSQL(db, sql);
 

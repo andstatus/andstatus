@@ -21,9 +21,10 @@ import android.database.sqlite.SQLiteDatabase;
 
 import net.jcip.annotations.GuardedBy;
 
-import org.andstatus.app.HelpActivity;
+import org.andstatus.app.R;
+import org.andstatus.app.backup.ProgressLogger;
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.data.MyDataChecker;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.util.MyLog;
@@ -65,7 +66,7 @@ public class DatabaseConverterController {
             skip = true;
         }
         if (!skip && acquireUpgradeLock(requestorName)) {
-            doUpgrade(upgradeRequestorIn);
+            new AsyncTaskLauncher<Activity>().execute(TAG, true, new AsyncUpgrade(), upgradeRequestorIn);
         }
     }
 
@@ -95,11 +96,9 @@ public class DatabaseConverterController {
         return !skip;
     }
 
-    private static void doUpgrade(Activity upgradeRequestor) {
-        new AsyncTaskLauncher<Activity>().execute(TAG, true, new AsyncUpgrade(), upgradeRequestor);
-    }
-    
     private static class AsyncUpgrade extends MyAsyncTask<Activity, Void, Void> {
+        Activity locUpgradeRequestor = null;
+        ProgressLogger.ProgressCallback progressCallback = ProgressLogger.getEmptyCallback();
 
         public AsyncUpgrade() {
             super(PoolEnum.LONG_UI);
@@ -108,17 +107,30 @@ public class DatabaseConverterController {
         @Override
         protected Void doInBackground2(Activity... activity) {
             boolean success = false;
+            locUpgradeRequestor = activity[0];
+            if (ProgressLogger.ProgressCallback.class.isAssignableFrom(locUpgradeRequestor.getClass())) {
+                progressCallback = (ProgressLogger.ProgressCallback) locUpgradeRequestor;
+            }
+            try {
+                progressCallback.onProgressMessage(locUpgradeRequestor.getText(R.string.label_upgrading));
+                success = doUpgrade();
+            } finally {
+                progressCallback.onComplete(success);
+            }
+            return null;
+        }
+
+        private boolean doUpgrade() {
+            boolean success = false;
             boolean locUpgradeStarted = false;
-            Activity locUpgradeRequestor = null;
             try {
                 synchronized(UPGRADE_LOCK) {
-                    upgradeRequestor = activity[0];
+                    upgradeRequestor = locUpgradeRequestor;
                 }
-                locUpgradeRequestor = upgradeRequestor;
-                MyLog.v(TAG, "Upgrade triggered by " + MyLog.objTagToString(activity[0]));
+                MyLog.v(TAG, "Upgrade triggered by " + MyLog.objTagToString(locUpgradeRequestor));
                 MyContextHolder.release();
                 // Upgrade will occur inside this call synchronously
-                MyContextHolder.initializeDuringUpgrade(activity[0], activity[0]);
+                MyContextHolder.initializeDuringUpgrade(locUpgradeRequestor, locUpgradeRequestor);
                 synchronized(UPGRADE_LOCK) {
                     shouldTriggerDatabaseUpgrade = false;
                 }
@@ -137,18 +149,22 @@ public class DatabaseConverterController {
                 MyLog.v(TAG, "Upgrade didn't start");
             }
             if (success) {
-                MyLog.v(TAG, "success");
+                MyLog.v(TAG, "success " + MyContextHolder.get().state());
+                onUpgradeSucceeded();
+            }
+            return success;
+        }
+
+        private void onUpgradeSucceeded() {
+            if (!MyContextHolder.get().isReady()) {
                 MyContextHolder.release();
                 MyContextHolder.initialize(locUpgradeRequestor, locUpgradeRequestor);
-                MyLog.v(TAG, "After context initialization: " + MyContextHolder.get());
-                if (MyContextHolder.get().isReady()) {
-                    MyContextHolder.get().persistentTimelines().addDefaultTimelinesIfNoneFound();
-                }
             }
-            HelpActivity.startFromActivity(locUpgradeRequestor);
-            return null;
+            if (MyContextHolder.get().isReady()) {
+                MyContextHolder.get().persistentTimelines().addDefaultTimelinesIfNoneFound();
+                new MyDataChecker(MyContextHolder.get(), new ProgressLogger(progressCallback)).fixData();
+            }
         }
-        
     }
     
     public static void stillUpgrading() {

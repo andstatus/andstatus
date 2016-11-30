@@ -89,7 +89,7 @@ public class BackupActivity extends MyActivity {
         this.backupFolder = backupFolder;
     }
     
-    private class BackupTask extends MyAsyncTask<File, String, Boolean> {
+    private class BackupTask extends MyAsyncTask<File, CharSequence, Boolean> {
         Boolean success = false;
 
         public BackupTask() {
@@ -101,7 +101,7 @@ public class BackupActivity extends MyActivity {
             MyBackupManager.backupInteractively(params[0], new ProgressLogger.ProgressCallback() {
                 
                 @Override
-                public void onProgressMessage(String message) {
+                public void onProgressMessage(CharSequence message) {
                    publishProgress(message);
                 }
                 
@@ -115,7 +115,7 @@ public class BackupActivity extends MyActivity {
         }
 
         @Override
-        protected void onProgressUpdate(String... values) {
+        protected void onProgressUpdate(CharSequence... values) {
             addProgressMessage(values[0]);
         }
     }
@@ -126,7 +126,7 @@ public class BackupActivity extends MyActivity {
         progressLog.setText("");
     }
     
-    private void addProgressMessage(String message) {
+    private void addProgressMessage(CharSequence message) {
         progressCounter++;
         TextView progressLog = (TextView) findViewById(R.id.progress_log);
         String log = Integer.toString(progressCounter) + ". " + message + "\n" + progressLog.getText();

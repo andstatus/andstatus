@@ -267,7 +267,9 @@ public class AsyncTaskLauncher<Params> {
     }
 
     public static void forget() {
-        MyLog.v(TAG, "forget");
+        if (MyLog.isVerboseEnabled()) {
+            MyLog.v(TAG, MyLog.getStackTrace(new IllegalArgumentException("forget")));
+        }
         shutdownExecutors(Arrays.asList(MyAsyncTask.PoolEnum.values()));
     }
 }

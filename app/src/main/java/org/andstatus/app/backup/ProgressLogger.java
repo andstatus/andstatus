@@ -19,9 +19,24 @@ package org.andstatus.app.backup;
 import org.andstatus.app.util.MyLog;
 
 public class ProgressLogger {
+
     public interface ProgressCallback {
-        void onProgressMessage(String message);
+        void onProgressMessage(CharSequence message);
         void onComplete(boolean success);
+    }
+
+    public static ProgressCallback getEmptyCallback() {
+        return new ProgressCallback() {
+            @Override
+            public void onProgressMessage(CharSequence message) {
+                // Empty
+            }
+
+            @Override
+            public void onComplete(boolean success) {
+                // Empty
+            }
+        };
     }
 
     private final ProgressCallback progressCallback;
@@ -52,6 +67,6 @@ public class ProgressLogger {
     }
 
     public static ProgressLogger getEmpty() {
-        return new ProgressLogger(null);
+        return new ProgressLogger(getEmptyCallback());
     }
 }

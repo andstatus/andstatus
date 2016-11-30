@@ -16,6 +16,7 @@
 
 package org.andstatus.app.util;
 
+import android.app.Activity;
 import android.support.annotation.NonNull;
 import android.view.View;
 import android.view.ViewGroup;
@@ -50,5 +51,40 @@ public class ViewUtils {
             width += layoutParams.leftMargin + layoutParams.rightMargin;
         }
         return width;
+    }
+
+    /**
+     * @return true if succeeded
+     */
+    public static boolean showView(Activity activity, int viewId, boolean show) {
+        return activity != null &&
+                showView(activity.findViewById(viewId), show);
+    }
+
+    /**
+     * @return true if succeeded
+     */
+    public static boolean showView(View parentView, int viewId, boolean show) {
+        return parentView != null &&
+                showView(parentView.findViewById(viewId), show);
+    }
+
+    /**
+     * @return true if succeeded
+     */
+    public static boolean showView(View view, boolean show) {
+        boolean success = view != null;
+        if (success) {
+            if (show) {
+                if (view.getVisibility() != View.VISIBLE) {
+                    view.setVisibility(View.VISIBLE);
+                }
+            } else {
+                if (view.getVisibility() != View.GONE) {
+                    view.setVisibility(View.GONE);
+                }
+            }
+        }
+        return success;
     }
 }

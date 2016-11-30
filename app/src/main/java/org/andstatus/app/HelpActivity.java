@@ -17,6 +17,7 @@
 package org.andstatus.app;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
@@ -35,6 +36,7 @@ import android.widget.TextView;
 import android.widget.ViewFlipper;
 
 import org.andstatus.app.account.AccountSettingsActivity;
+import org.andstatus.app.backup.ProgressLogger;
 import org.andstatus.app.backup.RestoreActivity;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
@@ -47,9 +49,10 @@ import org.andstatus.app.util.MyUrlSpan;
 import org.andstatus.app.util.Permissions;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.SwipeInterface;
+import org.andstatus.app.util.ViewUtils;
 import org.andstatus.app.util.Xslt;
 
-public class HelpActivity extends MyActivity implements SwipeInterface {
+public class HelpActivity extends MyActivity implements SwipeInterface, ProgressLogger.ProgressCallback {
 
     // Constants
     public static final String TAG = HelpActivity.class.getSimpleName();
@@ -76,11 +79,10 @@ public class HelpActivity extends MyActivity implements SwipeInterface {
      */
     private boolean mIsFirstActivity = false;
     private boolean wasPaused = false;
+    private volatile ProgressDialog progress = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        MyContextHolder.initialize(this, this);
-
         mLayoutId = R.layout.help;
         super.onCreate(savedInstanceState);
 
@@ -209,15 +211,17 @@ public class HelpActivity extends MyActivity implements SwipeInterface {
         view.setOnTouchListener(swipe);
         view = findViewById(R.id.user_guide);
         view.setOnTouchListener(swipe);
-        
-        final Button learnMore = (Button) findViewById(R.id.button_help_learn_more);
-        learnMore.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mFlipper.showNext();
-            }
-        });
-        
+
+        if (ViewUtils.showView(this, R.id.button_help_learn_more, MyContextHolder.get().isReady())) {
+            final Button learnMore = (Button) findViewById(R.id.button_help_learn_more);
+            learnMore.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    mFlipper.showNext();
+                }
+            });
+        }
+
         if (getIntent().hasExtra(EXTRA_HELP_PAGE_INDEX)) {
             int pageToStart = getIntent().getIntExtra(EXTRA_HELP_PAGE_INDEX, 0);
             if (pageToStart > 0) {
@@ -257,9 +261,9 @@ public class HelpActivity extends MyActivity implements SwipeInterface {
     protected void onResume() {
         super.onResume();
         MyContextHolder.upgradeIfNeeded(this);
-        // We assume that user pressed back after adding first account
-        if ( wasPaused && mIsFirstActivity 
+        if ( wasPaused && mIsFirstActivity
                 &&  MyContextHolder.get().persistentAccounts().getCurrentAccount().isValid() ) {
+            // We assume that user pressed back after adding first account
             Intent intent = new Intent(this, TimelineActivity.class);
             startActivity(intent);
             finish();
@@ -364,4 +368,51 @@ public class HelpActivity extends MyActivity implements SwipeInterface {
         this.recreate();
     }
 
+    @Override
+    public void finish() {
+        onComplete(false);
+        super.finish();
+    }
+
+    @Override
+    public void onProgressMessage(final CharSequence message) {
+        try {
+            this.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (progress == null) {
+                        progress = new ProgressDialog(HelpActivity.this, ProgressDialog.STYLE_SPINNER);
+                        progress.setTitle(R.string.app_name);
+                        progress.setMessage(message);
+                        progress.show();
+                    } else {
+                        progress.setMessage(message);
+                    }
+                }
+            });
+        } catch (Exception e) {
+            MyLog.d(this, "onProgressMessage '" + message + "'", e);
+        }
+
+    }
+
+    @Override
+    public void onComplete(final boolean success) {
+        try {
+            this.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (progress != null) {
+                        DialogFactory.dismissSafely(progress);
+                        progress = null;
+                    }
+                    if (success) {
+                        HelpActivity.startFromActivity(HelpActivity.this);
+                    }
+                }
+            });
+        } catch (Exception e) {
+            MyLog.d(this, "onComplete " + success, e);
+        }
+    }
 }

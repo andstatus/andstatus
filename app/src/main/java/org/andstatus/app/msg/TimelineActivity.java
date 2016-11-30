@@ -66,10 +66,10 @@ import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.BundleUtils;
 import org.andstatus.app.util.MyCheckBox;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.MyUrlSpan;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
+import org.andstatus.app.util.ViewUtils;
 import org.andstatus.app.widget.MyBaseAdapter;
 
 import java.util.Collections;
@@ -437,7 +437,7 @@ public class TimelineActivity extends LoadableListActivity implements
     }
 
     private void prepareCombinedTimelineToggle(View drawerView) {
-        if (MyUrlSpan.showView(drawerView, R.id.combinedTimelineToggle,
+        if (ViewUtils.showView(drawerView, R.id.combinedTimelineToggle,
                 // Show the "Combined" toggle even for one account to see messages,
                 // which are not on the timeline.
                 // E.g. messages by users, downloaded on demand.
@@ -710,7 +710,7 @@ public class TimelineActivity extends LoadableListActivity implements
         mMessageEditor.updateScreen();
         updateTitle(mRateLimitText);
         mDrawerToggle.setDrawerIndicatorEnabled(!getParamsLoaded().isAtHome());
-        MyUrlSpan.showView(
+        ViewUtils.showView(
                 findViewById(R.id.switchToDefaultTimelineButton), !getParamsLoaded().isAtHome());
         MyCheckBox.setEnabled(this, R.id.collapseDuplicatesToggle,
                 getListData().isCollapseDuplicates());
