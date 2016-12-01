@@ -105,6 +105,7 @@ public class MyDataCheckerConversations {
                 message.inReplyToId = c.getLong(1);
                 message.conversationId = c.getLong(2);
                 message.conversationOid = c.getString(3);
+                messages.put(message.id, message);
             }
         } finally {
             DbUtils.closeSilently(c);
