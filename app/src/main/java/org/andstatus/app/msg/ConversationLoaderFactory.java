@@ -34,7 +34,12 @@ public class ConversationLoaderFactory<T extends ConversationItem> {
             recursiveLoader = MyQuery.msgIdToLongColumnValue(MsgTable.RECIPIENT_ID, messageId) == 0;
         }
         if (recursiveLoader) {
-            return new RecursiveConversationLoader<T>(tClass, myContext, ma, messageId);
+            if (MyQuery.msgIdToLongColumnValue(MsgTable.CONVERSATION_ID, messageId) == 0) {
+                // TODO: It looks like we don't need this loader anymore?!
+                return new RecursiveConversationLoader<>(tClass, myContext, ma, messageId);
+            } else {
+                return new KnownConversationLoader<>(tClass, myContext, ma, messageId);
+            }
         }  else {
             return new DirectMessagesConversationLoader<T>(tClass, myContext, ma, messageId);
         }

@@ -20,12 +20,14 @@ import android.content.Intent;
 import android.test.InstrumentationTestCase;
 
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.backup.ProgressLogger;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.context.Travis;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.HtmlContentInserter;
 import org.andstatus.app.data.MessageInserter;
+import org.andstatus.app.data.MyDataCheckerConversations;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.origin.Origin;
@@ -73,5 +75,7 @@ public class MessageShareTest extends InstrumentationTestCase {
                 intent.getStringExtra(Intent.EXTRA_TEXT),
                 intent.getStringExtra(Intent.EXTRA_TEXT).contains(body));
         assertFalse(intent.getExtras().containsKey(Intent.EXTRA_HTML_TEXT));
+        assertEquals("Conversations need fixes", 0, new MyDataCheckerConversations(MyContextHolder.get(),
+                ProgressLogger.getEmpty()).countChanges());
     }
 }

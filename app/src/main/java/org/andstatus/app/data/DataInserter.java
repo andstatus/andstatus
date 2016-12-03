@@ -157,11 +157,11 @@ public class DataInserter {
                 values.put(MsgTable.AUTHOR_ID, authorId);
             }
 
-
             if (msgId == 0) {
                 // Lookup the System's (AndStatus) id from the Originated system's id
                 msgId = MyQuery.oidToId(OidEnum.MSG_OID, execContext.getMyAccount().getOriginId(), rowOid);
             }
+            message.msgId = msgId;
 
             /**
              * Is the row first time retrieved from a Social Network?
@@ -255,6 +255,8 @@ public class DataInserter {
             }
 
             boolean mentioned = isMentionedAndPutInReplyToMessage(message, lum, values);
+
+            putConversationId(message, values);
             
             if (MyLog.isVerboseEnabled()) {
                 MyLog.v(this, ((msgId==0) ? "insertMsg" : "updateMsg " + msgId)
@@ -275,29 +277,19 @@ public class DataInserter {
                 Uri msgUri = MatchedUri.getMsgUri(execContext.getMyAccount().getUserId(), msgId);
                 execContext.getContext().getContentResolver().update(msgUri, values, null, null);
             }
+            if (messageIn.msgId == 0) {
+                messageIn.msgId = msgId;
+            }
+            message.msgId = msgId;
+            if (message.conversationId == 0) {
+                Uri msgUri = MatchedUri.getMsgUri(execContext.getMyAccount().getUserId(), msgId);
+                ContentValues values2 = new ContentValues();
+                values2.put(MsgTable.CONVERSATION_ID, msgId);
+                execContext.getContext().getContentResolver().update(msgUri, values2, null, null);
+            }
 
             if (isFirstTimeLoaded || isDraftUpdated) {
-                List<Long> downloadIds = new ArrayList<>();
-                for (MbAttachment attachment : message.attachments) {
-                    DownloadData dd = DownloadData.getThisForMessage(msgId, attachment.contentType, attachment.getUri());
-                    dd.saveToDatabase();
-                    downloadIds.add(dd.getDownloadId());
-                    switch (dd.getStatus()) {
-                        case LOADED:
-                        case HARD_ERROR:
-                            break;
-                        default:
-                            if (UriUtils.isDownloadable(dd.getUri())) {
-                                if (attachment.contentType == MyContentType.IMAGE && MyPreferences.getDownloadAndDisplayAttachedImages()) {
-                                    dd.requestDownload();
-                                }
-                            } else {
-                                AttachmentDownloader.load(dd.getDownloadId(), execContext.getCommandData());
-                            }
-                            break;
-                    }
-                }
-                DownloadData.deleteOtherOfThisMsg(msgId, downloadIds);
+                saveAttachments(message);
             }
 
             if (isNewerThanInDatabase && !keywordsFilter.matched(message.getBody())) {
@@ -388,6 +380,54 @@ public class DataInserter {
             }
         }
         return userId;
+    }
+
+    private void putConversationId(MbMessage message, ContentValues values) {
+        if (message.conversationId == 0 && message.msgId != 0) {
+            message.conversationId = MyQuery.msgIdToLongColumnValue(MsgTable.CONVERSATION_ID, message.msgId);
+        }
+        if (!TextUtils.isEmpty(message.conversationOid)) {
+            values.put(MsgTable.CONVERSATION_OID, message.url);
+            if (message.conversationId == 0) {
+                message.conversationId = MyQuery.conditionToLongColumnValue(MsgTable.TABLE_NAME, MsgTable.CONVERSATION_ID,
+                        MsgTable.CONVERSATION_OID + "='" + message.conversationOid + "'");
+            }
+        }
+        if (message.conversationId == 0 && message.inReplyToMessage != null) {
+            if (message.inReplyToMessage.msgId != 0) {
+                message.conversationId = MyQuery.msgIdToLongColumnValue(MsgTable.CONVERSATION_ID, message.inReplyToMessage.msgId);
+            }
+        }
+        if (message.conversationId == 0) {
+            message.conversationId = message.msgId;
+        }
+        if (message.conversationId != 0) {
+            values.put(MsgTable.CONVERSATION_ID, message.conversationId);
+        }
+    }
+
+    private void saveAttachments(MbMessage message) {
+        List<Long> downloadIds = new ArrayList<>();
+        for (MbAttachment attachment : message.attachments) {
+            DownloadData dd = DownloadData.getThisForMessage(message.msgId, attachment.contentType, attachment.getUri());
+            dd.saveToDatabase();
+            downloadIds.add(dd.getDownloadId());
+            switch (dd.getStatus()) {
+                case LOADED:
+                case HARD_ERROR:
+                    break;
+                default:
+                    if (UriUtils.isDownloadable(dd.getUri())) {
+                        if (attachment.contentType == MyContentType.IMAGE && MyPreferences.getDownloadAndDisplayAttachedImages()) {
+                            dd.requestDownload();
+                        }
+                    } else {
+                        AttachmentDownloader.load(dd.getDownloadId(), execContext.getCommandData());
+                    }
+                    break;
+            }
+        }
+        DownloadData.deleteOtherOfThisMsg(message.msgId, downloadIds);
     }
 
     public long insertOrUpdateUser(MbUser user) {

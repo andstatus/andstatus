@@ -46,6 +46,7 @@ public class MbMessage {
     public MbMessage rebloggedMessage = null;
     public MbMessage inReplyToMessage = null;
     public final List<MbMessage> replies = new ArrayList<>();
+    public String conversationOid="";
     public String via = "";
     public String url="";
     private boolean isPublic = false;
@@ -71,7 +72,8 @@ public class MbMessage {
     // In our system
     public long originId = 0L;
     public long msgId = 0L;
-    
+    public long conversationId = 0L;
+
     public static MbMessage fromOriginAndOid(long originId, String oid, DownloadStatus status) {
         MbMessage message = new MbMessage();
         message.originId = originId;

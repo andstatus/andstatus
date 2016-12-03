@@ -18,6 +18,7 @@ package org.andstatus.app.service;
 import android.graphics.drawable.Drawable;
 import android.test.InstrumentationTestCase;
 
+import org.andstatus.app.backup.ProgressLogger;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.context.Travis;
@@ -26,6 +27,7 @@ import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MessageInserter;
 import org.andstatus.app.data.MyContentType;
+import org.andstatus.app.data.MyDataCheckerConversations;
 import org.andstatus.app.net.social.ConnectionTwitterGnuSocialMock;
 import org.andstatus.app.net.social.MbAttachment;
 import org.andstatus.app.net.social.MbMessage;
@@ -78,6 +80,9 @@ public class LargeImageTest extends InstrumentationTestCase {
         DownloadData data = DownloadData.fromId(dd.getDownloadId());
         assertFalse("Loaded " + data.getUri(), commandData.getResult().hasError());
         assertTrue("File exists " + data.getUri(), data.getFile().exists());
+
+        assertEquals("Conversations need fixes", 0, new MyDataCheckerConversations(MyContextHolder.get(),
+                ProgressLogger.getEmpty()).countChanges());
         return data;
     }
 
