@@ -322,6 +322,7 @@ public final class MyAccount implements Comparable<MyAccount> {
                         : (result.changed ? " Didn't save?! " : " Didn't change ")) + this.toString());
                 if (result.savedToAccountManager && result.changed) {
                     myContext.persistentTimelines().addDefaultMyAccountTimelinesIfNoneFound(myAccount);
+                    myContext.persistentTimelines().saveChanged();
                 }
             } catch (Exception e) {
                 MyLog.e(this, "Saving " + myAccount, e);
