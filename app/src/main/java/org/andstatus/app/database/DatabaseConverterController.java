@@ -27,6 +27,7 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.MyDataChecker;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
+import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
 
 public class DatabaseConverterController {
@@ -128,6 +129,7 @@ public class DatabaseConverterController {
                     upgradeRequestor = locUpgradeRequestor;
                 }
                 MyLog.v(TAG, "Upgrade triggered by " + MyLog.objTagToString(locUpgradeRequestor));
+                MyServiceManager.setServiceUnavailable();
                 MyContextHolder.release();
                 // Upgrade will occur inside this call synchronously
                 MyContextHolder.initializeDuringUpgrade(locUpgradeRequestor, locUpgradeRequestor);
@@ -156,11 +158,13 @@ public class DatabaseConverterController {
         }
 
         private void onUpgradeSucceeded() {
+            MyServiceManager.setServiceUnavailable();
             if (!MyContextHolder.get().isReady()) {
                 MyContextHolder.release();
                 MyContextHolder.initialize(locUpgradeRequestor, locUpgradeRequestor);
             }
             if (MyContextHolder.get().isReady()) {
+                MyServiceManager.stopService();
                 MyContextHolder.get().persistentTimelines().addDefaultTimelinesIfNoneFound();
                 new MyDataChecker(MyContextHolder.get(), new ProgressLogger(progressCallback)).fixData();
             }

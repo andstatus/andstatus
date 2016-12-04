@@ -17,8 +17,10 @@
 package org.andstatus.app.backup;
 
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.RelativeTime;
 
 public class ProgressLogger {
+    private volatile long lastLoggedAt = 0L;
 
     public interface ProgressCallback {
         void onProgressMessage(CharSequence message);
@@ -59,7 +61,18 @@ public class ProgressLogger {
         }
     }
 
+    public void logProgressIfMoreSecondsAgoThan(String message, long minSecondsAgo) {
+        if (loggedMoreSecondsAgoThan(minSecondsAgo)) {
+            logProgress(message);
+        }
+    }
+
+    public boolean loggedMoreSecondsAgoThan(long secondsAgo) {
+        return RelativeTime.moreSecondsAgoThan(lastLoggedAt, secondsAgo);
+    }
+
     public void logProgress(String message) {
+        lastLoggedAt = System.currentTimeMillis();
         MyLog.d(this, "Progress: " + message);
         if (progressCallback != null) {
             progressCallback.onProgressMessage(message);
