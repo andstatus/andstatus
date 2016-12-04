@@ -18,6 +18,7 @@ package org.andstatus.app.msg;
 
 import android.database.Cursor;
 import android.net.Uri;
+import android.support.annotation.NonNull;
 
 import org.andstatus.app.LoadableListActivity;
 import org.andstatus.app.LoadableListActivity.ProgressPublisher;
@@ -39,6 +40,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public abstract class ConversationLoader<T extends ConversationItem> extends SyncLoader<T> {
     private static final int MAX_INDENT_LEVEL = 19;
@@ -50,11 +53,12 @@ public abstract class ConversationLoader<T extends ConversationItem> extends Syn
     private final ReplyLevelComparator<T> replyLevelComparator = new ReplyLevelComparator<>();
     private final TFactory<T> tFactory;
 
-    final List<T> mMsgs = new ArrayList<>();
+    final Map<Long, T> cachedMessages = new ConcurrentHashMap<>();
+    final List<T> msgList = new ArrayList<>();
     LoadableListActivity.ProgressPublisher mProgress;
 
     public List<T> getList() {
-        return mMsgs;
+        return msgList;
     }
 
     final List<Long> idsOfTheMessagesToFind = new ArrayList<>();
@@ -70,10 +74,11 @@ public abstract class ConversationLoader<T extends ConversationItem> extends Syn
     @Override
     public void load(ProgressPublisher publisher) {
         mProgress = publisher;
+        cachedMessages.clear();
         idsOfTheMessagesToFind.clear();
-        mMsgs.clear();
-        load2(newOMsg(selectedMessageId, 0));
-        Collections.sort(mMsgs, replyLevelComparator);
+        msgList.clear();
+        load2(newOMsg(selectedMessageId));
+        Collections.sort(msgList, replyLevelComparator);
         enumerateMessages();
     }
 
@@ -93,15 +98,27 @@ public abstract class ConversationLoader<T extends ConversationItem> extends Syn
         return true;
     }
 
-    protected T newOMsg(long msgId, int replyLevel) {
-        T oMsg = tFactory.newT();
-        oMsg.setMyContext(myContext);
-        oMsg.setMsgId(msgId);
+    @NonNull
+    protected T getOMsg(long msgId, int replyLevel) {
+        T oMsg = cachedMessages.get(msgId);
+        if (oMsg == null) {
+            oMsg = newOMsg(msgId);
+        }
         oMsg.replyLevel = replyLevel;
         return oMsg;
     }
-    
-    protected void loadMessageFromDatabase(ConversationItem oMsg) {
+
+    protected T newOMsg(long msgId) {
+        T oMsg = tFactory.newT();
+        oMsg.setMyContext(myContext);
+        oMsg.setMsgId(msgId);
+        return oMsg;
+    }
+
+    protected void loadMessageFromDatabase(T oMsg) {
+        if (oMsg.isLoaded() || oMsg.getMsgId() == 0) {
+            return;
+        }
         Uri uri = MatchedUri.getTimelineItemUri(
                 Timeline.getTimeline(TimelineType.EVERYTHING, ma, 0, null), oMsg.getMsgId());
         Cursor cursor = null;
@@ -117,12 +134,12 @@ public abstract class ConversationLoader<T extends ConversationItem> extends Syn
 
     protected boolean addMessageToList(T oMsg) {
         boolean added = false;
-        if (mMsgs.contains(oMsg)) {
+        if (msgList.contains(oMsg)) {
             MyLog.v(this, "Message id=" + oMsg.getMsgId() + " is in the list already");
         } else {
-            mMsgs.add(oMsg);
+            msgList.add(oMsg);
             if (mProgress != null) {
-                mProgress.publish(Integer.toString(mMsgs.size()));
+                mProgress.publish(Integer.toString(msgList.size()));
             }
             added = true;
         }
@@ -163,13 +180,13 @@ public abstract class ConversationLoader<T extends ConversationItem> extends Syn
     
     private void enumerateMessages() {
         idsOfTheMessagesToFind.clear();
-        for (ConversationItem oMsg : mMsgs) {
+        for (ConversationItem oMsg : msgList) {
             oMsg.mListOrder = 0;
             oMsg.historyOrder = 0;
         }
         OrderCounters order = new OrderCounters();
-        for (int ind = mMsgs.size()-1; ind >= 0; ind--) {
-            ConversationItem oMsg = mMsgs.get(ind);
+        for (int ind = msgList.size()-1; ind >= 0; ind--) {
+            ConversationItem oMsg = msgList.get(ind);
             if (oMsg.mListOrder < 0 ) {
                 continue;
             }
@@ -189,8 +206,8 @@ public abstract class ConversationLoader<T extends ConversationItem> extends Syn
                 && indentNext < MAX_INDENT_LEVEL) {
             indentNext++;
         }
-        for (int ind = mMsgs.size() - 1; ind >= 0; ind--) {
-           ConversationItem reply = mMsgs.get(ind);
+        for (int ind = msgList.size() - 1; ind >= 0; ind--) {
+           ConversationItem reply = msgList.get(ind);
            if (reply.inReplyToMsgId == oMsg.getMsgId()) {
                reply.mNParentReplies = oMsg.mNReplies;
                enumerateBranch(reply, order, indentNext);
@@ -199,8 +216,8 @@ public abstract class ConversationLoader<T extends ConversationItem> extends Syn
     }
 
     private void reverseListOrder() {
-        for (ConversationItem oMsg : mMsgs) {
-            oMsg.mListOrder = mMsgs.size() - oMsg.mListOrder - 1; 
+        for (ConversationItem oMsg : msgList) {
+            oMsg.mListOrder = msgList.size() - oMsg.mListOrder - 1;
         }
     }
 
@@ -210,7 +227,7 @@ public abstract class ConversationLoader<T extends ConversationItem> extends Syn
 
     @Override
     public int size() {
-        return mMsgs.size();
+        return msgList.size();
     }
 
 }

@@ -89,7 +89,8 @@ public class ConversationInserter extends InstrumentationTestCase {
         MbUser author4 = buildUserFromOid("acct:fourthWithoutAvatar@pump.example.com");
         
         MbMessage minus1 = buildMessage(author2, "Older one message", null, null);
-        MbMessage selected = buildMessage(getAuthor1(), "Selected message", minus1, TestSuite.CONVERSATION_ENTRY_MESSAGE_OID);
+        MbMessage selected = buildMessage(getAuthor1(), "Selected message", minus1,
+                iteration == 1 ? TestSuite.CONVERSATION_ENTRY_MESSAGE_OID : null);
         MbMessage reply1 = buildMessage(author3, "Reply 1 to selected", selected, null);
         reply1.sender.followedByActor = TriState.TRUE;
 
@@ -116,7 +117,8 @@ public class ConversationInserter extends InstrumentationTestCase {
         final String BODY_OF_MENTIONS_MESSAGE = "@fourthWithoutAvatar@pump.example.com Reply 5 to Reply 4\n"
                 + "@" + TestSuite.CONVERSATION_MEMBER_USERNAME
                 + " @unknownUser@example.com";
-        MbMessage reply5 = buildMessage(author2, BODY_OF_MENTIONS_MESSAGE, reply4, TestSuite.CONVERSATION_MENTIONS_MESSAGE_OID);
+        MbMessage reply5 = buildMessage(author2, BODY_OF_MENTIONS_MESSAGE, reply4,
+                iteration == 1 ? TestSuite.CONVERSATION_MENTIONS_MESSAGE_OID : null);
         addMessage(reply5);
 
         MbUser reblogger1 = buildUserFromOid("acct:reblogger@identi.ca");

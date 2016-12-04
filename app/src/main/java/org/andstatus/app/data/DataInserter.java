@@ -75,93 +75,78 @@ public class DataInserter {
     
     private long insertOrUpdateMsgInner(MbMessage messageIn, LatestUserMessages lum, boolean updateSender) {
         final String funcName = "Inserting/updating msg";
-        /**
-         * Id of the message in our system, see {@link MsgTable#MSG_ID}
-         */
-        long msgId = messageIn.msgId;
+        MbMessage message = messageIn;
+        if (message.isEmpty()) {
+            MyLog.w(TAG, funcName +"; the message is empty, skipping: " + message.toString());
+            return 0;
+        }
         try {
-            if (messageIn.isEmpty()) {
-                MyLog.w(TAG, funcName +"; the message is empty, skipping: " + messageIn.toString());
-                return 0;
-            }
-            
-            MbMessage message = messageIn;
             ContentValues values = new ContentValues();
 
-            // We use Created date from this message as "Sent date" even for reblogs in order to
-            // get natural order of the tweets.
-            // Otherwise reblogged message may appear as old
-            long sentDate = message.sentDate;
-            long createdDate = 0;
-            if (sentDate > 0) {
-                createdDate = sentDate;
+            if (message.sentDate > 0) {
                 if (!keywordsFilter.matched(message.getBody())) {
                     execContext.getResult().incrementDownloadedCount();
                 }
             }
-            
-            long actorId;
-            if (message.actor != null) {
-                actorId = insertOrUpdateUser(message.actor, lum);
+
+            if (message.actor == null) {
+                message.actor = execContext.getMyAccount().toMbUser();
             } else {
-                actorId = execContext.getMyAccount().getUserId();
-            }
-            
-            // Sender
-            long senderId = message.sender == null ? 0L : message.sender.userId;
-            if (updateSender) {
-                senderId = insertOrUpdateUser(message.sender, lum);
+                insertOrUpdateUser(message.actor, lum);
             }
 
-            String rowOid = message.oid;
-            
-            // Author
-            long authorId = senderId;
+            if (updateSender) {
+                insertOrUpdateUser(message.sender, lum);
+            }
 
             // Is this a reblog?
             if (message.rebloggedMessage != null) {
                 if (message.rebloggedMessage.sender != null) {
-                    // Author of that message
-                    authorId = insertOrUpdateUser(message.rebloggedMessage.sender, lum);
+                    insertOrUpdateUser(message.rebloggedMessage.sender, lum);
                 }
-                if (senderId !=0) {
-                    if (senderId != execContext.getMyAccount().getUserId()) {
+                if (message.getSenderId() != 0) {
+                    if (message.getSenderId() != execContext.getMyAccount().getUserId()) {
                         values.put(MsgOfUserTable.USER_ID
-                                + MsgOfUserTable.SUFFIX_FOR_OTHER_USER, senderId);
+                                + MsgOfUserTable.SUFFIX_FOR_OTHER_USER, message.getSenderId());
                     }
                     values.put(MsgOfUserTable.REBLOGGED
-                            + (senderId == execContext.getMyAccount().getUserId() ? ""
+                            + (message.getSenderId() == execContext.getMyAccount().getUserId() ? ""
                             : MsgOfUserTable.SUFFIX_FOR_OTHER_USER), 1);
                     // Remember original id of the reblog message
                     // We will need it to "undo reblog" for our reblog
-                    if (!SharedPreferencesUtil.isEmpty(rowOid)) {
+                    if (!SharedPreferencesUtil.isEmpty(message.oid)) {
                         values.put(MsgOfUserTable.REBLOG_OID
-                                + (senderId == execContext.getMyAccount().getUserId() ? ""
-                                : MsgOfUserTable.SUFFIX_FOR_OTHER_USER), rowOid);
+                                + (message.getSenderId() == execContext.getMyAccount().getUserId() ? ""
+                                : MsgOfUserTable.SUFFIX_FOR_OTHER_USER), message.oid);
                     }
                 }
 
                 // And replace reblog with original message!
                 // So we won't have lots of reblogs but rather one original message
                 message = message.rebloggedMessage;
-                // Try to retrieve the message id again
-                if (!TextUtils.isEmpty(message.oid)) {
-                    rowOid = message.oid;
-                } 
-                // Created date is usually earlier for reblogs:
-                if (message.sentDate > 0 ) {
-                    createdDate = message.sentDate;
+                if (messageIn.msgId != 0) {
+                    message.msgId = messageIn.msgId;
                 }
+                if (messageIn.conversationId != 0) {
+                    message.conversationId = messageIn.conversationId;
+                }
+                if (message.sentDate == 0) {
+                    message.sentDate = messageIn.sentDate;
+                }
+            }
+
+            long authorId = message.getSenderId();
+            if (authorId == 0) {
+                authorId = messageIn.getSenderId();
             }
             if (authorId != 0) {
                 values.put(MsgTable.AUTHOR_ID, authorId);
             }
 
-            if (msgId == 0) {
+            if (message.msgId == 0) {
                 // Lookup the System's (AndStatus) id from the Originated system's id
-                msgId = MyQuery.oidToId(OidEnum.MSG_OID, execContext.getMyAccount().getOriginId(), rowOid);
+                message.msgId = MyQuery.oidToId(OidEnum.MSG_OID, execContext.getMyAccount().getOriginId(), message.oid);
             }
-            message.msgId = msgId;
 
             /**
              * Is the row first time retrieved from a Social Network?
@@ -169,15 +154,16 @@ public class DataInserter {
              * 1. There was only "a stub" stored (without a sent date and a body)
              * 2. Message was "unsent"
              */
-            boolean isFirstTimeLoaded = message.getStatus() == DownloadStatus.LOADED || msgId == 0;
+            boolean isFirstTimeLoaded = message.getStatus() == DownloadStatus.LOADED || message.msgId == 0;
             boolean isDraftUpdated = !isFirstTimeLoaded
                     && (message.getStatus() == DownloadStatus.SENDING
                         || message.getStatus() == DownloadStatus.DRAFT);
 
             long sentDateStored = 0;
-            if (msgId != 0) {
-                DownloadStatus statusStored = DownloadStatus.load(MyQuery.msgIdToLongColumnValue(MsgTable.MSG_STATUS, msgId));
-                sentDateStored = MyQuery.msgIdToLongColumnValue(MsgTable.SENT_DATE, msgId);
+            if (message.msgId != 0) {
+                DownloadStatus statusStored = DownloadStatus.load(
+                        MyQuery.msgIdToLongColumnValue(MsgTable.MSG_STATUS, message.msgId));
+                sentDateStored = MyQuery.msgIdToLongColumnValue(MsgTable.SENT_DATE, message.msgId);
                 if (isFirstTimeLoaded) {
                     isFirstTimeLoaded = statusStored != DownloadStatus.LOADED;
                 }
@@ -185,15 +171,15 @@ public class DataInserter {
 
             if (isFirstTimeLoaded || isDraftUpdated) {
                 values.put(MsgTable.MSG_STATUS, message.getStatus().save());
-                values.put(MsgTable.CREATED_DATE, createdDate);
+                values.put(MsgTable.CREATED_DATE, message.sentDate);
                 
-                if (senderId != 0) {
+                if (messageIn.getSenderId() != 0) {
                     // Store the Sender only for the first retrieved message.
                     // Don't overwrite the original sender (especially the first reblogger) 
-                    values.put(MsgTable.SENDER_ID, senderId);
+                    values.put(MsgTable.SENDER_ID, messageIn.getSenderId());
                 }
-                if (!TextUtils.isEmpty(rowOid)) {
-                    values.put(MsgTable.MSG_OID, rowOid);
+                if (!TextUtils.isEmpty(message.oid)) {
+                    values.put(MsgTable.MSG_OID, message.oid);
                 }
                 values.put(MsgTable.ORIGIN_ID, message.originId);
                 values.put(MsgTable.BODY, message.getBody());
@@ -202,11 +188,11 @@ public class DataInserter {
             /**
              * Is the message newer than stored in the database (e.g. the newer reblog of existing message)
              */
-            boolean isNewerThanInDatabase = sentDate > sentDateStored;
+            boolean isNewerThanInDatabase = message.sentDate > sentDateStored;
             if (isNewerThanInDatabase) {
                 // Remember the latest sent date in order to see the reblogged message 
                 // at the top of the sorted list 
-                values.put(MsgTable.SENT_DATE, sentDate);
+                values.put(MsgTable.SENT_DATE, message.sentDate);
             }
 
             boolean isDirectMessage = false;
@@ -214,7 +200,7 @@ public class DataInserter {
                 long recipientId = insertOrUpdateUser(message.recipient, lum);
                 values.put(MsgTable.RECIPIENT_ID, recipientId);
                 if (recipientId == execContext.getMyAccount().getUserId() ||
-                        senderId == execContext.getMyAccount().getUserId()) {
+                        messageIn.getSenderId() == execContext.getMyAccount().getUserId()) {
                     isDirectMessage = true;
                     values.put(MsgOfUserTable.DIRECTED, 1);
                     MyLog.v(this, "Message '" + message.oid + "' is Directed to " 
@@ -223,7 +209,7 @@ public class DataInserter {
             }
             if (!message.isSubscribed().equals(TriState.FALSE)) {
                 if (execContext.getTimeline().getTimelineType() == TimelineType.HOME
-                        || (!isDirectMessage && senderId == execContext.getMyAccount().getUserId())) {
+                        || (!isDirectMessage && messageIn.getSenderId() == execContext.getMyAccount().getUserId())) {
                     message.setSubscribed(TriState.TRUE);
                 }
             }
@@ -241,8 +227,7 @@ public class DataInserter {
             }
 
             if (message.favoritedByActor != TriState.UNKNOWN
-                    && actorId != 0
-                    && actorId == execContext.getMyAccount().getUserId()) {
+                    && message.actor.userId == execContext.getMyAccount().getUserId()) {
                 values.put(MsgOfUserTable.FAVORITED,
                         message.favoritedByActor.toBoolean(false));
                 MyLog.v(this,
@@ -259,32 +244,29 @@ public class DataInserter {
             putConversationId(message, values);
             
             if (MyLog.isVerboseEnabled()) {
-                MyLog.v(this, ((msgId==0) ? "insertMsg" : "updateMsg " + msgId)
+                MyLog.v(this, ((message.msgId==0) ? "insertMsg" : "updateMsg " + message.msgId)
                         + ":" + message.getStatus()
                         + (isFirstTimeLoaded ? " new;" : "")
                         + (isDraftUpdated ? " draft updated;" : "")
-                        + (isNewerThanInDatabase ? " newer, sent at " + new Date(sentDate).toString() + ";" : "") );
+                        + (isNewerThanInDatabase ? " newer, sent at " + new Date(message.sentDate).toString() + ";" : "") );
             }
             
             if (MyContextHolder.get().isTestRun()) {
                 MyContextHolder.get().put(new AssertionData(MSG_ASSERTION_KEY, values));
             }
-            if (msgId == 0) {
+            if (message.msgId == 0) {
                 Uri msgUri = execContext.getContext().getContentResolver().insert(
                         MatchedUri.getMsgUri(execContext.getMyAccount().getUserId(), 0), values);
-                msgId = ParsedUri.fromUri(msgUri).getMessageId();
+                message.msgId = ParsedUri.fromUri(msgUri).getMessageId();
             } else {
-                Uri msgUri = MatchedUri.getMsgUri(execContext.getMyAccount().getUserId(), msgId);
+                Uri msgUri = MatchedUri.getMsgUri(execContext.getMyAccount().getUserId(), message.msgId);
                 execContext.getContext().getContentResolver().update(msgUri, values, null, null);
             }
-            if (messageIn.msgId == 0) {
-                messageIn.msgId = msgId;
-            }
-            message.msgId = msgId;
             if (message.conversationId == 0) {
-                Uri msgUri = MatchedUri.getMsgUri(execContext.getMyAccount().getUserId(), msgId);
+                message.conversationId = message.msgId;
+                Uri msgUri = MatchedUri.getMsgUri(execContext.getMyAccount().getUserId(), message.msgId);
                 ContentValues values2 = new ContentValues();
-                values2.put(MsgTable.CONVERSATION_ID, msgId);
+                values2.put(MsgTable.CONVERSATION_ID, message.conversationId);
                 execContext.getContext().getContentResolver().update(msgUri, values2, null, null);
             }
 
@@ -302,12 +284,12 @@ public class DataInserter {
                     execContext.getResult().incrementDirectCount();
                 }
             }
-            if (senderId != 0) {
+            if (messageIn.getSenderId() != 0) {
                 // Remember all messages that we added or updated
-                lum.onNewUserMsg(new UserMsg(senderId, msgId, sentDate));
+                lum.onNewUserMsg(new UserMsg(messageIn.getSenderId(), message.msgId, message.sentDate));
             }
-            if ( authorId != 0 && authorId != senderId ) {
-                lum.onNewUserMsg(new UserMsg(authorId, msgId, createdDate));
+            if ( authorId != 0 && authorId != messageIn.getSenderId() ) {
+                lum.onNewUserMsg(new UserMsg(authorId, message.msgId, message.sentDate));
             }
 
             for (MbMessage reply : message.replies) {
@@ -318,7 +300,9 @@ public class DataInserter {
             MyLog.e(this, funcName, e);
         }
 
-        return msgId;
+        messageIn.msgId = message.msgId;
+        messageIn.conversationId = message.conversationId;
+        return messageIn.msgId;
     }
 
     private boolean isMentionedAndPutInReplyToMessage(MbMessage message, LatestUserMessages lum,

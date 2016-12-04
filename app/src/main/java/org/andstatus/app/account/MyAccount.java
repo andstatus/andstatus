@@ -121,6 +121,13 @@ public final class MyAccount implements Comparable<MyAccount> {
         return oAccountName;
     }
 
+    public MbUser toMbUser() {
+        MbUser mbUser = MbUser.fromOriginAndUserOid(getOriginId(), getUserOid());
+        mbUser.userId = getUserId();
+        mbUser.setUserName(getUsername());
+        return mbUser;
+    }
+
     /** Companion class used to load/create/change/delete {@link MyAccount}'s data */
     public static final class Builder implements Parcelable {
         private static final String TAG = MyAccount.TAG + "." + Builder.class.getSimpleName();

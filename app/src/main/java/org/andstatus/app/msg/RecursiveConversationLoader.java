@@ -16,12 +16,20 @@
 
 package org.andstatus.app.msg;
 
+import android.database.Cursor;
+import android.net.Uri;
+import android.provider.BaseColumns;
+
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
+import org.andstatus.app.data.DbUtils;
+import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyQuery;
+import org.andstatus.app.data.ProjectionMap;
+import org.andstatus.app.database.MsgTable;
+import org.andstatus.app.timeline.Timeline;
+import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.MyLog;
-
-import java.util.List;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -34,7 +42,31 @@ public class RecursiveConversationLoader<T extends ConversationItem> extends Con
 
     @Override
     protected void load2(T oMsg) {
-        findPreviousMessagesRecursively(oMsg);
+        cacheConversation(oMsg);
+        findPreviousMessagesRecursively(getOMsg(oMsg.getMsgId(), 0));
+    }
+
+    private void cacheConversation(T oMsg) {
+        long conversationId = MyQuery.msgIdToLongColumnValue(MsgTable.CONVERSATION_ID, oMsg.getMsgId());
+        String selection = ProjectionMap.MSG_TABLE_ALIAS + "." +
+                (conversationId == 0 ? MsgTable.MSG_ID + "=" + oMsg.getMsgId() :
+                        MsgTable.CONVERSATION_ID + "=" + conversationId);
+        Uri uri = MatchedUri.getTimelineUri(
+                Timeline.getTimeline(TimelineType.EVERYTHING, ma, 0, null));
+        Cursor cursor = null;
+        try {
+            cursor = myContext.context().getContentResolver().query(uri, oMsg.getProjection(),
+                    selection, null, null);
+            if (cursor != null) {
+                while (cursor.moveToNext()) {
+                    T oMsg2 = newOMsg(DbUtils.getLong(cursor, BaseColumns._ID));
+                    oMsg2.load(cursor);
+                    cachedMessages.put(oMsg2.getMsgId(), oMsg2);
+                }
+            }
+        } finally {
+            DbUtils.closeSilently(cursor);
+        }
     }
 
     private void findPreviousMessagesRecursively(T oMsg) {
@@ -47,7 +79,7 @@ public class RecursiveConversationLoader<T extends ConversationItem> extends Con
         if (oMsg.isLoaded()) {
             if (addMessageToList(oMsg)) {
                 if (oMsg.inReplyToMsgId != 0) {
-                    findPreviousMessagesRecursively(newOMsg(oMsg.inReplyToMsgId,
+                    findPreviousMessagesRecursively(getOMsg(oMsg.inReplyToMsgId,
                             oMsg.replyLevel - 1));
                 }
             }
@@ -58,11 +90,12 @@ public class RecursiveConversationLoader<T extends ConversationItem> extends Con
 
     public void findRepliesRecursively(T oMsg) {
         MyLog.v(this, "findReplies for id=" + oMsg.getMsgId());
-        List<Long> replies = MyQuery.getReplyIds(oMsg.getMsgId());
-        oMsg.mNReplies = replies.size();
-        for (long replyId : replies) {
-            T oMsgReply = newOMsg(replyId, oMsg.replyLevel + 1);
-            findPreviousMessagesRecursively(oMsgReply);
+        for (T oMsgReply : cachedMessages.values()) {
+            if (oMsgReply.inReplyToMsgId == oMsg.getMsgId()) {
+                oMsg.mNReplies++;
+                oMsgReply.replyLevel = oMsg.replyLevel + 1;
+                findPreviousMessagesRecursively(oMsgReply);
+            }
         }
     }
 }

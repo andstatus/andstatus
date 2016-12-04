@@ -73,7 +73,8 @@ public class GnuSocialMessagesInserter extends InstrumentationTestCase {
         MbUser author4 = userFromOidAndAvatar("4", "");
 
         MbMessage minus1 = buildMessage(author2, "Older one message", null, null);
-        MbMessage selected = buildMessage(author1, "Selected message", minus1, TestSuite.CONVERSATION_ENTRY_MESSAGE_OID);
+        MbMessage selected = buildMessage(author1, "Selected message", minus1,
+                iteration == 1 ? TestSuite.CONVERSATION_ENTRY_MESSAGE_OID : null);
         MbMessage reply1 = buildMessage(author3, "Reply 1 to selected", selected, null);
         MbMessage reply2 = buildMessage(author2, "Reply 2 to selected is public", selected, null);
         addPublicMessage(reply2, true);

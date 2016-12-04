@@ -54,7 +54,7 @@ public class DirectMessagesConversationLoader<T extends ConversationItem> extend
                     selection, null, null);
             if (cursor != null) {
                 while (cursor.moveToNext()) {
-                    T oMsg2 = newOMsg(DbUtils.getLong(cursor, BaseColumns._ID), 0);
+                    T oMsg2 = newOMsg(DbUtils.getLong(cursor, BaseColumns._ID));
                     oMsg2.load(cursor);
                     addMessageToList(oMsg2);
                 }

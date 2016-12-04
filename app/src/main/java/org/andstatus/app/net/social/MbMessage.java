@@ -117,10 +117,10 @@ public class MbMessage {
 
     public boolean isEmpty() {
         return this.isEmpty
+                || originId == 0
                 || (TextUtils.isEmpty(oid)
                     && ((status != DownloadStatus.SENDING && status != DownloadStatus.DRAFT)
-                        || (TextUtils.isEmpty(body) && attachments.isEmpty())))
-                || originId == 0;
+                        || (TextUtils.isEmpty(body) && attachments.isEmpty())));
     }
 
     @Override
@@ -193,5 +193,9 @@ public class MbMessage {
 
     public void setSubscribed(TriState isSubscribed) {
         this.isSubscribed = isSubscribed;
+    }
+
+    public long getSenderId() {
+        return sender == null ? 0L : sender.userId;
     }
 }
