@@ -49,7 +49,7 @@ public class RecursiveConversationLoader<T extends ConversationItem> extends Con
     private void cacheConversation(T oMsg) {
         long conversationId = MyQuery.msgIdToLongColumnValue(MsgTable.CONVERSATION_ID, oMsg.getMsgId());
         String selection = ProjectionMap.MSG_TABLE_ALIAS + "." +
-                (conversationId == 0 ? MsgTable.MSG_ID + "=" + oMsg.getMsgId() :
+                (conversationId == 0 ? MsgTable._ID + "=" + oMsg.getMsgId() :
                         MsgTable.CONVERSATION_ID + "=" + conversationId);
         Uri uri = MatchedUri.getTimelineUri(
                 Timeline.getTimeline(TimelineType.EVERYTHING, ma, 0, null));
