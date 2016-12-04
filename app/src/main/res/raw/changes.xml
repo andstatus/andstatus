@@ -27,6 +27,18 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
 		</subtitle>
     </header>
+    <release android:versionName="31.00" android:versionCode="200"
+             versionDate="2016-12-04"
+             versionTitle="Conversation view enhancements">
+        <changes>
+            <change>Conversation view opens much faster now. This is because messages, which belong to one
+                conversation are calculated beforehand in a background.
+                <a href="https://github.com/andstatus/andstatus/issues/361">#361</a>
+            </change>
+            <change>Default setting of the "Tap on a Timeline Title behaviour" option changed from "Switch to Default Timeline"
+            to "Select a Timeline". This doesn't affect existing users, but is more intuitive for novices.</change>
+        </changes>
+    </release>
     <release android:versionName="30.02" android:versionCode="195"
              versionDate="2016-10-13"
              versionTitle="More UX enhancements">

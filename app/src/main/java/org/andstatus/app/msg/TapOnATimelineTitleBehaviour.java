@@ -26,7 +26,7 @@ public enum TapOnATimelineTitleBehaviour {
     SELECT_TIMELINE(3),
     DISABLED(4);
 
-    public static final TapOnATimelineTitleBehaviour DEFAULT = SWITCH_TO_DEFAULT_TIMELINE;
+    public static final TapOnATimelineTitleBehaviour DEFAULT = SELECT_TIMELINE;
     private static final String TAG = TapOnATimelineTitleBehaviour.class.getSimpleName();
 
     private final long code;
