@@ -37,6 +37,9 @@
             </change>
             <change>Default setting of the "Tap on a Timeline Title behaviour" option changed from "Switch to Default Timeline"
             to "Select a Timeline". This doesn't affect existing users, but is more intuitive for novices.</change>
+            <change>"Check and fix data" action added to the AndStatus Settings -&gt; "Storage" section.
+                This action should be used during problem troubleshooting to fix internal data problems,
+                which could cause AndStatus malfunctions.</change>
         </changes>
     </release>
     <release android:versionName="30.02" android:versionCode="195"

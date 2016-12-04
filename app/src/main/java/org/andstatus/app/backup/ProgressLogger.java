@@ -47,14 +47,14 @@ public class ProgressLogger {
         this.progressCallback = progressCallback;
     }
 
-    void logSuccess() {
+    public void logSuccess() {
         logProgress("Completed successfully");
         if (progressCallback != null) {
             progressCallback.onComplete(true);
         }
     }
 
-    void logFailure() {
+    public void logFailure() {
         logProgress("Failed");
         if (progressCallback != null) {
             progressCallback.onComplete(false);

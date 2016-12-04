@@ -112,9 +112,6 @@ public class MyBackupAgent extends BackupAgent {
                 doBackup(data);
                 backupDescriptor.save();
                 MyLog.v(this, method + "; newState: " + backupDescriptor.toString());
-                if (backupDescriptor.saved()) {
-                    new MyDataChecker(MyContextHolder.get(), backupDescriptor.getLogger()).fixData();
-                }
                 if (isServiceAvailableStored) {
                     MyServiceManager.setServiceAvailable();
                 }

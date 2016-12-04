@@ -18,6 +18,9 @@ package org.andstatus.app.data;
 
 import org.andstatus.app.backup.ProgressLogger;
 import org.andstatus.app.context.MyContext;
+import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.os.AsyncTaskLauncher;
+import org.andstatus.app.os.MyAsyncTask;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -29,6 +32,35 @@ public class MyDataChecker {
     public MyDataChecker(MyContext myContext, ProgressLogger logger) {
         this.myContext = myContext;
         this.logger = logger;
+    }
+
+    public static void fixDataAsync(ProgressLogger.ProgressCallback progressCallback) {
+        final ProgressLogger logger = new ProgressLogger(progressCallback);
+        AsyncTaskLauncher.execute(
+                progressCallback,
+                false,
+                new MyAsyncTask<Void, Void, Void>(MyDataChecker.class.getSimpleName(),
+                MyAsyncTask.PoolEnum.LONG_UI) {
+
+                    @Override
+                    protected Void doInBackground2(Void... params) {
+                        new MyDataChecker(MyContextHolder.get(), logger).fixData();
+                        DbUtils.waitMs(MyDataChecker.class.getSimpleName(), 3000);
+                        return null;
+                    }
+
+                    @Override
+                    protected void onCancelled() {
+                        logger.logFailure();
+                        super.onCancelled();
+                    }
+
+                    @Override
+                    protected void onPostExecute(Void aVoid) {
+                        logger.logSuccess();
+                        super.onPostExecute(aVoid);
+                    }
+                });
     }
 
     public void fixData() {

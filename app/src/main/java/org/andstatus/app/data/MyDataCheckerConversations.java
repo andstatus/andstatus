@@ -24,6 +24,8 @@ import org.andstatus.app.context.MyContext;
 import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.util.MyLog;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
@@ -35,6 +37,9 @@ public class MyDataCheckerConversations {
     private static final int PROGRESS_REPORT_PERIOD_SECONDS = 20;
     private final MyContext myContext;
     private final ProgressLogger logger;
+
+    Map<Long, MsgItem> items = new TreeMap<>();
+    Map<Long, List<MsgItem>> replies = new TreeMap<>();
 
     private class MsgItem {
         long id = 0;
@@ -85,16 +90,17 @@ public class MyDataCheckerConversations {
     public int fixInternal(boolean countOnly) {
         final String method = "checkConversations";
         logger.logProgress(method + " started");
-        Map<Long, MsgItem> items = loadMessages();
-        fixConversationsUsingReplies(items);
-        fixConversationsUsingConversationOid(items);
-        int changedCount = saveChanges(items, countOnly);
+        loadMessages();
+        fixConversationsUsingReplies();
+        fixConversationsUsingConversationOid();
+        int changedCount = saveChanges(countOnly);
         logger.logProgress(method + " ended, " + (changedCount > 0 ?  "changed " + changedCount + " messages" : " no changes were required"));
         return changedCount;
     }
 
-    private Map<Long, MsgItem> loadMessages() {
-        Map<Long, MsgItem> messages = new TreeMap<>();
+    private void loadMessages() {
+        items.clear();
+        replies.clear();
         String sql = "SELECT " + MsgTable._ID
                 + ", " + MsgTable.ORIGIN_ID
                 + ", " + MsgTable.IN_REPLY_TO_MSG_ID
@@ -108,22 +114,29 @@ public class MyDataCheckerConversations {
             c = myContext.getDatabase().rawQuery(sql, null);
             while (c.moveToNext()) {
                 rowsCount++;
-                MsgItem message = new MsgItem();
-                message.id = c.getLong(0);
-                message.originId = c.getLong(1);
-                message.inReplyToId = c.getLong(2);
-                message.conversationId = c.getLong(3);
-                message.conversationOid = c.getString(4);
-                messages.put(message.id, message);
+                MsgItem item = new MsgItem();
+                item.id = c.getLong(0);
+                item.originId = c.getLong(1);
+                item.inReplyToId = c.getLong(2);
+                item.conversationId = c.getLong(3);
+                item.conversationOid = c.getString(4);
+                items.put(item.id, item);
+                if (item.inReplyToId != 0) {
+                    List<MsgItem> replies1 = replies.get(item.inReplyToId);
+                    if (replies1 == null) {
+                        replies1 = new ArrayList<>();
+                        replies.put(item.inReplyToId, replies1);
+                    }
+                    replies1.add(item);
+                }
             }
         } finally {
             DbUtils.closeSilently(c);
         }
         logger.logProgress(Long.toString(rowsCount) + " messages loaded");
-        return messages;
     }
 
-    private void fixConversationsUsingReplies(Map<Long, MsgItem> items) {
+    private void fixConversationsUsingReplies() {
         int counter = 0;
         for (MsgItem item : items.values()) {
             if (item.inReplyToId != 0) {
@@ -135,7 +148,7 @@ public class MyDataCheckerConversations {
                         parent.fixConversationId(item.conversationId == 0 ? parent.id : item.conversationId);
                     }
                     if (item.fixConversationId(parent.conversationId)) {
-                        changeConversationOfReplies(items, item, 1000);
+                        changeConversationOfReplies(item, 200);
                     }
                 }
             }
@@ -146,7 +159,7 @@ public class MyDataCheckerConversations {
         }
     }
 
-    private void fixConversationsUsingConversationOid(Map<Long, MsgItem> items) {
+    private void fixConversationsUsingConversationOid() {
         int counter = 0;
         Map<Long, Map<String, MsgItem>> origins = new ConcurrentHashMap<>();
         for (MsgItem item : items.values()) {
@@ -162,7 +175,7 @@ public class MyDataCheckerConversations {
                     firstConversationMembers.put(item.conversationOid, item);
                 } else {
                     if (item.fixConversationId(parent.conversationId)) {
-                        changeConversationOfReplies(items, item, 200);
+                        changeConversationOfReplies(item, 200);
                     }
                 }
             }
@@ -173,21 +186,23 @@ public class MyDataCheckerConversations {
         }
     }
 
-    private void changeConversationOfReplies(Map<Long, MsgItem> items, MsgItem parent, int level) {
-        for (MsgItem item : items.values()) {
-            if (item.inReplyToId == parent.id) {
-                if (item.fixConversationId(parent.conversationId)) {
-                    if (level > 0) {
-                        changeConversationOfReplies(items, item, level - 1);
-                    } else {
-                        logger.logProgress("Too long conversation, couldn't fix msgId=" + item.id);
-                    }
+    private void changeConversationOfReplies(MsgItem parent, int level) {
+        List<MsgItem> replies1 = replies.get(parent.id);
+        if (replies1 == null) {
+            return;
+        }
+        for (MsgItem item : replies1) {
+            if (item.fixConversationId(parent.conversationId)) {
+                if (level > 0) {
+                    changeConversationOfReplies(item, level - 1);
+                } else {
+                    logger.logProgress("Too long conversation, couldn't fix msgId=" + item.id);
                 }
             }
         }
     }
 
-    private int saveChanges(Map<Long, MsgItem> items, boolean countOnly) {
+    private int saveChanges(boolean countOnly) {
         int changedCount = 0;
         for (MsgItem item : items.values()) {
             if (item.isChanged()) {
@@ -203,6 +218,9 @@ public class MyDataCheckerConversations {
                                     MsgTable.CONVERSATION_ID + "=" + DbUtils.sqlZeroToNull(item.conversationId) : "")
                                 + " WHERE " + MsgTable._ID + "=" + item.id;
                         myContext.getDatabase().execSQL(sql);
+                        if (changedCount < 3) {
+                            MyLog.v(this, sql);
+                        }
                     }
                     changedCount++;
                     if (logger.loggedMoreSecondsAgoThan(PROGRESS_REPORT_PERIOD_SECONDS)) {

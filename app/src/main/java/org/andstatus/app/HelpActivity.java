@@ -41,6 +41,7 @@ import org.andstatus.app.backup.RestoreActivity;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.MySettingsActivity;
+import org.andstatus.app.data.MyDataChecker;
 import org.andstatus.app.msg.TimelineActivity;
 import org.andstatus.app.util.ActivitySwipeDetector;
 import org.andstatus.app.util.DialogFactory;
@@ -67,6 +68,7 @@ public class HelpActivity extends MyActivity implements SwipeInterface, Progress
      */
     public static final String EXTRA_IS_FIRST_ACTIVITY = ClassInApplicationPackage.PACKAGE_NAME + ".IS_FIRST_ACTIVITY";
     public static final String EXTRA_CLOSE_ME = ClassInApplicationPackage.PACKAGE_NAME + ".CLOSE_ME";
+    public static final String EXTRA_CHECK_DATA = ClassInApplicationPackage.PACKAGE_NAME + ".CHECK_DATA";
 
     public static final int PAGE_INDEX_LOGO = 0;
     public static final int PAGE_INDEX_USER_GUIDE = 1;
@@ -104,6 +106,10 @@ public class HelpActivity extends MyActivity implements SwipeInterface, Progress
         showRestoreButton();
         showGetStartedButton();
         setupHelpFlipper();
+
+        if (getIntent().hasExtra(EXTRA_CHECK_DATA)) {
+            MyDataChecker.fixDataAsync(this);
+        }
     }
 
     @Override

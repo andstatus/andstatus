@@ -58,6 +58,7 @@ public class MySettingsFragment extends PreferenceFragment implements
     private static final String KEY_ADD_NEW_ACCOUNT = "add_new_account";
     private static final String KEY_BACKUP_RESTORE = "backup_restore";
     private static final String KEY_CHANGE_LOG = "change_log";
+    public static final String KEY_CHECK_DATA = "check_data";
     static final String KEY_MANAGE_ACCOUNTS = "manage_accounts";
     private static final String KEY_MANAGE_ORIGIN_SYSTEMS = "manage_origin_systems";
     private static final String KEY_MANAGE_TIMELINES = "manage_timelines";
@@ -315,6 +316,10 @@ public class MySettingsFragment extends PreferenceFragment implements
                 } else {
                     startActivity(new Intent(getActivity(), BackupActivity.class));
                 }
+                break;
+            case KEY_CHECK_DATA:
+                preference.setEnabled(false);
+                startActivity(new Intent(getActivity(), HelpActivity.class).putExtra(HelpActivity.EXTRA_CHECK_DATA, "1"));
                 break;
             case KEY_MANAGE_ORIGIN_SYSTEMS:
                 startActivity(new Intent(getActivity(), PersistentOriginList.class));
