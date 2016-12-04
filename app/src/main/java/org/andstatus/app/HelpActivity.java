@@ -182,11 +182,11 @@ public class HelpActivity extends MyActivity implements SwipeInterface, Progress
                                 Permissions.PermissionType.GET_ACCOUNTS);
                         break;
                     case UPGRADING:
-                        DialogFactory.newNoActionAlertDialog(HelpActivity.this,
+                        DialogFactory.showOkAlertDialog(HelpActivity.this, HelpActivity.this,
                                 R.string.app_name, R.string.label_upgrading);
                         break;
                     default:
-                        DialogFactory.newNoActionAlertDialog(HelpActivity.this,
+                        DialogFactory.showOkAlertDialog(HelpActivity.this, HelpActivity.this,
                                 R.string.app_name, R.string.loading);
                         break;
                 }

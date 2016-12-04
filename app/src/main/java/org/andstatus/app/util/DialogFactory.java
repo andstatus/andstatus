@@ -19,39 +19,60 @@ package org.andstatus.app.util;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.StringRes;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
+import android.view.WindowManager;
+import android.widget.Toast;
 
 import org.andstatus.app.ActivityRequestCode;
 
 public class DialogFactory {
     public static final String OK_DIALOG_TAG = "ok";
     public static final String YES_CANCEL_DIALOG_TAG = "yes_cancel";
-    public static final String YES_NO_DIALOG_TAG = "yes_no";
 
     public static final String DIALOG_TITLE_KEY = "title";
     public static final String DIALOG_MESSAGE_KEY = "message";
-    
+
     private DialogFactory() {
     }
 
-    public static Dialog newNoActionAlertDialog(Activity activity, @StringRes int titleId,
-                                                @StringRes int summaryId) {
-        return new AlertDialog.Builder(activity)
+    public static Dialog showOkAlertDialog(Object method, Context context, @StringRes int titleId, @StringRes int summaryId) {
+        return showOkAlertDialog(method, context, titleId, context.getText(summaryId));
+    }
+
+    public static Dialog showOkAlertDialog(Object method, Context context, @StringRes int titleId, CharSequence summary) {
+        final AlertDialog dialog = new AlertDialog.Builder(context)
                 .setIcon(android.R.drawable.ic_dialog_alert)
                 .setTitle(titleId)
-                .setMessage(summaryId)
+                .setMessage(summary)
                 .setPositiveButton(android.R.string.ok,
                         new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog,
-                                    int whichButton) {
+                                                int whichButton) {
                                 dialog.dismiss();
                             }
                         }).create();
+        if (!Activity.class.isAssignableFrom(context.getClass())) {
+            // See http://stackoverflow.com/questions/32224452/android-unable-to-add-window-permission-denied-for-this-window-type
+            // and maybe http://stackoverflow.com/questions/17059545/show-dialog-alert-from-a-non-activity-class-in-android
+            dialog.getWindow().setType(WindowManager.LayoutParams.TYPE_TOAST);
+        }
+        try {
+            dialog.show();
+        } catch (Exception e) {
+            try {
+                MyLog.e(method, "Couldn't open alert dialog with the text: " + summary, e);
+                Toast.makeText(context, summary, Toast.LENGTH_LONG).show();
+            } catch (Exception e2) {
+                MyLog.e(method, "Couldn't send toast with the text: " + summary, e2);
+            }
+        }
+        return dialog;
     }
 
     public static void dismissSafely (Dialog dlg) {
@@ -141,4 +162,5 @@ public class DialogFactory {
         dlg = builder.create();
         return dlg;
     }
+
 }

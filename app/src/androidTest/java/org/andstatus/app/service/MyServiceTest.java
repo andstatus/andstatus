@@ -17,6 +17,7 @@
 package org.andstatus.app.service;
 
 import android.content.SyncResult;
+import android.database.sqlite.SQLiteDiskIOException;
 import android.test.InstrumentationTestCase;
 
 import org.andstatus.app.account.MyAccount;
@@ -25,6 +26,8 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.context.Travis;
+import org.andstatus.app.data.DbUtils;
+import org.andstatus.app.os.ExceptionsCounter;
 import org.andstatus.app.timeline.Timeline;
 import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.MyLog;
@@ -158,7 +161,8 @@ public class MyServiceTest extends InstrumentationTestCase {
     }
 
     public void testRateLimitStatus() {
-        MyLog.v(this, "testRateLimitStatus started");
+        final String method = "testRateLimitStatus";
+        MyLog.v(this, method + " started");
 
         mService.setListenedCommand(CommandData.newAccountCommand(
                 CommandEnum.RATE_LIMIT_STATUS,
@@ -172,7 +176,8 @@ public class MyServiceTest extends InstrumentationTestCase {
         assertTrue(mService.httpConnectionMock.toString(),
                 mService.httpConnectionMock.getRequestsCounter() > 0);
         assertTrue("Service stopped", mService.waitForServiceStopped(true));
-        MyLog.v(this, "testRateLimitStatus ended");
+        assertEquals("DiskIoException", 0, ExceptionsCounter.getDiskIoExceptionsCount());
+        MyLog.v(this, method + " ended");
     }
     
     public void testSyncInForeground() throws InterruptedException {
@@ -274,6 +279,24 @@ public class MyServiceTest extends InstrumentationTestCase {
         Queue<CommandData> queue = new CommandQueue().load().get(QueueType.CURRENT);
         assertFalse("The second command was deleted from the main queue", queue.contains(cd2));
         MyLog.v(this, "myTestDeleteCommand ended");
+    }
+
+    public void testDiskIoErrorCatching() throws InterruptedException {
+        final String method = "testDiskIoErrorCatching";
+        MyLog.v(this, method + " started");
+
+        mService.setListenedCommand(CommandData.newAccountCommand(
+                CommandEnum.RATE_LIMIT_STATUS,
+                TestSuite.getMyAccount(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME)));
+        mService.httpConnectionMock.setRuntimeException(new SQLiteDiskIOException(method));
+        long startCount = mService.executionStartCount;
+        mService.sendListenedToCommand();
+
+        assertTrue("First command started executing", mService.waitForCommandExecutionStarted(startCount));
+        assertTrue("Service stopped", mService.waitForServiceStopped(true));
+        assertEquals("No DiskIoException", 1, ExceptionsCounter.getDiskIoExceptionsCount());
+        DbUtils.waitMs(method, 3000);
+        MyLog.v(this, method + " ended");
     }
 
     @Override

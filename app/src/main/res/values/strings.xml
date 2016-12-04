@@ -138,6 +138,7 @@
   <string name="discover_open_instances_title">Discover open instances</string>
   <string name="displayed_in_selector">Displayed in a selector</string>
   <string name="displayed_in_selector_abbreviated">Displ.</string>
+  <string name="database_disk_io_error">Attention! %1$s error(s) occur during access to the local cache database, which caused malfunction of AndStatus application. \nThis usually means that SD card on your device is not working properly.</string>
   <string name="dont_synchronize_old_messages">Don\'t synchronize old messages, if previous sync was more than ... hours ago</string>
   <string name="dont_synchronize_old_messages_summary">After %s hours since previous sync
     AndStatus will not try to sync all messages since the latest message downloaded,

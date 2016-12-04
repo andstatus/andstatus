@@ -62,6 +62,8 @@ public class HttpConnectionMock extends HttpConnection {
     private final List<HttpReadResult> results = new CopyOnWriteArrayList<>();
     private volatile String responseString = "";
     private volatile InputStream responseFileStream = null;
+
+    private volatile RuntimeException runtimeException = null;
     private volatile ConnectionException exception = null;
 
     private volatile String password = "password";
@@ -87,7 +89,11 @@ public class HttpConnectionMock extends HttpConnection {
     public void setResponseFileStream(InputStream inputStream) {
         this.responseFileStream = inputStream;
     }
-    
+
+    public void setRuntimeException(RuntimeException exception) {
+        runtimeException = exception;
+    }
+
     public void setException(ConnectionException exception) {
         this.exception = exception;
     }
@@ -107,6 +113,9 @@ public class HttpConnectionMock extends HttpConnection {
     }
 
     private void throwExceptionIfSet() throws ConnectionException {
+        if (runtimeException != null) {
+            throw  runtimeException;
+        }
         if (exception != null) {
             throw exception;
         }

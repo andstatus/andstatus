@@ -38,6 +38,7 @@ import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.net.http.TlsSniSocketFactory;
 import org.andstatus.app.origin.PersistentOrigins;
 import org.andstatus.app.os.AsyncTaskLauncher;
+import org.andstatus.app.os.ExceptionsCounter;
 import org.andstatus.app.service.ConnectionState;
 import org.andstatus.app.timeline.PersistentTimelines;
 import org.andstatus.app.timeline.TimelineType;
@@ -250,6 +251,7 @@ public final class MyContextImpl implements MyContext {
     public void release() {
         TlsSniSocketFactory.forget();
         AsyncTaskLauncher.forget();
+        ExceptionsCounter.forget();
         MyLog.forget();
     }
 

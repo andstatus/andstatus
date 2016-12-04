@@ -17,7 +17,6 @@ import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.database.MsgTable;
-import org.andstatus.app.net.http.HttpConnectionMock;
 import org.andstatus.app.net.http.HttpReadResult;
 import org.andstatus.app.service.MyServiceTestHelper;
 import org.andstatus.app.timeline.Timeline;
@@ -129,4 +128,5 @@ public class UnsentMessagesTest extends ActivityInstrumentationTestCase2<Timelin
 
         MyLog.v(this, method + " ended");
     }
+
 }

@@ -43,6 +43,7 @@ import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.os.AsyncTaskLauncher;
+import org.andstatus.app.os.ExceptionsCounter;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.Permissions;
@@ -112,6 +113,7 @@ public class TestSuite extends TestCase {
             .putBoolean(MyPreferences.KEY_ATTACH_IMAGES_TO_MY_MESSAGES, true)
             .apply();
         AsyncTaskLauncher.forget();
+        ExceptionsCounter.forget();
         MyLog.forget();
         assertTrue("Log level set to verbose", MyLog.isLoggable(TAG, MyLog.VERBOSE));
         MyServiceManager.setServiceUnavailable();

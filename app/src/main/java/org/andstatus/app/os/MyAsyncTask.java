@@ -16,6 +16,7 @@
 
 package org.andstatus.app.os;
 
+import android.database.sqlite.SQLiteDiskIOException;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 
@@ -23,6 +24,8 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
+
+import static org.andstatus.app.os.ExceptionsCounter.onDiskIoException;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -79,6 +82,12 @@ public abstract class MyAsyncTask<Params, Progress, Result> extends AsyncTask<Pa
     }
 
     @Override
+    protected void onCancelled() {
+        ExceptionsCounter.showErrorDialogIfErrorsPresent();
+        super.onCancelled();
+    }
+
+    @Override
     protected final Result doInBackground(Params... params) {
         backgroundStartedAt = System.currentTimeMillis();
         currentlyExecutingSince = backgroundStartedAt;
@@ -88,6 +97,11 @@ public abstract class MyAsyncTask<Params, Progress, Result> extends AsyncTask<Pa
             } else {
                 return doInBackground2(params);
             }
+        } catch (SQLiteDiskIOException e) {
+            String msgLog = MyContextHolder.getSystemInfo(MyContextHolder.get().context(), true);
+            MyLog.e(this, msgLog, e);
+            onDiskIoException();
+            return null;
         } catch (Exception e) {
             String msgLog = MyContextHolder.getSystemInfo(MyContextHolder.get().context(), true);
             MyLog.e(this, msgLog, e);
@@ -164,6 +178,12 @@ public abstract class MyAsyncTask<Params, Progress, Result> extends AsyncTask<Pa
 
     public boolean isReallyWorking() {
         return needsBackgroundWork() && !isStalled();
+    }
+
+    @Override
+    protected void onPostExecute(Result result) {
+        ExceptionsCounter.showErrorDialogIfErrorsPresent();
+        super.onPostExecute(result);
     }
 
     private boolean isStalled() {
