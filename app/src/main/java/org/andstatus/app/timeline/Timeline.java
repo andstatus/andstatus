@@ -600,7 +600,8 @@ public class Timeline implements Comparable<Timeline> {
         toContentValues(contentValues);
         if (getId() == 0) {
             id = DbUtils.addRowWithRetry(TimelineTable.TABLE_NAME, contentValues, 3);
-            MyLog.v(this, "Added " + this);
+            MyLog.v(this, "Added " + this +
+                    (MyContextHolder.get().isTestRun() ? " from " + MyLog.getStackTrace(new Throwable()) : ""));
         } else {
             DbUtils.updateRowWithRetry(TimelineTable.TABLE_NAME, getId(), contentValues, 3);
         }
