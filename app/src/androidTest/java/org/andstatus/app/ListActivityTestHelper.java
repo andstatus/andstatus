@@ -171,8 +171,13 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> extends Instru
         mInstrumentation.runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                MyLog.v(methodExt, "performLongClick on " + viewToClick + " at position " + position);
-                viewToClick.performLongClick();
+                final String msg = "performLongClick on " + viewToClick + " at position " + position;
+                MyLog.v(methodExt, msg);
+                try {
+                    viewToClick.performLongClick();
+                } catch (Exception e) {
+                    MyLog.e(msg, e);
+                }
             }
         });
         TestSuite.waitForIdleSync(mInstrumentation);

@@ -123,7 +123,7 @@ public class MyServiceTest extends InstrumentationTestCase {
                 break;
             }
         }
-        assertTrue(timelineToSync != null);
+        assertTrue("No synced automatically timeline for " + myAccount, timelineToSync != null);
         timelineToSync.setSyncSucceededDate(0);
 
         runner = new MyServiceCommandsRunner(myContext);
@@ -196,7 +196,7 @@ public class MyServiceTest extends InstrumentationTestCase {
         mService.sendListenedToCommand();
         assertTrue("First command didn't start executing", mService.waitForCommandExecutionStarted(startCount));
         assertTrue("First command didn't end executing", mService.waitForCommandExecutionEnded(endCount));
-        assertEquals(mService.httpConnectionMock.toString(),
+        assertEquals(cd1.toString() + " " + mService.httpConnectionMock.toString(),
                 1, mService.httpConnectionMock.getRequestsCounter());
 
         assertTrue(TestSuite.setAndWaitForIsInForeground(true));
