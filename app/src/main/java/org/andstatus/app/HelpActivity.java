@@ -33,6 +33,7 @@ import android.view.animation.AlphaAnimation;
 import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.ViewFlipper;
 
 import org.andstatus.app.account.AccountSettingsActivity;
@@ -382,24 +383,33 @@ public class HelpActivity extends MyActivity implements SwipeInterface, Progress
 
     @Override
     public void onProgressMessage(final CharSequence message) {
+        final String method = "onProgressMessage";
         try {
             this.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    if (progress == null) {
-                        progress = new ProgressDialog(HelpActivity.this, ProgressDialog.STYLE_SPINNER);
-                        progress.setTitle(R.string.app_name);
-                        progress.setMessage(message);
-                        progress.show();
-                    } else {
-                        progress.setMessage(message);
+                    try {
+                        if (progress == null) {
+                            progress = new ProgressDialog(HelpActivity.this, ProgressDialog.STYLE_SPINNER);
+                            progress.setTitle(R.string.app_name);
+                            progress.setMessage(message);
+                            progress.show();
+                        } else {
+                            progress.setMessage(message);
+                        }
+                    } catch (Exception e) {
+                        MyLog.d(this, method + " '" + message + "'", e);
+                        try {
+                            Toast.makeText(MyContextHolder.get().context(), message, Toast.LENGTH_LONG).show();
+                        } catch (Exception e2) {
+                            MyLog.e(method, "Couldn't send toast with the text: " + method, e2);
+                        }
                     }
                 }
             });
         } catch (Exception e) {
-            MyLog.d(this, "onProgressMessage '" + message + "'", e);
+            MyLog.d(this, method + " '" + message + "'", e);
         }
-
     }
 
     @Override

@@ -22,6 +22,7 @@ import android.text.TextUtils;
 import org.andstatus.app.backup.ProgressLogger;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.database.MsgTable;
+import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
 
 import java.util.ArrayList;
@@ -208,6 +209,11 @@ public class MyDataCheckerConversations {
             if (item.isChanged()) {
                 String sql = "";
                 try {
+                    if (changedCount < 5) {
+                        MyLog.v(this, "msgId=" + item.id + "; conversationId changed from " +
+                                MyQuery.msgIdToLongColumnValue(MsgTable.CONVERSATION_ID, item.id)
+                                + " to " + item.conversationId);
+                    }
                     if (!countOnly) {
                         sql = "UPDATE " + MsgTable.TABLE_NAME
                                 + " SET "
@@ -218,13 +224,11 @@ public class MyDataCheckerConversations {
                                     MsgTable.CONVERSATION_ID + "=" + DbUtils.sqlZeroToNull(item.conversationId) : "")
                                 + " WHERE " + MsgTable._ID + "=" + item.id;
                         myContext.getDatabase().execSQL(sql);
-                        if (changedCount < 3) {
-                            MyLog.v(this, sql);
-                        }
                     }
                     changedCount++;
                     if (logger.loggedMoreSecondsAgoThan(PROGRESS_REPORT_PERIOD_SECONDS)) {
                         logger.logProgress("Saved changes for " + changedCount + " messages");
+                        MyServiceManager.setServiceUnavailable();
                     }
                 } catch (Exception e) {
                     String logMsg = "Error: " + e.getMessage() + ", SQL:" + sql;
