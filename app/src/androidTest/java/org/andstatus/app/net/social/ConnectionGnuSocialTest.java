@@ -63,6 +63,7 @@ public class ConnectionGnuSocialTest extends InstrumentationTestCase {
         int ind = 0;
         assertEquals("Posting message", MbTimelineItem.ItemType.MESSAGE, timeline.get(ind).getType());
         MbMessage mbMessage = timeline.get(ind).mbMessage;
+        assertEquals("conversationOid", "2218650", mbMessage.conversationOid);
         assertTrue("Favorited", mbMessage.favoritedByActor.toBoolean(false));
         assertEquals("Oid", "116387", mbMessage.sender.oid);
         assertEquals("Username", "aru", mbMessage.sender.getUserName());
@@ -83,6 +84,7 @@ public class ConnectionGnuSocialTest extends InstrumentationTestCase {
 
         ind++;
         mbMessage = timeline.get(ind).mbMessage;
+        assertEquals("conversationOid", "2218650", mbMessage.conversationOid);
         assertTrue("Does not have a recipient", mbMessage.recipient == null);
         assertTrue("Is not a reblog", mbMessage.rebloggedMessage == null);
         assertTrue("Is a reply", mbMessage.inReplyToMessage != null);
@@ -97,6 +99,7 @@ public class ConnectionGnuSocialTest extends InstrumentationTestCase {
 
         ind++;
         mbMessage = timeline.get(ind).mbMessage;
+        assertEquals("conversationOid", "2218650", mbMessage.conversationOid);
         assertTrue("Message is public", mbMessage.isPublic());
         assertFalse("Not Favorited", mbMessage.favoritedByActor.toBoolean(false));
         assertEquals("Actor", accountUserOid, mbMessage.actor.oid);
@@ -153,6 +156,7 @@ public class ConnectionGnuSocialTest extends InstrumentationTestCase {
             msg.oid += "_" + TestSuite.TESTRUN_UID;
         }
         assertNotNull("message returned", msg);
+        assertEquals("conversationOid", "1956322", msg.conversationOid);
         assertEquals("Author", "mcscx", msg.sender.getUserName());
         assertEquals("null Homepage (url) should be treated as blank", "", msg.sender.getHomepage());
 
@@ -170,6 +174,7 @@ public class ConnectionGnuSocialTest extends InstrumentationTestCase {
         connection.getHttpMock().setResponse(jString);
         MbMessage message = connection.postReblog(MESSAGE_OID);
         assertEquals(message.toString(), MESSAGE_OID, message.oid);
+        assertEquals("conversationOid", "1956322", message.conversationOid);
         assertEquals(1, connection.getHttpMock().getRequestsCounter());
         HttpReadResult result = connection.getHttpMock().getResults().get(0);
         assertTrue("URL doesn't contain message oid: " + result.getUrl(), result.getUrl().contains(MESSAGE_OID));

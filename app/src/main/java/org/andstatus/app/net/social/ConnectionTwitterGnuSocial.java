@@ -41,6 +41,9 @@ import java.util.List;
  * @author yvolk@yurivolkov.com
  */
 public class ConnectionTwitterGnuSocial extends ConnectionTwitter1p0 {
+    private static final String ATTACHMENTS_FIELD_NAME = "attachments";
+    private static final String CONVERSATION_ID_FIELD_NAME = "statusnet_conversation_id";
+    private static final String HTML_BODY_FIELD_NAME = "statusnet_html";
 
     @Override
     protected String getApiPath1(ApiRoutineEnum routine) {
@@ -145,7 +148,6 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitter1p0 {
         return config;
     }
 
-    private static final String HTML_BODY_FIELD_NAME = "statusnet_html";
     @Override
     protected void setMessageBodyFromJson(MbMessage message, JSONObject jso) throws JSONException {
         boolean bodyFound = false;
@@ -159,11 +161,11 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitter1p0 {
         }
     }
 
-    private static final String ATTACHMENTS_FIELD_NAME = "attachments";
     @Override
     protected MbMessage messageFromJson(JSONObject jso) throws ConnectionException {
         final String method = "messageFromJson";
         MbMessage message = super.messageFromJson(jso);
+        message.setConversationOid(jso.optString(CONVERSATION_ID_FIELD_NAME));
         if (jso != null && jso.has(ATTACHMENTS_FIELD_NAME)) {
             try {
                 JSONArray jArr = jso.getJSONArray(ATTACHMENTS_FIELD_NAME);

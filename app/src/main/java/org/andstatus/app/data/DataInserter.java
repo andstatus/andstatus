@@ -130,6 +130,7 @@ public class DataInserter {
                 if (messageIn.conversationId != 0) {
                     message.conversationId = messageIn.conversationId;
                 }
+                message.setConversationOid(messageIn.conversationOid);
                 if (message.sentDate == 0) {
                     message.sentDate = messageIn.sentDate;
                 }
@@ -182,6 +183,9 @@ public class DataInserter {
                     values.put(MsgTable.MSG_OID, message.oid);
                 }
                 values.put(MsgTable.ORIGIN_ID, message.originId);
+                if (!TextUtils.isEmpty(message.conversationOid)) {
+                    values.put(MsgTable.CONVERSATION_OID, message.conversationOid);
+                }
                 values.put(MsgTable.BODY, message.getBody());
             }
             
