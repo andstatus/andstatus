@@ -345,7 +345,7 @@ public class HelpActivity extends MyActivity implements SwipeInterface, Progress
      */
     public static boolean checkAndUpdateLastOpenedAppVersion(Context context, boolean update) {
         boolean changed = false;
-        int versionCodeLast =  SharedPreferencesUtil.getDefaultSharedPreferences().getInt(MyPreferences.KEY_VERSION_CODE_LAST, 0);
+        long versionCodeLast =  SharedPreferencesUtil.getLong(MyPreferences.KEY_VERSION_CODE_LAST);
         PackageManager pm = context.getPackageManager();
         PackageInfo pi;
         try {
@@ -359,8 +359,7 @@ public class HelpActivity extends MyActivity implements SwipeInterface, Progress
                 );
                 changed = true;
                 if ( update && MyContextHolder.get().isReady()) {
-                    SharedPreferencesUtil.getDefaultSharedPreferences().edit()
-                            .putInt(MyPreferences.KEY_VERSION_CODE_LAST, versionCode).commit();
+                    SharedPreferencesUtil.putLong(MyPreferences.KEY_VERSION_CODE_LAST, versionCode);
                 }
             }
         } catch (PackageManager.NameNotFoundException e) {

@@ -25,6 +25,7 @@ import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.AttachedImageFile;
 import org.andstatus.app.data.AvatarFile;
 import org.andstatus.app.data.DownloadStatus;
@@ -207,14 +208,16 @@ public class MessageViewItem implements DuplicatesCollapsible<MessageViewItem> {
     }
 
     public StringBuilder getDetails(Context context) {
-        StringBuilder messageDetails = new StringBuilder(
-                RelativeTime.getDifference(context, createdDate));
-        setInReplyTo(context, messageDetails);
-        setRecipientName(context, messageDetails);
-        setMessageSource(context, messageDetails);
-        setMessageStatus(context, messageDetails);
-        setCollapsedStatus(context, messageDetails);
-        return messageDetails;
+        StringBuilder builder = new StringBuilder(RelativeTime.getDifference(context, createdDate));
+        setInReplyTo(context, builder);
+        setRecipientName(context, builder);
+        setMessageSource(context, builder);
+        setMessageStatus(context, builder);
+        setCollapsedStatus(context, builder);
+        if (MyPreferences.isShowDebuggingInfoInUi()) {
+            I18n.appendWithSpace(builder, "(msgId=" + getMsgId() + ")");
+        }
+        return builder;
     }
 
     protected void setInReplyTo(Context context, StringBuilder messageDetails) {

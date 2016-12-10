@@ -183,8 +183,7 @@ public class MyServiceTest extends InstrumentationTestCase {
     public void testSyncInForeground() throws InterruptedException {
         final String method = "testSyncInForeground";
         MyLog.v(this, method + " started");
-        SharedPreferencesUtil.getDefaultSharedPreferences().edit()
-                .putBoolean(MyPreferences.KEY_SYNC_WHILE_USING_APPLICATION, false).commit();
+        SharedPreferencesUtil.putBoolean(MyPreferences.KEY_SYNC_WHILE_USING_APPLICATION, false);
         CommandData cd1 = CommandData.newTimelineCommand(CommandEnum.FETCH_TIMELINE,
                 TestSuite.getMyAccount(TestSuite.TWITTER_TEST_ACCOUNT_NAME),
                 TimelineType.DIRECT);

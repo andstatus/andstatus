@@ -293,11 +293,11 @@ public class MyProvider extends ContentProvider {
                         selection = "";
                     }
                     // TODO: Search in MyDatabase.User.USERNAME also
-                    selection = "(" + UserTable.AUTHOR_NAME + " LIKE ?  OR " + MsgTable.BODY
+                    selection = "(" + UserTable.AUTHOR_NAME + " LIKE ?  OR " + MsgTable.BODY_TO_SEARCH
                             + " LIKE ?)" + selection;
 
                     selectionArgs = addBeforeArray(selectionArgs, "%" + searchQuery + "%");
-                    selectionArgs = addBeforeArray(selectionArgs, "%" + searchQuery + "%");
+                    selectionArgs = addBeforeArray(selectionArgs, "%," + searchQuery + ",%");
                 }
                 break;
 

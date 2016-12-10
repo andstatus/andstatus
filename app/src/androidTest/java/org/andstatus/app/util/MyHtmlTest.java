@@ -60,6 +60,18 @@ public class MyHtmlTest extends InstrumentationTestCase {
                 MyHtml.htmlify("@auser@example.com This is a link https://example.com/page1.html#something\nThe second line"));
     }
 
+    public void testBodyToSearch() {
+        final String text1 = "@somebody,  [This]         is'\n a\t; \"normalised {text}\""
+                + "@user@domain.com, #<a href=\"#some\">AndStatus</a> (!gnusocial)";
+        final String text2 = "@somebody,  [This]         is'\n a\t; \"normalised {text}\""
+                + "@user@domain.com, #AndStatus (!gnusocial)";
+        final String text3 = ",somebody,@somebody,This,is,a,normalised,text,user,@user@domain.com,AndStatus,#AndStatus,"
+                + "gnusocial,!gnusocial,";
+        assertEquals(text3, MyHtml.normalizeWordsForSearch(text2));
+        assertEquals(text3.toLowerCase(), MyHtml.getBodyToSearch(text2));
+        assertEquals(text3.toLowerCase(), MyHtml.getBodyToSearch(text1));
+    }
+
     public void testHasHtmlMarkup() {
         assertFalse(MyHtml.hasHtmlMarkup(THIS_MESSAGE_HAS_NEWLINE));
         assertTrue(MyHtml.hasHtmlMarkup(THIS_MESSAGE_HAS_NEWLINE_HTML));

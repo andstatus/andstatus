@@ -39,6 +39,7 @@ import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.CommandExecutionContext;
 import org.andstatus.app.timeline.TimelineType;
+import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TriState;
@@ -187,6 +188,7 @@ public class DataInserter {
                     values.put(MsgTable.CONVERSATION_OID, message.conversationOid);
                 }
                 values.put(MsgTable.BODY, message.getBody());
+                values.put(MsgTable.BODY_TO_SEARCH, MyHtml.getBodyToSearch(message.getBody()));
             }
             
             /**

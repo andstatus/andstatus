@@ -107,11 +107,9 @@ public class TestSuite extends TestCase {
         MyLog.d(TAG, "After Initializing Test Suite loop");
         assertTrue("MyContext state=" + MyContextHolder.get().state(), MyContextHolder.get().state() != MyContextState.EMPTY);
 
-        SharedPreferencesUtil.getDefaultSharedPreferences().edit()
-            .putString(MyPreferences.KEY_MIN_LOG_LEVEL, Integer.toString(MyLog.VERBOSE))
-            .putBoolean(MyPreferences.KEY_DOWNLOAD_AND_DISPLAY_ATTACHED_IMAGES, true)
-            .putBoolean(MyPreferences.KEY_ATTACH_IMAGES_TO_MY_MESSAGES, true)
-            .apply();
+        SharedPreferencesUtil.putString(MyPreferences.KEY_MIN_LOG_LEVEL, Integer.toString(MyLog.VERBOSE));
+        SharedPreferencesUtil.putBoolean(MyPreferences.KEY_DOWNLOAD_AND_DISPLAY_ATTACHED_IMAGES, true);
+        SharedPreferencesUtil.putBoolean(MyPreferences.KEY_ATTACH_IMAGES_TO_MY_MESSAGES, true);
         AsyncTaskLauncher.forget();
         ExceptionsCounter.forget();
         MyLog.forget();

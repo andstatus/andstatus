@@ -86,6 +86,10 @@ public final class MsgTable implements BaseColumns {
      */
     public static final String BODY = "body";
     /**
+     * Body text, prepared for easy searching in a database
+     */
+    public static final String BODY_TO_SEARCH = "body_to_search";
+    /**
      * String generally describing Client's software used to post this message
      * It's like "User Agent" string in the browsers?!: "via ..."
      * (This is "source" field in tweets)
@@ -146,6 +150,7 @@ public final class MsgTable implements BaseColumns {
                 + MsgTable.SENDER_ID + " INTEGER,"
                 + MsgTable.RECIPIENT_ID + " INTEGER,"
                 + MsgTable.BODY + " TEXT,"
+                + MsgTable.BODY_TO_SEARCH + " TEXT,"
                 + MsgTable.VIA + " TEXT,"
                 + MsgTable.URL + " TEXT,"
                 + MsgTable.IN_REPLY_TO_MSG_ID + " INTEGER,"

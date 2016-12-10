@@ -389,11 +389,7 @@ public class StorageSwitch {
 
         private void saveNewSettings(boolean useExternalStorageNew, StringBuilder messageToAppend) {
             try {
-                SharedPreferencesUtil
-                        .getDefaultSharedPreferences()
-                        .edit()
-                        .putBoolean(MyPreferences.KEY_USE_EXTERNAL_STORAGE,
-                                useExternalStorageNew).commit();
+                SharedPreferencesUtil.putBoolean(MyPreferences.KEY_USE_EXTERNAL_STORAGE, useExternalStorageNew);
                 MyPreferences.onPreferencesChanged();
             } catch (Exception e) {
                 MyLog.v(this, "Save new settings", e);

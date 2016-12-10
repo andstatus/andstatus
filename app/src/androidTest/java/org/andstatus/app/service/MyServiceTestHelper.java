@@ -155,8 +155,7 @@ public class MyServiceTestHelper implements MyServiceEventsListener {
     public void tearDown() {
         MyLog.v(this, "tearDown started");
         dropQueues();
-        SharedPreferencesUtil.getDefaultSharedPreferences().edit()
-                .putBoolean(MyPreferences.KEY_SYNC_WHILE_USING_APPLICATION, true).commit();
+        SharedPreferencesUtil.putBoolean(MyPreferences.KEY_SYNC_WHILE_USING_APPLICATION, true);
         
         serviceConnector.unregisterReceiver(myContext.context());
         TestSuite.setHttpConnectionMockClass(null);

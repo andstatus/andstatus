@@ -111,7 +111,7 @@ public class MyAppWidgetData {
             nothingPref = prefs.getString(PREF_NOTHING_KEY, null);
             if (nothingPref == null) {
                 nothingPref = mContext.getString(R.string.appwidget_nothingnew_default);
-                if (MyPreferences.getShowDebuggingInfoInUi()) {
+                if (MyPreferences.isShowDebuggingInfoInUi()) {
                     nothingPref += " (" + mAppWidgetId + ")";
                 }
             }

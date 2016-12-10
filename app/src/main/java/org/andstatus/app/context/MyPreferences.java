@@ -205,7 +205,7 @@ public class MyPreferences {
         return UserInTimeline.load(SharedPreferencesUtil.getString(KEY_USER_IN_TIMELINE, ""));
     }
 
-    public static boolean getShowDebuggingInfoInUi() {
+    public static boolean isShowDebuggingInfoInUi() {
         return SharedPreferencesUtil.getBoolean(KEY_DEBUGGING_INFO_IN_UI, false);
     }
 

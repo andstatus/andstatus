@@ -231,14 +231,6 @@ public class SharedPreferencesUtil {
     }
 
     public static long getLongStoredAsString(@NonNull String key, long defaultValue) {
-        if (cachedValues.containsKey(key)) {
-            try {
-                return (long) cachedValues.get(key);
-            } catch (ClassCastException e) {
-                MyLog.ignored("getLongStoredAsString, key=" + key, e);
-                cachedValues.remove(key);
-            }
-        }
         long value = defaultValue;
         try {
             long longValueStored = Long.parseLong(getString(key, "0"));
@@ -248,8 +240,27 @@ public class SharedPreferencesUtil {
         } catch (NumberFormatException e) {
             MyLog.ignored(TAG, e);
         }
-        putToCache(key, value);
         return value;
+    }
+
+    public static void putString(@NonNull String key, String value) {
+        if (value == null) {
+            removeKey(key);
+        } else {
+            SharedPreferences sp = getDefaultSharedPreferences();
+            if (sp != null) {
+                sp.edit().putString(key, value).apply();
+                putToCache(key, value);
+            }
+        }
+    }
+
+    public static void removeKey(@NonNull String key) {
+        SharedPreferences sp = getDefaultSharedPreferences();
+        if (sp != null) {
+            sp.edit().remove(key).apply();
+            putToCache(key, null);
+        }
     }
 
     public static String getString(@NonNull String key, String defaultValue) {
@@ -265,12 +276,12 @@ public class SharedPreferencesUtil {
         SharedPreferences sp = getDefaultSharedPreferences();
         if (sp != null) {
             value = sp.getString(key, defaultValue);
+            putToCache(key, value);
         }
-        putToCache(key, value);
         return value;
     }
 
-    public static Object putToCache(@NonNull String key, Object value) {
+    private static Object putToCache(@NonNull String key, Object value) {
         if (value == null) {
             Object oldValue = cachedValues.get(key);
             cachedValues.remove(key);
@@ -278,14 +289,6 @@ public class SharedPreferencesUtil {
         } else {
             return cachedValues.put(key, value);
         }
-    }
-
-    public static void putLong(@NonNull String key, long value) {
-        SharedPreferences sp = getDefaultSharedPreferences();
-        if (sp != null) {
-            sp.edit().putLong(key, value).apply();
-        }
-        cachedValues.put(key, value);
     }
 
     public static void putBoolean(@NonNull String key, View checkBox) {
@@ -299,8 +302,16 @@ public class SharedPreferencesUtil {
         SharedPreferences sp = getDefaultSharedPreferences();
         if (sp != null) {
             sp.edit().putBoolean(key, value).apply();
+            cachedValues.put(key, value);
         }
-        cachedValues.put(key, value);
+    }
+
+    public static void putLong(@NonNull String key, long value) {
+        SharedPreferences sp = getDefaultSharedPreferences();
+        if (sp != null) {
+            sp.edit().putLong(key, value).apply();
+            cachedValues.put(key, value);
+        }
     }
 
     public static long getLong(@NonNull String key) {
@@ -317,11 +328,11 @@ public class SharedPreferencesUtil {
         if (sp != null) {
             try {
                 value = sp.getLong(key, 0);
+                cachedValues.put(key, value);
             } catch (ClassCastException e) {
                 MyLog.ignored("getLong", e);
             }
         }
-        cachedValues.put(key, value);
         return value;
     }
 
@@ -338,8 +349,8 @@ public class SharedPreferencesUtil {
         SharedPreferences sp = getDefaultSharedPreferences();
         if (sp != null) {
             value = sp.getBoolean(key, defaultValue);
+            cachedValues.put(key, value);
         }
-        cachedValues.put(key, value);
         return value;
     }
 

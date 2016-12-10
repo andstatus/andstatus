@@ -16,6 +16,7 @@
 
 package org.andstatus.app.util;
 
+import android.support.annotation.NonNull;
 import android.text.Html;
 import android.text.SpannableString;
 import android.text.TextUtils;
@@ -48,6 +49,11 @@ public class MyHtml {
         return Html.toHtml(spannable);
     }
 
+    @NonNull
+    public static String getBodyToSearch(String body) {
+        return normalizeWordsForSearch(fromHtml(body)).toLowerCase();
+    }
+
     /** Strips HTML markup from the String */
     public static String fromHtml(String text) {
         if (TextUtils.isEmpty(text)) {
@@ -76,6 +82,16 @@ public class MyHtml {
         }
     }
 
+    public static String normalizeWordsForSearch(String text) {
+        if (TextUtils.isEmpty(text)) {
+            return "";
+        } else {
+            String text2 = "," + text + ",";
+            text2 = text2.replaceAll("[\\[\\]\\(\\)\\{\\}\n\'\"<>,:;\\s]+",",");
+            text2 = text2.replaceAll("(,[@#!]([^@#!,]+))",",$2$1");
+            return text2;
+        }
+    }
 
     /** Very simple method  
      */
@@ -86,5 +102,4 @@ public class MyHtml {
         }
         return has; 
     }
-
 }

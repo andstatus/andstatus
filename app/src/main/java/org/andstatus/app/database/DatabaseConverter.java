@@ -17,6 +17,7 @@
 package org.andstatus.app.database;
 
 import android.app.Activity;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Build;
 
@@ -27,6 +28,7 @@ import org.andstatus.app.context.MyStorage;
 import org.andstatus.app.data.ApplicationUpgradeException;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.util.FileUtils;
+import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
 
 import java.io.File;
@@ -35,13 +37,13 @@ class DatabaseConverter {
     public static final int PARTIAL_INDEX_SUPPORTED = Build.VERSION_CODES.LOLLIPOP;
     long startTime = java.lang.System.currentTimeMillis();
     private Activity activity;
-    ProgressLogger.ProgressCallback progressCallback = ProgressLogger.getEmptyCallback();
+    ProgressLogger progressLogger = new ProgressLogger(ProgressLogger.getEmptyCallback());
 
     protected boolean execute(DatabaseConverterController.UpgradeParams params) {
         boolean success = false;
         activity = params.upgradeRequestor;
         if (ProgressLogger.ProgressCallback.class.isAssignableFrom(params.upgradeRequestor.getClass())) {
-            progressCallback = (ProgressLogger.ProgressCallback) params.upgradeRequestor;
+            progressLogger = new ProgressLogger((ProgressLogger.ProgressCallback) params.upgradeRequestor);
         }
         String msgLog = "";
         long endTime = 0;
@@ -52,7 +54,7 @@ class DatabaseConverter {
         } catch (ApplicationUpgradeException e) {
             endTime = java.lang.System.currentTimeMillis();
             msgLog = e.getMessage();
-            progressCallback.onProgressMessage(msgLog);
+            progressLogger.logProgress(msgLog);
             MyLog.ignored(this, e);
             DbUtils.waitMs("execute, on ApplicationUpgradeException", 30000);
         } finally {
@@ -88,7 +90,7 @@ class DatabaseConverter {
                 int prevVersion = currentVersion;
                 Class clazz = Class.forName(this.getClass().getName() + "$Convert" + Integer.toString(currentVersion));
                 oneStep = (OneStep) clazz.newInstance();
-                currentVersion = oneStep.execute(db, currentVersion);
+                currentVersion = oneStep.execute(db, currentVersion, progressLogger);
                 if (currentVersion == prevVersion) {
                     lastError = oneStep.getLastError();
                     MyLog.e(this, "Stuck at version " + prevVersion + "\n"
@@ -132,14 +134,16 @@ class DatabaseConverter {
     private static abstract class OneStep {
         SQLiteDatabase db;
         int oldVersion;
+        ProgressLogger progressLogger;
         int versionTo;
         String sql = "";
         protected String lastError = "?";
 
-        int execute (SQLiteDatabase db, int oldVersion) {
+        int execute(SQLiteDatabase db, int oldVersion, ProgressLogger progressLogger) {
             boolean ok = false;
             this.db = db;
             this.oldVersion = oldVersion;
+            this.progressLogger = progressLogger;
             try {
                 MyLog.i(this, "Database upgrading step from version " + oldVersion + " to version " + versionTo);
                 execute2();
@@ -393,6 +397,8 @@ class DatabaseConverter {
             DbUtils.execSQL(db, sql);
             sql = "ALTER TABLE msg ADD COLUMN conversation_oid TEXT";
             DbUtils.execSQL(db, sql);
+            sql = "ALTER TABLE msg ADD COLUMN body_to_search TEXT";
+            DbUtils.execSQL(db, sql);
             sql = "CREATE INDEX idx_msg_in_reply_to_msg_id ON msg (" + "in_reply_to_msg_id" + ")" +
                     (Build.VERSION.SDK_INT >= PARTIAL_INDEX_SUPPORTED ?
                             " WHERE " + "in_reply_to_msg_id" + " IS NOT NULL" : "");
@@ -401,6 +407,24 @@ class DatabaseConverter {
                     (Build.VERSION.SDK_INT >= PARTIAL_INDEX_SUPPORTED ?
                             " WHERE " + "conversation_id" + " IS NOT NULL" : "");
             DbUtils.execSQL(db, sql);
+
+            String sql = "SELECT body FROM msg";
+            Cursor c = null;
+            int count = 0;
+            try {
+                c = db.rawQuery(sql, null);
+                while (c.moveToNext()) {
+                    sql = "UPDATE msg SET body_to_search='" + MyHtml.fromHtml(c.getString(0)).toLowerCase() + "'";
+                    db.execSQL(sql);
+                    count++;
+                    if (progressLogger.loggedMoreSecondsAgoThan(10)) {
+                        progressLogger.logProgress(this.getClass().getSimpleName() + " converted " + count + " rows");
+                    }
+                }
+            } finally {
+                DbUtils.closeSilently(c);
+            }
+
         }
     }
 

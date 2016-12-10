@@ -79,7 +79,7 @@ public class OAuthClientKeysTest extends InstrumentationTestCase {
             keys1.setConsumerKeyAndSecret(consumerKey, consumerSecret);
             // Checking
             OAuthClientKeys keys2 = OAuthClientKeys.fromConnectionData(connectionData);
-            assertEquals("Keys are loaded", true, keys2.areKeysPresent());
+            assertEquals("Keys are loaded for " + origin, true, keys2.areKeysPresent());
             assertEquals(consumerKey, keys2.getConsumerKey());
             assertEquals(consumerSecret, keys2.getConsumerSecret());
         }

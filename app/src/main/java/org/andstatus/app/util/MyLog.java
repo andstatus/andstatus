@@ -352,7 +352,7 @@ public class MyLog {
     }
 
     public static void setMinLogLevel(int minLogLevel) {
-        SharedPreferencesUtil.getDefaultSharedPreferences().edit().putString(MyPreferences.KEY_MIN_LOG_LEVEL, Integer.toString(minLogLevel)).commit();
+        SharedPreferencesUtil.putString(MyPreferences.KEY_MIN_LOG_LEVEL, Integer.toString(minLogLevel));
         forget();
     }
     

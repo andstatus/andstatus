@@ -63,17 +63,13 @@ public class OAuthClientKeysDynamic implements OAuthClientKeysStrategy {
         if (TextUtils.isEmpty(consumerKeyIn) || TextUtils.isEmpty(consumerSecretIn)) {
             consumerKey = "";
             consumerSecret = "";
-            SharedPreferencesUtil.getDefaultSharedPreferences().edit()
-            .remove(keyConsumerKey)
-            .remove(keyConsumerSecret)
-            .commit();
+            SharedPreferencesUtil.removeKey(keyConsumerKey);
+            SharedPreferencesUtil.removeKey(keyConsumerSecret);
         } else {
             consumerKey = consumerKeyIn;
             consumerSecret = consumerSecretIn;
-            SharedPreferencesUtil.getDefaultSharedPreferences().edit()
-            .putString(keyConsumerKey, consumerKey)
-            .putString(keyConsumerSecret, consumerSecret)
-            .commit();
+            SharedPreferencesUtil.putString(keyConsumerKey, consumerKey);
+            SharedPreferencesUtil.putString(keyConsumerSecret, consumerSecret);
         }
     }
 

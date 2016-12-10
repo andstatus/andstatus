@@ -48,7 +48,7 @@ public class ConversationViewItem extends ConversationItem {
     @Override
     public StringBuilder getDetails(Context context) {
         StringBuilder builder = super.getDetails(context);
-        if (MyPreferences.getShowDebuggingInfoInUi()) {
+        if (MyPreferences.isShowDebuggingInfoInUi()) {
             I18n.appendWithSpace(builder, "(i" + indentLevel + ",r" + replyLevel + ")");
         }
         return builder;

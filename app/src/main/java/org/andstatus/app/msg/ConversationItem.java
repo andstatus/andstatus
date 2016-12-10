@@ -101,9 +101,6 @@ public abstract class ConversationItem extends MessageViewItem implements Compar
             I18n.appendWithSpace(builder, "(" + inReplyToViewItem.historyOrder
                     + ")");
         }
-        if (MyPreferences.getShowDebuggingInfoInUi()) {
-            I18n.appendWithSpace(builder, "(msgId=" + getMsgId() + ")");
-        }
         return builder;
     }
 }
