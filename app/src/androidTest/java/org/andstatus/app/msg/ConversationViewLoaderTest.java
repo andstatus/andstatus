@@ -7,8 +7,8 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.context.Travis;
-import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.data.MyQuery;
+import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.util.MyLog;
 
 import java.util.List;
@@ -35,7 +35,7 @@ public class ConversationViewLoaderTest extends InstrumentationTestCase implemen
         ConversationLoader<ConversationViewItem> loader =
                 new ConversationLoaderFactory<ConversationViewItem>().getLoader(
                 ConversationViewItem.class,
-                MyContextHolder.get(), ma, selectedMessageId);
+                MyContextHolder.get(), ma, selectedMessageId, false);
         progressCounter = 0;
         loader.load(this);
         List<ConversationViewItem> list = loader.getList();

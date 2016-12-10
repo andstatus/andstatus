@@ -18,7 +18,6 @@ package org.andstatus.app.data;
 
 import android.support.annotation.Nullable;
 import android.test.InstrumentationTestCase;
-import android.text.TextUtils;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
@@ -30,12 +29,14 @@ import org.andstatus.app.origin.Origin;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.CommandExecutionContext;
+import org.andstatus.app.util.MyLog;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class GnuSocialMessagesInserter extends InstrumentationTestCase {
     private static AtomicInteger iterationCounter = new AtomicInteger(0);
     private int iteration = 0;
+    private String conversationOid = "";
 
     private MbUser accountMbUser;
     private MyAccount ma;
@@ -48,6 +49,7 @@ public class GnuSocialMessagesInserter extends InstrumentationTestCase {
     
     private void mySetup() {
         iteration = iterationCounter.incrementAndGet();
+        conversationOid = Long.toString(MyLog.uniqueCurrentTimeMS());
         origin = MyContextHolder.get().persistentOrigins().fromName(TestSuite.GNUSOCIAL_TEST_ORIGIN_NAME);
         assertTrue(TestSuite.GNUSOCIAL_TEST_ORIGIN_NAME + " exists", origin != null);
         ma = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME); 
@@ -126,7 +128,8 @@ public class GnuSocialMessagesInserter extends InstrumentationTestCase {
     private MbMessage buildMessage(MbUser author, String body, MbMessage inReplyToMessage, String messageOidIn) {
         return new MessageInserter(ma).buildMessage(author, body
                         + (inReplyToMessage != null ? " it" + iteration : ""),
-                inReplyToMessage, messageOidIn, DownloadStatus.LOADED);
+                inReplyToMessage, messageOidIn, DownloadStatus.LOADED)
+                .setConversationOid(conversationOid);
     }
     
     private long addMessage(MbMessage message) {
@@ -134,6 +137,7 @@ public class GnuSocialMessagesInserter extends InstrumentationTestCase {
                 CommandData.newAccountCommand(CommandEnum.EMPTY, ma)));
         long messageId = di.insertOrUpdateMsg(message);
         assertTrue( "Message added " + message.oid, messageId != 0);
+        assertEquals("Conversation Oid", conversationOid, MyQuery.msgIdToConversationOid(messageId));
         return messageId;
     }
 }

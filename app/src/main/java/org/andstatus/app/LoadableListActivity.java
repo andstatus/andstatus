@@ -525,6 +525,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
         boolean needed = false;
         switch(commandData.getCommand()) {
             case GET_STATUS:
+            case GET_CONVERSATION:
 			case GET_FOLLOWERS:
             case GET_FRIENDS:
                 if (commandData.getResult().getDownloadedCount() > 0) {
@@ -593,7 +594,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.sync_menu_item:
-                showList(WhichPage.CURRENT);
+                showList(BundleUtils.toBundle(WhichPage.CURRENT.toBundle(), IntentExtra.SYNC.key, 1L));
                 break;
             default:
                 break;

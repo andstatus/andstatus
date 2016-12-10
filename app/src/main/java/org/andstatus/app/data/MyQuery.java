@@ -586,4 +586,14 @@ public class MyQuery {
         I18n.appendAtNewLine(builder, origin.toString());
         return builder.toString();
     }
+
+    public static long conversationOidToMsgId(String conversationOid) {
+        return conditionToLongColumnValue(MsgTable.TABLE_NAME, MsgTable.CONVERSATION_ID,
+                MsgTable.CONVERSATION_OID + "='" + conversationOid + "'");
+    }
+
+    @NonNull
+    public static String msgIdToConversationOid(long msgId) {
+        return msgIdToStringColumnValue(MsgTable.CONVERSATION_OID, msgId);
+    }
 }

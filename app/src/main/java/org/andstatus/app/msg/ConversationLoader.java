@@ -19,6 +19,7 @@ package org.andstatus.app.msg;
 import android.database.Cursor;
 import android.net.Uri;
 import android.support.annotation.NonNull;
+import android.text.TextUtils;
 
 import org.andstatus.app.LoadableListActivity;
 import org.andstatus.app.LoadableListActivity.ProgressPublisher;
@@ -27,6 +28,8 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MatchedUri;
+import org.andstatus.app.data.MyQuery;
+import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
@@ -49,6 +52,8 @@ public abstract class ConversationLoader<T extends ConversationItem> extends Syn
     protected final MyContext myContext;
     protected final MyAccount ma;
     private final long selectedMessageId;
+    private boolean sync = false;
+    private boolean conversationSyncRequested = false;
     protected boolean mAllowLoadingFromInternet = false;
     private final ReplyLevelComparator<T> replyLevelComparator = new ReplyLevelComparator<>();
     private final TFactory<T> tFactory;
@@ -64,11 +69,12 @@ public abstract class ConversationLoader<T extends ConversationItem> extends Syn
     final List<Long> idsOfTheMessagesToFind = new ArrayList<>();
 
     public ConversationLoader(
-            Class<T> tClass, MyContext myContext, MyAccount ma, long selectedMessageId) {
+            Class<T> tClass, MyContext myContext, MyAccount ma, long selectedMessageId, boolean sync) {
         tFactory = new TFactory<>(tClass);
         this.myContext = myContext;
         this.ma = ma;
         this.selectedMessageId = selectedMessageId;
+        this.sync = sync;
     }
     
     @Override
@@ -77,6 +83,9 @@ public abstract class ConversationLoader<T extends ConversationItem> extends Syn
         cachedMessages.clear();
         idsOfTheMessagesToFind.clear();
         msgList.clear();
+        if (sync) {
+            requestConversationSync(selectedMessageId);
+        }
         load2(newOMsg(selectedMessageId));
         Collections.sort(msgList, replyLevelComparator);
         enumerateMessages();
@@ -147,9 +156,30 @@ public abstract class ConversationLoader<T extends ConversationItem> extends Syn
     }
 
     protected void loadFromInternet(long msgId) {
+        if (requestConversationSync(msgId)) {
+            return;
+        }
         MyLog.v(this, "Message id=" + msgId + " will be loaded from the Internet");
         MyServiceManager.sendForegroundCommand(
                 CommandData.newItemCommand(CommandEnum.GET_STATUS, ma, msgId));
+    }
+
+    private boolean requestConversationSync(long msgId) {
+        if (conversationSyncRequested) {
+            return true;
+        }
+        if (ma.getConnection().isApiSupported(Connection.ApiRoutineEnum.GET_CONVERSATION)) {
+            String conversationOid = MyQuery.msgIdToConversationOid(msgId);
+            if (!TextUtils.isEmpty(conversationOid)) {
+                conversationSyncRequested = true;
+                MyLog.v(this, "Conversation oid=" +  conversationOid + " for message id=" + msgId
+                        + " will be loaded from the Internet");
+                MyServiceManager.sendForegroundCommand(
+                        CommandData.newItemCommand(CommandEnum.GET_CONVERSATION, ma, msgId));
+                return true;
+            }
+        }
+        return false;
     }
 
     private static class ReplyLevelComparator<T extends ConversationItem> implements Comparator<T>, Serializable {
@@ -212,12 +242,6 @@ public abstract class ConversationLoader<T extends ConversationItem> extends Syn
                reply.mNParentReplies = oMsg.mNReplies;
                enumerateBranch(reply, order, indentNext);
            }
-        }
-    }
-
-    private void reverseListOrder() {
-        for (ConversationItem oMsg : msgList) {
-            oMsg.mListOrder = msgList.size() - oMsg.mListOrder - 1;
         }
     }
 

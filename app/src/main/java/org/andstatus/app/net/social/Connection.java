@@ -28,7 +28,6 @@ import org.andstatus.app.net.http.ConnectionException.StatusCode;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.net.http.HttpConnectionData;
 import org.andstatus.app.net.http.HttpConnectionMock;
-import org.andstatus.app.net.http.HttpConnectionOAuthJavaNet;
 import org.andstatus.app.net.http.OAuthService;
 import org.andstatus.app.net.social.MbTimelineItem.ItemType;
 import org.andstatus.app.origin.OriginConnectionData;
@@ -68,6 +67,7 @@ public abstract class Connection {
         DESTROY_FAVORITE,
         FOLLOW_USER,
         GET_CONFIG,
+        GET_CONVERSATION,
         /** List of users */
         GET_FRIENDS, 
         /** List of Users' IDs */
@@ -288,7 +288,11 @@ public abstract class Connection {
 
     /** See {@link #getMessage(String)} */
     protected abstract MbMessage getMessage1(String statusId) throws ConnectionException;
-    
+
+    public List<MbTimelineItem> getConversation(String conversationOid) throws ConnectionException {
+        throw ConnectionException.fromStatusCode(StatusCode.UNSUPPORTED_API, "getConversation oid=" + conversationOid);
+    }
+
     /**
      * Update user status by posting to the Twitter REST API.
      * 

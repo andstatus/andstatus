@@ -28,15 +28,15 @@ public class ConversationLoaderFactory<T extends ConversationItem> {
 
     public ConversationLoader<T> getLoader(
             Class<T> tClass, MyContext myContext, MyAccount ma,
-            long messageId) {
+            long messageId, boolean sync) {
         boolean recursiveLoader = ma.getOrigin().getOriginType().isDirectMessageAllowsReply();
         if (!recursiveLoader) {
             recursiveLoader = MyQuery.msgIdToLongColumnValue(MsgTable.RECIPIENT_ID, messageId) == 0;
         }
         if (recursiveLoader) {
-            return new RecursiveConversationLoader<>(tClass, myContext, ma, messageId);
+            return new RecursiveConversationLoader<>(tClass, myContext, ma, messageId, sync);
         }  else {
-            return new DirectMessagesConversationLoader<T>(tClass, myContext, ma, messageId);
+            return new DirectMessagesConversationLoader<>(tClass, myContext, ma, messageId, sync);
         }
     }
 }

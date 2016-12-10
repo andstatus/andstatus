@@ -181,6 +181,7 @@
   <string name="friends_of">Friends of \"%1s\"</string>
   <string name="gestures">Gestures</string>
   <string name="gestures_summary">Touch mechanics. How a User interacts with the application</string>
+  <string name="get_conversation">Get conversation</string>
   <string name="get_followers">Get followers</string>
   <string name="get_friends">Get friends</string>
   <string name="get_open_instances_title">Get Open Instances</string>

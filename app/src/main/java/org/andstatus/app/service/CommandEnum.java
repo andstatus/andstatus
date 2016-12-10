@@ -58,6 +58,7 @@ public enum CommandEnum {
     UPDATE_STATUS("update-status", R.string.button_create_message, -10, ConnectionRequired.SYNC),
     DESTROY_STATUS("destroy-status", R.string.menu_item_destroy_status, -3, ConnectionRequired.SYNC),
     GET_STATUS("get-status", R.string.title_command_get_status, -5, ConnectionRequired.SYNC),
+    GET_CONVERSATION("get-conversation", R.string.get_conversation, -5, ConnectionRequired.SYNC),
     /** see http://gstools.org/api/doc/ */
     GET_OPEN_INSTANCES("get_open_instances", R.string.get_open_instances_title, -1, ConnectionRequired.SYNC),
 

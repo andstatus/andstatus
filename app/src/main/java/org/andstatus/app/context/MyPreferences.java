@@ -228,6 +228,7 @@ public class MyPreferences {
      *  Remember when last changes to the preferences were made
      */
     public static void onPreferencesChanged() {
+        SharedPreferencesUtil.forget();
         SharedPreferencesUtil.putLong(KEY_PREFERENCES_CHANGE_TIME, System.currentTimeMillis());
         Context context = MyContextHolder.get().context();
         if (context != null && SharedPreferencesUtil.getBoolean(KEY_ENABLE_ANDROID_BACKUP, false)) {

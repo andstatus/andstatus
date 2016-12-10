@@ -35,9 +35,12 @@ import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.ConnectionException.StatusCode;
 import org.andstatus.app.net.social.MbMessage;
 import org.andstatus.app.net.social.MbRateLimitStatus;
+import org.andstatus.app.net.social.MbTimelineItem;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
+
+import java.util.List;
 
 class CommandExecutorOther extends CommandExecutorStrategy{
     
@@ -62,6 +65,9 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 break;
             case DESTROY_REBLOG:
                 destroyReblog(execContext.getCommandData().itemId);
+                break;
+            case GET_CONVERSATION:
+                getConversation(execContext.getCommandData().itemId);
                 break;
             case GET_STATUS:
                 getStatus(execContext.getCommandData().itemId);
@@ -88,6 +94,36 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 MyLog.e(this, "Unexpected command here " + execContext.getCommandData());
                 break;
         }
+    }
+
+    private void getConversation(long msgId) {
+        final String method = "getConversation";
+        String conversationOid = MyQuery.msgIdToConversationOid(msgId);
+        if (TextUtils.isEmpty(conversationOid)) {
+            logExecutionError(true, method + " empty conversationId " + MyQuery.msgInfoForLog(msgId));
+        } else {
+            try {
+                List<MbTimelineItem> messages = execContext.getMyAccount().getConnection().getConversation(conversationOid);
+                if (!messages.isEmpty()) {
+                    DataInserter di = new DataInserter(execContext);
+                    for (MbTimelineItem item : messages) {
+                        switch (item.getType()) {
+                            case MESSAGE:
+                                di.insertOrUpdateMsg(item.mbMessage);
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                }
+            } catch (ConnectionException e) {
+                if (e.getStatusCode() == StatusCode.NOT_FOUND) {
+                    execContext.getResult().incrementParseExceptions();
+                }
+                logConnectionException(e, method + " " + MyQuery.msgInfoForLog(msgId));
+            }
+        }
+        MyLog.d(this, method + (noErrors() ? " succeeded" : " failed"));
     }
 
     private void getUser(long userId, String userName) {

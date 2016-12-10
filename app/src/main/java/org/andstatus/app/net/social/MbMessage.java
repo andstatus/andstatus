@@ -111,12 +111,13 @@ public class MbMessage {
         }
     }
 
-    public void setConversationOid(String conversationOid) {
+    public MbMessage setConversationOid(String conversationOid) {
         if (TextUtils.isEmpty(conversationOid)) {
             this.conversationOid = "";
         } else {
             this.conversationOid = conversationOid;
         }
+        return this;
     }
 
     public DownloadStatus getStatus() {

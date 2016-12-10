@@ -253,6 +253,7 @@ public final class MyContextImpl implements MyContext {
         AsyncTaskLauncher.forget();
         ExceptionsCounter.forget();
         MyLog.forget();
+        SharedPreferencesUtil.forget();
     }
 
     @Override

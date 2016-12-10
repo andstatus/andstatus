@@ -52,6 +52,9 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitter1p0 {
             case GET_CONFIG:
                 url = "statusnet/config" + EXTENSION;
                 break;
+            case GET_CONVERSATION:
+                url = "statusnet/conversation/";
+                break;
             case GET_OPEN_INSTANCES:
                 url = "http://gstools.org/api/get_open_instances";
                 break;
@@ -146,6 +149,17 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitter1p0 {
             }
         }
         return config;
+    }
+
+    @Override
+    public List<MbTimelineItem> getConversation(String conversationOid) throws ConnectionException {
+        if (TextUtils.isEmpty(conversationOid)) {
+            return new ArrayList<>();
+        } else {
+            String url = getApiPath(ApiRoutineEnum.GET_CONVERSATION) + conversationOid + EXTENSION;
+            JSONArray jArr = http.getRequestAsArray(url);
+            return jArrToTimeline(jArr, ApiRoutineEnum.GET_CONVERSATION, url);
+        }
     }
 
     @Override

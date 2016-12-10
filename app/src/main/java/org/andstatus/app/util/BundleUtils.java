@@ -84,4 +84,8 @@ public class BundleUtils {
         }
         return out;
     }
+
+    public static boolean hasKey(Bundle bundle, String key) {
+        return bundle != null &&  bundle.get(key) != null;
+    }
 }

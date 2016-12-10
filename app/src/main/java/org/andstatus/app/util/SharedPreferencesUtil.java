@@ -22,6 +22,7 @@ import android.content.SharedPreferences.Editor;
 import android.preference.ListPreference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.CheckBox;
@@ -30,14 +31,21 @@ import org.andstatus.app.context.MyContextHolder;
 
 import java.io.File;
 import java.text.MessageFormat;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class SharedPreferencesUtil {
     private static final String TAG = SharedPreferencesUtil.class.getSimpleName();
 
     public static final String FILE_EXTENSION = ".xml";
+    private static final Map<String, Object> cachedValues = new ConcurrentHashMap<>();
 
     private SharedPreferencesUtil() {
+    }
+
+    public static void forget() {
+        cachedValues.clear();
     }
 
     public static File defaultSharedPreferencesPath(Context context) {
@@ -176,6 +184,7 @@ public class SharedPreferencesUtil {
             entryCounter++;
         }
         editor.commit();
+        forget();
         return entryCounter;
     }
 
@@ -192,6 +201,7 @@ public class SharedPreferencesUtil {
     public static void resetHasSetDefaultValues() {
         SharedPreferences sp = getSharedPreferences(PreferenceManager.KEY_HAS_SET_DEFAULT_VALUES);
         sp.edit().clear().commit();
+        forget();
     }
 
     public static SharedPreferences getDefaultSharedPreferences() {
@@ -220,49 +230,88 @@ public class SharedPreferencesUtil {
         }
     }
 
-    public static long getLongStoredAsString(String key, long defaultValue) {
-        long longValue = defaultValue;
+    public static long getLongStoredAsString(@NonNull String key, long defaultValue) {
+        if (cachedValues.containsKey(key)) {
+            try {
+                return (long) cachedValues.get(key);
+            } catch (ClassCastException e) {
+                MyLog.ignored("getLongStoredAsString, key=" + key, e);
+                cachedValues.remove(key);
+            }
+        }
+        long value = defaultValue;
         try {
             long longValueStored = Long.parseLong(getString(key, "0"));
             if (longValueStored > 0) {
-                longValue = longValueStored;
+                value = longValueStored;
             }
         } catch (NumberFormatException e) {
             MyLog.ignored(TAG, e);
         }
-        return longValue;
+        putToCache(key, value);
+        return value;
     }
 
-    public static String getString(String key, String defaultValue) {
-        String longValue = defaultValue;
+    public static String getString(@NonNull String key, String defaultValue) {
+        if (cachedValues.containsKey(key)) {
+            try {
+                return (String) cachedValues.get(key);
+            } catch (ClassCastException e) {
+                MyLog.ignored("getString, key=" + key, e);
+                cachedValues.remove(key);
+            }
+        }
+        String value = defaultValue;
         SharedPreferences sp = getDefaultSharedPreferences();
         if (sp != null) {
-            longValue = sp.getString(key, defaultValue);
+            value = sp.getString(key, defaultValue);
         }
-        return longValue;
+        putToCache(key, value);
+        return value;
     }
 
-    public static void putLong(String key, long value) {
+    public static Object putToCache(@NonNull String key, Object value) {
+        if (value == null) {
+            Object oldValue = cachedValues.get(key);
+            cachedValues.remove(key);
+            return oldValue;
+        } else {
+            return cachedValues.put(key, value);
+        }
+    }
+
+    public static void putLong(@NonNull String key, long value) {
         SharedPreferences sp = getDefaultSharedPreferences();
         if (sp != null) {
             sp.edit().putLong(key, value).apply();
         }
+        cachedValues.put(key, value);
     }
 
-    public static void putBoolean(String key, View checkBox) {
+    public static void putBoolean(@NonNull String key, View checkBox) {
         if (checkBox != null && CheckBox.class.isAssignableFrom(checkBox.getClass())) {
-            putBoolean(key, ((CheckBox) checkBox).isChecked());
+            final boolean value = ((CheckBox) checkBox).isChecked();
+            putBoolean(key, value);
         }
     }
 
-    public static void putBoolean(String key, boolean value) {
+    public static void putBoolean(@NonNull String key, boolean value) {
         SharedPreferences sp = getDefaultSharedPreferences();
         if (sp != null) {
             sp.edit().putBoolean(key, value).apply();
         }
+        cachedValues.put(key, value);
     }
 
-    public static long getLong(String key) {
+    public static long getLong(@NonNull String key) {
+        if (cachedValues.containsKey(key)) {
+            try {
+                return (long) cachedValues.get(key);
+            } catch (ClassCastException e) {
+                MyLog.ignored("getLong, key=" + key, e);
+                cachedValues.remove(key);
+            }
+        }
         long value = 0;
         SharedPreferences sp = getDefaultSharedPreferences();
         if (sp != null) {
@@ -272,15 +321,25 @@ public class SharedPreferencesUtil {
                 MyLog.ignored("getLong", e);
             }
         }
+        cachedValues.put(key, value);
         return value;
     }
 
-    public static boolean getBoolean(String key, boolean defaultValue) {
+    public static boolean getBoolean(@NonNull String key, boolean defaultValue) {
+        if (cachedValues.containsKey(key)) {
+            try {
+                return (boolean) cachedValues.get(key);
+            } catch (ClassCastException e) {
+                MyLog.ignored("getBoolean, key=" + key, e);
+                cachedValues.remove(key);
+            }
+        }
         boolean value = defaultValue;
         SharedPreferences sp = getDefaultSharedPreferences();
         if (sp != null) {
             value = sp.getBoolean(key, defaultValue);
         }
+        cachedValues.put(key, value);
         return value;
     }
 

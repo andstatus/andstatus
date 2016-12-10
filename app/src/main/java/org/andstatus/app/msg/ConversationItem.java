@@ -19,6 +19,7 @@ package org.andstatus.app.msg;
 import android.content.Context;
 import android.database.Cursor;
 
+import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.util.I18n;
@@ -97,7 +98,11 @@ public abstract class ConversationItem extends MessageViewItem implements Compar
     public StringBuilder getDetails(Context context) {
         final StringBuilder builder = super.getDetails(context);
         if (inReplyToViewItem != null) {
-            I18n.appendWithSpace(builder, "(" + inReplyToViewItem.historyOrder + ")");
+            I18n.appendWithSpace(builder, "(" + inReplyToViewItem.historyOrder
+                    + ")");
+        }
+        if (MyPreferences.getShowDebuggingInfoInUi()) {
+            I18n.appendWithSpace(builder, "(msgId=" + getMsgId() + ")");
         }
         return builder;
     }

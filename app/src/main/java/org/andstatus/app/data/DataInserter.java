@@ -375,10 +375,8 @@ public class DataInserter {
             message.conversationId = MyQuery.msgIdToLongColumnValue(MsgTable.CONVERSATION_ID, message.msgId);
         }
         if (!TextUtils.isEmpty(message.conversationOid)) {
-            values.put(MsgTable.CONVERSATION_OID, message.url);
             if (message.conversationId == 0) {
-                message.conversationId = MyQuery.conditionToLongColumnValue(MsgTable.TABLE_NAME, MsgTable.CONVERSATION_ID,
-                        MsgTable.CONVERSATION_OID + "='" + message.conversationOid + "'");
+                message.conversationId = MyQuery.conversationOidToMsgId(message.conversationOid);
             }
         }
         if (message.conversationId == 0 && message.inReplyToMessage != null) {
