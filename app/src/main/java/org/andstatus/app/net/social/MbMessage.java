@@ -101,6 +101,9 @@ public class MbMessage {
     public String getBody() {
         return body;
     }
+    public String getBodyToSearch() {
+        return MyHtml.getBodyToSearch(body);
+    }
     public void setBody(String body) {
         if (TextUtils.isEmpty(body)) {
             this.body = "";

@@ -49,7 +49,7 @@ public class DatabaseConverterController {
     @GuardedBy("upgradeLock")
     private static boolean upgradeEndedSuccessfully = false;
     @GuardedBy("upgradeLock")
-    private static Activity upgradeRequestor = null;
+    private static ProgressLogger mProgressLogger = null;
     
     static final long SECONDS_BEFORE_UPGRADE_TRIGGERED = 5L;
     static final int UPGRADE_LENGTH_SECONDS_MAX = 90;
@@ -99,8 +99,8 @@ public class DatabaseConverterController {
     }
 
     private static class AsyncUpgrade extends MyAsyncTask<Activity, Void, Void> {
-        Activity locUpgradeRequestor = null;
-        ProgressLogger.ProgressCallback progressCallback = ProgressLogger.getEmptyCallback();
+        Activity upgradeRequestor = null;
+        ProgressLogger progressLogger = new ProgressLogger(ProgressLogger.getEmptyCallback());
 
         public AsyncUpgrade() {
             super(PoolEnum.LONG_UI);
@@ -109,15 +109,15 @@ public class DatabaseConverterController {
         @Override
         protected Void doInBackground2(Activity... activity) {
             boolean success = false;
-            locUpgradeRequestor = activity[0];
-            if (ProgressLogger.ProgressCallback.class.isAssignableFrom(locUpgradeRequestor.getClass())) {
-                progressCallback = (ProgressLogger.ProgressCallback) locUpgradeRequestor;
+            upgradeRequestor = activity[0];
+            if (ProgressLogger.ProgressCallback.class.isAssignableFrom(upgradeRequestor.getClass())) {
+                progressLogger = new ProgressLogger((ProgressLogger.ProgressCallback) upgradeRequestor);
             }
             try {
-                progressCallback.onProgressMessage(locUpgradeRequestor.getText(R.string.label_upgrading));
+                progressLogger.logProgress(upgradeRequestor.getText(R.string.label_upgrading));
                 success = doUpgrade();
             } finally {
-                progressCallback.onComplete(success);
+                progressLogger.onComplete(success);
             }
             return null;
         }
@@ -127,13 +127,13 @@ public class DatabaseConverterController {
             boolean locUpgradeStarted = false;
             try {
                 synchronized(UPGRADE_LOCK) {
-                    upgradeRequestor = locUpgradeRequestor;
+                    mProgressLogger = progressLogger;
                 }
-                MyLog.v(TAG, "Upgrade triggered by " + MyLog.objTagToString(locUpgradeRequestor));
+                MyLog.v(TAG, "Upgrade triggered by " + MyLog.objTagToString(upgradeRequestor));
                 MyServiceManager.setServiceUnavailable();
                 MyContextHolder.release();
                 // Upgrade will occur inside this call synchronously
-                MyContextHolder.initializeDuringUpgrade(locUpgradeRequestor, locUpgradeRequestor);
+                MyContextHolder.initializeDuringUpgrade(upgradeRequestor, upgradeRequestor);
                 synchronized(UPGRADE_LOCK) {
                     shouldTriggerDatabaseUpgrade = false;
                 }
@@ -142,7 +142,7 @@ public class DatabaseConverterController {
             } finally {
                 synchronized(UPGRADE_LOCK) {
                     success = upgradeEndedSuccessfully;
-                    upgradeRequestor = null;
+                    mProgressLogger = null;
                     locUpgradeStarted = upgradeStarted;
                     upgradeStarted = false;
                     upgradeEndTime = 0L;
@@ -162,12 +162,12 @@ public class DatabaseConverterController {
             MyServiceManager.setServiceUnavailable();
             if (!MyContextHolder.get().isReady()) {
                 MyContextHolder.release();
-                MyContextHolder.initialize(locUpgradeRequestor, locUpgradeRequestor);
+                MyContextHolder.initialize(upgradeRequestor, upgradeRequestor);
             }
             if (MyContextHolder.get().isReady()) {
                 MyServiceManager.stopService();
                 new TimelineSaver(MyContextHolder.get()).setAddDefaults(true).executeNotOnUiThread();
-                new MyDataChecker(MyContextHolder.get(), new ProgressLogger(progressCallback)).fixData();
+                new MyDataChecker(MyContextHolder.get(), progressLogger).fixData();
             }
         }
     }
@@ -216,7 +216,7 @@ public class DatabaseConverterController {
             stillUpgrading();
         }
         MyContextHolder.get().setInForeground(true);
-        boolean success = new DatabaseConverter().execute(new UpgradeParams(upgradeRequestor, db,
+        boolean success = new DatabaseConverter().execute(new UpgradeParams(mProgressLogger, db,
                 oldVersion, newVersion));
         synchronized(UPGRADE_LOCK) {
             upgradeEnded = true;
@@ -228,13 +228,13 @@ public class DatabaseConverterController {
     }
 
     static class UpgradeParams {
-        Activity upgradeRequestor;
+        ProgressLogger progressLogger;
         SQLiteDatabase db;
         int oldVersion;
         int newVersion;
 
-        UpgradeParams(Activity upgradeRequestor, SQLiteDatabase db, int oldVersion, int newVersion) {
-            this.upgradeRequestor = upgradeRequestor;
+        UpgradeParams(ProgressLogger progressLogger, SQLiteDatabase db, int oldVersion, int newVersion) {
+            this.progressLogger = progressLogger;
             this.db = db;
             this.oldVersion = oldVersion;
             this.newVersion = newVersion;

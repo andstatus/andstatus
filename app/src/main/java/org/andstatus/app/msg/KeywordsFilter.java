@@ -19,6 +19,8 @@ package org.andstatus.app.msg;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
+import org.andstatus.app.util.MyHtml;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -79,7 +81,7 @@ public class KeywordsFilter {
     private List<String> rawToActual(List<String> keywordsRaw) {
         List<String> keywords = new ArrayList<>();
         for (String itemRaw : keywordsRaw) {
-            String item = itemRaw.toLowerCase();
+            String item = MyHtml.getBodyToSearch(itemRaw);
             if (!TextUtils.isEmpty(item) && !keywords.contains(item)) {
                 keywords.add(item);
             }

@@ -48,22 +48,17 @@ public class ProgressLogger {
     }
 
     public void logSuccess() {
-        logProgress("Completed successfully");
-        if (progressCallback != null) {
-            progressCallback.onComplete(true);
-        }
+        onComplete(true);
     }
 
     public void logFailure() {
-        logProgress("Failed");
-        if (progressCallback != null) {
-            progressCallback.onComplete(false);
-        }
+        onComplete(false);
     }
 
-    public void logProgressIfMoreSecondsAgoThan(String message, long minSecondsAgo) {
-        if (loggedMoreSecondsAgoThan(minSecondsAgo)) {
-            logProgress(message);
+    public void onComplete(boolean success) {
+        logProgress(success ?"Completed successfully" : "Failed");
+        if (progressCallback != null) {
+            progressCallback.onComplete(success);
         }
     }
 
@@ -71,12 +66,16 @@ public class ProgressLogger {
         return RelativeTime.moreSecondsAgoThan(lastLoggedAt, secondsAgo);
     }
 
-    public void logProgress(String message) {
-        lastLoggedAt = System.currentTimeMillis();
+    public void logProgress(CharSequence message) {
+        updateLastLoggedTime();
         MyLog.d(this, "Progress: " + message);
         if (progressCallback != null) {
             progressCallback.onProgressMessage(message);
         }
+    }
+
+    public void updateLastLoggedTime() {
+        lastLoggedAt = System.currentTimeMillis();
     }
 
     public static ProgressLogger getEmpty() {

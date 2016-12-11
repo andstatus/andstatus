@@ -16,17 +16,16 @@
 
 package org.andstatus.app.database;
 
-import android.app.Activity;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Build;
 
 import org.andstatus.app.account.MyAccountConverter;
 import org.andstatus.app.backup.ProgressLogger;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyStorage;
 import org.andstatus.app.data.ApplicationUpgradeException;
 import org.andstatus.app.data.DbUtils;
+import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.util.FileUtils;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
@@ -36,15 +35,11 @@ import java.io.File;
 class DatabaseConverter {
     public static final int PARTIAL_INDEX_SUPPORTED = Build.VERSION_CODES.LOLLIPOP;
     long startTime = java.lang.System.currentTimeMillis();
-    private Activity activity;
-    ProgressLogger progressLogger = new ProgressLogger(ProgressLogger.getEmptyCallback());
+    ProgressLogger progressLogger;
 
     protected boolean execute(DatabaseConverterController.UpgradeParams params) {
         boolean success = false;
-        activity = params.upgradeRequestor;
-        if (ProgressLogger.ProgressCallback.class.isAssignableFrom(params.upgradeRequestor.getClass())) {
-            progressLogger = new ProgressLogger((ProgressLogger.ProgressCallback) params.upgradeRequestor);
-        }
+        progressLogger = params.progressLogger;
         String msgLog = "";
         long endTime = 0;
         try {
@@ -71,9 +66,6 @@ class DatabaseConverter {
                 MyLog.e(this, msgLog);
             }
             DbUtils.waitMs("execute finally 2", 500);
-            if (MyContextHolder.get().isTestRun()) {
-                activity.finish();
-            }
         }
         return success;
     }
@@ -138,6 +130,7 @@ class DatabaseConverter {
         int versionTo;
         String sql = "";
         protected String lastError = "?";
+        protected String stepTitle = "";
 
         int execute(SQLiteDatabase db, int oldVersion, ProgressLogger progressLogger) {
             boolean ok = false;
@@ -145,7 +138,8 @@ class DatabaseConverter {
             this.oldVersion = oldVersion;
             this.progressLogger = progressLogger;
             try {
-                MyLog.i(this, "Database upgrading step from version " + oldVersion + " to version " + versionTo);
+                stepTitle = "Database upgrading step from version " + oldVersion + " to version " + versionTo;
+                MyLog.i(this, stepTitle);
                 execute2();
                 ok = true;
             } catch (Exception e) {
@@ -408,17 +402,18 @@ class DatabaseConverter {
                             " WHERE " + "conversation_id" + " IS NOT NULL" : "");
             DbUtils.execSQL(db, sql);
 
-            String sql = "SELECT body FROM msg";
+            String sql = "SELECT _id, body FROM msg";
             Cursor c = null;
             int count = 0;
             try {
                 c = db.rawQuery(sql, null);
                 while (c.moveToNext()) {
-                    sql = "UPDATE msg SET body_to_search='" + MyHtml.fromHtml(c.getString(0)).toLowerCase() + "'";
+                    sql = "UPDATE msg SET body_to_search=" + MyQuery.quoteIfNotQuoted(MyHtml.getBodyToSearch(c.getString(1)))
+                    + " WHERE _id=" + c.getLong(0);
                     db.execSQL(sql);
                     count++;
                     if (progressLogger.loggedMoreSecondsAgoThan(10)) {
-                        progressLogger.logProgress(this.getClass().getSimpleName() + " converted " + count + " rows");
+                        progressLogger.logProgress(stepTitle + ": converted " + count + " rows");
                     }
                 }
             } finally {

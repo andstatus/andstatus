@@ -153,7 +153,7 @@ public class Timeline implements Comparable<Timeline> {
         this.myAccount = fixedMyAccount(myContext, timelineType, myAccount, userId);
         this.userId = fixedUserId(timelineType, userId);
         this.origin = fixedOrigin(myContext, timelineType, myAccount, userId, origin);
-        this.searchQuery = TextUtils.isEmpty(searchQuery) ? "" : searchQuery;
+        this.searchQuery = TextUtils.isEmpty(searchQuery) ? "" : searchQuery.trim();
         this.timelineType = fixedTimelineType(timelineType);
         this.isCombined = calcIsCombined(this.timelineType, this.origin, this.myAccount);
         this.isSyncable = calcIsSyncable(myContext);

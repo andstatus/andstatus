@@ -121,7 +121,7 @@ public class TimelineLoader extends SyncLoader<TimelineViewItem> {
                 SharedPreferencesUtil.getString(MyPreferences.KEY_FILTER_HIDE_MESSAGES_BASED_ON_KEYWORDS, ""));
         boolean hideRepliesNotToMeOrFriends = getParams().getTimelineType() == TimelineType.HOME
                 && SharedPreferencesUtil.getBoolean(MyPreferences.KEY_FILTER_HIDE_REPLIES_NOT_TO_ME_OR_FRIENDS, false);
-        String searchQuery = getParams().getTimeline().getSearchQuery().toLowerCase();
+        String searchQuery = MyHtml.getBodyToSearch(getParams().getTimeline().getSearchQuery());
 
         long startTime = System.currentTimeMillis();
         int rowsCount = 0;
@@ -134,7 +134,7 @@ public class TimelineLoader extends SyncLoader<TimelineViewItem> {
                         rowsCount++;
                         TimelineViewItem item = TimelineViewItem.fromCursorRow(params.getMyContext(), cursor);
                         getParams().rememberSentDateLoaded(item.sentDate);
-                        String body = MyHtml.fromHtml(item.body).toLowerCase();
+                        String body = MyHtml.getBodyToSearch(item.body);
                         boolean skip = keywordsFilter.matched(body);
                         if (!skip && !TextUtils.isEmpty(searchQuery)) {
                             skip = !body.contains(searchQuery);

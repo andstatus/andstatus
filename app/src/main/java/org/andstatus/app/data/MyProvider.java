@@ -33,6 +33,7 @@ import org.andstatus.app.database.MsgOfUserTable;
 import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.database.OriginTable;
 import org.andstatus.app.database.UserTable;
+import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
 
 import java.util.Arrays;
@@ -297,7 +298,7 @@ public class MyProvider extends ContentProvider {
                             + " LIKE ?)" + selection;
 
                     selectionArgs = addBeforeArray(selectionArgs, "%" + searchQuery + "%");
-                    selectionArgs = addBeforeArray(selectionArgs, "%," + searchQuery + ",%");
+                    selectionArgs = addBeforeArray(selectionArgs, "%" + MyHtml.getBodyToSearch(searchQuery) + "%");
                 }
                 break;
 
