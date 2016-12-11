@@ -313,6 +313,9 @@ public class CommandData implements Comparable<CommandData> {
         if (!timeline.equals(other.timeline)) {
             return false;
         }
+        if (itemId != other.itemId) {
+            return false;
+        }
         if (!description.contentEquals(other.description)) {
             return false;
         }

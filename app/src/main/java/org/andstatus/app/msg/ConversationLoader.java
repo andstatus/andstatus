@@ -164,12 +164,17 @@ public abstract class ConversationLoader<T extends ConversationItem> extends Syn
                 CommandData.newItemCommand(CommandEnum.GET_STATUS, ma, msgId));
     }
 
-    private boolean requestConversationSync(long msgId) {
+    private boolean requestConversationSync(long msgId_in) {
         if (conversationSyncRequested) {
             return true;
         }
         if (ma.getConnection().isApiSupported(Connection.ApiRoutineEnum.GET_CONVERSATION)) {
+            long msgId = selectedMessageId;
             String conversationOid = MyQuery.msgIdToConversationOid(msgId);
+            if (TextUtils.isEmpty(conversationOid) && msgId_in != msgId) {
+                msgId = msgId_in;
+                conversationOid = MyQuery.msgIdToConversationOid(msgId);
+            }
             if (!TextUtils.isEmpty(conversationOid)) {
                 conversationSyncRequested = true;
                 MyLog.v(this, "Conversation oid=" +  conversationOid + " for message id=" + msgId
