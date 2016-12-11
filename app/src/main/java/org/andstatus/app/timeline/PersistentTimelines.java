@@ -25,7 +25,6 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.TimelineTable;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.MyLog;
@@ -180,49 +179,6 @@ public class PersistentTimelines {
         return timelines;
     }
 
-    public void addDefaultTimelinesIfNoneFound() {
-        for (MyAccount ma : myContext.persistentAccounts().list()) {
-            addDefaultMyAccountTimelinesIfNoneFound(ma);
-        }
-    }
-
-    public void addDefaultMyAccountTimelinesIfNoneFound(MyAccount ma) {
-        if (ma.isValid() && getFiltered(false, TriState.FALSE, ma, null).isEmpty()) {
-            addDefaultCombinedTimelinesIfNoneFound();
-            addDefaultOriginTimelinesIfNoneFound(ma.getOrigin());
-
-            long timelineId = MyQuery.conditionToLongColumnValue(TimelineTable.TABLE_NAME,
-                    TimelineTable._ID, TimelineTable.ACCOUNT_ID + "=" + ma.getUserId());
-            if (timelineId == 0) {
-                Timeline.addDefaultForAccount(myContext, ma);
-            }
-        }
-    }
-
-    private void addDefaultCombinedTimelinesIfNoneFound() {
-        if (!timelines.isEmpty()) {
-            return;
-        }
-        long timelineId = MyQuery.conditionToLongColumnValue(TimelineTable.TABLE_NAME,
-                TimelineTable._ID,
-                TimelineTable.ACCOUNT_ID + "=0 AND " + TimelineTable.ORIGIN_ID + "=0");
-        if (timelineId == 0) {
-            Timeline.addDefaultCombined(myContext);
-        }
-    }
-
-    public void addDefaultOriginTimelinesIfNoneFound(Origin origin) {
-        if (origin.isValid()) {
-            long timelineId = MyQuery.conditionToLongColumnValue(TimelineTable.TABLE_NAME,
-                    TimelineTable._ID,
-                    TimelineTable.ORIGIN_ID + "=" + origin.getId() + " AND " +
-                            TimelineTable.TIMELINE_TYPE + "='" + TimelineType.EVERYTHING.save() + "'");
-            if (timelineId == 0) {
-                Timeline.addDefaultForOrigin(myContext, origin);
-            }
-        }
-    }
-
     public void onAccountDelete(MyAccount ma) {
         List<Timeline> toRemove = new ArrayList<>();
         for (Timeline timeline : values()) {
@@ -244,9 +200,7 @@ public class PersistentTimelines {
     }
 
     public void saveChanged() {
-        for (Timeline timeline : values()) {
-            timeline.save(myContext);
-        }
+        new TimelineSaver(myContext).executeNotOnUiThread();
     }
 
     public Timeline getHome() {

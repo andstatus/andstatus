@@ -28,6 +28,7 @@ import org.andstatus.app.data.MyDataChecker;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.service.MyServiceManager;
+import org.andstatus.app.timeline.TimelineSaver;
 import org.andstatus.app.util.MyLog;
 
 public class DatabaseConverterController {
@@ -165,7 +166,7 @@ public class DatabaseConverterController {
             }
             if (MyContextHolder.get().isReady()) {
                 MyServiceManager.stopService();
-                MyContextHolder.get().persistentTimelines().addDefaultTimelinesIfNoneFound();
+                new TimelineSaver(MyContextHolder.get()).setAddDefaults(true).executeNotOnUiThread();
                 new MyDataChecker(MyContextHolder.get(), new ProgressLogger(progressCallback)).fixData();
             }
         }

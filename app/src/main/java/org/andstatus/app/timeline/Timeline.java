@@ -34,14 +34,11 @@ import org.andstatus.app.data.ParsedUri;
 import org.andstatus.app.database.CommandTable;
 import org.andstatus.app.database.TimelineTable;
 import org.andstatus.app.origin.Origin;
+import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.service.CommandResult;
 import org.andstatus.app.util.BundleUtils;
 import org.andstatus.app.util.ContentValuesUtils;
 import org.andstatus.app.util.MyLog;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -257,40 +254,6 @@ public class Timeline implements Comparable<Timeline> {
 
     public static Timeline getEmpty(MyAccount myAccount) {
         return getTimeline(TimelineType.UNKNOWN, myAccount, 0, null);
-    }
-
-    public static List<Timeline> addDefaultForAccount(MyContext myContext, MyAccount myAccount) {
-        List<Timeline> timelines = new ArrayList<>();
-        for (TimelineType timelineType : TimelineType.getDefaultMyAccountTimelineTypes()) {
-            saveNewDefaultTimeline(myContext, getTimeline(myContext, 0, timelineType, myAccount, 0, null, ""));
-        }
-        return timelines;
-    }
-
-    public static Collection<Timeline> addDefaultForOrigin(MyContext myContext, Origin origin) {
-        List<Timeline> timelines = new ArrayList<>();
-        for (TimelineType timelineType : TimelineType.getDefaultOriginTimelineTypes()) {
-            if (origin.getOriginType().isTimelineTypeSyncable(timelineType)) {
-                saveNewDefaultTimeline(myContext, getTimeline(myContext, 0, timelineType, null, 0, origin, ""));
-            }
-        }
-        return timelines;
-    }
-
-    public static List<Timeline> addDefaultCombined(MyContext myContext) {
-        List<Timeline> timelines = new ArrayList<>();
-        for (TimelineType timelineType : TimelineType.values()) {
-            if (timelineType.isSelectable()) {
-                saveNewDefaultTimeline(myContext, getTimeline(myContext, 0, timelineType, null, 0, null, ""));
-            }
-        }
-        return timelines;
-    }
-
-    protected static void saveNewDefaultTimeline(MyContext myContext, Timeline timeline) {
-        timeline.isDisplayedInSelector = DisplayedInSelector.IN_CONTEXT;
-        timeline.setSyncedAutomatically(timeline.getTimelineType().isSyncedAutomaticallyByDefault());
-        timeline.save(myContext);
     }
 
     public static Timeline fromBundle(MyContext myContext, Bundle bundle) {
@@ -579,6 +542,9 @@ public class Timeline implements Comparable<Timeline> {
     }
 
     public long save(MyContext myContext) {
+        if (MyAsyncTask.isUiThread()) {
+            throw new IllegalStateException("Saving a timeline on the Main thread " + toString());
+        }
         if (needToLoadUserInTimeline()) {
             changed = true;
         }

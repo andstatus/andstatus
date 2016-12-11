@@ -18,6 +18,7 @@ package org.andstatus.app.os;
 
 import android.database.sqlite.SQLiteDiskIOException;
 import android.os.AsyncTask;
+import android.os.Looper;
 import android.support.annotation.NonNull;
 
 import org.andstatus.app.context.MyContextHolder;
@@ -210,5 +211,10 @@ public abstract class MyAsyncTask<Params, Progress, Result> extends AsyncTask<Pa
             cancelledAt = System.currentTimeMillis();
         }
         return super.cancel(mayInterruptIfRunning);
+    }
+
+    // See http://stackoverflow.com/questions/11411022/how-to-check-if-current-thread-is-not-main-thread
+    public static boolean isUiThread() {
+        return Looper.myLooper() == Looper.getMainLooper();
     }
 }

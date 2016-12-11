@@ -47,6 +47,7 @@ import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.timeline.Timeline;
+import org.andstatus.app.timeline.TimelineSaver;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
 import org.json.JSONException;
@@ -321,8 +322,7 @@ public final class MyAccount implements Comparable<MyAccount> {
                 MyLog.v(this, (result.savedToAccountManager ? " Saved "
                         : (result.changed ? " Didn't save?! " : " Didn't change ")) + this.toString());
                 if (result.savedToAccountManager && result.changed) {
-                    myContext.persistentTimelines().addDefaultMyAccountTimelinesIfNoneFound(myAccount);
-                    myContext.persistentTimelines().saveChanged();
+                    new TimelineSaver(MyContextHolder.get()).setAddDefaults(true).setAccount(myAccount).executeNotOnUiThread();
                 }
             } catch (Exception e) {
                 MyLog.e(this, "Saving " + myAccount, e);
