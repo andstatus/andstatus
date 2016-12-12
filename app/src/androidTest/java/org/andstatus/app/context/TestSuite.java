@@ -44,7 +44,9 @@ import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.ExceptionsCounter;
+import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.service.MyServiceManager;
+import org.andstatus.app.timeline.PersistentTimelinesTest;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.Permissions;
 import org.andstatus.app.util.SharedPreferencesUtil;
@@ -206,32 +208,58 @@ public class TestSuite extends TestCase {
         dataAdded = false;
     }
 
-    /**
-     * This method mimics execution of one test case before another
-     * @throws Exception 
-     */
     public static void ensureDataAdded() {
-        String method = "ensureDataAdded";
-        MyLog.v(TAG, method + ": started");
+        final String method = "ensureDataAdded";
+        MyLog.v(method, method + ": started");
         if (!dataAdded) {
             dataAdded = true;
-            new OriginsAndAccountsInserter(getMyContextForTest()).insert();
+            MyContextHolder.initialize(context, method);
+
+            final MyAsyncTask<Void, Void, Void> asyncTask
+                    = new MyAsyncTask<Void, Void, Void>(method, MyAsyncTask.PoolEnum.QUICK_UI) {
+                @Override
+                protected Void doInBackground2(Void... params) {
+                    MyServiceManager.setServiceUnavailable();
+                    new OriginsAndAccountsInserter(getMyContextForTest()).insert();
+                    return null;
+                }
+            };
+            AsyncTaskLauncher.execute(method, true, asyncTask);
+            long count = 30;
+            while (count > 0) {
+                boolean needsWork = asyncTask.needsBackgroundWork();
+                MyLog.v(method, (needsWork ? "Waiting for task completion " : "Task completed ") + count + " "
+                        + asyncTask.getStatus());
+                if (!needsWork) {
+                    break;
+                }
+                count--;
+                if (DbUtils.waitMs(method, 2000)) {
+                    break;
+                }
+            }
+
+            MyPreferences.onPreferencesChanged();
+            MyContextHolder.initialize(context, method);
+            MyServiceManager.setServiceUnavailable();
+            assertTrue("Context is not ready", MyContextHolder.get().isReady());
+            assertEquals("Data path", "ok", TestSuite.checkDataPath(method));
+            PersistentTimelinesTest.checkDefaultTimelinesForOrigins();
+            PersistentTimelinesTest.checkDefaultTimelinesForAccounts();
+
             new ConversationInserter().insertConversation("");
             new GnuSocialMessagesInserter().insertData();
-
             assertEquals("Conversations need fixes", 0, new MyDataCheckerConversations(MyContextHolder.get(),
                     ProgressLogger.getEmpty()).countChanges());
+            if (MyContextHolder.get().persistentAccounts().size() == 0) {
+                fail("No persistent accounts");
+            }
+            setSuccessfulAccountAsCurrent();
+            MyContextHolder.initialize(context, method);
         }
-
-        if (MyContextHolder.get().persistentAccounts().size() == 0) {
-            fail("No persistent accounts");
-        }
-        MyContextHolder.initialize(context, TAG);
-        setSuccessfulAccountAsCurrent();
-        
-        MyLog.v(TAG, method + ": ended");
+        MyLog.v(method, method + ": ended");
     }
-    
+
     public static final String TESTRUN_UID = String.valueOf(System.currentTimeMillis());
     
     private static final String TEST_ORIGIN_PARENT_HOST = "example.com";
@@ -392,5 +420,4 @@ public class TestSuite extends TestCase {
     public static long getConversationOriginId() {
         return getConversationMyAccount().getOriginId();
     }
-
 }

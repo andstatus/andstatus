@@ -21,8 +21,6 @@ import android.text.TextUtils;
 
 import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
 import org.andstatus.app.context.MyContextForTest;
-import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.ConversationInserter;
 import org.andstatus.app.data.MyQuery;
@@ -33,7 +31,6 @@ import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginTest;
 import org.andstatus.app.origin.OriginType;
-import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
 
@@ -49,11 +46,7 @@ public class OriginsAndAccountsInserter extends InstrumentationTestCase {
         assertEquals("Data path", "ok", TestSuite.checkDataPath(this));
         addOrigins();
         addAccounts();
-        MyPreferences.onPreferencesChanged();
-        MyContextHolder.initialize(null, this);
-        MyServiceManager.setServiceUnavailable();
-        assertTrue("Context is ready", MyContextHolder.get().isReady());
-        assertEquals("Data path", "ok", TestSuite.checkDataPath(this));
+        myContext.persistentTimelines().saveChanged();
     }
 
     private void addOrigins() {

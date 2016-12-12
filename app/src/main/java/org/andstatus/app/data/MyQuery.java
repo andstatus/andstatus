@@ -321,6 +321,11 @@ public class MyQuery {
      * @return 0 in case not found or error or systemId==0
      */
     public static long conditionToLongColumnValue(String tableName, String columnName, String condition) {
+        return conditionToLongColumnValue(null, columnName, tableName, columnName, condition);
+    }
+
+    public static long conditionToLongColumnValue(SQLiteDatabase databaseIn, String msgLog,
+                                                  String tableName, String columnName, String condition) {
         String sql = "SELECT t." + columnName +
                 " FROM " + tableName + " AS t" +
                 (TextUtils.isEmpty(condition) ? "" : " WHERE " + condition + ";");
@@ -330,7 +335,7 @@ public class MyQuery {
         } else if (TextUtils.isEmpty(columnName)) {
             throw new IllegalArgumentException("columnName is empty: " + sql);
         } else {
-            columnValue = sqlToLong(null, "", sql);
+            columnValue = sqlToLong(databaseIn, msgLog, sql);
         }
         return columnValue;
     }

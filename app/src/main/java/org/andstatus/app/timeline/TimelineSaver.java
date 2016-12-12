@@ -20,6 +20,7 @@ import android.support.annotation.NonNull;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
+import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.TimelineTable;
 import org.andstatus.app.origin.Origin;
@@ -73,22 +74,37 @@ public class TimelineSaver extends MyAsyncTask<Void, Void, Void> {
     }
 
     private void executeSynchronously() {
-        if (executing.compareAndSet(false, true)) {
-            try {
-                if (addDefaults) {
-                   if (myAccount == null) {
-                       addDefaultTimelinesIfNoneFound();
-                   } else {
-                       addDefaultMyAccountTimelinesIfNoneFound(myAccount);
-                   }
-                }
-                // TODO: Better duplication checks
-                for (Timeline timeline : timelines().values()) {
-                    timeline.save(myContext);
-                }
-            } finally {
-                executing.set(false);
+        long count = 10;
+        boolean lockReceived = false;
+        while (count > 0) {
+            lockReceived = executing.compareAndSet(false, true);
+            if (lockReceived) {
+                break;
             }
+            count--;
+            if (DbUtils.waitMs(this, 1000)) {
+                break;
+            }
+        }
+        if (lockReceived) {
+            executingLockReceived();
+        }
+    }
+
+    private void executingLockReceived() {
+        try {
+            if (addDefaults) {
+               if (myAccount == null) {
+                   addDefaultTimelinesIfNoneFound();
+               } else {
+                   addDefaultMyAccountTimelinesIfNoneFound(myAccount);
+               }
+            }
+            for (Timeline timeline : timelines().values()) {
+                timeline.save(myContext);
+            }
+        } finally {
+            executing.set(false);
         }
     }
 
@@ -124,7 +140,10 @@ public class TimelineSaver extends MyAsyncTask<Void, Void, Void> {
 
     private void addDefaultOriginTimelinesIfNoneFound(Origin origin) {
         if (origin.isValid()) {
-            long timelineId = MyQuery.conditionToLongColumnValue(TimelineTable.TABLE_NAME,
+            long timelineId = MyQuery.conditionToLongColumnValue(
+                    myContext.getDatabase(),
+                    origin.getName(),
+                    TimelineTable.TABLE_NAME,
                     TimelineTable._ID,
                     TimelineTable.ORIGIN_ID + "=" + origin.getId() + " AND " +
                             TimelineTable.TIMELINE_TYPE + "='" + TimelineType.EVERYTHING.save() + "'");

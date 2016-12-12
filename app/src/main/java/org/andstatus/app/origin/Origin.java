@@ -571,10 +571,10 @@ public class Origin {
             if (origin.id == 0) {
                 values.put(OriginTable.ORIGIN_NAME, origin.name);
                 values.put(OriginTable.ORIGIN_TYPE_ID, origin.originType.getId());
-                origin.id = DbUtils.addRowWithRetry(OriginTable.TABLE_NAME, values, 3);
+                origin.id = DbUtils.addRowWithRetry(MyContextHolder.get(), OriginTable.TABLE_NAME, values, 3);
                 changed = origin.isPersistent();
             } else {
-                changed = (DbUtils.updateRowWithRetry(OriginTable.TABLE_NAME, origin.id,
+                changed = (DbUtils.updateRowWithRetry(MyContextHolder.get(), OriginTable.TABLE_NAME, origin.id,
                         values, 3) != 0);
             }
             if (changed && MyContextHolder.get().isReady()) {

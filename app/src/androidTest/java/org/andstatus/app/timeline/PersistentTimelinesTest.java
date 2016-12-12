@@ -24,6 +24,7 @@ import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.context.Travis;
 import org.andstatus.app.origin.Origin;
+import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.TriState;
 
 import java.util.Collection;
@@ -88,21 +89,32 @@ public class PersistentTimelinesTest extends InstrumentationTestCase {
         }
     }
 
-    public void testDefaultMyAccountTimelinesCreation() {
+    public void testDefaultTimelinesForAccounts() {
+        checkDefaultTimelinesForAccounts();
+    }
+
+    public static void checkDefaultTimelinesForAccounts() {
         for (MyAccount myAccount : MyContextHolder.get().persistentAccounts().list()) {
             for (TimelineType timelineType : TimelineType.getDefaultMyAccountTimelineTypes()) {
                 long count = 0;
+                StringBuilder logMsg =new StringBuilder(myAccount.toString());
+                I18n.appendWithSpace(logMsg, timelineType.toString());
                 for (Timeline timeline : MyContextHolder.get().persistentTimelines().values()) {
                     if (timeline.getMyAccount().equals(myAccount) && timeline.getTimelineType().equals(timelineType)) {
                         count++;
+                        I18n.appendWithSpace(logMsg, timeline.toString());
                     }
                 }
-                assertEquals( myAccount.toString() + " " + timelineType , 1, count);
+                assertEquals(logMsg.toString(), 1, count);
             }
         }
     }
 
-    public void testDefaultOriginTimelinesCreation() {
+    public void testDefaultTimelinesForOrigins() {
+        checkDefaultTimelinesForOrigins();
+    }
+
+    public static void checkDefaultTimelinesForOrigins() {
         for (Origin origin : MyContextHolder.get().persistentOrigins().collection()) {
             MyAccount myAccount = MyContextHolder.get().persistentAccounts().
                     getFirstSucceededForOrigin(origin);

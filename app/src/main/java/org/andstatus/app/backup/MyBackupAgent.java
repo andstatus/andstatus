@@ -269,6 +269,7 @@ public class MyBackupAgent extends BackupAgent {
                     MyStorage.getDatabasePath(TimelineSearchSuggestionsProvider.DATABASE_NAME));
         }
         MyContextHolder.release();
+        MyContextHolder.setOnRestore(true);
         MyContextHolder.initialize(this, this);
         
         DataPruner.setDataPrunedNow();
@@ -278,6 +279,7 @@ public class MyBackupAgent extends BackupAgent {
         accountsRestored += data.getMyContext().persistentAccounts().onRestore(data, backupDescriptor);
 
         MyContextHolder.release();
+        MyContextHolder.setOnRestore(false);
         MyContextHolder.initialize(this, this);
     }
 

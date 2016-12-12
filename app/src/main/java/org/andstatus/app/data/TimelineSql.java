@@ -60,7 +60,7 @@ public class TimelineSql {
         Collection<String> columns = new java.util.HashSet<>(Arrays.asList(projection));
     
         String msgTable = MsgTable.TABLE_NAME;
-        String where = "";
+        SqlWhere where = new SqlWhere();
 
         boolean linkedUserDefined = false;
         boolean authorNameDefined = false;
@@ -115,13 +115,13 @@ public class TimelineSql {
                 }
                 break;
             case PUBLIC:
-                where = MsgTable.PUBLIC + "=1";
+                where.append(MsgTable.PUBLIC + "=1");
                 break;
             case DRAFTS:
-                where = MsgTable.MSG_STATUS + "=" + DownloadStatus.DRAFT.save();
+                where.append(MsgTable.MSG_STATUS + "=" + DownloadStatus.DRAFT.save());
                 break;
             case OUTBOX:
-                where = MsgTable.MSG_STATUS + "=" + DownloadStatus.SENDING.save();
+                where.append(MsgTable.MSG_STATUS + "=" + DownloadStatus.SENDING.save());
                 break;
             default:
                 break;
@@ -130,14 +130,9 @@ public class TimelineSql {
         String tables = msgTable;
         if (!tables.contains(" AS " + ProjectionMap.MSG_TABLE_ALIAS)) {
             if (timeline.getTimelineType().isAtOrigin() && !timeline.isCombined()) {
-                if (!TextUtils.isEmpty(where)) {
-                    where += " AND ";
-                }
-                where += MsgTable.ORIGIN_ID + "=" + timeline.getOrigin().getId();
+                where.append(MsgTable.ORIGIN_ID + "=" + timeline.getOrigin().getId());
             }
-            tables = "(SELECT * FROM (" + msgTable + ")"
-                            + (TextUtils.isEmpty(where) ? "" : " WHERE (" + where + ")")
-                            + ") AS " + ProjectionMap.MSG_TABLE_ALIAS;
+            tables = "(SELECT * FROM (" + msgTable + ")" + where.getWhere() + ") AS " + ProjectionMap.MSG_TABLE_ALIAS;
         }
 
         if (columns.contains(MsgOfUserTable.FAVORITED)

@@ -55,7 +55,7 @@ public final class DatabaseHolder extends SQLiteOpenHelper  {
                     state = MyContextState.UPGRADING;
                 } else {
                     if (db != null && db.isOpen()) {
-                        state = MyContextState.READY;
+                        state = MyContextState.DATABASE_READY;
                     }
                 }
             }

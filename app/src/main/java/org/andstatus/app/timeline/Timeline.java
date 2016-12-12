@@ -31,6 +31,7 @@ import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.ParsedUri;
+import org.andstatus.app.data.SqlWhere;
 import org.andstatus.app.database.CommandTable;
 import org.andstatus.app.database.TimelineTable;
 import org.andstatus.app.origin.Origin;
@@ -260,13 +261,13 @@ public class Timeline implements Comparable<Timeline> {
         MyAccount myAccount = MyAccount.fromBundle(bundle);
         Timeline timeline = getEmpty(myAccount);
         if (bundle != null) {
-            timeline = MyContextHolder.get().persistentTimelines().fromId(
+            timeline = myContext.persistentTimelines().fromId(
                     bundle.getLong(IntentExtra.TIMELINE_ID.key));
             if (timeline.isEmpty()) {
                 timeline = getTimeline(myContext, 0,
                         TimelineType.load(bundle.getString(IntentExtra.TIMELINE_TYPE.key)),
                         myAccount, bundle.getLong(IntentExtra.USER_ID.key),
-                        MyContextHolder.get().persistentOrigins().fromId(
+                        myContext.persistentOrigins().fromId(
                                 BundleUtils.fromBundle(bundle, IntentExtra.ORIGIN_ID)),
                         BundleUtils.getString(bundle, IntentExtra.SEARCH_QUERY));
             }
@@ -550,7 +551,14 @@ public class Timeline implements Comparable<Timeline> {
         }
         if (isValid() && (id == 0 || changed) && myContext.isReady()) {
             boolean isNew = id == 0;
-            saveInternal();
+            if (isNew) {
+                long duplicatedId = findDuplicateInDatabase(myContext);
+                if (duplicatedId != 0) {
+                    MyLog.i(this, "Found duplicating timeline, id=" + duplicatedId + " for " + this);
+                    return duplicatedId;
+                }
+            }
+            saveInternal(myContext);
             if (isNew && id != 0) {
                 myContext.persistentTimelines().addNew(this);
             }
@@ -558,18 +566,33 @@ public class Timeline implements Comparable<Timeline> {
         return id;
     }
 
-    private long saveInternal() {
+    private long findDuplicateInDatabase(MyContext myContext) {
+        SqlWhere where = new SqlWhere();
+        where.append(TimelineTable.TIMELINE_TYPE + "='" + timelineType.save() + "'");
+        where.append(TimelineTable.ACCOUNT_ID + "=" + myAccount.getUserId());
+        where.append(TimelineTable.ORIGIN_ID + "=" + origin.getId());
+        where.append(TimelineTable.USER_ID + "=" + userId);
+        where.append(TimelineTable.SEARCH_QUERY + "='" + searchQuery + "'");
+        return MyQuery.conditionToLongColumnValue(
+                myContext.getDatabase(),
+                "findDuplicateInDatabase",
+                TimelineTable.TABLE_NAME,
+                TimelineTable._ID,
+                where.getCondition());
+    }
+
+    private long saveInternal(MyContext myContext) {
         if (needToLoadUserInTimeline()) {
             userInTimeline = MyQuery.userIdToName(userId, MyPreferences.getUserInTimeline());
         }
         ContentValues contentValues = new ContentValues();
         toContentValues(contentValues);
         if (getId() == 0) {
-            id = DbUtils.addRowWithRetry(TimelineTable.TABLE_NAME, contentValues, 3);
+            id = DbUtils.addRowWithRetry(myContext, TimelineTable.TABLE_NAME, contentValues, 3);
             MyLog.v(this, "Added " + this +
-                    (MyContextHolder.get().isTestRun() ? " from " + MyLog.getStackTrace(new Throwable()) : ""));
+                    (myContext.isTestRun() ? " from " + MyLog.getStackTrace(new Throwable()) : ""));
         } else {
-            DbUtils.updateRowWithRetry(TimelineTable.TABLE_NAME, getId(), contentValues, 3);
+            DbUtils.updateRowWithRetry(myContext, TimelineTable.TABLE_NAME, getId(), contentValues, 3);
         }
         changed = false;
         return getId();

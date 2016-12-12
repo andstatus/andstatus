@@ -20,9 +20,10 @@ import android.support.annotation.NonNull;
 
 import org.andstatus.app.util.MyLog;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -103,6 +104,9 @@ public class AsyncTaskLauncher<Params> {
 
     public boolean execute(Object objTag, boolean throwOnFail, MyAsyncTask<Params, ?, ?> asyncTask,
                            Params... params) {
+        if (MyLog.isVerboseEnabled()) {
+            MyLog.v(objTag, "Launching the task: " + asyncTask.toString());
+        }
         boolean launched = false;
         try {
             checkForStalledTasks();
@@ -116,7 +120,7 @@ public class AsyncTaskLauncher<Params> {
             }
             removeFinishedTasks();
         } catch (RejectedExecutionException e) {
-            String msgLog = "Launching the task:\n" + asyncTask.toString()
+            String msgLog = "Launching the task: " + asyncTask.toString()
                     + "\n" + threadPoolInfo();
             MyLog.w(objTag, msgLog, e);
             if (throwOnFail) {
@@ -270,6 +274,13 @@ public class AsyncTaskLauncher<Params> {
         if (MyLog.isVerboseEnabled()) {
             MyLog.v(TAG, MyLog.getStackTrace(new IllegalArgumentException("forget")));
         }
-        shutdownExecutors(Arrays.asList(MyAsyncTask.PoolEnum.values()));
+        // Don't shut down QUICK UI pool
+        List<MyAsyncTask.PoolEnum> pools = new ArrayList<>();
+        for (MyAsyncTask.PoolEnum pool : MyAsyncTask.PoolEnum.values()) {
+            if (!pool.equals(MyAsyncTask.PoolEnum.QUICK_UI)) {
+                pools.add(pool);
+            }
+        }
+        shutdownExecutors(pools);
     }
 }

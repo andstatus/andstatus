@@ -210,7 +210,7 @@ public final class MyAccount implements Comparable<MyAccount> {
         }
 
         private void fixInconsistenciesWithChangedEnvironmentSilently() {
-            if (myAccount.version != MyAccount.ACCOUNT_VERSION) {
+            if (MyContextHolder.isOnRestore() || myAccount.version != MyAccount.ACCOUNT_VERSION) {
                 return;
             }
             boolean changed = false;
@@ -321,8 +321,8 @@ public final class MyAccount implements Comparable<MyAccount> {
                 }
                 MyLog.v(this, (result.savedToAccountManager ? " Saved "
                         : (result.changed ? " Didn't save?! " : " Didn't change ")) + this.toString());
-                if (result.savedToAccountManager && result.changed) {
-                    new TimelineSaver(MyContextHolder.get()).setAddDefaults(true).setAccount(myAccount).executeNotOnUiThread();
+                if (myContext.isReady() && !myAccount.hasAnyTimelines(myContext)) {
+                    new TimelineSaver(myContext).setAddDefaults(true).setAccount(myAccount).executeNotOnUiThread();
                 }
             } catch (Exception e) {
                 MyLog.e(this, "Saving " + myAccount, e);
@@ -1024,5 +1024,15 @@ public final class MyAccount implements Comparable<MyAccount> {
             }
         }
         return lastSyncedDate;
+    }
+
+    public boolean hasAnyTimelines(MyContext myContext) {
+        for (Timeline timeline : myContext.persistentTimelines().values()) {
+            if (timeline.getMyAccount().equals(this)) {
+                return true;
+            }
+        }
+        MyLog.v(this, this.getAccountName() + " doesn't have any timeline");
+        return false;
     }
 }

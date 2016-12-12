@@ -35,7 +35,7 @@ public class HelpActivityTest extends ActivityInstrumentationTestCase2<HelpActiv
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        TestSuite.initialize(this);
+        TestSuite.initializeWithData(this);
         
         Intent intent = new Intent();
         intent.putExtra(HelpActivity.EXTRA_IS_FIRST_ACTIVITY, true);

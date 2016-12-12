@@ -27,16 +27,18 @@ import org.andstatus.app.context.Travis;
 public class KeywordsFilterTest extends InstrumentationTestCase {
     public void testPhrases() {
         String string1 = "\"deleted notice\"";
-        assertOne(string1, "deleted notice");
+        final String keywordDN = ",deleted,notice,";
+        assertOne(string1, keywordDN);
 
         string1 = "word " + string1;
-        assertOne(string1, "word", "deleted notice");
+        final String keywordW = ",word,";
+        assertOne(string1, keywordW, keywordDN);
 
         string1 = "  , Word, " + string1;
-        assertOne(string1, "word", "deleted notice");
+        assertOne(string1, keywordW, keywordDN);
 
         string1 += ", Something";
-        assertOne(string1, "word", "deleted notice", "something");
+        assertOne(string1, keywordW, keywordDN, ",something,");
     }
 
     private void assertOne(String string1, String... values) {

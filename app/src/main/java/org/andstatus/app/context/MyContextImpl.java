@@ -118,11 +118,17 @@ public final class MyContextImpl implements MyContext {
         initializeDatabase(myContext, createApplicationData);
 
         switch (myContext.mState) {
-            case READY:
+            case DATABASE_READY:
                 myContext.mPersistentOrigins.initialize();
-                myContext.mPersistentAccounts.initialize();
-                myContext.persistentTimelines.initialize();
-                MyImageCache.initialize(myContext.context());
+                if (MyContextHolder.isOnRestore()) {
+                    myContext.mState = MyContextState.RESTORING;
+                } else {
+                    // Accounts are not restored yet
+                    myContext.mPersistentAccounts.initialize();
+                    myContext.persistentTimelines.initialize();
+                    MyImageCache.initialize(myContext.context());
+                    myContext.mState = MyContextState.READY;
+                }
                 break;
             default:
                 break;
@@ -134,7 +140,7 @@ public final class MyContextImpl implements MyContext {
         DatabaseHolder newDb = new DatabaseHolder(myContext.mContext, createApplicationData);
         try {
             myContext.mState = newDb.checkState();
-            if (myContext.state() == MyContextState.READY
+            if (myContext.state() == MyContextState.DATABASE_READY
                     && MyStorage.isApplicationDataCreated() != TriState.TRUE) {
                 myContext.mState = MyContextState.ERROR;
             }
@@ -144,7 +150,7 @@ public final class MyContextImpl implements MyContext {
             newDb.close();
             myContext.mDb = null;
         }
-        if (myContext.state() == MyContextState.READY) {
+        if (myContext.state() == MyContextState.DATABASE_READY) {
             myContext.mDb = newDb;
         }
     }

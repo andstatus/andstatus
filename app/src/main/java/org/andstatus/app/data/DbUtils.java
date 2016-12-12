@@ -26,7 +26,7 @@ import android.provider.BaseColumns;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
-import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MyContext;
 import org.andstatus.app.util.MyLog;
 
 import java.io.Closeable;
@@ -49,10 +49,10 @@ public final class DbUtils {
     /**
      * @return rowId
      */
-    public static long addRowWithRetry(String tableName, ContentValues values, int nRetries) {
+    public static long addRowWithRetry(MyContext myContext, String tableName, ContentValues values, int nRetries) {
         String method = "addRowWithRetry";
         long rowId = -1;
-        SQLiteDatabase db = MyContextHolder.get().getDatabase();
+        SQLiteDatabase db = myContext.getDatabase();
         if (db == null) {
             MyLog.v(TAG, method + "; Database is null");
             return 0;
@@ -82,10 +82,10 @@ public final class DbUtils {
     /**
      * @return Number of rows updated
      */
-    public static int updateRowWithRetry(String tableName, long rowId, ContentValues values, int nRetries) {
+    public static int updateRowWithRetry(MyContext myContext, String tableName, long rowId, ContentValues values, int nRetries) {
         String method = "updateRowWithRetry";
         int rowsUpdated = 0;
-        SQLiteDatabase db = MyContextHolder.get().getDatabase();
+        SQLiteDatabase db = myContext.getDatabase();
         if (db == null) {
             MyLog.v(TAG, method + "; Database is null");
             return 0;
@@ -111,7 +111,8 @@ public final class DbUtils {
     }
 
     /** @return true if current thread was interrupted */
-    public static boolean waitMs(String method, long delayMs) {
+    public static boolean waitMs(Object tag, long delayMs) {
+        final String method = MyLog.objTagToString(tag);
         if (delayMs > 1) {
             long delay = delayMs;
             // http://stackoverflow.com/questions/363681/generating-random-integers-in-a-range-with-java

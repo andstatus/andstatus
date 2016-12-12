@@ -238,7 +238,7 @@ public class DownloadData {
        values.put(DownloadTable.DOWNLOAD_STATUS, status.save());
        values.put(DownloadTable.FILE_NAME, fileNew.getFilename());
 
-       downloadId = DbUtils.addRowWithRetry(DownloadTable.TABLE_NAME, values, 3);
+       downloadId = DbUtils.addRowWithRetry(MyContextHolder.get(), DownloadTable.TABLE_NAME, values, 3);
        if (downloadId == -1) {
            softError = true;
        } else {
@@ -267,7 +267,7 @@ public class DownloadData {
             values.put(DownloadTable.VALID_FROM, loadTimeNew);
         }
 
-        if (DbUtils.updateRowWithRetry(DownloadTable.TABLE_NAME, downloadId, values, 3) != 1) {
+        if (DbUtils.updateRowWithRetry(MyContextHolder.get(), DownloadTable.TABLE_NAME, downloadId, values, 3) != 1) {
             softError = true;
         } else {
             MyLog.v(this, "Updated " + userMsgUriToString());

@@ -54,6 +54,7 @@ public final class MyContextHolder {
     private static volatile MyContext myInitializedContext = null;
     @GuardedBy("CONTEXT_LOCK")
     private static volatile MyFutureTaskExpirable<MyContext> myFutureContext = null;
+    private static volatile boolean onRestore = false;
 
     private MyContextHolder() {
     }
@@ -106,6 +107,7 @@ public final class MyContextHolder {
             MyLog.v(TAG, "Already initialized by " + get().initializedBy() +  " (called by: " + initializedBy + ")");
         }
         try {
+            MyLog.d(TAG, "Starting initialization by " + initializedBy);
             return getBlocking(context, initializedBy);
         } catch (InterruptedException e) {
             MyLog.d(TAG, "Initialize was interrupted, releasing resources...", e);
@@ -279,4 +281,13 @@ public final class MyContextHolder {
         }
         return "AndStatus v.?";
     }
+
+    public static void setOnRestore(boolean onRestore) {
+        MyContextHolder.onRestore = onRestore;
+    }
+
+    public static boolean isOnRestore() {
+        return onRestore;
+    }
+
 }
