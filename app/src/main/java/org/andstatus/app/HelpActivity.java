@@ -19,6 +19,7 @@ package org.andstatus.app;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -40,6 +41,7 @@ import org.andstatus.app.account.AccountSettingsActivity;
 import org.andstatus.app.backup.ProgressLogger;
 import org.andstatus.app.backup.RestoreActivity;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MyContextState;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.MySettingsActivity;
 import org.andstatus.app.data.MyDataChecker;
@@ -54,7 +56,7 @@ import org.andstatus.app.util.SwipeInterface;
 import org.andstatus.app.util.ViewUtils;
 import org.andstatus.app.util.Xslt;
 
-public class HelpActivity extends MyActivity implements SwipeInterface, ProgressLogger.ProgressCallback {
+public class HelpActivity extends MyActivity implements SwipeInterface, ProgressLogger.ProgressCallback, DialogInterface.OnDismissListener {
 
     // Constants
     public static final String TAG = HelpActivity.class.getSimpleName();
@@ -387,19 +389,33 @@ public class HelpActivity extends MyActivity implements SwipeInterface, Progress
             this.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    try {
-                        if (progress == null) {
-                            progress = new ProgressDialog(HelpActivity.this, ProgressDialog.STYLE_SPINNER);
-                            progress.setTitle(R.string.app_name);
-                            progress.setMessage(message);
-                            progress.show();
-                        } else {
-                            progress.setMessage(message);
-                        }
-                    } catch (Exception e) {
-                        MyLog.d(this, method + " '" + message + "'", e);
+                    boolean shown = false;
+                    if (isResumedMy()) {
                         try {
-                            Toast.makeText(MyContextHolder.get().context(), message, Toast.LENGTH_LONG).show();
+                            if (progress == null) {
+                                progress = new ProgressDialog(HelpActivity.this, ProgressDialog.STYLE_SPINNER);
+                                progress.setOnDismissListener(HelpActivity.this);
+                                progress.setTitle(MyContextHolder.get().state() == MyContextState.UPGRADING ?
+                                        R.string.label_upgrading : R.string.app_name);
+                                progress.setMessage(message);
+                                progress.show();
+                            } else {
+                                progress.setMessage(message);
+                            }
+                            shown = true;
+                        } catch (Exception e) {
+                            MyLog.d(this, method + " '" + message + "'", e);
+                        }
+                    }
+                    if (!shown) {
+                        try {
+                            Toast.makeText(MyContextHolder.get().context(),
+                                    getText(R.string.app_name) + "\n"
+                                    + MyContextHolder.getVersionText(getBaseContext())
+                                    + (MyContextHolder.get().state() == MyContextState.UPGRADING ?
+                                            "\n" + getText(R.string.label_upgrading) : "")
+                                    + "\n\n" + message,
+                                    Toast.LENGTH_LONG).show();
                         } catch (Exception e2) {
                             MyLog.e(method, "Couldn't send toast with the text: " + method, e2);
                         }
@@ -429,5 +445,12 @@ public class HelpActivity extends MyActivity implements SwipeInterface, Progress
         } catch (Exception e) {
             MyLog.d(this, "onComplete " + success, e);
         }
+    }
+
+    @Override
+    public void onDismiss(DialogInterface dialog) {
+        DialogFactory.dismissSafely(progress);
+        progress = null;
+        MyLog.v(this, "Progress dialog dismissed");
     }
 }

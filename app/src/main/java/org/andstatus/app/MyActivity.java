@@ -38,6 +38,7 @@ import org.andstatus.app.util.TriState;
 public class MyActivity extends AppCompatActivity {
 
     protected int mLayoutId = 0;
+    protected boolean mResumed = false;
     private Menu mOptionsMenu = null;
 
     @Override
@@ -84,10 +85,21 @@ public class MyActivity extends AppCompatActivity {
         }
     }
 
+    public boolean isResumedMy() {
+        return mResumed;
+    }
+
     @Override
     protected void onPause() {
+        mResumed = false;
         super.onPause();
         toggleFullscreen(TriState.FALSE);
+    }
+
+    @Override
+    protected void onResume() {
+        mResumed = true;
+        super.onResume();
     }
 
     @Override

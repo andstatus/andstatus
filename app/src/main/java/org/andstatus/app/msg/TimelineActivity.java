@@ -587,7 +587,7 @@ public class TimelineActivity extends LoadableListActivity implements
         }
         super.onNewIntent(intent);
         parseNewIntent(intent);
-		if (!isPaused() || getListData().size() > 0 || isLoading()) {
+		if (isResumedMy() || getListData().size() > 0 || isLoading()) {
             showList(getParamsNew().whichPage);
 		}
     }

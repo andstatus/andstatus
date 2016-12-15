@@ -87,8 +87,6 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
     long lastLoadedAt = 0;
     private static final long NO_AUTO_REFRESH_AFTER_LOAD_SECONDS = 5;
 
-    private boolean mIsPaused = true;
-
     protected CharSequence mSubtitle = "";
     /**
      * Id of current list item, which is sort of a "center" of the list view
@@ -282,7 +280,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
             mSyncLoader = loader;
             updateCompletedLoader();
             try {
-                if (!isPaused()) {
+                if (isResumedMy()) {
                     onLoadFinished(true);
                 }
             } catch (Exception e) {
@@ -301,10 +299,6 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
         public String toString() {
             return super.toString() + (mSyncLoader == null ? "" : "; " + mSyncLoader);
         }
-    }
-
-    public boolean isPaused() {
-        return mIsPaused;
     }
 
     public void onLoadFinished(boolean keepCurrentPosition) {
@@ -421,7 +415,6 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
     @Override
     protected void onResume() {
         String method = "onResume";
-        mIsPaused = false;
         super.onResume();
         MyLog.v(this, method + ", instanceId=" + mInstanceId
                 + (mFinishing ? ", finishing" : "") );
@@ -448,7 +441,6 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
 
     @Override
     protected void onPause() {
-        mIsPaused = true;
         super.onPause();
         myServiceReceiver.unregisterReceiver(this);
         MyContextHolder.get().setInForeground(false);

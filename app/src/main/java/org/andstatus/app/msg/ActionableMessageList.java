@@ -30,5 +30,4 @@ public interface ActionableMessageList {
     void onMessageEditorVisibilityChange();
     MyAccount getCurrentMyAccount();
     Timeline getTimeline();
-    boolean isPaused();
 }

@@ -25,10 +25,10 @@ import android.support.annotation.Nullable;
 import android.view.View;
 import android.widget.ImageView;
 
-import org.andstatus.app.database.DownloadTable;
-import org.andstatus.app.graphics.AttachedImageView;
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.database.DownloadTable;
+import org.andstatus.app.graphics.AttachedImageView;
 import org.andstatus.app.graphics.MyDrawableCache;
 import org.andstatus.app.graphics.MyImageCache;
 import org.andstatus.app.msg.ActionableMessageList;
@@ -106,7 +106,7 @@ public class AttachedImageFile {
     }
 
     public void showAttachedImage(@NonNull ActionableMessageList messageList, ImageView imageView) {
-        if (imageView == null || messageList.isPaused()) {
+        if (imageView == null || !messageList.getActivity().isResumedMy()) {
             return;
         }
         if (isEmpty()) {
@@ -163,7 +163,7 @@ public class AttachedImageFile {
                     }
 
                     private void onEnded(Drawable drawable) {
-                        if (imageView == null || messageList.getActivity().isPaused()) {
+                        if (imageView == null || !messageList.getActivity().isResumedMy()) {
                             return;
                         }
                         if (drawable == null) {
