@@ -143,19 +143,9 @@ class TimelineListPositionStorage {
                 mListView.setSelectionFromTop(position, tlPosition.y);
                 restored = true;
             } else {
-                // There is no stored position
-                if (mListParameters.whichPage.isYoungest()
-                        || mListParameters.getTimeline().hasSearchQuery()
-                        || mListView.getCount() < 10) {
-                    // In search mode start from the most recent message!
-                    position = 0;
-                } else {
-                    position = mListView.getCount() - 10;
-
-                }
-                if (position >= 0) {
-                    setPosition(mListView, position);
-                }
+                // There is no stored position - starting from the Top
+                position = 0;
+                setPosition(mListView, position);
             }
         } catch (Exception e) {
             MyLog.v(this, method, e);

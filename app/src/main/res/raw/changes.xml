@@ -42,6 +42,8 @@
             <change>"Check and fix data" action added to the AndStatus Settings -&gt; "Storage" section.
                 This action should be used during problem troubleshooting to fix internal data problems,
                 which could cause AndStatus malfunction.</change>
+            <change>Default scrolling position in a timeline changed: now it's at the Top of the list,
+                not near its bottom as before.</change>
         </changes>
     </release>
     <release android:versionName="30.02" android:versionCode="195"
