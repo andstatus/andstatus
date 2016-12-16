@@ -18,7 +18,6 @@ package org.andstatus.app.msg;
 
 import android.database.Cursor;
 import android.support.annotation.NonNull;
-import android.text.TextUtils;
 
 import org.andstatus.app.LoadableListActivity;
 import org.andstatus.app.SyncLoader;
@@ -121,7 +120,7 @@ public class TimelineLoader extends SyncLoader<TimelineViewItem> {
                 SharedPreferencesUtil.getString(MyPreferences.KEY_FILTER_HIDE_MESSAGES_BASED_ON_KEYWORDS, ""));
         boolean hideRepliesNotToMeOrFriends = getParams().getTimelineType() == TimelineType.HOME
                 && SharedPreferencesUtil.getBoolean(MyPreferences.KEY_FILTER_HIDE_REPLIES_NOT_TO_ME_OR_FRIENDS, false);
-        String searchQuery = MyHtml.getBodyToSearch(getParams().getTimeline().getSearchQuery());
+        KeywordsFilter searchQuery = new KeywordsFilter(getParams().getTimeline().getSearchQuery());
 
         long startTime = System.currentTimeMillis();
         int rowsCount = 0;
@@ -135,9 +134,9 @@ public class TimelineLoader extends SyncLoader<TimelineViewItem> {
                         TimelineViewItem item = TimelineViewItem.fromCursorRow(params.getMyContext(), cursor);
                         getParams().rememberSentDateLoaded(item.sentDate);
                         String body = MyHtml.getBodyToSearch(item.body);
-                        boolean skip = keywordsFilter.matched(body);
-                        if (!skip && !TextUtils.isEmpty(searchQuery)) {
-                            skip = !body.contains(searchQuery);
+                        boolean skip = keywordsFilter.matchedAny(body);
+                        if (!skip && !searchQuery.isEmpty()) {
+                            skip = !searchQuery.matchedAll(body);
                         }
                         if (!skip && hideRepliesNotToMeOrFriends && item.inReplyToUserId != 0) {
                             skip = !MyContextHolder.get().persistentAccounts().isMeOrMyFriend(item.inReplyToUserId);
@@ -145,7 +144,7 @@ public class TimelineLoader extends SyncLoader<TimelineViewItem> {
                         if (skip) {
                             filteredOutCount++;
                             if (MyLog.isVerboseEnabled()) {
-                                MyLog.v(this, filteredOutCount + " Filtered out: " + I18n.trimTextAt(body, 40));
+                                MyLog.v(this, filteredOutCount + " Filtered out: " + I18n.trimTextAt(body, 100));
                             }
                         } else if (reversedOrder) {
                             page.items.add(0, item);

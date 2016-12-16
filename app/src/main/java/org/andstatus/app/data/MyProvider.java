@@ -33,8 +33,9 @@ import org.andstatus.app.database.MsgOfUserTable;
 import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.database.OriginTable;
 import org.andstatus.app.database.UserTable;
-import org.andstatus.app.util.MyHtml;
+import org.andstatus.app.msg.KeywordsFilter;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.StringUtils;
 
 import java.util.Arrays;
 
@@ -286,19 +287,21 @@ public class MyProvider extends ContentProvider {
             case TIMELINE_SEARCH:
                 qb.setTables(TimelineSql.tablesForTimeline(uri, projection));
                 qb.setProjectionMap(ProjectionMap.MSG);
-                String searchQuery = uriParser.getSearchQuery();
-                if (!TextUtils.isEmpty(searchQuery)) {
+                String rawQuery = uriParser.getSearchQuery();
+                if (!TextUtils.isEmpty(rawQuery)) {
                     if (!TextUtils.isEmpty(selection)) {
                         selection = " AND (" + selection + ")";
                     } else {
                         selection = "";
                     }
+                    KeywordsFilter searchQuery  = new KeywordsFilter(rawQuery);
                     // TODO: Search in MyDatabase.User.USERNAME also
-                    selection = "(" + UserTable.AUTHOR_NAME + " LIKE ?  OR " + MsgTable.BODY_TO_SEARCH
-                            + " LIKE ?)" + selection;
+                    selection = "(" + UserTable.AUTHOR_NAME + " LIKE ?  OR "
+                            + searchQuery.getSqlSelection(MsgTable.BODY_TO_SEARCH)
+                            + ")" + selection;
 
-                    selectionArgs = addBeforeArray(selectionArgs, "%" + searchQuery + "%");
-                    selectionArgs = addBeforeArray(selectionArgs, "%" + MyHtml.getBodyToSearch(searchQuery) + "%");
+                    selectionArgs = searchQuery.prependSqlSelectionArgs(selectionArgs);
+                    selectionArgs = StringUtils.addBeforeArray(selectionArgs, "%" + rawQuery + "%");
                 }
                 break;
 
@@ -397,16 +400,6 @@ public class MyProvider extends ContentProvider {
             c.setNotificationUri(getContext().getContentResolver(), uri);
         }
         return c;
-    }
-
-    private String[] addBeforeArray(String[] array, String s) {
-        int length = array == null ? 0 : array.length;
-        String[] ans = new String[length + 1];
-        if (length > 0) {
-            System.arraycopy(array, 0, ans, 1, length);
-        }
-        ans[0] = s;
-        return ans;
     }
 
     /**

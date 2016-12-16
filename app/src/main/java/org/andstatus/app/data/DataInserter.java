@@ -84,7 +84,7 @@ public class DataInserter {
             ContentValues values = new ContentValues();
 
             if (message.sentDate > 0) {
-                if (!keywordsFilter.matched(message.getBodyToSearch())) {
+                if (!keywordsFilter.matchedAny(message.getBodyToSearch())) {
                     execContext.getResult().incrementDownloadedCount();
                 }
             }
@@ -279,7 +279,7 @@ public class DataInserter {
                 saveAttachments(message);
             }
 
-            if (isNewerThanInDatabase && !keywordsFilter.matched(message.getBody())) {
+            if (isNewerThanInDatabase && !keywordsFilter.matchedAny(message.getBody())) {
                 // This message is newer than already stored in our database, so count it!
                 execContext.getResult().incrementMessagesCount();
                 if (mentioned) {

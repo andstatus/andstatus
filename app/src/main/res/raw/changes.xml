@@ -29,7 +29,7 @@
     </header>
     <release android:versionName="31.00" android:versionCode="200"
              versionDate="2016-12-16"
-             versionTitle="Conversation view enhancements">
+             versionTitle="Conversation view and Search enhancements">
         <changes>
             <change>Conversation view opens much faster now. This is because messages, which belong to one
                 conversation, are calculated beforehand in a background.
@@ -40,8 +40,17 @@
                 in one request instead of downloading messages mostly one-by-one, as for other social networks.
                 <a href="https://github.com/andstatus/andstatus/issues/328">#328</a>
             </change>
-            <change>Search improvement: now !groups #hashtags and @mentions are correctly found in HTML-formatted text,
-            where e.g. "#" and a hashtag name are separated by (invisible) HTML markup.</change>
+            <change>Search for all words and for exact phrases implemented.<br/>
+                If you type several words in a search box,
+                AndStatus now searches for the messages, which contain all typed words in any order.
+                In order to search for an exact phrase, enclose it in double quotes.<br/>
+                In a case of a Global search, your query string is sent to a Social network server exactly as you typed it.
+                It turns out that GNU Social and Twitter interprets the query just like described above,
+                which means that Global search for all words and phrases (without punctuation) works also.
+                <a href="https://github.com/andstatus/andstatus/issues/402">#402</a>
+            </change>
+            <change>Search in HTML-formatted text improvement: now !groups #hashtags and @mentions are correctly found
+                in HTML-formatted text, where e.g. "#" and a hashtag name are separated by (invisible) HTML markup.</change>
             <change>Default setting of the "Tap on a Timeline Title behaviour" option changed from "Switch to Default Timeline"
             to "Select a Timeline". This doesn't affect existing users, but is more intuitive for novices.</change>
             <change>"Check and fix data" action added to the AndStatus Settings -&gt; "Storage" section.

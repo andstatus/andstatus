@@ -20,6 +20,7 @@ import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import org.andstatus.app.util.MyHtml;
+import org.andstatus.app.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -89,7 +90,7 @@ public class KeywordsFilter {
         return keywords;
     }
 
-    public boolean matched(String s) {
+    public boolean matchedAny(String s) {
         if (keywordsToFilter.isEmpty() || TextUtils.isEmpty(s)) {
             return false;
         }
@@ -99,6 +100,42 @@ public class KeywordsFilter {
             }
         }
         return false;
+    }
+
+    public boolean matchedAll(String s) {
+        if (keywordsToFilter.isEmpty() || TextUtils.isEmpty(s)) {
+            return false;
+        }
+        for (String keyword : keywordsToFilter) {
+            if (!s.contains(keyword)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    @NonNull
+    public String getSqlSelection(String fieldName) {
+        if (isEmpty()) {
+            return "";
+        }
+        String selection = "";
+        for (int ind=0; ind<keywordsToFilter.size(); ind++) {
+            if (ind > 0) {
+                selection += " AND ";
+            }
+            selection += fieldName + " LIKE ?";
+        }
+        return "(" + selection + ")";
+    }
+
+    @NonNull
+    public String[] prependSqlSelectionArgs(String[] selectionArgs) {
+        String[] selectionArgsOut = selectionArgs;
+        for (String keyword : keywordsToFilter) {
+            selectionArgsOut = StringUtils.addBeforeArray(selectionArgsOut, "%" + keyword + "%");
+        }
+        return selectionArgsOut;
     }
 
     public boolean isEmpty() {

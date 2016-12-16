@@ -258,7 +258,7 @@
   <string name="menu_item_follow_user">Follow \"%1s\"</string>
   <string name="menu_item_view_image">View image</string>
   <string name="menu_item_open_conversation">Open Conversation</string>
-  <string name="menu_item_open_message_permalink">Open on Internet</string>
+  <string name="menu_item_open_message_permalink">Open in browser</string>
   <string name="menu_item_reply">Reply</string>
   <string name="menu_item_reply_all">Reply to All</string>
   <string name="menu_item_reblog">Repost</string>

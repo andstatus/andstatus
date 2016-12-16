@@ -61,4 +61,14 @@ public class StringUtils {
         }
         return count;
     }
+
+    public static String[] addBeforeArray(String[] array, String s) {
+        int length = array == null ? 0 : array.length;
+        String[] ans = new String[length + 1];
+        if (length > 0) {
+            System.arraycopy(array, 0, ans, 1, length);
+        }
+        ans[0] = s;
+        return ans;
+    }
 }
