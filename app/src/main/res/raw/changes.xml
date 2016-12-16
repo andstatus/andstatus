@@ -28,12 +28,17 @@
 		</subtitle>
     </header>
     <release android:versionName="31.00" android:versionCode="200"
-             versionDate="2016-12-04"
+             versionDate="2016-12-16"
              versionTitle="Conversation view enhancements">
         <changes>
             <change>Conversation view opens much faster now. This is because messages, which belong to one
                 conversation, are calculated beforehand in a background.
                 <a href="https://github.com/andstatus/andstatus/issues/361">#361</a>
+            </change>
+            <change>For "GNU Social" additional conversation performance improvement implemented:
+                special "getConversation API" is used to download the whole conversation from a server
+                in one request instead of downloading messages mostly one-by-one, as for other social networks.
+                <a href="https://github.com/andstatus/andstatus/issues/328">#328</a>
             </change>
             <change>Search improvement: now !groups #hashtags and @mentions are correctly found in HTML-formatted text,
             where e.g. "#" and a hashtag name are separated by (invisible) HTML markup.</change>
@@ -43,7 +48,7 @@
                 This action should be used during problem troubleshooting to fix internal data problems,
                 which could cause AndStatus malfunction.</change>
             <change>Default scrolling position in a timeline changed: now it's at the Top of the list,
-                not near its bottom as before.</change>
+                not near its bottom, as before.</change>
         </changes>
     </release>
     <release android:versionName="30.02" android:versionCode="195"
