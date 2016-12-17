@@ -22,7 +22,13 @@ import android.text.SpannableString;
 import android.text.TextUtils;
 import android.text.util.Linkify;
 
+import org.apache.commons.lang3.StringEscapeUtils;
+
 public class MyHtml {
+
+    private static final String GNU_SOCIAL_FAVORITED_SOMETHING_BY_REGEX = "([^ ]*) favorited something by [^ ]* (.*)";
+    private static final String SPACES_REGEX = "[\\[\\]\\(\\)\\{\\}\n\'\"<>,:;\\s]+";
+
     private MyHtml() {
         // Empty
     }
@@ -63,6 +69,7 @@ public class MyHtml {
             if ( MyHtml.hasHtmlMarkup(text2)) {
                 text2 = Html.fromHtml(text2).toString();
             }
+            text2 = StringEscapeUtils.unescapeHtml4(text2);
             return stripUnnecessaryNewlines(text2);
         }
     }
@@ -87,7 +94,7 @@ public class MyHtml {
             return "";
         } else {
             String text2 = "," + text + ",";
-            text2 = text2.replaceAll("[\\[\\]\\(\\)\\{\\}\n\'\"<>,:;\\s]+",",");
+            text2 = text2.replaceAll(SPACES_REGEX,",");
             text2 = text2.replaceAll("(,[@#!]([^@#!,]+))",",$2$1");
             return text2;
         }
@@ -101,5 +108,18 @@ public class MyHtml {
             has = text.contains("<") && text.contains(">");
         }
         return has; 
+    }
+
+    @NonNull
+    public static boolean isFavoritingAction(String body) {
+        String out = fromHtml(body).toLowerCase();
+        return out.matches(GNU_SOCIAL_FAVORITED_SOMETHING_BY_REGEX);
+    }
+
+    @NonNull
+    public static String getCleanedBody(String body) {
+        String text2 = fromHtml(body).toLowerCase();
+        return text2.replaceAll(SPACES_REGEX, " ").
+                replaceFirst(GNU_SOCIAL_FAVORITED_SOMETHING_BY_REGEX,"$2");
     }
 }

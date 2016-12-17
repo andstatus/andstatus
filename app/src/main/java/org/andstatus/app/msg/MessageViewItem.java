@@ -35,7 +35,6 @@ import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.widget.DuplicatesCollapsible;
 import org.andstatus.app.widget.DuplicationLink;
-import org.apache.commons.lang3.StringEscapeUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -156,8 +155,8 @@ public class MessageViewItem implements DuplicatesCollapsible<MessageViewItem> {
         }
         if (link == DuplicationLink.NONE) {
             if (Math.abs(createdDate - other.createdDate) < TimeUnit.HOURS.toMillis(24)) {
-                String thisBody = getCleanedBody(body);
-                String otherBody = getCleanedBody(other.body);
+                String thisBody = MyHtml.getCleanedBody(body);
+                String otherBody = MyHtml.getCleanedBody(other.body);
                 if (thisBody.length() < MIN_LENGTH_TO_COMPARE ||
                         otherBody.length() < MIN_LENGTH_TO_COMPARE) {
                     // Too short to compare
@@ -177,15 +176,6 @@ public class MessageViewItem implements DuplicatesCollapsible<MessageViewItem> {
             }
         }
         return link;
-    }
-
-    @NonNull
-    private String getCleanedBody(String body) {
-        String out = MyHtml.fromHtml(body).toLowerCase();
-        out = StringEscapeUtils.unescapeHtml4(out);
-        return out.replaceAll("\n", " ").
-                replaceAll("  ", " ").
-                replaceFirst(".*(favorited something by.*)","$1");
     }
 
     private DuplicationLink duplicatesByFavoritedAndReblogged(MessageViewItem other) {

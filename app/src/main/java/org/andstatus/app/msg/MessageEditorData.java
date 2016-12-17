@@ -39,6 +39,7 @@ import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.user.UserListType;
 import org.andstatus.app.user.UserListViewItem;
 import org.andstatus.app.user.UsersOfMessageListLoader;
+import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.UriUtils;
 
@@ -282,7 +283,9 @@ public class MessageEditorData {
         loader.load(null);
         List<Long> toMention = new ArrayList<>();
         for(ConversationMemberItem item : loader.getList()) {
-            toMention.add(item.authorId);
+            if (!MyHtml.isFavoritingAction(item.body)) {
+                toMention.add(item.authorId);
+            }
         }
         addUsersBeforeText(toMention);
     }

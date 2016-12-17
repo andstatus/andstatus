@@ -95,4 +95,14 @@ public class MyHtmlTest extends InstrumentationTestCase {
         string = "<p>This <a href='#as'>message</a></p>   has <p>newline</p> ";
         assertEquals(expected, MyHtml.fromHtml(string));
     }
+
+    public void testGetCleanedBody() {
+        String body = "";
+        String expected = "the favorited message";
+
+        body = "Somebody favorited something by anotheruser: " + expected;
+        assertEquals(expected, MyHtml.getCleanedBody(body));
+        assertTrue(body, MyHtml.isFavoritingAction(body));
+        assertFalse(HTMLIFIED_STRING, MyHtml.isFavoritingAction(HTMLIFIED_STRING));
+    }
 }
