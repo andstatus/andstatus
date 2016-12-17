@@ -38,7 +38,6 @@ import org.andstatus.app.widget.MyBaseAdapter;
  */
 public class UserList extends LoadableListActivity {
     protected UserListType mUserListType = UserListType.UNKNOWN;
-    protected boolean mIsListCombined = false;
     private UserListContextMenu contextMenu = null;
 
     public UserList() {
@@ -50,7 +49,6 @@ public class UserList extends LoadableListActivity {
         super.onCreate(savedInstanceState);
 
         mUserListType = getParsedUri().getUserListType();
-        mIsListCombined = false; // For now...
         contextMenu = new UserListContextMenu(this);
     }
 
@@ -58,9 +56,9 @@ public class UserList extends LoadableListActivity {
     protected UserListLoader newSyncLoader(Bundle args) {
         switch (mUserListType) {
             case USERS_OF_MESSAGE:
-                return new UsersOfMessageListLoader(mUserListType, getCurrentMyAccount(), centralItemId, mIsListCombined);
+                return new UsersOfMessageListLoader(mUserListType, getCurrentMyAccount(), centralItemId);
             default:
-                return new UserListLoader(mUserListType, getCurrentMyAccount(), centralItemId, mIsListCombined);
+                return new UserListLoader(mUserListType, getCurrentMyAccount(), centralItemId);
         }
     }
 

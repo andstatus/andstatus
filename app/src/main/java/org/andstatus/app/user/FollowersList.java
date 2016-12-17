@@ -72,6 +72,6 @@ public class FollowersList extends UserList {
 
     @Override
     protected UserListLoader newSyncLoader(Bundle args) {
-        return new FollowersListLoader(mUserListType, getCurrentMyAccount(), getFollowedUserId(), mIsListCombined);
+        return new FollowersListLoader(mUserListType, getCurrentMyAccount(), getFollowedUserId());
     }
 }

@@ -26,16 +26,14 @@ import org.andstatus.app.util.MyLog;
 public class UserListLoader extends SyncLoader<UserListViewItem> {
     protected final UserListType mUserListType;
     protected final MyAccount ma;
-    protected final boolean mIsListCombined;
     protected boolean mAllowLoadingFromInternet = false;
     protected final long mCentralItemId;
 
     private LoadableListActivity.ProgressPublisher mProgress;
 
-    public UserListLoader(UserListType userListType, MyAccount ma, long centralItemId, boolean isListCombined) {
+    public UserListLoader(UserListType userListType, MyAccount ma, long centralItemId) {
         mUserListType = userListType;
         this.ma = ma;
-        mIsListCombined = isListCombined;
         mCentralItemId = centralItemId;
     }
 

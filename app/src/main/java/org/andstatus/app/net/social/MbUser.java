@@ -294,7 +294,7 @@ public class MbUser implements Comparable<MbUser> {
         return TEMP_OID_PREFIX + oid;
     }
 
-    public List<MbUser> fromBodyText(String textIn, boolean replyOnly) {
+    public List<MbUser> extractUsersFromBodyText(String textIn, boolean replyOnly) {
         final String SEPARATORS = ", ;'=`~!#$%^&*(){}[]/";
         Origin origin = MyContextHolder.get().persistentOrigins().fromId(originId);
         List<MbUser> users = new ArrayList<>();

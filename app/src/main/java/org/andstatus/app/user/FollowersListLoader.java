@@ -27,8 +27,8 @@ public class FollowersListLoader extends UserListLoader {
     private long userId;
     private final String userName;
 
-    public FollowersListLoader(UserListType userListType, MyAccount ma, long centralItemId, boolean isListCombined) {
-        super(userListType, ma, centralItemId, isListCombined);
+    public FollowersListLoader(UserListType userListType, MyAccount ma, long centralItemId) {
+        super(userListType, ma, centralItemId);
         userId = centralItemId;
         userName = MyQuery.userIdToWebfingerId(userId);
     }

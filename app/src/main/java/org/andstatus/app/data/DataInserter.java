@@ -361,7 +361,7 @@ public class DataInserter {
         if (author == null) {
             author = MbUser.fromOriginAndUserOid(message.originId, "");
         }
-        List<MbUser> users = author.fromBodyText(message.getBody(), true);
+        List<MbUser> users = author.extractUsersFromBodyText(message.getBody(), true);
         if (users.size() > 0) {
             userId = users.get(0).userId;
             if (userId == 0) {

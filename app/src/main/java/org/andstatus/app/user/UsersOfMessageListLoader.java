@@ -33,8 +33,8 @@ public class UsersOfMessageListLoader extends UserListLoader {
     private final Origin mOriginOfSelectedMessage;
     final String messageBody;
 
-    public UsersOfMessageListLoader(UserListType userListType, MyAccount ma, long centralItemId, boolean isListCombined) {
-        super(userListType, ma, centralItemId, isListCombined);
+    public UsersOfMessageListLoader(UserListType userListType, MyAccount ma, long centralItemId) {
+        super(userListType, ma, centralItemId);
 
         mSelectedMessageId = centralItemId;
         messageBody = MyQuery.msgIdToStringColumnValue(MsgTable.BODY, mSelectedMessageId);
@@ -62,8 +62,7 @@ public class UsersOfMessageListLoader extends UserListLoader {
     }
 
     private void addUsersFromMessageBody(MbUser author) {
-        List<MbUser> users = author.fromBodyText(
-                MyQuery.msgIdToStringColumnValue(MsgTable.BODY, mSelectedMessageId), false);
+        List<MbUser> users = author.extractUsersFromBodyText(messageBody, false);
         for (MbUser mbUser: users) {
             addUserToList(UserListViewItem.fromMbUser(mbUser));
         }
