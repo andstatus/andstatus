@@ -61,10 +61,10 @@ public class MyHtmlTest extends InstrumentationTestCase {
     }
 
     public void testBodyToSearch() {
-        final String text1 = "@somebody,  [This]         is'\n a\t; \"normalised {text}\""
-                + "@user@domain.com, #<a href=\"#some\">AndStatus</a> (!gnusocial)";
-        final String text2 = "@somebody,  [This]         is'\n a\t; \"normalised {text}\""
-                + "@user@domain.com, #AndStatus (!gnusocial)";
+        final String text1 = "@somebody,  [This]  .       is'\n a\t; \"normalised {text}\""
+                + "@user@domain.com, #<a href=\"#some\">AndStatus</a>. (!gnusocial)";
+        final String text2 = "@somebody,  [This]  .       is'\n a\t; \"normalised {text}\""
+                + "@user@domain.com, #AndStatus. (!gnusocial)";
         final String text3 = ",somebody,@somebody,This,is,a,normalised,text,user,@user@domain.com,AndStatus,#AndStatus,"
                 + "gnusocial,!gnusocial,";
         assertEquals(text3, MyHtml.normalizeWordsForSearch(text2));
