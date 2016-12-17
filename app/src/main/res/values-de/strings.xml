@@ -71,6 +71,8 @@
   <string name="category_title_preference_notifications">Benachrichtigungen</string>
   <string name="category_title_preference_origin">Soziales Netzwerk</string>
   <string name="category_title_preference_settings">Einstellungen</string>
+  <string name="check_and_fix_data">Daten überprüfen und korrigieren</string>
+  <string name="check_and_fix_data_summary">Verwenden Sie diese Aktion, wenn Sie das Gefühl haben, dass AndStatus fehlerhaft funktioniert, aber nicht neu installieren möchten.</string>
   <string name="client_registration_failed">AndStatus Client-Registrierung fehlgeschlagen</string>
   <string name="collapse_duplicates">Duplikate einklappen</string>
   <string name="color_black">Schwarz</string>
@@ -140,6 +142,7 @@
   <string name="discover_open_instances_title">Überblick öffentlicher Server</string>
   <string name="displayed_in_selector">In einem Selektor angezeigt</string>
   <string name="displayed_in_selector_abbreviated">Anz.</string>
+  <string name="database_disk_io_error">Achtung! %1$s Fehler auftreten während Zugriff auf die lokale Cache-Datenbank, was eine Fehlfunktion der AndStatus Applikation verursacht. \n Dies bedeutet normalerweise, dass die SD-Karte auf Ihrem Gerät nicht ordnungsgemäß funktioniert.</string>
   <string name="dont_synchronize_old_messages">Alte Nachrichten nicht synchronisieren, falls seit dem letzten Sync mehr als ... Tage vergangen sind</string>
   <string name="dont_synchronize_old_messages_summary">%s Stunden nach dem letzten Sync
     wird AndStatus nicht versuchen alle Nachrichten seit dem letzten Download zu
@@ -180,6 +183,7 @@
   <string name="friends_of">Freunde von \"%1s\"</string>
   <string name="gestures">Gesten</string>
   <string name="gestures_summary">Touchfunktionen. Wie ein Nutzer mit der Applikation interagiert</string>
+  <string name="get_conversation">Unterhaltung anzeigen</string>
   <string name="get_followers">Erhalte Abonnenten</string>
   <string name="get_friends">Freunde laden</string>
   <string name="get_open_instances_title">Öffentliche Server</string>
@@ -256,9 +260,7 @@
   <string name="menu_item_follow_user">Folge \"%1s\"</string>
   <string name="menu_item_view_image">Bild anzeigen</string>
   <string name="menu_item_open_conversation">Öffne Gespräch</string>
-  <string name="menu_item_open_message_permalink">Im Internet öffnen</string>
   <string name="menu_item_reply">Antworten</string>
-  <string name="menu_item_reply_to_conversation_participants">Allen antworten</string>
   <string name="menu_item_reblog">Reblog</string>
   <string name="menu_item_reblog_pumpio">Mit Pump.io teilen</string>
   <string name="menu_item_reblog_twitter">Retweet</string>
@@ -371,6 +373,7 @@
   <string name="search_timeline_hint">Username/Stichwort eingeben</string>
   <string name="search_direct_messages_label">Direktnachrichten durchsuchen</string>
   <string name="search_direct_messages_hint">Usernamen oder Stichwort eingeben</string>
+  <string name="select_backup_folder">Backup-Ordner auswählen</string>
   <string name="select_displayed_in_selector">Wähle, ob und wann diese Timeline angezeigt wird</string>
   <string name="sent">Gesendet</string>
   <string name="select_social_network">Soziales Netzwerk wählen</string>
@@ -420,7 +423,7 @@
   <string name="summary_preference_show_avatars_on">User Avatare werden angezeigt</string>
   <string name="summary_preference_ssl_off">Kein SSL</string>
   <string name="summary_preference_ssl_on">SSL ist an</string>
-  <string name="summary_preference_storage">Speicherort für Daten und Bilder</string>
+  <string name="summary_preference_storage">Lokal wo und welche Informationen ablegen. Daten prüfen und sichern.</string>
   <string name="summary_preference_storage_external_off">Internen Speicher verwenden</string>
   <string name="summary_preference_storage_external_on">Externen Speicher verwenden</string>
   <string name="summary_preference_sync_indicator_on_timeline_off">Keine Sync-Anzeige</string>

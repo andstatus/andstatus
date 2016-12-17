@@ -27,8 +27,8 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
 		</subtitle>
     </header>
-    <release android:versionName="31.00" android:versionCode="200"
-             versionDate="2016-12-16"
+    <release android:versionName="31.01" android:versionCode="201"
+             versionDate="2016-12-17"
              versionTitle="Conversation view and Search enhancements">
         <changes>
             <change>Conversation view opens much faster now. This is because messages, which belong to one

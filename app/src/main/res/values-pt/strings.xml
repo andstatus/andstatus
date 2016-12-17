@@ -38,6 +38,8 @@
   <string name="appwidget_directmessage_formats_2">{0} diretas</string>
   <string name="appwidget_nothingnew_default">Nenhuma novidade desde:</string>
   <string name="appwidget_nodata">Ainda não existem dados.</string>
+  <string name="acquiring_a_request_token_failed">Falha ao obter o \'token\' de pedido</string>
+  <string name="acquiring_an_access_token_failed">Falha ao obter o \'token\' de acesso</string>
   <string name="attach_images_summary_off">O botão \"Paperclip+\", usado para anexar imagens às publicações está oculto</string>
   <string name="attach_images_summary_on">Utilize o botão \"Paperclip+\" (item de menu \"Anexar\") para anexar imagens às suas mensagens. Ou partilhe a imagem com o AndStatus a partir de outra aplicação</string>
   <string name="attach_images_title">Anexar imagens às mensagens</string>
@@ -68,6 +70,7 @@
   <string name="category_title_preference_notifications">Notificações</string>
   <string name="category_title_preference_origin">Rede social</string>
   <string name="category_title_preference_settings">Definições</string>
+  <string name="client_registration_failed">Falha ao registar o AndStatus</string>
   <string name="collapse_duplicates">Recolher duplicados</string>
   <string name="color_black">Preto</string>
   <string name="color_black_cat">Gato preto</string>
@@ -224,7 +227,7 @@
   <string name="label_restore">Restaurar dados de um backup</string>
   <string name="label_upgrading">Atualização em curso. Por favor aguarde.</string>
   <string name="label_with_media">com multimédia</string>
-  <string name="last_synced">Última sincronização</string>
+  <string name="last_synced">Última sincronização com sucesso</string>
   <string name="latest_error_label">Último erro</string>
   <string name="loading">A carregar</string>
   <string name="long_press_to_open_context_menu">Clique longo para abrir o menu de contexto</string>
@@ -250,9 +253,7 @@
   <string name="menu_item_follow_user">Seguir \"%1s\"</string>
   <string name="menu_item_view_image">Ver imagem</string>
   <string name="menu_item_open_conversation">Abrir conversa</string>
-  <string name="menu_item_open_message_permalink">Abrir na Internet</string>
   <string name="menu_item_reply">Responder</string>
-  <string name="menu_item_reply_to_conversation_participants">Responder a todos</string>
   <string name="menu_item_reblog">Republicar</string>
   <string name="menu_item_reblog_pumpio">Partilhar via Pump.io</string>
   <string name="menu_item_reblog_twitter">Retweet</string>
@@ -383,8 +384,8 @@ Com suporte a GNU social, Twitter e Pump.io.</string>
   <string name="subtitle">Legenda</string>
   <string name="summary_preference_accounts_absent">Ainda não há contas AndStatus</string>
   <string name="summary_preference_accounts_present">Número de contas AndStatus</string>
-  <string name="summary_preference_add_account_oauth">Toque aqui para abrir o sítio web da rede social no seu navegador.</string>
-  <string name="summary_preference_add_account_basic">Toque aqui para verificar as credenciais e adicionar a conta.</string>
+  <string name="summary_preference_add_account_oauth">Toque no botão abaixo para abrir o site da rede social no navegador web.</string>
+  <string name="summary_preference_add_account_basic">Toque no botão abaixo para verificar as credenciais e adicionar a conta.</string>
   <string name="summary_preference_appearance">Mudar aspeto e comportamento do AndStatus</string>
   <string name="summary_preference_enable_android_backup_off">Não serão pedidos backups do Android</string>
   <string name="summary_preference_enable_android_backup_on">O AndStatus notifica o Android sobre as alterações que necessitam de backup (experimental)</string>
@@ -414,7 +415,6 @@ Com suporte a GNU social, Twitter e Pump.io.</string>
   <string name="summary_preference_show_avatars_on">Os avatars de utilizadores serão mostrados</string>
   <string name="summary_preference_ssl_off">Sem SSL</string>
   <string name="summary_preference_ssl_on">SSL ativo</string>
-  <string name="summary_preference_storage">Local e tipo de informação a guardar</string>
   <string name="summary_preference_storage_external_off">Dados guardados na memória interna</string>
   <string name="summary_preference_storage_external_on">Dados guardados na memória externa</string>
   <string name="summary_preference_sync_indicator_on_timeline_off">Sem indicador de sincronização</string>
@@ -424,10 +424,12 @@ Com suporte a GNU social, Twitter e Pump.io.</string>
   <string name="summary_preference_syncing">Quando sincronizar a cronologia e a forma de a indicar</string>
   <string name="summary_preference_theme_size">Selecione o tamanho do texto</string>
   <string name="summary_preference_user_in_timeline">O utilizador será mostrado como \"{0}\"</string>
-  <string name="summary_preference_username">O seu nome de utilizador na rede social</string>
-  <string name="summary_preference_username_webfinger_id">Digite a sua ID no sítio %1$s. É similar a um endereço de correio eletrónico, por exemplo: %2$s</string>
-  <string name="summary_preference_verify_credentials">Esta conta foi verificada e ativada. Toque Back (&lt;) para continuar ou toque aqui para verificar novamente as suas credenciais.</string>
-  <string name="summary_preference_verify_credentials_failed">Falha de verificação. Toque aqui para verificar as credenciais a para ativar esta conta</string>
+  <string name="summary_preference_username">O seu nome de utilizador na rede social %1$s; por exemplo: %2$s</string>
+  <string name="summary_preference_username_webfinger_id">A sua identificação em %1$s.
+Similar ao seu endereço de e-mal, com o seu nome de utilizador, depois @ e o seu servidor; por exemplo %2$s.</string>
+  <string name="summary_preference_verify_credentials">Esta conta foi verificada e ativada. Toque no botão Back para continuar ou
+toque no botão abaixo para verificar novamente as suas credenciais.</string>
+  <string name="summary_preference_verify_credentials_failed">Falha de verificação. Toque no botão abaixo para verificar as suas credenciais e ativar esta conta.</string>
   <string name="summary_preference_vibration_off">A vibração está desligada</string>
   <string name="summary_preference_vibration_on">Vibrar ao receber mensagens</string>
   <string name="switch_to_default_timeline">Trocar para a cronologia padrão</string>
@@ -438,6 +440,7 @@ Com suporte a GNU social, Twitter e Pump.io.</string>
   <string name="synced_abbreviated">Sincronizar</string>
   <string name="syncing">A sincronizar&#8230;</string>
   <string name="syncing_timeline_for_somebody">A sincronizar %1$s para %2$s</string>
+  <string name="system_information">Informação do sistema</string>
   <string name="system_is_busy_try_later">O sistema está ocupado. Tente mais tarde.</string>
   <string name="tap_on_a_timeline_title_behaviour">Comportamento ao tocar no título da cronologia</string>
   <string name="theme_color_entries_default">Predefinições</string>
@@ -481,7 +484,7 @@ Com suporte a GNU social, Twitter e Pump.io.</string>
   <string name="title_preference_frequency">Intervalo de tempo padrão</string>
   <string name="title_preference_history_size">Tamanho de histórico</string>
   <string name="title_preference_history_time">Tempo de histórico</string>
-  <string name="title_preference_is_default_account">Esta é uma conta predefinida</string>
+  <string name="title_preference_is_default_account">Esta é a conta padrão</string>
   <string name="title_preference_min_log_level">Nível mínimo de registo</string>
   <string name="title_preference_notification_sound">Toque da notificação</string>
   <string name="title_preference_notifications">Notificações</string>

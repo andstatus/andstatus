@@ -70,6 +70,9 @@
   <string name="category_title_preference_notifications">通知</string>
   <string name="category_title_preference_origin">ソーシャル ネットワーク</string>
   <string name="category_title_preference_settings">設定</string>
+  <string name="check_and_fix_data">データの確認と修正</string>
+  <string name="check_and_fix_data_summary">AndStatus が誤動作していると思う場合で、再インストールしたくない場合は、
+この操作を行ってください。</string>
   <string name="client_registration_failed">AndStatus クライアント登録に失敗しました</string>
   <string name="collapse_duplicates">重複を折りたたむ</string>
   <string name="color_black">黒</string>
@@ -139,6 +142,7 @@
   <string name="discover_open_instances_title">オープンインスタンスを検出</string>
   <string name="displayed_in_selector">セレクターに表示</string>
   <string name="displayed_in_selector_abbreviated">表示</string>
+  <string name="database_disk_io_error">注意! ローカル キャッシュ データベースにアクセス中に %1$s エラーが発生し、AndStatus アプリケーションが誤動作を引き起こします。\nこれは通常、デバイスの SD カードが正しく動作していないことを意味します。</string>
   <string name="dont_synchronize_old_messages">前回の同期が ... 時間以上前の場合、古いメッセージを同期しない</string>
   <string name="dont_synchronize_old_messages_summary">前回の同期から %s 時間経過しました
 AndStatus は、最後のメッセージのダウンロード以降のすべてのメッセージを同期しません、
@@ -178,6 +182,7 @@ AndStatus は、最後のメッセージのダウンロード以降のすべて�
   <string name="friends_of">\"%1s\" の友達</string>
   <string name="gestures">ジェスチャー</string>
   <string name="gestures_summary">タップのメカニズム。ユーザーがアプリケーションと対話する方法</string>
+  <string name="get_conversation">会話を取得</string>
   <string name="get_followers">フォロワーを取得</string>
   <string name="get_friends">友達になる</string>
   <string name="get_open_instances_title">オープン中のインスタンスを取得</string>
@@ -254,9 +259,8 @@ AndStatus は、最後のメッセージのダウンロード以降のすべて�
   <string name="menu_item_follow_user">\"%1s\" をフォロー</string>
   <string name="menu_item_view_image">画像を表示</string>
   <string name="menu_item_open_conversation">会話を開く</string>
-  <string name="menu_item_open_message_permalink">インターネットで開く</string>
+  <string name="menu_item_open_message_permalink">ブラウザーで開く</string>
   <string name="menu_item_reply">返信</string>
-  <string name="menu_item_reply_to_conversation_participants">全員に返信</string>
   <string name="menu_item_reblog">再投稿</string>
   <string name="menu_item_reblog_pumpio">Pump.io 経由で共有</string>
   <string name="menu_item_reblog_twitter">リツイート</string>
@@ -369,6 +373,7 @@ AndStatus は、最後のメッセージのダウンロード以降のすべて�
   <string name="search_timeline_hint">ユーザー名/フレーズを入力してください</string>
   <string name="search_direct_messages_label">ダイレクトメッセージを検索</string>
   <string name="search_direct_messages_hint">ユーザー名またはフレーズを入力てください</string>
+  <string name="select_backup_folder">バックアップ フォルダーを選択</string>
   <string name="select_displayed_in_selector">このタイムラインを表示するかどうかと、時期を選択</string>
   <string name="sent">送信済</string>
   <string name="select_social_network">ソーシャル ネットワークを選択</string>
@@ -417,7 +422,7 @@ AndStatus は、最後のメッセージのダウンロード以降のすべて�
   <string name="summary_preference_show_avatars_on">ユーザーのアバターが表示されます</string>
   <string name="summary_preference_ssl_off">非 SSL</string>
   <string name="summary_preference_ssl_on">SSL がオン</string>
-  <string name="summary_preference_storage">どこに、どのような情報を格納しますか</string>
+  <string name="summary_preference_storage">情報を格納する場所と内容。確認し、データを確認してバックアップします。</string>
   <string name="summary_preference_storage_external_off">データは内部メモリに格納されます</string>
   <string name="summary_preference_storage_external_on">データは外部メモリに格納されます</string>
   <string name="summary_preference_sync_indicator_on_timeline_off">同期インジケーターを表示しません</string>

@@ -38,6 +38,8 @@
   <string name="appwidget_directmessage_formats_2">{0} directo</string>
   <string name="appwidget_nothingnew_default">Sin novedades desde:</string>
   <string name="appwidget_nodata">Sin datos aún.</string>
+  <string name="acquiring_a_request_token_failed">La petición del identificador falló</string>
+  <string name="acquiring_an_access_token_failed">El acceso del identificador falló</string>
   <string name="attach_images_summary_off">El botón \"Paperclip+\", usado para añadir imágenes a tus publicaciones, está oculto</string>
   <string name="attach_images_summary_on">Usa el botón \"Paperclip+\" (\"Adjuntar\" en el menú del objeto) para añadir imágenes a tu mensaje. O comparte una imagen a AndStatus desde otra aplicación</string>
   <string name="attach_images_title">Adjuntar imágenes a mis mensajes</string>
@@ -68,6 +70,7 @@
   <string name="category_title_preference_notifications">Notificaciones</string>
   <string name="category_title_preference_origin">Red social</string>
   <string name="category_title_preference_settings">Configuración</string>
+  <string name="client_registration_failed">El registro del cliente AndStatus ha fallado</string>
   <string name="collapse_duplicates">Compactar duplicados</string>
   <string name="color_black">Negro</string>
   <string name="color_black_cat">Gato negro</string>
@@ -178,6 +181,7 @@
   <string name="get_followers">Consigue seguidores</string>
   <string name="get_friends">Consigue amigos</string>
   <string name="get_open_instances_title">Descargar nodos abiertos</string>
+  <string name="get_message">Obtener información del mensaje</string>
   <string name="get_user">Obtener información del usuario</string>
   <string name="go_to_the_top_title">Subir hasta arriba</string>
   <string name="header_accounts">Administrar cuentas</string>
@@ -224,7 +228,7 @@
   <string name="label_restore">Restaurar información desde una copia de seguridad</string>
   <string name="label_upgrading">Actualización en curso. Por favor, espere.</string>
   <string name="label_with_media">con multimedia</string>
-  <string name="last_synced">Última sincronización</string>
+  <string name="last_synced">Última vez sincronizado con éxito</string>
   <string name="latest_error_label">Último error</string>
   <string name="loading">Cargando</string>
   <string name="long_press_to_open_context_menu">Dejar pulsado para abrir el menú contextual</string>
@@ -241,6 +245,7 @@
   <string name="menu_item_copy_author">Copiar @autor</string>
   <string name="menu_item_destroy_favorite">Deshacer favorito</string>
   <string name="menu_item_destroy_reblog">Deshacer repetición</string>
+  <string name="menu_item_destroy_reblog_pumpio">Deshacer la compartición</string>
   <string name="menu_item_destroy_reblog_twitter">Deshacer retweet</string>
   <string name="menu_item_destroy_status">Borra el mensaje</string>
   <string name="menu_item_direct_message">Mensaje directo</string>
@@ -249,10 +254,9 @@
   <string name="menu_item_follow_user">Seguir a \"%1s\"</string>
   <string name="menu_item_view_image">Ver imagen</string>
   <string name="menu_item_open_conversation">Abrir conversación</string>
-  <string name="menu_item_open_message_permalink">Ver en navegador</string>
   <string name="menu_item_reply">Responder</string>
-  <string name="menu_item_reply_to_conversation_participants">Responder a todos</string>
   <string name="menu_item_reblog">Repetir</string>
+  <string name="menu_item_reblog_pumpio">Compartir a través de Pump.io</string>
   <string name="menu_item_reblog_twitter">Retweet</string>
   <string name="menu_item_resend">Reenviar</string>
   <string name="menu_item_share">Compartir</string>
@@ -269,6 +273,8 @@
   <string name="message_source_to">para %1$s</string>
   <string name="message_twitter">Tweet</string>
   <string name="messages_activity">Mensajes directos</string>
+  <string name="n_message_link">Enlace del mensaje</string>
+  <string name="n_message_links">Enlaces del mensaje %d</string>
   <string name="never">Nunca</string>
   <string name="new_items_count_abbreviated">Nuevo</string>
   <string name="no">No</string>
@@ -332,6 +338,7 @@
   <string name="preference_true_black_title">Negro sólido como color de fondo</string>
   <string name="preference_use_kitkat_media_chooser_title">Usar la interfaz moderna para añadir multimedia</string>
   <string name="reblogged_by">repetido por %1$s</string>
+  <string name="reblogged_by_pumpio">compartido por %1$s</string>
   <string name="reblogged_by_twitter">retweeteado por %1$s</string>
   <string name="refresh_title">Refrescar desde la caché</string>
   <string name="refresh_timeline_automatically_title">Refrescar línea temporal automáticamente</string>
@@ -367,6 +374,7 @@
   <string name="settings_activity_title">Configuración</string>
   <string name="show_buttons_below_message">Mostrar botones de respuesta, repetición y favorito debajo del mensaje</string>
   <string name="show_duplicates">Mostrar duplicados</string>
+  <string name="show_threads_of_conversation">Mostrar hilos de una conversación</string>
   <string name="show_timeline_messages">Mostrar mensajes de línea temporal</string>
   <string name="since">Desde %s</string>
   <string name="splash_button_learn_more">Más información</string>
@@ -378,8 +386,8 @@
   <string name="subtitle">Subtítulo</string>
   <string name="summary_preference_accounts_absent">Aún no tiene cuentas en AndStatus</string>
   <string name="summary_preference_accounts_present">Número de cuentas en AndStatus</string>
-  <string name="summary_preference_add_account_oauth">Pulsa aquí para abrir la red social en un navegador.</string>
-  <string name="summary_preference_add_account_basic">Pulse aquí para verificar las credenciales y agregar la cuenta.</string>
+  <string name="summary_preference_add_account_oauth">Pulsa el botón de abajo para abrir la red social en un navegador.</string>
+  <string name="summary_preference_add_account_basic">Pulsa el botón de abajo para verificar las credenciales y añadir una cuenta.</string>
   <string name="summary_preference_appearance">Cambiar el aspecto de AndStatus</string>
   <string name="summary_preference_enable_android_backup_off">No se pedirá confirmación para las copias de seguridad</string>
   <string name="summary_preference_enable_android_backup_on">AndStatus notificará sobre los cambios para las copias de seguridad (experimental)</string>
@@ -409,7 +417,6 @@
   <string name="summary_preference_show_avatars_on">Se mostrarán los avatares de los usuarios</string>
   <string name="summary_preference_ssl_off">Sin SSL</string>
   <string name="summary_preference_ssl_on">SSL está activada</string>
-  <string name="summary_preference_storage">Dónde y qué información para almacenar</string>
   <string name="summary_preference_storage_external_off">Almacenar datos en la memoria interna</string>
   <string name="summary_preference_storage_external_on">Almacenar datos en la memoria externa</string>
   <string name="summary_preference_sync_indicator_on_timeline_off">Sin indicador de sincronización</string>
@@ -419,10 +426,12 @@
   <string name="summary_preference_syncing">Cuándo sincronizar la línea temporal y cómo notificarlo</string>
   <string name="summary_preference_theme_size">Selecciona el tamaño del texto</string>
   <string name="summary_preference_user_in_timeline">Los usuarios se mostrarán como \"{0}\"</string>
-  <string name="summary_preference_username">Tu nombre de usuario en la red social</string>
-  <string name="summary_preference_username_webfinger_id">Introduzca su ID de tu servidor %1$s. Se parece a una dirección de correo electrónico, con su nombre de usuario a continuación \"@\" después tu servidor, por ejemplo: %2$s</string>
-  <string name="summary_preference_verify_credentials">Esta cuenta está verificada y habilitada. Pulse Back (&lt;) para continuar o pulse aquí para verificar las credenciales del usuario nuevo..</string>
-  <string name="summary_preference_verify_credentials_failed">Fallo en la verificación. Pulse aquí para verificar las credenciales y permitir esta cuenta de usuario</string>
+  <string name="summary_preference_username">Tu nombre de usuario en la red social %1$s; por ejemplo: %2$s</string>
+  <string name="summary_preference_username_webfinger_id">Tu identificador en %1$s. Es parecido
+    a una dirección de correo electrónico, con tu nombre de usuario, \"@\" y tu servidor; ejemplo: %2$s</string>
+  <string name="summary_preference_verify_credentials">Esta cuenta está verificada y activada. Pulsa el botón de atrás para continuar o
+    pulsa el botón de abajo para volver a ver las credenciales de usuario.</string>
+  <string name="summary_preference_verify_credentials_failed">La verificación ha fallado. Pulsa el siguiente botón para verificar las credenciales y activar la cuenta de usuario</string>
   <string name="summary_preference_vibration_off">Vibración desactivada</string>
   <string name="summary_preference_vibration_on">Vibración para los mensajes entrantes</string>
   <string name="switch_to_default_timeline">Cambiar a la línea temporal predefinida</string>
@@ -433,14 +442,17 @@
   <string name="synced_abbreviated">Sinc.</string>
   <string name="syncing">Sincronizando&#8230;</string>
   <string name="syncing_timeline_for_somebody">Sincronizando %1$s para %2$s</string>
+  <string name="system_information">Información del sistema</string>
   <string name="system_is_busy_try_later">El sistema está ocupado. Por favor, inténtelo de nuevo más tarde.</string>
   <string name="tap_on_a_timeline_title_behaviour">Comportamiento al pulsar en el título de la línea temporal</string>
   <string name="theme_color_entries_default">Predeterminado</string>
   <string name="theme_color_entries_light">Claro</string>
   <string name="theme_color_entries_dark">Oscuro</string>
-  <string name="theme_size_entries_small">Pequeño</string>
-  <string name="theme_size_entries_standard">Normal</string>
   <string name="theme_size_entries_large">Grande</string>
+  <string name="theme_size_entries_larger">Mayor</string>
+  <string name="theme_size_entries_small">Pequeño</string>
+  <string name="theme_size_entries_smaller">Menor</string>
+  <string name="theme_size_entries_standard">Normal</string>
   <string name="this_option_is_turned_off">(desactivado)</string>
   <string name="timeline_is_combined_by_default">La línea temporal combinada por defecto</string>
   <string name="timeline_reloaded">La línea de tiempo se ha vuelto a cargar.</string>
@@ -474,7 +486,7 @@
   <string name="title_preference_frequency">Frecuencia de sincronización por defecto</string>
   <string name="title_preference_history_size">Tamaño del historial</string>
   <string name="title_preference_history_time">Tiempo del historial</string>
-  <string name="title_preference_is_default_account">Usar como predeterminada</string>
+  <string name="title_preference_is_default_account">Ésta es la cuenta predeterminada</string>
   <string name="title_preference_min_log_level">Nivel mínimo del registro</string>
   <string name="title_preference_notification_sound">Melodía de la notificación</string>
   <string name="title_preference_notifications">Notificaciones</string>
