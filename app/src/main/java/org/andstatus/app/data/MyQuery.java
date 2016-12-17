@@ -592,7 +592,7 @@ public class MyQuery {
         return builder.toString();
     }
 
-    public static long conversationOidToMsgId(String conversationOid) {
+    public static long conversationOidToId(String conversationOid) {
         return conditionToLongColumnValue(MsgTable.TABLE_NAME, MsgTable.CONVERSATION_ID,
                 MsgTable.CONVERSATION_OID + "='" + conversationOid + "'");
     }

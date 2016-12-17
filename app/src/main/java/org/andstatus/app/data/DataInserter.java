@@ -247,7 +247,7 @@ public class DataInserter {
             boolean mentioned = isMentionedAndPutInReplyToMessage(message, lum, values);
 
             putConversationId(message, values);
-            
+
             if (MyLog.isVerboseEnabled()) {
                 MyLog.v(this, ((message.msgId==0) ? "insertMsg" : "updateMsg " + message.msgId)
                         + ":" + message.getStatus()
@@ -314,13 +314,17 @@ public class DataInserter {
                                                       ContentValues values) {
         boolean mentioned = execContext.getTimeline().getTimelineType() == TimelineType.MENTIONS;
         Long inReplyToUserId = 0L;
-        if (message.inReplyToMessage != null) {
+        final MbMessage inReplyToMessage = message.inReplyToMessage;
+        if (inReplyToMessage != null) {
+            if (TextUtils.isEmpty(inReplyToMessage.conversationOid)) {
+                inReplyToMessage.setConversationOid(message.conversationOid);
+            }
             // Type of the timeline is ALL meaning that message does not belong to this timeline
             DataInserter di = new DataInserter(execContext);
             // If the Msg is a Reply to another message
-            Long inReplyToMessageId = di.insertOrUpdateMsg(message.inReplyToMessage, lum);
-            if (message.inReplyToMessage.sender != null) {
-                inReplyToUserId = MyQuery.oidToId(OidEnum.USER_OID, message.originId, message.inReplyToMessage.sender.oid);
+            Long inReplyToMessageId = di.insertOrUpdateMsg(inReplyToMessage, lum);
+            if (inReplyToMessage.sender != null) {
+                inReplyToUserId = MyQuery.oidToId(OidEnum.USER_OID, message.originId, inReplyToMessage.sender.oid);
             } else if (inReplyToMessageId != 0) {
                 inReplyToUserId = MyQuery.msgIdToLongColumnValue(MsgTable.SENDER_ID, inReplyToMessageId);
             }
@@ -377,7 +381,7 @@ public class DataInserter {
         }
         if (!TextUtils.isEmpty(message.conversationOid)) {
             if (message.conversationId == 0) {
-                message.conversationId = MyQuery.conversationOidToMsgId(message.conversationOid);
+                message.conversationId = MyQuery.conversationOidToId(message.conversationOid);
             }
         }
         if (message.conversationId == 0 && message.inReplyToMessage != null) {

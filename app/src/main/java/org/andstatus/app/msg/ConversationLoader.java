@@ -125,20 +125,23 @@ public abstract class ConversationLoader<T extends ConversationItem> extends Syn
     }
 
     protected void loadMessageFromDatabase(T oMsg) {
-        if (oMsg.isLoaded() || oMsg.getMsgId() == 0) {
+        if (oMsg.isLoaded() || oMsg.getMsgId() == 0 || cachedMessages.containsKey(oMsg.getMsgId())) {
             return;
         }
         Uri uri = MatchedUri.getTimelineItemUri(
                 Timeline.getTimeline(TimelineType.EVERYTHING, ma, 0, null), oMsg.getMsgId());
         Cursor cursor = null;
+        boolean loaded = false;
         try {
             cursor = myContext.context().getContentResolver().query(uri, oMsg.getProjection(), null, null, null);
             if (cursor != null && cursor.moveToFirst()) {
                 oMsg.load(cursor);
+                loaded = true;
             }
         } finally {
             DbUtils.closeSilently(cursor);
         }
+        MyLog.v(this, (loaded ? "Loaded (" + oMsg.isLoaded() + ")"  : "Couldn't load") + " from a database msgId=" + oMsg.getMsgId());
     }
 
     protected boolean addMessageToList(T oMsg) {

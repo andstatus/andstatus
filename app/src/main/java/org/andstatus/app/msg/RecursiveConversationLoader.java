@@ -74,7 +74,7 @@ public class RecursiveConversationLoader<T extends ConversationItem> extends Con
             return;
         }
         findRepliesRecursively(oMsg);
-        MyLog.v(this, "findPreviousMessages id=" + oMsg.getMsgId());
+        MyLog.v(this, "findPreviousMessages id=" + oMsg.getMsgId() + " replies:" + oMsg.mNReplies);
         loadMessageFromDatabase(oMsg);
         if (oMsg.isLoaded()) {
             if (addMessageToList(oMsg)) {

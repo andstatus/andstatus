@@ -20,6 +20,7 @@ import android.database.Cursor;
 
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.database.MsgTable;
+import org.andstatus.app.util.MyHtml;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +35,7 @@ public class ConversationMemberItem extends ConversationItem {
         columnNames.add(MsgTable.CREATED_DATE);
         columnNames.add(MsgTable.IN_REPLY_TO_MSG_ID);
         columnNames.add(MsgTable.AUTHOR_ID);
+        columnNames.add(MsgTable.BODY);
         return columnNames.toArray(new String[]{});
     }
 
@@ -41,6 +43,7 @@ public class ConversationMemberItem extends ConversationItem {
     void load(Cursor cursor) {
         super.load(cursor);
         authorId = DbUtils.getLong(cursor, MsgTable.AUTHOR_ID);
+        body = MyHtml.fromHtml(DbUtils.getString(cursor, MsgTable.BODY));
     }
 
     @Override
