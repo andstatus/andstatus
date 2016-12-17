@@ -44,7 +44,7 @@ public class MessageEditorDataTest extends InstrumentationTestCase {
         MessageEditorData data = MessageEditorData.newEmpty(ma)
                 .setInReplyToId(inReplyToMsgId)
                 .setRecipientId(recipientId)
-                .setReplyAll(replyAll)
+                .setReplyToConversationParticipants(replyAll)
                 .setBody("Some text here " + TestSuite.TESTRUN_UID);
         assertFalse(data.toString(), data.body.contains("@"));
         data.addMentionsToText();

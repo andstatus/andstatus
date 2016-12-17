@@ -251,7 +251,7 @@ non verá na liña temporal algunhas mensaxes antiguas.</string>
   <string name="menu_item_open_conversation">Abrir conversa</string>
   <string name="menu_item_open_message_permalink">Abrir en internet</string>
   <string name="menu_item_reply">Respostar</string>
-  <string name="menu_item_reply_all">Respostar a todos</string>
+  <string name="menu_item_reply_to_conversation_participants">Respostar a todos</string>
   <string name="menu_item_reblog">Voltar a publicar</string>
   <string name="menu_item_reblog_twitter">Rechíar</string>
   <string name="menu_item_resend">Reenviar</string>

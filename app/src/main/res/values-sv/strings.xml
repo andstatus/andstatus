@@ -176,7 +176,7 @@
   <string name="menu_item_open_conversation">Öppna konversation</string>
   <string name="menu_item_open_message_permalink">Öppna på internet</string>
   <string name="menu_item_reply">Svara</string>
-  <string name="menu_item_reply_all">Svara alla</string>
+  <string name="menu_item_reply_to_conversation_participants">Svara alla</string>
   <string name="menu_item_reblog">Retweet</string>
   <string name="menu_item_reblog_twitter">Retweet</string>
   <string name="menu_item_resend">Skicka igen</string>

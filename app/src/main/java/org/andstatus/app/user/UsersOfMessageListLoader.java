@@ -29,17 +29,23 @@ import java.util.List;
  * @author yvolk@yurivolkov.com
  */
 public class UsersOfMessageListLoader extends UserListLoader {
-    private final long mSelectedMessageId;
-    private final Origin mOriginOfSelectedMessage;
+    private final long selectedMessageId;
+    private final Origin originOfSelectedMessage;
     final String messageBody;
+    private boolean mentionedOnly = false;
 
     public UsersOfMessageListLoader(UserListType userListType, MyAccount ma, long centralItemId) {
         super(userListType, ma, centralItemId);
 
-        mSelectedMessageId = centralItemId;
-        messageBody = MyQuery.msgIdToStringColumnValue(MsgTable.BODY, mSelectedMessageId);
-        mOriginOfSelectedMessage = MyContextHolder.get().persistentOrigins().fromId(
-                MyQuery.msgIdToOriginId(mSelectedMessageId));
+        selectedMessageId = centralItemId;
+        messageBody = MyQuery.msgIdToStringColumnValue(MsgTable.BODY, selectedMessageId);
+        originOfSelectedMessage = MyContextHolder.get().persistentOrigins().fromId(
+                MyQuery.msgIdToOriginId(selectedMessageId));
+    }
+
+    public UsersOfMessageListLoader setMentionedOnly(boolean mentionedOnly) {
+        this.mentionedOnly = mentionedOnly;
+        return this;
     }
 
     @Override
@@ -49,16 +55,20 @@ public class UsersOfMessageListLoader extends UserListLoader {
     }
 
     private void addFromMessageRow() {
-        MbUser author = addUserIdToList(mOriginOfSelectedMessage,
-                MyQuery.msgIdToLongColumnValue(MsgTable.AUTHOR_ID, mSelectedMessageId)).mbUser;
-        addUserIdToList(mOriginOfSelectedMessage,
-                MyQuery.msgIdToLongColumnValue(MsgTable.SENDER_ID, mSelectedMessageId));
-        addUserIdToList(mOriginOfSelectedMessage,
-                MyQuery.msgIdToLongColumnValue(MsgTable.IN_REPLY_TO_USER_ID, mSelectedMessageId));
-        addUserIdToList(mOriginOfSelectedMessage,
-                MyQuery.msgIdToLongColumnValue(MsgTable.RECIPIENT_ID, mSelectedMessageId));
-        addUsersFromMessageBody(author);
-        addRebloggers();
+        final long authorId = MyQuery.msgIdToLongColumnValue(MsgTable.AUTHOR_ID, selectedMessageId);
+        if (mentionedOnly) {
+            addUsersFromMessageBody(MbUser.fromOriginAndUserId(originOfSelectedMessage.getId(), authorId));
+        } else {
+            MbUser author = addUserIdToList(originOfSelectedMessage, authorId).mbUser;
+            addUserIdToList(originOfSelectedMessage,
+                    MyQuery.msgIdToLongColumnValue(MsgTable.SENDER_ID, selectedMessageId));
+            addUserIdToList(originOfSelectedMessage,
+                    MyQuery.msgIdToLongColumnValue(MsgTable.IN_REPLY_TO_USER_ID, selectedMessageId));
+            addUserIdToList(originOfSelectedMessage,
+                    MyQuery.msgIdToLongColumnValue(MsgTable.RECIPIENT_ID, selectedMessageId));
+            addUsersFromMessageBody(author);
+            addRebloggers();
+        }
     }
 
     private void addUsersFromMessageBody(MbUser author) {
@@ -69,8 +79,8 @@ public class UsersOfMessageListLoader extends UserListLoader {
     }
 
     private void addRebloggers() {
-        for (long rebloggerId : MyQuery.getRebloggers(mSelectedMessageId)) {
-            addUserIdToList(mOriginOfSelectedMessage, rebloggerId);
+        for (long rebloggerId : MyQuery.getRebloggers(selectedMessageId)) {
+            addUserIdToList(originOfSelectedMessage, rebloggerId);
         }
     }
 

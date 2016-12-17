@@ -19,8 +19,8 @@ package org.andstatus.app.user;
 import android.graphics.drawable.Drawable;
 
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.data.MyQuery;
+import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.origin.Origin;
 

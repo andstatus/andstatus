@@ -260,7 +260,8 @@
   <string name="menu_item_open_conversation">Open Conversation</string>
   <string name="menu_item_open_message_permalink">Open in browser</string>
   <string name="menu_item_reply">Reply</string>
-  <string name="menu_item_reply_all">Reply to All</string>
+  <string name="menu_item_reply_to_conversation_participants">Reply to conversation participants</string>
+  <string name="menu_item_reply_to_mentioned_users">Reply to mentioned users</string>
   <string name="menu_item_reblog">Repost</string>
   <string name="menu_item_reblog_pumpio">Share via Pump.io</string>
   <string name="menu_item_reblog_twitter">Retweet</string>

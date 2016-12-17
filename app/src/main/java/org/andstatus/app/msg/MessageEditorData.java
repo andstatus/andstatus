@@ -27,15 +27,18 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.UserInTimeline;
 import org.andstatus.app.data.AttachedImageFile;
 import org.andstatus.app.data.DataInserter;
-import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.data.MyQuery;
+import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.net.social.MbAttachment;
 import org.andstatus.app.net.social.MbMessage;
 import org.andstatus.app.net.social.MbUser;
+import org.andstatus.app.user.UserListType;
+import org.andstatus.app.user.UserListViewItem;
+import org.andstatus.app.user.UsersOfMessageListLoader;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.UriUtils;
 
@@ -62,7 +65,8 @@ public class MessageEditorData {
      */
     public long inReplyToId = 0;
     public String inReplyToBody = "";
-    boolean replyAll = false;
+    boolean replyToConversationParticipants = false;
+    boolean replyToMentionedUsers = false;
     public long recipientId = 0;
     public MyAccount ma = MyAccount.getEmpty(MyContextHolder.get(), "");
 
@@ -123,7 +127,7 @@ public class MessageEditorData {
         if(inReplyToId != 0) {
             builder.append("inReplyToId:" + inReplyToId + ",");
         }
-        if(replyAll) {
+        if(replyToConversationParticipants) {
             builder.append("ReplyAll,");
         }
         if(recipientId != 0) {
@@ -170,7 +174,7 @@ public class MessageEditorData {
             data.imageDrawable = imageDrawable;
             data.inReplyToId = inReplyToId;
             data.inReplyToBody = inReplyToBody;
-            data.replyAll = replyAll;
+            data.replyToConversationParticipants = replyToConversationParticipants;
             data.recipientId = recipientId;
             return data;
         } else {
@@ -247,60 +251,84 @@ public class MessageEditorData {
         return this;
     }
     
-    public MessageEditorData setReplyAll(boolean replyAll) {
-        this.replyAll = replyAll;
+    public MessageEditorData setReplyToConversationParticipants(boolean replyToConversationParticipants) {
+        this.replyToConversationParticipants = replyToConversationParticipants;
+        return this;
+    }
+
+    public MessageEditorData setReplyToMentionedUsers(boolean replyToMentionedUsers) {
+        this.replyToMentionedUsers = replyToMentionedUsers;
         return this;
     }
 
     public MessageEditorData addMentionsToText() {
-        if (inReplyToId != 0) {
-            if (replyAll) {
-                addConversationMembersToText();
+        if (ma.isValid() && inReplyToId != 0) {
+            if (replyToConversationParticipants) {
+                addConversationParticipantsBeforeText();
+            } else if (replyToMentionedUsers) {
+                addMentionedUsersBeforeText();
             } else {
-                addMentionedAuthorOfMessageToText(inReplyToId);
+                addUsersBeforeText(new ArrayList<Long>());
             }
         }
         return this;
     }
-    
-    private void addConversationMembersToText() {
-        if (!ma.isValid()) {
-            return;
-        }
+
+    private void addConversationParticipantsBeforeText() {
         ConversationLoader<ConversationMemberItem> loader =
                 new ConversationLoaderFactory<ConversationMemberItem>().getLoader(
                 ConversationMemberItem.class,
                 MyContextHolder.get(), ma, inReplyToId, false);
         loader.load(null);
-        List<Long> mentioned = new ArrayList<>();
-        mentioned.add(ma.getUserId());  // Skip an authorName of this message
-        long authorWhomWeReply = getAuthorWhomWeReply(loader);
-        mentioned.add(authorWhomWeReply);
+        List<Long> toMention = new ArrayList<>();
         for(ConversationMemberItem item : loader.getList()) {
-            mentionConversationMember(mentioned, item);
+            toMention.add(item.authorId);
         }
-        addMentionedUserToText(authorWhomWeReply);  // He will be mentioned first
+        addUsersBeforeText(toMention);
     }
 
-    private long getAuthorWhomWeReply(ConversationLoader<ConversationMemberItem> loader) {
-        for(ConversationMemberItem item : loader.getList()) {
-            if (item.getMsgId() == inReplyToId) {
-                return item.authorId;
+    private void addMentionedUsersBeforeText() {
+        UsersOfMessageListLoader loader = new UsersOfMessageListLoader(UserListType.USERS_OF_MESSAGE, ma, inReplyToId)
+                .setMentionedOnly(true);
+        loader.load(null);
+        List<Long> toMention = new ArrayList<>();
+        for(UserListViewItem item : loader.getList()) {
+            toMention.add(item.getUserId());
+        }
+        addUsersBeforeText(toMention);
+    }
+
+    private void addUsersBeforeText(List<Long> toMention) {
+        toMention.add(0, MyQuery.msgIdToLongColumnValue(MsgTable.AUTHOR_ID, inReplyToId));
+        List<Long> mentioned = new ArrayList<>();
+        mentioned.add(ma.getUserId());  // Don't mention an author of this message
+        String mentions = "";
+        for(Long userId : toMention) {
+            if (userId != 0 && !mentioned.contains(userId)) {
+                mentioned.add(userId);
+                String name = MyQuery.userIdToName(userId, getUserInTimeline());
+                if (!TextUtils.isEmpty(name)) {
+                    String mentionText = "@" + name + " ";
+                    if (TextUtils.isEmpty(body) || !(body + " ").contains(mentionText)) {
+                        mentions = mentions.trim() + " " + mentionText;
+                    }
+                }
             }
         }
-        return 0;
-    }
-
-    private void mentionConversationMember(List<Long> mentioned, ConversationMemberItem item) {
-        if (!mentioned.contains(item.authorId)) {
-            addMentionedUserToText(item.authorId);
-            mentioned.add(item.authorId);
+        if (!TextUtils.isEmpty(mentions)) {
+            setBody(mentions.trim() + " " + body);
         }
     }
 
-    public MessageEditorData addMentionedUserToText(long mentionedUserId) {
+    public MessageEditorData appendMentionedUserToText(long mentionedUserId) {
         String name = MyQuery.userIdToName(mentionedUserId, getUserInTimeline());
-        addMentionedUsernameToText(name);
+        if (!TextUtils.isEmpty(name)) {
+            String messageText1 = "@" + name + " ";
+            if (!TextUtils.isEmpty(body) && !(body + " ").contains(messageText1)) {
+                messageText1 = body.trim() + " " + messageText1;
+            }
+            setBody(messageText1);
+        }
         return this;
     }
 
@@ -308,21 +336,6 @@ public class MessageEditorData {
         return ma
                 .getOrigin().isMentionAsWebFingerId() ? UserInTimeline.WEBFINGER_ID
                 : UserInTimeline.USERNAME;
-    }
-
-    private void addMentionedAuthorOfMessageToText(long messageId) {
-        String name = MyQuery.msgIdToUsername(MsgTable.AUTHOR_ID, messageId, getUserInTimeline());
-        addMentionedUsernameToText(name);
-    }
-    
-    private void addMentionedUsernameToText(String name) {
-        if (!TextUtils.isEmpty(name)) {
-            String messageText1 = "@" + name + " ";
-            if (!TextUtils.isEmpty(body)) {
-                messageText1 += body;
-            }
-            setBody(messageText1);
-        }
     }
 
     public MessageEditorData setRecipientId(long userId) {

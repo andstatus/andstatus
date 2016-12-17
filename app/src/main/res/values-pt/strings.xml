@@ -252,7 +252,7 @@
   <string name="menu_item_open_conversation">Abrir conversa</string>
   <string name="menu_item_open_message_permalink">Abrir na Internet</string>
   <string name="menu_item_reply">Responder</string>
-  <string name="menu_item_reply_all">Responder a todos</string>
+  <string name="menu_item_reply_to_conversation_participants">Responder a todos</string>
   <string name="menu_item_reblog">Republicar</string>
   <string name="menu_item_reblog_pumpio">Partilhar via Pump.io</string>
   <string name="menu_item_reblog_twitter">Retweet</string>

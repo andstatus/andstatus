@@ -126,7 +126,10 @@ public class MessageContextMenu extends MyContextMenu {
             if (msg.isLoaded() && (!msg.isDirect() ||
                     msg.origin.getOriginType().isDirectMessageAllowsReply()) && !isEditorVisible()) {
                 MessageListContextMenuItem.REPLY.addTo(menu, order++, R.string.menu_item_reply);
-                MessageListContextMenuItem.REPLY_ALL.addTo(menu, order++, R.string.menu_item_reply_all);
+                MessageListContextMenuItem.REPLY_TO_CONVERSATION_PARTICIPANTS.addTo(menu, order++,
+                        R.string.menu_item_reply_to_conversation_participants);
+                MessageListContextMenuItem.REPLY_TO_MENTIONED_USERS.addTo(menu, order++,
+                        R.string.menu_item_reply_to_mentioned_users);
             }
             MessageListContextMenuItem.SHARE.addTo(menu, order++, R.string.menu_item_share);
             if (!TextUtils.isEmpty(msg.imageFilename)) {

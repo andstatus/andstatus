@@ -225,7 +225,7 @@
   <string name="menu_item_open_conversation">Åpne samtale</string>
   <string name="menu_item_open_message_permalink">Åpen på Internett</string>
   <string name="menu_item_reply">Svar</string>
-  <string name="menu_item_reply_all">Svar til alle</string>
+  <string name="menu_item_reply_to_conversation_participants">Svar til alle</string>
   <string name="menu_item_reblog">Send på ny</string>
   <string name="menu_item_reblog_twitter">Retweet</string>
   <string name="menu_item_resend">Send på ny</string>

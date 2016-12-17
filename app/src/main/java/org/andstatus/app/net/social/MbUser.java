@@ -76,7 +76,13 @@ public class MbUser implements Comparable<MbUser> {
         user.oid = TextUtils.isEmpty(userOid) ? "" : userOid;
         return user;
     }
-    
+
+    public static MbUser fromOriginAndUserId(long originId, long userId) {
+        MbUser user = new MbUser(originId);
+        user.userId = userId;
+        return user;
+    }
+
     public static MbUser getEmpty() {
         return new MbUser(0L);
     }

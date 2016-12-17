@@ -51,6 +51,11 @@
             </change>
             <change>Search in HTML-formatted text improvement: now !groups #hashtags and @mentions are correctly found
                 in HTML-formatted text, where e.g. "#" and a hashtag name are separated by (invisible) HTML markup.</change>
+            <change>One "Reply to all” action is replaced with two: ”Reply to conversation participants" (what we actually had
+                before as "Reply to all") and "Reply to mentioned users”. "Reply to mentioned users”, naturally, includes a User,
+                to whom you are replying, and all users, mentioned in the body of the replied message.
+                <a href="https://github.com/andstatus/andstatus/issues/432">#432</a>
+            </change>
             <change>Default setting of the "Tap on a Timeline Title behaviour" option changed from "Switch to Default Timeline"
             to "Select a Timeline". This doesn't affect existing users, but is more intuitive for novices.</change>
             <change>"Check and fix data" action added to the AndStatus Settings -&gt; "Storage" section.

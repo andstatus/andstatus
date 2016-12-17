@@ -253,7 +253,7 @@
   <string name="menu_item_open_conversation">Открыть в окне обсуждения</string>
   <string name="menu_item_open_message_permalink">Открыть в Интернете</string>
   <string name="menu_item_reply">Ответить</string>
-  <string name="menu_item_reply_all">Ответить всем</string>
+  <string name="menu_item_reply_to_conversation_participants">Ответить всем</string>
   <string name="menu_item_reblog">Пересказать</string>
   <string name="menu_item_reblog_pumpio">Поделиться через Pump.io</string>
   <string name="menu_item_reblog_twitter">Ретвитнуть</string>

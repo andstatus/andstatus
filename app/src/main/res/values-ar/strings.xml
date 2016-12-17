@@ -179,7 +179,7 @@
   <string name="menu_item_open_conversation">فتح المحادثة</string>
   <string name="menu_item_open_message_permalink">فتح في المتصفح</string>
   <string name="menu_item_reply">الرد</string>
-  <string name="menu_item_reply_all">الرد على الكل</string>
+  <string name="menu_item_reply_to_conversation_participants">الرد على الكل</string>
   <string name="menu_item_reblog">إعادة النشر</string>
   <string name="menu_item_reblog_twitter">إعادة التغريد</string>
   <string name="menu_item_resend">إعادة الإرسال</string>

@@ -184,7 +184,7 @@
   <string name="menu_item_open_conversation">Ouvrir la conversation</string>
   <string name="menu_item_open_message_permalink">Ouvrir dans le navigateur</string>
   <string name="menu_item_reply">Répondre</string>
-  <string name="menu_item_reply_all">Répondre à tous</string>
+  <string name="menu_item_reply_to_conversation_participants">Répondre à tous</string>
   <string name="menu_item_reblog">Reposter</string>
   <string name="menu_item_reblog_twitter">Retweeter</string>
   <string name="menu_item_resend">Réenvoyer</string>

@@ -82,11 +82,24 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
             return null;
         }
     },
-    REPLY_ALL(true) {
+    REPLY_TO_CONVERSATION_PARTICIPANTS(true) {
         @Override
         MessageEditorData executeAsync(MessageContextMenu menu) {
             return MessageEditorData.newEmpty(menu.getMyActor()).
-                    setInReplyToId(menu.getMsgId()).setReplyAll(true).
+                    setInReplyToId(menu.getMsgId()).setReplyToConversationParticipants(true).
+                    addMentionsToText();
+        }
+
+        @Override
+        void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
+            menu.messageList.getMessageEditor().startEditingMessage(editorData);
+        }
+    },
+    REPLY_TO_MENTIONED_USERS(true) {
+        @Override
+        MessageEditorData executeAsync(MessageContextMenu menu) {
+            return MessageEditorData.newEmpty(menu.getMyActor()).
+                    setInReplyToId(menu.getMsgId()).setReplyToMentionedUsers(true).
                     addMentionsToText();
         }
 
@@ -166,7 +179,7 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
         @Override
         MessageEditorData executeAsync(MessageContextMenu menu) {
             return MessageEditorData.newEmpty(menu.getMyActor()).
-                    addMentionedUserToText(
+                    appendMentionedUserToText(
                     MyQuery.msgIdToUserId(MsgTable.AUTHOR_ID, menu.getMsgId()));
         }
 
