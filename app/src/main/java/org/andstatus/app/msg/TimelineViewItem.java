@@ -53,7 +53,7 @@ public class TimelineViewItem extends MessageViewItem {
 
         item.authorName = TimelineSql.userColumnIndexToNameAtTimeline(cursor,
                 cursor.getColumnIndex(UserTable.AUTHOR_NAME), MyPreferences.getShowOrigin());
-        item.body = MyHtml.prepareForView(DbUtils.getString(cursor, MsgTable.BODY));
+        item.setBody(MyHtml.prepareForView(DbUtils.getString(cursor, MsgTable.BODY)));
         item.inReplyToMsgId = DbUtils.getLong(cursor, MsgTable.IN_REPLY_TO_MSG_ID);
         item.inReplyToUserId = DbUtils.getLong(cursor, MsgTable.IN_REPLY_TO_USER_ID);
         item.inReplyToName = DbUtils.getString(cursor, UserTable.IN_REPLY_TO_NAME);
@@ -101,7 +101,7 @@ public class TimelineViewItem extends MessageViewItem {
 
     @Override
     public String toString() {
-        return MyLog.formatKeyValue(this, I18n.trimTextAt(MyHtml.fromHtml(body), 40) + ","
+        return MyLog.formatKeyValue(this, I18n.trimTextAt(MyHtml.fromHtml(getBody()), 40) + ","
                 + getDetails(getMyContext().context()));
     }
 

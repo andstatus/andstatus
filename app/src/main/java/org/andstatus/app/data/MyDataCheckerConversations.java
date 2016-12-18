@@ -45,33 +45,38 @@ public class MyDataCheckerConversations {
     private class MsgItem {
         long id = 0;
         long originId = 0;
+        long inReplyToId_initial = 0;
         long inReplyToId = 0;
+        long conversationId_initial = 0;
         long conversationId = 0;
         String conversationOid = "";
-
-        public boolean conversationIdChanged = false;
-        public boolean inReplyToIdChanged = false;
 
         public boolean fixConversationId(long conversationId) {
             final boolean different = this.conversationId != conversationId;
             if (different) {
                 this.conversationId = conversationId;
-                conversationIdChanged = true;
             }
             return different;
         }
 
-        public boolean setInReplyToId(int inReplyToId) {
+        public boolean fixInReplyToId(int inReplyToId) {
             final boolean different = this.inReplyToId != inReplyToId;
             if (different) {
                 this.inReplyToId = inReplyToId;
-                inReplyToIdChanged = true;
             }
             return different;
         }
 
         public boolean isChanged() {
-            return conversationIdChanged || inReplyToIdChanged;
+            return isConversationIdChanged() || isInReplyToIdChanged();
+        }
+
+        public boolean isConversationIdChanged() {
+            return conversationId != conversationId_initial;
+        }
+
+        public boolean isInReplyToIdChanged() {
+            return inReplyToId != inReplyToId_initial;
         }
     }
 
@@ -96,6 +101,7 @@ public class MyDataCheckerConversations {
         fixConversationsUsingConversationOid();
         int changedCount = saveChanges(countOnly);
         logger.logProgress(method + " ended, " + (changedCount > 0 ?  "changed " + changedCount + " messages" : " no changes were required"));
+        DbUtils.waitMs(method, changedCount == 0 ? 1000 : 3000);
         return changedCount;
     }
 
@@ -119,7 +125,9 @@ public class MyDataCheckerConversations {
                 item.id = c.getLong(0);
                 item.originId = c.getLong(1);
                 item.inReplyToId = c.getLong(2);
+                item.inReplyToId_initial = item.inReplyToId;
                 item.conversationId = c.getLong(3);
+                item.conversationId_initial = item.conversationId;
                 item.conversationOid = c.getString(4);
                 items.put(item.id, item);
                 if (item.inReplyToId != 0) {
@@ -143,7 +151,7 @@ public class MyDataCheckerConversations {
             if (item.inReplyToId != 0) {
                 MsgItem parent = items.get(item.inReplyToId);
                 if (parent == null) {
-                    item.setInReplyToId(0);
+                    item.fixInReplyToId(0);
                 } else {
                     if (parent.conversationId == 0) {
                         parent.fixConversationId(item.conversationId == 0 ? parent.id : item.conversationId);
@@ -210,17 +218,20 @@ public class MyDataCheckerConversations {
                 String sql = "";
                 try {
                     if (changedCount < 5) {
-                        MyLog.v(this, "msgId=" + item.id + "; conversationId changed from " +
-                                MyQuery.msgIdToLongColumnValue(MsgTable.CONVERSATION_ID, item.id)
-                                + " to " + item.conversationId);
+                        MyLog.v(this, "msgId=" + item.id + "; "
+                            + (item.isInReplyToIdChanged() ? "inReplyToId changed from "
+                                + item.inReplyToId_initial + " to " + item.inReplyToId : "")
+                            + (item.isInReplyToIdChanged() && item.isConversationIdChanged() ? " and " : "")
+                            + (item.isConversationIdChanged() ? "conversationId changed from "
+                                + item.conversationId_initial + " to " + item.conversationId : ""));
                     }
                     if (!countOnly) {
                         sql = "UPDATE " + MsgTable.TABLE_NAME
                                 + " SET "
-                                + (item.inReplyToIdChanged ?
+                                + (item.isInReplyToIdChanged() ?
                                     MsgTable.IN_REPLY_TO_MSG_ID + "=" + DbUtils.sqlZeroToNull(item.inReplyToId) : "")
-                                + (item.inReplyToIdChanged && item.conversationIdChanged ? ", " : "")
-                                + (item.conversationIdChanged ?
+                                + (item.isInReplyToIdChanged() && item.isConversationIdChanged() ? ", " : "")
+                                + (item.isConversationIdChanged() ?
                                     MsgTable.CONVERSATION_ID + "=" + DbUtils.sqlZeroToNull(item.conversationId) : "")
                                 + " WHERE " + MsgTable._ID + "=" + item.id;
                         myContext.getDatabase().execSQL(sql);

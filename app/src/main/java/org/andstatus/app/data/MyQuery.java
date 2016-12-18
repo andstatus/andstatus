@@ -592,9 +592,10 @@ public class MyQuery {
         return builder.toString();
     }
 
-    public static long conversationOidToId(String conversationOid) {
+    public static long conversationOidToId(long originId, String conversationOid) {
         return conditionToLongColumnValue(MsgTable.TABLE_NAME, MsgTable.CONVERSATION_ID,
-                MsgTable.CONVERSATION_OID + "='" + conversationOid + "'");
+                MsgTable.ORIGIN_ID + "=" + originId
+                + " AND " + MsgTable.CONVERSATION_OID + "=" + quoteIfNotQuoted(conversationOid));
     }
 
     @NonNull

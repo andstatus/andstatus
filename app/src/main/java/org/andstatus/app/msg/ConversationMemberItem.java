@@ -43,7 +43,7 @@ public class ConversationMemberItem extends ConversationItem {
     void load(Cursor cursor) {
         super.load(cursor);
         authorId = DbUtils.getLong(cursor, MsgTable.AUTHOR_ID);
-        body = MyHtml.fromHtml(DbUtils.getString(cursor, MsgTable.BODY));
+        setBody(MyHtml.fromHtml(DbUtils.getString(cursor, MsgTable.BODY)));
     }
 
     @Override

@@ -48,10 +48,13 @@ public class MyDataCheckerMergeUsers {
         final String method = "checkUsers";
         logger.logProgress(method + " started");
 
+        int changedCount = 0;
         for (MbUser user : getUsersToMerge()) {
             mergeUser(user);
+            changedCount++;
         }
-        logger.logProgress(method + " ended");
+        logger.logProgress(method + " ended, " + (changedCount > 0 ?  changedCount + " users merged" : " no changes were required"));
+        DbUtils.waitMs(method, changedCount == 0 ? 1000 : 3000);
     }
 
     private Set<MbUser> getUsersToMerge() {

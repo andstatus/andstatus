@@ -124,7 +124,7 @@ public abstract class MessageListAdapter<T extends MessageViewItem> extends MyBa
 
     protected void showMessageBody(View view, MessageViewItem item) {
         TextView body = (TextView) view.findViewById(R.id.message_body);
-        MyUrlSpan.showText(body, item.body, true, true);
+        MyUrlSpan.showText(body, item.getBody(), true, true);
     }
 
     protected void showAvatar(View view, MessageViewItem item) {

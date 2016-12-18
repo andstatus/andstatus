@@ -381,7 +381,7 @@ public class DataInserter {
         }
         if (!TextUtils.isEmpty(message.conversationOid)) {
             if (message.conversationId == 0) {
-                message.conversationId = MyQuery.conversationOidToId(message.conversationOid);
+                message.conversationId = MyQuery.conversationOidToId(message.originId, message.conversationOid);
             }
         }
         if (message.conversationId == 0 && message.inReplyToMessage != null) {

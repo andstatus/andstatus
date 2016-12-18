@@ -26,7 +26,7 @@ import org.apache.commons.lang3.StringEscapeUtils;
 
 public class MyHtml {
 
-    private static final String GNU_SOCIAL_FAVORITED_SOMETHING_BY_REGEX = "([^ ]+) favorited something by [^ ]+ (.*)";
+    private static final String GNU_SOCIAL_FAVORITED_SOMETHING_BY_REGEX = "(?s)([^ ]+) favorited something by [^ ]+ (.*)";
     private static final String SPACES_REGEX = "[\\[\\]\\(\\)\\{\\}\n\'\"<>,:;\\s]+";
     private static final String DOT_BEFORE_COMMA_REGEX = "[,]*\\.,";
 

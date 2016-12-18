@@ -133,7 +133,7 @@ public class TimelineLoader extends SyncLoader<TimelineViewItem> {
                         rowsCount++;
                         TimelineViewItem item = TimelineViewItem.fromCursorRow(params.getMyContext(), cursor);
                         getParams().rememberSentDateLoaded(item.sentDate);
-                        String body = MyHtml.getBodyToSearch(item.body);
+                        String body = MyHtml.getBodyToSearch(item.getBody());
                         boolean skip = keywordsFilter.matchedAny(body);
                         if (!skip && !searchQuery.isEmpty()) {
                             skip = !searchQuery.matchedAll(body);

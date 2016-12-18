@@ -64,9 +64,10 @@ public class MessageViewItem implements DuplicatesCollapsible<MessageViewItem> {
 
     String messageSource = "";
 
-    String body = "";
+    private String body = "";
 
     boolean favorited = false;
+    boolean isFavoritingAction = false;
     Map<Long, String> rebloggers = new HashMap<>();
     boolean reblogged = false;
 
@@ -182,6 +183,8 @@ public class MessageViewItem implements DuplicatesCollapsible<MessageViewItem> {
         DuplicationLink link;
         if (favorited != other.favorited) {
             link = favorited ? DuplicationLink.IS_DUPLICATED : DuplicationLink.DUPLICATES;
+        } else if (isFavoritingAction != other.isFavoritingAction) {
+            link = other.isFavoritingAction ? DuplicationLink.IS_DUPLICATED : DuplicationLink.DUPLICATES;
         } else if (reblogged != other.reblogged) {
             link = reblogged ? DuplicationLink.IS_DUPLICATED : DuplicationLink.DUPLICATES;
         } else if (!getLinkedMyAccount().equals(other.getLinkedMyAccount())) {
@@ -250,5 +253,15 @@ public class MessageViewItem implements DuplicatesCollapsible<MessageViewItem> {
 
     public AttachedImageFile getAttachedImageFile() {
         return attachedImageFile;
+    }
+
+    public MessageViewItem setBody(String body) {
+        this.body = body;
+        this.isFavoritingAction = MyHtml.isFavoritingAction(body);
+        return this;
+    }
+
+    public String getBody() {
+        return body;
     }
 }
