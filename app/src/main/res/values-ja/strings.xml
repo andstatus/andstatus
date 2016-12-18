@@ -261,6 +261,8 @@ AndStatus は、最後のメッセージのダウンロード以降のすべて�
   <string name="menu_item_open_conversation">会話を開く</string>
   <string name="menu_item_open_message_permalink">ブラウザーで開く</string>
   <string name="menu_item_reply">返信</string>
+  <string name="menu_item_reply_to_conversation_participants">会話の参加者に返信</string>
+  <string name="menu_item_reply_to_mentioned_users">メンションしたユーザーに返信</string>
   <string name="menu_item_reblog">再投稿</string>
   <string name="menu_item_reblog_pumpio">Pump.io 経由で共有</string>
   <string name="menu_item_reblog_twitter">リツイート</string>

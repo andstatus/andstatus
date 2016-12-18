@@ -27,8 +27,8 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
 		</subtitle>
     </header>
-    <release android:versionName="31.01" android:versionCode="201"
-             versionDate="2016-12-17"
+    <release android:versionName="31.02" android:versionCode="202"
+             versionDate="2016-12-18"
              versionTitle="Conversation view and Search enhancements">
         <changes>
             <change>Conversation view opens much faster now. This is because messages, which belong to one
@@ -55,6 +55,10 @@
                 before as "Reply to all") and "Reply to mentioned users”. "Reply to mentioned users”, naturally, includes a User,
                 to whom you are replying, and all users, mentioned in the body of the replied message.
                 <a href="https://github.com/andstatus/andstatus/issues/432">#432</a>
+            </change>
+            <change>Implemented: Ignore favourites when using "Reply to conversation participants":
+                simple match for "favorited something by" text in the message body.
+                <a href="https://github.com/andstatus/andstatus/issues/368">#368</a>
             </change>
             <change>Default setting of the "Tap on a Timeline Title behaviour" option changed from "Switch to Default Timeline"
             to "Select a Timeline". This doesn't affect existing users, but is more intuitive for novices.</change>
