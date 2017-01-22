@@ -10,10 +10,15 @@ jdk: oraclejdk8
 
 sudo: required
 
+# See https://docs.travis-ci.com/user/languages/java/#Projects-Using-Gradle
+before_cache:
+  - ls -la $HOME/.gradle/**/*
+  - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
+  - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
 cache:
   directories:
-    - ${TRAVIS_BUILD_DIR}/gradle/caches/
-    - ${TRAVIS_BUILD_DIR}/gradle/wrapper/dists/
+    - $HOME/.gradle/caches/
+    - $HOME/.gradle/wrapper/
 
 env:
   global:
@@ -34,9 +39,6 @@ android:
     - extra-android-m2repository
     # Specify at least one system image
     - sys-img-$ANDROID_ABI-google_apis-$ANDROID_API_LEVEL
-
-before_cache:
-  - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
 
 before_install:
   # http://stackoverflow.com/questions/33820638/travis-yml-gradlew-permission-denied
