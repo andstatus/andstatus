@@ -83,10 +83,10 @@ script:
   # - adb shell am instrument -w -r -e debug false -e class org.andstatus.app.msg.ActAsUserTest#testActAsUser org.andstatus.app.tests/android.test.InstrumentationTestRunner
 
   - |
-    if [ $? -ge 0 ]
+    if [ $? -gt 0 ]
     then
       echo "adb returned non-zero exit code: "$?
-      exit 1
+      exit $?
     fi
 
   # adb doesn't propagate exit code from tests, see https://code.google.com/p/android/issues/detail?id=3254

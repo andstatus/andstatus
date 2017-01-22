@@ -225,7 +225,7 @@ public class TestSuite extends TestCase {
                 }
             };
             AsyncTaskLauncher.execute(method, true, asyncTask);
-            long count = 30;
+            long count = 50;
             while (count > 0) {
                 boolean needsWork = asyncTask.needsBackgroundWork();
                 MyLog.v(method, (needsWork ? "Waiting for task completion " : "Task completed ") + count + " "
@@ -234,10 +234,12 @@ public class TestSuite extends TestCase {
                     break;
                 }
                 count--;
-                if (DbUtils.waitMs(method, 2000)) {
+                if (DbUtils.waitMs(method, 5000)) {
                     break;
                 }
             }
+            assertFalse("OriginsAndAccountsInserter failed to complete, count=" + count +
+                    ", status=" + asyncTask.getStatus() + ", " + asyncTask.toString(), asyncTask.needsBackgroundWork());
 
             MyPreferences.onPreferencesChanged();
             MyContextHolder.initialize(context, method);
