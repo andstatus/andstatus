@@ -78,9 +78,28 @@ script:
   #
   # Run only tests, marked with a special annotation:
   # See https://developer.android.com/reference/android/test/InstrumentationTestRunner.html
-  - adb shell am instrument -w -r -e annotation org.andstatus.app.context.Travis org.andstatus.app.tests/android.test.InstrumentationTestRunner
+  - adb shell am instrument -w -r -e annotation org.andstatus.app.context.Travis org.andstatus.app.tests/android.test.InstrumentationTestRunner |& tee build/adb-test.log
   # For testing one method only:
   # - adb shell am instrument -w -r -e debug false -e class org.andstatus.app.msg.ActAsUserTest#testActAsUser org.andstatus.app.tests/android.test.InstrumentationTestRunner
+
+  - |
+    if [ $? -ge 0 ]
+    then
+      echo "adb returned non-zero exit code: "$?
+      exit 1
+    fi
+
+  # adb doesn't propagate exit code from tests, see https://code.google.com/p/android/issues/detail?id=3254
+  # So we need to parse saved terminal log
+  - |
+    cat build/adb-test.log | grep "INSTRUMENTATION_STATUS: stack="
+    if [ $? -eq 0 ]
+    then
+      echo "Test failure found"
+      exit 1
+    else
+      cat build/adb-test.log | grep "Test results for InstrumentationTestRunner"
+    fi
 
 # See https://docs.travis-ci.com/user/languages/java/#Projects-Using-Gradle
 before_cache:
