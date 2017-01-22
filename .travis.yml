@@ -67,11 +67,23 @@ before_script:
 
 script:
   - ./gradlew build assembleAndroidTest
+  - |
+    if [ $? -gt 0 ]; then
+      echo "error on assembling, exit code: "$?
+      exit $?
+    fi
+
   # See http://stackoverflow.com/questions/21294945/error-unable-to-find-instrumentation-info-for-componentinfo
   # Instead of this (which doesn't give any output during tests execution):
   # - ./gradlew connectedCheck -PdisablePreDex --continue --stacktrace --debug
   # run:
   - ./gradlew :app:installDebugAndroidTest :app:installDebug
+  - |
+    if [ $? -gt 0 ]; then
+      echo "error on install, exit code: "$?
+      exit $?
+    fi
+
   #
   # The below line causes Process crash due to absense of video device
   #- adb shell am instrument -w -r -e debug false org.andstatus.app.tests/android.test.InstrumentationTestRunner
@@ -83,8 +95,7 @@ script:
   # - adb shell am instrument -w -r -e debug false -e class org.andstatus.app.msg.ActAsUserTest#testActAsUser org.andstatus.app.tests/android.test.InstrumentationTestRunner
 
   - |
-    if [ $? -gt 0 ]
-    then
+    if [ $? -gt 0 ]; then
       echo "adb returned non-zero exit code: "$?
       exit $?
     fi
@@ -93,8 +104,7 @@ script:
   # So we need to parse saved terminal log
   - |
     cat build/adb-test.log | grep "INSTRUMENTATION_STATUS: stack="
-    if [ $? -eq 0 ]
-    then
+    if [ $? -eq 0 ]; then
       echo "Test failure found"
       exit 1
     else
