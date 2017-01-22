@@ -34,7 +34,7 @@ public class MyAccountTest  extends InstrumentationTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        TestSuite.initialize(this);
+        TestSuite.initializeWithData(this);
     }
 
     public void testNewAccountCreation() {
