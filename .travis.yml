@@ -66,22 +66,24 @@ before_script:
   - adb shell input keyevent 82 &
 
 script:
-  - ./gradlew build assembleAndroidTest
   - |
-    if [ $? -gt 0 ]; then
-      echo "error on assembling, exit code: "$?
-      exit $?
+    ./gradlew build assembleAndroidTest
+    retval=$?
+    if [ $retval -ne 0 ]; then
+      echo "error on assembling, exit code: "$retval
+      exit $retval
     fi
 
   # See http://stackoverflow.com/questions/21294945/error-unable-to-find-instrumentation-info-for-componentinfo
   # Instead of this (which doesn't give any output during tests execution):
   # - ./gradlew connectedCheck -PdisablePreDex --continue --stacktrace --debug
   # run:
-  - ./gradlew :app:installDebugAndroidTest :app:installDebug
   - |
-    if [ $? -gt 0 ]; then
-      echo "error on install, exit code: "$?
-      exit $?
+    ./gradlew :app:installDebugAndroidTest :app:installDebug
+    retval=$?
+    if [ $retval -ne 0 ]; then
+      echo "error on install, exit code: "$retval
+      exit $retval
     fi
 
   #
@@ -90,14 +92,14 @@ script:
   #
   # Run only tests, marked with a special annotation:
   # See https://developer.android.com/reference/android/test/InstrumentationTestRunner.html
-  - adb shell am instrument -w -r -e annotation org.andstatus.app.context.Travis org.andstatus.app.tests/android.test.InstrumentationTestRunner |& tee build/adb-test.log
   # For testing one method only:
   # - adb shell am instrument -w -r -e debug false -e class org.andstatus.app.msg.ActAsUserTest#testActAsUser org.andstatus.app.tests/android.test.InstrumentationTestRunner
-
   - |
-    if [ $? -gt 0 ]; then
-      echo "adb returned non-zero exit code: "$?
-      exit $?
+    adb shell am instrument -w -r -e annotation org.andstatus.app.context.Travis org.andstatus.app.tests/android.test.InstrumentationTestRunner |& tee build/adb-test.log
+    retval=$?
+    if [ $retval -ne 0 ]; then
+      echo "error in adb, exit code: "$retval
+      exit $retval
     fi
 
   # adb doesn't propagate exit code from tests, see https://code.google.com/p/android/issues/detail?id=3254
