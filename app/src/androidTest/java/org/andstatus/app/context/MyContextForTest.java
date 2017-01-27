@@ -24,11 +24,11 @@ import android.support.annotation.NonNull;
 import org.andstatus.app.account.PersistentAccounts;
 import org.andstatus.app.data.AssertionData;
 import org.andstatus.app.database.DatabaseHolder;
-import org.andstatus.app.timeline.TimelineType;
-import org.andstatus.app.timeline.PersistentTimelines;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.origin.PersistentOrigins;
 import org.andstatus.app.service.ConnectionState;
+import org.andstatus.app.timeline.PersistentTimelines;
+import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.MyLog;
 
 import java.util.Locale;
@@ -42,7 +42,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
  * @author yvolk@yurivolkov.com
  */
 public class MyContextForTest implements MyContext {
-    private MyContext myContext;
+    private volatile MyContext myContext = null;
     private final Set<AssertionData> dataSet = new CopyOnWriteArraySet<>();
     private volatile Class<? extends HttpConnection> httpConnectionMockClass = null;
     private volatile HttpConnection httpConnectionMockInstance = null;
@@ -50,7 +50,17 @@ public class MyContextForTest implements MyContext {
     private final Map<TimelineType, Notification> notifications = new ConcurrentHashMap<>();
 
     public MyContextForTest setContext(MyContext myContextIn) {
-        myContext = myContextIn;
+        MyContext myContext2 = myContextIn;
+        for (int i = 0; i < 100; i++) {
+            myContext = myContext2;
+            if (myContext2 == null || !MyContextForTest.class.isAssignableFrom(myContext2.getClass())) {
+                break;
+            }
+            myContext2 = ((MyContextForTest) myContext2).myContext;
+        };
+        if (myContext == null) {
+            myContext = MyContextImpl.newEmpty(this);
+        }
         return this;
     }
 
@@ -63,12 +73,12 @@ public class MyContextForTest implements MyContext {
     }
 
     @Override
-    public MyContext newInitialized(Context context, String initializerName) {
+    public MyContext newInitialized(Context context, Object initializerName) {
         return new MyContextForTest().setContext(myContext.newInitialized(context, initializerName));
     }
 
     @Override
-    public MyContext newCreator(Context context, String initializerName) {
+    public MyContext newCreator(Context context, Object initializerName) {
         return new MyContextForTest().setContext(myContext.newCreator(context, initializerName));
     }
 
@@ -239,4 +249,9 @@ public class MyContextForTest implements MyContext {
 	public Map<TimelineType, Notification> getNotifications() {
 		return notifications;
 	}
+
+    @Override
+    public String toString() {
+        return "MyContextForTest " + myContext;
+    }
 }

@@ -46,7 +46,6 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
 import org.andstatus.app.os.AsyncTaskLauncher;
@@ -54,6 +53,7 @@ import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
+import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TriState;
@@ -502,10 +502,8 @@ public class MessageEditor {
                     Toast.LENGTH_SHORT).show();
         } else {
             MessageEditorCommand command = new MessageEditorCommand(editorData.copy());
-			if (SharedPreferencesUtil.getBoolean(MyPreferences.KEY_SENDING_MESSAGES_LOG_ENABLED, false)) {
-				MyLog.setLogToFile(true);
-			}
             command.currentData.status = DownloadStatus.SENDING;
+            MyLog.onSendingMessageStart();
             saveData(command);
         }
     }

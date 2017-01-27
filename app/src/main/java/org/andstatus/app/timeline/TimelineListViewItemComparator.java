@@ -136,7 +136,7 @@ class TimelineListViewItemComparator implements Comparator<TimelineListViewItem>
                     rhs.timeline.isSyncedAutomatically());
         }
         if (result == 0) {
-            result = compareCheckbox(lhs.timeline.isSyncable(), rhs.timeline.isSyncable());
+            result = compareCheckbox(lhs.timeline.isSyncableAutomatically(), rhs.timeline.isSyncableAutomatically());
         }
         return result;
     }

@@ -29,13 +29,15 @@ public class DataPrunerTest extends InstrumentationTestCase  {
     public void testPrune() throws MalformedURLException {
         final String method = "testPrune";
         MyLog.v(this, method + "; Started");
+
+        boolean isLogEnabled = MyLog.isLogToFileEnabled();
+        MyLog.setLogToFile(false);
         MyLog.setLogToFile(true);
         String filename = MyLog.getLogFilename();
         File logFile1 = MyLog.getFileInLogDir(filename, true);
         MyLog.v(this, method);
         MyLog.setLogToFile(false);
         assertTrue(logFile1.exists());
-
         clearPrunedDate();
         DataPruner dp = new DataPruner(MyContextHolder.get());
         assertTrue("Pruned", dp.prune());
@@ -77,7 +79,10 @@ public class DataPrunerTest extends InstrumentationTestCase  {
         clearPrunedDate();
         assertTrue(TestSuite.setAndWaitForIsInForeground(true));
         assertFalse("Prune while in foreground skipped", dp.prune());
-        
+
+        if (isLogEnabled) {
+            MyLog.setLogToFile(true);
+        }
         MyLog.v(this, method + "; Ended");
     }
 

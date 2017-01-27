@@ -71,6 +71,8 @@ public class Timeline implements Comparable<Timeline> {
 
     /** If this timeline can be synced */
     private final boolean isSyncable;
+    /** If this timeline can be synced automatically */
+    private final boolean isSyncableAutomatically;
     /** Is it possible to sync this timeline via usage of one or more (child, not combined...)
      * timelines for individual accounts */
     private final boolean isSyncableForAccounts;
@@ -157,17 +159,18 @@ public class Timeline implements Comparable<Timeline> {
         this.searchQuery = TextUtils.isEmpty(searchQuery) ? "" : searchQuery.trim();
         this.timelineType = fixedTimelineType(timelineType);
         this.isCombined = calcIsCombined(this.timelineType, this.origin, this.myAccount);
-        this.isSyncable = calcIsSyncable(myContext);
+        MyAccount myAccountToSync = getMyAccountToSync(myContext);
+        this.isSyncable = calcIsSyncable(myAccountToSync);
+        this.isSyncableAutomatically = this.isSyncable && myAccountToSync.isSyncedAutomatically();
         this.isSyncableForAccounts = calcIsSyncableForAccounts(myContext);
         this.isSyncableForOrigins = calcIsSyncableForOrigins(myContext);
     }
 
-    private boolean calcIsSyncable(MyContext myContext) {
+    private boolean calcIsSyncable(MyAccount myAccountToSync) {
         if (isCombined() || !timelineType.isSyncable()) {
             return false;
         }
-        MyAccount myAccountToSync = getMyAccountToSync(myContext);
-        return myAccountToSync.isValidAndSucceeded() && myAccountToSync.isSyncedAutomatically()
+        return myAccountToSync.isValidAndSucceeded()
                 && myAccountToSync.getOrigin().getOriginType().isTimelineTypeSyncable(timelineType);
     }
 
@@ -635,6 +638,9 @@ public class Timeline implements Comparable<Timeline> {
         } else {
             builder.append(origin.isValid() ? origin.getName() : "(all origins)");
         }
+        if (!isSyncable()) {
+            builder.append(", not syncable");
+        }
         if (timelineType != TimelineType.UNKNOWN) {
             builder.append(", type:" + timelineType.save());
         }
@@ -792,7 +798,7 @@ public class Timeline implements Comparable<Timeline> {
     }
 
     public void setSyncedAutomatically(boolean isSyncedAutomatically) {
-        if (this.isSyncedAutomatically != isSyncedAutomatically && isSyncable()) {
+        if (this.isSyncedAutomatically != isSyncedAutomatically && isSyncableAutomatically()) {
             this.isSyncedAutomatically = isSyncedAutomatically;
             changed = true;
         }
@@ -845,6 +851,10 @@ public class Timeline implements Comparable<Timeline> {
 
     public boolean isSyncable() {
         return isSyncable;
+    }
+
+    public boolean isSyncableAutomatically() {
+        return isSyncableAutomatically;
     }
 
     public boolean isSyncableForAccounts() {

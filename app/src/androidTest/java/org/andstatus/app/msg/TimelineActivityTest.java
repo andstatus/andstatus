@@ -57,7 +57,6 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        MyLog.setLogToFile(true);
         MyLog.i(this, "setUp started");
         TestSuite.initializeWithData(this);
 
@@ -74,7 +73,6 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
 
     @Override
     protected void tearDown() throws Exception {
-        MyLog.setLogToFile(false);
         super.tearDown();
     }
 

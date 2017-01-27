@@ -263,4 +263,9 @@ public class MyPreferences {
     public static boolean areOldMessagesFirstInConversation() {
         return SharedPreferencesUtil.getBoolean(KEY_OLD_MESSAGES_FIRST_IN_CONVERSATION, false);
     }
+
+    public static boolean isLogEverythingToFile() {
+        return SharedPreferencesUtil.getBoolean(MyPreferences.KEY_LOG_EVERYTHING_TO_FILE, MyContextHolder.get().isTestRun());
+    }
+
 }

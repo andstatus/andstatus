@@ -108,6 +108,8 @@ class CommandExecutorStrategy implements CommandExecutorParent {
                                         break;
                                 }
                             } else {
+                                MyLog.v(CommandExecutorStrategy.class, "Dummy commandExecutor for " +
+                                        execContext.getCommandData().getTimeline());
                                 strategy = new CommandExecutorStrategy();
                             }
                             break;
@@ -120,6 +122,7 @@ class CommandExecutorStrategy implements CommandExecutorParent {
                             break;
                     }
                 } else {
+                    MyLog.v(CommandExecutorStrategy.class, "Dummy commandExecutor for " + execContext.getMyAccount());
                     strategy = new CommandExecutorStrategy();
                 }
                 break;

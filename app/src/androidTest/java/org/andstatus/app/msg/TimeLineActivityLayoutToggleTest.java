@@ -67,7 +67,6 @@ public class TimeLineActivityLayoutToggleTest extends android.test.ActivityInstr
                 break;
         }
         setPreferences();
-        MyLog.setLogToFile(true);
         logStartStop("setUp started");
 
         MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.CONVERSATION_ACCOUNT_NAME);
@@ -122,7 +121,6 @@ public class TimeLineActivityLayoutToggleTest extends android.test.ActivityInstr
         showAttachedImages = showAttachedImagesOld;
         showAvatars = showAvatarsOld;
         setPreferences();
-        MyLog.setLogToFile(false);
         super.tearDown();
     }
 }

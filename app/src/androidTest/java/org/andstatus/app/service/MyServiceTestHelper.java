@@ -28,36 +28,39 @@ public class MyServiceTestHelper implements MyServiceEventsListener {
     
     public void setUp(String accountName) {
         MyLog.i(this, "setUp started");
+        try {
+            MyServiceManager.setServiceUnavailable();
+            MyServiceManager.stopService();
 
-        MyServiceManager.setServiceUnavailable();
-        MyServiceManager.stopService();
+            MyAccountTest.fixPersistentAccounts(myContext);
+            boolean isSingleMockedInstance = TextUtils.isEmpty(accountName);
+            if (isSingleMockedInstance) {
+                httpConnectionMock = new HttpConnectionMock();
+                TestSuite.setHttpConnectionMockInstance(httpConnectionMock);
+            } else {
+                TestSuite.setHttpConnectionMockClass(HttpConnectionMock.class);
+            }
+            TestSuite.getMyContextForTest().setConnectionState(ConnectionState.WIFI);
+            MyContextHolder.get().setExpired();
+            myContext = MyContextHolder.initialize(myContext.context(), this);
+            if (!isSingleMockedInstance) {
+                MyAccount ma = myContext.persistentAccounts().fromAccountName(accountName);
+                HttpConnectionMock http = ma.getConnection().getHttpMock();
+                httpConnectionMock = http;
+            }
+            connectionInstanceId = httpConnectionMock.getInstanceId();
 
-        boolean isSingleMockedInstance = TextUtils.isEmpty(accountName);
-        if (isSingleMockedInstance) {
-            httpConnectionMock = new HttpConnectionMock();
-            TestSuite.setHttpConnectionMockInstance(httpConnectionMock);
-        } else {
-            TestSuite.setHttpConnectionMockClass(HttpConnectionMock.class);
+            serviceConnector = new MyServiceEventsReceiver(myContext, this);
+            serviceConnector.registerReceiver(myContext.context());
+
+            dropQueues();
+            httpConnectionMock.clearPostedData();
+            TestCase.assertTrue(TestSuite.setAndWaitForIsInForeground(false));
+        } catch (Exception e) {
+            MyLog.e(this, "setUp", e);
+        } finally {
+            MyLog.i(this, "setUp ended instanceId=" + connectionInstanceId);
         }
-        TestSuite.getMyContextForTest().setConnectionState(ConnectionState.WIFI);
-        MyContextHolder.get().setExpired();
-        myContext = MyContextHolder.initialize(myContext.context(), this);
-        MyAccountTest.fixPersistentAccounts(myContext);
-        if (!isSingleMockedInstance) {
-            MyAccount ma = myContext.persistentAccounts().fromAccountName(accountName);
-            HttpConnectionMock http = ma.getConnection().getHttpMock();
-            httpConnectionMock = http;
-        }
-        connectionInstanceId = httpConnectionMock.getInstanceId();
-
-        serviceConnector = new MyServiceEventsReceiver(myContext, this);
-        serviceConnector.registerReceiver(myContext.context());
-        
-        dropQueues();
-        httpConnectionMock.clearPostedData();
-        TestCase.assertTrue(TestSuite.setAndWaitForIsInForeground(false));
-
-        MyLog.i(this, "setUp ended instanceId=" + connectionInstanceId);
     }
 
     private void dropQueues() {

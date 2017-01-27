@@ -222,7 +222,7 @@ public class TimelineList extends LoadableListActivity {
                         origin.getName() : "", false, true);
                 showDisplayedInSelector(view, item);
                 MyCheckBox.set(view, R.id.synced, item.timeline.isSyncedAutomatically(),
-                        item.timeline.isSyncable() ?
+                        item.timeline.isSyncableAutomatically() ?
                                 new CompoundButton.OnCheckedChangeListener() {
                                     @Override
                                     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {

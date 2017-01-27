@@ -68,7 +68,6 @@ public class MessageEditorTest extends ActivityInstrumentationTestCase2<Timeline
         super.setUp();
         MyLog.i(this, "setUp started");
         TestSuite.initializeWithData(this);
-        MyLog.setLogToFile(true);
 
         if (editingStep.get() == 0) {
             SharedPreferencesUtil.putLong(MyPreferences.KEY_BEING_EDITED_MESSAGE_ID, 0);
@@ -105,7 +104,6 @@ public class MessageEditorTest extends ActivityInstrumentationTestCase2<Timeline
 
     @Override
     protected void tearDown() throws Exception {
-        MyLog.setLogToFile(false);
         super.tearDown();
     }
 

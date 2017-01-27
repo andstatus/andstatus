@@ -28,10 +28,13 @@ import net.jcip.annotations.ThreadSafe;
 
 import org.andstatus.app.database.DatabaseConverterController;
 import org.andstatus.app.graphics.MyImageCache;
+import org.andstatus.app.net.http.TlsSniSocketFactory;
 import org.andstatus.app.os.AsyncTaskLauncher;
+import org.andstatus.app.os.ExceptionsCounter;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
+import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TamperingDetector;
 
 import java.util.concurrent.Callable;
@@ -49,7 +52,7 @@ public final class MyContextHolder {
 
     private static final Object CONTEXT_LOCK = new Object();
     @GuardedBy("CONTEXT_LOCK")
-    private static volatile MyContext myContextCreator = MyContextImpl.newEmpty();
+    private static volatile MyContext myContextCreator = MyContextImpl.newEmpty("static");
     @GuardedBy("CONTEXT_LOCK")
     private static volatile MyContext myInitializedContext = null;
     @GuardedBy("CONTEXT_LOCK")
@@ -105,9 +108,10 @@ public final class MyContextHolder {
     public static MyContext initializeDuringUpgrade(Context context, Object initializedBy) {
         if (get().initialized() && !get().isExpired()) {
             MyLog.v(TAG, "Already initialized by " + get().initializedBy() +  " (called by: " + initializedBy + ")");
+        } else {
+            MyLog.d(TAG, "Starting initialization by " + initializedBy);
         }
         try {
-            MyLog.d(TAG, "Starting initialization by " + initializedBy);
             return getBlocking(context, initializedBy);
         } catch (InterruptedException e) {
             MyLog.d(TAG, "Initialize was interrupted, releasing resources...", e);
@@ -195,24 +199,36 @@ public final class MyContextHolder {
             MyLog.v(TAG, method + " may block at Future.get: " + callerName);
             myContextOut = myFutureContext.get();
             MyLog.v(TAG, method + " passed Future.get: " + callerName);
+            boolean releaseGlobalNeeded = false;
+            String msgLog = "";
             synchronized (CONTEXT_LOCK) {
                 if (myFutureContext == null || myFutureContext.isExpired()) {
-                    MyLog.i(TAG, method + " myFutureContext is null or expired " + callerName);
+                    msgLog = "myFutureContext is null or expired " + callerName;
                     myContextOut = null;
                 } else if (myContextOut.isExpired()) {
-                    MyLog.i(TAG, method + " myContextOut is expired " + callerName);
+                    msgLog = "myContextOut is expired " + callerName + " " + myContextOut;
                     myFutureContext.setExpired();
                     myContextOut = null;
                 } else if (myContextOut.initialized()) {
-                    if (myInitializedContext != null && myInitializedContext.initialized()) {
-                        myInitializedContext.release();
+                    if (myInitializedContext == myContextOut) {
+                        msgLog = "the same " + myContextOut;
+                    } else {
+                        if (myInitializedContext != null && myInitializedContext.initialized()) {
+                            myInitializedContext.release();
+                            releaseGlobalNeeded = true;
+                        }
+                        myInitializedContext = myContextOut;
+                        msgLog = "initialized " + myContextOut;
                     }
-                    myInitializedContext = myContextOut;
                 } else {
-                    MyLog.i(TAG, method + " myContextOut is NOT initialized " + callerName);
+                    msgLog = "myContextOut is NOT initialized " + callerName  + " " + myContextOut;
                     myFutureContext.setExpired();
                     myContextOut = null;
                 }
+            }
+            MyLog.i(TAG, method + " " + msgLog);
+            if (releaseGlobalNeeded) {
+                releaseGlobal();
             }
         } catch (ExecutionException e) {
             MyLog.v(TAG, method + " by " + callerName, e);
@@ -220,7 +236,7 @@ public final class MyContextHolder {
         }
         return myContextOut;
     }
-    
+
     /**
      *  Quickly return, providing context for the deferred initialization
      */
@@ -252,7 +268,16 @@ public final class MyContextHolder {
             }
         }
     }
-    
+
+    private static void releaseGlobal() {
+        TlsSniSocketFactory.forget();
+        AsyncTaskLauncher.forget();
+        ExceptionsCounter.forget();
+        MyLog.forget();
+        SharedPreferencesUtil.forget();
+        MyLog.i(TAG, "releaseGlobal completed");
+    }
+
     public static void upgradeIfNeeded(Activity upgradeRequestor) {
         if (get().state() == MyContextState.UPGRADING) {
             DatabaseConverterController.attemptToTriggerDatabaseUpgrade(upgradeRequestor);

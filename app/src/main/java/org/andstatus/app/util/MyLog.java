@@ -322,7 +322,7 @@ public class MyLog {
                 if (sp != null) {
                     val = getMinLogLevel(sp);
                 }
-                setLogToFile(SharedPreferencesUtil.getBoolean(MyPreferences.KEY_LOG_EVERYTHING_TO_FILE, false));
+                setLogToFile(MyPreferences.isLogEverythingToFile());
             } catch (Exception e) {
                 Log.e(TAG, "Error in isLoggable", e);
             }
@@ -446,7 +446,7 @@ public class MyLog {
 
     private static void onSendingMessageEvent(boolean start) {
         if (!SharedPreferencesUtil.getBoolean(MyPreferences.KEY_SENDING_MESSAGES_LOG_ENABLED, false) ||
-                SharedPreferencesUtil.getBoolean(MyPreferences.KEY_LOG_EVERYTHING_TO_FILE, false)) {
+                MyPreferences.isLogEverythingToFile()) {
             return;
         }
         setLogToFile(start);
@@ -479,7 +479,7 @@ public class MyLog {
         }
     }
     
-    static boolean isLogToFileEnabled() {
+    public static boolean isLogToFileEnabled() {
         synchronized (logFileLock) {
             return logFileName != null;
         }
@@ -577,7 +577,7 @@ public class MyLog {
     public static void logNetworkLevelMessage(Object objTag, String namePrefix, Object jso) {
         if (jso != null && isLoggable(objTag, VERBOSE) 
                 && SharedPreferencesUtil.getBoolean(MyPreferences.KEY_LOG_NETWORK_LEVEL_MESSAGES, false)) {
-            logJson(objTag, namePrefix, jso, SharedPreferencesUtil.getBoolean(MyPreferences.KEY_LOG_EVERYTHING_TO_FILE, false));
+            logJson(objTag, namePrefix, jso, MyPreferences.isLogEverythingToFile());
         }
     }
    

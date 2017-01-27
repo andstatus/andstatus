@@ -35,13 +35,11 @@ import org.andstatus.app.database.DatabaseConverterController;
 import org.andstatus.app.database.DatabaseHolder;
 import org.andstatus.app.graphics.MyImageCache;
 import org.andstatus.app.net.http.HttpConnection;
-import org.andstatus.app.net.http.TlsSniSocketFactory;
 import org.andstatus.app.origin.PersistentOrigins;
-import org.andstatus.app.os.AsyncTaskLauncher;
-import org.andstatus.app.os.ExceptionsCounter;
 import org.andstatus.app.service.ConnectionState;
 import org.andstatus.app.timeline.PersistentTimelines;
 import org.andstatus.app.timeline.TimelineType;
+import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.Permissions;
 import org.andstatus.app.util.RelativeTime;
@@ -57,7 +55,8 @@ import java.util.Locale;
  */
 @ThreadSafe
 public final class MyContextImpl implements MyContext {
-    private static final String TAG = MyContextImpl.class.getSimpleName();
+
+    final long instanceId = InstanceId.next();
 
     private volatile MyContextState mState = MyContextState.EMPTY;
     /**
@@ -67,12 +66,12 @@ public final class MyContextImpl implements MyContext {
     /**
      * Name of the object that initialized the class
      */
-    private String mInitializedBy;
+    private final String mInitializedBy;
     /**
      * When preferences, loaded into this class, were changed
      */
     private volatile long mPreferencesChangeTime = 0;
-    private volatile DatabaseHolder mDb;
+    private volatile DatabaseHolder mDb = null;
     private final PersistentAccounts mPersistentAccounts = PersistentAccounts.newEmpty(this);
     private final PersistentOrigins mPersistentOrigins = PersistentOrigins.newEmpty(this);
     private final PersistentTimelines persistentTimelines = PersistentTimelines.newEmpty(this);
@@ -85,49 +84,53 @@ public final class MyContextImpl implements MyContext {
     private static volatile long mInForegroundChangedAt = 0;
     private static final long CONSIDER_IN_BACKGROUND_AFTER_SECONDS = 20;
 
-    private MyContextImpl() {
+    private MyContextImpl(Object initializerName) {
+        mInitializedBy = MyLog.objTagToString(initializerName);
     }
 
     @Override
-    public MyContext newInitialized(Context context, String initializerName) {
+    public MyContext newInitialized(Context context, Object initializer) {
         final String method = "newInitialized";
-        MyContextImpl myContext = newNotInitialized(context, initializerName);
+        MyContextImpl myContext = newNotInitialized(context, initializer);
         if ( myContext.mContext == null) {
             // Nothing to do
         } else if (!Permissions.checkPermission(myContext.mContext,
                 Permissions.PermissionType.GET_ACCOUNTS)) {
             myContext.mState = MyContextState.NO_PERMISSIONS;
         } else {
-            MyLog.v(TAG, method + " Starting initialization by " + initializerName);
-
-            initialize2(myContext);
+            MyLog.v(getTag(), method + " Starting initialization of " + myContext.instanceId + " by " + myContext.mInitializedBy);
+            myContext.initialize2();
         }
-        MyLog.v(this, toString());
+        MyLog.v(getTag(), toString());
         return myContext;
     }
 
-    private void initialize2(MyContextImpl myContext) {
+    private String getTag() {
+        return MyLog.objTagToString(this) + "-" + instanceId;
+    }
+
+    private void initialize2() {
         final String method = "initialize2";
         boolean createApplicationData = MyStorage.isApplicationDataCreated().not().toBoolean(false);
         if (createApplicationData) {
-            MyLog.i(TAG, method + " Creating application data");
+            MyLog.i(getTag(), method + " Creating application data");
             MyPreferencesGroupsEnum.setDefaultValues();
             tryToSetExternalStorageOnDataCreation();
         }
-        myContext.mPreferencesChangeTime = MyPreferences.getPreferencesChangeTime();
-        initializeDatabase(myContext, createApplicationData);
+        mPreferencesChangeTime = MyPreferences.getPreferencesChangeTime();
+        initializeDatabase(createApplicationData);
 
-        switch (myContext.mState) {
+        switch (mState) {
             case DATABASE_READY:
-                myContext.mPersistentOrigins.initialize();
+                mPersistentOrigins.initialize();
                 if (MyContextHolder.isOnRestore()) {
-                    myContext.mState = MyContextState.RESTORING;
+                    mState = MyContextState.RESTORING;
                 } else {
                     // Accounts are not restored yet
-                    myContext.mPersistentAccounts.initialize();
-                    myContext.persistentTimelines.initialize();
-                    MyImageCache.initialize(myContext.context());
-                    myContext.mState = MyContextState.READY;
+                    mPersistentAccounts.initialize();
+                    persistentTimelines.initialize();
+                    MyImageCache.initialize(context());
+                    mState = MyContextState.READY;
                 }
                 break;
             default:
@@ -135,60 +138,61 @@ public final class MyContextImpl implements MyContext {
         }
     }
 
-    private void initializeDatabase(MyContextImpl myContext, boolean createApplicationData) {
+    private void initializeDatabase(boolean createApplicationData) {
         final String method = "initializeDatabase";
-        DatabaseHolder newDb = new DatabaseHolder(myContext.mContext, createApplicationData);
+        DatabaseHolder newDb = new DatabaseHolder(mContext, createApplicationData);
         try {
-            myContext.mState = newDb.checkState();
-            if (myContext.state() == MyContextState.DATABASE_READY
+            mState = newDb.checkState();
+            if (state() == MyContextState.DATABASE_READY
                     && MyStorage.isApplicationDataCreated() != TriState.TRUE) {
-                myContext.mState = MyContextState.ERROR;
+                mState = MyContextState.ERROR;
             }
         } catch (SQLiteException e) {
-            MyLog.e(TAG, method + " Error", e);
-            myContext.mState = MyContextState.ERROR;
+            MyLog.e(getTag(), method + " Error", e);
+            mState = MyContextState.ERROR;
             newDb.close();
-            myContext.mDb = null;
+            mDb = null;
         }
-        if (myContext.state() == MyContextState.DATABASE_READY) {
-            myContext.mDb = newDb;
+        if (state() == MyContextState.DATABASE_READY) {
+            mDb = newDb;
         }
     }
 
     private void tryToSetExternalStorageOnDataCreation() {
         boolean useExternalStorage = !Environment.isExternalStorageEmulated()
                 && MyStorage.isWritableExternalStorageAvailable(null);
-        MyLog.i(this, "External storage is " + (useExternalStorage ? "" : "not") + " used");
+        MyLog.i(getTag(), "External storage is " + (useExternalStorage ? "" : "not") + " used");
         SharedPreferencesUtil.putBoolean(MyPreferences.KEY_USE_EXTERNAL_STORAGE, useExternalStorage);
     }
 
     @Override
     public String toString() {
-        return  MyLog.objTagToString(this) +  " initialized by " + mInitializedBy + "; state=" + mState +  "; " + (mContext == null ? "no context" : "context=" + mContext.getClass().getName());
+        return  getTag() + " initialized by " + mInitializedBy + "; state=" + mState +
+                "; " + (isExpired() && (mState != MyContextState.EXPIRED) ? "expired" : "") +
+                (mContext == null ? "no context" : "context=" + mContext.getClass().getName());
     }
 
     @Override
-    public MyContext newCreator(Context context, String initializerName) {
-        MyContextImpl myContext = newNotInitialized(context, initializerName);
-        MyLog.v(this, "newCreator by " + myContext.mInitializedBy
+    public MyContext newCreator(Context context, Object initializer) {
+        MyContextImpl myContext = newNotInitialized(context, initializer);
+        MyLog.v(getTag(), "newCreator by " + myContext.mInitializedBy
                 + (myContext.mContext == null ? "" : " context: " + myContext.mContext.getClass().getName()));
         return myContext;
     }
 
-    private MyContextImpl newNotInitialized(Context context, String initializerName) {
-        MyContextImpl newMyContext = newEmpty();
-        newMyContext.mInitializedBy = initializerName;
+    private MyContextImpl newNotInitialized(Context context, Object initializer) {
+        MyContextImpl newMyContext = newEmpty(initializer);
         if (context != null) {
             Context contextToUse = context.getApplicationContext();
         
             if ( contextToUse == null) {
-                MyLog.w(TAG, "getApplicationContext is null, trying the context itself: " + context.getClass().getName());
+                MyLog.w(getTag(), "getApplicationContext is null, trying the context itself: " + context.getClass().getName());
                 contextToUse = context;
             }
             // TODO: Maybe we need to determine if the context is compatible, using some Interface...
             // ...but we don't have any yet.
             if (!context.getClass().getName().contains(ClassInApplicationPackage.PACKAGE_NAME)) {
-                MyLog.w(TAG, "Incompatible context: " + contextToUse.getClass().getName());
+                MyLog.w(getTag(), "Incompatible context: " + contextToUse.getClass().getName());
                 contextToUse = null;
             }
             newMyContext.mContext = contextToUse;
@@ -196,8 +200,8 @@ public final class MyContextImpl implements MyContext {
         return newMyContext;
     }
     
-    public static MyContextImpl newEmpty() {
-        return new MyContextImpl();
+    public static MyContextImpl newEmpty(Object initializerName) {
+        return new MyContextImpl(initializerName);
     }
 
     @Override
@@ -244,7 +248,7 @@ public final class MyContextImpl implements MyContext {
         try {
             db = mDb.getWritableDatabase();
         } catch (Exception e) {
-            MyLog.e(this, "getDatabase", e);
+            MyLog.e(getTag(), "getDatabase", e);
         }
         return db;
     }
@@ -255,11 +259,7 @@ public final class MyContextImpl implements MyContext {
      * and reading Internet, I decided NOT to db.close here.
      */
     public void release() {
-        TlsSniSocketFactory.forget();
-        AsyncTaskLauncher.forget();
-        ExceptionsCounter.forget();
-        MyLog.forget();
-        SharedPreferencesUtil.forget();
+        // Nothing to do here
     }
 
     @Override
@@ -284,6 +284,7 @@ public final class MyContextImpl implements MyContext {
 
     @Override
     public void setExpired() {
+        MyLog.i(getTag(), "setExpired");
         mExpired = true;
         mState = MyContextState.EXPIRED;
     }

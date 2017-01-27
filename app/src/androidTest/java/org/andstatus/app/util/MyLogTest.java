@@ -46,6 +46,8 @@ public class MyLogTest extends InstrumentationTestCase {
     
     public void testLogFilename() {
         final String method = "testLogFilename";
+        boolean isLogEnabled = MyLog.isLogToFileEnabled();
+
         MyLog.setLogToFile(true);
         assertFalse(TextUtils.isEmpty(MyLog.getLogFilename()));
         MyLog.v(this, method);
@@ -58,6 +60,10 @@ public class MyLogTest extends InstrumentationTestCase {
         MyLog.v(this, method);
         assertEquals(MyLog.getLogFilename(), null);
         assertFalse(file.exists());
+
+        if (isLogEnabled) {
+            MyLog.setLogToFile(true);
+        }
     }
 
     public void testUniqueDateTimeFormatted() {
