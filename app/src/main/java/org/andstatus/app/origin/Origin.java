@@ -36,6 +36,7 @@ import org.andstatus.app.database.UserTable;
 import org.andstatus.app.net.http.SslModeEnum;
 import org.andstatus.app.net.social.MbConfig;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UrlUtils;
 
@@ -364,7 +365,7 @@ public class Origin {
         Origin origin = (Origin) o;
 
         if (id != origin.id) return false;
-        return name.equals(origin.name);
+        return StringUtils.equalsNotEmpty(name, origin.name);
     }
 
     @Override

@@ -89,7 +89,7 @@ public class MessageViewItem implements DuplicatesCollapsible<MessageViewItem> {
         this.myContext = myContext;
     }
 
-    long getMsgId() {
+    public long getMsgId() {
         return mMsgId;
     }
 

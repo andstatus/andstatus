@@ -49,6 +49,7 @@ import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.timeline.Timeline;
 import org.andstatus.app.timeline.TimelineSaver;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -1001,14 +1002,16 @@ public final class MyAccount implements Comparable<MyAccount> {
         MyAccount myAccount = (MyAccount) o;
 
         if (!oAccountName.equals(myAccount.oAccountName)) return false;
-        return userOid.equals(myAccount.userOid);
+        return StringUtils.equalsNotEmpty(userOid, myAccount.userOid);
 
     }
 
     @Override
     public int hashCode() {
         int result = oAccountName.hashCode();
-        result = 31 * result + userOid.hashCode();
+        if (!TextUtils.isEmpty(userOid)) {
+            result = 31 * result + userOid.hashCode();
+        }
         return result;
     }
 

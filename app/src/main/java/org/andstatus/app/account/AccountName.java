@@ -17,9 +17,11 @@
 package org.andstatus.app.account;
 
 import android.support.annotation.NonNull;
+import android.text.TextUtils;
 
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.origin.Origin;
+import org.andstatus.app.util.StringUtils;
 
 /**
  * Account name, unique for this application and suitable for {@link android.accounts.AccountManager}
@@ -151,14 +153,16 @@ public class AccountName {
         AccountName that = (AccountName) o;
 
         if (!origin.equals(that.origin)) return false;
-        return username.equals(that.username);
+        return StringUtils.equalsNotEmpty(username, that.username);
 
     }
 
     @Override
     public int hashCode() {
         int result = origin.hashCode();
-        result = 31 * result + username.hashCode();
+        if (!TextUtils.isEmpty(username)) {
+            result = 31 * result + username.hashCode();
+        }
         return result;
     }
 }

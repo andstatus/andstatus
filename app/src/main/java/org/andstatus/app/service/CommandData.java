@@ -44,6 +44,7 @@ import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
+import org.andstatus.app.util.StringUtils;
 
 import java.util.Queue;
 
@@ -316,10 +317,7 @@ public class CommandData implements Comparable<CommandData> {
         if (itemId != other.itemId) {
             return false;
         }
-        if (!description.contentEquals(other.description)) {
-            return false;
-        }
-        return true;
+        return StringUtils.equalsNotEmpty(description, other.description);
     }
 
     @Override

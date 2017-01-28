@@ -203,12 +203,17 @@ public class MyService extends Service {
                 break;
 
         }
-        commandData.getResult().prepareForLaunch();
-        MyLog.v(this, "Adding to Main queue " + commandData);
-        if (!queues.get(QueueType.CURRENT).offer(commandData)) {
-            MyLog.e(this, "Couldn't add to the main queue, size=" + queues.get(QueueType.CURRENT).size());
-            return commandData;
+        if (queues.get(QueueType.CURRENT).contains(commandData)) {
+            MyLog.v(this, "Didn't add to Main queue. Already found " + commandData);
+        } else {
+            commandData.getResult().prepareForLaunch();
+            MyLog.v(this, "Adding to Main queue " + commandData);
+            if (!queues.get(QueueType.CURRENT).offer(commandData)) {
+                MyLog.e(this, "Couldn't add to the main queue, size=" + queues.get(QueueType.CURRENT).size());
+                return commandData;
+            }
         }
+
         return null;
     }
 

@@ -219,6 +219,17 @@ public class TimelineData extends ListData {
         return TimelineViewItem.getEmpty();
     }
 
+    public TimelineViewItem getById(long itemId) {
+        for (TimelinePage page : pages) {
+            for (TimelineViewItem item : page.items) {
+                if (item.getMsgId() == itemId) {
+                    return item;
+                }
+            }
+        }
+        return TimelineViewItem.getEmpty();
+    }
+
     public boolean mayHaveYoungerPage() {
         return pages.size() == 0 || pages.get(0).params.mayHaveYoungerPage();
     }

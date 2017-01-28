@@ -128,10 +128,10 @@ public class CommandQueue {
                     MyLog.e(context, method + "; duplicate skipped " + cd);
                 } else {
                     if (queue.offer(cd)) {
-                        if (MyLog.isVerboseEnabled() && count < 5) {
-                            MyLog.v(context, method + "; " + cd);
-                        }
                         count++;
+                        if (MyLog.isVerboseEnabled() && (count < 6 || cd.getCommand() == CommandEnum.UPDATE_STATUS )) {
+                            MyLog.v(context, method + "; " + count + ": " + cd.toString());
+                        }
                     } else {
                         MyLog.e(context, method + "; " + cd);
                     }
@@ -184,10 +184,13 @@ public class CommandQueue {
                     cd.toContentValues(values);
                     values.put(CommandTable.QUEUE_TYPE, queueType.save());
                     db.insert(CommandTable.TABLE_NAME, null, values);
-                    if (MyLog.isVerboseEnabled() && count < 5) {
-                        MyLog.v(context, method + "; Command saved: " + cd.toString());
+                    count++;
+                    if (MyLog.isVerboseEnabled() && (count < 6 || cd.getCommand() == CommandEnum.UPDATE_STATUS )) {
+                        MyLog.v(context, method + "; " + count + ": " + cd.toString());
                     }
-                    count += 1;
+                    if (MyContextHolder.get().isTestRun() && queue.contains(cd)) {
+                        MyLog.e(context, method + "; Duplicated command in a queue:" + count + " " + cd.toString());
+                    }
                 }
                 if (queue.isEmpty()) {
                     MyLog.d(context, method + "; " + count + " saved");

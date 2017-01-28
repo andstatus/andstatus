@@ -40,6 +40,7 @@ import org.andstatus.app.service.CommandResult;
 import org.andstatus.app.util.BundleUtils;
 import org.andstatus.app.util.ContentValuesUtils;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.StringUtils;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -670,7 +671,7 @@ public class Timeline implements Comparable<Timeline> {
         if (!origin.equals(timeline.origin)) return false;
         if (!myAccount.equals(timeline.myAccount)) return false;
         if (userId != timeline.userId) return false;
-        return searchQuery.equals(timeline.searchQuery);
+        return StringUtils.equalsNotEmpty(searchQuery, timeline.searchQuery);
     }
 
     @Override
@@ -679,7 +680,9 @@ public class Timeline implements Comparable<Timeline> {
         result = 31 * result + origin.hashCode();
         result = 31 * result + myAccount.hashCode();
         result = 31 * result + (int) (userId ^ (userId >>> 32));
-        result = 31 * result + searchQuery.hashCode();
+        if (!TextUtils.isEmpty(searchQuery)) {
+            result = 31 * result + searchQuery.hashCode();
+        }
         return result;
     }
 
