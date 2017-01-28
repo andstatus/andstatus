@@ -70,6 +70,9 @@
   <string name="category_title_preference_notifications">Notificações</string>
   <string name="category_title_preference_origin">Rede social</string>
   <string name="category_title_preference_settings">Definições</string>
+  <string name="check_and_fix_data">Analisar e corrigir dados</string>
+  <string name="check_and_fix_data_summary">Utilize esta ação se achar que a aplicação está a funcionar
+ incorretamente e não quiser tentar a reinstalação</string>
   <string name="client_registration_failed">Falha ao registar o AndStatus</string>
   <string name="collapse_duplicates">Recolher duplicados</string>
   <string name="color_black">Preto</string>
@@ -139,6 +142,7 @@
   <string name="discover_open_instances_title">Descobrir instâncias abertas</string>
   <string name="displayed_in_selector">Mostrar no seletor</string>
   <string name="displayed_in_selector_abbreviated">Mostrar</string>
+  <string name="database_disk_io_error">Atenção! Ocorreram %1$s erro(s) ao aceder à base de dados local, o que causou o funcionamento errático da aplicação.\nNormalmente, isto significa que o cartão SD não está a funcionar corretamente.</string>
   <string name="dont_synchronize_old_messages">Não sincronizar mensagens antigas se a sincronização anterior tiver sido há menos de ... horas</string>
   <string name="dont_synchronize_old_messages_summary">Se não decorrerem %s desde a última sincronização,
  o AndStatus não tentará sincronizar todas as mensagens desde a última descarga,
@@ -177,6 +181,7 @@
   <string name="friends_of">Amigos de \"%1s\"</string>
   <string name="gestures">Gestos</string>
   <string name="gestures_summary">Mecanismos de toque. Como o utilizador interage com a aplicação.</string>
+  <string name="get_conversation">Obter conversa</string>
   <string name="get_followers">Obter seguidores</string>
   <string name="get_friends">Obter amigos</string>
   <string name="get_open_instances_title">Obter instâncias abertas</string>
@@ -253,7 +258,10 @@
   <string name="menu_item_follow_user">Seguir \"%1s\"</string>
   <string name="menu_item_view_image">Ver imagem</string>
   <string name="menu_item_open_conversation">Abrir conversa</string>
+  <string name="menu_item_open_message_permalink">Abrir no navegador</string>
   <string name="menu_item_reply">Responder</string>
+  <string name="menu_item_reply_to_conversation_participants">Responder aos participantes da conversa</string>
+  <string name="menu_item_reply_to_mentioned_users">Responder aos utilizadores mencionados</string>
   <string name="menu_item_reblog">Republicar</string>
   <string name="menu_item_reblog_pumpio">Partilhar via Pump.io</string>
   <string name="menu_item_reblog_twitter">Retweet</string>
@@ -366,6 +374,7 @@
   <string name="search_timeline_hint">Digite o nome de utilizador/frase</string>
   <string name="search_direct_messages_label">Procurar mensagens diretas</string>
   <string name="search_direct_messages_hint">Digite o nome de utilizador ou frase</string>
+  <string name="select_backup_folder">Selecione a pasta de backup</string>
   <string name="select_displayed_in_selector">Selecione se e quando a cronologia será mostrada</string>
   <string name="sent">Enviadas</string>
   <string name="select_social_network">Selecione a rede social</string>
@@ -415,6 +424,7 @@ Com suporte a GNU social, Twitter e Pump.io.</string>
   <string name="summary_preference_show_avatars_on">Os avatars de utilizadores serão mostrados</string>
   <string name="summary_preference_ssl_off">Sem SSL</string>
   <string name="summary_preference_ssl_on">SSL ativo</string>
+  <string name="summary_preference_storage">O local e o tipo de informação a guardar. Verifique e faça um backup dos seus dados.</string>
   <string name="summary_preference_storage_external_off">Dados guardados na memória interna</string>
   <string name="summary_preference_storage_external_on">Dados guardados na memória externa</string>
   <string name="summary_preference_sync_indicator_on_timeline_off">Sem indicador de sincronização</string>
