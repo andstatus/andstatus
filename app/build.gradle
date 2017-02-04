@@ -2,15 +2,15 @@ apply plugin: 'com.android.application'
 apply plugin: "org.sonarqube"
 
 android {
-    compileSdkVersion 24
-    buildToolsVersion '24.0.3'
+    compileSdkVersion 25
+    buildToolsVersion '25.0.2'
 
     defaultConfig {
         applicationId "org.andstatus.app"
         minSdkVersion 16
-        targetSdkVersion 24
-        versionName "31.03"
-        versionCode 203
+        targetSdkVersion 25
+        versionName "31.04"
+        versionCode 204
 
         testApplicationId "org.andstatus.app.tests"
         testInstrumentationRunner "android.test.InstrumentationTestRunner"
@@ -53,9 +53,9 @@ sonarqube {
 dependencies {
     compile 'com.github.stephenc.jcip:jcip-annotations:1.0-1'
     // http://stephenc.github.io/jcip-annotations/dependency-info.html
-    compile 'com.android.support:appcompat-v7:24.2.1'
-    compile 'com.android.support:design:24.2.1'
-    compile 'ch.acra:acra:4.8.5'  // https://github.com/ACRA/acra/wiki/AdvancedUsage
+    compile 'com.android.support:appcompat-v7:25.1.1'
+    compile 'com.android.support:design:25.1.1'
+    compile 'ch.acra:acra:4.9.2'  // https://github.com/ACRA/acra/wiki/AdvancedUsage
     compile 'cz.msebera.android:httpclient:4.4.1.2'
     // https://github.com/smarek/httpclient-android
     /* Don't use these dependencies for now, because AIDE doesn't support exclusion
