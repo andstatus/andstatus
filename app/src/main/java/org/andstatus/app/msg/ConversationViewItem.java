@@ -98,18 +98,18 @@ public class ConversationViewItem extends ConversationItem {
                 rebloggerIds.add(senderId);
             }
             if (linkedUserId != 0) {
-                if (getLinkedUserId() == 0) {
+                if (getLinkedUserId() == 0 || !getLinkedMyAccount().isValid()) {
                     setLinkedUserAndAccount(linkedUserId);
                 }
                 if (DbUtils.getInt(cursor, MsgOfUserTable.REBLOGGED) == 1) {
                     if (linkedUserId != authorId) {
                         rebloggerIds.add(linkedUserId);
                     }
-                    if (isLinkedToMyAccount()) {
+                    if (getLinkedMyAccount().getUserId() == linkedUserId) {
                         reblogged = true;
                     }
                 }
-                if (isLinkedToMyAccount() & DbUtils.getInt(cursor, MsgOfUserTable.FAVORITED) == 1) {
+                if (getLinkedMyAccount().getUserId() == linkedUserId & DbUtils.getInt(cursor, MsgOfUserTable.FAVORITED) == 1) {
                     favorited = true;
                 }
             }
