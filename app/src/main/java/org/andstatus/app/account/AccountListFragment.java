@@ -110,8 +110,9 @@ public class AccountListFragment extends Fragment {
             ((TextView) dragView.findViewById(R.id.visible_name)).setText(text);
             dragView.setBackgroundColor(
                     MyResources.getColorByAttribute(
-                            R.attr.actionBarColorAccent, android.R.attr.colorAccent, dragView.getContext().getTheme()));
+                            R.attr.actionBarColorAccent, MyResources.getColorAccent(), dragView.getContext().getTheme()));
         }
+
     }
 
     class ItemAdapter extends DragItemAdapter<MyAccount, ItemAdapter.ViewHolder> {
@@ -119,7 +120,7 @@ public class AccountListFragment extends Fragment {
         private int mLayoutId;
         private int mGrabHandleId;
 
-        public ItemAdapter(List<MyAccount> list, int layoutId, int grabHandleId) {
+        ItemAdapter(List<MyAccount> list, int layoutId, int grabHandleId) {
             super();
             mLayoutId = layoutId;
             mGrabHandleId = grabHandleId;

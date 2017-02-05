@@ -20,6 +20,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteDiskIOException;
 import android.support.annotation.NonNull;
 
 import org.andstatus.app.context.MyContextHolder;
@@ -203,7 +204,11 @@ public class CommandQueue {
             String msgLog = method + "; " + count + " saved, " + queue.size() + " left.\n"
                     + MyContextHolder.getSystemInfo(context, true);
             MyLog.e(context, msgLog, e);
-            throw new IllegalStateException(msgLog, e);
+            if (SQLiteDiskIOException.class.isAssignableFrom(e.getClass())) {
+                throw e;
+            } else {
+                throw new IllegalStateException(msgLog, e);
+            }
         }
         oneQueue.savedCount += count;
         return count;
