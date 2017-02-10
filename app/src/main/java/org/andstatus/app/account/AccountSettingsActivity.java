@@ -18,7 +18,6 @@
 package org.andstatus.app.account;
 
 import android.accounts.AccountManager;
-import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.net.Uri;
@@ -60,6 +59,8 @@ import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.service.MyServiceState;
+import org.andstatus.app.timeline.Timeline;
+import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.DialogFactory;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyCheckBox;
@@ -69,6 +70,7 @@ import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
+import org.andstatus.app.util.ViewUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -102,7 +104,12 @@ public class AccountSettingsActivity extends MyActivity {
      * We are going to finish/restart this Activity
      */
     private boolean mIsFinishing = false;
-    private boolean overrideBackActivity = false;
+    private enum ActivityOnFinish {
+        NONE,
+        HOME,
+        OUR_DEFAULT_SCREEN
+    }
+    private ActivityOnFinish activityOnFinish = ActivityOnFinish.NONE;
     
     private StateOfAccountChangeProcess state = null;
 
@@ -295,6 +302,8 @@ public class AccountSettingsActivity extends MyActivity {
         showPassword();
         showAccountState();
         showAddAccountButton();
+        ViewUtils.showView(this, R.id.below_add_account, state.builder.isPersistent());
+        showHomeTimelineButton();
         showVerifyCredentialsButton();
         showIsDefaultAccount();
         showIsSyncedAutomatically();
@@ -457,7 +466,21 @@ public class AccountSettingsActivity extends MyActivity {
             showErrors();
         }
     }
-    
+
+    private void showHomeTimelineButton() {
+        TextView textView = showTextView(
+                R.id.home_timeline, R.string.options_menu_home_timeline, state.builder.isPersistent());
+        textView.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                updateChangedFields();
+                activityOnFinish = ActivityOnFinish.HOME;
+                mIsFinishing = true;
+                finish();
+            }
+        });
+    }
+
     private void showVerifyCredentialsButton() {
         TextView textView = showTextView(
                 R.id.verify_credentials,
@@ -575,8 +598,7 @@ public class AccountSettingsActivity extends MyActivity {
                 // This activity was started by Twitter ("Service Provider")
                 // so start second step of OAuth Authentication process
                 new AsyncTaskLauncher<Uri>().execute(this, true, new OAuthAcquireAccessTokenTask(), uri);
-                // and return back to default screen
-                overrideBackActivity = true;
+                activityOnFinish = ActivityOnFinish.OUR_DEFAULT_SCREEN;
             }
         }
     }
@@ -610,8 +632,7 @@ public class AccountSettingsActivity extends MyActivity {
                         AsyncTaskLauncher.execute(this, true, new OAuthRegisterClientTask());
                     } else {
                         AsyncTaskLauncher.execute(this, true, new OAuthAcquireRequestTokenTask());
-                        // and return back to default screen
-                        overrideBackActivity = true;
+                        activityOnFinish = ActivityOnFinish.OUR_DEFAULT_SCREEN;
                     }
                 }
             }
@@ -659,7 +680,7 @@ public class AccountSettingsActivity extends MyActivity {
         state.save();
         if (mIsFinishing) {
             MyContextHolder.setExpiredIfConfigChanged();
-            if (overrideBackActivity) {
+            if (activityOnFinish != ActivityOnFinish.NONE) {
                 returnToOurActivity();
             }
         }
@@ -667,18 +688,29 @@ public class AccountSettingsActivity extends MyActivity {
     }
 
     private void returnToOurActivity() {
-        Class<? extends Activity> ourActivity;
         MyContextHolder.initialize(this, this);
-        if (MyContextHolder.get().persistentAccounts().size() > 1) {
-            ourActivity = MySettingsActivity.class;
-        } else {
-            ourActivity = TimelineActivity.class;
+        MyLog.v(this, "Returning to " + activityOnFinish);
+        MyAccount myAccount = MyContextHolder.get().persistentAccounts().
+                fromAccountName(getState().getAccount().getAccountName());
+        if (myAccount.isValid()) {
+            MyContextHolder.get().persistentAccounts().setCurrentAccount(myAccount);
         }
-        MyLog.v(this, "Returning to " + ourActivity.getSimpleName());
-        Intent i = new Intent(this, ourActivity);
-        // On modifying activity back stack see http://stackoverflow.com/questions/11366700/modification-of-the-back-stack-in-android
-        i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        startActivity(i);
+        switch (activityOnFinish) {
+            case HOME:
+                Timeline home = Timeline.getTimeline(TimelineType.HOME, myAccount, 0, null);
+                TimelineActivity.startForTimeline(MyContextHolder.get(), this, home, myAccount, true);
+                break;
+            default:
+                if (MyContextHolder.get().persistentAccounts().size() > 1) {
+                    Intent intent = new Intent(this, MySettingsActivity.class);
+                    // On modifying activity back stack see http://stackoverflow.com/questions/11366700/modification-of-the-back-stack-in-android
+                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                    startActivity(intent);
+                } else {
+                    TimelineActivity.goHome(this);
+                }
+                break;
+        }
     }
 
     /**
@@ -708,10 +740,10 @@ public class AccountSettingsActivity extends MyActivity {
         state.builder.save();
         String message = "";
         state.actionCompleted = true;
-        overrideBackActivity = true;
+        activityOnFinish = ActivityOnFinish.OUR_DEFAULT_SCREEN;
         if (state.authenticatorResponse != null) {
             // We should return result back to AccountManager
-            overrideBackActivity = false;
+            activityOnFinish = ActivityOnFinish.NONE;
             if (state.actionSucceeded) {
                 if (state.builder.isPersistent()) {
                     // Pass the new/edited account back to the account manager
@@ -837,8 +869,7 @@ public class AccountSettingsActivity extends MyActivity {
                                 MyContextHolder.get(), accountName, TriState.TRUE);
                         updateScreen();
                         AsyncTaskLauncher.execute(this, true, new OAuthAcquireRequestTokenTask());
-                        // and return back to default screen
-                        overrideBackActivity = true;
+                        activityOnFinish = ActivityOnFinish.OUR_DEFAULT_SCREEN;
                     } else {
                         appendError(message);
                         state.builder.setCredentialsVerificationStatus(CredentialsVerificationStatus.FAILED);

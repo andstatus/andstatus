@@ -30,7 +30,7 @@ public enum TimelineListContextMenuItem implements ContextMenuItem {
         @Override
         public boolean execute(TimelineListContextMenu menu, TimelineListViewItem viewItem) {
             TimelineActivity.startForTimeline(menu.getActivity().getMyContext(), menu.getActivity(),
-                    viewItem.timeline, null);
+                    viewItem.timeline, null, false);
             return true;
         }
     },

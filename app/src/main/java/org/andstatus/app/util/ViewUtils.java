@@ -87,4 +87,13 @@ public class ViewUtils {
         }
         return success;
     }
+
+    public static boolean isVisible(@NonNull Activity activity, int viewId) {
+        View view = activity.findViewById(viewId);
+        if (view == null) {
+            return false;
+        }
+        return view.getVisibility() == View.VISIBLE;
+    }
+
 }

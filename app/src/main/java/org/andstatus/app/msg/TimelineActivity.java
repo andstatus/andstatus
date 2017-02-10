@@ -100,20 +100,23 @@ public class TimelineActivity extends LoadableListActivity implements
     protected volatile SelectorActivityMock selectorActivityMock;
 
     public static void startForTimeline(MyContext myContext, Activity activity, Timeline timeline,
-                                        MyAccount newCurrentMyAccount) {
+                                        MyAccount newCurrentMyAccount, boolean clearTask) {
         if (newCurrentMyAccount != null && newCurrentMyAccount.isValid()) {
             myContext.persistentAccounts().setCurrentAccount(newCurrentMyAccount);
         }
         Intent intent = new Intent(myContext.context(), TimelineActivity.class);
         intent.setData(MatchedUri.getTimelineUri(timeline));
+        if (clearTask) {
+            // On modifying activity back stack see http://stackoverflow.com/questions/11366700/modification-of-the-back-stack-in-android
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+        }
         activity.startActivity(intent);
     }
 
     public static void goHome(Activity activity) {
-        // On modifying activity back stack see http://stackoverflow.com/questions/11366700/modification-of-the-back-stack-in-android
-        Intent i = new Intent(activity, TimelineActivity.class);
-        i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
-        activity.startActivity(i);
+        Intent intent = new Intent(activity, TimelineActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+        activity.startActivity(intent);
     }
 
     @Override
@@ -1170,7 +1173,7 @@ public class TimelineActivity extends LoadableListActivity implements
             if (MyLog.isVerboseEnabled()) {
                 MyLog.v(this, "switchTimelineActivity; " + timeline);
             }
-            TimelineActivity.startForTimeline(myContext, this, timeline, currentMyAccountToSet);
+            TimelineActivity.startForTimeline(myContext, this, timeline, currentMyAccountToSet, false);
         } else {
             showList(WhichPage.CURRENT);
         }

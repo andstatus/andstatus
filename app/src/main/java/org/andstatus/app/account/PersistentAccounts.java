@@ -142,6 +142,7 @@ public class PersistentAccounts {
      * 
      * @return Invalid account if was not found
      */
+    @NonNull
     public MyAccount fromAccountName(String accountNameIn) {
         MyAccount myAccount = MyAccount.getEmpty(myContext, accountNameIn);
         if (!myAccount.isUsernameValid()) {

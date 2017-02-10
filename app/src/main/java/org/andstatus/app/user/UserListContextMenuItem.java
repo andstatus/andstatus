@@ -67,7 +67,7 @@ public enum UserListContextMenuItem implements ContextMenuItem {
             TimelineActivity.startForTimeline(menu.getActivity().getMyContext(),
                     menu.getActivity(),
                     Timeline.getTimeline(menu.getActivity().getMyContext(), 0, TimelineType.USER,
-                            null, menu.getViewItem().getUserId(), menu.getOrigin(), ""), ma);
+                            null, menu.getViewItem().getUserId(), menu.getOrigin(), ""), ma, false);
         }
     },
     FOLLOW() {

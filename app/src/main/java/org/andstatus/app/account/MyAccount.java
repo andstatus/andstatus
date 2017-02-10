@@ -1021,9 +1021,11 @@ public final class MyAccount implements Comparable<MyAccount> {
 
     public long getLastSyncSucceededDate(MyContext myContext) {
         long lastSyncedDate = 0;
-        for (Timeline timeline : myContext.persistentTimelines().getFiltered(false, TriState.UNKNOWN, this, null)) {
-            if (timeline.getSyncSucceededDate() > lastSyncedDate) {
-                lastSyncedDate = timeline.getSyncSucceededDate();
+        if (isValid() && isPersistent()) {
+            for (Timeline timeline : myContext.persistentTimelines().getFiltered(false, TriState.UNKNOWN, this, null)) {
+                if (timeline.getSyncSucceededDate() > lastSyncedDate) {
+                    lastSyncedDate = timeline.getSyncSucceededDate();
+                }
             }
         }
         return lastSyncedDate;

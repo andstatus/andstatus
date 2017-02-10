@@ -2,7 +2,7 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/my_layout_parent"
-    android:layout_width="wrap_content"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:paddingStart="4dp"
     android:paddingEnd="4dp">
@@ -97,52 +97,65 @@
             android:layout_height="wrap_content"
             android:text="@string/title_preference_add_account" />
 
-        <Button
-            android:id="@+id/verify_credentials"
+        <LinearLayout
+            android:id="@+id/below_add_account"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/title_preference_verify_credentials" />
+            android:orientation="vertical">
 
-        <LinearLayout android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-            <TextView android:labelFor="@+id/last_synced"
-                  android:text="@string/last_synced"
-                  android:layout_width="wrap_content"
-                  android:layout_height="wrap_content"/>
+            <Button
+                android:id="@+id/verify_credentials"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/title_preference_verify_credentials" />
 
-            <TextView android:id="@+id/last_synced"
+            <Button
+                android:id="@+id/home_timeline"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/options_menu_home_timeline" />
+
+            <LinearLayout android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <TextView android:labelFor="@+id/last_synced"
+                      android:text="@string/last_synced"
                       android:layout_width="wrap_content"
-                      android:layout_height="wrap_content"
-                      tools:text="15 minute ago"
-                      android:layout_marginLeft="4dp"/>
-        </LinearLayout>
+                      android:layout_height="wrap_content"/>
 
-        <CheckBox
-            android:id="@+id/synced_automatically"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/synced_automatically" />
+                <TextView android:id="@+id/last_synced"
+                          android:layout_width="wrap_content"
+                          android:layout_height="wrap_content"
+                          tools:text="15 minute ago"
+                          android:layout_marginLeft="4dp"/>
+            </LinearLayout>
 
-        <TextView
-            android:id="@+id/label_sync_frequency"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:labelFor="@+id/sync_frequency"
-            android:text="@string/sync_frequency_minutes" />
+            <CheckBox
+                android:id="@+id/synced_automatically"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/synced_automatically" />
 
-        <org.andstatus.app.widget.LongHintEditText
-            android:id="@+id/sync_frequency"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textAppearance="?attr/messageBodyTextAppearance"
-            android:hint="@string/sync_frequency_minutes" />
+            <TextView
+                android:id="@+id/label_sync_frequency"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:labelFor="@+id/sync_frequency"
+                android:text="@string/sync_frequency_minutes" />
 
-        <TextView
-            android:id="@+id/is_default_account"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/title_preference_is_default_account" />
+            <org.andstatus.app.widget.LongHintEditText
+                android:id="@+id/sync_frequency"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAppearance="?attr/messageBodyTextAppearance"
+                android:hint="@string/sync_frequency_minutes" />
+
+            <TextView
+                android:id="@+id/is_default_account"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/title_preference_is_default_account" />
+            </LinearLayout>
     </LinearLayout>
 
 </ScrollView>

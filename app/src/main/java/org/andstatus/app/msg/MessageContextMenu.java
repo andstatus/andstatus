@@ -315,7 +315,7 @@ public class MessageContextMenu extends MyContextMenu {
         if (TimelineActivity.class.isAssignableFrom(getActivity().getClass())) {
             ((TimelineActivity) getActivity()).switchView(timeline, null);
         } else {
-            TimelineActivity.startForTimeline(getMyContext(), getActivity(),  timeline, null);
+            TimelineActivity.startForTimeline(getMyContext(), getActivity(),  timeline, null, false);
         }
     }
 
