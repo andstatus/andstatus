@@ -1,6 +1,4 @@
 # AndStatus
-[![Build status](https://api.travis-ci.org/andstatus/andstatus.svg?branch=master)](https://travis-ci.org/andstatus/andstatus) 
-[![Code quality status](https://sonarqube.com/api/badges/gate?key=andstatus)](https://sonarqube.com/dashboard?id=andstatus)
 
 AndStatus is an Open Source low traffic social networking client with tree-like threaded conversations.
 It supports different Social networks, including
@@ -12,6 +10,9 @@ and it allows you to read and post even when you are offline.
 
 For Android OS version 4.1 or higher.
 Under Free/Libre and Open Source License.
+
+[![Build status](https://api.travis-ci.org/andstatus/andstatus.svg?branch=master)](https://travis-ci.org/andstatus/andstatus) 
+[![Code quality status](https://sonarqube.com/api/badges/gate?key=andstatus)](https://sonarqube.com/dashboard?id=andstatus)
 
 For more information please read the [AndStatus Wiki](https://github.com/andstatus/andstatus/wiki).
 See the [Change Log](http://andstatus.org/changelog.html) for descriptions of all features of AndStatus and their discussion.
