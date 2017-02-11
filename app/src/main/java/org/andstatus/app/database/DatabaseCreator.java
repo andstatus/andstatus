@@ -102,7 +102,6 @@ public class DatabaseCreator {
                 " 2, 2,'Pump.io',        '',                         1, 1, 1,    0,  0",
                 " 3, 3,'Quitter.se',     'https://quitter.se',       1, 1, 1,    0,  0",
                 " 4, 3,'LoadAverage',    'https://loadaverage.org',  1, 1, 1,    0,  0",
-                " 5, 3,'Vinilox',        'http://status.vinilox.eu', 1, 1, 1,    0,  0",
                 " 6, 3,'GNUsocial.de',   'https://gnusocial.de',     1, 1, 1,    0,  0",
                 " 7, 3,'GNUsocial.no',   'https://gnusocial.no',     1, 1, 1,    0,  0",
                 " 8, 3,'Quitter.no',     'https://quitter.no',       1, 1, 1,    0,  0",

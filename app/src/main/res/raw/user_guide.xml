@@ -67,8 +67,8 @@ xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../../../re
     </p>
     <p>First you will be prompted to select a Social network
         of an account from a list.
-        Twitter, Pump.io and several "GNU social"-type systems (Quitter,
-        LoadAverage and Vinilox) are preconfigured.
+        Twitter, Pump.io and several "GNU social"-type systems (Quitter.se,
+        LoadAverage, etc.) are preconfigured.
     </p>
     <p>In a case your ("GNU social"-type) system is not listed,
         tap "Discover open instances" menu item to choose a system
