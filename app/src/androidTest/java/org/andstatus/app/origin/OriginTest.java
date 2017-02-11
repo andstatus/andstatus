@@ -229,10 +229,11 @@ public class OriginTest extends InstrumentationTestCase {
         checkUsernameIsValid(origin, "some@example.com.", false);
         checkUsernameIsValid(origin, "some@example.com", true);
         checkUsernameIsValid(origin, "some@user", false);
+        checkUsernameIsValid(origin, "AndStatus@datamost.com", true);
     }
 
     private void checkUsernameIsValid(Origin origin, String userName, boolean valid) {
-        assertEquals("Username '" + userName + "' " + (valid ? "is valid" : "invalid"), valid,
+        assertEquals("Username '" + userName + "' " + (valid ? "is not valid" : "is valid"), valid,
                 origin.isUsernameValid(userName));
     }
 }
