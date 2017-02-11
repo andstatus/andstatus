@@ -224,8 +224,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".account.AccountSettingsWebActivity" 
-            android:noHistory="true">
+            android:name=".account.AccountSettingsWebActivity">
         </activity>
         <activity android:name=".origin.DiscoveredOriginList"
             android:label="@string/discover_open_instances_title"
