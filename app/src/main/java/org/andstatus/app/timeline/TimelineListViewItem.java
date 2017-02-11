@@ -16,18 +16,24 @@
 
 package org.andstatus.app.timeline;
 
+import org.andstatus.app.ViewItem;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 
 /**
  * @author yvolk@yurivolkov.com
  */
-public class TimelineListViewItem {
+public class TimelineListViewItem implements ViewItem {
     final Timeline timeline;
     final TimelineTitle timelineTitle;
 
     public TimelineListViewItem(MyContext myContext, Timeline timeline) {
         this.timeline = timeline;
         this.timelineTitle = TimelineTitle.load(myContext, timeline, MyAccount.getEmpty());
+    }
+
+    @Override
+    public long getId() {
+        return timeline == null ? 0 : timeline.getId();
     }
 }

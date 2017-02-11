@@ -22,6 +22,7 @@ import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import org.andstatus.app.R;
+import org.andstatus.app.ViewItem;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
@@ -42,8 +43,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-public class MessageViewItem implements DuplicatesCollapsible<MessageViewItem> {
-    public static final int MIN_LENGTH_TO_COMPARE = 5;
+public class MessageViewItem implements DuplicatesCollapsible<MessageViewItem>, ViewItem {
+    static final int MIN_LENGTH_TO_COMPARE = 5;
     private MyContext myContext = MyContextHolder.get();
     long createdDate = 0;
     long sentDate = 0;
@@ -263,5 +264,10 @@ public class MessageViewItem implements DuplicatesCollapsible<MessageViewItem> {
 
     public String getBody() {
         return body;
+    }
+
+    @Override
+    public long getId() {
+        return getMsgId();
     }
 }

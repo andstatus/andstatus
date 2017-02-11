@@ -107,10 +107,10 @@ public class UserListContextMenu extends MyContextMenu {
     }
 
     public UserListViewItem getViewItem() {
-        if (oViewItem == null) {
+        if (mViewItem == null) {
             return UserListViewItem.getEmpty("");
         }
-        return (UserListViewItem) oViewItem;
+        return (UserListViewItem) mViewItem;
     }
 
     public Origin getOrigin() {

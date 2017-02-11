@@ -67,10 +67,10 @@ public class TimelineListContextMenu extends MyContextMenu {
     }
 
     public TimelineListViewItem getViewItem() {
-        if (oViewItem == null) {
+        if (mViewItem == null) {
             return new TimelineListViewItem(listActivity.getMyContext(), Timeline.getEmpty(null));
         }
-        return (TimelineListViewItem) oViewItem;
+        return (TimelineListViewItem) mViewItem;
     }
 
 }

@@ -184,14 +184,21 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
 
     /** @return selectedItem */
     @Nullable
-    public Object saveContextOfSelectedItem(View v) {
+    public ViewItem saveContextOfSelectedItem(View v) {
         int position = -1;
         if (getListAdapter() != null) {
             position = getListAdapter().getPosition(v);
         }
         setPositionOfContextMenu(position);
         if (position >= 0) {
-            return getListAdapter().getItem(position);
+            Object viewItem = getListAdapter().getItem(position);
+            if (viewItem != null) {
+                if (ViewItem.class.isAssignableFrom(viewItem.getClass())) {
+                    return (ViewItem) viewItem;
+                } else {
+                    MyLog.i(this, "Unexpected type of selected item: " + viewItem.getClass() + ", " + viewItem);
+                }
+            }
         }
         return null;
     }

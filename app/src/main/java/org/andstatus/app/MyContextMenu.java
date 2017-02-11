@@ -30,7 +30,7 @@ import org.andstatus.app.util.MyLog;
 public class MyContextMenu implements View.OnCreateContextMenuListener {
     protected final LoadableListActivity listActivity;
     protected View viewOfTheContext = null;
-    protected Object oViewItem = null;
+    protected ViewItem mViewItem = null;
     /**
      *  Corresponding account information ( "Reply As..." ... )
      *  oh whose behalf we are going to execute an action on this line in the list (message/user...)
@@ -47,11 +47,12 @@ public class MyContextMenu implements View.OnCreateContextMenuListener {
     }
 
     protected void saveContextOfSelectedItem(View v) {
-        if (viewOfTheContext != v) {
+        viewOfTheContext = v;
+        ViewItem viewItem = listActivity.saveContextOfSelectedItem(v);
+        if (viewItem == null || mViewItem == null || mViewItem.getId() != viewItem.getId()) {
             myActor = MyAccount.getEmpty();
         }
-        viewOfTheContext = v;
-        oViewItem = listActivity.saveContextOfSelectedItem(v);
+        mViewItem = viewItem;
     }
 
     public LoadableListActivity getActivity() {

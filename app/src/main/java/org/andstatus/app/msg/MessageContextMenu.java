@@ -74,7 +74,7 @@ public class MessageContextMenu extends MyContextMenu {
             return;
         }
 
-        MessageViewItem viewItem = (MessageViewItem) oViewItem;
+        MessageViewItem viewItem = (MessageViewItem) mViewItem;
         int order = 0;
         try {
             new ContextMenuHeader(getActivity(), menu).setTitle(msg.getBodyTrimmed())
@@ -228,13 +228,13 @@ public class MessageContextMenu extends MyContextMenu {
         mMsgId = 0;
         msg = null;
         super.saveContextOfSelectedItem(v);
-        if (oViewItem == null) {
+        if (mViewItem == null) {
             return;
         }
 
         MyAccount myActorForThisMessage = getMyActor();
         String logMsg = method;
-        MessageViewItem viewItem = (MessageViewItem) oViewItem;
+        MessageViewItem viewItem = (MessageViewItem) mViewItem;
         mMsgId = viewItem.getMsgId();
         logMsg += "; id=" + mMsgId;
         if (!myActorForThisMessage.isValid()) {
@@ -300,14 +300,14 @@ public class MessageContextMenu extends MyContextMenu {
     public void onContextMenuItemSelected(MessageListContextMenuItem contextMenuItem, long msgId,
                                           MyAccount actor) {
         final String method = "onContextMenuItemSelected";
+        String logMsg = method + "; " + contextMenuItem + "; myActor=" + actor + "; msgId=" + msgId;
         if (msgId == 0 || !actor.isValid()) {
-            MyLog.d(this, method + "; msgId=" + msgId + "; myActor=" + actor);
+            MyLog.d(this, logMsg);
             return;
         }
         mMsgId = msgId;
         setMyActor(actor);
-        MyLog.v(this, method + "; " + contextMenuItem
-                + "; myActor=" + actor + "; msgId=" + msgId);
+        MyLog.v(this, logMsg);
         contextMenuItem.execute(this);
     }
 

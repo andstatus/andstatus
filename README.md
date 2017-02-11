@@ -1,4 +1,6 @@
 # AndStatus
+[![Build status](https://api.travis-ci.org/andstatus/andstatus.svg?branch=master)](https://travis-ci.org/andstatus/andstatus) 
+[![Code quality status](https://sonarqube.com/api/badges/gate?key=andstatus)](https://sonarqube.com/dashboard?id=andstatus)
 
 AndStatus is an Open Source low traffic social networking client with tree-like threaded conversations.
 It supports different Social networks, including

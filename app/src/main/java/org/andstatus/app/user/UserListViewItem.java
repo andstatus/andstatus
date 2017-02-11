@@ -18,6 +18,7 @@ package org.andstatus.app.user;
 
 import android.graphics.drawable.Drawable;
 
+import org.andstatus.app.ViewItem;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
@@ -27,7 +28,7 @@ import org.andstatus.app.origin.Origin;
 import java.util.HashSet;
 import java.util.Set;
 
-public class UserListViewItem {
+public class UserListViewItem implements ViewItem {
     boolean populated = false;
     final MbUser mbUser;
     Drawable avatarDrawable = null;
@@ -93,5 +94,10 @@ public class UserListViewItem {
 
     public boolean userIsFollowedBy(MyAccount ma) {
         return myFollowers.contains(ma.getUserId());
+    }
+
+    @Override
+    public long getId() {
+        return getUserId();
     }
 }
