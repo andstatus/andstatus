@@ -32,18 +32,12 @@ import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.util.MyLog;
 
 /**
- * A very basic authenticator service for POP/IMAP.  At the moment, it has no UI hooks.  When called
- * with addAccount, it simply adds the account to AccountManager directly with a username and
- * password.
+ * Based on a very basic authenticator service for POP/IMAP...
  */
 public class AuthenticatorService extends Service {
 
     public static final String OPTIONS_USERNAME = "username";
     public static final String OPTIONS_PASSWORD = "password";
-    public static final String OPTIONS_CONTACTS_SYNC_ENABLED = "contacts";
-    public static final String OPTIONS_CALENDAR_SYNC_ENABLED = "calendar";
-    public static final String OPTIONS_EMAIL_SYNC_ENABLED = "email";
-
     public static final String ANDROID_ACCOUNT_TYPE = "org.andstatus.app";
     
     class Authenticator extends AbstractAccountAuthenticator {

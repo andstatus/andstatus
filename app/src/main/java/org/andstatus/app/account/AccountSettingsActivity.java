@@ -766,20 +766,7 @@ public class AccountSettingsActivity extends MyActivity {
             finish();
         }
     }
-    
-    /**
-     * Start system activity which allow to manage list of accounts
-     * See <a href="https://groups.google.com/forum/?fromgroups#!topic/android-developers/RfrIb5V_Bpo">per account settings in Jelly Beans</a>. 
-     * For versions prior to Jelly Bean see <a href="http://stackoverflow.com/questions/3010103/android-how-to-create-intent-to-open-the-activity-that-displays-the-accounts">
-     *  Android - How to Create Intent to open the activity that displays the “Accounts & Sync settings” screen</a>
-     */
-    public static void startManageExistingAccounts(android.content.Context context) {
-        Intent intent;
-        // TODO: Figure out more concrete Intent to the list of AndStatus accounts
-        intent = new Intent(context, AccountSettingsActivity.class);
-        context.startActivity(intent);
-    }
-    
+
     public static void startAddNewAccount(android.content.Context context) {
         Intent intent;
         intent = new Intent(context, AccountSettingsActivity.class);

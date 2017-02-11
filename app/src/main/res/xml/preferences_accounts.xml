@@ -17,15 +17,20 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
                   android:title="@string/header_accounts">
     <Preference
-        android:key="manage_accounts"
-        android:persistent="false"
-        android:title="@string/manage_accounts" >
-    </Preference>
-    <Preference
         android:key="add_new_account"
         android:persistent="false"
         android:title="@string/header_add_new_account" >
     </Preference>
+    <Preference
+        android:key="manage_accounts_internally"
+        android:persistent="false"
+        android:title="@string/manage_accounts" >
+    </Preference>
+    <org.andstatus.app.context.MultilinePreference
+        android:key="manage_accounts_android"
+        android:persistent="false"
+        android:title="@string/manage_accounts_android" >
+    </org.andstatus.app.context.MultilinePreference>
     <Preference
         android:key="manage_origin_systems"
         android:persistent="false"

@@ -32,6 +32,7 @@ import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceScreen;
 import android.preference.RingtonePreference;
+import android.provider.Settings;
 import android.text.TextUtils;
 
 import org.andstatus.app.ActivityRequestCode;
@@ -41,6 +42,7 @@ import org.andstatus.app.account.AccountSettingsActivity;
 import org.andstatus.app.account.ManageAccountsActivity;
 import org.andstatus.app.backup.BackupActivity;
 import org.andstatus.app.backup.RestoreActivity;
+import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.graphics.MyImageCache;
 import org.andstatus.app.msg.KeywordsFilter;
 import org.andstatus.app.origin.PersistentOriginList;
@@ -59,7 +61,8 @@ public class MySettingsFragment extends PreferenceFragment implements
     private static final String KEY_BACKUP_RESTORE = "backup_restore";
     private static final String KEY_CHANGE_LOG = "change_log";
     public static final String KEY_CHECK_DATA = "check_data";
-    static final String KEY_MANAGE_ACCOUNTS = "manage_accounts";
+    static final String KEY_MANAGE_ACCOUNTS = "manage_accounts_internally";
+    static final String KEY_MANAGE_ACCOUNTS_ANDROID = "manage_accounts_android";
     private static final String KEY_MANAGE_ORIGIN_SYSTEMS = "manage_origin_systems";
     private static final String KEY_MANAGE_TIMELINES = "manage_timelines";
 
@@ -310,6 +313,16 @@ public class MySettingsFragment extends PreferenceFragment implements
             case KEY_MANAGE_ACCOUNTS:
                 startActivity(new Intent(getActivity(), ManageAccountsActivity.class));
                 break;
+            case KEY_MANAGE_ACCOUNTS_ANDROID:
+                /**
+                 * Start system activity which allow to manage list of accounts
+                 * See <a href="http://stackoverflow.com/questions/3010103/android-how-to-create-intent-to-open-the-activity-that-displays-the-accounts">
+                 *  Android - How to Create Intent to open the activity that displays the “Accounts & Sync settings” screen</a>
+                 */
+                Intent  intent = new Intent(Settings.ACTION_SYNC_SETTINGS);
+                intent.putExtra(Settings.EXTRA_AUTHORITIES, new String[]{MatchedUri.AUTHORITY});
+                startActivity(intent);
+                break;
             case KEY_BACKUP_RESTORE:
                 if (MyContextHolder.get().persistentAccounts().isEmpty()) {
                     startActivity(new Intent(getActivity(), RestoreActivity.class));
@@ -331,7 +344,7 @@ public class MySettingsFragment extends PreferenceFragment implements
                 startActivity(new Intent(getActivity(), HelpActivity.class));
                 break;
             case KEY_CHANGE_LOG:
-                Intent intent = new Intent(getActivity(), HelpActivity.class);
+                intent = new Intent(getActivity(), HelpActivity.class);
                 intent.putExtra(HelpActivity.EXTRA_HELP_PAGE_INDEX, HelpActivity.PAGE_INDEX_CHANGELOG);
                 startActivity(intent);
                 break;
