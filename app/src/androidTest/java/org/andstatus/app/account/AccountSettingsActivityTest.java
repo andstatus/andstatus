@@ -29,6 +29,7 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MySettingsActivity;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DbUtils;
+import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.origin.PersistentOriginList;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
@@ -90,7 +91,7 @@ public class AccountSettingsActivityTest extends ActivityInstrumentationTestCase
             @Override
             public void run() {
                 MyLog.v(this, method + "-Log before click");
-                mActivity.selectOrigin();
+                mActivity.selectOrigin(OriginType.GNUSOCIAL);
             }
           };
     

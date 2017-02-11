@@ -20,7 +20,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.provider.BaseColumns;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -32,9 +31,9 @@ import org.andstatus.app.ActivityRequestCode;
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.MyListActivity;
 import org.andstatus.app.R;
-import org.andstatus.app.widget.MySimpleAdapter;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.widget.MySimpleAdapter;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -52,6 +51,7 @@ public abstract class OriginList extends MyListActivity {
     
     private final List<Map<String, String>> data = new ArrayList<>();
     protected boolean addEnabled = false;
+    protected OriginType originType = OriginType.UNKNOWN;
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,6 +76,7 @@ public abstract class OriginList extends MyListActivity {
             getListView().setOnItemClickListener(new Updater());
         }
         addEnabled = !Intent.ACTION_PICK.equals(action);
+        originType = OriginType.fromCode(intentNew.getStringExtra(IntentExtra.ORIGIN_TYPE.key));
         if (Intent.ACTION_INSERT.equals(action)) {
             getSupportActionBar().setTitle(R.string.select_social_network);
         }
@@ -106,12 +107,14 @@ public abstract class OriginList extends MyListActivity {
 
     protected final void fillData(List<Map<String, String>> data) {
         for (Origin origin : getOrigins()) {
-            Map<String, String> map = new HashMap<>();
-            String visibleName = origin.getName();
-            map.put(KEY_VISIBLE_NAME, visibleName);
-            map.put(KEY_NAME, origin.getName());
-            map.put(BaseColumns._ID, Long.toString(origin.getId()));
-            data.add(map);
+            if (originType.equals(OriginType.UNKNOWN) || originType.equals(origin.getOriginType())) {
+                Map<String, String> map = new HashMap<>();
+                String visibleName = origin.getName();
+                map.put(KEY_VISIBLE_NAME, visibleName);
+                map.put(KEY_NAME, origin.getName());
+                map.put(BaseColumns._ID, Long.toString(origin.getId()));
+                data.add(map);
+            }
         }
     }
 

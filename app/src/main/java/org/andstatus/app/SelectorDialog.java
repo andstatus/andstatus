@@ -18,6 +18,7 @@ package org.andstatus.app;
 
 import android.app.Activity;
 import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -34,8 +35,8 @@ import android.widget.ListView;
 
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.widget.MySimpleAdapter;
 import org.andstatus.app.context.MyTheme;
+import org.andstatus.app.widget.MySimpleAdapter;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -46,6 +47,7 @@ public class SelectorDialog extends DialogFragment {
     ListView listView = null;
     private int mLayoutId = R.layout.my_list_dialog;
     protected MyContext myContext = MyContextHolder.get();
+    private boolean resultReturned = false;
 
     public Bundle setRequestCode(ActivityRequestCode requestCode) {
         Bundle args = new Bundle();
@@ -105,12 +107,38 @@ public class SelectorDialog extends DialogFragment {
     }
 
     protected void returnSelected(Intent selectedData) {
+        boolean returnResult = false;
+        if (!resultReturned) {
+            resultReturned = true;
+            returnResult = true;
+        }
         dismiss();
-        ((MyActivity) getActivity()).onActivityResult(
-                getArguments().getInt(IntentExtra.REQUEST_CODE.key),
-                Activity.RESULT_OK,
-                selectedData
-        );
+        if (returnResult) {
+            Activity activity = getActivity();
+            if (activity != null) {
+                ((MyActivity) activity).onActivityResult(
+                        getArguments().getInt(IntentExtra.REQUEST_CODE.key),
+                        Activity.RESULT_OK,
+                        selectedData
+                );
+            }
+        }
+    }
+
+    @Override
+    public void onDismiss(DialogInterface dialog) {
+        super.onDismiss(dialog);
+        if (!resultReturned) {
+            resultReturned = true;
+            Activity activity = getActivity();
+            if (activity != null) {
+                ((MyActivity) activity).onActivityResult(
+                        getArguments().getInt(IntentExtra.REQUEST_CODE.key),
+                        Activity.RESULT_CANCELED,
+                        new Intent()
+                );
+            }
+        }
     }
 
     public void show(FragmentActivity fragmentActivity) {

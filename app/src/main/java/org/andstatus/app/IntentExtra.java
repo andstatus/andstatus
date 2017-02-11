@@ -55,8 +55,9 @@ public enum IntentExtra{
     /** Selected User. E.g. the User whose messages we are seeing */
     USER_ID("USER_ID"),
     USER_NAME("USER_NAME"),
-    ORIGIN_NAME("ORIGIN_NAME"),
     ORIGIN_ID("ORIGIN_ID"),
+    ORIGIN_NAME("ORIGIN_NAME"),
+    ORIGIN_TYPE("ORIGIN_TYPE"),
     /**
      * Name of the preference to set
      */

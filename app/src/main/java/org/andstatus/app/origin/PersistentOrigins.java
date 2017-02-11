@@ -151,6 +151,7 @@ public class PersistentOrigins {
         return originsForGlobalSearch(origin, forAllOrigins).size() > 0;
     }
 
+    @NonNull
     public List<Origin> originsForGlobalSearch(Origin originIn, boolean forAllOrigins) {
         List<Origin> origins = new ArrayList<>();
         if (forAllOrigins) {
@@ -165,6 +166,17 @@ public class PersistentOrigins {
             MyAccount account = myContext.persistentAccounts().getFirstSucceededForOrigin(originIn);
             if (account.isValidAndSucceeded() && account.isGlobalSearchSupported()) {
                 origins.add(originIn);
+            }
+        }
+        return origins;
+    }
+
+    @NonNull
+    public List<Origin> originsOfType(@NonNull OriginType originType) {
+        List<Origin> origins = new ArrayList<>();
+        for (Origin origin : collection()) {
+            if (origin.getOriginType().equals(originType)) {
+                origins.add(origin);
             }
         }
         return origins;

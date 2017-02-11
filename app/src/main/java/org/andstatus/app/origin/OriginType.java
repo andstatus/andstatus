@@ -16,6 +16,10 @@
 
 package org.andstatus.app.origin;
 
+import android.content.Context;
+
+import org.andstatus.app.R;
+import org.andstatus.app.SelectableEnum;
 import org.andstatus.app.net.http.HttpConnectionBasic;
 import org.andstatus.app.net.http.HttpConnectionEmpty;
 import org.andstatus.app.net.http.HttpConnectionOAuthApache;
@@ -33,7 +37,7 @@ import org.andstatus.app.util.UrlUtils;
 
 import java.net.URL;
 
-public enum OriginType {
+public enum OriginType implements SelectableEnum {
     /**
      * Origin type for Twitter system 
      * <a href="https://dev.twitter.com/docs">Twitter Developers' documentation</a>
@@ -122,6 +126,7 @@ public enum OriginType {
     private boolean isDirectTimelineSyncable = true;
     private boolean isMentionsTimelineSyncable = true;
     private final boolean isDirectMessageAllowsReply;
+    private final boolean isSelectable;
 
     OriginType(long id, String title, ApiEnum api) {
         this.id = id;
@@ -149,6 +154,7 @@ public enum OriginType {
                 mAllowAttachmentForDirectMessage = false;
                 allowEditing = false;
                 isDirectMessageAllowsReply = false;
+                isSelectable = true;
                 break;
             case PUMPIO:
                 isOAuthDefault = true;  
@@ -172,6 +178,7 @@ public enum OriginType {
                 isMentionsTimelineSyncable = false;
                 allowEditing = true;
                 isDirectMessageAllowsReply = true;
+                isSelectable = true;
                 break;
             case GNUSOCIAL_TWITTER:
                 isOAuthDefault = false;  
@@ -192,6 +199,7 @@ public enum OriginType {
                 isPublicTimeLineSyncable = true;
                 allowEditing = false;
                 isDirectMessageAllowsReply = false;
+                isSelectable = true;
                 break;
             case MASTODON:
                 isOAuthDefault = true;
@@ -214,6 +222,7 @@ public enum OriginType {
                 isMentionsTimelineSyncable = true;
                 allowEditing = false;
                 isDirectMessageAllowsReply = false;
+                isSelectable = false;
                 break;
             default:
                 canSetUrlOfOrigin = false;
@@ -225,6 +234,7 @@ public enum OriginType {
                 allowEditing = false;
                 isDirectMessageAllowsReply = false;
                 validUsernameExamples = USERNAME_EXAMPLES_SIMPLE;
+                isSelectable = false;
                 break;
         }
     }
@@ -244,7 +254,27 @@ public enum OriginType {
             return httpConnectionClassBasic;
         }
     }
-    
+
+    @Override
+    public boolean isSelectable() {
+        return isSelectable;
+    }
+
+    @Override
+    public String getCode() {
+        return Long.toString(getId());
+    }
+
+    @Override
+    public CharSequence getTitle(Context context) {
+        return getTitle();
+    }
+
+    @Override
+    public int getDialogTitleResId() {
+        return R.string.label_origin_type;
+    }
+
     public long getId() {
         return id;
     }
@@ -293,10 +323,10 @@ public enum OriginType {
         return obj;
     }
 
-    public static OriginType fromName( String name) {
+    public static OriginType fromCode(String code) {
         OriginType obj = UNKNOWN;
         for(OriginType val : values()) {
-            if (val.title.equalsIgnoreCase(name)) {
+            if (val.getCode().equalsIgnoreCase(code)) {
                 obj = val;
                 break;
             }

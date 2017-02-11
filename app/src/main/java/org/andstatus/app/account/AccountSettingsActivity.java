@@ -42,6 +42,7 @@ import com.github.scribejava.core.model.OAuth2AccessToken;
 import com.github.scribejava.core.oauth.OAuth20Service;
 
 import org.andstatus.app.ActivityRequestCode;
+import org.andstatus.app.EnumSelector;
 import org.andstatus.app.HelpActivity;
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.MyActivity;
@@ -54,6 +55,7 @@ import org.andstatus.app.msg.TimelineActivity;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.origin.Origin;
+import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.origin.PersistentOriginList;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
@@ -75,6 +77,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.List;
 
 import oauth.signpost.OAuth;
 import oauth.signpost.OAuthConsumer;
@@ -142,14 +145,7 @@ public class AccountSettingsActivity extends MyActivity {
         }
         return null;
     }
-    
-    protected boolean selectOrigin() {
-        Intent i = new Intent(AccountSettingsActivity.this, PersistentOriginList.class);
-        i.setAction(Intent.ACTION_INSERT);
-        startActivityForResult(i, ActivityRequestCode.SELECT_ORIGIN.id);
-        return true;
-    }
-    
+
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
@@ -176,7 +172,7 @@ public class AccountSettingsActivity extends MyActivity {
             message += "New state; ";
             state = newState;
             if (state.originShouldBeSelected) {
-                selectOrigin();
+                EnumSelector.newInstance(ActivityRequestCode.SELECT_ORIGIN_TYPE, OriginType.class).show(this);
             } else if (state.accountShouldBeSelected) {
                 AccountSelector.selectAccount(this, ActivityRequestCode.SELECT_ACCOUNT, 0);
                 message += "Select account; ";
@@ -197,6 +193,9 @@ public class AccountSettingsActivity extends MyActivity {
             case SELECT_ACCOUNT:
                 onAccountSelected(resultCode, data);
                 break;
+            case SELECT_ORIGIN_TYPE:
+                onOriginTypeSelected(resultCode, data);
+                break;
             case SELECT_ORIGIN:
                 onOriginSelected(resultCode, data);
                 break;
@@ -208,7 +207,8 @@ public class AccountSettingsActivity extends MyActivity {
 
     private void onAccountSelected(int resultCode, Intent data) {
         if (resultCode == RESULT_OK) {
-            state.builder = MyAccount.Builder.newOrExistingFromAccountName(MyContextHolder.get(), data.getStringExtra(IntentExtra.ACCOUNT_NAME.key), TriState.UNKNOWN);
+            state.builder = MyAccount.Builder.newOrExistingFromAccountName(MyContextHolder.get(),
+                    data.getStringExtra(IntentExtra.ACCOUNT_NAME.key), TriState.UNKNOWN);
             if (!state.builder.isPersistent()) {
                 mIsFinishing = true;
             }
@@ -226,27 +226,64 @@ public class AccountSettingsActivity extends MyActivity {
         }
     }
 
+    private void onOriginTypeSelected(int resultCode, Intent data) {
+        OriginType originType = OriginType.UNKNOWN;
+        if (resultCode == RESULT_OK) {
+            originType = OriginType.fromCode(data.getStringExtra(IntentExtra.SELECTABLE_ENUM.key));
+            if (originType.isSelectable()) {
+                List<Origin> origins = MyContextHolder.get().persistentOrigins().originsOfType(originType);
+                switch(origins.size()) {
+                    case 0:
+                        originType = OriginType.UNKNOWN;
+                        break;
+                    case 1:
+                        onOriginSelected(origins.get(0));
+                        break;
+                    default:
+                        selectOrigin(originType);
+                        break;
+                }
+            }
+        }
+        if (!originType.isSelectable()) {
+            closeAndGoBack();
+        }
+    }
+
+    protected boolean selectOrigin(OriginType originType) {
+        Intent intent = new Intent(AccountSettingsActivity.this, PersistentOriginList.class);
+        intent.setAction(Intent.ACTION_INSERT);
+        intent.putExtra(IntentExtra.ORIGIN_TYPE.key, originType.getCode());
+        startActivityForResult(intent, ActivityRequestCode.SELECT_ORIGIN.id);
+        return true;
+    }
+
     private void onOriginSelected(int resultCode, Intent data) {
         Origin origin = Origin.getEmpty();
         if (resultCode == RESULT_OK) {
             origin = MyContextHolder.get().persistentOrigins()
                     .fromName(data.getStringExtra(IntentExtra.ORIGIN_NAME.key));
-            if (origin.isPersistent()
-                    && state.getAccount().getOriginId() != origin.getId()) {
-                // If we have changed the System, we should recreate the Account
-                state.builder = MyAccount.Builder.newOrExistingFromAccountName(
-                        MyContextHolder.get(), 
-                        AccountName.fromOriginAndUserName(origin,
-                                state.getAccount().getUsername()).toString(),
-                        TriState.fromBoolean(state.getAccount().isOAuth()));
-                updateScreen();
+            if (origin.isPersistent()) {
+                onOriginSelected(origin);
             }
         }
         if (!origin.isPersistent()) {
             closeAndGoBack();
         }
     }
-    
+
+    private void onOriginSelected(Origin origin) {
+        if (state.getAccount().getOriginId() != origin.getId()) {
+            // If we have changed the System, we should recreate the Account
+            state.builder = MyAccount.Builder.newOrExistingFromAccountName(
+                    MyContextHolder.get(),
+                    AccountName.fromOriginAndUserName(origin,
+                            state.getAccount().getUsername()).toString(),
+                    TriState.fromBoolean(state.getAccount().isOAuth()));
+            updateScreen();
+        }
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.account_settings, menu);
