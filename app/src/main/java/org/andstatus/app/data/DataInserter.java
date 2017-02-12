@@ -557,7 +557,8 @@ public class DataInserter {
 
     public void downloadOneMessageBy(String userOid, LatestUserMessages lum) throws ConnectionException {
         List<MbTimelineItem> messages = execContext.getMyAccount().getConnection().getTimeline(
-                TimelineType.USER.getConnectionApiRoutine(), TimelinePosition.getEmpty(), 1, userOid);
+                TimelineType.USER.getConnectionApiRoutine(), TimelinePosition.getEmpty(),
+                TimelinePosition.getEmpty(), 1, userOid);
         for (MbTimelineItem item : messages) {
             if (item.getType() == MbTimelineItem.ItemType.MESSAGE) {
                 insertOrUpdateMsg(item.mbMessage, lum);

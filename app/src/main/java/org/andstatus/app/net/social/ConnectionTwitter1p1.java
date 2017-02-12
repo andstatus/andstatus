@@ -130,20 +130,19 @@ public class ConnectionTwitter1p1 extends ConnectionTwitter {
     }
 
     @Override
-    public List<MbTimelineItem> search(TimelinePosition youngestPosition, int limit, String searchQuery)
+    public List<MbTimelineItem> search(TimelinePosition youngestPosition,
+                                       TimelinePosition oldestPosition, int limit, String searchQuery)
             throws ConnectionException {
         ApiRoutineEnum apiRoutine = ApiRoutineEnum.SEARCH_MESSAGES;
         String url = this.getApiPath(apiRoutine);
         Uri sUri = Uri.parse(url);
         Uri.Builder builder = sUri.buildUpon();
-        if (fixedDownloadLimitForApiRoutine(limit, apiRoutine) > 0) {
-            builder.appendQueryParameter("count", String.valueOf(fixedDownloadLimitForApiRoutine(limit, apiRoutine)));
-        }
         if (!TextUtils.isEmpty(searchQuery)) {
             builder.appendQueryParameter("q", searchQuery);
         }
-        if (!youngestPosition.isEmpty()) {
-            builder.appendQueryParameter("since_id", youngestPosition.getPosition());
+        appendPositionParameters(builder, youngestPosition, oldestPosition);
+        if (fixedDownloadLimitForApiRoutine(limit, apiRoutine) > 0) {
+            builder.appendQueryParameter("count", String.valueOf(fixedDownloadLimitForApiRoutine(limit, apiRoutine)));
         }
         JSONArray jArr = getRequestArrayInObject(builder.build().toString(), "statuses");
         return jArrToTimeline(jArr, apiRoutine, url);

@@ -341,10 +341,12 @@ public abstract class Connection {
      * Universal method for several Timeline Types...
      * @param userId For the {@link ApiRoutineEnum#STATUSES_USER_TIMELINE}, null for the other timelines
      */
-    public abstract List<MbTimelineItem> getTimeline(ApiRoutineEnum apiRoutine, TimelinePosition sinceId, int limit, String userId)
+    public abstract List<MbTimelineItem> getTimeline(ApiRoutineEnum apiRoutine, TimelinePosition youngestPosition,
+            TimelinePosition oldestPosition, int limit, String userId)
             throws ConnectionException;
 
-    public abstract List<MbTimelineItem> search(TimelinePosition youngestPosition, int limit, String searchQuery)
+    public abstract List<MbTimelineItem> search(TimelinePosition youngestPosition,
+                                                TimelinePosition oldestPosition, int limit, String searchQuery)
             throws ConnectionException;
     
     /**

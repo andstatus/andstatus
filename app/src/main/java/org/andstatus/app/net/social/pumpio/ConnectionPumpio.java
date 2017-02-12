@@ -340,15 +340,18 @@ public class ConnectionPumpio extends Connection {
     }
 
     @Override
-    public List<MbTimelineItem> getTimeline(ApiRoutineEnum apiRoutine, TimelinePosition sinceId, int limit, String userId)
+    public List<MbTimelineItem> getTimeline(ApiRoutineEnum apiRoutine, TimelinePosition youngestPosition,
+                                            TimelinePosition oldestPosition, int limit, String userId)
             throws ConnectionException {
         ConnectionAndUrl conu = getConnectionAndUrl(apiRoutine, userId);
         Uri sUri = Uri.parse(conu.url);
         Uri.Builder builder = sUri.buildUpon();
-        if (!sinceId.isEmpty()) {
+        if (youngestPosition.isPresent()) {
             // The "since" should point to the "Activity" on the timeline, not to the message
             // Otherwise we will always get "not found"
-            builder.appendQueryParameter("since", sinceId.getPosition());
+            builder.appendQueryParameter("since", youngestPosition.getPosition());
+        } else if (oldestPosition.isPresent()) {
+            builder.appendQueryParameter("before", oldestPosition.getPosition());
         }
         if (fixedDownloadLimitForApiRoutine(limit, apiRoutine) > 0) {
             builder.appendQueryParameter("count",String.valueOf(fixedDownloadLimitForApiRoutine(limit, apiRoutine)));
@@ -646,7 +649,8 @@ public class ConnectionPumpio extends Connection {
     }
     
     @Override
-    public List<MbTimelineItem> search(TimelinePosition youngestPosition, int limit, String searchQuery)
+    public List<MbTimelineItem> search(TimelinePosition youngestPosition,
+                                       TimelinePosition oldestPosition, int limit, String searchQuery)
             throws ConnectionException {
         return new ArrayList<>();
     }

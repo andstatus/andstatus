@@ -158,7 +158,7 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         httpConnectionMock.setResponse(jso);
         
         List<MbTimelineItem> timeline = connection.getTimeline(ApiRoutineEnum.STATUSES_HOME_TIMELINE,
-                new TimelinePosition(sinceId), 20, "acct:t131t@" + originUrl.getHost());
+                new TimelinePosition(sinceId), TimelinePosition.getEmpty(), 20, "acct:t131t@" + originUrl.getHost());
         assertNotNull("timeline returned", timeline);
         int size = 6;
         assertEquals("Number of items in the Timeline", size, timeline.size());

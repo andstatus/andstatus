@@ -83,11 +83,13 @@ class TimelineDownloaderOther extends TimelineDownloader {
                 List<MbTimelineItem> messages;
                 switch (getTimeline().getTimelineType()) {
                     case SEARCH:
-                        messages = execContext.getMyAccount().getConnection().search(lastPosition, limit, getTimeline().getSearchQuery());
+                        messages = execContext.getMyAccount().getConnection().search(lastPosition,
+                                TimelinePosition.getEmpty(), limit, getTimeline().getSearchQuery());
                         break;
                     default:
                         messages = execContext.getMyAccount().getConnection().getTimeline(
-                                getTimeline().getTimelineType().getConnectionApiRoutine(), lastPosition, limit, userOid);
+                                getTimeline().getTimelineType().getConnectionApiRoutine(), lastPosition,
+                                TimelinePosition.getEmpty(), limit, userOid);
                         break;
                 }
                 for (MbTimelineItem item : messages) {

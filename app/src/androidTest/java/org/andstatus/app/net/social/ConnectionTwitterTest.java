@@ -76,7 +76,7 @@ public class ConnectionTwitterTest extends InstrumentationTestCase {
         httpConnection.setResponse(jso);
         
         List<MbTimelineItem> timeline = connection.getTimeline(ApiRoutineEnum.STATUSES_HOME_TIMELINE, 
-                new TimelinePosition("380925803053449216") , 20, connectionData.getAccountUserOid());
+                new TimelinePosition("380925803053449216") , TimelinePosition.getEmpty(), 20, connectionData.getAccountUserOid());
         assertNotNull("timeline returned", timeline);
         int size = 4;
         assertEquals("Number of items in the Timeline", size, timeline.size());

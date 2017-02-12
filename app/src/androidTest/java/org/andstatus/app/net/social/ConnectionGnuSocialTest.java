@@ -55,7 +55,7 @@ public class ConnectionGnuSocialTest extends InstrumentationTestCase {
         connection.getHttpMock().setResponse(jso);
         
         List<MbTimelineItem> timeline = connection.getTimeline(ApiRoutineEnum.PUBLIC_TIMELINE,
-                new TimelinePosition("2656388"), 20, accountUserOid);
+                new TimelinePosition("2656388"), TimelinePosition.getEmpty(), 20, accountUserOid);
         assertNotNull("timeline returned", timeline);
         int size = 3;
         assertEquals("Number of items in the Timeline", size, timeline.size());
@@ -126,7 +126,7 @@ public class ConnectionGnuSocialTest extends InstrumentationTestCase {
                 org.andstatus.app.tests.R.raw.twitter_home_timeline);
         connection.getHttpMock().setResponse(jso);
         
-        List<MbTimelineItem> timeline = connection.search(new TimelinePosition(""), 20,
+        List<MbTimelineItem> timeline = connection.search(new TimelinePosition(""), TimelinePosition.getEmpty(), 20,
                 TestSuite.GLOBAL_PUBLIC_MESSAGE_TEXT);
         assertNotNull("timeline returned", timeline);
         int size = 4;

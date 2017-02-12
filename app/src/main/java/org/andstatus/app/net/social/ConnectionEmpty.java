@@ -76,15 +76,17 @@ public class ConnectionEmpty extends Connection {
     }
 
     @Override
-    public List<MbTimelineItem> getTimeline(ApiRoutineEnum apiRoutine, TimelinePosition sinceId,
-            int limit, String userId) throws ConnectionException {
-        return new ArrayList<MbTimelineItem>();
+    public List<MbTimelineItem> getTimeline(ApiRoutineEnum apiRoutine, TimelinePosition youngestPosition,
+                                            TimelinePosition oldestPosition, int limit, String userId)
+            throws ConnectionException {
+        return new ArrayList<>();
     }
 
     @Override
-    public List<MbTimelineItem> search(TimelinePosition youngestPosition, int limit, String searchQuery)
+    public List<MbTimelineItem> search(TimelinePosition youngestPosition,
+                                       TimelinePosition oldestPosition, int limit, String searchQuery)
             throws ConnectionException {
-        return new ArrayList<MbTimelineItem>();
+        return new ArrayList<>();
     }
 
     @Override
