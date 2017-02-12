@@ -71,4 +71,12 @@ public class StringUtils {
         ans[0] = s;
         return ans;
     }
+
+    public static boolean isFilled(String value) {
+        return !TextUtils.isEmpty(value);
+    }
+
+    public static boolean isNewFilledValue(String oldValue, String newValue) {
+        return isFilled(newValue) && (oldValue == null || !oldValue.equals(newValue));
+    }
 }

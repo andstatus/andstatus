@@ -74,7 +74,7 @@ public class MyServiceTest1 extends MyServiceTest {
         MyLog.i(this, method + " started");
 
         MyAccount myAccount = MyContextHolder.get().persistentAccounts().getFirstSucceeded();
-        assertTrue("No successful account", myAccount != null);
+        assertTrue("No successful account", myAccount.isValidAndSucceeded());
 
         MyContext myContext = MyContextHolder.get();
         for (Timeline timeline : myContext.persistentTimelines().getFiltered(false, TriState.FALSE,
@@ -85,6 +85,7 @@ public class MyServiceTest1 extends MyServiceTest {
                 }
             }
         }
+        myContext.persistentTimelines().saveChanged();
         SyncResult syncResult = new SyncResult();
         MyServiceCommandsRunner runner = new MyServiceCommandsRunner(myContext);
         runner.setIgnoreServiceAvailability(true);
@@ -125,7 +126,7 @@ public class MyServiceTest1 extends MyServiceTest {
         MyLog.i(this, method + " started");
 
         mService.setListenedCommand(CommandData.newTimelineCommand(
-                CommandEnum.FETCH_TIMELINE, ma, TimelineType.HOME));
+                CommandEnum.GET_TIMELINE, ma, TimelineType.HOME));
         long startCount = mService.executionStartCount;
         long endCount = mService.executionEndCount;
 

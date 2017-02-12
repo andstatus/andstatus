@@ -38,8 +38,8 @@ public enum CommandEnum {
     /** There is no action */
     EMPTY("empty"),
     DELETE_COMMAND("delete-command", R.string.button_delete, 100, ConnectionRequired.ANY),
-    /** Fetch timeline(s) of the specified type for the specified MyAccount */
-    FETCH_TIMELINE("fetch-timeline", 0, 4, ConnectionRequired.SYNC),
+    GET_TIMELINE("fetch-timeline", 0, 4, ConnectionRequired.SYNC),
+    GET_OLDER_TIMELINE("get-older-timeline", 0, 4, ConnectionRequired.SYNC),
 
     /** Fetch avatar for the specified user */
     FETCH_AVATAR("fetch-avatar", R.string.title_command_fetch_avatar, 9, ConnectionRequired.SYNC),

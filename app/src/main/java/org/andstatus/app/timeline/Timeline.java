@@ -42,6 +42,8 @@ import org.andstatus.app.util.ContentValuesUtils;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
 
+import java.util.Date;
+
 /**
  * @author yvolk@yurivolkov.com
  */
@@ -111,6 +113,7 @@ public class Timeline implements Comparable<Timeline> {
     private volatile long newItemsCountTotal = 0;
 
     /** Timeline position of the youngest ever downloaded message */
+    @NonNull
     private volatile String youngestPosition = "";
     /** Date of the item corresponding to the {@link #youngestPosition} */
     private volatile long youngestItemDate = 0;
@@ -121,6 +124,7 @@ public class Timeline implements Comparable<Timeline> {
     private volatile long youngestSyncedDate = 0;
 
     /** Timeline position of the oldest ever downloaded message */
+    @NonNull
     private volatile String oldestPosition = "";
     /** Date of the item corresponding to the {@link #oldestPosition} */
     private volatile long oldestItemDate = 0;
@@ -660,6 +664,22 @@ public class Timeline implements Comparable<Timeline> {
         return builder.toString();
     }
 
+    public String positionsToString() {
+        StringBuilder builder = new StringBuilder();
+
+        builder.append("TimelinePositions{");
+        if (youngestSyncedDate > 0) {
+            builder.append("synced at " + new Date(youngestSyncedDate).toString());
+            builder.append(", pos:" + getYoungestPosition());
+        }
+        if (oldestSyncedDate > 0) {
+            builder.append("older synced at " + new Date(oldestSyncedDate).toString());
+            builder.append(", pos:" + getOldestPosition());
+        }
+        builder.append('}');
+        return builder.toString();
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -736,31 +756,89 @@ public class Timeline implements Comparable<Timeline> {
         return blnOut;
     }
 
+    public void clearPosition() {
+        if (!TextUtils.isEmpty(youngestPosition)) {
+            youngestPosition = "";
+            changed = true;
+        }
+        if (youngestItemDate > 0) {
+            youngestItemDate = 0;
+            changed = true;
+        }
+        if (!TextUtils.isEmpty(oldestPosition)) {
+            oldestPosition = "";
+            changed = true;
+        }
+        if (oldestItemDate > 0) {
+            oldestItemDate = 0;
+            changed = true;
+        }
+    }
+
     public String getYoungestPosition() {
         return youngestPosition;
     }
 
-    public void setYoungestPosition(String youngestPosition) {
-        this.youngestPosition = youngestPosition;
-        changed = true;
+    public void setYoungestPosition(String newPosition) {
+        if (StringUtils.isNewFilledValue(youngestPosition, newPosition)) {
+            youngestPosition = newPosition;
+            changed = true;
+        }
     }
 
     public long getYoungestItemDate() {
         return youngestItemDate;
     }
 
-    public void setYoungestItemDate(long youngestItemDate) {
-        this.youngestItemDate = youngestItemDate;
-        changed = true;
+    public void setYoungestItemDate(long newDate) {
+        if (youngestItemDate < newDate) {
+            youngestItemDate = newDate;
+            changed = true;
+        }
     }
 
     public long getYoungestSyncedDate() {
         return youngestSyncedDate;
     }
 
-    public void setYoungestSyncedDate(long youngestSyncedDate) {
-        this.youngestSyncedDate = youngestSyncedDate;
-        changed = true;
+    public void setYoungestSyncedDate(long newDate) {
+        if (youngestSyncedDate < newDate) {
+            youngestSyncedDate = newDate;
+            changed = true;
+        }
+    }
+
+    public long getOldestItemDate() {
+        return oldestItemDate;
+    }
+
+    public void setOldestItemDate(long newDate) {
+        if (newDate > 0 && oldestItemDate > newDate) {
+            oldestItemDate = newDate;
+            changed = true;
+        }
+    }
+
+    public String getOldestPosition() {
+        return oldestPosition;
+    }
+
+    public void setOldestPosition(String newPosition) {
+        if (StringUtils.isNewFilledValue(oldestPosition, newPosition)) {
+            oldestPosition = newPosition;
+            changed = true;
+        }
+    }
+
+    public long getOldestSyncedDate() {
+        return oldestSyncedDate;
+    }
+
+    public void setOldestSyncedDate(long newDate) {
+        if (oldestSyncedDate < newDate) {
+            oldestSyncedDate = newDate;
+            changed = true;
+        }
     }
 
     public long getVisibleItemId() {

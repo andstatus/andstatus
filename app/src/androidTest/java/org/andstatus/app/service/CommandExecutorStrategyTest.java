@@ -56,11 +56,11 @@ public class CommandExecutorStrategyTest extends InstrumentationTestCase {
     }
 
     public void testFetchTimeline() {
-        CommandData commandData = CommandData.newTimelineCommand(CommandEnum.FETCH_TIMELINE, null, TimelineType.HOME);
+        CommandData commandData = CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, null, TimelineType.HOME);
         CommandExecutorStrategy strategy = CommandExecutorStrategy.getStrategy(commandData, null);
         assertEquals(CommandExecutorStrategy.class, strategy.getClass());
 
-        commandData = CommandData.newTimelineCommand(CommandEnum.FETCH_TIMELINE, ma, TimelineType.HOME);
+        commandData = CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, ma, TimelineType.HOME);
         strategy = CommandExecutorStrategy.getStrategy(commandData, null);
         assertEquals(TimelineDownloaderOther.class, strategy.getClass());
     }

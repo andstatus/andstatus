@@ -26,6 +26,7 @@ import android.text.TextUtils;
 
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
+import org.andstatus.app.WhichPage;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
@@ -78,7 +79,7 @@ public class CommandData implements Comparable<CommandData> {
 
     public static CommandData newSearch(MyContext myContext, Origin origin, String queryString) {
         Timeline timeline =  Timeline.getTimeline(myContext, 0, TimelineType.SEARCH, null, 0, origin, queryString);
-        CommandData commandData = new CommandData(0, CommandEnum.FETCH_TIMELINE, timeline, 0);
+        CommandData commandData = new CommandData(0, CommandEnum.GET_TIMELINE, timeline, 0);
         return commandData;
     }
 
@@ -366,7 +367,8 @@ public class CommandData implements Comparable<CommandData> {
     }
 
     private String toUserFriendlyForm(MyContext myContext, boolean summaryOnly) {
-        StringBuilder builder = new StringBuilder(command == CommandEnum.FETCH_TIMELINE ? "" :
+        StringBuilder builder = new StringBuilder(
+                command == CommandEnum.GET_TIMELINE || command == CommandEnum.GET_OLDER_TIMELINE ? "" :
                 toShortCommandName(myContext));
         if (!summaryOnly) {
             if (mInForeground) {
@@ -396,7 +398,12 @@ public class CommandData implements Comparable<CommandData> {
                 builder.append(trimConditionally(description, summaryOnly));
                 builder.append("\"");
                 break;
-            case FETCH_TIMELINE:
+            case GET_TIMELINE:
+                builder.append(TimelineTitle.load(myContext, timeline, null).toString());
+                break;
+            case GET_OLDER_TIMELINE:
+                builder.append(WhichPage.OLDER.getTitle(myContext.context()));
+                builder.append(" ");
                 builder.append(TimelineTitle.load(myContext, timeline, null).toString());
                 break;
             case FOLLOW_USER:
@@ -459,7 +466,12 @@ public class CommandData implements Comparable<CommandData> {
     public String toShortCommandName(MyContext myContext) {
         StringBuilder builder = new StringBuilder();
         switch (command) {
-            case FETCH_TIMELINE:
+            case GET_TIMELINE:
+                builder.append(getTimelineType().getTitle(myContext.context()));
+                break;
+            case GET_OLDER_TIMELINE:
+                builder.append(WhichPage.OLDER.getTitle(myContext.context()));
+                builder.append(" ");
                 builder.append(getTimelineType().getTitle(myContext.context()));
                 break;
             default:

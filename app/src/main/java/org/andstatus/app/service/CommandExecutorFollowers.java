@@ -22,11 +22,10 @@ import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DataInserter;
 import org.andstatus.app.data.FriendshipValues;
-import org.andstatus.app.timeline.LatestTimelineItem;
+import org.andstatus.app.timeline.TimelineSyncTracker;
 import org.andstatus.app.data.LatestUserMessages;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
-import org.andstatus.app.timeline.Timeline;
 import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.data.UserMsg;
 import org.andstatus.app.database.MsgTable;
@@ -68,9 +67,8 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
                     break;
             }
 
-            LatestTimelineItem latestTimelineItem = new LatestTimelineItem(execContext.getTimeline());
-            latestTimelineItem.onTimelineDownloaded();
-            latestTimelineItem.save();
+            TimelineSyncTracker syncTracker = new TimelineSyncTracker(execContext.getTimeline(), true);
+            syncTracker.onTimelineDownloaded();
 
             MyLog.d(this, commandSummary + " ended, " + usersNew.size() + " users");
             logOk(true);

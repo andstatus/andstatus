@@ -27,7 +27,7 @@ import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.ConnectionException.StatusCode;
 import org.andstatus.app.net.social.MbTimelineItem;
 import org.andstatus.app.net.social.TimelinePosition;
-import org.andstatus.app.timeline.LatestTimelineItem;
+import org.andstatus.app.timeline.TimelineSyncTracker;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
 
@@ -44,14 +44,14 @@ class TimelineDownloaderOther extends TimelineDownloader {
             throw new IllegalArgumentException("Timeline cannot be synced: " + getTimeline());
         }
 
-        LatestTimelineItem latestTimelineItem = new LatestTimelineItem(getTimeline());
+        TimelineSyncTracker syncTracker = new TimelineSyncTracker(getTimeline(), isSyncYounger());
         long hours = MyPreferences.getDontSynchronizeOldMessages();
         boolean downloadingLatest = false;
-        if (hours > 0 && RelativeTime.moreSecondsAgoThan(latestTimelineItem.getTimelineDownloadedDate(),
+        if (hours > 0 && RelativeTime.moreSecondsAgoThan(syncTracker.getPreviousSyncedDate(),
                 TimeUnit.HOURS.toSeconds(hours))) {
             downloadingLatest = true;
-            latestTimelineItem.clearPosition();
-        } else if (latestTimelineItem.getPosition().isEmpty()) {
+            syncTracker.clearPosition();
+        } else if (syncTracker.getPreviousPosition().isEmpty()) {
             downloadingLatest = true;
         }
         
@@ -59,9 +59,9 @@ class TimelineDownloaderOther extends TimelineDownloader {
             String strLog = "Loading "
             + (downloadingLatest ? "latest " : "")
             + execContext.getCommandData().toCommandSummary(execContext.getMyContext());
-            if (latestTimelineItem.getTimelineItemDate() > 0) { strLog +=
-                "; last Timeline item at=" + (new Date(latestTimelineItem.getTimelineItemDate()).toString())
-                + "; last time downloaded at=" +  (new Date(latestTimelineItem.getTimelineDownloadedDate()).toString());
+            if (syncTracker.getPreviousItemDate() > 0) { strLog +=
+                "; last Timeline item at=" + (new Date(syncTracker.getPreviousItemDate()).toString())
+                + "; last time downloaded at=" +  (new Date(syncTracker.getPreviousSyncedDate()).toString());
             }
             MyLog.d(this, strLog);
         }
@@ -70,10 +70,10 @@ class TimelineDownloaderOther extends TimelineDownloader {
             throw new ConnectionException("User oId is not found for id=" + execContext.getCommandData().getUserId());
         }
         int toDownload = MAXIMUM_NUMBER_OF_MESSAGES_TO_DOWNLOAD;
-        TimelinePosition lastPosition = latestTimelineItem.getPosition();
+        TimelinePosition previousPosition = syncTracker.getPreviousPosition();
         LatestUserMessages latestUserMessages = new LatestUserMessages();
 
-        latestTimelineItem.onTimelineDownloaded();
+        syncTracker.onTimelineDownloaded();
 
         DataInserter di = new DataInserter(execContext);
         for (int loopCounter=0; loopCounter < 100; loopCounter++ ) {
@@ -83,18 +83,22 @@ class TimelineDownloaderOther extends TimelineDownloader {
                 List<MbTimelineItem> messages;
                 switch (getTimeline().getTimelineType()) {
                     case SEARCH:
-                        messages = execContext.getMyAccount().getConnection().search(lastPosition,
-                                TimelinePosition.getEmpty(), limit, getTimeline().getSearchQuery());
+                        messages = execContext.getMyAccount().getConnection().search(
+                                isSyncYounger() ? previousPosition : TimelinePosition.getEmpty(),
+                                isSyncYounger() ? TimelinePosition.getEmpty() : previousPosition,
+                                limit, getTimeline().getSearchQuery());
                         break;
                     default:
                         messages = execContext.getMyAccount().getConnection().getTimeline(
-                                getTimeline().getTimelineType().getConnectionApiRoutine(), lastPosition,
-                                TimelinePosition.getEmpty(), limit, userOid);
+                                getTimeline().getTimelineType().getConnectionApiRoutine(),
+                                isSyncYounger() ? previousPosition : TimelinePosition.getEmpty(),
+                                isSyncYounger() ? TimelinePosition.getEmpty() : previousPosition,
+                                limit, userOid);
                         break;
                 }
                 for (MbTimelineItem item : messages) {
                     toDownload--;
-                    latestTimelineItem.onNewMsg(item.timelineItemPosition, item.timelineItemDate);
+                    syncTracker.onNewMsg(item.timelineItemPosition, item.timelineItemDate);
                     switch (item.getType()) {
                         case MESSAGE:
                             di.insertOrUpdateMsg(item.mbMessage, latestUserMessages);
@@ -106,25 +110,21 @@ class TimelineDownloaderOther extends TimelineDownloader {
                             break;
                     }
                 }
-                if (toDownload <= 0
-                        || lastPosition == latestTimelineItem.getPosition()) {
+                if (toDownload <= 0 || messages.isEmpty() || previousPosition.equals(syncTracker.getPreviousPosition())) {
                     break;
-                } else {
-                    lastPosition = latestTimelineItem.getPosition();
                 }
+                previousPosition = syncTracker.getPreviousPosition();
             } catch (ConnectionException e) {
                 if (e.getStatusCode() != StatusCode.NOT_FOUND) {
                     throw e;
                 }
-                if (lastPosition.isEmpty()) {
+                if (previousPosition.isEmpty()) {
                     throw ConnectionException.hardConnectionException("No last position", e);
                 }
-                MyLog.d(this, "The timeline was not found, last position='" + lastPosition +"'", e);
-                lastPosition = TimelinePosition.getEmpty();
+                MyLog.d(this, "The timeline was not found, last position='" + previousPosition +"'", e);
+                previousPosition = TimelinePosition.getEmpty();
             }
         }
         latestUserMessages.save();
-        latestTimelineItem.save();
     }
-
 }

@@ -84,4 +84,7 @@ abstract class TimelineDownloader extends CommandExecutorStrategy {
         appWidgets.updateViews();
     }
 
+    protected boolean isSyncYounger() {
+        return !execContext.getCommandData().getCommand().equals(CommandEnum.GET_OLDER_TIMELINE);
+    }
 }

@@ -13,7 +13,7 @@ import org.andstatus.app.net.social.TimelinePosition;
 import java.util.Arrays;
 
 @Travis
-public class LatestTimelineItemTest extends InstrumentationTestCase {
+public class TimelineSyncTrackerTest extends InstrumentationTestCase {
 
     public static final int LATEST_ITEM_MILLIS_AGO = 10000;
 
@@ -55,30 +55,29 @@ public class LatestTimelineItemTest extends InstrumentationTestCase {
                     , timeline.getId() != 0);
         }
         long time1 = System.currentTimeMillis();
-        LatestTimelineItem latest = new LatestTimelineItem(timeline);
-        latest.onTimelineDownloaded();
-        latest.onNewMsg(
+        TimelineSyncTracker syncTracker = new TimelineSyncTracker(timeline, true);
+        syncTracker.onTimelineDownloaded();
+        syncTracker.onNewMsg(
                 new TimelinePosition("position_" + timelineType.save() + "_" + accountName),
                 System.currentTimeMillis() - LATEST_ITEM_MILLIS_AGO);
-        latest.save();
         timeline.save(myContext);
 
         timeline = getTimeline(myContext, timelineType, ma);
 
-        latest = new LatestTimelineItem(timeline);
+        syncTracker = new TimelineSyncTracker(timeline, true);
         long time2 = System.currentTimeMillis();
         if (timeline.getId() == 0) {
-            assertEquals("Remembered timeline dates for " + timeline, 0, latest.getTimelineItemDate());
-            assertEquals("Remembered timeline dates for " + timeline, latest.getTimelineDownloadedDate(), 0);
+            assertEquals("Remembered timeline dates for " + timeline, 0, syncTracker.getPreviousItemDate());
+            assertEquals("Remembered timeline dates for " + timeline, syncTracker.getPreviousSyncedDate(), 0);
         } else {
-            assertTrue(timeline.toString() + " was downloaded " + latest.toString(),
-                    latest.getTimelineDownloadedDate() >= time1);
-            assertTrue(timeline.toString() + " was downloaded " + latest.toString(),
-                    latest.getTimelineDownloadedDate() <= time2);
-            assertTrue(timeline.toString() + " latest item " + latest.toString(),
-                    latest.getTimelineItemDate() >= time1 - LATEST_ITEM_MILLIS_AGO);
-            assertTrue(timeline.toString() + " latest item " + latest.toString(),
-                    latest.getTimelineItemDate() <= time2 - LATEST_ITEM_MILLIS_AGO);
+            assertTrue(timeline.toString() + " was downloaded " + syncTracker.toString(),
+                    syncTracker.getPreviousSyncedDate() >= time1);
+            assertTrue(timeline.toString() + " was downloaded " + syncTracker.toString(),
+                    syncTracker.getPreviousSyncedDate() <= time2);
+            assertTrue(timeline.toString() + " latest item " + syncTracker.toString(),
+                    syncTracker.getPreviousItemDate() >= time1 - LATEST_ITEM_MILLIS_AGO);
+            assertTrue(timeline.toString() + " latest item " + syncTracker.toString(),
+                    syncTracker.getPreviousItemDate() <= time2 - LATEST_ITEM_MILLIS_AGO);
         }
     }
 

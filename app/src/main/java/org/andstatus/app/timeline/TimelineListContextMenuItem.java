@@ -38,7 +38,7 @@ public enum TimelineListContextMenuItem implements ContextMenuItem {
         @Override
         public boolean execute(TimelineListContextMenu menu, TimelineListViewItem viewItem) {
             MyServiceManager.sendManualForegroundCommand(
-                    CommandData.newTimelineCommand(CommandEnum.FETCH_TIMELINE, viewItem.timeline));
+                    CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, viewItem.timeline));
             return true;
         }
     },

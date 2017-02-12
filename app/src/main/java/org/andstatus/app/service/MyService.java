@@ -711,7 +711,7 @@ public class MyService extends Service {
                             MyPreferences.KEY_SYNC_AFTER_MESSAGE_WAS_SENT, false)) {
                 return;
             }
-            addToMainQueue(CommandData.newTimelineCommand(CommandEnum.FETCH_TIMELINE,
+            addToMainQueue(CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE,
                     commandDataExecuted.getTimeline().getMyAccount(), TimelineType.HOME)
                     .setInForeground(commandDataExecuted.isInForeground()));
         }

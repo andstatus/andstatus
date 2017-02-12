@@ -113,15 +113,15 @@ public class CommandDataTest extends InstrumentationTestCase {
         queue.add(CommandData.newSearch(
                 MyContextHolder.get(), TestSuite.getMyAccount(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME).getOrigin(), "q1"));
         queue.add(CommandData.newUpdateStatus(null, 2));
-        queue.add(CommandData.newCommand(CommandEnum.FETCH_TIMELINE));
+        queue.add(CommandData.newCommand(CommandEnum.GET_TIMELINE));
         queue.add(CommandData.newUpdateStatus(null, 3));
         queue.add(CommandData.newCommand(CommandEnum.GET_STATUS));
         
         assertEquals(CommandEnum.UPDATE_STATUS, queue.poll().getCommand());
         assertEquals(CommandEnum.UPDATE_STATUS, queue.poll().getCommand());
         assertEquals(CommandEnum.GET_STATUS, queue.poll().getCommand());
-        assertEquals(CommandEnum.FETCH_TIMELINE, queue.poll().getCommand());
-        assertEquals(CommandEnum.FETCH_TIMELINE, queue.poll().getCommand());
+        assertEquals(CommandEnum.GET_TIMELINE, queue.poll().getCommand());
+        assertEquals(CommandEnum.GET_TIMELINE, queue.poll().getCommand());
     }
     
     public void testSummary() {

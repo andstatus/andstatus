@@ -314,7 +314,8 @@ public final class CommandResult implements Parcelable {
     void resetRetries(CommandEnum command) {
         retriesLeft = INITIAL_NUMBER_OF_RETRIES;
         switch (command) {
-            case FETCH_TIMELINE:
+            case GET_TIMELINE:
+            case GET_OLDER_TIMELINE:
             case RATE_LIMIT_STATUS:
                 retriesLeft = 0;
                 break;

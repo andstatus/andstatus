@@ -944,7 +944,7 @@ public class TimelineActivity extends LoadableListActivity implements
             setCircularSyncIndicator(method, true);
             showSyncing(method, getText(R.string.options_menu_sync));
             MyServiceManager.sendForegroundCommand(
-                    CommandData.newTimelineCommand(CommandEnum.FETCH_TIMELINE, timeline)
+                    CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, timeline)
                             .setManuallyLaunched(manuallyLaunched)
             );
         }
@@ -1053,7 +1053,8 @@ public class TimelineActivity extends LoadableListActivity implements
     @Override
     protected boolean isCommandToShowInSyncIndicator(CommandData commandData) {
         switch (commandData.getCommand()) {
-            case FETCH_TIMELINE:
+            case GET_TIMELINE:
+            case GET_OLDER_TIMELINE:
             case FETCH_ATTACHMENT:
             case FETCH_AVATAR:
             case UPDATE_STATUS:
@@ -1111,7 +1112,8 @@ public class TimelineActivity extends LoadableListActivity implements
     public boolean isRefreshNeededAfterExecuting(CommandData commandData) {
         boolean needed = super.isRefreshNeededAfterExecuting(commandData);
         switch (commandData.getCommand()) {
-            case FETCH_TIMELINE:
+            case GET_TIMELINE:
+            case GET_OLDER_TIMELINE:
                 if (!getParamsLoaded().isLoaded()
                         || getParamsLoaded().getTimelineType() != commandData.getTimelineType()) {
                     break;
