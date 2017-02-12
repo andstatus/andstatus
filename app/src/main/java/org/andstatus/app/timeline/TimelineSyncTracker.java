@@ -56,10 +56,7 @@ public class TimelineSyncTracker {
         if (timelineItemPosition != null 
                 && timelineItemPosition.isPresent()
                 && (timelineItemDate > 0)) {
-            timeline.setYoungestPosition(timelineItemPosition.getPosition());
-            timeline.setYoungestItemDate(timelineItemDate);
-            timeline.setOldestPosition(timelineItemPosition.getPosition());
-            timeline.setOldestItemDate(timelineItemDate);
+            timeline.onNewMsg(timelineItemDate, timelineItemPosition.getPosition());
         }
     }
     

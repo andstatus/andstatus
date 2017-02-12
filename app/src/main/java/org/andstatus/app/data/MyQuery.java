@@ -367,9 +367,9 @@ public class MyQuery {
             SQLiteStatement prog = null;
             String sql = "";
             try {
-                sql = "SELECT t." + columnName
-                        + " FROM " + tableName + " AS t"
-                        + " WHERE t._id=" + systemId;
+                sql = "SELECT " + columnName
+                        + " FROM " + tableName
+                        + " WHERE _id=" + systemId;
                 SQLiteDatabase db = MyContextHolder.get().getDatabase();
                 if (db == null) {
                     MyLog.v(TAG, method + "; Database is null");

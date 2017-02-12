@@ -33,6 +33,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.CheckBox;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import org.andstatus.app.ActivityRequestCode;
@@ -98,6 +99,7 @@ public class TimelineActivity extends LoadableListActivity implements
     DrawerLayout mDrawerLayout;
     ActionBarDrawerToggle mDrawerToggle;
     protected volatile SelectorActivityMock selectorActivityMock;
+    View syncOlderView = null;
 
     public static void startForTimeline(MyContext myContext, Activity activity, Timeline timeline,
                                         MyAccount newCurrentMyAccount, boolean clearTask) {
@@ -121,7 +123,7 @@ public class TimelineActivity extends LoadableListActivity implements
 
     @Override
     public void onRefresh() {
-        syncWithInternet(getParamsLoaded().getTimeline(), true);
+        syncWithInternet(getParamsLoaded().getTimeline(), true, true);
     }
 
     /**
@@ -157,6 +159,14 @@ public class TimelineActivity extends LoadableListActivity implements
                 }
             });
         }
+
+        syncOlderView = View.inflate(this, R.layout.sync_older, null);
+        syncOlderView.findViewById(R.id.sync_older_button).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                syncWithInternet(getParamsLoaded().getTimeline(), false, true);
+            }
+        });
 
         if (savedInstanceState != null) {
             restoreActivityState(savedInstanceState);
@@ -471,7 +481,7 @@ public class TimelineActivity extends LoadableListActivity implements
                 onSearchRequested();
                 break;
             case R.id.sync_menu_item:
-                syncWithInternet(getParamsLoaded().getTimeline(), true);
+                syncWithInternet(getParamsLoaded().getTimeline(), true, true);
                 break;
             case R.id.commands_queue_id:
                 startActivity(new Intent(getActivity(), QueueViewer.class));
@@ -892,59 +902,74 @@ public class TimelineActivity extends LoadableListActivity implements
         } else if (otherPageToRequest != WhichPage.EMPTY) {
             MyLog.v(this, method + "; Nothing loaded, requesting " + otherPageToRequest);
             showList(otherPageToRequest, TriState.TRUE);
+        } else {
+            showSyncOlder();
+        }
+    }
+
+    private void showSyncOlder() {
+        final ListView listView = getListView();
+        if (listView == null) {
+            return;
+        }
+        if (getListData().mayHaveOlderPage() || !getParamsLoaded().getTimeline().isSyncable()) {
+            listView.removeFooterView(syncOlderView);
+        } else {
+            listView.addFooterView(syncOlderView);
         }
     }
 
     private void launchSyncIfNeeded(Timeline timelineToSync) {
         if (!timelineToSync.isEmpty()) {
             if (timelineToSync.getTimelineType() == TimelineType.EVERYTHING) {
-                syncWithInternet(getParamsLoaded().getTimeline(), false);
+                syncWithInternet(getParamsLoaded().getTimeline(), true, false);
                 // Sync this one timeline and then - all syncable for this account
                 if (getParamsNew().getMyAccount().isValidAndSucceeded()) {
                     getParamsNew().getMyAccount().requestSync();
                 }
             } else {
-                syncWithInternet(timelineToSync, false);
+                syncWithInternet(timelineToSync, true, false);
             }
         }
     }
 
-    protected void syncWithInternet(Timeline timelineToSync, boolean manuallyLaunched) {
+    protected void syncWithInternet(Timeline timelineToSync, boolean syncYounger, boolean manuallyLaunched) {
         if (timelineToSync.isSyncableForOrigins()) {
-            syncForAllOrigins(timelineToSync, manuallyLaunched);
+            syncForAllOrigins(timelineToSync, syncYounger, manuallyLaunched);
         } else if (timelineToSync.isSyncableForAccounts()) {
-            syncForAllAccounts(timelineToSync, manuallyLaunched);
+            syncForAllAccounts(timelineToSync, syncYounger, manuallyLaunched);
         } else if (timelineToSync.isSyncable()) {
-            syncOneTimeline(timelineToSync, manuallyLaunched);
+            syncOneTimeline(timelineToSync, syncYounger, manuallyLaunched);
         } else {
             hideSyncing("SyncWithInternet");
         }
     }
 
-    private void syncForAllOrigins(Timeline timelineToSync, boolean manuallyLaunched) {
+    private void syncForAllOrigins(Timeline timelineToSync, boolean syncYounger, boolean manuallyLaunched) {
         for (Origin origin : myContext.persistentOrigins().originsToSync(
                 timelineToSync.getMyAccount().getOrigin(), true, timelineToSync.hasSearchQuery())) {
-            syncOneTimeline(timelineToSync.cloneForOrigin(myContext, origin), manuallyLaunched);
+            syncOneTimeline(timelineToSync.cloneForOrigin(myContext, origin), syncYounger, manuallyLaunched);
         }
     }
 
-    private void syncForAllAccounts(Timeline timelineToSync, boolean manuallyLaunched) {
+    private void syncForAllAccounts(Timeline timelineToSync, boolean syncYounger, boolean manuallyLaunched) {
         for (MyAccount ma : myContext.persistentAccounts().accountsToSync(timelineToSync.getMyAccount(), true)) {
             if (timelineToSync.getTimelineType() == TimelineType.EVERYTHING) {
                 ma.requestSync();
             } else {
-                syncOneTimeline(timelineToSync.cloneForAccount(myContext, ma), manuallyLaunched);
+                syncOneTimeline(timelineToSync.cloneForAccount(myContext, ma), syncYounger, manuallyLaunched);
             }
         }
     }
 
-    private void syncOneTimeline(Timeline timeline, boolean manuallyLaunched) {
+    private void syncOneTimeline(Timeline timeline, boolean syncYounger, boolean manuallyLaunched) {
         final String method = "syncOneTimeline";
         if (timeline.isSyncable()) {
             setCircularSyncIndicator(method, true);
             showSyncing(method, getText(R.string.options_menu_sync));
             MyServiceManager.sendForegroundCommand(
-                    CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, timeline)
+                    CommandData.newTimelineCommand(syncYounger ? CommandEnum.GET_TIMELINE :
+                            CommandEnum.GET_OLDER_TIMELINE, timeline)
                             .setManuallyLaunched(manuallyLaunched)
             );
         }

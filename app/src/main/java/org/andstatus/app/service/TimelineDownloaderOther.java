@@ -37,6 +37,7 @@ import java.util.concurrent.TimeUnit;
 
 class TimelineDownloaderOther extends TimelineDownloader {
     private static final int MAXIMUM_NUMBER_OF_MESSAGES_TO_DOWNLOAD = 200;
+    private static final int MAXIMUM_NUMBER_OF_LATEST_MESSAGES_TO_DOWNLOAD = 20;
 
     @Override
     public void download() throws ConnectionException {
@@ -69,7 +70,8 @@ class TimelineDownloaderOther extends TimelineDownloader {
         if (TextUtils.isEmpty(userOid) && getTimeline().getTimelineType().isForUser()) {
             throw new ConnectionException("User oId is not found for id=" + execContext.getCommandData().getUserId());
         }
-        int toDownload = MAXIMUM_NUMBER_OF_MESSAGES_TO_DOWNLOAD;
+        int toDownload = downloadingLatest ? MAXIMUM_NUMBER_OF_LATEST_MESSAGES_TO_DOWNLOAD :
+                MAXIMUM_NUMBER_OF_MESSAGES_TO_DOWNLOAD;
         TimelinePosition previousPosition = syncTracker.getPreviousPosition();
         LatestUserMessages latestUserMessages = new LatestUserMessages();
 

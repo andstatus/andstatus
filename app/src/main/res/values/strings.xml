@@ -444,6 +444,7 @@
   <string name="summary_preference_vibration_off">Vibration is turned off</string>
   <string name="summary_preference_vibration_on">Vibrate on incoming message</string>
   <string name="switch_to_default_timeline">Switch to Default Timeline</string>
+  <string name="sync_older_messages">Sync older messages</string>
   <string name="sync_over_wifi_only">Sync over WiFi only</string>
   <string name="sync_failed">Sync failed</string>
   <string name="sync_frequency_minutes">Sync frequency in minutes. Leave it blank to have the default value: </string>

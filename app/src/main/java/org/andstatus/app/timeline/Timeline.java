@@ -775,26 +775,30 @@ public class Timeline implements Comparable<Timeline> {
         }
     }
 
+    public void onNewMsg(long newDate, String newPosition) {
+        if (newDate <= 0 || TextUtils.isEmpty(newPosition)) {
+            return;
+        }
+        if (youngestItemDate < newDate ||
+                ( youngestItemDate == newDate && StringUtils.isNewFilledValue(youngestPosition, newPosition))) {
+            youngestItemDate = newDate;
+            youngestPosition = newPosition;
+            changed = true;
+        }
+        if (oldestItemDate == 0 || oldestItemDate > newDate ||
+                (oldestItemDate == newDate && StringUtils.isNewFilledValue(oldestPosition, newPosition))) {
+            oldestItemDate = newDate;
+            oldestPosition = newPosition;
+            changed = true;
+        }
+    }
+
     public String getYoungestPosition() {
         return youngestPosition;
     }
 
-    public void setYoungestPosition(String newPosition) {
-        if (StringUtils.isNewFilledValue(youngestPosition, newPosition)) {
-            youngestPosition = newPosition;
-            changed = true;
-        }
-    }
-
     public long getYoungestItemDate() {
         return youngestItemDate;
-    }
-
-    public void setYoungestItemDate(long newDate) {
-        if (youngestItemDate < newDate) {
-            youngestItemDate = newDate;
-            changed = true;
-        }
     }
 
     public long getYoungestSyncedDate() {
@@ -812,22 +816,8 @@ public class Timeline implements Comparable<Timeline> {
         return oldestItemDate;
     }
 
-    public void setOldestItemDate(long newDate) {
-        if (newDate > 0 && oldestItemDate > newDate) {
-            oldestItemDate = newDate;
-            changed = true;
-        }
-    }
-
     public String getOldestPosition() {
         return oldestPosition;
-    }
-
-    public void setOldestPosition(String newPosition) {
-        if (StringUtils.isNewFilledValue(oldestPosition, newPosition)) {
-            oldestPosition = newPosition;
-            changed = true;
-        }
     }
 
     public long getOldestSyncedDate() {
