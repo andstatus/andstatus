@@ -27,6 +27,32 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
 		</subtitle>
     </header>
+    <release android:versionName="32.00" android:versionCode="205"
+             versionDate="2017-02-13"
+             versionTitle="Sync older messages">
+        <changes>
+            <change>AndStatus now can download older messages of a Timeline. When a User have scrolled down to the oldest
+                message of a timeline, the "Sync older messages" button is shown,
+                which allows to request next page of older messages from a server.
+                This may seem like a must have feature, but due to ability to store previously downloaded messages as long
+                as a User wishes, it was not frequently requested. In fact, ability to view older messages may be needed
+                mostly during the first day-two of AndStatus application usage, when there is not much data stored yet.
+                <a href="https://github.com/andstatus/andstatus/issues/354">#354</a>
+            </change>
+            <change>In order to simplify creation of new accounts, a long list of available "Social Networks" is divided
+                into the three groups: Twitter, Pump.io and GNU Social. Now, when a User starts addition of a new account,
+                he/she is prompted to select a "Type of Social Network" first. After this selection only social Networks
+                of the selected type are shown. Actually, only one Social Network of Twitter and of Pump.io types
+                are preconfigured after installation, so there is no need to select the only instance. But there are 7
+                preconfigured instances of GNU Social servers. Additional "Social networks" may be added by a User.
+                <a href="https://github.com/andstatus/andstatus/issues/212">#212</a>
+            </change>
+            <change>Another round to simplify AndStatus adoption by new Users. A form to add new account cleaned from
+                irrelevant data. Added the "Home timeline" button showing a way to proceed after successful account
+                creation.
+            </change>
+        </changes>
+    </release>
     <release android:versionName="31.04" android:versionCode="204"
              versionDate="2017-02-05"
              versionTitle="Conversation view and Search enhancements">
@@ -61,7 +87,7 @@
                 <a href="https://github.com/andstatus/andstatus/issues/368">#368</a>
             </change>
             <change>Default setting of the "Tap on a Timeline Title behaviour" option changed from "Switch to Default Timeline"
-            to "Select a Timeline". This doesn't affect existing users, but is more intuitive for novices.</change>
+                to "Select a Timeline". This doesn't affect existing users, but is more intuitive for novices.</change>
             <change>"Check and fix data" action added to the AndStatus Settings -&gt; "Storage" section.
                 This action should be used during problem troubleshooting to fix internal data problems,
                 which could cause AndStatus malfunction.</change>

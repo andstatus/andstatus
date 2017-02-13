@@ -912,7 +912,8 @@ public class TimelineActivity extends LoadableListActivity implements
         if (listView == null) {
             return;
         }
-        if (getListData().mayHaveOlderPage() || !getParamsLoaded().getTimeline().isSyncable()) {
+        if (getListData().mayHaveOlderPage() || (!getParamsLoaded().getTimeline().isCombined() &&
+                        !myContext.persistentAccounts().getCurrentAccount().isValidAndSucceeded()) ) {
             listView.removeFooterView(syncOlderView);
         } else {
             listView.addFooterView(syncOlderView);
