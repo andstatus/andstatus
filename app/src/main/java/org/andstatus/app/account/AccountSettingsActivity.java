@@ -389,6 +389,9 @@ public class AccountSettingsActivity extends MyActivity {
                         String.format(getText(ma.alternativeTermForResourceId(R.string.summary_preference_username)).toString(),
                                 ma.getOrigin().getName(), ma.getOrigin().getOriginType().validUsernameExamples));
                 usernameEditable.addTextChangedListener(textWatcher);
+                if (usernameEditable.getText().length() == 0) {
+                    usernameEditable.requestFocus();
+                }
             }
             if (ma.getUsername().compareTo(usernameEditable.getText().toString()) != 0) {
                 usernameEditable.setText(ma.getUsername());

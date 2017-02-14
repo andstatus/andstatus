@@ -42,10 +42,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="@string/summary_preference_username_webfinger_id"
-            android:textAppearance="?attr/messageBodyTextAppearance">
-
-            <requestFocus />
-        </org.andstatus.app.widget.LongHintEditText>
+            android:textAppearance="?attr/messageBodyTextAppearance" />
 
         <TextView
             android:id="@+id/username_readonly"

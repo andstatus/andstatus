@@ -212,7 +212,7 @@ public class DataInserter {
                             + execContext.getMyAccount().getAccountName() );
                 }
             }
-            if (!message.isSubscribed().equals(TriState.FALSE)) {
+            if (!message.isSubscribed().equals(TriState.FALSE) && message.sentDate > 0) {
                 if (execContext.getTimeline().getTimelineType() == TimelineType.HOME
                         || (!isDirectMessage && messageIn.getSenderId() == execContext.getMyAccount().getUserId())) {
                     message.setSubscribed(TriState.TRUE);
@@ -319,6 +319,7 @@ public class DataInserter {
             if (TextUtils.isEmpty(inReplyToMessage.conversationOid)) {
                 inReplyToMessage.setConversationOid(message.conversationOid);
             }
+            inReplyToMessage.setSubscribed(TriState.FALSE);
             // Type of the timeline is ALL meaning that message does not belong to this timeline
             DataInserter di = new DataInserter(execContext);
             // If the Msg is a Reply to another message

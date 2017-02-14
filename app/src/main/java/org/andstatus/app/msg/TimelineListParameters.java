@@ -313,13 +313,11 @@ public class TimelineListParameters {
                 break;
         }
 
-        if (minSentDate > 0) {
-            sa.addSelection(ProjectionMap.MSG_TABLE_ALIAS + "." + MsgTable.SENT_DATE
-                            + " >= ?",
-                    new String[]{
-                            String.valueOf(minSentDate)
-                    });
-        }
+        sa.addSelection(ProjectionMap.MSG_TABLE_ALIAS + "." + MsgTable.SENT_DATE
+                        + " >= ?",
+                new String[]{
+                        String.valueOf(minSentDate > 0 ? minSentDate : 1)
+                });
         if (maxSentDate > 0) {
             sa.addSelection(ProjectionMap.MSG_TABLE_ALIAS + "." + MsgTable.SENT_DATE
                             + " <= ?",
