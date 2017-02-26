@@ -1,0 +1,109 @@
+{
+  "created_at": "Wed Feb 22 07:37:28 +0000 2017",
+  "id": 834306097003581440,
+  "id_str": "834306097003581440",
+  "text": "Update: Streckensperrung zw. Berliner Tor &lt;&gt; Bergedorf. Ersatzverkehr mit Bussen und Taxis Störungsdauer bis ca. 10 Uhr. #hvv #sbahnhh",
+  "truncated": false,
+  "entities": {
+    "hashtags": [
+      {
+        "text": "hvv",
+        "indices": [
+          127,
+          131
+        ]
+      },
+      {
+        "text": "sbahnhh",
+        "indices": [
+          132,
+          140
+        ]
+      }
+    ],
+    "symbols": [],
+    "user_mentions": [],
+    "urls": []
+  },
+  "metadata": {
+    "iso_language_code": "de",
+    "result_type": "recent"
+  },
+  "source": "<a href=\"http:\/\/www.s-bahn.hamburg\" rel=\"nofollow\">sbahnhamburgHIM<\/a>",
+  "in_reply_to_status_id": null,
+  "in_reply_to_status_id_str": null,
+  "in_reply_to_user_id": null,
+  "in_reply_to_user_id_str": null,
+  "in_reply_to_screen_name": null,
+  "user": {
+    "id": 95618880,
+    "id_str": "95618880",
+    "name": "S-Bahn Hamburg",
+    "screen_name": "SBahnHamburg",
+    "location": "Hamburg und Umland",
+    "description": "Offizieller Informationskanal der S-Bahn Hamburg GmbH \nKundentelefon: (040) 3918-4385 (24h)  \ns-bahn.hamburg@deutschebahn.com",
+    "url": "http:\/\/t.co\/YNHAe7cVxw",
+    "entities": {
+      "url": {
+        "urls": [
+          {
+            "url": "http:\/\/t.co\/YNHAe7cVxw",
+            "expanded_url": "http:\/\/www.s-bahn.hamburg",
+            "display_url": "s-bahn.hamburg",
+            "indices": [
+              0,
+              22
+            ]
+          }
+        ]
+      },
+      "description": {
+        "urls": []
+      }
+    },
+    "protected": false,
+    "followers_count": 13281,
+    "friends_count": 18,
+    "listed_count": 159,
+    "created_at": "Wed Dec 09 10:30:09 +0000 2009",
+    "favourites_count": 1,
+    "utc_offset": 3600,
+    "time_zone": "Bern",
+    "geo_enabled": false,
+    "verified": false,
+    "statuses_count": 1260,
+    "lang": "de",
+    "contributors_enabled": false,
+    "is_translator": false,
+    "is_translation_enabled": false,
+    "profile_background_color": "C0DEED",
+    "profile_background_image_url": "http:\/\/pbs.twimg.com\/profile_background_images\/58687282\/Netzplan_Hamburg.jpg",
+    "profile_background_image_url_https": "https:\/\/pbs.twimg.com\/profile_background_images\/58687282\/Netzplan_Hamburg.jpg",
+    "profile_background_tile": false,
+    "profile_image_url": "http:\/\/pbs.twimg.com\/profile_images\/709679226102935552\/Pce8N7fF_normal.jpg",
+    "profile_image_url_https": "https:\/\/pbs.twimg.com\/profile_images\/709679226102935552\/Pce8N7fF_normal.jpg",
+    "profile_banner_url": "https:\/\/pbs.twimg.com\/profile_banners\/95618880\/1447830277",
+    "profile_link_color": "0084B4",
+    "profile_sidebar_border_color": "C0DEED",
+    "profile_sidebar_fill_color": "DDEEF6",
+    "profile_text_color": "333333",
+    "profile_use_background_image": true,
+    "has_extended_profile": false,
+    "default_profile": false,
+    "default_profile_image": false,
+    "following": false,
+    "follow_request_sent": false,
+    "notifications": false,
+    "translator_type": "none"
+  },
+  "geo": null,
+  "coordinates": null,
+  "place": null,
+  "contributors": null,
+  "is_quote_status": false,
+  "retweet_count": 7,
+  "favorite_count": 2,
+  "favorited": false,
+  "retweeted": false,
+  "lang": "de"
+}

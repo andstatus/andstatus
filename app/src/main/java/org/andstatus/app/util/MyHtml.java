@@ -70,9 +70,15 @@ public class MyHtml {
             if ( MyHtml.hasHtmlMarkup(text2)) {
                 text2 = Html.fromHtml(text2).toString();
             }
-            text2 = StringEscapeUtils.unescapeHtml4(text2);
+            text2 = unescapeHtml4(text2);
             return stripUnnecessaryNewlines(text2);
         }
+    }
+
+    public static String unescapeHtml4(String text2) {
+        return StringEscapeUtils.unescapeHtml4(text2)
+                // This is needed to avoid visible text truncation, see https://github.com/andstatus/andstatus/issues/441
+                .replaceAll("<>","< >");
     }
 
     public static String stripUnnecessaryNewlines(String text) {

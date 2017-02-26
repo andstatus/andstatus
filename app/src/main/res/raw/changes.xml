@@ -28,7 +28,7 @@
 		</subtitle>
     </header>
     <release android:versionName="32.00" android:versionCode="205"
-             versionDate="2017-02-13"
+             versionDate="2017-02-26"
              versionTitle="Sync older messages">
         <changes>
             <change>AndStatus now can download older messages of a Timeline. When a User have scrolled down to the oldest
@@ -50,6 +50,9 @@
             <change>Another round to simplify AndStatus adoption by new Users. A form to add new account cleaned from
                 irrelevant data. Added the "Home timeline" button showing a way to proceed after successful account
                 creation.
+            </change>
+            <change>
+                Fixed a case when Twitter message appeared truncated. <a href="https://github.com/andstatus/andstatus/issues/212">#212</a>
             </change>
         </changes>
     </release>

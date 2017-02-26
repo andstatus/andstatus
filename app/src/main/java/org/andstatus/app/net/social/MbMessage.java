@@ -104,10 +104,15 @@ public class MbMessage {
     public String getBodyToSearch() {
         return MyHtml.getBodyToSearch(body);
     }
+
+    private boolean isHtmlContentAllowed() {
+        return MyContextHolder.get().persistentOrigins().isHtmlContentAllowed(originId);
+    }
+
     public void setBody(String body) {
         if (TextUtils.isEmpty(body)) {
             this.body = "";
-        } else if (MyContextHolder.get().persistentOrigins().isHtmlContentAllowed(originId)) {
+        } else if (isHtmlContentAllowed()) {
             this.body = MyHtml.stripUnnecessaryNewlines(body);
         } else {
             this.body = MyHtml.fromHtml(body);
