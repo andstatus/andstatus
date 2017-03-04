@@ -61,6 +61,9 @@
                 Fixed a case when Twitter message appeared truncated.
                 <a href="https://github.com/andstatus/andstatus/issues/212">#212</a>
             </change>
+            <change>Link to <a href="https://github.com/andstatus/andstatus/issues?q=label%3AQuestions%26Answers%20">Questions
+                &amp; Answers</a> added to the AndStatus User Guide.
+                <a href="https://github.com/andstatus/andstatus/issues/443">#443</a></change>
         </changes>
     </release>
     <release android:versionName="31.04" android:versionCode="204"

@@ -18,7 +18,7 @@
  -->
 <FictionBook xmlns="http://www.gribuser.ru/xml/fictionbook/2.0"
 xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../../../res-src/fb2/FictionBook.xsd">
+xsi:schemaLocation="http://gribuser.ru/xml/fictionbook/2.0/xsd/FictionBook2.xsd ../../../../../res-src/fb2/FictionBook.xsd">
 <description>
     <title-info>
         <genre>computers</genre>
@@ -55,8 +55,12 @@ xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../../../re
         AndStatus combines your accounts from all networks into one Timeline
         and allows you reading and posting even while you are offline.</p>
     <p>Link to this guide is available in the Action bar-&gt;Help.</p>
-    <p>Change Log on the next page will allow you to see descriptions
+    <p><a xlink:href="http://andstatus.org/changelog.html">Change Log</a> will allow you to see descriptions
         and links to discussions of all features of AndStatus.</p>
+    <p>Most of Users' <strong>questions</strong> are already answered in corresponding "Issues" topics, specially
+        labeled as "Questions&amp;Answers". See and search among them:
+        <a xlink:href="https://github.com/andstatus/andstatus/issues?q=label%3AQuestions%26Answers%20">Questions
+            and answers</a>.</p>
 </section>
 <section>
     <title>
