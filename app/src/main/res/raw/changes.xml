@@ -28,7 +28,7 @@
 		</subtitle>
     </header>
     <release android:versionName="32.00" android:versionCode="205"
-             versionDate="2017-02-26"
+             versionDate="2017-03-04"
              versionTitle="Sync older messages">
         <changes>
             <change>AndStatus now can download older messages of a Timeline. When a User have scrolled down to the oldest
@@ -47,12 +47,19 @@
                 preconfigured instances of GNU Social servers. Additional "Social networks" may be added by a User.
                 <a href="https://github.com/andstatus/andstatus/issues/212">#212</a>
             </change>
-            <change>Another round to simplify AndStatus adoption by new Users. A form to add new account cleaned from
-                irrelevant data. Added the "Home timeline" button showing a way to proceed after successful account
-                creation.
+            <change>Another round to simplify AndStatus adoption by new Users.
+                <ul>
+                    <li>A form to add new account cleaned from
+                        irrelevant data. Added the "Home timeline" button showing a way to proceed after successful account
+                        creation.</li>
+                    <li>Added "Manage AndStatus accounts in Android Settings" item to Settings -> Accounts section.</li>
+                    <li>When you are creating new account and stay in a Web view, you can switch to another application
+                        (e.g. to lookup password) and back to continue account creation.</li>
+                </ul>
             </change>
             <change>
-                Fixed a case when Twitter message appeared truncated. <a href="https://github.com/andstatus/andstatus/issues/212">#212</a>
+                Fixed a case when Twitter message appeared truncated.
+                <a href="https://github.com/andstatus/andstatus/issues/212">#212</a>
             </change>
         </changes>
     </release>
@@ -876,7 +883,7 @@
 	            <a href="https://github.com/andstatus/andstatus/issues/187">#187</a>
 	        </change>
 	        <change>New AndStatus icons created.
-	            Thanks to <a href="https://status.vinilox.eu/moshpirit">status.vinilox.eu/moshpirit</a>
+	            Thanks to <a href="https://quitter.es/moshpirit">@moshpirit</a>
 	            for the contribution.
 	            <a href="https://github.com/andstatus/andstatus/issues/182">#182</a>
 	        </change>
@@ -1153,7 +1160,7 @@
                 updated in the background, new messages don't cause unexpected list scrolling any more.
                 See <a href="https://github.com/andstatus/andstatus/issues/7" >Issue #7</a>.</change>
             <change><a href="https://loadaverage.org/">Load Average</a>
-                and <a href="http://status.vinilox.eu/">Vinilox</a> "GNU social" sites are preconfigured,
+                and Vinilox "GNU social" sites are preconfigured,
                 in addition to <a href="https://quitter.se/">Quitter</a>.</change>
             </changes>
     </release>
