@@ -74,7 +74,7 @@ public class TimelineAdapter extends MessageListAdapter<TimelineViewItem> {
             TimelineViewItem item = getItem(positionToPreload);
             if (!preloadedImages.contains(item.getMsgId())) {
                 preloadedImages.add(item.getMsgId());
-                item.getAttachedImageFile().preloadAttachedImage(contextMenu.messageList);
+                item.getAttachedImageFile().preloadAttachedImage(contextMenu.getActivity());
                 break;
             }
         }
@@ -111,8 +111,8 @@ public class TimelineAdapter extends MessageListAdapter<TimelineViewItem> {
         boolean handled = false;
         if (MyPreferences.isLongPressToOpenContextMenu()) {
             TimelineViewItem item = getItem(v);
-            if (TimelineActivity.class.isAssignableFrom(contextMenu.messageList.getClass())) {
-                ((TimelineActivity) contextMenu.messageList).onItemClick(item);
+            if (TimelineActivity.class.isAssignableFrom(contextMenu.menuContainer.getClass())) {
+                ((TimelineActivity) contextMenu.menuContainer).onItemClick(item);
                 handled = true;
             }
         }

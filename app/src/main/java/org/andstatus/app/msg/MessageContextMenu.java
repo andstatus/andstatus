@@ -49,7 +49,7 @@ import static android.content.Context.ACCESSIBILITY_SERVICE;
  * @author yvolk@yurivolkov.com
  */
 public class MessageContextMenu extends MyContextMenu {
-    public final ActionableMessageList messageList;
+    public final MessageContextMenuContainer menuContainer;
     
     /**
      * Id of the Message that was selected (clicked, or whose context menu item
@@ -61,9 +61,9 @@ public class MessageContextMenu extends MyContextMenu {
     private MessageForAccount msg;
     private String selectedItemTitle = "";
 
-    public MessageContextMenu(ActionableMessageList actionableMessageList) {
-        super(actionableMessageList.getActivity());
-        messageList = actionableMessageList;
+    public MessageContextMenu(MessageContextMenuContainer menuContainer) {
+        super(menuContainer.getActivity());
+        this.menuContainer = menuContainer;
     }
 
     @Override
@@ -107,7 +107,7 @@ public class MessageContextMenu extends MyContextMenu {
                 MessageListContextMenuItem.COPY_AUTHOR.addTo(menu, order++, R.string.menu_item_copy_author);
             }
 
-            if (messageList.getTimeline().getUserId() != msg.senderId) {
+            if (menuContainer.getTimeline().getUserId() != msg.senderId) {
                 // Messages by a Sender of this message ("User timeline" of that user)
                 MessageListContextMenuItem.SENDER_MESSAGES.addTo(menu, order++,
                         String.format(
@@ -115,7 +115,7 @@ public class MessageContextMenu extends MyContextMenu {
                                 MyQuery.userIdToWebfingerId(msg.senderId)));
             }
 
-            if (messageList.getTimeline().getUserId() != msg.authorId && msg.senderId != msg.authorId) {
+            if (menuContainer.getTimeline().getUserId() != msg.authorId && msg.senderId != msg.authorId) {
                 // Messages by an Author of this message ("User timeline" of that user)
                 MessageListContextMenuItem.AUTHOR_MESSAGES.addTo(menu, order++,
                         String.format(
@@ -246,7 +246,7 @@ public class MessageContextMenu extends MyContextMenu {
         }
         MyLog.v(this, logMsg);
 
-        MessageForAccount msg2 = getMessageForAccount(myActorForThisMessage, messageList.getCurrentMyAccount());
+        MessageForAccount msg2 = getMessageForAccount(myActorForThisMessage, menuContainer.getCurrentMyAccount());
         setMyActor(msg2.getMyAccount());
         if (msg2.getMyAccount().isValid()) {
             msg = msg2;
@@ -262,7 +262,7 @@ public class MessageContextMenu extends MyContextMenu {
         if (ma1.isValid() && !forceFirstUser
                 && !msg.isTiedToThisAccount()
                 && ma1.getUserId() != currentMyAccount.getUserId()
-                && !messageList.getTimeline().getTimelineType().isForUser()) {
+                && !menuContainer.getTimeline().getTimelineType().isForUser()) {
             if (currentMyAccount.isValid() && ma1.getOriginId() == currentMyAccount.getOriginId()) {
                 msg = new MessageForAccount(mMsgId, originId, currentMyAccount);
             }
@@ -271,11 +271,11 @@ public class MessageContextMenu extends MyContextMenu {
     }
 
     private boolean isEditorVisible() {
-        return messageList.getMessageEditor().isVisible();
+        return menuContainer.getMessageEditor().isVisible();
     }
 
     protected long getCurrentMyAccountUserId() {
-        return messageList.getCurrentMyAccount().getUserId();
+        return menuContainer.getCurrentMyAccount().getUserId();
     }
 
     public void onContextItemSelected(MenuItem item) {

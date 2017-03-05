@@ -79,7 +79,7 @@ import java.util.Collections;
  * @author yvolk@yurivolkov.com
  */
 public class TimelineActivity extends LoadableListActivity implements
-        ActionableMessageList, AbsListView.OnScrollListener {
+        MessageContextMenuContainer, AbsListView.OnScrollListener {
     public static final String HORIZONTAL_ELLIPSIS = "\u2026";
 
     /** Parameters for the next page request, not necessarily requested already */

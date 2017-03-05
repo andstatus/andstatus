@@ -25,13 +25,13 @@ import android.support.annotation.Nullable;
 import android.view.View;
 import android.widget.ImageView;
 
+import org.andstatus.app.MyActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.database.DownloadTable;
 import org.andstatus.app.graphics.AttachedImageView;
 import org.andstatus.app.graphics.MyDrawableCache;
 import org.andstatus.app.graphics.MyImageCache;
-import org.andstatus.app.msg.ActionableMessageList;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.util.MyLog;
@@ -95,18 +95,18 @@ public class AttachedImageFile {
         return MyLog.objTagToString(this) + " [rowId=" + downloadRowId + ", " + downloadFile + "]";
     }
 
-    public void preloadAttachedImage(@NonNull ActionableMessageList messageList) {
+    public void preloadAttachedImage(@NonNull MyActivity myActivity) {
         Drawable drawable = getDrawableFromCache();
         if (drawable != null) {
             return;
         }
         if (downloadFile.exists()) {
-            setImageDrawableAsync(messageList, null, downloadFile.getFilePath(), "-preload");
+            setImageDrawableAsync(myActivity, null, downloadFile.getFilePath(), "-preload");
         }
     }
 
-    public void showAttachedImage(@NonNull ActionableMessageList messageList, ImageView imageView) {
-        if (imageView == null || !messageList.getActivity().isResumedMy()) {
+    public void showAttachedImage(@NonNull MyActivity myActivity, ImageView imageView) {
+        if (imageView == null || !myActivity.isResumedMy()) {
             return;
         }
         if (isEmpty()) {
@@ -128,7 +128,7 @@ public class AttachedImageFile {
         if (downloadFile.exists()) {
             imageView.setImageDrawable(BLANK_DRAWABLE);
             imageView.setVisibility(View.VISIBLE);
-            setImageDrawableAsync(messageList, imageView, downloadFile.getFilePath(), "-load");
+            setImageDrawableAsync(myActivity, imageView, downloadFile.getFilePath(), "-load");
         } else {
             imageView.setVisibility(View.GONE);
             if (downloadRowId == 0) {
@@ -140,7 +140,7 @@ public class AttachedImageFile {
         }
     }
 
-    private void setImageDrawableAsync(final ActionableMessageList messageList,
+    private void setImageDrawableAsync(final MyActivity myActivity,
                                        @Nullable final ImageView imageView, final String path,
                                        final String taskSuffix) {
         AsyncTaskLauncher.execute(this, false,
@@ -163,7 +163,7 @@ public class AttachedImageFile {
                     }
 
                     private void onEnded(Drawable drawable) {
-                        if (imageView == null || !messageList.getActivity().isResumedMy()) {
+                        if (imageView == null || !myActivity.isResumedMy()) {
                             return;
                         }
                         if (drawable == null) {

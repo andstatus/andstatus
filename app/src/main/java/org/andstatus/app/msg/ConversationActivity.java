@@ -51,7 +51,7 @@ import org.andstatus.app.widget.MyBaseAdapter;
  * 
  * @author yvolk@yurivolkov.com
  */
-public class ConversationActivity extends LoadableListActivity implements ActionableMessageList {
+public class ConversationActivity extends LoadableListActivity implements MessageContextMenuContainer {
     private MessageContextMenu mContextMenu;
     private MessageEditor mMessageEditor;
 

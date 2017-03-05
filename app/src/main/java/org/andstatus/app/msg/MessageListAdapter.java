@@ -134,7 +134,7 @@ public abstract class MessageListAdapter<T extends MessageViewItem> extends MyBa
 
     protected void showAttachedImage(View view, MessageViewItem item) {
         preloadedImages.add(item.getMsgId());
-        item.getAttachedImageFile().showAttachedImage(contextMenu.messageList,
+        item.getAttachedImageFile().showAttachedImage(contextMenu.getActivity(),
                 (ImageView) view.findViewById(R.id.attached_image));
     }
 

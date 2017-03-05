@@ -16,6 +16,7 @@
 
 package org.andstatus.app.user;
 
+import android.support.annotation.NonNull;
 import android.view.ContextMenu;
 import android.view.MenuItem;
 import android.view.View;
@@ -106,6 +107,7 @@ public class UserListContextMenu extends MyContextMenu {
         }
     }
 
+    @NonNull
     public UserListViewItem getViewItem() {
         if (mViewItem == null) {
             return UserListViewItem.getEmpty("");

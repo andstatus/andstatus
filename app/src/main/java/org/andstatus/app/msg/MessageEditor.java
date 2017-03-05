@@ -39,7 +39,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import org.andstatus.app.ActivityRequestCode;
-import org.andstatus.app.MyBaseListActivity;
+import org.andstatus.app.MyActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
@@ -53,7 +53,6 @@ import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
-import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TriState;
@@ -64,7 +63,7 @@ import org.andstatus.app.util.UriUtils;
  */
 public class MessageEditor {
 
-    private final ActionableMessageList mMessageList;
+    private final MessageEditorContainer editorContainer;
     private final android.view.ViewGroup mEditorView;
 
     /**
@@ -75,8 +74,8 @@ public class MessageEditor {
 
     private MessageEditorData editorData = MessageEditorData.INVALID;
 
-    public MessageEditor(ActionableMessageList actionableMessageList) {
-        mMessageList = actionableMessageList;
+    public MessageEditor(MessageEditorContainer editorContainer) {
+        this.editorContainer = editorContainer;
         mEditorView = getEditorView();
         mCharsLeftText = (TextView) mEditorView.findViewById(R.id.messageEditCharsLeftTextView);
         setupEditText();
@@ -279,11 +278,7 @@ public class MessageEditor {
     private void prepareCreateMessageButton(Menu menu) {
         MenuItem item = menu.findItem(R.id.createMessageButton);
         if (item != null) {
-            MyAccount accountForButton = accountForCreateMessageButton();
-            item.setVisible(!isVisible()
-                    && accountForButton.isValidAndSucceeded()
-                    && mMessageList.getTimeline().getTimelineType() != TimelineType.DIRECT
-                    && mMessageList.getTimeline().getTimelineType() != TimelineType.MESSAGES_TO_ACT);
+            item.setVisible(!isVisible() && accountForCreateMessageButton().isValidAndSucceeded());
         }
     }
 
@@ -291,7 +286,7 @@ public class MessageEditor {
         if (isVisible()) {
             return editorData.getMyAccount();
         } else {
-            return mMessageList.getCurrentMyAccount();
+            return editorContainer.getCurrentMyAccount();
         }
     }
 
@@ -336,7 +331,7 @@ public class MessageEditor {
             if (!isHardwareKeyboardAttached()) {
                 openSoftKeyboard();
             }
-            mMessageList.onMessageEditorVisibilityChange();
+            editorContainer.onMessageEditorVisibilityChange();
         }
     }
     
@@ -362,7 +357,7 @@ public class MessageEditor {
         if (isVisible()) {
             mEditorView.setVisibility(View.GONE);
             closeSoftKeyboard();
-            mMessageList.onMessageEditorVisibilityChange();
+            editorContainer.onMessageEditorVisibilityChange();
         }
     }
 
@@ -452,21 +447,20 @@ public class MessageEditor {
     private void showMessageDetails() {
         String messageDetails = "";
         if (editorData.inReplyToId != 0) {
-            String replyToName = MyQuery.msgIdToUsername(MsgTable.AUTHOR_ID, editorData.inReplyToId, MyPreferences.getUserInTimeline());
+            String replyToName = MyQuery.msgIdToUsername(MsgTable.AUTHOR_ID, editorData.inReplyToId,
+                    MyPreferences.getUserInTimeline());
             messageDetails += " " + String.format(
-                    MyContextHolder.get().context().getText(R.string.message_source_in_reply_to).toString(),
-                    replyToName);
+                    getActivity().getText(R.string.message_source_in_reply_to).toString(), replyToName);
         }
         if (editorData.recipientId != 0) {
             String recipientName = MyQuery.userIdToWebfingerId(editorData.recipientId);
             if (!TextUtils.isEmpty(recipientName)) {
                 messageDetails += " " + String.format(
-                        MyContextHolder.get().context().getText(R.string.message_source_to).toString(),
-                        recipientName);
+                        getActivity().getText(R.string.message_source_to).toString(), recipientName);
             }
         }
         if (!UriUtils.isEmpty(editorData.getMediaUri())) {
-            messageDetails += " (" + MyContextHolder.get().context().getText(R.string.label_with_media).toString()
+            messageDetails += " (" + getActivity().getText(R.string.label_with_media).toString()
                     + " " + editorData.getImageSize().x + "x" + editorData.getImageSize().y
                     + ", " + editorData.getImageFileSize()/1024 + "K" +
                     ")";
@@ -475,9 +469,7 @@ public class MessageEditor {
     }
 
     private boolean shouldShowAccountName() {
-        return mMessageList.getTimeline().isCombined()
-                || mMessageList.getTimeline().getTimelineType().isAtOrigin()
-                || !editorData.getMyAccount().equals(mMessageList.getCurrentMyAccount());
+        return MyContextHolder.get().persistentAccounts().size() > 1;
     }
 
     private void showAttachedImage() {
@@ -647,8 +639,8 @@ public class MessageEditor {
         }
     }
 
-    private MyBaseListActivity getActivity() {
-        return mMessageList.getActivity();
+    private MyActivity getActivity() {
+        return editorContainer.getActivity();
     }
 
     public MessageEditorData getData() {

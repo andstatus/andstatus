@@ -58,7 +58,7 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
 
         @Override
         void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
-            menu.messageList.getMessageEditor().startEditingMessage(editorData);
+            menu.menuContainer.getMessageEditor().startEditingMessage(editorData);
         }
     },
     EDIT(true) {
@@ -69,7 +69,7 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
 
         @Override
         void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
-            menu.messageList.getMessageEditor().startEditingMessage(editorData);
+            menu.menuContainer.getMessageEditor().startEditingMessage(editorData);
         }
     },
     RESEND(true) {
@@ -92,7 +92,7 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
 
         @Override
         void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
-            menu.messageList.getMessageEditor().startEditingMessage(editorData);
+            menu.menuContainer.getMessageEditor().startEditingMessage(editorData);
         }
     },
     REPLY_TO_MENTIONED_USERS(true) {
@@ -105,7 +105,7 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
 
         @Override
         void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
-            menu.messageList.getMessageEditor().startEditingMessage(editorData);
+            menu.menuContainer.getMessageEditor().startEditingMessage(editorData);
         }
     },
     DIRECT_MESSAGE(true) {
@@ -118,7 +118,7 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
         @Override
         void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
             if (editorData.recipientId != 0) {
-                menu.messageList.getMessageEditor().startEditingMessage(editorData);
+                menu.menuContainer.getMessageEditor().startEditingMessage(editorData);
             }
         }
     },
