@@ -16,19 +16,16 @@
 
 package org.andstatus.app.widget;
 
-import android.annotation.TargetApi;
 import android.content.Context;
-import android.os.Build;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.AttributeSet;
-import android.widget.EditText;
 
 /**
  * @author yvolk@yurivolkov.com
  * Inspired by http://stackoverflow.com/questions/31832665/android-how-to-create-edit-text-with-single-line-input-and-multiline-hint
  */
-public class LongHintEditText extends EditText {
+public class LongHintEditText extends android.support.v7.widget.AppCompatEditText {
     boolean singleLine = false;
     public LongHintEditText(Context context) {
         super(context);
@@ -69,10 +66,5 @@ public class LongHintEditText extends EditText {
     public LongHintEditText(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         setTextChangedListener();
-    }
-
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    public LongHintEditText(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
-        super(context, attrs, defStyleAttr, defStyleRes);
     }
 }

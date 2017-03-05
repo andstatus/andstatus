@@ -18,7 +18,6 @@ package org.andstatus.app.msg;
 
 import android.content.Context;
 import android.view.View;
-import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
 import org.andstatus.app.graphics.MyImageCache;
@@ -29,7 +28,7 @@ import org.andstatus.app.util.ViewUtils;
  * This custom ImageView allows dynamically crop its image according to the height of the other view
  * @author yvolk@yurivolkov.com
  */
-public class ConversationIndentImageView extends ImageView {
+public class ConversationIndentImageView extends android.support.v7.widget.AppCompatImageView {
     private final View referencedView;
     private final int widthPixels;
     private static final int MIN_HEIGHT = 80;

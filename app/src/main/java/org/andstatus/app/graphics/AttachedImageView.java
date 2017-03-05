@@ -16,12 +16,10 @@
 
 package org.andstatus.app.graphics;
 
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
-import android.widget.ImageView;
 
 import org.andstatus.app.R;
 import org.andstatus.app.util.MyLog;
@@ -30,7 +28,7 @@ import org.andstatus.app.util.MyLog;
  * The ImageView auto resizes to the width of the referenced view  
  * @author yvolk@yurivolkov.com
  */
-public class AttachedImageView extends ImageView {
+public class AttachedImageView extends android.support.v7.widget.AppCompatImageView {
     public static final double MAX_ATTACHED_IMAGE_PART = 0.75;
 
     private View referencedView = null;
