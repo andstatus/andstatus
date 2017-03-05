@@ -54,7 +54,7 @@ public class DownloadData {
     public static DownloadData getSingleForMessage(long msgIdIn, MyContentType contentTypeIn, Uri uriIn) {
         DownloadData data = new DownloadData(0, msgIdIn, contentTypeIn, Uri.EMPTY);
         if (!UriUtils.isEmpty(uriIn) && !data.getUri().equals(uriIn)) {
-            deleteAllOfThisMsg(msgIdIn);
+            deleteAllOfThisMsg(MyContextHolder.get().getDatabase(), msgIdIn);
             data = getThisForMessage(msgIdIn, contentTypeIn, uriIn);
         }
         return data;
@@ -316,10 +316,10 @@ public class DownloadData {
         final String method = "deleteOtherOfThisUser userId=" + userId + (rowId != 0 ? ", downloadId=" + rowId : "");
         String where = DownloadTable.USER_ID + "=" + userId
                 + (rowId != 0 ? " AND " + DownloadTable._ID + "<>" + Long.toString(rowId) : "") ;
-        deleteSelected(method, where);
+        deleteSelected(method, MyContextHolder.get().getDatabase(), where);
     }
 
-    private static void deleteSelected(final String method, String where) {
+    private static void deleteSelected(final String method, SQLiteDatabase db, String where) {
         String sql = "SELECT " + DownloadTable._ID + ", "
                 + DownloadTable.FILE_NAME
                 + " FROM " + DownloadTable.TABLE_NAME
@@ -327,7 +327,6 @@ public class DownloadData {
         int rowsDeleted = 0;
         boolean done = false;
         for (int pass=0; !done && pass<3; pass++) {
-            SQLiteDatabase db = MyContextHolder.get().getDatabase();
             if (db == null) {
                 MyLog.v(TAG, "Database is null");
                 return;
@@ -355,9 +354,9 @@ public class DownloadData {
         }
     }
 
-    public static void deleteAllOfThisMsg(long msgId) {
+    public static void deleteAllOfThisMsg(SQLiteDatabase db, long msgId) {
         final String method = "deleteAllOfThisMsg msgId=" + msgId;
-        deleteSelected(method, DownloadTable.MSG_ID + "=" + msgId);
+        deleteSelected(method, db, DownloadTable.MSG_ID + "=" + msgId);
     }
 
     public static void deleteOtherOfThisMsg(long msgId, List<Long> downloadIds) {
@@ -367,7 +366,7 @@ public class DownloadData {
         final String method = "deleteOtherOfThisMsg msgId=" + msgId + ", rowIds:" + toSqlList(downloadIds);
         String where = DownloadTable.MSG_ID + "=" + msgId
                 + " AND " + DownloadTable._ID + " NOT IN(" + toSqlList(downloadIds) + ")" ;
-        deleteSelected(method, where);
+        deleteSelected(method, MyContextHolder.get().getDatabase(), where);
     }
 
     public static String toSqlList(List<Long> longs) {

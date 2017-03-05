@@ -168,12 +168,16 @@ public class MessageContextMenu extends MyContextMenu {
             }
 
             if (msg.isSenderMySucceededAccount()) {
-                if (msg.isDirect()) {
-                    // This is a Direct Message
-                    // TODO: Delete Direct message
-                } else if (!msg.reblogged) {
-                    MessageListContextMenuItem.DESTROY_STATUS.addTo(menu, order++,
-                            R.string.menu_item_destroy_status);
+                if (msg.isLoaded()) {
+                    if (msg.isDirect()) {
+                        // This is a Direct Message
+                        // TODO: Delete Direct message
+                    } else if (!msg.reblogged) {
+                        MessageListContextMenuItem.DESTROY_STATUS.addTo(menu, order++,
+                                R.string.menu_item_destroy_status);
+                    }
+                } else {
+                    MessageListContextMenuItem.DESTROY_STATUS.addTo(menu, order++, R.string.button_discard);
                 }
             }
 

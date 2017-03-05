@@ -273,11 +273,11 @@ class CommandExecutorOther extends CommandExecutorStrategy{
     private void destroyStatus(long msgId) {
         final String method = "destroyStatus";
         boolean ok = false;
-        String oid = getMsgOid(method, msgId, true);
+        String oid = getMsgOid(method, msgId, false);
         try {
-            if (TextUtils.isEmpty(oid)) {
+            if (msgId == 0 || TextUtils.isEmpty(oid)) {
                 ok = true;
-                MyLog.e(this, "OID is empty for MsgId=" + msgId);
+                MyLog.i(this, method + "; OID is empty for MsgId=" + msgId);
             } else {
                 ok = execContext.getMyAccount().getConnection().destroyStatus(oid);
                 logOk(ok);
@@ -288,22 +288,19 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 // assume that it's Ok!
                 ok = true;
             } else {
-                logConnectionException(e, "Destroy Status " + oid);
+                logConnectionException(e, method + "; " + oid);
             }
         }
-
-        if (ok) {
-            // And delete the status from the local storage
+        if (ok && msgId != 0) {
             try {
                 execContext.getContext().getContentResolver()
                         .delete(MatchedUri.getMsgUri(0, msgId), null, null);
             } catch (Exception e) {
-                MyLog.e(this, "Error destroying status locally", e);
+                MyLog.e(this, "Error destroying message locally", e);
             }
         }
         MyLog.d(this, method + (noErrors() ? " succeeded" : " failed"));
     }
-
 
     /**
      * @param msgId ID of the message to destroy

@@ -20,7 +20,6 @@ import android.net.Uri;
 
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.os.MyAsyncTask;
@@ -71,7 +70,8 @@ public class MessageEditorSaver extends MyAsyncTask<MessageEditorCommand, Void, 
     private void saveCurrentData() {
         MyLog.v(MessageEditorData.TAG, "Saving current data:" + command.currentData);
         if (command.currentData.status == DownloadStatus.DELETED) {
-            deleteDraft(command.currentData);
+            MyContextHolder.get().context().getContentResolver()
+                    .delete(MatchedUri.getMsgUri(0, command.currentData.getMsgId()), null, null);
         } else {
             command.currentData.save(command.getMediaUri());
             if (command.beingEdited) {
@@ -86,12 +86,6 @@ public class MessageEditorSaver extends MyAsyncTask<MessageEditorCommand, Void, 
             }
         }
         broadcastDataChanged(command.currentData);
-    }
-
-    private void deleteDraft(MessageEditorData data) {
-        DownloadData.deleteAllOfThisMsg(data.getMsgId());
-        MyContextHolder.get().context().getContentResolver()
-                .delete(MatchedUri.getMsgUri(0, data.getMsgId()), null, null);
     }
 
     private void broadcastDataChanged(MessageEditorData data) {

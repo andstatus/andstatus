@@ -183,7 +183,7 @@ public class DataPruner {
             DbUtils.closeSilently(cursor);
         }
         for (Long msgId : list) {
-            DownloadData.deleteAllOfThisMsg(msgId);
+            DownloadData.deleteAllOfThisMsg(db, msgId);
             nDeleted++;
         }
         if (nDeleted > 0) {

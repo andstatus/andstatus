@@ -136,7 +136,7 @@ public class CommandExecutorStrategyTest extends InstrumentationTestCase {
                 TestSuite.getMyAccount(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME),
                 INEXISTENT_MSG_ID);
         CommandExecutorStrategy.executeCommand(commandData, null);
-        assertTrue(commandData.toString(), commandData.getResult().hasError());
+        assertFalse(commandData.toString(), commandData.getResult().hasError());
         
         httpConnectionMock.setException(null);
     }

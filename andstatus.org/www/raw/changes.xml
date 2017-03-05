@@ -64,6 +64,10 @@
             <change>Link to <a href="https://github.com/andstatus/andstatus/issues?q=label%3AQuestions%26Answers%20">Questions
                 &amp; Answers</a> added to the AndStatus User Guide.
                 <a href="https://github.com/andstatus/andstatus/issues/443">#443</a></change>
+            <change>
+                For unsent message or a draft context menu has "Discard" menu item, which allows to delete this message.
+                <a href="https://github.com/andstatus/andstatus/issues/436">#436</a>
+            </change>
         </changes>
     </release>
     <release android:versionName="31.04" android:versionCode="204"

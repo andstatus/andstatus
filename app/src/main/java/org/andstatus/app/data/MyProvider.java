@@ -89,6 +89,7 @@ public class MyProvider extends ContentProvider {
                 break;
 
             case MSG_ITEM:
+                DownloadData.deleteAllOfThisMsg(db, uriParser.getMessageId());
                 count = deleteMessages(db, BaseColumns._ID + "=" + uriParser.getMessageId(), null);
                 break;
                 
