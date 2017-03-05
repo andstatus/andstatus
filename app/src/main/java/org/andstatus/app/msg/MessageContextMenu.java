@@ -49,7 +49,7 @@ import static android.content.Context.ACCESSIBILITY_SERVICE;
  * @author yvolk@yurivolkov.com
  */
 public class MessageContextMenu extends MyContextMenu {
-    public final MessageContextMenuContainer menuContainer;
+    public final MessageListContextMenuContainer menuContainer;
     
     /**
      * Id of the Message that was selected (clicked, or whose context menu item
@@ -61,7 +61,7 @@ public class MessageContextMenu extends MyContextMenu {
     private MessageForAccount msg;
     private String selectedItemTitle = "";
 
-    public MessageContextMenu(MessageContextMenuContainer menuContainer) {
+    public MessageContextMenu(MessageListContextMenuContainer menuContainer) {
         super(menuContainer.getActivity());
         this.menuContainer = menuContainer;
     }

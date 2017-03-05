@@ -16,11 +16,15 @@
 
 package org.andstatus.app.msg;
 
-import org.andstatus.app.MyActivity;
+import org.andstatus.app.LoadableListActivity;
 import org.andstatus.app.account.MyAccount;
 
-interface MessageEditorContainer {
-    MyActivity getActivity();
+/**
+ * @author yvolk@yurivolkov.com
+ */
+public interface MessageEditorContainer {
+    LoadableListActivity getActivity();
     void onMessageEditorVisibilityChange();
     MyAccount getCurrentMyAccount();
+    MessageEditor getMessageEditor();
 }

@@ -187,6 +187,7 @@ public class MessageEditor {
     }
 
     public void onCreateOptionsMenu(Menu menu) {
+        editorContainer.getActivity().getMenuInflater().inflate(R.menu.message_editor, menu);
         createCreateMessageButton(menu);
         createAttachButton(menu);
         createSendButton(menu);

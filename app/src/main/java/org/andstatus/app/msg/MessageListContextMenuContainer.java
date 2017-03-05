@@ -16,15 +16,12 @@
 
 package org.andstatus.app.msg;
 
-import org.andstatus.app.LoadableListActivity;
 import org.andstatus.app.timeline.Timeline;
 
 /**
  * Activity should implement this interface in order to use {@link MessageContextMenu} 
  * @author yvolk@yurivolkov.com
  */
-public interface MessageContextMenuContainer extends MessageEditorContainer {
-    LoadableListActivity getActivity();
-    MessageEditor getMessageEditor();
+public interface MessageListContextMenuContainer extends MessageEditorContainer {
     Timeline getTimeline();
 }

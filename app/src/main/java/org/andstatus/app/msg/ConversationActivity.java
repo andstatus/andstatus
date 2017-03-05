@@ -17,7 +17,6 @@
 package org.andstatus.app.msg;
 
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -29,13 +28,11 @@ import android.widget.CompoundButton;
 
 import org.andstatus.app.ActivityRequestCode;
 import org.andstatus.app.IntentExtra;
-import org.andstatus.app.LoadableListActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.SyncLoader;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.QueueViewer;
 import org.andstatus.app.timeline.Timeline;
 import org.andstatus.app.timeline.TimelineType;
@@ -43,7 +40,6 @@ import org.andstatus.app.util.BundleUtils;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyCheckBox;
 import org.andstatus.app.util.TriState;
-import org.andstatus.app.util.UriUtils;
 import org.andstatus.app.widget.MyBaseAdapter;
 
 /**
@@ -51,9 +47,8 @@ import org.andstatus.app.widget.MyBaseAdapter;
  * 
  * @author yvolk@yurivolkov.com
  */
-public class ConversationActivity extends LoadableListActivity implements MessageContextMenuContainer {
+public class ConversationActivity extends MessageEditorListActivity implements MessageListContextMenuContainer {
     private MessageContextMenu mContextMenu;
-    private MessageEditor mMessageEditor;
 
     DrawerLayout mDrawerLayout;
     ActionBarDrawerToggle mDrawerToggle;
@@ -65,7 +60,6 @@ public class ConversationActivity extends LoadableListActivity implements Messag
         mLayoutId = R.layout.conversation;
         super.onCreate(savedInstanceState);
 
-        mMessageEditor = new MessageEditor(this);
         mContextMenu = new MessageContextMenu(this);
 
         showThreadsOfConversation = MyPreferences.isShowThreadsOfConversation();
@@ -95,14 +89,6 @@ public class ConversationActivity extends LoadableListActivity implements Messag
     }
 
     @Override
-    public boolean canSwipeRefreshChildScrollUp() {
-        if (mMessageEditor != null && mMessageEditor.isVisible()) {
-            return true;
-        }
-        return super.canSwipeRefreshChildScrollUp();
-    }
-
-    @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (ActivityRequestCode.fromId(requestCode)) {
             case SELECT_ACCOUNT_TO_ACT_AS:
@@ -115,43 +101,10 @@ public class ConversationActivity extends LoadableListActivity implements Messag
                     }
                 }
                 break;
-            case ATTACH:
-                if (resultCode == RESULT_OK && data != null) {
-                    Uri uri = UriUtils.notNull(data.getData());
-                    if (!UriUtils.isEmpty(uri)) {
-                        UriUtils.takePersistableUriPermission(getActivity(), uri, data.getFlags());
-                        mMessageEditor.startEditingCurrentWithAttachedMedia(uri);
-                    }
-                }
-                break;
             default:
                 super.onActivityResult(requestCode, resultCode, data);
                 break;
         }
-    }
-
-    @Override
-    protected void onPause() {
-        mMessageEditor.saveAsBeingEditedAndHide();
-        super.onPause();
-    }
-
-    @Override
-    protected void onReceiveAfterExecutingCommand(CommandData commandData) {
-        super.onReceiveAfterExecutingCommand(commandData);
-        switch (commandData.getCommand()) {
-            case UPDATE_STATUS:
-                mMessageEditor.loadCurrentDraft();
-                break;
-            default:
-                break;
-        }
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        mMessageEditor.loadCurrentDraft();
     }
 
     @Override
@@ -162,20 +115,14 @@ public class ConversationActivity extends LoadableListActivity implements Messag
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+        super.onCreateOptionsMenu(menu);
         getMenuInflater().inflate(R.menu.conversation, menu);
-        if (mMessageEditor != null) {
-            mMessageEditor.onCreateOptionsMenu(menu);
-        }
-        return super.onCreateOptionsMenu(menu);
+        return true;
     }
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         prepareDrawer();
-
-        if (mMessageEditor != null) {
-            mMessageEditor.onPrepareOptionsMenu(menu);
-        }
         return super.onPrepareOptionsMenu(menu);
     }
 
@@ -232,21 +179,6 @@ public class ConversationActivity extends LoadableListActivity implements Messag
     private void closeDrawer() {
         ViewGroup mDrawerList = (ViewGroup) findViewById(R.id.navigation_drawer);
         mDrawerLayout.closeDrawer(mDrawerList);
-    }
-
-    @Override
-    public LoadableListActivity getActivity() {
-        return this;
-    }
-
-    @Override
-    public MessageEditor getMessageEditor() {
-        return mMessageEditor;
-    }
-
-    @Override
-    public void onMessageEditorVisibilityChange() {
-        invalidateOptionsMenu();
     }
 
     @Override

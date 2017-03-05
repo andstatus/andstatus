@@ -22,17 +22,19 @@ import android.view.MenuItem;
 import android.view.View;
 
 import org.andstatus.app.ContextMenuHeader;
-import org.andstatus.app.LoadableListActivity;
 import org.andstatus.app.MyContextMenu;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.msg.MessageEditorContainer;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.MyLog;
 
 public class UserListContextMenu extends MyContextMenu {
+    public final MessageEditorContainer menuContainer;
 
-    public UserListContextMenu(LoadableListActivity listActivity) {
-        super(listActivity);
+    public UserListContextMenu(MessageEditorContainer menuContainer) {
+        super(menuContainer.getActivity());
+        this.menuContainer = menuContainer;
     }
 
     @Override
@@ -71,6 +73,11 @@ public class UserListContextMenu extends MyContextMenu {
                     UserListContextMenuItem.FOLLOW.addTo(menu, order++,
                             String.format(
                                     getActivity().getText(R.string.menu_item_follow_user).toString(), shortName));
+                }
+                if (!menuContainer.getMessageEditor().isVisible()) {
+                    // TODO: Only if he follows me?
+                    UserListContextMenuItem.DIRECT_MESSAGE.addTo(menu, order++,
+                            R.string.menu_item_direct_message);
                 }
                 switch (getMyActor().numberOfAccountsOfThisOrigin()) {
                     case 0:

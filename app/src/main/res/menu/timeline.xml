@@ -25,34 +25,6 @@
         android:title="@string/button_create_message">
     </item>
     <item
-        android:id="@+id/attach_menu_id"
-        android:alphabeticShortcut="a"
-        android:icon="?attr/attachIcon"
-        app:showAsAction="always"
-        android:title="@string/options_menu_attach"
-        android:visible="false">
-    </item>
-    <item
-        android:id="@+id/messageSendButton"
-        android:icon="?attr/sendIcon"
-        app:showAsAction="always"
-        android:title="@string/button_send"
-        android:visible="false">
-    </item>
-    <item
-        android:id="@+id/saveDraftButton"
-        android:icon="?attr/saveMessageIcon"
-        app:showAsAction="ifRoom"
-        android:title="@string/button_save_draft"
-        android:visible="false">
-    </item>
-    <item
-        android:id="@+id/discardButton"
-        app:showAsAction="never"
-        android:title="@string/button_discard"
-        android:visible="false">
-    </item>
-    <item
         android:id="@+id/global_search_menu_id"
         android:alphabeticShortcut="g"
         android:icon="?attr/globalSearchIcon"

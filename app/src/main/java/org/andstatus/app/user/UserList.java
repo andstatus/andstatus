@@ -22,9 +22,9 @@ import android.view.MenuItem;
 
 import org.andstatus.app.ActivityRequestCode;
 import org.andstatus.app.IntentExtra;
-import org.andstatus.app.LoadableListActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.msg.MessageEditorListActivity;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
@@ -36,7 +36,7 @@ import org.andstatus.app.widget.MyBaseAdapter;
  *  e.g. "Users of the message", "Followers of my account(s)" etc.
  *  @author yvolk@yurivolkov.com
  */
-public class UserList extends LoadableListActivity {
+public class UserList extends MessageEditorListActivity {
     protected UserListType mUserListType = UserListType.UNKNOWN;
     private UserListContextMenu contextMenu = null;
 
@@ -102,7 +102,8 @@ public class UserList extends LoadableListActivity {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        MyLog.v(this, "onActivityResult; request:" + requestCode + ", result:" + (resultCode == RESULT_OK ? "ok" : "fail"));
+        final String method = "onActivityResult";
+        MyLog.v(this, method + "; request:" + requestCode + ", result:" + (resultCode == RESULT_OK ? "ok" : "fail"));
         if (resultCode != RESULT_OK || data == null) {
             return;
         }

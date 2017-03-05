@@ -226,6 +226,10 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
         return myContext;
     }
 
+    public LoadableListActivity getActivity() {
+        return this;
+    }
+
     public interface ProgressPublisher {
         void publish(String progress);
     }

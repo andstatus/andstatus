@@ -25,6 +25,7 @@ import org.andstatus.app.MyAction;
 import org.andstatus.app.account.AccountSelector;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.data.MatchedUri;
+import org.andstatus.app.msg.MessageEditorData;
 import org.andstatus.app.msg.TimelineActivity;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.os.AsyncTaskLauncher;
@@ -52,7 +53,11 @@ public enum UserListContextMenuItem implements ContextMenuItem {
     DIRECT_MESSAGE() {
         @Override
         void executeOnUiThread(UserListContextMenu menu, MyAccount ma) {
-            // TODO
+            MessageEditorData editorData = MessageEditorData.newEmpty(menu.getMyActor())
+                    .setRecipientId(menu.getViewItem().getUserId());
+            if (editorData.recipientId != 0) {
+                menu.menuContainer.getMessageEditor().startEditingMessage(editorData);
+            }
         }
     },
     SHARE() {

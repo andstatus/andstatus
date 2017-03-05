@@ -39,7 +39,6 @@ import android.widget.TextView;
 import org.andstatus.app.ActivityRequestCode;
 import org.andstatus.app.HelpActivity;
 import org.andstatus.app.IntentExtra;
-import org.andstatus.app.LoadableListActivity;
 import org.andstatus.app.MyAction;
 import org.andstatus.app.R;
 import org.andstatus.app.SyncLoader;
@@ -78,8 +77,8 @@ import java.util.Collections;
 /**
  * @author yvolk@yurivolkov.com
  */
-public class TimelineActivity extends LoadableListActivity implements
-        MessageContextMenuContainer, AbsListView.OnScrollListener {
+public class TimelineActivity extends MessageEditorListActivity implements
+        MessageListContextMenuContainer, AbsListView.OnScrollListener {
     public static final String HORIZONTAL_ELLIPSIS = "\u2026";
 
     /** Parameters for the next page request, not necessarily requested already */
@@ -89,7 +88,6 @@ public class TimelineActivity extends LoadableListActivity implements
     private volatile TimelineData listData;
 
     private MessageContextMenu contextMenu;
-    private MessageEditor mMessageEditor;
 
     private String mTextToShareViaThisApp = "";
     private Uri mMediaToShareViaThisApp = Uri.EMPTY;
@@ -145,7 +143,6 @@ public class TimelineActivity extends LoadableListActivity implements
 
         getParamsNew().setTimeline(myContext.persistentTimelines().getHome());
         contextMenu = new MessageContextMenu(this);
-        mMessageEditor = new MessageEditor(this);
 
         initializeDrawer();
         getListView().setOnScrollListener(this);
@@ -330,7 +327,6 @@ public class TimelineActivity extends LoadableListActivity implements
     @Override
     protected void onResume() {
         String method = "onResume";
-        super.onResume();
         if (!mFinishing) {
             if (getCurrentMyAccount().isValid()) {
                 if (isConfigChanged()) {
@@ -344,9 +340,7 @@ public class TimelineActivity extends LoadableListActivity implements
                 finish();
             }
         }
-        if (!mFinishing) {
-            mMessageEditor.loadCurrentDraft();
-        }
+        super.onResume();
     }
 
     @Override
@@ -358,7 +352,6 @@ public class TimelineActivity extends LoadableListActivity implements
         hideLoading(method);
         hideSyncing(method);
         crashTest();
-        mMessageEditor.saveAsBeingEditedAndHide();
         saveListPosition();
         myContext.persistentTimelines().saveChanged();
         super.onPause();
@@ -399,11 +392,9 @@ public class TimelineActivity extends LoadableListActivity implements
     
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+        super.onCreateOptionsMenu(menu);
         getMenuInflater().inflate(R.menu.timeline, menu);
-        if (mMessageEditor != null) {
-            mMessageEditor.onCreateOptionsMenu(menu);
-        }
-        return super.onCreateOptionsMenu(menu);
+        return true;
     }
 
     @Override
@@ -420,10 +411,6 @@ public class TimelineActivity extends LoadableListActivity implements
 
         if (contextMenu != null) {
             contextMenu.setMyActor(MyAccount.getEmpty());
-        }
-
-        if (mMessageEditor != null) {
-            mMessageEditor.onPrepareOptionsMenu(menu);
         }
 
         boolean enableGlobalSearch = myContext.persistentOrigins()
@@ -720,7 +707,7 @@ public class TimelineActivity extends LoadableListActivity implements
     private void updateScreen() {
         MyServiceManager.setServiceAvailable();
         invalidateOptionsMenu();
-        mMessageEditor.updateScreen();
+        getMessageEditor().updateScreen();
         updateTitle(mRateLimitText);
         mDrawerToggle.setDrawerIndicatorEnabled(!getParamsLoaded().isAtHome());
         ViewUtils.showView(
@@ -992,8 +979,8 @@ public class TimelineActivity extends LoadableListActivity implements
 
     protected void crashTest() {
         final String CRASH_TEST_STRING = "Crash test 2015-04-10";
-        if (MyLog.isVerboseEnabled() && mMessageEditor != null &&
-                    mMessageEditor.getData().body.contains(CRASH_TEST_STRING)) {
+        if (MyLog.isVerboseEnabled() && getMessageEditor() != null &&
+                getMessageEditor().getData().body.contains(CRASH_TEST_STRING)) {
             MyLog.e(this, "Initiating crash test exception");
             throw new NullPointerException("This is a test crash event");
         }
@@ -1023,9 +1010,6 @@ public class TimelineActivity extends LoadableListActivity implements
                 break;
             case SELECT_ACCOUNT_TO_SHARE_VIA:
                 accountToShareViaSelected(data);
-                break;
-            case ATTACH:
-                attachmentSelected(data);
                 break;
             case SELECT_TIMELINE:
                 Timeline timeline = myContext.persistentTimelines()
@@ -1060,15 +1044,7 @@ public class TimelineActivity extends LoadableListActivity implements
 
     private void accountToShareViaSelected(Intent data) {
         MyAccount ma = myContext.persistentAccounts().fromAccountName(data.getStringExtra(IntentExtra.ACCOUNT_NAME.key));
-        mMessageEditor.startEditingSharedData(ma, mTextToShareViaThisApp, mMediaToShareViaThisApp);
-    }
-
-    private void attachmentSelected(Intent data) {
-        Uri uri = UriUtils.notNull(data.getData());
-        if (!UriUtils.isEmpty(uri)) {
-            UriUtils.takePersistableUriPermission(getActivity(), uri, data.getFlags());
-            mMessageEditor.startEditingCurrentWithAttachedMedia(uri);
-        }
+        getMessageEditor().startEditingSharedData(ma, mTextToShareViaThisApp, mMediaToShareViaThisApp);
     }
 
     @Override
@@ -1099,13 +1075,10 @@ public class TimelineActivity extends LoadableListActivity implements
 
     @Override
     public boolean canSwipeRefreshChildScrollUp() {
-        if ((mMessageEditor != null && mMessageEditor.isVisible()) ||  super.canSwipeRefreshChildScrollUp()) {
-            return true;
-        }
         if (getListData().mayHaveYoungerPage()) {
             return true;
         }
-        return false;
+        return super.canSwipeRefreshChildScrollUp();
     }
 
     @Override
@@ -1117,9 +1090,6 @@ public class TimelineActivity extends LoadableListActivity implements
                             + commandData.getResult().getHourlyLimit();
                     updateTitle(mRateLimitText);
                 }
-                break;
-            case UPDATE_STATUS:
-                mMessageEditor.loadCurrentDraft();
                 break;
             default:
                 break;
@@ -1166,19 +1136,9 @@ public class TimelineActivity extends LoadableListActivity implements
     }
 
     @Override
-    public LoadableListActivity getActivity() {
-        return this;
-    }
-
-    @Override
-    public MessageEditor getMessageEditor() {
-        return mMessageEditor;
-    }
-
-    @Override
     public void onMessageEditorVisibilityChange() {
         hideSyncing("onMessageEditorVisibilityChange");
-        invalidateOptionsMenu();
+        super.onMessageEditorVisibilityChange();
     }
 
     @Override
