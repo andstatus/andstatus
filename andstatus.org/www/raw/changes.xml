@@ -27,8 +27,8 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
 		</subtitle>
     </header>
-    <release android:versionName="32.00" android:versionCode="205"
-             versionDate="2017-03-04"
+    <release android:versionName="32.01" android:versionCode="206"
+             versionDate="2017-03-05"
              versionTitle="Sync older messages">
         <changes>
             <change>AndStatus now can download older messages of a Timeline. When a User have scrolled down to the oldest
@@ -67,6 +67,13 @@
             <change>
                 For unsent message or a draft context menu has "Discard" menu item, which allows to delete this message.
                 <a href="https://github.com/andstatus/andstatus/issues/436">#436</a>
+            </change>
+            <change>
+                "Direct Message" context menu item added to a User List. This means that now you can send a Direct Message
+                to any user, mentioned in a Message, via a "Users of message" list. You can also open a list of a User's
+                Friends and send a Direct Message to any User from that list (some systems allow to send Direct messages
+                only to users, who follow us).
+                <a href="https://github.com/andstatus/andstatus/issues/438">#438</a>
             </change>
         </changes>
     </release>
