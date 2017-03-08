@@ -27,8 +27,8 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
 		</subtitle>
     </header>
-    <release android:versionName="32.01" android:versionCode="206"
-             versionDate="2017-03-05"
+    <release android:versionName="32.02" android:versionCode="207"
+             versionDate="2017-03-08"
              versionTitle="Sync older messages">
         <changes>
             <change>AndStatus now can download older messages of a Timeline. When a User have scrolled down to the oldest
