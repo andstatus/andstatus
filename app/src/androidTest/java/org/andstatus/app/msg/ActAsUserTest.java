@@ -70,7 +70,10 @@ public class ActAsUserTest extends android.test.ActivityInstrumentationTestCase2
 
         ActivityTestHelper.closeContextMenu(this);
 
-        assertTrue(logMsg, actor1.getUserId() != actor1.firstOtherAccountOfThisOrigin().getUserId());
+        logMsg += "MyContext: " + MyContextHolder.get();
+        MyAccount firstOtherActor = actor1.firstOtherAccountOfThisOrigin();
+        logMsg += "; firstOtherActor=" + firstOtherActor;
+        assertNotSame(logMsg, actor1, firstOtherActor);
 
         helper.invokeContextMenuAction4ListItemId(method, msgId, MessageListContextMenuItem.ACT_AS_FIRST_OTHER_USER);
         MyAccount actor2 = getActivity().getContextMenu().getMyActor();

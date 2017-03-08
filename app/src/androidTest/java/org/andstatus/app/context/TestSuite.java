@@ -242,10 +242,13 @@ public class TestSuite extends TestCase {
                     ", status=" + asyncTask.getStatus() + ", " + asyncTask.toString(), asyncTask.needsBackgroundWork());
 
             MyPreferences.onPreferencesChanged();
+            MyContextHolder.setExpiredIfConfigChanged();
             MyContextHolder.initialize(context, method);
             MyServiceManager.setServiceUnavailable();
             assertTrue("Context is not ready", MyContextHolder.get().isReady());
             assertEquals("Data path", "ok", TestSuite.checkDataPath(method));
+            int size = MyContextHolder.get().persistentAccounts().size();
+            assertTrue("Only " + size + " accounts added: " + MyContextHolder.get().persistentAccounts(), size > 5);
             PersistentTimelinesTest.checkDefaultTimelinesForOrigins();
             PersistentTimelinesTest.checkDefaultTimelinesForAccounts();
 

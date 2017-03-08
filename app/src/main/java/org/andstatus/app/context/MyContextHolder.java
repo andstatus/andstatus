@@ -106,20 +106,26 @@ public final class MyContextHolder {
     }
 
     public static MyContext initializeDuringUpgrade(Context context, Object initializedBy) {
-        if (get().initialized() && !get().isExpired()) {
-            MyLog.v(TAG, "Already initialized by " + get().initializedBy() +  " (called by: " + initializedBy + ")");
-        } else {
-            MyLog.d(TAG, "Starting initialization by " + initializedBy);
+        MyContext myContext = myInitializedContext;
+        if (myContext != null && myContext.initialized() && !myContext.isExpired()) {
+            MyLog.v(TAG, "Already initialized " + myContext +  " (called" +
+                    " " +
+                    "by: " +
+                    initializedBy + ")");
+            return myContext;
         }
+
+        MyLog.d(TAG, "Starting initialization by " + initializedBy);
         try {
             return getBlocking(context, initializedBy);
         } catch (InterruptedException e) {
+            myContext = get();
             MyLog.d(TAG, "Initialize was interrupted, releasing resources...", e);
             synchronized(CONTEXT_LOCK) {
-                get().setExpired();
+                myContext.setExpired();
             }
             Thread.currentThread().interrupt();
-            return get();
+            return myContext;
         }
     }
 

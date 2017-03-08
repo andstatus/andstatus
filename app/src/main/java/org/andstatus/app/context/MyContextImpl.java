@@ -101,7 +101,7 @@ public final class MyContextImpl implements MyContext {
             MyLog.v(getTag(), method + " Starting initialization of " + myContext.instanceId + " by " + myContext.mInitializedBy);
             myContext.initialize2();
         }
-        MyLog.v(getTag(), toString());
+        MyLog.v(getTag(), method + " " + myContext.toString());
         return myContext;
     }
 
@@ -167,8 +167,9 @@ public final class MyContextImpl implements MyContext {
 
     @Override
     public String toString() {
-        return  getTag() + " initialized by " + mInitializedBy + "; state=" + mState +
+        return  getTag() + " by " + mInitializedBy + "; state=" + mState +
                 "; " + (isExpired() && (mState != MyContextState.EXPIRED) ? "expired" : "") +
+                persistentAccounts().size() + " accounts, " +
                 (mContext == null ? "no context" : "context=" + mContext.getClass().getName());
     }
 
@@ -376,4 +377,9 @@ public final class MyContextImpl implements MyContext {
         NotificationManager nM = (NotificationManager) context().getSystemService(android.content.Context.NOTIFICATION_SERVICE);
         nM.cancel(MyLog.APPTAG, id.ordinal());
 	}
+
+    @Override
+    public long instanceId() {
+        return instanceId;
+    }
 }

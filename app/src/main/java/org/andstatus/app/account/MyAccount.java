@@ -986,7 +986,7 @@ public final class MyAccount implements Comparable<MyAccount> {
      */
     public MyAccount firstOtherAccountOfThisOrigin() {
         for (MyAccount persistentAccount : MyContextHolder.get().persistentAccounts().list()) {
-            if (persistentAccount.getOriginId() == this.getOriginId() 
+            if (persistentAccount.getOriginId() == this.getOriginId()
                     && !persistentAccount.equals(this)) {
                 return persistentAccount;
             }

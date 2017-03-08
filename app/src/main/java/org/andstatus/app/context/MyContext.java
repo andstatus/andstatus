@@ -60,6 +60,7 @@ public interface MyContext {
     void setInForeground(boolean inForeground);
     void notify(TimelineType id, Notification notification);
     void clearNotification(TimelineType id);
+    long instanceId();
     
     // For testing
     boolean isTestRun();

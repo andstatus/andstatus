@@ -245,8 +245,13 @@ public class MyContextForTest implements MyContext {
 		myContext.clearNotification(id);
 		notifications.remove(id);
 	}
-	
-	public Map<TimelineType, Notification> getNotifications() {
+
+    @Override
+    public long instanceId() {
+        return myContext.instanceId();
+    }
+
+    public Map<TimelineType, Notification> getNotifications() {
 		return notifications;
 	}
 
