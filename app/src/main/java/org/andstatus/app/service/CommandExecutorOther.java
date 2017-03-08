@@ -168,7 +168,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
             }
         }
         if (noErrors()) {
-            if (message.favoritedByActor.toBoolean(!create) != create) {
+            if (message.getFavoritedByActor().toBoolean(!create) != create) {
                 /**
                  * yvolk: 2011-09-27 Twitter docs state that
                  * this may happen due to asynchronous nature of
@@ -180,7 +180,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                     // For the case we created favorite, let's
                     // change
                     // the flag manually.
-                    message.favoritedByActor = TriState.fromBoolean(create);
+                    message.setFavoritedByActor(TriState.fromBoolean(create));
 
                     MyLog.d(this, method + "; Favorited flag didn't change yet.");
                     // Let's try to assume that everything was OK

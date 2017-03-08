@@ -392,6 +392,7 @@ public class TimelineActivity extends MessageEditorListActivity implements
     
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.create_message, menu);
         super.onCreateOptionsMenu(menu);
         getMenuInflater().inflate(R.menu.timeline, menu);
         return true;

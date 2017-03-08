@@ -283,7 +283,7 @@ public abstract class ConnectionTwitter extends Connection {
                 message.via = jso.getString("source");
             }
             if (jso.has("favorited")) {
-                message.favoritedByActor = TriState.fromBoolean(SharedPreferencesUtil.isTrue(jso.getString("favorited")));
+                message.setFavoritedByActor(TriState.fromBoolean(SharedPreferencesUtil.isTrue(jso.getString("favorited"))));
             }
 
             // If the Msg is a Reply to other message

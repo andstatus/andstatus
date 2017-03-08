@@ -64,7 +64,7 @@ public class ConnectionGnuSocialTest extends InstrumentationTestCase {
         assertEquals("Posting message", MbTimelineItem.ItemType.MESSAGE, timeline.get(ind).getType());
         MbMessage mbMessage = timeline.get(ind).mbMessage;
         assertEquals("conversationOid", "2218650", mbMessage.conversationOid);
-        assertTrue("Favorited", mbMessage.favoritedByActor.toBoolean(false));
+        assertTrue("Favorited", mbMessage.getFavoritedByActor().toBoolean(false));
         assertEquals("Oid", "116387", mbMessage.sender.oid);
         assertEquals("Username", "aru", mbMessage.sender.getUserName());
         assertEquals("WebFinger ID", "aru@status.vinilox.eu", mbMessage.sender.getWebFingerId());
@@ -90,7 +90,7 @@ public class ConnectionGnuSocialTest extends InstrumentationTestCase {
         assertTrue("Is a reply", mbMessage.inReplyToMessage != null);
         assertEquals("Reply to the message id", "2663833", mbMessage.inReplyToMessage.oid);
         assertEquals("Reply to the message by userOid", "114973", mbMessage.inReplyToMessage.sender.oid);
-        assertFalse("Is not Favorited", mbMessage.favoritedByActor.toBoolean(true));
+        assertFalse("Is not Favorited", mbMessage.getFavoritedByActor().toBoolean(true));
         String startsWith = "@<span class=\"vcard\">";
         assertEquals("Body of this message starts with", startsWith, mbMessage.getBody().substring(0, startsWith.length()));
         assertEquals("Username", "andstatus", mbMessage.sender.getUserName());
@@ -101,7 +101,7 @@ public class ConnectionGnuSocialTest extends InstrumentationTestCase {
         mbMessage = timeline.get(ind).mbMessage;
         assertEquals("conversationOid", "2218650", mbMessage.conversationOid);
         assertTrue("Message is public", mbMessage.isPublic());
-        assertFalse("Not Favorited", mbMessage.favoritedByActor.toBoolean(false));
+        assertFalse("Not Favorited", mbMessage.getFavoritedByActor().toBoolean(false));
         assertEquals("Actor", accountUserOid, mbMessage.actor.oid);
         assertEquals("Oid", "114973", mbMessage.sender.oid);
         assertEquals("Username", "mmn", mbMessage.sender.getUserName());

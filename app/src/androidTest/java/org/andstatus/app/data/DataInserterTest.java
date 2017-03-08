@@ -219,7 +219,7 @@ public class DataInserterTest extends InstrumentationTestCase {
         message.via = "SomeOtherClient";
         message.sender = author;
         message.actor = firstReader;
-        message.favoritedByActor = TriState.TRUE;
+        message.setFavoritedByActor(TriState.TRUE);
 
         DataInserter di = new DataInserter(TestSuite.getConversationMyAccount());
         long messageId = di.insertOrUpdateMsg(message);
@@ -261,7 +261,7 @@ public class DataInserterTest extends InstrumentationTestCase {
         message.via = "UnknownClient";
         message.sender = author;
         message.actor = TestSuite.getConversationMbUser();
-        message.favoritedByActor = TriState.TRUE;
+        message.setFavoritedByActor(TriState.TRUE);
 
         String inReplyToOid = "https://identi.ca/api/comment/dfjklzdfSf28skdkfgloxWB";
         MbMessage inReplyTo = MbMessage.fromOriginAndOid(TestSuite.getConversationOriginId(),

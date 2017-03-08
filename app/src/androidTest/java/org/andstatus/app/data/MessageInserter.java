@@ -24,9 +24,9 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.database.MsgOfUserTable;
 import org.andstatus.app.database.MsgTable;
-import org.andstatus.app.net.social.pumpio.ConnectionPumpio;
 import org.andstatus.app.net.social.MbMessage;
 import org.andstatus.app.net.social.MbUser;
+import org.andstatus.app.net.social.pumpio.ConnectionPumpio;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.service.CommandData;
@@ -137,7 +137,7 @@ public class MessageInserter extends InstrumentationTestCase {
         return new MessageInserter(ma).addMessage(message);
     }
 
-    public long addMessage(MbMessage messageIn) {
+    public long addMessage(final MbMessage messageIn) {
         DataInserter di = new DataInserter(new CommandExecutionContext(
                         CommandData.newTimelineCommand(CommandEnum.EMPTY, ma,
                                 messageIn.isPublic() ? TimelineType.PUBLIC : TimelineType.HOME)));
@@ -151,20 +151,21 @@ public class MessageInserter extends InstrumentationTestCase {
         assertTrue("Message permalink is a valid URL '" + permalink + "',\n" + message.toString()
                 + "\n author: " + message.sender.toString(), urlPermalink != null);
         if (origin.getUrl() != null && origin.getOriginType() != OriginType.TWITTER) {
-            assertEquals("Message permalink has the same host as origin, " + message.toString(), origin.getUrl().getHost(), urlPermalink.getHost());
+            assertEquals("Message permalink has the same host as origin, " + message.toString(),
+                    origin.getUrl().getHost(), urlPermalink.getHost());
         }
         if (!TextUtils.isEmpty(message.url)) {
             assertEquals("Message permalink", message.url, origin.messagePermalink(messageId));
         }
         
-        if (message.favoritedByActor == TriState.TRUE) {
-            long msgIdFromMsgOfUser = MyQuery.conditionToLongColumnValue(MsgOfUserTable.TABLE_NAME, MsgOfUserTable.MSG_ID,
-                    "t." + MsgOfUserTable.MSG_ID + "=" + messageId);
-            assertEquals("msgOfUser found for msgId=" + messageId, messageId, msgIdFromMsgOfUser);
+        if (message.getFavoritedByActor() == TriState.TRUE) {
+            long msgIdFromMsgOfUser = MyQuery.conditionToLongColumnValue(MsgOfUserTable.TABLE_NAME,
+                    MsgOfUserTable.MSG_ID, "t." + MsgOfUserTable.MSG_ID + "=" + messageId);
+            assertEquals("msgOfUser found for " + messageIn, messageId, msgIdFromMsgOfUser);
             
-            long userIdFromMsgOfUser = MyQuery.conditionToLongColumnValue(MsgOfUserTable.TABLE_NAME, MsgOfUserTable.MSG_ID,
-                    "t." + MsgOfUserTable.USER_ID + "=" + ma.getUserId());
-            assertEquals("userId found for msgId=" + messageId, ma.getUserId(), userIdFromMsgOfUser);
+            long userIdFromMsgOfUser = MyQuery.conditionToLongColumnValue(MsgOfUserTable.TABLE_NAME, MsgOfUserTable
+                            .USER_ID, "t." + MsgOfUserTable.USER_ID + "=" + ma.getUserId());
+            assertEquals("userId found for " + messageIn, ma.getUserId(), userIdFromMsgOfUser);
         }
 
         if (messageIn.rebloggedMessage != null) {

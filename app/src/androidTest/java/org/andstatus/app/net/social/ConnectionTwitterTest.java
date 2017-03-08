@@ -90,7 +90,7 @@ public class ConnectionTwitterTest extends InstrumentationTestCase {
         String hostName = TestSuite.getTestOriginHost(TestSuite.TWITTER_TEST_ORIGIN_NAME).replace("api.", "");
         assertEquals("Posting message", MbTimelineItem.ItemType.MESSAGE, timeline.get(ind).getType());
         MbMessage message = timeline.get(ind).mbMessage;
-        assertTrue("Favorited", message.favoritedByActor.toBoolean(false));
+        assertTrue("Favorited", message.getFavoritedByActor().toBoolean(false));
         assertEquals("Actor", connectionData.getAccountUserOid(), message.actor.oid);
         assertEquals("Oid", "221452291", message.sender.oid);
         assertEquals("Username", "Know", message.sender.getUserName());
@@ -118,7 +118,7 @@ public class ConnectionTwitterTest extends InstrumentationTestCase {
         assertEquals("Reply to the message id", "17176774678", message.inReplyToMessage.oid);
         assertEquals("Reply to the message by userOid", TestSuite.TWITTER_TEST_ACCOUNT_USER_OID, message.inReplyToMessage.sender.oid);
         assertTrue("Reply status is unknown", message.inReplyToMessage.getStatus() == DownloadStatus.UNKNOWN);
-        assertTrue("Is not Favorited", !message.favoritedByActor.toBoolean(true));
+        assertTrue("Is not Favorited", !message.getFavoritedByActor().toBoolean(true));
         String startsWith = "@t131t";
         assertEquals("Body of this message starts with", startsWith, message.getBody().substring(0, startsWith.length()));
 
@@ -129,7 +129,7 @@ public class ConnectionTwitterTest extends InstrumentationTestCase {
         assertTrue("Is not a reply", message.inReplyToMessage == null);
         assertEquals("Reblog of the message id", "315088751183409153", message.rebloggedMessage.oid);
         assertEquals("Reblog of the message by userOid", "442756884", message.rebloggedMessage.sender.oid);
-        assertTrue("Is not Favorited", !message.favoritedByActor.toBoolean(true));
+        assertTrue("Is not Favorited", !message.getFavoritedByActor().toBoolean(true));
         startsWith = "RT @AndStatus1: This AndStatus application";
         assertEquals("Body of this message starts with", startsWith, message.getBody().substring(0, startsWith.length()));
         startsWith = "This AndStatus application";
@@ -144,7 +144,7 @@ public class ConnectionTwitterTest extends InstrumentationTestCase {
         assertTrue("Does not have a recipient", message.recipient == null);
         assertTrue("Is not a reblog", message.rebloggedMessage == null);
         assertTrue("Is not a reply", message.inReplyToMessage == null);
-        assertTrue("Is not Favorited", !message.favoritedByActor.toBoolean(true));
+        assertTrue("Is not Favorited", !message.getFavoritedByActor().toBoolean(true));
         assertEquals("Author's oid is user oid of this account", connectionData.getAccountUserOid(), message.sender.oid);
         startsWith = "And this is";
         assertEquals("Body of this message starts with", startsWith, message.getBody().substring(0, startsWith.length()));

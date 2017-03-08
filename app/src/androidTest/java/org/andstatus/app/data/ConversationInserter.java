@@ -127,13 +127,18 @@ public class ConversationInserter extends InstrumentationTestCase {
         reblog1.rebloggedMessage = reply5;
         addMessage(reblog1);
 
-        addMessage(buildMessage(author3, "Reply 6 to Reply 4 - the second", reply4, null));
+        addMessage(buildMessage(author3, "Reply 6 to Reply 4 - the second", reply4, null).
+                setFavoritedByActor(TriState.TRUE));
 
         MbMessage reply7 = buildMessage(getAuthor1(), "Reply 7 to Reply 2 is about " 
         + TestSuite.PUBLIC_MESSAGE_TEXT + " and something else", reply2, null);
         addPublicMessage(reply7, true);
         
         MbMessage reply8 = buildMessage(author4, "<b>Reply 8</b> to Reply 7", reply7, null);
+
+        MbMessage reblog2 = buildMessage(myAuthor, reply8.getBody(), null, null);
+        reblog2.rebloggedMessage = reply8;
+        addMessage(reblog2);
 
         MbMessage reply9 = buildMessage(author2, "Reply 9 to Reply 7", reply7, null);
         reply9.attachments

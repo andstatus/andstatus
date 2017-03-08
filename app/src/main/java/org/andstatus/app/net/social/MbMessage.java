@@ -67,7 +67,7 @@ public class MbMessage {
      * point of view (usually - from the point of view of the authenticated user)
      */
     public MbUser actor = null;
-    public TriState favoritedByActor = TriState.UNKNOWN;
+    private TriState favoritedByActor = TriState.UNKNOWN;
     
     // In our system
     public long originId = 0L;
@@ -214,5 +214,14 @@ public class MbMessage {
 
     public long getSenderId() {
         return sender == null ? 0L : sender.userId;
+    }
+
+    public TriState getFavoritedByActor() {
+        return favoritedByActor;
+    }
+
+    public MbMessage setFavoritedByActor(TriState favoritedByActor) {
+        this.favoritedByActor = favoritedByActor;
+        return this;
     }
 }

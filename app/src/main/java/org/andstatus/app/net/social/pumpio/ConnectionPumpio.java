@@ -501,9 +501,9 @@ public class ConnectionPumpio extends Connection {
                 }
             } else {
                 if (activityType.equals(ActivityType.FAVORITE)) {
-                    message.favoritedByActor = TriState.TRUE;
+                    message.setFavoritedByActor(TriState.TRUE);
                 } else if (activityType.equals(ActivityType.UNFAVORITE)) {
-                    message.favoritedByActor = TriState.FALSE;
+                    message.setFavoritedByActor(TriState.FALSE);
                 }
                 
                 if (ObjectType.compatibleWith(jso) == ObjectType.COMMENT) {

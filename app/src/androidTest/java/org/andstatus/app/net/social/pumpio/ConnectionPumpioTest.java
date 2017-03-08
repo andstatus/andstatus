@@ -201,7 +201,7 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
 
         ind++;
         mbMessage = timeline.get(ind).mbMessage;
-        assertEquals("Favorited by someone else", TriState.TRUE, mbMessage.favoritedByActor);
+        assertEquals("Favorited by someone else", TriState.TRUE, mbMessage.getFavoritedByActor());
         assertEquals("Actor -someone else", "acct:jpope@io.jpope.org" , mbMessage.actor.oid);
         assertTrue("Does not have a recipient", mbMessage.recipient == null);
         assertEquals("Url of the message", "https://fmrl.me/lostson/note/Dp-njbPQSiOfdclSOuAuFw", mbMessage.url);

@@ -231,15 +231,15 @@ public class DataInserter {
                 values.put(MsgTable.PUBLIC, 1);
             }
 
-            if (message.favoritedByActor != TriState.UNKNOWN
+            if (message.getFavoritedByActor() != TriState.UNKNOWN
                     && message.actor.userId == execContext.getMyAccount().getUserId()) {
                 values.put(MsgOfUserTable.FAVORITED,
-                        message.favoritedByActor.toBoolean(false));
+                        message.getFavoritedByActor().toBoolean(false));
                 MyLog.v(this,
                         "Message '"
                                 + message.oid
                                 + "' "
-                                + (message.favoritedByActor.toBoolean(false) ? "favorited"
+                                + (message.getFavoritedByActor().toBoolean(false) ? "favorited"
                                         : "unfavorited")
                                 + " by " + execContext.getMyAccount().getAccountName());
             }
