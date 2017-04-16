@@ -19,7 +19,7 @@ package org.andstatus.app.timeline;
 import android.content.Context;
 import android.support.annotation.NonNull;
 
-import org.andstatus.app.SelectableEnum;
+import org.andstatus.app.lang.SelectableEnum;
 import org.andstatus.app.R;
 import org.andstatus.app.database.FriendshipTable;
 import org.andstatus.app.net.social.Connection;

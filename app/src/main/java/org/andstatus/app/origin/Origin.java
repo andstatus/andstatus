@@ -214,10 +214,6 @@ public class Origin {
         }
     }
 
-    public boolean canChangeSsl() {
-        return originType.canChangeSsl;
-    }
-
     public boolean isSsl() {
         return ssl;
     }
@@ -230,10 +226,6 @@ public class Origin {
         return mUseLegacyHttpProtocol;
     }
     
-    String keyOf(String keyRoot) {
-        return keyRoot + Long.toString(id);
-    }
-
     public boolean isHtmlContentAllowed() {
         return allowHtml;
     }

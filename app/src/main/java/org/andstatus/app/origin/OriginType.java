@@ -19,7 +19,7 @@ package org.andstatus.app.origin;
 import android.content.Context;
 
 import org.andstatus.app.R;
-import org.andstatus.app.SelectableEnum;
+import org.andstatus.app.lang.SelectableEnum;
 import org.andstatus.app.net.http.HttpConnectionBasic;
 import org.andstatus.app.net.http.HttpConnectionEmpty;
 import org.andstatus.app.net.http.HttpConnectionOAuthApache;
@@ -279,10 +279,6 @@ public enum OriginType implements SelectableEnum {
         return id;
     }
 
-    public int getEntriesPosition() {
-        return ordinal();
-    }
-    
     public String getTitle() {
         return title;
     }
@@ -327,17 +323,6 @@ public enum OriginType implements SelectableEnum {
         OriginType obj = UNKNOWN;
         for(OriginType val : values()) {
             if (val.getCode().equalsIgnoreCase(code)) {
-                obj = val;
-                break;
-            }
-        }
-        return obj;
-    }
-
-    public static OriginType fromEntriesPosition( int position) {
-        OriginType obj = UNKNOWN;
-        for(OriginType val : values()) {
-            if (val.ordinal() == position) {
                 obj = val;
                 break;
             }

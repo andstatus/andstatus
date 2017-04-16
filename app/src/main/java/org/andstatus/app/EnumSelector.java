@@ -23,10 +23,11 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.TextView;
 
+import org.andstatus.app.lang.SelectableEnum;
+import org.andstatus.app.lang.SelectableEnumList;
 import org.andstatus.app.widget.MySimpleAdapter;
 
 import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,58 +35,44 @@ import java.util.Map;
 /**
  * @author yvolk@yurivolkov.com
  */
-public class EnumSelector<E extends Enum<E>> extends org.andstatus.app.SelectorDialog {
+public class EnumSelector<E extends Enum<E> & SelectableEnum> extends org.andstatus.app.SelectorDialog {
     private static final String KEY_VISIBLE_NAME = "visible_name";
-    private int dialogTitleResId;
-    private EnumSet<E> enumSet;
+    private SelectableEnumList<E> enumList;
 
-    public static <E extends Enum<E>> SelectorDialog newInstance(ActivityRequestCode requestCode, Class<E> clazz) {
-        if (!SelectableEnum.class.isAssignableFrom(clazz)) {
-            throw new IllegalArgumentException("Class '" + clazz.getName() +
-                    "' doesn't implement SelectableEnum");
-        }
+    public static <E extends Enum<E> & SelectableEnum> SelectorDialog newInstance(
+            ActivityRequestCode requestCode, Class<E> clazz) {
         EnumSelector selector = new EnumSelector();
         selector.setRequestCode(requestCode);
-        selector.enumSet =  EnumSet.allOf(clazz);
-        selector.dialogTitleResId = ((SelectableEnum) selector.enumSet.iterator().next()).getDialogTitleResId();
+        selector.enumList = SelectableEnumList.newInstance(clazz);
         return selector;
     }
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        if (dialogTitleResId == 0) {  // We don't save a state of the dialog
+        if (enumList.getDialogTitleResId() == 0) {  // We don't save a state of the dialog
             dismiss();
             return;
         }
-        setTitle(dialogTitleResId);
+        setTitle(enumList.getDialogTitleResId());
         setListAdapter(newListAdapter());
 
         getListView().setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                int idSelected = Integer.parseInt(((TextView) view.findViewById(R.id.id)).getText().toString());
-                String code = "";
-                for(E en : enumSet){
-                    if (en.ordinal() == idSelected) {
-                        code = ((SelectableEnum) en).getCode();
-                    }
-                }
-                returnSelected(new Intent().putExtra(IntentExtra.SELECTABLE_ENUM.key, code));
+            String idSelected = ((TextView) view.findViewById(R.id.id)).getText().toString();
+            returnSelected(new Intent().putExtra(IntentExtra.SELECTABLE_ENUM.key, idSelected));
             }
         });
     }
 
     private MySimpleAdapter newListAdapter() {
         List<Map<String, String>> list = new ArrayList<>();
-        for(E en : enumSet){
-            SelectableEnum value = (SelectableEnum) en;
-            if (value.isSelectable()) {
-                Map<String, String> map = new HashMap<>();
-                map.put(KEY_VISIBLE_NAME, value.getTitle(getActivity()).toString());
-                map.put(BaseColumns._ID, Integer.toString(en.ordinal()));
-                list.add(map);
-            }
+        for(SelectableEnum value : enumList.getList()){
+            Map<String, String> map = new HashMap<>();
+            map.put(KEY_VISIBLE_NAME, value.getTitle(getActivity()).toString());
+            map.put(BaseColumns._ID, value.getCode());
+            list.add(map);
         }
 
         return new MySimpleAdapter(getActivity(),

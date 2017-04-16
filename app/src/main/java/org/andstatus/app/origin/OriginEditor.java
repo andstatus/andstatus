@@ -37,6 +37,7 @@ import org.andstatus.app.IntentExtra;
 import org.andstatus.app.MyActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.lang.SelectableEnumList;
 import org.andstatus.app.net.http.SslModeEnum;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyCheckBox;
@@ -53,6 +54,7 @@ public class OriginEditor extends MyActivity {
 
     private Button buttonSave;
     private Button buttonDelete;
+    private final SelectableEnumList<OriginType> originTypes = SelectableEnumList.newInstance(OriginType.class);
     private Spinner spinnerOriginType;
     private EditText editTextOriginName;
     private EditText editTextHost;
@@ -89,6 +91,7 @@ public class OriginEditor extends MyActivity {
         });
         
         spinnerOriginType = (Spinner) findViewById(R.id.origin_type);
+        spinnerOriginType.setAdapter(originTypes.getSpinnerArrayAdapter(this));
         editTextOriginName = (EditText) findViewById(R.id.origin_name);
         editTextHost = (EditText) findViewById(R.id.host);
         checkBoxIsSsl = (CheckBox) findViewById(R.id.is_ssl);
@@ -115,13 +118,14 @@ public class OriginEditor extends MyActivity {
             buttonSave.setOnClickListener(new SaveOrigin());
             spinnerOriginType.setEnabled(false);
             editTextOriginName.setEnabled(false);
-            Origin origin = MyContextHolder.get().persistentOrigins().fromName(intentNew.getStringExtra(IntentExtra.ORIGIN_NAME.key));
+            Origin origin = MyContextHolder.get().persistentOrigins().fromName(
+                    intentNew.getStringExtra(IntentExtra.ORIGIN_NAME.key));
             builder = new Origin.Builder(origin);
         }
 
         Origin origin = builder.build();
         MyLog.v(this, "processNewIntent: " + origin.toString());
-        spinnerOriginType.setSelection(origin.getOriginType().getEntriesPosition());
+        spinnerOriginType.setSelection(originTypes.getIndex(origin.getOriginType()));
         editTextOriginName.setText(origin.getName());
         
         String strHost = "";
@@ -189,8 +193,8 @@ public class OriginEditor extends MyActivity {
     private class AddOrigin implements OnClickListener {
         @Override
         public void onClick(View v) {
-            builder = new Origin.Builder(OriginType.fromEntriesPosition(spinnerOriginType.getSelectedItemPosition()));
-            builder.setName(editTextOriginName.getText().toString());
+            builder = new Origin.Builder(originTypes.get(spinnerOriginType.getSelectedItemPosition()))
+                    .setName(editTextOriginName.getText().toString());
             saveOthers();
         }
     }
@@ -203,17 +207,17 @@ public class OriginEditor extends MyActivity {
     }
     
     private void saveOthers() {
-        builder.setHostOrUrl(editTextHost.getText().toString());
-        builder.setSsl(checkBoxIsSsl.isChecked());
-        builder.setSslMode(SslModeEnum.fromEntriesPosition(spinnerSslMode.getSelectedItemPosition()));
-        builder.setHtmlContentAllowed(MyCheckBox.isChecked(this, R.id.allow_html, false));
-        builder.setMentionAsWebFingerId(TriState.fromEntriesPosition(spinnerMentionAsWebFingerId
-                .getSelectedItemPosition()));
-        builder.setUseLegacyHttpProtocol(TriState.fromEntriesPosition(spinnerUseLegacyHttpProtocol
-                .getSelectedItemPosition()));
-        builder.setInCombinedGlobalSearch(MyCheckBox.isChecked(this, R.id.in_combined_global_search, false));
-        builder.setInCombinedPublicReload(MyCheckBox.isChecked(this, R.id.in_combined_public_reload, false));
-        builder.save();
+        builder.setHostOrUrl(editTextHost.getText().toString())
+                .setSsl(checkBoxIsSsl.isChecked())
+                .setSslMode(SslModeEnum.fromEntriesPosition(spinnerSslMode.getSelectedItemPosition()))
+                .setHtmlContentAllowed(MyCheckBox.isChecked(this, R.id.allow_html, false))
+                .setMentionAsWebFingerId(TriState.fromEntriesPosition(
+                        spinnerMentionAsWebFingerId.getSelectedItemPosition()))
+                .setUseLegacyHttpProtocol(TriState.fromEntriesPosition(
+                        spinnerUseLegacyHttpProtocol.getSelectedItemPosition()))
+                .setInCombinedGlobalSearch(MyCheckBox.isChecked(this, R.id.in_combined_global_search, false))
+                .setInCombinedPublicReload(MyCheckBox.isChecked(this, R.id.in_combined_public_reload, false))
+                .save();
         MyLog.v(this, (builder.isSaved() ? "Saved" : "Not saved") + ": " + builder.build().toString());
         if (builder.isSaved()) {
             MyContextHolder.get().persistentOrigins().initialize();

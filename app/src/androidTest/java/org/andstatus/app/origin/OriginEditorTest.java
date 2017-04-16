@@ -28,6 +28,7 @@ import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DbUtils;
+import org.andstatus.app.lang.SelectableEnumList;
 import org.andstatus.app.net.http.SslModeEnum;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
@@ -130,7 +131,7 @@ public class OriginEditorTest extends ActivityInstrumentationTestCase2<OriginEdi
         Runnable clicker = new Runnable() {
             @Override
             public void run() {
-                spinnerOriginType.setSelection(originType.getEntriesPosition());
+                spinnerOriginType.setSelection(SelectableEnumList.newInstance(OriginType.class).getIndex(originType));
                 editTextOriginName.setText(originName);
                 editTextHost.setText(hostOrUrl);
                 checkBoxIsSsl.setChecked(isSsl);

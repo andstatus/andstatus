@@ -155,12 +155,6 @@
         <item>3</item>
         <item>2</item>
     </string-array>
-    <string-array name="origin_system_types_entries">
-        <item>Twitter</item>
-        <item>Pump.io</item>
-        <item>GNU social</item>
-  <!--      <item>Mastodon</item> -->
-    </string-array>
     <string-array name="theme_color_entries">
         <item>@string/theme_color_entries_dark</item>
         <item>@string/theme_color_entries_light</item>
