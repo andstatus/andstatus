@@ -18,6 +18,7 @@ package org.andstatus.app.net.http;
 
 import com.github.scribejava.core.builder.ServiceBuilder;
 import com.github.scribejava.core.model.OAuth2AccessToken;
+import com.github.scribejava.core.model.OAuthConstants;
 import com.github.scribejava.core.model.OAuthRequest;
 import com.github.scribejava.core.model.Response;
 import com.github.scribejava.core.model.Verb;
@@ -26,6 +27,8 @@ import com.github.scribejava.core.oauth.OAuth20Service;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.util.FileUtils;
 import org.andstatus.app.util.MyLog;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.Map;
@@ -37,9 +40,47 @@ import oauth.signpost.OAuthProvider;
  * @author yvolk@yurivolkov.com
  */
 public class HttpConnectionOAuth2JavaNet extends HttpConnectionOAuthJavaNet {
+    public static final String OAUTH_SCOPES = "read write follow";
+
+    @Override
+    public void registerClient(String path) throws ConnectionException {
+        String logmsg = "registerClient; for " + data.originUrl + "; URL='" + pathToUrlString(path) + "'";
+        MyLog.v(this, logmsg);
+        data.oauthClientKeys.clear();
+        try {
+            JSONObject params = new JSONObject();
+            params.put("client_name", HttpConnection.USER_AGENT);
+            params.put("redirect_uris", HttpConnection.CALLBACK_URI.toString());
+            params.put(OAuthConstants.SCOPE, OAUTH_SCOPES);
+            params.put("website", "http://andstatus.org");
+
+            JSONObject jso = postRequest(path, params);
+            String consumerKey = jso.getString("client_id");
+            String consumerSecret = jso.getString("client_secret");
+            data.oauthClientKeys.setConsumerKeyAndSecret(consumerKey, consumerSecret);
+        } catch (IOException e) {
+            MyLog.i(this, logmsg, e);
+        } catch (JSONException e) {
+            MyLog.i(this, logmsg, e);
+        }
+        if (data.oauthClientKeys.areKeysPresent()) {
+            MyLog.v(this, "Completed " + logmsg);
+        } else {
+            throw ConnectionException.fromStatusCodeAndHost(ConnectionException.StatusCode.NO_CREDENTIALS_FOR_HOST,
+                    "No client keys for the host yet; " + logmsg, data.originUrl);
+        }
+    }
 
     @Override
     protected void postRequest(HttpReadResult result) throws ConnectionException {
+        if (data.areOAuthClientKeysPresent()) {
+            postRequestOauth(result);
+        } else {
+            super.postRequest(result);
+        }
+    }
+
+    private void postRequestOauth(HttpReadResult result) throws ConnectionException {
         try {
             OAuth20Service service = getService(false);
             final OAuthRequest request = new OAuthRequest(Verb.POST, result.getUrlObj().toString(), service);
@@ -139,8 +180,7 @@ public class HttpConnectionOAuth2JavaNet extends HttpConnectionOAuthJavaNet {
         if (redirect) {
             serviceBuilder.callback(HttpConnection.CALLBACK_URI.toString());
         }
-        OAuth20Service service = serviceBuilder.build(new OAuthApi20(this));
-        return service;
+        return serviceBuilder.build(new OAuthApi20(this));
     }
 
     private void signRequest(OAuthRequest request, OAuth20Service service, boolean redirected) throws ConnectionException {

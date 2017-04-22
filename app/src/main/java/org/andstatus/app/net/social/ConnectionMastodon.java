@@ -16,9 +16,14 @@
 
 package org.andstatus.app.net.social;
 
-import org.andstatus.app.net.social.pumpio.ConnectionPumpio;
+import android.text.TextUtils;
 
-public class ConnectionMastodon extends ConnectionPumpio {
+import org.andstatus.app.net.http.ConnectionException;
+import org.andstatus.app.util.SharedPreferencesUtil;
+import org.andstatus.app.util.UriUtils;
+import org.json.JSONObject;
+
+public class ConnectionMastodon extends ConnectionTwitter1p0 {
     @Override
     protected String getApiPath1(ApiRoutineEnum routine) {
         String url;
@@ -41,5 +46,33 @@ public class ConnectionMastodon extends ConnectionPumpio {
         }
 
         return prependWithBasicPath(url);
+    }
+
+    @Override
+    protected MbUser userFromJson(JSONObject jso) throws ConnectionException {
+        if (jso == null) {
+            return MbUser.getEmpty();
+        }
+        String oid = jso.optString("id");
+        String userName = jso.optString("username");
+        if (TextUtils.isEmpty(oid) || TextUtils.isEmpty(userName)) {
+            throw ConnectionException.loggedJsonException(this, "Id or username is empty", null, jso);
+        }
+        MbUser user = MbUser.fromOriginAndUserOid(data.getOriginId(), oid);
+        user.actor = MbUser.fromOriginAndUserOid(data.getOriginId(), data.getAccountUserOid());
+        user.setUserName(userName);
+        user.setRealName(jso.optString("display_name"));
+        if (!SharedPreferencesUtil.isEmpty(user.getRealName())) {
+            user.setProfileUrl(data.getOriginUrl());
+        }
+        user.avatarUrl = UriUtils.fromJson(jso, "avatar").toString();
+        user.bannerUrl = UriUtils.fromJson(jso, "header").toString();
+        user.setDescription(jso.optString("note"));
+        user.setHomepage(jso.optString("url"));
+        user.msgCount = jso.optLong("statuses_count");
+        user.followingCount = jso.optLong("following_count");
+        user.followersCount = jso.optLong("followers_count");
+        user.setCreatedDate(dateFromJson(jso, "created_at"));
+        return user;
     }
 }

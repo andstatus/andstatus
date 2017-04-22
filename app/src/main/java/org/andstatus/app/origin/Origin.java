@@ -142,10 +142,6 @@ public class Origin {
         return ok;
     }
 
-    public boolean isUsernameNeededToStartAddingNewAccount(boolean isOAuthUser) {
-        return !isOAuthUser;
-    }
-
     /**
      * Calculates number of Characters left for this message taking shortened
      * URL's length into account.

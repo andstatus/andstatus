@@ -501,6 +501,8 @@ public class AccountSettingsActivity extends MyActivity {
     }
 
     private void clearError() {
+        android.webkit.CookieManager cookieManager = android.webkit.CookieManager.getInstance();
+        cookieManager.removeAllCookie();
         if (mLatestErrorMessage.length() > 0) {
             mLatestErrorMessage.setLength(0);
             showErrors();
@@ -979,19 +981,26 @@ public class AccountSettingsActivity extends MyActivity {
                     state.setRequestTokenWithSecret(consumer.getToken(), consumer.getTokenSecret());
                 }
 
-                android.webkit.CookieManager cookieManager = android.webkit.CookieManager.getInstance();
-                cookieManager.removeAllCookie();
-
                 // This is needed in order to complete the process after redirect
                 // from the Browser to the same activity.
                 state.actionCompleted = false;
-                
-                // Start Web view (looking just like Web Browser)
-                Intent i = new Intent(AccountSettingsActivity.this, AccountSettingsWebActivity.class);
-                i.putExtra(AccountSettingsWebActivity.EXTRA_URLTOOPEN, authUrl);
-                AccountSettingsActivity.this.startActivity(i);
 
-                requestSucceeded = true;
+                boolean authInBrowser = false; // TODO: If we need this switch?
+                if (authInBrowser) {
+                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(authUrl));
+                    if (intent.resolveActivity(getPackageManager()) != null) {
+                        AccountSettingsActivity.this.startActivity(intent);
+                        requestSucceeded = true;
+                    } else {
+                        connectionErrorMessage = "No browser found for " + authUrl;
+                    }
+                } else {
+                    // Start Web view (looking just like Web Browser)
+                    Intent i = new Intent(AccountSettingsActivity.this, AccountSettingsWebActivity.class);
+                    i.putExtra(AccountSettingsWebActivity.EXTRA_URLTOOPEN, authUrl);
+                    AccountSettingsActivity.this.startActivity(i);
+                    requestSucceeded = true;
+                }
             } catch (OAuthMessageSignerException | OAuthNotAuthorizedException
                     | OAuthExpectationFailedException
                     | OAuthCommunicationException

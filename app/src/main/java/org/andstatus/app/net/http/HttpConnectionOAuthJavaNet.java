@@ -18,6 +18,8 @@ package org.andstatus.app.net.http;
 
 import android.net.Uri;
 
+import com.github.scribejava.core.model.OAuthConstants;
+
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyContentType;

@@ -204,11 +204,11 @@ public enum OriginType implements SelectableEnum {
             case MASTODON:
                 isOAuthDefault = true;
                 canChangeOAuth = false;
-                canSetUrlOfOrigin = false;
+                canSetUrlOfOrigin = true;
                 shouldSetNewUsernameManuallyIfOAuth = false;
                 shouldSetNewUsernameManuallyNoOAuth = true;
-                usernameRegEx = MbUser.WEBFINGER_ID_REGEX;
-                validUsernameExamples = "AndStatus@mastodon.social";
+                usernameRegEx = USERNAME_REGEX_SIMPLE;
+                validUsernameExamples = USERNAME_EXAMPLES_SIMPLE;
                 textLimitDefault = 500;
                 basicPath = "api/v1";
                 oauthPath = "oauth";
@@ -222,7 +222,7 @@ public enum OriginType implements SelectableEnum {
                 isMentionsTimelineSyncable = true;
                 allowEditing = false;
                 isDirectMessageAllowsReply = false;
-                isSelectable = false;
+                isSelectable = true;
                 break;
             default:
                 canSetUrlOfOrigin = false;
@@ -372,6 +372,10 @@ public enum OriginType implements SelectableEnum {
 
     public boolean isDirectMessageAllowsReply() {
         return isDirectMessageAllowsReply;
+    }
+
+    public boolean isUsernameNeededToStartAddingNewAccount(boolean isOAuth) {
+        return isOAuth ? shouldSetNewUsernameManuallyIfOAuth : shouldSetNewUsernameManuallyNoOAuth;
     }
 
 }

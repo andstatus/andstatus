@@ -16,32 +16,6 @@
 
 package org.andstatus.app.origin;
 
-import org.andstatus.app.R;
-
 public class OriginMastodon extends Origin {
-
-    @Override
-    public int alternativeTermForResourceId(int resId) {
-        int resIdOut;
-        switch (resId) {
-            case R.string.dialog_title_preference_username:
-                resIdOut = R.string.dialog_title_preference_username_pumpio;
-                break;
-            case R.string.title_preference_username:
-                resIdOut = R.string.title_preference_username_pumpio;
-                break;
-            case R.string.summary_preference_username:
-                resIdOut = R.string.summary_preference_username_webfinger_id;
-                break;
-            default:
-                resIdOut = resId;
-                break;
-        }
-        return resIdOut;
-    }
-
-    @Override
-    public boolean isUsernameNeededToStartAddingNewAccount(boolean isOAuthUser) {
-        return true;
-    }
+    // Empty
 }

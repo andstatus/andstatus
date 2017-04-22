@@ -847,16 +847,8 @@ public final class MyAccount implements Comparable<MyAccount> {
         return getConnection().getPassword();
     }
 
-    /**
-     * This is defined by Microblogging system
-     * Starting from 2010-09 twitter.com allows OAuth only
-     */
-    public boolean canChangeOAuth() {
-        return oAccountName.getOrigin().canChangeOAuth();
-    }
-
     public boolean isUsernameNeededToStartAddingNewAccount() {
-        return oAccountName.getOrigin().isUsernameNeededToStartAddingNewAccount(isOAuth());
+        return oAccountName.getOrigin().getOriginType().isUsernameNeededToStartAddingNewAccount(isOAuth());
     }
 
     public boolean isUsernameValid() {

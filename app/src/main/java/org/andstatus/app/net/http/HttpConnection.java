@@ -63,7 +63,7 @@ public abstract class HttpConnection {
     }
 
     public final JSONObject postRequest(String path, JSONObject formParams) throws ConnectionException {
-        /** See https://github.com/andstatus/andstatus/issues/249 */
+        /* See https://github.com/andstatus/andstatus/issues/249 */
         if (data.getUseLegacyHttpProtocol() == TriState.UNKNOWN) {
             try {
                 return postRequestOneHttpProtocol(path, formParams, false);

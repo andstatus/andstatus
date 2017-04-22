@@ -58,7 +58,7 @@ public class HttpConnectionOAuthMastodon extends HttpConnectionOAuth2JavaNet {
     @Override
     public Map<String, String> getAdditionalAuthorizationParams() {
         Map<String, String> additionalParams = new HashMap<>();
-        additionalParams.put(OAuthConstants.SCOPE, "read write follow");
+  //      additionalParams.put(OAuthConstants.SCOPE, OAUTH_SCOPES);
         return additionalParams;
     }
 

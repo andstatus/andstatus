@@ -17,8 +17,8 @@
 package org.andstatus.app.origin;
 
 import org.andstatus.app.R;
-import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.data.MyQuery;
+import org.andstatus.app.database.MsgTable;
 
 class OriginPumpio extends Origin {
     @Override
@@ -53,10 +53,5 @@ class OriginPumpio extends Origin {
     @Override
     public String messagePermalink(long messageId) {
         return MyQuery.msgIdToStringColumnValue(MsgTable.URL, messageId);
-    }
-    
-    @Override
-    public boolean isUsernameNeededToStartAddingNewAccount(boolean isOAuthUser) {
-        return true;
     }
 }
