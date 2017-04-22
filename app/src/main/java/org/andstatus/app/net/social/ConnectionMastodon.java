@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (c) 2017 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,16 @@
 
 package org.andstatus.app.net.social;
 
+import android.net.Uri;
 import android.text.TextUtils;
 
+import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.net.http.ConnectionException;
+import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
+import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 public class ConnectionMastodon extends ConnectionTwitter1p0 {
@@ -32,13 +37,16 @@ public class ConnectionMastodon extends ConnectionTwitter1p0 {
                 url = "apps";
                 break;
             case STATUSES_HOME_TIMELINE:
-                url = "statuses/home";
+                url = "timelines/home";
                 break;
-            case STATUSES_MENTIONS_TIMELINE:
-                url = "statuses/mentions";
+            case PUBLIC_TIMELINE:
+                url = "timelines/public";
                 break;
             case ACCOUNT_VERIFY_CREDENTIALS:
                 url = "accounts/verify_credentials";
+                break;
+            case POST_MESSAGE:
+                url = "statuses";
                 break;
             default:
                 url = "";
@@ -46,6 +54,21 @@ public class ConnectionMastodon extends ConnectionTwitter1p0 {
         }
 
         return prependWithBasicPath(url);
+    }
+
+    @Override
+    public MbMessage updateStatus(String message, String statusId, String inReplyToId, Uri mediaUri) throws ConnectionException {
+        JSONObject formParams = new JSONObject();
+        try {
+            formParams.put("status", message);
+            if ( !TextUtils.isEmpty(inReplyToId)) {
+                formParams.put("in_reply_to_id", inReplyToId);
+            }
+        } catch (JSONException e) {
+            MyLog.e(this, e);
+        }
+        JSONObject jso = postRequest(ApiRoutineEnum.POST_MESSAGE, formParams);
+        return messageFromJson(jso);
     }
 
     @Override
@@ -68,11 +91,86 @@ public class ConnectionMastodon extends ConnectionTwitter1p0 {
         user.avatarUrl = UriUtils.fromJson(jso, "avatar").toString();
         user.bannerUrl = UriUtils.fromJson(jso, "header").toString();
         user.setDescription(jso.optString("note"));
-        user.setHomepage(jso.optString("url"));
+        user.setProfileUrl(jso.optString("url"));
         user.msgCount = jso.optLong("statuses_count");
         user.followingCount = jso.optLong("following_count");
         user.followersCount = jso.optLong("followers_count");
         user.setCreatedDate(dateFromJson(jso, "created_at"));
         return user;
     }
+
+    @Override
+    protected MbMessage messageFromJson(JSONObject jso) throws ConnectionException {
+        if (jso == null) {
+            return MbMessage.getEmpty();
+        }
+        String oid = jso.optString("id");
+        MbMessage message =  MbMessage.fromOriginAndOid(data.getOriginId(), oid, DownloadStatus.LOADED);
+        message.actor = MbUser.fromOriginAndUserOid(data.getOriginId(), data.getAccountUserOid());
+        try {
+            message.sentDate = dateFromJson(jso, "created_at");
+
+            JSONObject sender;
+            if (jso.has("account")) {
+                sender = jso.getJSONObject("account");
+                message.sender = userFromJson(sender);
+            }
+
+            // Is this a reblog?
+            if (!jso.isNull("reblog") ) {
+                JSONObject rebloggedMessage = jso.getJSONObject("reblog");
+                message.rebloggedMessage = messageFromJson(rebloggedMessage);
+            }
+            message.setBody(jso.optString("content"));
+            message.url = jso.optString("url");
+            if (jso.has("recipient")) {
+                JSONObject recipient = jso.getJSONObject("recipient");
+                message.recipient = userFromJson(recipient);
+            }
+            if (!jso.isNull("application")) {
+                JSONObject application = jso.getJSONObject("application");
+                message.via = application.optString("name");
+            }
+            if (jso.has("favorited")) {
+                message.setFavoritedByActor(TriState.fromBoolean(SharedPreferencesUtil.isTrue(jso.getString("favorited"))));
+            }
+
+            // If the Msg is a Reply to other message
+            String inReplyToUserOid = "";
+            if (jso.has("in_reply_to_account_id")) {
+                inReplyToUserOid = jso.getString("in_reply_to_account_id");
+            }
+            if (SharedPreferencesUtil.isEmpty(inReplyToUserOid)) {
+                inReplyToUserOid = "";
+            }
+            if (!SharedPreferencesUtil.isEmpty(inReplyToUserOid)) {
+                String inReplyToMessageOid = "";
+                if (jso.has("in_reply_to_id")) {
+                    inReplyToMessageOid = jso.getString("in_reply_to_id");
+                }
+                if (!SharedPreferencesUtil.isEmpty(inReplyToMessageOid)) {
+                    // Construct Related message from available info
+                    MbMessage inReplyToMessage = MbMessage.fromOriginAndOid(data.getOriginId(),
+                            inReplyToMessageOid, DownloadStatus.UNKNOWN);
+                    MbUser inReplyToUser = MbUser.fromOriginAndUserOid(data.getOriginId(),
+                            inReplyToUserOid);
+                    inReplyToMessage.sender = inReplyToUser;
+                    inReplyToMessage.actor = message.actor;
+                    message.inReplyToMessage = inReplyToMessage;
+                }
+            }
+        } catch (JSONException e) {
+            throw ConnectionException.loggedJsonException(this, "Parsing message", e, jso);
+        } catch (Exception e) {
+            MyLog.e(this, "messageFromJson", e);
+            return MbMessage.getEmpty();
+        }
+        return message;
+    }
+
+    @Override
+    public long parseDate(String stringDate) {
+        return parseIso8601Date(stringDate);
+    }
+
 }

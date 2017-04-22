@@ -287,6 +287,11 @@ public class TestSuite extends TestCase {
     public static final String TWITTER_TEST_ACCOUNT_USER_OID = "144771645";
     public static final String TWITTER_TEST_ACCOUNT_NAME = TWITTER_TEST_ACCOUNT_USERNAME + "/" + TWITTER_TEST_ORIGIN_NAME;
 
+    public static final String MASTODON_TEST_ORIGIN_NAME = "MastodonTest";
+    public static final String MASTODON_TEST_ACCOUNT_USERNAME = "t131t1";
+    public static final String MASTODON_TEST_ACCOUNT_NAME = MASTODON_TEST_ACCOUNT_USERNAME + "/" + MASTODON_TEST_ORIGIN_NAME;
+    public static final String MASTODON_TEST_ACCOUNT_USER_OID = "37";
+
     public static final OriginType CONVERSATION_ORIGIN_TYPE = OriginType.PUMPIO;
     public static final String CONVERSATION_ORIGIN_NAME = PUMPIO_ORIGIN_NAME;
     private static final String CONVERSATION_ACCOUNT_USERNAME = "testerofandstatus@identi.ca";

@@ -113,7 +113,7 @@ public class MbMessage {
         if (TextUtils.isEmpty(body)) {
             this.body = "";
         } else if (isHtmlContentAllowed()) {
-            this.body = MyHtml.stripUnnecessaryNewlines(body);
+            this.body = MyHtml.stripUnnecessaryNewlines(MyHtml.unescapeHtml(body));
         } else {
             this.body = MyHtml.fromHtml(body);
         }

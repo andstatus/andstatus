@@ -488,6 +488,31 @@ public abstract class Connection {
         return unixDate;
     }
 
+    /**
+     * Simple solution based on:
+     * http://stackoverflow.com/questions/2201925/converting-iso8601-compliant-string-to-java-util-date
+     * @return Unix time. Returns 0 in a case of an error
+     */
+    protected long parseIso8601Date(String stringDate) {
+        long unixDate = 0;
+        if(stringDate != null) {
+            String datePrepared;
+            if (stringDate.lastIndexOf('Z') == stringDate.length()-1) {
+                datePrepared = stringDate.substring(0, stringDate.length()-1) + "+0000";
+            } else {
+                datePrepared = stringDate.replaceAll("\\+0([0-9]):00", "+0$100");
+            }
+            String formatString = stringDate.contains(".") ? "yyyy-MM-dd'T'HH:mm:ss.SSSZ" : "yyyy-MM-dd'T'HH:mm:ssZ";
+            DateFormat iso8601DateFormatSec = new SimpleDateFormat(formatString, Locale.GERMANY);
+            try {
+                unixDate = iso8601DateFormatSec.parse(datePrepared).getTime();
+            } catch (ParseException e) {
+                MyLog.e(this, "Failed to parse the date: '" + stringDate +"' using '" + formatString + "'", e);
+            }
+        }
+        return unixDate;
+    }
+
     protected void setMessagesPublic(List<MbTimelineItem> timeline) {
         for (MbTimelineItem item : timeline) {
             if (item.getType() == ItemType.MESSAGE) {

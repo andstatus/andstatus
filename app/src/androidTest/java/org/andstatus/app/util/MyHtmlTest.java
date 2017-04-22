@@ -94,6 +94,7 @@ public class MyHtmlTest extends InstrumentationTestCase {
         assertEquals(expected, MyHtml.fromHtml(string));
         string = "<p>This <a href='#as'>message</a></p>   has <p>newline</p> ";
         assertEquals(expected, MyHtml.fromHtml(string));
+        assertEquals("I'm working", MyHtml.fromHtml("I&apos;m working"));
     }
 
     public void testGetCleanedBody() {

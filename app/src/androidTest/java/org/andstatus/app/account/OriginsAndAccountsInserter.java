@@ -64,6 +64,9 @@ public class OriginsAndAccountsInserter extends InstrumentationTestCase {
         OriginTest.createOneOrigin(OriginType.GNUSOCIAL, additionalOriginName,
                 TestSuite.getTestOriginHost(additionalOriginName),
                 true, SslModeEnum.INSECURE, true, false, true);
+        OriginTest.createOneOrigin(OriginType.MASTODON, TestSuite.MASTODON_TEST_ORIGIN_NAME,
+                TestSuite.getTestOriginHost(TestSuite.MASTODON_TEST_ORIGIN_NAME),
+                true, SslModeEnum.SECURE, true, true, true);
         myContext.persistentOrigins().initialize();
     }
 
@@ -76,6 +79,8 @@ public class OriginsAndAccountsInserter extends InstrumentationTestCase {
                 TestSuite.GNUSOCIAL_TEST_ACCOUNT_AVATAR_URL, OriginType.GNUSOCIAL);
         addAccount(TestSuite.GNUSOCIAL_TEST_ACCOUNT2_USER_OID, TestSuite.GNUSOCIAL_TEST_ACCOUNT2_NAME,
                 "", OriginType.GNUSOCIAL);
+        addAccount(TestSuite.MASTODON_TEST_ACCOUNT_USER_OID, TestSuite.MASTODON_TEST_ACCOUNT_NAME,
+                TestSuite.GNUSOCIAL_TEST_ACCOUNT_AVATAR_URL, OriginType.MASTODON);
         addAccount(TestSuite.CONVERSATION_ACCOUNT_USER_OID, TestSuite.CONVERSATION_ACCOUNT_NAME,
                 TestSuite.CONVERSATION_ACCOUNT_AVATAR_URL, TestSuite.CONVERSATION_ORIGIN_TYPE);
         addAccount(TestSuite.CONVERSATION_ACCOUNT2_USER_OID, TestSuite.CONVERSATION_ACCOUNT2_NAME,

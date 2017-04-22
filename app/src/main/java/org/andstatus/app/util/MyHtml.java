@@ -22,7 +22,11 @@ import android.text.SpannableString;
 import android.text.TextUtils;
 import android.text.util.Linkify;
 
-import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.commons.lang3.text.translate.AggregateTranslator;
+import org.apache.commons.lang3.text.translate.CharSequenceTranslator;
+import org.apache.commons.lang3.text.translate.EntityArrays;
+import org.apache.commons.lang3.text.translate.LookupTranslator;
+import org.apache.commons.lang3.text.translate.NumericEntityUnescaper;
 
 public class MyHtml {
 
@@ -70,16 +74,26 @@ public class MyHtml {
             if ( MyHtml.hasHtmlMarkup(text2)) {
                 text2 = Html.fromHtml(text2).toString();
             }
-            text2 = unescapeHtml4(text2);
+            text2 = unescapeHtml(text2);
             return stripUnnecessaryNewlines(text2);
         }
     }
 
-    public static String unescapeHtml4(String text2) {
-        return StringEscapeUtils.unescapeHtml4(text2)
-                // This is needed to avoid visible text truncation, see https://github.com/andstatus/andstatus/issues/441
+    public static String unescapeHtml(String text2) {
+        return UNESCAPE_HTML.translate(text2)
+                // This is needed to avoid visible text truncation,
+                // see https://github.com/andstatus/andstatus/issues/441
                 .replaceAll("<>","< >");
     }
+
+    private static final CharSequenceTranslator UNESCAPE_HTML =
+            new AggregateTranslator(
+                    new LookupTranslator(EntityArrays.BASIC_UNESCAPE()),
+                    new LookupTranslator(EntityArrays.ISO8859_1_UNESCAPE()),
+                    new LookupTranslator(EntityArrays.HTML40_EXTENDED_UNESCAPE()),
+                    new LookupTranslator(EntityArrays.APOS_UNESCAPE()),
+                    new NumericEntityUnescaper()
+            );
 
     public static String stripUnnecessaryNewlines(String text) {
         if (TextUtils.isEmpty(text)) {

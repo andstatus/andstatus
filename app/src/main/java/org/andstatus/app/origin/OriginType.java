@@ -220,6 +220,7 @@ public enum OriginType implements SelectableEnum {
                 isSearchTimelineSyncable = false;
                 isDirectTimelineSyncable = false;
                 isMentionsTimelineSyncable = true;
+                isPublicTimeLineSyncable = true;
                 allowEditing = false;
                 isDirectMessageAllowsReply = false;
                 isSelectable = true;

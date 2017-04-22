@@ -174,7 +174,7 @@ public class ConnectionTwitterTest extends InstrumentationTestCase {
                 "Störungsdauer bis ca. 10 Uhr. #hvv #sbahnhh";
         MbMessage message = connection.getMessage("834306097003581440");
         assertNotNull("message returned", message);
-        assertEquals("Body of this message", MyHtml.unescapeHtml4(body), message.getBody());
+        assertEquals("Body of this message", MyHtml.unescapeHtml(body), message.getBody());
         assertEquals("Body of this message", ",update,streckensperrung,zw,berliner,tor,bergedorf,ersatzverkehr,mit,bussen," +
                 "und,taxis,störungsdauer,bis,ca,10,uhr,hvv,#hvv,sbahnhh,#sbahnhh,", message.getBodyToSearch());
 
