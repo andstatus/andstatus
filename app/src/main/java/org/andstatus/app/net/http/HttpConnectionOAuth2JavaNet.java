@@ -18,7 +18,6 @@ package org.andstatus.app.net.http;
 
 import com.github.scribejava.core.builder.ServiceBuilder;
 import com.github.scribejava.core.model.OAuth2AccessToken;
-import com.github.scribejava.core.model.OAuthConstants;
 import com.github.scribejava.core.model.OAuthRequest;
 import com.github.scribejava.core.model.Response;
 import com.github.scribejava.core.model.Verb;
@@ -31,6 +30,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.Map;
 
 import oauth.signpost.OAuthConsumer;
@@ -51,7 +51,7 @@ public class HttpConnectionOAuth2JavaNet extends HttpConnectionOAuthJavaNet {
             JSONObject params = new JSONObject();
             params.put("client_name", HttpConnection.USER_AGENT);
             params.put("redirect_uris", HttpConnection.CALLBACK_URI.toString());
-            params.put(OAuthConstants.SCOPE, OAUTH_SCOPES);
+            params.put("scopes", OAUTH_SCOPES);
             params.put("website", "http://andstatus.org");
 
             JSONObject jso = postRequest(path, params);
@@ -90,7 +90,11 @@ public class HttpConnectionOAuth2JavaNet extends HttpConnectionOAuthJavaNet {
                 super.postRequest(result);
                 return;
             } else {
-                request.addPayload(result.getFormParams().toString());
+                Iterator<String> iterator = result.getFormParams().keys();
+                while (iterator.hasNext()) {
+                    String key = iterator.next();
+                    request.addBodyParameter(key, result.getFormParams().optString(key));
+                }
             }
             signRequest(request, service, false);
             final Response response = request.send();
