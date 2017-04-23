@@ -428,8 +428,8 @@ public abstract class Connection {
         // Nothing to do
     }
 
-    public boolean userObjectHasMessage() {
-        return false;
+    public final JSONObject postRequest(String apiPath, JSONObject formParams) throws ConnectionException {
+        return http.postRequest(apiPath, formParams);
     }
 
     public MbConfig getConfig() throws ConnectionException {

@@ -575,11 +575,7 @@ public abstract class ConnectionTwitter extends Connection {
     }
 
     protected final JSONObject postRequest(ApiRoutineEnum apiRoutine, JSONObject formParams) throws ConnectionException {
-        return http.postRequest(getApiPath(apiRoutine), formParams);
+        return postRequest(getApiPath(apiRoutine), formParams);
     }
-    
-    @Override
-    public boolean userObjectHasMessage() {
-        return true;
-    }
+
 }

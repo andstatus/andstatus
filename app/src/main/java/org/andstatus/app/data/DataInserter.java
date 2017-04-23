@@ -440,7 +440,7 @@ public class DataInserter {
         }
         
         long userId = mbUser.lookupUserId();
-        if (userId != 0 && mbUser.isPartiallyDefined()) {
+        if (userId != 0 && mbUser.isPartiallyDefined() && mbUser.followedByActor.equals(TriState.UNKNOWN)) {
             if (MyLog.isVerboseEnabled()) {
                 MyLog.v(this, method + "; Skipping partially defined: " + mbUser.toString());
             }
@@ -451,27 +451,29 @@ public class DataInserter {
         String userOid = (userId == 0 && !mbUser.isOidReal()) ? mbUser.getTempOid() : mbUser.oid;
         try {
             ContentValues values = new ContentValues();
-            if (userId == 0 || mbUser.isOidReal()) {
-                values.put(UserTable.USER_OID, userOid);
-            }
+            if (userId == 0 || !mbUser.isPartiallyDefined()) {
+                if (userId == 0 || mbUser.isOidReal()) {
+                    values.put(UserTable.USER_OID, userOid);
+                }
 
-            // Substitute required empty values with some temporary for a new entry only!
-            String userName = mbUser.getUserName();
-            if (SharedPreferencesUtil.isEmpty(userName)) {
-                userName = "id:" + userOid;
+                // Substitute required empty values with some temporary for a new entry only!
+                String userName = mbUser.getUserName();
+                if (SharedPreferencesUtil.isEmpty(userName)) {
+                    userName = "id:" + userOid;
+                }
+                values.put(UserTable.USERNAME, userName);
+                String webFingerId = mbUser.getWebFingerId();
+                if (SharedPreferencesUtil.isEmpty(webFingerId)) {
+                    webFingerId = userName;
+                }
+                values.put(UserTable.WEBFINGER_ID, webFingerId);
+                String realName = mbUser.getRealName();
+                if (SharedPreferencesUtil.isEmpty(realName)) {
+                    realName = userName;
+                }
+                values.put(UserTable.REAL_NAME, realName);
+                // Enf of required attributes
             }
-            values.put(UserTable.USERNAME, userName);
-            String webFingerId = mbUser.getWebFingerId();
-            if (SharedPreferencesUtil.isEmpty(webFingerId)) {
-                webFingerId = userName;
-            }
-            values.put(UserTable.WEBFINGER_ID, webFingerId);
-            String realName = mbUser.getRealName();
-            if (SharedPreferencesUtil.isEmpty(realName)) {
-                realName = userName;
-            }
-            values.put(UserTable.REAL_NAME, realName);
-            // Enf of required attributes
 
             if (!SharedPreferencesUtil.isEmpty(mbUser.avatarUrl)) {
                 values.put(UserTable.AVATAR_URL, mbUser.avatarUrl);

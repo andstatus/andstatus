@@ -60,6 +60,12 @@ public class ConnectionMastodon extends ConnectionTwitter1p0 {
             case POST_WITH_MEDIA:
                 url = "media";
                 break;
+            case FOLLOW_USER:
+                url = "accounts/%id%/follow";
+                break;
+            case STOP_FOLLOWING_USER:
+                url = "accounts/%id%/unfollow";
+                break;
             default:
                 url = "";
                 break;
@@ -229,4 +235,18 @@ public class ConnectionMastodon extends ConnectionTwitter1p0 {
         return parseIso8601Date(stringDate);
     }
 
+    @Override
+    public MbUser followUser(String userId, Boolean follow) throws ConnectionException {
+        JSONObject relationship = postRequest(getApiPathWithId(follow ? ApiRoutineEnum.FOLLOW_USER :
+                ApiRoutineEnum.STOP_FOLLOWING_USER, userId), new JSONObject());
+        MbUser user = MbUser.fromOriginAndUserOid(data.getOriginId(), userId);
+        if (relationship != null && !relationship.isNull("following")) {
+            user.followedByActor = TriState.fromBoolean(relationship.optBoolean("following"));
+        }
+        return user;
+    }
+
+    private String getApiPathWithId(ApiRoutineEnum routineEnum, String userId) throws ConnectionException {
+        return getApiPath(routineEnum).replace("%id%", userId);
+    }
 }

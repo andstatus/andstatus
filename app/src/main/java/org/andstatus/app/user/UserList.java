@@ -101,6 +101,17 @@ public class UserList extends MessageEditorListActivity {
     }
 
     @Override
+    protected boolean isRefreshNeededAfterExecuting(CommandData commandData) {
+        switch(commandData.getCommand()) {
+            case FOLLOW_USER:
+            case STOP_FOLLOWING_USER:
+                return true;
+            default:
+                return super.isRefreshNeededAfterExecuting(commandData);
+        }
+    }
+
+    @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         final String method = "onActivityResult";
         MyLog.v(this, method + "; request:" + requestCode + ", result:" + (resultCode == RESULT_OK ? "ok" : "fail"));

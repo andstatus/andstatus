@@ -22,9 +22,9 @@ import android.text.TextUtils;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
-import org.andstatus.app.net.social.pumpio.ConnectionPumpio.ConnectionAndUrl;
 import org.andstatus.app.net.social.MbMessage;
 import org.andstatus.app.net.social.MbUser;
+import org.andstatus.app.net.social.pumpio.ConnectionPumpio.ConnectionAndUrl;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.UriUtils;
 import org.json.JSONArray;
@@ -127,7 +127,7 @@ class ActivitySender {
 
             ConnectionAndUrl conu = connection.getConnectionAndUrl(ApiRoutineEnum.POST_MESSAGE,
                     connection.getData().getAccountUserOid());
-            jso = conu.httpConnection.postRequest(conu.url, activity);
+            jso = connection.postRequest(conu.url, activity);
             if (jso == null) {
                 throw ConnectionException.hardConnectionException(msgLog + " returned no data", null);
             }
@@ -143,7 +143,7 @@ class ActivitySender {
                             "when an image object is posted. Sending an update");
                 }
                 activity.put("verb", ActivityType.UPDATE.code);
-                jso = conu.httpConnection.postRequest(conu.url, activity);
+                jso = connection.postRequest(conu.url, activity);
             }
         } catch (JSONException e) {
             throw ConnectionException.loggedJsonException(this, msgLog, e, jso);
@@ -213,7 +213,7 @@ class ActivitySender {
             formParams.put(HttpConnection.KEY_MEDIA_PART_URI, mMediaUri.toString());
             ConnectionAndUrl conu = connection.getConnectionAndUrl(ApiRoutineEnum.POST_WITH_MEDIA,
                     connection.getData().getAccountUserOid());
-            obj1 = conu.httpConnection.postRequest(conu.url, formParams);
+            obj1 = connection.postRequest(conu.url, formParams);
             if (obj1 != null) {
                 if (MyLog.isVerboseEnabled()) {
                     MyLog.v(this, "uploaded '" + mMediaUri.toString() + "' " + obj1.toString(2));

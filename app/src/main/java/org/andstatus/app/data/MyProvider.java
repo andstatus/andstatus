@@ -445,9 +445,11 @@ public class MyProvider extends ContentProvider {
                 accountUserId = uriParser.getAccountUserId();
                 long selectedUserId = uriParser.getUserId();
                 FriendshipValues friendshipValues = FriendshipValues.valueOf(accountUserId, selectedUserId, values);
-                count = db.update(UserTable.TABLE_NAME, values, BaseColumns._ID + "=" + selectedUserId
-                        + (!TextUtils.isEmpty(selection) ? " AND (" + selection + ')' : ""),
-                        selectionArgs);
+                if (values.size() > 0) {
+                    count = db.update(UserTable.TABLE_NAME, values, BaseColumns._ID + "=" + selectedUserId
+                                    + (!TextUtils.isEmpty(selection) ? " AND (" + selection + ')' : ""),
+                            selectionArgs);
+                }
                 friendshipValues.update(db);
                 optionallyLoadAvatar(selectedUserId, values);
                 break;
