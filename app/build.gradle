@@ -53,8 +53,8 @@ sonarqube {
 dependencies {
     compile 'com.github.stephenc.jcip:jcip-annotations:1.0-1'
     // http://stephenc.github.io/jcip-annotations/dependency-info.html
-    compile 'com.android.support:appcompat-v7:25.1.1'
-    compile 'com.android.support:design:25.1.1'
+    compile 'com.android.support:appcompat-v7:25.3.1'
+    compile 'com.android.support:design:25.3.1'
     compile 'ch.acra:acra:4.9.2'  // https://github.com/ACRA/acra/wiki/AdvancedUsage
     compile 'cz.msebera.android:httpclient:4.4.1.2'
     // https://github.com/smarek/httpclient-android
@@ -67,5 +67,5 @@ dependencies {
     compile files('libs/signpost-core-1.2.1.2.jar')
     compile 'org.apache.commons:commons-lang3:3.4'
     compile 'com.github.woxthebox:draglistview:1.3' // https://github.com/woxblom/DragListView
-    compile 'com.github.scribejava:scribejava-core:3.2.0'
+    compile 'com.github.scribejava:scribejava-core:4.1.0'
 }

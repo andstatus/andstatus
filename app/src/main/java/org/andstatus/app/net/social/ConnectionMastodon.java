@@ -79,7 +79,7 @@ public class ConnectionMastodon extends ConnectionTwitter1p0 {
             if (!UriUtils.isEmpty(mediaUri)) {
                 JSONObject mediaObject = uploadMedia(mediaUri);
                 if (mediaObject != null && mediaObject.has("id")) {
-                    formParams.put("media_ids", mediaObject.get("id"));
+                    formParams.put("media_ids[]", mediaObject.get("id"));
                 }
             }
         } catch (JSONException e) {

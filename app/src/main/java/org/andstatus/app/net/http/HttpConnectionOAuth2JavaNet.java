@@ -17,6 +17,7 @@
 package org.andstatus.app.net.http;
 
 import com.github.scribejava.core.builder.ServiceBuilder;
+import com.github.scribejava.core.httpclient.jdk.JDKHttpClientConfig;
 import com.github.scribejava.core.model.OAuth2AccessToken;
 import com.github.scribejava.core.model.OAuthConstants;
 import com.github.scribejava.core.model.OAuthRequest;
@@ -35,6 +36,7 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 import cz.msebera.android.httpclient.HttpEntity;
 import oauth.signpost.OAuthConsumer;
@@ -87,11 +89,11 @@ public class HttpConnectionOAuth2JavaNet extends HttpConnectionOAuthJavaNet {
     private void postRequestOauth(HttpReadResult result) throws ConnectionException {
         try {
             OAuth20Service service = getService(false);
-            final OAuthRequest request = new OAuthRequest(Verb.POST, result.getUrlObj().toString(), service);
+            final OAuthRequest request = new OAuthRequest(Verb.POST, result.getUrlObj().toString());
             if (result.getFormParams().has(HttpConnection.KEY_MEDIA_PART_URI)) {
                 HttpEntity httpEntity = HttpConnectionApacheCommon.multiPartFormEntity(result.getFormParams(), true);
                 request.addHeader(httpEntity.getContentType().getName(), httpEntity.getContentType().getValue());
-                request.addPayload(httpEntityToBytes(httpEntity));
+                request.setPayload(httpEntityToBytes(httpEntity));
             } else {
                 Iterator<String> iterator = result.getFormParams().keys();
                 while (iterator.hasNext()) {
@@ -100,7 +102,7 @@ public class HttpConnectionOAuth2JavaNet extends HttpConnectionOAuthJavaNet {
                 }
             }
             signRequest(request, service, false);
-            final Response response = request.send();
+            final Response response = service.execute(request);
             result.setStatusCode(response.getCode());
             switch(result.getStatusCode()) {
                 case OK:
@@ -110,7 +112,7 @@ public class HttpConnectionOAuth2JavaNet extends HttpConnectionOAuthJavaNet {
                     result.strResponse = HttpConnectionUtils.readStreamToString(response.getStream());
                     throw result.getExceptionFromJsonErrorResponse();
             }
-        } catch (IOException e) {
+        } catch (IOException | InterruptedException | ExecutionException e) {
             result.e1 = e;
         }
     }
@@ -133,12 +135,11 @@ public class HttpConnectionOAuth2JavaNet extends HttpConnectionOAuthJavaNet {
             boolean redirected = false;
             boolean stop = false;
             do {
-                request = new OAuthRequest(Verb.GET, result.getUrlObj().toString(), service);
-                request.setFollowRedirects(false);
+                request = new OAuthRequest(Verb.GET, result.getUrlObj().toString());
                 if (result.authenticate) {
                     signRequest(request, service, redirected);
                 }
-                Response response = request.send();
+                Response response = service.execute(request);
                 result.setStatusCode(response.getCode());
                 switch(result.getStatusCode()) {
                     case OK:
@@ -181,16 +182,23 @@ public class HttpConnectionOAuth2JavaNet extends HttpConnectionOAuthJavaNet {
             throw e;
         } catch(IOException e) {
             throw new ConnectionException(logBuilder.toString(), e);
+        } catch (InterruptedException e) {
+            throw new ConnectionException(logBuilder.toString(), e);
+        } catch (ExecutionException e) {
+            throw new ConnectionException(logBuilder.toString(), e);
         }
     }
 
     @Override
     public OAuth20Service getService(boolean redirect) {
+        final JDKHttpClientConfig clientConfig = JDKHttpClientConfig.defaultConfig();
+        clientConfig.setConnectTimeout(MyPreferences.getConnectionTimeoutMs());
+        clientConfig.setReadTimeout(2*MyPreferences.getConnectionTimeoutMs());
+        clientConfig.setFollowRedirects(false);
         final ServiceBuilder serviceBuilder = new ServiceBuilder()
                 .apiKey(data.oauthClientKeys.getConsumerKey())
                 .apiSecret(data.oauthClientKeys.getConsumerSecret())
-                .connectTimeout(MyPreferences.getConnectionTimeoutMs())
-                .readTimeout(2*MyPreferences.getConnectionTimeoutMs());
+                .httpClientConfig(clientConfig);
         if (redirect) {
             serviceBuilder.callback(HttpConnection.CALLBACK_URI.toString());
         }

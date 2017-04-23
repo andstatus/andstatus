@@ -37,7 +37,6 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.github.scribejava.core.exceptions.OAuthException;
 import com.github.scribejava.core.model.OAuth2AccessToken;
 import com.github.scribejava.core.oauth.OAuth20Service;
 
@@ -76,7 +75,6 @@ import org.andstatus.app.util.ViewUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.util.List;
 
 import oauth.signpost.OAuth;
@@ -1142,9 +1140,7 @@ public class AccountSettingsActivity extends MyActivity {
                                 accessSecret = consumer.getTokenSecret();
                             }
                         }
-                    } catch (OAuthMessageSignerException | OAuthNotAuthorizedException
-                            | OAuthExpectationFailedException | OAuthCommunicationException
-                            | IOException | OAuthException e) {
+                    } catch (Exception e) {
                         message = e.getMessage();
                         MyLog.e(this, e);
                     } finally {
