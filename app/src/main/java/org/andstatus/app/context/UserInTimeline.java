@@ -41,7 +41,7 @@ public enum UserInTimeline {
     }
 
     /**
-     * Returns the enum or {@link #USERNAME}
+     * Returns the enum
      */
     public static UserInTimeline load(String strCode) {
         try {
@@ -51,7 +51,7 @@ public enum UserInTimeline {
         } catch (NumberFormatException e) {
             MyLog.v(TAG, "Error converting '" + strCode + "'", e);
         }
-        return USERNAME;
+        return WEBFINGER_ID;
     }
     
     public static UserInTimeline load( long code) {
@@ -60,7 +60,7 @@ public enum UserInTimeline {
                 return val;
             }
         }
-        return USERNAME;
+        return WEBFINGER_ID;
     }
     
 }
