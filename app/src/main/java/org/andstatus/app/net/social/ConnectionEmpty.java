@@ -42,12 +42,12 @@ public class ConnectionEmpty extends Connection {
 
     @Override
     public MbMessage destroyFavorite(String statusId) throws ConnectionException {
-        return MbMessage.getEmpty();
+        return MbMessage.EMPTY;
     }
 
     @Override
     public MbMessage createFavorite(String statusId) throws ConnectionException {
-        return MbMessage.getEmpty();
+        return MbMessage.EMPTY;
     }
 
     @Override
@@ -57,22 +57,22 @@ public class ConnectionEmpty extends Connection {
 
     @Override
     public MbMessage getMessage1(String statusId) throws ConnectionException {
-        return MbMessage.getEmpty();
+        return MbMessage.EMPTY;
     }
 
     @Override
     public MbMessage updateStatus(String message, String statusId, String inReplyToId, Uri mediaUri) throws ConnectionException {
-        return MbMessage.getEmpty();
+        return MbMessage.EMPTY;
     }
 
     @Override
     public MbMessage postDirectMessage(String message, String statusId, String userId, Uri mediaUri) throws ConnectionException {
-        return MbMessage.getEmpty();
+        return MbMessage.EMPTY;
     }
 
     @Override
     public MbMessage postReblog(String rebloggedId) throws ConnectionException {
-        return MbMessage.getEmpty();
+        return MbMessage.EMPTY;
     }
 
     @Override

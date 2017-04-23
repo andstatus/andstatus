@@ -16,6 +16,7 @@
 
 package org.andstatus.app.net.social;
 
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import org.andstatus.app.context.MyContextHolder;
@@ -33,6 +34,8 @@ import java.util.List;
  * @author yvolk@yurivolkov.com
  */
 public class MbMessage {
+    public static final MbMessage EMPTY = new MbMessage();
+
     private boolean isEmpty = false;
     private DownloadStatus status = DownloadStatus.UNKNOWN;
     
@@ -43,8 +46,8 @@ public class MbMessage {
     public MbUser recipient = null; 
     private String body = "";
 
-    public MbMessage rebloggedMessage = null;
-    public MbMessage inReplyToMessage = null;
+    private MbMessage reblogged = null;
+    private MbMessage inReplyTo = null;
     public final List<MbMessage> replies = new ArrayList<>();
     public String conversationOid="";
     public String via = "";
@@ -53,14 +56,6 @@ public class MbMessage {
     private TriState isSubscribed = TriState.UNKNOWN;
 
     public final List<MbAttachment> attachments = new ArrayList<>();
-    
-    public boolean isPublic() {
-        return isPublic;
-    }
-
-    public void setPublic(boolean isPublic) {
-        this.isPublic = isPublic;
-    }
 
     /**
      * Some additional attributes may appear from the Reader's
@@ -84,10 +79,6 @@ public class MbMessage {
         }
         return message;
     }
-    
-    public static MbMessage getEmpty() {
-        return new MbMessage();
-    }
 
     public MbMessage markAsEmpty() {
         isEmpty = true;
@@ -97,7 +88,15 @@ public class MbMessage {
     private MbMessage() {
         // Empty
     }
-    
+
+    public boolean isPublic() {
+        return isPublic;
+    }
+
+    public void setPublic(boolean isPublic) {
+        this.isPublic = isPublic;
+    }
+
     public String getBody() {
         return body;
     }
@@ -130,6 +129,10 @@ public class MbMessage {
 
     public DownloadStatus getStatus() {
         return status;
+    }
+
+    public boolean nonEmpty() {
+        return !isEmpty();
     }
 
     public boolean isEmpty() {
@@ -170,11 +173,11 @@ public class MbMessage {
         if(favoritedByActor != TriState.UNKNOWN) {
             builder.append("favorited:" + favoritedByActor + ",");
         }
-        if(inReplyToMessage != null && !inReplyToMessage.isEmpty()) {
-            builder.append("inReplyTo:" + inReplyToMessage + ",");
+        if(getInReplyTo().nonEmpty()) {
+            builder.append("inReplyTo:" + getInReplyTo() + ",");
         }
-        if(rebloggedMessage != null && !rebloggedMessage.isEmpty()) {
-            builder.append("reblogged:" + rebloggedMessage + ",");
+        if(getReblogged().nonEmpty()) {
+            builder.append("reblogged:" + getReblogged() + ",");
         }
         if(recipient != null && !recipient.isEmpty()) {
             builder.append("recipient:" + recipient + ",");
@@ -223,5 +226,27 @@ public class MbMessage {
     public MbMessage setFavoritedByActor(TriState favoritedByActor) {
         this.favoritedByActor = favoritedByActor;
         return this;
+    }
+
+    @NonNull
+    public MbMessage getReblogged() {
+        return reblogged == null ? EMPTY : reblogged;
+    }
+
+    public void setReblogged(MbMessage message) {
+        if (message != null && message.nonEmpty()) {
+            this.reblogged = message;
+        }
+    }
+
+    @NonNull
+    public MbMessage getInReplyTo() {
+        return inReplyTo == null ? EMPTY : inReplyTo;
+    }
+
+    public void setInReplyTo(MbMessage message) {
+        if (message != null && message.nonEmpty()) {
+            this.inReplyTo = message;
+        }
     }
 }

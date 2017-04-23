@@ -86,10 +86,10 @@ public class ConnectionGnuSocialTest extends InstrumentationTestCase {
         mbMessage = timeline.get(ind).mbMessage;
         assertEquals("conversationOid", "2218650", mbMessage.conversationOid);
         assertTrue("Does not have a recipient", mbMessage.recipient == null);
-        assertTrue("Is not a reblog", mbMessage.rebloggedMessage == null);
-        assertTrue("Is a reply", mbMessage.inReplyToMessage != null);
-        assertEquals("Reply to the message id", "2663833", mbMessage.inReplyToMessage.oid);
-        assertEquals("Reply to the message by userOid", "114973", mbMessage.inReplyToMessage.sender.oid);
+        assertTrue("Is not a reblog", mbMessage.getReblogged().isEmpty());
+        assertTrue("Is a reply", mbMessage.getInReplyTo().nonEmpty());
+        assertEquals("Reply to the message id", "2663833", mbMessage.getInReplyTo().oid);
+        assertEquals("Reply to the message by userOid", "114973", mbMessage.getInReplyTo().sender.oid);
         assertFalse("Is not Favorited", mbMessage.getFavoritedByActor().toBoolean(true));
         String startsWith = "@<span class=\"vcard\">";
         assertEquals("Body of this message starts with", startsWith, mbMessage.getBody().substring(0, startsWith.length()));

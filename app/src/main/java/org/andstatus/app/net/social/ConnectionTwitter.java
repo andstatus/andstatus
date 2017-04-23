@@ -17,6 +17,7 @@
 package org.andstatus.app.net.social;
 
 import android.net.Uri;
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import org.andstatus.app.data.DownloadStatus;
@@ -234,10 +235,12 @@ public abstract class ConnectionTwitter extends Connection {
         return item;
     }
 
-    protected MbMessage messageFromJson(JSONObject jso) throws ConnectionException {
-        if (jso == null) {
-            return MbMessage.getEmpty();
-        }
+    @NonNull
+    final MbMessage messageFromJson(JSONObject jso) throws ConnectionException {
+        return jso == null ? MbMessage.EMPTY : messageFromJson2(jso);
+    }
+
+    MbMessage messageFromJson2(@NonNull JSONObject jso) throws ConnectionException {
         String oid = jso.optString("id_str");
         if (TextUtils.isEmpty(oid)) {
             // This is for the Status.net
@@ -270,9 +273,8 @@ public abstract class ConnectionTwitter extends Connection {
             }
             
             // Is this a reblog?
-            if (jso.has("retweeted_status")) {
-                JSONObject rebloggedMessage = jso.getJSONObject("retweeted_status");
-                message.rebloggedMessage = messageFromJson(rebloggedMessage);
+            if (!jso.isNull("retweeted_status")) {
+                message.setReblogged(messageFromJson(jso.getJSONObject("retweeted_status")));
             }
             setMessageBodyFromJson(message, jso);
             if (jso.has("recipient")) {
@@ -316,14 +318,14 @@ public abstract class ConnectionTwitter extends Connection {
                     }
                     inReplyToMessage.sender = inReplyToUser;
                     inReplyToMessage.actor = message.actor;
-                    message.inReplyToMessage = inReplyToMessage;
+                    message.setInReplyTo(inReplyToMessage);
                 }
             }
         } catch (JSONException e) {
             throw ConnectionException.loggedJsonException(this, "Parsing message", e, jso);
         } catch (Exception e) {
             MyLog.e(this, "messageFromJson", e);
-            return MbMessage.getEmpty();
+            return MbMessage.EMPTY;
         }
         return message;
     }
@@ -377,7 +379,7 @@ public abstract class ConnectionTwitter extends Connection {
         if (!jso.isNull("following")) {
             user.followedByActor = TriState.fromBoolean(jso.optBoolean("following"));
         }
-        if (jso.has("status")) {
+        if (!jso.isNull("status")) {
             JSONObject latestMessage;
             try {
                 latestMessage = jso.getJSONObject("status");

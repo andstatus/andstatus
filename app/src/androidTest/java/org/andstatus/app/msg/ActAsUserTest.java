@@ -59,13 +59,14 @@ public class ActAsUserTest extends android.test.ActivityInstrumentationTestCase2
     public void testActAsUser() throws InterruptedException {
         final String method = "testActAsUser";
         TestSuite.waitForListLoaded(this, mActivity, 2);
-        ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<TimelineActivity>(this, ConversationActivity.class);
+        ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<>(this, ConversationActivity.class);
         long msgId = helper.getListItemIdOfLoadedReply();
         String logMsg = "msgId=" + msgId;
 
-        helper.invokeContextMenuAction4ListItemId(method, msgId, MessageListContextMenuItem.ACT_AS_FIRST_OTHER_USER);
+        boolean invoked = helper.invokeContextMenuAction4ListItemId(method, msgId,
+                MessageListContextMenuItem.ACT_AS_FIRST_OTHER_USER);
         MyAccount actor1 = getActivity().getContextMenu().getMyActor();
-        logMsg += "; actor1=" + actor1;
+        logMsg += ";" + (invoked ? "" : " failed to invoke context menu 1," ) + " actor1=" + actor1;
         assertTrue(logMsg, actor1.isValid());
 
         ActivityTestHelper.closeContextMenu(this);
@@ -75,9 +76,10 @@ public class ActAsUserTest extends android.test.ActivityInstrumentationTestCase2
         logMsg += "; firstOtherActor=" + firstOtherActor;
         assertNotSame(logMsg, actor1, firstOtherActor);
 
-        helper.invokeContextMenuAction4ListItemId(method, msgId, MessageListContextMenuItem.ACT_AS_FIRST_OTHER_USER);
+        boolean invoked2 = helper.invokeContextMenuAction4ListItemId(method, msgId,
+                MessageListContextMenuItem.ACT_AS_FIRST_OTHER_USER);
         MyAccount actor2 = getActivity().getContextMenu().getMyActor();
-        logMsg += "; actor2=" + actor2;
+        logMsg += ";" + (invoked2 ? "" : " failed to invoke context menu 2," ) + " actor2=" + actor2;
         assertNotSame(logMsg, actor1, actor2);
     }
 

@@ -271,9 +271,9 @@ public class AsyncTaskLauncher<Params> {
     }
 
     public static void forget() {
-        if (MyLog.isVerboseEnabled()) {
-            MyLog.v(TAG, MyLog.getStackTrace(new IllegalArgumentException("forget")));
-        }
+    //    if (MyLog.isVerboseEnabled()) {
+    //        MyLog.v(TAG, MyLog.getStackTrace(new IllegalArgumentException("forget")));
+    //    }
         // Don't shut down QUICK UI pool
         List<MyAsyncTask.PoolEnum> pools = new ArrayList<>();
         for (MyAsyncTask.PoolEnum pool : MyAsyncTask.PoolEnum.values()) {

@@ -195,9 +195,9 @@ public class MessageEditorData {
                     MyQuery.idToOid(OidEnum.USER_OID, recipientId, 0));
         }
         if (inReplyToId != 0) {
-            message.inReplyToMessage = MbMessage.fromOriginAndOid(getMyAccount().getOriginId(),
+            message.setInReplyTo(MbMessage.fromOriginAndOid(getMyAccount().getOriginId(),
                     MyQuery.idToOid(OidEnum.MSG_OID, inReplyToId, 0),
-                    DownloadStatus.UNKNOWN);
+                    DownloadStatus.UNKNOWN));
         }
         Uri mediaUri = imageUriToSave.equals(Uri.EMPTY) ? image.getUri() : imageUriToSave;
         if (!mediaUri.equals(Uri.EMPTY)) {

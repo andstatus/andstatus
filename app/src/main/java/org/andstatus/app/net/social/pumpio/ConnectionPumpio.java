@@ -45,12 +45,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.URL;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 /**
  * Implementation of pump.io API: <a href="https://github.com/e14n/pump.io/blob/master/API.md">https://github.com/e14n/pump.io/blob/master/API.md</a>  
@@ -425,7 +421,7 @@ public class ConnectionPumpio extends Connection {
         } else if (ObjectType.compatibleWith(jso) == ObjectType.COMMENT) {
             return messageFromJsonComment(jso);
         } else {
-            return MbMessage.getEmpty();
+            return MbMessage.EMPTY;
         }
     }
     
@@ -436,7 +432,7 @@ public class ConnectionPumpio extends Connection {
             String oid = activity.optString("id");
             if (TextUtils.isEmpty(oid)) {
                 MyLog.d(this, "Pumpio activity has no id:" + activity.toString(2));
-                return MbMessage.getEmpty();
+                return MbMessage.EMPTY;
             } 
             message =  MbMessage.fromOriginAndOid(data.getOriginId(), oid, DownloadStatus.LOADED);
             message.actor = MbUser.fromOriginAndUserOid(data.getOriginId(), data.getAccountUserOid());
@@ -474,8 +470,8 @@ public class ConnectionPumpio extends Connection {
             JSONObject jso = activity.getJSONObject("object");
             // Is this a reblog ("Share" in terms of Activity streams)?
             if (activityType.equals(ActivityType.SHARE)) {
-                message.rebloggedMessage = messageFromJson(jso);
-                if (message.rebloggedMessage.isEmpty()) {
+                message.setReblogged(messageFromJson(jso));
+                if (message.getReblogged().isEmpty()) {
                     MyLog.d(TAG, "No reblogged message " + jso.toString(2));
                     return message.markAsEmpty();
                 }
@@ -538,9 +534,8 @@ public class ConnectionPumpio extends Connection {
 
             // If the Msg is a Reply to other message
             if (jso.has("inReplyTo")) {
-                JSONObject inReplyToObject = jso.getJSONObject("inReplyTo");
-                message.inReplyToMessage = messageFromJson(inReplyToObject);
-                message.inReplyToMessage.setSubscribed(TriState.FALSE);
+                message.setInReplyTo(messageFromJson(jso.getJSONObject("inReplyTo")));
+                message.getInReplyTo().setSubscribed(TriState.FALSE);
             }
 
             if (jso.has("replies")) {
@@ -578,7 +573,7 @@ public class ConnectionPumpio extends Connection {
             String oid = jso.optString("id");
             if (TextUtils.isEmpty(oid)) {
                 MyLog.d(TAG, "Pumpio object has no id:" + jso.toString(2));
-                return MbMessage.getEmpty();
+                return MbMessage.EMPTY;
             } 
             message =  MbMessage.fromOriginAndOid(data.getOriginId(), oid, DownloadStatus.LOADED);
             message.actor = MbUser.fromOriginAndUserOid(data.getOriginId(), data.getAccountUserOid());

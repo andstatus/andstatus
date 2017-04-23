@@ -17,6 +17,7 @@
 package org.andstatus.app.net.social;
 
 import android.net.Uri;
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import org.andstatus.app.context.MyContextHolder;
@@ -176,11 +177,11 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitter1p0 {
     }
 
     @Override
-    protected MbMessage messageFromJson(JSONObject jso) throws ConnectionException {
+    MbMessage messageFromJson2(@NonNull JSONObject jso) throws ConnectionException {
         final String method = "messageFromJson";
-        MbMessage message = super.messageFromJson(jso);
+        MbMessage message = super.messageFromJson2(jso);
         message.setConversationOid(jso.optString(CONVERSATION_ID_FIELD_NAME));
-        if (jso != null && jso.has(ATTACHMENTS_FIELD_NAME)) {
+        if (!jso.isNull(ATTACHMENTS_FIELD_NAME)) {
             try {
                 JSONArray jArr = jso.getJSONArray(ATTACHMENTS_FIELD_NAME);
                 for (int ind = 0; ind < jArr.length(); ind++) {

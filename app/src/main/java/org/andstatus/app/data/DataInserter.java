@@ -100,9 +100,9 @@ public class DataInserter {
             }
 
             // Is this a reblog?
-            if (message.rebloggedMessage != null) {
-                if (message.rebloggedMessage.sender != null) {
-                    insertOrUpdateUser(message.rebloggedMessage.sender, lum);
+            if (message.getReblogged().nonEmpty()) {
+                if (message.getReblogged().sender != null) {
+                    insertOrUpdateUser(message.getReblogged().sender, lum);
                 }
                 if (message.getSenderId() != 0) {
                     if (message.getSenderId() != execContext.getMyAccount().getUserId()) {
@@ -123,7 +123,7 @@ public class DataInserter {
 
                 // And replace reblog with original message!
                 // So we won't have lots of reblogs but rather one original message
-                message = message.rebloggedMessage;
+                message = message.getReblogged();
                 if (messageIn.msgId != 0) {
                     message.msgId = messageIn.msgId;
                 }
@@ -314,8 +314,8 @@ public class DataInserter {
                                                       ContentValues values) {
         boolean mentioned = execContext.getTimeline().getTimelineType() == TimelineType.MENTIONS;
         Long inReplyToUserId = 0L;
-        final MbMessage inReplyToMessage = message.inReplyToMessage;
-        if (inReplyToMessage != null) {
+        final MbMessage inReplyToMessage = message.getInReplyTo();
+        if (inReplyToMessage.nonEmpty()) {
             if (TextUtils.isEmpty(inReplyToMessage.conversationOid)) {
                 inReplyToMessage.setConversationOid(message.conversationOid);
             }
@@ -385,9 +385,9 @@ public class DataInserter {
                 message.conversationId = MyQuery.conversationOidToId(message.originId, message.conversationOid);
             }
         }
-        if (message.conversationId == 0 && message.inReplyToMessage != null) {
-            if (message.inReplyToMessage.msgId != 0) {
-                message.conversationId = MyQuery.msgIdToLongColumnValue(MsgTable.CONVERSATION_ID, message.inReplyToMessage.msgId);
+        if (message.conversationId == 0 && message.getInReplyTo().nonEmpty()) {
+            if (message.getInReplyTo().msgId != 0) {
+                message.conversationId = MyQuery.msgIdToLongColumnValue(MsgTable.CONVERSATION_ID, message.getInReplyTo().msgId);
             }
         }
         if (message.conversationId == 0) {

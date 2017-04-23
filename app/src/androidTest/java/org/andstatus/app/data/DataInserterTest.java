@@ -269,7 +269,7 @@ public class DataInserterTest extends InstrumentationTestCase {
         inReplyTo.sender = MbUser.fromOriginAndUserOid(TestSuite.getConversationOriginId(),
                 "irtUser" + TestSuite.TESTRUN_UID).setUserName("irt" + username);
         inReplyTo.actor = message.actor;
-        message.inReplyToMessage = inReplyTo;
+        message.setInReplyTo(inReplyTo);
 
         DataInserter di = new DataInserter(TestSuite.getConversationMyAccount());
         long messageId = di.insertOrUpdateMsg(message);

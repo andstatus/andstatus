@@ -214,9 +214,9 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         ind++;
         mbMessage = timeline.get(ind).mbMessage;
         assertEquals(mbMessage.isSubscribed(), TriState.UNKNOWN);
-        assertTrue("Is a reply", mbMessage.inReplyToMessage != null);
-        assertEquals("Is a reply to this user", mbMessage.inReplyToMessage.sender.getUserName(), "jankusanagi@identi.ca");
-        assertEquals(mbMessage.inReplyToMessage.isSubscribed(), TriState.FALSE);
+        assertTrue("Is a reply", mbMessage.getInReplyTo().nonEmpty());
+        assertEquals("Is a reply to this user", mbMessage.getInReplyTo().sender.getUserName(), "jankusanagi@identi.ca");
+        assertEquals(mbMessage.getInReplyTo().isSubscribed(), TriState.FALSE);
     }
 
     public void testGetUsersFollowedBy() throws IOException {
@@ -362,6 +362,6 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         assertEquals("Number of replies", 2, msg.replies.size());
         MbMessage reply = msg.replies.get(0);
         assertEquals("Reply oid", "https://identi.ca/api/comment/cJdi4cGWQT-Z9Rn3mjr5Bw", reply.oid);
-        assertEquals("Is a Reply to", msgOid, reply.inReplyToMessage.oid);
+        assertEquals("Is a Reply to", msgOid, reply.getInReplyTo().oid);
     }
 }

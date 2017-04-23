@@ -17,6 +17,7 @@
 package org.andstatus.app.net.social;
 
 import android.net.Uri;
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import org.andstatus.app.data.DownloadStatus;
@@ -100,10 +101,7 @@ public class ConnectionMastodon extends ConnectionTwitter1p0 {
     }
 
     @Override
-    protected MbMessage messageFromJson(JSONObject jso) throws ConnectionException {
-        if (jso == null) {
-            return MbMessage.getEmpty();
-        }
+    MbMessage messageFromJson2(@NonNull JSONObject jso) throws ConnectionException {
         String oid = jso.optString("id");
         MbMessage message =  MbMessage.fromOriginAndOid(data.getOriginId(), oid, DownloadStatus.LOADED);
         message.actor = MbUser.fromOriginAndUserOid(data.getOriginId(), data.getAccountUserOid());
@@ -118,8 +116,7 @@ public class ConnectionMastodon extends ConnectionTwitter1p0 {
 
             // Is this a reblog?
             if (!jso.isNull("reblog") ) {
-                JSONObject rebloggedMessage = jso.getJSONObject("reblog");
-                message.rebloggedMessage = messageFromJson(rebloggedMessage);
+                message.setReblogged(messageFromJson(jso.getJSONObject("reblog")));
             }
             message.setBody(jso.optString("content"));
             message.url = jso.optString("url");
@@ -156,14 +153,14 @@ public class ConnectionMastodon extends ConnectionTwitter1p0 {
                             inReplyToUserOid);
                     inReplyToMessage.sender = inReplyToUser;
                     inReplyToMessage.actor = message.actor;
-                    message.inReplyToMessage = inReplyToMessage;
+                    message.setInReplyTo(inReplyToMessage);
                 }
             }
         } catch (JSONException e) {
             throw ConnectionException.loggedJsonException(this, "Parsing message", e, jso);
         } catch (Exception e) {
             MyLog.e(this, "messageFromJson", e);
-            return MbMessage.getEmpty();
+            return MbMessage.EMPTY;
         }
         return message;
     }

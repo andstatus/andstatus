@@ -17,6 +17,7 @@
 package org.andstatus.app.net.social;
 
 import android.net.Uri;
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import org.andstatus.app.data.MyContentType;
@@ -150,9 +151,9 @@ public class ConnectionTwitter1p1 extends ConnectionTwitter {
     
     private static final String ATTACHMENTS_FIELD_NAME = "media";
     @Override
-    protected MbMessage messageFromJson(JSONObject jso) throws ConnectionException {
+    MbMessage messageFromJson2(@NonNull JSONObject jso) throws ConnectionException {
         final String method = "messageFromJson";
-        MbMessage message = super.messageFromJson(jso);
+        MbMessage message = super.messageFromJson2(jso);
         // See https://dev.twitter.com/docs/entities
         JSONObject entities = jso.optJSONObject("entities");
         if (entities != null && entities.has(ATTACHMENTS_FIELD_NAME)) {

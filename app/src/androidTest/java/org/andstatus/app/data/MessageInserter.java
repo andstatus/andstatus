@@ -125,7 +125,7 @@ public class MessageInserter extends InstrumentationTestCase {
         message.via = "AndStatus";
         message.sender = author;
         message.actor = accountMbUser;
-        message.inReplyToMessage = inReplyToMessage;
+        message.setInReplyTo(inReplyToMessage);
         if (origin.getOriginType() == OriginType.PUMPIO) {
             message.url = message.oid;
         }
@@ -144,7 +144,7 @@ public class MessageInserter extends InstrumentationTestCase {
         long messageId = di.insertOrUpdateMsg(messageIn);
         assertTrue( "Message added " + messageIn.oid, messageId != 0);
 
-        MbMessage message = messageIn.rebloggedMessage == null ? messageIn : messageIn.rebloggedMessage;
+        MbMessage message = messageIn.getReblogged().isEmpty() ? messageIn : messageIn.getReblogged();
 
         String permalink = origin.messagePermalink(messageId);
         URL urlPermalink = UrlUtils.fromString(permalink); 
@@ -168,7 +168,7 @@ public class MessageInserter extends InstrumentationTestCase {
             assertEquals("userId found for " + messageIn, ma.getUserId(), userIdFromMsgOfUser);
         }
 
-        if (messageIn.rebloggedMessage != null) {
+        if (messageIn.getReblogged().nonEmpty()) {
             long rebloggerId = MyQuery.conditionToLongColumnValue(MsgOfUserTable.TABLE_NAME,
                     MsgOfUserTable.USER_ID,
                     "t." + MsgOfUserTable.MSG_ID + "=" + messageId
