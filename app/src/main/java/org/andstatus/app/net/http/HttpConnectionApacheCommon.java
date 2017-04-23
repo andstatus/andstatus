@@ -25,6 +25,15 @@ import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.util.FileUtils;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.UriUtils;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
 import cz.msebera.android.httpclient.Header;
 import cz.msebera.android.httpclient.HttpEntity;
 import cz.msebera.android.httpclient.HttpResponse;
@@ -39,14 +48,6 @@ import cz.msebera.android.httpclient.entity.ContentType;
 import cz.msebera.android.httpclient.entity.mime.MultipartEntityBuilder;
 import cz.msebera.android.httpclient.message.BasicNameValuePair;
 import cz.msebera.android.httpclient.protocol.HTTP;
-import org.json.JSONObject;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 
 public class HttpConnectionApacheCommon {
     private HttpConnectionApacheSpecific specific;
@@ -64,7 +65,7 @@ public class HttpConnectionApacheCommon {
             if ( !result.hasFormParams()) {
                 // Nothing to do at this step
             } else if (result.getFormParams().has(HttpConnection.KEY_MEDIA_PART_URI)) {
-                fillMultiPartPost(httpPost, result.getFormParams());
+                httpPost.setEntity(multiPartFormEntity(result.getFormParams(), result.isLegacyHttpProtocol()));
             } else {
                 fillSinglePartPost(httpPost, result.getFormParams());
             }
@@ -74,12 +75,13 @@ public class HttpConnectionApacheCommon {
         }
     }
 
-    private void fillMultiPartPost(HttpPost httpPost, JSONObject formParams) throws ConnectionException {
-        MultipartEntityBuilder builder = MultipartEntityBuilder.create(); 
+    public static HttpEntity multiPartFormEntity(JSONObject formParams, boolean noStreamParts) throws
+            ConnectionException {
+        MultipartEntityBuilder builder = MultipartEntityBuilder.create();
         Uri mediaUri = null;
         String mediaPartName = "";
         Iterator<String> iterator =  formParams.keys();
-        ContentType contentType = ContentType.create(HTTP.PLAIN_TEXT_TYPE, HTTP.UTF_8);
+        ContentType textContentType = ContentType.create(HTTP.PLAIN_TEXT_TYPE, HTTP.UTF_8);
         while (iterator.hasNext()) {
             String name = iterator.next();
             String value = formParams.optString(name);
@@ -89,25 +91,28 @@ public class HttpConnectionApacheCommon {
                 mediaUri = UriUtils.fromString(value);
             } else {
                 // see http://stackoverflow.com/questions/19292169/multipartentitybuilder-and-charset
-                builder.addTextBody(name, value, contentType);
+                builder.addTextBody(name, value, textContentType);
             }
         }
         if (!TextUtils.isEmpty(mediaPartName) && !UriUtils.isEmpty(mediaUri)) {
+            InputStream ins = null;
             try {
-                InputStream ins = MyContextHolder.get().context().getContentResolver().openInputStream(mediaUri);
-                ContentType contentType2 = ContentType.create(MyContentType.uri2MimeType(mediaUri, null));
-                if (httpPost.getProtocolVersion() == HttpVersion.HTTP_1_0 ) {
-                    builder.addBinaryBody(mediaPartName, FileUtils.getBytes(ins), contentType2, mediaUri.getPath());
+                ins = MyContextHolder.get().context().getContentResolver().openInputStream(mediaUri);
+                ContentType mediaContentType = ContentType.create(MyContentType.uri2MimeType(mediaUri, null));
+                if (noStreamParts) {
+                    builder.addBinaryBody(mediaPartName, FileUtils.getBytes(ins), mediaContentType, mediaUri.getPath());
                 } else {
-                    builder.addBinaryBody(mediaPartName, ins, contentType2, mediaUri.getPath());
+                    builder.addBinaryBody(mediaPartName, ins, mediaContentType, mediaUri.getPath());
                 }
             } catch (SecurityException | IOException e) {
                 throw ConnectionException.hardConnectionException("mediaUri='" + mediaUri + "'", e);
+            } finally {
+                DbUtils.closeSilently(ins);
             }
         }
-        httpPost.setEntity(builder.build()); 
+        return builder.build();
     }
-    
+
     private void fillSinglePartPost(HttpPost httpPost, JSONObject formParams)
             throws UnsupportedEncodingException {
         List<NameValuePair> nvFormParams = HttpConnectionApacheCommon.jsonToNameValuePair(formParams);

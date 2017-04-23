@@ -18,8 +18,6 @@ package org.andstatus.app.net.http;
 
 import android.net.Uri;
 
-import com.github.scribejava.core.model.OAuthConstants;
-
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyContentType;
@@ -149,7 +147,7 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
     }
 
     /** This method is not legacy HTTP */
-    private void writeMedia(HttpURLConnection conn, JSONObject formParams)
+    void writeMedia(HttpURLConnection conn, JSONObject formParams)
             throws IOException, JSONException {
         Uri mediaUri = Uri.parse(formParams.getString(KEY_MEDIA_PART_URI));
         conn.setChunkedStreamingMode(0);
@@ -158,11 +156,11 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
                 
         InputStream in = MyContextHolder.get().context().getContentResolver().openInputStream(mediaUri);
         try {
-            byte[] buffer = new byte[1024];
+            byte[] buffer = new byte[16384];
             int length;
             OutputStream out = new BufferedOutputStream(conn.getOutputStream());
             try {
-                while ((length = in.read(buffer)) > 0) {
+                while ((length = in.read(buffer)) != -1) {
                     out.write(buffer, 0, length);
                 }
             } finally {
@@ -261,9 +259,9 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
         }
     }
 
-    private void signConnection(HttpURLConnection conn, OAuthConsumer consumer, boolean redirected)
+    protected void signConnection(HttpURLConnection conn, OAuthConsumer consumer, boolean redirected)
             throws ConnectionException {
-        if (!getCredentialsPresent()) {
+        if (!getCredentialsPresent() || consumer == null) {
             return;
         }
         try {

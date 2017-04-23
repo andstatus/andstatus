@@ -18,6 +18,7 @@ package org.andstatus.app.net.http;
 
 import com.github.scribejava.core.builder.ServiceBuilder;
 import com.github.scribejava.core.model.OAuth2AccessToken;
+import com.github.scribejava.core.model.OAuthConstants;
 import com.github.scribejava.core.model.OAuthRequest;
 import com.github.scribejava.core.model.Response;
 import com.github.scribejava.core.model.Verb;
@@ -29,10 +30,13 @@ import org.andstatus.app.util.MyLog;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.util.Iterator;
 import java.util.Map;
 
+import cz.msebera.android.httpclient.HttpEntity;
 import oauth.signpost.OAuthConsumer;
 import oauth.signpost.OAuthProvider;
 
@@ -84,11 +88,10 @@ public class HttpConnectionOAuth2JavaNet extends HttpConnectionOAuthJavaNet {
         try {
             OAuth20Service service = getService(false);
             final OAuthRequest request = new OAuthRequest(Verb.POST, result.getUrlObj().toString(), service);
-            if (!result.hasFormParams()) {
-                // Nothing to do at this step
-            } else if (result.getFormParams().has(HttpConnection.KEY_MEDIA_PART_URI)) {
-                super.postRequest(result);
-                return;
+            if (result.getFormParams().has(HttpConnection.KEY_MEDIA_PART_URI)) {
+                HttpEntity httpEntity = HttpConnectionApacheCommon.multiPartFormEntity(result.getFormParams(), true);
+                request.addHeader(httpEntity.getContentType().getName(), httpEntity.getContentType().getValue());
+                request.addPayload(httpEntityToBytes(httpEntity));
             } else {
                 Iterator<String> iterator = result.getFormParams().keys();
                 while (iterator.hasNext()) {
@@ -110,6 +113,13 @@ public class HttpConnectionOAuth2JavaNet extends HttpConnectionOAuthJavaNet {
         } catch (IOException e) {
             result.e1 = e;
         }
+    }
+
+    byte[] httpEntityToBytes(HttpEntity httpEntity) throws IOException {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        httpEntity.writeTo(out);
+        out.flush();
+        return out.toByteArray();
     }
 
     @Override
@@ -209,6 +219,34 @@ public class HttpConnectionOAuth2JavaNet extends HttpConnectionOAuthJavaNet {
                     service.signRequest(token, request);
                 }
             }
+        } catch (Exception e) {
+            throw new ConnectionException(e);
+        }
+    }
+
+    @Override
+    protected void signConnection(HttpURLConnection conn, OAuthConsumer consumer,  boolean redirected) throws
+            ConnectionException {
+        if (!getCredentialsPresent()) {
+            return;
+        }
+        try {
+            OAuth2AccessToken token;
+            if (data.originUrl.getHost().contentEquals(data.urlForUserToken.getHost())) {
+                token = new OAuth2AccessToken(getUserToken(), getUserSecret());
+            } else {
+                if (redirected) {
+                    token = new OAuth2AccessToken("", null);
+                } else {
+                    conn.setRequestProperty("Authorization", "Dialback");
+                    conn.setRequestProperty("host", data.urlForUserToken.getHost());
+                    conn.setRequestProperty("token", getUserToken());
+                    MyLog.v(this, "Dialback authorization at " + data.originUrl + "; urlForUserToken="
+                            + data.urlForUserToken + "; token=" + getUserToken());
+                    token = new OAuth2AccessToken(getUserToken(), null);
+                }
+            }
+            conn.setRequestProperty(OAuthConstants.ACCESS_TOKEN, token.getAccessToken());
         } catch (Exception e) {
             throw new ConnectionException(e);
         }

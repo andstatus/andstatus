@@ -23,6 +23,7 @@ import android.text.TextUtils;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.net.http.ConnectionException;
+import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TriState;
@@ -56,6 +57,9 @@ public class ConnectionMastodon extends ConnectionTwitter1p0 {
             case POST_MESSAGE:
                 url = "statuses";
                 break;
+            case POST_WITH_MEDIA:
+                url = "media";
+                break;
             default:
                 url = "";
                 break;
@@ -72,11 +76,35 @@ public class ConnectionMastodon extends ConnectionTwitter1p0 {
             if ( !TextUtils.isEmpty(inReplyToId)) {
                 formParams.put("in_reply_to_id", inReplyToId);
             }
+            if (!UriUtils.isEmpty(mediaUri)) {
+                JSONObject mediaObject = uploadMedia(mediaUri);
+                if (mediaObject != null && mediaObject.has("id")) {
+                    formParams.put("media_ids", mediaObject.get("id"));
+                }
+            }
         } catch (JSONException e) {
             MyLog.e(this, e);
         }
         JSONObject jso = postRequest(ApiRoutineEnum.POST_MESSAGE, formParams);
         return messageFromJson(jso);
+    }
+
+    private JSONObject uploadMedia(Uri mediaUri) throws ConnectionException {
+        JSONObject jso = null;
+        try {
+            JSONObject formParams = new JSONObject();
+            formParams.put(HttpConnection.KEY_MEDIA_PART_NAME, "file");
+            formParams.put(HttpConnection.KEY_MEDIA_PART_URI, mediaUri.toString());
+            jso = postRequest(ApiRoutineEnum.POST_WITH_MEDIA, formParams);
+            if (jso != null) {
+                if (MyLog.isVerboseEnabled()) {
+                    MyLog.v(this, "uploaded '" + mediaUri.toString() + "' " + jso.toString(2));
+                }
+            }
+        } catch (JSONException e) {
+            throw ConnectionException.loggedJsonException(this, "Error uploading '" + mediaUri.toString() + "'", e, jso);
+        }
+        return jso;
     }
 
     @Override

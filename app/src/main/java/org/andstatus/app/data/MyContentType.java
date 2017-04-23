@@ -28,7 +28,7 @@ public enum MyContentType {
     TEXT(3),
     UNKNOWN(0);
     
-    public static final String DEFAULT_MIME_TYPE = "image/jpeg";
+    public static final String DEFAULT_MIME_TYPE = "image/png";
 
     private static final String TAG = MyContentType.class.getSimpleName();
     
