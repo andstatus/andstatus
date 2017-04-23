@@ -26,7 +26,16 @@
       "following_count": 0,
       "statuses_count": 1
     },
-    "media_attachments": [],
+    "media_attachments": [
+      {
+        "id": 75435,
+        "remote_url": "https:\/\/media.mstdn.jp\/images\/media_attachments\/files\/000\/212\/533\/original\/e678f956970a585b.png",
+        "type": "image",
+        "url": "https:\/\/files.neumastodon.com\/media_attachments\/files\/000\/306\/223\/original\/e678f956970a585b.png?1492832537",
+        "preview_url": "https:\/\/files.neumastodon.com\/media_attachments\/files\/000\/306\/223\/small\/e678f956970a585b.png?1492831537",
+        "text_url": null
+      }
+    ],
     "mentions": [],
     "tags": [],
     "uri": "tag:neumastodon.com,2017-04-16:objectId=22:objectType=Status",

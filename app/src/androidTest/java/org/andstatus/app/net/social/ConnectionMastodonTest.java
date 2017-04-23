@@ -19,8 +19,10 @@ package org.andstatus.app.net.social;
 import android.test.InstrumentationTestCase;
 
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.util.RawResourceUtils;
 import org.andstatus.app.util.TriState;
+import org.andstatus.app.util.UriUtils;
 
 import java.io.IOException;
 import java.util.Date;
@@ -68,5 +70,11 @@ public class ConnectionMastodonTest extends InstrumentationTestCase {
         assertEquals("Message url", "https://neumastodon.com/@t131t1/22", mbMessage.url);
         assertEquals("Body", "<p>I'm figuring out how to work with Mastodon</p>", mbMessage.getBody());
         assertEquals("Message application", "Web", mbMessage.via);
+
+        assertEquals("Media attachments", 1, mbMessage.attachments.size());
+        MbAttachment attachment = mbMessage.attachments.get(0);
+        assertEquals("Content type", MyContentType.IMAGE, attachment.contentType);
+        assertEquals("Content type", UriUtils.fromString("https://files.neumastodon.com/media_attachments/files/000/306/223/original/e678f956970a585b.png?1492832537"),
+                attachment.getUri());
     }
 }

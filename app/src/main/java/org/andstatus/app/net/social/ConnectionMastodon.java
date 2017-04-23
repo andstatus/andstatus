@@ -21,15 +21,22 @@ import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import org.andstatus.app.data.DownloadStatus;
+import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
+import org.andstatus.app.util.UrlUtils;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.net.URL;
+
 public class ConnectionMastodon extends ConnectionTwitter1p0 {
+    private static final String ATTACHMENTS_FIELD_NAME = "media_attachments";
+
     @Override
     protected String getApiPath1(ApiRoutineEnum routine) {
         String url;
@@ -102,6 +109,7 @@ public class ConnectionMastodon extends ConnectionTwitter1p0 {
 
     @Override
     MbMessage messageFromJson2(@NonNull JSONObject jso) throws ConnectionException {
+        final String method = "messageFromJson";
         String oid = jso.optString("id");
         MbMessage message =  MbMessage.fromOriginAndOid(data.getOriginId(), oid, DownloadStatus.LOADED);
         message.actor = MbUser.fromOriginAndUserOid(data.getOriginId(), data.getAccountUserOid());
@@ -156,6 +164,29 @@ public class ConnectionMastodon extends ConnectionTwitter1p0 {
                     message.setInReplyTo(inReplyToMessage);
                 }
             }
+
+            // TODO: Remove duplicated code of attachments parsing
+            if (!jso.isNull(ATTACHMENTS_FIELD_NAME)) {
+                try {
+                    JSONArray jArr = jso.getJSONArray(ATTACHMENTS_FIELD_NAME);
+                    for (int ind = 0; ind < jArr.length(); ind++) {
+                        JSONObject attachment = (JSONObject) jArr.get(ind);
+                        URL url = UrlUtils.fromJson(attachment, "url");
+                        if (url == null) {
+                            url = UrlUtils.fromJson(attachment, "preview_url");
+                        }
+                        MbAttachment mbAttachment =  MbAttachment.fromUrlAndContentType(url, MyContentType.fromUrl(url, attachment.optString("type")));
+                        if (mbAttachment.isValid()) {
+                            message.attachments.add(mbAttachment);
+                        } else {
+                            MyLog.d(this, method + "; invalid attachment #" + ind + "; " + jArr.toString());
+                        }
+                    }
+                } catch (JSONException e) {
+                    MyLog.d(this, method, e);
+                }
+            }
+
         } catch (JSONException e) {
             throw ConnectionException.loggedJsonException(this, "Parsing message", e, jso);
         } catch (Exception e) {
