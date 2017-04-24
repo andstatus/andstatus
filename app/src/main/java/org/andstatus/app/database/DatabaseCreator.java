@@ -105,7 +105,12 @@ public class DatabaseCreator {
                 " 8, 3,'Quitter.no',     'https://quitter.no',       1, 1, 1,    0,  0",
                 " 9, 3,'Quitter.is',     'https://quitter.is',       1, 1, 1,    0,  0",
                 "10, 3,'Quitter.Espana', 'https://quitter.es',       1, 1, 1,    0,  0",
-                "11, 4,'Mastodon.social','https://mastodon.social',  1, 1, 1,    0,  0"
+                "11, 4,'Mastodon.social','https://mastodon.social',  1, 1, 1,    0,  0",
+                "12, 4,'Mastodon.cloud', 'https://mastodon.cloud',   1, 1, 1,    0,  0",
+                "13, 4,'mstdn.jp',       'https://mstdn.jp',         1, 1, 1,    0,  0",
+                "14, 4,'Pawoo',          'https://pawoo.net',        1, 1, 1,    0,  0",
+                "15, 4,'friends.nico',   'https://friends.nico',     1, 1, 1,    0,  0",
+                "16, 4,'Mastodon.xyz',   'https://mastodon.xyz',     1, 1, 1,    0,  0"
         };
         for (String value : values) {
             DbUtils.execSQL(db, sqlIns.replace("%s", value));
