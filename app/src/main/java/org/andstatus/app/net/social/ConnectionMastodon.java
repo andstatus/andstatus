@@ -42,6 +42,7 @@ public class ConnectionMastodon extends ConnectionTwitter1p0 {
     @Override
     protected String getApiPath1(ApiRoutineEnum routine) {
         String url;
+        // See https://github.com/tootsuite/documentation/blob/master/Using-the-API/API.md
         switch (routine) {
             case REGISTER_CLIENT:
                 url = "apps";
@@ -73,6 +74,12 @@ public class ConnectionMastodon extends ConnectionTwitter1p0 {
             case STOP_FOLLOWING_USER:
                 url = "accounts/%userId%/unfollow";
                 break;
+            case GET_FOLLOWERS:
+                url = "accounts/%userId%/followers";
+                break;
+            case GET_FRIENDS:
+                url = "accounts/%userId%/following";
+                break;
             case POST_REBLOG:
                 url = "statuses/%messageId%/reblog";
                 break;
@@ -95,10 +102,7 @@ public class ConnectionMastodon extends ConnectionTwitter1p0 {
         Uri.Builder builder = Uri.parse(url).buildUpon();
         appendPositionParameters(builder, youngestPosition, oldestPosition);
         builder.appendQueryParameter("local", "false");
-        if (fixedDownloadLimitForApiRoutine(limit, apiRoutine) > 0) {
-            builder.appendQueryParameter("limit", String.valueOf(fixedDownloadLimitForApiRoutine(limit,
-                    apiRoutine)));
-        }
+        builder.appendQueryParameter("limit", String.valueOf(fixedDownloadLimitForApiRoutine(limit, apiRoutine)));
         JSONArray jArr = http.getRequestAsArray(builder.build().toString());
         return jArrToTimeline(jArr, apiRoutine, url);
     }
@@ -275,10 +279,6 @@ public class ConnectionMastodon extends ConnectionTwitter1p0 {
         return user;
     }
 
-    private String getApiPathWithUserId(ApiRoutineEnum routineEnum, String userId) throws ConnectionException {
-        return getApiPath(routineEnum).replace("%userId%", userId);
-    }
-
     @Override
     public boolean destroyReblog(String statusId) throws ConnectionException {
         JSONObject jso = http.postRequest(getApiPathWithMessageId(ApiRoutineEnum.DESTROY_REBLOG, statusId));
@@ -291,6 +291,15 @@ public class ConnectionMastodon extends ConnectionTwitter1p0 {
             }
         }
         return jso != null;
+    }
+
+    List<MbUser> getMbUsers(String userId, ApiRoutineEnum apiRoutine) throws ConnectionException {
+        String url = this.getApiPathWithUserId(apiRoutine, userId);
+        Uri sUri = Uri.parse(url);
+        Uri.Builder builder = sUri.buildUpon();
+        int limit = 400;
+        builder.appendQueryParameter("limit", String.valueOf(fixedDownloadLimitForApiRoutine(limit, apiRoutine)));
+        return jArrToUsers(http.getRequestAsArray(builder.build().toString()), apiRoutine, url);
     }
 
 }

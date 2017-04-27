@@ -385,12 +385,12 @@ public abstract class Connection {
     }
 
     /**
-     * Restrict the limit to 1 - 200
+     * Restrict the limit to 1 - 400
      * @param apiRoutine 
      */
     public int fixedDownloadLimitForApiRoutine(int limit, ApiRoutineEnum apiRoutine) {
-        int out = 200;
-        if (limit > 0 && limit < 200) {
+        int out = 400;
+        if (limit > 0 && limit < 400) {
             out = limit;
         }
         return out;

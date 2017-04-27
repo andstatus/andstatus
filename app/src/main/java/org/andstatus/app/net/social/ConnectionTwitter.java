@@ -217,9 +217,7 @@ public abstract class ConnectionTwitter extends Connection {
         Uri sUri = Uri.parse(url);
         Uri.Builder builder = sUri.buildUpon();
         appendPositionParameters(builder, youngestPosition, oldestPosition);
-        if (fixedDownloadLimitForApiRoutine(limit, apiRoutine) > 0) {
-            builder.appendQueryParameter("count", String.valueOf(fixedDownloadLimitForApiRoutine(limit, apiRoutine)));
-        }
+        builder.appendQueryParameter("count", String.valueOf(fixedDownloadLimitForApiRoutine(limit, apiRoutine)));
         if (!TextUtils.isEmpty(userId)) {
             builder.appendQueryParameter("user_id", userId);
         }
@@ -403,9 +401,7 @@ public abstract class ConnectionTwitter extends Connection {
             builder.appendQueryParameter("q", searchQuery);
         }
         appendPositionParameters(builder, youngestPosition, oldestPosition);
-        if (fixedDownloadLimitForApiRoutine(limit, apiRoutine) > 0) {
-            builder.appendQueryParameter("count", String.valueOf(fixedDownloadLimitForApiRoutine(limit, apiRoutine)));
-        }
+        builder.appendQueryParameter("count", String.valueOf(fixedDownloadLimitForApiRoutine(limit, apiRoutine)));
         JSONArray jArr = http.getRequestAsArray(builder.build().toString());
         return jArrToTimeline(jArr, apiRoutine, url);
     }
@@ -580,5 +576,23 @@ public abstract class ConnectionTwitter extends Connection {
 
     protected String getApiPathWithMessageId(ApiRoutineEnum routineEnum, String userId) throws ConnectionException {
         return getApiPath(routineEnum).replace("%messageId%", userId);
+    }
+
+    protected String getApiPathWithUserId(ApiRoutineEnum routineEnum, String userId) throws ConnectionException {
+        return getApiPath(routineEnum).replace("%userId%", userId);
+    }
+
+    @Override
+    public List<MbUser> getFollowers(String userId) throws ConnectionException {
+        return getMbUsers(userId, ApiRoutineEnum.GET_FOLLOWERS);
+    }
+
+    @Override
+    public List<MbUser> getFriends(String userId) throws ConnectionException {
+        return getMbUsers(userId, ApiRoutineEnum.GET_FRIENDS);
+    }
+
+    List<MbUser> getMbUsers(String userId, ApiRoutineEnum apiRoutine) throws ConnectionException {
+        return new ArrayList<>();
     }
 }

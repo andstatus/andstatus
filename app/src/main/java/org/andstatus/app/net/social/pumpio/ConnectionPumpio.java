@@ -180,9 +180,7 @@ public class ConnectionPumpio extends Connection {
         ConnectionAndUrl conu = getConnectionAndUrl(apiRoutine, userId);
         Uri sUri = Uri.parse(conu.url);
         Uri.Builder builder = sUri.buildUpon();
-        if (fixedDownloadLimitForApiRoutine(limit, apiRoutine) > 0) {
-            builder.appendQueryParameter("count",String.valueOf(fixedDownloadLimitForApiRoutine(limit, apiRoutine)));
-        }
+        builder.appendQueryParameter("count",String.valueOf(fixedDownloadLimitForApiRoutine(limit, apiRoutine)));
         String url = builder.build().toString();
         JSONArray jArr = conu.httpConnection.getRequestAsArray(url);
         List<MbUser> users = new ArrayList<>();
@@ -329,9 +327,7 @@ public class ConnectionPumpio extends Connection {
         } else if (oldestPosition.isPresent()) {
             builder.appendQueryParameter("before", oldestPosition.getPosition());
         }
-        if (fixedDownloadLimitForApiRoutine(limit, apiRoutine) > 0) {
-            builder.appendQueryParameter("count",String.valueOf(fixedDownloadLimitForApiRoutine(limit, apiRoutine)));
-        }
+        builder.appendQueryParameter("count",String.valueOf(fixedDownloadLimitForApiRoutine(limit, apiRoutine)));
         String url = builder.build().toString();
         JSONArray jArr = conu.httpConnection.getRequestAsArray(url);
         List<MbTimelineItem> timeline = new ArrayList<>();

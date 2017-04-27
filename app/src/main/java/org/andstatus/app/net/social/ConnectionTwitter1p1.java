@@ -142,9 +142,7 @@ public class ConnectionTwitter1p1 extends ConnectionTwitter {
             builder.appendQueryParameter("q", searchQuery);
         }
         appendPositionParameters(builder, youngestPosition, oldestPosition);
-        if (fixedDownloadLimitForApiRoutine(limit, apiRoutine) > 0) {
-            builder.appendQueryParameter("count", String.valueOf(fixedDownloadLimitForApiRoutine(limit, apiRoutine)));
-        }
+        builder.appendQueryParameter("count", String.valueOf(fixedDownloadLimitForApiRoutine(limit, apiRoutine)));
         JSONArray jArr = getRequestArrayInObject(builder.build().toString(), "statuses");
         return jArrToTimeline(jArr, apiRoutine, url);
     }
@@ -176,17 +174,7 @@ public class ConnectionTwitter1p1 extends ConnectionTwitter {
         return message;
     }
 
-    @Override
-    public List<MbUser> getFollowers(String userId) throws ConnectionException {
-        return getMbUsers(userId, ApiRoutineEnum.GET_FOLLOWERS);
-    }
-
-    @Override
-    public List<MbUser> getFriends(String userId) throws ConnectionException {
-        return getMbUsers(userId, ApiRoutineEnum.GET_FRIENDS);
-    }
-
-    public List<MbUser> getMbUsers(String userId, ApiRoutineEnum apiRoutine) throws ConnectionException {
+    List<MbUser> getMbUsers(String userId, ApiRoutineEnum apiRoutine) throws ConnectionException {
         String url = this.getApiPath(apiRoutine);
         Uri sUri = Uri.parse(url);
         Uri.Builder builder = sUri.buildUpon();
@@ -194,10 +182,8 @@ public class ConnectionTwitter1p1 extends ConnectionTwitter {
         if (!TextUtils.isEmpty(userId)) {
             builder.appendQueryParameter("user_id", userId);
         }
-        if (fixedDownloadLimitForApiRoutine(limit, apiRoutine) > 0) {
-            builder.appendQueryParameter("count",
-                    String.valueOf(fixedDownloadLimitForApiRoutine(limit, apiRoutine)));
-        }
+        builder.appendQueryParameter("count", String.valueOf(fixedDownloadLimitForApiRoutine(limit, apiRoutine)));
         return jArrToUsers(http.getRequestAsArray(builder.build().toString()), apiRoutine, url);
     }
+
 }
