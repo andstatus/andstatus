@@ -96,7 +96,7 @@ public abstract class ConnectionTwitter extends Connection {
                 url = "statuses/user_timeline" + EXTENSION;
                 break;
             case GET_MESSAGE:
-                url = "statuses/show" + EXTENSION;
+                url = "statuses/show" + EXTENSION + "?id=%messageId%";
                 break;
             case POST_MESSAGE:
                 url = "statuses/update" + EXTENSION;
@@ -202,10 +202,7 @@ public abstract class ConnectionTwitter extends Connection {
      */
     @Override
     public MbMessage getMessage1(String messageId) throws ConnectionException {
-        Uri sUri = Uri.parse(getApiPath(ApiRoutineEnum.GET_MESSAGE));
-        Uri.Builder builder = sUri.buildUpon();
-        builder.appendQueryParameter("id", messageId);
-        JSONObject message = http.getRequest(builder.build().toString());
+        JSONObject message = http.getRequest(getApiPathWithMessageId(ApiRoutineEnum.GET_MESSAGE, messageId));
         return messageFromJson(message);
     }
 

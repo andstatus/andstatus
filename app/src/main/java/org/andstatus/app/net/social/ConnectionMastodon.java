@@ -62,6 +62,9 @@ public class ConnectionMastodon extends ConnectionTwitter1p0 {
             case POST_WITH_MEDIA:
                 url = "media";
                 break;
+            case GET_MESSAGE:
+                url = "statuses/%messageId%";
+                break;
             case CREATE_FAVORITE:
                 url = "statuses/%messageId%/favourite";
                 break;
