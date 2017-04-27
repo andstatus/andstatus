@@ -27,19 +27,19 @@ public class ConnectionTwitter1p0 extends ConnectionTwitter {
 
     @Override
     public MbMessage createFavorite(String statusId) throws ConnectionException {
-        StringBuilder path = new StringBuilder(getApiPath(ApiRoutineEnum.CREATE_FAVORITE));
-        path.append(statusId);
-        path.append(EXTENSION);
-        JSONObject jso = http.postRequest(path.toString());
+        JSONObject jso = http.postRequest(getApiPathWithMessageId(ApiRoutineEnum.CREATE_FAVORITE, statusId));
         return messageFromJson(jso);
     }
 
     @Override
     public MbMessage destroyFavorite(String statusId) throws ConnectionException {
-        StringBuilder path = new StringBuilder(getApiPath(ApiRoutineEnum.DESTROY_FAVORITE));
-        path.append(statusId);
-        path.append(EXTENSION);
-        JSONObject jso = http.postRequest(path.toString());
+        JSONObject jso = http.postRequest(getApiPathWithMessageId(ApiRoutineEnum.DESTROY_FAVORITE, statusId));
         return messageFromJson(jso);
     }
+
+
+    private String getApiPathWithMessageId(ApiRoutineEnum routineEnum, String userId) throws ConnectionException {
+        return getApiPath(routineEnum).replace("%messageId%", userId);
+    }
+
 }

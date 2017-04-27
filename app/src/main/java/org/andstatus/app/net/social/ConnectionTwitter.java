@@ -60,10 +60,10 @@ public abstract class ConnectionTwitter extends Connection {
                 url = "direct_messages" + EXTENSION;
                 break;
             case CREATE_FAVORITE:
-                url = "favorites/create/";
+                url = "favorites/create/%messageId%"  + EXTENSION;
                 break;
             case DESTROY_FAVORITE:
-                url = "favorites/destroy/";
+                url = "favorites/destroy/%messageId%" + EXTENSION;
                 break;
             case GET_FOLLOWERS_IDS:
                 url = "followers/ids" + EXTENSION;

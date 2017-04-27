@@ -34,6 +34,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.URL;
+import java.util.List;
 
 public class ConnectionMastodon extends ConnectionTwitter1p0 {
     private static final String ATTACHMENTS_FIELD_NAME = "media_attachments";
@@ -60,11 +61,17 @@ public class ConnectionMastodon extends ConnectionTwitter1p0 {
             case POST_WITH_MEDIA:
                 url = "media";
                 break;
+            case CREATE_FAVORITE:
+                url = "statuses/%messageId%/favourite";
+                break;
+            case DESTROY_FAVORITE:
+                url = "statuses/%messageId%/unfavourite";
+                break;
             case FOLLOW_USER:
-                url = "accounts/%id%/follow";
+                url = "accounts/%userId%/follow";
                 break;
             case STOP_FOLLOWING_USER:
-                url = "accounts/%id%/unfollow";
+                url = "accounts/%userId%/unfollow";
                 break;
             default:
                 url = "";
@@ -73,6 +80,23 @@ public class ConnectionMastodon extends ConnectionTwitter1p0 {
 
         return prependWithBasicPath(url);
     }
+
+    @Override
+    public List<MbTimelineItem> getTimeline(ApiRoutineEnum apiRoutine, TimelinePosition youngestPosition,
+                                            TimelinePosition oldestPosition, int limit, String userId)
+            throws ConnectionException {
+        String url = this.getApiPath(apiRoutine);
+        Uri.Builder builder = Uri.parse(url).buildUpon();
+        appendPositionParameters(builder, youngestPosition, oldestPosition);
+        builder.appendQueryParameter("local", "false");
+        if (fixedDownloadLimitForApiRoutine(limit, apiRoutine) > 0) {
+            builder.appendQueryParameter("limit", String.valueOf(fixedDownloadLimitForApiRoutine(limit,
+                    apiRoutine)));
+        }
+        JSONArray jArr = http.getRequestAsArray(builder.build().toString());
+        return jArrToTimeline(jArr, apiRoutine, url);
+    }
+
 
     @Override
     public MbMessage updateStatus(String message, String statusId, String inReplyToId, Uri mediaUri) throws ConnectionException {
@@ -170,8 +194,9 @@ public class ConnectionMastodon extends ConnectionTwitter1p0 {
                 JSONObject application = jso.getJSONObject("application");
                 message.via = application.optString("name");
             }
-            if (jso.has("favorited")) {
-                message.setFavoritedByActor(TriState.fromBoolean(SharedPreferencesUtil.isTrue(jso.getString("favorited"))));
+            if (jso.has("favourited")) {
+                message.setFavoritedByActor(TriState.fromBoolean(SharedPreferencesUtil.isTrue(
+                        jso.getString("favourited"))));
             }
 
             // If the Msg is a Reply to other message
@@ -237,7 +262,7 @@ public class ConnectionMastodon extends ConnectionTwitter1p0 {
 
     @Override
     public MbUser followUser(String userId, Boolean follow) throws ConnectionException {
-        JSONObject relationship = postRequest(getApiPathWithId(follow ? ApiRoutineEnum.FOLLOW_USER :
+        JSONObject relationship = postRequest(getApiPathWithUserId(follow ? ApiRoutineEnum.FOLLOW_USER :
                 ApiRoutineEnum.STOP_FOLLOWING_USER, userId), new JSONObject());
         MbUser user = MbUser.fromOriginAndUserOid(data.getOriginId(), userId);
         if (relationship != null && !relationship.isNull("following")) {
@@ -246,7 +271,8 @@ public class ConnectionMastodon extends ConnectionTwitter1p0 {
         return user;
     }
 
-    private String getApiPathWithId(ApiRoutineEnum routineEnum, String userId) throws ConnectionException {
-        return getApiPath(routineEnum).replace("%id%", userId);
+    private String getApiPathWithUserId(ApiRoutineEnum routineEnum, String userId) throws ConnectionException {
+        return getApiPath(routineEnum).replace("%userId%", userId);
     }
+
 }
