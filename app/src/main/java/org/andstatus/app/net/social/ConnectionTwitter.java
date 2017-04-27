@@ -81,7 +81,7 @@ public abstract class ConnectionTwitter extends Connection {
                 url = "direct_messages/new" + EXTENSION;
                 break;
             case POST_REBLOG:
-                url = "statuses/retweet/";
+                url = "statuses/retweet/%messageId%" + EXTENSION;
                 break;
             case DESTROY_MESSAGE:
                 url = "statuses/destroy/";
@@ -503,7 +503,7 @@ public abstract class ConnectionTwitter extends Connection {
     
     @Override
     public MbMessage postReblog(String rebloggedId) throws ConnectionException {
-        JSONObject jso = http.postRequest(getApiPath(ApiRoutineEnum.POST_REBLOG) + rebloggedId + EXTENSION);
+        JSONObject jso = http.postRequest(getApiPathWithMessageId(ApiRoutineEnum.POST_REBLOG, rebloggedId));
         return messageFromJson(jso);
     }
 
@@ -578,4 +578,7 @@ public abstract class ConnectionTwitter extends Connection {
         return postRequest(getApiPath(apiRoutine), formParams);
     }
 
+    protected String getApiPathWithMessageId(ApiRoutineEnum routineEnum, String userId) throws ConnectionException {
+        return getApiPath(routineEnum).replace("%messageId%", userId);
+    }
 }

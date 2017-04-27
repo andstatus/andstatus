@@ -73,6 +73,12 @@ public class ConnectionMastodon extends ConnectionTwitter1p0 {
             case STOP_FOLLOWING_USER:
                 url = "accounts/%userId%/unfollow";
                 break;
+            case POST_REBLOG:
+                url = "statuses/%messageId%/reblog";
+                break;
+            case DESTROY_REBLOG:
+                url = "statuses/%messageId%/unreblog";
+                break;
             default:
                 url = "";
                 break;
@@ -216,9 +222,7 @@ public class ConnectionMastodon extends ConnectionTwitter1p0 {
                     // Construct Related message from available info
                     MbMessage inReplyToMessage = MbMessage.fromOriginAndOid(data.getOriginId(),
                             inReplyToMessageOid, DownloadStatus.UNKNOWN);
-                    MbUser inReplyToUser = MbUser.fromOriginAndUserOid(data.getOriginId(),
-                            inReplyToUserOid);
-                    inReplyToMessage.sender = inReplyToUser;
+                    inReplyToMessage.sender = MbUser.fromOriginAndUserOid(data.getOriginId(), inReplyToUserOid);
                     inReplyToMessage.actor = message.actor;
                     message.setInReplyTo(inReplyToMessage);
                 }
@@ -273,6 +277,20 @@ public class ConnectionMastodon extends ConnectionTwitter1p0 {
 
     private String getApiPathWithUserId(ApiRoutineEnum routineEnum, String userId) throws ConnectionException {
         return getApiPath(routineEnum).replace("%userId%", userId);
+    }
+
+    @Override
+    public boolean destroyReblog(String statusId) throws ConnectionException {
+        JSONObject jso = http.postRequest(getApiPathWithMessageId(ApiRoutineEnum.DESTROY_REBLOG, statusId));
+        if (jso != null && MyLog.isVerboseEnabled()) {
+            try {
+                MyLog.v(this, "destroyReblog response: " + jso.toString(2));
+            } catch (JSONException e) {
+                MyLog.e(this, e);
+                jso = null;
+            }
+        }
+        return jso != null;
     }
 
 }

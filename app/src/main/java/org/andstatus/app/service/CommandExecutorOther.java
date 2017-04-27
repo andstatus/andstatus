@@ -309,7 +309,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         final String method = "destroyReblog";
         String oid = MyQuery.idToOid(OidEnum.REBLOG_OID, msgId, execContext.getMyAccount().getUserId());
         try {
-            if (!execContext.getMyAccount().getConnection().destroyStatus(oid)) {
+            if (!execContext.getMyAccount().getConnection().destroyReblog(oid)) {
                 logExecutionError(false, "Connection returned 'false' " + method + MyQuery.msgInfoForLog(msgId));
             }
         } catch (ConnectionException e) {
@@ -421,8 +421,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         MbMessage message = null;
         if (noErrors()) {
             try {
-                message = execContext.getMyAccount().getConnection()
-                        .postReblog(oid);
+                message = execContext.getMyAccount().getConnection().postReblog(oid);
                 logIfEmptyMessage(method, rebloggedId, message);
             } catch (ConnectionException e) {
                 logConnectionException(e, "Reblog " + oid);

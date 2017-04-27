@@ -37,9 +37,4 @@ public class ConnectionTwitter1p0 extends ConnectionTwitter {
         return messageFromJson(jso);
     }
 
-
-    private String getApiPathWithMessageId(ApiRoutineEnum routineEnum, String userId) throws ConnectionException {
-        return getApiPath(routineEnum).replace("%messageId%", userId);
-    }
-
 }

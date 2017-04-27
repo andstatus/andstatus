@@ -80,6 +80,7 @@ public abstract class Connection {
         POST_WITH_MEDIA,
         POST_DIRECT_MESSAGE,
         POST_REBLOG,
+        DESTROY_REBLOG,
         DESTROY_MESSAGE,
         REGISTER_CLIENT,
         /**
@@ -241,6 +242,10 @@ public abstract class Connection {
      *      REST API Method: favorites create</a>
      */
     public abstract MbMessage createFavorite(String statusId) throws ConnectionException;
+
+    public boolean destroyReblog(String statusId) throws ConnectionException {
+        return destroyStatus(statusId);
+    }
 
     /**
      * Destroys the status specified by the required ID parameter.
