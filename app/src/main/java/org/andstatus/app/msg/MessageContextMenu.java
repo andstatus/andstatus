@@ -113,6 +113,19 @@ public class MessageContextMenu extends MyContextMenu {
                         String.format(
                                 getActivity().getText(R.string.menu_item_user_messages).toString(),
                                 MyQuery.userIdToWebfingerId(msg.senderId)));
+                if (!msg.isSender) {
+                    if (msg.senderFollowed) {
+                        MessageListContextMenuItem.STOP_FOLLOWING_SENDER.addTo(menu, order++,
+                                String.format(
+                                        getActivity().getText(R.string.menu_item_stop_following_user).toString(),
+                                        MyQuery.userIdToWebfingerId(msg.senderId)));
+                    } else {
+                        MessageListContextMenuItem.FOLLOW_SENDER.addTo(menu, order++,
+                                String.format(
+                                        getActivity().getText(R.string.menu_item_follow_user).toString(),
+                                        MyQuery.userIdToWebfingerId(msg.senderId)));
+                    }
+                }
             }
 
             if (menuContainer.getTimeline().getUserId() != msg.authorId && msg.senderId != msg.authorId) {
@@ -121,6 +134,19 @@ public class MessageContextMenu extends MyContextMenu {
                         String.format(
                                 getActivity().getText(R.string.menu_item_user_messages).toString(),
                                 MyQuery.userIdToWebfingerId(msg.authorId)));
+                if (!msg.isAuthor) {
+                    if (msg.authorFollowed) {
+                        MessageListContextMenuItem.STOP_FOLLOWING_AUTHOR.addTo(menu, order++,
+                                String.format(
+                                        getActivity().getText(R.string.menu_item_stop_following_user).toString(),
+                                        MyQuery.userIdToWebfingerId(msg.authorId)));
+                    } else {
+                        MessageListContextMenuItem.FOLLOW_AUTHOR.addTo(menu, order++,
+                                String.format(
+                                        getActivity().getText(R.string.menu_item_follow_user).toString(),
+                                        MyQuery.userIdToWebfingerId(msg.authorId)));
+                    }
+                }
             }
 
             if (msg.isLoaded() && (!msg.isDirect() ||
