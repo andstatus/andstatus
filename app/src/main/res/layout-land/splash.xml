@@ -43,23 +43,29 @@
         </LinearLayout>
     </LinearLayout>
 
-    <View style="@style/Divider"
-        android:layout_marginTop="10dp"
-        android:layout_marginBottom="10dp"/>
-
-    <TextView
+    <LinearLayout
+        android:id="@+id/system_info_section"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center"
-        android:text="@string/system_information"/>
+        android:orientation="vertical">
+        <View style="@style/Divider"
+              android:layout_marginTop="10dp"
+              android:layout_marginBottom="10dp"/>
 
-    <TextView
-        android:id="@+id/system_info"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        tools:text="Here some long system information
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="@string/system_information"/>
+
+        <TextView
+            android:id="@+id/system_info"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            tools:text="Here some long system information
 will be shown.
 Memory, current objects etc."/>
 
+    </LinearLayout>
 </LinearLayout>
             

@@ -103,7 +103,10 @@ public class HelpActivity extends MyActivity implements SwipeInterface, Progress
         }
 
         showVersionText();
-        MyUrlSpan.showText(this, R.id.system_info, MyContextHolder.getSystemInfo(this, false), false, false);
+        ViewUtils.showView(this, R.id.system_info_section, MyPreferences.isShowDebuggingInfoInUi());
+        if (MyPreferences.isShowDebuggingInfoInUi()) {
+            MyUrlSpan.showText(this, R.id.system_info, MyContextHolder.getSystemInfo(this, false), false, false);
+        }
         showChangeLog();
         showUserGuide();
         showRestoreButton();
