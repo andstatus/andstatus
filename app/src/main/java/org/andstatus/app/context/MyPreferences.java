@@ -268,4 +268,7 @@ public class MyPreferences {
         return SharedPreferencesUtil.getBoolean(MyPreferences.KEY_LOG_EVERYTHING_TO_FILE, MyContextHolder.get().isTestRun());
     }
 
+    public static boolean isRefreshTimelineAutomatically() {
+        return SharedPreferencesUtil.getBoolean(KEY_REFRESH_TIMELINE_AUTOMATICALLY, true);
+    }
 }

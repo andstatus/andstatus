@@ -1126,14 +1126,8 @@ public class TimelineActivity extends MessageEditorListActivity implements
     }
 
     @Override
-    protected boolean isAutoRefreshAllowedAfterExecuting(CommandData commandData) {
-        boolean allowed = super.isAutoRefreshAllowedAfterExecuting(commandData)
-                && SharedPreferencesUtil.getBoolean(MyPreferences.KEY_REFRESH_TIMELINE_AUTOMATICALLY, true);
-        if (allowed && getListData().mayHaveYoungerPage()) {
-            // Update a list only if we already show the youngest page
-            allowed = false;
-        }
-        return allowed;
+    protected boolean isAutoRefreshNow(boolean onStop) {
+        return super.isAutoRefreshNow(onStop) && MyPreferences.isRefreshTimelineAutomatically();
     }
 
     @Override

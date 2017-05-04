@@ -50,6 +50,9 @@ import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.widget.MyBaseAdapter;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
+
 /**
  * List, loaded asynchronously. Updated by MyService
  * 
@@ -85,6 +88,8 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
     private boolean loaderIsWorking = false;
 
     long lastLoadedAt = 0;
+    protected final AtomicLong refreshNeededSince = new AtomicLong(0);
+    protected final AtomicBoolean refreshNeededAfterForegroundCommand = new AtomicBoolean(false);
     private static final long NO_AUTO_REFRESH_AFTER_LOAD_SECONDS = 5;
 
     protected CharSequence mSubtitle = "";
@@ -153,6 +158,8 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
                     if (new AsyncTaskLauncher<Bundle>().execute(this, true, newLoader, args)) {
                         mWorkingLoader = newLoader;
                         loaderIsWorking = true;
+                        refreshNeededSince.set(0);
+                        refreshNeededAfterForegroundCommand.set(false);
                         msgLog = "Launched, " + msgLog;
                     } else {
                         msgLog = "Couldn't launch, " + msgLog;
@@ -480,6 +487,12 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
             default:
                 break;
         }
+        if (isAutoRefreshNow(event == MyServiceEvent.ON_STOP)) {
+            if (MyLog.isVerboseEnabled()) {
+                MyLog.v(this, "Auto refresh on content change");
+            }
+            showList(WhichPage.CURRENT);
+        }
     }
 
     private void showSyncing(final CommandData commandData) {
@@ -511,13 +524,9 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
     }
 
     protected void onReceiveAfterExecutingCommand(CommandData commandData) {
-        if (isRefreshNeededAfterExecuting(commandData)
-                && isAutoRefreshAllowedAfterExecuting(commandData)) {
-            if (MyLog.isVerboseEnabled()) {
-                MyLog.v(this, "Content changed after "
-                        + commandData.toCommandSummary(MyContextHolder.get()));
-            }
-            showList(WhichPage.CURRENT);
+        if (isRefreshNeededAfterExecuting(commandData)) {
+            refreshNeededSince.compareAndSet(0, System.currentTimeMillis());
+            refreshNeededAfterForegroundCommand.compareAndSet(false, commandData.isInForeground());
         }
     }
 
@@ -553,25 +562,22 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
         return needed;
     }
 
-    /**
-     * @return false if not allowed, true means "don't know"
-     */
-    protected boolean isAutoRefreshAllowedAfterExecuting(CommandData commandData) {
-        boolean allowed = true;
-        if (isLoading()) {
+    protected boolean isAutoRefreshNow(boolean onStop) {
+        if (refreshNeededSince.get() == 0) {
+            return false;
+        } else if (isLoading()) {
             if (MyLog.isVerboseEnabled()) {
-                MyLog.v(this, "Ignoring content change while loading, "
-                        + commandData.toCommandSummary(MyContextHolder.get()));
+                MyLog.v(this, "Ignoring content change while loading");
             }
-            allowed = false;
-        } else if (!commandData.isInForeground() &&
+            return false;
+        } else if (!onStop && !refreshNeededAfterForegroundCommand.get() &&
                 !RelativeTime.wasButMoreSecondsAgoThan(lastLoadedAt, NO_AUTO_REFRESH_AFTER_LOAD_SECONDS)) {
             if (MyLog.isVerboseEnabled()) {
                 MyLog.v(this, "Ignoring background content change - loaded recently");
             }
-            allowed = false;
+            return false;
         }
-        return allowed;
+        return true;
     }
 
     @Override

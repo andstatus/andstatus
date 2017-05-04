@@ -142,8 +142,7 @@ public class MyService extends Service {
                 stopDelayed(false);
                 break;
             case BROADCAST_SERVICE_STATE:
-                MyServiceEventsBroadcaster.newInstance(myContext, getServiceState())
-                        .broadcast();
+                broadcastAfterExecutingCommand(commandData);
                 break;
             case UNKNOWN:
                 MyLog.v(this, "Command " + commandData.getCommand() + " ignored");
@@ -823,7 +822,7 @@ public class MyService extends Service {
         @Override
         public boolean isReallyWorking() {
             return needsBackgroundWork() && !RelativeTime.
-                    wasButMoreSecondsAgoThan(previousBeat, HEARTBEAT_PERIOD_SECONDS + 3);
+                    wasButMoreSecondsAgoThan(previousBeat, HEARTBEAT_PERIOD_SECONDS * 2);
         }
     }
     
