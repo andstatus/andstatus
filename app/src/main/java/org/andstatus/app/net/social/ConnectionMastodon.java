@@ -210,7 +210,7 @@ public class ConnectionMastodon extends ConnectionTwitter1p0 {
                 JSONObject application = jso.getJSONObject("application");
                 message.via = application.optString("name");
             }
-            if (jso.has("favourited")) {
+            if (!jso.isNull("favourited")) {
                 message.setFavoritedByActor(TriState.fromBoolean(SharedPreferencesUtil.isTrue(
                         jso.getString("favourited"))));
             }

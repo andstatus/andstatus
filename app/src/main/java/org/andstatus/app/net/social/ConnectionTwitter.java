@@ -279,7 +279,7 @@ public abstract class ConnectionTwitter extends Connection {
             if (jso.has("source")) {
                 message.via = jso.getString("source");
             }
-            if (jso.has("favorited")) {
+            if (!jso.isNull("favorited")) {
                 message.setFavoritedByActor(TriState.fromBoolean(SharedPreferencesUtil.isTrue(jso.getString("favorited"))));
             }
 
