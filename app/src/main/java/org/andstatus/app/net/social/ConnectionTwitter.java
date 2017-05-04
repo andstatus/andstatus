@@ -461,8 +461,7 @@ public abstract class ConnectionTwitter extends Connection {
     }
 
     /**
-     * @see <a
-     *      href="https://dev.twitter.com/docs/api/1.1/get/users/show">GET users/show</a>
+     * @see <a href="https://dev.twitter.com/docs/api/1.1/get/users/show">GET users/show</a>
      */
     @Override
     public MbUser getUser(String userId, String userName) throws ConnectionException {

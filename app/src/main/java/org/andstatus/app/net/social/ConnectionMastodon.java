@@ -83,6 +83,9 @@ public class ConnectionMastodon extends ConnectionTwitter1p0 {
             case GET_FRIENDS:
                 url = "accounts/%userId%/following";
                 break;
+            case GET_USER:
+                url = "accounts/%userId%";
+                break;
             case POST_REBLOG:
                 url = "statuses/%messageId%/reblog";
                 break;
@@ -269,6 +272,14 @@ public class ConnectionMastodon extends ConnectionTwitter1p0 {
     @Override
     public long parseDate(String stringDate) {
         return parseIso8601Date(stringDate);
+    }
+
+    @Override
+    public MbUser getUser(String userId, String userName) throws ConnectionException {
+        JSONObject jso = http.getRequest(getApiPathWithUserId(ApiRoutineEnum.GET_USER, userId));
+        MbUser mbUser = userFromJson(jso);
+        MyLog.v(this, "getUser oid='" + userId + "', userName='" + userName + "' -> " + mbUser.getRealName());
+        return mbUser;
     }
 
     @Override
