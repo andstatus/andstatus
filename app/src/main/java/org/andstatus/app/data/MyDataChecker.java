@@ -45,7 +45,7 @@ public class MyDataChecker {
                     @Override
                     protected Void doInBackground2(Void... params) {
                         new MyDataChecker(MyContextHolder.get(), logger).fixData();
-                        DbUtils.waitMs(MyDataChecker.class.getSimpleName(), 3000);
+                        DbUtils.waitMs(MyDataChecker.class, 3000);
                         return null;
                     }
 

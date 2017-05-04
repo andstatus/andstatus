@@ -51,7 +51,7 @@ class DatabaseConverter {
             msgLog = e.getMessage();
             progressLogger.logProgress(msgLog);
             MyLog.ignored(this, e);
-            DbUtils.waitMs("execute, on ApplicationUpgradeException", 30000);
+            DbUtils.waitMs("ApplicationUpgradeException", 30000);
         } finally {
             DbUtils.waitMs("execute finally", 2000);
             if (success) {

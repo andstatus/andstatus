@@ -112,7 +112,6 @@ public final class DbUtils {
 
     /** @return true if current thread was interrupted */
     public static boolean waitMs(Object tag, long delayMs) {
-        final String method = MyLog.objTagToString(tag);
         if (delayMs > 1) {
             long delay = delayMs;
             // http://stackoverflow.com/questions/363681/generating-random-integers-in-a-range-with-java
@@ -126,7 +125,7 @@ public final class DbUtils {
                     try {
                         lock.wait(delay);
                     } catch (InterruptedException e) {
-                        MyLog.v(method + "; Interrupted waiting " + delay + "ms", e);
+                        MyLog.v(tag, "Interrupted waiting " + delay + "ms");
                         Thread.currentThread().interrupt();
                         break;
                     }

@@ -17,6 +17,7 @@
 package org.andstatus.app.util;
 
 import android.content.SharedPreferences;
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 import android.text.format.DateFormat;
 import android.util.Log;
@@ -69,6 +70,7 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class MyLog {
     private static final String TAG = MyLog.class.getSimpleName();
+    private static final int MAX_TAG_LENGTH = 23;
 
     /**
      * Use this tag to change logging level of the whole application
@@ -244,21 +246,26 @@ public class MyLog {
         }
         return i;
     }
-    
+
+    /** Truncated to {@link #MAX_TAG_LENGTH} */
+    @NonNull
     public static String objTagToString(Object objTag) {
-        String tag = "";
+        final String tag;
         if (objTag == null) {
             tag = "(null)";
         } else if (objTag instanceof String) {
             tag = (String) objTag;
         } else if (objTag instanceof Enum<?>) {
-            tag = ((Enum<?>) objTag).toString();
+            tag = objTag.toString();
         } else if (objTag instanceof Class<?>) {
             tag = ((Class<?>) objTag).getSimpleName();
         }else {
             tag = objTag.getClass().getSimpleName();
         }
-        return tag;
+        if (tag.trim().isEmpty()) {
+            return "(empty)";
+        }
+        return (tag.length() > MAX_TAG_LENGTH) ? tag.substring(0, MAX_TAG_LENGTH) : tag;
     }
 
     public static boolean isDebugEnabled() {
@@ -280,24 +287,18 @@ public class MyLog {
      * @return
      */
     public static boolean isLoggable(Object objTag, int level) {
-        boolean is = false;
         checkInit();
         if (level < VERBOSE) {
-            is = false;
+            return false;
         } else if (level >= minLogLevel) {
-            is = true;
+            return true;
         } else {
             String tag = objTagToString(objTag);
             if (TextUtils.isEmpty(tag)) {
                 tag = APPTAG;
             }
-            if (tag.length() > 23) {
-                tag = tag.substring(0, 22);
-            }
-            is = Log.isLoggable(tag, level);
+            return Log.isLoggable(tag, level);
         }
-        
-        return is;
     }
     
     /**
