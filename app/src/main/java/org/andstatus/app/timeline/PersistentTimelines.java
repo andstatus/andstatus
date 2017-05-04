@@ -155,7 +155,7 @@ public class PersistentTimelines {
     @NonNull
     public List<Timeline> getFiltered(boolean isForSelector,
                                       TriState isTimelineCombined,
-                                      MyAccount currentMyAccount,
+                                      MyAccount myAccount,
                                       Origin origin) {
         List<Timeline> timelines = new ArrayList<>();
         for (Timeline timeline : values()) {
@@ -166,9 +166,12 @@ public class PersistentTimelines {
                 include = false;
             } else {
                 include = isTimelineCombined.isBoolean(timeline.isCombined()) &&
-                        (currentMyAccount == null || !currentMyAccount.isValid() ||
+                        (myAccount == null || !myAccount.isValid() ||
                                 timeline.isCombined() ||
-                                timeline.getMyAccount().equals(currentMyAccount)) &&
+                                timeline.getMyAccount().equals(myAccount) ||
+                                (isForSelector && timeline.getTimelineType().isAtOrigin() &&
+                                        myAccount.getOrigin().equals(timeline.getOrigin()))
+                        ) &&
                         (origin == null || !origin.isValid() ||
                                 timeline.isCombined() || timeline.getOrigin().equals(origin));
             }

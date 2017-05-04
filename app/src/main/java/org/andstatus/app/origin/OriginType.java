@@ -219,7 +219,7 @@ public enum OriginType implements SelectableEnum {
                 mAllowAttachmentForDirectMessage = false;
                 isSearchTimelineSyncable = false;
                 isDirectTimelineSyncable = false;
-                isMentionsTimelineSyncable = true;
+                isMentionsTimelineSyncable = false;
                 isPublicTimeLineSyncable = true;
                 allowEditing = false;
                 isDirectMessageAllowsReply = false;
