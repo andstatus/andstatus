@@ -18,7 +18,6 @@ package org.andstatus.app.service;
 
 import android.database.sqlite.SQLiteConstraintException;
 
-import org.andstatus.app.appwidget.AppWidgets;
 import org.andstatus.app.data.DataInserter;
 import org.andstatus.app.data.DataPruner;
 import org.andstatus.app.net.http.ConnectionException;
@@ -70,18 +69,8 @@ abstract class TimelineDownloader extends CommandExecutorStrategy {
         }
         if (execContext.getResult().getDownloadedCount() > 0) {
             MyLog.v(this, "Notifying of timeline changes");
-
-            notifyViaWidgets();
-
-            AddedMessagesNotifier.newInstance(execContext.getMyContext()).update(
-                    execContext.getResult());
+            AddedMessagesNotifier.notify(execContext.getMyContext(), execContext.getResult());
         }
-    }
-
-    private void notifyViaWidgets() {
-        AppWidgets appWidgets = AppWidgets.newInstance(execContext.getMyContext());
-        appWidgets.updateData(execContext.getResult());
-        appWidgets.updateViews();
     }
 
     protected boolean isSyncYounger() {

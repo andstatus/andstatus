@@ -24,13 +24,14 @@ import android.net.Uri;
 import android.text.TextUtils;
 
 import org.andstatus.app.R;
+import org.andstatus.app.appwidget.AppWidgets;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.MatchedUri;
-import org.andstatus.app.timeline.Timeline;
-import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.msg.TimelineActivity;
 import org.andstatus.app.service.CommandResult;
+import org.andstatus.app.timeline.Timeline;
+import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
@@ -39,22 +40,30 @@ public class AddedMessagesNotifier {
     private MyContext myContext;
     private boolean mNotificationsVibrate;
 
+    public static void notify(MyContext myContext, CommandResult result) {
+        AddedMessagesNotifier notifier = new AddedMessagesNotifier(myContext);
+        notifier.update(result);
+    }
+
     private AddedMessagesNotifier(MyContext myContext) {
         this.myContext = myContext;
         mNotificationsVibrate = SharedPreferencesUtil.getBoolean(MyPreferences.KEY_NOTIFICATION_VIBRATION, false);
     }
 
-    public static AddedMessagesNotifier newInstance(MyContext myContext) {
-        return new AddedMessagesNotifier(myContext);
-    }
-
-    public void update(CommandResult result) {
+    private void update(CommandResult result) {
+        notifyViaWidgets(result);
         if (!SharedPreferencesUtil.getBoolean(MyPreferences.KEY_NOTIFICATIONS_ENABLED, false)) {
             return;
         }
         notifyForOneType(TimelineType.HOME, result.getMessagesAdded());
         notifyForOneType(TimelineType.MENTIONS, result.getMentionsAdded());
         notifyForOneType(TimelineType.DIRECT, result.getDirectedAdded());
+    }
+
+    private void notifyViaWidgets(CommandResult result) {
+        AppWidgets appWidgets = AppWidgets.newInstance(myContext);
+        appWidgets.updateData(result);
+        appWidgets.updateViews();
     }
 
     private void notifyForOneType(TimelineType timelineType, int numMessages) {

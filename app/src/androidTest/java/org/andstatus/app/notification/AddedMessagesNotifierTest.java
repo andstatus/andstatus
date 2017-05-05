@@ -6,9 +6,8 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.context.Travis;
-import org.andstatus.app.timeline.Timeline;
-import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.service.CommandResult;
+import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.SharedPreferencesUtil;
 
 @Travis
@@ -27,19 +26,19 @@ public class AddedMessagesNotifierTest extends InstrumentationTestCase {
     	CommandResult result = new CommandResult();
     	result.incrementDirectCount();
     	TestSuite.getMyContextForTest().getNotifications().clear();
-        AddedMessagesNotifier.newInstance(MyContextHolder.get()).update(result);
+        AddedMessagesNotifier.notify(MyContextHolder.get(), result);
         assertNull(TestSuite.getMyContextForTest().getNotifications().get(TimelineType.HOME));
         assertNull(TestSuite.getMyContextForTest().getNotifications().get(TimelineType.MENTIONS));
         assertNotNull(TestSuite.getMyContextForTest().getNotifications().get(TimelineType.DIRECT));
 
     	result.incrementMentionsCount();
-        AddedMessagesNotifier.newInstance(MyContextHolder.get()).update(result);
+        AddedMessagesNotifier.notify(MyContextHolder.get(), result);
         assertNull(TestSuite.getMyContextForTest().getNotifications().get(TimelineType.HOME));
         assertNotNull(TestSuite.getMyContextForTest().getNotifications().get(TimelineType.MENTIONS));
         assertNotNull(TestSuite.getMyContextForTest().getNotifications().get(TimelineType.DIRECT));
 
     	result.incrementMessagesCount();
-        AddedMessagesNotifier.newInstance(MyContextHolder.get()).update(result);
+        AddedMessagesNotifier.notify(MyContextHolder.get(), result);
         assertNotNull(TestSuite.getMyContextForTest().getNotifications().get(TimelineType.HOME));
         assertNotNull(TestSuite.getMyContextForTest().getNotifications().get(TimelineType.MENTIONS));
         assertNotNull(TestSuite.getMyContextForTest().getNotifications().get(TimelineType.DIRECT));
