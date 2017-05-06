@@ -37,7 +37,7 @@ import java.util.Map;
  */
 public class EnumSelector<E extends Enum<E> & SelectableEnum> extends org.andstatus.app.SelectorDialog {
     private static final String KEY_VISIBLE_NAME = "visible_name";
-    private SelectableEnumList<E> enumList;
+    private SelectableEnumList<E> enumList = null;
 
     public static <E extends Enum<E> & SelectableEnum> SelectorDialog newInstance(
             ActivityRequestCode requestCode, Class<E> clazz) {
@@ -49,11 +49,11 @@ public class EnumSelector<E extends Enum<E> & SelectableEnum> extends org.andsta
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        if (enumList.getDialogTitleResId() == 0) {  // We don't save a state of the dialog
+        if (enumList == null || enumList.getDialogTitleResId() == 0) {  // We don't save a state of the dialog
             dismiss();
             return;
         }
+        super.onActivityCreated(savedInstanceState);
         setTitle(enumList.getDialogTitleResId());
         setListAdapter(newListAdapter());
 
