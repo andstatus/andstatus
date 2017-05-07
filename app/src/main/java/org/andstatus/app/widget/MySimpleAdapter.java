@@ -34,7 +34,8 @@ public class MySimpleAdapter extends SimpleAdapter implements View.OnClickListen
         @SuppressWarnings("unchecked")
         Map<String, ?> item = (Map<String, ?>) getItem(position);
         try {
-            return Long.parseLong( (String) item.get(BaseColumns._ID));
+            String id = (String) item.get(BaseColumns._ID);
+            return id == null ? 0 : Long.parseLong(id);
         } catch (NumberFormatException e) {
             throw new NumberFormatException(e.getMessage() +  " caused by wrong item: " + item);
         }

@@ -18,10 +18,8 @@ package org.andstatus.app;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.provider.BaseColumns;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.TextView;
 
 import org.andstatus.app.lang.SelectableEnum;
 import org.andstatus.app.lang.SelectableEnumList;
@@ -60,8 +58,7 @@ public class EnumSelector<E extends Enum<E> & SelectableEnum> extends org.andsta
         getListView().setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-            String idSelected = ((TextView) view.findViewById(R.id.id)).getText().toString();
-            returnSelected(new Intent().putExtra(IntentExtra.SELECTABLE_ENUM.key, idSelected));
+                returnSelected(new Intent().putExtra(IntentExtra.SELECTABLE_ENUM.key, enumList.get(position).getCode()));
             }
         });
     }
@@ -71,14 +68,13 @@ public class EnumSelector<E extends Enum<E> & SelectableEnum> extends org.andsta
         for(SelectableEnum value : enumList.getList()){
             Map<String, String> map = new HashMap<>();
             map.put(KEY_VISIBLE_NAME, value.getTitle(getActivity()).toString());
-            map.put(BaseColumns._ID, value.getCode());
             list.add(map);
         }
 
         return new MySimpleAdapter(getActivity(),
                 list,
                 R.layout.accountlist_item,
-                new String[] {KEY_VISIBLE_NAME, BaseColumns._ID},
-                new int[] {R.id.visible_name, R.id.id}, true);
+                new String[] {KEY_VISIBLE_NAME},
+                new int[] {R.id.visible_name}, true);
     }
 }
