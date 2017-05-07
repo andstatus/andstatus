@@ -107,7 +107,6 @@ public class ConnectionMastodon extends ConnectionTwitter1p0 {
         String url = this.getApiPath(apiRoutine);
         Uri.Builder builder = Uri.parse(url).buildUpon();
         appendPositionParameters(builder, youngestPosition, oldestPosition);
-        builder.appendQueryParameter("local", "false");
         builder.appendQueryParameter("limit", String.valueOf(fixedDownloadLimitForApiRoutine(limit, apiRoutine)));
         JSONArray jArr = http.getRequestAsArray(builder.build().toString());
         return jArrToTimeline(jArr, apiRoutine, url);
