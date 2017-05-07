@@ -270,29 +270,21 @@ public class TimelineListParameters {
                 // messages, even those that we downloaded
                 // not as Home timeline of any Account
                 if (!isTimelineCombined()) {
-                    sa.addSelection(MsgOfUserTable.SUBSCRIBED + " = ?", new String[] {
-                            "1"
-                    });
-                }
+                    sa.addSelection(MsgOfUserTable.SUBSCRIBED + " = ?", "1");
+        }
                 break;
             case MENTIONS:
-                sa.addSelection(MsgOfUserTable.MENTIONED + " = ?", new String[] {
-                        "1"
-                });
+                sa.addSelection(MsgOfUserTable.MENTIONED + " = ?", "1");
                 /*
                  * We already figured this out and set {@link MyDatabase.MsgOfUser.MENTIONED}:
                  * sa.addSelection(MyDatabase.Msg.BODY + " LIKE ?" ...
                  */
                 break;
             case FAVORITES:
-                sa.addSelection(MsgOfUserTable.FAVORITED + " = ?", new String[] {
-                        "1"
-                });
+                sa.addSelection(MsgOfUserTable.FAVORITED + " = ?", "1");
                 break;
             case DIRECT:
-                sa.addSelection(MsgOfUserTable.DIRECTED + " = ?", new String[] {
-                        "1"
-                });
+                sa.addSelection(MsgOfUserTable.DIRECTED + " = ?", "1");
                 break;
             case USER:
             case SENT:
@@ -300,14 +292,13 @@ public class TimelineListParameters {
                 // Reblogs are included also
                 sa.addSelection(MsgTable.AUTHOR_ID + " " + userIds.getSql()
                                 + " OR "
-                                + MsgTable.SENDER_ID + " " + userIds.getSql()
+                                + MsgTable.ACTOR_ID + " " + userIds.getSql()
                                 + " OR "
                                 + "("
                                 + UserTable.LINKED_USER_ID + " " + userIds.getSql()
                                 + " AND "
                                 + MsgOfUserTable.REBLOGGED + " = 1"
-                                + ")",
-                        null);
+                                + ")");
                 break;
             default:
                 break;
@@ -319,11 +310,8 @@ public class TimelineListParameters {
                         String.valueOf(minSentDate > 0 ? minSentDate : 1)
                 });
         if (maxSentDate > 0) {
-            sa.addSelection(ProjectionMap.MSG_TABLE_ALIAS + "." + MsgTable.SENT_DATE
-                            + " <= ?",
-                    new String[]{
-                            String.valueOf(maxSentDate)
-                    });
+            sa.addSelection(ProjectionMap.MSG_TABLE_ALIAS + "." + MsgTable.SENT_DATE + " <= ?",
+                    String.valueOf(maxSentDate));
         }
         return sa;
     }

@@ -197,14 +197,14 @@ public abstract class ConversationLoader<T extends ConversationItem> extends Syn
         public int compare(T lhs, T rhs) {
             int compared = rhs.replyLevel - lhs.replyLevel;
             if (compared == 0) {
-                if (lhs.createdDate == rhs.createdDate) {
+                if (lhs.updatedDate == rhs.updatedDate) {
                     if ( lhs.getMsgId() == rhs.getMsgId()) {
                         compared = 0;
                     } else {
                         compared = (rhs.getMsgId() - lhs.getMsgId() > 0 ? 1 : -1);
                     }
                 } else {
-                    compared = (rhs.createdDate - lhs.createdDate > 0 ? 1 : -1);
+                    compared = (rhs.updatedDate - lhs.updatedDate > 0 ? 1 : -1);
                 }
             }
             return compared;

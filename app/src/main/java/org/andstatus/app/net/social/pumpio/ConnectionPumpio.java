@@ -422,23 +422,30 @@ public class ConnectionPumpio extends Connection {
     }
     
     private MbMessage messageFromJsonActivity(JSONObject activity) throws ConnectionException {
-        MbMessage message;
         try {
             ActivityType activityType = ActivityType.load(activity.getString("verb"));
             String oid = activity.optString("id");
             if (TextUtils.isEmpty(oid)) {
                 MyLog.d(this, "Pumpio activity has no id:" + activity.toString(2));
                 return MbMessage.EMPTY;
-            } 
-            message =  MbMessage.fromOriginAndOid(data.getOriginId(), oid, DownloadStatus.LOADED);
-            message.actor = MbUser.fromOriginAndUserOid(data.getOriginId(), data.getAccountUserOid());
+            }
+            MbMessage message = messageFromJson(activity.getJSONObject("object"));
+            switch (activityType) {
+                case FAVORITE:
+                    message.setFavorited(TriState.TRUE);
+                    break;
+                case UNFAVORITE:
+                    message.setFavorited(TriState.FALSE);
+                    break;
+                case SHARE:
+                    message.setReblogOid(oid);
+                    break;
+                default:
+                    break;
+            }
             message.sentDate = dateFromJson(activity, "updated");
-
             if (activity.has("actor")) {
-                message.sender = userFromJson(activity.getJSONObject("actor"));
-                if (!message.sender.isEmpty()) {
-                    message.actor = message.sender;
-                }
+                message.setActor(userFromJson(activity.getJSONObject("actor")));
             }
             if (activity.has("to")) {
                 JSONObject to = activity.optJSONObject("to");
@@ -456,102 +463,19 @@ public class ConnectionPumpio extends Connection {
                     }
                 }
             }
-            if (activity.has("generator")) {
-                JSONObject generator = activity.getJSONObject(Properties.GENERATOR.code);
-                if (generator.has("displayName")) {
-                    message.via = generator.getString("displayName");
-                }
-            }
-            
-            JSONObject jso = activity.getJSONObject("object");
-            // Is this a reblog ("Share" in terms of Activity streams)?
-            if (activityType.equals(ActivityType.SHARE)) {
-                message.setReblogged(messageFromJson(jso));
-                if (message.getReblogged().isEmpty()) {
-                    MyLog.d(TAG, "No reblogged message " + jso.toString(2));
-                    return message.markAsEmpty();
-                }
-            } else {
-                if (activityType.equals(ActivityType.FAVORITE)) {
-                    message.setFavoritedByActor(TriState.TRUE);
-                } else if (activityType.equals(ActivityType.UNFAVORITE)) {
-                    message.setFavoritedByActor(TriState.FALSE);
-                }
-                
-                if (ObjectType.compatibleWith(jso) == ObjectType.COMMENT) {
-                    parseComment(message, jso);
-                } else {
-                    return message.markAsEmpty();
-                }
-            }
+            setVia(message, activity);
+            return message;
         } catch (JSONException e) {
             throw ConnectionException.loggedJsonException(this, "Parsing activity", e, activity);
         }
-        return message;
     }
 
-    private void parseComment(MbMessage message, JSONObject jso) throws ConnectionException {
-        try {
-            String oid = jso.optString("id");
-            if (!TextUtils.isEmpty(oid) && !message.oid.equalsIgnoreCase(oid)) {
-                message.oid = oid;
+    private void setVia(MbMessage message, JSONObject activity) throws JSONException {
+        if (TextUtils.isEmpty(message.via) && activity.has(Properties.GENERATOR.code)) {
+            JSONObject generator = activity.getJSONObject(Properties.GENERATOR.code);
+            if (generator.has("displayName")) {
+                message.via = generator.getString("displayName");
             }
-            if (jso.has("author")) {
-                MbUser author = userFromJson(jso.getJSONObject("author"));
-                if (!author.isEmpty()) {
-                    message.sender = author;
-                }
-            }
-            if (jso.has("content")) {
-                message.setBody(jso.getString("content"));
-            }
-            message.sentDate = dateFromJson(jso, "published");
-
-            if (jso.has(Properties.GENERATOR.code)) {
-                JSONObject generator = jso.getJSONObject(Properties.GENERATOR.code);
-                if (generator.has("displayName")) {
-                    message.via = generator.getString("displayName");
-                }
-            }
-            message.url = jso.optString("url");
-
-            if (jso.has("fullImage") || jso.has("image")) {
-                URL url = getImageUrl(jso, "fullImage");
-                if (url == null) {
-                    url = getImageUrl(jso, "image");
-                }
-                MbAttachment mbAttachment =  MbAttachment.fromUrlAndContentType(url, MyContentType.IMAGE);
-                if (mbAttachment.isValid()) {
-                    message.attachments.add(mbAttachment);
-                } else {
-                    MyLog.d(this, "Invalid attachment; " + jso.toString());
-                }
-            }
-
-            // If the Msg is a Reply to other message
-            if (jso.has("inReplyTo")) {
-                message.setInReplyTo(messageFromJson(jso.getJSONObject("inReplyTo")));
-                message.getInReplyTo().setSubscribed(TriState.FALSE);
-            }
-
-            if (jso.has("replies")) {
-                JSONObject replies = jso.getJSONObject("replies");
-                if (replies.has("items")) {
-                    JSONArray jArr = replies.getJSONArray("items");
-                    for (int index = 0; index < jArr.length(); index++) {
-                        try {
-                            MbMessage item = messageFromJson(jArr.getJSONObject(index));
-                            item.setSubscribed(TriState.FALSE);
-                            message.replies.add(item);
-                        } catch (JSONException e) {
-                            throw ConnectionException.loggedJsonException(this,
-                                    "Parsing list of replies", e, null);
-                        }
-                    }
-                }
-            }
-        } catch (JSONException e) {
-            throw ConnectionException.loggedJsonException(this, "Parsing comment/note", e, jso);
         }
     }
 
@@ -571,10 +495,57 @@ public class ConnectionPumpio extends Connection {
                 MyLog.d(TAG, "Pumpio object has no id:" + jso.toString(2));
                 return MbMessage.EMPTY;
             } 
-            message =  MbMessage.fromOriginAndOid(data.getOriginId(), oid, DownloadStatus.LOADED);
-            message.actor = MbUser.fromOriginAndUserOid(data.getOriginId(), data.getAccountUserOid());
+            message =  MbMessage.fromOriginAndOid(data.getOriginId(), data.getAccountUserOid(), oid,
+                    DownloadStatus.LOADED);
+            if (jso.has("author")) {
+                message.setAuthor(userFromJson(jso.getJSONObject("author")));
+            }
+            if (jso.has("content")) {
+                message.setBody(jso.getString("content"));
+            }
+            message.setUpdatedDate(dateFromJson(jso, "updated"));
+            if (message.getUpdatedDate() == 0) {
+                message.setUpdatedDate(dateFromJson(jso, "published"));
+            }
 
-            parseComment(message, jso);
+            setVia(message, jso);
+            message.url = jso.optString("url");
+
+            if (jso.has("fullImage") || jso.has("image")) {
+                URL url = getImageUrl(jso, "fullImage");
+                if (url == null) {
+                    url = getImageUrl(jso, "image");
+                }
+                MbAttachment mbAttachment =  MbAttachment.fromUrlAndContentType(url, MyContentType.IMAGE);
+                if (mbAttachment.isValid()) {
+                    message.attachments.add(mbAttachment);
+                } else {
+                    MyLog.d(this, "Invalid attachment; " + jso.toString());
+                }
+            }
+
+            // If the Msg is a Reply to other message
+            if (jso.has("inReplyTo")) {
+                message.setInReplyTo(messageFromJson(jso.getJSONObject("inReplyTo")));
+                message.getInReplyTo().setSubscribedByMe(TriState.FALSE);
+            }
+
+            if (jso.has("replies")) {
+                JSONObject replies = jso.getJSONObject("replies");
+                if (replies.has("items")) {
+                    JSONArray jArr = replies.getJSONArray("items");
+                    for (int index = 0; index < jArr.length(); index++) {
+                        try {
+                            MbMessage item = messageFromJson(jArr.getJSONObject(index));
+                            item.setSubscribedByMe(TriState.FALSE);
+                            message.replies.add(item);
+                        } catch (JSONException e) {
+                            throw ConnectionException.loggedJsonException(this,
+                                    "Parsing list of replies", e, null);
+                        }
+                    }
+                }
+            }
         } catch (JSONException e) {
             throw ConnectionException.loggedJsonException(this, "Parsing comment", e, jso);
         }

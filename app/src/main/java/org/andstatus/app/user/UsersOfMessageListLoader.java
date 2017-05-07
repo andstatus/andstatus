@@ -61,7 +61,7 @@ public class UsersOfMessageListLoader extends UserListLoader {
         } else {
             MbUser author = addUserIdToList(originOfSelectedMessage, authorId).mbUser;
             addUserIdToList(originOfSelectedMessage,
-                    MyQuery.msgIdToLongColumnValue(MsgTable.SENDER_ID, selectedMessageId));
+                    MyQuery.msgIdToLongColumnValue(MsgTable.ACTOR_ID, selectedMessageId));
             addUserIdToList(originOfSelectedMessage,
                     MyQuery.msgIdToLongColumnValue(MsgTable.IN_REPLY_TO_USER_ID, selectedMessageId));
             addUserIdToList(originOfSelectedMessage,

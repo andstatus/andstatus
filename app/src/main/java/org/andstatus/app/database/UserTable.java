@@ -103,10 +103,10 @@ public final class UserTable implements BaseColumns {
     /** Alias used in a timeline to distinguish messages for different users */
     public static final String LINKED_USER_ID = "linked_user_id";
     /**
-     * Derived from {@link MsgTable#SENDER_ID}
+     * Derived from {@link MsgTable#ACTOR_ID}
      * TODO: Whether this (and other similar...) is {@link #USERNAME} or {@link #REAL_NAME}, depends on settings
      */
-    public static final String SENDER_NAME = "sender_name";
+    public static final String SENDER_NAME = "sender_name";  // TODO: Rename to "actor_name"
     /** Derived from {@link MsgTable#AUTHOR_ID} */
     public static final String AUTHOR_NAME = "author_name";
     /** Derived from {@link MsgTable#IN_REPLY_TO_USER_ID} */

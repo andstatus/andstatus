@@ -141,7 +141,7 @@ public class MessageEditorData {
         MessageEditorData data;
         if (msgId != 0) {
             MyAccount ma = MyContextHolder.get().persistentAccounts().fromUserId(
-                    MyQuery.msgIdToLongColumnValue(MsgTable.SENDER_ID, msgId));
+                    MyQuery.msgIdToLongColumnValue(MsgTable.ACTOR_ID, msgId));
             data = new MessageEditorData(ma);
             data.msgId = msgId;
             data.setBody(MyQuery.msgIdToStringColumnValue(MsgTable.BODY, msgId));
@@ -183,19 +183,17 @@ public class MessageEditorData {
     }
 
     public void save(Uri imageUriToSave) {
-        MbMessage message = MbMessage.fromOriginAndOid(getMyAccount().getOriginId(), "", status);
+        MbMessage message = MbMessage.fromOriginAndOid(getMyAccount().getOriginId(), getMyAccount().getUserOid(), "",
+                status);
         message.msgId = getMsgId();
-        message.actor = MbUser.fromOriginAndUserOid(getMyAccount().getOriginId(),
-                getMyAccount().getUserOid());
-        message.sender = message.actor;
-        message.sentDate = System.currentTimeMillis();
+        message.setUpdatedDate(System.currentTimeMillis());
         message.setBody(body);
         if (recipientId != 0) {
             message.recipient = MbUser.fromOriginAndUserOid(getMyAccount().getOriginId(),
                     MyQuery.idToOid(OidEnum.USER_OID, recipientId, 0));
         }
         if (inReplyToId != 0) {
-            message.setInReplyTo(MbMessage.fromOriginAndOid(getMyAccount().getOriginId(),
+            message.setInReplyTo(MbMessage.fromOriginAndOid(getMyAccount().getOriginId(), getMyAccount().getUserOid(),
                     MyQuery.idToOid(OidEnum.MSG_OID, inReplyToId, 0),
                     DownloadStatus.UNKNOWN));
         }

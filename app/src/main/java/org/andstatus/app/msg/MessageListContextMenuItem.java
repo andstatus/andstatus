@@ -76,7 +76,7 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
         @Override
         MessageEditorData executeAsync(MessageContextMenu menu) {
             MyAccount ma = MyContextHolder.get().persistentAccounts().fromUserId(
-                    MyQuery.msgIdToLongColumnValue(MsgTable.SENDER_ID, menu.getMsgId()));
+                    MyQuery.msgIdToLongColumnValue(MsgTable.ACTOR_ID, menu.getMsgId()));
             CommandData commandData = CommandData.newUpdateStatus(ma, menu.getMsgId());
             MyServiceManager.sendManualForegroundCommand(commandData);
             return null;
@@ -191,7 +191,7 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
     SENDER_MESSAGES(true) {
         @Override
         MessageEditorData executeAsync(MessageContextMenu menu) {
-            return fillUserId(menu.getMyActor(), menu.getMsgId(), MsgTable.SENDER_ID);
+            return fillUserId(menu.getMyActor(), menu.getMsgId(), MsgTable.ACTOR_ID);
         }
 
         @Override
@@ -221,7 +221,7 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
     FOLLOW_SENDER(true) {
         @Override
         MessageEditorData executeAsync(MessageContextMenu menu) {
-            return fillUserId(menu.getMyActor(), menu.getMsgId(), MsgTable.SENDER_ID);
+            return fillUserId(menu.getMyActor(), menu.getMsgId(), MsgTable.ACTOR_ID);
         }
 
         @Override
@@ -232,7 +232,7 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
     STOP_FOLLOWING_SENDER(true) {
         @Override
         MessageEditorData executeAsync(MessageContextMenu menu) {
-            return fillUserId(menu.getMyActor(), menu.getMsgId(), MsgTable.SENDER_ID);
+            return fillUserId(menu.getMyActor(), menu.getMsgId(), MsgTable.ACTOR_ID);
         }
 
         @Override

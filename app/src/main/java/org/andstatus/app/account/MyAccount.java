@@ -31,7 +31,6 @@ import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DataInserter;
-import org.andstatus.app.data.LatestUserMessages;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.DatabaseConverterController;
@@ -430,7 +429,7 @@ public final class MyAccount implements Comparable<MyAccount> {
                     myAccount.userId = myAccount.accountData.getDataLong(KEY_USER_ID, myAccount.userId);
                 } else {
                     DataInserter di = new DataInserter(myAccount);
-                    myAccount.userId = di.insertOrUpdateUser(user);
+                    myAccount.userId = di.insertOrUpdateUser(user, true);
                 }
             }
             if (ok && !isPersistent()) {
@@ -503,9 +502,7 @@ public final class MyAccount implements Comparable<MyAccount> {
                     // We need this User in order to be able to link Messages to him
                     MbUser mbUser = MbUser.fromOriginAndUserOid(myAccount.getOriginId(), myAccount.userOid);
                     mbUser.setUserName(myAccount.getUsername());
-                    LatestUserMessages lum = new LatestUserMessages();
-                    myAccount.userId = di.insertOrUpdateUser(mbUser, lum);
-                    lum.save();
+                    myAccount.userId = di.insertOrUpdateUser(mbUser);
                 } catch (Exception e) {
                     MyLog.e(TAG, "Construct user", e);
                 }

@@ -232,29 +232,33 @@ public abstract class ConnectionTwitter extends Connection {
 
     @NonNull
     final MbMessage messageFromJson(JSONObject jso) throws ConnectionException {
-        return jso == null ? MbMessage.EMPTY : messageFromJson2(jso);
+        return jso == null ? MbMessage.EMPTY :
+                MbMessage.makeReblog(messageFromJson2(jso), rebloggedMessageFromJson(jso));
+    }
+
+    MbMessage rebloggedMessageFromJson(JSONObject jso) throws ConnectionException {
+        return messageFromJson(jso.optJSONObject("retweeted_status"));
     }
 
     MbMessage messageFromJson2(@NonNull JSONObject jso) throws ConnectionException {
-        String oid = jso.optString("id_str");
-        if (TextUtils.isEmpty(oid)) {
-            // This is for the Status.net
-            oid = jso.optString("id");
-        } 
-        MbMessage message =  MbMessage.fromOriginAndOid(data.getOriginId(), oid, DownloadStatus.LOADED);
-        message.actor = MbUser.fromOriginAndUserOid(data.getOriginId(), data.getAccountUserOid());
+        MbMessage message;
         try {
-            message.sentDate = dateFromJson(jso, "created_at");
+            String oid = jso.optString("id_str");
+            if (TextUtils.isEmpty(oid)) {
+                // This is for the Status.net
+                oid = jso.optString("id");
+            }
+            message =  MbMessage.fromOriginAndOid(data.getOriginId(), data.getAccountUserOid(),
+                    oid, DownloadStatus.LOADED);
+            message.setUpdatedDate(dateFromJson(jso, "created_at"));
 
-            JSONObject sender;
+            MbUser author = MbUser.getEmpty();
             if (jso.has("sender")) {
-                sender = jso.getJSONObject("sender");
-                message.sender = userFromJson(sender);
+                author = userFromJson(jso.getJSONObject("sender"));
             } else if (jso.has("user")) {
-                sender = jso.getJSONObject("user");
-                message.sender = userFromJson(sender);
+                author = userFromJson(jso.getJSONObject("user"));
             } else if (jso.has("from_user")) {
-                // This is in the search results, 
+                // This is in the search results,
                 // see https://dev.twitter.com/docs/api/1/get/search
                 String senderName = jso.getString("from_user");
                 String senderOid = jso.optString("from_user_id_str");
@@ -262,15 +266,12 @@ public abstract class ConnectionTwitter extends Connection {
                     senderOid = jso.optString("from_user_id");
                 }
                 if (!SharedPreferencesUtil.isEmpty(senderOid)) {
-                    message.sender = MbUser.fromOriginAndUserOid(data.getOriginId(), senderOid);
-                    message.sender.setUserName(senderName);
+                    author = MbUser.fromOriginAndUserOid(data.getOriginId(), senderOid);
+                    author.setUserName(senderName);
                 }
             }
-            
-            // Is this a reblog?
-            if (!jso.isNull("retweeted_status")) {
-                message.setReblogged(messageFromJson(jso.getJSONObject("retweeted_status")));
-            }
+            message.setAuthor(author);
+
             setMessageBodyFromJson(message, jso);
             if (jso.has("recipient")) {
                 JSONObject recipient = jso.getJSONObject("recipient");
@@ -278,9 +279,6 @@ public abstract class ConnectionTwitter extends Connection {
             }
             if (jso.has("source")) {
                 message.via = jso.getString("source");
-            }
-            if (!jso.isNull("favorited")) {
-                message.setFavoritedByActor(TriState.fromBoolean(SharedPreferencesUtil.isTrue(jso.getString("favorited"))));
             }
 
             // If the Msg is a Reply to other message
@@ -304,17 +302,19 @@ public abstract class ConnectionTwitter extends Connection {
                 }
                 if (!SharedPreferencesUtil.isEmpty(inReplyToMessageOid)) {
                     // Construct Related message from available info
-                    MbMessage inReplyToMessage = MbMessage.fromOriginAndOid(data.getOriginId(),
+                    MbMessage inReplyToMessage = MbMessage.fromOriginAndOid(data.getOriginId(), message.myUserOid,
                             inReplyToMessageOid, DownloadStatus.UNKNOWN);
-                    MbUser inReplyToUser = MbUser.fromOriginAndUserOid(data.getOriginId(),
-                            inReplyToUserOid);
+                    MbUser inReplyToUser = MbUser.fromOriginAndUserOid(data.getOriginId(), inReplyToUserOid);
                     if (jso.has("in_reply_to_screen_name")) {
                         inReplyToUser.setUserName(jso.getString("in_reply_to_screen_name"));
                     }
-                    inReplyToMessage.sender = inReplyToUser;
-                    inReplyToMessage.actor = message.actor;
+                    inReplyToMessage.setAuthor(inReplyToUser);
                     message.setInReplyTo(inReplyToMessage);
                 }
+            }
+
+            if (!jso.isNull("favorited")) {
+                message.setFavoritedByMe(TriState.fromBoolean(SharedPreferencesUtil.isTrue(jso.getString("favorited"))));
             }
         } catch (JSONException e) {
             throw ConnectionException.loggedJsonException(this, "Parsing message", e, jso);
@@ -375,10 +375,8 @@ public abstract class ConnectionTwitter extends Connection {
             user.followedByActor = TriState.fromBoolean(jso.optBoolean("following"));
         }
         if (!jso.isNull("status")) {
-            JSONObject latestMessage;
             try {
-                latestMessage = jso.getJSONObject("status");
-                user.setLatestMessage(messageFromJson(latestMessage));
+                user.setLatestMessage(messageFromJson(jso.getJSONObject("status")));
             } catch (JSONException e) {
                 throw ConnectionException.loggedJsonException(this, "getting status from user", e, jso);
             }

@@ -96,7 +96,7 @@ public class MessageForAccount {
             cursor = MyContextHolder.get().context().getContentResolver().query(uri, new String[]{
                     BaseColumns._ID,
                     MsgTable.MSG_STATUS,
-                    MsgTable.BODY, MsgTable.SENDER_ID,
+                    MsgTable.BODY, MsgTable.ACTOR_ID,
                     MsgTable.AUTHOR_ID,
                     MsgTable.IN_REPLY_TO_USER_ID,
                     MsgTable.RECIPIENT_ID,
@@ -110,7 +110,7 @@ public class MessageForAccount {
             if (cursor != null && cursor.moveToFirst()) {
                 status = DownloadStatus.load(DbUtils.getLong(cursor, MsgTable.MSG_STATUS));
                 authorId = DbUtils.getLong(cursor, MsgTable.AUTHOR_ID);
-                senderId = DbUtils.getLong(cursor, MsgTable.SENDER_ID);
+                senderId = DbUtils.getLong(cursor, MsgTable.ACTOR_ID);
                 isSenderMySucceededAccount = MyContextHolder.get().persistentAccounts().fromUserId(senderId).isValidAndSucceeded();
                 recipientId = DbUtils.getLong(cursor, MsgTable.RECIPIENT_ID);
                 imageFilename = DbUtils.getString(cursor, DownloadTable.IMAGE_FILE_NAME);

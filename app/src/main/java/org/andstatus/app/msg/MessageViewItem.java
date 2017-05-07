@@ -44,9 +44,9 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 public class MessageViewItem implements DuplicatesCollapsible<MessageViewItem>, ViewItem {
-    static final int MIN_LENGTH_TO_COMPARE = 5;
+    private static final int MIN_LENGTH_TO_COMPARE = 5;
     private MyContext myContext = MyContextHolder.get();
-    long createdDate = 0;
+    long updatedDate = 0;
     long sentDate = 0;
 
     DownloadStatus msgStatus = DownloadStatus.UNKNOWN;
@@ -73,7 +73,7 @@ public class MessageViewItem implements DuplicatesCollapsible<MessageViewItem>, 
     boolean reblogged = false;
 
     AttachedImageFile attachedImageFile = AttachedImageFile.EMPTY;
-    protected Drawable avatarDrawable = null;
+    Drawable avatarDrawable = null;
 
     /** A message can be linked to any user, MyAccount or not */
     private long linkedUserId = 0;
@@ -156,16 +156,16 @@ public class MessageViewItem implements DuplicatesCollapsible<MessageViewItem>, 
             link = duplicatesByFavoritedAndReblogged(other);
         }
         if (link == DuplicationLink.NONE) {
-            if (Math.abs(createdDate - other.createdDate) < TimeUnit.HOURS.toMillis(24)) {
+            if (Math.abs(updatedDate - other.updatedDate) < TimeUnit.HOURS.toMillis(24)) {
                 String thisBody = MyHtml.getCleanedBody(body);
                 String otherBody = MyHtml.getCleanedBody(other.body);
                 if (thisBody.length() < MIN_LENGTH_TO_COMPARE ||
                         otherBody.length() < MIN_LENGTH_TO_COMPARE) {
                     // Too short to compare
                 } else if (thisBody.equals(otherBody)) {
-                    if (createdDate == other.createdDate) {
+                    if (updatedDate == other.updatedDate) {
                         link = duplicatesByFavoritedAndReblogged(other);
-                    } else if (createdDate < other.createdDate) {
+                    } else if (updatedDate < other.updatedDate) {
                         link = DuplicationLink.IS_DUPLICATED;
                     } else {
                         link = DuplicationLink.DUPLICATES;
@@ -202,7 +202,7 @@ public class MessageViewItem implements DuplicatesCollapsible<MessageViewItem>, 
     }
 
     public StringBuilder getDetails(Context context) {
-        StringBuilder builder = new StringBuilder(RelativeTime.getDifference(context, createdDate));
+        StringBuilder builder = new StringBuilder(RelativeTime.getDifference(context, updatedDate));
         setInReplyTo(context, builder);
         setRecipientName(context, builder);
         setMessageSource(context, builder);

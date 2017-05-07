@@ -23,7 +23,7 @@ import org.andstatus.app.data.DbUtils;
 /**
  * Link tables: Msg to a User.
  * This User may be not even mentioned in this message
- *   (e.g. SUBSCRIBED by the User who is not sender not recipient...).
+ *   (e.g. #FAVORITED by the User who is neither an author nor recipient...).
  * This table is used to filter User's timelines (based on flags: SUBSCRIBED etc.)
  */
 public final class MsgOfUserTable {

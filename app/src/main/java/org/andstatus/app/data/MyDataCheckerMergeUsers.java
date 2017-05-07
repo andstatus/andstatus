@@ -123,7 +123,7 @@ public class MyDataCheckerMergeUsers {
     private void mergeUser(MbUser user) {
         String logMsg = "Merging " + user + " with " + user.actor;
         logger.logProgress(logMsg);
-        updateColumn(logMsg, user, MsgTable.TABLE_NAME, MsgTable.SENDER_ID, false);
+        updateColumn(logMsg, user, MsgTable.TABLE_NAME, MsgTable.ACTOR_ID, false);
         updateColumn(logMsg, user, MsgTable.TABLE_NAME, MsgTable.AUTHOR_ID, false);
         updateColumn(logMsg, user, MsgTable.TABLE_NAME, MsgTable.RECIPIENT_ID, false);
         updateColumn(logMsg, user, MsgTable.TABLE_NAME, MsgTable.IN_REPLY_TO_USER_ID, false);

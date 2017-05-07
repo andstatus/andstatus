@@ -101,7 +101,7 @@ public class TimelineSql {
                  */
                 msgTable  += " LEFT JOIN " + MsgTable.TABLE_NAME + " AS " + ProjectionMap.MSG_TABLE_ALIAS
                         + " ON ("
-                        + ProjectionMap.MSG_TABLE_ALIAS + "." + MsgTable.SENDER_ID
+                        + ProjectionMap.MSG_TABLE_ALIAS + "." + MsgTable.ACTOR_ID
                         + "=fUserId"
                         + " AND " + ProjectionMap.MSG_TABLE_ALIAS + "." + BaseColumns._ID
                         + "=u1." + UserTable.USER_MSG_ID
@@ -201,11 +201,11 @@ public class TimelineSql {
                     + ProjectionMap.ATTACHMENT_IMAGE_TABLE_ALIAS + "." + DownloadTable.MSG_ID
                     + "=" + ProjectionMap.MSG_TABLE_ALIAS + "." + BaseColumns._ID;
         }
-        if (columns.contains(UserTable.SENDER_NAME)) {
+        if (columns.contains(UserTable.SENDER_NAME)) {  // TODO: Rename SENDER to ACTOR
             tables = "(" + tables + ") LEFT OUTER JOIN (SELECT " + BaseColumns._ID + ", "
                     + TimelineSql.userNameField() + " AS " + UserTable.SENDER_NAME
                     + " FROM " + UserTable.TABLE_NAME + ") AS sender ON "
-                    + ProjectionMap.MSG_TABLE_ALIAS + "." + MsgTable.SENDER_ID + "=sender."
+                    + ProjectionMap.MSG_TABLE_ALIAS + "." + MsgTable.ACTOR_ID + "=sender."
                     + BaseColumns._ID;
         }
         if (columns.contains(UserTable.IN_REPLY_TO_NAME)) {
@@ -244,7 +244,7 @@ public class TimelineSql {
                     + " FROM " + FriendshipTable.TABLE_NAME + ") AS followingSender ON ("
                     + "followingSender." + FriendshipTable.USER_ID + "=" + UserTable.LINKED_USER_ID
                     + " AND "
-                    + ProjectionMap.MSG_TABLE_ALIAS + "." + MsgTable.SENDER_ID
+                    + ProjectionMap.MSG_TABLE_ALIAS + "." + MsgTable.ACTOR_ID
                     + "=followingSender." + FriendshipTable.FRIEND_ID
                     + ")";
         }
@@ -259,7 +259,7 @@ public class TimelineSql {
         if (!columnNames.contains(MsgTable.AUTHOR_ID)) {
             columnNames.add(MsgTable.AUTHOR_ID);
         }
-        columnNames.add(MsgTable.SENDER_ID);
+        columnNames.add(MsgTable.ACTOR_ID);
         columnNames.add(UserTable.SENDER_NAME);
         columnNames.add(MsgTable.VIA);
         columnNames.add(MsgOfUserTable.REBLOGGED);
@@ -277,7 +277,7 @@ public class TimelineSql {
         columnNames.add(UserTable.RECIPIENT_NAME);
         columnNames.add(MsgOfUserTable.FAVORITED);
         columnNames.add(MsgTable.SENT_DATE);
-        columnNames.add(MsgTable.CREATED_DATE);
+        columnNames.add(MsgTable.UPDATED_DATE);
         columnNames.add(MsgTable.MSG_STATUS);
         columnNames.add(UserTable.LINKED_USER_ID);
         if (MyPreferences.getShowAvatars()) {
@@ -301,7 +301,7 @@ public class TimelineSql {
         if (!columnNames.contains(MsgTable.AUTHOR_ID)) {
             columnNames.add(MsgTable.AUTHOR_ID);
         }
-        columnNames.add(MsgTable.SENDER_ID);
+        columnNames.add(MsgTable.ACTOR_ID);
         columnNames.add(MsgTable.VIA);
         columnNames.add(MsgOfUserTable.REBLOGGED);
         return columnNames.toArray(new String[]{});

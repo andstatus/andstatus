@@ -39,7 +39,11 @@ public final class SelectionAndArgs {
     }
 
     public int addSelection(String selection_in) {
-        return addSelection(selection_in, null);
+        return addSelection(selection_in, new String[] {});
+    }
+
+    public int addSelection(String selectionAdd, String selectionArgAdd) {
+        return addSelection(selectionAdd, new String[] { selectionArgAdd});
     }
 
     public int addSelection(String selectionAdd, String[] selectionArgsAdd) {

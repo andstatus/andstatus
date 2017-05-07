@@ -101,7 +101,7 @@ public class DataPruner {
                 latestTimestamp = System.currentTimeMillis() - java.util.concurrent.TimeUnit.DAYS.toMillis(maxDays);
                 SelectionAndArgs sa = new SelectionAndArgs();
                 sa.addSelection(MsgTable.TABLE_NAME + "." + MsgTable.INS_DATE + " <  ?",
-                        new String[] {String.valueOf(latestTimestamp)});
+                        String.valueOf(latestTimestamp));
                 sa.addSelection(sqlNotFavoritedMessage);
                 sa.addSelection(sqlNotLatestMessageByFollowedUser);
                 nDeletedTime = mContentResolver.delete(MatchedUri.MSG_CONTENT_URI, sa.selection, sa.selectionArgs);
@@ -128,7 +128,7 @@ public class DataPruner {
                     if (latestTimestampSize > 0) {
                         SelectionAndArgs sa = new SelectionAndArgs();
                         sa.addSelection(MsgTable.TABLE_NAME + "." + MsgTable.INS_DATE + " <=  ?",
-                                new String[] {String.valueOf(latestTimestampSize)});
+                                String.valueOf(latestTimestampSize));
                         sa.addSelection(sqlNotFavoritedMessage);
                         sa.addSelection(sqlNotLatestMessageByFollowedUser);
                         nDeletedSize = mContentResolver.delete(MatchedUri.MSG_CONTENT_URI, sa.selection,

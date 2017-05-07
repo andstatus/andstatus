@@ -54,8 +54,8 @@ public class ConnectionMastodonTest extends InstrumentationTestCase {
         int ind = 0;
         assertEquals("Is not a message", MbTimelineItem.ItemType.MESSAGE, timeline.get(ind).getType());
         MbMessage mbMessage = timeline.get(ind).mbMessage;
-        assertEquals("Favorited", TriState.UNKNOWN, mbMessage.getFavoritedByActor());
-        MbUser sender = mbMessage.sender;
+        assertEquals("Favorited", TriState.UNKNOWN, mbMessage.getFavoritedByMe());
+        MbUser sender = mbMessage.getAuthor();
 
         String stringDate = "2017-04-16T11:13:12.133Z";
         long parsedDate = connection.parseDate(stringDate);

@@ -352,6 +352,12 @@ public class TestSuite extends TestCase {
         return cal.getTime();        
     }
 
+    public static Date utcTime(long millis) {
+        GregorianCalendar cal = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
+        cal.setTimeInMillis(millis);
+        return cal.getTime();
+    }
+
     public static int waitForListLoaded(InstrumentationTestCase instrumentationTestCase, Activity activity, int minCount) throws InterruptedException {
         return waitForListLoaded(instrumentationTestCase.getInstrumentation(), activity, minCount);
     }

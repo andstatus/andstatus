@@ -170,6 +170,16 @@ public class PersistentAccounts {
         return myAccount;
     }
 
+    @NonNull
+    public MyAccount fromOriginAndOid(long originId, String myUserOid) {
+        for (MyAccount persistentAccount : mAccounts) {
+            if (persistentAccount.getOriginId() == originId && persistentAccount.getUserOid().equals(myUserOid)) {
+                return persistentAccount;
+            }
+        }
+        return MyAccount.getEmpty(myContext);
+    }
+
     /**
      * Get instance of current MyAccount (MyAccount selected by the user). The account isPersistent.
      * As a side effect the function changes current account if old value is not valid.

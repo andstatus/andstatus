@@ -68,11 +68,11 @@ public class TimelineViewItemTest extends InstrumentationTestCase {
         item2.setBody("What is good about Android is that I can use <a href=\"https://quitter.se/\" title=\"https://quitter.se/\" class=\"attachment\" id=\"attachment-1205381\" rel=\"nofollow external\">Quitter.se</a> via AndStatus.");
         assertDuplicates(item1, DuplicationLink.DUPLICATES, item2);
 
-        item1.createdDate = 1468509659000L;
-        item2.createdDate = 1468509658000L;
+        item1.updatedDate = 1468509659000L;
+        item2.updatedDate = 1468509658000L;
         assertDuplicates(item1, DuplicationLink.DUPLICATES, item2);
         assertDuplicates(item2, DuplicationLink.IS_DUPLICATED, item1);
-        item2.createdDate = item1.createdDate;
+        item2.updatedDate = item1.updatedDate;
 
         item2.favorited = true;
         assertDuplicates(item1, DuplicationLink.DUPLICATES, item2);

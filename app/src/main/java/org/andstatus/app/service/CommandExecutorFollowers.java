@@ -213,7 +213,7 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
             broadcastProgress(String.valueOf(count) + ". "
                     + execContext.getContext().getText(R.string.button_save)
                     + ": " + mbUser.getNamePreferablyWebFingerId(), true);
-            di.insertOrUpdateUser(mbUser, lum);
+            di.insertOrUpdateUser(mbUser, lum, true);
             if (mbUser.hasLatestMessage()) {
                 messagesLoaded = true;
             }
@@ -234,7 +234,7 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
                     if (lastMsgId == 0) {
                         lastMsgId = MyQuery.conditionToLongColumnValue(MsgTable.TABLE_NAME,
                                 MsgTable._ID,
-                                MsgTable.SENDER_ID + "=" + mbUser.userId
+                                MsgTable.ACTOR_ID + "=" + mbUser.userId
                         + " ORDER BY " + MsgTable.SENT_DATE + " DESC LIMIT 0,0");
                     }
                     if (lastMsgId == 0) {

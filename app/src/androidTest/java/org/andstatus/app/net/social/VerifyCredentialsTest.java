@@ -16,7 +16,6 @@
 
 package org.andstatus.app.net.social;
 
-import android.content.Context;
 import android.test.InstrumentationTestCase;
 import android.text.TextUtils;
 
@@ -43,23 +42,23 @@ import java.io.IOException;
 
 @Travis
 public class VerifyCredentialsTest extends InstrumentationTestCase {
-    Context context;
-    Connection connection;
-    HttpConnectionMock httpConnection;
-    OriginConnectionData connectionData;
+    private Connection connection;
+    private HttpConnectionMock httpConnection;
 
-    String keyStored;
-    String secretStored;
-    
+    private String keyStored;
+    private String secretStored;
+
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        context = TestSuite.initialize(this);
+        TestSuite.initializeWithData(this);
 
         TestSuite.setHttpConnectionMockClass(HttpConnectionMock.class);
-        connectionData = OriginConnectionData.fromAccountName( AccountName.fromOriginAndUserName(
-                MyContextHolder.get().persistentOrigins().firstOfType(OriginType.TWITTER), ""),
+        OriginConnectionData connectionData = OriginConnectionData.fromAccountName(AccountName.fromOriginAndUserName(
+                MyContextHolder.get().persistentOrigins().fromName(TestSuite.TWITTER_TEST_ORIGIN_NAME),
+                TestSuite.TWITTER_TEST_ACCOUNT_USERNAME),
                 TriState.UNKNOWN);
+        connectionData.setAccountUserOid(TestSuite.TWITTER_TEST_ACCOUNT_USER_OID);
         connectionData.setDataReader(new AccountDataReaderEmpty());
         connection = connectionData.newConnection();
         httpConnection = (HttpConnectionMock) connection.http;
@@ -84,16 +83,16 @@ public class VerifyCredentialsTest extends InstrumentationTestCase {
     }
 
     public void testVerifyCredentials() throws IOException {
-        String jso = RawResourceUtils.getString(this.getInstrumentation().getContext(), 
+        String jso = RawResourceUtils.getString(this.getInstrumentation().getContext(),
                 org.andstatus.app.tests.R.raw.verify_credentials_twitter);
         httpConnection.setResponse(jso);
-        
+
         MbUser mbUser = connection.verifyCredentials();
         assertEquals("User's oid is user oid of this account", TestSuite.TWITTER_TEST_ACCOUNT_USER_OID, mbUser.oid);
-        
+
         Origin origin = MyContextHolder.get().persistentOrigins().firstOfType(OriginType.TWITTER);
         MyAccount.Builder builder = MyAccount.Builder.newOrExistingFromAccountName(
-                MyContextHolder.get(),
+                MyContextHolder.get(), TestSuite.TWITTER_TEST_ACCOUNT_NAME +
                 "/" + origin.getName(), TriState.TRUE);
         builder.onCredentialsVerified(mbUser, null);
         assertTrue("Account is persistent", builder.isPersistent());
@@ -106,9 +105,9 @@ public class VerifyCredentialsTest extends InstrumentationTestCase {
 
         String msgOid = "383296535213002752";
         long msgId = MyQuery.oidToId(OidEnum.MSG_OID, origin.getId(), msgOid) ;
-        assertTrue("Message not found", msgId !=0);
+        assertTrue("Message not found", msgId != 0);
         long userIdM = MyQuery.msgIdToUserId(MsgTable.AUTHOR_ID, msgId);
-        assertEquals("Message is by " + mbUser.getUserName() + " found", userId, userIdM);
+        assertEquals("Message not by " + mbUser.getUserName() + " found", userId, userIdM);
 
         assertEquals("Message permalink at twitter",
                 "https://" + origin.fixUriforPermalink(UriUtils.fromUrl(origin.getUrl())).getHost()

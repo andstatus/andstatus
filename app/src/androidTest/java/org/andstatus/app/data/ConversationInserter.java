@@ -92,9 +92,10 @@ public class ConversationInserter extends InstrumentationTestCase {
         MbMessage selected = buildMessage(getAuthor1(), "Selected message", minus1,
                 iteration == 1 ? TestSuite.CONVERSATION_ENTRY_MESSAGE_OID : null);
         MbMessage reply1 = buildMessage(author3, "Reply 1 to selected", selected, null);
-        reply1.sender.followedByActor = TriState.TRUE;
+        reply1.getAuthor().followedByActor = TriState.TRUE;
 
-        MbMessage reply1Copy = MbMessage.fromOriginAndOid(reply1.originId, reply1.oid, DownloadStatus.UNKNOWN);
+        MbMessage reply1Copy = MbMessage.fromOriginAndOid(reply1.originId, reply1.myUserOid, reply1.oid,
+                DownloadStatus.UNKNOWN);
         MbMessage reply12 = buildMessage(author2, "Reply 12 to 1 in Replies", reply1Copy, null);
         reply1.replies.add(reply12);
 
@@ -124,11 +125,10 @@ public class ConversationInserter extends InstrumentationTestCase {
         MbUser reblogger1 = buildUserFromOid("acct:reblogger@identi.ca");
         reblogger1.avatarUrl = "http://www.avatarsdb.com/avatars/cow_face.jpg";
         MbMessage reblog1 = buildMessage(reblogger1, BODY_OF_MENTIONS_MESSAGE, null, null);
-        reblog1.setReblogged(reply5);
-        addMessage(reblog1);
+        addMessage(MbMessage.makeReblog(reblog1, reply5));
 
         addMessage(buildMessage(author3, "Reply 6 to Reply 4 - the second", reply4, null).
-                setFavoritedByActor(TriState.TRUE));
+                setFavoritedByMe(TriState.TRUE));
 
         MbMessage reply7 = buildMessage(getAuthor1(), "Reply 7 to Reply 2 is about " 
         + TestSuite.PUBLIC_MESSAGE_TEXT + " and something else", reply2, null);
@@ -137,8 +137,7 @@ public class ConversationInserter extends InstrumentationTestCase {
         MbMessage reply8 = buildMessage(author4, "<b>Reply 8</b> to Reply 7", reply7, null);
 
         MbMessage reblog2 = buildMessage(myAuthor, reply8.getBody(), null, null);
-        reblog2.setReblogged(reply8);
-        addMessage(reblog2);
+        addMessage(MbMessage.makeReblog(reblog2, reply8));
 
         MbMessage reply9 = buildMessage(author2, "Reply 9 to Reply 7", reply7, null);
         reply9.attachments
@@ -155,8 +154,8 @@ public class ConversationInserter extends InstrumentationTestCase {
         author3.actor = users.get(TestSuite.CONVERSATION_ACCOUNT2_USER_OID);
         author3.followedByActor = TriState.TRUE;
         MbMessage reply10 = buildMessage(acc2, author3, "Reply 10 to Reply 8", reply8, null);
-        assertEquals("Another account as a message actor", reply10.actor.oid, TestSuite.CONVERSATION_ACCOUNT2_USER_OID);
-        assertEquals("Another account as a sender actor", reply10.sender.actor.oid, TestSuite.CONVERSATION_ACCOUNT2_USER_OID);
+        assertEquals("Another account as a message actor", reply10.myUserOid, TestSuite.CONVERSATION_ACCOUNT2_USER_OID);
+        assertEquals("Another account as a author actor", reply10.getAuthor().actor.oid, TestSuite.CONVERSATION_ACCOUNT2_USER_OID);
         MessageInserter.addMessage(acc2, reply10);
         author3.followedByActor = TriState.UNKNOWN;
         author3.actor = actorOld;

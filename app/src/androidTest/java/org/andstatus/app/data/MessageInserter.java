@@ -119,12 +119,11 @@ public class MessageInserter extends InstrumentationTestCase {
                 messageOid = String.valueOf(System.nanoTime());
             }
         }
-        MbMessage message = MbMessage.fromOriginAndOid(origin.getId(), messageOid, messageStatus);
+        MbMessage message = MbMessage.fromOriginAndOid(origin.getId(), accountMbUser.oid, messageOid, messageStatus);
         message.setBody(body);
-        message.sentDate = System.currentTimeMillis();
+        message.setUpdatedDate(System.currentTimeMillis());
         message.via = "AndStatus";
-        message.sender = author;
-        message.actor = accountMbUser;
+        message.setAuthor(author);
         message.setInReplyTo(inReplyToMessage);
         if (origin.getOriginType() == OriginType.PUMPIO) {
             message.url = message.oid;
@@ -137,19 +136,17 @@ public class MessageInserter extends InstrumentationTestCase {
         return new MessageInserter(ma).addMessage(message);
     }
 
-    public long addMessage(final MbMessage messageIn) {
+    public long addMessage(final MbMessage message) {
         DataInserter di = new DataInserter(new CommandExecutionContext(
                         CommandData.newTimelineCommand(CommandEnum.EMPTY, ma,
-                                messageIn.isPublic() ? TimelineType.PUBLIC : TimelineType.HOME)));
-        long messageId = di.insertOrUpdateMsg(messageIn);
-        assertTrue( "Message added " + messageIn.oid, messageId != 0);
-
-        MbMessage message = messageIn.getReblogged().isEmpty() ? messageIn : messageIn.getReblogged();
+                                message.isPublic() ? TimelineType.PUBLIC : TimelineType.HOME)));
+        long messageId = di.insertOrUpdateMsg(message);
+        assertTrue( "Message added " + message.oid, messageId != 0);
 
         String permalink = origin.messagePermalink(messageId);
         URL urlPermalink = UrlUtils.fromString(permalink); 
         assertTrue("Message permalink is a valid URL '" + permalink + "',\n" + message.toString()
-                + "\n author: " + message.sender.toString(), urlPermalink != null);
+                + "\n author: " + message.getAuthor().toString(), urlPermalink != null);
         if (origin.getUrl() != null && origin.getOriginType() != OriginType.TWITTER) {
             assertEquals("Message permalink has the same host as origin, " + message.toString(),
                     origin.getUrl().getHost(), urlPermalink.getHost());
@@ -158,17 +155,17 @@ public class MessageInserter extends InstrumentationTestCase {
             assertEquals("Message permalink", message.url, origin.messagePermalink(messageId));
         }
         
-        if (message.getFavoritedByActor() == TriState.TRUE) {
+        if (message.getFavoritedByMe() == TriState.TRUE) {
             long msgIdFromMsgOfUser = MyQuery.conditionToLongColumnValue(MsgOfUserTable.TABLE_NAME,
                     MsgOfUserTable.MSG_ID, "t." + MsgOfUserTable.MSG_ID + "=" + messageId);
-            assertEquals("msgOfUser found for " + messageIn, messageId, msgIdFromMsgOfUser);
+            assertEquals("msgOfUser found for " + message, messageId, msgIdFromMsgOfUser);
             
             long userIdFromMsgOfUser = MyQuery.conditionToLongColumnValue(MsgOfUserTable.TABLE_NAME, MsgOfUserTable
                             .USER_ID, "t." + MsgOfUserTable.USER_ID + "=" + ma.getUserId());
-            assertEquals("userId found for " + messageIn, ma.getUserId(), userIdFromMsgOfUser);
+            assertEquals("userId found for " + message, ma.getUserId(), userIdFromMsgOfUser);
         }
 
-        if (messageIn.getReblogged().nonEmpty()) {
+        if (message.isReblogged()) {
             long rebloggerId = MyQuery.conditionToLongColumnValue(MsgOfUserTable.TABLE_NAME,
                     MsgOfUserTable.USER_ID,
                     "t." + MsgOfUserTable.MSG_ID + "=" + messageId
@@ -176,8 +173,8 @@ public class MessageInserter extends InstrumentationTestCase {
             assertTrue("Reblogger found for msgId=" + messageId, rebloggerId != 0);
         }
 
-        if (!messageIn.replies.isEmpty()) {
-            for (MbMessage reply : messageIn.replies) {
+        if (!message.replies.isEmpty()) {
+            for (MbMessage reply : message.replies) {
                 long inReplyToMsgId = MyQuery.conditionToLongColumnValue(MsgTable.TABLE_NAME,
                         MsgTable.IN_REPLY_TO_MSG_ID,
                         "t." + MsgTable.MSG_OID + "='" + reply.oid + "'" );

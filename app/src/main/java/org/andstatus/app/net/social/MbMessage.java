@@ -23,6 +23,7 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TriState;
 
 import java.util.ArrayList;
@@ -30,48 +31,62 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * 'Mb' stands for "Microblogging system" 
+ * Message of a Social Network
  * @author yvolk@yurivolkov.com
  */
 public class MbMessage {
-    public static final MbMessage EMPTY = new MbMessage();
+    public static final MbMessage EMPTY = new MbMessage(0, "");
 
     private boolean isEmpty = false;
     private DownloadStatus status = DownloadStatus.UNKNOWN;
     
     public String oid="";
-    public long sentDate = 0;
-    public MbUser sender = null;
+    private long updatedDate = 0;
+    private MbUser author;
     // TODO: Multiple recipients needed?!
     public MbUser recipient = null; 
     private String body = "";
 
-    private MbMessage reblogged = null;
     private MbMessage inReplyTo = null;
     public final List<MbMessage> replies = new ArrayList<>();
     public String conversationOid="";
     public String via = "";
     public String url="";
     private boolean isPublic = false;
-    private TriState isSubscribed = TriState.UNKNOWN;
 
     public final List<MbAttachment> attachments = new ArrayList<>();
 
-    /**
-     * Some additional attributes may appear from the Reader's
-     * point of view (usually - from the point of view of the authenticated user)
-     */
-    public MbUser actor = null;
-    private TriState favoritedByActor = TriState.UNKNOWN;
+    @NonNull
+    private MbUser actor;
+    public long sentDate = 0;
+    private TriState favorited = TriState.UNKNOWN;
+    private String reblogOid = "";
+
+    /** Some additional attributes may appear from "My account's" (authenticated user's) point of view */
+    public final String myUserOid;
+    private TriState subscribedByMe = TriState.UNKNOWN;
+    private TriState favoritedByMe = TriState.UNKNOWN;
     
     // In our system
-    public long originId = 0L;
+    public final long originId;
     public long msgId = 0L;
     public long conversationId = 0L;
 
-    public static MbMessage fromOriginAndOid(long originId, String oid, DownloadStatus status) {
-        MbMessage message = new MbMessage();
-        message.originId = originId;
+    public static MbMessage makeReblog(@NonNull MbMessage reblog, MbMessage rebloggedMessage) {
+        if (rebloggedMessage.isEmpty()) {
+            return reblog;
+        } else {
+            // TODO: clone source instead of changing it
+            rebloggedMessage.sentDate = reblog.sentDate;
+            rebloggedMessage.actor = reblog.author;
+            rebloggedMessage.setReblogOid(reblog.oid);
+            rebloggedMessage.setFavoritedByMe(reblog.getFavoritedByMe());
+            return rebloggedMessage;
+        }
+    }
+
+    public static MbMessage fromOriginAndOid(long originId, String myUserOid, String oid, DownloadStatus status) {
+        MbMessage message = new MbMessage(originId, myUserOid);
         message.oid = oid;
         message.status = status;
         if (TextUtils.isEmpty(oid) && status == DownloadStatus.LOADED) {
@@ -85,8 +100,11 @@ public class MbMessage {
         return this;
     }
     
-    private MbMessage() {
-        // Empty
+    private MbMessage(long originId, String myUserOid) {
+        this.originId = originId;
+        this.myUserOid = myUserOid;
+        actor = MbUser.fromOriginAndUserOid(originId, myUserOid);
+        author = actor;
     }
 
     public boolean isPublic() {
@@ -170,14 +188,8 @@ public class MbMessage {
         if(!TextUtils.isEmpty(body)) {
             builder.append("body:'" + body + "',");
         }
-        if(favoritedByActor != TriState.UNKNOWN) {
-            builder.append("favorited:" + favoritedByActor + ",");
-        }
         if(getInReplyTo().nonEmpty()) {
             builder.append("inReplyTo:" + getInReplyTo() + ",");
-        }
-        if(getReblogged().nonEmpty()) {
-            builder.append("reblogged:" + getReblogged() + ",");
         }
         if(recipient != null && !recipient.isEmpty()) {
             builder.append("recipient:" + recipient + ",");
@@ -200,43 +212,49 @@ public class MbMessage {
         if(!TextUtils.isEmpty(via)) {
             builder.append("via:'" + via + "',");
         }
-        builder.append("sender:" + sender + ",");
-        builder.append("actor:" + actor + ",");
-        builder.append("sent" + new Date(sentDate) + ",");
+        builder.append("author:" + author + ",");
+        builder.append("updated" + new Date(updatedDate) + ",");
+        if (!actor.equals(author)) {
+            builder.append("actor:" + actor + ",");
+        }
+        if (sentDate != updatedDate) {
+            builder.append("sent" + new Date(sentDate) + ",");
+        }
+        if(favorited != TriState.UNKNOWN) {
+            builder.append("favorited:" + favorited + ",");
+        }
+        if(isReblogged()) {
+            builder.append("reblogged,");
+        }
+        builder.append("me:" + myUserOid + ",");
+        if(subscribedByMe != TriState.UNKNOWN) {
+            builder.append("subscribedByMe:" + subscribedByMe + ",");
+        }
+        if(favoritedByMe != TriState.UNKNOWN) {
+            builder.append("favoritedByMe:" + favoritedByMe + ",");
+        }
         builder.append("originId:" + originId + ",");
         return MyLog.formatKeyValue(this, builder.toString());
     }
 
-    public TriState isSubscribed() {
-        return isSubscribed;
+    public TriState getFavorited() {
+        return favorited;
     }
 
-    public void setSubscribed(TriState isSubscribed) {
-        this.isSubscribed = isSubscribed;
+    public void setFavorited(TriState favorited) {
+        this.favorited = favorited;
     }
 
-    public long getSenderId() {
-        return sender == null ? 0L : sender.userId;
+    public boolean isReblogged() {
+        return !SharedPreferencesUtil.isEmpty(reblogOid);
     }
 
-    public TriState getFavoritedByActor() {
-        return favoritedByActor;
+    public void setReblogOid(String reblogOid) {
+        this.reblogOid = reblogOid;
     }
 
-    public MbMessage setFavoritedByActor(TriState favoritedByActor) {
-        this.favoritedByActor = favoritedByActor;
-        return this;
-    }
-
-    @NonNull
-    public MbMessage getReblogged() {
-        return reblogged == null ? EMPTY : reblogged;
-    }
-
-    public void setReblogged(MbMessage message) {
-        if (message != null && message.nonEmpty()) {
-            this.reblogged = message;
-        }
+    public String getReblogOid() {
+        return reblogOid;
     }
 
     @NonNull
@@ -247,6 +265,73 @@ public class MbMessage {
     public void setInReplyTo(MbMessage message) {
         if (message != null && message.nonEmpty()) {
             this.inReplyTo = message;
+        }
+    }
+
+    public TriState isSubscribedByMe() {
+        return subscribedByMe;
+    }
+
+    public void setSubscribedByMe(TriState isSubscribed) {
+        this.subscribedByMe = isSubscribed;
+    }
+
+    public TriState getFavoritedByMe() {
+        return favoritedByMe;
+    }
+
+    public MbMessage setFavoritedByMe(TriState favoritedByMe) {
+        this.favoritedByMe = favoritedByMe;
+        return this;
+    }
+
+    @NonNull
+    public MbUser getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(MbUser author) {
+        if (author != null && author.nonEmpty()) {
+            this.author = author;
+            setActor(author);
+        }
+    }
+
+    /** These properties reflect an action of the actor **/
+    @NonNull
+    public MbUser getActor() {
+        return actor;
+    }
+
+    public void setActor(@NonNull MbUser actor) {
+        if (actor != null && actor.nonEmpty()) {
+            this.actor = actor;
+            if (author.isEmpty()) {
+                author = actor;
+            }
+        }
+    }
+
+    public boolean isActorMe() {
+        return actor.oid.equals(myUserOid);
+    }
+
+    public boolean isAuthorMe() {
+        return author.oid.equals(myUserOid);
+    }
+
+    public boolean isAuthorActor() {
+        return actor.oid.equals(author.oid);
+    }
+
+    public long getUpdatedDate() {
+        return updatedDate;
+    }
+
+    public void setUpdatedDate(long updatedDate) {
+        this.updatedDate = updatedDate;
+        if (sentDate < updatedDate) {
+            sentDate = updatedDate;
         }
     }
 }

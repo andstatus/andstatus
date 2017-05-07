@@ -185,21 +185,17 @@ public class ConnectionMastodon extends ConnectionTwitter1p0 {
     MbMessage messageFromJson2(@NonNull JSONObject jso) throws ConnectionException {
         final String method = "messageFromJson";
         String oid = jso.optString("id");
-        MbMessage message =  MbMessage.fromOriginAndOid(data.getOriginId(), oid, DownloadStatus.LOADED);
-        message.actor = MbUser.fromOriginAndUserOid(data.getOriginId(), data.getAccountUserOid());
+        MbMessage message =  MbMessage.fromOriginAndOid(data.getOriginId(), data.getAccountUserOid(), oid,
+                DownloadStatus.LOADED);
         try {
-            message.sentDate = dateFromJson(jso, "created_at");
+            message.setUpdatedDate(dateFromJson(jso, "created_at"));
 
-            JSONObject sender;
+            JSONObject actor;
             if (jso.has("account")) {
-                sender = jso.getJSONObject("account");
-                message.sender = userFromJson(sender);
+                actor = jso.getJSONObject("account");
+                message.setAuthor(userFromJson(actor));
             }
 
-            // Is this a reblog?
-            if (!jso.isNull("reblog") ) {
-                message.setReblogged(messageFromJson(jso.getJSONObject("reblog")));
-            }
             message.setBody(jso.optString("content"));
             message.url = jso.optString("url");
             if (jso.has("recipient")) {
@@ -211,7 +207,7 @@ public class ConnectionMastodon extends ConnectionTwitter1p0 {
                 message.via = application.optString("name");
             }
             if (!jso.isNull("favourited")) {
-                message.setFavoritedByActor(TriState.fromBoolean(SharedPreferencesUtil.isTrue(
+                message.setFavoritedByMe(TriState.fromBoolean(SharedPreferencesUtil.isTrue(
                         jso.getString("favourited"))));
             }
 
@@ -230,10 +226,9 @@ public class ConnectionMastodon extends ConnectionTwitter1p0 {
                 }
                 if (!SharedPreferencesUtil.isEmpty(inReplyToMessageOid)) {
                     // Construct Related message from available info
-                    MbMessage inReplyToMessage = MbMessage.fromOriginAndOid(data.getOriginId(),
+                    MbMessage inReplyToMessage = MbMessage.fromOriginAndOid(data.getOriginId(), message.myUserOid,
                             inReplyToMessageOid, DownloadStatus.UNKNOWN);
-                    inReplyToMessage.sender = MbUser.fromOriginAndUserOid(data.getOriginId(), inReplyToUserOid);
-                    inReplyToMessage.actor = message.actor;
+                    inReplyToMessage.setAuthor(MbUser.fromOriginAndUserOid(data.getOriginId(), inReplyToUserOid));
                     message.setInReplyTo(inReplyToMessage);
                 }
             }
@@ -267,6 +262,11 @@ public class ConnectionMastodon extends ConnectionTwitter1p0 {
             return MbMessage.EMPTY;
         }
         return message;
+    }
+
+    @Override
+    MbMessage rebloggedMessageFromJson(JSONObject jso) throws ConnectionException {
+        return  messageFromJson(jso.optJSONObject("reblog"));
     }
 
     @Override

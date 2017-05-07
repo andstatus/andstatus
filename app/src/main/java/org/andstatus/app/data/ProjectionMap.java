@@ -51,7 +51,7 @@ public class ProjectionMap {
         MSG.put(DownloadTable.IMAGE_FILE_NAME, ATTACHMENT_IMAGE_TABLE_ALIAS + "." + DownloadTable.FILE_NAME + " AS " + DownloadTable.IMAGE_FILE_NAME);
         MSG.put(DownloadTable.IMAGE_ID, ATTACHMENT_IMAGE_TABLE_ALIAS + "." + DownloadTable._ID + " AS " + DownloadTable.IMAGE_ID);
         MSG.put(DownloadTable.IMAGE_URL, ATTACHMENT_IMAGE_TABLE_ALIAS + "." + DownloadTable.URI + " AS " + DownloadTable.IMAGE_URL);
-        MSG.put(MsgTable.SENDER_ID, MsgTable.SENDER_ID);
+        MSG.put(MsgTable.ACTOR_ID, MsgTable.ACTOR_ID);
         MSG.put(UserTable.SENDER_NAME, UserTable.SENDER_NAME);
         MSG.put(MsgTable.BODY, MsgTable.BODY);
         MSG.put(MsgTable.VIA, MsgTable.VIA);
@@ -68,7 +68,7 @@ public class ProjectionMap {
         MSG.put(MsgOfUserTable.REBLOGGED, MsgOfUserTable.REBLOGGED);
         MSG.put(MsgOfUserTable.REBLOG_OID, MsgOfUserTable.REBLOG_OID);
         MSG.put(MsgOfUserTable.SUBSCRIBED, MsgOfUserTable.SUBSCRIBED);
-        MSG.put(MsgTable.CREATED_DATE, MsgTable.CREATED_DATE);
+        MSG.put(MsgTable.UPDATED_DATE, MsgTable.UPDATED_DATE);
         MSG.put(MsgTable.MSG_STATUS, MsgTable.MSG_STATUS);
         MSG.put(MsgTable.SENT_DATE, MsgTable.SENT_DATE);
         MSG.put(MsgTable.INS_DATE, MsgTable.INS_DATE);

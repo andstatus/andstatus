@@ -72,9 +72,9 @@ public final class MsgTable implements BaseColumns {
      */
     public static final String AUTHOR_ID = "author_id";
     /**
-     * Sender of the message = User._ID
+     * Actor/sender of the message = User._ID
      */
-    public static final String SENDER_ID = "sender_id";
+    public static final String ACTOR_ID = "sender_id";  // TODO: rename to "actor_id"
     /**
      * Recipient of the message = User._ID
      * null for public messages
@@ -105,13 +105,13 @@ public final class MsgTable implements BaseColumns {
      */
     public static final String IN_REPLY_TO_USER_ID = "in_reply_to_user_id";
     /**
-     * Date and time when the row was created in the originating system.
+     * Date and time when the message was updated in the originating system.
      * We store it as long milliseconds.
      */
-    public static final String CREATED_DATE = "msg_created_date";
+    public static final String UPDATED_DATE = "msg_created_date";  // TODO: Rename to "msg_updated_date"
     /**
      * Date and time when the message was sent,
-     * it's not equal to {@link MsgTable#CREATED_DATE} for reblogged messages
+     * it's not equal to {@link MsgTable#UPDATED_DATE} for reblogged messages
      * We change the value if we reblog the message in the application
      * or if we receive new reblog of the message
      * This value is set for unsent messages also. So it is updated after successful retrieval
@@ -147,7 +147,7 @@ public final class MsgTable implements BaseColumns {
                 + MsgTable.CONVERSATION_ID + " INTEGER,"
                 + MsgTable.CONVERSATION_OID + " TEXT,"
                 + MsgTable.AUTHOR_ID + " INTEGER,"
-                + MsgTable.SENDER_ID + " INTEGER,"
+                + MsgTable.ACTOR_ID + " INTEGER,"
                 + MsgTable.RECIPIENT_ID + " INTEGER,"
                 + MsgTable.BODY + " TEXT,"
                 + MsgTable.BODY_TO_SEARCH + " TEXT,"
@@ -155,7 +155,7 @@ public final class MsgTable implements BaseColumns {
                 + MsgTable.URL + " TEXT,"
                 + MsgTable.IN_REPLY_TO_MSG_ID + " INTEGER,"
                 + MsgTable.IN_REPLY_TO_USER_ID + " INTEGER,"
-                + MsgTable.CREATED_DATE + " INTEGER,"
+                + MsgTable.UPDATED_DATE + " INTEGER,"
                 + MsgTable.SENT_DATE + " INTEGER,"
                 + MsgTable.INS_DATE + " INTEGER NOT NULL,"
                 + MsgTable.PUBLIC + " BOOLEAN DEFAULT 0 NOT NULL"

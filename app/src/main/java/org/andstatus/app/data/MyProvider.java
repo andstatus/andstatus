@@ -183,8 +183,8 @@ public class MyProvider extends ContentProvider {
                     /**
                      * Add default values for missed required fields
                      */
-                    if (!values.containsKey(MsgTable.AUTHOR_ID) && values.containsKey(MsgTable.SENDER_ID)) {
-                        values.put(MsgTable.AUTHOR_ID, values.get(MsgTable.SENDER_ID).toString());
+                    if (!values.containsKey(MsgTable.AUTHOR_ID) && values.containsKey(MsgTable.ACTOR_ID)) {
+                        values.put(MsgTable.AUTHOR_ID, values.get(MsgTable.ACTOR_ID).toString());
                     }
                     if (!values.containsKey(MsgTable.BODY)) {
                         values.put(MsgTable.BODY, "");

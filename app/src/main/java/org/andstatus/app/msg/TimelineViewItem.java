@@ -60,12 +60,12 @@ public class TimelineViewItem extends MessageViewItem {
         item.recipientName = DbUtils.getString(cursor, UserTable.RECIPIENT_NAME);
         item.favorited = item.isLinkedToMyAccount() && DbUtils.getLong(cursor, MsgOfUserTable.FAVORITED) == 1;
         item.sentDate = DbUtils.getLong(cursor, MsgTable.SENT_DATE);
-        item.createdDate = DbUtils.getLong(cursor, MsgTable.CREATED_DATE);
+        item.updatedDate = DbUtils.getLong(cursor, MsgTable.UPDATED_DATE);
         item.msgStatus = DownloadStatus.load(DbUtils.getLong(cursor, MsgTable.MSG_STATUS));
 
         item.authorId = DbUtils.getLong(cursor, MsgTable.AUTHOR_ID);
 
-        long senderId = DbUtils.getLong(cursor, MsgTable.SENDER_ID);
+        long senderId = DbUtils.getLong(cursor, MsgTable.ACTOR_ID);
         if (senderId != item.authorId) {
             String senderName = DbUtils.getString(cursor, UserTable.SENDER_NAME);
             if (TextUtils.isEmpty(senderName)) {

@@ -90,7 +90,11 @@ public class MbUser implements Comparable<MbUser> {
     private MbUser(long originId) {
         this.originId = originId;
     }
-    
+
+    public boolean nonEmpty() {
+        return !isEmpty();
+    }
+
     public boolean isEmpty() {
         return originId==0 || (userId == 0 && !isOidReal(oid)
                 && TextUtils.isEmpty(webFingerId) && TextUtils.isEmpty(userName));
@@ -435,8 +439,8 @@ public class MbUser implements Comparable<MbUser> {
 
     public void setLatestMessage(MbMessage latestMessage) {
         this.latestMessage = latestMessage;
-        if (this.latestMessage.sender == null) {
-            this.latestMessage.sender = this;
+        if (this.latestMessage.getAuthor().isEmpty()) {
+            this.latestMessage.setAuthor(this);
         }
     }
 

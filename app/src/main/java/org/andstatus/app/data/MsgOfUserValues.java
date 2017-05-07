@@ -58,7 +58,6 @@ class MsgOfUserValues {
         ContentValuesUtils.moveBooleanKey(MsgOfUserTable.SUBSCRIBED, sourceSuffix, values, userValues.contentValues);
         ContentValuesUtils.moveBooleanKey(MsgOfUserTable.FAVORITED, sourceSuffix, values, userValues.contentValues);
         ContentValuesUtils.moveBooleanKey(MsgOfUserTable.REBLOGGED, sourceSuffix, values, userValues.contentValues);
-        // The value is String!
         ContentValuesUtils.moveStringKey(MsgOfUserTable.REBLOG_OID, sourceSuffix, values, userValues.contentValues);
         ContentValuesUtils.moveBooleanKey(MsgOfUserTable.MENTIONED, sourceSuffix, values, userValues.contentValues);
         ContentValuesUtils.moveBooleanKey(MsgOfUserTable.REPLIED, sourceSuffix, values, userValues.contentValues);

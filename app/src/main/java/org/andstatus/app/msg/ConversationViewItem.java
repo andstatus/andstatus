@@ -70,7 +70,7 @@ public class ConversationViewItem extends ConversationItem {
                 }
                 break;
             }
-            long senderId = DbUtils.getLong(cursor, MsgTable.SENDER_ID);
+            long senderId = DbUtils.getLong(cursor, MsgTable.ACTOR_ID);
             authorId = DbUtils.getLong(cursor, MsgTable.AUTHOR_ID);
             long linkedUserId = DbUtils.getLong(cursor, UserTable.LINKED_USER_ID);
     

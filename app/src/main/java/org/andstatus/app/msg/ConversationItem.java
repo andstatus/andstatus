@@ -19,7 +19,6 @@ package org.andstatus.app.msg;
 import android.content.Context;
 import android.database.Cursor;
 
-import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.util.I18n;
@@ -52,14 +51,14 @@ public abstract class ConversationItem extends MessageViewItem implements Compar
     public int compareTo(ConversationItem another) {
         int compared = mListOrder - another.mListOrder;
         if (compared == 0) {
-            if (createdDate == another.createdDate) {
+            if (updatedDate == another.updatedDate) {
                 if ( getMsgId() == another.getMsgId()) {
                     compared = 0;
                 } else {
                     compared = (another.getMsgId() - getMsgId() > 0 ? 1 : -1);
                 }
             } else {
-                compared = (another.createdDate - createdDate > 0 ? 1 : -1);
+                compared = (another.updatedDate - updatedDate > 0 ? 1 : -1);
             }
         }
         if (reversedListOrder) compared = 0 - compared;
@@ -67,7 +66,7 @@ public abstract class ConversationItem extends MessageViewItem implements Compar
     }
 
     public boolean isLoaded() {
-        return createdDate > 0;
+        return updatedDate > 0;
     }
 
     @Override
@@ -91,7 +90,7 @@ public abstract class ConversationItem extends MessageViewItem implements Compar
     
     void load(Cursor cursor) {
         inReplyToMsgId = DbUtils.getLong(cursor, MsgTable.IN_REPLY_TO_MSG_ID);
-        createdDate = DbUtils.getLong(cursor, MsgTable.CREATED_DATE);
+        updatedDate = DbUtils.getLong(cursor, MsgTable.UPDATED_DATE);
     }
 
     @Override

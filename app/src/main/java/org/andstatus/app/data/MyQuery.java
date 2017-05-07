@@ -118,8 +118,7 @@ public class MyQuery {
         try {
             statement = db.compileStatement(sql);
             value = statement.simpleQueryForLong();
-            if ((value == 1 || value == 388)
-                && MyLog.isVerboseEnabled()) {
+            if (value == 1 && MyLog.isVerboseEnabled()) {
                 MyLog.v(TAG, msgLogSql);
             }
         } catch (SQLiteDoneException e) {
@@ -253,7 +252,7 @@ public class MyQuery {
             SQLiteStatement prog = null;
             String sql = "";
             try {
-                if (userIdColumnName.contentEquals(MsgTable.SENDER_ID) ||
+                if (userIdColumnName.contentEquals(MsgTable.ACTOR_ID) ||
                         userIdColumnName.contentEquals(MsgTable.AUTHOR_ID) ||
                         userIdColumnName.contentEquals(MsgTable.IN_REPLY_TO_USER_ID) ||
                         userIdColumnName.contentEquals(MsgTable.RECIPIENT_ID)) {
@@ -396,7 +395,7 @@ public class MyQuery {
     public static long msgIdToUserId(String msgUserIdColumnName, long systemId) {
         long userId = 0;
         try {
-            if (msgUserIdColumnName.contentEquals(MsgTable.SENDER_ID) ||
+            if (msgUserIdColumnName.contentEquals(MsgTable.ACTOR_ID) ||
                     msgUserIdColumnName.contentEquals(MsgTable.AUTHOR_ID) ||
                     msgUserIdColumnName.contentEquals(MsgTable.IN_REPLY_TO_USER_ID) ||
                     msgUserIdColumnName.contentEquals(MsgTable.RECIPIENT_ID)) {
@@ -537,7 +536,7 @@ public class MyQuery {
         String sql = "SELECT " + MsgTable._ID
                 + " FROM " + MsgTable.TABLE_NAME
                 + " WHERE " + MsgTable.IN_REPLY_TO_MSG_ID + "=" + msgId
-                + " ORDER BY " + MsgTable.CREATED_DATE + " DESC";
+                + " ORDER BY " + MsgTable.UPDATED_DATE + " DESC";
         
         SQLiteDatabase db = MyContextHolder.get().getDatabase();
         if (db == null) {

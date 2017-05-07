@@ -42,7 +42,7 @@ public class DirectMessagesConversationLoader<T extends ConversationItem> extend
 
     @Override
     protected void load2(T oMsg) {
-        long senderId = MyQuery.msgIdToLongColumnValue(MsgTable.SENDER_ID, oMsg.getMsgId());
+        long senderId = MyQuery.msgIdToLongColumnValue(MsgTable.ACTOR_ID, oMsg.getMsgId());
         long recipientId = MyQuery.msgIdToLongColumnValue(MsgTable.RECIPIENT_ID, oMsg.getMsgId());
         String selection = getSelectionForSenderAndRecipient(senderId, recipientId) + " OR "
                 + getSelectionForSenderAndRecipient(recipientId, senderId);
@@ -66,7 +66,7 @@ public class DirectMessagesConversationLoader<T extends ConversationItem> extend
 
     @NonNull
     private String getSelectionForSenderAndRecipient(long senderId, long recipientId) {
-        return "(" + ProjectionMap.MSG_TABLE_ALIAS + "." + MsgTable.SENDER_ID + "=" +
+        return "(" + ProjectionMap.MSG_TABLE_ALIAS + "." + MsgTable.ACTOR_ID + "=" +
                 Long.toString(senderId)
                 + " AND " + ProjectionMap.MSG_TABLE_ALIAS + "." + MsgTable.RECIPIENT_ID + "=" +
                 Long.toString(recipientId) + ")";
