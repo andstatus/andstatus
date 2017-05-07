@@ -27,8 +27,8 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
 		</subtitle>
     </header>
-    <release android:versionName="33.00" android:versionCode="208"
-             versionDate="2017-05-04"
+    <release android:versionName="33.01" android:versionCode="209"
+             versionDate="2017-05-08"
              versionTitle="Mastodon support">
         <changes>
             <change>Added <a href="https://github.com/tootsuite/documentation">Mastodon</a> support.
