@@ -216,7 +216,8 @@ public class MyProvider extends ContentProvider {
             rowId = db.insert(table, null, values);
             if (rowId == -1) {
                 throw new SQLException("Failed to insert row into " + uri);
-            } else if ( UserTable.TABLE_NAME.equals(table)) {
+            }
+            if ( UserTable.TABLE_NAME.equals(table)) {
                 optionallyLoadAvatar(rowId, values);
             }
             

@@ -21,6 +21,8 @@ import android.text.TextUtils;
 
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DownloadStatus;
+import org.andstatus.app.data.MyQuery;
+import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
@@ -71,7 +73,7 @@ public class MbMessage {
     // In our system
     public final long originId;
     public long msgId = 0L;
-    public long conversationId = 0L;
+    private long conversationId = 0L;
 
     public static MbMessage makeReblog(@NonNull MbMessage reblog, MbMessage rebloggedMessage) {
         if (rebloggedMessage.isEmpty()) {
@@ -137,6 +139,32 @@ public class MbMessage {
             this.conversationOid = conversationOid;
         }
         return this;
+    }
+
+    public long lookupConversationId() {
+        if (conversationId == 0 && msgId != 0) {
+            conversationId = MyQuery.msgIdToLongColumnValue(MsgTable.CONVERSATION_ID, msgId);
+        }
+        if (conversationId == 0 && !TextUtils.isEmpty(conversationOid)) {
+            conversationId = MyQuery.conversationOidToId(originId, conversationOid);
+        }
+        if (conversationId == 0 && getInReplyTo().nonEmpty()) {
+            if (getInReplyTo().msgId != 0) {
+                conversationId = MyQuery.msgIdToLongColumnValue(MsgTable.CONVERSATION_ID, getInReplyTo().msgId);
+            }
+        }
+        return setConversationIdFromMsgId();
+    }
+
+    public long setConversationIdFromMsgId() {
+        if (conversationId == 0 && msgId != 0) {
+            conversationId = msgId;
+        }
+        return conversationId;
+    }
+
+    public long getConversationId() {
+        return conversationId;
     }
 
     public DownloadStatus getStatus() {

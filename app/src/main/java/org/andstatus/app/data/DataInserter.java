@@ -89,9 +89,11 @@ public class DataInserter {
             }
 
             if (updateUsers) {
-                insertOrUpdateUser(message.getActor(), lum, false);
-                if (!message.isAuthorActor()) {
-                    insertOrUpdateUser(message.getAuthor(), lum, false);
+                insertOrUpdateUser(message.getAuthor(), lum, false);
+                if (message.isAuthorActor()) {
+                    message.setActor(message.getAuthor());
+                } else {
+                    insertOrUpdateUser(message.getActor(), lum, false);
                 }
             }
 
@@ -202,7 +204,9 @@ public class DataInserter {
 
             boolean mentioned = isMentionedAndPutInReplyToMessage(message, me, lum, values);
 
-            putConversationId(message, values);
+            if (message.lookupConversationId() != 0) {
+                values.put(MsgTable.CONVERSATION_ID, message.getConversationId());
+            }
 
             if (MyLog.isVerboseEnabled()) {
                 MyLog.v(this, ((message.msgId==0) ? "insertMsg" : "updateMsg " + message.msgId)
@@ -220,16 +224,15 @@ public class DataInserter {
                 Uri msgUri = execContext.getContext().getContentResolver().insert(
                         MatchedUri.getMsgUri(me.getUserId(), 0), values);
                 message.msgId = ParsedUri.fromUri(msgUri).getMessageId();
+
+                if (message.getConversationId() == 0) {
+                    ContentValues values2 = new ContentValues();
+                    values2.put(MsgTable.CONVERSATION_ID, message.setConversationIdFromMsgId());
+                    execContext.getContext().getContentResolver().update(msgUri, values2, null, null);
+                }
             } else {
                 Uri msgUri = MatchedUri.getMsgUri(me.getUserId(), message.msgId);
                 execContext.getContext().getContentResolver().update(msgUri, values, null, null);
-            }
-            if (message.conversationId == 0) {
-                message.conversationId = message.msgId;
-                Uri msgUri = MatchedUri.getMsgUri(me.getUserId(), message.msgId);
-                ContentValues values2 = new ContentValues();
-                values2.put(MsgTable.CONVERSATION_ID, message.conversationId);
-                execContext.getContext().getContentResolver().update(msgUri, values2, null, null);
             }
 
             if (isFirstTimeLoaded || isDraftUpdated) {
@@ -325,28 +328,6 @@ public class DataInserter {
             }
         }
         return userId;
-    }
-
-    private void putConversationId(MbMessage message, ContentValues values) {
-        if (message.conversationId == 0 && message.msgId != 0) {
-            message.conversationId = MyQuery.msgIdToLongColumnValue(MsgTable.CONVERSATION_ID, message.msgId);
-        }
-        if (!TextUtils.isEmpty(message.conversationOid)) {
-            if (message.conversationId == 0) {
-                message.conversationId = MyQuery.conversationOidToId(message.originId, message.conversationOid);
-            }
-        }
-        if (message.conversationId == 0 && message.getInReplyTo().nonEmpty()) {
-            if (message.getInReplyTo().msgId != 0) {
-                message.conversationId = MyQuery.msgIdToLongColumnValue(MsgTable.CONVERSATION_ID, message.getInReplyTo().msgId);
-            }
-        }
-        if (message.conversationId == 0) {
-            message.conversationId = message.msgId;
-        }
-        if (message.conversationId != 0) {
-            values.put(MsgTable.CONVERSATION_ID, message.conversationId);
-        }
     }
 
     private void saveAttachments(MbMessage message) {
