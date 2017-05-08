@@ -252,7 +252,7 @@ public abstract class ConnectionTwitter extends Connection {
                     oid, DownloadStatus.LOADED);
             message.setUpdatedDate(dateFromJson(jso, "created_at"));
 
-            MbUser author = MbUser.getEmpty();
+            MbUser author = MbUser.EMPTY;
             if (jso.has("sender")) {
                 author = userFromJson(jso.getJSONObject("sender"));
             } else if (jso.has("user")) {
@@ -333,7 +333,7 @@ public abstract class ConnectionTwitter extends Connection {
     
     protected MbUser userFromJson(JSONObject jso) throws ConnectionException {
         if (jso == null) {
-            return MbUser.getEmpty();
+            return MbUser.EMPTY;
         }
         String oid = "";
         if (jso.has("id_str")) {

@@ -42,7 +42,8 @@ public class MbMessage {
     
     public String oid="";
     private long updatedDate = 0;
-    private MbUser author;
+    @NonNull
+    private MbUser author = MbUser.EMPTY;
     // TODO: Multiple recipients needed?!
     public MbUser recipient = null; 
     private String body = "";
@@ -57,7 +58,7 @@ public class MbMessage {
     public final List<MbAttachment> attachments = new ArrayList<>();
 
     @NonNull
-    private MbUser actor;
+    private MbUser actor = MbUser.EMPTY;
     public long sentDate = 0;
     private TriState favorited = TriState.UNKNOWN;
     private String reblogOid = "";
@@ -95,16 +96,9 @@ public class MbMessage {
         return message;
     }
 
-    public MbMessage markAsEmpty() {
-        isEmpty = true;
-        return this;
-    }
-    
     private MbMessage(long originId, String myUserOid) {
         this.originId = originId;
         this.myUserOid = myUserOid;
-        actor = MbUser.fromOriginAndUserOid(originId, myUserOid);
-        author = actor;
     }
 
     public boolean isPublic() {
@@ -293,7 +287,9 @@ public class MbMessage {
     public void setAuthor(MbUser author) {
         if (author != null && author.nonEmpty()) {
             this.author = author;
-            setActor(author);
+            if (actor.isEmpty()) {
+                actor = author;
+            }
         }
     }
 
@@ -303,7 +299,7 @@ public class MbMessage {
         return actor;
     }
 
-    public void setActor(@NonNull MbUser actor) {
+    public void setActor(MbUser actor) {
         if (actor != null && actor.nonEmpty()) {
             this.actor = actor;
             if (author.isEmpty()) {

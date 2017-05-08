@@ -155,7 +155,7 @@ public class ConnectionMastodon extends ConnectionTwitter1p0 {
     @Override
     protected MbUser userFromJson(JSONObject jso) throws ConnectionException {
         if (jso == null) {
-            return MbUser.getEmpty();
+            return MbUser.EMPTY;
         }
         String oid = jso.optString("id");
         String userName = jso.optString("username");

@@ -123,7 +123,7 @@ public class ConnectionPumpio extends Connection {
 
     private MbUser userFromJson(JSONObject jso) throws ConnectionException {
         if (!ObjectType.PERSON.isMyType(jso)) {
-            return MbUser.getEmpty();
+            return MbUser.EMPTY;
         }
         String oid = jso.optString("id");
         MbUser user = MbUser.fromOriginAndUserOid(data.getOriginId(), oid);
@@ -386,7 +386,7 @@ public class ConnectionPumpio extends Connection {
             String oid = activity.optString("id");
             if (TextUtils.isEmpty(oid)) {
                 MyLog.d(TAG, "Pumpio activity has no id:" + activity.toString(2));
-                return MbUser.getEmpty();
+                return MbUser.EMPTY;
             }
             mbUser = userFromJson(activity.getJSONObject("object"));
             if (activity.has("actor")) {

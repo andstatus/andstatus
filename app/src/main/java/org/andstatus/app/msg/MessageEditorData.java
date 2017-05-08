@@ -186,6 +186,7 @@ public class MessageEditorData {
         MbMessage message = MbMessage.fromOriginAndOid(getMyAccount().getOriginId(), getMyAccount().getUserOid(), "",
                 status);
         message.msgId = getMsgId();
+        message.setAuthor(getMyAccount().toMbUser());
         message.setUpdatedDate(System.currentTimeMillis());
         message.setBody(body);
         if (recipientId != 0) {

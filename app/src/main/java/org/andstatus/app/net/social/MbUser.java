@@ -39,6 +39,7 @@ import java.util.List;
  * @author yvolk@yurivolkov.com
  */
 public class MbUser implements Comparable<MbUser> {
+    public static final MbUser EMPTY = new MbUser(0L);
     // RegEx from http://www.mkyong.com/regular-expressions/how-to-validate-email-address-with-regular-expression/
     public static final String WEBFINGER_ID_REGEX = "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)*(\\.[A-Za-z]{2,})$";
     private static final String TEMP_OID_PREFIX = "andstatustemp:";
@@ -83,10 +84,6 @@ public class MbUser implements Comparable<MbUser> {
         return user;
     }
 
-    public static MbUser getEmpty() {
-        return new MbUser(0L);
-    }
-    
     private MbUser(long originId) {
         this.originId = originId;
     }
@@ -377,10 +374,11 @@ public class MbUser implements Comparable<MbUser> {
         return description;
     }
 
-    public void setDescription(String description) {
+    public MbUser setDescription(String description) {
         if (!SharedPreferencesUtil.isEmpty(description)) {
             this.description = description;
         }
+        return this;
     }
 
     public String getHomepage() {

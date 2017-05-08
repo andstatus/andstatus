@@ -37,7 +37,7 @@ public class ConnectionEmpty extends Connection {
 
     @Override
     public MbUser verifyCredentials() throws ConnectionException {
-        return MbUser.getEmpty();
+        return MbUser.EMPTY;
     }
 
     @Override
@@ -91,12 +91,12 @@ public class ConnectionEmpty extends Connection {
 
     @Override
     public MbUser followUser(String userId, Boolean follow) throws ConnectionException {
-        return MbUser.getEmpty();
+        return MbUser.EMPTY;
     }
 
     @Override
     public MbUser getUser(String userId, String userName) throws ConnectionException {
-        return MbUser.getEmpty();
+        return MbUser.EMPTY;
     }
 
 }

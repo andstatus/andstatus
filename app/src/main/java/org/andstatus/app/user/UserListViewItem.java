@@ -17,6 +17,7 @@
 package org.andstatus.app.user;
 
 import android.graphics.drawable.Drawable;
+import android.text.TextUtils;
 
 import org.andstatus.app.ViewItem;
 import org.andstatus.app.account.MyAccount;
@@ -53,16 +54,15 @@ public class UserListViewItem implements ViewItem {
     }
 
     public static UserListViewItem getEmpty(String description) {
-        MbUser mbUser = MbUser.getEmpty();
-        mbUser.setDescription(description);
+        MbUser mbUser = TextUtils.isEmpty(description) ? MbUser.EMPTY :
+                MbUser.fromOriginAndUserId(0L, 0L).setDescription(description);
         return fromMbUser(mbUser);
     }
 
     public static UserListViewItem fromUserId(Origin origin, long userId) {
-        MbUser mbUser = MbUser.getEmpty();
+        MbUser mbUser = MbUser.EMPTY;
         if (userId != 0) {
-            mbUser = MbUser.fromOriginAndUserOid(origin.getId(),
-                    MyQuery.idToOid(OidEnum.USER_OID, userId, 0));
+            mbUser = MbUser.fromOriginAndUserOid(origin.getId(), MyQuery.idToOid(OidEnum.USER_OID, userId, 0));
             mbUser.userId = userId;
             mbUser.setWebFingerId(MyQuery.userIdToWebfingerId(userId));
         }

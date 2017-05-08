@@ -136,6 +136,7 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> extends Instru
         boolean success = false;
         int position1 = position;
         for (long attempt = 1; attempt < 4; attempt++) {
+            goToPosition(methodExt, position);
             if (!longClickListAtPosition(methodExt, position1)) {
                 break;
             }
@@ -182,6 +183,23 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> extends Instru
         });
         TestSuite.waitForIdleSync(mInstrumentation);
         return true;
+    }
+
+    public void goToPosition(final String methodExt, final int position) throws InterruptedException {
+        final ListView listView = getListView();
+        mInstrumentation.runOnMainSync(new Runnable() {
+            @Override
+            public void run() {
+                final String msg = "goToPosition " + position;
+                MyLog.v(methodExt, msg);
+                try {
+                    listView.setSelectionFromTop(position, 0);
+                } catch (Exception e) {
+                    MyLog.e(msg, e);
+                }
+            }
+        });
+        TestSuite.waitForIdleSync(mInstrumentation);
     }
 
     // See http://stackoverflow.com/questions/24811536/android-listview-get-item-view-by-position

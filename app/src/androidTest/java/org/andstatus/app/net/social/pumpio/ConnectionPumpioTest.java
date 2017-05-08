@@ -53,7 +53,6 @@ import java.util.List;
 
 @Travis
 public class ConnectionPumpioTest extends InstrumentationTestCase {
-    private Context context;
     private ConnectionPumpio connection;
     private URL originUrl = UrlUtils.fromString("https://identi.ca");
     private HttpConnectionMock httpConnectionMock;
@@ -65,12 +64,13 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        context = TestSuite.initializeWithData(this);
+        TestSuite.initializeWithData(this);
 
         TestSuite.setHttpConnectionMockClass(HttpConnectionMock.class);
         connectionData = OriginConnectionData.fromAccountName( AccountName.fromOriginAndUserName(
                 MyContextHolder.get().persistentOrigins().fromName(TestSuite.PUMPIO_ORIGIN_NAME), ""),
                 TriState.UNKNOWN);
+        connectionData.setAccountUserOid(TestSuite.PUMPIO_TEST_ACCOUNT_USER_OID);
         connectionData.setDataReader(new AccountDataReaderEmpty());
         connection = (ConnectionPumpio) connectionData.newConnection();
         httpConnectionMock = connection.getHttpMock();
@@ -151,10 +151,10 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
     }
     
     public void testGetTimeline() throws IOException {
-        String sinceId = originUrl.toExternalForm() + "/activity/frefq3232sf";
+        String sinceId = "https%3A%2F%2F" + originUrl.getHost() + "%2Fapi%2Factivity%2Ffrefq3232sf";
 
         String jso = RawResourceUtils.getString(this.getInstrumentation().getContext(),
-                org.andstatus.app.tests.R.raw.user_t131t_inbox);
+                org.andstatus.app.tests.R.raw.pumpio_user_t131t_inbox);
         httpConnectionMock.setResponse(jso);
         
         List<MbTimelineItem> timeline = connection.getTimeline(ApiRoutineEnum.STATUSES_HOME_TIMELINE,
@@ -188,6 +188,9 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         assertEquals("Updated at", TestSuite.utcTime(2013, Calendar.SEPTEMBER, 12, 17, 10, 44),
                 TestSuite.utcTime(actor.getUpdatedDate()));
         assertEquals("Actor is an Author", actor, mbMessage.getAuthor());
+        assertFalse("Reblogged", mbMessage.isReblogged());
+        assertEquals("Favorited by actor", TriState.UNKNOWN, mbMessage.getFavorited());
+        assertEquals("Favorited by me (" + mbMessage.myUserOid + ")", TriState.UNKNOWN, mbMessage.getFavoritedByMe());
 
         ind++;
         assertEquals("Other User", MbTimelineItem.ItemType.USER, timeline.get(ind).getType());
@@ -227,7 +230,7 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
 
     public void testGetUsersFollowedBy() throws IOException {
         String jso = RawResourceUtils.getString(this.getInstrumentation().getContext(), 
-                org.andstatus.app.tests.R.raw.user_t131t_following);
+                org.andstatus.app.tests.R.raw.pumpio_user_t131t_following);
         httpConnectionMock.setResponse(jso);
         
         assertTrue(connection.isApiSupported(ApiRoutineEnum.GET_FRIENDS));        
