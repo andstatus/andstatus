@@ -556,6 +556,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
                 if (!commandData.getResult().hasError()) {
                     needed = true;
                 }
+                break;
             default:
                 break;
         }

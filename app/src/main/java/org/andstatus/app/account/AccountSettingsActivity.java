@@ -313,7 +313,8 @@ public class AccountSettingsActivity extends MyActivity {
                         getSupportFragmentManager().findFragmentById(R.id.fragmentOne),
                         R.string.remove_account_dialog_title,
                         R.string.remove_account_dialog_text, 
-                        ActivityRequestCode.REMOVE_ACCOUNT);                
+                        ActivityRequestCode.REMOVE_ACCOUNT);
+                break;
             default:
                 break;
         }
