@@ -55,7 +55,6 @@ public class MyServiceTest2 extends MyServiceTest {
         mService.setListenedCommand(cd2);
 
         startCount = mService.executionStartCount;
-        endCount = mService.executionEndCount;
         mService.sendListenedToCommand();
         assertFalse("Second command started execution", mService.waitForCommandExecutionStarted(startCount));
         MyLog.i(this, method + "; After waiting for the second command");

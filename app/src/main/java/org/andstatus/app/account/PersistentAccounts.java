@@ -308,9 +308,9 @@ public class PersistentAccounts {
     public MyAccount getAccountForThisMessage(long originId, long messageId, MyAccount firstUser,
             MyAccount preferredUser, boolean succeededOnly)  {
         final String method = "getAccountForThisMessage";
-        MyAccount ma = firstUser;
+        MyAccount ma = firstUser == null ? MyAccount.getEmpty() : firstUser;
         if (!accountFits(ma, originId, succeededOnly)) {
-            ma = betterFit(ma, preferredUser, originId, succeededOnly);
+            ma = betterFit(ma, preferredUser == null ? MyAccount.getEmpty() : preferredUser, originId, succeededOnly);
         }
         if (!accountFits(ma, originId, succeededOnly)) {
             ma = betterFit(ma, getFirstSucceededForOriginId(originId), originId, succeededOnly);

@@ -34,7 +34,7 @@ public class ExceptionsCounter {
 
     private ExceptionsCounter() {
         // Empty
-    };
+    }
 
     public static long getDiskIoExceptionsCount() {
         return diskIoExceptionsCount;

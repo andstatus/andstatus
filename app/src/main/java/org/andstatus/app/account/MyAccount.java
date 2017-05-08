@@ -641,6 +641,7 @@ public final class MyAccount implements Comparable<MyAccount> {
         }
     }
 
+    // TODO: replace with EMPTY static value
     public static MyAccount getEmpty() {
         return MyAccount.getEmpty(MyContextHolder.get());
     }

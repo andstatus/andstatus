@@ -17,6 +17,7 @@
 package org.andstatus.app.net.social.pumpio;
 
 import android.net.Uri;
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import org.andstatus.app.net.http.ConnectionException;
@@ -206,6 +207,7 @@ class ActivitySender {
      *  org.macno.puma.provider.Pumpio.postImage(String, String, boolean, Location, String, byte[])
      *  We simplified it a bit...
      */
+    @NonNull
     private JSONObject uploadMedia() throws ConnectionException {
         JSONObject obj1 = null;
         try {
@@ -214,15 +216,16 @@ class ActivitySender {
             ConnectionAndUrl conu = connection.getConnectionAndUrl(ApiRoutineEnum.POST_WITH_MEDIA,
                     connection.getData().getAccountUserOid());
             obj1 = connection.postRequest(conu.url, formParams);
-            if (obj1 != null) {
-                if (MyLog.isVerboseEnabled()) {
-                    MyLog.v(this, "uploaded '" + mMediaUri.toString() + "' " + obj1.toString(2));
-                }
+            if (obj1 == null) {
+                throw new ConnectionException("Error uploading '" + mMediaUri.toString() + "': null response returned");
             }
+            if (MyLog.isVerboseEnabled()) {
+                MyLog.v(this, "uploaded '" + mMediaUri.toString() + "' " + obj1.toString(2));
+            }
+            return obj1;
         } catch (JSONException e) {
             throw ConnectionException.loggedJsonException(this, "Error uploading '" + mMediaUri.toString() + "'", e, obj1);
         }
-        return obj1;
     }
 
     private JSONObject buildObject(JSONObject activity) throws JSONException {

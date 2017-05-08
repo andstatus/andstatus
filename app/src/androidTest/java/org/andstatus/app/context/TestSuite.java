@@ -186,13 +186,10 @@ public class TestSuite extends TestCase {
     }
     
     public static MyContextForTest getMyContextForTest() {
-        MyContextForTest myContextForTest = null;
-        if (MyContextHolder.get() instanceof MyContextForTest) {
-            myContextForTest = (MyContextForTest) MyContextHolder.get(); 
-        } else {
+        if (!(MyContextHolder.get() instanceof MyContextForTest)) {
             fail("Wrong type of current context");
         }
-        return myContextForTest;
+        return (MyContextForTest) MyContextHolder.get();
     }
     
     public static void setHttpConnectionMockClass(Class<? extends HttpConnection> httpConnectionMockClass) {

@@ -72,13 +72,9 @@ public class MessageForAccount {
     }
 
     @NonNull
-    private MyAccount calculateMyAccount(Origin origin, MyAccount maIn) {
-        MyAccount ma = maIn;
+    private MyAccount calculateMyAccount(Origin origin, MyAccount ma) {
         if (ma == null || !ma.getOrigin().equals(origin) || !ma.isValid()) {
-            ma = MyContextHolder.get().persistentAccounts().getFirstSucceededForOrigin(origin);
-        }
-        if (ma == null) {
-            ma = MyAccount.getEmpty();
+            return MyContextHolder.get().persistentAccounts().getFirstSucceededForOrigin(origin);
         }
         return ma;
     }

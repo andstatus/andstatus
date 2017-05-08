@@ -112,7 +112,10 @@ public class HttpConnectionOAuth2JavaNet extends HttpConnectionOAuthJavaNet {
                     result.strResponse = HttpConnectionUtils.readStreamToString(response.getStream());
                     throw result.getExceptionFromJsonErrorResponse();
             }
-        } catch (IOException | InterruptedException | ExecutionException e) {
+        } catch (IOException | ExecutionException e) {
+            result.e1 = e;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
             result.e1 = e;
         }
     }
@@ -180,11 +183,10 @@ public class HttpConnectionOAuth2JavaNet extends HttpConnectionOAuthJavaNet {
             } while (!stop);
         } catch(ConnectionException e) {
             throw e;
-        } catch(IOException e) {
+        } catch(IOException | ExecutionException e) {
             throw new ConnectionException(logBuilder.toString(), e);
         } catch (InterruptedException e) {
-            throw new ConnectionException(logBuilder.toString(), e);
-        } catch (ExecutionException e) {
+            Thread.currentThread().interrupt();
             throw new ConnectionException(logBuilder.toString(), e);
         }
     }

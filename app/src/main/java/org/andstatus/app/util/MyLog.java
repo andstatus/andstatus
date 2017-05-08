@@ -387,6 +387,9 @@ public class MyLog {
             return false;
         }
         File file = getFileInLogDir(filename, logged);
+        if (file == null) {
+            return false;
+        }
         FileOutputStream fileOutputStream = null;
         Writer out = null;
         try {

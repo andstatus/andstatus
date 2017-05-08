@@ -119,14 +119,14 @@ public class KeywordsFilter {
         if (isEmpty()) {
             return "";
         }
-        String selection = "";
+        StringBuilder selection = new StringBuilder();
         for (int ind=0; ind<keywordsToFilter.size(); ind++) {
             if (ind > 0) {
-                selection += " AND ";
+                selection.append(" AND ");
             }
-            selection += fieldName + " LIKE ?";
+            selection.append(fieldName + " LIKE ?");
         }
-        return "(" + selection + ")";
+        return selection.length() == 0 ? "" : "(" + selection.toString() + ")";
     }
 
     @NonNull

@@ -71,12 +71,15 @@ public class TimelineData extends ListData {
     private void addThisPage(TimelinePage page) {
         switch (page.params.whichPage) {
             case YOUNGEST:
-                if (!mayHaveYoungerPage()) {
+                if (mayHaveYoungerPage()) {
+                    pages.clear();
+                    pages.add(page);
+                } else {
                     removeDuplicatesWithOlder(page, 1);
                     pages.remove(0);
                     pages.add(0, page);
-                    break;
                 }
+                break;
             case CURRENT:
             case TOP:
                 pages.clear();

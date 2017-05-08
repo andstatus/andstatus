@@ -983,22 +983,11 @@ public class AccountSettingsActivity extends MyActivity {
                 // from the Browser to the same activity.
                 state.actionCompleted = false;
 
-                boolean authInBrowser = false; // TODO: If we need this switch?
-                if (authInBrowser) {
-                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(authUrl));
-                    if (intent.resolveActivity(getPackageManager()) != null) {
-                        AccountSettingsActivity.this.startActivity(intent);
-                        requestSucceeded = true;
-                    } else {
-                        connectionErrorMessage = "No browser found for " + authUrl;
-                    }
-                } else {
-                    // Start Web view (looking just like Web Browser)
-                    Intent i = new Intent(AccountSettingsActivity.this, AccountSettingsWebActivity.class);
-                    i.putExtra(AccountSettingsWebActivity.EXTRA_URLTOOPEN, authUrl);
-                    AccountSettingsActivity.this.startActivity(i);
-                    requestSucceeded = true;
-                }
+                // Start Web view (looking just like Web Browser)
+                Intent i = new Intent(AccountSettingsActivity.this, AccountSettingsWebActivity.class);
+                i.putExtra(AccountSettingsWebActivity.EXTRA_URLTOOPEN, authUrl);
+                AccountSettingsActivity.this.startActivity(i);
+                requestSucceeded = true;
             } catch (OAuthMessageSignerException | OAuthNotAuthorizedException
                     | OAuthExpectationFailedException
                     | OAuthCommunicationException

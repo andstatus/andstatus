@@ -57,7 +57,7 @@ public class MyContextForTest implements MyContext {
                 break;
             }
             myContext2 = ((MyContextForTest) myContext2).myContext;
-        };
+        }
         if (myContext == null) {
             myContext = MyContextImpl.newEmpty(this);
         }

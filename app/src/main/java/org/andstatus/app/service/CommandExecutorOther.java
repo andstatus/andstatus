@@ -410,7 +410,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
     }
 
     private void logIfEmptyMessage(String method, long msgId, MbMessage message) {
-        if (message.isEmpty()) {
+        if (message == null || message.isEmpty()) {
             logExecutionError(false, method + "; Received Message is empty, " + MyQuery.msgInfoForLog(msgId));
         }
     }

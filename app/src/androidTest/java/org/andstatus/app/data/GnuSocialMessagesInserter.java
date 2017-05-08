@@ -65,7 +65,7 @@ public class GnuSocialMessagesInserter extends InstrumentationTestCase {
         mySetup();
     }
     
-    public void addConversation() {
+    private void addConversation() {
         MbUser author1 = userFromOidAndAvatar("1",
                 "https://raw.github.com/andstatus/andstatus/master/app/src/main/res/drawable/splash_logo.png");
         MbUser author2 = userFromOidAndAvatar("2",
