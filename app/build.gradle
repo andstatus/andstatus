@@ -3,14 +3,14 @@ apply plugin: "org.sonarqube"
 
 android {
     compileSdkVersion 25
-    buildToolsVersion '25.0.2'
+    buildToolsVersion '25.0.3'
 
     defaultConfig {
         applicationId "org.andstatus.app"
         minSdkVersion 16
         targetSdkVersion 25
-        versionName "33.02"
-        versionCode 210
+        versionName "33.03"
+        versionCode 211
 
         testApplicationId "org.andstatus.app.tests"
         testInstrumentationRunner "android.test.InstrumentationTestRunner"
