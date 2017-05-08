@@ -27,9 +27,9 @@ import org.andstatus.app.data.AvatarData;
 import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.data.DownloadFile;
 import org.andstatus.app.data.DownloadStatus;
+import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.DownloadTable;
 import org.andstatus.app.database.UserTable;
-import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.social.ConnectionTwitterGnuSocialMock;
 import org.andstatus.app.util.MyLog;
@@ -40,7 +40,7 @@ import java.net.URL;
 
 @Travis
 public class AvatarDownloaderTest extends InstrumentationTestCase {
-    private MyAccount ma = MyAccount.getEmpty(MyContextHolder.get(), "");
+    private MyAccount ma = MyAccount.EMPTY;
 
     @Override
     protected void setUp() throws Exception {

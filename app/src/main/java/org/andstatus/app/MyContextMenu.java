@@ -35,7 +35,7 @@ public class MyContextMenu implements View.OnCreateContextMenuListener {
      *  Corresponding account information ( "Reply As..." ... )
      *  oh whose behalf we are going to execute an action on this line in the list (message/user...)
      */
-    protected MyAccount myActor = MyAccount.getEmpty();
+    protected MyAccount myActor = MyAccount.EMPTY;
 
     public MyContextMenu(LoadableListActivity listActivity) {
         this.listActivity = listActivity;
@@ -50,7 +50,7 @@ public class MyContextMenu implements View.OnCreateContextMenuListener {
         viewOfTheContext = v;
         ViewItem viewItem = listActivity.saveContextOfSelectedItem(v);
         if (viewItem == null || mViewItem == null || mViewItem.getId() != viewItem.getId()) {
-            myActor = MyAccount.getEmpty();
+            myActor = MyAccount.EMPTY;
         }
         mViewItem = viewItem;
     }

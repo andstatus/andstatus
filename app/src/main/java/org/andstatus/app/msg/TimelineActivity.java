@@ -411,7 +411,7 @@ public class TimelineActivity extends MessageEditorListActivity implements
         prepareDrawer();
 
         if (contextMenu != null) {
-            contextMenu.setMyActor(MyAccount.getEmpty());
+            contextMenu.setMyActor(MyAccount.EMPTY);
         }
 
         boolean enableGlobalSearch = myContext.persistentOrigins()
@@ -1142,7 +1142,7 @@ public class TimelineActivity extends MessageEditorListActivity implements
     }
 
     public void switchView(Timeline timeline, MyAccount newCurrentMyAccount) {
-        MyAccount currentMyAccountToSet = MyAccount.getEmpty();
+        MyAccount currentMyAccountToSet = MyAccount.EMPTY;
         if (newCurrentMyAccount != null && newCurrentMyAccount.isValid()) {
             currentMyAccountToSet = newCurrentMyAccount;
         } else if (timeline.getMyAccount().isValid()) {

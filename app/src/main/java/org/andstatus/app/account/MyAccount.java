@@ -29,6 +29,7 @@ import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MyContextImpl;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DataInserter;
 import org.andstatus.app.data.MatchedUri;
@@ -62,6 +63,7 @@ import org.json.JSONObject;
  */
 public final class MyAccount implements Comparable<MyAccount> {
     private static final String TAG = MyAccount.class.getSimpleName();
+    public static final MyAccount EMPTY = Builder.getEmptyAccount(MyContextImpl.newEmpty(TAG),"(empty)");
 
     //------------------------------------------------------------
     // Key names for MyAccount preferences are below:
@@ -70,10 +72,6 @@ public final class MyAccount implements Comparable<MyAccount> {
      * The Key for the android.accounts.Account bundle;
      */
     public static final String KEY_ACCOUNT = "account";
-    /**
-     * Is the MyAccount persistent in AccountManager;
-     */
-    public static final String KEY_PERSISTENT = "persistent";
 
     /**
      * This Key is both global for the application and the same - for one MyAccount
@@ -81,11 +79,6 @@ public final class MyAccount implements Comparable<MyAccount> {
      * This MyAccount: Username of the {@link UserTable} corresponding to this {@link MyAccount}
      */
     public static final String KEY_USERNAME = "username";
-    /**
-     * New Username typed / selected in UI
-     * It doesn't immediately change "Current MyAccount"
-     */
-    public static final String KEY_USERNAME_NEW = "username_new";
     /**
      * {@link UserTable#_ID} in our System.
      */
@@ -641,21 +634,12 @@ public final class MyAccount implements Comparable<MyAccount> {
         }
     }
 
-    // TODO: replace with EMPTY static value
-    public static MyAccount getEmpty() {
-        return MyAccount.getEmpty(MyContextHolder.get());
-    }
-
-    public static MyAccount getEmpty(MyContext myContext) {
-        return Builder.getEmptyAccount(myContext, "(empty)");
-    }
-
     public static MyAccount getEmpty(MyContext myContext, String accountName) {
         return Builder.getEmptyAccount(myContext, accountName);
     }
 
     public static MyAccount fromBundle(Bundle bundle) {
-        return bundle == null ? getEmpty() :
+        return bundle == null ? EMPTY :
                 MyContextHolder.get().persistentAccounts().fromAccountName(
                         bundle.getString(IntentExtra.ACCOUNT_NAME.key));
     }

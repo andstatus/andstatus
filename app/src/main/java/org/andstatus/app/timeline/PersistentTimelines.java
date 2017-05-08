@@ -86,7 +86,7 @@ public class PersistentTimelines {
     public Timeline fromId(long id) {
         Timeline timeline = timelines.get(id);
         if (timeline == null) {
-            timeline = Timeline.getEmpty(MyAccount.getEmpty(myContext));
+            timeline = Timeline.getEmpty(MyAccount.EMPTY);
         }
         return timeline;
     }

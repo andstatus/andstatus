@@ -89,7 +89,7 @@ public class PersistentAccounts {
     }
 
     public MyAccount getDefaultAccount() {
-        return mAccounts.isEmpty() ? MyAccount.getEmpty(myContext) : list().get(0);
+        return mAccounts.isEmpty() ? MyAccount.EMPTY : list().get(0);
     }
 
     public int getDistinctOriginsCount() {
@@ -143,31 +143,26 @@ public class PersistentAccounts {
      * @return Invalid account if was not found
      */
     @NonNull
-    public MyAccount fromAccountName(String accountNameIn) {
-        MyAccount myAccount = MyAccount.getEmpty(myContext, accountNameIn);
-        if (!myAccount.isUsernameValid()) {
-            return myAccount;
+    public MyAccount fromAccountName(String accountNameString) {
+        AccountName accountName = AccountName.fromAccountName(myContext, accountNameString);
+        if (!accountName.isValid()) {
+            return MyAccount.EMPTY;
         }
-
         for (MyAccount persistentAccount : mAccounts) {
-            if (persistentAccount.getAccountName().compareTo(myAccount.getAccountName()) == 0) {
-                myAccount = persistentAccount;
-                break;
+            if (persistentAccount.getAccountName().equals(accountName.toString())) {
+                return persistentAccount;
             }
         }
-        // Try to find persisted Account which was not loaded yet
-        if (!myAccount.isValid()) {
-            for (android.accounts.Account androidAccount : getAccounts(myContext.context())) {
-                if (myAccount.getAccountName().compareTo(androidAccount.name) == 0) {
-                    myAccount = Builder.fromAndroidAccount(myContext, androidAccount).getAccount();
-                    mAccounts.add(myAccount);
-                    CollectionsUtil.sort(mAccounts);
-                    MyPreferences.onPreferencesChanged();
-                    break;
-                }
+        for (android.accounts.Account androidAccount : getAccounts(myContext.context())) {
+            if (accountName.toString().equals(androidAccount.name)) {
+                MyAccount myAccount = Builder.fromAndroidAccount(myContext, androidAccount).getAccount();
+                mAccounts.add(myAccount);
+                CollectionsUtil.sort(mAccounts);
+                MyPreferences.onPreferencesChanged();
+                return myAccount;
             }
         }
-        return myAccount;
+        return MyAccount.EMPTY;
     }
 
     @NonNull
@@ -177,7 +172,7 @@ public class PersistentAccounts {
                 return persistentAccount;
             }
         }
-        return MyAccount.getEmpty(myContext);
+        return MyAccount.EMPTY;
     }
 
     /**
@@ -238,7 +233,7 @@ public class PersistentAccounts {
      */
     @NonNull
     public MyAccount fromUserId(long userId) {
-        MyAccount ma = MyAccount.getEmpty(myContext, "(id=" + userId +")");
+        MyAccount ma = MyAccount.EMPTY;
         if (userId != 0) {
             for (MyAccount persistentAccount : mAccounts) {
                 if (persistentAccount.getUserId() == userId) {
@@ -270,7 +265,7 @@ public class PersistentAccounts {
      */
     @NonNull
     public MyAccount getFirstSucceededForOriginId(long originId) {
-        MyAccount ma = MyAccount.getEmpty(myContext, "");
+        MyAccount ma = MyAccount.EMPTY;
         for (MyAccount persistentAccount : mAccounts) {
             if (originId==0 || persistentAccount.getOriginId() == originId) {
                 if (!ma.isValid()) {
@@ -308,9 +303,9 @@ public class PersistentAccounts {
     public MyAccount getAccountForThisMessage(long originId, long messageId, MyAccount firstUser,
             MyAccount preferredUser, boolean succeededOnly)  {
         final String method = "getAccountForThisMessage";
-        MyAccount ma = firstUser == null ? MyAccount.getEmpty() : firstUser;
+        MyAccount ma = firstUser == null ? MyAccount.EMPTY : firstUser;
         if (!accountFits(ma, originId, succeededOnly)) {
-            ma = betterFit(ma, preferredUser == null ? MyAccount.getEmpty() : preferredUser, originId, succeededOnly);
+            ma = betterFit(ma, preferredUser == null ? MyAccount.EMPTY : preferredUser, originId, succeededOnly);
         }
         if (!accountFits(ma, originId, succeededOnly)) {
             ma = betterFit(ma, getFirstSucceededForOriginId(originId), originId, succeededOnly);

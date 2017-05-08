@@ -29,7 +29,7 @@ public class TimelineListViewItem implements ViewItem {
 
     public TimelineListViewItem(MyContext myContext, Timeline timeline) {
         this.timeline = timeline;
-        this.timelineTitle = TimelineTitle.load(myContext, timeline, MyAccount.getEmpty());
+        this.timelineTitle = TimelineTitle.load(myContext, timeline, MyAccount.EMPTY);
     }
 
     @Override

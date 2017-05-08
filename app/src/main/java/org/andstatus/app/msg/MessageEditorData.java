@@ -47,7 +47,7 @@ import java.util.List;
 
 public class MessageEditorData {
     public static final String TAG = MessageEditorData.class.getSimpleName();
-    public static final MessageEditorData INVALID = MessageEditorData.newEmpty(null);
+    static final MessageEditorData INVALID = MessageEditorData.newEmpty(null);
 
     private long msgId = 0;
     public DownloadStatus status = DownloadStatus.DRAFT;
@@ -64,14 +64,14 @@ public class MessageEditorData {
      * -1 - is non-existent id.
      */
     public long inReplyToId = 0;
-    public String inReplyToBody = "";
-    boolean replyToConversationParticipants = false;
-    boolean replyToMentionedUsers = false;
+    String inReplyToBody = "";
+    private boolean replyToConversationParticipants = false;
+    private boolean replyToMentionedUsers = false;
     public long recipientId = 0;
-    public MyAccount ma = MyAccount.getEmpty(MyContextHolder.get(), "");
+    public MyAccount ma = MyAccount.EMPTY;
 
     private MessageEditorData(MyAccount myAccount) {
-        ma = myAccount == null ? MyAccount.getEmpty(MyContextHolder.get(), "") : myAccount;
+        ma = myAccount == null ? MyAccount.EMPTY : myAccount;
     }
 
     public static MessageEditorData newEmpty(MyAccount myAccount) {

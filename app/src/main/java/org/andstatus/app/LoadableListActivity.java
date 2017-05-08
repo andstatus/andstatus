@@ -74,7 +74,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
 
     protected final long mInstanceId = InstanceId.next();
     protected MyContext myContext = MyContextHolder.get();
-    private MyAccount ma = MyAccount.getEmpty(myContext, "");
+    private MyAccount ma = MyAccount.EMPTY;
     private long configChangeTime = 0;
     private volatile boolean configChanged = false;
     MyServiceEventsReceiver myServiceReceiver;

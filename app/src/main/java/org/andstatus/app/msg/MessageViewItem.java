@@ -77,7 +77,7 @@ public class MessageViewItem implements DuplicatesCollapsible<MessageViewItem>, 
 
     /** A message can be linked to any user, MyAccount or not */
     private long linkedUserId = 0;
-    private MyAccount linkedMyAccount = MyAccount.getEmpty();
+    private MyAccount linkedMyAccount = MyAccount.EMPTY;
 
     private List<TimelineViewItem> children = new ArrayList<>();
 

@@ -307,9 +307,9 @@ public class Timeline implements Comparable<Timeline> {
     @NonNull
     private MyAccount fixedMyAccount(MyContext myContext, TimelineType timelineType, MyAccount myAccountIn, long userIdIn) {
         if (timelineType == null) {
-            return MyAccount.getEmpty();
+            return MyAccount.EMPTY;
         }
-        MyAccount myAccount = myAccountIn == null ? MyAccount.getEmpty() : myAccountIn;
+        MyAccount myAccount = myAccountIn == null ? MyAccount.EMPTY : myAccountIn;
         long userId = timelineType.isForUser() ? userIdIn : 0;
         if (myContext.persistentAccounts().isAccountUserId(userId)) {
             myAccount = myContext.persistentAccounts().fromUserId(userId);
@@ -318,7 +318,7 @@ public class Timeline implements Comparable<Timeline> {
                 !timelineType.isForUser() &&
                 userId == 0 || (userId != 0 && !myContext.persistentAccounts().isAccountUserId(userId))
                 ) {
-            return MyAccount.getEmpty();
+            return MyAccount.EMPTY;
         }
         return myAccount;
     }
@@ -481,7 +481,7 @@ public class Timeline implements Comparable<Timeline> {
         MyAccount myAccount;
         if (isCombined) {
             origin = Origin.getEmpty();
-            myAccount = MyAccount.getEmpty();
+            myAccount = MyAccount.EMPTY;
         } else {
             origin = myContext.persistentAccounts().getCurrentAccount().getOrigin();
             myAccount = myContext.persistentAccounts().getCurrentAccount();
