@@ -158,8 +158,11 @@ public class AvatarDownloaderTest extends InstrumentationTestCase {
 
         DownloadData data = AvatarData.getForUser(ma.getUserId());
         if (DownloadStatus.LOADED.equals(status)) {
-            assertFalse("Loaded " + data, commandData.getResult().hasError());
-            assertEquals("Loaded " + data.getUri(), status, loader.getStatus());
+            assertFalse("Loaded " + data + ", error message:" + commandData.getResult().getMessage(),
+                    commandData.getResult()
+                    .hasError());
+            assertEquals("Loaded " + data.getUri() + ", error message:" + commandData.getResult().getMessage(), status,
+                    loader.getStatus());
         } else {
             assertTrue("Error loading " + data.getUri(), commandData.getResult().hasError());
         }

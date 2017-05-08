@@ -247,7 +247,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
     }
 
     private void logIfUserIsEmpty(String method, long userId, MbUser user) {
-        if (user.isEmpty()) {
+        if (user == null || user.isEmpty()) {
             logExecutionError(false, "Received User is empty, " + method + userInfoLogged(userId));
         }
     }
