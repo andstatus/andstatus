@@ -17,6 +17,7 @@
 package org.andstatus.app.net.http;
 
 import com.github.scribejava.core.builder.ServiceBuilder;
+import com.github.scribejava.core.exceptions.OAuthException;
 import com.github.scribejava.core.httpclient.jdk.JDKHttpClientConfig;
 import com.github.scribejava.core.model.OAuth2AccessToken;
 import com.github.scribejava.core.model.OAuthConstants;
@@ -183,7 +184,7 @@ public class HttpConnectionOAuth2JavaNet extends HttpConnectionOAuthJavaNet {
             } while (!stop);
         } catch(ConnectionException e) {
             throw e;
-        } catch(IOException | ExecutionException e) {
+        } catch(IOException | ExecutionException | OAuthException e) {
             throw new ConnectionException(logBuilder.toString(), e);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();

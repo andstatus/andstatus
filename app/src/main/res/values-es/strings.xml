@@ -70,6 +70,8 @@
   <string name="category_title_preference_notifications">Notificaciones</string>
   <string name="category_title_preference_origin">Red social</string>
   <string name="category_title_preference_settings">Configuración</string>
+  <string name="check_and_fix_data">Comprobar y reparar datos</string>
+  <string name="check_and_fix_data_summary">Utilizar esta acción si AndStatus no funciona correctamente, para evitar reinstalarlo</string>
   <string name="client_registration_failed">El registro del cliente AndStatus ha fallado</string>
   <string name="collapse_duplicates">Compactar duplicados</string>
   <string name="color_black">Negro</string>
@@ -139,6 +141,7 @@
   <string name="discover_open_instances_title">Descubre nodos abiertos</string>
   <string name="displayed_in_selector">Mostrado para elegir</string>
   <string name="displayed_in_selector_abbreviated">Most.</string>
+  <string name="database_disk_io_error">¡Atención! Ocurrió un error %1$s durante el acceso a la base de datos de la caché local, causando el mal funcionamiento de la aplicación. \nEsto suele ocurrir porque la tarjeta SD en el dispositivo no está funcionando correctamente.</string>
   <string name="dont_synchronize_old_messages">No sincronizar mensajes antiguos si la anterior sincronización fue hace más de ... horas</string>
   <string name="dont_synchronize_old_messages_summary">Después de horas de %s desde la sincronización anterior 
    AndStatus no intentará sincronizar todos los mensajes desde el último mensaje descargado, 
@@ -178,6 +181,7 @@
   <string name="friends_of">Amigos de \"%1s\"</string>
   <string name="gestures">Gestos</string>
   <string name="gestures_summary">La mecánica. Cómo un usuario interacciona con la aplicación</string>
+  <string name="get_conversation">Abrir conversación</string>
   <string name="get_followers">Consigue seguidores</string>
   <string name="get_friends">Consigue amigos</string>
   <string name="get_open_instances_title">Descargar nodos abiertos</string>
@@ -254,7 +258,10 @@
   <string name="menu_item_follow_user">Seguir a \"%1s\"</string>
   <string name="menu_item_view_image">Ver imagen</string>
   <string name="menu_item_open_conversation">Abrir conversación</string>
+  <string name="menu_item_open_message_permalink">Abrir en navegador</string>
   <string name="menu_item_reply">Responder</string>
+  <string name="menu_item_reply_to_conversation_participants">Responder a los participantes en la conversación</string>
+  <string name="menu_item_reply_to_mentioned_users">Responder a los usuarios mencionados</string>
   <string name="menu_item_reblog">Repetir</string>
   <string name="menu_item_reblog_pumpio">Compartir a través de Pump.io</string>
   <string name="menu_item_reblog_twitter">Retweet</string>
@@ -367,6 +374,7 @@
   <string name="search_timeline_hint">Introduzca un nombre de usuario/frase</string>
   <string name="search_direct_messages_label">Buscar mensajes directos</string>
   <string name="search_direct_messages_hint">Introduzca un nombre de usuario o frase</string>
+  <string name="select_backup_folder">Seleccione la carpeta para copia de seguridad</string>
   <string name="select_displayed_in_selector">Seleccionar si se muestra y cuando esta línea temporal</string>
   <string name="sent">Enviado</string>
   <string name="select_social_network">Seleccionar red social</string>
@@ -417,6 +425,7 @@
   <string name="summary_preference_show_avatars_on">Se mostrarán los avatares de los usuarios</string>
   <string name="summary_preference_ssl_off">Sin SSL</string>
   <string name="summary_preference_ssl_on">SSL está activada</string>
+  <string name="summary_preference_storage">Dónde y qué información almacenar. Comprobar y realizar copia de seguridad de los datos.</string>
   <string name="summary_preference_storage_external_off">Almacenar datos en la memoria interna</string>
   <string name="summary_preference_storage_external_on">Almacenar datos en la memoria externa</string>
   <string name="summary_preference_sync_indicator_on_timeline_off">Sin indicador de sincronización</string>
