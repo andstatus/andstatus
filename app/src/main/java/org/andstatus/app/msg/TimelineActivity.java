@@ -870,7 +870,7 @@ public class TimelineActivity extends MessageEditorListActivity implements
         TimelineListParameters otherParams = paramsToLoad;
         boolean isParamsChanged = otherParams != null && !dataLoaded.params.equals(otherParams);
         WhichPage otherPageToRequest = WhichPage.EMPTY;
-        if (!isParamsChanged && getListData().size() == 0) {
+        if (!isParamsChanged && getListData().size() < 20) {
             if (getListData().mayHaveYoungerPage()) {
                 otherPageToRequest = WhichPage.YOUNGER;
             } else if (getListData().mayHaveOlderPage()) {
