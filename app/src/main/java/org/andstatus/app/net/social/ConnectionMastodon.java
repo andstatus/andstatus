@@ -22,6 +22,7 @@ import android.text.TextUtils;
 
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyContentType;
+import org.andstatus.app.msg.KeywordsFilter;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.util.MyLog;
@@ -34,6 +35,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ConnectionMastodon extends ConnectionTwitter1p0 {
@@ -53,6 +55,9 @@ public class ConnectionMastodon extends ConnectionTwitter1p0 {
             case PUBLIC_TIMELINE:
                 url = "timelines/public";
                 break;
+            case TAGS_TIMELINE:
+                url = "timelines/tag/%tag%";
+                break;
             case ACCOUNT_VERIFY_CREDENTIALS:
                 url = "accounts/verify_credentials";
                 break;
@@ -64,6 +69,9 @@ public class ConnectionMastodon extends ConnectionTwitter1p0 {
                 break;
             case GET_MESSAGE:
                 url = "statuses/%messageId%";
+                break;
+            case SEARCH_MESSAGES:
+                url = "search";
                 break;
             case CREATE_FAVORITE:
                 url = "statuses/%messageId%/favourite";
@@ -112,6 +120,27 @@ public class ConnectionMastodon extends ConnectionTwitter1p0 {
         return jArrToTimeline(jArr, apiRoutine, url);
     }
 
+    @Override
+    public List<MbTimelineItem> search(TimelinePosition youngestPosition,
+                                       TimelinePosition oldestPosition, int limit, String searchQuery)
+            throws ConnectionException {
+        String tag = new KeywordsFilter(searchQuery).getFirstTagOrFirstKeyword();
+        if (TextUtils.isEmpty(tag)) {
+            return new ArrayList<>();
+        }
+        ApiRoutineEnum apiRoutine = ApiRoutineEnum.TAGS_TIMELINE;
+        String url = getApiPathWithTag(apiRoutine, tag);
+        Uri sUri = Uri.parse(url);
+        Uri.Builder builder = sUri.buildUpon();
+        appendPositionParameters(builder, youngestPosition, oldestPosition);
+        builder.appendQueryParameter("limit", String.valueOf(fixedDownloadLimitForApiRoutine(limit, apiRoutine)));
+        JSONArray jArr = http.getRequestAsArray(builder.build().toString());
+        return jArrToTimeline(jArr, apiRoutine, url);
+    }
+
+    protected String getApiPathWithTag(ApiRoutineEnum routineEnum, String tag) throws ConnectionException {
+        return getApiPath(routineEnum).replace("%tag%", tag);
+    }
 
     @Override
     public MbMessage updateStatus(String message, String statusId, String inReplyToId, Uri mediaUri) throws ConnectionException {

@@ -217,7 +217,7 @@ public enum OriginType implements SelectableEnum {
                 httpConnectionClassOauth = HttpConnectionOAuthMastodon.class;
                 httpConnectionClassBasic = HttpConnectionEmpty.class;
                 mAllowAttachmentForDirectMessage = false;
-                isSearchTimelineSyncable = false;
+                isSearchTimelineSyncable = true;
                 isDirectTimelineSyncable = false;
                 isMentionsTimelineSyncable = false;
                 isPublicTimeLineSyncable = true;

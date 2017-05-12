@@ -138,6 +138,16 @@ public class KeywordsFilter {
         return selectionArgsOut;
     }
 
+    @NonNull
+    public String getFirstTagOrFirstKeyword() {
+        for (String keyword : keywordsRaw) {
+            if (keyword.startsWith("#")) {
+                return keyword.substring(1);
+            }
+        }
+        return keywordsRaw.isEmpty() ? "" : keywordsRaw.get(0);
+    }
+
     public boolean isEmpty() {
         return keywordsToFilter.isEmpty();
     }

@@ -101,6 +101,7 @@ public abstract class Connection {
          */
         STATUSES_USER_TIMELINE(true),
         PUBLIC_TIMELINE(true),
+        TAGS_TIMELINE(true),
         SEARCH_MESSAGES(true),
 
         GET_MESSAGE,
