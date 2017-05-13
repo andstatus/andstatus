@@ -66,6 +66,7 @@ import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.BundleUtils;
 import org.andstatus.app.util.MyCheckBox;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.MyUrlSpan;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
@@ -73,6 +74,7 @@ import org.andstatus.app.util.ViewUtils;
 import org.andstatus.app.widget.MyBaseAdapter;
 
 import java.util.Collections;
+import java.util.Date;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -870,7 +872,7 @@ public class TimelineActivity extends MessageEditorListActivity implements
         TimelineListParameters otherParams = paramsToLoad;
         boolean isParamsChanged = otherParams != null && !dataLoaded.params.equals(otherParams);
         WhichPage otherPageToRequest = WhichPage.EMPTY;
-        if (!isParamsChanged && getListData().size() < 20) {
+        if (!isParamsChanged && getListData().size() < 10) {
             if (getListData().mayHaveYoungerPage()) {
                 otherPageToRequest = WhichPage.YOUNGER;
             } else if (getListData().mayHaveOlderPage()) {
@@ -905,6 +907,13 @@ public class TimelineActivity extends MessageEditorListActivity implements
             listView.removeFooterView(syncOlderView);
         } else {
             listView.addFooterView(syncOlderView);
+            MyUrlSpan.showText(syncOlderView, R.id.sync_older_button,
+                    String.format(getText(getParamsLoaded().getTimeline().isCombined() ||
+                            getParamsLoaded().getTimeline().getOldestItemDate() == 0 ? R.string.options_menu_sync :
+                            R.string.sync_older_messages).toString(),
+                            new Date(getParamsLoaded().getTimeline().getOldestItemDate()).toString()),
+                    false,
+                    false);
         }
     }
 
