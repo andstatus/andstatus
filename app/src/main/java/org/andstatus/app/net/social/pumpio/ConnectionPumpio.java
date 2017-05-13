@@ -86,7 +86,7 @@ public class ConnectionPumpio extends Connection {
             case REGISTER_CLIENT:
                 url = "client/register";
                 break;
-            case STATUSES_HOME_TIMELINE:
+            case HOME_TIMELINE:
                 url = "user/%nickname%/inbox";
                 break;
             case POST_WITH_MEDIA:
@@ -99,7 +99,7 @@ public class ConnectionPumpio extends Connection {
             case POST_REBLOG:
             case DESTROY_MESSAGE:
             case POST_MESSAGE:
-            case STATUSES_USER_TIMELINE:
+            case USER_TIMELINE:
                 url = "user/%nickname%/feed";
                 break;
             default:

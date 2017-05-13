@@ -45,7 +45,7 @@ public class ConnectionMastodonTest extends InstrumentationTestCase {
                 org.andstatus.app.tests.R.raw.mastodon_home_timeline);
         connection.getHttpMock().setResponse(jso);
 
-        List<MbTimelineItem> timeline = connection.getTimeline(Connection.ApiRoutineEnum.STATUSES_HOME_TIMELINE,
+        List<MbTimelineItem> timeline = connection.getTimeline(Connection.ApiRoutineEnum.HOME_TIMELINE,
                 new TimelinePosition("2656388"), TimelinePosition.getEmpty(), 20, accountUserOid);
         assertNotNull("timeline returned", timeline);
         int size = 1;

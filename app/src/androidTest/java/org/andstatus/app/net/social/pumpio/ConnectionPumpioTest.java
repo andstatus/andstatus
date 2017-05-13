@@ -157,7 +157,7 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
                 org.andstatus.app.tests.R.raw.pumpio_user_t131t_inbox);
         httpConnectionMock.setResponse(jso);
         
-        List<MbTimelineItem> timeline = connection.getTimeline(ApiRoutineEnum.STATUSES_HOME_TIMELINE,
+        List<MbTimelineItem> timeline = connection.getTimeline(ApiRoutineEnum.HOME_TIMELINE,
                 new TimelinePosition(sinceId), TimelinePosition.getEmpty(), 20, "acct:t131t@" + originUrl.getHost());
         assertNotNull("timeline returned", timeline);
         int size = 6;

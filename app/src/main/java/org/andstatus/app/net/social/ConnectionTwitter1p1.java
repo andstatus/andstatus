@@ -92,7 +92,7 @@ public class ConnectionTwitter1p1 extends ConnectionTwitter {
                 // https://dev.twitter.com/docs/api/1.1/get/search/tweets
                 url = "search/tweets" + EXTENSION;
                 break;
-            case STATUSES_MENTIONS_TIMELINE:
+            case MENTIONS_TIMELINE:
                 // https://dev.twitter.com/docs/api/1.1/get/statuses/mentions_timeline
                 url = "statuses/mentions_timeline" + EXTENSION;
                 break;

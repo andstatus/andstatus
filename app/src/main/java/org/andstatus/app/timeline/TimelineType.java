@@ -19,28 +19,28 @@ package org.andstatus.app.timeline;
 import android.content.Context;
 import android.support.annotation.NonNull;
 
-import org.andstatus.app.lang.SelectableEnum;
 import org.andstatus.app.R;
 import org.andstatus.app.database.FriendshipTable;
+import org.andstatus.app.lang.SelectableEnum;
 import org.andstatus.app.net.social.Connection;
 
 public enum TimelineType implements SelectableEnum {
     /** The type is unknown */
     UNKNOWN("unknown", R.string.timeline_title_unknown, Connection.ApiRoutineEnum.DUMMY),
     /** The Home timeline and other information (replies...). */
-    HOME("home", R.string.timeline_title_home, Connection.ApiRoutineEnum.STATUSES_HOME_TIMELINE),
+    HOME("home", R.string.timeline_title_home, Connection.ApiRoutineEnum.HOME_TIMELINE),
     /** Favorites (favorited messages) */
-    FAVORITES("favorites", R.string.timeline_title_favorites, Connection.ApiRoutineEnum.DUMMY),
+    FAVORITES("favorites", R.string.timeline_title_favorites, Connection.ApiRoutineEnum.FAVORITES_TIMELINE),
     /** The Mentions timeline and other information (replies...). */
-    MENTIONS("mentions", R.string.timeline_title_mentions, Connection.ApiRoutineEnum.STATUSES_MENTIONS_TIMELINE),
+    MENTIONS("mentions", R.string.timeline_title_mentions, Connection.ApiRoutineEnum.MENTIONS_TIMELINE),
     /** Direct messages (direct dents...) */
     DIRECT("direct", R.string.timeline_title_direct_messages, Connection.ApiRoutineEnum.DIRECT_MESSAGES),
     /** Messages of the selected User (where he is an Author or a Sender only (e.g. for Reblog/Retweet).
      * This User is NOT one of our Accounts.
      * Hence this timeline type requires the User parameter. */
-    USER("user", R.string.timeline_title_user, Connection.ApiRoutineEnum.STATUSES_USER_TIMELINE),
+    USER("user", R.string.timeline_title_user, Connection.ApiRoutineEnum.USER_TIMELINE),
     /** Almost like {@link #USER}, but for a User, who is one of my accounts. */
-    SENT("sent", R.string.sent, Connection.ApiRoutineEnum.STATUSES_USER_TIMELINE),
+    SENT("sent", R.string.sent, Connection.ApiRoutineEnum.USER_TIMELINE),
     /** Latest messages of every Friend of this user - AndStatus account
      * (i.e of every user, followed by this User).
      * So this is essentially a list of "Friends". See {@link FriendshipTable} */
@@ -57,7 +57,7 @@ public enum TimelineType implements SelectableEnum {
     OUTBOX("outbox", R.string.timeline_title_outbox, Connection.ApiRoutineEnum.DUMMY),
     /** For the selected my account (a user), the timeline includes all messages of the same origin irrespectively existence
      * of the link between the message and the User. So the User may "Act" on this message. */
-    MESSAGES_TO_ACT("messages_to_act", R.string.timeline_title_home, Connection.ApiRoutineEnum.STATUSES_HOME_TIMELINE),
+    MESSAGES_TO_ACT("messages_to_act", R.string.timeline_title_home, Connection.ApiRoutineEnum.HOME_TIMELINE),
     REPLIES("replies", R.string.timeline_title_replies, Connection.ApiRoutineEnum.DUMMY);
 
     /** Code - identifier of the type */

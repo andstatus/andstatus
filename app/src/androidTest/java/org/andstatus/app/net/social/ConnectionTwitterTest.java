@@ -80,7 +80,7 @@ public class ConnectionTwitterTest extends InstrumentationTestCase {
                 org.andstatus.app.tests.R.raw.twitter_home_timeline);
         httpConnection.setResponse(jso);
         
-        List<MbTimelineItem> timeline = connection.getTimeline(ApiRoutineEnum.STATUSES_HOME_TIMELINE, 
+        List<MbTimelineItem> timeline = connection.getTimeline(ApiRoutineEnum.HOME_TIMELINE,
                 new TimelinePosition("380925803053449216") , TimelinePosition.getEmpty(), 20, connectionData.getAccountUserOid());
         assertNotNull("timeline returned", timeline);
         int size = 4;

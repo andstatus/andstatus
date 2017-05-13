@@ -86,13 +86,13 @@ public abstract class ConnectionTwitter extends Connection {
             case DESTROY_MESSAGE:
                 url = "statuses/destroy/";
                 break;
-            case STATUSES_HOME_TIMELINE:
+            case HOME_TIMELINE:
                 url = "statuses/home_timeline" + EXTENSION;
                 break;
-            case STATUSES_MENTIONS_TIMELINE:
+            case MENTIONS_TIMELINE:
                 url = "statuses/mentions" + EXTENSION;
                 break;
-            case STATUSES_USER_TIMELINE:
+            case USER_TIMELINE:
                 url = "statuses/user_timeline" + EXTENSION;
                 break;
             case GET_MESSAGE:

@@ -87,21 +87,22 @@ public abstract class Connection {
          * Get the Home timeline (whatever it is...).
          * This is the equivalent of /home on the Web.
          */
-        STATUSES_HOME_TIMELINE,
+        HOME_TIMELINE,
         /**
          * Get the user's replies.
          * 
          * Returns most recent @replies (status updates prefixed with @username) 
          * for the authenticating user.
          */
-        STATUSES_MENTIONS_TIMELINE,
+        MENTIONS_TIMELINE,
         /**
          * Get the User timeline for the user with the selectedUserId. We use credentials of Account which may be
          * not the same user. 
          */
-        STATUSES_USER_TIMELINE(true),
+        USER_TIMELINE(true),
         PUBLIC_TIMELINE(true),
         TAGS_TIMELINE(true),
+        FAVORITES_TIMELINE,
         SEARCH_MESSAGES(true),
 
         GET_MESSAGE,
@@ -345,7 +346,7 @@ public abstract class Connection {
 
     /**
      * Universal method for several Timeline Types...
-     * @param userId For the {@link ApiRoutineEnum#STATUSES_USER_TIMELINE}, null for the other timelines
+     * @param userId For the {@link ApiRoutineEnum#USER_TIMELINE}, null for the other timelines
      */
     @NonNull
     public abstract List<MbTimelineItem> getTimeline(ApiRoutineEnum apiRoutine, TimelinePosition youngestPosition,

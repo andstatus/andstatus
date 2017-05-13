@@ -49,8 +49,11 @@ public class ConnectionMastodon extends ConnectionTwitter1p0 {
             case REGISTER_CLIENT:
                 url = "apps";
                 break;
-            case STATUSES_HOME_TIMELINE:
+            case HOME_TIMELINE:
                 url = "timelines/home";
+                break;
+            case FAVORITES_TIMELINE:
+                url = "favourites";
                 break;
             case PUBLIC_TIMELINE:
                 url = "timelines/public";
