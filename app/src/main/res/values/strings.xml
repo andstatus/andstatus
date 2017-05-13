@@ -389,7 +389,7 @@
   <string name="splash_button_learn_more">Learn More</string>
   <string name="splash_button_get_started">Get Started</string>
   <string name="splash_payoff_line">Open Source low traffic social networking client with tree-like threaded conversations.
-	    Supports GNU social, Twitter and Pump.io.</string>
+	    Supports GNU social, Twitter, Mastodon and Pump.io.</string>
   <string name="status_destroyed">The message has been removed.</string>
   <string name="subtitle">Subtitle</string>
   <string name="summary_preference_accounts_absent">No AndStatus accounts yet</string>
