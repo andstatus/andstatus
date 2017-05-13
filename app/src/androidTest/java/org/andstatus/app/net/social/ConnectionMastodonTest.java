@@ -87,4 +87,45 @@ public class ConnectionMastodonTest extends InstrumentationTestCase {
         assertNotNull("timeline returned", timeline);
         assertEquals("Number of items in the Timeline", 5, timeline.size());
     }
+
+    public void testGetMentions() throws IOException {
+        String jso = RawResourceUtils.getString(this.getInstrumentation().getContext(),
+                org.andstatus.app.tests.R.raw.mastodon_notifications);
+        connection.getHttpMock().setResponse(jso);
+
+        List<MbTimelineItem> timeline = connection.getTimeline(Connection.ApiRoutineEnum.MENTIONS_TIMELINE,
+                new TimelinePosition(""), TimelinePosition.getEmpty(), 20, accountUserOid);
+        assertNotNull("timeline returned", timeline);
+        assertEquals("Number of items in the Timeline", 20, timeline.size());
+
+        int ind = 0;
+        assertEquals("Is not a message", MbTimelineItem.ItemType.MESSAGE, timeline.get(ind).getType());
+        MbMessage mbMessage = timeline.get(ind).mbMessage;
+        assertEquals("Favorited " + mbMessage, TriState.UNKNOWN, mbMessage.getFavoritedByMe());
+        assertEquals("Not reblogged " + mbMessage, true, mbMessage.isReblogged());
+        assertEquals("Author's username", "AndStatus", mbMessage.getAuthor().getUserName());
+        MbUser actor = mbMessage.getActor();
+        assertEquals("Actor's Oid", "15451", actor.oid);
+        assertEquals("Username", "Chaosphere", actor.getUserName());
+        assertEquals("WebfingerId", "Chaosphere@mastodon.social", actor.getWebFingerId());
+
+        ind = 19;
+        assertEquals("Is not a message", MbTimelineItem.ItemType.MESSAGE, timeline.get(ind).getType());
+        mbMessage = timeline.get(ind).mbMessage;
+        assertEquals("Favorited " + mbMessage, TriState.UNKNOWN, mbMessage.getFavoritedByMe());
+        actor = mbMessage.getActor();
+        assertEquals("Actor's Oid", "119218", actor.oid);
+        assertEquals("Username", "izwx6502", actor.getUserName());
+        assertEquals("WebfingerId", "izwx6502@mstdn.jp", actor.getWebFingerId());
+
+        ind = 17;
+        assertEquals("Is a message", MbTimelineItem.ItemType.USER, timeline.get(ind).getType());
+        MbUser user = timeline.get(ind).mbUser;
+        actor = user.actor;
+        assertEquals("Actor's Oid", "24853", actor.oid);
+        assertEquals("Username", "resir014", actor.getUserName());
+        assertEquals("WebfingerId", "resir014@icosahedron.website", actor.getWebFingerId());
+
+        assertEquals("Not followed", TriState.TRUE, user.followedByActor);
+    }
 }

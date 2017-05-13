@@ -52,6 +52,9 @@ public class ConnectionMastodon extends ConnectionTwitter1p0 {
             case HOME_TIMELINE:
                 url = "timelines/home";
                 break;
+            case MENTIONS_TIMELINE:
+                url = "notifications";
+                break;
             case FAVORITES_TIMELINE:
                 url = "favourites";
                 break;
@@ -127,6 +130,43 @@ public class ConnectionMastodon extends ConnectionTwitter1p0 {
         builder.appendQueryParameter("limit", String.valueOf(fixedDownloadLimitForApiRoutine(limit, apiRoutine)));
         JSONArray jArr = http.getRequestAsArray(builder.build().toString());
         return jArrToTimeline(jArr, apiRoutine, url);
+    }
+
+    @Override
+    protected MbTimelineItem timelineItemFromJson(JSONObject timelineItem) throws ConnectionException {
+        if (isNotification(timelineItem)) {
+            MbTimelineItem item = new MbTimelineItem();
+            item.timelineItemPosition = new TimelinePosition(timelineItem.optString("id"));
+            item.timelineItemDate = dateFromJson(timelineItem, "created_at");
+            MbUser actor = userFromJson(timelineItem.optJSONObject("account"));
+            item.mbMessage = messageFromJson(timelineItem.optJSONObject("status"));
+            item.mbMessage.setActor(actor);
+            item.mbMessage.sentDate = item.timelineItemDate;
+
+            switch (timelineItem.optString("type")) {
+                case "favourite":
+                    item.mbMessage.setFavorited(TriState.TRUE);
+                    break;
+                case "reblog":
+                    item.mbMessage.setReblogOid(timelineItem.optString("id"));
+                    break;
+                case "follow":
+                    item.mbUser = MbUser.fromOriginAndUserOid(data.getOriginId(), data.getAccountUserOid());
+                    item.mbUser.actor = actor;
+                    item.mbUser.followedByActor = TriState.TRUE;
+                    break;
+                default:
+                    break;
+            }
+            return item;
+        } else {
+            return super.timelineItemFromJson(timelineItem);
+        }
+
+    }
+
+    private boolean isNotification(JSONObject activity) {
+        return activity != null && !activity.isNull("type");
     }
 
     @Override
@@ -230,6 +270,7 @@ public class ConnectionMastodon extends ConnectionTwitter1p0 {
         user.actor = MbUser.fromOriginAndUserOid(data.getOriginId(), data.getAccountUserOid());
         user.setUserName(userName);
         user.setRealName(jso.optString("display_name"));
+        user.setWebFingerId(jso.optString("acct"));
         if (!SharedPreferencesUtil.isEmpty(user.getRealName())) {
             user.setProfileUrl(data.getOriginUrl());
         }

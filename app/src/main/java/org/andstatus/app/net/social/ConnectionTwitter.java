@@ -222,7 +222,7 @@ public abstract class ConnectionTwitter extends Connection {
         return jArrToTimeline(jArr, apiRoutine, url);
     }
 
-    private MbTimelineItem timelineItemFromJson(JSONObject jso) throws ConnectionException {
+    protected MbTimelineItem timelineItemFromJson(JSONObject jso) throws ConnectionException {
         MbTimelineItem item = new MbTimelineItem();
         item.mbMessage = messageFromJson(jso);
         item.timelineItemDate = item.mbMessage.sentDate; 
