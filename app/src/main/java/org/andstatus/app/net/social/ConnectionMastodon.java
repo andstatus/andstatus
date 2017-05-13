@@ -61,6 +61,9 @@ public class ConnectionMastodon extends ConnectionTwitter1p0 {
             case TAGS_TIMELINE:
                 url = "timelines/tag/%tag%";
                 break;
+            case USER_TIMELINE:
+                url = "accounts/%userId%/statuses";
+                break;
             case ACCOUNT_VERIFY_CREDENTIALS:
                 url = "accounts/verify_credentials";
                 break;
@@ -115,7 +118,7 @@ public class ConnectionMastodon extends ConnectionTwitter1p0 {
     public List<MbTimelineItem> getTimeline(ApiRoutineEnum apiRoutine, TimelinePosition youngestPosition,
                                             TimelinePosition oldestPosition, int limit, String userId)
             throws ConnectionException {
-        String url = this.getApiPath(apiRoutine);
+        String url = this.getApiPathWithUserId(apiRoutine, userId);
         Uri.Builder builder = Uri.parse(url).buildUpon();
         appendPositionParameters(builder, youngestPosition, oldestPosition);
         builder.appendQueryParameter("limit", String.valueOf(fixedDownloadLimitForApiRoutine(limit, apiRoutine)));
