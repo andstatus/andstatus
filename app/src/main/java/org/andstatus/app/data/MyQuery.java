@@ -599,6 +599,21 @@ public class MyQuery {
 
     @NonNull
     public static String msgIdToConversationOid(long msgId) {
-        return msgIdToStringColumnValue(MsgTable.CONVERSATION_OID, msgId);
+        if (msgId == 0) {
+            return "";
+        }
+        String oid = msgIdToStringColumnValue(MsgTable.CONVERSATION_OID, msgId);
+        if (!TextUtils.isEmpty(oid)) {
+            return oid;
+        }
+        long conversationId = MyQuery.msgIdToLongColumnValue(MsgTable.CONVERSATION_ID, msgId);
+        if (conversationId == 0) {
+            return idToOid(OidEnum.MSG_OID, msgId, 0);
+        }
+        oid = msgIdToStringColumnValue(MsgTable.CONVERSATION_OID, conversationId);
+        if (!TextUtils.isEmpty(oid)) {
+            return oid;
+        }
+        return idToOid(OidEnum.MSG_OID, conversationId, 0);
     }
 }

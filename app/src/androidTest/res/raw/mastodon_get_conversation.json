@@ -1,0 +1,245 @@
+{
+  "ancestors": [
+    {
+      "id": 5566577,
+      "created_at": "2017-05-10T14:48:56.000Z",
+      "in_reply_to_id": null,
+      "in_reply_to_account_id": null,
+      "sensitive": false,
+      "spoiler_text": "",
+      "visibility": "public",
+      "application": null,
+      "account": {
+        "id": 487,
+        "username": "thefaico",
+        "acct": "thefaico@loadaverage.org",
+        "display_name": "Juanjo Faico",
+        "locked": false,
+        "created_at": "2016-10-03T03:42:15.311Z",
+        "followers_count": 13,
+        "following_count": 20,
+        "statuses_count": 1403,
+        "note": "Ingeniero químico, técnico de poliuretanos, máster en gestión de recursos hídricos, cabrero. Amante de la ecología, el software libre, cómics, idiomas y más... Languages: English, Español, Français",
+        "url": "https:\/\/loadaverage.org\/thefaico",
+        "avatar": "https:\/\/files.mastodon.social\/accounts\/avatars\/000\/000\/487\/original\/339282-123-20150117102047.gif",
+        "avatar_static": "https:\/\/files.mastodon.social\/accounts\/avatars\/000\/000\/487\/static\/339282-123-20150117102047.png",
+        "header": "\/headers\/original\/missing.png",
+        "header_static": "\/headers\/original\/missing.png"
+      },
+      "media_attachments": [],
+      "mentions": [],
+      "tags": [
+        {
+          "name": "andstatus",
+          "url": "https:\/\/mastodon.social\/tags\/andstatus"
+        }
+      ],
+      "uri": "tag:loadaverage.org,2017-05-10:noticeId=10050026:objectType=note",
+      "content": "<a href=\"https:\/\/mastodon.social\/@thefaico\/5560568\">https:\/\/mastodon.social\/@thefaico\/5560568<\/a> Mastonautas usuarios de Android, ya se puede barritar desde #<span class=\"tag\"><a href=\"https:\/\/loadaverage.org\/tag\/andstatus\">AndStatus<\/a><\/span>, por el momento no parece funcionar la línea temporal Menciones\/Notificaciones, pero sí la línea de Inicio y Global (aparece como Público en la app). Respuestas, Favorito, Repetir todo bien, al menos desde mastodon.social. Si queréis probarlo tenéis que descargar la versión beta de la aplicación en el siguiente enlace <a href=\"https:\/\/github-cloud.s3.amazonaws.com\/assets\/repositories\/3040264\/984407?X-Amz-Algorithm=AWS4-HMAC-SHA256&amp;X-Amz-Credential=AKIAISTNZFOVBIJMK3TQ%2F20170510%2Fus-east-1%2Fs3%2Faws4_request&amp;X-Amz-Date=20170510T144914Z&amp;X-Amz-Expires=300&amp;X-Amz-Signature=73c3414400b2dd8d875d4c4b075ec7292a50e7092138e370d638780d68e86a3b&amp;X-Amz-SignedHeaders=host&amp;actor_id=0&amp;response-content-disposition=attachment%3Bfilename%3DAndStatus-33.03-release.zip&amp;response-content-type=application%2Fx-zip-compressed\">https:\/\/github.com\/andstatus\/andstatus\/files\/984407\/AndStatus-33.03-release.zip<\/a>",
+      "url": "https:\/\/loadaverage.org\/notice\/10050026",
+      "reblogs_count": 2,
+      "favourites_count": 0,
+      "reblog": null,
+      "favourited": null,
+      "reblogged": null
+    },
+    {
+      "id": 5587057,
+      "created_at": "2017-05-10T18:17:27.000Z",
+      "in_reply_to_id": 5566577,
+      "in_reply_to_account_id": 487,
+      "sensitive": false,
+      "spoiler_text": "",
+      "visibility": "public",
+      "application": null,
+      "account": {
+        "id": 112,
+        "username": "andstatus",
+        "acct": "andstatus@loadaverage.org",
+        "display_name": "AndStatus",
+        "locked": false,
+        "created_at": "2016-04-09T14:56:55.772Z",
+        "followers_count": 11,
+        "following_count": 1,
+        "statuses_count": 199,
+        "note": "Open Source low traffic social networking client for Android with tree-like threaded conversations. It supports different Social networks, including GNU social (e.g. Quitter.se, LoadAverage, etc.), Twitter and Pump.io. AndStatus can combine your feeds from all networks into one Timeline, and it allows you to read and post even when you are offline.",
+        "url": "https:\/\/loadaverage.org\/andstatus",
+        "avatar": "https:\/\/files.mastodon.social\/accounts\/avatars\/000\/000\/112\/original\/5263-96-20141214115410.png",
+        "avatar_static": "https:\/\/files.mastodon.social\/accounts\/avatars\/000\/000\/112\/original\/5263-96-20141214115410.png",
+        "header": "\/headers\/original\/missing.png",
+        "header_static": "\/headers\/original\/missing.png"
+      },
+      "media_attachments": [],
+      "mentions": [
+        {
+          "url": "https:\/\/loadaverage.org\/thefaico",
+          "acct": "thefaico@loadaverage.org",
+          "id": 487,
+          "username": "thefaico"
+        }
+      ],
+      "tags": [],
+      "uri": "tag:loadaverage.org,2017-05-10:noticeId=10051481:objectType=comment",
+      "content": "@<a href=\"https:\/\/loadaverage.org\/user\/339282\">thefaico<\/a> Actually v.33.03 is promoted to Release for Google Play users. I hope F-Droid build will appear soon.<br> Regarding Mentions timeline. It's not syncable,  because Mastodon doesn't provide such a feature,  but you will see Mentions it this timeline as soon as they will be downloaded via Home timeline\/feed.",
+      "url": "https:\/\/loadaverage.org\/notice\/10051481",
+      "reblogs_count": 0,
+      "favourites_count": 0,
+      "reblog": null,
+      "favourited": null,
+      "reblogged": null
+    }
+  ],
+  "descendants": [
+    {
+      "id": 5628083,
+      "created_at": "2017-05-11T05:29:58.000Z",
+      "in_reply_to_id": 5596683,
+      "in_reply_to_account_id": 487,
+      "sensitive": false,
+      "spoiler_text": "",
+      "visibility": "public",
+      "application": null,
+      "account": {
+        "id": 112,
+        "username": "andstatus",
+        "acct": "andstatus@loadaverage.org",
+        "display_name": "AndStatus",
+        "locked": false,
+        "created_at": "2016-04-09T14:56:55.772Z",
+        "followers_count": 11,
+        "following_count": 1,
+        "statuses_count": 199,
+        "note": "Open Source low traffic social networking client for Android with tree-like threaded conversations. It supports different Social networks, including GNU social (e.g. Quitter.se, LoadAverage, etc.), Twitter and Pump.io. AndStatus can combine your feeds from all networks into one Timeline, and it allows you to read and post even when you are offline.",
+        "url": "https:\/\/loadaverage.org\/andstatus",
+        "avatar": "https:\/\/files.mastodon.social\/accounts\/avatars\/000\/000\/112\/original\/5263-96-20141214115410.png",
+        "avatar_static": "https:\/\/files.mastodon.social\/accounts\/avatars\/000\/000\/112\/original\/5263-96-20141214115410.png",
+        "header": "\/headers\/original\/missing.png",
+        "header_static": "\/headers\/original\/missing.png"
+      },
+      "media_attachments": [],
+      "mentions": [
+        {
+          "url": "https:\/\/quitter.se\/perspicacious01",
+          "acct": "perspicacious01@quitter.se",
+          "id": 119209,
+          "username": "perspicacious01"
+        },
+        {
+          "url": "https:\/\/loadaverage.org\/thefaico",
+          "acct": "thefaico@loadaverage.org",
+          "id": 487,
+          "username": "thefaico"
+        }
+      ],
+      "tags": [
+        {
+          "name": "andstatus",
+          "url": "https:\/\/mastodon.social\/tags\/andstatus"
+        }
+      ],
+      "uri": "tag:loadaverage.org,2017-05-11:noticeId=10055183:objectType=comment",
+      "content": "@<a href=\"https:\/\/loadaverage.org\/user\/339282\">thefaico<\/a> Please help to improve #<span class=\"tag\"><a href=\"https:\/\/loadaverage.org\/tag\/andstatus\">AndStatus<\/a><\/span> translations joining this translation project: <a href=\"https:\/\/crowdin.com\/project\/andstatus\">https:\/\/crowdin.com\/project\/andstatus<\/a><br> @<a href=\"https:\/\/quitter.se\/user\/224357\">perspicacious01<\/a>",
+      "url": "https:\/\/loadaverage.org\/notice\/10055183",
+      "reblogs_count": 1,
+      "favourites_count": 0,
+      "reblog": null,
+      "favourited": null,
+      "reblogged": null
+    },
+    {
+      "id": 5740343,
+      "created_at": "2017-05-12T05:21:04.000Z",
+      "in_reply_to_id": 5596683,
+      "in_reply_to_account_id": 487,
+      "sensitive": false,
+      "spoiler_text": "",
+      "visibility": "public",
+      "application": null,
+      "account": {
+        "id": 112,
+        "username": "andstatus",
+        "acct": "andstatus@loadaverage.org",
+        "display_name": "AndStatus",
+        "locked": false,
+        "created_at": "2016-04-09T14:56:55.772Z",
+        "followers_count": 11,
+        "following_count": 1,
+        "statuses_count": 199,
+        "note": "Open Source low traffic social networking client for Android with tree-like threaded conversations. It supports different Social networks, including GNU social (e.g. Quitter.se, LoadAverage, etc.), Twitter and Pump.io. AndStatus can combine your feeds from all networks into one Timeline, and it allows you to read and post even when you are offline.",
+        "url": "https:\/\/loadaverage.org\/andstatus",
+        "avatar": "https:\/\/files.mastodon.social\/accounts\/avatars\/000\/000\/112\/original\/5263-96-20141214115410.png",
+        "avatar_static": "https:\/\/files.mastodon.social\/accounts\/avatars\/000\/000\/112\/original\/5263-96-20141214115410.png",
+        "header": "\/headers\/original\/missing.png",
+        "header_static": "\/headers\/original\/missing.png"
+      },
+      "media_attachments": [],
+      "mentions": [
+        {
+          "url": "https:\/\/loadaverage.org\/thefaico",
+          "acct": "thefaico@loadaverage.org",
+          "id": 487,
+          "username": "thefaico"
+        }
+      ],
+      "tags": [
+        {
+          "name": "andstatus",
+          "url": "https:\/\/mastodon.social\/tags\/andstatus"
+        }
+      ],
+      "uri": "tag:loadaverage.org,2017-05-12:noticeId=10062555:objectType=comment",
+      "content": "@<a href=\"https:\/\/loadaverage.org\/user\/339282\">thefaico<\/a> Thank you for Spanish translation update. I released #<span class=\"tag\"><a href=\"https:\/\/loadaverage.org\/tag\/andstatus\">AndStatus<\/a><\/span> v.33.04 with this update.<br> AndStatus translation project: <a href=\"https:\/\/crowdin.com\/project\/andstatus\">https:\/\/crowdin.com\/project\/andstatus<\/a>",
+      "url": "https:\/\/loadaverage.org\/notice\/10062555",
+      "reblogs_count": 0,
+      "favourites_count": 0,
+      "reblog": null,
+      "favourited": null,
+      "reblogged": null
+    },
+    {
+      "id": 5749848,
+      "created_at": "2017-05-12T07:49:37.000Z",
+      "in_reply_to_id": 5740343,
+      "in_reply_to_account_id": 112,
+      "sensitive": false,
+      "spoiler_text": "",
+      "visibility": "public",
+      "application": null,
+      "account": {
+        "id": 487,
+        "username": "thefaico",
+        "acct": "thefaico@loadaverage.org",
+        "display_name": "Juanjo Faico",
+        "locked": false,
+        "created_at": "2016-10-03T03:42:15.311Z",
+        "followers_count": 13,
+        "following_count": 20,
+        "statuses_count": 1403,
+        "note": "Ingeniero químico, técnico de poliuretanos, máster en gestión de recursos hídricos, cabrero. Amante de la ecología, el software libre, cómics, idiomas y más... Languages: English, Español, Français",
+        "url": "https:\/\/loadaverage.org\/thefaico",
+        "avatar": "https:\/\/files.mastodon.social\/accounts\/avatars\/000\/000\/487\/original\/339282-123-20150117102047.gif",
+        "avatar_static": "https:\/\/files.mastodon.social\/accounts\/avatars\/000\/000\/487\/static\/339282-123-20150117102047.png",
+        "header": "\/headers\/original\/missing.png",
+        "header_static": "\/headers\/original\/missing.png"
+      },
+      "media_attachments": [],
+      "mentions": [
+        {
+          "url": "https:\/\/loadaverage.org\/andstatus",
+          "acct": "andstatus@loadaverage.org",
+          "id": 112,
+          "username": "andstatus"
+        }
+      ],
+      "tags": [],
+      "uri": "tag:loadaverage.org,2017-05-12:noticeId=10063222:objectType=comment",
+      "content": "@<a href=\"https:\/\/loadaverage.org\/user\/5263\">andstatus<\/a> a pleasure!",
+      "url": "https:\/\/loadaverage.org\/notice\/10063222",
+      "reblogs_count": 0,
+      "favourites_count": 0,
+      "reblog": null,
+      "favourited": null,
+      "reblogged": null
+    }
+  ]
+}

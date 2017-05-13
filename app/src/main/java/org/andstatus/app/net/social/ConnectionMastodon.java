@@ -79,6 +79,9 @@ public class ConnectionMastodon extends ConnectionTwitter1p0 {
             case SEARCH_MESSAGES:
                 url = "search";
                 break;
+            case GET_CONVERSATION:
+                url = "statuses/%messageId%/context";
+                break;
             case CREATE_FAVORITE:
                 url = "statuses/%messageId%/favourite";
                 break;
@@ -149,21 +152,47 @@ public class ConnectionMastodon extends ConnectionTwitter1p0 {
     }
 
     @Override
+    public List<MbTimelineItem> getConversation(String conversationOid) throws ConnectionException {
+        List<MbTimelineItem> timeline = new ArrayList<>();
+        if (TextUtils.isEmpty(conversationOid)) {
+            return timeline;
+        }
+        String url = getApiPathWithMessageId(ApiRoutineEnum.GET_CONVERSATION, conversationOid);
+        JSONObject mastodonContext = http.getRequest(url);
+        try {
+            if (mastodonContext.has("ancestors")) {
+                timeline.addAll(jArrToTimeline(mastodonContext.getJSONArray("ancestors"),
+                        ApiRoutineEnum.GET_CONVERSATION, url));
+            }
+            if (mastodonContext.has("descendants")) {
+                timeline.addAll(jArrToTimeline(mastodonContext.getJSONArray("descendants"),
+                        ApiRoutineEnum.GET_CONVERSATION, url));
+            }
+        } catch (JSONException e) {
+            throw ConnectionException.loggedJsonException(this, "Error getting conversation '" + conversationOid + "'",
+                    e, mastodonContext);
+        }
+        return timeline;
+    }
+
+
+    @Override
     public MbMessage updateStatus(String message, String statusId, String inReplyToId, Uri mediaUri) throws ConnectionException {
         JSONObject formParams = new JSONObject();
+        JSONObject mediaObject = null;
         try {
             formParams.put("status", message);
             if ( !TextUtils.isEmpty(inReplyToId)) {
                 formParams.put("in_reply_to_id", inReplyToId);
             }
             if (!UriUtils.isEmpty(mediaUri)) {
-                JSONObject mediaObject = uploadMedia(mediaUri);
+                mediaObject = uploadMedia(mediaUri);
                 if (mediaObject != null && mediaObject.has("id")) {
                     formParams.put("media_ids[]", mediaObject.get("id"));
                 }
             }
         } catch (JSONException e) {
-            MyLog.e(this, e);
+            throw ConnectionException.loggedJsonException(this, "Error posting message '" + mediaUri + "'", e, mediaObject);
         }
         JSONObject jso = postRequest(ApiRoutineEnum.POST_MESSAGE, formParams);
         return messageFromJson(jso);
@@ -182,7 +211,7 @@ public class ConnectionMastodon extends ConnectionTwitter1p0 {
                 }
             }
         } catch (JSONException e) {
-            throw ConnectionException.loggedJsonException(this, "Error uploading '" + mediaUri.toString() + "'", e, jso);
+            throw ConnectionException.loggedJsonException(this, "Error uploading '" + mediaUri + "'", e, jso);
         }
         return jso;
     }

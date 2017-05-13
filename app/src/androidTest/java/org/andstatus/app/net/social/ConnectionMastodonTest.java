@@ -77,4 +77,14 @@ public class ConnectionMastodonTest extends InstrumentationTestCase {
         assertEquals("Content type", UriUtils.fromString("https://files.neumastodon.com/media_attachments/files/000/306/223/original/e678f956970a585b.png?1492832537"),
                 attachment.getUri());
     }
+
+    public void testGetConversation() throws IOException {
+        String jso = RawResourceUtils.getString(this.getInstrumentation().getContext(),
+                org.andstatus.app.tests.R.raw.mastodon_get_conversation);
+        connection.getHttpMock().setResponse(jso);
+
+        List<MbTimelineItem> timeline = connection.getConversation("5596683");
+        assertNotNull("timeline returned", timeline);
+        assertEquals("Number of items in the Timeline", 5, timeline.size());
+    }
 }
