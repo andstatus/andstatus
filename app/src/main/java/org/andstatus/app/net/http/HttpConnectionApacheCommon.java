@@ -65,7 +65,7 @@ public class HttpConnectionApacheCommon {
             if ( !result.hasFormParams()) {
                 // Nothing to do at this step
             } else if (result.getFormParams().has(HttpConnection.KEY_MEDIA_PART_URI)) {
-                httpPost.setEntity(multiPartFormEntity(result.getFormParams(), result.isLegacyHttpProtocol()));
+                httpPost.setEntity(multiPartFormEntity(result.getFormParams()));
             } else {
                 fillSinglePartPost(httpPost, result.getFormParams());
             }
@@ -75,7 +75,7 @@ public class HttpConnectionApacheCommon {
         }
     }
 
-    public static HttpEntity multiPartFormEntity(JSONObject formParams, boolean noStreamParts) throws
+    public static HttpEntity multiPartFormEntity(JSONObject formParams) throws
             ConnectionException {
         MultipartEntityBuilder builder = MultipartEntityBuilder.create();
         Uri mediaUri = null;
@@ -99,11 +99,7 @@ public class HttpConnectionApacheCommon {
             try {
                 ins = MyContextHolder.get().context().getContentResolver().openInputStream(mediaUri);
                 ContentType mediaContentType = ContentType.create(MyContentType.uri2MimeType(mediaUri, null));
-                if (noStreamParts) {
-                    builder.addBinaryBody(mediaPartName, FileUtils.getBytes(ins), mediaContentType, mediaUri.getPath());
-                } else {
-                    builder.addBinaryBody(mediaPartName, ins, mediaContentType, mediaUri.getPath());
-                }
+                builder.addBinaryBody(mediaPartName, FileUtils.getBytes(ins), mediaContentType, mediaUri.getPath());
             } catch (SecurityException | IOException e) {
                 throw ConnectionException.hardConnectionException("mediaUri='" + mediaUri + "'", e);
             } finally {
