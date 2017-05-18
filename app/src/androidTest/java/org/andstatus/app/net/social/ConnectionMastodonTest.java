@@ -45,14 +45,14 @@ public class ConnectionMastodonTest extends InstrumentationTestCase {
                 org.andstatus.app.tests.R.raw.mastodon_home_timeline);
         connection.getHttpMock().setResponse(jso);
 
-        List<MbTimelineItem> timeline = connection.getTimeline(Connection.ApiRoutineEnum.HOME_TIMELINE,
+        List<MbActivity> timeline = connection.getTimeline(Connection.ApiRoutineEnum.HOME_TIMELINE,
                 new TimelinePosition("2656388"), TimelinePosition.getEmpty(), 20, accountUserOid);
         assertNotNull("timeline returned", timeline);
         int size = 1;
         assertEquals("Number of items in the Timeline", size, timeline.size());
 
         int ind = 0;
-        assertEquals("Is not a message", MbTimelineItem.ItemType.MESSAGE, timeline.get(ind).getType());
+        assertEquals("Is not a message", MbObjectType.MESSAGE, timeline.get(ind).getObjectType());
         MbMessage mbMessage = timeline.get(ind).mbMessage;
         assertEquals("Favorited", TriState.UNKNOWN, mbMessage.getFavoritedByMe());
         MbUser sender = mbMessage.getAuthor();
@@ -83,7 +83,7 @@ public class ConnectionMastodonTest extends InstrumentationTestCase {
                 org.andstatus.app.tests.R.raw.mastodon_get_conversation);
         connection.getHttpMock().setResponse(jso);
 
-        List<MbTimelineItem> timeline = connection.getConversation("5596683");
+        List<MbActivity> timeline = connection.getConversation("5596683");
         assertNotNull("timeline returned", timeline);
         assertEquals("Number of items in the Timeline", 5, timeline.size());
     }
@@ -93,13 +93,13 @@ public class ConnectionMastodonTest extends InstrumentationTestCase {
                 org.andstatus.app.tests.R.raw.mastodon_notifications);
         connection.getHttpMock().setResponse(jso);
 
-        List<MbTimelineItem> timeline = connection.getTimeline(Connection.ApiRoutineEnum.MENTIONS_TIMELINE,
+        List<MbActivity> timeline = connection.getTimeline(Connection.ApiRoutineEnum.MENTIONS_TIMELINE,
                 new TimelinePosition(""), TimelinePosition.getEmpty(), 20, accountUserOid);
         assertNotNull("timeline returned", timeline);
         assertEquals("Number of items in the Timeline", 20, timeline.size());
 
         int ind = 0;
-        assertEquals("Is not a message", MbTimelineItem.ItemType.MESSAGE, timeline.get(ind).getType());
+        assertEquals("Is not a message", MbObjectType.MESSAGE, timeline.get(ind).getObjectType());
         MbMessage mbMessage = timeline.get(ind).mbMessage;
         assertEquals("Favorited " + mbMessage, TriState.UNKNOWN, mbMessage.getFavoritedByMe());
         assertEquals("Not reblogged " + mbMessage, true, mbMessage.isReblogged());
@@ -110,7 +110,7 @@ public class ConnectionMastodonTest extends InstrumentationTestCase {
         assertEquals("WebfingerId", "Chaosphere@mastodon.social", actor.getWebFingerId());
 
         ind = 19;
-        assertEquals("Is not a message", MbTimelineItem.ItemType.MESSAGE, timeline.get(ind).getType());
+        assertEquals("Is not a message", MbObjectType.MESSAGE, timeline.get(ind).getObjectType());
         mbMessage = timeline.get(ind).mbMessage;
         assertEquals("Favorited " + mbMessage, TriState.UNKNOWN, mbMessage.getFavoritedByMe());
         actor = mbMessage.getActor();
@@ -119,7 +119,7 @@ public class ConnectionMastodonTest extends InstrumentationTestCase {
         assertEquals("WebfingerId", "izwx6502@mstdn.jp", actor.getWebFingerId());
 
         ind = 17;
-        assertEquals("Is a message", MbTimelineItem.ItemType.USER, timeline.get(ind).getType());
+        assertEquals("Is a message", MbObjectType.USER, timeline.get(ind).getObjectType());
         MbUser user = timeline.get(ind).mbUser;
         actor = user.actor;
         assertEquals("Actor's Oid", "24853", actor.oid);

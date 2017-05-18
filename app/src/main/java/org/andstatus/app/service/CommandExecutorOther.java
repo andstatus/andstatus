@@ -35,7 +35,7 @@ import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.ConnectionException.StatusCode;
 import org.andstatus.app.net.social.MbMessage;
 import org.andstatus.app.net.social.MbRateLimitStatus;
-import org.andstatus.app.net.social.MbTimelineItem;
+import org.andstatus.app.net.social.MbActivity;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
@@ -103,11 +103,11 @@ class CommandExecutorOther extends CommandExecutorStrategy{
             logExecutionError(true, method + " empty conversationId " + MyQuery.msgInfoForLog(msgId));
         } else {
             try {
-                List<MbTimelineItem> messages = execContext.getMyAccount().getConnection().getConversation(conversationOid);
+                List<MbActivity> messages = execContext.getMyAccount().getConnection().getConversation(conversationOid);
                 if (!messages.isEmpty()) {
                     DataInserter di = new DataInserter(execContext);
-                    for (MbTimelineItem item : messages) {
-                        switch (item.getType()) {
+                    for (MbActivity item : messages) {
+                        switch (item.getObjectType()) {
                             case MESSAGE:
                                 di.insertOrUpdateMsg(item.mbMessage);
                                 break;

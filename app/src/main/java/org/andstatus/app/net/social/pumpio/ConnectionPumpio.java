@@ -31,7 +31,7 @@ import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.net.social.MbAttachment;
 import org.andstatus.app.net.social.MbMessage;
 import org.andstatus.app.net.social.MbRateLimitStatus;
-import org.andstatus.app.net.social.MbTimelineItem;
+import org.andstatus.app.net.social.MbActivity;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.net.social.TimelinePosition;
 import org.andstatus.app.origin.OriginConnectionData;
@@ -314,8 +314,8 @@ public class ConnectionPumpio extends Connection {
     }
 
     @Override
-    public List<MbTimelineItem> getTimeline(ApiRoutineEnum apiRoutine, TimelinePosition youngestPosition,
-                                            TimelinePosition oldestPosition, int limit, String userId)
+    public List<MbActivity> getTimeline(ApiRoutineEnum apiRoutine, TimelinePosition youngestPosition,
+                                        TimelinePosition oldestPosition, int limit, String userId)
             throws ConnectionException {
         ConnectionAndUrl conu = getConnectionAndUrl(apiRoutine, userId);
         Uri sUri = Uri.parse(conu.url);
@@ -330,13 +330,13 @@ public class ConnectionPumpio extends Connection {
         builder.appendQueryParameter("count",String.valueOf(fixedDownloadLimitForApiRoutine(limit, apiRoutine)));
         String url = builder.build().toString();
         JSONArray jArr = conu.httpConnection.getRequestAsArray(url);
-        List<MbTimelineItem> timeline = new ArrayList<>();
+        List<MbActivity> timeline = new ArrayList<>();
         if (jArr != null) {
             // Read the activities in chronological order
             for (int index = jArr.length() - 1; index >= 0; index--) {
                 try {
                     JSONObject jso = jArr.getJSONObject(index);
-                    MbTimelineItem item = timelineItemFromJson(jso);
+                    MbActivity item = timelineItemFromJson(jso);
                     timeline.add(item);
                 } catch (JSONException e) {
                     throw ConnectionException.loggedJsonException(this, "Parsing timeline", e, null);
@@ -357,8 +357,8 @@ public class ConnectionPumpio extends Connection {
         return out;
     }
 
-    private MbTimelineItem timelineItemFromJson(JSONObject activity) throws ConnectionException {
-        MbTimelineItem item = new MbTimelineItem();
+    private MbActivity timelineItemFromJson(JSONObject activity) throws ConnectionException {
+        MbActivity item = new MbActivity();
         if (ObjectType.ACTIVITY.isMyType(activity)) {
             try {
                 item.timelineItemPosition = new TimelinePosition(activity.optString("id"));
@@ -591,8 +591,8 @@ public class ConnectionPumpio extends Connection {
     }
     
     @Override
-    public List<MbTimelineItem> search(TimelinePosition youngestPosition,
-                                       TimelinePosition oldestPosition, int limit, String searchQuery)
+    public List<MbActivity> search(TimelinePosition youngestPosition,
+                                   TimelinePosition oldestPosition, int limit, String searchQuery)
             throws ConnectionException {
         return new ArrayList<>();
     }

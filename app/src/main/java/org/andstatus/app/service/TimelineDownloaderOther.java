@@ -25,7 +25,7 @@ import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.ConnectionException.StatusCode;
-import org.andstatus.app.net.social.MbTimelineItem;
+import org.andstatus.app.net.social.MbActivity;
 import org.andstatus.app.net.social.TimelinePosition;
 import org.andstatus.app.timeline.TimelineSyncTracker;
 import org.andstatus.app.util.MyLog;
@@ -83,7 +83,7 @@ class TimelineDownloaderOther extends TimelineDownloader {
             try {
                 int limit = execContext.getMyAccount().getConnection().fixedDownloadLimitForApiRoutine(
                         toDownload, getTimeline().getTimelineType().getConnectionApiRoutine());
-                List<MbTimelineItem> messages;
+                List<MbActivity> messages;
                 switch (getTimeline().getTimelineType()) {
                     case SEARCH:
                         messages = execContext.getMyAccount().getConnection().search(
@@ -99,10 +99,10 @@ class TimelineDownloaderOther extends TimelineDownloader {
                                 limit, userOid);
                         break;
                 }
-                for (MbTimelineItem item : messages) {
+                for (MbActivity item : messages) {
                     toDownload--;
                     syncTracker.onNewMsg(item.timelineItemPosition, item.timelineItemDate);
-                    switch (item.getType()) {
+                    switch (item.getObjectType()) {
                         case MESSAGE:
                             di.insertOrUpdateMsg(item.mbMessage, latestUserMessages);
                             break;

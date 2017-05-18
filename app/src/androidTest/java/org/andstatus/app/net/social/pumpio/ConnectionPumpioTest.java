@@ -32,7 +32,8 @@ import org.andstatus.app.net.http.OAuthClientKeys;
 import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
 import org.andstatus.app.net.social.MbAttachment;
 import org.andstatus.app.net.social.MbMessage;
-import org.andstatus.app.net.social.MbTimelineItem;
+import org.andstatus.app.net.social.MbActivity;
+import org.andstatus.app.net.social.MbObjectType;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.net.social.TimelinePosition;
 import org.andstatus.app.net.social.pumpio.ConnectionPumpio.ConnectionAndUrl;
@@ -157,14 +158,14 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
                 org.andstatus.app.tests.R.raw.pumpio_user_t131t_inbox);
         httpConnectionMock.setResponse(jso);
         
-        List<MbTimelineItem> timeline = connection.getTimeline(ApiRoutineEnum.HOME_TIMELINE,
+        List<MbActivity> timeline = connection.getTimeline(ApiRoutineEnum.HOME_TIMELINE,
                 new TimelinePosition(sinceId), TimelinePosition.getEmpty(), 20, "acct:t131t@" + originUrl.getHost());
         assertNotNull("timeline returned", timeline);
         int size = 6;
         assertEquals("Number of items in the Timeline", size, timeline.size());
 
         int ind = 0;
-        assertEquals("Posting image", MbTimelineItem.ItemType.MESSAGE, timeline.get(ind).getType());
+        assertEquals("Posting image", MbObjectType.MESSAGE, timeline.get(ind).getObjectType());
         MbMessage mbMessage = timeline.get(ind).mbMessage;
         assertTrue("Message body: '" + mbMessage.getBody() + "'", mbMessage.getBody().contains("Fantastic wheel stand"));
         assertEquals("Message sent date: " + TestSuite.utcTime(mbMessage.sentDate),
@@ -193,14 +194,14 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         assertEquals("Favorited by me (" + mbMessage.myUserOid + ")", TriState.UNKNOWN, mbMessage.getFavoritedByMe());
 
         ind++;
-        assertEquals("Other User", MbTimelineItem.ItemType.USER, timeline.get(ind).getType());
+        assertEquals("Other User", MbObjectType.USER, timeline.get(ind).getObjectType());
         MbUser mbUser = timeline.get(ind).mbUser;
         assertEquals("Other actor", "acct:jpope@io.jpope.org", mbUser.actor.oid);
         assertEquals("WebFinger ID", "jpope@io.jpope.org", mbUser.actor.getWebFingerId());
         assertEquals("Following", TriState.TRUE, mbUser.followedByActor);
 
         ind++;
-        assertEquals("User", MbTimelineItem.ItemType.USER, timeline.get(ind).getType());
+        assertEquals("User", MbObjectType.USER, timeline.get(ind).getObjectType());
         mbUser = timeline.get(ind).mbUser;
         assertEquals("Url of the actor", "https://identi.ca/t131t", mbUser.actor.getProfileUrl());
         assertEquals("WebFinger ID", "t131t@identi.ca", mbUser.actor.getWebFingerId());

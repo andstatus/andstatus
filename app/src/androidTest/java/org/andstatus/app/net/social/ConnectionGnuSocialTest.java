@@ -54,14 +54,14 @@ public class ConnectionGnuSocialTest extends InstrumentationTestCase {
                 org.andstatus.app.tests.R.raw.quitter_home);
         connection.getHttpMock().setResponse(jso);
         
-        List<MbTimelineItem> timeline = connection.getTimeline(ApiRoutineEnum.PUBLIC_TIMELINE,
+        List<MbActivity> timeline = connection.getTimeline(ApiRoutineEnum.PUBLIC_TIMELINE,
                 new TimelinePosition("2656388"), TimelinePosition.getEmpty(), 20, accountUserOid);
         assertNotNull("timeline returned", timeline);
         int size = 3;
         assertEquals("Number of items in the Timeline", size, timeline.size());
 
         int ind = 0;
-        assertEquals("Posting message", MbTimelineItem.ItemType.MESSAGE, timeline.get(ind).getType());
+        assertEquals("Posting message", MbObjectType.MESSAGE, timeline.get(ind).getObjectType());
         MbMessage mbMessage = timeline.get(ind).mbMessage;
         assertEquals("conversationOid", "2218650", mbMessage.conversationOid);
         assertTrue("Favorited", mbMessage.getFavoritedByMe().toBoolean(false));
@@ -126,7 +126,7 @@ public class ConnectionGnuSocialTest extends InstrumentationTestCase {
                 org.andstatus.app.tests.R.raw.twitter_home_timeline);
         connection.getHttpMock().setResponse(jso);
         
-        List<MbTimelineItem> timeline = connection.search(new TimelinePosition(""), TimelinePosition.getEmpty(), 20,
+        List<MbActivity> timeline = connection.search(new TimelinePosition(""), TimelinePosition.getEmpty(), 20,
                 TestSuite.GLOBAL_PUBLIC_MESSAGE_TEXT);
         assertNotNull("timeline returned", timeline);
         int size = 4;

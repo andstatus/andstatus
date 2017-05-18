@@ -80,7 +80,7 @@ public class ConnectionTwitterTest extends InstrumentationTestCase {
                 org.andstatus.app.tests.R.raw.twitter_home_timeline);
         httpConnection.setResponse(jso);
         
-        List<MbTimelineItem> timeline = connection.getTimeline(ApiRoutineEnum.HOME_TIMELINE,
+        List<MbActivity> timeline = connection.getTimeline(ApiRoutineEnum.HOME_TIMELINE,
                 new TimelinePosition("380925803053449216") , TimelinePosition.getEmpty(), 20, connectionData.getAccountUserOid());
         assertNotNull("timeline returned", timeline);
         int size = 4;
@@ -88,7 +88,7 @@ public class ConnectionTwitterTest extends InstrumentationTestCase {
 
         int ind = 0;
         String hostName = TestSuite.getTestOriginHost(TestSuite.TWITTER_TEST_ORIGIN_NAME).replace("api.", "");
-        assertEquals("Posting message", MbTimelineItem.ItemType.MESSAGE, timeline.get(ind).getType());
+        assertEquals("Posting message", MbObjectType.MESSAGE, timeline.get(ind).getObjectType());
         MbMessage message = timeline.get(ind).mbMessage;
         assertTrue("Favorited", message.getFavoritedByMe().toBoolean(false));
         assertEquals("Actor", connectionData.getAccountUserOid(), message.myUserOid);

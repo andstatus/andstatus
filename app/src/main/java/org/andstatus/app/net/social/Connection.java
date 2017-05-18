@@ -29,7 +29,6 @@ import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.net.http.HttpConnectionData;
 import org.andstatus.app.net.http.HttpConnectionMock;
 import org.andstatus.app.net.http.OAuthService;
-import org.andstatus.app.net.social.MbTimelineItem.ItemType;
 import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.util.MyLog;
 import org.json.JSONArray;
@@ -296,7 +295,7 @@ public abstract class Connection {
     /** See {@link #getMessage(String)} */
     protected abstract MbMessage getMessage1(String statusId) throws ConnectionException;
 
-    public List<MbTimelineItem> getConversation(String conversationOid) throws ConnectionException {
+    public List<MbActivity> getConversation(String conversationOid) throws ConnectionException {
         throw ConnectionException.fromStatusCode(StatusCode.UNSUPPORTED_API, "getConversation oid=" + conversationOid);
     }
 
@@ -349,13 +348,13 @@ public abstract class Connection {
      * @param userId For the {@link ApiRoutineEnum#USER_TIMELINE}, null for the other timelines
      */
     @NonNull
-    public abstract List<MbTimelineItem> getTimeline(ApiRoutineEnum apiRoutine, TimelinePosition youngestPosition,
-            TimelinePosition oldestPosition, int limit, String userId)
+    public abstract List<MbActivity> getTimeline(ApiRoutineEnum apiRoutine, TimelinePosition youngestPosition,
+                                                 TimelinePosition oldestPosition, int limit, String userId)
             throws ConnectionException;
 
     @NonNull
-    public abstract List<MbTimelineItem> search(TimelinePosition youngestPosition,
-                                                TimelinePosition oldestPosition, int limit, String searchQuery)
+    public abstract List<MbActivity> search(TimelinePosition youngestPosition,
+                                            TimelinePosition oldestPosition, int limit, String searchQuery)
             throws ConnectionException;
     
     /**
@@ -520,9 +519,9 @@ public abstract class Connection {
         return unixDate;
     }
 
-    protected void setMessagesPublic(List<MbTimelineItem> timeline) {
-        for (MbTimelineItem item : timeline) {
-            if (item.getType() == ItemType.MESSAGE) {
+    protected void setMessagesPublic(List<MbActivity> timeline) {
+        for (MbActivity item : timeline) {
+            if (item.getObjectType() == MbObjectType.MESSAGE) {
                 item.mbMessage.setPublic(true);
             }
         }

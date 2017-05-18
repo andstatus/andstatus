@@ -153,7 +153,7 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitter1p0 {
     }
 
     @Override
-    public List<MbTimelineItem> getConversation(String conversationOid) throws ConnectionException {
+    public List<MbActivity> getConversation(String conversationOid) throws ConnectionException {
         if (TextUtils.isEmpty(conversationOid)) {
             return new ArrayList<>();
         } else {

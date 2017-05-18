@@ -207,8 +207,8 @@ public abstract class ConnectionTwitter extends Connection {
     }
 
     @Override
-    public List<MbTimelineItem> getTimeline(ApiRoutineEnum apiRoutine, TimelinePosition youngestPosition,
-                                            TimelinePosition oldestPosition, int limit, String userId)
+    public List<MbActivity> getTimeline(ApiRoutineEnum apiRoutine, TimelinePosition youngestPosition,
+                                        TimelinePosition oldestPosition, int limit, String userId)
             throws ConnectionException {
         String url = this.getApiPath(apiRoutine);
         Uri sUri = Uri.parse(url);
@@ -222,8 +222,8 @@ public abstract class ConnectionTwitter extends Connection {
         return jArrToTimeline(jArr, apiRoutine, url);
     }
 
-    protected MbTimelineItem timelineItemFromJson(JSONObject jso) throws ConnectionException {
-        MbTimelineItem item = new MbTimelineItem();
+    protected MbActivity timelineItemFromJson(JSONObject jso) throws ConnectionException {
+        MbActivity item = new MbActivity();
         item.mbMessage = messageFromJson(jso);
         item.timelineItemDate = item.mbMessage.sentDate; 
         item.timelineItemPosition = new TimelinePosition(item.mbMessage.oid);
@@ -385,8 +385,8 @@ public abstract class ConnectionTwitter extends Connection {
     }
 
     @Override
-    public List<MbTimelineItem> search(TimelinePosition youngestPosition,
-                                       TimelinePosition oldestPosition, int limit, String searchQuery)
+    public List<MbActivity> search(TimelinePosition youngestPosition,
+                                   TimelinePosition oldestPosition, int limit, String searchQuery)
             throws ConnectionException {
         ApiRoutineEnum apiRoutine = ApiRoutineEnum.SEARCH_MESSAGES;
         String url = this.getApiPath(apiRoutine);
@@ -417,14 +417,14 @@ public abstract class ConnectionTwitter extends Connection {
         }
     }
 
-    List<MbTimelineItem> jArrToTimeline(JSONArray jArr, ApiRoutineEnum apiRoutine, String url) throws ConnectionException {
-        List<MbTimelineItem> timeline = new ArrayList<>();
+    List<MbActivity> jArrToTimeline(JSONArray jArr, ApiRoutineEnum apiRoutine, String url) throws ConnectionException {
+        List<MbActivity> timeline = new ArrayList<>();
         if (jArr != null) {
             // Read the activities in chronological order
             for (int index = jArr.length() - 1; index >= 0; index--) {
                 try {
                     JSONObject jso = jArr.getJSONObject(index);
-                    MbTimelineItem item = timelineItemFromJson(jso);
+                    MbActivity item = timelineItemFromJson(jso);
                     timeline.add(item);
                 } catch (JSONException e) {
                     throw ConnectionException.loggedJsonException(this, "Parsing " + apiRoutine, e, null);

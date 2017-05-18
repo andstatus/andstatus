@@ -121,8 +121,8 @@ public class ConnectionMastodon extends ConnectionTwitter1p0 {
     }
 
     @Override
-    public List<MbTimelineItem> getTimeline(ApiRoutineEnum apiRoutine, TimelinePosition youngestPosition,
-                                            TimelinePosition oldestPosition, int limit, String userId)
+    public List<MbActivity> getTimeline(ApiRoutineEnum apiRoutine, TimelinePosition youngestPosition,
+                                        TimelinePosition oldestPosition, int limit, String userId)
             throws ConnectionException {
         String url = this.getApiPathWithUserId(apiRoutine, userId);
         Uri.Builder builder = Uri.parse(url).buildUpon();
@@ -133,9 +133,9 @@ public class ConnectionMastodon extends ConnectionTwitter1p0 {
     }
 
     @Override
-    protected MbTimelineItem timelineItemFromJson(JSONObject timelineItem) throws ConnectionException {
+    protected MbActivity timelineItemFromJson(JSONObject timelineItem) throws ConnectionException {
         if (isNotification(timelineItem)) {
-            MbTimelineItem item = new MbTimelineItem();
+            MbActivity item = new MbActivity();
             item.timelineItemPosition = new TimelinePosition(timelineItem.optString("id"));
             item.timelineItemDate = dateFromJson(timelineItem, "created_at");
             MbUser actor = userFromJson(timelineItem.optJSONObject("account"));
@@ -170,8 +170,8 @@ public class ConnectionMastodon extends ConnectionTwitter1p0 {
     }
 
     @Override
-    public List<MbTimelineItem> search(TimelinePosition youngestPosition,
-                                       TimelinePosition oldestPosition, int limit, String searchQuery)
+    public List<MbActivity> search(TimelinePosition youngestPosition,
+                                   TimelinePosition oldestPosition, int limit, String searchQuery)
             throws ConnectionException {
         String tag = new KeywordsFilter(searchQuery).getFirstTagOrFirstKeyword();
         if (TextUtils.isEmpty(tag)) {
@@ -192,8 +192,8 @@ public class ConnectionMastodon extends ConnectionTwitter1p0 {
     }
 
     @Override
-    public List<MbTimelineItem> getConversation(String conversationOid) throws ConnectionException {
-        List<MbTimelineItem> timeline = new ArrayList<>();
+    public List<MbActivity> getConversation(String conversationOid) throws ConnectionException {
+        List<MbActivity> timeline = new ArrayList<>();
         if (TextUtils.isEmpty(conversationOid)) {
             return timeline;
         }

@@ -131,8 +131,8 @@ public class ConnectionTwitter1p1 extends ConnectionTwitter {
     }
 
     @Override
-    public List<MbTimelineItem> search(TimelinePosition youngestPosition,
-                                       TimelinePosition oldestPosition, int limit, String searchQuery)
+    public List<MbActivity> search(TimelinePosition youngestPosition,
+                                   TimelinePosition oldestPosition, int limit, String searchQuery)
             throws ConnectionException {
         ApiRoutineEnum apiRoutine = ApiRoutineEnum.SEARCH_MESSAGES;
         String url = this.getApiPath(apiRoutine);

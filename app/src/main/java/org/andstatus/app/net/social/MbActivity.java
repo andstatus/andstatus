@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2017 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,29 +16,25 @@
 
 package org.andstatus.app.net.social;
 
-public class MbTimelineItem {
-    public enum ItemType {
-        MESSAGE,
-        USER,
-        EMPTY
-    }
+/** Activity in a sense of Activity Streams https://www.w3.org/TR/activitystreams-core/ */
+public class MbActivity {
     public TimelinePosition timelineItemPosition = null;
     public long timelineItemDate = 0;
 
     public MbMessage mbMessage = null;
     public MbUser mbUser = null;
-    
-    public ItemType getType() {
+
+    public MbObjectType getObjectType() {
         if (mbMessage != null && !mbMessage.isEmpty()) {
-            return ItemType.MESSAGE;
+            return MbObjectType.MESSAGE;
         } else if ( mbUser != null && !mbUser.isEmpty()) {
-            return ItemType.USER;
+            return MbObjectType.USER;
         } else {
-            return ItemType.EMPTY;
+            return MbObjectType.EMPTY;
         }
     }
 
     public boolean isEmpty() {
-        return getType() == ItemType.EMPTY;
+        return getObjectType() == MbObjectType.EMPTY;
     }
 }
