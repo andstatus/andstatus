@@ -91,7 +91,7 @@ public class TimelineSql {
                 }
                 String userTable = "(SELECT "
                         + BaseColumns._ID
-                        + (defineAuthorName ? ", " + UserTable.USERNAME + " AS " + UserTable.AUTHOR_NAME : "")
+                        + (defineAuthorName ? ", " + TimelineSql.userNameField() + " AS " + UserTable.AUTHOR_NAME : "")
                         + ", " + UserTable.USER_MSG_ID
                         + " FROM " + UserTable.TABLE_NAME + ")";
                 msgTable += " INNER JOIN " + userTable + " as u1"
