@@ -48,11 +48,9 @@ public class I18n {
      * 
      * @author yvolk@yurivolkov.com
      */
-    public static String formatQuantityMessage(Context context, int messageFormat,
-            int quantityOfSomething, int arrayPatterns, int arrayFormats) {
-        String submessage = "";
-        String message = "";
-        String toMatch = Integer.toString(quantityOfSomething);
+    public static String formatQuantityMessage(Context context, int messageFormatResourceId,
+            long quantityOfSomething, int arrayPatterns, int arrayFormats) {
+        String toMatch = Long.toString(quantityOfSomething);
         String[] p = context.getResources().getStringArray(arrayPatterns);
         String[] f = context.getResources().getStringArray(arrayFormats);
         String subformat = "{0} ???";
@@ -65,15 +63,14 @@ public class I18n {
             }
         }
         MessageFormat msf = new MessageFormat(subformat);
-        submessage = msf.format(new Object[] { quantityOfSomething });
+        String submessage = msf.format(new Object[] { quantityOfSomething });
         
-        if (messageFormat == 0) {
-            message = submessage;
+        if (messageFormatResourceId == 0) {
+            return submessage;
         } else {
-            MessageFormat mf = new MessageFormat(context.getText(messageFormat).toString());
-            message = mf.format(new Object[] { submessage });
+            MessageFormat mf = new MessageFormat(context.getText(messageFormatResourceId).toString());
+            return mf.format(new Object[] { submessage });
         }
-        return message;
     }
 
     @NonNull

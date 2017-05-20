@@ -44,6 +44,7 @@ import org.andstatus.app.util.TriState;
 import java.util.Collections;
 import java.util.Queue;
 import java.util.concurrent.PriorityBlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -690,7 +691,7 @@ public class MyService extends Service {
                             MyLog.v(this, "Found in Error queue: " + cd);
                         }
                     } else {
-                        if (cd.executedMoreSecondsAgoThan(MAX_DAYS_IN_ERROR_QUEUE * RelativeTime.SECONDS_IN_A_DAY)) {
+                        if (cd.executedMoreSecondsAgoThan(TimeUnit.DAYS.toSeconds(MAX_DAYS_IN_ERROR_QUEUE))) {
                             if (queues.get(QueueType.ERROR).remove(cd)) {
                                 MyLog.i(this, "Removed old from Error queue: " + cd);
                             } else {

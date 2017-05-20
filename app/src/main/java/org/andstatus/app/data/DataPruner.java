@@ -38,6 +38,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Clean database from outdated information
@@ -199,7 +200,7 @@ public class DataPruner {
     private boolean isTimeToPrune()	{
         return !mMyContext.isInForeground() && RelativeTime.moreSecondsAgoThan(
                 SharedPreferencesUtil.getLong(MyPreferences.KEY_DATA_PRUNED_DATE),
-                PRUNE_MIN_PERIOD_DAYS * RelativeTime.SECONDS_IN_A_DAY);
+                TimeUnit.DAYS.toSeconds(PRUNE_MIN_PERIOD_DAYS));
     }
 
     long pruneLogs(long maxDaysToKeep) {
