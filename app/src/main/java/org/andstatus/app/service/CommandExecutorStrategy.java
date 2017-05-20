@@ -70,6 +70,7 @@ class CommandExecutorStrategy implements CommandExecutorParent {
                 return;
             }
         }
+        MyLog.v(this, "Progress: " + progress);
         lastProgressBroadcastAt = System.currentTimeMillis();
         MyServiceEventsBroadcaster.newInstance(MyContextHolder.get(), MyServiceState.RUNNING)
                 .setCommandData(execContext.getCommandData())

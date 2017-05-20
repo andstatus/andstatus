@@ -21,6 +21,7 @@ import android.database.sqlite.SQLiteConstraintException;
 import org.andstatus.app.data.DataInserter;
 import org.andstatus.app.data.DataPruner;
 import org.andstatus.app.net.http.ConnectionException;
+import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.notification.AddedMessagesNotifier;
 import org.andstatus.app.timeline.Timeline;
 import org.andstatus.app.util.MyLog;
@@ -37,7 +38,7 @@ abstract class TimelineDownloader extends CommandExecutorStrategy {
     @Override
     void execute() {
         try {
-            if (execContext.getMyAccount().getConnection().isApiSupported(execContext.getTimeline().getTimelineType().getConnectionApiRoutine())) {
+            if (isApiSupported(execContext.getTimeline().getTimelineType().getConnectionApiRoutine())) {
                 MyLog.d(this, "Getting " + execContext.getCommandData().toCommandSummary(execContext.getMyContext()) +
                         " by " + execContext.getMyAccount().getAccountName() );
                 download();
@@ -53,6 +54,10 @@ abstract class TimelineDownloader extends CommandExecutorStrategy {
         } catch (SQLiteConstraintException e) {
             MyLog.e(this, execContext.getTimeline().toString(), e);
         }
+    }
+
+    protected boolean isApiSupported(Connection.ApiRoutineEnum routine) {
+        return execContext.getMyAccount().getConnection().isApiSupported(routine);
     }
 
     public abstract void download() throws ConnectionException;

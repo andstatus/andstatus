@@ -22,17 +22,17 @@ import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DataInserter;
 import org.andstatus.app.data.FriendshipValues;
-import org.andstatus.app.timeline.TimelineSyncTracker;
 import org.andstatus.app.data.LatestUserMessages;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
-import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.data.UserMsg;
 import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.database.UserTable;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.net.social.MbUser;
+import org.andstatus.app.timeline.TimelineSyncTracker;
+import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
 
@@ -57,13 +57,15 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
             if (lookupUser()) return;
             switch (timelineType) {
                 case FOLLOWERS:
+                case MY_FOLLOWERS:
                     syncFollowers();
                     break;
                 case FRIENDS:
+                case MY_FRIENDS:
                     syncFriends();
                     break;
                 default:
-                    MyLog.e(this, "Unexpected timeline or command here: " + commandSummary);
+                    MyLog.e(this, "Unexpected timeline or command here: " + timelineType + " - " + commandSummary);
                     break;
             }
 
@@ -181,10 +183,10 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
                 if (userId == 0) {
                     MyLog.i(this, "Failed to identify a User for oid=" + userOidNew, e);
                 } else {
-                    MyLog.v(this, "Server doesn't return User object for oid=" + userOidNew, e);
-                    mbUser = MbUser.fromOriginAndUserOid(
-                            execContext.getMyAccount().getOriginId(), userOidNew);
+                    mbUser = MbUser.fromOriginAndUserOid(execContext.getMyAccount().getOriginId(), userOidNew);
                     mbUser.userId = userId;
+                    mbUser.setWebFingerId(MyQuery.userIdToWebfingerId(userId));
+                    MyLog.v(this, "Server doesn't return User object for " + mbUser , e);
                 }
             }
             if (mbUser != null) {

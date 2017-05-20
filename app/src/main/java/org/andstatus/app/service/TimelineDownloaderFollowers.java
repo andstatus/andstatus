@@ -17,6 +17,7 @@
 package org.andstatus.app.service;
 
 import org.andstatus.app.net.http.ConnectionException;
+import org.andstatus.app.net.social.Connection;
 
 class TimelineDownloaderFollowers extends TimelineDownloader {
 
@@ -25,5 +26,30 @@ class TimelineDownloaderFollowers extends TimelineDownloader {
         CommandExecutorStrategy strategy = new CommandExecutorFollowers();
         strategy.execContext = execContext;
         strategy.execute();
+    }
+
+    @Override
+    protected boolean isApiSupported(Connection.ApiRoutineEnum routine) {
+        if (super.isApiSupported(routine)) {
+            return true;
+        } else {
+            return super.isApiSupported(getAlternativeApiRputineEnum(routine));
+        }
+    }
+
+    private Connection.ApiRoutineEnum getAlternativeApiRputineEnum(Connection.ApiRoutineEnum routine) {
+        switch (routine) {
+            case GET_FOLLOWERS:
+                return Connection.ApiRoutineEnum.GET_FOLLOWERS_IDS;
+            case GET_FOLLOWERS_IDS:
+                return Connection.ApiRoutineEnum.GET_FOLLOWERS;
+            case GET_FRIENDS:
+                return Connection.ApiRoutineEnum.GET_FRIENDS_IDS;
+            case GET_FRIENDS_IDS:
+                return Connection.ApiRoutineEnum.GET_FRIENDS;
+            default:
+                return Connection.ApiRoutineEnum.DUMMY;
+        }
+
     }
 }

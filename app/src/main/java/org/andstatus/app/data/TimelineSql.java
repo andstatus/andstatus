@@ -96,16 +96,10 @@ public class TimelineSql {
                         + " FROM " + UserTable.TABLE_NAME + ")";
                 msgTable += " INNER JOIN " + userTable + " as u1"
                         + " ON (fUserId=u1." + BaseColumns._ID + ")";
-                /**
-                 * Select only the latest message from each Friend's timeline
-                 */
+                // Select only the latest message from each Friend's timeline
                 msgTable  += " LEFT JOIN " + MsgTable.TABLE_NAME + " AS " + ProjectionMap.MSG_TABLE_ALIAS
                         + " ON ("
-                        + ProjectionMap.MSG_TABLE_ALIAS + "." + MsgTable.ACTOR_ID
-                        + "=fUserId"
-                        + " AND " + ProjectionMap.MSG_TABLE_ALIAS + "." + BaseColumns._ID
-                        + "=u1." + UserTable.USER_MSG_ID
-                        + ")";
+                        + ProjectionMap.MSG_TABLE_ALIAS + "." + BaseColumns._ID + "=u1." + UserTable.USER_MSG_ID + ")";
                 break;
             case MESSAGES_TO_ACT:
                 if (selectedAccounts.size() == 1) {
