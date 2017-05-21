@@ -47,11 +47,11 @@ public class EnumSelector<E extends Enum<E> & SelectableEnum> extends org.andsta
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
         if (enumList == null || enumList.getDialogTitleResId() == 0) {  // We don't save a state of the dialog
             dismiss();
             return;
         }
-        super.onActivityCreated(savedInstanceState);
         setTitle(enumList.getDialogTitleResId());
         setListAdapter(newListAdapter());
 
