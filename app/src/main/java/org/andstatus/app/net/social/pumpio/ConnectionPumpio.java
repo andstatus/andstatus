@@ -89,6 +89,9 @@ public class ConnectionPumpio extends Connection {
             case HOME_TIMELINE:
                 url = "user/%nickname%/inbox";
                 break;
+            case FAVORITES_TIMELINE:
+                url = "user/%nickname%/favorites";
+                break;
             case POST_WITH_MEDIA:
                 url = "user/%nickname%/uploads";
                 break;

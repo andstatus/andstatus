@@ -96,6 +96,10 @@ public class ConnectionTwitter1p1 extends ConnectionTwitter {
                 // https://dev.twitter.com/docs/api/1.1/get/statuses/mentions_timeline
                 url = "statuses/mentions_timeline" + EXTENSION;
                 break;
+            case FAVORITES_TIMELINE:
+                // https://dev.twitter.com/rest/reference/get/favorites/list
+                url = "favorites/list" + EXTENSION;
+                break;
             default:
                 url = "";
                 break;

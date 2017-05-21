@@ -104,6 +104,9 @@ public abstract class ConnectionTwitter extends Connection {
             case STOP_FOLLOWING_USER:
                 url = "friendships/destroy" + EXTENSION;
                 break;
+            case FAVORITES_TIMELINE:
+                url = "favorites" + EXTENSION;
+                break;
             default:
                 url = "";
                 break;

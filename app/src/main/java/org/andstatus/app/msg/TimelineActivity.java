@@ -403,7 +403,8 @@ public class TimelineActivity extends MessageEditorListActivity implements
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         MyAccount ma = myContext.persistentAccounts().getCurrentAccount();
-        boolean enableSync = getParamsLoaded().getTimeline().isCombined() || ma.isValidAndSucceeded();
+        boolean enableSync = (getParamsLoaded().getTimeline().isCombined() || ma.isValidAndSucceeded())
+                && getParamsLoaded().getTimeline().isSynableSomehow();
         MenuItem item = menu.findItem(R.id.sync_menu_item);
         if (item != null) {
             item.setEnabled(enableSync);

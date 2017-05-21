@@ -920,6 +920,10 @@ public class Timeline implements Comparable<Timeline> {
         this.syncSucceededDate = syncSucceededDate;
     }
 
+    public boolean isSynableSomehow() {
+        return isSyncable || isSyncableForOrigins() || isSyncableForAccounts();
+    }
+
     public boolean isSyncable() {
         return isSyncable;
     }
