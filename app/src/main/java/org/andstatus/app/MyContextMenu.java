@@ -29,13 +29,14 @@ import org.andstatus.app.util.MyLog;
  */
 public class MyContextMenu implements View.OnCreateContextMenuListener {
     protected final LoadableListActivity listActivity;
-    protected View viewOfTheContext = null;
+    private View viewOfTheContext = null;
     protected ViewItem mViewItem = null;
     /**
      *  Corresponding account information ( "Reply As..." ... )
      *  oh whose behalf we are going to execute an action on this line in the list (message/user...)
      */
-    protected MyAccount myActor = MyAccount.EMPTY;
+    @NonNull
+    private MyAccount myActor = MyAccount.EMPTY;
 
     public MyContextMenu(LoadableListActivity listActivity) {
         this.listActivity = listActivity;
@@ -75,12 +76,15 @@ public class MyContextMenu implements View.OnCreateContextMenuListener {
         }
     }
 
+    @NonNull
     public MyAccount getMyActor() {
         return myActor;
     }
 
-    public void setMyActor(@NonNull MyAccount myAccount) {
-        this.myActor = myAccount;
+    public void setMyActor(MyAccount myAccount) {
+        if (myAccount != null) {
+            this.myActor = myAccount;
+        }
     }
 
     public MyContext getMyContext() {

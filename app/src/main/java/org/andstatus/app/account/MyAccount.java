@@ -873,6 +873,10 @@ public final class MyAccount implements Comparable<MyAccount> {
 
     @Override
     public String toString() {
+        if (EMPTY == this) {
+            return MyLog.formatKeyValue(TAG, "EMPTY");
+        }
+
         String members = (isValid() ? "" : "(invalid) ") + "accountName:" + getAccountName() + ",";
         try {
             if (userId != 0) {

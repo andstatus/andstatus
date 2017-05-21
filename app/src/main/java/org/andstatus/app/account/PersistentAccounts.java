@@ -295,13 +295,13 @@ public class PersistentAccounts {
     }
 
     /** Should not be called from UI thread
-     * Find MyAccount, which may be linked to this message.
+     * Find MyAccount, which may be linked to a message in this origin.
      * First try two supplied user IDs, then try any other existing account
      * @return Invalid account if nothing suitable found
      */
     @NonNull
-    public MyAccount getAccountForThisMessage(long originId, long messageId, MyAccount firstUser,
-            MyAccount preferredUser, boolean succeededOnly)  {
+    public MyAccount getAccountForThisMessage(long originId, MyAccount firstUser, MyAccount preferredUser,
+                                              boolean succeededOnly)  {
         final String method = "getAccountForThisMessage";
         MyAccount ma = firstUser == null ? MyAccount.EMPTY : firstUser;
         if (!accountFits(ma, originId, succeededOnly)) {
@@ -311,11 +311,10 @@ public class PersistentAccounts {
             ma = betterFit(ma, getFirstSucceededForOriginId(originId), originId, succeededOnly);
         }
         if (MyLog.isVerboseEnabled()) {
-            MyLog.v(this, method + "; msgId=" + messageId 
-                    + "; user1=" + firstUser
-                    + "; user2=" + preferredUser
-                    + (succeededOnly ? "; succeeded only" : "")
-                    + " -> account=" + ma.getAccountName());
+            MyLog.v(this, method + "; originId=" + originId
+                    + "; user1=" + ma
+                    + (ma.equals(preferredUser) ? "" : "; user2=" + preferredUser)
+                    + (succeededOnly ? "; succeeded only" : ""));
         }
         return ma;
     }

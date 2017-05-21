@@ -26,7 +26,6 @@ import android.view.MenuItem;
 import android.view.SubMenu;
 import android.view.View;
 import android.view.accessibility.AccessibilityManager;
-import android.widget.AdapterView;
 
 import org.andstatus.app.ContextMenuHeader;
 import org.andstatus.app.IntentExtra;
@@ -48,20 +47,18 @@ import static android.content.Context.ACCESSIBILITY_SERVICE;
  * Context menu and corresponding actions on messages from the list 
  * @author yvolk@yurivolkov.com
  */
-public class MessageContextMenu extends MyContextMenu {
-    public final MessageListContextMenuContainer menuContainer;
+class MessageContextMenu extends MyContextMenu {
+    final MessageListContextMenuContainer menuContainer;
     
-    /**
-     * Id of the Message that was selected (clicked, or whose context menu item
-     * was selected) TODO: clicked, restore position...
-     */
-    private long mMsgId = 0;
-    public String imageFilename = null;
+    String imageFilename = null;
 
-    private MessageForAccount msg;
+    /**
+     * Message that was selected (clicked, or whose context menu item was selected)
+     */
+    private MessageForAccount msg = MessageForAccount.EMPTY;
     private String selectedItemTitle = "";
 
-    public MessageContextMenu(MessageListContextMenuContainer menuContainer) {
+    MessageContextMenu(MessageListContextMenuContainer menuContainer) {
         super(menuContainer.getActivity());
         this.menuContainer = menuContainer;
     }
@@ -70,7 +67,7 @@ public class MessageContextMenu extends MyContextMenu {
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
         final String method = "onCreateContextMenu";
         super.onCreateContextMenu(menu, v, menuInfo);
-        if (msg == null) {
+        if (getMsgId() == 0) {
             return;
         }
 
@@ -255,45 +252,31 @@ public class MessageContextMenu extends MyContextMenu {
 
     protected void saveContextOfSelectedItem(View v) {
         final String method = "saveContextOfSelectedItem";
-        mMsgId = 0;
-        msg = null;
         super.saveContextOfSelectedItem(v);
-        if (mViewItem == null) {
-            return;
-        }
-
-        MyAccount myActorForThisMessage = getMyActor();
-        String logMsg = method;
-        MessageViewItem viewItem = (MessageViewItem) mViewItem;
-        mMsgId = viewItem.getMsgId();
-        logMsg += "; id=" + mMsgId;
-        if (!myActorForThisMessage.isValid()) {
-            myActorForThisMessage = viewItem.getLinkedMyAccount();
-        }
-        MyLog.v(this, logMsg);
-
-        MessageForAccount msg2 = getMessageForAccount(myActorForThisMessage, menuContainer.getCurrentMyAccount());
-        setMyActor(msg2.getMyAccount());
-        if (msg2.getMyAccount().isValid()) {
-            msg = msg2;
-        }
+        setMessageForAccount(method,
+                mViewItem == null ? 0 : ((MessageViewItem) mViewItem).getMsgId(),
+                getMyActor().isValid() || mViewItem == null ? getMyActor() :
+                        ((MessageViewItem) mViewItem).getLinkedMyAccount());
     }
 
-    private MessageForAccount getMessageForAccount(MyAccount linkedUser, MyAccount currentMyAccount) {
-        long originId = MyQuery.msgIdToOriginId(mMsgId);
+    private void setMessageForAccount(String method, long msgId, MyAccount myActorIn) {
+        MyAccount myActor = myActorIn == null ? MyAccount.EMPTY : myActorIn;
+        MyAccount currentMyAccount = menuContainer.getCurrentMyAccount();
+        long originId = MyQuery.msgIdToOriginId(msgId);
         MyAccount ma1 = getMyContext().persistentAccounts()
-                .getAccountForThisMessage(originId, mMsgId, linkedUser, currentMyAccount, false);
-        MessageForAccount msg = new MessageForAccount(mMsgId, originId, ma1);
-        boolean forceFirstUser = myActor.isValid();
-        if (ma1.isValid() && !forceFirstUser
-                && !msg.isTiedToThisAccount()
-                && ma1.getUserId() != currentMyAccount.getUserId()
-                && !menuContainer.getTimeline().getTimelineType().isForUser()) {
-            if (currentMyAccount.isValid() && ma1.getOriginId() == currentMyAccount.getOriginId()) {
-                msg = new MessageForAccount(mMsgId, originId, currentMyAccount);
-            }
+                .getAccountForThisMessage(originId, myActor, currentMyAccount, false);
+        MessageForAccount msgNew = new MessageForAccount(msgId, originId, ma1);
+        if (!ma1.equals(currentMyAccount)
+                && ma1.isValid() && !myActor.isValid() && !msg.isTiedToThisAccount()
+                && !menuContainer.getTimeline().getTimelineType().isForUser()
+                && currentMyAccount.isValid() && ma1.getOriginId() == currentMyAccount.getOriginId()) {
+            msgNew = new MessageForAccount(msgId, originId, currentMyAccount);
         }
-        return msg;
+        MyLog.v(this, method + "; myActor=" + myActor +
+                (msgNew.getMyAccount().equals(myActor) ? "" : " -> " + msgNew.getMyAccount()) +
+                "; msgId=" + msgId);
+        setMyActor(msgNew.getMyAccount());
+        msg = msgNew.getMyAccount().isValid() ? msgNew : MessageForAccount.EMPTY;
     }
 
     private boolean isEditorVisible() {
@@ -305,39 +288,16 @@ public class MessageContextMenu extends MyContextMenu {
     }
 
     public void onContextItemSelected(MenuItem item) {
-        AdapterView.AdapterContextMenuInfo info;
-        String msgInfo = "";
-        try {
-            info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
-            if (info != null) {
-                mMsgId = info.id;
-            } else {
-                msgInfo = "; info==null";
-            }
-        } catch (ClassCastException e) {
-            MyLog.e(this, "bad menuInfo", e);
-            return;
+        if (item != null) {
+            setSelectedItemTitle(String.valueOf(item.getTitle()));
+            onContextMenuItemSelected(MessageListContextMenuItem.fromId(item.getItemId()), getMsgId(), getMyActor());
         }
-        if (mMsgId == 0) {
-            MyLog.e(this, "message id == 0" + msgInfo);
-            return;
-        }
-        setSelectedItemTitle(String.valueOf(item.getTitle()));
-        onContextMenuItemSelected(MessageListContextMenuItem.fromId(item.getItemId()), mMsgId,
-                getMyActor());
     }
 
     public void onContextMenuItemSelected(MessageListContextMenuItem contextMenuItem, long msgId,
                                           MyAccount actor) {
         final String method = "onContextMenuItemSelected";
-        String logMsg = method + "; " + contextMenuItem + "; myActor=" + actor + "; msgId=" + msgId;
-        if (msgId == 0 || !actor.isValid()) {
-            MyLog.d(this, logMsg);
-            return;
-        }
-        mMsgId = msgId;
-        setMyActor(actor);
-        MyLog.v(this, logMsg);
+        setMessageForAccount(method + "; " + contextMenuItem, msgId, actor);
         contextMenuItem.execute(this);
     }
 
@@ -350,18 +310,23 @@ public class MessageContextMenu extends MyContextMenu {
     }
 
     public void loadState(Bundle savedInstanceState) {
-        if (savedInstanceState != null 
-                && savedInstanceState.containsKey(IntentExtra.ITEM_ID.key)) {
-            mMsgId = savedInstanceState.getLong(IntentExtra.ITEM_ID.key, 0);
+        if (savedInstanceState != null && savedInstanceState.containsKey(IntentExtra.ITEM_ID.key)) {
+            setMessageForAccount("loadState",
+                    savedInstanceState.getLong(IntentExtra.ITEM_ID.key, 0),
+                    menuContainer.getActivity().getMyContext().persistentAccounts().fromAccountName(
+                            savedInstanceState.getString(IntentExtra.ACCOUNT_NAME.key,
+                            menuContainer.getCurrentMyAccount().getAccountName()))
+            );
         }
     }
 
     public void saveState(Bundle outState) {
-        outState.putLong(IntentExtra.ITEM_ID.key, mMsgId);
+        outState.putLong(IntentExtra.ITEM_ID.key, getMsgId());
+        outState.putString(IntentExtra.ACCOUNT_NAME.key, msg.getMyAccount().getAccountName());
     }
 
     public long getMsgId() {
-        return mMsgId;
+        return msg.msgId;
     }
 
     public Origin getOrigin() {

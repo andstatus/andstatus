@@ -38,6 +38,7 @@ import org.andstatus.app.util.MyHtml;
  * @author yvolk@yurivolkov.com
  */
 public class MessageForAccount {
+    public static final MessageForAccount EMPTY = new MessageForAccount(0, 0, MyAccount.EMPTY);
     public final long msgId;
     public final Origin origin;
     public DownloadStatus status = DownloadStatus.UNKNOWN;
