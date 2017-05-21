@@ -27,13 +27,26 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
 		</subtitle>
     </header>
-    <release android:versionName="33.07" android:versionCode="215"
-             versionDate="2017-05-14"
+    <release android:versionName="33.08" android:versionCode="216"
+             versionDate="2017-05-21"
              versionTitle="Mastodon support">
         <changes>
             <change>Added <a href="https://github.com/tootsuite/documentation">Mastodon</a> support.
                 Six most popular Mastodon instances are preconfigured.
                 <a href="https://github.com/andstatus/andstatus/issues/419">#419</a>
+            </change>
+            <change>"Favorites" timeline is now syncable for all types of social networks. It's set to be synced
+                automatically by default for new installations. If you upgraded existing installation,
+                you will need to go to the "Manage Timelines" menu item in the Timeline action bar
+                and set "Sync" flag for "Favorites" timelines of all accounts.
+                See also <a href="https://github.com/andstatus/andstatus/issues/460">#460</a>
+            </change>
+            <change>Fixed syncing and showing of "Friends" and "Followers" timelines.</change>
+            <change>Accuracy of the "Relative time" (... ago) increased. Now you will see "... minutes ago" up to 2 hours,
+                then  "... hours ago" up to 2 days, then "... days ago" up to three months and then -
+                any number of "months ago". So no more "more than a year ago" for all old messages.</change>
+            <change>The first fix for: Occasionally message context menu doesn't work.
+                <a href="https://github.com/andstatus/andstatus/issues/458">#458</a>
             </change>
         </changes>
     </release>
