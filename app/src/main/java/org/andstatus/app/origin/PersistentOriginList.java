@@ -41,6 +41,12 @@ public class PersistentOriginList extends OriginList {
             item.setEnabled(addEnabled);
             item.setVisible(addEnabled);
         }
+        // TODO: Currently no corresponding services work
+        item = menu.findItem(R.id.discoverOpenInstances);
+        if (item != null) {
+            item.setEnabled(false);
+            item.setVisible(false);
+        }
         return super.onPrepareOptionsMenu(menu);
     }
     
