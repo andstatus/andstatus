@@ -137,6 +137,7 @@ public enum TimelineType implements SelectableEnum {
             case MENTIONS:
             case DIRECT:
             case SENT:
+            case FAVORITES:
                 return true;
             default:
                 return false;
