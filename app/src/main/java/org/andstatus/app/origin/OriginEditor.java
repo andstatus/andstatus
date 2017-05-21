@@ -22,6 +22,7 @@ import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
@@ -42,6 +43,7 @@ import org.andstatus.app.net.http.SslModeEnum;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyCheckBox;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.MyUrlSpan;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UrlUtils;
 
@@ -112,7 +114,11 @@ public class OriginEditor extends MyActivity {
             if (origin.isValid()) {
                 builder = new Origin.Builder(origin);
             } else {
-                builder = new Origin.Builder(OriginType.GNUSOCIAL);
+                OriginType originType = OriginType.fromCode(intentNew.getStringExtra(IntentExtra.ORIGIN_TYPE.key));
+                builder = new Origin.Builder(OriginType.UNKNOWN.equals(originType) ? OriginType.GNUSOCIAL : originType);
+                if (!OriginType.UNKNOWN.equals(originType)) {
+                    spinnerOriginType.setEnabled(false);
+                }
             }
         } else {
             buttonSave.setOnClickListener(new SaveOrigin());
@@ -135,7 +141,24 @@ public class OriginEditor extends MyActivity {
             strHost = origin.getUrl().toExternalForm();
         }
         editTextHost.setText(strHost);
-        
+        editTextHost.setHint(origin.alternativeTermForResourceId(R.string.host_hint));
+        MyUrlSpan.showLabel(this, R.id.label_host, origin.alternativeTermForResourceId(R.string.label_host));
+        if (Intent.ACTION_INSERT.equals(editorAction) && TextUtils.isEmpty(origin.getName())) {
+            editTextHost.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+                @Override
+                public void onFocusChange(View v, boolean hasFocus) {
+                    if (!(hasFocus) && TextUtils.isEmpty(editTextOriginName.getText())) {
+                        Origin origin = new Origin.Builder(
+                                originTypes.get(spinnerOriginType.getSelectedItemPosition()))
+                                .setHostOrUrl(editTextHost.getText().toString()).build();
+                        if (origin.getUrl() != null) {
+                            editTextOriginName.setText(origin.getUrl().getHost());
+                        }
+                    }
+                }
+            });
+        }
+
         MyCheckBox.set(this, R.id.is_ssl, origin.isSsl() , new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {

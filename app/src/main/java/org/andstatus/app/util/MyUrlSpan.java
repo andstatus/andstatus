@@ -23,6 +23,7 @@ import android.content.Context;
 import android.os.Parcel;
 import android.support.annotation.IdRes;
 import android.support.annotation.NonNull;
+import android.support.annotation.StringRes;
 import android.text.Html;
 import android.text.Layout;
 import android.text.Selection;
@@ -83,7 +84,12 @@ public class MyUrlSpan extends URLSpan {
         }
     }
 
-    public static void showText(Activity activity, @IdRes int viewId, String text, boolean linkify, boolean showIfEmpty) {
+    public static void showLabel(Activity activity, @IdRes int viewId, @StringRes int stringResId) {
+        showText((TextView) activity.findViewById(viewId), activity.getText(stringResId).toString(), false, false);
+    }
+
+    public static void showText(Activity activity, @IdRes int viewId, String text, boolean linkify, boolean
+            showIfEmpty) {
         showText((TextView) activity.findViewById(viewId), text, linkify, showIfEmpty);
     }
 

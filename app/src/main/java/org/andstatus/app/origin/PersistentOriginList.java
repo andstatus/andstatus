@@ -65,6 +65,7 @@ public class PersistentOriginList extends OriginList {
         Intent intent = new Intent(this, OriginEditor.class);
         intent.setAction(Intent.ACTION_INSERT);
         intent.putExtra(IntentExtra.ORIGIN_NAME.key, originName);
+        intent.putExtra(IntentExtra.ORIGIN_TYPE.key, originType.getCode());
         startActivityForResult(intent, ActivityRequestCode.EDIT_ORIGIN.id);
     }
 

@@ -17,11 +17,12 @@
 package org.andstatus.app.origin;
 
 import android.net.Uri;
+import android.support.annotation.StringRes;
 
 import org.andstatus.app.R;
 import org.andstatus.app.context.UserInTimeline;
-import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.data.MyQuery;
+import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.UriUtils;
 
@@ -34,7 +35,7 @@ class OriginTwitter extends Origin {
      * @return Id of alternative (proprietary) term/phrase
      */
     @Override
-    public int alternativeTermForResourceId(int resId) {
+    public int alternativeTermForResourceId(@StringRes int resId) {
         int resIdOut;
         switch (resId) {
             case R.string.button_create_message:

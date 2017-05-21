@@ -16,13 +16,15 @@
 
 package org.andstatus.app.origin;
 
+import android.support.annotation.StringRes;
+
 import org.andstatus.app.R;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.MsgTable;
 
 class OriginPumpio extends Origin {
     @Override
-    public int alternativeTermForResourceId(int resId) {
+    public int alternativeTermForResourceId(@StringRes int resId) {
         int resIdOut;
         switch (resId) {
             case R.string.dialog_title_preference_username:

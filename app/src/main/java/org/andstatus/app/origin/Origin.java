@@ -22,6 +22,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.provider.BaseColumns;
 import android.support.annotation.NonNull;
+import android.support.annotation.StringRes;
 import android.text.SpannableString;
 import android.text.TextUtils;
 import android.text.style.URLSpan;
@@ -169,7 +170,7 @@ public class Origin {
         return textLimit - messageLength;
     }
 
-    public int alternativeTermForResourceId(int resId) {
+    public int alternativeTermForResourceId(@StringRes int resId) {
         return resId;
     }
 

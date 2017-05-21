@@ -33,34 +33,34 @@
 		<View style="@style/Divider"/>
 			    
 	    <TextView
-	        android:id="@+id/label_origin_name"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:text="@string/label_origin_name" />
-	
-	    <EditText
-	        android:id="@+id/origin_name"
-	        android:layout_width="match_parent"
-	        android:layout_height="wrap_content"
-	        android:ems="10"
-	        android:hint="@string/label_origin_name" >
-	
-	    </EditText>
-	
-	    <TextView
 	        android:id="@+id/label_host"
 	        android:layout_width="wrap_content"
 	        android:layout_height="wrap_content"
 	        android:text="@string/label_host" />
 	
-	    <EditText
+	    <org.andstatus.app.widget.LongHintEditText
 	        android:id="@+id/host"
 	        android:layout_width="match_parent"
 	        android:layout_height="wrap_content"
 	        android:ems="10"
-	        android:hint="@string/label_host" />
-	
-	    <CheckBox
+	        android:hint="@string/host_hint" />
+
+		<TextView
+			android:id="@+id/label_origin_name"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="@string/label_origin_name" />
+
+		<org.andstatus.app.widget.LongHintEditText
+			android:id="@+id/origin_name"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:ems="10"
+			android:hint="@string/label_origin_name" />
+
+		<View style="@style/Divider"/>
+
+		<CheckBox
 	        android:id="@+id/is_ssl"
 	        android:layout_width="wrap_content"
 	        android:layout_height="wrap_content"

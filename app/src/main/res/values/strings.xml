@@ -48,7 +48,7 @@
   <string name="automatic">Auto</string>
   <string name="background_color_preference_title">Background color for the Dark theme</string>
   <string name="button_add">Add</string>
-  <string name="button_add_origin">Add new system</string>
+  <string name="button_add_origin">Add new Social Network</string>
   <string name="button_backup">Backup</string>
   <string name="button_cancel">Cancel</string>
   <string name="button_change_folder">Change folder</string>
@@ -224,6 +224,10 @@
   <string name="label_backup_folder">Backup folder</string>
   <string name="label_conversation">Conversation</string>
   <string name="label_host">Host</string>
+  <string name="label_host_mastodon">Mastodon instance</string>
+  <string name="host_hint">E.g. gnusocial.net, social.10one.net</string>
+  <string name="host_hint_mastodon">The address or domain of any instance, e.g. mastodon.social, icosahedron.website,
+    social.tchncs.de</string>
   <string name="label_manage_origin_systems">Manage social networks</string>
   <string name="label_origin_list">Social networks</string>
   <string name="label_origin_name">Name of the Social network (unique and not changeable)</string>

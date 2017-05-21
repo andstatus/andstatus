@@ -16,6 +16,9 @@
 
 package org.andstatus.app.origin;
 
+import android.support.annotation.StringRes;
+
+import org.andstatus.app.R;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.util.MyLog;
@@ -24,6 +27,23 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 public class OriginMastodon extends Origin {
+
+    @Override
+    public int alternativeTermForResourceId(@StringRes int resId) {
+        int resIdOut;
+        switch (resId) {
+            case R.string.label_host:
+                resIdOut = R.string.label_host_mastodon;
+                break;
+            case R.string.host_hint:
+                resIdOut = R.string.host_hint_mastodon;
+                break;
+            default:
+                resIdOut = resId;
+                break;
+        }
+        return resIdOut;
+    }
 
     @Override
     public String messagePermalink(long messageId) {

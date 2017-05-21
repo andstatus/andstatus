@@ -310,25 +310,21 @@ public enum OriginType implements SelectableEnum {
     }
     
     public static OriginType fromId( long id) {
-        OriginType obj = UNKNOWN;
         for(OriginType val : values()) {
             if (val.id == id) {
-                obj = val;
-                break;
+                return val;
             }
         }
-        return obj;
+        return UNKNOWN;
     }
 
     public static OriginType fromCode(String code) {
-        OriginType obj = UNKNOWN;
         for(OriginType val : values()) {
             if (val.getCode().equalsIgnoreCase(code)) {
-                obj = val;
-                break;
+                return val;
             }
         }
-        return obj;
+        return UNKNOWN;
     }
 
     public boolean isTimelineTypeSyncable(TimelineType timelineType) {
