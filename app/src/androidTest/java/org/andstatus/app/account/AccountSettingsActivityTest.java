@@ -19,12 +19,12 @@ package org.andstatus.app.account;
 import android.app.Activity;
 import android.app.Instrumentation.ActivityMonitor;
 import android.content.Intent;
-import android.test.ActivityInstrumentationTestCase2;
 import android.widget.Button;
 import android.widget.TextView;
 
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
+import org.andstatus.app.context.ActivityTest;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MySettingsActivity;
 import org.andstatus.app.context.TestSuite;
@@ -33,38 +33,40 @@ import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.origin.PersistentOriginList;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * @author yvolk@yurivolkov.com
  */
-public class AccountSettingsActivityTest extends ActivityInstrumentationTestCase2<AccountSettingsActivity> {
-    private AccountSettingsActivity mActivity;
+public class AccountSettingsActivityTest extends ActivityTest<AccountSettingsActivity> {
     private MyAccount ma = null;
 
-    public AccountSettingsActivityTest() {
-        super(AccountSettingsActivity.class);
-    }
-    
     @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    protected Class<AccountSettingsActivity> getActivityClass() {
+        return AccountSettingsActivity.class;
+    }
+
+    @Override
+    protected Intent getActivityIntent() {
         TestSuite.initializeWithData(this);
-        
+
         ma = MyContextHolder.get().persistentAccounts().getCurrentAccount();
         if (!ma.isValid()) {
             fail("No persistent accounts yet");
         }
-        
-        Intent intent = new Intent();
-        intent.putExtra(IntentExtra.ACCOUNT_NAME.key, ma.getAccountName());
-        setActivityIntent(intent);
-        
-        mActivity = getActivity();
+        return new Intent().putExtra(IntentExtra.ACCOUNT_NAME.key, ma.getAccountName());
     }
-    
+
+    @Test
     public void test() throws InterruptedException {
         final String method = "test";
-        Button addAccountOrVerifyCredentials = (Button) mActivity.findViewById(R.id.add_account);
+        Button addAccountOrVerifyCredentials = (Button) getActivity().findViewById(R.id.add_account);
         assertTrue(addAccountOrVerifyCredentials != null);
         assertUsernameTextField(R.id.username);
         assertUsernameTextField(R.id.username_readonly);
@@ -72,14 +74,14 @@ public class AccountSettingsActivityTest extends ActivityInstrumentationTestCase
         assertFalse("MyService is not available", MyServiceManager.isServiceAvailable());
         openingOriginList();
         DbUtils.waitMs(method, 500);
-        mActivity.finish();
+        getActivity().finish();
         DbUtils.waitMs(method, 500);
         MySettingsActivity.closeAllActivities(getInstrumentation().getTargetContext());
         DbUtils.waitMs(method, 500);
     }
 
     private void assertUsernameTextField(int viewId) {
-        TextView usernameText = (TextView) mActivity.findViewById(viewId);
+        TextView usernameText = (TextView) getActivity().findViewById(viewId);
         assertTrue(usernameText != null);
         assertEquals("Selected Username", ma.getUsername(), usernameText.getText().toString());
     }
@@ -91,20 +93,19 @@ public class AccountSettingsActivityTest extends ActivityInstrumentationTestCase
             @Override
             public void run() {
                 MyLog.v(this, method + "-Log before click");
-                mActivity.selectOrigin(OriginType.GNUSOCIAL);
+                getActivity().selectOrigin(OriginType.GNUSOCIAL);
             }
           };
     
         MyLog.v(this, method + "-Log before run clicker 1");
-        mActivity.runOnUiThread(clicker);
+        getActivity().runOnUiThread(clicker);
           
         Activity nextActivity = getInstrumentation().waitForMonitorWithTimeout(activityMonitor, 15000);
         MyLog.v(this, method + "-Log after waitForMonitor: " 
                 + nextActivity);
         assertNotNull("Next activity is opened and captured", nextActivity);
-        TestSuite.waitForListLoaded(this, nextActivity, 8);
+        TestSuite.waitForListLoaded(nextActivity, 8);
         DbUtils.waitMs(method, 500);
         nextActivity.finish();
     }
-    
 }

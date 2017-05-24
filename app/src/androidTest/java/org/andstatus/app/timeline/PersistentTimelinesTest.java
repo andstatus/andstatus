@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2016 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,8 +16,6 @@
 
 package org.andstatus.app.timeline;
 
-import android.test.InstrumentationTestCase;
-
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
@@ -26,24 +24,31 @@ import org.andstatus.app.context.Travis;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.TriState;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.util.Collection;
 import java.util.List;
 
-@Travis
-public class PersistentTimelinesTest extends InstrumentationTestCase {
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+@Travis
+public class PersistentTimelinesTest {
+
+    @Before
+    public void setUp() throws Exception {
         TestSuite.initializeWithData(this);
     }
 
+    @Test
     public void testList() throws Exception {
         Collection<Timeline> timelines = MyContextHolder.get().persistentTimelines().values();
         assertTrue(timelines.size() > 0);
     }
 
+    @Test
     public void testFilteredList() throws Exception {
         Collection<Timeline> timelines = MyContextHolder.get().persistentTimelines().values();
         List<Timeline> filtered = MyContextHolder.get().persistentTimelines().getFiltered(false, TriState.UNKNOWN, null, null);
@@ -70,7 +75,7 @@ public class PersistentTimelinesTest extends InstrumentationTestCase {
 
     }
 
-    protected void ensureAtLeastOneNotDisplayedTimeline() {
+    private void ensureAtLeastOneNotDisplayedTimeline() {
         Collection<Timeline> timelines = MyContextHolder.get().persistentTimelines().values();
         boolean found = false;
         Timeline timeline1 = null;
@@ -89,6 +94,7 @@ public class PersistentTimelinesTest extends InstrumentationTestCase {
         }
     }
 
+    @Test
     public void testDefaultTimelinesForAccounts() {
         checkDefaultTimelinesForAccounts();
     }
@@ -110,6 +116,7 @@ public class PersistentTimelinesTest extends InstrumentationTestCase {
         }
     }
 
+    @Test
     public void testDefaultTimelinesForOrigins() {
         checkDefaultTimelinesForOrigins();
     }
@@ -134,6 +141,7 @@ public class PersistentTimelinesTest extends InstrumentationTestCase {
         }
     }
 
+    @Test
     public void testDefaultTimeline() {
         MyPreferences.setDefaultTimelineId(0);
         MyAccount myAccount = MyContextHolder.get().persistentAccounts().getDefaultAccount();

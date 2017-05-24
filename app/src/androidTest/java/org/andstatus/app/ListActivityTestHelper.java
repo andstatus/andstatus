@@ -17,11 +17,8 @@
 package org.andstatus.app;
 
 import android.app.Activity;
-import android.app.Instrumentation;
 import android.app.Instrumentation.ActivityMonitor;
-import android.test.ActivityInstrumentationTestCase2;
-import android.test.ActivityTestCase;
-import android.test.InstrumentationTestCase;
+import android.support.test.InstrumentationRegistry;
 import android.view.View;
 import android.widget.ListAdapter;
 import android.widget.ListView;
@@ -33,35 +30,29 @@ import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.util.MyLog;
 
-public class ListActivityTestHelper<T extends MyBaseListActivity> extends InstrumentationTestCase {
-    private final Instrumentation mInstrumentation;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+public class ListActivityTestHelper<T extends MyBaseListActivity> {
     private final T mActivity;
     private ActivityMonitor mActivityMonitor = null;
     private String dialogTagToMonitor = null;
     private SelectorDialog dialogToMonitor = null;
 
-    public ListActivityTestHelper(ActivityTestCase testCase, T activity) {
-        this(testCase.getInstrumentation(), activity);
-    }
-
-    public ListActivityTestHelper(Instrumentation instrumentation, T activity) {
+    public ListActivityTestHelper(T activity) {
         super();
-        mInstrumentation = instrumentation;
         mActivity = activity;
     }
 
-    public ListActivityTestHelper(ActivityInstrumentationTestCase2<T> testCase, Class<? extends Activity> classOfActivityToMonitor) {
+    public ListActivityTestHelper(T activity, Class<? extends Activity> classOfActivityToMonitor) {
         super();
-        mInstrumentation = testCase.getInstrumentation();
         addMonitor(classOfActivityToMonitor);
-        mActivity = testCase.getActivity();
+        mActivity = activity;
     }
 
-    public static ListActivityTestHelper newForSelectorDialog(
-            ActivityInstrumentationTestCase2<? extends MyBaseListActivity> testCase,
-            String dialogTagToMonitor) {
-        ListActivityTestHelper helper =
-                new ListActivityTestHelper(testCase.getInstrumentation(), testCase.getActivity());
+    public static <T extends MyBaseListActivity> ListActivityTestHelper<T> newForSelectorDialog( T activity,
+                                                              String dialogTagToMonitor) {
+        ListActivityTestHelper<T> helper = new ListActivityTestHelper<T>(activity);
         helper.dialogTagToMonitor = dialogTagToMonitor;
         return helper;
     }
@@ -74,7 +65,7 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> extends Instru
         boolean success = false;
         String msg = "";
         for (long attempt = 1; attempt < 4; attempt++) {
-            TestSuite.waitForIdleSync(mInstrumentation);
+            TestSuite.waitForIdleSync();
             int position = getPositionOfListItemId(listItemId);
             msg = "listItemId=" + listItemId + "; menu Item=" + menuItem + "; position=" + position + "; attempt=" + attempt;
             MyLog.v(this, msg);
@@ -92,7 +83,7 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> extends Instru
             }
         }
         MyLog.v(methodExt, method + " ended " + success + "; " + msg);
-        TestSuite.waitForIdleSync(mInstrumentation);
+        TestSuite.waitForIdleSync();
         return success;
     }
 
@@ -105,7 +96,7 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> extends Instru
                                    final ListAdapter listAdapter) throws InterruptedException {
         final String method = "selectListPosition";
         MyLog.v(methodExt, method + " started; position=" + positionIn);
-        mInstrumentation.runOnMainSync(new Runnable() {
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
                 int position = positionIn;
@@ -117,13 +108,12 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> extends Instru
                 listView.setSelectionFromTop(position, 0);
             }
         });
-        TestSuite.waitForIdleSync(mInstrumentation);
+        TestSuite.waitForIdleSync();
         MyLog.v(methodExt, method + " ended");
     }
 
 
     /**
-     * InstrumentationTestCase.getInstrumentation().invokeContextMenuAction doesn't work properly
      * @return success
      *
      * Note: This method cannot be invoked on the main thread.
@@ -150,14 +140,14 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> extends Instru
             position1 = position + (position1 - mActivity.getPositionOfContextMenu());
         }
         if (success) {
-            mInstrumentation.runOnMainSync(new Runnable() {
+            InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
                 @Override
                 public void run() {
                     MyLog.v(methodExt, method + "; before performContextMenuIdentifierAction");
                     activity.getWindow().performContextMenuIdentifierAction(menuItemId, 0);
                 }
             });
-            TestSuite.waitForIdleSync(mInstrumentation);
+            TestSuite.waitForIdleSync();
         }
         MyLog.v(methodExt, method + " ended " + success);
         return success;
@@ -169,7 +159,7 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> extends Instru
             MyLog.i(methodExt, "View at list position " + position + " doesn't exist");
             return false;
         }
-        mInstrumentation.runOnMainSync(new Runnable() {
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
                 final String msg = "performLongClick on " + viewToClick + " at position " + position;
@@ -181,13 +171,13 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> extends Instru
                 }
             }
         });
-        TestSuite.waitForIdleSync(mInstrumentation);
+        TestSuite.waitForIdleSync();
         return true;
     }
 
     public void goToPosition(final String methodExt, final int position) throws InterruptedException {
         final ListView listView = getListView();
-        mInstrumentation.runOnMainSync(new Runnable() {
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
                 final String msg = "goToPosition " + position;
@@ -199,7 +189,7 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> extends Instru
                 }
             }
         });
-        TestSuite.waitForIdleSync(mInstrumentation);
+        TestSuite.waitForIdleSync();
     }
 
     // See http://stackoverflow.com/questions/24811536/android-listview-get-item-view-by-position
@@ -282,7 +272,7 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> extends Instru
         final View viewToClick = getViewByPosition(position, listView, listAdapter);
         final long listItemId = listAdapter.getItemId(position);
         final String msgLog = method + "; id:" + listItemId + ", position:" + position + ", view:" + viewToClick;
-        mInstrumentation.runOnMainSync(new Runnable() {
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
                 MyLog.v(methodExt, "onPerformClick " + msgLog);
@@ -297,18 +287,18 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> extends Instru
             }
         });
         MyLog.v(methodExt, method + " ended, " + msgLog);
-        TestSuite.waitForIdleSync(mInstrumentation);
+        TestSuite.waitForIdleSync();
     }
 
     public void addMonitor(Class<? extends Activity> classOfActivity) {
-        mActivityMonitor = mInstrumentation.addMonitor(classOfActivity.getName(), null, false);
+        mActivityMonitor = InstrumentationRegistry.getInstrumentation().addMonitor(classOfActivity.getName(), null, false);
     }
     
     public Activity waitForNextActivity(String methodExt, long timeOut) throws InterruptedException {
-        Activity nextActivity = mInstrumentation.waitForMonitorWithTimeout(mActivityMonitor, timeOut);
+        Activity nextActivity = InstrumentationRegistry.getInstrumentation().waitForMonitorWithTimeout(mActivityMonitor, timeOut);
         MyLog.v(methodExt, "After waitForMonitor: " + nextActivity);
         assertNotNull("Next activity is opened and captured", nextActivity);
-        TestSuite.waitForListLoaded(mInstrumentation, nextActivity, 2);
+        TestSuite.waitForListLoaded(nextActivity, 2);
         mActivityMonitor = null;
         return nextActivity;
     }
@@ -318,7 +308,7 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> extends Instru
         SelectorDialog selectorDialog = null;
         boolean isVisible = false;
         for (int ind=0; ind<20; ind++) {
-            mInstrumentation.waitForIdleSync();
+            InstrumentationRegistry.getInstrumentation().waitForIdleSync();
             selectorDialog = (SelectorDialog) mActivity.getSupportFragmentManager().findFragmentByTag(dialogTagToMonitor);
             if (selectorDialog != null && selectorDialog.isVisible()) {
                 isVisible = true;
@@ -339,7 +329,7 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> extends Instru
             if (DbUtils.waitMs(method, 2000)) {
                 break;
             }
-            mInstrumentation.waitForIdleSync();
+            InstrumentationRegistry.getInstrumentation().waitForIdleSync();
             int itemsCountNew = list.getCount();
             MyLog.v(methodExt, "waitForSelectorDialog; countNew=" + itemsCountNew + ", prev=" + itemsCount + ", min=" + minCount);
             if (itemsCountNew >= minCount && itemsCount == itemsCountNew) {
@@ -398,8 +388,8 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> extends Instru
             }
           };
     
-        mInstrumentation.runOnMainSync(clicker);
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(clicker);
         MyLog.v(methodExt, "After click view");
-        TestSuite.waitForIdleSync(mInstrumentation);
+        TestSuite.waitForIdleSync();
     }
 }

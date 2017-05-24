@@ -17,17 +17,22 @@
 package org.andstatus.app.util;
 
 import android.net.Uri;
-import android.test.InstrumentationTestCase;
 
 import org.andstatus.app.context.Travis;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 @Travis
-public class UriUtilsTest extends InstrumentationTestCase {
-    private static Uri[] EMPTY_URIS = { (Uri) null, Uri.EMPTY, Uri.parse(""),
+public class UriUtilsTest {
+    private static Uri[] EMPTY_URIS = { null, Uri.EMPTY, Uri.parse(""),
             UriUtils.fromString(""), UriUtils.fromString(" ")};
 
+    @Test
     public void testIsEmpty() {
         for (Uri uri : EMPTY_URIS) {
             assertTrue(UriUtils.isEmpty(uri));
@@ -35,18 +40,21 @@ public class UriUtilsTest extends InstrumentationTestCase {
         assertFalse(UriUtils.isEmpty(UriUtils.fromString(".")));
     }
 
+    @Test
     public void testFromString() {
         assertTrue(UriUtils.fromString(null) != null);
         assertTrue(UriUtils.fromString("") != null);
         assertTrue(UriUtils.fromString("something") != null);
     }
 
+    @Test
     public void testNotNull() {
         assertEquals(UriUtils.notNull(null), Uri.EMPTY);
         Uri uri = Uri.parse("http://some.org/");
         assertEquals(UriUtils.notNull(uri), uri);
     }
 
+    @Test
     public void testFromJson() throws JSONException {
         JSONObject jso = new JSONObject(
             "{\"profile_image_url\":\"http://a0.twimg.com/profile_images/36_normal.jpeg\",\n"
@@ -61,6 +69,7 @@ public class UriUtilsTest extends InstrumentationTestCase {
         assertEquals("", uri.toString());
     }
 
+    @Test
     public void testIsDownloadable() {
         for (Uri uri : EMPTY_URIS) {
             assertFalse(UriUtils.isDownloadable(uri));

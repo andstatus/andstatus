@@ -16,7 +16,7 @@
 
 package org.andstatus.app.net.social;
 
-import android.test.InstrumentationTestCase;
+import android.support.test.InstrumentationRegistry;
 import android.text.TextUtils;
 
 import org.andstatus.app.account.AccountDataReaderEmpty;
@@ -37,20 +37,25 @@ import org.andstatus.app.util.RawResourceUtils;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
 import org.andstatus.app.util.UrlUtils;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.io.IOException;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 @Travis
-public class VerifyCredentialsTest extends InstrumentationTestCase {
+public class VerifyCredentialsTest {
     private Connection connection;
     private HttpConnectionMock httpConnection;
 
     private String keyStored;
     private String secretStored;
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    @Before
+    public void setUp() throws Exception {
         TestSuite.initializeWithData(this);
 
         TestSuite.setHttpConnectionMockClass(HttpConnectionMock.class);
@@ -74,16 +79,16 @@ public class VerifyCredentialsTest extends InstrumentationTestCase {
         TestSuite.setHttpConnectionMockClass(null);
     }
 
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
+    @After
+    public void tearDown() throws Exception {
         if (!TextUtils.isEmpty(keyStored)) {
             httpConnection.data.oauthClientKeys.setConsumerKeyAndSecret(keyStored, secretStored);        
         }
     }
 
+    @Test
     public void testVerifyCredentials() throws IOException {
-        String jso = RawResourceUtils.getString(this.getInstrumentation().getContext(),
+        String jso = RawResourceUtils.getString(InstrumentationRegistry.getInstrumentation().getContext(),
                 org.andstatus.app.tests.R.raw.verify_credentials_twitter);
         httpConnection.setResponse(jso);
 

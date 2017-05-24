@@ -1,14 +1,17 @@
 package org.andstatus.app.backup;
 
-import android.test.ActivityInstrumentationTestCase2;
-
+import org.andstatus.app.context.ActivityTest;
 import org.andstatus.app.data.DbUtils;
+import org.junit.Test;
 
-public class BackupActivityTest extends ActivityInstrumentationTestCase2<BackupActivity> {
-    public BackupActivityTest() {
-        super(BackupActivity.class);
+public class BackupActivityTest extends ActivityTest<BackupActivity> {
+
+    @Override
+    protected Class<BackupActivity> getActivityClass() {
+        return BackupActivity.class;
     }
-    
+
+    @Test
     public void testOpenActivity() throws InterruptedException {
         final String method = "testOpenActivity";
         getActivity();

@@ -1,11 +1,14 @@
 package org.andstatus.app.data;
 
-import android.test.InstrumentationTestCase;
-
 import org.andstatus.app.context.Travis;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 
 @Travis
-public class MyProviderTest extends InstrumentationTestCase {
+public class MyProviderTest {
+
+    @Test
     public void testQuoteIfNotQuoted() {
         assertEquals("Empty string", String.valueOf('\'') + String.valueOf('\''), MyQuery.quoteIfNotQuoted(""));
         assertEquals("Null", String.valueOf('\'') + String.valueOf('\''), MyQuery.quoteIfNotQuoted(null));

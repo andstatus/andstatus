@@ -17,7 +17,6 @@
 package org.andstatus.app.user;
 
 import android.content.Intent;
-import android.test.ActivityInstrumentationTestCase2;
 
 import org.andstatus.app.ListActivityTestHelper;
 import org.andstatus.app.account.MyAccount;
@@ -31,40 +30,41 @@ import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.msg.MessageListContextMenuItem;
 import org.andstatus.app.msg.TimelineActivity;
+import org.andstatus.app.msg.TimelineActivityTest;
 import org.andstatus.app.msg.TimelineViewItem;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.timeline.Timeline;
 import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.MyLog;
+import org.junit.Test;
 
 import java.util.List;
 
-public class UserListTest extends ActivityInstrumentationTestCase2<TimelineActivity> {
-    public UserListTest() {
-        super(TimelineActivity.class);
-    }
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+public class UserListTest extends TimelineActivityTest {
 
     @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    protected Intent getActivityIntent() {
         MyLog.i(this, "setUp started");
         TestSuite.initializeWithData(this);
 
-        MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.CONVERSATION_ACCOUNT_NAME);
+        final MyAccount ma = MyContextHolder.get().persistentAccounts()
+                .fromAccountName(TestSuite.CONVERSATION_ACCOUNT_NAME);
         assertTrue(ma.isValid());
         MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
 
-        Intent intent = new Intent(Intent.ACTION_VIEW,
-                MatchedUri.getTimelineUri(Timeline.getTimeline(TimelineType.HOME, ma, 0, null)));
-        setActivityIntent(intent);
-
         MyLog.i(this, "setUp ended");
+        return new Intent(Intent.ACTION_VIEW,
+                MatchedUri.getTimelineUri(Timeline.getTimeline(TimelineType.HOME, ma, 0, null)));
     }
 
+    @Test
     public void testUsersOfMessage() throws InterruptedException {
         final String method = "testUsersOfMessage";
-        TestSuite.waitForListLoaded(this, getActivity(), 2);
-        ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<>(this, UserList.class);
+        TestSuite.waitForListLoaded(getActivity(), 2);
+        ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<>(getActivity(), UserList.class);
         long msgId = MyQuery.oidToId(OidEnum.MSG_OID, TestSuite.getConversationOriginId(),
                 TestSuite.CONVERSATION_MENTIONS_MESSAGE_OID);
         String body = MyQuery.msgIdToStringColumnValue(MsgTable.BODY, msgId);
@@ -88,7 +88,7 @@ public class UserListTest extends ActivityInstrumentationTestCase2<TimelineActiv
         assertTrue("Invoked Context menu for " + logMsg, helper.invokeContextMenuAction4ListItemId(method, msgId, MessageListContextMenuItem.USERS_OF_MESSAGE));
 
         UserList userList = (UserList) helper.waitForNextActivity(method, 15000);
-        TestSuite.waitForListLoaded(this, userList, 1);
+        TestSuite.waitForListLoaded(userList, 1);
 
         List<UserListViewItem> listItems = userList.getListLoader().getList();
 
@@ -102,7 +102,7 @@ public class UserListTest extends ActivityInstrumentationTestCase2<TimelineActiv
             compareAttributes(userE, userA, true);
         }
 
-        ListActivityTestHelper<UserList> userListHelper = new ListActivityTestHelper<>(this, userList);
+        ListActivityTestHelper<UserList> userListHelper = new ListActivityTestHelper<>(userList);
         userListHelper.clickListAtPosition(method, userListHelper.getPositionOfListItemId(listItems.get(
                 listItems.size() > 2 ? 2 : 0).getUserId()));
         DbUtils.waitMs(method, 500);

@@ -16,7 +16,7 @@
 
 package org.andstatus.app.net.social;
 
-import android.test.InstrumentationTestCase;
+import android.support.test.InstrumentationRegistry;
 
 import org.andstatus.app.account.AccountDataReaderEmpty;
 import org.andstatus.app.account.AccountName;
@@ -37,6 +37,8 @@ import org.andstatus.app.service.CommandExecutionContext;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.RawResourceUtils;
 import org.andstatus.app.util.TriState;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.io.IOException;
 import java.net.URL;
@@ -44,15 +46,19 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertTrue;
+
 @Travis
-public class ConnectionTwitterTest extends InstrumentationTestCase {
+public class ConnectionTwitterTest {
     private Connection connection;
     private HttpConnectionMock httpConnection;
     private OriginConnectionData connectionData;
     
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    @Before
+    public void setUp() throws Exception {
         TestSuite.initializeWithData(this);
 
         TestSuite.setHttpConnectionMockClass(HttpConnectionMock.class);
@@ -75,8 +81,9 @@ public class ConnectionTwitterTest extends InstrumentationTestCase {
         TestSuite.setHttpConnectionMockClass(null);
     }
 
+    @Test
     public void testGetTimeline() throws IOException {
-        String jso = RawResourceUtils.getString(this.getInstrumentation().getContext(),
+        String jso = RawResourceUtils.getString(InstrumentationRegistry.getInstrumentation().getContext(),
                 org.andstatus.app.tests.R.raw.twitter_home_timeline);
         httpConnection.setResponse(jso);
         
@@ -150,8 +157,9 @@ public class ConnectionTwitterTest extends InstrumentationTestCase {
         assertEquals("Body of this message starts with", startsWith, message.getBody().substring(0, startsWith.length()));
     }
 
+    @Test
     public void testGetMessageWithAttachment() throws IOException {
-        String jso = RawResourceUtils.getString(this.getInstrumentation().getContext(), 
+        String jso = RawResourceUtils.getString(InstrumentationRegistry.getInstrumentation().getContext(),
                 org.andstatus.app.tests.R.raw.twitter_message_with_media);
         httpConnection.setResponse(jso);
 
@@ -165,8 +173,9 @@ public class ConnectionTwitterTest extends InstrumentationTestCase {
         assertNotSame("attachment", attachment, message.attachments.get(0));
     }
 
+    @Test
     public void testGetMessageWithEscapedHtmlTag() throws IOException {
-        String jso = RawResourceUtils.getString(this.getInstrumentation().getContext(),
+        String jso = RawResourceUtils.getString(InstrumentationRegistry.getInstrumentation().getContext(),
                 org.andstatus.app.tests.R.raw.twitter_message_with_escaped_html_tag);
         httpConnection.setResponse(jso);
 

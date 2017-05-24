@@ -17,25 +17,21 @@
 package org.andstatus.app.util;
 
 import android.content.Context;
-import android.test.ActivityTestCase;
 
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
+import org.junit.Test;
 
-public class MyUtilTest extends ActivityTestCase {
-    /**
-     * Test I18n class...
-     * @author yvolk@yurivolkov.com
-     */
+public class MyUtilTest {
+
+	@Test
     public void test001MessageFormat() throws Exception {
     	MyLog.i(this, "testMessageFormat started");
     	Context context = MyContextHolder.get().context();
     	
-        int len = messageFormatTests.length;
-        for (int index = 0; index < len; index++) {
-            MessageFormatTest messageFormatTest = messageFormatTests[index];
-            if (messageFormatTest == null) { 
-            	break; 
+        for (MessageFormatTest messageFormatTest : messageFormatTests) {
+            if (messageFormatTest == null) {
+                break;
             }
             int messageFormat = messageFormatTest.messageFormat;
             int numSomething = messageFormatTest.numSomething;
@@ -48,21 +44,21 @@ public class MyUtilTest extends ActivityTestCase {
                         + " expected: " + dateTest.expectedOutput
                         + " actual: " + output);
             } */
-        	MyLog.i(this, "num=" + numSomething + "; output=\"" + output + "\"");
-            
+            MyLog.i(this, "num=" + numSomething + "; output=\"" + output + "\"");
+
             //assertEquals(dateTest.expectedOutput, output);
         }         
     	MyLog.i(this, "testMessageFormat ended");
     }   
 
     static private class MessageFormatTest {
-    	public int messageFormat = 0;
-    	public int numSomething = 0;
-    	public int array_patterns = 0;
-    	public int array_formats = 0;
+    	int messageFormat = 0;
+    	int numSomething = 0;
+    	int array_patterns = 0;
+    	int array_formats = 0;
         
-        public MessageFormatTest(int messageFormat,
-    			int numSomething, int array_patterns, int array_formats) {
+        MessageFormatTest(int messageFormat,
+                          int numSomething, int array_patterns, int array_formats) {
         	this.messageFormat = messageFormat;
         	this.numSomething = numSomething;
         	this.array_patterns = array_patterns;
@@ -70,7 +66,7 @@ public class MyUtilTest extends ActivityTestCase {
         }
     }
     
-    MessageFormatTest[] messageFormatTests = new MessageFormatTest[]{ 
+    private MessageFormatTest[] messageFormatTests = new MessageFormatTest[]{
     	new MessageFormatTest(R.string.appwidget_new_home_format,
     			1, R.array.appwidget_home_patterns, R.array.appwidget_home_formats),	
     	new MessageFormatTest(R.string.appwidget_new_home_format,

@@ -1,11 +1,13 @@
 package org.andstatus.app.msg;
 
-import android.test.InstrumentationTestCase;
-
 import org.andstatus.app.context.Travis;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 
 @Travis
-public class SharingToThisAppTest extends InstrumentationTestCase {
+public class SharingToThisAppTest {
+    @Test
     public void testInputSharedContent() {
         String part1 = "This is a long a long post";
         String text = part1 + " that doesn't fit into subject";

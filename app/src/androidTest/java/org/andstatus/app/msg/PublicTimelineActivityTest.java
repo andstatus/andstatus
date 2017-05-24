@@ -35,61 +35,54 @@ import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.timeline.Timeline;
 import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.MyLog;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author yvolk@yurivolkov.com
  */
-public class PublicTimelineActivityTest extends android.test.ActivityInstrumentationTestCase2<TimelineActivity> {
-    private TimelineActivity mActivity;
-    
+public class PublicTimelineActivityTest extends TimelineActivityTest {
+    private MyAccount ma;
+
     @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    protected Intent getActivityIntent() {
         MyLog.i(this, "setUp started");
         TestSuite.initializeWithData(this);
 
-        MyAccount ma = MyContextHolder.get().persistentAccounts().getFirstSucceededForOrigin(
+        ma = MyContextHolder.get().persistentAccounts().getFirstSucceededForOrigin(
                 MyContextHolder.get().persistentOrigins().fromName(TestSuite.GNUSOCIAL_TEST_ORIGIN_NAME));
         assertTrue(ma.isValidAndSucceeded());
         MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
-        
+
         assertEquals(ma.getUserId(), MyContextHolder.get().persistentAccounts().getCurrentAccountUserId());
-        
-        Intent intent = new Intent(Intent.ACTION_VIEW, 
-                MatchedUri.getTimelineUri(Timeline.getTimeline(TimelineType.PUBLIC, ma, 0, null)));
-        setActivityIntent(intent);
-        
-        mActivity = getActivity();
-        TestSuite.waitForListLoaded(this, mActivity, 2);
-        
-        assertEquals(ma, mActivity.getCurrentMyAccount());
-        assertEquals(TimelineType.PUBLIC, mActivity.getTimeline().getTimelineType());
-        
-        assertTrue("MyService is available", MyServiceManager.isServiceAvailable());
         MyLog.i(this, "setUp ended");
+
+        return new Intent(Intent.ACTION_VIEW,
+                MatchedUri.getTimelineUri(Timeline.getTimeline(TimelineType.PUBLIC, ma, 0, null)));
     }
 
-    @Override
-    protected void tearDown() throws Exception {
-        mActivity.finish();
-        super.tearDown();
-    }
-
-    public PublicTimelineActivityTest() {
-        super(TimelineActivity.class);
-    }
-    
+    @Test
     public void testGlobalSearchInOptionsMenu() throws InterruptedException {
+        assertTrue("MyService is available", MyServiceManager.isServiceAvailable());
+        TestSuite.waitForListLoaded(getActivity(), 2);
+        assertEquals(ma, getActivity().getCurrentMyAccount());
+        assertEquals(TimelineType.PUBLIC, getActivity().getTimeline().getTimelineType());
+
         oneSearchTest("testGlobalSearchInOptionsMenu", R.id.global_search_menu_id, TestSuite.GLOBAL_PUBLIC_MESSAGE_TEXT);
     }
 
+    @Test
     public void testSearch() throws InterruptedException {
         oneSearchTest("testSearch", R.id.search_menu_id, TestSuite.PUBLIC_MESSAGE_TEXT);
     }
 
     private void oneSearchTest(String method, int menu_id, String messageText) throws InterruptedException {
-        assertFalse("Screen is locked", TestSuite.isScreenLocked(mActivity));
-        ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<>(this, TimelineActivity.class);
+        assertFalse("Screen is locked", TestSuite.isScreenLocked(getActivity()));
+        ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<>(getActivity(),
+                TimelineActivity.class);
         helper.clickMenuItem(method, menu_id);
         getInstrumentation().sendStringSync(messageText);
         getInstrumentation().sendKeyDownUpSync(KeyEvent.KEYCODE_ENTER);
@@ -105,7 +98,7 @@ public class PublicTimelineActivityTest extends android.test.ActivityInstrumenta
         boolean found = false;
         final StringBuilder sb = new StringBuilder();
         for (int attempt = 0; attempt < 6; attempt++) {
-            TestSuite.waitForIdleSync(this);
+            TestSuite.waitForIdleSync();
             
             Runnable probe = new Runnable() {
                 @Override
@@ -136,7 +129,7 @@ public class PublicTimelineActivityTest extends android.test.ActivityInstrumenta
         final String method = "assertMessagesArePublic";
         int msgCount = 0;
         for (int attempt=0; attempt < 3; attempt++) {
-            TestSuite.waitForIdleSync(this);
+            TestSuite.waitForIdleSync();
             msgCount = oneAttempt(timelineActivity, publicMessageText);
             if (msgCount > 0 || DbUtils.waitMs(method, 2000 * (attempt + 1))) {
                 break;

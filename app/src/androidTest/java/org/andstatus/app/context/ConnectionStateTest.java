@@ -16,23 +16,27 @@
 
 package org.andstatus.app.context;
 
-import android.test.InstrumentationTestCase;
-
 import org.andstatus.app.service.ConnectionRequired;
 import org.andstatus.app.service.ConnectionState;
+import org.junit.Before;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author yvolk@yurivolkov.com
  */
 @Travis
-public class ConnectionStateTest extends InstrumentationTestCase {
+public class ConnectionStateTest {
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    @Before
+    public void setUp() throws Exception {
         TestSuite.initialize(this);
     }
 
+    @Test
     public void testIsConnectionStateOkFor() {
         TestSuite.getMyContextForTest().setConnectionState(ConnectionState.OFFLINE);
         assertEquals(ConnectionState.OFFLINE, MyContextHolder.get().getConnectionState());

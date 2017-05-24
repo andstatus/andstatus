@@ -2,7 +2,6 @@ package org.andstatus.app.data;
 
 import android.net.Uri;
 import android.os.Build;
-import android.test.InstrumentationTestCase;
 
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
@@ -11,21 +10,28 @@ import org.andstatus.app.context.Travis;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.SharedPreferencesUtil;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.io.File;
 import java.net.MalformedURLException;
 import java.util.Date;
 
-@Travis
-public class DataPrunerTest extends InstrumentationTestCase  {
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+@Travis
+public class DataPrunerTest {
+
+    @Before
+    public void setUp() throws Exception {
         TestSuite.initializeWithData(this);
         assertTrue(TestSuite.setAndWaitForIsInForeground(false));
     }
-    
+
+    @Test
     public void testPrune() throws MalformedURLException {
         final String method = "testPrune";
         MyLog.v(this, method + "; Started");
@@ -86,6 +92,7 @@ public class DataPrunerTest extends InstrumentationTestCase  {
         MyLog.v(this, method + "; Ended");
     }
 
+    @Test
     public void testPruneAttachments() throws MalformedURLException {
         DataPruner dp = new DataPruner(MyContextHolder.get());
         dp.pruneAttachments();

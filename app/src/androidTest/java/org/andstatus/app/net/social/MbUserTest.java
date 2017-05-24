@@ -16,24 +16,27 @@
 
 package org.andstatus.app.net.social;
 
-import android.test.InstrumentationTestCase;
-
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.context.Travis;
 import org.andstatus.app.origin.Origin;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.util.List;
 
-@Travis
-public class MbUserTest extends InstrumentationTestCase {
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+@Travis
+public class MbUserTest {
+
+    @Before
+    public void setUp() throws Exception {
         TestSuite.initializeWithData(this);
     }
 
+    @Test
     public void testFromBodyText1() {
         Origin origin = MyContextHolder.get().persistentOrigins().fromName(TestSuite.GNUSOCIAL_TEST_ORIGIN_NAME);
         String webFingerId2 = "anotherUser@somedomain.org";
@@ -51,6 +54,7 @@ public class MbUserTest extends InstrumentationTestCase {
         assertEquals(msgLog, shortUsername3, users.get(3).getUserName());
     }
 
+    @Test
     public void testFromBodyText2() {
         final String USERNAME1 = "FontSelinstin";
         final String SKIPPED_USERNAME2 = "rocuhdjekrt";
@@ -72,6 +76,7 @@ public class MbUserTest extends InstrumentationTestCase {
         assertEquals(msgLog, USERNAME4, users.get(1).getUserName());
     }
 
+    @Test
     public void testIsWebFingerIdValid() {
         checkWebFingerId("", false);
         checkWebFingerId("someUser.", false);

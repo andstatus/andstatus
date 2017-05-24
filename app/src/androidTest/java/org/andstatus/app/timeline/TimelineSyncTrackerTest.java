@@ -1,7 +1,6 @@
 package org.andstatus.app.timeline;
 
 import android.support.annotation.NonNull;
-import android.test.InstrumentationTestCase;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
@@ -9,24 +8,30 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.context.Travis;
 import org.andstatus.app.net.social.TimelinePosition;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.util.Arrays;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 @Travis
-public class TimelineSyncTrackerTest extends InstrumentationTestCase {
+public class TimelineSyncTrackerTest {
 
-    public static final int LATEST_ITEM_MILLIS_AGO = 10000;
+    private static final int LATEST_ITEM_MILLIS_AGO = 10000;
 
-    @Override
+    @Before
     public void setUp() throws Exception {
-        super.setUp();
         TestSuite.initializeWithData(this);
     }
 
+    @Test
     public void testGnuSocialTimeline() {
         testTimelineForAccount(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME);
     }
 
+    @Test
     public void testTwitterTimeline() {
         testTimelineForAccount(TestSuite.TWITTER_TEST_ACCOUNT_NAME);
     }

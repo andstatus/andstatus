@@ -1,24 +1,26 @@
 package org.andstatus.app.service;
 
-import android.test.InstrumentationTestCase;
-
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.context.Travis;
 import org.andstatus.app.timeline.TimelineType;
-import org.andstatus.app.util.TriState;
+import org.junit.Before;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 
 @Travis
-public class CommandExecutionContextTest extends InstrumentationTestCase {
-    MyAccount ma;
+public class CommandExecutionContextTest {
+    private MyAccount ma;
 
-    @Override
-    protected void setUp() throws Exception {
+    @Before
+    public void setUp() throws Exception {
         TestSuite.initializeWithData(this);
         ma = MyContextHolder.get().persistentAccounts().getFirstSucceeded();
     }
 
+    @Test
     public void testHomeAccumulation() {
         CommandExecutionContext execContext = new CommandExecutionContext(
                 CommandData.newAccountCommand(CommandEnum.EMPTY, ma));
@@ -37,6 +39,7 @@ public class CommandExecutionContextTest extends InstrumentationTestCase {
         assertEquals(0, execContext.getResult().getDirectedAdded());
     }
 
+    @Test
     public void testDirectAccumulation() {
         CommandExecutionContext execContext = new CommandExecutionContext(
                 CommandData.newTimelineCommand(CommandEnum.EMPTY, ma, TimelineType.DIRECT));

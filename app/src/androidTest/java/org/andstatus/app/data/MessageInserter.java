@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,7 +16,6 @@
 
 package org.andstatus.app.data;
 
-import android.test.InstrumentationTestCase;
 import android.text.TextUtils;
 
 import org.andstatus.app.account.MyAccount;
@@ -39,7 +38,10 @@ import org.andstatus.app.util.UrlUtils;
 
 import java.net.URL;
 
-public class MessageInserter extends InstrumentationTestCase {
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+public class MessageInserter {
     private MyAccount ma;
     private Origin origin;
     private MbUser accountMbUser;
@@ -52,7 +54,7 @@ public class MessageInserter extends InstrumentationTestCase {
         accountMbUser = buildUserFromOid(ma.getUserOid(), true);
     }
 
-    public MbUser getAccountMbUser() {
+    MbUser getAccountMbUser() {
         return accountMbUser;
     }
     
@@ -69,11 +71,11 @@ public class MessageInserter extends InstrumentationTestCase {
         return mbUser;
     }
     
-    public final MbUser buildUserFromOid(String userOid) {
+    final MbUser buildUserFromOid(String userOid) {
         return  buildUserFromOid(userOid, false);
     }
 
-    public final MbUser buildUserFromOid(String userOid, boolean partial) {
+    private MbUser buildUserFromOid(String userOid, boolean partial) {
         MbUser mbUser = MbUser.fromOriginAndUserOid(origin.getId(), userOid);
         String username;
         String profileUrl;
@@ -132,7 +134,7 @@ public class MessageInserter extends InstrumentationTestCase {
         return message;
     }
 
-    public static long addMessage(MyAccount ma, MbMessage message) {
+    static long addMessage(MyAccount ma, MbMessage message) {
         return new MessageInserter(ma).addMessage(message);
     }
 
@@ -185,7 +187,7 @@ public class MessageInserter extends InstrumentationTestCase {
         return messageId;
     }
 
-    public static void deleteOldMessage(long originId, String messageOid) {
+    static void deleteOldMessage(long originId, String messageOid) {
         long messageIdOld = MyQuery.oidToId(OidEnum.MSG_OID, originId, messageOid);
         if (messageIdOld != 0) {
             int deleted = TestSuite.getMyContextForTest().context().getContentResolver().delete(MatchedUri.getMsgUri(0, messageIdOld),  null, null);

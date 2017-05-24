@@ -16,8 +16,6 @@
 
 package org.andstatus.app.net.http;
 
-import android.test.InstrumentationTestCase;
-
 import org.andstatus.app.account.AccountName;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
@@ -27,17 +25,21 @@ import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UrlUtils;
+import org.junit.Before;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 
 @Travis
-public class OAuthClientKeysTest extends InstrumentationTestCase {
+public class OAuthClientKeysTest {
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    @Before
+    public void setUp() throws Exception {
         TestSuite.forget();
         TestSuite.initialize(this);
     }
 
+    @Test
     public void testKeysSave() {
         HttpConnectionData connectionData = HttpConnectionData.fromConnectionData(
                 OriginConnectionData.fromAccountName(
@@ -83,10 +85,5 @@ public class OAuthClientKeysTest extends InstrumentationTestCase {
             assertEquals(consumerKey, keys2.getConsumerKey());
             assertEquals(consumerSecret, keys2.getConsumerSecret());
         }
-    }
-    
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
     }
 }

@@ -17,7 +17,6 @@
 package org.andstatus.app.service;
 
 import android.content.ContentValues;
-import android.test.InstrumentationTestCase;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
@@ -33,29 +32,36 @@ import org.andstatus.app.database.UserTable;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.social.ConnectionTwitterGnuSocialMock;
 import org.andstatus.app.util.MyLog;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 @Travis
-public class AvatarDownloaderTest extends InstrumentationTestCase {
+public class AvatarDownloaderTest {
     private MyAccount ma = MyAccount.EMPTY;
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    @Before
+    public void setUp() throws Exception {
         MyLog.i(this, "setUp started");
         TestSuite.initializeWithData(this);
         MyLog.i(this, "setUp ended");
     }
 
+    @Test
     public void testLoadPumpio() throws IOException {
         ma = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.CONVERSATION_ACCOUNT_NAME);
         assertTrue(TestSuite.CONVERSATION_ACCOUNT_NAME + " exists", ma.isValid());
         loadForOneMyAccount(TestSuite.CONVERSATION_ACCOUNT_AVATAR_URL);
     }
 
+    @Test
     public void testLoadBasicAuth() throws IOException {
         ma = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME);
         assertTrue(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME + " exists", ma.isValid());
@@ -107,6 +113,7 @@ public class AvatarDownloaderTest extends InstrumentationTestCase {
         assertTrue("Loaded avatar file deleted", data.getFile().delete());
     }
 
+    @Test
     public void testDeletedFile() throws IOException {
         ma = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.CONVERSATION_ACCOUNT_NAME);
         

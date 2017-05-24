@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,30 +17,35 @@
 package org.andstatus.app.user;
 
 import android.content.Intent;
-import android.test.ActivityInstrumentationTestCase2;
 
 import org.andstatus.app.ListActivityTestHelper;
 import org.andstatus.app.MyAction;
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.context.ActivityTest;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MatchedUri;
-import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.data.MyQuery;
+import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.util.MyLog;
+import org.junit.Test;
 
 import java.util.List;
 
-public class UserListWorkTest extends ActivityInstrumentationTestCase2<UserList> {
-    public UserListWorkTest() {
-        super(UserList.class);
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+public class UserListWorkTest extends ActivityTest<UserList> {
+
+    @Override
+    protected Class<UserList> getActivityClass() {
+        return UserList.class;
     }
 
     @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    protected Intent getActivityIntent() {
         MyLog.i(this, "setUp started");
         TestSuite.initializeWithData(this);
 
@@ -51,18 +56,17 @@ public class UserListWorkTest extends ActivityInstrumentationTestCase2<UserList>
         long msgId = MyQuery.oidToId(OidEnum.MSG_OID, TestSuite.getConversationOriginId(),
                 TestSuite.CONVERSATION_MENTIONS_MESSAGE_OID);
         assertTrue(msgId > 0);
-
-        Intent intent = new Intent(MyAction.VIEW_USERS.getAction(),
-                MatchedUri.getUserListUri(ma.getUserId(), UserListType.USERS_OF_MESSAGE, ma.getOriginId(), msgId));
-        setActivityIntent(intent);
-
         MyLog.i(this, "setUp ended");
+
+        return new Intent(MyAction.VIEW_USERS.getAction(),
+                MatchedUri.getUserListUri(ma.getUserId(), UserListType.USERS_OF_MESSAGE, ma.getOriginId(), msgId));
     }
 
+    @Test
     public void testFollowersList() throws InterruptedException {
         final String method = "testFollowersList";
-        TestSuite.waitForListLoaded(this, getActivity(), 2);
-        ListActivityTestHelper<UserList> helper = new ListActivityTestHelper<>(this, FollowersList.class);
+        TestSuite.waitForListLoaded(getActivity(), 2);
+        ListActivityTestHelper<UserList> helper = new ListActivityTestHelper<>(getActivity(), FollowersList.class);
 
         List<UserListViewItem> listItems = getActivity().getListLoader().getList();
         assertEquals(listItems.toString(), 5, listItems.size());
@@ -73,10 +77,10 @@ public class UserListWorkTest extends ActivityInstrumentationTestCase2<UserList>
                 method, userA.userId, UserListContextMenuItem.FOLLOWERS));
 
         FollowersList userList = (FollowersList) helper.waitForNextActivity(method, 15000);
-        TestSuite.waitForListLoaded(this, userList, 1);
+        TestSuite.waitForListLoaded(userList, 1);
 
         List<UserListViewItem> followersItems = userList.getListLoader().getList();
-        ListActivityTestHelper<FollowersList> followersHelper = new ListActivityTestHelper<>(this, userList);
+        ListActivityTestHelper<FollowersList> followersHelper = new ListActivityTestHelper<>(userList);
         followersHelper.clickListAtPosition(method,
                 followersHelper.getPositionOfListItemId(followersItems.get(0).getUserId()));
         DbUtils.waitMs(method, 500);

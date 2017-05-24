@@ -16,12 +16,15 @@
 
 package org.andstatus.app.util;
 
-import android.test.InstrumentationTestCase;
-
 import org.andstatus.app.context.Travis;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 
 @Travis
-public class I18nTest extends InstrumentationTestCase {
+public class I18nTest {
+
+    @Test
     public void testTrimTextAt() {
         // Length of this string is 20 chars:
         String text1 = "Text 'to be trimmed.";
@@ -36,6 +39,7 @@ public class I18nTest extends InstrumentationTestCase {
         assertEquals("", I18n.trimTextAt(text1, -1));
     }
 
+    @Test
     public void testLocaleToLanguageAndCountry() {
         assertEquals("pt", I18n.localeToLanguage("pt-rPT"));
         assertEquals("PT", I18n.localeToCountry("pt-rPT"));
@@ -43,6 +47,7 @@ public class I18nTest extends InstrumentationTestCase {
         assertEquals("", I18n.localeToCountry("pt"));
     }
 
+    @Test
     public void testFormatBytes() {
         assertEquals("0", I18n.formatBytes(0));
         assertEquals("1B", I18n.formatBytes(1));

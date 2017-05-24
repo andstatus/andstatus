@@ -1,7 +1,5 @@
 package org.andstatus.app.msg;
 
-import android.test.InstrumentationTestCase;
-
 import org.andstatus.app.LoadableListActivity.ProgressPublisher;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
@@ -10,18 +8,21 @@ import org.andstatus.app.context.Travis;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.util.MyLog;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.util.List;
 
+import static org.junit.Assert.assertTrue;
+
 @Travis
-public class ConversationViewLoaderTest extends InstrumentationTestCase implements ProgressPublisher {
+public class ConversationViewLoaderTest implements ProgressPublisher {
     private MyAccount ma;
     private long selectedMessageId;
     private long progressCounter = 0;
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    @Before
+    public void setUp() throws Exception {
         MyLog.i(this, "setUp started");
         TestSuite.initializeWithData(this);
         ma = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.CONVERSATION_ACCOUNT_NAME);
@@ -31,6 +32,7 @@ public class ConversationViewLoaderTest extends InstrumentationTestCase implemen
         MyLog.i(this, "setUp ended");
     }
 
+    @Test
     public void testLoad() {
         ConversationLoader<ConversationViewItem> loader =
                 new ConversationLoaderFactory<ConversationViewItem>().getLoader(

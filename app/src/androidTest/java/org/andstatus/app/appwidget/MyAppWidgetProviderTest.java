@@ -16,7 +16,6 @@
 
 package org.andstatus.app.appwidget;
 
-import android.test.InstrumentationTestCase;
 import android.text.format.DateFormat;
 import android.text.format.DateUtils;
 import android.text.format.Time;
@@ -28,58 +27,60 @@ import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.service.CommandResult;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.util.Calendar;
 import java.util.Date;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 /**
  * Runs various tests...
  * @author yvolk@yurivolkov.com
  */
-public class MyAppWidgetProviderTest extends InstrumentationTestCase {
-    MyContext myContext;
+public class MyAppWidgetProviderTest {
+    private MyContext myContext;
     
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    @Before
+    public void setUp() throws Exception {
         TestSuite.initializeWithData(this);
         myContext = MyContextHolder.get();
         MyServiceManager.setServiceUnavailable();
         initializeDateTests();
     }
-    
+
+    @Test
     public void testTimeFormatting() throws Exception {
         MyLog.v(this, "testTimeFormatting started");
     	
-        int len = dateTests.length;
-        for (int index = 0; index < len; index++) {
-            DateTest dateTest = dateTests[index];
-            if (dateTest == null) { 
-            	break; 
+        for (DateTest dateTest : dateTests) {
+            if (dateTest == null) {
+                break;
             }
             long startMillis = dateTest.date1.toMillis(false /* use isDst */);
             long endMillis = dateTest.date2.toMillis(false /* use isDst */);
             int flags = dateTest.flags;
             String output = DateUtils.formatDateRange(myContext.context(), startMillis, endMillis, flags);
             String output2 = MyRemoteViewData.formatWidgetTime(myContext.context(), startMillis, endMillis);
-        	MyLog.v(this, "\"" + output + "\"; \"" + output2 + "\"");
+            MyLog.v(this, "\"" + output + "\"; \"" + output2 + "\"");
         }         
     }   
 
-    DateTest[] dateTests = new DateTest[101];
+    private DateTest[] dateTests = new DateTest[101];
     
     static private class DateTest {
-        public Time date1;
-        public Time date2;
-        public int flags;
+        Time date1;
+        Time date2;
+        int flags;
         
-        public DateTest(long startMillis, long endMillis) {
+        DateTest(long startMillis, long endMillis) {
         	date1 = new Time();
         	date1.set(startMillis);
         	date2 = new Time();
         	date2.set(endMillis);
-        	flags = DateUtils.FORMAT_24HOUR | DateUtils.FORMAT_SHOW_DATE 
-        	| DateUtils.FORMAT_SHOW_TIME;
+        	flags = DateUtils.FORMAT_24HOUR | DateUtils.FORMAT_SHOW_DATE | DateUtils.FORMAT_SHOW_TIME;
         }
     }
     
@@ -146,6 +147,7 @@ public class MyAppWidgetProviderTest extends InstrumentationTestCase {
     	dateTests[ind] = new DateTest(cal1.getTimeInMillis(), cal2.getTimeInMillis());
     }
 
+    @Test
     public void testReceiver() throws Exception {
         final String method = "testReceiver";
     	MyLog.i(this, method + "; started");
@@ -242,14 +244,13 @@ public class MyAppWidgetProviderTest extends InstrumentationTestCase {
         }
     }
     
-    static String dateTimeFormatted(long date) {
+    private static String dateTimeFormatted(long date) {
         return DateFormat.format("yyyy-MM-dd HH:mm:ss", new Date(date)).toString();
     }
 
 	/** 
 	 * Update AndStatus Widget(s),
 	 * if there are some installed... (e.g. on the Home screen...) 
-	 * @throws InterruptedException 
 	 * @see MyAppWidgetProvider
 	 */
 	private void updateWidgets(int msgAdded, int msgDirectAdded, int mentionsAdded) throws InterruptedException{

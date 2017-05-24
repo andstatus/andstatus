@@ -16,7 +16,7 @@ package org.andstatus.app.service;
  */
 
 import android.graphics.drawable.Drawable;
-import android.test.InstrumentationTestCase;
+import android.support.test.InstrumentationRegistry;
 
 import org.andstatus.app.backup.ProgressLogger;
 import org.andstatus.app.context.MyContextHolder;
@@ -31,20 +31,26 @@ import org.andstatus.app.data.MyDataCheckerConversations;
 import org.andstatus.app.net.social.ConnectionTwitterGnuSocialMock;
 import org.andstatus.app.net.social.MbAttachment;
 import org.andstatus.app.net.social.MbMessage;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 @Travis
-public class LargeImageTest extends InstrumentationTestCase {
+public class LargeImageTest {
     
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    @Before
+    public void setUp() throws Exception {
         TestSuite.initializeWithData(this);
     }
-    
+
+    @Test
     public void testLargeImageAttachmentLoad() throws IOException {
         DownloadData dd = insertMessage();
         loadingTest(dd);
@@ -69,7 +75,7 @@ public class LargeImageTest extends InstrumentationTestCase {
         CommandData commandData = CommandData.newCommand(CommandEnum.FETCH_AVATAR);
         AttachmentDownloader loader = new AttachmentDownloader(dd);
         ConnectionTwitterGnuSocialMock connection = new ConnectionTwitterGnuSocialMock();
-        InputStream inputStream = this.getInstrumentation().getContext().getResources()
+        InputStream inputStream = InstrumentationRegistry.getInstrumentation().getContext().getResources()
                 .openRawResource(org.andstatus.app.tests.R.raw.large_image);
         connection.getHttpMock().setResponseFileStream(inputStream);
         loader.connectionMock = connection;

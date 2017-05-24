@@ -16,16 +16,20 @@
 
 package org.andstatus.app.net.http;
 
-import android.test.InstrumentationTestCase;
-
 import org.andstatus.app.context.Travis;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 @Travis
-public class HttpReadResultTest extends InstrumentationTestCase {
-    
+public class HttpReadResultTest {
+
+    @Test
     public void testResultToArray() throws ConnectionException, JSONException {
         final String url = "https://example.com/somepath/file.html";
         final String in = "{\"results\":[{\"text\":\"Text1\",\"to_user\":\"someuser\",\"from_user\":\"author1\"}," 

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,7 +16,6 @@
 
 package org.andstatus.app.data;
 
-import android.test.InstrumentationTestCase;
 import android.text.TextUtils;
 
 import org.andstatus.app.account.MyAccount;
@@ -29,13 +28,17 @@ import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UrlUtils;
+import org.junit.Before;
 
 import java.util.GregorianCalendar;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class ConversationInserter extends InstrumentationTestCase {
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+public class ConversationInserter {
     private static AtomicInteger iterationCounter = new AtomicInteger(0);
     private static final Map<String, MbUser> users = new ConcurrentHashMap<>();
 
@@ -63,9 +66,8 @@ public class ConversationInserter extends InstrumentationTestCase {
         assertTrue(TestSuite.CONVERSATION_ACCOUNT_NAME + " exists", ma.isValid());
     }
     
-    @Override
+    @Before
     public void setUp() throws Exception {
-        super.setUp();
         TestSuite.initializeWithData(this);
         mySetup();
     }

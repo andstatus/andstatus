@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,7 +16,6 @@
 
 package org.andstatus.app.data;
 
-import android.test.InstrumentationTestCase;
 import android.text.TextUtils;
 
 import org.andstatus.app.account.MyAccount;
@@ -27,19 +26,19 @@ import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.MyHtml;
+import org.junit.Before;
 
-public class HtmlContentInserter extends InstrumentationTestCase {
-    private InstrumentationTestCase testCase;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+public class HtmlContentInserter {
     private MyAccount ma;
     private Origin origin;
     public static final String HTML_BODY_IMG_STRING = "A message with <b>HTML</b> <i>img</i> tag: " 
             + "<img src='http://static.fsf.org/dbd/hollyweb.jpeg' alt='Stop DRM in HTML5' />"
             + ", <a href='http://www.fsf.org/'>the link in 'a' tag</a> <br/>" 
             + "and a plain text link to the issue 60: https://github.com/andstatus/andstatus/issues/60";
-    
-    public HtmlContentInserter(InstrumentationTestCase parent) {
-        testCase = parent;
-    }
     
     private void mySetup() {
         origin = MyContextHolder.get().persistentOrigins().fromName(TestSuite.CONVERSATION_ORIGIN_NAME);
@@ -48,9 +47,8 @@ public class HtmlContentInserter extends InstrumentationTestCase {
         assertTrue(TestSuite.CONVERSATION_ACCOUNT_NAME + " exists", ma.isValid());
     }
     
-    @Override
+    @Before
     public void setUp() throws Exception {
-        super.setUp();
         TestSuite.initializeWithData(this);
         mySetup();
     }
@@ -63,7 +61,7 @@ public class HtmlContentInserter extends InstrumentationTestCase {
         mySetup();
         testHtmlContent();
     }
-    
+
     private void testHtmlContent() {
         boolean isHtmlContentAllowedStored = origin.isHtmlContentAllowed(); 
         MbUser author1 = buildUserFromOid("acct:html@example.com");
@@ -84,7 +82,7 @@ public class HtmlContentInserter extends InstrumentationTestCase {
     private void setHtmlContentAllowed(boolean allowed) {
         new Origin.Builder(origin).setHtmlContentAllowed(allowed).save();
         TestSuite.forget();
-        TestSuite.initialize(testCase);
+        TestSuite.initialize(this);
         mySetup();
         assertEquals(allowed, origin.isHtmlContentAllowed());
     }

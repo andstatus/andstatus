@@ -23,11 +23,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.support.annotation.NonNull;
-import android.test.InstrumentationTestCase;
+import android.support.test.InstrumentationRegistry;
 import android.view.ViewGroup;
 import android.widget.ListView;
-
-import junit.framework.TestCase;
 
 import org.andstatus.app.HelpActivity;
 import org.andstatus.app.account.MyAccount;
@@ -57,22 +55,27 @@ import java.util.GregorianCalendar;
 import java.util.Locale;
 import java.util.TimeZone;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 /**
  * @author yvolk@yurivolkov.com
  */
-public class TestSuite extends TestCase {
+public class TestSuite {
     private static final String TAG = TestSuite.class.getSimpleName();
     private static volatile boolean initialized = false;
     private static volatile Context context;
     private static volatile String dataPath;
     
-    public static Context initializeWithData(InstrumentationTestCase testCase) {
+    public static Context initializeWithData(Object testCase) {
         initialize(testCase);
         ensureDataAdded();
         return getMyContextForTest().context();
     }
     
-    public static synchronized Context initialize(InstrumentationTestCase testCase) {
+    public static synchronized Context initialize(Object testCase) {
         final String method = "initialize";
         if (initialized) {
             MyLog.d(TAG, "Already initialized");
@@ -84,7 +87,7 @@ public class TestSuite extends TestCase {
                 MyLog.e(TAG, "testCase is null.");
                 throw new IllegalArgumentException("testCase is null");
             }
-            Instrumentation instrumentation = testCase.getInstrumentation();
+            Instrumentation instrumentation = InstrumentationRegistry.getInstrumentation();
             if (instrumentation == null) {
                 MyLog.e(TAG, "testCase.getInstrumentation() is null.");
                 throw new IllegalArgumentException("testCase.getInstrumentation() returned null");
@@ -355,18 +358,14 @@ public class TestSuite extends TestCase {
         return cal.getTime();
     }
 
-    public static int waitForListLoaded(InstrumentationTestCase instrumentationTestCase, Activity activity, int minCount) throws InterruptedException {
-        return waitForListLoaded(instrumentationTestCase.getInstrumentation(), activity, minCount);
-    }
-
-    public static int waitForListLoaded(Instrumentation instrumentation, Activity activity, int minCount) throws InterruptedException {
+    public static int waitForListLoaded(Activity activity, int minCount) throws InterruptedException {
         final String method = "waitForListLoaded";
         final ViewGroup list = (ViewGroup) activity.findViewById(android.R.id.list);
         assertTrue(list != null);
         int itemsCount = 0;
         for (int ind=0; ind<60; ind++) {
             DbUtils.waitMs(method, 2000);
-            instrumentation.waitForIdleSync();
+            InstrumentationRegistry.getInstrumentation().waitForIdleSync();
             int itemsCountNew = list.getChildCount();
             if (ListView.class.isInstance(list)) {
                 itemsCountNew = ((ListView) list).getCount();
@@ -382,14 +381,10 @@ public class TestSuite extends TestCase {
         return itemsCount;
     }
 
-    public static void waitForIdleSync(InstrumentationTestCase instrumentationTestCase) throws InterruptedException {
-        waitForIdleSync(instrumentationTestCase.getInstrumentation());
-    }
-
-    public static void waitForIdleSync(Instrumentation instrumentation) throws InterruptedException {
+    public static void waitForIdleSync() throws InterruptedException {
         final String method = "waitForIdleSync";
         DbUtils.waitMs(method, 200);
-        instrumentation.waitForIdleSync();
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
         DbUtils.waitMs(method, 2000);
     }
     

@@ -17,7 +17,7 @@
 package org.andstatus.app.net.social;
 
 import android.content.Context;
-import android.test.InstrumentationTestCase;
+import android.support.test.InstrumentationRegistry;
 
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.context.Travis;
@@ -25,35 +25,42 @@ import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.net.http.HttpReadResult;
 import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
 import org.andstatus.app.util.RawResourceUtils;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 @Travis
-public class ConnectionGnuSocialTest extends InstrumentationTestCase {
+public class ConnectionGnuSocialTest {
     private static final String MESSAGE_OID = "2215662";
     private ConnectionTwitterGnuSocialMock connection;
-    String accountUserOid = TestSuite.GNUSOCIAL_TEST_ACCOUNT_USER_OID;
-    
+
     public static MbMessage getMessageWithAttachment(Context context) throws Exception {
         ConnectionGnuSocialTest test = new ConnectionGnuSocialTest();
         test.setUp();
         return test.privateGetMessageWithAttachment(context, true);
     }
     
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    @Before
+    public void setUp() throws Exception {
         TestSuite.initializeWithData(this);
         connection = new ConnectionTwitterGnuSocialMock();
     }
 
+    @Test
     public void testGetPublicTimeline() throws IOException {
-        String jso = RawResourceUtils.getString(this.getInstrumentation().getContext(),
+        String jso = RawResourceUtils.getString(InstrumentationRegistry.getInstrumentation().getContext(),
                 org.andstatus.app.tests.R.raw.quitter_home);
         connection.getHttpMock().setResponse(jso);
-        
+
+        String accountUserOid = TestSuite.GNUSOCIAL_TEST_ACCOUNT_USER_OID;
         List<MbActivity> timeline = connection.getTimeline(ApiRoutineEnum.PUBLIC_TIMELINE,
                 new TimelinePosition("2656388"), TimelinePosition.getEmpty(), 20, accountUserOid);
         assertNotNull("timeline returned", timeline);
@@ -121,8 +128,9 @@ public class ConnectionGnuSocialTest extends InstrumentationTestCase {
         assertEquals("Updated at", 0, mbMessage.getAuthor().getUpdatedDate());
     }
 
+    @Test
     public void testSearch() throws IOException {
-        String jso = RawResourceUtils.getString(this.getInstrumentation().getContext(), 
+        String jso = RawResourceUtils.getString(InstrumentationRegistry.getInstrumentation().getContext(),
                 org.andstatus.app.tests.R.raw.twitter_home_timeline);
         connection.getHttpMock().setResponse(jso);
         
@@ -133,18 +141,21 @@ public class ConnectionGnuSocialTest extends InstrumentationTestCase {
         assertEquals("Number of items in the Timeline", size, timeline.size());
     }
 
+    @Test
     public void testPostWithMedia() throws IOException {
-        String jso = RawResourceUtils.getString(this.getInstrumentation().getContext(), 
+        String jso = RawResourceUtils.getString(InstrumentationRegistry.getInstrumentation().getContext(),
                 org.andstatus.app.tests.R.raw.quitter_message_with_attachment);
         connection.getHttpMock().setResponse(jso);
         
         MbMessage message2 = connection.updateStatus("Test post message with media", "", "", TestSuite.LOCAL_IMAGE_TEST_URI);
         message2.setPublic(true); 
-        assertEquals("Message returned", privateGetMessageWithAttachment(this.getInstrumentation().getContext(), false), message2);
+        assertEquals("Message returned", privateGetMessageWithAttachment(
+                InstrumentationRegistry.getInstrumentation().getContext(), false), message2);
     }
-    
+
+    @Test
     public void testGetMessageWithAttachment() throws IOException {
-        privateGetMessageWithAttachment(this.getInstrumentation().getContext(), true);
+        privateGetMessageWithAttachment(InstrumentationRegistry.getInstrumentation().getContext(), true);
     }
 
     private MbMessage privateGetMessageWithAttachment(Context context, boolean uniqueUid) throws IOException {
@@ -168,8 +179,9 @@ public class ConnectionGnuSocialTest extends InstrumentationTestCase {
         return msg;
     }
 
+    @Test
     public void testReblog() throws IOException {
-        String jString = RawResourceUtils.getString(this.getInstrumentation().getContext(),
+        String jString = RawResourceUtils.getString(InstrumentationRegistry.getInstrumentation().getContext(),
                 org.andstatus.app.tests.R.raw.quitter_message_with_attachment);
         connection.getHttpMock().setResponse(jString);
         MbMessage message = connection.postReblog(MESSAGE_OID);

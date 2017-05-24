@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,7 +19,7 @@ package org.andstatus.app.data;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
-import android.test.InstrumentationTestCase;
+import android.support.test.InstrumentationRegistry;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
@@ -41,21 +41,27 @@ import org.andstatus.app.timeline.Timeline;
 import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.SelectionAndArgs;
 import org.andstatus.app.util.TriState;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.util.Set;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 @Travis
-public class DataInserterTest extends InstrumentationTestCase {
+public class DataInserterTest {
     private Context context;
 
-    @Override
+    @Before
     public void setUp() throws Exception {
-        super.setUp();
         TestSuite.initializeWithData(this);
         context = TestSuite.getMyContextForTest().context();
         assertEquals("Data path", "ok", TestSuite.checkDataPath(this));
     }
 
+    @Test
     public void testFriends() throws ConnectionException {
         String messageOid = "https://identi.ca/api/comment/dasdjfdaskdjlkewjz1EhSrTRB";
         MessageInserter.deleteOldMessage(TestSuite.getConversationOriginId(), messageOid);
@@ -139,8 +145,7 @@ public class DataInserterTest extends InstrumentationTestCase {
 
         cursor = context.getContentResolver().query(contentUri, PROJECTION, sa.selection,
                 sa.selectionArgs, sortOrder);
-        assertTrue("Message by user=" + somebodyId + " is in the Friends timeline",
-                cursor.getCount() > 0);
+        assertTrue("Message by user=" + somebodyId + " is in the Friends timeline", cursor.getCount() > 0);
         cursor.close();
 
         MyContextHolder.get().persistentAccounts().initialize();
@@ -149,6 +154,7 @@ public class DataInserterTest extends InstrumentationTestCase {
         }
     }
 
+    @Test
     public void testDirectMessageToMyAccount() throws ConnectionException {
         String messageOid = "https://pumpity.net/api/comment/sa23wdi78dhgjerdfddajDSQ";
         MessageInserter.deleteOldMessage(TestSuite.getConversationOriginId(), messageOid);
@@ -192,6 +198,7 @@ public class DataInserterTest extends InstrumentationTestCase {
         cursor.close();
     }
 
+    @Test
     public void testMessageFavoritedByOtherUser() throws ConnectionException {
         String authorUserName = "anybody@pumpity.net";
         MbUser author = MbUser.fromOriginAndUserOid(TestSuite.getConversationOriginId(), "acct:"
@@ -248,6 +255,7 @@ public class DataInserterTest extends InstrumentationTestCase {
         cursor.close();
     }
 
+    @Test
     public void testMessageFavoritedByAccountUser() throws ConnectionException {
         String authorUserName = "example@pumpity.net";
         MbUser author = MbUser.fromOriginAndUserOid(TestSuite.getConversationOriginId(), "acct:"
@@ -303,9 +311,10 @@ public class DataInserterTest extends InstrumentationTestCase {
                 MyQuery.msgIdToLongColumnValue(MsgTable.MSG_STATUS, inReplyToId)));
     }
 
+    @Test
     public void testMessageWithAttachment() throws Exception {
-        MbMessage message = ConnectionGnuSocialTest.getMessageWithAttachment(this
-                .getInstrumentation().getContext());
+        MbMessage message = ConnectionGnuSocialTest.getMessageWithAttachment(
+                InstrumentationRegistry.getInstrumentation().getContext());
 
         MyAccount ma = MyContextHolder.get().persistentAccounts()
                 .getFirstSucceededForOriginId(message.originId);
@@ -318,6 +327,7 @@ public class DataInserterTest extends InstrumentationTestCase {
         assertEquals("Image URI stored", message.attachments.get(0).getUri(), dd.getUri());
     }
 
+    @Test
     public void testUnsentMessageWithAttachment() throws Exception {
         final String method = "testUnsentMessageWithAttachment";
         MyAccount ma = MyContextHolder.get().persistentAccounts().getFirstSucceeded();
@@ -367,6 +377,7 @@ public class DataInserterTest extends InstrumentationTestCase {
         AttachmentDownloaderTest.loadAndAssertStatusForRow(dd2.getDownloadId(), DownloadStatus.LOADED, false);
     }
 
+    @Test
     public void testUserNameChanged() {
         MyAccount ma = TestSuite.getMyContextForTest().persistentAccounts().fromAccountName(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME); 
         String username = "peter" + TestSuite.TESTRUN_UID;
@@ -416,6 +427,7 @@ public class DataInserterTest extends InstrumentationTestCase {
                 MyQuery.userIdToStringColumnValue(UserTable.USERNAME, userId3));
     }
 
+    @Test
     public void testInsertUser() {
         MyAccount ma = TestSuite.getMyContextForTest().persistentAccounts()
                 .fromAccountName(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME);
@@ -458,6 +470,7 @@ public class DataInserterTest extends InstrumentationTestCase {
                 MyQuery.userIdToLongColumnValue(UserTable.UPDATED_DATE, id));
     }
 
+    @Test
     public void testReplyInBody() {
         String buddyUserName = "buddy" +  TestSuite.TESTRUN_UID + "@example.com";
         String body = "@" + buddyUserName + " I'm replying to you in a message body."
@@ -485,7 +498,7 @@ public class DataInserterTest extends InstrumentationTestCase {
         addOneMessage4testReplyInBody(buddyUserName, body, true);
     }
 
-    protected void addOneMessage4testReplyInBody(String buddyUserName, String body, boolean isReply) {
+    private void addOneMessage4testReplyInBody(String buddyUserName, String body, boolean isReply) {
         DataInserter di = new DataInserter(TestSuite.getConversationMyAccount());
         String username = "somebody" + TestSuite.TESTRUN_UID + "@somewhere.net";
         String userOid = "acct:" + username;

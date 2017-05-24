@@ -1,23 +1,26 @@
 package org.andstatus.app.data;
 
-import android.test.InstrumentationTestCase;
-
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.context.Travis;
 import org.andstatus.app.net.social.MbMessage;
 import org.andstatus.app.net.social.MbUser;
+import org.junit.Before;
+import org.junit.Test;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 @Travis
-public class MessageForAccountTest extends InstrumentationTestCase {
+public class MessageForAccountTest {
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    @Before
+    public void setUp() throws Exception {
         TestSuite.initializeWithData(this);
     }
 
+    @Test
     public void testAReply() {
         MyAccount ma = MyContextHolder.get().persistentAccounts()
                 .fromAccountName(TestSuite.CONVERSATION_ACCOUNT_NAME);

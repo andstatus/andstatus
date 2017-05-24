@@ -16,23 +16,28 @@
 
 package org.andstatus.app.util;
 
-import android.test.InstrumentationTestCase;
 import android.text.TextUtils;
 
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.context.Travis;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.io.File;
 
-@Travis
-public class MyLogTest extends InstrumentationTestCase {
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+@Travis
+public class MyLogTest {
+
+    @Before
+    public void setUp() throws Exception {
         TestSuite.initialize(this);
     }
 
+    @Test
     public void testObjToString() {
        Object tag = this;
        assertEquals("MyLogTest", MyLog.objTagToString(tag));
@@ -43,7 +48,8 @@ public class MyLogTest extends InstrumentationTestCase {
        tag = null;
        assertEquals("(null)", MyLog.objTagToString(tag));
     }
-    
+
+    @Test
     public void testLogFilename() {
         final String method = "testLogFilename";
         boolean isLogEnabled = MyLog.isLogToFileEnabled();
@@ -66,6 +72,7 @@ public class MyLogTest extends InstrumentationTestCase {
         }
     }
 
+    @Test
     public void testUniqueDateTimeFormatted() {
         String string1 = "";
         String string2 = "";

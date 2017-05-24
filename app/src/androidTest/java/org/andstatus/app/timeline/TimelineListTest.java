@@ -16,28 +16,33 @@
 
 package org.andstatus.app.timeline;
 
-import android.test.ActivityInstrumentationTestCase2;
-
+import org.andstatus.app.context.ActivityTest;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
+import org.junit.Before;
+import org.junit.Test;
+
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author yvolk@yurivolkov.com
  */
-public class TimelineListTest extends ActivityInstrumentationTestCase2<TimelineList> {
-    public TimelineListTest() {
-        super(TimelineList.class);
-    }
+public class TimelineListTest extends ActivityTest<TimelineList> {
 
     @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    protected Class<TimelineList> getActivityClass() {
+        return TimelineList.class;
+    }
+
+    @Before
+    public void setUp() throws Exception {
         TestSuite.initializeWithData(this);
     }
 
+    @Test
     public void testActivityOpened() throws InterruptedException {
         int expectedCount = MyContextHolder.get().persistentTimelines().values().size();
-        TestSuite.waitForListLoaded(this, getActivity(), expectedCount);
+        TestSuite.waitForListLoaded(getActivity(), expectedCount);
         assertTrue("Timelines shown: " + getActivity().getListAdapter().getCount(),
                 getActivity().getListAdapter().getCount() ==  expectedCount);
     }

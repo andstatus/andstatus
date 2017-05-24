@@ -16,32 +16,36 @@
 
 package org.andstatus.app.msg;
 
-import android.test.InstrumentationTestCase;
-
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.context.Travis;
 import org.andstatus.app.widget.DuplicationLink;
+import org.junit.Before;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author yvolk@yurivolkov.com
  */
 @Travis
-public class TimelineViewItemTest extends InstrumentationTestCase {
+public class TimelineViewItemTest {
 
-    public static final String HTML_BODY = "@<a href=\"https://bsdnode.xyz/user/2\" class=\"h-card mention\">username</a> " +
+    private static final String HTML_BODY =
+            "@<a href=\"https://bsdnode.xyz/user/2\" class=\"h-card mention\">username</a> " +
             "On duplicated posts, sent by AndStatus, please read <a href=\"https://github.com/andstatus/andstatus/issues/83\" " +
             "title=\"https://github.com/andstatus/andstatus/issues/83\" class=\"attachment\" id=\"attachment-15180\" " +
             "rel=\"nofollow external\">https://github.com/andstatus/andstatus/issues/83</a><br />\n" +
             "Sorry if I misunderstood your post :-)";
-    public static final String THIS_USER_FAVORITED_SOMETHING_BY_THAT_USER =
+    private static final String THIS_USER_FAVORITED_SOMETHING_BY_THAT_USER =
             "thisUser favorited something by thatUser: ";
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    @Before
+    public void setUp() throws Exception {
         TestSuite.initialize(this);
     }
 
+    @Test
     public void testDuplicationLink() {
         TimelineViewItem item1 = new TimelineViewItem();
         item1.setBody(HTML_BODY);
@@ -91,7 +95,7 @@ public class TimelineViewItemTest extends InstrumentationTestCase {
         assertDuplicates(item1, DuplicationLink.IS_DUPLICATED, item2);
     }
 
-    protected void assertDuplicates(TimelineViewItem item1, DuplicationLink duplicates, TimelineViewItem item2) {
+    private void assertDuplicates(TimelineViewItem item1, DuplicationLink duplicates, TimelineViewItem item2) {
         assertEquals(item1.toString() + " vs " + item2, duplicates, item1.duplicates(item2));
     }
 }

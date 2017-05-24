@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,22 +17,25 @@
 package org.andstatus.app.data;
 
 import android.net.Uri;
-import android.test.InstrumentationTestCase;
 
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.context.Travis;
 import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.user.UserListType;
+import org.junit.Before;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 
 @Travis
-public class ParsedUriTest extends InstrumentationTestCase {
+public class ParsedUriTest {
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    @Before
+    public void setUp() throws Exception {
         TestSuite.initializeWithData(this);
     }
 
+    @Test
     public void testUserList() {
         assertOneUserList(TestSuite.getConversationOriginId());
         assertOneUserList(0);

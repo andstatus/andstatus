@@ -2,7 +2,6 @@ package org.andstatus.app.msg;
 
 import android.content.Intent;
 import android.provider.BaseColumns;
-import android.test.ActivityInstrumentationTestCase2;
 import android.view.View;
 import android.widget.EditText;
 
@@ -22,44 +21,41 @@ import org.andstatus.app.service.MyServiceTestHelper;
 import org.andstatus.app.timeline.Timeline;
 import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.MyLog;
+import org.junit.After;
+import org.junit.Test;
 
 import java.util.List;
 
-public class UnsentMessagesTest extends ActivityInstrumentationTestCase2<TimelineActivity> {
-    final MyServiceTestHelper mService = new MyServiceTestHelper();
-    MyAccount ma;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
-    public UnsentMessagesTest() {
-        super(TimelineActivity.class);
-    }
+public class UnsentMessagesTest extends TimelineActivityTest {
+    private final MyServiceTestHelper mService = new MyServiceTestHelper();
 
     @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    protected Intent getActivityIntent() {
         TestSuite.initializeWithData(this);
 
         mService.setUp(null);
-        ma = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME);
+        MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME);
         assertTrue(ma.isValid());
         MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
 
-        Intent intent = new Intent(Intent.ACTION_VIEW,
+        return new Intent(Intent.ACTION_VIEW,
                 MatchedUri.getTimelineUri(Timeline.getTimeline(TimelineType.HOME, ma, 0, ma.getOrigin())));
-        setActivityIntent(intent);
     }
 
-    @Override
-    protected void tearDown() throws Exception {
+    @After
+    public void tearDown() throws Exception {
         mService.tearDown();
-        super.tearDown();
     }
 
-
+    @Test
     public void testEditUnsentMessage() throws InterruptedException {
         final String method = "testEditUnsentMessage";
         String step = "Start editing a message";
         MyLog.v(this, method + " started");
-        ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<>(this, getActivity());
+        ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<>(getActivity());
         View editorView = getActivity().findViewById(R.id.message_editor);
         helper.clickMenuItem(method + "; " + step, R.id.createMessageButton);
         ActivityTestHelper.waitViewVisible(method + "; " + step, editorView);
@@ -67,9 +63,9 @@ public class UnsentMessagesTest extends ActivityInstrumentationTestCase2<Timelin
         String body = "Test unsent message, which we will try to edit " + TestSuite.TESTRUN_UID;
         EditText editText = (EditText) editorView.findViewById(R.id.messageBodyEditText);
         editText.requestFocus();
-        TestSuite.waitForIdleSync(this);
+        TestSuite.waitForIdleSync();
         getInstrumentation().sendStringSync(body);
-        TestSuite.waitForIdleSync(this);
+        TestSuite.waitForIdleSync();
 
         mService.serviceStopped = false;
         step = "Sending message";
@@ -88,7 +84,7 @@ public class UnsentMessagesTest extends ActivityInstrumentationTestCase2<Timelin
         step = "Start editing unsent message" + unsentMsgId ;
         getActivity().getMessageEditor().startEditingMessage(MessageEditorData.load(unsentMsgId));
         ActivityTestHelper.waitViewVisible(method + "; " + step, editorView);
-        TestSuite.waitForIdleSync(this);
+        TestSuite.waitForIdleSync();
 
         step = "Saving previously unsent message " + unsentMsgId + " as a draft";
         helper.clickMenuItem(method + "; " + step, R.id.saveDraftButton);
@@ -100,17 +96,18 @@ public class UnsentMessagesTest extends ActivityInstrumentationTestCase2<Timelin
         MyLog.v(this, method + " ended");
     }
 
+    @Test
     public void testGnuSocialReblog() throws InterruptedException {
         final String method = "testGnuSocialReblog";
         MyLog.v(this, method + " started");
-        TestSuite.waitForListLoaded(this, getActivity(), 1);
-        ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<>(this, getActivity());
+        TestSuite.waitForListLoaded(getActivity(), 1);
+        ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<>(getActivity());
         long msgId = helper.getListItemIdOfLoadedReply();
         String msgOid = MyQuery.idToOid(OidEnum.MSG_OID, msgId, 0);
         String logMsg = MyQuery.msgInfoForLog(msgId);
         assertTrue(logMsg, helper.invokeContextMenuAction4ListItemId(method, msgId, MessageListContextMenuItem.REBLOG));
         mService.serviceStopped = false;
-        TestSuite.waitForIdleSync(this);
+        TestSuite.waitForIdleSync();
         mService.waitForServiceStopped(false);
 
         List<HttpReadResult> results = mService.httpConnectionMock.getResults();

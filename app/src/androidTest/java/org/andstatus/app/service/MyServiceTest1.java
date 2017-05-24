@@ -30,12 +30,18 @@ import org.andstatus.app.timeline.Timeline;
 import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
+import org.junit.Test;
 
 import java.net.MalformedURLException;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 @Travis
 public class MyServiceTest1 extends MyServiceTest {
 
+    @Test
     public void testRepeatingFailingCommand() throws MalformedURLException {
         final String method = "testRepeatingFailingCommand";
         MyLog.i(this, method + " started");
@@ -69,6 +75,7 @@ public class MyServiceTest1 extends MyServiceTest {
         MyLog.i(this, method + " ended");
     }
 
+    @Test
     public void testAccountSync() {
         final String method = "testAccountSync";
         MyLog.i(this, method + " started");
@@ -120,7 +127,7 @@ public class MyServiceTest1 extends MyServiceTest {
         MyLog.i(this, method + " ended");
     }
 
-
+    @Test
     public void testHomeTimeline() {
         final String method = "testHomeTimeline";
         MyLog.i(this, method + " started");
@@ -141,6 +148,7 @@ public class MyServiceTest1 extends MyServiceTest {
         MyLog.i(this, method + " ended");
     }
 
+    @Test
     public void testRateLimitStatus() {
         final String method = "testRateLimitStatus";
         MyLog.i(this, method + " started");
@@ -161,6 +169,7 @@ public class MyServiceTest1 extends MyServiceTest {
         MyLog.i(this, method + " ended");
     }
 
+    @Test
     public void testDiskIoErrorCatching() throws InterruptedException {
         final String method = "testDiskIoErrorCatching";
         MyLog.i(this, method + " started");

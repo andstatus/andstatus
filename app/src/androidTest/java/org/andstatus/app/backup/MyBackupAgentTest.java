@@ -6,7 +6,6 @@ import android.accounts.AuthenticatorException;
 import android.accounts.OperationCanceledException;
 import android.content.Context;
 import android.content.pm.PackageManager.NameNotFoundException;
-import android.test.InstrumentationTestCase;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.account.PersistentAccounts;
@@ -14,7 +13,6 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyStorage;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.context.Travis;
-import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.FileUtils;
 import org.andstatus.app.util.MyLog;
@@ -23,22 +21,27 @@ import org.andstatus.app.util.TriState;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
-@Travis
-public class MyBackupAgentTest extends InstrumentationTestCase {
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+@Travis
+public class MyBackupAgentTest {
+
+    @Before
+    public void setUp() throws Exception {
         TestSuite.initializeWithData(this);
     }
 
-    public void testBackupRestore() throws IOException, JSONException, NameNotFoundException, ConnectionException, InterruptedException {
+    @Test
+    public void testBackupRestore() throws IOException, JSONException, NameNotFoundException, InterruptedException {
         TestSuite.forget();
         TestSuite.initialize(this);
         
@@ -142,8 +145,7 @@ public class MyBackupAgentTest extends InstrumentationTestCase {
         FileUtils.deleteFilesRecursively(SharedPreferencesUtil.prefsDirectory(context));
     }
 
-    private void testRestore(File dataFolder)
-            throws IOException {
+    private void testRestore(File dataFolder) throws IOException {
         
         MyBackupManager backupManager = new MyBackupManager(null);
         backupManager.prepareForRestore(dataFolder);

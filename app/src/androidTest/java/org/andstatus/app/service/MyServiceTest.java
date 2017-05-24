@@ -16,21 +16,22 @@
 
 package org.andstatus.app.service;
 
-import android.test.InstrumentationTestCase;
-
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.util.MyLog;
+import org.junit.After;
+import org.junit.Before;
 
-class MyServiceTest extends InstrumentationTestCase {
-    protected MyServiceTestHelper mService;
+import static org.junit.Assert.assertTrue;
+
+class MyServiceTest {
+    MyServiceTestHelper mService;
     protected volatile MyAccount ma;
 
-    @Override
-    protected void setUp() throws Exception {
-        TestSuite.waitForIdleSync(this);
-        super.setUp();
+    @Before
+    public void setUp() throws Exception {
+        TestSuite.waitForIdleSync();
         MyLog.i(this, "setUp started");
         boolean ok = false;
         try {
@@ -42,18 +43,17 @@ class MyServiceTest extends InstrumentationTestCase {
             assertTrue("No successfully verified accounts", ma.isValidAndSucceeded());
             ok = true;
         } finally {
-            TestSuite.waitForIdleSync(this);
+            TestSuite.waitForIdleSync();
             MyLog.i(this, "setUp ended " +
                     (ok ? "successfully " : "failed") +
                     " instanceId=" + (mService == null ? "null" : mService.connectionInstanceId));
         }
     }
 
-    @Override
-    protected void tearDown() throws Exception {
+    @After
+    public void tearDown() throws Exception {
         MyLog.i(this, "tearDown started");
         mService.tearDown();
-        super.tearDown();
         MyLog.i(this, "tearDown ended");
     }
 }

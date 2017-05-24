@@ -1,4 +1,4 @@
-package org.andstatus.app.util;/*
+/*
  * Copyright (c) 2016 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,15 +14,20 @@ package org.andstatus.app.util;/*
  * limitations under the License.
  */
 
-import android.test.InstrumentationTestCase;
+package org.andstatus.app.util;
 
 import org.andstatus.app.context.Travis;
+import org.junit.Test;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import static org.junit.Assert.assertEquals;
+
 @Travis
-public class CollectionsUtilTest extends InstrumentationTestCase {
+public class CollectionsUtilTest {
+
+    @Test
     public void testSort() {
         List<String> list = new CopyOnWriteArrayList<>(new String[]{"one", "two", "three", "four"});
         CollectionsUtil.sort(list);

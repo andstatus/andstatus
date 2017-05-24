@@ -18,26 +18,30 @@ package org.andstatus.app.util;
 
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
-import android.test.InstrumentationTestCase;
 
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.context.Travis;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.io.File;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author yvolk@yurivolkov.com
  */
 @Travis
-public class SharedPreferencesUtilTest extends InstrumentationTestCase {
+public class SharedPreferencesUtilTest {
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    @Before
+    public void setUp() throws Exception {
         TestSuite.initialize(this);
     }
 
+    @Test
     public void testPrefsDirectory() {
         File prefsDir = SharedPreferencesUtil.prefsDirectory(MyContextHolder.get().context());
         assertTrue("Prefs dir: " + prefsDir.getAbsolutePath(), prefsDir.exists());
@@ -45,6 +49,7 @@ public class SharedPreferencesUtilTest extends InstrumentationTestCase {
         assertTrue("defaultSharedPreferencesFile: " + defaultSharedPreferencesFile.getAbsolutePath(), defaultSharedPreferencesFile.exists());
     }
 
+    @Test
     public void testResetHasSetDefaultValues() {
         assertEquals(TriState.TRUE, SharedPreferencesUtil.areDefaultPreferenceValuesSet());
         SharedPreferencesUtil.resetHasSetDefaultValues();

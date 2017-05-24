@@ -16,32 +16,36 @@
 
 package org.andstatus.app.net.social;
 
-import android.test.InstrumentationTestCase;
+import android.support.test.InstrumentationRegistry;
 
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.util.RawResourceUtils;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 
-public class ConnectionMastodonTest extends InstrumentationTestCase {
-    private static final String MESSAGE_OID = "22";
-    private ConnectionMastodonMock connection;
-    String accountUserOid = TestSuite.MASTODON_TEST_ACCOUNT_USER_OID;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+public class ConnectionMastodonTest {
+    private ConnectionMastodonMock connection;
+    private String accountUserOid = TestSuite.MASTODON_TEST_ACCOUNT_USER_OID;
+
+    @Before
+    public void setUp() throws Exception {
         TestSuite.initializeWithData(this);
         connection = new ConnectionMastodonMock();
     }
 
+    @Test
     public void testGetHomeTimeline() throws IOException {
-        String jso = RawResourceUtils.getString(this.getInstrumentation().getContext(),
+        String jso = RawResourceUtils.getString(InstrumentationRegistry.getInstrumentation().getContext(),
                 org.andstatus.app.tests.R.raw.mastodon_home_timeline);
         connection.getHttpMock().setResponse(jso);
 
@@ -78,8 +82,9 @@ public class ConnectionMastodonTest extends InstrumentationTestCase {
                 attachment.getUri());
     }
 
+    @Test
     public void testGetConversation() throws IOException {
-        String jso = RawResourceUtils.getString(this.getInstrumentation().getContext(),
+        String jso = RawResourceUtils.getString(InstrumentationRegistry.getInstrumentation().getContext(),
                 org.andstatus.app.tests.R.raw.mastodon_get_conversation);
         connection.getHttpMock().setResponse(jso);
 
@@ -88,8 +93,9 @@ public class ConnectionMastodonTest extends InstrumentationTestCase {
         assertEquals("Number of items in the Timeline", 5, timeline.size());
     }
 
+    @Test
     public void testGetMentions() throws IOException {
-        String jso = RawResourceUtils.getString(this.getInstrumentation().getContext(),
+        String jso = RawResourceUtils.getString(InstrumentationRegistry.getInstrumentation().getContext(),
                 org.andstatus.app.tests.R.raw.mastodon_notifications);
         connection.getHttpMock().setResponse(jso);
 

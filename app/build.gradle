@@ -13,7 +13,7 @@ android {
         versionCode 216
 
         testApplicationId "org.andstatus.app.tests"
-        testInstrumentationRunner "android.test.InstrumentationTestRunner"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         project.ext.set("archivesBaseName", "AndStatus-$versionName".toString());
         project.ext.set("versionName", "$versionName".toString());
     }
@@ -68,4 +68,9 @@ dependencies {
     compile 'org.apache.commons:commons-lang3:3.4'
     compile 'com.github.woxthebox:draglistview:1.3' // https://github.com/woxblom/DragListView
     compile 'com.github.scribejava:scribejava-core:4.1.0'
+
+    androidTestCompile 'com.android.support.test:runner:0.6-alpha'
+    androidTestCompile 'com.android.support.test:rules:0.6-alpha'
+    androidTestCompile 'com.android.support.test.espresso:espresso-core:2.2.2'
+    androidTestCompile 'com.android.support:support-annotations:25.3.1'
 }

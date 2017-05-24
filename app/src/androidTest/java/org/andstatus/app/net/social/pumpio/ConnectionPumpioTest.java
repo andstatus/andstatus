@@ -17,7 +17,7 @@
 package org.andstatus.app.net.social.pumpio;
 
 import android.content.Context;
-import android.test.InstrumentationTestCase;
+import android.support.test.InstrumentationRegistry;
 import android.text.TextUtils;
 
 import org.andstatus.app.account.AccountDataReaderEmpty;
@@ -30,9 +30,9 @@ import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnectionMock;
 import org.andstatus.app.net.http.OAuthClientKeys;
 import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
+import org.andstatus.app.net.social.MbActivity;
 import org.andstatus.app.net.social.MbAttachment;
 import org.andstatus.app.net.social.MbMessage;
-import org.andstatus.app.net.social.MbActivity;
 import org.andstatus.app.net.social.MbObjectType;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.net.social.TimelinePosition;
@@ -46,14 +46,22 @@ import org.andstatus.app.util.UrlUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.io.IOException;
 import java.net.URL;
 import java.util.Calendar;
 import java.util.List;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 @Travis
-public class ConnectionPumpioTest extends InstrumentationTestCase {
+public class ConnectionPumpioTest {
     private ConnectionPumpio connection;
     private URL originUrl = UrlUtils.fromString("https://identi.ca");
     private HttpConnectionMock httpConnectionMock;
@@ -62,9 +70,8 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
     private String keyStored;
     private String secretStored;
     
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    @Before
+    public void setUp() throws Exception {
         TestSuite.initializeWithData(this);
 
         TestSuite.setHttpConnectionMockClass(HttpConnectionMock.class);
@@ -87,14 +94,14 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         TestSuite.setHttpConnectionMockClass(null);
     }
     
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
+    @After
+    public void tearDown() throws Exception {
         if (!TextUtils.isEmpty(keyStored)) {
             httpConnectionMock.data.oauthClientKeys.setConsumerKeyAndSecret(keyStored, secretStored);        
         }
     }
 
+    @Test
     public void testOidToObjectType() {
         String oids[] = {"https://identi.ca/api/activity/L4v5OL93RrabouQc9_QGfg",
                 "https://identi.ca/api/comment/ibpUqhU1TGCE2yHNbUv54g",
@@ -121,6 +128,7 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         }
     }
 
+    @Test
     public void testUsernameToHost() {
         String usernames[] = {"t131t@identi.ca", 
                 "somebody@example.com",
@@ -136,7 +144,8 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
             assertEquals("Expecting '" + hosts[ind] + "'", hosts[ind], connection.usernameToHost(usernames[ind]));
         }
     }
-    
+
+    @Test
     public void testGetConnectionAndUrl() throws ConnectionException {
         String userOids[] = {"acct:t131t@identi.ca", 
                 "somebody@identi.ca"};
@@ -150,11 +159,12 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
             assertEquals("Expecting '" + hosts[ind] + "'", hosts[ind], conu.httpConnection.data.originUrl.getHost());
         }
     }
-    
+
+    @Test
     public void testGetTimeline() throws IOException {
         String sinceId = "https%3A%2F%2F" + originUrl.getHost() + "%2Fapi%2Factivity%2Ffrefq3232sf";
 
-        String jso = RawResourceUtils.getString(this.getInstrumentation().getContext(),
+        String jso = RawResourceUtils.getString(InstrumentationRegistry.getInstrumentation().getContext(),
                 org.andstatus.app.tests.R.raw.pumpio_user_t131t_inbox);
         httpConnectionMock.setResponse(jso);
         
@@ -229,8 +239,9 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         assertEquals(mbMessage.getInReplyTo().isSubscribedByMe(), TriState.FALSE);
     }
 
+    @Test
     public void testGetUsersFollowedBy() throws IOException {
-        String jso = RawResourceUtils.getString(this.getInstrumentation().getContext(), 
+        String jso = RawResourceUtils.getString(InstrumentationRegistry.getInstrumentation().getContext(),
                 org.andstatus.app.tests.R.raw.pumpio_user_t131t_following);
         httpConnectionMock.setResponse(jso);
         
@@ -247,7 +258,8 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         assertEquals("acct:ken@coding.example", users.get(3).oid);
         assertEquals("Yuri Volkov", users.get(4).getRealName());
     }
-    
+
+    @Test
     public void testUpdateStatus() throws ConnectionException, JSONException {
         String body = "@peter Do you think it's true?";
         String inReplyToId = "https://identi.ca/api/note/94893FsdsdfFdgtjuk38ErKv";
@@ -279,6 +291,7 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         assertTrue("InReplyTo is not present", !obj.has("inReplyTo"));
     }
 
+    @Test
     public void testReblog() throws ConnectionException, JSONException {
         String rebloggedId = "https://identi.ca/api/note/94893FsdsdfFdgtjuk38ErKv";
         httpConnectionMock.setResponse("");
@@ -292,8 +305,9 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         assertEquals("No followers in CC", null, activity.optJSONArray("cc"));
     }
 
+    @Test
     public void testUnfollowUser() throws IOException {
-        String jso = RawResourceUtils.getString(this.getInstrumentation().getContext(), 
+        String jso = RawResourceUtils.getString(InstrumentationRegistry.getInstrumentation().getContext(),
                 org.andstatus.app.tests.R.raw.unfollow_pumpio);
         httpConnectionMock.setResponse(jso);
         connection.getData().setAccountUserOid("acct:t131t@" + originUrl.getHost());
@@ -305,13 +319,15 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         assertEquals("Unfollowed", TriState.FALSE, user.followedByActor);
     }
 
+    @Test
     public void testParseDate() {
         String stringDate = "Wed Nov 27 09:27:01 -0300 2013";
         assertEquals("Bad date shouldn't throw (" + stringDate + ")", 0, connection.parseDate(stringDate) );
     }
-    
+
+    @Test
     public void testDestroyStatus() throws IOException {
-        String jso = RawResourceUtils.getString(this.getInstrumentation().getContext(), 
+        String jso = RawResourceUtils.getString(InstrumentationRegistry.getInstrumentation().getContext(),
                 org.andstatus.app.tests.R.raw.destroy_status_response_pumpio);
         httpConnectionMock.setResponse(jso);
         connection.getData().setAccountUserOid(TestSuite.CONVERSATION_ACCOUNT_USER_OID);
@@ -326,16 +342,18 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         }
         assertTrue(thrown);
     }
-    
+
+    @Test
     public void testPostWithMedia() throws IOException {
-        String jso = RawResourceUtils.getString(this.getInstrumentation().getContext(),
+        String jso = RawResourceUtils.getString(InstrumentationRegistry.getInstrumentation().getContext(),
                 org.andstatus.app.tests.R.raw.pumpio_activity_with_image);
         httpConnectionMock.setResponse(jso);
         
         connection.getData().setAccountUserOid("acct:mymediatester@" + originUrl.getHost());
         MbMessage message2 = connection.updateStatus("Test post message with media", "", "", TestSuite.LOCAL_IMAGE_TEST_URI);
         message2.setPublic(true); 
-        assertEquals("Message returned", privateGetMessageWithAttachment(this.getInstrumentation().getContext(), false), message2);
+        assertEquals("Message returned", privateGetMessageWithAttachment(
+                InstrumentationRegistry.getInstrumentation().getContext(), false), message2);
     }
     
     private MbMessage privateGetMessageWithAttachment(Context context, boolean uniqueUid) throws IOException {
@@ -356,12 +374,14 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         return msg;
     }
 
+    @Test
     public void testGetMessageWithAttachment() throws IOException {
-        privateGetMessageWithAttachment(this.getInstrumentation().getContext(), true);    
+        privateGetMessageWithAttachment(InstrumentationRegistry.getInstrumentation().getContext(), true);
     }
 
+    @Test
     public void testGetMessageWithReplies() throws IOException {
-        String jso = RawResourceUtils.getString(this.getInstrumentation().getContext(),
+        String jso = RawResourceUtils.getString(InstrumentationRegistry.getInstrumentation().getContext(),
                 org.andstatus.app.tests.R.raw.pumpio_note_self);
         httpConnectionMock.setResponse(jso);
 

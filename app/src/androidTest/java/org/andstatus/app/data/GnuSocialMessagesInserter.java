@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,7 +17,6 @@
 package org.andstatus.app.data;
 
 import android.support.annotation.Nullable;
-import android.test.InstrumentationTestCase;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
@@ -33,7 +32,10 @@ import org.andstatus.app.util.MyLog;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class GnuSocialMessagesInserter extends InstrumentationTestCase {
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+public class GnuSocialMessagesInserter {
     private static AtomicInteger iterationCounter = new AtomicInteger(0);
     private int iteration = 0;
     private String conversationOid = "";
@@ -56,13 +58,6 @@ public class GnuSocialMessagesInserter extends InstrumentationTestCase {
         assertTrue(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME + " exists", ma.isValid());
         accountMbUser = userFromOidAndAvatar(TestSuite.GNUSOCIAL_TEST_ACCOUNT_USER_OID,
                 TestSuite.GNUSOCIAL_TEST_ACCOUNT_AVATAR_URL);
-    }
-    
-    @Override
-    public void setUp() throws Exception {
-        super.setUp();
-        TestSuite.initializeWithData(this);
-        mySetup();
     }
     
     private void addConversation() {

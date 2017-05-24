@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,7 +16,6 @@
 
 package org.andstatus.app.account;
 
-import android.test.InstrumentationTestCase;
 import android.text.TextUtils;
 
 import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
@@ -34,8 +33,12 @@ import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
 
-public class OriginsAndAccountsInserter extends InstrumentationTestCase {
-    MyContextForTest myContext;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+public class OriginsAndAccountsInserter {
+    private MyContextForTest myContext;
     private String firstAccountUserOid = null;
 
     public OriginsAndAccountsInserter(MyContextForTest myContextForTest) {
@@ -109,7 +112,7 @@ public class OriginsAndAccountsInserter extends InstrumentationTestCase {
         } else {
             assertTrue(msg + " != 0", accountUserId != 0);
         }
-        assertTrue("Account " + userOid + " is persistent", ma != null);
+        assertTrue("Account " + userOid + " is persistent", ma.isValid());
         assertTrue("Account UserOid", ma.getUserOid().equalsIgnoreCase(userOid));
         assertTrue("Account is successfully verified", ma.getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED);
 

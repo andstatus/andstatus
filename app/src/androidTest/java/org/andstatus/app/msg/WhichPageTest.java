@@ -17,18 +17,21 @@
 package org.andstatus.app.msg;
 
 import android.os.Bundle;
-import android.test.InstrumentationTestCase;
 
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.WhichPage;
 import org.andstatus.app.context.Travis;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author yvolk@yurivolkov.com
  */
 @Travis
-public class WhichPageTest extends InstrumentationTestCase {
+public class WhichPageTest {
 
+    @Test
     public void testSaveLoad() {
         assertOne(WhichPage.CURRENT);
         assertOne(WhichPage.YOUNGER);

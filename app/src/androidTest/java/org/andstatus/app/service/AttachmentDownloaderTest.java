@@ -17,7 +17,6 @@
 package org.andstatus.app.service;
 
 import android.net.Uri;
-import android.test.InstrumentationTestCase;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
@@ -33,24 +32,30 @@ import org.andstatus.app.net.social.ConnectionTwitterGnuSocialMock;
 import org.andstatus.app.net.social.MbAttachment;
 import org.andstatus.app.net.social.MbMessage;
 import org.andstatus.app.util.MyLog;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 @Travis
-public class AttachmentDownloaderTest extends InstrumentationTestCase {
-    MyAccount ma;
+public class AttachmentDownloaderTest {
+    private MyAccount ma;
     
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    @Before
+    public void setUp() throws Exception {
         MyLog.i(this, "setUp started");
         TestSuite.initializeWithData(this);
         ma = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME); 
         assertTrue(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME + " exists", ma.isValid());
     }
-    
+
+    @Test
     public void testImageAttachmentLoad() throws IOException {
         String body = "A message with an image attachment";
         MessageInserter mi = new MessageInserter(ma);

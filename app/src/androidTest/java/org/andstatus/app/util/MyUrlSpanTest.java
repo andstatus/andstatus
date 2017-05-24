@@ -16,7 +16,6 @@
 
 package org.andstatus.app.util;
 
-import android.test.ActivityInstrumentationTestCase2;
 import android.text.SpannableString;
 import android.text.style.URLSpan;
 import android.widget.TextView;
@@ -24,22 +23,28 @@ import android.widget.ViewFlipper;
 
 import org.andstatus.app.HelpActivity;
 import org.andstatus.app.R;
+import org.andstatus.app.context.ActivityTest;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DbUtils;
+import org.junit.Before;
+import org.junit.Test;
+
+import static org.junit.Assert.assertTrue;
 
 /** See https://github.com/andstatus/andstatus/issues/300 */
-public class MyUrlSpanTest extends ActivityInstrumentationTestCase2<HelpActivity> {
+public class MyUrlSpanTest extends ActivityTest<HelpActivity> {
 
-    public MyUrlSpanTest() {
-        super(HelpActivity.class);
-    }
-    
     @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    protected Class<HelpActivity> getActivityClass() {
+        return HelpActivity.class;
+    }
+
+    @Before
+    public void setUp() throws Exception {
         TestSuite.initialize(this);
     }
 
+    @Test
     public void testMyUrlSpan() {
         String text = "The string has malformed links "
                 + MyUrlSpan.SOFT_HYPHEN + " "
@@ -74,9 +79,9 @@ public class MyUrlSpanTest extends ActivityInstrumentationTestCase2<HelpActivity
         DbUtils.waitMs(method, 1000);
     }
 
+    @Test
     public void testSoftHyphen() {
         String text = MyUrlSpan.SOFT_HYPHEN;
         forOneString(text);
     }
-
 }

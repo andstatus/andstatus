@@ -16,28 +16,33 @@
 
 package org.andstatus.app.service;
 
-import android.test.InstrumentationTestCase;
-
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.context.Travis;
 import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.data.MyQuery;
+import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.util.MyLog;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.util.Queue;
 import java.util.concurrent.PriorityBlockingQueue;
 
-@Travis
-public class CommandDataTest extends InstrumentationTestCase {
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
-    @Override
-    protected void setUp() throws Exception {
+@Travis
+public class CommandDataTest {
+
+    @Before
+    public void setUp() throws Exception {
         TestSuite.initializeWithData(this);
     }
-    
+
+    @Test
     public void testQueue() throws InterruptedException {
         long time0 = System.currentTimeMillis(); 
         CommandData commandData = CommandData.newUpdateStatus(TestSuite.getConversationMyAccount(), 1);
@@ -92,6 +97,7 @@ public class CommandDataTest extends InstrumentationTestCase {
         assertEquals(commandData.getResult().getMessage(), commandData2.getResult().getMessage());
     }
 
+    @Test
     public void testEquals() {
         CommandData data1 = CommandData.newSearch(MyContextHolder.get(), null, "andstatus");
         CommandData data2 = CommandData.newSearch(MyContextHolder.get(), null, "mustard");
@@ -107,9 +113,10 @@ public class CommandDataTest extends InstrumentationTestCase {
         assertTrue(data1.hashCode() == data3.hashCode());
         assertEquals(data1, data3);
     }
-    
+
+    @Test
     public void testPriority() {
-        Queue<CommandData> queue = new PriorityBlockingQueue<CommandData>(100);
+        Queue<CommandData> queue = new PriorityBlockingQueue<>(100);
         queue.add(CommandData.newSearch(
                 MyContextHolder.get(), TestSuite.getMyAccount(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME).getOrigin(), "q1"));
         queue.add(CommandData.newUpdateStatus(null, 2));
@@ -123,7 +130,8 @@ public class CommandDataTest extends InstrumentationTestCase {
         assertEquals(CommandEnum.GET_TIMELINE, queue.poll().getCommand());
         assertEquals(CommandEnum.GET_TIMELINE, queue.poll().getCommand());
     }
-    
+
+    @Test
     public void testSummary() {
         followUnfollowSummary(CommandEnum.FOLLOW_USER);
         followUnfollowSummary(CommandEnum.STOP_FOLLOWING_USER);

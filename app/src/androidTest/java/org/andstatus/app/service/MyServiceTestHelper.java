@@ -2,8 +2,6 @@ package org.andstatus.app.service;
 
 import android.text.TextUtils;
 
-import junit.framework.TestCase;
-
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.account.MyAccountTest;
 import org.andstatus.app.context.MyContext;
@@ -15,14 +13,16 @@ import org.andstatus.app.net.http.HttpConnectionMock;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 
+import static org.junit.Assert.assertTrue;
+
 public class MyServiceTestHelper implements MyServiceEventsListener {
     private volatile MyServiceEventsReceiver serviceConnector;
     public volatile HttpConnectionMock httpConnectionMock;
-    public volatile long connectionInstanceId;
+    volatile long connectionInstanceId;
 
     private volatile CommandData listenedCommand = CommandData.getEmpty();
-    public volatile long executionStartCount = 0;
-    public volatile long executionEndCount = 0;
+    volatile long executionStartCount = 0;
+    volatile long executionEndCount = 0;
     public volatile boolean serviceStopped = false;
     private MyContext myContext = MyContextHolder.get();
     
@@ -45,8 +45,7 @@ public class MyServiceTestHelper implements MyServiceEventsListener {
             myContext = MyContextHolder.initialize(myContext.context(), this);
             if (!isSingleMockedInstance) {
                 MyAccount ma = myContext.persistentAccounts().fromAccountName(accountName);
-                HttpConnectionMock http = ma.getConnection().getHttpMock();
-                httpConnectionMock = http;
+                httpConnectionMock = ma.getConnection().getHttpMock();
             }
             connectionInstanceId = httpConnectionMock.getInstanceId();
 
@@ -55,7 +54,7 @@ public class MyServiceTestHelper implements MyServiceEventsListener {
 
             dropQueues();
             httpConnectionMock.clearPostedData();
-            TestCase.assertTrue(TestSuite.setAndWaitForIsInForeground(false));
+            assertTrue(TestSuite.setAndWaitForIsInForeground(false));
         } catch (Exception e) {
             MyLog.e(this, "setUp", e);
         } finally {
@@ -67,11 +66,11 @@ public class MyServiceTestHelper implements MyServiceEventsListener {
         new CommandQueue().clear();
     }
 
-    public void sendListenedToCommand() {
+    void sendListenedToCommand() {
         MyServiceManager.sendCommandEvenForUnavailable(getListenedCommand());
     }
     
-    public boolean waitForCommandExecutionStarted(long count0) {
+    boolean waitForCommandExecutionStarted(long count0) {
         final String method = "waitForCommandExecutionStarted";
         boolean found = false;
         String locEvent = "none";
@@ -91,7 +90,7 @@ public class MyServiceTestHelper implements MyServiceEventsListener {
         return found;
     }
 
-    public boolean waitForCommandExecutionEnded(long count0) {
+    boolean waitForCommandExecutionEnded(long count0) {
         final String method = "waitForCommandExecutionEnded";
         boolean found = false;
         String locEvent = "none";
@@ -169,11 +168,11 @@ public class MyServiceTestHelper implements MyServiceEventsListener {
         MyLog.v(this, "tearDown ended");
     }
 
-    public CommandData getListenedCommand() {
+    CommandData getListenedCommand() {
         return listenedCommand;
     }
 
-    public void setListenedCommand(CommandData listenedCommand) {
+    void setListenedCommand(CommandData listenedCommand) {
         this.listenedCommand = listenedCommand;
         MyLog.v(this, "setListenedCommand; " + this.listenedCommand);
     }

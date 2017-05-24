@@ -27,39 +27,37 @@ import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.timeline.Timeline;
 import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.MyLog;
+import org.junit.Test;
+
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author yvolk@yurivolkov.com
  */
-public class ActAsUserTest extends android.test.ActivityInstrumentationTestCase2<TimelineActivity> {
-    private TimelineActivity mActivity;
-
-    public ActAsUserTest() {
-        super(TimelineActivity.class);
-    }
+public class ActAsUserTest extends TimelineActivityTest {
 
     @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    protected Intent getActivityIntent() {
         MyLog.i(this, "setUp started");
         TestSuite.initializeWithData(this);
 
-        MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME);
+        final MyAccount ma = MyContextHolder.get().persistentAccounts()
+                .fromAccountName(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME);
         assertTrue(ma.isValid());
         MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
 
-        Intent intent = new Intent(Intent.ACTION_VIEW,
-                MatchedUri.getTimelineUri(Timeline.getTimeline(TimelineType.HOME, ma, 0, null)));
-        setActivityIntent(intent);
-
-        mActivity = getActivity();
         MyLog.i(this, "setUp ended");
+        return new Intent(Intent.ACTION_VIEW,
+                MatchedUri.getTimelineUri(Timeline.getTimeline(TimelineType.HOME, ma, 0, null)));
     }
 
-    public void testActAsUser() throws InterruptedException {
-        final String method = "testActAsUser";
-        TestSuite.waitForListLoaded(this, mActivity, 2);
-        ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<>(this, ConversationActivity.class);
+    @Test
+    public void actAsUser() throws InterruptedException {
+        final String method = "actAsUser";
+        TestSuite.waitForListLoaded(getActivity(), 2);
+        ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<>(getActivity(),
+                ConversationActivity.class);
         long msgId = helper.getListItemIdOfLoadedReply();
         String logMsg = "msgId=" + msgId;
 
@@ -69,7 +67,7 @@ public class ActAsUserTest extends android.test.ActivityInstrumentationTestCase2
         logMsg += ";" + (invoked ? "" : " failed to invoke context menu 1," ) + " actor1=" + actor1;
         assertTrue(logMsg, actor1.isValid());
 
-        ActivityTestHelper.closeContextMenu(this);
+        ActivityTestHelper.closeContextMenu(getActivity());
 
         logMsg += "MyContext: " + MyContextHolder.get();
         MyAccount firstOtherActor = actor1.firstOtherAccountOfThisOrigin();

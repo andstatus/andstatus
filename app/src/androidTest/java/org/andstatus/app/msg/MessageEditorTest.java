@@ -22,7 +22,6 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
-import android.test.ActivityInstrumentationTestCase2;
 import android.text.TextUtils;
 import android.view.MenuItem;
 import android.view.View;
@@ -48,24 +47,24 @@ import org.andstatus.app.timeline.Timeline;
 import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
+import org.junit.Test;
 
 import java.util.concurrent.atomic.AtomicInteger;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * On activity testing: http://developer.android.com/tools/testing/activity_testing.html
  * @author yvolk@yurivolkov.com
  */
-public class MessageEditorTest extends ActivityInstrumentationTestCase2<TimelineActivity> {
+public class MessageEditorTest extends TimelineActivityTest {
     private MessageEditorData data = null;
     private static final AtomicInteger editingStep = new AtomicInteger();
 
-    public MessageEditorTest() {
-        super(TimelineActivity.class);
-    }
-
     @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    protected Intent getActivityIntent() {
         MyLog.i(this, "setUp started");
         TestSuite.initializeWithData(this);
 
@@ -73,50 +72,42 @@ public class MessageEditorTest extends ActivityInstrumentationTestCase2<Timeline
             SharedPreferencesUtil.putLong(MyPreferences.KEY_BEING_EDITED_MESSAGE_ID, 0);
         }
 
-        MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.CONVERSATION_ACCOUNT_NAME);
+        final MyAccount ma = MyContextHolder.get().persistentAccounts()
+                .fromAccountName(TestSuite.CONVERSATION_ACCOUNT_NAME);
         assertTrue(ma.isValid());
         MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
 
-        Intent intent = new Intent(Intent.ACTION_VIEW,
-                MatchedUri.getTimelineUri(Timeline.getTimeline(TimelineType.HOME, ma, 0, null)));
-        setActivityIntent(intent);
+        data = getStaticData(ma);
 
-        data = getStaticData();
-
-        assertTrue("MyService is available", MyServiceManager.isServiceAvailable());
         MyLog.i(this, "setUp ended");
+        return new Intent(Intent.ACTION_VIEW,
+                MatchedUri.getTimelineUri(Timeline.getTimeline(TimelineType.HOME, ma, 0, null)));
     }
 
-    private MessageEditorData getStaticData() {
-        MyAccount ma = getActivity().getCurrentMyAccount();
+    private MessageEditorData getStaticData(MyAccount ma) {
         return MessageEditorData.newEmpty(ma)
-                .setInReplyToId(
-                        MyQuery.oidToId(OidEnum.MSG_OID, MyContextHolder.get()
-                                        .persistentOrigins()
-                                        .fromName(TestSuite.CONVERSATION_ORIGIN_NAME).getId(),
-                                TestSuite.CONVERSATION_ENTRY_MESSAGE_OID))
-                .setRecipientId(
-                        MyQuery.oidToId(OidEnum.USER_OID, ma.getOrigin().getId(),
-                                TestSuite.CONVERSATION_MEMBER_USER_OID))
+                .setInReplyToId(MyQuery.oidToId(OidEnum.MSG_OID, MyContextHolder.get()
+                                .persistentOrigins().fromName(TestSuite.CONVERSATION_ORIGIN_NAME).getId(),
+                        TestSuite.CONVERSATION_ENTRY_MESSAGE_OID))
+                .setRecipientId(MyQuery.oidToId(OidEnum.USER_OID, ma.getOrigin().getId(),
+                        TestSuite.CONVERSATION_MEMBER_USER_OID))
                 .addMentionsToText()
                 .setBody("Some static text " + TestSuite.TESTRUN_UID);
     }
 
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
-    }
-
+    @Test
     public void testEditing1() throws InterruptedException {
+        assertTrue("MyService is available", MyServiceManager.isServiceAvailable());
         editingTester();
     }
 
+    @Test
     public void testEditing2() throws InterruptedException {
         editingTester();
     }
 
     private void editingTester() throws InterruptedException {
-        TestSuite.waitForListLoaded(this, getActivity(), 2);
+        TestSuite.waitForListLoaded(getActivity(), 2);
         switch (editingStep.incrementAndGet()) {
             case 1:
                 openEditor();
@@ -138,7 +129,7 @@ public class MessageEditorTest extends ActivityInstrumentationTestCase2<Timeline
         assertTrue(editorView != null);
         if (editorView.getVisibility() != android.view.View.VISIBLE) {
             assertTrue("Blog button is visible", createMessageButton.isVisible());
-            ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<>(this, getActivity());
+            ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<>(getActivity());
             helper.clickMenuItem(method + " opening editor", R.id.createMessageButton);
         }
         assertEquals("Editor appeared", android.view.View.VISIBLE, editorView.getVisibility());
@@ -148,7 +139,7 @@ public class MessageEditorTest extends ActivityInstrumentationTestCase2<Timeline
         final String method = "editingStep1";
         MyLog.v(this, method + " started");
 
-        ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<>(this, getActivity());
+        ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<>(getActivity());
         helper.clickMenuItem(method + " hiding editor", R.id.saveDraftButton);
         View editorView = getActivity().findViewById(R.id.message_editor);
         ActivityTestHelper.waitViewInvisible(method, editorView);
@@ -161,7 +152,7 @@ public class MessageEditorTest extends ActivityInstrumentationTestCase2<Timeline
             }
         };
         getInstrumentation().runOnMainSync(startEditing);
-        getInstrumentation().waitForIdleSync();
+        TestSuite.waitForIdleSync();
 
         ActivityTestHelper.waitViewVisible(method, editorView);
 
@@ -172,7 +163,7 @@ public class MessageEditorTest extends ActivityInstrumentationTestCase2<Timeline
     private void editingStep2() throws InterruptedException {
         final String method = "editingStep2";
         MyLog.v(this, method + " started");
-        ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<>(this, getActivity());
+        ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<>(getActivity());
         View editorView = getActivity().findViewById(R.id.message_editor);
         ActivityTestHelper.waitViewVisible(method + "; Restored message is visible", editorView);
         assertInitialText("Message restored");
@@ -186,12 +177,13 @@ public class MessageEditorTest extends ActivityInstrumentationTestCase2<Timeline
         MyLog.v(this, method + " ended");
     }
 
+    @Test
     public void testAttachImage() throws InterruptedException {
         final String method = "testAttachImage";
         MyLog.v(this, method + " started");
 
         View editorView = getActivity().findViewById(R.id.message_editor);
-        ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<>(this, getActivity());
+        ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<>(getActivity());
         helper.clickMenuItem(method + " clicker createMessageButton", R.id.createMessageButton);
         ActivityTestHelper.waitViewVisible(method + "; Editor appeared", editorView);
         assertTextCleared();
@@ -199,22 +191,24 @@ public class MessageEditorTest extends ActivityInstrumentationTestCase2<Timeline
         String body = "Message with attachment " + TestSuite.TESTRUN_UID;
         EditText editText = (EditText) editorView.findViewById(R.id.messageBodyEditText);
         editText.requestFocus();
-        TestSuite.waitForIdleSync(this);
+        TestSuite.waitForIdleSync();
         getInstrumentation().sendStringSync(body);
-        TestSuite.waitForIdleSync(this);
+        TestSuite.waitForIdleSync();
 
         getActivity().selectorActivityMock = helper;
         helper.clickMenuItem(method + " clicker attach_menu_id", R.id.attach_menu_id);
         assertNotNull(helper.waitForSelectorStart(method, ActivityRequestCode.ATTACH.id));
         getActivity().selectorActivityMock = null;
 
-        Instrumentation.ActivityMonitor activityMonitor = getInstrumentation().addMonitor(HelpActivity.class.getName(), null, false);
+        Instrumentation.ActivityMonitor activityMonitor = getInstrumentation()
+                .addMonitor(HelpActivity.class.getName(), null, false);
 
         Intent intent = new Intent(getActivity(), HelpActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         getActivity().getApplicationContext().startActivity(intent);
 
-        Activity selectorActivity = getInstrumentation().waitForMonitorWithTimeout(activityMonitor, 15000);
+        Activity selectorActivity = getInstrumentation()
+                .waitForMonitorWithTimeout(activityMonitor, 15000);
         assertTrue(selectorActivity != null);
         ActivityTestHelper.waitViewInvisible(method, editorView);
         DbUtils.waitMs(method, 4000);
@@ -256,12 +250,13 @@ public class MessageEditorTest extends ActivityInstrumentationTestCase2<Timeline
         assertEquals(MessageEditorData.newEmpty(getActivity().getCurrentMyAccount()), editor.getData());
     }
 
+    @Test
     public void testContextMenuWhileEditing() throws InterruptedException {
         final String method = "testContextMenuWhileEditing";
-        TestSuite.waitForListLoaded(this, getActivity(), 2);
+        TestSuite.waitForListLoaded(getActivity(), 2);
         openEditor();
         ListActivityTestHelper<TimelineActivity> helper =
-                new ListActivityTestHelper<>(this, ConversationActivity.class);
+                new ListActivityTestHelper<>(getActivity(), ConversationActivity.class);
         long msgId = helper.getListItemIdOfLoadedReply();
         String logMsg = "msgId=" + msgId;
 
@@ -277,7 +272,7 @@ public class MessageEditorTest extends ActivityInstrumentationTestCase2<Timeline
     private String getClipboardText(String methodExt) throws InterruptedException {
         final String method = "getClipboardText";
         MyLog.v(methodExt, method + " started");
-        TestSuite.waitForIdleSync(this);
+        TestSuite.waitForIdleSync();
         ClipboardReader reader = new ClipboardReader();
         getInstrumentation().runOnMainSync(reader);
         MyLog.v(methodExt, method + "; clip='" + reader.clip + "'");

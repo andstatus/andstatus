@@ -16,8 +16,6 @@
 
 package org.andstatus.app.account;
 
-import android.test.InstrumentationTestCase;
-
 import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
@@ -27,16 +25,21 @@ import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
+import org.junit.Before;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 @Travis
-public class MyAccountTest  extends InstrumentationTestCase {
+public class MyAccountTest {
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    @Before
+    public void setUp() throws Exception {
         TestSuite.initializeWithData(this);
     }
 
+    @Test
     public void testNewAccountCreation() {
        createAccountOfOriginType("", OriginType.TWITTER);
        createAccountOfOriginType("testUser1", OriginType.TWITTER);
@@ -63,13 +66,14 @@ public class MyAccountTest  extends InstrumentationTestCase {
         }
     }
     
-    public static void fixAccountByName(MyContext myContext, String accountName) {
+    private static void fixAccountByName(MyContext myContext, String accountName) {
         MyAccount ma = myContext.persistentAccounts().fromAccountName(accountName);
         assertTrue("Account " + accountName + " is valid", ma.isValid());
         if (ma.getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED ) {
             return;
         }
-        MyAccount.Builder builder = MyAccount.Builder.newOrExistingFromAccountName(MyContextHolder.get(), accountName, TriState.UNKNOWN);
+        MyAccount.Builder builder = MyAccount.Builder.newOrExistingFromAccountName(MyContextHolder.get(), accountName,
+                TriState.UNKNOWN);
         builder.setCredentialsVerificationStatus(CredentialsVerificationStatus.SUCCEEDED);
         builder.saveSilently();
     }

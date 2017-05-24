@@ -16,7 +16,7 @@
 
 package org.andstatus.app.service;
 
-import android.test.InstrumentationTestCase;
+import android.support.test.InstrumentationRegistry;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
@@ -31,18 +31,25 @@ import org.andstatus.app.origin.DiscoveredOrigins;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.RawResourceUtils;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.io.IOException;
 import java.util.Arrays;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 @Travis
-public class CommandExecutorStrategyTest extends InstrumentationTestCase {
+public class CommandExecutorStrategyTest {
 
     private HttpConnectionMock httpConnectionMock;
-    MyAccount ma;
+    private MyAccount ma;
 
-    @Override
-    protected void setUp() throws Exception {
+    @Before
+    public void setUp() throws Exception {
         TestSuite.initializeWithData(this);
 
         TestSuite.setHttpConnectionMockClass(HttpConnectionMock.class);
@@ -55,6 +62,7 @@ public class CommandExecutorStrategyTest extends InstrumentationTestCase {
         httpConnectionMock = ma.getConnection().getHttpMock();
     }
 
+    @Test
     public void testFetchTimeline() {
         CommandData commandData = CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, null, TimelineType.HOME);
         CommandExecutorStrategy strategy = CommandExecutorStrategy.getStrategy(commandData, null);
@@ -65,6 +73,7 @@ public class CommandExecutorStrategyTest extends InstrumentationTestCase {
         assertEquals(TimelineDownloaderOther.class, strategy.getClass());
     }
 
+    @Test
     public void testSearch() {
         CommandData commandData = CommandData.newSearch(MyContextHolder.get(), null, TestSuite.GLOBAL_PUBLIC_MESSAGE_TEXT);
         CommandExecutorStrategy strategy = CommandExecutorStrategy.getStrategy(commandData, null);
@@ -78,9 +87,10 @@ public class CommandExecutorStrategyTest extends InstrumentationTestCase {
                 httpConnectionMock.getResults().get(0).getUrl().contains(TestSuite.GLOBAL_PUBLIC_MESSAGE_TEXT) );
     }
 
+    @Test
     public void testUpdateDestroyStatus() throws IOException {
         CommandData commandData = getCommandDataForUnsentMessage("1");
-        httpConnectionMock.setResponse(RawResourceUtils.getString(this.getInstrumentation().getContext(),
+        httpConnectionMock.setResponse(RawResourceUtils.getString(InstrumentationRegistry.getInstrumentation().getContext(),
                 org.andstatus.app.tests.R.raw.quitter_update_status_response));
         assertEquals(0, commandData.getResult().getExecutionCount());
         CommandExecutorStrategy.executeCommand(commandData, null);
@@ -148,9 +158,10 @@ public class CommandExecutorStrategyTest extends InstrumentationTestCase {
         return CommandData.newUpdateStatus(ma, unsentMessageId);
     }
 
+    @Test
     public void testDiscoverOrigins() throws IOException {
         HttpConnectionMock http = new HttpConnectionMock();
-        http.setResponse(RawResourceUtils.getString(this.getInstrumentation().getContext(),
+        http.setResponse(RawResourceUtils.getString(InstrumentationRegistry.getInstrumentation().getContext(),
                 org.andstatus.app.tests.R.raw.get_open_instances));
         TestSuite.setHttpConnectionMockInstance(http);
         CommandData commandData = CommandData.newItemCommand(
@@ -165,11 +176,10 @@ public class CommandExecutorStrategyTest extends InstrumentationTestCase {
         assertFalse(DiscoveredOrigins.get().isEmpty());
     }
     
-    @Override
-    protected void tearDown() throws Exception {
+    @After
+    public void tearDown() throws Exception {
         TestSuite.setHttpConnectionMockInstance(null);
         TestSuite.setHttpConnectionMockClass(null);
         MyContextHolder.get().persistentAccounts().initialize();
-        super.tearDown();
     }
 }

@@ -17,7 +17,6 @@
 package org.andstatus.app.origin;
 
 import android.content.Intent;
-import android.test.ActivityInstrumentationTestCase2;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -25,6 +24,7 @@ import android.widget.Spinner;
 
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
+import org.andstatus.app.context.ActivityTest;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DbUtils;
@@ -33,24 +33,24 @@ import org.andstatus.app.net.http.SslModeEnum;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UrlUtils;
+import org.junit.Test;
 
 import java.net.URL;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author yvolk@yurivolkov.com
  */
-public class OriginEditorTest extends ActivityInstrumentationTestCase2<OriginEditor> {
+public class OriginEditorTest extends ActivityTest<OriginEditor> {
 
-    public OriginEditorTest() {
-        super(OriginEditor.class);
-    }
-    
     @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    protected Class<OriginEditor> getActivityClass() {
         TestSuite.initialize(this);
+        return OriginEditor.class;
     }
 
+    @Test
     public void test() throws InterruptedException {
         OriginType originType = OriginType.GNUSOCIAL;
         String originName = "oe" + System.currentTimeMillis();
@@ -84,7 +84,7 @@ public class OriginEditorTest extends ActivityInstrumentationTestCase2<OriginEdi
                 true, true);
     }
     
-    public void forOneOrigin(final OriginType originType, final String originName,
+    private void forOneOrigin(final OriginType originType, final String originName,
             final String hostOrUrl, final boolean isSsl, final SslModeEnum sslMode, 
             final boolean allowHtml, final TriState mentionAsWebFingerId,
             final TriState useLegacyHttpProtocol,
@@ -100,8 +100,7 @@ public class OriginEditorTest extends ActivityInstrumentationTestCase2<OriginEdi
         } else {
             intent.setAction(Intent.ACTION_INSERT);
         }
-        setActivityIntent(intent);
-        
+
         final OriginEditor activity = getActivity();
         activity.runOnUiThread(new Runnable() {
             @Override

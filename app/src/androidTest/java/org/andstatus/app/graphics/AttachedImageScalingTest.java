@@ -2,22 +2,25 @@ package org.andstatus.app.graphics;
 
 import android.graphics.BitmapFactory;
 import android.graphics.Point;
-import android.test.InstrumentationTestCase;
 
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.context.Travis;
-import org.andstatus.app.graphics.MyDrawableCache;
-import org.andstatus.app.graphics.MyImageCache;
+import org.junit.Before;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 @Travis
-public class AttachedImageScalingTest extends InstrumentationTestCase {
-    @Override
+public class AttachedImageScalingTest {
+
+    @Before
     public void setUp() throws Exception {
-        super.setUp();
         TestSuite.initialize(this);
     }
-    
+
+    @Test
     public void testScaling() {
         MyImageCache.initialize(MyContextHolder.get().context());
         MyDrawableCache cache = MyImageCache.attachedImagesCache;

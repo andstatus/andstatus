@@ -22,12 +22,18 @@ import org.andstatus.app.context.Travis;
 import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
+import org.junit.Test;
 
 import java.util.Queue;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 @Travis
 public class MyServiceTest2 extends MyServiceTest {
 
+    @Test
     public void testSyncInForeground() throws InterruptedException {
         final String method = "testSyncInForeground";
         MyLog.i(this, method + " started");

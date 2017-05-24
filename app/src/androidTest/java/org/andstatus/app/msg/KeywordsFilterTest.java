@@ -16,16 +16,21 @@
 
 package org.andstatus.app.msg;
 
-import android.test.InstrumentationTestCase;
-
 import org.andstatus.app.context.Travis;
 import org.andstatus.app.util.MyHtml;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author yvolk@yurivolkov.com
  */
 @Travis
-public class KeywordsFilterTest extends InstrumentationTestCase {
+public class KeywordsFilterTest {
+
+    @Test
     public void testPhrases() {
         String query = "\"deleted notice\"";
         final String keywordDN = ",deleted,notice,";

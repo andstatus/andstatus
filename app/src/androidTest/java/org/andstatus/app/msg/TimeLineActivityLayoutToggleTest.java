@@ -28,24 +28,22 @@ import org.andstatus.app.timeline.Timeline;
 import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
+import org.junit.After;
+import org.junit.Test;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class TimeLineActivityLayoutToggleTest extends android.test.ActivityInstrumentationTestCase2<TimelineActivity> {
-    private TimelineActivity activity;
-    private static final AtomicInteger iteration = new AtomicInteger();
-    static final boolean showAttachedImagesOld = MyPreferences.getDownloadAndDisplayAttachedImages();
-    boolean showAttachedImages = false;
-    static final boolean showAvatarsOld = MyPreferences.getShowAvatars();
-    boolean showAvatars = false;
+import static org.junit.Assert.assertTrue;
 
-    public TimeLineActivityLayoutToggleTest() {
-        super(TimelineActivity.class);
-    }
-    
+public class TimeLineActivityLayoutToggleTest extends TimelineActivityTest {
+    private static final AtomicInteger iteration = new AtomicInteger();
+    private static final boolean showAttachedImagesOld = MyPreferences.getDownloadAndDisplayAttachedImages();
+    private boolean showAttachedImages = false;
+    private  static final boolean showAvatarsOld = MyPreferences.getShowAvatars();
+    private boolean showAvatars = false;
+
     @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    protected Intent getActivityIntent() {
         TestSuite.initializeWithData(this);
         switch (iteration.incrementAndGet()) {
             case 2:
@@ -72,15 +70,10 @@ public class TimeLineActivityLayoutToggleTest extends android.test.ActivityInstr
         MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.CONVERSATION_ACCOUNT_NAME);
         assertTrue(ma.isValid());
         MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
-        
-        Intent intent = new Intent(Intent.ACTION_VIEW, 
-                MatchedUri.getTimelineUri(Timeline.getTimeline(TimelineType.HOME, ma, 0, null)));
-        setActivityIntent(intent);
-        
-        activity = getActivity();
 
-        assertTrue("MyService is available", MyServiceManager.isServiceAvailable());
         logStartStop("setUp ended");
+        return new Intent(Intent.ACTION_VIEW,
+                MatchedUri.getTimelineUri(Timeline.getTimeline(TimelineType.HOME, ma, 0, null)));
     }
 
     private void logStartStop(String text) {
@@ -90,37 +83,41 @@ public class TimeLineActivityLayoutToggleTest extends android.test.ActivityInstr
                 + (showAttachedImages ? " attached images;" : ""));
     }
 
+    @Test
     public void testToggleAttachedImages1() throws InterruptedException {
         oneIteration();
     }
 
     private void oneIteration() throws InterruptedException {
-        TestSuite.waitForListLoaded(this, activity, 3);
+        assertTrue("MyService is available", MyServiceManager.isServiceAvailable());
+        TestSuite.waitForListLoaded(getActivity(), 3);
     }
 
+    @Test
     public void testToggleAttachedImages2() throws InterruptedException {
         oneIteration();
     }
-    
+
+    @Test
     public void testToggleAttachedImages3() throws InterruptedException {
         oneIteration();
     }
-    
+
+    @Test
     public void testToggleAttachedImages4() throws InterruptedException {
         oneIteration();
     }
-    
+
     private void setPreferences() {
         SharedPreferencesUtil.putBoolean(MyPreferences.KEY_DOWNLOAD_AND_DISPLAY_ATTACHED_IMAGES, showAttachedImages);
         SharedPreferencesUtil.putBoolean(MyPreferences.KEY_SHOW_AVATARS, showAvatars);
     }
     
-    @Override
-    protected void tearDown() throws Exception {
+    @After
+    public void tearDown() throws Exception {
         logStartStop("tearDown started");
         showAttachedImages = showAttachedImagesOld;
         showAvatars = showAvatarsOld;
         setPreferences();
-        super.tearDown();
     }
 }

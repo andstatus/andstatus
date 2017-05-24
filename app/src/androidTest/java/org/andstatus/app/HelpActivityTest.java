@@ -18,50 +18,61 @@ package org.andstatus.app;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.test.ActivityInstrumentationTestCase2;
+import android.support.test.InstrumentationRegistry;
 import android.view.View;
 import android.widget.ViewFlipper;
 
+import org.andstatus.app.context.ActivityTest;
 import org.andstatus.app.context.MySettingsActivity;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DbUtils;
+import org.junit.After;
+import org.junit.Test;
 
-public class HelpActivityTest extends ActivityInstrumentationTestCase2<HelpActivity> {
+import static android.support.test.espresso.Espresso.onView;
+import static android.support.test.espresso.action.ViewActions.click;
+import static android.support.test.espresso.matcher.ViewMatchers.withId;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
-    public HelpActivityTest() {
-        super(HelpActivity.class);
-    }
-    
+public class HelpActivityTest extends ActivityTest<HelpActivity> {
+
     @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    protected Class<HelpActivity> getActivityClass() {
+        return HelpActivity.class;
+    }
+
+    @Override
+    protected Intent getActivityIntent() {
         TestSuite.initializeWithData(this);
-        
         Intent intent = new Intent();
         intent.putExtra(HelpActivity.EXTRA_IS_FIRST_ACTIVITY, true);
         intent.putExtra(HelpActivity.EXTRA_HELP_PAGE_INDEX, HelpActivity.PAGE_INDEX_CHANGELOG);
-        setActivityIntent(intent);
+        return intent;
     }
 
-    @Override
-    protected void tearDown() throws Exception {
-        MySettingsActivity.closeAllActivities(getInstrumentation().getTargetContext());
-        super.tearDown();
+    @After
+    public void tearDown() throws Exception {
+        MySettingsActivity.closeAllActivities(InstrumentationRegistry.getInstrumentation().getTargetContext());
     }
 
+    @Test
     public void test() throws Throwable {
-        ViewFlipper mFlipper = ((ViewFlipper) getActivity().findViewById(R.id.help_flipper));
+        ViewFlipper mFlipper = ((ViewFlipper) mActivityRule.getActivity().findViewById(R.id.help_flipper));
         assertTrue(mFlipper != null);
         assertEquals("At Changelog page", HelpActivity.PAGE_INDEX_CHANGELOG, mFlipper.getDisplayedChild());
-        View changeLogView = getActivity().findViewById(R.id.changelog);
+        View changeLogView = mActivityRule.getActivity().findViewById(R.id.changelog);
         assertTrue(changeLogView != null);
         DbUtils.waitMs("test", 500);
 
-        ActivityTestHelper<HelpActivity> helper = new ActivityTestHelper<HelpActivity>(this, MySettingsActivity.class);
+ //       openActionBarOverflowOrOptionsMenu(InstrumentationRegistry.getTargetContext());
+        onView(withId(R.id.preferences_menu_id)).perform(click());
+
+        ActivityTestHelper<HelpActivity> helper = new ActivityTestHelper<>(mActivityRule.getActivity(),
+                MySettingsActivity.class);
         assertTrue("Click on ActionBar item", helper.clickMenuItem("Clicking on Settings menu item", R.id.preferences_menu_id));
         Activity nextActivity = helper.waitForNextActivity("Clicking on Settings menu item", 10000);
         DbUtils.waitMs("test", 500);
         nextActivity.finish();
     }
-
 }

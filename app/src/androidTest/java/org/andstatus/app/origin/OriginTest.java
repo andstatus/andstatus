@@ -1,8 +1,6 @@
 
 package org.andstatus.app.origin;
 
-import android.test.InstrumentationTestCase;
-
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.context.Travis;
@@ -16,16 +14,22 @@ import org.andstatus.app.net.http.SslModeEnum;
 import org.andstatus.app.net.social.MbConfig;
 import org.andstatus.app.origin.Origin.Builder;
 import org.andstatus.app.util.UrlUtils;
+import org.junit.Before;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 @Travis
-public class OriginTest extends InstrumentationTestCase {
+public class OriginTest {
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    @Before
+    public void setUp() throws Exception {
         TestSuite.initializeWithData(this);
     }
 
+    @Test
     public void testTextLimit() {
         String urlString = "https://github.com/andstatus/andstatus/issues/41";
         String message = "I set \"Shorten URL with: QTTR_AT\" URL longer than 25 Text longer than 140. Will this be shortened: "
@@ -91,6 +95,7 @@ public class OriginTest extends InstrumentationTestCase {
         assertTrue(origin.isMentionAsWebFingerId());
     }
 
+    @Test
     public void testAddDeleteOrigin() {
         String seed = Long.toString(System.nanoTime());
         String originName = "snTest" + seed;
@@ -169,6 +174,7 @@ public class OriginTest extends InstrumentationTestCase {
         assertEquals(allowHtml, origin.isHtmlContentAllowed());
     }
 
+    @Test
     public void testPermalink() {
         Origin origin = MyContextHolder.get().persistentOrigins().firstOfType(OriginType.TWITTER);
         assertEquals(origin.getOriginType(), OriginType.TWITTER);
@@ -186,7 +192,8 @@ public class OriginTest extends InstrumentationTestCase {
         assertTrue(desc, permalink.contains(userName + "/status/" + messageOid));
         assertFalse(desc, permalink.contains("://api."));
     }
-    
+
+    @Test
     public void testNameFix() {
         checkOneName("o.mrblog.nl", " o. mrblog. nl ");
         checkOneName("o.mrblog.nl", " o.   mrblog. nl ");
@@ -199,6 +206,7 @@ public class OriginTest extends InstrumentationTestCase {
         assertEquals(out, new Origin.Builder(OriginType.GNUSOCIAL).setName(in).build().getName());
     }
 
+    @Test
     public void testHostFix() {
         checkOneHost("https://o.mrblog.nl", " o. mrBlog. nl ", true);
         checkOneHost("http://o.mrblog.nl", " o.   mrblog. nl ", false);
@@ -208,6 +216,7 @@ public class OriginTest extends InstrumentationTestCase {
         assertEquals(out, new Origin.Builder(OriginType.GNUSOCIAL).setHostOrUrl(in).setSsl(ssl).build().getUrl().toExternalForm());
     }
 
+    @Test
     public void testUsernameIsValid() {
         Origin origin = MyContextHolder.get().persistentOrigins().fromName(TestSuite.GNUSOCIAL_TEST_ORIGIN_NAME);
         checkUsernameIsValid(origin, "", false);

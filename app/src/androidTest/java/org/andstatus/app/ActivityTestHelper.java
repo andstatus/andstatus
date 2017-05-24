@@ -19,9 +19,7 @@ package org.andstatus.app;
 import android.app.Activity;
 import android.app.Instrumentation.ActivityMonitor;
 import android.content.Intent;
-import android.test.ActivityInstrumentationTestCase2;
-import android.test.ActivityTestCase;
-import android.test.InstrumentationTestCase;
+import android.support.test.InstrumentationRegistry;
 import android.view.Menu;
 import android.view.View;
 import android.widget.TextView;
@@ -31,25 +29,25 @@ import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.test.SelectorActivityMock;
 import org.andstatus.app.util.MyLog;
 
-public class ActivityTestHelper<T extends MyActivity> extends InstrumentationTestCase implements SelectorActivityMock {
-    private InstrumentationTestCase mTestCase;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+public class ActivityTestHelper<T extends MyActivity> implements SelectorActivityMock {
     private T mActivity;
     private ActivityMonitor activityMonitor = null;
 
     private volatile Intent selectorIntent = null;
     private volatile int selectorRequestCode = 0;
 
-    public ActivityTestHelper(ActivityTestCase testCase, T activity) {
+    public ActivityTestHelper(T activity) {
         super();
-        mTestCase = testCase;
         mActivity = activity;
     }
 
-    public ActivityTestHelper(ActivityInstrumentationTestCase2<T> testCase, Class<? extends Activity> classOfActivityToMonitor) {
+    public ActivityTestHelper(T activity, Class<? extends Activity> classOfActivityToMonitor) {
         super();
-        mTestCase = testCase;
         addMonitor(classOfActivityToMonitor);
-        mActivity = testCase.getActivity();
+        mActivity = activity;
     }
 
     public static boolean waitViewVisible(String method, View view) throws InterruptedException {
@@ -104,38 +102,38 @@ public class ActivityTestHelper<T extends MyActivity> extends InstrumentationTes
         return ok;
     }
 
-    public static void closeContextMenu(final ActivityInstrumentationTestCase2<?> testCase) throws InterruptedException {
+    public static void closeContextMenu(final Activity activity) throws InterruptedException {
         Runnable runnable = new Runnable() {
             @Override
             public void run() {
-                testCase.getActivity().closeContextMenu();
+                activity.closeContextMenu();
             }
         };
-        testCase.getActivity().runOnUiThread(runnable);
-        TestSuite.waitForIdleSync(testCase);
+        activity.runOnUiThread(runnable);
+        TestSuite.waitForIdleSync();
     }
 
     public ActivityMonitor addMonitor(Class<? extends Activity> classOfActivity) {
-        activityMonitor = mTestCase.getInstrumentation().addMonitor(classOfActivity.getName(), null, false);
+        activityMonitor = InstrumentationRegistry.getInstrumentation().addMonitor(classOfActivity.getName(), null, false);
         return activityMonitor;
     }
     
     public Activity waitForNextActivity(String method, long timeOut) throws InterruptedException {
-        Activity nextActivity = mTestCase.getInstrumentation().waitForMonitorWithTimeout(activityMonitor, timeOut);
+        Activity nextActivity = InstrumentationRegistry.getInstrumentation().waitForMonitorWithTimeout(activityMonitor, timeOut);
         MyLog.v(this, method + "-Log after waitForMonitor: " 
                 + nextActivity);
         assertNotNull("Next activity is opened and captured", nextActivity);
-        TestSuite.waitForListLoaded(mTestCase, nextActivity, 1);
+        TestSuite.waitForListLoaded(nextActivity, 1);
         activityMonitor = null;
         return nextActivity;
     }
 
     public boolean clickMenuItem(String method, int menuItemResourceId) throws InterruptedException {
         assertTrue(menuItemResourceId != 0);
-        TestSuite.waitForIdleSync(mTestCase);
+        TestSuite.waitForIdleSync();
         MyLog.v(this, method + "-Log before run clickers");
 
-        boolean clicked = mTestCase.getInstrumentation().invokeMenuActionSync(mActivity, menuItemResourceId, 0);
+        boolean clicked = InstrumentationRegistry.getInstrumentation().invokeMenuActionSync(mActivity, menuItemResourceId, 0);
         if (clicked) {
             MyLog.i(this, method + "-Log instrumentation clicked");
         } else {
@@ -146,7 +144,7 @@ public class ActivityTestHelper<T extends MyActivity> extends InstrumentationTes
             Menu menu = mActivity.getOptionsMenu();
             if (menu != null) {
                 MenuItemClicker clicker = new MenuItemClicker(method, menu, menuItemResourceId);
-                mTestCase.getInstrumentation().runOnMainSync(clicker);
+                InstrumentationRegistry.getInstrumentation().runOnMainSync(clicker);
                 clicked = clicker.clicked;
                 if (clicked) {
                     MyLog.i(this, method + "-Log performIdentifierAction clicked");
@@ -166,7 +164,7 @@ public class ActivityTestHelper<T extends MyActivity> extends InstrumentationTes
                 MyLog.i(this, method + "-Log onOptionsItemSelected couldn't click");
             }
         }
-        TestSuite.waitForIdleSync(mTestCase);
+        TestSuite.waitForIdleSync();
         return clicked;
     }
 

@@ -17,7 +17,6 @@
 package org.andstatus.app.msg;
 
 import android.content.Intent;
-import android.test.InstrumentationTestCase;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.backup.ProgressLogger;
@@ -32,18 +31,24 @@ import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.MyHtml;
+import org.junit.Before;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 @Travis
-public class MessageShareTest extends InstrumentationTestCase {
+public class MessageShareTest {
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    @Before
+    public void setUp() throws Exception {
         TestSuite.initializeWithData(this);
     }
 
+    @Test
     public void testShareHtml() throws Exception {
-        new HtmlContentInserter(this).insertHtml();
+        new HtmlContentInserter().insertHtml();
         
         Origin origin = MyContextHolder.get().persistentOrigins().fromName(TestSuite.CONVERSATION_ORIGIN_NAME);
         assertTrue(TestSuite.CONVERSATION_ORIGIN_NAME + " exists", origin != null);
@@ -62,7 +67,8 @@ public class MessageShareTest extends InstrumentationTestCase {
                 intent.getStringExtra(Intent.EXTRA_HTML_TEXT).contains(
                         HtmlContentInserter.HTML_BODY_IMG_STRING));
     }
-    
+
+    @Test
     public void testSharePlainText() {
         String body = "Posting as a plain Text " + TestSuite.TESTRUN_UID;
         final MyAccount myAccount = TestSuite.getMyAccount(TestSuite.TWITTER_TEST_ACCOUNT_NAME);

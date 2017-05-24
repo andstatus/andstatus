@@ -1,26 +1,31 @@
 package org.andstatus.app.msg;
 
 import android.net.Uri;
-import android.test.InstrumentationTestCase;
 import android.text.TextUtils;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.context.Travis;
-import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.data.MyQuery;
+import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.database.UserTable;
+import org.junit.Before;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 @Travis
-public class MessageEditorDataTest extends InstrumentationTestCase {
+public class MessageEditorDataTest {
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    @Before
+    public void setUp() throws Exception {
         TestSuite.initializeWithData(this);
     }
-    
+
+    @Test
     public void testMessageEditorDataConversation() {
         MyAccount ma = MyContextHolder.get().persistentAccounts()
                 .fromAccountName(TestSuite.CONVERSATION_ACCOUNT_NAME);

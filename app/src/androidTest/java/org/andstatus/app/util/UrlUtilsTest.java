@@ -16,16 +16,19 @@
 
 package org.andstatus.app.util;
 
-import android.test.InstrumentationTestCase;
-
 import org.andstatus.app.context.Travis;
 import org.andstatus.app.net.http.ConnectionException;
+import org.junit.Test;
 
 import java.net.URL;
 
-@Travis
-public class UrlUtilsTest extends InstrumentationTestCase {
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
+@Travis
+public class UrlUtilsTest {
+
+    @Test
     public void testHostOnly() throws ConnectionException {
         String host = "example.com";
         boolean isUrl = false;
@@ -58,6 +61,7 @@ public class UrlUtilsTest extends InstrumentationTestCase {
         assertTrue(UrlUtils.isHostOnly(url));
     }
 
+    @Test
     public void testNotOnlyHost() {
         String strUrl = "http://host.org/directory/file.jpg";
         String strUrlSsl = "https://host.org/directory/file.jpg";
@@ -94,6 +98,7 @@ public class UrlUtilsTest extends InstrumentationTestCase {
         }
     }
 
+    @Test
     public void testPathToUrl() throws ConnectionException {
         String strUrl = "https://username:password@host.org:8080/directory/";
         String path = "somepath/somewhere.json";

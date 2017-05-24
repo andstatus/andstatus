@@ -3,7 +3,6 @@ package org.andstatus.app.msg;
 import android.content.Intent;
 import android.net.Uri;
 import android.provider.BaseColumns;
-import android.test.ActivityInstrumentationTestCase2;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -22,20 +21,21 @@ import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.service.MyServiceTestHelper;
 import org.andstatus.app.util.MyLog;
+import org.junit.After;
+import org.junit.Test;
 
 import java.util.Arrays;
 
-public class SharingMediaToThisAppTest extends ActivityInstrumentationTestCase2<TimelineActivity> {
-    MyServiceTestHelper mService;
-    MyAccount ma;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
-    public SharingMediaToThisAppTest() {
-        super(TimelineActivity.class);
-    }
+public class SharingMediaToThisAppTest extends TimelineActivityTest {
+    private MyServiceTestHelper mService;
+    private MyAccount ma;
 
     @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    protected Intent getActivityIntent() {
+        MyLog.i(this, "setUp started");
         TestSuite.initializeWithData(this);
 
         mService = new MyServiceTestHelper();
@@ -43,26 +43,26 @@ public class SharingMediaToThisAppTest extends ActivityInstrumentationTestCase2<
         ma = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME);
         assertTrue(ma.isValid());
         MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
-        
+
         Intent intent = new Intent(Intent.ACTION_SEND);
         intent.setType("image/png");
         Uri mediaUri = TestSuite.LOCAL_IMAGE_TEST_URI2;
         assertTrue(mediaUri != null);
+        MyLog.i(this, "setUp ended");
         intent.putExtra(Intent.EXTRA_STREAM, mediaUri);
-        setActivityIntent(intent);
-        
+        return intent;
     }
 
-    @Override
-    protected void tearDown() throws Exception {
+    @After
+    public void tearDown() throws Exception {
         mService.tearDown();
-        super.tearDown();
     }
 
+    @Test
     public void testSharingMediaToThisApp() throws InterruptedException {
         final String method = "testSharingMediaToThisApp";
         ListActivityTestHelper<TimelineActivity> listActivityTestHelper =
-                ListActivityTestHelper.newForSelectorDialog(this, AccountSelector.getDialogTag());
+                ListActivityTestHelper.newForSelectorDialog(getActivity(), AccountSelector.getDialogTag());
         listActivityTestHelper.selectIdFromSelectorDialog(method, ma.getUserId());
 
         View editorView = getActivity().findViewById(R.id.message_editor);
@@ -74,12 +74,12 @@ public class SharingMediaToThisAppTest extends ActivityInstrumentationTestCase2<
         String body = "Test message with a shared image " + TestSuite.TESTRUN_UID;
         EditText editText = (EditText) editorView.findViewById(R.id.messageBodyEditText);
         editText.requestFocus();
-        TestSuite.waitForIdleSync(this);
+        TestSuite.waitForIdleSync();
         getInstrumentation().sendStringSync(body);
-        TestSuite.waitForIdleSync(this);
+        TestSuite.waitForIdleSync();
 
         mService.serviceStopped = false;
-        ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<TimelineActivity>(this, getActivity());
+        ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<TimelineActivity>(getActivity());
         helper.clickMenuItem(method, R.id.messageSendButton);
         ActivityTestHelper.waitViewInvisible(method, editorView);
 

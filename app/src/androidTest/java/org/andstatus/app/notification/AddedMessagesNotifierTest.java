@@ -1,7 +1,5 @@
 package org.andstatus.app.notification;
 
-import android.test.InstrumentationTestCase;
-
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.TestSuite;
@@ -9,12 +7,17 @@ import org.andstatus.app.context.Travis;
 import org.andstatus.app.service.CommandResult;
 import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.SharedPreferencesUtil;
+import org.junit.Before;
+import org.junit.Test;
+
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 @Travis
-public class AddedMessagesNotifierTest extends InstrumentationTestCase {
+public class AddedMessagesNotifierTest {
     
-    @Override
-    protected void setUp() throws Exception {
+    @Before
+    public void setUp() throws Exception {
         TestSuite.initializeWithData(this);
         SharedPreferencesUtil.putBoolean(MyPreferences.KEY_NOTIFICATIONS_ENABLED, true);
         SharedPreferencesUtil.putBoolean(MyPreferences.KEY_NOTIFY_OF_HOME_TIMELINE, true);
@@ -22,6 +25,7 @@ public class AddedMessagesNotifierTest extends InstrumentationTestCase {
         SharedPreferencesUtil.putBoolean(MyPreferences.KEY_NOTIFY_OF_DIRECT_MESSAGES, true);
     }
 
+    @Test
     public void testCreateNotification() {
     	CommandResult result = new CommandResult();
     	result.incrementDirectCount();
