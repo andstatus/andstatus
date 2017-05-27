@@ -29,6 +29,8 @@ import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.test.SelectorActivityMock;
 import org.andstatus.app.util.MyLog;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -128,25 +130,26 @@ public class ActivityTestHelper<T extends MyActivity> implements SelectorActivit
         return nextActivity;
     }
 
-    public boolean clickMenuItem(String method, int menuItemResourceId) throws InterruptedException {
+    public boolean clickMenuItem(final String method, final int menuItemResourceId) throws InterruptedException {
         assertTrue(menuItemResourceId != 0);
         TestSuite.waitForIdleSync();
         MyLog.v(this, method + "-Log before run clickers");
 
-        boolean clicked = InstrumentationRegistry.getInstrumentation().invokeMenuActionSync(mActivity, menuItemResourceId, 0);
-        if (clicked) {
+        final AtomicBoolean clicked = new AtomicBoolean(false);
+        clicked.set(InstrumentationRegistry.getInstrumentation().invokeMenuActionSync(mActivity, menuItemResourceId, 0));
+        if (clicked.get()) {
             MyLog.i(this, method + "-Log instrumentation clicked");
         } else {
             MyLog.i(this, method + "-Log instrumentation couldn't click");
         }
 
-        if (!clicked) {
+        if (!clicked.get()) {
             Menu menu = mActivity.getOptionsMenu();
             if (menu != null) {
                 MenuItemClicker clicker = new MenuItemClicker(method, menu, menuItemResourceId);
                 InstrumentationRegistry.getInstrumentation().runOnMainSync(clicker);
-                clicked = clicker.clicked;
-                if (clicked) {
+                clicked.set(clicker.clicked);
+                if (clicked.get()) {
                     MyLog.i(this, method + "-Log performIdentifierAction clicked");
                 } else {
                     MyLog.i(this, method + "-Log performIdentifierAction couldn't click");
@@ -154,18 +157,29 @@ public class ActivityTestHelper<T extends MyActivity> implements SelectorActivit
             }
         }
 
-        if (!clicked) {
-            MenuItemMock menuItem = new MenuItemMock(menuItemResourceId);
-            mActivity.onOptionsItemSelected(menuItem);
-            clicked = menuItem.called();
-            if (clicked) {
-                MyLog.i(this, method + "-Log onOptionsItemSelected clicked");
-            } else {
-                MyLog.i(this, method + "-Log onOptionsItemSelected couldn't click");
-            }
+        if (!clicked.get()) {
+            InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+                @Override
+                public void run() {
+                    final String msg = method + "-Log onOptionsItemSelected";
+                    MyLog.v(method, msg);
+                    try {
+                        MenuItemMock menuItem = new MenuItemMock(menuItemResourceId);
+                        mActivity.onOptionsItemSelected(menuItem);
+                        clicked.set(menuItem.called());
+                        if (clicked.get()) {
+                            MyLog.i(this, msg + " clicked");
+                        } else {
+                            MyLog.i(this, msg + " couldn't click");
+                        }
+                    } catch (Exception e) {
+                        MyLog.e(msg, e);
+                    }
+                }
+            });
         }
         TestSuite.waitForIdleSync();
-        return clicked;
+        return clicked.get();
     }
 
     public Intent waitForSelectorStart(String method, int requestCode) throws InterruptedException {
