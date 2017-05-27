@@ -87,8 +87,6 @@ install:
   - echo yes | sdkmanager "${EMULATOR}" # Install emulator system image
   # Create and start emulator
   - echo no | avdmanager create avd -n acib -k "${EMULATOR}" -f --abi "${EMULATOR_ABI}" --tag "${EMULATOR_TAG}"
-  - ls -la ${ANDROID_HOME}/.android/**/*
-  - ls -la ${ANDROID_HOME}/**/*
   - emulator -avd acib -engine classic -no-window -camera-back none -camera-front none -verbose -qemu -m 512 &
   # Start adbd, wait for device connected and show android serial
   - adb wait-for-device get-serialno
