@@ -137,8 +137,10 @@ script:
   # See https://developer.android.com/reference/android/test/InstrumentationTestRunner.html
   # For testing one method only:
   # - adb shell am instrument -w -r -e debug false -e class org.andstatus.app.msg.ActAsUserTest#testActAsUser org.andstatus.app.tests/android.support.test.runner.AndroidJUnitRunner
+  # Only with this annotation:
+  #  adb shell am instrument -w -r -e annotation org.andstatus.app.context.Travis ...
   - |
-    adb shell am instrument -w -r -e annotation org.andstatus.app.context.Travis org.andstatus.app.tests/android.support.test.runner.AndroidJUnitRunner |& tee build/adb-test.log
+    adb shell am instrument -w -r org.andstatus.app.tests/android.support.test.runner.AndroidJUnitRunner |& tee build/adb-test.log
     retval=$?
     if [ $retval -ne 0 ]; then
       echo "error in adb, exit code: "$retval
