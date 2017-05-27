@@ -18,11 +18,11 @@ package org.andstatus.app.net.social;
 
 /** Activity in a sense of Activity Streams https://www.w3.org/TR/activitystreams-core/ */
 public class MbActivity {
-    public TimelinePosition timelineItemPosition = null;
-    public long timelineItemDate = 0;
+    private TimelinePosition timelineItemPosition = TimelinePosition.EMPTY;
+    private long timelineItemDate = 0;
 
-    public MbMessage mbMessage = null;
-    public MbUser mbUser = null;
+    private MbMessage mbMessage = null;
+    private MbUser mbUser = null;
 
     public MbObjectType getObjectType() {
         if (mbMessage != null && !mbMessage.isEmpty()) {
@@ -36,5 +36,37 @@ public class MbActivity {
 
     public boolean isEmpty() {
         return getObjectType() == MbObjectType.EMPTY;
+    }
+
+    public TimelinePosition getTimelineItemPosition() {
+        return timelineItemPosition;
+    }
+
+    public void setTimelineItemPosition(String strPosition) {
+        this.timelineItemPosition = new TimelinePosition(strPosition);
+    }
+
+    public long getTimelineItemDate() {
+        return timelineItemDate;
+    }
+
+    public void setTimelineItemDate(long timelineItemDate) {
+        this.timelineItemDate = timelineItemDate;
+    }
+
+    public MbMessage getMessage() {
+        return mbMessage;
+    }
+
+    public void setMessage(MbMessage mbMessage) {
+        this.mbMessage = mbMessage;
+    }
+
+    public MbUser getUser() {
+        return mbUser;
+    }
+
+    public void setUser(MbUser mbUser) {
+        this.mbUser = mbUser;
     }
 }

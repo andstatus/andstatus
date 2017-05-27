@@ -87,27 +87,27 @@ class TimelineDownloaderOther extends TimelineDownloader {
                 switch (getTimeline().getTimelineType()) {
                     case SEARCH:
                         messages = execContext.getMyAccount().getConnection().search(
-                                isSyncYounger() ? previousPosition : TimelinePosition.getEmpty(),
-                                isSyncYounger() ? TimelinePosition.getEmpty() : previousPosition,
+                                isSyncYounger() ? previousPosition : TimelinePosition.EMPTY,
+                                isSyncYounger() ? TimelinePosition.EMPTY : previousPosition,
                                 limit, getTimeline().getSearchQuery());
                         break;
                     default:
                         messages = execContext.getMyAccount().getConnection().getTimeline(
                                 getTimeline().getTimelineType().getConnectionApiRoutine(),
-                                isSyncYounger() ? previousPosition : TimelinePosition.getEmpty(),
-                                isSyncYounger() ? TimelinePosition.getEmpty() : previousPosition,
+                                isSyncYounger() ? previousPosition : TimelinePosition.EMPTY,
+                                isSyncYounger() ? TimelinePosition.EMPTY : previousPosition,
                                 limit, userOid);
                         break;
                 }
                 for (MbActivity item : messages) {
                     toDownload--;
-                    syncTracker.onNewMsg(item.timelineItemPosition, item.timelineItemDate);
+                    syncTracker.onNewMsg(item.getTimelineItemPosition(), item.getTimelineItemDate());
                     switch (item.getObjectType()) {
                         case MESSAGE:
-                            di.insertOrUpdateMsg(item.mbMessage, latestUserMessages);
+                            di.insertOrUpdateMsg(item.getMessage(), latestUserMessages);
                             break;
                         case USER:
-                            di.insertOrUpdateUser(item.mbUser);
+                            di.insertOrUpdateUser(item.getUser());
                             break;
                         default:
                             break;
@@ -125,7 +125,7 @@ class TimelineDownloaderOther extends TimelineDownloader {
                     throw ConnectionException.hardConnectionException("No last position", e);
                 }
                 MyLog.d(this, "The timeline was not found, last position='" + previousPosition +"'", e);
-                previousPosition = TimelinePosition.getEmpty();
+                previousPosition = TimelinePosition.EMPTY;
             }
         }
         latestUserMessages.save();

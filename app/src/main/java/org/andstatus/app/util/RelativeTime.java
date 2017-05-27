@@ -94,7 +94,7 @@ public class RelativeTime {
         // TODO: Migrate to java.util.time, see http://stackoverflow.com/questions/1086396/java-date-month-difference
         Date date1 = new Date(fromMs);
         Date date2 = new Date(toMs);
-        return (date2.getYear() - date1.getYear()) * 12 + (date2.getMonth() - date1.getMonth());
+        return (date2.getYear() - date1.getYear()) * 12L + (date2.getMonth() - date1.getMonth());
     }
 
     /** Returns false if previousTime <= 0 */

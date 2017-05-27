@@ -24,6 +24,7 @@ import android.text.TextUtils;
  * @author yvolk@yurivolkov.com
  */
 public class TimelinePosition {
+    public static final TimelinePosition EMPTY = new TimelinePosition("");
     private final String position;
 
     public TimelinePosition(String position) {
@@ -43,10 +44,6 @@ public class TimelinePosition {
         return position;
     }
 
-    public static TimelinePosition getEmpty() {
-        return new TimelinePosition("");
-    }
-
     public boolean isEmpty() {
         return TextUtils.isEmpty(position);
     }
@@ -61,7 +58,7 @@ public class TimelinePosition {
         if (o == null || !(o instanceof TimelinePosition)) {
             return false;
         }
-        return hashCode() == ((TimelinePosition) o).hashCode();
+        return hashCode() == o.hashCode();
     }
 
     @Override

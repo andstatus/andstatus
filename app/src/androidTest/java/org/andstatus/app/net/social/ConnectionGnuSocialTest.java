@@ -62,14 +62,14 @@ public class ConnectionGnuSocialTest {
 
         String accountUserOid = TestSuite.GNUSOCIAL_TEST_ACCOUNT_USER_OID;
         List<MbActivity> timeline = connection.getTimeline(ApiRoutineEnum.PUBLIC_TIMELINE,
-                new TimelinePosition("2656388"), TimelinePosition.getEmpty(), 20, accountUserOid);
+                new TimelinePosition("2656388"), TimelinePosition.EMPTY, 20, accountUserOid);
         assertNotNull("timeline returned", timeline);
         int size = 3;
         assertEquals("Number of items in the Timeline", size, timeline.size());
 
         int ind = 0;
         assertEquals("Posting message", MbObjectType.MESSAGE, timeline.get(ind).getObjectType());
-        MbMessage mbMessage = timeline.get(ind).mbMessage;
+        MbMessage mbMessage = timeline.get(ind).getMessage();
         assertEquals("conversationOid", "2218650", mbMessage.conversationOid);
         assertTrue("Favorited", mbMessage.getFavoritedByMe().toBoolean(false));
         assertEquals("Oid", "116387", mbMessage.getAuthor().oid);
@@ -90,7 +90,7 @@ public class ConnectionGnuSocialTest {
         assertEquals("Updated at", 0, mbMessage.getAuthor().getUpdatedDate());
 
         ind++;
-        mbMessage = timeline.get(ind).mbMessage;
+        mbMessage = timeline.get(ind).getMessage();
         assertEquals("conversationOid", "2218650", mbMessage.conversationOid);
         assertTrue("Does not have a recipient", mbMessage.recipient == null);
         assertTrue("Is a reblog", !mbMessage.isReblogged());
@@ -105,7 +105,7 @@ public class ConnectionGnuSocialTest {
         assertEquals("Banner URL", "https://quitter.se/file/3fd65c6088ea02dc3a5ded9798a865a8ff5425b13878da35ad894cd084d015fc.png", mbMessage.getAuthor().bannerUrl);
 
         ind++;
-        mbMessage = timeline.get(ind).mbMessage;
+        mbMessage = timeline.get(ind).getMessage();
         assertEquals("conversationOid", "2218650", mbMessage.conversationOid);
         assertTrue("Message is public", mbMessage.isPublic());
         assertFalse("Not Favorited", mbMessage.getFavoritedByMe().toBoolean(false));
@@ -134,7 +134,7 @@ public class ConnectionGnuSocialTest {
                 org.andstatus.app.tests.R.raw.twitter_home_timeline);
         connection.getHttpMock().setResponse(jso);
         
-        List<MbActivity> timeline = connection.search(new TimelinePosition(""), TimelinePosition.getEmpty(), 20,
+        List<MbActivity> timeline = connection.search(new TimelinePosition(""), TimelinePosition.EMPTY, 20,
                 TestSuite.GLOBAL_PUBLIC_MESSAGE_TEXT);
         assertNotNull("timeline returned", timeline);
         int size = 4;

@@ -227,9 +227,9 @@ public abstract class ConnectionTwitter extends Connection {
 
     protected MbActivity timelineItemFromJson(JSONObject jso) throws ConnectionException {
         MbActivity item = new MbActivity();
-        item.mbMessage = messageFromJson(jso);
-        item.timelineItemDate = item.mbMessage.sentDate; 
-        item.timelineItemPosition = new TimelinePosition(item.mbMessage.oid);
+        item.setMessage(messageFromJson(jso));
+        item.setTimelineItemDate(item.getMessage().sentDate);
+        item.setTimelineItemPosition(item.getMessage().oid);
         return item;
     }
 

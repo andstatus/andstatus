@@ -169,14 +169,14 @@ public class ConnectionPumpioTest {
         httpConnectionMock.setResponse(jso);
         
         List<MbActivity> timeline = connection.getTimeline(ApiRoutineEnum.HOME_TIMELINE,
-                new TimelinePosition(sinceId), TimelinePosition.getEmpty(), 20, "acct:t131t@" + originUrl.getHost());
+                new TimelinePosition(sinceId), TimelinePosition.EMPTY, 20, "acct:t131t@" + originUrl.getHost());
         assertNotNull("timeline returned", timeline);
         int size = 6;
         assertEquals("Number of items in the Timeline", size, timeline.size());
 
         int ind = 0;
         assertEquals("Posting image", MbObjectType.MESSAGE, timeline.get(ind).getObjectType());
-        MbMessage mbMessage = timeline.get(ind).mbMessage;
+        MbMessage mbMessage = timeline.get(ind).getMessage();
         assertTrue("Message body: '" + mbMessage.getBody() + "'", mbMessage.getBody().contains("Fantastic wheel stand"));
         assertEquals("Message sent date: " + TestSuite.utcTime(mbMessage.sentDate),
                 TestSuite.utcTime(2013, Calendar.SEPTEMBER, 13, 1, 8, 38),
@@ -205,21 +205,21 @@ public class ConnectionPumpioTest {
 
         ind++;
         assertEquals("Other User", MbObjectType.USER, timeline.get(ind).getObjectType());
-        MbUser mbUser = timeline.get(ind).mbUser;
+        MbUser mbUser = timeline.get(ind).getUser();
         assertEquals("Other actor", "acct:jpope@io.jpope.org", mbUser.actor.oid);
         assertEquals("WebFinger ID", "jpope@io.jpope.org", mbUser.actor.getWebFingerId());
         assertEquals("Following", TriState.TRUE, mbUser.followedByActor);
 
         ind++;
         assertEquals("User", MbObjectType.USER, timeline.get(ind).getObjectType());
-        mbUser = timeline.get(ind).mbUser;
+        mbUser = timeline.get(ind).getUser();
         assertEquals("Url of the actor", "https://identi.ca/t131t", mbUser.actor.getProfileUrl());
         assertEquals("WebFinger ID", "t131t@identi.ca", mbUser.actor.getWebFingerId());
         assertEquals("Following", TriState.TRUE, mbUser.followedByActor);
         assertEquals("Url of the user", "https://fmrl.me/grdryn", mbUser.getProfileUrl());
 
         ind++;
-        mbMessage = timeline.get(ind).mbMessage;
+        mbMessage = timeline.get(ind).getMessage();
         assertEquals("Favorited by me", TriState.UNKNOWN, mbMessage.getFavoritedByMe());
         assertEquals("Not favorited by someone else", TriState.TRUE, mbMessage.getFavorited());
         assertEquals("Actor -someone else", "acct:jpope@io.jpope.org" , actor.oid);
@@ -227,12 +227,12 @@ public class ConnectionPumpioTest {
         assertEquals("Url of the message", "https://fmrl.me/lostson/note/Dp-njbPQSiOfdclSOuAuFw", mbMessage.url);
 
         ind++;
-        mbMessage = timeline.get(ind).mbMessage;
+        mbMessage = timeline.get(ind).getMessage();
         assertTrue("Have a recipient", mbMessage.recipient != null);
         assertEquals("Directed to yvolk", "acct:yvolk@identi.ca" , mbMessage.recipient.oid);
 
         ind++;
-        mbMessage = timeline.get(ind).mbMessage;
+        mbMessage = timeline.get(ind).getMessage();
         assertEquals(mbMessage.isSubscribedByMe(), TriState.UNKNOWN);
         assertTrue("Is a reply", mbMessage.getInReplyTo().nonEmpty());
         assertEquals("Is a reply to this user", mbMessage.getInReplyTo().getAuthor().getUserName(), "jankusanagi@identi.ca");

@@ -109,7 +109,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                     for (MbActivity item : messages) {
                         switch (item.getObjectType()) {
                             case MESSAGE:
-                                di.insertOrUpdateMsg(item.mbMessage);
+                                di.insertOrUpdateMsg(item.getMessage());
                                 break;
                             default:
                                 break;
@@ -227,7 +227,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 logConnectionException(e, method + userInfoLogged(userId));
             }
         }
-        if (noErrors()) {
+        if (user != null && noErrors()) {
             if (user.followedByActor != TriState.UNKNOWN &&  user.followedByActor.toBoolean(follow) != follow) {
                 if (follow) {
                     // Act just like for creating favorite...

@@ -28,10 +28,10 @@ import org.andstatus.app.net.http.ConnectionException.StatusCode;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.net.http.HttpConnectionData;
 import org.andstatus.app.net.social.Connection;
+import org.andstatus.app.net.social.MbActivity;
 import org.andstatus.app.net.social.MbAttachment;
 import org.andstatus.app.net.social.MbMessage;
 import org.andstatus.app.net.social.MbRateLimitStatus;
-import org.andstatus.app.net.social.MbActivity;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.net.social.TimelinePosition;
 import org.andstatus.app.origin.OriginConnectionData;
@@ -364,20 +364,20 @@ public class ConnectionPumpio extends Connection {
         MbActivity item = new MbActivity();
         if (ObjectType.ACTIVITY.isMyType(activity)) {
             try {
-                item.timelineItemPosition = new TimelinePosition(activity.optString("id"));
-                item.timelineItemDate = dateFromJson(activity, "updated");
+                item.setTimelineItemPosition(activity.optString("id"));
+                item.setTimelineItemDate(dateFromJson(activity, "updated"));
                 
                 if (ObjectType.PERSON.isMyType(activity.getJSONObject("object"))) {
-                    item.mbUser = userFromJsonActivity(activity);
+                    item.setUser(userFromJsonActivity(activity));
                 } else {
-                    item.mbMessage = messageFromJsonActivity(activity);
+                    item.setMessage(messageFromJsonActivity(activity));
                 }
             } catch (JSONException e) {
                 throw ConnectionException.loggedJsonException(this, "Parsing timeline item", e, activity);
             }
         } else {
             MyLog.e(this, "Not an Activity in the timeline:" + activity.toString() );
-            item.mbMessage = messageFromJson(activity);
+            item.setMessage(messageFromJson(activity));
         }
         return item;
     }

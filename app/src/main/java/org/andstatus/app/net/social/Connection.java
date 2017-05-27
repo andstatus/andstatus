@@ -522,7 +522,7 @@ public abstract class Connection {
     protected void setMessagesPublic(List<MbActivity> timeline) {
         for (MbActivity item : timeline) {
             if (item.getObjectType() == MbObjectType.MESSAGE) {
-                item.mbMessage.setPublic(true);
+                item.getMessage().setPublic(true);
             }
         }
     }

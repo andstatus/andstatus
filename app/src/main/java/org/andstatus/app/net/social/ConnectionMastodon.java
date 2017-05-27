@@ -136,24 +136,24 @@ public class ConnectionMastodon extends ConnectionTwitter1p0 {
     protected MbActivity timelineItemFromJson(JSONObject timelineItem) throws ConnectionException {
         if (isNotification(timelineItem)) {
             MbActivity item = new MbActivity();
-            item.timelineItemPosition = new TimelinePosition(timelineItem.optString("id"));
-            item.timelineItemDate = dateFromJson(timelineItem, "created_at");
+            item.setTimelineItemPosition(timelineItem.optString("id"));
+            item.setTimelineItemDate(dateFromJson(timelineItem, "created_at"));
             MbUser actor = userFromJson(timelineItem.optJSONObject("account"));
-            item.mbMessage = messageFromJson(timelineItem.optJSONObject("status"));
-            item.mbMessage.setActor(actor);
-            item.mbMessage.sentDate = item.timelineItemDate;
+            item.setMessage(messageFromJson(timelineItem.optJSONObject("status")));
+            item.getMessage().setActor(actor);
+            item.getMessage().sentDate = item.getTimelineItemDate();
 
             switch (timelineItem.optString("type")) {
                 case "favourite":
-                    item.mbMessage.setFavorited(TriState.TRUE);
+                    item.getMessage().setFavorited(TriState.TRUE);
                     break;
                 case "reblog":
-                    item.mbMessage.setReblogOid(timelineItem.optString("id"));
+                    item.getMessage().setReblogOid(timelineItem.optString("id"));
                     break;
                 case "follow":
-                    item.mbUser = MbUser.fromOriginAndUserOid(data.getOriginId(), data.getAccountUserOid());
-                    item.mbUser.actor = actor;
-                    item.mbUser.followedByActor = TriState.TRUE;
+                    item.setUser(MbUser.fromOriginAndUserOid(data.getOriginId(), data.getAccountUserOid()));
+                    item.getUser().actor = actor;
+                    item.getUser().followedByActor = TriState.TRUE;
                     break;
                 default:
                     break;

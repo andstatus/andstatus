@@ -50,14 +50,14 @@ public class ConnectionMastodonTest {
         connection.getHttpMock().setResponse(jso);
 
         List<MbActivity> timeline = connection.getTimeline(Connection.ApiRoutineEnum.HOME_TIMELINE,
-                new TimelinePosition("2656388"), TimelinePosition.getEmpty(), 20, accountUserOid);
+                new TimelinePosition("2656388"), TimelinePosition.EMPTY, 20, accountUserOid);
         assertNotNull("timeline returned", timeline);
         int size = 1;
         assertEquals("Number of items in the Timeline", size, timeline.size());
 
         int ind = 0;
         assertEquals("Is not a message", MbObjectType.MESSAGE, timeline.get(ind).getObjectType());
-        MbMessage mbMessage = timeline.get(ind).mbMessage;
+        MbMessage mbMessage = timeline.get(ind).getMessage();
         assertEquals("Favorited", TriState.UNKNOWN, mbMessage.getFavoritedByMe());
         MbUser sender = mbMessage.getAuthor();
 
@@ -100,13 +100,13 @@ public class ConnectionMastodonTest {
         connection.getHttpMock().setResponse(jso);
 
         List<MbActivity> timeline = connection.getTimeline(Connection.ApiRoutineEnum.MENTIONS_TIMELINE,
-                new TimelinePosition(""), TimelinePosition.getEmpty(), 20, accountUserOid);
+                new TimelinePosition(""), TimelinePosition.EMPTY, 20, accountUserOid);
         assertNotNull("timeline returned", timeline);
         assertEquals("Number of items in the Timeline", 20, timeline.size());
 
         int ind = 0;
         assertEquals("Is not a message", MbObjectType.MESSAGE, timeline.get(ind).getObjectType());
-        MbMessage mbMessage = timeline.get(ind).mbMessage;
+        MbMessage mbMessage = timeline.get(ind).getMessage();
         assertEquals("Favorited " + mbMessage, TriState.UNKNOWN, mbMessage.getFavoritedByMe());
         assertEquals("Not reblogged " + mbMessage, true, mbMessage.isReblogged());
         assertEquals("Author's username", "AndStatus", mbMessage.getAuthor().getUserName());
@@ -117,7 +117,7 @@ public class ConnectionMastodonTest {
 
         ind = 19;
         assertEquals("Is not a message", MbObjectType.MESSAGE, timeline.get(ind).getObjectType());
-        mbMessage = timeline.get(ind).mbMessage;
+        mbMessage = timeline.get(ind).getMessage();
         assertEquals("Favorited " + mbMessage, TriState.UNKNOWN, mbMessage.getFavoritedByMe());
         actor = mbMessage.getActor();
         assertEquals("Actor's Oid", "119218", actor.oid);
@@ -126,7 +126,7 @@ public class ConnectionMastodonTest {
 
         ind = 17;
         assertEquals("Is a message", MbObjectType.USER, timeline.get(ind).getObjectType());
-        MbUser user = timeline.get(ind).mbUser;
+        MbUser user = timeline.get(ind).getUser();
         actor = user.actor;
         assertEquals("Actor's Oid", "24853", actor.oid);
         assertEquals("Username", "resir014", actor.getUserName());

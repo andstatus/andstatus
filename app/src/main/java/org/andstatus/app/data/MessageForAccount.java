@@ -67,7 +67,7 @@ public class MessageForAccount {
         this.origin = MyContextHolder.get().persistentOrigins().fromId(originId);
         this.myAccount = calculateMyAccount(origin, myAccount);
         this.userId = this.myAccount.getUserId();
-        if (myAccount.isValid()) {
+        if (this.myAccount.isValid()) {
             getData();
         }
     }

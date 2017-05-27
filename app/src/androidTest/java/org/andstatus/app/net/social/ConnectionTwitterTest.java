@@ -88,7 +88,7 @@ public class ConnectionTwitterTest {
         httpConnection.setResponse(jso);
         
         List<MbActivity> timeline = connection.getTimeline(ApiRoutineEnum.HOME_TIMELINE,
-                new TimelinePosition("380925803053449216") , TimelinePosition.getEmpty(), 20, connectionData.getAccountUserOid());
+                new TimelinePosition("380925803053449216") , TimelinePosition.EMPTY, 20, connectionData.getAccountUserOid());
         assertNotNull("timeline returned", timeline);
         int size = 4;
         assertEquals("Number of items in the Timeline", size, timeline.size());
@@ -96,7 +96,7 @@ public class ConnectionTwitterTest {
         int ind = 0;
         String hostName = TestSuite.getTestOriginHost(TestSuite.TWITTER_TEST_ORIGIN_NAME).replace("api.", "");
         assertEquals("Posting message", MbObjectType.MESSAGE, timeline.get(ind).getObjectType());
-        MbMessage message = timeline.get(ind).mbMessage;
+        MbMessage message = timeline.get(ind).getMessage();
         assertTrue("Favorited", message.getFavoritedByMe().toBoolean(false));
         assertEquals("Actor", connectionData.getAccountUserOid(), message.myUserOid);
         assertEquals("Oid", "221452291", message.getAuthor().oid);
@@ -117,7 +117,7 @@ public class ConnectionTwitterTest {
         assertEquals("Updated at", 0, message.getAuthor().getUpdatedDate());
 
         ind++;
-        message = timeline.get(ind).mbMessage;
+        message = timeline.get(ind).getMessage();
         assertTrue("Message is loaded", message.getStatus() == DownloadStatus.LOADED);
         assertTrue("Does not have a recipient", message.recipient == null);
         assertTrue("Is a reblog", !message.isReblogged());
@@ -130,7 +130,7 @@ public class ConnectionTwitterTest {
         assertEquals("Body of this message starts with", startsWith, message.getBody().substring(0, startsWith.length()));
 
         ind++;
-        message = timeline.get(ind).mbMessage;
+        message = timeline.get(ind).getMessage();
         assertTrue("Does not have a recipient", message.recipient == null);
         assertTrue("Is not a reblog", message.isReblogged());
         assertTrue("Is not a reply", message.getInReplyTo().isEmpty());
@@ -147,7 +147,7 @@ public class ConnectionTwitterTest {
                 TestSuite.utcTime(message.getUpdatedDate()));
 
         ind++;
-        message = timeline.get(ind).mbMessage;
+        message = timeline.get(ind).getMessage();
         assertTrue("Does not have a recipient", message.recipient == null);
         assertTrue("Is a reblog", !message.isReblogged());
         assertTrue("Is not a reply", message.getInReplyTo().isEmpty());
