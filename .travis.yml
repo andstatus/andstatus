@@ -30,12 +30,9 @@ android:
 
 matrix:
   include: # More Emulator API levels to build in parallel
-    - env: EMULATOR_API_LEVEL=24
     - env: EMULATOR_API_LEVEL=23
-    - env: EMULATOR_API_LEVEL=22
   allow_failures:
     - env: EMULATOR_API_LEVEL=23
-    - env: EMULATOR_API_LEVEL=22
   fast_finish: false
 
 before_cache:
