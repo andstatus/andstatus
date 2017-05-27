@@ -66,11 +66,6 @@ public class PublicTimelineActivityTest extends TimelineActivityTest {
 
     @Test
     public void testGlobalSearchInOptionsMenu() throws InterruptedException {
-        assertTrue("MyService is available", MyServiceManager.isServiceAvailable());
-        TestSuite.waitForListLoaded(getActivity(), 2);
-        assertEquals(ma, getActivity().getCurrentMyAccount());
-        assertEquals(TimelineType.PUBLIC, getActivity().getTimeline().getTimelineType());
-
         oneSearchTest("testGlobalSearchInOptionsMenu", R.id.global_search_menu_id, TestSuite.GLOBAL_PUBLIC_MESSAGE_TEXT);
     }
 
@@ -80,6 +75,11 @@ public class PublicTimelineActivityTest extends TimelineActivityTest {
     }
 
     private void oneSearchTest(String method, int menu_id, String messageText) throws InterruptedException {
+        assertTrue("MyService is available", MyServiceManager.isServiceAvailable());
+        TestSuite.waitForListLoaded(getActivity(), 2);
+        assertEquals(ma, getActivity().getCurrentMyAccount());
+        assertEquals(TimelineType.PUBLIC, getActivity().getTimeline().getTimelineType());
+
         assertFalse("Screen is locked", TestSuite.isScreenLocked(getActivity()));
         ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<>(getActivity(),
                 TimelineActivity.class);
