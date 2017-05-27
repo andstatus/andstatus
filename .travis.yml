@@ -28,15 +28,15 @@ android:
     - platform-tools # Update platform-tools to revision 25.0.3+
     - tools # Update tools from revision 24.4.1 to 25.2.5
 
-#matrix:
-#  include: # More Emulator API levels to build in parallel
-#    - env: EMULATOR_API_LEVEL=24
-#    - env: EMULATOR_API_LEVEL=23
-#    - env: EMULATOR_API_LEVEL=22
-#  allow_failures:
-#    - env: EMULATOR_API_LEVEL=23
-#    - env: EMULATOR_API_LEVEL=22
-#  fast_finish: false
+matrix:
+  include: # More Emulator API levels to build in parallel
+    - env: EMULATOR_API_LEVEL=24
+    - env: EMULATOR_API_LEVEL=23
+    - env: EMULATOR_API_LEVEL=22
+  allow_failures:
+    - env: EMULATOR_API_LEVEL=23
+    - env: EMULATOR_API_LEVEL=22
+  fast_finish: false
 
 before_cache:
   - rm -f ${TRAVIS_BUILD_DIR}/gradle/caches/modules-2/modules-2.lock # Avoid to repack it due locks
@@ -137,10 +137,8 @@ script:
   # See https://developer.android.com/reference/android/test/InstrumentationTestRunner.html
   # For testing one method only:
   # - adb shell am instrument -w -r -e debug false -e class org.andstatus.app.msg.ActAsUserTest#testActAsUser org.andstatus.app.tests/android.support.test.runner.AndroidJUnitRunner
-  # Only with this annotation:
-  #  adb shell am instrument -w -r -e annotation org.andstatus.app.context.Travis ...
   - |
-    adb shell am instrument -w -r org.andstatus.app.tests/android.support.test.runner.AndroidJUnitRunner |& tee build/adb-test.log
+    adb shell am instrument -w -r -e annotation org.andstatus.app.context.Travis org.andstatus.app.tests/android.support.test.runner.AndroidJUnitRunner |& tee build/adb-test.log
     retval=$?
     if [ $retval -ne 0 ]; then
       echo "error in adb, exit code: "$retval
@@ -160,8 +158,8 @@ script:
 
 after_script:
   # Show tests and lint results
-  - cat ${PROJECT_DIR}/*/build/outputs/androidTest-results/connected/*
-  - cat ${PROJECT_DIR}/*/build/reports/lint-results.xml
+#  - cat ${PROJECT_DIR}/*/build/outputs/androidTest-results/connected/*
+#  - cat ${PROJECT_DIR}/*/build/reports/lint-results.xml
 
 after_success:
   - ./gradlew sonarqube -Dsonar.host.url=https://sonarqube.com -Dsonar.login=$SONAR_TOKEN -Dsonar.verbose=true
