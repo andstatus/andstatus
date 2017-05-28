@@ -16,21 +16,16 @@
 
 package org.andstatus.app.context;
 
-import android.support.test.internal.runner.junit4.AndroidJUnit4ClassRunner;
-import android.support.test.internal.util.AndroidRunnerParams;
-
-import org.junit.runners.model.InitializationError;
+import org.apache.geode.test.junit.IgnoreCondition;
+import org.junit.runner.Description;
 
 /**
- * Explicitly telling that test is running in Travis CI environment
  * @author yvolk@yurivolkov.com
  */
-public final class TravisJUnit4Runner extends AndroidJUnit4ClassRunner {
-    static {
-        MyContextHolder.setExecutionMode(ExecutionMode.TRAVIS_TEST);
-    }
-
-    public TravisJUnit4Runner(Class<?> klass, AndroidRunnerParams runnerParams) throws InitializationError {
-        super(klass, runnerParams);
+public class NoScreenSupport implements IgnoreCondition {
+    @Override
+    public boolean evaluate(Description testCaseDescription) {
+        TestSuite.initialize(this);
+        return !MyContextHolder.isScreenSupported();
     }
 }

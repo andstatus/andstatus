@@ -333,15 +333,15 @@ public final class MyContextHolder {
 
     public static void setExecutionMode(@NonNull ExecutionMode executionMode) {
         MyContextHolder.executionMode = executionMode;
+        if (executionMode != ExecutionMode.DEVICE) {
+            MyLog.i(TAG, "Executing: " + getVersionText(get().context()));
+        }
     }
 
     @NonNull
     public static ExecutionMode getExecutionMode() {
         if (executionMode == ExecutionMode.UNKNOWN) {
-            executionMode = calculateExecutionMode();
-            if (executionMode != ExecutionMode.DEVICE) {
-                MyLog.i(TAG, "Executing: " + getVersionText(get().context()));
-            }
+            setExecutionMode(calculateExecutionMode());
         }
         return executionMode;
     }

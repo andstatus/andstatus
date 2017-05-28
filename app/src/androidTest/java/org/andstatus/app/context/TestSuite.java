@@ -80,6 +80,8 @@ public class TestSuite {
         if (initialized) {
             return context;
         }
+        MyContextHolder.setExecutionMode(
+                ExecutionMode.load(InstrumentationRegistry.getArguments().getString("executionMode")));
         for (int iter=1; iter<6; iter++) {
             MyLog.d(TAG, "Initializing Test Suite, iteration=" + iter);
             if (testCase == null) {

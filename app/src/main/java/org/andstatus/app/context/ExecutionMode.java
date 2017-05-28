@@ -16,6 +16,8 @@
 
 package org.andstatus.app.context;
 
+import android.support.annotation.NonNull;
+
 /**
  * We can change application's behaviour based on this
  * @author yvolk@yurivolkov.com
@@ -34,5 +36,15 @@ public enum ExecutionMode {
     ExecutionMode(String code, String description) {
         this.code = code;
         this.description = description;
+    }
+
+    @NonNull
+    public static ExecutionMode load(String code) {
+        for(ExecutionMode val : values()) {
+            if (val.code.equals(code)) {
+                return val;
+            }
+        }
+        return UNKNOWN;
     }
 }

@@ -134,7 +134,8 @@ script:
   # For testing one method only:
   # - adb shell am instrument -w -r -e debug false -e class org.andstatus.app.msg.ActAsUserTest#testActAsUser org.andstatus.app.tests/android.support.test.runner.AndroidJUnitRunner
   - |
-    adb shell am instrument -w -r org.andstatus.app.tests/org.andstatus.app.context.TravisJUnit4Runner |& tee build/adb-test.log
+    adb shell am instrument -w -r -e executionMode travisTest org.andstatus.app.tests/android.support.test.runner.AndroidJUnitRunner |& tee build/adb-test
+    .log
     retval=$?
     if [ $retval -ne 0 ]; then
       echo "error in adb, exit code: "$retval
@@ -144,7 +145,7 @@ script:
   # adb doesn't propagate exit code from tests, see https://code.google.com/p/android/issues/detail?id=3254
   # So we need to parse saved terminal log
   - |
-    cat build/adb-test.log | grep "INSTRUMENTATION_STATUS: stack="
+    cat build/adb-test.log | grep "INSTRUMENTATION_STATUS: stack=" | grep -v "org.junit.AssumptionViolatedException"
     if [ $? -eq 0 ]; then
       echo "Test failure found"
       exit 1

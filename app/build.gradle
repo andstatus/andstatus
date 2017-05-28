@@ -14,7 +14,8 @@ android {
 
         testApplicationId "org.andstatus.app.tests"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
-//        testInstrumentationRunnerArgument "annotation", "org.andstatus.app.context.Travis"
+        // To test arguments:
+        // testInstrumentationRunnerArgument "executionMode", "travisTest"
         project.ext.set("archivesBaseName", "AndStatus-$versionName".toString());
         project.ext.set("versionName", "$versionName".toString());
     }
