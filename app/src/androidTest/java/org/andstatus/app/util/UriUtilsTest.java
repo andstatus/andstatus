@@ -18,7 +18,6 @@ package org.andstatus.app.util;
 
 import android.net.Uri;
 
-import org.andstatus.app.context.Travis;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Test;
@@ -27,7 +26,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-@Travis
 public class UriUtilsTest {
     private static Uri[] EMPTY_URIS = { null, Uri.EMPTY, Uri.parse(""),
             UriUtils.fromString(""), UriUtils.fromString(" ")};

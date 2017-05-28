@@ -3,7 +3,6 @@ package org.andstatus.app.notification;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.context.Travis;
 import org.andstatus.app.service.CommandResult;
 import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.SharedPreferencesUtil;
@@ -13,7 +12,6 @@ import org.junit.Test;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
-@Travis
 public class AddedMessagesNotifierTest {
     
     @Before

@@ -22,12 +22,19 @@ import android.content.Intent;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.rule.ActivityTestRule;
 
+import org.junit.Before;
 import org.junit.Rule;
 
 /** Helper for Activity tests, based on https://google.github.io/android-testing-support-library/
  * See https://developer.android.com/training/testing/ui-testing/espresso-testing.html
  */
 public abstract class ActivityTest<T extends Activity> {
+
+    @Before
+    public void setUp() {
+        TestSuite.initialize(this);
+        org.junit.Assume.assumeTrue(MyContextHolder.isScreenSupported());
+    }
 
     @Rule
     public ActivityTestRule<T> mActivityRule =

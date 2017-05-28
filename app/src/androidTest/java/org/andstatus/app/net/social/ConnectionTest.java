@@ -1,7 +1,6 @@
 package org.andstatus.app.net.social;
 
 import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.context.Travis;
 import org.junit.Test;
 
 import java.util.Calendar;
@@ -9,7 +8,6 @@ import java.util.Date;
 
 import static org.junit.Assert.assertEquals;
 
-@Travis
 public class ConnectionTest {
 
     @Test

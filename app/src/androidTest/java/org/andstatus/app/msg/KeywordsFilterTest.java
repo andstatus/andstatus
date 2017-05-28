@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,7 +16,6 @@
 
 package org.andstatus.app.msg;
 
-import org.andstatus.app.context.Travis;
 import org.andstatus.app.util.MyHtml;
 import org.junit.Test;
 
@@ -27,7 +26,6 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author yvolk@yurivolkov.com
  */
-@Travis
 public class KeywordsFilterTest {
 
     @Test

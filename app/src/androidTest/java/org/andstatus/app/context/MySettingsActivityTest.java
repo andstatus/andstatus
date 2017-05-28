@@ -5,7 +5,6 @@ import android.preference.PreferenceFragment;
 
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.service.MyServiceManager;
-import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.assertFalse;
@@ -16,11 +15,6 @@ public class MySettingsActivityTest extends ActivityTest<MySettingsActivity> {
     @Override
     protected Class<MySettingsActivity> getActivityClass() {
         return MySettingsActivity.class;
-    }
-
-    @Before
-    public void setUp() throws Exception {
-        TestSuite.initialize(this);
     }
 
     @Test

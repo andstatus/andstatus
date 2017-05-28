@@ -19,7 +19,6 @@ package org.andstatus.app.util;
 import android.text.TextUtils;
 
 import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.context.Travis;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -29,7 +28,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-@Travis
 public class MyLogTest {
 
     @Before

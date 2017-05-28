@@ -23,7 +23,6 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.context.Travis;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.os.ExceptionsCounter;
 import org.andstatus.app.timeline.Timeline;
@@ -38,7 +37,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-@Travis
 public class MyServiceTest1 extends MyServiceTest {
 
     @Test

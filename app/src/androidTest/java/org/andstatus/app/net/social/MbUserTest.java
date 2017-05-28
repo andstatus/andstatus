@@ -18,7 +18,6 @@ package org.andstatus.app.net.social;
 
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.context.Travis;
 import org.andstatus.app.origin.Origin;
 import org.junit.Before;
 import org.junit.Test;
@@ -28,7 +27,6 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
-@Travis
 public class MbUserTest {
 
     @Before

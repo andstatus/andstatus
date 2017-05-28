@@ -21,7 +21,6 @@ import android.preference.PreferenceManager;
 
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.context.Travis;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -33,7 +32,6 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author yvolk@yurivolkov.com
  */
-@Travis
 public class SharedPreferencesUtilTest {
 
     @Before

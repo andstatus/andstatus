@@ -24,7 +24,6 @@ import android.support.test.InstrumentationRegistry;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.context.Travis;
 import org.andstatus.app.database.MsgOfUserTable;
 import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.database.UserTable;
@@ -50,7 +49,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-@Travis
 public class DataInserterTest {
     private Context context;
 

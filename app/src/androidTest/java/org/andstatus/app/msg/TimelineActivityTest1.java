@@ -98,12 +98,12 @@ public class TimelineActivityTest1 extends TimelineActivityTest {
      */
     @Test
     public void testPositionOnContentChange1() throws MalformedURLException, InterruptedException {
-        onePositionOnContentChange(10, 1);
+        onePositionOnContentChange(9, 1);
     }
 
     @Test
     public void testPositionOnContentChange2() throws MalformedURLException, InterruptedException {
-        onePositionOnContentChange(10, 2);
+        onePositionOnContentChange(9, 2);
     }
     
     private void onePositionOnContentChange(int position0, int iterationId) throws InterruptedException, MalformedURLException {

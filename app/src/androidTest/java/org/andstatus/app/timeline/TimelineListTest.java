@@ -35,7 +35,8 @@ public class TimelineListTest extends ActivityTest<TimelineList> {
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
+        super.setUp();
         TestSuite.initializeWithData(this);
     }
 

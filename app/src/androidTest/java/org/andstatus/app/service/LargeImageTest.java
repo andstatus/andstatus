@@ -21,7 +21,6 @@ import android.support.test.InstrumentationRegistry;
 import org.andstatus.app.backup.ProgressLogger;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.context.Travis;
 import org.andstatus.app.data.AttachedImageFile;
 import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.data.DownloadStatus;
@@ -42,7 +41,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-@Travis
 public class LargeImageTest {
     
     @Before

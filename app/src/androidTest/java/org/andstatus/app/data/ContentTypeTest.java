@@ -1,14 +1,12 @@
 package org.andstatus.app.data;
 
 import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.context.Travis;
 import org.junit.Test;
 
 import cz.msebera.android.httpclient.entity.ContentType;
 
 import static org.junit.Assert.assertEquals;
 
-@Travis
 public class ContentTypeTest {
     @Test
     public void testApacheContentType() {

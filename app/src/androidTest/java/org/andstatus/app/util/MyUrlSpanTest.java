@@ -24,9 +24,7 @@ import android.widget.ViewFlipper;
 import org.andstatus.app.HelpActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.context.ActivityTest;
-import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DbUtils;
-import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.assertTrue;
@@ -37,11 +35,6 @@ public class MyUrlSpanTest extends ActivityTest<HelpActivity> {
     @Override
     protected Class<HelpActivity> getActivityClass() {
         return HelpActivity.class;
-    }
-
-    @Before
-    public void setUp() throws Exception {
-        TestSuite.initialize(this);
     }
 
     @Test

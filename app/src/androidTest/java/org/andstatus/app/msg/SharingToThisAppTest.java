@@ -1,11 +1,9 @@
 package org.andstatus.app.msg;
 
-import org.andstatus.app.context.Travis;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-@Travis
 public class SharingToThisAppTest {
     @Test
     public void testInputSharedContent() {

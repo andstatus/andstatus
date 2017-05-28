@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,7 +22,6 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.backup.ProgressLogger;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.context.Travis;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.HtmlContentInserter;
 import org.andstatus.app.data.MessageInserter;
@@ -38,7 +37,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-@Travis
 public class MessageShareTest {
 
     @Before

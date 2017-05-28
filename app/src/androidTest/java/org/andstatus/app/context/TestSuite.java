@@ -78,7 +78,6 @@ public class TestSuite {
     public static synchronized Context initialize(Object testCase) {
         final String method = "initialize";
         if (initialized) {
-            MyLog.d(TAG, "Already initialized");
             return context;
         }
         for (int iter=1; iter<6; iter++) {

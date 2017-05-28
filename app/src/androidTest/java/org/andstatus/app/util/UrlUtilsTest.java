@@ -16,7 +16,6 @@
 
 package org.andstatus.app.util;
 
-import org.andstatus.app.context.Travis;
 import org.andstatus.app.net.http.ConnectionException;
 import org.junit.Test;
 
@@ -25,7 +24,6 @@ import java.net.URL;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-@Travis
 public class UrlUtilsTest {
 
     @Test

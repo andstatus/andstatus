@@ -16,12 +16,10 @@
 
 package org.andstatus.app.util;
 
-import org.andstatus.app.context.Travis;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-@Travis
 public class I18nTest {
 
     @Test

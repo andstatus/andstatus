@@ -17,7 +17,6 @@
 package org.andstatus.app.msg;
 
 import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.context.Travis;
 import org.andstatus.app.widget.DuplicationLink;
 import org.junit.Before;
 import org.junit.Test;
@@ -28,7 +27,6 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author yvolk@yurivolkov.com
  */
-@Travis
 public class TimelineViewItemTest {
 
     private static final String HTML_BODY =

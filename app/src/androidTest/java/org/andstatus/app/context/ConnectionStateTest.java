@@ -28,7 +28,6 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author yvolk@yurivolkov.com
  */
-@Travis
 public class ConnectionStateTest {
 
     @Before

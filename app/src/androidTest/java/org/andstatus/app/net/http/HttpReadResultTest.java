@@ -16,7 +16,6 @@
 
 package org.andstatus.app.net.http;
 
-import org.andstatus.app.context.Travis;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -26,7 +25,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-@Travis
 public class HttpReadResultTest {
 
     @Test

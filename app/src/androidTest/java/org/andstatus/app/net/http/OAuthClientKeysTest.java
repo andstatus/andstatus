@@ -19,7 +19,6 @@ package org.andstatus.app.net.http;
 import org.andstatus.app.account.AccountName;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.context.Travis;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.origin.OriginType;
@@ -30,7 +29,6 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-@Travis
 public class OAuthClientKeysTest {
 
     @Before

@@ -20,7 +20,6 @@ import android.content.Context;
 import android.support.test.InstrumentationRegistry;
 
 import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.context.Travis;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.net.http.HttpReadResult;
 import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
@@ -37,7 +36,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-@Travis
 public class ConnectionGnuSocialTest {
     private static final String MESSAGE_OID = "2215662";
     private ConnectionTwitterGnuSocialMock connection;

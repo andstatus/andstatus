@@ -12,7 +12,6 @@ import org.andstatus.app.account.PersistentAccounts;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyStorage;
 import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.context.Travis;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.FileUtils;
 import org.andstatus.app.util.MyLog;
@@ -32,7 +31,6 @@ import java.util.concurrent.TimeUnit;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-@Travis
 public class MyBackupAgentTest {
 
     @Before

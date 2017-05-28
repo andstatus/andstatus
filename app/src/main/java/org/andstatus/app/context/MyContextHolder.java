@@ -21,6 +21,7 @@ import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.SystemClock;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
 
 import net.jcip.annotations.GuardedBy;
@@ -58,6 +59,8 @@ public final class MyContextHolder {
     @GuardedBy("CONTEXT_LOCK")
     private static volatile MyFutureTaskExpirable<MyContext> myFutureContext = null;
     private static volatile boolean onRestore = false;
+    @NonNull
+    private static volatile ExecutionMode executionMode = ExecutionMode.UNKNOWN;
 
     private MyContextHolder() {
     }
@@ -302,15 +305,22 @@ public final class MyContextHolder {
     }
 
     public static String getVersionText(Context context) {
-        try {
-            PackageManager pm = context.getPackageManager();
-            PackageInfo pi = pm.getPackageInfo(context.getPackageName(), 0);
-            return pi.packageName + " v." + pi.versionName + " (" + pi.versionCode + ") " +
-                    TamperingDetector.getAppSignatureInfo();
-        } catch (PackageManager.NameNotFoundException e) {
-            MyLog.e(TAG, "Unable to obtain package information", e);
+        StringBuilder builder = new StringBuilder();
+        if (context != null) {
+            try {
+                PackageManager pm = context.getPackageManager();
+                PackageInfo pi = pm.getPackageInfo(context.getPackageName(), 0);
+                builder.append(pi.packageName + " v." + pi.versionName + " (" + pi.versionCode + ")");
+            } catch (PackageManager.NameNotFoundException e) {
+                MyLog.e(TAG, "Unable to obtain package information", e);
+            }
         }
-        return "AndStatus v.?";
+        if (builder.length() == 0) {
+            builder.append("AndStatus v.?");
+        }
+        I18n.appendWithSpace(builder, (getExecutionMode() == ExecutionMode.DEVICE ? "" : getExecutionMode().code));
+        I18n.appendWithSpace(builder, TamperingDetector.getAppSignatureInfo());
+        return builder.toString();
     }
 
     public static void setOnRestore(boolean onRestore) {
@@ -321,4 +331,38 @@ public final class MyContextHolder {
         return onRestore;
     }
 
+    public static void setExecutionMode(@NonNull ExecutionMode executionMode) {
+        MyContextHolder.executionMode = executionMode;
+    }
+
+    @NonNull
+    public static ExecutionMode getExecutionMode() {
+        if (executionMode == ExecutionMode.UNKNOWN) {
+            executionMode = calculateExecutionMode();
+            if (executionMode != ExecutionMode.DEVICE) {
+                MyLog.i(TAG, "Executing: " + getVersionText(get().context()));
+            }
+        }
+        return executionMode;
+    }
+
+    @NonNull
+    private static ExecutionMode calculateExecutionMode() {
+        Context context = get().context();
+        if (context == null) {
+            return ExecutionMode.UNKNOWN;
+        }
+        if ("true".equals(Settings.System.getString(context.getContentResolver(), "firebase.test.lab"))) {
+            // See https://firebase.google.com/docs/test-lab/android-studio
+            return get().isTestRun() ? ExecutionMode.FIREBASE_TEST : ExecutionMode.ROBO_TEST;
+        }
+        if (get().isTestRun()) {
+            return ExecutionMode.TEST;
+        }
+        return ExecutionMode.DEVICE;
+    }
+
+    public static boolean isScreenSupported() {
+        return getExecutionMode() != ExecutionMode.TRAVIS_TEST;
+    }
 }

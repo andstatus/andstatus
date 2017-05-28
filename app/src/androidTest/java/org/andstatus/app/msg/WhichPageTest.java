@@ -20,7 +20,6 @@ import android.os.Bundle;
 
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.WhichPage;
-import org.andstatus.app.context.Travis;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -28,7 +27,6 @@ import static org.junit.Assert.assertEquals;
 /**
  * @author yvolk@yurivolkov.com
  */
-@Travis
 public class WhichPageTest {
 
     @Test

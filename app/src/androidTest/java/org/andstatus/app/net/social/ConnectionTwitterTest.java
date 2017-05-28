@@ -22,7 +22,6 @@ import org.andstatus.app.account.AccountDataReaderEmpty;
 import org.andstatus.app.account.AccountName;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.context.Travis;
 import org.andstatus.app.data.DataInserter;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyContentType;
@@ -51,7 +50,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
 
-@Travis
 public class ConnectionTwitterTest {
     private Connection connection;
     private HttpConnectionMock httpConnection;

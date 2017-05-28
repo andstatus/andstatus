@@ -23,6 +23,7 @@ import android.view.View;
 import android.widget.ViewFlipper;
 
 import org.andstatus.app.context.ActivityTest;
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MySettingsActivity;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DbUtils;
@@ -31,7 +32,10 @@ import org.junit.Test;
 
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
+import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
+import static android.support.test.espresso.matcher.ViewMatchers.withText;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -65,12 +69,17 @@ public class HelpActivityTest extends ActivityTest<HelpActivity> {
         assertTrue(changeLogView != null);
         DbUtils.waitMs("test", 500);
 
- //       openActionBarOverflowOrOptionsMenu(InstrumentationRegistry.getTargetContext());
-        onView(withId(R.id.preferences_menu_id)).perform(click());
+        onView(withId(R.id.button_help_learn_more)).perform(click());
+        assertEquals("At Logo page", HelpActivity.PAGE_INDEX_LOGO, mFlipper.getDisplayedChild());
+        onView(withId(R.id.splash_application_version)).check(matches(withText(containsString(MyContextHolder
+                .getExecutionMode().code))));
+
+        DbUtils.waitMs("test", 500);
 
         ActivityTestHelper<HelpActivity> helper = new ActivityTestHelper<>(mActivityRule.getActivity(),
                 MySettingsActivity.class);
-        assertTrue("Click on ActionBar item", helper.clickMenuItem("Clicking on Settings menu item", R.id.preferences_menu_id));
+        //       openActionBarOverflowOrOptionsMenu(InstrumentationRegistry.getTargetContext());
+        onView(withId(R.id.preferences_menu_id)).perform(click());
         Activity nextActivity = helper.waitForNextActivity("Clicking on Settings menu item", 10000);
         DbUtils.waitMs("test", 500);
         nextActivity.finish();

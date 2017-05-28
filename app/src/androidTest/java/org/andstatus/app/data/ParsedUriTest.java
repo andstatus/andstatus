@@ -19,7 +19,6 @@ package org.andstatus.app.data;
 import android.net.Uri;
 
 import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.context.Travis;
 import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.user.UserListType;
 import org.junit.Before;
@@ -27,7 +26,6 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-@Travis
 public class ParsedUriTest {
 
     @Before
