@@ -69,11 +69,16 @@ public class MyHtmlTest {
                 + "@user@domain.com, #<a href=\"#some\">AndStatus</a>. (!gnusocial)";
         final String text2 = "@somebody,  [This]  .       is'\n a\t; \"normalised {text}\""
                 + "@user@domain.com, #AndStatus. (!gnusocial)";
-        final String text3 = ",somebody,@somebody,This,is,a,normalised,text,user,@user@domain.com,AndStatus,#AndStatus,"
+        final String result1 = ",somebody,@somebody,This,is,a,normalised,text,user,@user@domain.com,AndStatus,#AndStatus,"
                 + "gnusocial,!gnusocial,";
-        assertEquals(text3, MyHtml.normalizeWordsForSearch(text2));
-        assertEquals(text3.toLowerCase(), MyHtml.getBodyToSearch(text2));
-        assertEquals(text3.toLowerCase(), MyHtml.getBodyToSearch(text1));
+        assertEquals(result1, MyHtml.normalizeWordsForSearch(text2));
+        assertEquals(result1.toLowerCase(), MyHtml.getBodyToSearch(text2));
+        assertEquals(result1.toLowerCase(), MyHtml.getBodyToSearch(text1));
+
+        final String text3 = "<p>Hello! Does anyone use?! <a href=\"https://mstdn.io/tags/andstatus\" rel=\"nofollow " +
+                "noopener\" target=\"_blank\">#<span>Andstatus</span></a>? How do I get to recognize my instance?</p>";
+        final String result2 = ",hello,does,anyone,use,andstatus,#andstatus,how,do,i,get,to,recognize,my,instance,";
+        assertEquals(result2, MyHtml.getBodyToSearch(text3));
     }
 
     @Test
