@@ -66,5 +66,6 @@ public class MyDataChecker {
     public void fixData() {
         new MyDataCheckerMergeUsers(myContext, logger).fixData();
         new MyDataCheckerConversations(myContext, logger).fixData();
+        new MyDataCheckerSearchIndex(myContext, logger).fixData();
     }
 }

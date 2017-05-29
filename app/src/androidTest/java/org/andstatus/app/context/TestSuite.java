@@ -80,8 +80,6 @@ public class TestSuite {
         if (initialized) {
             return context;
         }
-        MyContextHolder.setExecutionMode(
-                ExecutionMode.load(InstrumentationRegistry.getArguments().getString("executionMode")));
         for (int iter=1; iter<6; iter++) {
             MyLog.d(TAG, "Initializing Test Suite, iteration=" + iter);
             if (testCase == null) {
@@ -111,6 +109,8 @@ public class TestSuite {
             DbUtils.waitMs(method, 100);
         }
         MyLog.d(TAG, "After Initializing Test Suite loop");
+        MyContextHolder.setExecutionMode(
+                ExecutionMode.load(InstrumentationRegistry.getArguments().getString("executionMode")));
         assertTrue("MyContext state=" + MyContextHolder.get().state(), MyContextHolder.get().state() != MyContextState.EMPTY);
 
         SharedPreferencesUtil.putString(MyPreferences.KEY_MIN_LOG_LEVEL, Integer.toString(MyLog.VERBOSE));

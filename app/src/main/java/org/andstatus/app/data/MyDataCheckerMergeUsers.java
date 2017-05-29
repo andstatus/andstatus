@@ -53,7 +53,8 @@ public class MyDataCheckerMergeUsers {
             mergeUser(user);
             changedCount++;
         }
-        logger.logProgress(method + " ended, " + (changedCount > 0 ?  changedCount + " users merged" : " no changes were required"));
+        logger.logProgress(method + " ended, "
+                + (changedCount > 0 ?  changedCount + " users merged" : " no changes were needed"));
         DbUtils.waitMs(method, changedCount == 0 ? 1000 : 3000);
     }
 

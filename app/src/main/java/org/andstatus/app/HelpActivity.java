@@ -118,7 +118,7 @@ public class HelpActivity extends MyActivity implements SwipeInterface, Progress
         showGetStartedButton();
         setupHelpFlipper();
 
-        if (getIntent().hasExtra(EXTRA_CHECK_DATA)) {
+        if (getIntent().hasExtra(EXTRA_CHECK_DATA) && savedInstanceState == null) {
             MyDataChecker.fixDataAsync(this);
         }
     }

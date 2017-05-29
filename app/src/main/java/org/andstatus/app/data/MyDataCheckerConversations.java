@@ -100,7 +100,8 @@ public class MyDataCheckerConversations {
         fixConversationsUsingReplies();
         fixConversationsUsingConversationOid();
         int changedCount = saveChanges(countOnly);
-        logger.logProgress(method + " ended, " + (changedCount > 0 ?  "changed " + changedCount + " messages" : " no changes were required"));
+        logger.logProgress(method + " ended, " + (changedCount > 0 ?  "changed " + changedCount
+                + " messages" : " no changes were needed"));
         DbUtils.waitMs(method, changedCount == 0 ? 1000 : 3000);
         return changedCount;
     }
