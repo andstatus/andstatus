@@ -6,6 +6,7 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.context.DemoData;
 import org.andstatus.app.net.social.TimelinePosition;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,12 +27,12 @@ public class TimelineSyncTrackerTest {
 
     @Test
     public void testGnuSocialTimeline() {
-        testTimelineForAccount(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME);
+        testTimelineForAccount(DemoData.GNUSOCIAL_TEST_ACCOUNT_NAME);
     }
 
     @Test
     public void testTwitterTimeline() {
-        testTimelineForAccount(TestSuite.TWITTER_TEST_ACCOUNT_NAME);
+        testTimelineForAccount(DemoData.TWITTER_TEST_ACCOUNT_NAME);
     }
 
     private void testTimelineForAccount(String accountName) {

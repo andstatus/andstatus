@@ -25,6 +25,7 @@ import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DataInserter;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyContentType;
+import org.andstatus.app.context.DemoData;
 import org.andstatus.app.net.http.HttpConnectionMock;
 import org.andstatus.app.net.http.OAuthClientKeys;
 import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
@@ -60,12 +61,12 @@ public class ConnectionTwitterTest {
         TestSuite.initializeWithData(this);
 
         TestSuite.setHttpConnectionMockClass(HttpConnectionMock.class);
-        Origin origin = MyContextHolder.get().persistentOrigins().fromName(TestSuite.TWITTER_TEST_ORIGIN_NAME);
+        Origin origin = MyContextHolder.get().persistentOrigins().fromName(DemoData.TWITTER_TEST_ORIGIN_NAME);
 
         connectionData = OriginConnectionData.fromAccountName(
-                AccountName.fromOriginAndUserName(origin, TestSuite.TWITTER_TEST_ACCOUNT_USERNAME),
+                AccountName.fromOriginAndUserName(origin, DemoData.TWITTER_TEST_ACCOUNT_USERNAME),
                 TriState.UNKNOWN);
-        connectionData.setAccountUserOid(TestSuite.TWITTER_TEST_ACCOUNT_USER_OID);
+        connectionData.setAccountUserOid(DemoData.TWITTER_TEST_ACCOUNT_USER_OID);
         connectionData.setDataReader(new AccountDataReaderEmpty());
         connection = connectionData.newConnection();
         httpConnection = (HttpConnectionMock) connection.http;
@@ -92,7 +93,7 @@ public class ConnectionTwitterTest {
         assertEquals("Number of items in the Timeline", size, timeline.size());
 
         int ind = 0;
-        String hostName = TestSuite.getTestOriginHost(TestSuite.TWITTER_TEST_ORIGIN_NAME).replace("api.", "");
+        String hostName = DemoData.getTestOriginHost(DemoData.TWITTER_TEST_ORIGIN_NAME).replace("api.", "");
         assertEquals("Posting message", MbObjectType.MESSAGE, timeline.get(ind).getObjectType());
         MbMessage message = timeline.get(ind).getMessage();
         assertTrue("Favorited", message.getFavoritedByMe().toBoolean(false));
@@ -121,7 +122,7 @@ public class ConnectionTwitterTest {
         assertTrue("Is a reblog", !message.isReblogged());
         assertTrue("Is a reply", message.getInReplyTo().nonEmpty());
         assertEquals("Reply to the message id", "17176774678", message.getInReplyTo().oid);
-        assertEquals("Reply to the message by userOid", TestSuite.TWITTER_TEST_ACCOUNT_USER_OID, message.getInReplyTo().getAuthor().oid);
+        assertEquals("Reply to the message by userOid", DemoData.TWITTER_TEST_ACCOUNT_USER_OID, message.getInReplyTo().getAuthor().oid);
         assertTrue("Reply status is unknown", message.getInReplyTo().getStatus() == DownloadStatus.UNKNOWN);
         assertTrue("Is not Favorited", !message.getFavoritedByMe().toBoolean(true));
         String startsWith = "@t131t";
@@ -187,7 +188,7 @@ public class ConnectionTwitterTest {
 
         CommandExecutionContext executionContext = new CommandExecutionContext(
                 CommandData.newAccountCommand(CommandEnum.GET_STATUS,
-                        TestSuite.getMyAccount(connectionData.getAccountName().toString())));
+                        DemoData.getMyAccount(connectionData.getAccountName().toString())));
         DataInserter di = new DataInserter(executionContext);
         long messageId = di.insertOrUpdateMsg(message);
         assertTrue("Message added", messageId != 0);

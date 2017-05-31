@@ -49,7 +49,7 @@ import java.util.concurrent.ExecutionException;
 @ThreadSafe
 public final class MyContextHolder {
     private static final String TAG = MyContextHolder.class.getSimpleName();
-    public final static long appStartedAt = SystemClock.elapsedRealtime();
+    private final static long appStartedAt = SystemClock.elapsedRealtime();
 
     private static final Object CONTEXT_LOCK = new Object();
     @GuardedBy("CONTEXT_LOCK")

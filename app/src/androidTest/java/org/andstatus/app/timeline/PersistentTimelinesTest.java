@@ -17,11 +17,13 @@
 package org.andstatus.app.timeline;
 
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.account.AccountInserter;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.context.DemoData;
 import org.andstatus.app.origin.Origin;
-import org.andstatus.app.util.I18n;
+import org.andstatus.app.origin.OriginInserter;
 import org.andstatus.app.util.TriState;
 import org.junit.Before;
 import org.junit.Test;
@@ -64,7 +66,7 @@ public class PersistentTimelinesTest {
         assertTrue(timelines.size() > filtered2.size());
         assertTrue(filtered2.size() > filtered.size());
 
-        MyAccount myAccount = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.CONVERSATION_ACCOUNT_NAME);
+        MyAccount myAccount = MyContextHolder.get().persistentAccounts().fromAccountName(DemoData.CONVERSATION_ACCOUNT_NAME);
         filtered = MyContextHolder.get().persistentTimelines().getFiltered(true, TriState.FALSE, myAccount, null);
         assertTrue(!filtered.isEmpty());
 
@@ -94,49 +96,12 @@ public class PersistentTimelinesTest {
 
     @Test
     public void testDefaultTimelinesForAccounts() {
-        checkDefaultTimelinesForAccounts();
-    }
-
-    public static void checkDefaultTimelinesForAccounts() {
-        for (MyAccount myAccount : MyContextHolder.get().persistentAccounts().list()) {
-            for (TimelineType timelineType : TimelineType.getDefaultMyAccountTimelineTypes()) {
-                long count = 0;
-                StringBuilder logMsg =new StringBuilder(myAccount.toString());
-                I18n.appendWithSpace(logMsg, timelineType.toString());
-                for (Timeline timeline : MyContextHolder.get().persistentTimelines().values()) {
-                    if (timeline.getMyAccount().equals(myAccount) && timeline.getTimelineType().equals(timelineType)) {
-                        count++;
-                        I18n.appendWithSpace(logMsg, timeline.toString());
-                    }
-                }
-                assertEquals(logMsg.toString(), 1, count);
-            }
-        }
+        AccountInserter.checkDefaultTimelinesForAccounts();
     }
 
     @Test
     public void testDefaultTimelinesForOrigins() {
-        checkDefaultTimelinesForOrigins();
-    }
-
-    public static void checkDefaultTimelinesForOrigins() {
-        for (Origin origin : MyContextHolder.get().persistentOrigins().collection()) {
-            MyAccount myAccount = MyContextHolder.get().persistentAccounts().
-                    getFirstSucceededForOrigin(origin);
-            for (TimelineType timelineType : TimelineType.getDefaultOriginTimelineTypes()) {
-                int count = 0;
-                for (Timeline timeline : MyContextHolder.get().persistentTimelines().values()) {
-                    if (timeline.getOrigin().equals(origin) &&
-                            timeline.getTimelineType().equals(timelineType) &&
-                            timeline.getSearchQuery().isEmpty()) {
-                        count++;
-                    }
-                }
-                if (myAccount.isValid() && origin.getOriginType().isTimelineTypeSyncable(timelineType)) {
-                    assertTrue(origin.toString() + " " + timelineType, count > 0);
-                }
-            }
-        }
+        OriginInserter.checkDefaultTimelinesForOrigins();
     }
 
     @Test
@@ -149,7 +114,7 @@ public class PersistentTimelinesTest {
         assertEquals(timeline.toString(), TimelineType.HOME, timeline.getTimelineType());
         assertFalse(timeline.toString(), timeline.isCombined());
 
-        Origin origin = MyContextHolder.get().persistentOrigins().fromName(TestSuite.GNUSOCIAL_TEST_ORIGIN_NAME);
+        Origin origin = MyContextHolder.get().persistentOrigins().fromName(DemoData.GNUSOCIAL_TEST_ORIGIN_NAME);
         myAccount = MyContextHolder.get().persistentAccounts().getFirstSucceededForOrigin(origin);
         timeline = MyContextHolder.get().persistentTimelines().
                 getFiltered(false, TriState.FALSE, myAccount, null).get(2);

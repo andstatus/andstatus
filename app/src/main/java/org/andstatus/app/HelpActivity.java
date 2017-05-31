@@ -40,16 +40,14 @@ import android.widget.ViewFlipper;
 import org.andstatus.app.account.AccountSettingsActivity;
 import org.andstatus.app.backup.ProgressLogger;
 import org.andstatus.app.backup.RestoreActivity;
+import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.ExecutionMode;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyContextState;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.MySettingsActivity;
-import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyDataChecker;
 import org.andstatus.app.msg.TimelineActivity;
-import org.andstatus.app.os.AsyncTaskLauncher;
-import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.util.ActivitySwipeDetector;
 import org.andstatus.app.util.DialogFactory;
 import org.andstatus.app.util.MyLog;
@@ -61,8 +59,6 @@ import org.andstatus.app.util.ViewUtils;
 import org.andstatus.app.util.Xslt;
 
 public class HelpActivity extends MyActivity implements SwipeInterface, ProgressLogger.ProgressCallback, DialogInterface.OnDismissListener {
-
-    // Constants
     public static final String TAG = HelpActivity.class.getSimpleName();
 
     /**
@@ -89,6 +85,7 @@ public class HelpActivity extends MyActivity implements SwipeInterface, Progress
     private boolean mIsFirstActivity = false;
     private boolean wasPaused = false;
     private volatile ProgressDialog progress = null;
+    private static volatile boolean generatingDemoData = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -112,6 +109,15 @@ public class HelpActivity extends MyActivity implements SwipeInterface, Progress
         if (MyPreferences.isShowDebuggingInfoInUi()) {
             MyUrlSpan.showText(this, R.id.system_info, MyContextHolder.getSystemInfo(this, false), false, false);
         }
+
+        if (!MyContextHolder.get().persistentAccounts().getCurrentAccount().isValid() &&
+                MyContextHolder.getExecutionMode() == ExecutionMode.ROBO_TEST) {
+            if (!generatingDemoData) {
+                generatingDemoData = true;
+                DemoData.addAsync("GenerateDemoData", MyContextHolder.get(), HelpActivity.this);
+            }
+        }
+
         showChangeLog();
         showUserGuide();
         showRestoreButton();
@@ -164,7 +170,8 @@ public class HelpActivity extends MyActivity implements SwipeInterface, Progress
     
     private void showRestoreButton() {
         Button restoreButton = (Button) findViewById(R.id.button_restore);
-        if (MyContextHolder.get().isReady() && MyContextHolder.get().persistentAccounts().isEmpty()) {
+        if (!generatingDemoData
+                && MyContextHolder.get().isReady() && MyContextHolder.get().persistentAccounts().isEmpty()) {
             restoreButton.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -180,6 +187,7 @@ public class HelpActivity extends MyActivity implements SwipeInterface, Progress
     private void showGetStartedButton() {
         //The button is always visible in order to avoid a User's confusion,
         final Button getStarted = (Button) findViewById(R.id.button_help_get_started);
+        getStarted.setVisibility(generatingDemoData ? View.GONE : View.VISIBLE);
         getStarted.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -189,8 +197,6 @@ public class HelpActivity extends MyActivity implements SwipeInterface, Progress
                         if (MyContextHolder.get().persistentAccounts().getCurrentAccount().isValid()) {
                             startActivity(new Intent(HelpActivity.this, TimelineActivity.class));
                             finish();
-                        } else if (MyContextHolder.getExecutionMode() == ExecutionMode.ROBO_TEST) {
-                            generateDemoData();
                         } else {
                             startActivity(new Intent(HelpActivity.this, AccountSettingsActivity.class));
                             finish();
@@ -210,30 +216,6 @@ public class HelpActivity extends MyActivity implements SwipeInterface, Progress
                                 R.string.app_name, R.string.loading);
                         break;
                 }
-            }
-
-            private void generateDemoData() {
-                getStarted.setEnabled(false);
-                AsyncTaskLauncher.execute(TAG, false,
-                        new MyAsyncTask<Void, Void, Void>("GenerateDemoData", MyAsyncTask.PoolEnum
-                                .FILE_DOWNLOAD) {
-                            @Override
-                            protected Void doInBackground2(Void... params) {
-                                // TODO: implement
-                                for (int ind = 1; ind < 11; ind++) {
-                                    DbUtils.waitMs(TAG, 1000);
-                                    HelpActivity.this.onProgressMessage("Generating demo data " + ind);
-                                }
-                                return null;
-                            }
-
-                            @Override
-                            protected void onPostExecute(Void aVoid) {
-                                startActivity(new Intent(HelpActivity.this, TimelineActivity.class));
-                                finish();
-                            }
-                        }
-                );
             }
         });
         if (MyContextHolder.get().persistentAccounts().getCurrentAccount().isValid()) {
@@ -279,7 +261,9 @@ public class HelpActivity extends MyActivity implements SwipeInterface, Progress
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.help, menu);
+        if (!generatingDemoData) {
+            getMenuInflater().inflate(R.menu.help, menu);
+        }
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -473,7 +457,13 @@ public class HelpActivity extends MyActivity implements SwipeInterface, Progress
                         progress = null;
                     }
                     if (success) {
-                        HelpActivity.startFromActivity(HelpActivity.this);
+                        if (generatingDemoData) {
+                            generatingDemoData = false;
+                            startActivity(new Intent(HelpActivity.this, TimelineActivity.class));
+                            finish();
+                        } else {
+                            HelpActivity.startFromActivity(HelpActivity.this);
+                        }
                     }
                 }
             });

@@ -6,6 +6,7 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
+import org.andstatus.app.context.DemoData;
 import org.andstatus.app.util.MyLog;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,9 +24,9 @@ public class ConversationViewLoaderTest implements ProgressPublisher {
     public void setUp() throws Exception {
         MyLog.i(this, "setUp started");
         TestSuite.initializeWithData(this);
-        ma = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.CONVERSATION_ACCOUNT_NAME);
+        ma = MyContextHolder.get().persistentAccounts().fromAccountName(DemoData.CONVERSATION_ACCOUNT_NAME);
         assertTrue(ma.isValid());
-        selectedMessageId = MyQuery.oidToId(OidEnum.MSG_OID, ma.getOriginId(), TestSuite.CONVERSATION_ENTRY_MESSAGE_OID);
+        selectedMessageId = MyQuery.oidToId(OidEnum.MSG_OID, ma.getOriginId(), DemoData.CONVERSATION_ENTRY_MESSAGE_OID);
         assertTrue("Selected message exists", selectedMessageId != 0);
         MyLog.i(this, "setUp ended");
     }

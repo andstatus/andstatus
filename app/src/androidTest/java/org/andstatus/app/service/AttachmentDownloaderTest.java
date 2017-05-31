@@ -26,6 +26,7 @@ import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.FileProvider;
 import org.andstatus.app.data.MessageInserter;
 import org.andstatus.app.data.MyContentType;
+import org.andstatus.app.context.DemoData;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.social.ConnectionTwitterGnuSocialMock;
 import org.andstatus.app.net.social.MbAttachment;
@@ -49,8 +50,8 @@ public class AttachmentDownloaderTest {
     public void setUp() throws Exception {
         MyLog.i(this, "setUp started");
         TestSuite.initializeWithData(this);
-        ma = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME); 
-        assertTrue(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME + " exists", ma.isValid());
+        ma = MyContextHolder.get().persistentAccounts().fromAccountName(DemoData.GNUSOCIAL_TEST_ACCOUNT_NAME);
+        assertTrue(DemoData.GNUSOCIAL_TEST_ACCOUNT_NAME + " exists", ma.isValid());
     }
 
     @Test

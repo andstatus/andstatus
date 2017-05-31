@@ -22,8 +22,8 @@ import android.database.sqlite.SQLiteDiskIOException;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DbUtils;
+import org.andstatus.app.context.DemoData;
 import org.andstatus.app.os.ExceptionsCounter;
 import org.andstatus.app.timeline.Timeline;
 import org.andstatus.app.timeline.TimelineType;
@@ -153,7 +153,7 @@ public class MyServiceTest1 extends MyServiceTest {
 
         mService.setListenedCommand(CommandData.newAccountCommand(
                 CommandEnum.RATE_LIMIT_STATUS,
-                TestSuite.getMyAccount(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME)));
+                DemoData.getMyAccount(DemoData.GNUSOCIAL_TEST_ACCOUNT_NAME)));
         long startCount = mService.executionStartCount;
         long endCount = mService.executionEndCount;
 
@@ -174,7 +174,7 @@ public class MyServiceTest1 extends MyServiceTest {
 
         mService.setListenedCommand(CommandData.newAccountCommand(
                 CommandEnum.RATE_LIMIT_STATUS,
-                TestSuite.getMyAccount(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME)));
+                DemoData.getMyAccount(DemoData.GNUSOCIAL_TEST_ACCOUNT_NAME)));
         mService.httpConnectionMock.setRuntimeException(new SQLiteDiskIOException(method));
         long startCount = mService.executionStartCount;
         mService.sendListenedToCommand();

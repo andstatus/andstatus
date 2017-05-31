@@ -25,6 +25,7 @@ import org.andstatus.app.account.AccountName;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MyContentType;
+import org.andstatus.app.context.DemoData;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnectionMock;
 import org.andstatus.app.net.http.OAuthClientKeys;
@@ -74,9 +75,9 @@ public class ConnectionPumpioTest {
 
         TestSuite.setHttpConnectionMockClass(HttpConnectionMock.class);
         connectionData = OriginConnectionData.fromAccountName( AccountName.fromOriginAndUserName(
-                MyContextHolder.get().persistentOrigins().fromName(TestSuite.PUMPIO_ORIGIN_NAME), ""),
+                MyContextHolder.get().persistentOrigins().fromName(DemoData.PUMPIO_ORIGIN_NAME), ""),
                 TriState.UNKNOWN);
-        connectionData.setAccountUserOid(TestSuite.PUMPIO_TEST_ACCOUNT_USER_OID);
+        connectionData.setAccountUserOid(DemoData.PUMPIO_TEST_ACCOUNT_USER_OID);
         connectionData.setDataReader(new AccountDataReaderEmpty());
         connection = (ConnectionPumpio) connectionData.newConnection();
         httpConnectionMock = connection.getHttpMock();
@@ -328,7 +329,7 @@ public class ConnectionPumpioTest {
         String jso = RawResourceUtils.getString(InstrumentationRegistry.getInstrumentation().getContext(),
                 org.andstatus.app.tests.R.raw.destroy_status_response_pumpio);
         httpConnectionMock.setResponse(jso);
-        connection.getData().setAccountUserOid(TestSuite.CONVERSATION_ACCOUNT_USER_OID);
+        connection.getData().setAccountUserOid(DemoData.CONVERSATION_ACCOUNT_USER_OID);
         assertTrue("Success", connection.destroyStatus("https://identi.ca.example.com/api/comment/xf0WjLeEQSlyi8jwHJ0ttre"));
 
         boolean thrown = false;
@@ -348,7 +349,7 @@ public class ConnectionPumpioTest {
         httpConnectionMock.setResponse(jso);
         
         connection.getData().setAccountUserOid("acct:mymediatester@" + originUrl.getHost());
-        MbMessage message2 = connection.updateStatus("Test post message with media", "", "", TestSuite.LOCAL_IMAGE_TEST_URI);
+        MbMessage message2 = connection.updateStatus("Test post message with media", "", "", DemoData.LOCAL_IMAGE_TEST_URI);
         message2.setPublic(true); 
         assertEquals("Message returned", privateGetMessageWithAttachment(
                 InstrumentationRegistry.getInstrumentation().getContext(), false), message2);
@@ -361,7 +362,7 @@ public class ConnectionPumpioTest {
 
         MbMessage msg = connection.getMessage("w9wME-JVQw2GQe6POK7FSQ");
         if (uniqueUid) {
-            msg.oid += "_" + TestSuite.TESTRUN_UID;
+            msg.oid += "_" + DemoData.TESTRUN_UID;
         }
         assertNotNull("message returned", msg);
         assertEquals("has attachment", msg.attachments.size(), 1);

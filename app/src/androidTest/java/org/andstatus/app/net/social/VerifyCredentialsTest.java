@@ -27,6 +27,7 @@ import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.database.MsgTable;
+import org.andstatus.app.context.DemoData;
 import org.andstatus.app.net.http.HttpConnectionMock;
 import org.andstatus.app.net.http.OAuthClientKeys;
 import org.andstatus.app.origin.Origin;
@@ -58,10 +59,10 @@ public class VerifyCredentialsTest {
 
         TestSuite.setHttpConnectionMockClass(HttpConnectionMock.class);
         OriginConnectionData connectionData = OriginConnectionData.fromAccountName(AccountName.fromOriginAndUserName(
-                MyContextHolder.get().persistentOrigins().fromName(TestSuite.TWITTER_TEST_ORIGIN_NAME),
-                TestSuite.TWITTER_TEST_ACCOUNT_USERNAME),
+                MyContextHolder.get().persistentOrigins().fromName(DemoData.TWITTER_TEST_ORIGIN_NAME),
+                DemoData.TWITTER_TEST_ACCOUNT_USERNAME),
                 TriState.UNKNOWN);
-        connectionData.setAccountUserOid(TestSuite.TWITTER_TEST_ACCOUNT_USER_OID);
+        connectionData.setAccountUserOid(DemoData.TWITTER_TEST_ACCOUNT_USER_OID);
         connectionData.setDataReader(new AccountDataReaderEmpty());
         connection = connectionData.newConnection();
         httpConnection = (HttpConnectionMock) connection.http;
@@ -91,11 +92,11 @@ public class VerifyCredentialsTest {
         httpConnection.setResponse(jso);
 
         MbUser mbUser = connection.verifyCredentials();
-        assertEquals("User's oid is user oid of this account", TestSuite.TWITTER_TEST_ACCOUNT_USER_OID, mbUser.oid);
+        assertEquals("User's oid is user oid of this account", DemoData.TWITTER_TEST_ACCOUNT_USER_OID, mbUser.oid);
 
         Origin origin = MyContextHolder.get().persistentOrigins().firstOfType(OriginType.TWITTER);
         MyAccount.Builder builder = MyAccount.Builder.newOrExistingFromAccountName(
-                MyContextHolder.get(), TestSuite.TWITTER_TEST_ACCOUNT_NAME +
+                MyContextHolder.get(), DemoData.TWITTER_TEST_ACCOUNT_NAME +
                 "/" + origin.getName(), TriState.TRUE);
         builder.onCredentialsVerified(mbUser, null);
         assertTrue("Account is persistent", builder.isPersistent());

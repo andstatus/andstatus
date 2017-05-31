@@ -63,25 +63,4 @@ public class OAuthClientKeysTest {
         OAuthClientKeys keys3 = OAuthClientKeys.fromConnectionData(connectionData);
         assertEquals("Keys are cleared", false, keys3.areKeysPresent());
     }
-
-    public static void insertTestKeys(Origin origin) {
-        HttpConnectionData connectionData = HttpConnectionData.fromConnectionData(
-                OriginConnectionData.fromAccountName(
-                        AccountName.fromOriginAndUserName(origin, ""), TriState.UNKNOWN)
-        );
-        final String consumerKey = "testConsumerKey" + Long.toString(System.nanoTime());
-        final String consumerSecret = "testConsumerSecret" + Long.toString(System.nanoTime());
-        if (connectionData.originUrl == null) {
-            connectionData.originUrl = UrlUtils.fromString("https://identi.ca");
-        }
-        OAuthClientKeys keys1 = OAuthClientKeys.fromConnectionData(connectionData);
-        if (!keys1.areKeysPresent()) {
-            keys1.setConsumerKeyAndSecret(consumerKey, consumerSecret);
-            // Checking
-            OAuthClientKeys keys2 = OAuthClientKeys.fromConnectionData(connectionData);
-            assertEquals("Keys are loaded for " + origin, true, keys2.areKeysPresent());
-            assertEquals(consumerKey, keys2.getConsumerKey());
-            assertEquals(consumerSecret, keys2.getConsumerSecret());
-        }
-    }
 }

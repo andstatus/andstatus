@@ -3,6 +3,7 @@ package org.andstatus.app.data;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.context.DemoData;
 import org.andstatus.app.net.social.MbMessage;
 import org.andstatus.app.net.social.MbUser;
 import org.junit.Before;
@@ -21,7 +22,7 @@ public class MessageForAccountTest {
     @Test
     public void testAReply() {
         MyAccount ma = MyContextHolder.get().persistentAccounts()
-                .fromAccountName(TestSuite.CONVERSATION_ACCOUNT_NAME);
+                .fromAccountName(DemoData.CONVERSATION_ACCOUNT_NAME);
         assertTrue(ma.isValid());
         MessageInserter mi = new MessageInserter(ma);
         MbUser author1 = mi.getAccountMbUser();

@@ -23,6 +23,7 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MessageInserter;
+import org.andstatus.app.context.DemoData;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.ConnectionException.StatusCode;
 import org.andstatus.app.net.http.HttpConnectionMock;
@@ -55,7 +56,7 @@ public class CommandExecutorStrategyTest {
         MyContextHolder.get().persistentAccounts().initialize();
         MyContextHolder.get().persistentTimelines().initialize();
         ma = MyContextHolder.get().persistentAccounts().getFirstSucceededForOrigin(
-                MyContextHolder.get().persistentOrigins().fromName(TestSuite.GNUSOCIAL_TEST_ORIGIN_NAME));
+                MyContextHolder.get().persistentOrigins().fromName(DemoData.GNUSOCIAL_TEST_ORIGIN_NAME));
         assertTrue(ma.toString(), ma.isValidAndSucceeded());
         httpConnectionMock = ma.getConnection().getHttpMock();
     }
@@ -73,16 +74,16 @@ public class CommandExecutorStrategyTest {
 
     @Test
     public void testSearch() {
-        CommandData commandData = CommandData.newSearch(MyContextHolder.get(), null, TestSuite.GLOBAL_PUBLIC_MESSAGE_TEXT);
+        CommandData commandData = CommandData.newSearch(MyContextHolder.get(), null, DemoData.GLOBAL_PUBLIC_MESSAGE_TEXT);
         CommandExecutorStrategy strategy = CommandExecutorStrategy.getStrategy(commandData, null);
         assertEquals(CommandExecutorStrategy.class, strategy.getClass());
 
-        commandData = CommandData.newSearch(MyContextHolder.get(), ma.getOrigin(), TestSuite.GLOBAL_PUBLIC_MESSAGE_TEXT);
+        commandData = CommandData.newSearch(MyContextHolder.get(), ma.getOrigin(), DemoData.GLOBAL_PUBLIC_MESSAGE_TEXT);
         strategy = CommandExecutorStrategy.getStrategy(commandData, null);
         assertEquals(TimelineDownloaderOther.class, strategy.getClass());
         strategy.execute();
         assertTrue("Requested '" + Arrays.toString(httpConnectionMock.getResults().toArray()) + "'",
-                httpConnectionMock.getResults().get(0).getUrl().contains(TestSuite.GLOBAL_PUBLIC_MESSAGE_TEXT) );
+                httpConnectionMock.getResults().get(0).getUrl().contains(DemoData.GLOBAL_PUBLIC_MESSAGE_TEXT) );
     }
 
     @Test
@@ -133,7 +134,7 @@ public class CommandExecutorStrategyTest {
         httpConnectionMock.setException(null);
         commandData = CommandData.newItemCommand(
                 CommandEnum.DESTROY_STATUS,
-                TestSuite.getMyAccount(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME),
+                DemoData.getMyAccount(DemoData.GNUSOCIAL_TEST_ACCOUNT_NAME),
                 msgId);
         CommandExecutorStrategy.executeCommand(commandData, null);
         assertFalse(commandData.toString(), commandData.getResult().hasError());
@@ -141,7 +142,7 @@ public class CommandExecutorStrategyTest {
         final long INEXISTENT_MSG_ID = -1;
         commandData = CommandData.newItemCommand(
                 CommandEnum.DESTROY_STATUS,
-                TestSuite.getMyAccount(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME),
+                DemoData.getMyAccount(DemoData.GNUSOCIAL_TEST_ACCOUNT_NAME),
                 INEXISTENT_MSG_ID);
         CommandExecutorStrategy.executeCommand(commandData, null);
         assertFalse(commandData.toString(), commandData.getResult().hasError());
@@ -164,7 +165,7 @@ public class CommandExecutorStrategyTest {
         TestSuite.setHttpConnectionMockInstance(http);
         CommandData commandData = CommandData.newItemCommand(
                 CommandEnum.GET_OPEN_INSTANCES,
-                TestSuite.getMyAccount(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME),
+                DemoData.getMyAccount(DemoData.GNUSOCIAL_TEST_ACCOUNT_NAME),
                 OriginType.GNUSOCIAL.getId());
         DiscoveredOrigins.clear();
         CommandExecutorStrategy.executeCommand(commandData, null);

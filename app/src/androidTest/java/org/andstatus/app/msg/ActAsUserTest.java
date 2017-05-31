@@ -24,6 +24,7 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MatchedUri;
+import org.andstatus.app.context.DemoData;
 import org.andstatus.app.timeline.Timeline;
 import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.MyLog;
@@ -43,7 +44,7 @@ public class ActAsUserTest extends TimelineActivityTest {
         TestSuite.initializeWithData(this);
 
         final MyAccount ma = MyContextHolder.get().persistentAccounts()
-                .fromAccountName(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME);
+                .fromAccountName(DemoData.GNUSOCIAL_TEST_ACCOUNT_NAME);
         assertTrue(ma.isValid());
         MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
 

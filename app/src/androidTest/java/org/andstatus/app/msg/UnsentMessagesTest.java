@@ -16,6 +16,7 @@ import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.database.MsgTable;
+import org.andstatus.app.context.DemoData;
 import org.andstatus.app.net.http.HttpReadResult;
 import org.andstatus.app.service.MyServiceTestHelper;
 import org.andstatus.app.timeline.Timeline;
@@ -37,7 +38,7 @@ public class UnsentMessagesTest extends TimelineActivityTest {
         TestSuite.initializeWithData(this);
 
         mService.setUp(null);
-        MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME);
+        MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(DemoData.GNUSOCIAL_TEST_ACCOUNT_NAME);
         assertTrue(ma.isValid());
         MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
 
@@ -60,7 +61,7 @@ public class UnsentMessagesTest extends TimelineActivityTest {
         helper.clickMenuItem(method + "; " + step, R.id.createMessageButton);
         ActivityTestHelper.waitViewVisible(method + "; " + step, editorView);
 
-        String body = "Test unsent message, which we will try to edit " + TestSuite.TESTRUN_UID;
+        String body = "Test unsent message, which we will try to edit " + DemoData.TESTRUN_UID;
         EditText editText = (EditText) editorView.findViewById(R.id.messageBodyEditText);
         editText.requestFocus();
         TestSuite.waitForIdleSync();

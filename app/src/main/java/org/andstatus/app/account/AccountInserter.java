@@ -19,17 +19,19 @@ package org.andstatus.app.account;
 import android.text.TextUtils;
 
 import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
-import org.andstatus.app.context.MyContextForTest;
-import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.context.DemoData;
+import org.andstatus.app.context.MyContext;
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.ConversationInserter;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.net.http.ConnectionException;
-import org.andstatus.app.net.http.SslModeEnum;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.origin.Origin;
-import org.andstatus.app.origin.OriginTest;
 import org.andstatus.app.origin.OriginType;
+import org.andstatus.app.timeline.Timeline;
+import org.andstatus.app.timeline.TimelineType;
+import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
 
@@ -37,64 +39,36 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-public class OriginsAndAccountsInserter {
-    private MyContextForTest myContext;
+public class AccountInserter {
+    private MyContext myContext;
     private String firstAccountUserOid = null;
 
-    public OriginsAndAccountsInserter(MyContextForTest myContextForTest) {
-        myContext = myContextForTest;
+    public AccountInserter(MyContext myContext) {
+        this.myContext = myContext;
     }
 
     public void insert() {
-        assertEquals("Data path", "ok", TestSuite.checkDataPath(this));
-        addOrigins();
-        addAccounts();
-        myContext.persistentTimelines().saveChanged();
-    }
-
-    private void addOrigins() {
-        OriginTest.createOneOrigin(OriginType.TWITTER, TestSuite.TWITTER_TEST_ORIGIN_NAME,
-                TestSuite.getTestOriginHost(TestSuite.TWITTER_TEST_ORIGIN_NAME),
-                true, SslModeEnum.SECURE, false, true, true);
-        OriginTest.createOneOrigin(OriginType.PUMPIO,
-                TestSuite.PUMPIO_ORIGIN_NAME,
-                TestSuite.getTestOriginHost(TestSuite.PUMPIO_ORIGIN_NAME),
-                true, SslModeEnum.SECURE, true, true, true);
-        OriginTest.createOneOrigin(OriginType.GNUSOCIAL, TestSuite.GNUSOCIAL_TEST_ORIGIN_NAME,
-                TestSuite.getTestOriginHost(TestSuite.GNUSOCIAL_TEST_ORIGIN_NAME),
-                true, SslModeEnum.SECURE, true, true, true);
-        String additionalOriginName = TestSuite.GNUSOCIAL_TEST_ORIGIN_NAME + "ins";
-        OriginTest.createOneOrigin(OriginType.GNUSOCIAL, additionalOriginName,
-                TestSuite.getTestOriginHost(additionalOriginName),
-                true, SslModeEnum.INSECURE, true, false, true);
-        OriginTest.createOneOrigin(OriginType.MASTODON, TestSuite.MASTODON_TEST_ORIGIN_NAME,
-                TestSuite.getTestOriginHost(TestSuite.MASTODON_TEST_ORIGIN_NAME),
-                true, SslModeEnum.SECURE, true, true, true);
-        myContext.persistentOrigins().initialize();
-    }
-
-    private void addAccounts() {
-        addAccount(TestSuite.PUMPIO_TEST_ACCOUNT_USER_OID, TestSuite.PUMPIO_TEST_ACCOUNT_NAME,
+        addAccount(DemoData.PUMPIO_TEST_ACCOUNT_USER_OID, DemoData.PUMPIO_TEST_ACCOUNT_NAME,
                 "", OriginType.PUMPIO);
-        addAccount(TestSuite.TWITTER_TEST_ACCOUNT_USER_OID, TestSuite.TWITTER_TEST_ACCOUNT_NAME,
+        addAccount(DemoData.TWITTER_TEST_ACCOUNT_USER_OID, DemoData.TWITTER_TEST_ACCOUNT_NAME,
                 "", OriginType.TWITTER);
-        addAccount(TestSuite.GNUSOCIAL_TEST_ACCOUNT_USER_OID, TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME,
-                TestSuite.GNUSOCIAL_TEST_ACCOUNT_AVATAR_URL, OriginType.GNUSOCIAL);
-        addAccount(TestSuite.GNUSOCIAL_TEST_ACCOUNT2_USER_OID, TestSuite.GNUSOCIAL_TEST_ACCOUNT2_NAME,
+        addAccount(DemoData.GNUSOCIAL_TEST_ACCOUNT_USER_OID, DemoData.GNUSOCIAL_TEST_ACCOUNT_NAME,
+                DemoData.GNUSOCIAL_TEST_ACCOUNT_AVATAR_URL, OriginType.GNUSOCIAL);
+        addAccount(DemoData.GNUSOCIAL_TEST_ACCOUNT2_USER_OID, DemoData.GNUSOCIAL_TEST_ACCOUNT2_NAME,
                 "", OriginType.GNUSOCIAL);
-        addAccount(TestSuite.MASTODON_TEST_ACCOUNT_USER_OID, TestSuite.MASTODON_TEST_ACCOUNT_NAME,
-                TestSuite.GNUSOCIAL_TEST_ACCOUNT_AVATAR_URL, OriginType.MASTODON);
-        addAccount(TestSuite.CONVERSATION_ACCOUNT_USER_OID, TestSuite.CONVERSATION_ACCOUNT_NAME,
-                TestSuite.CONVERSATION_ACCOUNT_AVATAR_URL, TestSuite.CONVERSATION_ORIGIN_TYPE);
-        addAccount(TestSuite.CONVERSATION_ACCOUNT2_USER_OID, TestSuite.CONVERSATION_ACCOUNT2_NAME,
-                "", TestSuite.CONVERSATION_ORIGIN_TYPE);
+        addAccount(DemoData.MASTODON_TEST_ACCOUNT_USER_OID, DemoData.MASTODON_TEST_ACCOUNT_NAME,
+                DemoData.GNUSOCIAL_TEST_ACCOUNT_AVATAR_URL, OriginType.MASTODON);
+        addAccount(DemoData.CONVERSATION_ACCOUNT_USER_OID, DemoData.CONVERSATION_ACCOUNT_NAME,
+                DemoData.CONVERSATION_ACCOUNT_AVATAR_URL, DemoData.CONVERSATION_ORIGIN_TYPE);
+        addAccount(DemoData.CONVERSATION_ACCOUNT2_USER_OID, DemoData.CONVERSATION_ACCOUNT2_NAME,
+                "", DemoData.CONVERSATION_ORIGIN_TYPE);
     }
 
     private MyAccount addAccount(String userOid, String accountNameString, String avatarUrl, OriginType originType) {
         if (firstAccountUserOid == null) {
             firstAccountUserOid = userOid;
         }
-        assertEquals("Data path", "ok", TestSuite.checkDataPath(this));
+        DemoData.checkDataPath();
         AccountName accountName = AccountName.fromAccountName(myContext, accountNameString);
         MyLog.v(this, "Adding account " + accountName);
         assertTrue("Name '" + accountNameString + "' is valid for " + originType, accountName.isValid());
@@ -152,7 +126,7 @@ public class OriginsAndAccountsInserter {
 
         assertTrue("Account is persistent", builder.isPersistent());
         MyAccount ma = builder.getAccount();
-        assertEquals("Credentials of " + mbUser.getUserName() + " successfully verified", 
+        assertEquals("Credentials of " + mbUser.getUserName() + " successfully verified",
                 CredentialsVerificationStatus.SUCCEEDED, ma.getCredentialsVerified());
         long userId = ma.getUserId();
         assertTrue("Account " + mbUser.getUserName() + " has UserId", userId != 0);
@@ -161,9 +135,9 @@ public class OriginsAndAccountsInserter {
         if (TextUtils.isEmpty(oid)) {
             String message = "Couldn't find a User in the database for id=" + userId + " oid=" + mbUser.oid;
             MyLog.v(this, message);
-            fail(message); 
+            fail(message);
         }
-        assertEquals("User in the database for id=" + userId, 
+        assertEquals("User in the database for id=" + userId,
                 mbUser.oid,
                 MyQuery.idToOid(myContext.getDatabase(), OidEnum.USER_OID, userId, 0));
         assertEquals("Account name", mbUser.getUserName() + "/" + origin.getName(), ma.getAccountName());
@@ -171,4 +145,22 @@ public class OriginsAndAccountsInserter {
         ConversationInserter.getUsers().put(mbUser.oid, mbUser);
         return ma;
     }
+
+    public static void checkDefaultTimelinesForAccounts() {
+        for (MyAccount myAccount : MyContextHolder.get().persistentAccounts().list()) {
+            for (TimelineType timelineType : TimelineType.getDefaultMyAccountTimelineTypes()) {
+                long count = 0;
+                StringBuilder logMsg =new StringBuilder(myAccount.toString());
+                I18n.appendWithSpace(logMsg, timelineType.toString());
+                for (Timeline timeline : MyContextHolder.get().persistentTimelines().values()) {
+                    if (timeline.getMyAccount().equals(myAccount) && timeline.getTimelineType().equals(timelineType)) {
+                        count++;
+                        I18n.appendWithSpace(logMsg, timeline.toString());
+                    }
+                }
+                assertEquals(logMsg.toString(), 1, count);
+            }
+        }
+    }
+
 }

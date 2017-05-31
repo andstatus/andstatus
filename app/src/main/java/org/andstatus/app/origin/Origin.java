@@ -322,7 +322,7 @@ public class Origin {
             origin = new Origin();
             origin.originType = OriginType.UNKNOWN;
         }
-        origin.url = origin.originType.urlDefault;
+        origin.url = origin.originType.getUrlDefault();
         origin.ssl = origin.originType.sslDefault;
         origin.allowHtml = origin.originType.allowHtmlDefault;
         origin.shortUrlLength = origin.originType.shortUrlLengthDefault;

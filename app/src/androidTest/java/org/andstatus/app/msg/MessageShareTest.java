@@ -28,6 +28,7 @@ import org.andstatus.app.data.MessageInserter;
 import org.andstatus.app.data.MyDataCheckerConversations;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
+import org.andstatus.app.context.DemoData;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.MyHtml;
 import org.junit.Before;
@@ -48,10 +49,10 @@ public class MessageShareTest {
     public void testShareHtml() throws Exception {
         new HtmlContentInserter().insertHtml();
         
-        Origin origin = MyContextHolder.get().persistentOrigins().fromName(TestSuite.CONVERSATION_ORIGIN_NAME);
-        assertTrue(TestSuite.CONVERSATION_ORIGIN_NAME + " exists", origin != null);
-        long msgId = MyQuery.oidToId(OidEnum.MSG_OID, origin.getId(), TestSuite.HTML_MESSAGE_OID);
-        assertTrue("origin=" + origin.getId() + "; oid=" + TestSuite.HTML_MESSAGE_OID, msgId != 0);
+        Origin origin = MyContextHolder.get().persistentOrigins().fromName(DemoData.CONVERSATION_ORIGIN_NAME);
+        assertTrue(DemoData.CONVERSATION_ORIGIN_NAME + " exists", origin != null);
+        long msgId = MyQuery.oidToId(OidEnum.MSG_OID, origin.getId(), DemoData.HTML_MESSAGE_OID);
+        assertTrue("origin=" + origin.getId() + "; oid=" + DemoData.HTML_MESSAGE_OID, msgId != 0);
         MessageShare messageShare = new MessageShare(origin, msgId, null);
         Intent intent = messageShare.intentToViewAndShare(true);
         assertTrue(intent.getExtras().containsKey(Intent.EXTRA_TEXT));
@@ -68,10 +69,10 @@ public class MessageShareTest {
 
     @Test
     public void testSharePlainText() {
-        String body = "Posting as a plain Text " + TestSuite.TESTRUN_UID;
-        final MyAccount myAccount = TestSuite.getMyAccount(TestSuite.TWITTER_TEST_ACCOUNT_NAME);
+        String body = "Posting as a plain Text " + DemoData.TESTRUN_UID;
+        final MyAccount myAccount = DemoData.getMyAccount(DemoData.TWITTER_TEST_ACCOUNT_NAME);
         long msgId = MessageInserter.addMessageForAccount(myAccount, body,
-                TestSuite.PLAIN_TEXT_MESSAGE_OID, DownloadStatus.LOADED);
+                DemoData.PLAIN_TEXT_MESSAGE_OID, DownloadStatus.LOADED);
         MessageShare messageShare = new MessageShare(myAccount.getOrigin(), msgId, null);
         Intent intent = messageShare.intentToViewAndShare(true);
         assertTrue(intent.getExtras().containsKey(Intent.EXTRA_TEXT));

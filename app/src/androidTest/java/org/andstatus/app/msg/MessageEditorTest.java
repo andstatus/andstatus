@@ -42,6 +42,7 @@ import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.database.MsgTable;
+import org.andstatus.app.context.DemoData;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.timeline.Timeline;
 import org.andstatus.app.timeline.TimelineType;
@@ -73,7 +74,7 @@ public class MessageEditorTest extends TimelineActivityTest {
         }
 
         final MyAccount ma = MyContextHolder.get().persistentAccounts()
-                .fromAccountName(TestSuite.CONVERSATION_ACCOUNT_NAME);
+                .fromAccountName(DemoData.CONVERSATION_ACCOUNT_NAME);
         assertTrue(ma.isValid());
         MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
 
@@ -87,12 +88,12 @@ public class MessageEditorTest extends TimelineActivityTest {
     private MessageEditorData getStaticData(MyAccount ma) {
         return MessageEditorData.newEmpty(ma)
                 .setInReplyToId(MyQuery.oidToId(OidEnum.MSG_OID, MyContextHolder.get()
-                                .persistentOrigins().fromName(TestSuite.CONVERSATION_ORIGIN_NAME).getId(),
-                        TestSuite.CONVERSATION_ENTRY_MESSAGE_OID))
+                                .persistentOrigins().fromName(DemoData.CONVERSATION_ORIGIN_NAME).getId(),
+                        DemoData.CONVERSATION_ENTRY_MESSAGE_OID))
                 .setRecipientId(MyQuery.oidToId(OidEnum.USER_OID, ma.getOrigin().getId(),
-                        TestSuite.CONVERSATION_MEMBER_USER_OID))
+                        DemoData.CONVERSATION_MEMBER_USER_OID))
                 .addMentionsToText()
-                .setBody("Some static text " + TestSuite.TESTRUN_UID);
+                .setBody("Some static text " + DemoData.TESTRUN_UID);
     }
 
     @Test
@@ -188,7 +189,7 @@ public class MessageEditorTest extends TimelineActivityTest {
         ActivityTestHelper.waitViewVisible(method + "; Editor appeared", editorView);
         assertTextCleared();
 
-        String body = "Message with attachment " + TestSuite.TESTRUN_UID;
+        String body = "Message with attachment " + DemoData.TESTRUN_UID;
         EditText editText = (EditText) editorView.findViewById(R.id.messageBodyEditText);
         editText.requestFocus();
         TestSuite.waitForIdleSync();
@@ -216,21 +217,21 @@ public class MessageEditorTest extends TimelineActivityTest {
 
         MyLog.i(method, "Callback from a selector");
         Intent data = new Intent();
-        data.setData(TestSuite.LOCAL_IMAGE_TEST_URI2);
+        data.setData(DemoData.LOCAL_IMAGE_TEST_URI2);
         getActivity().onActivityResult(ActivityRequestCode.ATTACH.id, Activity.RESULT_OK, data);
 
         final MessageEditor editor = getActivity().getMessageEditor();
         for (int attempt=0; attempt < 4; attempt++) {
             ActivityTestHelper.waitViewVisible(method, editorView);
             // Due to a race the editor may open before this change first.
-            if (TestSuite.LOCAL_IMAGE_TEST_URI2.equals(editor.getData().getMediaUri())) {
+            if (DemoData.LOCAL_IMAGE_TEST_URI2.equals(editor.getData().getMediaUri())) {
                 break;
             }
             if (DbUtils.waitMs(method, 2000)) {
                 break;
             }
         }
-        assertEquals("Image attached", TestSuite.LOCAL_IMAGE_TEST_URI2, editor.getData().getMediaUri());
+        assertEquals("Image attached", DemoData.LOCAL_IMAGE_TEST_URI2, editor.getData().getMediaUri());
         assertEquals("Text is the same", body, editText.getText().toString().trim());
 
         MyLog.v(this, method + " ended");

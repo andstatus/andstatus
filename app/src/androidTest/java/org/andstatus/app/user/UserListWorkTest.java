@@ -28,6 +28,7 @@ import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
+import org.andstatus.app.context.DemoData;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.util.MyLog;
 import org.junit.Test;
@@ -49,12 +50,12 @@ public class UserListWorkTest extends ActivityTest<UserList> {
         MyLog.i(this, "setUp started");
         TestSuite.initializeWithData(this);
 
-        MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.CONVERSATION_ACCOUNT_NAME);
+        MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(DemoData.CONVERSATION_ACCOUNT_NAME);
         assertTrue(ma.isValid());
         MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
 
-        long msgId = MyQuery.oidToId(OidEnum.MSG_OID, TestSuite.getConversationOriginId(),
-                TestSuite.CONVERSATION_MENTIONS_MESSAGE_OID);
+        long msgId = MyQuery.oidToId(OidEnum.MSG_OID, DemoData.getConversationOriginId(),
+                DemoData.CONVERSATION_MENTIONS_MESSAGE_OID);
         assertTrue(msgId > 0);
         MyLog.i(this, "setUp ended");
 
@@ -71,7 +72,7 @@ public class UserListWorkTest extends ActivityTest<UserList> {
         List<UserListViewItem> listItems = getActivity().getListLoader().getList();
         assertEquals(listItems.toString(), 5, listItems.size());
 
-        MbUser userA = UserListTest.getByUserOid(listItems, TestSuite.CONVERSATION_MEMBER_USER_OID);
+        MbUser userA = UserListTest.getByUserOid(listItems, DemoData.CONVERSATION_MEMBER_USER_OID);
 
         assertTrue("Invoked Context menu for " + userA, helper.invokeContextMenuAction4ListItemId(
                 method, userA.userId, UserListContextMenuItem.FOLLOWERS));

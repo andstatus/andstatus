@@ -36,6 +36,7 @@ import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.MsgTable;
+import org.andstatus.app.context.DemoData;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceEvent;
@@ -65,7 +66,7 @@ public class TimelineActivityTest1 extends TimelineActivityTest {
         TestSuite.initializeWithData(this);
 
         final MyAccount ma = MyContextHolder.get().persistentAccounts()
-                .fromAccountName(TestSuite.CONVERSATION_ACCOUNT_NAME);
+                .fromAccountName(DemoData.CONVERSATION_ACCOUNT_NAME);
         assertTrue(ma.isValid());
         MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
 
@@ -193,7 +194,7 @@ public class TimelineActivityTest1 extends TimelineActivityTest {
 
     private void broadcastCommandExecuted() {
         CommandData commandData = CommandData.newAccountCommand(CommandEnum.CREATE_FAVORITE,
-                TestSuite.getConversationMyAccount());
+                DemoData.getConversationMyAccount());
         MyServiceEventsBroadcaster.newInstance(MyContextHolder.get(), MyServiceState.RUNNING)
                 .setCommandData(commandData).setEvent(MyServiceEvent.AFTER_EXECUTING_COMMAND)
                 .broadcast();

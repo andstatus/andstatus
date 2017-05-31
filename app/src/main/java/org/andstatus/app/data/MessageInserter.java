@@ -20,9 +20,9 @@ import android.text.TextUtils;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.database.MsgOfUserTable;
 import org.andstatus.app.database.MsgTable;
+import org.andstatus.app.context.DemoData;
 import org.andstatus.app.net.social.MbMessage;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.net.social.pumpio.ConnectionPumpio;
@@ -60,9 +60,9 @@ public class MessageInserter {
     
     public MbUser buildUser() {
         if (origin.getOriginType() == OriginType.PUMPIO) {
-            return buildUserFromOid("acct:userOf" + origin.getName() + TestSuite.TESTRUN_UID);
+            return buildUserFromOid("acct:userOf" + origin.getName() + DemoData.TESTRUN_UID);
         }
-        return buildUserFromOid(TestSuite.TESTRUN_UID);
+        return buildUserFromOid(DemoData.TESTRUN_UID);
     }
 
     public MbUser buildUserFromOidAndAvatar(String userOid, String avatarUrlString) {
@@ -86,7 +86,7 @@ public class MessageInserter {
                     + connection.usernameToNickname(username);
         } else {
             username = "userOf" + origin.getName() + userOid;
-            profileUrl = "https://" + TestSuite.GNUSOCIAL_TEST_ORIGIN_NAME
+            profileUrl = "https://" + DemoData.GNUSOCIAL_TEST_ORIGIN_NAME
                     + ".example.com/profiles/" + username;
         }
         if (!partial) {
@@ -96,7 +96,7 @@ public class MessageInserter {
         mbUser.setRealName("Real " + username);
         mbUser.setDescription("This is about " + username);
         mbUser.setHomepage("https://example.com/home/" + username + "/start/");
-        mbUser.location = "Faraway place #" + TestSuite.TESTRUN_UID;
+        mbUser.location = "Faraway place #" + DemoData.TESTRUN_UID;
         mbUser.avatarUrl = mbUser.getHomepage() + "avatar.jpg";
         mbUser.bannerUrl = mbUser.getHomepage() + "banner.png";
         long rand = InstanceId.next();
@@ -190,7 +190,7 @@ public class MessageInserter {
     static void deleteOldMessage(long originId, String messageOid) {
         long messageIdOld = MyQuery.oidToId(OidEnum.MSG_OID, originId, messageOid);
         if (messageIdOld != 0) {
-            int deleted = TestSuite.getMyContextForTest().context().getContentResolver().delete(MatchedUri.getMsgUri(0, messageIdOld),  null, null);
+            int deleted = MyContextHolder.get().context().getContentResolver().delete(MatchedUri.getMsgUri(0, messageIdOld),  null, null);
             assertEquals( "Old message id=" + messageIdOld + " deleted", 1, deleted);
         }
     }

@@ -18,6 +18,7 @@ package org.andstatus.app.service;
 
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.context.DemoData;
 import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
@@ -37,7 +38,7 @@ public class MyServiceTest2 extends MyServiceTest {
         MyLog.i(this, method + " started");
         SharedPreferencesUtil.putBoolean(MyPreferences.KEY_SYNC_WHILE_USING_APPLICATION, false);
         CommandData cd1 = CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE,
-                TestSuite.getMyAccount(TestSuite.TWITTER_TEST_ACCOUNT_NAME),
+                DemoData.getMyAccount(DemoData.TWITTER_TEST_ACCOUNT_NAME),
                 TimelineType.DIRECT);
         mService.setListenedCommand(cd1);
 
@@ -54,7 +55,7 @@ public class MyServiceTest2 extends MyServiceTest {
         MyLog.i(this, method + "; we are in a foreground");
 
         CommandData cd2 = CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE,
-                TestSuite.getMyAccount(TestSuite.TWITTER_TEST_ACCOUNT_NAME),
+                DemoData.getMyAccount(DemoData.TWITTER_TEST_ACCOUNT_NAME),
                 TimelineType.MENTIONS);
         mService.setListenedCommand(cd2);
 
@@ -74,7 +75,7 @@ public class MyServiceTest2 extends MyServiceTest {
         assertTrue("The second command is not in the main queue", queue.contains(cd2));
 
         CommandData cd3 = CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE,
-                TestSuite.getMyAccount(TestSuite.TWITTER_TEST_ACCOUNT_NAME),
+                DemoData.getMyAccount(DemoData.TWITTER_TEST_ACCOUNT_NAME),
                 TimelineType.HOME)
                 .setInForeground(true);
         mService.setListenedCommand(cd3);

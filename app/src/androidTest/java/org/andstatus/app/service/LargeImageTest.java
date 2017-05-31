@@ -27,6 +27,7 @@ import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MessageInserter;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.data.MyDataCheckerConversations;
+import org.andstatus.app.context.DemoData;
 import org.andstatus.app.net.social.ConnectionTwitterGnuSocialMock;
 import org.andstatus.app.net.social.MbAttachment;
 import org.andstatus.app.net.social.MbMessage;
@@ -57,7 +58,7 @@ public class LargeImageTest {
     private DownloadData insertMessage() throws IOException {
         String body = "Large image attachment";
         MessageInserter mi = new MessageInserter(MyContextHolder.get().persistentAccounts()
-                .fromAccountName(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME));
+                .fromAccountName(DemoData.GNUSOCIAL_TEST_ACCOUNT_NAME));
         MbMessage message = mi.buildMessage(mi.buildUser(), body, null, null, DownloadStatus.LOADED);
         message.attachments
                 .add(MbAttachment

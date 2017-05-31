@@ -20,15 +20,14 @@ import android.text.TextUtils;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.database.MsgTable;
+import org.andstatus.app.context.DemoData;
 import org.andstatus.app.net.social.MbAttachment;
 import org.andstatus.app.net.social.MbMessage;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UrlUtils;
-import org.junit.Before;
 
 import java.util.GregorianCalendar;
 import java.util.Map;
@@ -56,31 +55,21 @@ public class ConversationInserter {
         } else {
             bodySuffix = " " + bodySuffixIn;
         }
-        mySetup();
+        iteration = iterationCounter.incrementAndGet();
+        ma = MyContextHolder.get().persistentAccounts().fromAccountName(DemoData.CONVERSATION_ACCOUNT_NAME);
+        assertTrue(DemoData.CONVERSATION_ACCOUNT_NAME + " exists", ma.isValid());
         insertAndTestConversation();
     }
 
-    private void mySetup() {
-        iteration = iterationCounter.incrementAndGet();
-        ma = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.CONVERSATION_ACCOUNT_NAME);
-        assertTrue(TestSuite.CONVERSATION_ACCOUNT_NAME + " exists", ma.isValid());
-    }
-    
-    @Before
-    public void setUp() throws Exception {
-        TestSuite.initializeWithData(this);
-        mySetup();
-    }
-    
     private void insertAndTestConversation() {
-        assertEquals("Only PumpIo supported in this test", OriginType.PUMPIO, TestSuite.CONVERSATION_ORIGIN_TYPE  );
+        assertEquals("Only PumpIo supported in this test", OriginType.PUMPIO, DemoData.CONVERSATION_ORIGIN_TYPE  );
 
         MbUser myAuthor = buildUserFromOid(ma.getUserOid());
 
         MbUser author2 = buildUserFromOid("acct:second@identi.ca");
         author2.avatarUrl = "http://png.findicons.com/files/icons/1780/black_and_orange/300/android_orange.png";
 
-        MbUser author3 = buildUserFromOid(TestSuite.CONVERSATION_MEMBER_USER_OID);
+        MbUser author3 = buildUserFromOid(DemoData.CONVERSATION_MEMBER_USER_OID);
         author3.setRealName("John Smith");
         author3.setHomepage("http://johnsmith.com/welcome");
         author3.setCreatedDate(new GregorianCalendar(2011,5,12).getTimeInMillis());
@@ -92,7 +81,7 @@ public class ConversationInserter {
         
         MbMessage minus1 = buildMessage(author2, "Older one message", null, null);
         MbMessage selected = buildMessage(getAuthor1(), "Selected message", minus1,
-                iteration == 1 ? TestSuite.CONVERSATION_ENTRY_MESSAGE_OID : null);
+                iteration == 1 ? DemoData.CONVERSATION_ENTRY_MESSAGE_OID : null);
         MbMessage reply1 = buildMessage(author3, "Reply 1 to selected", selected, null);
         reply1.getAuthor().followedByActor = TriState.TRUE;
 
@@ -118,10 +107,10 @@ public class ConversationInserter {
         addPublicMessage(reply4, false);
 
         final String BODY_OF_MENTIONS_MESSAGE = "@fourthWithoutAvatar@pump.example.com Reply 5 to Reply 4\n"
-                + "@" + TestSuite.CONVERSATION_MEMBER_USERNAME
+                + "@" + DemoData.CONVERSATION_MEMBER_USERNAME
                 + " @unknownUser@example.com";
         MbMessage reply5 = buildMessage(author2, BODY_OF_MENTIONS_MESSAGE, reply4,
-                iteration == 1 ? TestSuite.CONVERSATION_MENTIONS_MESSAGE_OID : null);
+                iteration == 1 ? DemoData.CONVERSATION_MENTIONS_MESSAGE_OID : null);
         addMessage(reply5);
 
         MbUser reblogger1 = buildUserFromOid("acct:reblogger@identi.ca");
@@ -133,7 +122,7 @@ public class ConversationInserter {
                 setFavoritedByMe(TriState.TRUE));
 
         MbMessage reply7 = buildMessage(getAuthor1(), "Reply 7 to Reply 2 is about " 
-        + TestSuite.PUBLIC_MESSAGE_TEXT + " and something else", reply2, null);
+        + DemoData.PUBLIC_MESSAGE_TEXT + " and something else", reply2, null);
         addPublicMessage(reply7, true);
         
         MbMessage reply8 = buildMessage(author4, "<b>Reply 8</b> to Reply 7", reply7, null);
@@ -151,18 +140,18 @@ public class ConversationInserter {
         addMessage(buildMessage(author4, "A duplicate of " + reply9.getBody(), null, null));
 
         // Message downloaded by another account
-        MyAccount acc2 = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.CONVERSATION_ACCOUNT2_NAME);
+        MyAccount acc2 = MyContextHolder.get().persistentAccounts().fromAccountName(DemoData.CONVERSATION_ACCOUNT2_NAME);
         MbUser actorOld = author3.actor;
-        author3.actor = users.get(TestSuite.CONVERSATION_ACCOUNT2_USER_OID);
+        author3.actor = users.get(DemoData.CONVERSATION_ACCOUNT2_USER_OID);
         author3.followedByActor = TriState.TRUE;
         MbMessage reply10 = buildMessage(acc2, author3, "Reply 10 to Reply 8", reply8, null);
-        assertEquals("Another account as a message actor", reply10.myUserOid, TestSuite.CONVERSATION_ACCOUNT2_USER_OID);
-        assertEquals("Another account as a author actor", reply10.getAuthor().actor.oid, TestSuite.CONVERSATION_ACCOUNT2_USER_OID);
+        assertEquals("Another account as a message actor", reply10.myUserOid, DemoData.CONVERSATION_ACCOUNT2_USER_OID);
+        assertEquals("Another account as a author actor", reply10.getAuthor().actor.oid, DemoData.CONVERSATION_ACCOUNT2_USER_OID);
         MessageInserter.addMessage(acc2, reply10);
         author3.followedByActor = TriState.UNKNOWN;
         author3.actor = actorOld;
 
-        MbMessage reply11 = buildMessage(author2, "Reply 11 to Reply 7, " + TestSuite.GLOBAL_PUBLIC_MESSAGE_TEXT + " text", reply7, null);
+        MbMessage reply11 = buildMessage(author2, "Reply 11 to Reply 7, " + DemoData.GLOBAL_PUBLIC_MESSAGE_TEXT + " text", reply7, null);
         addPublicMessage(reply11, true);
 
         MbMessage reply13 = buildMessage(myAuthor, "My reply to Reply 2", reply2, null);
@@ -171,7 +160,7 @@ public class ConversationInserter {
     }
 
     private MbUser getAuthor1() {
-        MbUser author1 = buildUserFromOid(TestSuite.CONVERSATION_ENTRY_USER_OID);
+        MbUser author1 = buildUserFromOid(DemoData.CONVERSATION_ENTRY_USER_OID);
         author1.avatarUrl = "https://raw.github.com/andstatus/andstatus/master/app/src/main/res/drawable/splash_logo.png";
         return author1;
     }

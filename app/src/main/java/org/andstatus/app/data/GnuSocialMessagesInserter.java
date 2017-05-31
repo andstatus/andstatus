@@ -20,8 +20,8 @@ import android.support.annotation.Nullable;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.database.MsgTable;
+import org.andstatus.app.context.DemoData;
 import org.andstatus.app.net.social.MbMessage;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.origin.Origin;
@@ -52,12 +52,12 @@ public class GnuSocialMessagesInserter {
     private void mySetup() {
         iteration = iterationCounter.incrementAndGet();
         conversationOid = Long.toString(MyLog.uniqueCurrentTimeMS());
-        origin = MyContextHolder.get().persistentOrigins().fromName(TestSuite.GNUSOCIAL_TEST_ORIGIN_NAME);
-        assertTrue(TestSuite.GNUSOCIAL_TEST_ORIGIN_NAME + " exists", origin != null);
-        ma = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME); 
-        assertTrue(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME + " exists", ma.isValid());
-        accountMbUser = userFromOidAndAvatar(TestSuite.GNUSOCIAL_TEST_ACCOUNT_USER_OID,
-                TestSuite.GNUSOCIAL_TEST_ACCOUNT_AVATAR_URL);
+        origin = MyContextHolder.get().persistentOrigins().fromName(DemoData.GNUSOCIAL_TEST_ORIGIN_NAME);
+        assertTrue(DemoData.GNUSOCIAL_TEST_ORIGIN_NAME + " exists", origin != null);
+        ma = MyContextHolder.get().persistentAccounts().fromAccountName(DemoData.GNUSOCIAL_TEST_ACCOUNT_NAME);
+        assertTrue(DemoData.GNUSOCIAL_TEST_ACCOUNT_NAME + " exists", ma.isValid());
+        accountMbUser = userFromOidAndAvatar(DemoData.GNUSOCIAL_TEST_ACCOUNT_USER_OID,
+                DemoData.GNUSOCIAL_TEST_ACCOUNT_AVATAR_URL);
     }
     
     private void addConversation() {
@@ -71,7 +71,7 @@ public class GnuSocialMessagesInserter {
 
         MbMessage minus1 = buildMessage(author2, "Older one message", null, null);
         MbMessage selected = buildMessage(author1, "Selected message", minus1,
-                iteration == 1 ? TestSuite.CONVERSATION_ENTRY_MESSAGE_OID : null);
+                iteration == 1 ? DemoData.CONVERSATION_ENTRY_MESSAGE_OID : null);
         MbMessage reply1 = buildMessage(author3, "Reply 1 to selected", selected, null);
         MbMessage reply2 = buildMessage(author2, "Reply 2 to selected is public", selected, null);
         addPublicMessage(reply2, true);
@@ -80,14 +80,14 @@ public class GnuSocialMessagesInserter {
         addMessage(reply3);
         addMessage(reply1);
         addMessage(reply2);
-        MbMessage reply4 = buildMessage(author4, "Reply 4 to Reply 1, " + TestSuite.PUBLIC_MESSAGE_TEXT + " other author", reply1, null);
+        MbMessage reply4 = buildMessage(author4, "Reply 4 to Reply 1, " + DemoData.PUBLIC_MESSAGE_TEXT + " other author", reply1, null);
         addMessage(reply4);
         addPublicMessage(reply4, false);
         addMessage(buildMessage(author2, "Reply 5 to Reply 4", reply4, null));
         addMessage(buildMessage(author3, "Reply 6 to Reply 4 - the second", reply4, null));
 
         MbMessage reply7 = buildMessage(author1, "Reply 7 to Reply 2 is about " 
-        + TestSuite.PUBLIC_MESSAGE_TEXT + " and something else", reply2, null);
+        + DemoData.PUBLIC_MESSAGE_TEXT + " and something else", reply2, null);
         addPublicMessage(reply7, true);
         
         MbMessage reply8 = buildMessage(author4, "<b>Reply 8</b> to Reply 7", reply7, null);
@@ -95,7 +95,7 @@ public class GnuSocialMessagesInserter {
         addMessage(reply9);
         MbMessage reply10 = buildMessage(author3, "Reply 10 to Reply 8", reply8, null);
         addMessage(reply10);
-        MbMessage reply11 = buildMessage(author2, "Reply 11 to Reply 7 with " + TestSuite.GLOBAL_PUBLIC_MESSAGE_TEXT + " text", reply7, null);
+        MbMessage reply11 = buildMessage(author2, "Reply 11 to Reply 7 with " + DemoData.GLOBAL_PUBLIC_MESSAGE_TEXT + " text", reply7, null);
         addPublicMessage(reply11, true);
     }
     

@@ -31,6 +31,7 @@ import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.MsgTable;
+import org.andstatus.app.context.DemoData;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.timeline.Timeline;
 import org.andstatus.app.timeline.TimelineType;
@@ -53,7 +54,7 @@ public class PublicTimelineActivityTest extends TimelineActivityTest {
         TestSuite.initializeWithData(this);
 
         ma = MyContextHolder.get().persistentAccounts().getFirstSucceededForOrigin(
-                MyContextHolder.get().persistentOrigins().fromName(TestSuite.GNUSOCIAL_TEST_ORIGIN_NAME));
+                MyContextHolder.get().persistentOrigins().fromName(DemoData.GNUSOCIAL_TEST_ORIGIN_NAME));
         assertTrue(ma.isValidAndSucceeded());
         MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
 
@@ -66,12 +67,12 @@ public class PublicTimelineActivityTest extends TimelineActivityTest {
 
     @Test
     public void testGlobalSearchInOptionsMenu() throws InterruptedException {
-        oneSearchTest("testGlobalSearchInOptionsMenu", R.id.global_search_menu_id, TestSuite.GLOBAL_PUBLIC_MESSAGE_TEXT);
+        oneSearchTest("testGlobalSearchInOptionsMenu", R.id.global_search_menu_id, DemoData.GLOBAL_PUBLIC_MESSAGE_TEXT);
     }
 
     @Test
     public void testSearch() throws InterruptedException {
-        oneSearchTest("testSearch", R.id.search_menu_id, TestSuite.PUBLIC_MESSAGE_TEXT);
+        oneSearchTest("testSearch", R.id.search_menu_id, DemoData.PUBLIC_MESSAGE_TEXT);
     }
 
     private void oneSearchTest(String method, int menu_id, String messageText) throws InterruptedException {

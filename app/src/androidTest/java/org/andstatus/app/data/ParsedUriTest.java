@@ -18,6 +18,7 @@ package org.andstatus.app.data;
 
 import android.net.Uri;
 
+import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.user.UserListType;
@@ -35,7 +36,7 @@ public class ParsedUriTest {
 
     @Test
     public void testUserList() {
-        assertOneUserList(TestSuite.getConversationOriginId());
+        assertOneUserList(DemoData.getConversationOriginId());
         assertOneUserList(0);
     }
 

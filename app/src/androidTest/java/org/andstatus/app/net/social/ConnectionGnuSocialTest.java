@@ -21,6 +21,7 @@ import android.support.test.InstrumentationRegistry;
 
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MyContentType;
+import org.andstatus.app.context.DemoData;
 import org.andstatus.app.net.http.HttpReadResult;
 import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
 import org.andstatus.app.util.RawResourceUtils;
@@ -58,7 +59,7 @@ public class ConnectionGnuSocialTest {
                 org.andstatus.app.tests.R.raw.quitter_home);
         connection.getHttpMock().setResponse(jso);
 
-        String accountUserOid = TestSuite.GNUSOCIAL_TEST_ACCOUNT_USER_OID;
+        String accountUserOid = DemoData.GNUSOCIAL_TEST_ACCOUNT_USER_OID;
         List<MbActivity> timeline = connection.getTimeline(ApiRoutineEnum.PUBLIC_TIMELINE,
                 new TimelinePosition("2656388"), TimelinePosition.EMPTY, 20, accountUserOid);
         assertNotNull("timeline returned", timeline);
@@ -133,7 +134,7 @@ public class ConnectionGnuSocialTest {
         connection.getHttpMock().setResponse(jso);
         
         List<MbActivity> timeline = connection.search(new TimelinePosition(""), TimelinePosition.EMPTY, 20,
-                TestSuite.GLOBAL_PUBLIC_MESSAGE_TEXT);
+                DemoData.GLOBAL_PUBLIC_MESSAGE_TEXT);
         assertNotNull("timeline returned", timeline);
         int size = 4;
         assertEquals("Number of items in the Timeline", size, timeline.size());
@@ -145,7 +146,7 @@ public class ConnectionGnuSocialTest {
                 org.andstatus.app.tests.R.raw.quitter_message_with_attachment);
         connection.getHttpMock().setResponse(jso);
         
-        MbMessage message2 = connection.updateStatus("Test post message with media", "", "", TestSuite.LOCAL_IMAGE_TEST_URI);
+        MbMessage message2 = connection.updateStatus("Test post message with media", "", "", DemoData.LOCAL_IMAGE_TEST_URI);
         message2.setPublic(true); 
         assertEquals("Message returned", privateGetMessageWithAttachment(
                 InstrumentationRegistry.getInstrumentation().getContext(), false), message2);
@@ -162,7 +163,7 @@ public class ConnectionGnuSocialTest {
         connection.getHttpMock().setResponse(jso);
         MbMessage msg = connection.getMessage(MESSAGE_OID);
         if (uniqueUid) {
-            msg.oid += "_" + TestSuite.TESTRUN_UID;
+            msg.oid += "_" + DemoData.TESTRUN_UID;
         }
         assertNotNull("message returned", msg);
         assertEquals("conversationOid", "1956322", msg.conversationOid);

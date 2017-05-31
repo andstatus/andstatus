@@ -18,6 +18,7 @@ package org.andstatus.app.net.social;
 
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.context.DemoData;
 import org.andstatus.app.origin.Origin;
 import org.junit.Before;
 import org.junit.Test;
@@ -36,18 +37,18 @@ public class MbUserTest {
 
     @Test
     public void testFromBodyText1() {
-        Origin origin = MyContextHolder.get().persistentOrigins().fromName(TestSuite.GNUSOCIAL_TEST_ORIGIN_NAME);
+        Origin origin = MyContextHolder.get().persistentOrigins().fromName(DemoData.GNUSOCIAL_TEST_ORIGIN_NAME);
         String webFingerId2 = "anotherUser@somedomain.org";
         String shortUsername3 = "shortusername";
-        String body = "@" + TestSuite.GNUSOCIAL_TEST_ACCOUNT_USERNAME + " @" + TestSuite.GNUSOCIAL_TEST_ACCOUNT2_USERNAME
+        String body = "@" + DemoData.GNUSOCIAL_TEST_ACCOUNT_USERNAME + " @" + DemoData.GNUSOCIAL_TEST_ACCOUNT2_USERNAME
                 + " Please take this into account\n@" + webFingerId2
-                + " @" + TestSuite.GNUSOCIAL_TEST_ACCOUNT2_USERNAME
+                + " @" + DemoData.GNUSOCIAL_TEST_ACCOUNT2_USERNAME
                 + " And let me mention: @" + shortUsername3;
         List<MbUser> users = MbUser.fromOriginAndUserOid(origin.getId(), "").extractUsersFromBodyText(body, false);
         String msgLog = body + " -> " + users;
         assertEquals(msgLog, 4, users.size());
-        assertEquals(msgLog, TestSuite.GNUSOCIAL_TEST_ACCOUNT_USERNAME, users.get(0).getUserName());
-        assertEquals(msgLog, TestSuite.GNUSOCIAL_TEST_ACCOUNT2_USERNAME, users.get(1).getUserName());
+        assertEquals(msgLog, DemoData.GNUSOCIAL_TEST_ACCOUNT_USERNAME, users.get(0).getUserName());
+        assertEquals(msgLog, DemoData.GNUSOCIAL_TEST_ACCOUNT2_USERNAME, users.get(1).getUserName());
         assertEquals(msgLog, webFingerId2, users.get(2).getWebFingerId());
         assertEquals(msgLog, shortUsername3, users.get(3).getUserName());
     }
@@ -59,7 +60,7 @@ public class MbUserTest {
         final String SKIPPED_USERNAME3 = "kauiwoeieurt";
         final String USERNAME4 = "djjerekwerwewer";
 
-        Origin origin = MyContextHolder.get().persistentOrigins().fromName(TestSuite.TWITTER_TEST_ORIGIN_NAME);
+        Origin origin = MyContextHolder.get().persistentOrigins().fromName(DemoData.TWITTER_TEST_ORIGIN_NAME);
         String body = "Starting post @ #ThisIsTagofsome-event-and entertainment"
                 + " by @" + USERNAME1 + " @@" + SKIPPED_USERNAME2 + " @#" + SKIPPED_USERNAME3
                 + " &amp; @" + USERNAME4

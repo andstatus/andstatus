@@ -20,6 +20,7 @@ import android.support.test.InstrumentationRegistry;
 
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MyContentType;
+import org.andstatus.app.context.DemoData;
 import org.andstatus.app.util.RawResourceUtils;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
@@ -35,7 +36,7 @@ import static org.junit.Assert.assertNotNull;
 
 public class ConnectionMastodonTest {
     private ConnectionMastodonMock connection;
-    private String accountUserOid = TestSuite.MASTODON_TEST_ACCOUNT_USER_OID;
+    private String accountUserOid = DemoData.MASTODON_TEST_ACCOUNT_USER_OID;
 
     @Before
     public void setUp() throws Exception {

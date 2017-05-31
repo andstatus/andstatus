@@ -9,8 +9,8 @@ android {
         applicationId "org.andstatus.app"
         minSdkVersion 16
         targetSdkVersion 25
-        versionName "33.09"
-        versionCode 217
+        versionName "33.10"
+        versionCode 218
 
         testApplicationId "org.andstatus.app.tests"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
@@ -76,6 +76,7 @@ dependencies {
     compile 'org.apache.commons:commons-lang3:3.4'
     compile 'com.github.woxthebox:draglistview:1.3' // https://github.com/woxblom/DragListView
     compile 'com.github.scribejava:scribejava-core:4.1.0'
+    compile 'junit:junit:4.12'
 
     androidTestCompile 'com.android.support.test:runner:0.6-alpha'
     androidTestCompile 'com.android.support.test:rules:0.6-alpha'

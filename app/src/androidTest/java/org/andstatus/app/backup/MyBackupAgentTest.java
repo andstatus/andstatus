@@ -12,6 +12,7 @@ import org.andstatus.app.account.PersistentAccounts;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyStorage;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.context.DemoData;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.FileUtils;
 import org.andstatus.app.util.MyLog;
@@ -46,7 +47,7 @@ public class MyBackupAgentTest {
         PersistentAccounts accountsBefore = PersistentAccounts.newEmpty(MyContextHolder.get());
         accountsBefore.initialize();
         assertEquals("Compare Persistent accounts with copy", MyContextHolder.get().persistentAccounts(), accountsBefore);
-        compareOneAccount(MyContextHolder.get().persistentAccounts(), accountsBefore, TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME);
+        compareOneAccount(MyContextHolder.get().persistentAccounts(), accountsBefore, DemoData.GNUSOCIAL_TEST_ACCOUNT_NAME);
         
         File outputFolder = MyContextHolder.get().context().getCacheDir();
         File dataFolder = testBackup(outputFolder);
@@ -59,7 +60,7 @@ public class MyBackupAgentTest {
         assertEquals("Number of persistent accounts", accountsBefore.size(), MyContextHolder.get().persistentAccounts().size());
         
         assertEquals("Persistent accounts", accountsBefore, MyContextHolder.get().persistentAccounts());
-        compareOneAccount(accountsBefore, MyContextHolder.get().persistentAccounts(), TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME);
+        compareOneAccount(accountsBefore, MyContextHolder.get().persistentAccounts(), DemoData.GNUSOCIAL_TEST_ACCOUNT_NAME);
 
         deleteBackup(dataFolder);
     }

@@ -28,6 +28,7 @@ import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.DownloadTable;
 import org.andstatus.app.database.UserTable;
+import org.andstatus.app.context.DemoData;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.social.ConnectionTwitterGnuSocialMock;
 import org.andstatus.app.util.MyLog;
@@ -54,16 +55,16 @@ public class AvatarDownloaderTest {
 
     @Test
     public void testLoadPumpio() throws IOException {
-        ma = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.CONVERSATION_ACCOUNT_NAME);
-        assertTrue(TestSuite.CONVERSATION_ACCOUNT_NAME + " exists", ma.isValid());
-        loadForOneMyAccount(TestSuite.CONVERSATION_ACCOUNT_AVATAR_URL);
+        ma = MyContextHolder.get().persistentAccounts().fromAccountName(DemoData.CONVERSATION_ACCOUNT_NAME);
+        assertTrue(DemoData.CONVERSATION_ACCOUNT_NAME + " exists", ma.isValid());
+        loadForOneMyAccount(DemoData.CONVERSATION_ACCOUNT_AVATAR_URL);
     }
 
     @Test
     public void testLoadBasicAuth() throws IOException {
-        ma = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME);
-        assertTrue(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME + " exists", ma.isValid());
-        loadForOneMyAccount(TestSuite.GNUSOCIAL_TEST_ACCOUNT_AVATAR_URL);
+        ma = MyContextHolder.get().persistentAccounts().fromAccountName(DemoData.GNUSOCIAL_TEST_ACCOUNT_NAME);
+        assertTrue(DemoData.GNUSOCIAL_TEST_ACCOUNT_NAME + " exists", ma.isValid());
+        loadForOneMyAccount(DemoData.GNUSOCIAL_TEST_ACCOUNT_AVATAR_URL);
     }
     
     private void loadForOneMyAccount(String urlStringInitial) throws IOException {
@@ -113,11 +114,11 @@ public class AvatarDownloaderTest {
 
     @Test
     public void testDeletedFile() throws IOException {
-        ma = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.CONVERSATION_ACCOUNT_NAME);
+        ma = MyContextHolder.get().persistentAccounts().fromAccountName(DemoData.CONVERSATION_ACCOUNT_NAME);
         
-        changeMaAvatarUrl(TestSuite.CONVERSATION_ACCOUNT_AVATAR_URL);
+        changeMaAvatarUrl(DemoData.CONVERSATION_ACCOUNT_AVATAR_URL);
         String urlString = MyQuery.userIdToStringColumnValue(UserTable.AVATAR_URL, ma.getUserId());
-        assertEquals(TestSuite.CONVERSATION_ACCOUNT_AVATAR_URL, urlString);
+        assertEquals(DemoData.CONVERSATION_ACCOUNT_AVATAR_URL, urlString);
         
         loadAndAssertStatusForMa(DownloadStatus.LOADED, false);
         DownloadData data = AvatarData.getForUser(ma.getUserId());

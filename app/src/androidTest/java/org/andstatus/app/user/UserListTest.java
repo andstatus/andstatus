@@ -28,6 +28,7 @@ import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.database.MsgTable;
+import org.andstatus.app.context.DemoData;
 import org.andstatus.app.msg.MessageListContextMenuItem;
 import org.andstatus.app.msg.TimelineActivity;
 import org.andstatus.app.msg.TimelineActivityTest;
@@ -51,7 +52,7 @@ public class UserListTest extends TimelineActivityTest {
         TestSuite.initializeWithData(this);
 
         final MyAccount ma = MyContextHolder.get().persistentAccounts()
-                .fromAccountName(TestSuite.CONVERSATION_ACCOUNT_NAME);
+                .fromAccountName(DemoData.CONVERSATION_ACCOUNT_NAME);
         assertTrue(ma.isValid());
         MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
 
@@ -65,12 +66,12 @@ public class UserListTest extends TimelineActivityTest {
         final String method = "testUsersOfMessage";
         TestSuite.waitForListLoaded(getActivity(), 2);
         ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<>(getActivity(), UserList.class);
-        long msgId = MyQuery.oidToId(OidEnum.MSG_OID, TestSuite.getConversationOriginId(),
-                TestSuite.CONVERSATION_MENTIONS_MESSAGE_OID);
+        long msgId = MyQuery.oidToId(OidEnum.MSG_OID, DemoData.getConversationOriginId(),
+                DemoData.CONVERSATION_MENTIONS_MESSAGE_OID);
         String body = MyQuery.msgIdToStringColumnValue(MsgTable.BODY, msgId);
         String logMsg = MyQuery.msgInfoForLog(msgId);
 
-        List<MbUser> users = MbUser.fromOriginAndUserOid(TestSuite.getConversationMyAccount().getOriginId(), "").extractUsersFromBodyText(body, false);
+        List<MbUser> users = MbUser.fromOriginAndUserOid(DemoData.getConversationMyAccount().getOriginId(), "").extractUsersFromBodyText(body, false);
         assertEquals(logMsg, 3, users.size());
         assertEquals(logMsg, "unknownUser@example.com", users.get(2).getUserName());
 
@@ -95,10 +96,10 @@ public class UserListTest extends TimelineActivityTest {
         if (messageWasFound) {
             assertEquals(listItems.toString(), 5, listItems.size());
 
-            MbUser userE = ConversationInserter.getUsers().get(TestSuite.CONVERSATION_MEMBER_USER_OID);
-            assertTrue("Found " + TestSuite.CONVERSATION_MEMBER_USER_OID + " cached ", userE != null);
-            MbUser userA = getByUserOid(listItems, TestSuite.CONVERSATION_MEMBER_USER_OID);
-            assertTrue("Found " + TestSuite.CONVERSATION_MEMBER_USER_OID + ", " + logMsg, userA != null);
+            MbUser userE = ConversationInserter.getUsers().get(DemoData.CONVERSATION_MEMBER_USER_OID);
+            assertTrue("Found " + DemoData.CONVERSATION_MEMBER_USER_OID + " cached ", userE != null);
+            MbUser userA = getByUserOid(listItems, DemoData.CONVERSATION_MEMBER_USER_OID);
+            assertTrue("Found " + DemoData.CONVERSATION_MEMBER_USER_OID + ", " + logMsg, userA != null);
             compareAttributes(userE, userA, true);
         }
 

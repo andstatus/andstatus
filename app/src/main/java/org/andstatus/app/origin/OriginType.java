@@ -116,7 +116,7 @@ public enum OriginType implements SelectableEnum {
     protected boolean allowHtmlDefault = true;
     /** Maximum number of characters in the message */
     protected int textLimitDefault = 0;
-    protected URL urlDefault = null;
+    private URL urlDefault = null;
     private String basicPath = BASIC_PATH_DEFAULT;
     private String oauthPath = OAUTH_PATH_DEFAULT;
     private final boolean mAllowAttachmentForDirectMessage;
@@ -373,6 +373,10 @@ public enum OriginType implements SelectableEnum {
 
     public boolean isUsernameNeededToStartAddingNewAccount(boolean isOAuth) {
         return isOAuth ? shouldSetNewUsernameManuallyIfOAuth : shouldSetNewUsernameManuallyNoOAuth;
+    }
+
+    public URL getUrlDefault() {
+        return urlDefault;
     }
 
 }
