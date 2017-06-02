@@ -23,8 +23,8 @@ import android.view.Menu;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.BaseAdapter;
 import android.widget.ListAdapter;
-import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
 import org.andstatus.app.ActivityRequestCode;
@@ -102,7 +102,7 @@ public abstract class OriginList extends MyListActivity {
             }
         });
         MyLog.v(this, "fillList, " + data.size() + " items");
-        ((SimpleAdapter) getListAdapter()).notifyDataSetChanged(); 
+        ((BaseAdapter) getListAdapter()).notifyDataSetChanged();
     }
 
     protected final void fillData(List<Map<String, String>> data) {

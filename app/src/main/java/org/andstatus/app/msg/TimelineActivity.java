@@ -750,6 +750,11 @@ public class TimelineActivity extends MessageEditorListActivity implements
     private TimelineData setAndGetListData(TimelinePage pageLoaded) {
         TimelineData dataNew = new TimelineData(listData, pageLoaded);
         listData = dataNew;
+        TimelineAdapter listAdapter = getListAdapter();
+        if (listAdapter != null) {
+            // Old value of listData is modified also
+            listAdapter.notifyDataSetChanged();
+        }
         return dataNew;
     }
 
@@ -859,9 +864,10 @@ public class TimelineActivity extends MessageEditorListActivity implements
         boolean keepCurrentPosition = keepCurrentPosition_in && getListData().isSameTimeline &&
                 isPositionRestored() && dataLoaded.params.whichPage != WhichPage.TOP;
         super.onLoadFinished(keepCurrentPosition);
-        if (dataLoaded.params.whichPage == WhichPage.TOP) {
+        TimelineAdapter listAdapter = getListAdapter();
+        if (dataLoaded.params.whichPage == WhichPage.TOP && listAdapter != null) {
             TimelineListPositionStorage.setPosition(getListView(), 0);
-            getListAdapter().setPositionRestored(true);
+            listAdapter.setPositionRestored(true);
         }
         // TODO end: Move this inside superclass
 
