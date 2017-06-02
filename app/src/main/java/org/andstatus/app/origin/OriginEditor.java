@@ -147,13 +147,8 @@ public class OriginEditor extends MyActivity {
             editTextHost.setOnFocusChangeListener(new View.OnFocusChangeListener() {
                 @Override
                 public void onFocusChange(View v, boolean hasFocus) {
-                    if (!(hasFocus) && TextUtils.isEmpty(editTextOriginName.getText())) {
-                        Origin origin = new Origin.Builder(
-                                originTypes.get(spinnerOriginType.getSelectedItemPosition()))
-                                .setHostOrUrl(editTextHost.getText().toString()).build();
-                        if (origin.getUrl() != null) {
-                            editTextOriginName.setText(origin.getUrl().getHost());
-                        }
+                    if (!hasFocus) {
+                        originNameFromHost();
                     }
                 }
             });
@@ -199,6 +194,17 @@ public class OriginEditor extends MyActivity {
         setTitle(title);
     }
 
+    void originNameFromHost() {
+        if (TextUtils.isEmpty(editTextOriginName.getText())) {
+            Origin origin = new Origin.Builder(
+                    originTypes.get(spinnerOriginType.getSelectedItemPosition()))
+                    .setHostOrUrl(editTextHost.getText().toString()).build();
+            if (origin.getUrl() != null) {
+                editTextOriginName.setText(origin.getUrl().getHost());
+            }
+        }
+    }
+
     void showSslModeSummary(SslModeEnum sslMode) {
         ((TextView)findViewById(R.id.ssl_mode_summary)).setText(sslMode.getSummaryResourceId());
     }
@@ -216,6 +222,7 @@ public class OriginEditor extends MyActivity {
     private class AddOrigin implements OnClickListener {
         @Override
         public void onClick(View v) {
+            originNameFromHost();
             builder = new Origin.Builder(originTypes.get(spinnerOriginType.getSelectedItemPosition()))
                     .setName(editTextOriginName.getText().toString());
             saveOthers();

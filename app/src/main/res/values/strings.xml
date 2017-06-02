@@ -230,7 +230,8 @@
     social.tchncs.de</string>
   <string name="label_manage_origin_systems">Manage social networks</string>
   <string name="label_origin_list">Social networks</string>
-  <string name="label_origin_name">Name of the Social network (unique and not changeable)</string>
+  <string name="label_origin_name">Name of the Social network</string>
+  <string name="origin_name_hint">E.g. Poster, Rainbow, Quitter.se, MyInstance</string>
   <string name="label_origin_system">Social network</string>
   <string name="label_origin_type">Type of Social network</string>
   <string name="label_restore">Restore application data from Backup</string>
