@@ -41,12 +41,12 @@ import java.net.URL;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class MessageInserter {
+public class DemoMessageInserter {
     private MyAccount ma;
     private Origin origin;
     private MbUser accountMbUser;
 
-    public MessageInserter(MyAccount maIn) {
+    public DemoMessageInserter(MyAccount maIn) {
         ma = maIn;
         assertTrue(ma != null);
         origin = MyContextHolder.get().persistentOrigins().fromId(ma.getOriginId());
@@ -135,7 +135,7 @@ public class MessageInserter {
     }
 
     static long addMessage(MyAccount ma, MbMessage message) {
-        return new MessageInserter(ma).addMessage(message);
+        return new DemoMessageInserter(ma).addMessage(message);
     }
 
     public long addMessage(final MbMessage message) {
@@ -197,7 +197,7 @@ public class MessageInserter {
     
     public static long addMessageForAccount(MyAccount ma, String body, String messageOid, DownloadStatus messageStatus) {
         assertTrue("Is not valid: " + ma, ma.isValid());
-        MessageInserter mi = new MessageInserter(ma);
+        DemoMessageInserter mi = new DemoMessageInserter(ma);
         return mi.addMessage(mi.buildMessage(mi.buildUser(), body, null, messageOid, messageStatus));
     }
 }

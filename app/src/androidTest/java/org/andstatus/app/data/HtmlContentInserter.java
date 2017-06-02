@@ -55,7 +55,7 @@ public class HtmlContentInserter {
     }
 
     private MbUser buildUserFromOid(String userOid) {
-        return new MessageInserter(ma).buildUserFromOid(userOid);
+        return new DemoMessageInserter(ma).buildUserFromOid(userOid);
     }
     
     public void insertHtml() {
@@ -94,10 +94,10 @@ public class HtmlContentInserter {
         		TextUtils.isEmpty(messageOid) ? null : messageOid + "-noHtml", false);
     }
 
-	private MessageInserter assertHtmlMessageContentAllowed(MbUser author,
-			String bodyString, String messageOid, boolean htmlContentAllowed) {
+	private DemoMessageInserter assertHtmlMessageContentAllowed(MbUser author,
+                                                                String bodyString, String messageOid, boolean htmlContentAllowed) {
 		setHtmlContentAllowed(htmlContentAllowed);
-        MessageInserter mi = new MessageInserter(ma);
+        DemoMessageInserter mi = new DemoMessageInserter(ma);
         long msgId1 = mi.addMessage(mi.buildMessage(author, bodyString, null, messageOid, DownloadStatus.LOADED));
         String body = MyQuery.msgIdToStringColumnValue(MsgTable.BODY, msgId1);
         if (htmlContentAllowed) {

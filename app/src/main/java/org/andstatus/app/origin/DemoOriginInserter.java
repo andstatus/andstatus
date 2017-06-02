@@ -16,30 +16,30 @@ import org.andstatus.app.util.UrlUtils;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public final class OriginInserter {
+public final class DemoOriginInserter {
     private MyContext myContext;
 
-    public OriginInserter(MyContext myContext) {
+    public DemoOriginInserter(MyContext myContext) {
         this.myContext = myContext;
     }
 
     public void insert() {
         DemoData.checkDataPath();
-        OriginInserter.createOneOrigin(OriginType.TWITTER, DemoData.TWITTER_TEST_ORIGIN_NAME,
+        createOneOrigin(OriginType.TWITTER, DemoData.TWITTER_TEST_ORIGIN_NAME,
                 DemoData.getTestOriginHost(DemoData.TWITTER_TEST_ORIGIN_NAME),
                 true, SslModeEnum.SECURE, false, true, true);
-        OriginInserter.createOneOrigin(OriginType.PUMPIO,
+        createOneOrigin(OriginType.PUMPIO,
                 DemoData.PUMPIO_ORIGIN_NAME,
                 DemoData.getTestOriginHost(DemoData.PUMPIO_ORIGIN_NAME),
                 true, SslModeEnum.SECURE, true, true, true);
-        OriginInserter.createOneOrigin(OriginType.GNUSOCIAL, DemoData.GNUSOCIAL_TEST_ORIGIN_NAME,
+        createOneOrigin(OriginType.GNUSOCIAL, DemoData.GNUSOCIAL_TEST_ORIGIN_NAME,
                 DemoData.getTestOriginHost(DemoData.GNUSOCIAL_TEST_ORIGIN_NAME),
                 true, SslModeEnum.SECURE, true, true, true);
         String additionalOriginName = DemoData.GNUSOCIAL_TEST_ORIGIN_NAME + "ins";
-        OriginInserter.createOneOrigin(OriginType.GNUSOCIAL, additionalOriginName,
+        createOneOrigin(OriginType.GNUSOCIAL, additionalOriginName,
                 DemoData.getTestOriginHost(additionalOriginName),
                 true, SslModeEnum.INSECURE, true, false, true);
-        OriginInserter.createOneOrigin(OriginType.MASTODON, DemoData.MASTODON_TEST_ORIGIN_NAME,
+        createOneOrigin(OriginType.MASTODON, DemoData.MASTODON_TEST_ORIGIN_NAME,
                 DemoData.getTestOriginHost(DemoData.MASTODON_TEST_ORIGIN_NAME),
                 true, SslModeEnum.SECURE, true, true, true);
         myContext.persistentOrigins().initialize();

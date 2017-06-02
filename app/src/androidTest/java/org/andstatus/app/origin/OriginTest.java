@@ -5,7 +5,7 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.context.UserInTimeline;
 import org.andstatus.app.data.DownloadStatus;
-import org.andstatus.app.data.MessageInserter;
+import org.andstatus.app.data.DemoMessageInserter;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.context.DemoData;
@@ -102,16 +102,16 @@ public class OriginTest {
         boolean inCombinedGlobalSearch = true;
         boolean inCombinedPublicReload = true;
         
-        OriginInserter.createOneOrigin(originType, originName, hostOrUrl, isSsl, SslModeEnum.SECURE, allowHtml,
+        DemoOriginInserter.createOneOrigin(originType, originName, hostOrUrl, isSsl, SslModeEnum.SECURE, allowHtml,
                 inCombinedGlobalSearch, inCombinedPublicReload);
-        OriginInserter.createOneOrigin(originType, originName, "https://" + hostOrUrl
+        DemoOriginInserter.createOneOrigin(originType, originName, "https://" + hostOrUrl
                 + "/somepath", isSsl, SslModeEnum.INSECURE, allowHtml, 
                 inCombinedGlobalSearch, false);
-        OriginInserter.createOneOrigin(originType, originName, "https://" + hostOrUrl
+        DemoOriginInserter.createOneOrigin(originType, originName, "https://" + hostOrUrl
                 + "/pathwithslash/", isSsl, SslModeEnum.MISCONFIGURED, allowHtml,
                 false, inCombinedPublicReload);
         isSsl = false;
-        Origin.Builder builder2 = OriginInserter.createOneOrigin(originType, originName,
+        Origin.Builder builder2 = DemoOriginInserter.createOneOrigin(originType, originName,
                 hostOrUrl, isSsl, SslModeEnum.SECURE, allowHtml, 
                 inCombinedGlobalSearch, inCombinedPublicReload);
         Origin origin = builder2.build();
@@ -125,7 +125,7 @@ public class OriginTest {
         assertEquals(origin.getOriginType(), OriginType.TWITTER);
         String body = "Posting to Twitter " + DemoData.TESTRUN_UID;
         String messageOid = "2578909845023" + DemoData.TESTRUN_UID;
-        long msgId = MessageInserter.addMessageForAccount(
+        long msgId = DemoMessageInserter.addMessageForAccount(
                 DemoData.getMyAccount(DemoData.TWITTER_TEST_ACCOUNT_NAME),
                 body, messageOid, DownloadStatus.LOADED);
         assertTrue(msgId != 0);

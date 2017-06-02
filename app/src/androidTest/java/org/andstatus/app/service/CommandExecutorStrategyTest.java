@@ -22,7 +22,7 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DownloadStatus;
-import org.andstatus.app.data.MessageInserter;
+import org.andstatus.app.data.DemoMessageInserter;
 import org.andstatus.app.context.DemoData;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.ConnectionException.StatusCode;
@@ -152,7 +152,7 @@ public class CommandExecutorStrategyTest {
 
     private CommandData getCommandDataForUnsentMessage(String suffix) {
         String body = "Some text " + suffix + " to send " + System.currentTimeMillis() + "ms";
-        long unsentMessageId = MessageInserter.addMessageForAccount(
+        long unsentMessageId = DemoMessageInserter.addMessageForAccount(
                 ma, body, "", DownloadStatus.SENDING);
         return CommandData.newUpdateStatus(ma, unsentMessageId);
     }

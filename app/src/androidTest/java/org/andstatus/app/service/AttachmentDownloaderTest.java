@@ -24,7 +24,7 @@ import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.FileProvider;
-import org.andstatus.app.data.MessageInserter;
+import org.andstatus.app.data.DemoMessageInserter;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.context.DemoData;
 import org.andstatus.app.net.http.ConnectionException;
@@ -57,7 +57,7 @@ public class AttachmentDownloaderTest {
     @Test
     public void testImageAttachmentLoad() throws IOException {
         String body = "A message with an image attachment";
-        MessageInserter mi = new MessageInserter(ma);
+        DemoMessageInserter mi = new DemoMessageInserter(ma);
         MbMessage message = mi.buildMessage(mi.buildUser(), body, null, null, DownloadStatus.LOADED);
         message.attachments.add(MbAttachment.fromUrlAndContentType(
                 new URL("http://www.publicdomainpictures.net/pictures/60000/nahled/landscape-1376582205Yno.jpg"),

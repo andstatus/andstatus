@@ -22,7 +22,7 @@ import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
 import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.data.ConversationInserter;
+import org.andstatus.app.data.DemoConversationInserter;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.net.http.ConnectionException;
@@ -39,11 +39,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-public class AccountInserter {
+public class DemoAccountInserter {
     private MyContext myContext;
     private String firstAccountUserOid = null;
 
-    public AccountInserter(MyContext myContext) {
+    public DemoAccountInserter(MyContext myContext) {
         this.myContext = myContext;
     }
 
@@ -142,7 +142,7 @@ public class AccountInserter {
                 MyQuery.idToOid(myContext.getDatabase(), OidEnum.USER_OID, userId, 0));
         assertEquals("Account name", mbUser.getUserName() + "/" + origin.getName(), ma.getAccountName());
         MyLog.v(this, ma.getAccountName() + " added, id=" + ma.getUserId());
-        ConversationInserter.getUsers().put(mbUser.oid, mbUser);
+        DemoConversationInserter.getUsers().put(mbUser.oid, mbUser);
         return ma;
     }
 

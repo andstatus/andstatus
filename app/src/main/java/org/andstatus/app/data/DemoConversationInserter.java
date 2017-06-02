@@ -37,7 +37,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class ConversationInserter {
+public class DemoConversationInserter {
     private static AtomicInteger iterationCounter = new AtomicInteger(0);
     private static final Map<String, MbUser> users = new ConcurrentHashMap<>();
 
@@ -147,7 +147,7 @@ public class ConversationInserter {
         MbMessage reply10 = buildMessage(acc2, author3, "Reply 10 to Reply 8", reply8, null);
         assertEquals("Another account as a message actor", reply10.myUserOid, DemoData.CONVERSATION_ACCOUNT2_USER_OID);
         assertEquals("Another account as a author actor", reply10.getAuthor().actor.oid, DemoData.CONVERSATION_ACCOUNT2_USER_OID);
-        MessageInserter.addMessage(acc2, reply10);
+        DemoMessageInserter.addMessage(acc2, reply10);
         author3.followedByActor = TriState.UNKNOWN;
         author3.actor = actorOld;
 
@@ -174,7 +174,7 @@ public class ConversationInserter {
     }
 
     private MbUser buildUserFromOid(String userOid) {
-        return new MessageInserter(ma).buildUserFromOid(userOid);
+        return new DemoMessageInserter(ma).buildUserFromOid(userOid);
     }
     
     private MbMessage buildMessage(MbUser author, String body, MbMessage inReplyToMessage, String messageOidIn) {
@@ -182,12 +182,12 @@ public class ConversationInserter {
     }
 
     private MbMessage buildMessage(MyAccount ma, MbUser author, String body, MbMessage inReplyToMessage, String messageOidIn) {
-        return new MessageInserter(ma).buildMessage(author, body
+        return new DemoMessageInserter(ma).buildMessage(author, body
                         + (inReplyToMessage != null ? " it" + iteration : "") + bodySuffix,
                 inReplyToMessage, messageOidIn, DownloadStatus.LOADED);
     }
 
     private long addMessage(MbMessage message) {
-        return MessageInserter.addMessage(ma, message);
+        return DemoMessageInserter.addMessage(ma, message);
     }
 }

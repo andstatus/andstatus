@@ -20,17 +20,17 @@ import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
-import org.andstatus.app.account.AccountInserter;
+import org.andstatus.app.account.DemoAccountInserter;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.backup.ProgressLogger;
-import org.andstatus.app.data.ConversationInserter;
+import org.andstatus.app.data.DemoConversationInserter;
 import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.data.GnuSocialMessagesInserter;
-import org.andstatus.app.data.MessageInserter;
+import org.andstatus.app.data.DemoGnuSocialMessagesInserter;
+import org.andstatus.app.data.DemoMessageInserter;
 import org.andstatus.app.data.MyDataCheckerConversations;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.origin.Origin;
-import org.andstatus.app.origin.OriginInserter;
+import org.andstatus.app.origin.DemoOriginInserter;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
@@ -151,8 +151,8 @@ public final class DemoData {
                     DbUtils.waitMs(TAG, 1000);
                 }
                 MyServiceManager.setServiceUnavailable();
-                new OriginInserter(myContext).insert();
-                new AccountInserter(myContext).insert();
+                new DemoOriginInserter(myContext).insert();
+                new DemoAccountInserter(myContext).insert();
                 myContext.persistentTimelines().saveChanged();
 
                 MyPreferences.onPreferencesChanged();
@@ -167,11 +167,11 @@ public final class DemoData {
                 checkDataPath();
                 int size = MyContextHolder.get().persistentAccounts().size();
                 assertTrue("Only " + size + " accounts added: " + MyContextHolder.get().persistentAccounts(), size > 5);
-                OriginInserter.checkDefaultTimelinesForOrigins();
-                AccountInserter.checkDefaultTimelinesForAccounts();
+                DemoOriginInserter.checkDefaultTimelinesForOrigins();
+                DemoAccountInserter.checkDefaultTimelinesForAccounts();
 
-                new ConversationInserter().insertConversation("");
-                new GnuSocialMessagesInserter().insertData();
+                new DemoConversationInserter().insertConversation("");
+                new DemoGnuSocialMessagesInserter().insertData();
                 if (progressCallback != null) {
                     progressCallback.onProgressMessage("Demo messages added...");
                     DbUtils.waitMs(TAG, 1000);
@@ -256,7 +256,7 @@ public final class DemoData {
     }
 
     public static MbUser getConversationMbUser() {
-        return new MessageInserter(getConversationMyAccount()).buildUserFromOidAndAvatar(
+        return new DemoMessageInserter(getConversationMyAccount()).buildUserFromOidAndAvatar(
                 CONVERSATION_ACCOUNT_USER_OID, CONVERSATION_ACCOUNT_AVATAR_URL);
     }
 

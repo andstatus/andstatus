@@ -35,7 +35,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class GnuSocialMessagesInserter {
+public class DemoGnuSocialMessagesInserter {
     private static AtomicInteger iterationCounter = new AtomicInteger(0);
     private int iteration = 0;
     private String conversationOid = "";
@@ -121,7 +121,7 @@ public class GnuSocialMessagesInserter {
     }
     
     private MbMessage buildMessage(MbUser author, String body, MbMessage inReplyToMessage, String messageOidIn) {
-        return new MessageInserter(ma).buildMessage(author, body
+        return new DemoMessageInserter(ma).buildMessage(author, body
                         + (inReplyToMessage != null ? " it" + iteration : ""),
                 inReplyToMessage, messageOidIn, DownloadStatus.LOADED)
                 .setConversationOid(conversationOid);

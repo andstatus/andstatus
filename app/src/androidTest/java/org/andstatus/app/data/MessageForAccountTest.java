@@ -24,7 +24,7 @@ public class MessageForAccountTest {
         MyAccount ma = MyContextHolder.get().persistentAccounts()
                 .fromAccountName(DemoData.CONVERSATION_ACCOUNT_NAME);
         assertTrue(ma.isValid());
-        MessageInserter mi = new MessageInserter(ma);
+        DemoMessageInserter mi = new DemoMessageInserter(ma);
         MbUser author1 = mi.getAccountMbUser();
         MbMessage msg1 = mi.buildMessage(author1, "My testing message", null, null, DownloadStatus.LOADED);
         long mgs1Id = mi.addMessage(msg1);

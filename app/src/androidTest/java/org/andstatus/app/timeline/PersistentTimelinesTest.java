@@ -17,13 +17,13 @@
 package org.andstatus.app.timeline;
 
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.account.AccountInserter;
+import org.andstatus.app.account.DemoAccountInserter;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.context.DemoData;
 import org.andstatus.app.origin.Origin;
-import org.andstatus.app.origin.OriginInserter;
+import org.andstatus.app.origin.DemoOriginInserter;
 import org.andstatus.app.util.TriState;
 import org.junit.Before;
 import org.junit.Test;
@@ -96,12 +96,12 @@ public class PersistentTimelinesTest {
 
     @Test
     public void testDefaultTimelinesForAccounts() {
-        AccountInserter.checkDefaultTimelinesForAccounts();
+        DemoAccountInserter.checkDefaultTimelinesForAccounts();
     }
 
     @Test
     public void testDefaultTimelinesForOrigins() {
-        OriginInserter.checkDefaultTimelinesForOrigins();
+        DemoOriginInserter.checkDefaultTimelinesForOrigins();
     }
 
     @Test

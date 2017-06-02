@@ -24,7 +24,7 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.HtmlContentInserter;
-import org.andstatus.app.data.MessageInserter;
+import org.andstatus.app.data.DemoMessageInserter;
 import org.andstatus.app.data.MyDataCheckerConversations;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
@@ -71,7 +71,7 @@ public class MessageShareTest {
     public void testSharePlainText() {
         String body = "Posting as a plain Text " + DemoData.TESTRUN_UID;
         final MyAccount myAccount = DemoData.getMyAccount(DemoData.TWITTER_TEST_ACCOUNT_NAME);
-        long msgId = MessageInserter.addMessageForAccount(myAccount, body,
+        long msgId = DemoMessageInserter.addMessageForAccount(myAccount, body,
                 DemoData.PLAIN_TEXT_MESSAGE_OID, DownloadStatus.LOADED);
         MessageShare messageShare = new MessageShare(myAccount.getOrigin(), msgId, null);
         Intent intent = messageShare.intentToViewAndShare(true);

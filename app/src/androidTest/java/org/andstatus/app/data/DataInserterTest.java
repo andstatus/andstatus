@@ -63,7 +63,7 @@ public class DataInserterTest {
     @Test
     public void testFriends() throws ConnectionException {
         String messageOid = "https://identi.ca/api/comment/dasdjfdaskdjlkewjz1EhSrTRB";
-        MessageInserter.deleteOldMessage(DemoData.getConversationOriginId(), messageOid);
+        DemoMessageInserter.deleteOldMessage(DemoData.getConversationOriginId(), messageOid);
 
         CommandExecutionContext counters = new CommandExecutionContext(
                 CommandData.newAccountCommand(CommandEnum.EMPTY, DemoData.getConversationMyAccount()));
@@ -156,7 +156,7 @@ public class DataInserterTest {
     @Test
     public void testDirectMessageToMyAccount() throws ConnectionException {
         String messageOid = "https://pumpity.net/api/comment/sa23wdi78dhgjerdfddajDSQ";
-        MessageInserter.deleteOldMessage(DemoData.getConversationOriginId(), messageOid);
+        DemoMessageInserter.deleteOldMessage(DemoData.getConversationOriginId(), messageOid);
 
         String username = "t131t@pumpity.net";
         MbUser author = MbUser.fromOriginAndUserOid(DemoData.getConversationOriginId(), "acct:"
@@ -164,14 +164,14 @@ public class DataInserterTest {
         author.setUserName(username);
         author.actor = DemoData.getConversationMbUser();
 
-        MbMessage message = new MessageInserter(DemoData.getConversationMyAccount()).buildMessage(
+        MbMessage message = new DemoMessageInserter(DemoData.getConversationMyAccount()).buildMessage(
                 author,
                 "Hello, this is a test Direct message by your namesake from http://pumpity.net",
                 null, messageOid, DownloadStatus.LOADED);
         message.setUpdatedDate(13312699000L);
         message.via = "AnyOtherClient";
         message.recipient = DemoData.getConversationMbUser();
-        long messageId = new MessageInserter(DemoData.getConversationMyAccount())
+        long messageId = new DemoMessageInserter(DemoData.getConversationMyAccount())
                 .addMessage(message);
 
         Uri contentUri = MatchedUri.getTimelineUri(
@@ -380,7 +380,7 @@ public class DataInserterTest {
     public void testUserNameChanged() {
         MyAccount ma = TestSuite.getMyContextForTest().persistentAccounts().fromAccountName(DemoData.GNUSOCIAL_TEST_ACCOUNT_NAME);
         String username = "peter" + DemoData.TESTRUN_UID;
-        MbUser user1 = new MessageInserter(ma).buildUserFromOid("34804" + DemoData.TESTRUN_UID);
+        MbUser user1 = new DemoMessageInserter(ma).buildUserFromOid("34804" + DemoData.TESTRUN_UID);
         user1.setUserName(username);
         user1.setProfileUrl("https://" + DemoData.GNUSOCIAL_TEST_ORIGIN_NAME + ".example.com/");
         
@@ -407,7 +407,7 @@ public class DataInserterTest {
         assertEquals("Same user renamed", user1.getUserName(),
                 MyQuery.userIdToStringColumnValue(UserTable.USERNAME, userId1));
 
-        MbUser user2SameOldUserName = new MessageInserter(ma).buildUserFromOid("34805"
+        MbUser user2SameOldUserName = new DemoMessageInserter(ma).buildUserFromOid("34805"
                 + DemoData.TESTRUN_UID);
         user2SameOldUserName.setUserName(username);
         long userId2 = di.insertOrUpdateUser(user2SameOldUserName);
@@ -415,7 +415,7 @@ public class DataInserterTest {
         assertEquals("Username stored", user2SameOldUserName.getUserName(),
                 MyQuery.userIdToStringColumnValue(UserTable.USERNAME, userId2));
 
-        MbUser user3SameNewUserName = new MessageInserter(ma).buildUserFromOid("34806"
+        MbUser user3SameNewUserName = new DemoMessageInserter(ma).buildUserFromOid("34806"
                 + DemoData.TESTRUN_UID);
         user3SameNewUserName.setUserName(user1.getUserName());
         user3SameNewUserName.setProfileUrl("https://" + DemoData.GNUSOCIAL_TEST_ORIGIN_NAME + ".other.example.com/");
@@ -430,7 +430,7 @@ public class DataInserterTest {
     public void testInsertUser() {
         MyAccount ma = TestSuite.getMyContextForTest().persistentAccounts()
                 .fromAccountName(DemoData.GNUSOCIAL_TEST_ACCOUNT_NAME);
-        MbUser user = new MessageInserter(ma).buildUserFromOid("34807" + DemoData.TESTRUN_UID);
+        MbUser user = new DemoMessageInserter(ma).buildUserFromOid("34807" + DemoData.TESTRUN_UID);
 
         DataInserter di = new DataInserter(ma);
         long id = di.insertOrUpdateUser(user);

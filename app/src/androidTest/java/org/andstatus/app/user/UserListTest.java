@@ -22,7 +22,7 @@ import org.andstatus.app.ListActivityTestHelper;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.data.ConversationInserter;
+import org.andstatus.app.data.DemoConversationInserter;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyQuery;
@@ -96,7 +96,7 @@ public class UserListTest extends TimelineActivityTest {
         if (messageWasFound) {
             assertEquals(listItems.toString(), 5, listItems.size());
 
-            MbUser userE = ConversationInserter.getUsers().get(DemoData.CONVERSATION_MEMBER_USER_OID);
+            MbUser userE = DemoConversationInserter.getUsers().get(DemoData.CONVERSATION_MEMBER_USER_OID);
             assertTrue("Found " + DemoData.CONVERSATION_MEMBER_USER_OID + " cached ", userE != null);
             MbUser userA = getByUserOid(listItems, DemoData.CONVERSATION_MEMBER_USER_OID);
             assertTrue("Found " + DemoData.CONVERSATION_MEMBER_USER_OID + ", " + logMsg, userA != null);

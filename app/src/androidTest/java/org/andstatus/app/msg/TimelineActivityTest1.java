@@ -31,7 +31,7 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.data.ConversationInserter;
+import org.andstatus.app.data.DemoConversationInserter;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyQuery;
@@ -129,7 +129,7 @@ public class TimelineActivityTest1 extends TimelineActivityTest {
         long itemId = getListView().getAdapter().getItemId(position1);
         int count1 = getListView().getAdapter().getCount();
 
-        new ConversationInserter().insertConversation("p" + iterationId);
+        new DemoConversationInserter().insertConversation("p" + iterationId);
         broadcastCommandExecuted();
 
         long updatedAt2 = 0;

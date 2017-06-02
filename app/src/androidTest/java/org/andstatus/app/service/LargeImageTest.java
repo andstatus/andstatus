@@ -24,7 +24,7 @@ import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.AttachedImageFile;
 import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.data.DownloadStatus;
-import org.andstatus.app.data.MessageInserter;
+import org.andstatus.app.data.DemoMessageInserter;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.data.MyDataCheckerConversations;
 import org.andstatus.app.context.DemoData;
@@ -57,7 +57,7 @@ public class LargeImageTest {
 
     private DownloadData insertMessage() throws IOException {
         String body = "Large image attachment";
-        MessageInserter mi = new MessageInserter(MyContextHolder.get().persistentAccounts()
+        DemoMessageInserter mi = new DemoMessageInserter(MyContextHolder.get().persistentAccounts()
                 .fromAccountName(DemoData.GNUSOCIAL_TEST_ACCOUNT_NAME));
         MbMessage message = mi.buildMessage(mi.buildUser(), body, null, null, DownloadStatus.LOADED);
         message.attachments
