@@ -32,15 +32,67 @@ import org.json.JSONObject;
 import java.util.List;
 
 /**
- * Twitter API v.1.1 https://dev.twitter.com/docs/api/1.1
- *
+ * Implementation of current API of the twitter.com
+ * https://dev.twitter.com/rest/public
  */
-public class ConnectionTwitter1p1 extends ConnectionTwitter {
+public class ConnectionTheTwitter extends ConnectionTwitterLike {
 
-    @NonNull
     @Override
-    protected Uri.Builder getTimelineUriBuilder(ApiRoutineEnum apiRoutine, int limit, String userId) throws ConnectionException {
-        return super.getTimelineUriBuilder(apiRoutine, limit, userId).appendQueryParameter("tweet_mode", "extended");
+    protected String getApiPath1(ApiRoutineEnum routine) {
+        String url;
+        switch(routine) {
+            case ACCOUNT_RATE_LIMIT_STATUS:
+                url = "application/rate_limit_status.json";
+                break;
+            case CREATE_FAVORITE:
+                url = "favorites/create.json";
+                break;
+            case DESTROY_FAVORITE:
+                url = "favorites/destroy.json";
+                break;
+            case DIRECT_MESSAGES:
+                url = "direct_messages.json?tweet_mode=extended";
+                break;
+            case FAVORITES_TIMELINE:
+                // https://dev.twitter.com/rest/reference/get/favorites/list
+                url = "favorites/list.json?tweet_mode=extended";
+                break;
+            case GET_FOLLOWERS:
+                // https://dev.twitter.com/rest/reference/get/followers/list
+                url = "followers/list.json";
+                break;
+            case GET_FRIENDS:
+                // https://dev.twitter.com/docs/api/1.1/get/friends/list
+                url = "friends/list.json";
+                break;
+            case GET_MESSAGE:
+                url = "statuses/show.json" + "?id=%messageId%&tweet_mode=extended";
+                break;
+            case HOME_TIMELINE:
+                url = "statuses/home_timeline.json?tweet_mode=extended";
+                break;
+            case MENTIONS_TIMELINE:
+                // https://dev.twitter.com/docs/api/1.1/get/statuses/mentions_timeline
+                url = "statuses/mentions_timeline.json?tweet_mode=extended";
+                break;
+            case POST_WITH_MEDIA:
+                url = "statuses/update_with_media.json";
+                break;
+            case SEARCH_MESSAGES:
+                // https://dev.twitter.com/docs/api/1.1/get/search/tweets
+                url = "search/tweets.json?tweet_mode=extended";
+                break;
+            case USER_TIMELINE:
+                url = "statuses/user_timeline.json?tweet_mode=extended";
+                break;
+            default:
+                url = "";
+                break;
+        }
+        if (TextUtils.isEmpty(url)) {
+            return super.getApiPath1(routine);
+        }
+        return prependWithBasicPath(url);
     }
 
     @Override
@@ -68,52 +120,6 @@ public class ConnectionTwitter1p1 extends ConnectionTwitter {
         }
         JSONObject jso = postRequest(ApiRoutineEnum.POST_WITH_MEDIA, formParams);
         return messageFromJson(jso);
-    }
-
-    @Override
-    protected String getApiPath1(ApiRoutineEnum routine) {
-        String url;
-        switch(routine) {
-            case ACCOUNT_RATE_LIMIT_STATUS:
-                url = "application/rate_limit_status" + EXTENSION;
-                break;
-            case CREATE_FAVORITE:
-                url = "favorites/create" + EXTENSION;
-                break;
-            case DESTROY_FAVORITE:
-                url = "favorites/destroy" + EXTENSION;
-                break;
-            case GET_FOLLOWERS:
-                // https://dev.twitter.com/rest/reference/get/followers/list
-                url = "followers/list" + EXTENSION;
-                break;
-            case GET_FRIENDS:
-                // https://dev.twitter.com/docs/api/1.1/get/friends/list
-                url = "friends/list" + EXTENSION;
-                break;
-            case POST_WITH_MEDIA:
-                url = "statuses/update_with_media" + EXTENSION;
-                break;
-            case SEARCH_MESSAGES:
-                // https://dev.twitter.com/docs/api/1.1/get/search/tweets
-                url = "search/tweets" + EXTENSION;
-                break;
-            case MENTIONS_TIMELINE:
-                // https://dev.twitter.com/docs/api/1.1/get/statuses/mentions_timeline
-                url = "statuses/mentions_timeline" + EXTENSION;
-                break;
-            case FAVORITES_TIMELINE:
-                // https://dev.twitter.com/rest/reference/get/favorites/list
-                url = "favorites/list" + EXTENSION;
-                break;
-            default:
-                url = "";
-                break;
-        }
-        if (TextUtils.isEmpty(url)) {
-            return super.getApiPath1(routine);
-        } 
-        return prependWithBasicPath(url);
     }
 
     @Override

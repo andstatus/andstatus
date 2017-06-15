@@ -35,6 +35,7 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MessageForAccount;
 import org.andstatus.app.data.MyQuery;
+import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.Timeline;
 import org.andstatus.app.util.MyLog;
@@ -195,7 +196,8 @@ class MessageContextMenu extends MyContextMenu {
                     if (msg.isDirect()) {
                         // This is a Direct Message
                         // TODO: Delete Direct message
-                    } else if (!msg.reblogged) {
+                    } else if (!msg.reblogged && msg.getMyAccount().getConnection()
+                            .isApiSupported(Connection.ApiRoutineEnum.DESTROY_MESSAGE)) {
                         MessageListContextMenuItem.DESTROY_STATUS.addTo(menu, order++,
                                 R.string.menu_item_destroy_status);
                     }

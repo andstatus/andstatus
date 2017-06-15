@@ -129,6 +129,7 @@ public class MessageForAccount {
         }
     }
 
+    @NonNull
     public MyAccount getMyAccount() {
         return myAccount;
     }

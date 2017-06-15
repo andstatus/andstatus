@@ -52,7 +52,6 @@ import java.util.Locale;
  */
 public abstract class Connection {
     public static final String KEY_PASSWORD = "password";
-    protected static final String EXTENSION = ".json";
 
     /**
      * API routines (functions, "resources" in terms of Twitter)  enumerated

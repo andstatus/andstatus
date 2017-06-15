@@ -27,7 +27,7 @@ import org.andstatus.app.net.http.HttpConnectionOAuthJavaNet;
 import org.andstatus.app.net.http.HttpConnectionOAuthMastodon;
 import org.andstatus.app.net.social.ConnectionEmpty;
 import org.andstatus.app.net.social.ConnectionMastodon;
-import org.andstatus.app.net.social.ConnectionTwitter1p1;
+import org.andstatus.app.net.social.ConnectionTheTwitter;
 import org.andstatus.app.net.social.ConnectionTwitterGnuSocial;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.net.social.pumpio.ConnectionPumpio;
@@ -148,7 +148,7 @@ public enum OriginType implements SelectableEnum {
                 basicPath = "1.1";
                 oauthPath = OAUTH_PATH_DEFAULT;
                 originClass = OriginTwitter.class;
-                connectionClass = ConnectionTwitter1p1.class;
+                connectionClass = ConnectionTheTwitter.class;
                 httpConnectionClassOauth = HttpConnectionOAuthApache.class;
                 httpConnectionClassBasic = HttpConnectionBasic.class;
                 mAllowAttachmentForDirectMessage = false;

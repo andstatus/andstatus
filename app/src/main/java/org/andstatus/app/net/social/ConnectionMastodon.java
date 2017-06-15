@@ -38,7 +38,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ConnectionMastodon extends ConnectionTwitter1p0 {
+public class ConnectionMastodon extends ConnectionTwitterLike {
     private static final String ATTACHMENTS_FIELD_NAME = "media_attachments";
 
     @Override

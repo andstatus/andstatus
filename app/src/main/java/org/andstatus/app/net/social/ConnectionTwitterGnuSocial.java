@@ -41,7 +41,7 @@ import java.util.List;
  * Specific implementation of the Twitter API in GNU Social
  * @author yvolk@yurivolkov.com
  */
-public class ConnectionTwitterGnuSocial extends ConnectionTwitter1p0 {
+public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
     private static final String ATTACHMENTS_FIELD_NAME = "attachments";
     private static final String CONVERSATION_ID_FIELD_NAME = "statusnet_conversation_id";
     private static final String HTML_BODY_FIELD_NAME = "statusnet_html";
@@ -51,19 +51,19 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitter1p0 {
         String url;
         switch(routine) {
             case GET_CONFIG:
-                url = "statusnet/config" + EXTENSION;
+                url = "statusnet/config.json";
                 break;
             case GET_CONVERSATION:
-                url = "statusnet/conversation/";
+                url = "statusnet/conversation/%messageId%.json";
                 break;
             case GET_OPEN_INSTANCES:
                 url = "http://gstools.org/api/get_open_instances";
                 break;
             case PUBLIC_TIMELINE:
-                url = "statuses/public_timeline" + EXTENSION;
+                url = "statuses/public_timeline.json";
                 break;
             case SEARCH_MESSAGES:
-                url = "search" + EXTENSION;
+                url = "search.json";
                 break;
             default:
                 url = "";
@@ -157,7 +157,7 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitter1p0 {
         if (TextUtils.isEmpty(conversationOid)) {
             return new ArrayList<>();
         } else {
-            String url = getApiPath(ApiRoutineEnum.GET_CONVERSATION) + conversationOid + EXTENSION;
+            String url = getApiPathWithMessageId(ApiRoutineEnum.GET_CONVERSATION, conversationOid);
             JSONArray jArr = http.getRequestAsArray(url);
             return jArrToTimeline(jArr, ApiRoutineEnum.GET_CONVERSATION, url);
         }

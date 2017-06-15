@@ -38,8 +38,8 @@ import java.util.List;
  * https://dev.twitter.com/rest/public
  * @author yvolk@yurivolkov.com
  */
-public abstract class ConnectionTwitter extends Connection {
-    private static final String TAG = ConnectionTwitter.class.getSimpleName();
+public abstract class ConnectionTwitterLike extends Connection {
+    private static final String TAG = ConnectionTwitterLike.class.getSimpleName();
 
     /**
      * URL of the API. Not logged
@@ -51,61 +51,61 @@ public abstract class ConnectionTwitter extends Connection {
         String url;
         switch(routine) {
             case ACCOUNT_RATE_LIMIT_STATUS:
-                url = "account/rate_limit_status" + EXTENSION;
+                url = "account/rate_limit_status.json";
                 break;
             case ACCOUNT_VERIFY_CREDENTIALS:
-                url = "account/verify_credentials" + EXTENSION;
-                break;
-            case DIRECT_MESSAGES:
-                url = "direct_messages" + EXTENSION;
+                url = "account/verify_credentials.json";
                 break;
             case CREATE_FAVORITE:
-                url = "favorites/create/%messageId%"  + EXTENSION;
+                url = "favorites/create/%messageId%.json";
                 break;
             case DESTROY_FAVORITE:
-                url = "favorites/destroy/%messageId%" + EXTENSION;
-                break;
-            case GET_FOLLOWERS_IDS:
-                url = "followers/ids" + EXTENSION;
-                break;
-            case FOLLOW_USER:
-                url = "friendships/create" + EXTENSION;
-                break;
-            case GET_FRIENDS_IDS:
-                url = "friends/ids" + EXTENSION;
-                break;
-            case GET_USER:
-                url = "users/show" + EXTENSION;
-                break;
-            case POST_DIRECT_MESSAGE:
-                url = "direct_messages/new" + EXTENSION;
-                break;
-            case POST_REBLOG:
-                url = "statuses/retweet/%messageId%" + EXTENSION;
+                url = "favorites/destroy/%messageId%.json";
                 break;
             case DESTROY_MESSAGE:
-                url = "statuses/destroy/";
+                url = "statuses/destroy/%messageId%.json";
                 break;
-            case HOME_TIMELINE:
-                url = "statuses/home_timeline" + EXTENSION;
-                break;
-            case MENTIONS_TIMELINE:
-                url = "statuses/mentions" + EXTENSION;
-                break;
-            case USER_TIMELINE:
-                url = "statuses/user_timeline" + EXTENSION;
-                break;
-            case GET_MESSAGE:
-                url = "statuses/show" + EXTENSION + "?id=%messageId%";
-                break;
-            case POST_MESSAGE:
-                url = "statuses/update" + EXTENSION;
-                break;
-            case STOP_FOLLOWING_USER:
-                url = "friendships/destroy" + EXTENSION;
+            case DIRECT_MESSAGES:
+                url = "direct_messages.json";
                 break;
             case FAVORITES_TIMELINE:
-                url = "favorites" + EXTENSION;
+                url = "favorites.json";
+                break;
+            case FOLLOW_USER:
+                url = "friendships/create.json";
+                break;
+            case GET_FOLLOWERS_IDS:
+                url = "followers/ids.json";
+                break;
+            case GET_FRIENDS_IDS:
+                url = "friends/ids.json";
+                break;
+            case GET_MESSAGE:
+                url = "statuses/show.json" + "?id=%messageId%";
+                break;
+            case GET_USER:
+                url = "users/show.json";
+                break;
+            case HOME_TIMELINE:
+                url = "statuses/home_timeline.json";
+                break;
+            case MENTIONS_TIMELINE:
+                url = "statuses/mentions.json";
+                break;
+            case POST_DIRECT_MESSAGE:
+                url = "direct_messages/new.json";
+                break;
+            case POST_MESSAGE:
+                url = "statuses/update.json";
+                break;
+            case POST_REBLOG:
+                url = "statuses/retweet/%messageId%.json";
+                break;
+            case STOP_FOLLOWING_USER:
+                url = "friendships/destroy.json";
+                break;
+            case USER_TIMELINE:
+                url = "statuses/user_timeline.json";
                 break;
             default:
                 url = "";
@@ -116,7 +116,7 @@ public abstract class ConnectionTwitter extends Connection {
 
     @Override
     public boolean destroyStatus(String statusId) throws ConnectionException {
-        JSONObject jso = http.postRequest(getApiPath(ApiRoutineEnum.DESTROY_MESSAGE) + statusId + EXTENSION);
+        JSONObject jso = http.postRequest(getApiPathWithMessageId(ApiRoutineEnum.DESTROY_MESSAGE, statusId));
         if (jso != null && MyLog.isVerboseEnabled()) {
             try {
                 MyLog.v(TAG, "destroyStatus response: " + jso.toString(2));
@@ -599,4 +599,17 @@ public abstract class ConnectionTwitter extends Connection {
     List<MbUser> getMbUsers(String userId, ApiRoutineEnum apiRoutine) throws ConnectionException {
         return new ArrayList<>();
     }
+
+    @Override
+    public MbMessage createFavorite(String statusId) throws ConnectionException {
+        JSONObject jso = http.postRequest(getApiPathWithMessageId(ApiRoutineEnum.CREATE_FAVORITE, statusId));
+        return messageFromJson(jso);
+    }
+
+    @Override
+    public MbMessage destroyFavorite(String statusId) throws ConnectionException {
+        JSONObject jso = http.postRequest(getApiPathWithMessageId(ApiRoutineEnum.DESTROY_FAVORITE, statusId));
+        return messageFromJson(jso);
+    }
+
 }
