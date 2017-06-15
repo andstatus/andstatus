@@ -81,7 +81,7 @@ class TimelineDownloaderOther extends TimelineDownloader {
         DataInserter di = new DataInserter(execContext);
         for (int loopCounter=0; loopCounter < 100; loopCounter++ ) {
             try {
-                int limit = execContext.getMyAccount().getConnection().fixedDownloadLimitForApiRoutine(
+                int limit = execContext.getMyAccount().getConnection().fixedDownloadLimit(
                         toDownload, getTimeline().getTimelineType().getConnectionApiRoutine());
                 List<MbActivity> messages;
                 switch (getTimeline().getTimelineType()) {

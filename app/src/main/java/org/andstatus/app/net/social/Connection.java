@@ -385,11 +385,16 @@ public abstract class Connection {
         return out;
     }
 
+    @NonNull
+    protected String strFixedDownloadLimit(int limit, ApiRoutineEnum apiRoutine) {
+        return String.valueOf(fixedDownloadLimit(limit, apiRoutine));
+    }
+
     /**
      * Restrict the limit to 1 - 400
      * @param apiRoutine 
      */
-    public int fixedDownloadLimitForApiRoutine(int limit, ApiRoutineEnum apiRoutine) {
+    public int fixedDownloadLimit(int limit, ApiRoutineEnum apiRoutine) {
         int out = 400;
         if (limit > 0 && limit < 400) {
             out = limit;

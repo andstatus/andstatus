@@ -120,16 +120,11 @@ public class ConnectionMastodon extends ConnectionTwitter1p0 {
         return prependWithBasicPath(url);
     }
 
+    @NonNull
     @Override
-    public List<MbActivity> getTimeline(ApiRoutineEnum apiRoutine, TimelinePosition youngestPosition,
-                                        TimelinePosition oldestPosition, int limit, String userId)
-            throws ConnectionException {
+    protected Uri.Builder getTimelineUriBuilder(ApiRoutineEnum apiRoutine, int limit, String userId) throws ConnectionException {
         String url = this.getApiPathWithUserId(apiRoutine, userId);
-        Uri.Builder builder = Uri.parse(url).buildUpon();
-        appendPositionParameters(builder, youngestPosition, oldestPosition);
-        builder.appendQueryParameter("limit", String.valueOf(fixedDownloadLimitForApiRoutine(limit, apiRoutine)));
-        JSONArray jArr = http.getRequestAsArray(builder.build().toString());
-        return jArrToTimeline(jArr, apiRoutine, url);
+        return Uri.parse(url).buildUpon().appendQueryParameter("limit", strFixedDownloadLimit(limit, apiRoutine));
     }
 
     @Override
@@ -182,7 +177,7 @@ public class ConnectionMastodon extends ConnectionTwitter1p0 {
         Uri sUri = Uri.parse(url);
         Uri.Builder builder = sUri.buildUpon();
         appendPositionParameters(builder, youngestPosition, oldestPosition);
-        builder.appendQueryParameter("limit", String.valueOf(fixedDownloadLimitForApiRoutine(limit, apiRoutine)));
+        builder.appendQueryParameter("limit", strFixedDownloadLimit(limit, apiRoutine));
         JSONArray jArr = http.getRequestAsArray(builder.build().toString());
         return jArrToTimeline(jArr, apiRoutine, url);
     }
@@ -416,7 +411,7 @@ public class ConnectionMastodon extends ConnectionTwitter1p0 {
         Uri sUri = Uri.parse(url);
         Uri.Builder builder = sUri.buildUpon();
         int limit = 400;
-        builder.appendQueryParameter("limit", String.valueOf(fixedDownloadLimitForApiRoutine(limit, apiRoutine)));
+        builder.appendQueryParameter("limit", strFixedDownloadLimit(limit, apiRoutine));
         return jArrToUsers(http.getRequestAsArray(builder.build().toString()), apiRoutine, url);
     }
 

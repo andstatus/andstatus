@@ -209,20 +209,27 @@ public abstract class ConnectionTwitter extends Connection {
         return messageFromJson(message);
     }
 
+    @NonNull
     @Override
     public List<MbActivity> getTimeline(ApiRoutineEnum apiRoutine, TimelinePosition youngestPosition,
                                         TimelinePosition oldestPosition, int limit, String userId)
             throws ConnectionException {
+        Uri.Builder builder = getTimelineUriBuilder(apiRoutine, limit, userId);
+        appendPositionParameters(builder, youngestPosition, oldestPosition);
+        JSONArray jArr = http.getRequestAsArray(builder.build().toString());
+        return jArrToTimeline(jArr, apiRoutine, builder.build().toString());
+    }
+
+    @NonNull
+    protected Uri.Builder getTimelineUriBuilder(ApiRoutineEnum apiRoutine, int limit, String userId) throws ConnectionException {
         String url = this.getApiPath(apiRoutine);
         Uri sUri = Uri.parse(url);
         Uri.Builder builder = sUri.buildUpon();
-        appendPositionParameters(builder, youngestPosition, oldestPosition);
-        builder.appendQueryParameter("count", String.valueOf(fixedDownloadLimitForApiRoutine(limit, apiRoutine)));
+        builder.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine));
         if (!TextUtils.isEmpty(userId)) {
             builder.appendQueryParameter("user_id", userId);
         }
-        JSONArray jArr = http.getRequestAsArray(builder.build().toString());
-        return jArrToTimeline(jArr, apiRoutine, url);
+        return builder;
     }
 
     protected MbActivity timelineItemFromJson(JSONObject jso) throws ConnectionException {
@@ -399,7 +406,7 @@ public abstract class ConnectionTwitter extends Connection {
             builder.appendQueryParameter("q", searchQuery);
         }
         appendPositionParameters(builder, youngestPosition, oldestPosition);
-        builder.appendQueryParameter("count", String.valueOf(fixedDownloadLimitForApiRoutine(limit, apiRoutine)));
+        builder.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine));
         JSONArray jArr = http.getRequestAsArray(builder.build().toString());
         return jArrToTimeline(jArr, apiRoutine, url);
     }

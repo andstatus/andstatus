@@ -183,7 +183,7 @@ public class ConnectionPumpio extends Connection {
         ConnectionAndUrl conu = getConnectionAndUrl(apiRoutine, userId);
         Uri sUri = Uri.parse(conu.url);
         Uri.Builder builder = sUri.buildUpon();
-        builder.appendQueryParameter("count",String.valueOf(fixedDownloadLimitForApiRoutine(limit, apiRoutine)));
+        builder.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine));
         String url = builder.build().toString();
         JSONArray jArr = conu.httpConnection.getRequestAsArray(url);
         List<MbUser> users = new ArrayList<>();
@@ -330,7 +330,7 @@ public class ConnectionPumpio extends Connection {
         } else if (oldestPosition.isPresent()) {
             builder.appendQueryParameter("before", oldestPosition.getPosition());
         }
-        builder.appendQueryParameter("count",String.valueOf(fixedDownloadLimitForApiRoutine(limit, apiRoutine)));
+        builder.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine));
         String url = builder.build().toString();
         JSONArray jArr = conu.httpConnection.getRequestAsArray(url);
         List<MbActivity> timeline = new ArrayList<>();
@@ -351,9 +351,9 @@ public class ConnectionPumpio extends Connection {
     }
 
     @Override
-    public int fixedDownloadLimitForApiRoutine(int limit, ApiRoutineEnum apiRoutine) {
+    public int fixedDownloadLimit(int limit, ApiRoutineEnum apiRoutine) {
         final int maxLimit = apiRoutine == ApiRoutineEnum.GET_FRIENDS ? 200 : 20;
-        int out = super.fixedDownloadLimitForApiRoutine(limit, apiRoutine);
+        int out = super.fixedDownloadLimit(limit, apiRoutine);
         if (out > maxLimit) {
             out = maxLimit;
         }
