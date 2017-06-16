@@ -75,8 +75,17 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
                 // https://dev.twitter.com/docs/api/1.1/get/statuses/mentions_timeline
                 url = "statuses/mentions_timeline.json?tweet_mode=extended";
                 break;
+            case POST_DIRECT_MESSAGE:
+                url = "direct_messages/new.json?tweet_mode=extended";
+                break;
+            case POST_MESSAGE:
+                url = "statuses/update.json?tweet_mode=extended";
+                break;
+            case POST_REBLOG:
+                url = "statuses/retweet/%messageId%.json?tweet_mode=extended";
+                break;
             case POST_WITH_MEDIA:
-                url = "statuses/update_with_media.json";
+                url = "statuses/update_with_media.json?tweet_mode=extended";
                 break;
             case SEARCH_MESSAGES:
                 // https://dev.twitter.com/docs/api/1.1/get/search/tweets
