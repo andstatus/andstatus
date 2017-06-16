@@ -90,4 +90,21 @@ class OriginTwitter extends Origin {
         }
         return uri2;
     }
+
+    @Override
+    public int charactersLeftForMessage(String message) {
+        return subtractMention(message, super.charactersLeftForMessage(message));
+    }
+
+    private int subtractMention(String message, int charsLeft) {
+        if (message == null || !message.startsWith("@")) {
+            return charsLeft;
+        }
+        int indSpace = message.contains(" ") ? message.indexOf(" ") : message.length();
+        return isUsernameValid(message.substring(1, indSpace))
+                ? (message.length() > indSpace + 1
+                    ? subtractMention(message.substring(indSpace + 1), charsLeft + indSpace + 1)
+                    : charsLeft + message.length())
+                : charsLeft;
+    }
 }
