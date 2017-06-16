@@ -92,30 +92,6 @@ public class OriginTest {
     }
 
     @Test
-    public void twitterExpandedTweetLength() {
-        String msg1 = "Full length";
-        String msg2 = msg1 + " of expanded tweets can be more than 140 characters";
-        String msg3 = msg2 + ", because it doesn't include @names that auto-populate at the start of a reply Tweet";
-        expandedTweetForMessage(msg1);
-        expandedTweetForMessage(msg2);
-        expandedTweetForMessage(msg3);
-        expandedTweetForMessage("@invalid;mention " + msg1);
-        expandedTweetForMessage("@. " + msg1);
-    }
-
-    private void expandedTweetForMessage(String msg) {
-        Origin origin = MyContextHolder.get().persistentOrigins().firstOfType(OriginType.TWITTER);
-        assertEquals(origin.getOriginType(), OriginType.TWITTER);
-
-        assertEquals("Characters left", 140 - msg.length(), origin.charactersLeftForMessage(msg));
-        assertEquals("Characters left", 140 - msg.length(), origin.charactersLeftForMessage("@peter " + msg));
-        String mentions = "@peter @max";
-        assertEquals("Characters left", 140 - msg.length()
-                , origin.charactersLeftForMessage(mentions + " " + msg));
-        assertEquals("Characters left", 140, origin.charactersLeftForMessage(mentions));
-    }
-
-    @Test
     public void testAddDeleteOrigin() {
         String seed = Long.toString(System.nanoTime());
         String originName = "snTest" + seed;
