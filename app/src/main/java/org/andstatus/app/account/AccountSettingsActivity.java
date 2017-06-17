@@ -472,31 +472,33 @@ public class AccountSettingsActivity extends MyActivity {
     
     private void showAddAccountButton() {
         TextView textView = showTextView(R.id.add_account, null, !state.builder.isPersistent());
-        textView.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                clearError();
-                updateChangedFields();
-                updateScreen();
-                MyAccount ma = state.getAccount();
-                CharSequence error = "";
-                boolean addAccountEnabled = !ma.isUsernameNeededToStartAddingNewAccount()
-                        || ma.isUsernameValid();
-                if (addAccountEnabled) {
-                    if (!ma.isOAuth() && !ma.getCredentialsPresent()) {
-                        addAccountEnabled = false;
-                        error = getText(R.string.title_preference_password);
+        if (textView != null) {
+            textView.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    clearError();
+                    updateChangedFields();
+                    updateScreen();
+                    MyAccount ma = state.getAccount();
+                    CharSequence error = "";
+                    boolean addAccountEnabled = !ma.isUsernameNeededToStartAddingNewAccount()
+                            || ma.isUsernameValid();
+                    if (addAccountEnabled) {
+                        if (!ma.isOAuth() && !ma.getCredentialsPresent()) {
+                            addAccountEnabled = false;
+                            error = getText(R.string.title_preference_password);
+                        }
+                    } else {
+                        error = getText(ma.alternativeTermForResourceId(R.string.title_preference_username));
                     }
-                } else {
-                    error = getText(ma.alternativeTermForResourceId(R.string.title_preference_username));
+                    if (addAccountEnabled) {
+                        verifyCredentials(true);
+                    } else {
+                        appendError(getText(R.string.error_invalid_value) + ": " + error);
+                    }
                 }
-                if (addAccountEnabled) {
-                    verifyCredentials(true);
-                } else {
-                    appendError(getText(R.string.error_invalid_value) + ": " + error);
-                }
-            }
-        });
+            });
+        }
     }
 
     private void clearError() {
@@ -511,15 +513,17 @@ public class AccountSettingsActivity extends MyActivity {
     private void showHomeTimelineButton() {
         TextView textView = showTextView(
                 R.id.home_timeline, R.string.options_menu_home_timeline, state.builder.isPersistent());
-        textView.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                updateChangedFields();
-                activityOnFinish = ActivityOnFinish.HOME;
-                mIsFinishing = true;
-                finish();
-            }
-        });
+        if (textView != null) {
+            textView.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    updateChangedFields();
+                    activityOnFinish = ActivityOnFinish.HOME;
+                    mIsFinishing = true;
+                    finish();
+                }
+            });
+        }
     }
 
     private void showVerifyCredentialsButton() {
@@ -529,15 +533,17 @@ public class AccountSettingsActivity extends MyActivity {
                         ? R.string.title_preference_verify_credentials
                         : R.string.title_preference_verify_credentials_failed,
                 state.builder.isPersistent());
-        textView.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                clearError();
-                updateChangedFields();
-                updateScreen();
-                verifyCredentials(true);
-            }
-        });
+        if (textView != null) {
+            textView.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    clearError();
+                    updateChangedFields();
+                    updateScreen();
+                    verifyCredentials(true);
+                }
+            });
+        }
     }
     
     private void showIsDefaultAccount() {

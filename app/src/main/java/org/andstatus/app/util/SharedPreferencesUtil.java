@@ -200,7 +200,9 @@ public class SharedPreferencesUtil {
 
     public static void resetHasSetDefaultValues() {
         SharedPreferences sp = getSharedPreferences(PreferenceManager.KEY_HAS_SET_DEFAULT_VALUES);
-        sp.edit().clear().commit();
+        if (sp != null) {
+            sp.edit().clear().commit();
+        }
         forget();
     }
 

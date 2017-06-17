@@ -19,6 +19,7 @@ package org.andstatus.app.account;
 import android.content.Intent;
 import android.os.Bundle;
 import android.provider.BaseColumns;
+import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentActivity;
 import android.view.View;
 import android.widget.AdapterView;
@@ -57,7 +58,7 @@ public class AccountSelector extends SelectorDialog {
 
         List<MyAccount> listData = newListData();
         if (listData.isEmpty()) {
-            returnSelectedAccount(null);
+            returnSelectedAccount(MyAccount.EMPTY);
             return;
         } else if (listData.size() == 1) {
             returnSelectedAccount(listData.get(0));
@@ -109,7 +110,7 @@ public class AccountSelector extends SelectorDialog {
                 new int[] {R.id.visible_name, R.id.sync_auto, R.id.id}, true);
     }
 
-    private void returnSelectedAccount(MyAccount ma) {
+    private void returnSelectedAccount(@NonNull MyAccount ma) {
         returnSelected(new Intent().putExtra(IntentExtra.ACCOUNT_NAME.key, ma.getAccountName()));
     }
 

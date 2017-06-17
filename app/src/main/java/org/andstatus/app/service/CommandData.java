@@ -107,7 +107,7 @@ public class CommandData implements Comparable<CommandData> {
 
     @NonNull
     public static CommandData newUserCommand(CommandEnum command, MyAccount myActor,
-                                             @NonNull Origin origin, long userId, String userName) {
+                                             Origin origin, long userId, String userName) {
         CommandData commandData = newTimelineCommand(command, myActor, TimelineType.UNKNOWN, userId, origin);
         commandData.setUserName(userName);
         commandData.description = commandData.getUserName();
