@@ -143,7 +143,7 @@ public class TimelineActivity extends MessageEditorListActivity implements
             return;
         }
 
-        getParamsNew().setTimeline(myContext.persistentTimelines().getHome());
+        getParamsNew().setTimeline(myContext.persistentTimelines().getDefault());
         contextMenu = new MessageContextMenu(this);
 
         initializeDrawer();
@@ -606,7 +606,7 @@ public class TimelineActivity extends MessageEditorListActivity implements
         String searchQuery = intentNew.getStringExtra(SearchManager.QUERY);
         if (!parseAppSearchData(intentNew, searchQuery)
                 && !getParamsNew().parseUri(intentNew.getData(), searchQuery)) {
-            getParamsNew().setTimeline(myContext.persistentTimelines().getHome());
+            getParamsNew().setTimeline(myContext.persistentTimelines().getDefault());
         }
         setCurrentMyAccount(getParamsNew().getTimeline().getMyAccount(), getParamsNew().getTimeline().getOrigin());
 

@@ -23,7 +23,6 @@ import android.support.annotation.NonNull;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.database.TimelineTable;
 import org.andstatus.app.origin.Origin;
@@ -92,27 +91,21 @@ public class PersistentTimelines {
     }
 
     @NonNull
-    public Timeline getDefaultForCurrentAccount() {
-        return getDefault().fromMyAccount(myContext, myContext.persistentAccounts().getCurrentAccount());
-    }
-
     public Timeline getDefault() {
-        long id = MyPreferences.getDefaultTimelineId();
-        Timeline timeline = Timeline.getEmpty(null);
-        if (id != 0) {
-            timeline = fromId(id);
-        }
-        if (!timeline.isValid()) {
-            timeline = fromNewTimeLine(Timeline.getTimeline(myContext, 0, TimelineType.HOME,
-                    myContext.persistentAccounts().getDefaultAccount(), 0, null, null));
-        }
-        if (!timeline.isValid()) {
-            List<Timeline> timelines = getFiltered(false, TriState.TRUE, null, null);
-            if (!timelines.isEmpty()) {
-                timeline = timelines.get(0);
+        Timeline defaultTimeline = Timeline.getEmpty(null);
+        for (Timeline timeline : values()) {
+            if (defaultTimeline.compareTo(timeline) > 0 || !defaultTimeline.isValid()) {
+                defaultTimeline = timeline;
             }
         }
-        return timeline;
+        return defaultTimeline;
+    }
+
+    public void setDefault(@NonNull Timeline timelineIn) {
+        Timeline prevDefault = getDefault();
+        if (!timelineIn.equals(prevDefault) && timelineIn.getSelectorOrder() >= prevDefault.getSelectorOrder()) {
+            timelineIn.setSelectorOrder(prevDefault.getSelectorOrder() - 1);
+        }
     }
 
     @NonNull
@@ -206,10 +199,6 @@ public class PersistentTimelines {
         new TimelineSaver(myContext).executeNotOnUiThread();
     }
 
-    public Timeline getHome() {
-        return getDefaultForCurrentAccount();
-    }
-
     public void addNew(Timeline timeline) {
         if (timeline.getId() != 0) {
             timelines.putIfAbsent(timeline.getId(), timeline);
@@ -219,6 +208,12 @@ public class PersistentTimelines {
     public void resetCounters(boolean all) {
         for (Timeline timeline : values()) {
             timeline.resetCounters(all);
+        }
+    }
+
+    public void resetDefaultSelectorOrder() {
+        for (Timeline timeline : values()) {
+            timeline.setDefaultSelectorOrder();
         }
     }
 }

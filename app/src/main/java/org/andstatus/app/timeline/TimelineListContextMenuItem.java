@@ -53,7 +53,7 @@ public enum TimelineListContextMenuItem implements ContextMenuItem {
     MAKE_DEFAULT() {
         @Override
         public boolean execute(TimelineListContextMenu menu, TimelineListViewItem viewItem) {
-            MyPreferences.setDefaultTimelineId(viewItem.timeline.getId());
+            menu.getActivity().getMyContext().persistentTimelines().setDefault(viewItem.timeline);
             menu.getActivity().showList(WhichPage.CURRENT);
             return true;
         }

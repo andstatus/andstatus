@@ -45,10 +45,10 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
                 url = "application/rate_limit_status.json";
                 break;
             case CREATE_FAVORITE:
-                url = "favorites/create.json";
+                url = "favorites/create.json?tweet_mode=extended";
                 break;
             case DESTROY_FAVORITE:
-                url = "favorites/destroy.json";
+                url = "favorites/destroy.json?tweet_mode=extended";
                 break;
             case DIRECT_MESSAGES:
                 url = "direct_messages.json?tweet_mode=extended";

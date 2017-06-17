@@ -38,6 +38,7 @@ import org.andstatus.app.origin.Origin;
 import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.service.CommandResult;
 import org.andstatus.app.util.BundleUtils;
+import org.andstatus.app.util.CollectionsUtil;
 import org.andstatus.app.util.ContentValuesUtils;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
@@ -169,6 +170,11 @@ public class Timeline implements Comparable<Timeline> {
         this.isSyncableAutomatically = this.isSyncable && myAccountToSync.isSyncedAutomatically();
         this.isSyncableForAccounts = calcIsSyncableForAccounts(myContext);
         this.isSyncableForOrigins = calcIsSyncableForOrigins(myContext);
+        this.setDefaultSelectorOrder();
+    }
+
+    protected void setDefaultSelectorOrder() {
+        setSelectorOrder((timelineType.ordinal() + 1) * 2 + (isCombined ? 1 : 0));
     }
 
     private boolean calcIsSyncable(MyAccount myAccountToSync) {
@@ -410,9 +416,12 @@ public class Timeline implements Comparable<Timeline> {
     }
 
     @Override
-    public int compareTo(Timeline another) {
-        return selectorOrder == another.selectorOrder ? 0 :
-                (selectorOrder >= another.selectorOrder ? 1 : -1);
+    public int compareTo(@NonNull Timeline another) {
+        int result = CollectionsUtil.compareCheckbox(checkBoxDisplayedInSelector(), another.checkBoxDisplayedInSelector());
+        if (result != 0) {
+            return result;
+        }
+        return ((Long) getSelectorOrder()).compareTo(another.getSelectorOrder());
     }
 
     public void toContentValues(ContentValues values) {
@@ -535,6 +544,10 @@ public class Timeline implements Comparable<Timeline> {
         return myAccount;
     }
 
+    public boolean checkBoxDisplayedInSelector() {
+        return !isDisplayedInSelector.equals(DisplayedInSelector.NEVER);
+    }
+
     public DisplayedInSelector isDisplayedInSelector() {
         return isDisplayedInSelector;
     }
@@ -548,6 +561,13 @@ public class Timeline implements Comparable<Timeline> {
 
     public long getSelectorOrder() {
         return selectorOrder;
+    }
+
+    public void setSelectorOrder(long selectorOrder) {
+        if (this.selectorOrder != selectorOrder) {
+            changed = true;
+            this.selectorOrder = selectorOrder;
+        }
     }
 
     public long save(MyContext myContext) {

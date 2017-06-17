@@ -182,9 +182,9 @@ public final class DemoData {
                     fail("No persistent accounts");
                 }
                 setSuccessfulAccountAsCurrent();
-                MyPreferences.setDefaultTimelineId(
+                MyContextHolder.get().persistentTimelines().setDefault(
                         MyContextHolder.get().persistentTimelines().getFiltered(false, TriState.TRUE,
-                                MyContextHolder.get().persistentAccounts().getCurrentAccount(), null).get(0).getId());
+                                MyContextHolder.get().persistentAccounts().getCurrentAccount(), null).get(0));
                 MyContextHolder.initialize(myContext.context(), method);
                 if (progressCallback != null) {
                     progressCallback.onProgressMessage("Demo data is ready");

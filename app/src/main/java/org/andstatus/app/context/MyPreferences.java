@@ -240,14 +240,6 @@ public class MyPreferences {
         return COLLAPSE_DUPLICATES_DEFAULT_VALUE;
     }
 
-    public static long getDefaultTimelineId() {
-        return SharedPreferencesUtil.getLong(KEY_DEFAULT_TIMELINE);
-    }
-
-    public static void setDefaultTimelineId(long id) {
-        SharedPreferencesUtil.putLong(KEY_DEFAULT_TIMELINE, id);
-    }
-
     public static boolean isShowThreadsOfConversation() {
         return SharedPreferencesUtil.getBoolean(KEY_SHOW_THREADS_OF_CONVERSATION, true);
     }

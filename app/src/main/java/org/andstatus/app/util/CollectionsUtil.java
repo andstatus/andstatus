@@ -36,4 +36,10 @@ public class CollectionsUtil {
         list.clear();
         list.addAll(sortableList);
     }
+
+    public static int compareCheckbox(boolean lhs, boolean rhs) {
+        int result = lhs == rhs ? 0 : lhs ? 1 : -1;
+        return 0 - result;
+    }
+
 }

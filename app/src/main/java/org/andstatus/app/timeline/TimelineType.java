@@ -30,6 +30,9 @@ public enum TimelineType implements SelectableEnum {
     /** The Home timeline and other information (replies...). */
     HOME("home", R.string.timeline_title_home, Connection.ApiRoutineEnum.HOME_TIMELINE),
     /** Favorites (favorited messages) */
+    PUBLIC("public", R.string.timeline_title_public, Connection.ApiRoutineEnum.PUBLIC_TIMELINE),
+    EVERYTHING("everything", R.string.timeline_title_everything, Connection.ApiRoutineEnum.DUMMY),
+    SEARCH("search", R.string.options_menu_search, Connection.ApiRoutineEnum.SEARCH_MESSAGES),
     FAVORITES("favorites", R.string.timeline_title_favorites, Connection.ApiRoutineEnum.FAVORITES_TIMELINE),
     /** The Mentions timeline and other information (replies...). */
     MENTIONS("mentions", R.string.timeline_title_mentions, Connection.ApiRoutineEnum.MENTIONS_TIMELINE),
@@ -50,9 +53,6 @@ public enum TimelineType implements SelectableEnum {
     FOLLOWERS("followers", R.string.followers, Connection.ApiRoutineEnum.GET_FOLLOWERS),
     /** Same as {@link #FOLLOWERS} but for my accounts only */
     MY_FOLLOWERS("my_followers", R.string.followers, Connection.ApiRoutineEnum.GET_FOLLOWERS),
-    PUBLIC("public", R.string.timeline_title_public, Connection.ApiRoutineEnum.PUBLIC_TIMELINE),
-    SEARCH("search", R.string.options_menu_search, Connection.ApiRoutineEnum.SEARCH_MESSAGES),
-    EVERYTHING("everything", R.string.timeline_title_everything, Connection.ApiRoutineEnum.DUMMY),
     DRAFTS("drafts", R.string.timeline_title_drafts, Connection.ApiRoutineEnum.DUMMY),
     OUTBOX("outbox", R.string.timeline_title_outbox, Connection.ApiRoutineEnum.DUMMY),
     /** For the selected my account (a user), the timeline includes all messages of the same origin irrespectively existence

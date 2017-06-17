@@ -139,7 +139,7 @@ public class TimelineListParameters {
     }
 
     public boolean isAtHome() {
-        return  timeline.equals(myContext.persistentTimelines().getHome());
+        return  timeline.equals(myContext.persistentTimelines().getDefault());
     }
 
     @Override

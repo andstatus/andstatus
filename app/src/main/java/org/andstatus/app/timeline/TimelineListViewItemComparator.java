@@ -17,6 +17,7 @@
 package org.andstatus.app.timeline;
 
 import org.andstatus.app.R;
+import org.andstatus.app.util.CollectionsUtil;
 
 import java.util.Comparator;
 
@@ -39,40 +40,32 @@ class TimelineListViewItemComparator implements Comparator<TimelineListViewItem>
         int result = 0;
         switch (sortByField) {
             case R.id.displayedInSelector:
-                result = lhs.timeline.isDisplayedInSelector().compareTo(rhs.timeline.isDisplayedInSelector());
-                if (result != 0) {
-                    break;
-                }
-                result = compareLong(lhs.timeline.getSelectorOrder(), rhs.timeline.getSelectorOrder());
-                if (result != 0) {
-                    break;
-                }
-                result = lhs.timeline.getTimelineType().compareTo(rhs.timeline.getTimelineType());
+                result = compareAny(lhs.timeline, rhs.timeline);
                 if (result != 0) {
                     break;
                 }
             case R.id.title:
-                result = compareString(lhs.timelineTitle.title, rhs.timelineTitle.title);
+                result = compareAny(lhs.timelineTitle.title, rhs.timelineTitle.title);
                 if (result != 0) {
                     break;
                 }
             case R.id.account:
-                result = compareString(lhs.timelineTitle.accountName, rhs.timelineTitle.accountName);
+                result = compareAny(lhs.timelineTitle.accountName, rhs.timelineTitle.accountName);
                 if (result != 0) {
                     break;
                 }
-                return compareString(lhs.timelineTitle.originName, rhs.timelineTitle.originName);
+                return compareAny(lhs.timelineTitle.originName, rhs.timelineTitle.originName);
             case R.id.origin:
-                result = compareString(lhs.timelineTitle.originName, rhs.timelineTitle.originName);
+                result = compareAny(lhs.timelineTitle.originName, rhs.timelineTitle.originName);
                 if (result != 0) {
                     break;
                 } else {
-                    result = compareString(lhs.timelineTitle.accountName, rhs.timelineTitle.accountName);
+                    result = compareAny(lhs.timelineTitle.accountName, rhs.timelineTitle.accountName);
                 }
                 if (result != 0) {
                     break;
                 } else {
-                    result = compareString(lhs.timelineTitle.title, rhs.timelineTitle.title);
+                    result = compareAny(lhs.timelineTitle.title, rhs.timelineTitle.title);
                 }
                 if (result != 0) {
                     break;
@@ -113,7 +106,7 @@ class TimelineListViewItemComparator implements Comparator<TimelineListViewItem>
                 }
                 break;
             case R.id.errorMessage:
-                result = compareString(lhs.timeline.getErrorMessage(), rhs.timeline.getErrorMessage());
+                result = compareAny(lhs.timeline.getErrorMessage(), rhs.timeline.getErrorMessage());
                 if (result == 0) {
                     return compareSynced(lhs, rhs);
                 }
@@ -123,7 +116,7 @@ class TimelineListViewItemComparator implements Comparator<TimelineListViewItem>
         return result;
     }
 
-    private int compareString(String lhs, String rhs) {
+    private <T extends Comparable<T>> int compareAny(T lhs, T rhs) {
         int result = lhs == null ? 0 : lhs.compareTo(rhs);
         return result == 0 ? 0 : sortDefault ? result : 0 - result;
     }
@@ -146,14 +139,8 @@ class TimelineListViewItemComparator implements Comparator<TimelineListViewItem>
         return result == 0 ? 0 : !sortDefault ? result : 0 - result;
     }
 
-    private int compareCheckbox(boolean lhs, boolean rhs) {
-        int result = lhs == rhs ? 0 : lhs ? 1 : -1;
-        return result == 0 ? 0 : !sortDefault ? result : 0 - result;
-    }
-
-    private int compareLong(long lhs, long rhs) {
-        int result = lhs == rhs ? 0 : lhs > rhs ? 1 : -1;
+    private int compareCheckbox(Boolean lhs, Boolean rhs) {
+        int result = CollectionsUtil.compareCheckbox(lhs, rhs);
         return result == 0 ? 0 : sortDefault ? result : 0 - result;
     }
-
 }

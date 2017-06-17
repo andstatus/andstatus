@@ -16,14 +16,13 @@
 
 package org.andstatus.app.timeline;
 
-import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.account.DemoAccountInserter;
-import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.DemoData;
-import org.andstatus.app.origin.Origin;
+import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.origin.DemoOriginInserter;
+import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.TriState;
 import org.junit.Before;
 import org.junit.Test;
@@ -106,19 +105,18 @@ public class PersistentTimelinesTest {
 
     @Test
     public void testDefaultTimeline() {
-        MyPreferences.setDefaultTimelineId(0);
-        MyAccount myAccount = MyContextHolder.get().persistentAccounts().getDefaultAccount();
-        assertTrue(myAccount.isValid());
+        MyContextHolder.get().persistentTimelines().resetDefaultSelectorOrder();
         Timeline timeline = MyContextHolder.get().persistentTimelines().getDefault();
-        assertEquals(timeline.toString(), myAccount, timeline.getMyAccount());
+        assertTrue(timeline.toString(), timeline.isValid());
         assertEquals(timeline.toString(), TimelineType.HOME, timeline.getTimelineType());
         assertFalse(timeline.toString(), timeline.isCombined());
 
         Origin origin = MyContextHolder.get().persistentOrigins().fromName(DemoData.GNUSOCIAL_TEST_ORIGIN_NAME);
-        myAccount = MyContextHolder.get().persistentAccounts().getFirstSucceededForOrigin(origin);
+        MyAccount myAccount = MyContextHolder.get().persistentAccounts().getFirstSucceededForOrigin(origin);
+        assertTrue(myAccount.isValid());
         timeline = MyContextHolder.get().persistentTimelines().
                 getFiltered(false, TriState.FALSE, myAccount, null).get(2);
-        MyPreferences.setDefaultTimelineId(timeline.getId());
+        MyContextHolder.get().persistentTimelines().setDefault(timeline);
 
         Timeline timeline2 = MyContextHolder.get().persistentTimelines().getDefault();
         assertEquals(timeline, timeline2);
