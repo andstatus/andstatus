@@ -95,7 +95,7 @@
   <string name="crash_dialog_comment_prompt">Por favor, introduza os seus comentarios sobre o erro. Sería de utilidade saber: cando aconteceu e quizás incluso cómo reproducilo.</string>
   <string name="created_label">Creado</string>
   <string name="custom_locale_title">Idioma do aplicativo</string>
-  <string name="default_timeline_title">Liña de tempo por defecto</string>
+  <string name="set_as_default_timeline">Liña de tempo por defecto</string>
   <string name="default_timeline_summary">Liña temporal que será aberta por un Lanzador: \"%s\"</string>
   <string name="device_default">Por omisión do dispositivo</string>
   <string name="dialog_summary_acquiring_an_access_token">Por favor espere mentras AndStatus intercambia una petición de testemuño OAuth de autorización</string>

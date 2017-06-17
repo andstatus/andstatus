@@ -101,7 +101,7 @@
   <string name="crash_dialog_comment_prompt">Por favor, forneça alguns comentários sobre o problema. O que nos ajuda a resolver o problema: o que estava a fazer quando ocorreu e se pode ser reproduzido.</string>
   <string name="created_label">Criado</string>
   <string name="custom_locale_title">Idioma da aplicação</string>
-  <string name="default_timeline_title">Cronologia padrão</string>
+  <string name="set_as_default_timeline">Cronologia padrão</string>
   <string name="default_timeline_summary">A cronologia será aberta com o \'launcher\': \"%s\"</string>
   <string name="device_default">Predefinições</string>
   <string name="dialog_summary_acquiring_an_access_token">Por favor aguarde enquanto o AndStatus está a trocar o \"token\" de pedido OAuth pelo \"token\" de acesso.</string>

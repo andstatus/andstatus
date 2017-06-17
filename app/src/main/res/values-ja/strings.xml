@@ -101,7 +101,7 @@
   <string name="crash_dialog_comment_prompt">問題について下にコメントを入力してください。修正するために分かると非常に役立つこと: いつそれが発生したか、再現性があるかどうか。</string>
   <string name="created_label">作成</string>
   <string name="custom_locale_title">アプリケーションの言語</string>
-  <string name="default_timeline_title">デフォルトのタイムライン</string>
+  <string name="set_as_default_timeline">デフォルトのタイムライン</string>
   <string name="default_timeline_summary">ランチャーで開かれるタイムライン: \"%s\"</string>
   <string name="device_default">デバイス デフォルト</string>
   <string name="dialog_summary_acquiring_an_access_token">AndStatus がアクセス トークンのために OAuth リクエスト トークンを交換するまでお待ちください。</string>

@@ -100,7 +100,7 @@
   <string name="crash_dialog_comment_prompt">Por favor, forneça alguns comentários sobre o problema. O que nos ajuda a resolver o problema: o que estava fazendo quando o erro ocorreu e como pode ser reproduzido.</string>
   <string name="created_label">Criado</string>
   <string name="custom_locale_title">Idioma do aplicativo</string>
-  <string name="default_timeline_title">Linha do tempo padrão</string>
+  <string name="set_as_default_timeline">Linha do tempo padrão</string>
   <string name="device_default">Padrão de dispositivo</string>
   <string name="dialog_summary_acquiring_an_access_token">Por favor aguarde enquanto o AndStatus está trocando o token de pedido OAuth pelo token de acesso</string>
   <string name="dialog_summary_acquiring_a_request_token">Por favor aguarde enquanto o AndStatus obtém um token para OAuth</string>

@@ -100,7 +100,7 @@
   <string name="crash_dialog_comment_prompt">Пожалуйста, прокомментируйте данную проблему. Было бы очень полезно для её исправления знать: в какой момент это произошло и, если Вы знаете, как эту проблему можно воспроизвести.</string>
   <string name="created_label">Создан</string>
   <string name="custom_locale_title">Язык приложения</string>
-  <string name="default_timeline_title">Лента времени по умолчанию</string>
+  <string name="set_as_default_timeline">Лента времени по умолчанию</string>
   <string name="default_timeline_summary">Лента времени, которая будет открыта при запуске приложения: \"%s\"</string>
   <string name="device_default">По умолчанию в устройстве</string>
   <string name="dialog_summary_acquiring_an_access_token">Пожалуйста подождите пока AndStatus обменяет токен OAuth запроса на токен доступа</string>

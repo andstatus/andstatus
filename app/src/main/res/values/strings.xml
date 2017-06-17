@@ -100,7 +100,7 @@
   <string name="crash_dialog_comment_prompt">Please provide below your comments about the problem. It would be very helpful for a fix to know: when it occurred and maybe even how it could be reproduced.</string>
   <string name="created_label">Created</string>
   <string name="custom_locale_title">Application language</string>
-  <string name="default_timeline_title">Default timeline</string>
+  <string name="set_as_default_timeline">Set as Default Timeline</string>
   <string name="default_timeline_summary">Timeline that will be opened by a Launcher: \"%s\"</string>
   <string name="device_default">Device default</string>
   <string name="dialog_summary_acquiring_an_access_token">Please wait while AndStatus is exchanging an OAuth Request token for Access token</string>

@@ -34,6 +34,13 @@
             <change>Fixed Twitter tweets longer than 140 characters were shown truncated.
                 <a href="https://github.com/andstatus/andstatus/issues/462">#462</a>
             </change>
+            <change>Default order of timelines improved with Home, Public, Search and Everything timelines now at the top.
+                <br />
+                Sort timelines by "Displ" column in the "Manage timelines" list (by clicking on its header) to see,
+                how they will be sorted in the "Select a Timeline" dialog. Clicking "Set as Default Timeline"
+                timeline's context menu item permanently moves the timeline above other timelines.
+                Previous default timeline becomes the second in the "Select a Timeline" list.
+            </change>
         </changes>
     </release>
     <release android:versionName="33.11" android:versionCode="219"

@@ -101,7 +101,7 @@
   <string name="crash_dialog_comment_prompt">Bitte gib unten deine Kommentare zum Problem an. Es wäre sehr hilfreich für eine Korrektur zu wissen, wann es aufgetreten ist und vielleicht sogar wie es reproduziert werden könnte.</string>
   <string name="created_label">Erstellt</string>
   <string name="custom_locale_title">Sprache der Anwendung</string>
-  <string name="default_timeline_title">Standard-Timeline</string>
+  <string name="set_as_default_timeline">Standard-Timeline</string>
   <string name="default_timeline_summary">Timeline, die durch einen Launcher geöffnet wird: \"%s\"</string>
   <string name="device_default">Gerätestandard</string>
   <string name="dialog_summary_acquiring_an_access_token">Bitte warten, während AndStatus OAuth Request Token und Access Token austauscht</string>

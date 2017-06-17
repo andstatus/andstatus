@@ -90,7 +90,7 @@
   <string name="crash_dialog_comment_prompt">Angi under din kommentarer om hendelsen. Slik informasjon er nyttig for å kunne rette på problemet: feks. når det skjedde og kanskje også hvordan vi kan gjenskape problemet.</string>
   <string name="created_label">Opprettet</string>
   <string name="custom_locale_title">Applikasjons språk</string>
-  <string name="default_timeline_title">Standard tidslinje</string>
+  <string name="set_as_default_timeline">Standard tidslinje</string>
   <string name="device_default">Standard enhet</string>
   <string name="dialog_summary_acquiring_an_access_token">Vent mens AndStatus utveksler en OAuth forespørsel tokenet for å motta en tilgangstoken</string>
   <string name="dialog_summary_acquiring_a_request_token">Vent mens AndStatus forespør en forespørselstoken for OAuth</string>

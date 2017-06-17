@@ -68,7 +68,7 @@
   <string name="color_teal">כחלחל ירוק</string>
   <string name="command_follow_user">עקוב</string>
   <string name="created_label">נוצר</string>
-  <string name="default_timeline_title">ציר זמן שגרתי</string>
+  <string name="set_as_default_timeline">ציר זמן שגרתי</string>
   <string name="dialog_title_checking_credentials">כעת מאמת&#8230;</string>
   <string name="dialog_title_executing_command">כעת מבצע פקודה&#8230;</string>
   <string name="dialog_title_external_storage">אחסון חיצוני זמין</string>

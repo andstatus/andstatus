@@ -53,7 +53,7 @@ public class TimelineListContextMenu extends MyContextMenu {
                 TimelineListContextMenuItem.DELETE.addTo(menu, order++, R.string.button_delete);
             }
             if (!getMyContext().persistentTimelines().getDefault().equals(getViewItem().timeline)) {
-                TimelineListContextMenuItem.MAKE_DEFAULT.addTo(menu, order++, R.string.default_timeline_title);
+                TimelineListContextMenuItem.MAKE_DEFAULT.addTo(menu, order++, R.string.set_as_default_timeline);
             }
         } catch (Exception e) {
             MyLog.e(this, method, e);

@@ -100,7 +100,7 @@
   <string name="crash_dialog_comment_prompt">Por favor, especifica abajo tus comentarios sobre el problema. Esto puede ser de gran ayuda para solucionarlo: cuándo ocurrió y si es posible cómo reproducirlo.</string>
   <string name="created_label">Creado</string>
   <string name="custom_locale_title">Idioma de la aplicación</string>
-  <string name="default_timeline_title">Línea temporal predeterminada</string>
+  <string name="set_as_default_timeline">Línea temporal predeterminada</string>
   <string name="default_timeline_summary">Línea temporal que será abierta por un lanzador: \"%s\"</string>
   <string name="device_default">Predeterminado</string>
   <string name="dialog_summary_acquiring_an_access_token">Por favor, espere mientras AndStatus intercambia una solicitud de prueba de OAuth para la prueba de acceso</string>
