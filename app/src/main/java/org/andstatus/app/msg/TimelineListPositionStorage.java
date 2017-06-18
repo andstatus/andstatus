@@ -140,7 +140,7 @@ class TimelineListPositionStorage {
                 position = getPositionById(tlPosition.firstVisibleItemId);
             }
             if (position >= 0) {
-                mListView.setSelectionFromTop(position, tlPosition.y);
+                mListView.setSelectionFromTop(position + mListView.getHeaderViewsCount(), tlPosition.y);
                 restored = true;
             } else {
                 // There is no stored position - starting from the Top
@@ -172,7 +172,7 @@ class TimelineListPositionStorage {
         if (MyLog.isVerboseEnabled()) {
             MyLog.v(TAG, "Set position of " + position + " item to " + y + " px");
         }
-        listView.setSelectionFromTop(position, y);
+        listView.setSelectionFromTop(position  + listView.getHeaderViewsCount(), y);
     }
 
     /**

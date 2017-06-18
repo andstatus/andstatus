@@ -105,7 +105,7 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> {
                 }
                 MyLog.v(methodExt, method + " on setSelection " + position
                         + " of " + (listAdapter.getCount() - 1));
-                listView.setSelectionFromTop(position, 0);
+                listView.setSelectionFromTop(position + listView.getHeaderViewsCount(), 0);
             }
         });
         TestSuite.waitForIdleSync();
@@ -183,7 +183,7 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> {
                 final String msg = "goToPosition " + position;
                 MyLog.v(methodExt, msg);
                 try {
-                    listView.setSelectionFromTop(position, 0);
+                    listView.setSelectionFromTop(position + listView.getHeaderViewsCount(), 0);
                 } catch (Exception e) {
                     MyLog.e(msg, e);
                 }
@@ -199,8 +199,8 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> {
 
     public View getViewByPosition(int position, ListView listView, final ListAdapter listAdapter) {
         final String method = "getViewByPosition";
-        final int firstListItemPosition = listView.getFirstVisiblePosition();
-        final int lastListItemPosition = firstListItemPosition + listView.getChildCount() - 1;
+        final int firstListItemPosition = listView.getFirstVisiblePosition() - listView.getHeaderViewsCount();
+        final int lastListItemPosition = firstListItemPosition + listView.getChildCount() - 1 - listView.getHeaderViewsCount();
         View view;
         if (position < firstListItemPosition || position > lastListItemPosition ) {
             if (position < 0 || listAdapter == null
@@ -281,7 +281,7 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> {
                 viewToClick.performClick();
                 listView.performItemClick(
                         viewToClick,
-                        position, listItemId);
+                        position + listView.getHeaderViewsCount(), listItemId);
 
                 MyLog.v(methodExt, "afterClick " + msgLog);
             }

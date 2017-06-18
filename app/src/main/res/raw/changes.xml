@@ -47,6 +47,9 @@
                 So now for a message, received via your account's GNU Social instance, "Open in Browser"
                 opens it at a web site, where the message was created, and not necessarily at this GNU Social instance.
             </change>
+            <change>Timeline header - button added: "Synced .... Sync messages since..." to make more transparent,
+                which timeline when was sychronized and which timeline cannot be synchronized at all (e.g. "Drafts").
+            </change>
         </changes>
     </release>
     <release android:versionName="33.11" android:versionCode="219"

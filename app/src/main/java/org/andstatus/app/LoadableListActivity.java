@@ -362,7 +362,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
             if (itemIdOfListPosition >= 0) {
                 int firstListPosition = adapter.getPositionById(itemIdOfListPosition);
                 if (firstListPosition >= 0) {
-                    list.setSelectionFromTop(firstListPosition, y);
+                    list.setSelectionFromTop(firstListPosition + list.getHeaderViewsCount(), y);
                     positionRestored = true;
                     verboseListPositionLog(method, "After setting position:" + firstListPosition);
                 }

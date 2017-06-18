@@ -26,6 +26,7 @@ import android.support.annotation.NonNull;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.text.TextUtils;
+import android.text.format.DateUtils;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -67,6 +68,7 @@ import org.andstatus.app.util.BundleUtils;
 import org.andstatus.app.util.MyCheckBox;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyUrlSpan;
+import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
@@ -74,7 +76,6 @@ import org.andstatus.app.util.ViewUtils;
 import org.andstatus.app.widget.MyBaseAdapter;
 
 import java.util.Collections;
-import java.util.Date;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -99,6 +100,7 @@ public class TimelineActivity extends MessageEditorListActivity implements
     DrawerLayout mDrawerLayout;
     ActionBarDrawerToggle mDrawerToggle;
     protected volatile SelectorActivityMock selectorActivityMock;
+    View syncYoungerView = null;
     View syncOlderView = null;
 
     public static void startForTimeline(MyContext myContext, Activity activity, Timeline timeline,
@@ -158,6 +160,14 @@ public class TimelineActivity extends MessageEditorListActivity implements
                 }
             });
         }
+
+        syncYoungerView = View.inflate(this, R.layout.sync_younger, null);
+        syncYoungerView.findViewById(R.id.sync_younger_button).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                syncWithInternet(getParamsLoaded().getTimeline(), true, true);
+            }
+        });
 
         syncOlderView = View.inflate(this, R.layout.sync_older, null);
         syncOlderView.findViewById(R.id.sync_older_button).setOnClickListener(new View.OnClickListener() {
@@ -718,6 +728,7 @@ public class TimelineActivity extends MessageEditorListActivity implements
                 findViewById(R.id.switchToDefaultTimelineButton), !getParamsLoaded().isAtHome());
         MyCheckBox.setEnabled(this, R.id.collapseDuplicatesToggle,
                 getListData().isCollapseDuplicates());
+        showSyncListButtons();
     }
 
     @Override
@@ -816,6 +827,8 @@ public class TimelineActivity extends MessageEditorListActivity implements
                     + "; requesting " + (isDifferentRequest ? "" : "duplicating ")
                     + params.toSummary());
             saveListPosition();
+            disableHeaderSyncButton(R.string.loading);
+            disableFooterButton(R.string.loading);
             showLoading(method, getText(R.string.loading) + " "
                     + paramsToLoad.toSummary() + HORIZONTAL_ELLIPSIS);
             super.showList(chainedRequest.toBundle(paramsToLoad.whichPage.toBundle(),
@@ -899,29 +912,79 @@ public class TimelineActivity extends MessageEditorListActivity implements
         } else if (otherPageToRequest != WhichPage.EMPTY) {
             MyLog.v(this, method + "; Nothing loaded, requesting " + otherPageToRequest);
             showList(otherPageToRequest, TriState.TRUE);
-        } else {
-            showSyncOlder();
         }
     }
 
-    private void showSyncOlder() {
+    private void showSyncListButtons() {
         final ListView listView = getListView();
-        if (listView == null) {
+        if (listView != null) {
+            showHeaderSyncButton(listView);
+            showFooterSyncButton(listView);
+        }
+    }
+
+    private boolean showHeaderSyncButton(@NonNull ListView listView) {
+        if (listView.getHeaderViewsCount() == 0) {
+            listView.addHeaderView(syncYoungerView);
+        }
+        if (getListData().mayHaveYoungerPage()) {
+            disableHeaderSyncButton(R.string.loading);
+            return false;
+        }
+        if (!getParamsLoaded().getTimeline().isSynableSomehow()) {
+            disableHeaderSyncButton(R.string.not_syncable);
+            return false;
+        }
+        long syncSucceededDate = getParamsLoaded().getTimeline().getSyncSucceededDate();
+        long youngestItemDate = getParamsLoaded().getTimeline().getYoungestItemDate();
+        String format = getText(getParamsLoaded().getTimeline().isCombined() ||
+                youngestItemDate == 0 ? R.string.options_menu_sync : R.string.sync_younger_messages).toString();
+        MyUrlSpan.showText(syncYoungerView, R.id.sync_younger_button,
+                String.format(format,
+                    syncSucceededDate > 0 ? RelativeTime.getDifference(this, syncSucceededDate) : getText(R.string.never),
+                    DateUtils.getRelativeTimeSpanString(this, youngestItemDate)),
+                false,
+                false);
+        syncYoungerView.setEnabled(true);
+        return true;
+    }
+
+    private void disableHeaderSyncButton(int resInfo) {
+        MyUrlSpan.showText(syncYoungerView, R.id.sync_younger_button,
+                getText(resInfo).toString(),
+                false,
+                false);
+        syncYoungerView.setEnabled(false);
+    }
+
+    private void showFooterSyncButton(@NonNull ListView listView) {
+        if (listView.getFooterViewsCount() == 0) {
+            listView.addFooterView(syncOlderView);
+        }
+        if (getListData().mayHaveOlderPage()) {
+            disableFooterButton(R.string.loading);
             return;
         }
-        if (getListData().mayHaveOlderPage() || (!getParamsLoaded().getTimeline().isCombined() &&
-                        !myContext.persistentAccounts().getCurrentAccount().isValidAndSucceeded()) ) {
-            listView.removeFooterView(syncOlderView);
-        } else {
-            listView.addFooterView(syncOlderView);
-            MyUrlSpan.showText(syncOlderView, R.id.sync_older_button,
-                    String.format(getText(getParamsLoaded().getTimeline().isCombined() ||
-                            getParamsLoaded().getTimeline().getOldestItemDate() == 0 ? R.string.options_menu_sync :
-                            R.string.sync_older_messages).toString(),
-                            new Date(getParamsLoaded().getTimeline().getOldestItemDate()).toString()),
-                    false,
-                    false);
+        if (!getParamsLoaded().getTimeline().isSynableSomehow()) {
+            disableFooterButton(R.string.no_more_messages);
+            return;
         }
+        MyUrlSpan.showText(syncOlderView, R.id.sync_older_button,
+                String.format(getText(getParamsLoaded().getTimeline().isCombined() ||
+                        getParamsLoaded().getTimeline().getOldestItemDate() == 0 ? R.string.options_menu_sync :
+                        R.string.sync_older_messages).toString(),
+                        DateUtils.getRelativeTimeSpanString(this, getParamsLoaded().getTimeline().getOldestItemDate())),
+                false,
+                false);
+        syncOlderView.setEnabled(true);
+    }
+
+    private void disableFooterButton(int resInfo) {
+        MyUrlSpan.showText(syncOlderView, R.id.sync_older_button,
+                getText(resInfo).toString(),
+                false,
+                false);
+        syncOlderView.setEnabled(false);
     }
 
     private void launchSyncIfNeeded(Timeline timelineToSync) {
@@ -1133,6 +1196,8 @@ public class TimelineActivity extends MessageEditorListActivity implements
                 }
                 if (commandData.getResult().getDownloadedCount() > 0) {
                     needed = true;
+                } else {
+                    showSyncListButtons();
                 }
                 break;
             default:

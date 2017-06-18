@@ -25,6 +25,8 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.context.DemoData;
+import org.andstatus.app.data.MyQuery;
+import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.timeline.Timeline;
 import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.MyLog;
@@ -60,7 +62,7 @@ public class ActAsUserTest extends TimelineActivityTest {
         ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<>(getActivity(),
                 ConversationActivity.class);
         long msgId = helper.getListItemIdOfLoadedReply();
-        String logMsg = "msgId=" + msgId;
+        String logMsg = "msgId=" + msgId + " text='" + MyQuery.msgIdToStringColumnValue(MsgTable.BODY, msgId) + "'";
 
         boolean invoked = helper.invokeContextMenuAction4ListItemId(method, msgId,
                 MessageListContextMenuItem.ACT_AS_FIRST_OTHER_USER);
