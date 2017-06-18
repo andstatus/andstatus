@@ -28,7 +28,7 @@
 		</subtitle>
     </header>
     <release android:versionName="34.00" android:versionCode="220"
-             versionDate="2017-06-17"
+             versionDate="2017-06-18"
              versionTitle="Showing Twitter tweets longer than 140 characters">
         <changes>
             <change>Fixed Twitter tweets longer than 140 characters were shown truncated.
@@ -40,6 +40,9 @@
                 how they will be sorted in the "Select a Timeline" dialog. Clicking "Set as Default Timeline"
                 timeline's context menu item permanently moves the timeline above other timelines.
                 Previous default timeline becomes the second in the "Select a Timeline" list.
+                <br />
+                New action "Reset timelines order" added to the "Manage timelines" list helping existing users
+                to reorder timelines.
             </change>
         </changes>
     </release>

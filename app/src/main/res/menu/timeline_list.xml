@@ -36,4 +36,9 @@
         app:showAsAction="never"
         android:title="@string/reset_counters">
     </item>
+    <item
+        android:id="@+id/reset_timelines_order"
+        app:showAsAction="never"
+        android:title="@string/reset_timelines_order">
+    </item>
 </menu>

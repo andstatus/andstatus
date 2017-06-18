@@ -374,6 +374,7 @@
   <string name="remove_account_dialog_title">Remove account?</string>
   <string name="remove_account_dialog_text">Removing the account will delete all its data from the device. Continue?</string>
   <string name="reset_counters">Reset counters</string>
+  <string name="reset_timelines_order">Reset timelines order</string>
   <string name="resolve_view">View Message</string>
   <string name="rounded_avatars">Rounded avatars</string>
   <string name="search_timeline_label">Search messages, users, and hashtags</string>
@@ -449,6 +450,7 @@
   <string name="summary_preference_vibration_off">Vibration is turned off</string>
   <string name="summary_preference_vibration_on">Vibrate on incoming message</string>
   <string name="switch_to_default_timeline">Switch to Default Timeline</string>
+  <string name="sync_younger_messages">Synced %1$s. Sync messages since %2$s</string>
   <string name="sync_older_messages">Sync messages before %1$s</string>
   <string name="sync_over_wifi_only">Sync over WiFi only</string>
   <string name="sync_failed">Sync failed</string>

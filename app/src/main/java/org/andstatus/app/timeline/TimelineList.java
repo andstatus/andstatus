@@ -304,6 +304,10 @@ public class TimelineList extends LoadableListActivity {
                 myContext.persistentTimelines().resetCounters(isTotal);
                 showList(WhichPage.CURRENT);
                 return true;
+            case R.id.reset_timelines_order:
+                myContext.persistentTimelines().resetDefaultSelectorOrder();
+                sortBy(R.id.displayedInSelector);
+                return true;
             case R.id.total_counters:
                 isTotal = !isTotal;
                 item.setChecked(isTotal);
