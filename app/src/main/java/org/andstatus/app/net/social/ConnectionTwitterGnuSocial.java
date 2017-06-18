@@ -180,6 +180,7 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
     MbMessage messageFromJson2(@NonNull JSONObject jso) throws ConnectionException {
         final String method = "messageFromJson";
         MbMessage message = super.messageFromJson2(jso);
+        message.url = jso.optString("external_url");
         message.setConversationOid(jso.optString(CONVERSATION_ID_FIELD_NAME));
         if (!jso.isNull(ATTACHMENTS_FIELD_NAME)) {
             try {

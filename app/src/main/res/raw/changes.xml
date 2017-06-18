@@ -36,13 +36,16 @@
             </change>
             <change>Default order of timelines improved with Home, Public, Search and Everything timelines now at the top.
                 <br />
-                Sort timelines by "Displ" column in the "Manage timelines" list (by clicking on its header) to see,
+                Sort timelines by "Displ" column in the "Manage timelines" list (by clicking on the column header) to see,
                 how they will be sorted in the "Select a Timeline" dialog. Clicking "Set as Default Timeline"
                 timeline's context menu item permanently moves the timeline above other timelines.
-                Previous default timeline becomes the second in the "Select a Timeline" list.
-                <br />
+                Previous default timeline becomes the second in the "Select a Timeline" list.<br />
                 New action "Reset timelines order" added to the "Manage timelines" list helping existing users
                 to reorder timelines.
+            </change>
+            <change>Started capturing Original message URL for GNU Social.
+                So now for a message, received via your account's GNU Social instance, "Open in Browser"
+                opens it at a web site, where the message was created, and not necessarily at this GNU Social instance.
             </change>
         </changes>
     </release>

@@ -61,7 +61,7 @@ class OriginTwitter extends Origin {
     }
 
     @Override
-    public String messagePermalink(long messageId) {
+    protected String alternativeMessagePermalink(long messageId) {
         if (url == null) {
             return "";
         }

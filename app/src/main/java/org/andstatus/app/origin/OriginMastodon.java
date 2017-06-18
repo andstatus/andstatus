@@ -19,12 +19,6 @@ package org.andstatus.app.origin;
 import android.support.annotation.StringRes;
 
 import org.andstatus.app.R;
-import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.database.MsgTable;
-import org.andstatus.app.util.MyLog;
-
-import java.net.MalformedURLException;
-import java.net.URL;
 
 public class OriginMastodon extends Origin {
 
@@ -44,16 +38,4 @@ public class OriginMastodon extends Origin {
         }
         return resIdOut;
     }
-
-    @Override
-    public String messagePermalink(long messageId) {
-        String msgUrl = MyQuery.msgIdToStringColumnValue(MsgTable.URL, messageId);
-        try {
-            return new URL(msgUrl).toExternalForm();
-        } catch (MalformedURLException e) {
-            MyLog.d(this, "Malformed URL from '" + msgUrl + "'", e);
-        }
-        return "";
-    }
-
 }

@@ -19,8 +19,6 @@ package org.andstatus.app.origin;
 import android.support.annotation.StringRes;
 
 import org.andstatus.app.R;
-import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.database.MsgTable;
 
 class OriginPumpio extends Origin {
     @Override
@@ -50,10 +48,5 @@ class OriginPumpio extends Origin {
                 break;
         }
         return resIdOut;
-    }
-    
-    @Override
-    public String messagePermalink(long messageId) {
-        return MyQuery.msgIdToStringColumnValue(MsgTable.URL, messageId);
     }
 }

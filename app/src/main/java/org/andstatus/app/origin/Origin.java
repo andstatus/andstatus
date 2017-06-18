@@ -31,6 +31,7 @@ import android.text.util.Linkify;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DbUtils;
+import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.database.OriginTable;
 import org.andstatus.app.database.UserTable;
@@ -41,6 +42,7 @@ import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UrlUtils;
 
+import java.net.MalformedURLException;
 import java.net.URL;
 
 /**
@@ -174,7 +176,19 @@ public class Origin {
         return resId;
     }
 
-    public String messagePermalink(long messageId) {
+    public final String messagePermalink(long messageId) {
+        String msgUrl = MyQuery.msgIdToStringColumnValue(MsgTable.URL, messageId);
+        if (!TextUtils.isEmpty(msgUrl)) {
+            try {
+                return new URL(msgUrl).toExternalForm();
+            } catch (MalformedURLException e) {
+                MyLog.d(this, "Malformed URL from '" + msgUrl + "'", e);
+            }
+        }
+        return alternativeMessagePermalink(messageId);
+    }
+
+    protected String alternativeMessagePermalink(long messageId) {
         return "";
     }
 
