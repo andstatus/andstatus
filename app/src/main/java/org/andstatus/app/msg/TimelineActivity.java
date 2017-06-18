@@ -176,6 +176,7 @@ public class TimelineActivity extends MessageEditorListActivity implements
                 syncWithInternet(getParamsLoaded().getTimeline(), false, true);
             }
         });
+        addSyncButtons();
 
         if (savedInstanceState != null) {
             restoreActivityState(savedInstanceState);
@@ -915,6 +916,20 @@ public class TimelineActivity extends MessageEditorListActivity implements
         }
     }
 
+    private void addSyncButtons() {
+        final ListView listView = getListView();
+        if (listView != null) {
+            if (listView.getHeaderViewsCount() == 0) {
+                listView.addHeaderView(syncYoungerView);
+                disableHeaderSyncButton(R.string.loading);
+            }
+            if (listView.getFooterViewsCount() == 0) {
+                listView.addFooterView(syncOlderView);
+                disableFooterButton(R.string.loading);
+            }
+        }
+    }
+
     private void showSyncListButtons() {
         final ListView listView = getListView();
         if (listView != null) {
@@ -924,9 +939,6 @@ public class TimelineActivity extends MessageEditorListActivity implements
     }
 
     private boolean showHeaderSyncButton(@NonNull ListView listView) {
-        if (listView.getHeaderViewsCount() == 0) {
-            listView.addHeaderView(syncYoungerView);
-        }
         if (getListData().mayHaveYoungerPage()) {
             disableHeaderSyncButton(R.string.loading);
             return false;
@@ -958,9 +970,6 @@ public class TimelineActivity extends MessageEditorListActivity implements
     }
 
     private void showFooterSyncButton(@NonNull ListView listView) {
-        if (listView.getFooterViewsCount() == 0) {
-            listView.addFooterView(syncOlderView);
-        }
         if (getListData().mayHaveOlderPage()) {
             disableFooterButton(R.string.loading);
             return;

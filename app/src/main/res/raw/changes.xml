@@ -45,9 +45,10 @@
             </change>
             <change>Started capturing Original message URL for GNU Social.
                 So now for a message, received via your account's GNU Social instance, "Open in Browser"
-                opens it at a web site, where the message was created, and not necessarily at this GNU Social instance.
+                opens it at a web site, where the message was created, and not necessarily at this GNU Social instance.<br/>
+                Unfortunately, not all GNU Social instances provide the "external_url" field to the client application...
             </change>
-            <change>Timeline header - button added: "Synced .... Sync messages since..." to make more transparent,
+            <change>Timeline header button added: "Synced .... Sync messages since..." to make more transparent,
                 which timeline when was sychronized and which timeline cannot be synchronized at all (e.g. "Drafts").
             </change>
         </changes>

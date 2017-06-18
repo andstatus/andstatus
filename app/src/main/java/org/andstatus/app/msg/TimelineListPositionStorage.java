@@ -55,7 +55,7 @@ class TimelineListPositionStorage {
             MyLog.v(this, method + "; skipped");
             return;
         }
-        int firstVisiblePosition = mListView.getFirstVisiblePosition();
+        int firstVisiblePosition = mListView.getFirstVisiblePosition() - mListView.getHeaderViewsCount();
         int itemCount = adapter.getCount();
         if (firstVisiblePosition >= itemCount) {
             firstVisiblePosition = itemCount - 1;
@@ -168,11 +168,12 @@ class TimelineListPositionStorage {
         }
         int viewHeight = listView.getHeight();
         int childHeight = 30;
-        int y = viewHeight - childHeight;
+        int y = position == 0 ? 0 : viewHeight - childHeight;
+        int headerViewsCount = listView.getHeaderViewsCount();
         if (MyLog.isVerboseEnabled()) {
-            MyLog.v(TAG, "Set position of " + position + " item to " + y + " px");
+            MyLog.v(TAG, "Set position of " + position + " item to " + y + " px, header views: " + headerViewsCount);
         }
-        listView.setSelectionFromTop(position  + listView.getHeaderViewsCount(), y);
+        listView.setSelectionFromTop(position  + headerViewsCount, y);
     }
 
     /**

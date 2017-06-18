@@ -340,7 +340,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
         long itemIdOfListPosition = centralItemId;
         int y = 0;
         if (list.getChildCount() > 0 && adapter != null) {
-            int firstVisiblePosition = list.getFirstVisiblePosition();
+            int firstVisiblePosition = list.getFirstVisiblePosition() - list.getHeaderViewsCount();
             itemIdOfListPosition = adapter.getItemId(firstVisiblePosition);
             y = getYOfPosition(list, adapter, firstVisiblePosition);
         }
@@ -385,11 +385,11 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
 
     public static int getYOfPosition(ListView list, MyBaseAdapter myBaseAdapter, int position) {
         int y = 0;
-        int zeroChildPosition = myBaseAdapter.getPosition(list.getChildAt(0));
+        int zeroChildPosition = myBaseAdapter.getPosition(list.getChildAt(list.getHeaderViewsCount()));
         if (position - zeroChildPosition != 0) {
             MyLog.v("getYOfPosition", "pos:" + position + ", zeroChildPos:" + zeroChildPosition);
         }
-        View viewOfPosition = list.getChildAt(position - zeroChildPosition);
+        View viewOfPosition = list.getChildAt(position - zeroChildPosition + list.getHeaderViewsCount());
         if (viewOfPosition != null) {
             y  = viewOfPosition.getTop() - list.getPaddingTop();
         }
