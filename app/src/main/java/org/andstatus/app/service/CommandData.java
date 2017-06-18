@@ -129,7 +129,7 @@ public class CommandData implements Comparable<CommandData> {
     }
 
     public static CommandData newAccountCommand(CommandEnum command, MyAccount myAccount) {
-        return newTimelineCommand(command, Timeline.getTimeline(TimelineType.HOME, myAccount, 0, null));
+        return newTimelineCommand(command, Timeline.getTimeline(TimelineType.EVERYTHING, myAccount, 0, null));
     }
 
     public static CommandData newTimelineCommand(CommandEnum command, MyAccount myAccount,
