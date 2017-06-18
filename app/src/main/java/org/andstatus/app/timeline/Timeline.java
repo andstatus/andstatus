@@ -174,7 +174,7 @@ public class Timeline implements Comparable<Timeline> {
     }
 
     protected void setDefaultSelectorOrder() {
-        setSelectorOrder((timelineType.ordinal() + 1) * 2 + (isCombined ? 1 : 0));
+        setSelectorOrder((timelineType.ordinal() + 1L) * 2 + (isCombined ? 1 : 0));
     }
 
     private boolean calcIsSyncable(MyAccount myAccountToSync) {
