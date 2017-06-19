@@ -12,6 +12,7 @@ import org.andstatus.app.ListActivityTestHelper;
 import org.andstatus.app.R;
 import org.andstatus.app.account.AccountSelector;
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DownloadData;
@@ -19,7 +20,6 @@ import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.MsgTable;
-import org.andstatus.app.context.DemoData;
 import org.andstatus.app.service.MyServiceTestHelper;
 import org.andstatus.app.util.MyLog;
 import org.junit.After;
@@ -80,7 +80,7 @@ public class SharingMediaToThisAppTest extends TimelineActivityTest {
         TestSuite.waitForIdleSync();
 
         mService.serviceStopped = false;
-        ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<TimelineActivity>(getActivity());
+        ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<>(getActivity());
         helper.clickMenuItem(method, R.id.messageSendButton);
         ActivityTestHelper.waitViewInvisible(method, editorView);
 

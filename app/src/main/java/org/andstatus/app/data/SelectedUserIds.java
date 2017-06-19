@@ -29,20 +29,13 @@ public class SelectedUserIds {
     private int mSize = 0;
     private String sqlUserIds = "";
 
-    public SelectedUserIds(long selectedUserId) {
-        if (selectedUserId != 0) {
-            mSize = 1;
-            sqlUserIds = Long.toString(selectedUserId);
-        }
-    }
-
     public SelectedUserIds(Timeline timeline) {
         if (timeline.getTimelineType() == TimelineType.USER) {
             if ( timeline.getUserId() != 0) {
                 mSize = 1;
                 sqlUserIds = Long.toString(timeline.getUserId());
             }
-        } else if (timeline.isCombined()) {
+        } else if (timeline.isCombined() || timeline.getTimelineType().isAtOrigin()) {
             StringBuilder sb = new StringBuilder();
             for (MyAccount ma : MyContextHolder.get().persistentAccounts().list()) {
                 if (!timeline.getOrigin().isValid() || timeline.getOrigin().equals(ma.getOrigin())) {

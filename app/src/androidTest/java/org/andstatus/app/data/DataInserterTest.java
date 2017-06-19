@@ -68,11 +68,11 @@ public class DataInserterTest {
         CommandExecutionContext counters = new CommandExecutionContext(
                 CommandData.newAccountCommand(CommandEnum.EMPTY, DemoData.getConversationMyAccount()));
         DataInserter di = new DataInserter(counters);
-        String username = "somebody@identi.ca";
+        String username = "somebody" + DemoData.TESTRUN_UID + "@identi.ca";
         String userOid = "acct:" + username;
         MbUser somebody = MbUser.fromOriginAndUserOid(DemoData.getConversationOriginId(), userOid);
         somebody.setUserName(username);
-        somebody.actor = DemoData.getConversationMbUser();
+        somebody.actor = DemoData.getConversationMyMbUser();
         somebody.followedByActor = TriState.FALSE;
         somebody.setProfileUrl("http://identi.ca/somebody");
         di.insertOrUpdateUser(somebody);
@@ -81,12 +81,13 @@ public class DataInserterTest {
                 userOid);
         assertTrue("User " + username + " added", somebodyId != 0);
 
-        Set<Long> followedIds = MyQuery.getFriendsIds(DemoData
+        Set<Long> friendsIds = MyQuery.getFriendsIds(DemoData
                 .getConversationMyAccount().getUserId());
-        assertFalse("User " + username + " is not followed", followedIds.contains(somebodyId));
+        assertFalse("User " + username + " is followed by " + DemoData.getConversationMyAccount(),
+                friendsIds.contains(somebodyId));
 
         MbMessage message = MbMessage.fromOriginAndOid(DemoData.getConversationOriginId(),
-                DemoData.getConversationMbUser().oid, messageOid, DownloadStatus.LOADED);
+                DemoData.getConversationMyMbUser().oid, messageOid, DownloadStatus.LOADED);
         message.setBody("The test message by Somebody");
         message.setUpdatedDate(13312696000L);
         message.via = "MyCoolClient";
@@ -131,24 +132,24 @@ public class DataInserterTest {
         };
         Cursor cursor = context.getContentResolver().query(contentUri, PROJECTION, sa.selection,
                 sa.selectionArgs, sortOrder);
-        assertTrue("No messages of this user in the Friends timeline", cursor.getCount() == 0);
+        assertTrue("No messages of this user in the Friends timeline", cursor != null && cursor.getCount() == 0);
         cursor.close();
 
         somebody.followedByActor = TriState.TRUE;
         di.insertOrUpdateUser(somebody);
 
-        followedIds = MyQuery.getFriendsIds(DemoData.getConversationMyAccount()
-                .getUserId());
-        assertTrue("User " + username + ", id=" + somebodyId + " is followed",
-                followedIds.contains(somebodyId));
+        friendsIds = MyQuery.getFriendsIds(DemoData.getConversationMyAccount().getUserId());
+        assertTrue("User " + username + ", id=" + somebodyId + " is not followed by "
+                + DemoData.getConversationMyAccount(), friendsIds.contains(somebodyId));
 
         cursor = context.getContentResolver().query(contentUri, PROJECTION, sa.selection,
                 sa.selectionArgs, sortOrder);
-        assertTrue("Message by user=" + somebodyId + " is in the Friends timeline", cursor.getCount() > 0);
+        assertTrue("Message by user=" + somebodyId + " is not in the Friends timeline",
+                cursor != null && cursor.getCount() > 0);
         cursor.close();
 
         MyContextHolder.get().persistentAccounts().initialize();
-        for (long id : followedIds) {
+        for (long id : friendsIds) {
             assertTrue("isFriend: " + id, MyContextHolder.get().persistentAccounts().isMeOrMyFriend(id));
         }
     }
@@ -162,7 +163,7 @@ public class DataInserterTest {
         MbUser author = MbUser.fromOriginAndUserOid(DemoData.getConversationOriginId(), "acct:"
                 + username);
         author.setUserName(username);
-        author.actor = DemoData.getConversationMbUser();
+        author.actor = DemoData.getConversationMyMbUser();
 
         MbMessage message = new DemoMessageInserter(DemoData.getConversationMyAccount()).buildMessage(
                 author,
@@ -170,7 +171,7 @@ public class DataInserterTest {
                 null, messageOid, DownloadStatus.LOADED);
         message.setUpdatedDate(13312699000L);
         message.via = "AnyOtherClient";
-        message.recipient = DemoData.getConversationMbUser();
+        message.recipient = DemoData.getConversationMyMbUser();
         long messageId = new DemoMessageInserter(DemoData.getConversationMyAccount())
                 .addMessage(message);
 
@@ -203,15 +204,15 @@ public class DataInserterTest {
         MbUser author = MbUser.fromOriginAndUserOid(DemoData.getConversationOriginId(), "acct:"
                 + authorUserName);
         author.setUserName(authorUserName);
-        author.actor = DemoData.getConversationMbUser();
+        author.actor = DemoData.getConversationMyMbUser();
 
         String actorUserName = "firstreader@identi.ca";
         MbUser otherUser = MbUser.fromOriginAndUserOid(DemoData.getConversationOriginId(), "acct:" + actorUserName);
         otherUser.setUserName(actorUserName);
-        otherUser.actor = DemoData.getConversationMbUser();
+        otherUser.actor = DemoData.getConversationMyMbUser();
 
         MbMessage message = MbMessage.fromOriginAndOid(DemoData.getConversationOriginId(),
-                DemoData.getConversationMbUser().oid,
+                DemoData.getConversationMyMbUser().oid,
                 "https://pumpity.net/api/comment/sdajklsdkiewwpdsldkfsdasdjWED" +  DemoData.TESTRUN_UID,
                 DownloadStatus.LOADED);
         message.setBody("The test message by Anybody from http://pumpity.net");
@@ -226,31 +227,39 @@ public class DataInserterTest {
         assertTrue("Message added", messageId != 0);
 
         Uri contentUri = MatchedUri.getTimelineUri(
-                Timeline.getTimeline(TimelineType.HOME, DemoData.getConversationMyAccount(), 0, null));
+                Timeline.getTimeline(TimelineType.EVERYTHING, null, 0, DemoData.getConversationMyAccount().getOrigin()));
         SelectionAndArgs sa = new SelectionAndArgs();
         String sortOrder = MsgTable.DESC_SORT_ORDER;
-        sa.addSelection(MsgTable.MSG_ID + " = ?", Long.toString(messageId));
+        sa.addSelection(MsgTable._ID + " = ?", Long.toString(messageId));
         String[] PROJECTION = new String[] {
                 MsgOfUserTable.FAVORITED,
-                UserTable.LINKED_USER_ID
+                UserTable.LINKED_USER_ID,
+                MsgOfUserTable.SUBSCRIBED,
+                MsgTable._ID
         };
         Cursor cursor = context.getContentResolver().query(contentUri, PROJECTION, sa.selection,
                 sa.selectionArgs, sortOrder);
         assertTrue("Cursor returned", cursor != null);
-        boolean linkedToMeFound = false;
+        boolean messageFound = false;
+        MyAccount meLinked = MyAccount.EMPTY;
         boolean linkedToActorFound = false;
         while (cursor.moveToNext()) {
-            if (cursor.getLong(1) == DemoData.getConversationMyAccount().getUserId()) {
-                linkedToMeFound = true;
-                assertEquals("Message is favorited by me: " + DemoData.getConversationMyAccount(), 0, cursor.getLong(0));
+            assertEquals("Message with other id returned", messageId, cursor.getLong(3));
+            messageFound = true;
+            MyAccount me = MyContextHolder.get().persistentAccounts().fromUserId(cursor.getLong(1));
+            if (me.isValid()) {
+                meLinked = me;
+                assertEquals("Message is favorited by me: " + me, 0, cursor.getLong(0));
+                assertEquals("Message is subscribed by me: " + me, 0, cursor.getLong(2));
             } else if (cursor.getLong(1) == otherUser.userId) {
                 linkedToActorFound = true;
                 assertEquals("Message is not favorited by: " + otherUser, 1, cursor.getLong(0));
             }
         }
-        assertTrue("Message is not in a Home timeline, msgId=" + messageId, linkedToMeFound);
+        assertTrue("Message is not in Everything timeline, msgId=" + messageId, messageFound);
         // TODO: Remember that other User favorited something, so the below will be assertTrue
         assertFalse("Linked to " + otherUser + " (this is not expected yet)", linkedToActorFound);
+        assertFalse("Linked to my account " + meLinked + " (this is not expected yet)", meLinked.isValid());
         cursor.close();
     }
 
@@ -260,10 +269,10 @@ public class DataInserterTest {
         MbUser author = MbUser.fromOriginAndUserOid(DemoData.getConversationOriginId(), "acct:"
                 + authorUserName);
         author.setUserName(authorUserName);
-        author.actor = DemoData.getConversationMbUser();
+        author.actor = DemoData.getConversationMyMbUser();
 
         MbMessage message = MbMessage.fromOriginAndOid(DemoData.getConversationOriginId(),
-                DemoData.getConversationMbUser().oid,
+                DemoData.getConversationMyMbUser().oid,
                 "https://pumpity.net/api/comment/jhlkjh3sdffpmnhfd123", DownloadStatus.LOADED);
         message.setBody("The test message by Example from the http://pumpity.net");
         message.setUpdatedDate(13312795000L);
@@ -503,11 +512,11 @@ public class DataInserterTest {
         String userOid = "acct:" + username;
         MbUser somebody = MbUser.fromOriginAndUserOid(DemoData.getConversationOriginId(), userOid);
         somebody.setUserName(username);
-        somebody.actor = DemoData.getConversationMbUser();
+        somebody.actor = DemoData.getConversationMyMbUser();
         somebody.setProfileUrl("https://somewhere.net/" + username);
 
         MbMessage message = MbMessage.fromOriginAndOid(DemoData.getConversationOriginId(),
-                DemoData.getConversationMbUser().oid, String.valueOf(System.nanoTime()), DownloadStatus.LOADED);
+                DemoData.getConversationMyMbUser().oid, String.valueOf(System.nanoTime()), DownloadStatus.LOADED);
         message.setBody(body);
         message.setUpdatedDate(System.currentTimeMillis());
         message.via = "MyCoolClient";

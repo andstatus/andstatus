@@ -22,7 +22,7 @@ public class CommandExecutionContextTest {
     public void testHomeAccumulation() {
         CommandExecutionContext execContext = new CommandExecutionContext(
                 CommandData.newAccountCommand(CommandEnum.EMPTY, ma));
-        assertEquals(execContext.getTimeline().getTimelineType(), TimelineType.HOME);
+        assertEquals(TimelineType.EVERYTHING, execContext.getTimeline().getTimelineType());
         
         final int MESSAGES = 4;
         final int MENTIONS = 2;

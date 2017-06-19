@@ -52,7 +52,7 @@ public class ActAsUserTest extends TimelineActivityTest {
 
         MyLog.i(this, "setUp ended");
         return new Intent(Intent.ACTION_VIEW,
-                MatchedUri.getTimelineUri(Timeline.getTimeline(TimelineType.HOME, ma, 0, null)));
+                MatchedUri.getTimelineUri(Timeline.getTimeline(TimelineType.EVERYTHING, ma, 0, null)));
     }
 
     @Test

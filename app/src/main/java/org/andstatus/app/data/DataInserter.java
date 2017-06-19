@@ -449,24 +449,24 @@ public class DataInserter {
                 values.put(UserTable.UPDATED_DATE, mbUser.getUpdatedDate());
             }
 
-            long readerId;
-            if (mbUser.actor != null) {
-                readerId = insertOrUpdateUser(mbUser.actor, lum, false);
-            } else {
-                readerId = execContext.getMyAccount().getUserId();
+            MyAccount myActor = mbUser.actor == null ? execContext.getMyAccount()
+                    : execContext.getMyContext().persistentAccounts().fromUserId(
+                            insertOrUpdateUser(mbUser.actor, lum, false));
+            if (!myActor.isValid()) {
+                myActor = execContext.getMyAccount();
             }
             if (mbUser.followedByActor != TriState.UNKNOWN
-                    && readerId == execContext.getMyAccount().getUserId()) {
+                    && mbUser.actor.userId == myActor.getUserId()) {
                 values.put(FriendshipTable.FOLLOWED,
                         mbUser.followedByActor.toBoolean(false));
                 MyLog.v(this,
                         "User '" + mbUser.getUserName() + "' is "
                                 + (mbUser.followedByActor.toBoolean(false) ? "" : "not ")
-                                + "followed by " + execContext.getMyAccount().getAccountName());
+                                + "followed by " + myActor.getAccountName());
             }
             
             // Construct the Uri to the User
-            Uri userUri = MatchedUri.getUserUri(execContext.getMyAccount().getUserId(), userId);
+            Uri userUri = MatchedUri.getUserUri(myActor.getUserId(), userId);
             if (userId == 0) {
                 // There was no such row so add new one
                 values.put(UserTable.ORIGIN_ID, originId);

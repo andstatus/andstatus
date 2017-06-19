@@ -23,14 +23,14 @@ import android.text.TextUtils;
 import org.andstatus.app.account.DemoAccountInserter;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.backup.ProgressLogger;
-import org.andstatus.app.data.DemoConversationInserter;
 import org.andstatus.app.data.DbUtils;
+import org.andstatus.app.data.DemoConversationInserter;
 import org.andstatus.app.data.DemoGnuSocialMessagesInserter;
 import org.andstatus.app.data.DemoMessageInserter;
 import org.andstatus.app.data.MyDataCheckerConversations;
 import org.andstatus.app.net.social.MbUser;
-import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.DemoOriginInserter;
+import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
@@ -251,11 +251,11 @@ public final class DemoData {
         MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(accountName);
         assertTrue(accountName + " exists", ma.isValid());
         Origin origin = MyContextHolder.get().persistentOrigins().fromId(ma.getOriginId());
-        assertTrue("Origin for " + accountName + " doesn't exist", origin != null);
+        assertTrue("Origin for " + accountName + " doesn't exist", origin.isValid());
         return ma;
     }
 
-    public static MbUser getConversationMbUser() {
+    public static MbUser getConversationMyMbUser() {
         return new DemoMessageInserter(getConversationMyAccount()).buildUserFromOidAndAvatar(
                 CONVERSATION_ACCOUNT_USER_OID, CONVERSATION_ACCOUNT_AVATAR_URL);
     }
