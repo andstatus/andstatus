@@ -27,12 +27,12 @@ android:
     - platform-tools # Update platform-tools to revision 25.0.3+
     - tools # Update tools from revision 24.4.1 to 25.2.5
 
-matrix:
-  include: # More Emulator API levels to build in parallel
-    - env: EMULATOR_API_LEVEL=23
-  allow_failures:
-    - env: EMULATOR_API_LEVEL=23
-  fast_finish: false
+#matrix:
+#  include: # More Emulator API levels to build in parallel
+#    - env: EMULATOR_API_LEVEL=23
+#  allow_failures:
+#    - env: EMULATOR_API_LEVEL=23
+#  fast_finish: false
 
 before_cache:
   - rm -f ${TRAVIS_BUILD_DIR}/gradle/caches/modules-2/modules-2.lock # Avoid to repack it due locks
