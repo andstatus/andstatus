@@ -69,7 +69,14 @@ public class DataInserter {
     public DataInserter(CommandExecutionContext execContext) {
         this.execContext = execContext;
     }
-    
+
+    public long insertOrUpdateMsg(MbMessage message) {
+        LatestUserMessages lum = new LatestUserMessages();
+        long rowId = insertOrUpdateMsg(message, lum);
+        lum.save();
+        return rowId;
+    }
+
     public long insertOrUpdateMsg(MbMessage message, LatestUserMessages lum) {
         return insertOrUpdateMsgInner(message, lum, true);
     }
@@ -486,13 +493,6 @@ public class DataInserter {
         }
         MyLog.v(this, "insertUser, userId=" + userId + "; oid=" + userOid);
         return userId;
-    }
-    
-    public long insertOrUpdateMsg(MbMessage message) {
-        LatestUserMessages lum = new LatestUserMessages();
-        long rowId = insertOrUpdateMsg(message, lum);
-        lum.save();
-        return rowId;
     }
 
     public void downloadOneMessageBy(String userOid, LatestUserMessages lum) throws ConnectionException {

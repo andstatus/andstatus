@@ -83,25 +83,25 @@ class TimelineDownloaderOther extends TimelineDownloader {
             try {
                 int limit = execContext.getMyAccount().getConnection().fixedDownloadLimit(
                         toDownload, getTimeline().getTimelineType().getConnectionApiRoutine());
-                List<MbActivity> messages;
+                List<MbActivity> activities;
                 switch (getTimeline().getTimelineType()) {
                     case SEARCH:
-                        messages = execContext.getMyAccount().getConnection().search(
+                        activities = execContext.getMyAccount().getConnection().search(
                                 isSyncYounger() ? previousPosition : TimelinePosition.EMPTY,
                                 isSyncYounger() ? TimelinePosition.EMPTY : previousPosition,
                                 limit, getTimeline().getSearchQuery());
                         break;
                     default:
-                        messages = execContext.getMyAccount().getConnection().getTimeline(
+                        activities = execContext.getMyAccount().getConnection().getTimeline(
                                 getTimeline().getTimelineType().getConnectionApiRoutine(),
                                 isSyncYounger() ? previousPosition : TimelinePosition.EMPTY,
                                 isSyncYounger() ? TimelinePosition.EMPTY : previousPosition,
                                 limit, userOid);
                         break;
                 }
-                for (MbActivity item : messages) {
+                for (MbActivity item : activities) {
                     toDownload--;
-                    syncTracker.onNewMsg(item.getTimelineItemPosition(), item.getTimelineItemDate());
+                    syncTracker.onNewMsg(item.getTimelinePosition(), item.getTimelineDate());
                     switch (item.getObjectType()) {
                         case MESSAGE:
                             di.insertOrUpdateMsg(item.getMessage(), latestUserMessages);
@@ -113,7 +113,7 @@ class TimelineDownloaderOther extends TimelineDownloader {
                             break;
                     }
                 }
-                if (toDownload <= 0 || messages.isEmpty() || previousPosition.equals(syncTracker.getPreviousPosition())) {
+                if (toDownload <= 0 || activities.isEmpty() || previousPosition.equals(syncTracker.getPreviousPosition())) {
                     break;
                 }
                 previousPosition = syncTracker.getPreviousPosition();

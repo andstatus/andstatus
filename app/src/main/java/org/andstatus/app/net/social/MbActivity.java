@@ -16,18 +16,21 @@
 
 package org.andstatus.app.net.social;
 
+import android.support.annotation.NonNull;
+
 /** Activity in a sense of Activity Streams https://www.w3.org/TR/activitystreams-core/ */
 public class MbActivity {
-    private TimelinePosition timelineItemPosition = TimelinePosition.EMPTY;
-    private long timelineItemDate = 0;
+    private TimelinePosition timelinePosition = TimelinePosition.EMPTY;
+    private long timelineDate = 0;
 
-    private MbMessage mbMessage = null;
-    private MbUser mbUser = null;
+    // Objects of the Activity may be of several types...
+    private MbMessage mbMessage = MbMessage.EMPTY;
+    private MbUser mbUser = MbUser.EMPTY;
 
     public MbObjectType getObjectType() {
-        if (mbMessage != null && !mbMessage.isEmpty()) {
+        if (!mbMessage.isEmpty()) {
             return MbObjectType.MESSAGE;
-        } else if ( mbUser != null && !mbUser.isEmpty()) {
+        } else if (!mbUser.isEmpty()) {
             return MbObjectType.USER;
         } else {
             return MbObjectType.EMPTY;
@@ -38,35 +41,37 @@ public class MbActivity {
         return getObjectType() == MbObjectType.EMPTY;
     }
 
-    public TimelinePosition getTimelineItemPosition() {
-        return timelineItemPosition;
+    public TimelinePosition getTimelinePosition() {
+        return timelinePosition;
     }
 
-    public void setTimelineItemPosition(String strPosition) {
-        this.timelineItemPosition = new TimelinePosition(strPosition);
+    public void setTimelinePosition(String strPosition) {
+        this.timelinePosition = new TimelinePosition(strPosition);
     }
 
-    public long getTimelineItemDate() {
-        return timelineItemDate;
+    public long getTimelineDate() {
+        return timelineDate;
     }
 
-    public void setTimelineItemDate(long timelineItemDate) {
-        this.timelineItemDate = timelineItemDate;
+    public void setTimelineDate(long timelineDate) {
+        this.timelineDate = timelineDate;
     }
 
+    @NonNull
     public MbMessage getMessage() {
         return mbMessage;
     }
 
     public void setMessage(MbMessage mbMessage) {
-        this.mbMessage = mbMessage;
+        this.mbMessage = mbMessage == null ? MbMessage.EMPTY : mbMessage;
     }
 
+    @NonNull
     public MbUser getUser() {
         return mbUser;
     }
 
     public void setUser(MbUser mbUser) {
-        this.mbUser = mbUser;
+        this.mbUser = mbUser == null ? MbUser.EMPTY : mbUser;
     }
 }

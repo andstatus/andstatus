@@ -131,12 +131,12 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
     protected MbActivity timelineItemFromJson(JSONObject timelineItem) throws ConnectionException {
         if (isNotification(timelineItem)) {
             MbActivity item = new MbActivity();
-            item.setTimelineItemPosition(timelineItem.optString("id"));
-            item.setTimelineItemDate(dateFromJson(timelineItem, "created_at"));
+            item.setTimelinePosition(timelineItem.optString("id"));
+            item.setTimelineDate(dateFromJson(timelineItem, "created_at"));
             MbUser actor = userFromJson(timelineItem.optJSONObject("account"));
             item.setMessage(messageFromJson(timelineItem.optJSONObject("status")));
             item.getMessage().setActor(actor);
-            item.getMessage().sentDate = item.getTimelineItemDate();
+            item.getMessage().sentDate = item.getTimelineDate();
 
             switch (timelineItem.optString("type")) {
                 case "favourite":

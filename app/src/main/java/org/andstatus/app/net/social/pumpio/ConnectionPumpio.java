@@ -364,8 +364,8 @@ public class ConnectionPumpio extends Connection {
         MbActivity item = new MbActivity();
         if (ObjectType.ACTIVITY.isMyType(activity)) {
             try {
-                item.setTimelineItemPosition(activity.optString("id"));
-                item.setTimelineItemDate(dateFromJson(activity, "updated"));
+                item.setTimelinePosition(activity.optString("id"));
+                item.setTimelineDate(dateFromJson(activity, "updated"));
                 
                 if (ObjectType.PERSON.isMyType(activity.getJSONObject("object"))) {
                     item.setUser(userFromJsonActivity(activity));
