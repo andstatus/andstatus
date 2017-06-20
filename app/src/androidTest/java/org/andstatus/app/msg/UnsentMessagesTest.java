@@ -43,7 +43,7 @@ public class UnsentMessagesTest extends TimelineActivityTest {
         MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
 
         return new Intent(Intent.ACTION_VIEW,
-                MatchedUri.getTimelineUri(Timeline.getTimeline(TimelineType.HOME, ma, 0, ma.getOrigin())));
+                MatchedUri.getTimelineUri(Timeline.getTimeline(TimelineType.EVERYTHING, ma, 0, ma.getOrigin())));
     }
 
     @After

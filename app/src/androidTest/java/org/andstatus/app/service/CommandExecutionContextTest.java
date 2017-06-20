@@ -21,8 +21,8 @@ public class CommandExecutionContextTest {
     @Test
     public void testHomeAccumulation() {
         CommandExecutionContext execContext = new CommandExecutionContext(
-                CommandData.newAccountCommand(CommandEnum.EMPTY, ma));
-        assertEquals(TimelineType.EVERYTHING, execContext.getTimeline().getTimelineType());
+                CommandData.newTimelineCommand( CommandEnum.GET_TIMELINE, ma, TimelineType.MENTIONS));
+        assertEquals(TimelineType.MENTIONS, execContext.getTimeline().getTimelineType());
         
         final int MESSAGES = 4;
         final int MENTIONS = 2;
@@ -40,7 +40,7 @@ public class CommandExecutionContextTest {
     @Test
     public void testDirectAccumulation() {
         CommandExecutionContext execContext = new CommandExecutionContext(
-                CommandData.newTimelineCommand(CommandEnum.EMPTY, ma, TimelineType.DIRECT));
+                CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, ma, TimelineType.DIRECT));
         final int MESSAGES = 4;
         for (int ind=0; ind < MESSAGES; ind++) {
             execContext.getResult().incrementDirectCount();

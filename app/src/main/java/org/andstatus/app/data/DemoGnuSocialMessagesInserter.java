@@ -19,9 +19,9 @@ package org.andstatus.app.data;
 import android.support.annotation.Nullable;
 
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.database.MsgTable;
-import org.andstatus.app.context.DemoData;
 import org.andstatus.app.net.social.MbMessage;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.origin.Origin;
@@ -129,7 +129,7 @@ public class DemoGnuSocialMessagesInserter {
     
     private long addMessage(MbMessage message) {
         DataInserter di = new DataInserter(new CommandExecutionContext(
-                CommandData.newAccountCommand(CommandEnum.EMPTY, ma)));
+                CommandData.newOriginCommand(CommandEnum.EMPTY, origin)));
         long messageId = di.insertOrUpdateMsg(message);
         assertTrue( "Message added " + message.oid, messageId != 0);
         assertEquals("Conversation Oid", conversationOid, MyQuery.msgIdToConversationOid(messageId));

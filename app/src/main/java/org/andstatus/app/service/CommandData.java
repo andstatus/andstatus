@@ -91,7 +91,7 @@ public class CommandData implements Comparable<CommandData> {
     }
 
     public static CommandData newFetchAttachment(long msgId, long downloadDataRowId) {
-        CommandData commandData = newAccountCommand(CommandEnum.FETCH_ATTACHMENT, null);
+        CommandData commandData = newOriginCommand(CommandEnum.FETCH_ATTACHMENT, null);
         commandData.itemId = downloadDataRowId;
         commandData.setTrimmedMessageBodyAsDescription(msgId);
         return commandData;
@@ -119,7 +119,7 @@ public class CommandData implements Comparable<CommandData> {
     }
 
     public static CommandData newCommand(CommandEnum command) {
-        return newAccountCommand(command, null);
+        return newOriginCommand(command, null);
     }
 
     public static CommandData newItemCommand(CommandEnum command, MyAccount myAccount, long itemId) {
@@ -129,7 +129,11 @@ public class CommandData implements Comparable<CommandData> {
     }
 
     public static CommandData newAccountCommand(CommandEnum command, MyAccount myAccount) {
-        return newTimelineCommand(command, Timeline.getTimeline(TimelineType.EVERYTHING, myAccount, 0, null));
+        return newTimelineCommand(command, Timeline.getTimeline(TimelineType.OUTBOX, myAccount, 0, null));
+    }
+
+    public static CommandData newOriginCommand(CommandEnum command, Origin origin) {
+        return newTimelineCommand(command, Timeline.getTimeline(TimelineType.EVERYTHING, null, 0, origin));
     }
 
     public static CommandData newTimelineCommand(CommandEnum command, MyAccount myAccount,

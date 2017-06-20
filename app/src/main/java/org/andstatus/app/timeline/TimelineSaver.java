@@ -164,7 +164,8 @@ public class TimelineSaver extends MyAsyncTask<Void, Void, Void> {
     private Collection<Timeline> addDefaultForOrigin(MyContext myContext, Origin origin) {
         List<Timeline> timelines = new ArrayList<>();
         for (TimelineType timelineType : TimelineType.getDefaultOriginTimelineTypes()) {
-            if (origin.getOriginType().isTimelineTypeSyncable(timelineType)) {
+            if (origin.getOriginType().isTimelineTypeSyncable(timelineType)
+                    || timelineType.equals(TimelineType.EVERYTHING)) {
                 saveNewDefaultTimeline(Timeline.getTimeline(myContext, 0, timelineType, null, 0, origin, ""));
             }
         }

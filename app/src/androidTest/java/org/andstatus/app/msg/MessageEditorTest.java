@@ -233,6 +233,7 @@ public class MessageEditorTest extends TimelineActivityTest {
         }
         assertEquals("Image attached", DemoData.LOCAL_IMAGE_TEST_URI2, editor.getData().getMediaUri());
         assertEquals("Text is the same", body, editText.getText().toString().trim());
+        helper.clickMenuItem(method + " clicker save draft", R.id.saveDraftButton);
 
         MyLog.v(this, method + " ended");
     }

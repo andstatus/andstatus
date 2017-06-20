@@ -80,8 +80,9 @@ public class DemoConversationInserter {
         MbUser author4 = buildUserFromOid("acct:fourthWithoutAvatar@pump.example.com");
         
         MbMessage minus1 = buildMessage(author2, "Older one message", null, null);
-        MbMessage selected = buildMessage(getAuthor1(), "Selected message", minus1,
+        MbMessage selected = buildMessage(getAuthor1(), "Selected message from Home timeline", minus1,
                 iteration == 1 ? DemoData.CONVERSATION_ENTRY_MESSAGE_OID : null);
+        selected.setSubscribedByMe(TriState.TRUE);
         MbMessage reply1 = buildMessage(author3, "Reply 1 to selected", selected, null);
         reply1.getAuthor().followedByActor = TriState.TRUE;
 

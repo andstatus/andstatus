@@ -1,13 +1,13 @@
 <?xml-stylesheet type='text/xsl' href='changes2html.xsl' encoding="utf-8"?>
-<!-- 
+<!--
 	Copyright (C) 2012-2017 yvolk (Yuri Volkov), http://yurivolkov.com
-	
+
 	Licensed under the Apache License, Version 2.0 (the "License");
 	you may not use this file except in compliance with the License.
 	You may obtain a copy of the License at
-	
+
 	     http://www.apache.org/licenses/LICENSE-2.0
-	
+
 	Unless required by applicable law or agreed to in writing, software
 	distributed under the License is distributed on an "AS IS" BASIS,
 	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -25,16 +25,18 @@
             <a href="https://f-droid.org/repository/browse/?fdid=org.andstatus.app"
                target="_blank">F-Droid</a>.
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
-		</subtitle>
+        </subtitle>
     </header>
     <release android:versionName="34.00" android:versionCode="220"
-             versionDate="2017-06-18"
+             versionDate="2017-06-20"
              versionTitle="Showing Twitter tweets longer than 140 characters">
         <changes>
             <change>Fixed Twitter tweets longer than 140 characters were shown truncated.
                 <a href="https://github.com/andstatus/andstatus/issues/462">#462</a>
             </change>
             <change>Default order of timelines improved with Home, Public, Search and Everything timelines now at the top.
+                "Everything" timeline is now created for all Social networks to allow easily see all locally cached
+                messages of a Social Network.
                 <br />
                 Sort timelines by "Displ" column in the "Manage timelines" list (by clicking on the column header) to see,
                 how they will be sorted in the "Select a Timeline" dialog. Clicking "Set as Default Timeline"
@@ -227,7 +229,7 @@
                 <a href="https://github.com/federicoiosue/Omni-Notes">Omni Notes</a>,
                 where it will be stored with the attachment.
                 Some file managers, e.g. <a href="http://www.ghisler.com/android.htm">Total
-                Commander</a>, allow to save shared attachment to a file.
+                    Commander</a>, allow to save shared attachment to a file.
                 <a href="https://github.com/andstatus/andstatus/issues/387">#387</a>
             </change>
             <change>Added "Overflow" button to the row of buttons below
@@ -572,7 +574,7 @@
     </release>
     <release android:versionName="22.18" android:versionCode="158"
              versionDate="2016-02-26"
-        versionTitle="Timeline loading and navigation improvements">
+             versionTitle="Timeline loading and navigation improvements">
         <changes>
             <change>Maximum number of messages, shown in a Timeline at a time, is restricted
                 to several hundreds. This change should prevent performance degradation for users
@@ -623,8 +625,8 @@
         </changes>
     </release>
     <release android:versionName="21.0" android:versionCode="139"
-        versionDate="2015-12-04"
-        versionTitle="Users of message">
+             versionDate="2015-12-04"
+             versionTitle="Users of message">
         <changes>
             <change>With this release AndStatus opens a new view for exploration of social
                 networks: a &quot;User List&quot;.<br/>
@@ -663,7 +665,7 @@
             </change>
             <change><a href="https://github.com/andstatus/andstatus/issues/305">Norwegian</a>
                 and Galician translations added.
-                </change>
+            </change>
             <change>A &quot;star&quot; icon was removed from a timeline for not favorited messages.
                 This will avoid confusion of users, who tried to favorite a message
                 by clicking on the star. Instead, this should be done via a message context menu
@@ -720,8 +722,8 @@
         </changes>
     </release>
     <release android:versionName="18.0" android:versionCode="126"
-        versionDate="2015-08-05"
-        versionTitle="Material design and new color options">
+             versionDate="2015-08-05"
+             versionTitle="Material design and new color options">
         <changes>
             <change>Added &quot;Action bar color&quot; option, having 6 colors from
                 <a href="http://www.google.com/design/spec/style/color.html">Material
@@ -748,8 +750,8 @@
         </changes>
     </release>
     <release android:versionName="17.1" android:versionCode="125"
-        versionDate="2015-04-23"
-        versionTitle="Sending attachments fix for legacy servers">
+             versionDate="2015-04-23"
+             versionTitle="Sending attachments fix for legacy servers">
         <changes>
             <change>Fixed: gnusocial.no, quitter.no, quitter.es and some other servers didn't
                 allow sending attachments via AndStatus due to HTTP protocol incompatibility.
@@ -782,8 +784,8 @@
         </changes>
     </release>
     <release android:versionName="16.0" android:versionCode="123"
-        versionDate="2015-03-21"
-        versionTitle="Posting enhancements and custom Application language. New User guide format.">
+             versionDate="2015-03-21"
+             versionTitle="Posting enhancements and custom Application language. New User guide format.">
         <changes>
             <change>&quot;Reply to All&quot; menu item added, allowing to include
                 all conversation participants into a reply.
@@ -815,8 +817,8 @@
         </changes>
     </release>
     <release android:versionName="15.0" android:versionCode="122"
-        versionDate="2015-02-14"
-        versionTitle="Discovery of open GNU Social instances">
+             versionDate="2015-02-14"
+             versionTitle="Discovery of open GNU Social instances">
         <changes>
             <change>Implemented discovery of open GNU Social instances (servers)
                 using the new &quot;get_open_instances&quot;
@@ -833,15 +835,15 @@
                 allowing to have specific SSL mode per Microblogging system.
             </change>
             <change>Added two options to Microblogging system: &quot;Include in Global Search
-				while in Combined Timeline&quot; and
-				&quot;Include in Reload while in Combined Public timeline&quot;.
+                while in Combined Timeline&quot; and
+                &quot;Include in Reload while in Combined Public timeline&quot;.
             </change>
             <change>Added &quot;Swipe to Refresh&quot; feature for a Timeline view.
                 The swipe duplicates &quot;Reload&quot; menu item.</change>
             <change>Syncing indicator on a Timeline moved to the bottom and
                 it doesn't cause timeline tremors anymore.</change>
             <change>Fixed ANR (application freeze/or crash) when requesting download of
-				Avatars and Attachments during a Timeline drawing.
+                Avatars and Attachments during a Timeline drawing.
             </change>
             <change>Added Japanese (<a href="https://crowdin.com/profile/naofum">naofum</a>)
                 and Arabic (<a href="https://quitter.no/dragnucs">dragnucs</a>) translations.
@@ -849,8 +851,8 @@
         </changes>
     </release>
     <release android:versionName="14.4" android:versionCode="121"
-        versionDate="2015-02-03"
-        versionTitle="Stalled connections are killed">
+             versionDate="2015-02-03"
+             versionTitle="Stalled connections are killed">
         <changes>
             <change>Fixed: Sometimes a command/connection doesn't end after
                 a predefined timeout (10 minutes without a progress).
@@ -881,8 +883,8 @@
         </changes>
     </release>
     <release android:versionName="14.3" android:versionCode="120"
-        versionDate="2015-01-26"
-        versionTitle="Extra large pictures don't crash any more">
+             versionDate="2015-01-26"
+             versionTitle="Extra large pictures don't crash any more">
         <changes>
             <change>Fixed: Crash during downloading large pictures
                 <a href="https://github.com/andstatus/andstatus/issues/179">#179</a></change>
@@ -893,8 +895,8 @@
         </changes>
     </release>
     <release android:versionName="14.2" android:versionCode="119"
-        versionDate="2015-01-23"
-        versionTitle="Bug fixes and connection to Quitter.Zone">
+             versionDate="2015-01-23"
+             versionTitle="Bug fixes and connection to Quitter.Zone">
         <changes>
             <change>Reported crashes fixed.</change>
             <change>Fixed: Microblogging system editor layout doesn't fit in a small screen.</change>
@@ -905,11 +907,11 @@
                 2. Insecure SSL<br/>
                 3. Misconfigured SSL<br/>
                 <a href="https://github.com/andstatus/andstatus/issues/214">#214</a></change>
-            </changes>
+        </changes>
     </release>
     <release android:versionName="14.1" android:versionCode="118"
-        versionDate="2015-01-18"
-        versionTitle="Fixed Private attachments and typed text persistence">
+             versionDate="2015-01-18"
+             versionTitle="Fixed Private attachments and typed text persistence">
         <changes>
             <change>Fixed: [Pump.io] Attachment was not sent with a Direct message.
                 Please note that only pump.io supports attaching images to Direct messages.
@@ -924,71 +926,71 @@
             <change>Fixed: [Pump.io] Private attachments are not downloaded.
                 <a href="https://github.com/andstatus/andstatus/issues/204">#204</a></change>
             <change>&quot;Log network level messages&quot; option added allowing deeper debugging.
-	            If &quot;Log everything to file&quot; is also enabled, separate .json files are
-	            created for each request and response.
-	        </change>
-	    </changes>
+                If &quot;Log everything to file&quot; is also enabled, separate .json files are
+                created for each request and response.
+            </change>
+        </changes>
     </release>
     <release android:versionName="14.0" android:versionCode="117"
-        versionDate="2014-12-24"
-        versionTitle="&quot;Everything&quot; timeline and Fullscreen image view">
+             versionDate="2014-12-24"
+             versionTitle="&quot;Everything&quot; timeline and Fullscreen image view">
         <changes>
-	        <change>&quot;Everything&quot; timeline added:
-	            all cached messages are shown in one timeline.
-	            <a href="https://github.com/andstatus/andstatus/issues/114">#114</a>
-	        </change>
-	        <change>Added &quot;View Image&quot; context menu item, allowing to view attachments
-	            in Your selected image Viewer.
-	            <a href="https://github.com/andstatus/andstatus/issues/191">#191</a>
-	        </change>
-	        <change>Multiline titles for checkbox and list settings. Now a User can see full titles
-	            of all settings even in a portrait mode.
-	            <a href="https://github.com/andstatus/andstatus/issues/187">#187</a>
-	        </change>
-	        <change>New AndStatus icons created.
-	            Thanks to <a href="https://quitter.es/moshpirit">@moshpirit</a>
-	            for the contribution.
-	            <a href="https://github.com/andstatus/andstatus/issues/182">#182</a>
-	        </change>
-	        <change>A screen to add new account (or to manage existing account) redesigned for a Novice.
-	            <a href="https://github.com/andstatus/andstatus/issues/164">#164</a>
-	        </change>
-	        <change>Fixed <a href="https://github.com/andstatus/andstatus/issues/190">#190</a>
-                [pump.io] Don't make a Reply ("Comment") public. Now a Reply fully relies
-	            on Pump.io server to determine correct recipients of the Reply.
+            <change>&quot;Everything&quot; timeline added:
+                all cached messages are shown in one timeline.
+                <a href="https://github.com/andstatus/andstatus/issues/114">#114</a>
             </change>
-	        <change>&quot;True black background&quot; option added.
-	            <a href="https://github.com/andstatus/andstatus/issues/195">#195</a>
-	        </change>
-	        <change>References to StatusNet changed to &quot;GNU social&quot;.</change>
-	        <change>Added debugging option &quot;Log everything to file&quot;.</change>
-	        <change>Deleting commands from Queue implemented.
-	            Text of the posts shared from "Commands in the Queue" is not truncated now.
-	            Commands now are sorted by date-time of creation chronologically (newest first).
-	            <a href="https://github.com/andstatus/andstatus/issues/162">#162</a></change>
-	        </changes>
+            <change>Added &quot;View Image&quot; context menu item, allowing to view attachments
+                in Your selected image Viewer.
+                <a href="https://github.com/andstatus/andstatus/issues/191">#191</a>
+            </change>
+            <change>Multiline titles for checkbox and list settings. Now a User can see full titles
+                of all settings even in a portrait mode.
+                <a href="https://github.com/andstatus/andstatus/issues/187">#187</a>
+            </change>
+            <change>New AndStatus icons created.
+                Thanks to <a href="https://quitter.es/moshpirit">@moshpirit</a>
+                for the contribution.
+                <a href="https://github.com/andstatus/andstatus/issues/182">#182</a>
+            </change>
+            <change>A screen to add new account (or to manage existing account) redesigned for a Novice.
+                <a href="https://github.com/andstatus/andstatus/issues/164">#164</a>
+            </change>
+            <change>Fixed <a href="https://github.com/andstatus/andstatus/issues/190">#190</a>
+                [pump.io] Don't make a Reply ("Comment") public. Now a Reply fully relies
+                on Pump.io server to determine correct recipients of the Reply.
+            </change>
+            <change>&quot;True black background&quot; option added.
+                <a href="https://github.com/andstatus/andstatus/issues/195">#195</a>
+            </change>
+            <change>References to StatusNet changed to &quot;GNU social&quot;.</change>
+            <change>Added debugging option &quot;Log everything to file&quot;.</change>
+            <change>Deleting commands from Queue implemented.
+                Text of the posts shared from "Commands in the Queue" is not truncated now.
+                Commands now are sorted by date-time of creation chronologically (newest first).
+                <a href="https://github.com/andstatus/andstatus/issues/162">#162</a></change>
+        </changes>
     </release>
     <release android:versionName="13.3" android:versionCode="116"
-        versionDate="2014-11-30"
-        versionTitle="Navigation drawer added">
+             versionDate="2014-11-30"
+             versionTitle="Navigation drawer added">
         <changes>
-	        <change>Navigation drawer introduced to a Timeline view. Timeline type,
-	            &quot;combined&quot; and Account selections moved to it.</change>
-	        <change>Fixed error posting with attachments for messages,
-	            which have non-latin characters.
-	            <a href="https://github.com/andstatus/andstatus/issues/176">Issue #176</a>.
-	        </change>
-	        <change>Fixed security exception on Android 4.4 while sending attached image.
-	            In a case of such exception it is logged and may be seen in the
-	            &quot;Commands in the Queue&quot; list.
-	            <a href="https://github.com/andstatus/andstatus/issues/127">Issue #127</a>.
-	            For debugging purposes &quot;Use KitKat media chooser&quot; option added (on by default).
-	        </change>
+            <change>Navigation drawer introduced to a Timeline view. Timeline type,
+                &quot;combined&quot; and Account selections moved to it.</change>
+            <change>Fixed error posting with attachments for messages,
+                which have non-latin characters.
+                <a href="https://github.com/andstatus/andstatus/issues/176">Issue #176</a>.
+            </change>
+            <change>Fixed security exception on Android 4.4 while sending attached image.
+                In a case of such exception it is logged and may be seen in the
+                &quot;Commands in the Queue&quot; list.
+                <a href="https://github.com/andstatus/andstatus/issues/127">Issue #127</a>.
+                For debugging purposes &quot;Use KitKat media chooser&quot; option added (on by default).
+            </change>
         </changes>
     </release>
     <release android:versionName="13.2" android:versionCode="115"
-        versionDate="2014-11-15"
-        versionTitle="Debugging option allowing misconfigured SSL">
+             versionDate="2014-11-15"
+             versionTitle="Debugging option allowing misconfigured SSL">
         <changes>
             <change>Added an option to &quot;Allow misconfigured SSL&quot; connections
                 (inside &quot;Logging and Debugging&quot;) to support those users, who cannot afford
@@ -1004,8 +1006,8 @@
         </changes>
     </release>
     <release android:versionName="13.1" android:versionCode="114"
-        versionDate="2014-10-26"
-        versionTitle="Migration to Android v.4.1 and the latest secure communication protocols">
+             versionDate="2014-10-26"
+             versionTitle="Migration to Android v.4.1 and the latest secure communication protocols">
         <changes>
             <change>Dropped compatibility with Android before v.4.1. This
                 made application look modern and familiar to Android users.</change>
@@ -1020,8 +1022,8 @@
         </changes>
     </release>
     <release android:versionName="12.1" android:versionCode="112"
-        versionDate="2014-10-10"
-        versionTitle="Don't sync 'Following' timeline automatically">
+             versionDate="2014-10-10"
+             versionTitle="Don't sync 'Following' timeline automatically">
         <changes>
             <change>The &quot;Following&quot; timeline excluded from the list
                 of automatically synced timelines as this is actually a waste of time and traffic:
@@ -1033,7 +1035,7 @@
                 (inside &quot;Logging and debugging&quot; settings group)
                 in order to help diagnoze syncing problems. This screens is opened, when you
                 tap Notification on the messages in the Queue.
-                </change>
+            </change>
             <change>Localizable strings reorganized and simplified in order to allow
                 application translation using simple Web tools. AndStatus Crowdsourcing and
                 collaborative localization project at
@@ -1045,8 +1047,8 @@
         </changes>
     </release>
     <release android:versionName="12.0" android:versionCode="111"
-        versionDate="2014-09-27"
-        versionTitle="Don't merge Users with the same nicknames [StatusNet]">
+             versionDate="2014-09-27"
+             versionTitle="Don't merge Users with the same nicknames [StatusNet]">
         <changes>
             <change>Fixed undesirable merge of Users with the same nicknames [StatusNet]. This is
                 actual for the cases, <br/>
@@ -1068,8 +1070,8 @@
         </changes>
     </release>
     <release android:versionName="11.2" android:versionCode="110"
-        versionDate="2014-09-19"
-        versionTitle="Share images via AndStatus and attach images to posts">
+             versionDate="2014-09-19"
+             versionTitle="Share images via AndStatus and attach images to posts">
         <changes>
             <change>Now you may share an image via AndStatus, add text and post it.
                 You may also start writing a post as usual and attach an image later
@@ -1079,8 +1081,8 @@
         </changes>
     </release>
     <release android:versionName="11.1" android:versionCode="108"
-        versionDate="2014-09-09"
-        versionTitle="Viewing attached images">
+             versionDate="2014-09-09"
+             versionTitle="Viewing attached images">
         <changes>
             <change>Added an option to view attached images for all supported systems. Turn this option off
                 in Menu-&gt;Settings-&gt;Appearance-&gt;&quot;Display attached images&quot;.
@@ -1100,11 +1102,11 @@
             <change>Fixed: User timeline worked correctly in Combined mode only.</change>
             <change>Fixed: Cannot load next timeline page if previous position was stored
                 when too few rows existed.</change>
-            </changes>
+        </changes>
     </release>
     <release android:versionName="10.1" android:versionCode="106"
-        versionDate="2014-08-23"
-        versionTitle="Mark replies to myself in Timeline. Twitter for old devices back again">
+             versionDate="2014-08-23"
+             versionTitle="Mark replies to myself in Timeline. Twitter for old devices back again">
         <changes>
             <change>Added &quot;Mark replies to myself in Timeline&quot; option allowing
                 to easily see posts, which are most relevant for a User.
@@ -1122,8 +1124,8 @@
         </changes>
     </release>
     <release android:versionName="10.0" android:versionCode="105"
-        versionDate="2014-08-17"
-        versionTitle="Share message to another account and Open it on Internet">
+             versionDate="2014-08-17"
+             versionTitle="Share message to another account and Open it on Internet">
         <changes>
             <change>&quot;Share&quot; message action improved to allow message sharing from one account
                 to another, including sharing between different Microblogging systems. When you
@@ -1133,12 +1135,12 @@
                 as before: you will not have to delete duplicated text.
                 See <a href="https://github.com/andstatus/andstatus/issues/112" >Issue #112</a>.</change>
             <change>&quot;Open on Internet&quot; message context menu
-				item added. See <a href="https://github.com/andstatus/andstatus/issues/97" >Issue #97</a>.</change>
+                item added. See <a href="https://github.com/andstatus/andstatus/issues/97" >Issue #97</a>.</change>
             <change>Added &quot;ENTER key sends message&quot; option (&quot;on&quot; by default
-				to preserve existing behaviour).
-				Setting it to &quot;off&quot; allows inserting newline
-				in the message. In order to see these new lines in the messages,
-				&quot;Allow HTML content&quot; option should be set for this Microblogging System.</change>
+                to preserve existing behaviour).
+                Setting it to &quot;off&quot; allows inserting newline
+                in the message. In order to see these new lines in the messages,
+                &quot;Allow HTML content&quot; option should be set for this Microblogging System.</change>
             <change>Added &quot;Old messages first in Conversation view&quot; option allowing
                 to reverse the order of messages in the Conversation view.
                 See <a href="https://github.com/andstatus/andstatus/issues/67" >Issue #67</a>.</change>
@@ -1153,8 +1155,8 @@
         </changes>
     </release>
     <release android:versionName="9.1" android:versionCode="104"
-        versionDate="2014-07-06"
-        versionTitle="Fixed: Commands lost when created offline">
+             versionDate="2014-07-06"
+             versionTitle="Fixed: Commands lost when created offline">
         <changes>
             <change>Fixed: If you tried to send update while offline, the update was lost.
                 Now it is put into retry queue.</change>
@@ -1162,14 +1164,14 @@
         </changes>
     </release>
     <release android:versionName="9.0" android:versionCode="103"
-        versionDate="2014-06-28"
-        versionTitle="Backup/Restore and Syncing indicator">
+             versionDate="2014-06-28"
+             versionTitle="Backup/Restore and Syncing indicator">
         <changes>
             <change>Application data backup and restore implemented. This feature may be used in two ways:
                 <ul>
                     <li>Manual backup at any time to SD card (Settings-&gt;Storage-&gt;Backup application
-                         data) and manual restore after reinstall: from the first screen and from
-                         Settings-&gt;Storage-&gt;Restore application data.</li>
+                        data) and manual restore after reinstall: from the first screen and from
+                        Settings-&gt;Storage-&gt;Restore application data.</li>
                     <li>Automatic backup and restore by Android system. This may work for some devices,
                         but currently is useless for the most users due to Android system internal limitations
                         (see <a href="https://github.com/andstatus/andstatus/pull/49" >this discussion</a>).</li>
@@ -1197,8 +1199,8 @@
         </changes>
     </release>
     <release android:versionName="8.4" android:versionCode="100"
-        versionDate="2014-04-20"
-        versionTitle="Public Timeline and Global Search">
+             versionDate="2014-04-20"
+             versionTitle="Public Timeline and Global Search">
         <changes>
             <change>"Public" Timeline added to the list of available timelines.
                 The latest messages from the Public Timeline may be fetched on demand
@@ -1208,7 +1210,7 @@
             <change>Context menu on Public Timeline has a "Global search" item,
                 allowing searching messages online for Twitter and StatusNet-type systems
                 (requires Internet connection). <a href="https://github.com/e14n/pump.io/issues/503" >Pump.io
-                doesn't have a global search service yet</a>.<br/>
+                    doesn't have a global search service yet</a>.<br/>
                 Thus the Public timeline shows both messages, "Reloaded" from Public Timeline directly,
                 and messages, retrieved via: "Global Search", "Messages by this User" and Messages,
                 automatically retrieved for Conversation trees.</change>
@@ -1225,11 +1227,11 @@
             <change><a href="https://loadaverage.org/">Load Average</a>
                 and Vinilox "GNU social" sites are preconfigured,
                 in addition to <a href="https://quitter.se/">Quitter</a>.</change>
-            </changes>
+        </changes>
     </release>
     <release android:versionName="7.1" android:versionCode="95"
-        versionDate="2014-02-07"
-        versionTitle="Design for the Novice">
+             versionDate="2014-02-07"
+             versionTitle="Design for the Novice">
         <changes>
             <change>Getting started with AndStatus is simplified, including creation of the first user account.
                 See <a href="https://github.com/andstatus/andstatus/issues/75" >Issue #75</a></change>
@@ -1247,8 +1249,8 @@
         </changes>
     </release>
     <release android:versionName="6.3" android:versionCode="93"
-        versionDate="2014-01-26"
-        versionTitle="Multiple instances of Microblogging systems">
+             versionDate="2014-01-26"
+             versionTitle="Multiple instances of Microblogging systems">
         <changes>
             <change>"Type of Microblogging system" ("twitter" / "pump.io" / "status.net" ) separated
                 from the "Microblogging System" of one of these types.
@@ -1260,7 +1262,7 @@
                 <a href="https://quitter.se" >Quitter</a> and
                 <a href="https://github.com/andstatus/andstatus/issues/55" >Friendica</a>.
                 See ""Preferences"-"Manage Microblogging Systems" menu item.
-                </change>
+            </change>
             <change>Implemented "More than one StatusNet server"
                 <a href="https://github.com/andstatus/andstatus/issues/58" >Issue #58</a></change>
             <change>Added "Allow HTML content" option for each Microblogging system,
@@ -1270,14 +1272,14 @@
             <change>Host of each Microblogging system may be configured. This may allow, for example,
                 connection to the Twitter sites through proxy server. On the other hand,
                 this may be not exactly what <a href="https://github.com/andstatus/andstatus/issues/43" >Issue
-                #43 "Implement Connection via proxy"</a> mean.</change>
+                    #43 "Implement Connection via proxy"</a> mean.</change>
             <change>Fixed sending messages offline.</change>
             <change>Fixed too many requests to the server in some cases.</change>
         </changes>
     </release>
     <release android:versionName="5.1" android:versionCode="89"
-        versionDate="2013-12-09"
-        versionTitle="Option to show avatars added">
+             versionDate="2013-12-09"
+             versionTitle="Option to show avatars added">
         <changes>
             <change>Avatars are displayed by default for new installations,
                 but are turned off for upgrades to preserve familiar environment of existing users.
@@ -1292,12 +1294,12 @@
                 is expected Android system behavior.
                 In order to address this limitation, AndStatus offers Storage - "Use External Storage"
                 option for its data.
-                </change>
+            </change>
         </changes>
     </release>
     <release android:versionName="4.1" android:versionCode="87"
-        versionDate="2013-12-05"
-        versionTitle="User timeline improved">
+             versionDate="2013-12-05"
+             versionTitle="User timeline improved">
         <changes>
             <change>Combined "User" Timeline shows messages by all my accounts,
                 not only by currently selected, as it was before
@@ -1312,8 +1314,8 @@
         </changes>
     </release>
     <release android:versionName="4.0" android:versionCode="86"
-        versionDate="2013-12-01"
-        versionTitle="Show the whole conversation tree including later replies">
+             versionDate="2013-12-01"
+             versionTitle="Show the whole conversation tree including later replies">
         <changes>
             <change>Conversation view extended to show not only previous messages (as before),
                 but also latest replies, if they were already downloaded.
@@ -1328,25 +1330,25 @@
         </changes>
     </release>
     <release android:versionName="3.0" android:versionCode="85"
-        versionDate="2013-11-16"
-        versionTitle="Answering in Conversation view added">
+             versionDate="2013-11-16"
+             versionTitle="Answering in Conversation view added">
         <changes>
             <change>When clicking on a message in a Timeline,
                 you see the message or the whole thread. You can act on
                 messages of this thread (reply, make favorite etc.) just like in the Timeline view
                 <a href="https://github.com/andstatus/andstatus/issues/40" >Issue #40</a>.
-			</change>
+            </change>
             <change>Theme support extended. Now AndStatus allows selecting Device Default,
                 Light and Dark themes, using Holo themes for compatible devices.
                 Light Theme is fixed for Android v.3+
                 (because the Holo.Light theme is used, not a legacy theme as for the older devices).
                 <a href="https://github.com/andstatus/andstatus/issues/38" >Issue #38</a>.
-			</change>
+            </change>
         </changes>
     </release>
     <release android:versionName="2.1" android:versionCode="84"
-        versionDate="2013-11-01"
-        versionTitle="StatusNet support added">
+             versionDate="2013-11-01"
+             versionTitle="StatusNet support added">
         <changes><change>Added support of the "<a href="http://status.net" >StatusNet</a>"-like sites: "Even though identi.ca
             has changed to pump.io there are many StatusNet servers outside
             (and servers that are compatible with the StatusNet API)",
@@ -1360,8 +1362,8 @@
         </changes>
     </release>
     <release android:versionName="1.18.1" android:versionCode="81"
-        versionDate="2013-10-08"
-        versionTitle="Act as... added for multiple accounts in one system">
+             versionDate="2013-10-08"
+             versionTitle="Act as... added for multiple accounts in one system">
         <changes><change>In a case you have more than one account in one Microblogging system,
             AndStatus adds one more item to the message context menu, allowing you "to act as..." another
             account on the same message. This feature may be very convenient when e.g. one of the users
@@ -1378,8 +1380,8 @@
         </changes>
     </release>
     <release android:versionName="1.17.1" android:versionCode="79"
-        versionDate="2013-09-29"
-        versionTitle="Pump.io support added">
+             versionDate="2013-09-29"
+             versionTitle="Pump.io support added">
         <changes><change><a href="http://pump.io" >Pump.io</a> is a new application by the
             authors of StatusNet and of identi.ca service as it was before July 2013.
             Pump.io is also a new engine for the <a href="http://identi.ca" >identi.ca</a> site,
@@ -1389,66 +1391,66 @@
             After installation of this app version old identi.ca accounts and data
             are automatically converted to be used with the new pump.io system.
             <a href="https://github.com/andstatus/andstatus/issues/34" >Issue #34</a>.
-             </change>
-             <change>Internal app structure redone in order to accommodate different
-                 microblogging systems. A suite of automated tests created
-                 to increase the quality of the releases.</change>
+        </change>
+            <change>Internal app structure redone in order to accommodate different
+                microblogging systems. A suite of automated tests created
+                to increase the quality of the releases.</change>
         </changes>
     </release>
     <release android:versionName="1.16.0" android:versionCode="77"
-        versionDate="2013-07-12"
-        versionTitle="Timeline synchronization is managed by Android core">
+             versionDate="2013-07-12"
+             versionTitle="Timeline synchronization is managed by Android core">
         <changes><change>Timeline synchronization is greatly improved because now Android itself does
             this smartly for us.
             A user can <a href="https://support.google.com/android/answer/1663705?hl=en" >Configure
-            account sync options</a> individually for each account
+                account sync options</a> individually for each account
             with Android built-in tools (in Settings-&gt; Personal -&gt; Accounts &amp; Sync).
             E.g. a user may turn Auto-sync on and off for an account.
             <a href="https://github.com/andstatus/andstatus/issues/29" >Issue #29</a>.
             As a result of this change, &quot;Automatic updates&quot; setting was removed from preferences.
             Please enable Sync in Settings for your old accounts after installing this version of the application!
-             </change>
-             <change>New preference added: Notification of &quot;Commands in the queue&quot; to be sent. Off by default.
-                 <a href="https://github.com/andstatus/andstatus/issues/23" >Issue #23</a>.
-                 </change>
-             <change>Creation of new identi.ca accounts disabled, sync for identi.ca accounts doesn't work.
-                 This is because the identi.ca service changed its underlying API from Twitter-compatible (StatusNet)
-                 to PumpIo. Hope to add support for the new API in a reasonable time...</change>
+        </change>
+            <change>New preference added: Notification of &quot;Commands in the queue&quot; to be sent. Off by default.
+                <a href="https://github.com/andstatus/andstatus/issues/23" >Issue #23</a>.
+            </change>
+            <change>Creation of new identi.ca accounts disabled, sync for identi.ca accounts doesn't work.
+                This is because the identi.ca service changed its underlying API from Twitter-compatible (StatusNet)
+                to PumpIo. Hope to add support for the new API in a reasonable time...</change>
         </changes>
     </release>
     <release android:versionName="1.15.1" android:versionCode="75"
-        versionDate="2013-06-02"
-        versionTitle="Follow and Stop following a User">
+             versionDate="2013-06-02"
+             versionTitle="Follow and Stop following a User">
         <changes><change>Follow and "Stop following a user" actions added. For a retweeted (reblogged)
             message you may Follow/Unfollow both a Sender and/or an Author of the message.
-             <a href="https://github.com/andstatus/andstatus/issues/14" >Issue #14</a>.
-             </change>
-             <change>"Following" timeline added. This new timeline shows one latest message
-                 per followed user (per account in the "combined" view).
-                 You may Stop following a User right from this timeline.</change>
+            <a href="https://github.com/andstatus/andstatus/issues/14" >Issue #14</a>.
+        </change>
+            <change>"Following" timeline added. This new timeline shows one latest message
+                per followed user (per account in the "combined" view).
+                You may Stop following a User right from this timeline.</change>
         </changes>
     </release>
     <release android:versionName="1.14.0" android:versionCode="73"
-        versionDate="2013-04-17"
-        versionTitle="Managing accounts is easier now">
+             versionDate="2013-04-17"
+             versionTitle="Managing accounts is easier now">
         <changes><change>Now it takes less steps for the User
-             to start using this application after creation of the first AndStatus account.</change>
+            to start using this application after creation of the first AndStatus account.</change>
             <change>Internal code fixing aimed at improving concurrency management.</change>
         </changes>
     </release>
     <release android:versionName="1.13.1" android:versionCode="72"
-        versionDate="2013-03-30"
-        versionTitle="User Timeline and Undo Reblog">
+             versionDate="2013-03-30"
+             versionTitle="User Timeline and Undo Reblog">
         <changes><change>The new "User" timeline added. Normally when you select "User" from the list
-             of the timelines,  timeline of the current Account is shown.
-             But when you select the "Messages by this User" context menu item, a "User" timeline
-             for the selected User is been shown.
-             The timeline has messages from the cache which are shown immediately.
-             The "Reload" options menu loads the timeline from the Internet. If you have "Automatic updates"
-             enabled in preferences, the User's timeline will be updated asynchronously
-             even without the manual "Reload" command.
-             <a href="https://github.com/andstatus/andstatus/issues/18" >Issue #18</a>.
-            </change>
+            of the timelines,  timeline of the current Account is shown.
+            But when you select the "Messages by this User" context menu item, a "User" timeline
+            for the selected User is been shown.
+            The timeline has messages from the cache which are shown immediately.
+            The "Reload" options menu loads the timeline from the Internet. If you have "Automatic updates"
+            enabled in preferences, the User's timeline will be updated asynchronously
+            even without the manual "Reload" command.
+            <a href="https://github.com/andstatus/andstatus/issues/18" >Issue #18</a>.
+        </change>
             <change>"Tweet/Blog" button can be accessed using keys.
                 <a href="https://github.com/andstatus/andstatus/issues/31" >Issue #31</a>. </change>
             <change>In the combined timeline, actions on a selected message may be done
@@ -1456,17 +1458,17 @@
                 whose timeline the message belongs to. This allows subscribing to the message
                 in one accound and replying to it from another
                 (e.g. from the account which is more relevant to the topic of current message).</change>
-             <change>"Undo reblog" implemented. Each reblog (retweet) of the same message (tweet) is shown
-                 as a separate item in the timeline now. This allows to undo reblog from specific account.
-                 Information about original reblogger is stored also
-                 (in case we received the message already as a reblog).</change>
-             <change>Help (welcome) screen improved and it gives now more information
-                 for the first time users.</change>
+            <change>"Undo reblog" implemented. Each reblog (retweet) of the same message (tweet) is shown
+                as a separate item in the timeline now. This allows to undo reblog from specific account.
+                Information about original reblogger is stored also
+                (in case we received the message already as a reblog).</change>
+            <change>Help (welcome) screen improved and it gives now more information
+                for the first time users.</change>
         </changes>
     </release>
     <release android:versionName="1.12.0" android:versionCode="70"
-        versionDate="2013-02-17"
-        versionTitle="Migration to the Twitter API v.1.1.">
+             versionDate="2013-02-17"
+             versionTitle="Migration to the Twitter API v.1.1.">
         <changes><change>Migration to the Twitter API v.1.1.
             Twitter plans to start turning off an older API after March 1,
             so this upgrade will be required very soon. See
@@ -1475,27 +1477,27 @@
         <change>Fixed: Mentions notifications missed in the Widget.</change>
     </release>
     <release android:versionName="1.11.4" android:versionCode="69"
-        versionDate="2012-12-23"
-        versionTitle="Combined timeline added">
+             versionDate="2012-12-23"
+             versionTitle="Combined timeline added">
         <changes>
             <change>Terminology, independent from twitter.com, is used.
-From now on we will avoid all proprietary terms for non-Twitter accounts.
-At the same time, in order to comply with Twitter "Developer Display Requirements", we will use alternative
-(Twitter's proprietary) terms "tweet" and "retweet" in Twitter accounts and messages ("tweets").
-See <a href="https://github.com/andstatus/andstatus/issues/15">Issue #15</a>.
+                From now on we will avoid all proprietary terms for non-Twitter accounts.
+                At the same time, in order to comply with Twitter "Developer Display Requirements", we will use alternative
+                (Twitter's proprietary) terms "tweet" and "retweet" in Twitter accounts and messages ("tweets").
+                See <a href="https://github.com/andstatus/andstatus/issues/15">Issue #15</a>.
             </change>
             <change>Combined timeline added.
-In a case of many accounts it's becoming harder to check for new messages in each account.
-A "Combined timeline" allows both read all new messages in one stream
-and search for all messages stored locally in all accounts,
-even if they were downloaded from different systems.
-The "Home Combined" timeline shows not only messages from "Home" timelines of all accounts,
-but also messages, downloaded during other requests: e.g. previous messages of Conversations.
-You can do all usual operations with messages in the Combined Timeline, including favoriting,
-replying and reblogging.
+                In a case of many accounts it's becoming harder to check for new messages in each account.
+                A "Combined timeline" allows both read all new messages in one stream
+                and search for all messages stored locally in all accounts,
+                even if they were downloaded from different systems.
+                The "Home Combined" timeline shows not only messages from "Home" timelines of all accounts,
+                but also messages, downloaded during other requests: e.g. previous messages of Conversations.
+                You can do all usual operations with messages in the Combined Timeline, including favoriting,
+                replying and reblogging.
             </change>
             <change>Timeline type selection (Home/Favorites/Mentions/Direct Messages) moved
-            from a legacy "Options menu" to the top bar.
+                from a legacy "Options menu" to the top bar.
             </change>
             <change>French translation added. Thanks to <a href="https://github.com/kvnco">Kevin C.</a>
             </change>
@@ -1509,51 +1511,51 @@ replying and reblogging.
         </changes>
     </release>
     <release android:versionName="1.10.0" android:versionCode="62"
-        versionDate="2012-08-12"
-        versionTitle="Share via AndStatus">
+             versionDate="2012-08-12"
+             versionTitle="Share via AndStatus">
         <changes><change>"Share via AndStatus" added for text data (including Web page sharing).
             E.g. in a Web browser select "Share" menu item and you will see "AndStatus" in the list of destinations.
             Choose AndStatus, and the page title and its URL will be inserted into the new tweet.
-            </change>
+        </change>
         </changes>
     </release>
     <release android:versionName="1.9.1" android:versionCode="61"
-        versionDate="2012-08-06"
-        versionTitle="Conversation view">
+             versionDate="2012-08-06"
+             versionTitle="Conversation view">
         <changes>
             <change>Single message (Tweet) view expanded to show full conversation
-                 in case the Tweet is a reply to other Tweet.
-                 Previous Tweets are being retrieved asynchronously.</change>
+                in case the Tweet is a reply to other Tweet.
+                Previous Tweets are being retrieved asynchronously.</change>
             <change>Fixed replies for identi.ca</change>
-            </changes>
+        </changes>
     </release>
     <release android:versionName="1.8.0" android:versionCode="59"
-        versionDate="2012-08-01"
-        versionTitle="identi.ca support added">
+             versionDate="2012-08-01"
+             versionTitle="identi.ca support added">
         <changes>
             <change>Identi.ca support added. Currently only basic authentication works (i.e. no OAuth for identi.ca yet).</change>
-            </changes>
+        </changes>
     </release>
     <release android:versionName="1.7.0" android:versionCode="58"
-        versionDate="2012-07-28"
-        versionTitle="Manage Accounts code adapted for Jelly Bean">
+             versionDate="2012-07-28"
+             versionTitle="Manage Accounts code adapted for Jelly Bean">
         <changes>
             <change>Manage Accounts code adapted for Jelly Bean. The app works ok on Android v.2.2 - 4.1 now.</change>
-            </changes>
+        </changes>
     </release>
     <release android:versionName="1.6.0" android:versionCode="57"
-        versionDate="2012-07-07"
-        versionTitle="Send Direct Message added">
+             versionDate="2012-07-07"
+             versionTitle="Send Direct Message added">
         <changes>
             <change>Send Direct Message added.</change>
             <change>Message is counted as new only if it didn't exist in the database yet.</change>
             <change>While editing tweet, system calculates characters left taking shortened URL's length into account!</change>
             <change>Too long wake lock fixed.</change>
-            </changes>
+        </changes>
     </release>
     <release android:versionName="1.5.0" android:versionCode="56"
-        versionDate="2012-06-09"
-        versionTitle="Multiple User accounts support">
+             versionDate="2012-06-09"
+             versionTitle="Multiple User accounts support">
         <changes>
             <change>Multiple User Accounts support added.
                 User can easily switch timeline between accounts.</change>
@@ -1566,29 +1568,29 @@ replying and reblogging.
         </changes>
     </release>
     <release android:versionName="1.4.2" android:versionCode="55"
-        versionDate="2012-03-20"
-        versionTitle="&quot;Native&quot; Retweets, Advanced Data Model and moving to Android 2.2">
+             versionDate="2012-03-20"
+             versionTitle="&quot;Native&quot; Retweets, Advanced Data Model and moving to Android 2.2">
         <changes>
             <change>"Native" Retweet implemented. Tweets retweeted in AndStatus
-             are shown as "Retweeted" in twitter.com also.</change>
+                are shown as "Retweeted" in twitter.com also.</change>
             <change>Home timeline shows authors of Retweets, not users who retweeted them.</change>
             <change>Underlying Data model has been totally redesigned in order to be able to
-            accommodate upcoming enhancements:
-            1. Multiple user Accounts.
-            2. Multiple Instant messaging systems (twitter.com, identi.ca etc.).
-            3. References between messages (tweets, dents, statuses…), Users and Accounts.
-            Unfortunately advanced SQL queries used in the code are not supported by the
-            SQLite engine built-in Android prior v.2.2 (API 8).
-            This means that this updated application works only on Android v.2.2 and above.
+                accommodate upcoming enhancements:
+                1. Multiple user Accounts.
+                2. Multiple Instant messaging systems (twitter.com, identi.ca etc.).
+                3. References between messages (tweets, dents, statuses…), Users and Accounts.
+                Unfortunately advanced SQL queries used in the code are not supported by the
+                SQLite engine built-in Android prior v.2.2 (API 8).
+                This means that this updated application works only on Android v.2.2 and above.
             </change>
             <change>WRITE_EXTERNAL_STORAGE permission was added to the Manifest.
-            Otherwhise "Use External Storage" doesn't work (after compilation for API 8.
-            It worked for API 3 though..).</change>
+                Otherwhise "Use External Storage" doesn't work (after compilation for API 8.
+                It worked for API 3 though..).</change>
         </changes>
     </release>
     <release android:versionName="1.3.2" android:versionCode="52"
-        versionDate="2012-02-25"
-        versionTitle="External storage">
+             versionDate="2012-02-25"
+             versionTitle="External storage">
         <changes>
             <change>Added "Use External Storage" option. When a User changes
                 this option, System moves database file to External storage
@@ -1599,165 +1601,165 @@ replying and reblogging.
         </changes>
     </release>
     <release android:versionName="1.2.2" android:versionCode="46"
-        versionDate="2011-10-26">
+             versionDate="2011-10-26">
         <changes>
-                <change>Implemented "Move Enter your tweet here field to it's own screen" request (Issue 60)</change>
-                <change>Added option to Share tweet.</change>
-                <change>Improved interface of the "User credentials" group of Preferences to make it more clear for new users (Issue 61)</change>
-                <change>Internal application changes that require recreating AndStatus Widget after upgrade to this version.</change>
-                <change>Fixed: Sometimes twitter.com succeeds to create/delete favorite,
-                   but doesn't change 'favorited' flag in the returned tweet.
-                   Sometimes it fails, but doesn't indicate error.
-                   (This is twitter.com feature: asynchronous processes…)</change>
-                <change>Fixed: Issue 45: Manually setting a username and authenticating with another does not work.</change>
-                <change>Fixed: Issue 50: tells me credentials are for other user.</change>
-                <change>Fixed: Errors in the Service when it's stopped during command execution.</change>
+            <change>Implemented "Move Enter your tweet here field to it's own screen" request (Issue 60)</change>
+            <change>Added option to Share tweet.</change>
+            <change>Improved interface of the "User credentials" group of Preferences to make it more clear for new users (Issue 61)</change>
+            <change>Internal application changes that require recreating AndStatus Widget after upgrade to this version.</change>
+            <change>Fixed: Sometimes twitter.com succeeds to create/delete favorite,
+                but doesn't change 'favorited' flag in the returned tweet.
+                Sometimes it fails, but doesn't indicate error.
+                (This is twitter.com feature: asynchronous processes…)</change>
+            <change>Fixed: Issue 45: Manually setting a username and authenticating with another does not work.</change>
+            <change>Fixed: Issue 50: tells me credentials are for other user.</change>
+            <change>Fixed: Errors in the Service when it's stopped during command execution.</change>
         </changes>
         <history>
             <package android:versionName="1.2.2" android:versionCode="46"
-                versionDate="2011-10-26">
+                     versionDate="2011-10-26">
                 <change>Added option to Share tweet.</change>
             </package>
             <package android:versionName="1.2.1" android:versionCode="45"
-                versionDate="2011-10-11">
+                     versionDate="2011-10-11">
                 <change>Improved interface of the "User credentials" group of Preferences to make it more clear for new users (Issue 61)</change>
                 <change>Internal application changes that require recreating AndStatus Widget after upgrade to this version.</change>
             </package>
             <package android:versionName="1.2.0" android:versionCode="44"
-                versionDate="2011-09-28">
+                     versionDate="2011-09-28">
                 <change>Implemented "Move Enter your tweet here field to it's own screen" request (Issue 60)</change>
                 <change>Fixed: Sometimes twitter.com succeeds to create/delete favorite,
-                   but doesn't change 'favorited' flag in the returned tweet.
-                   Sometimes it fails, but doesn't indicate error.
-                   (This is twitter.com feature: asynchronous processes…)</change>
+                    but doesn't change 'favorited' flag in the returned tweet.
+                    Sometimes it fails, but doesn't indicate error.
+                    (This is twitter.com feature: asynchronous processes…)</change>
                 <change>Fixed: Issue 45: Manually setting a username and authenticating with another does not work.</change>
                 <change>Fixed: Issue 50: tells me credentials are for other user</change>
                 <change>Fixed: Errors in the Service when it's stopped during command execution.</change>
             </package>
         </history>
     </release>
-	<release android:versionName="1.1.7" android:versionCode="43"
-		versionDate="2011-09-23">
-    <changes>
-        <change>
-            Working offline or in bad connection conditions is
-            implemented.
-            Now User doesn't have to wait for the "Command execution
-            on a Server" after updating his status (i.e. sending a tweet)
-            and may continue reading and
-            writing tweets, making them Favorite etc.
-            while AndStatus stores all the
-            commands in the queue and retries delivery
-            upon every automatic update and also
-            during any manual command (Reload or Status update).
-            User is being notified about number of messages
-            currently in the Output queue
-            (If
-            Notifications are being enabled).
-            Queues of unsent commands persist in the phone's memory.
-            Even after shutdown for Android v.1.6 and up.</change>
-        <change>Changes in the application permissions.
-            Two (location)
-            permissions were removed, one permission was added
-            to help
-            asynchronous message delivery (ACCESS_NETWORK_STATE).</change>
-        <change>Improved user experience during initial configuration till first tweets loading</change>
-        <change>"Verify" preference moved to the top of the "User
-            Credentials"
-            preference's
-            section, because User can really start from tapping it
-            (typing Username is not required for OAuth)!</change>
-        <change>Widget shows last time when data was successfully
-            downloaded from the server, not when there was last attempt to do
-            this (maybe it failed…)</change>
-        <change>New Preference "Minimum logging level" added to allow changing
-            Logging level from within the application Preferences.</change>
-        <change>Another pass of timeline code cleaning. Now AndStatus's
-            timelines open
-            faster thanks to less requests and redrawing.</change>
-        <change>Fixed issue 12 "Themes do not apply until app is restarted"</change>
-        <change>Fixed bug preventing timeline position restore.</change>
-        <change>Fixed errors loading data from the Internet due to
-            parallel
-            OAuth requests. (e.g. during initial loading of the User's timeline).</change>
-        <change>Fixed blank screen in Preferences activity during
-            authentication
-            after redirect from Twitter web site.</change>
-        <change>Fixed "black on black" tweet text on "Single tweet"
-            window on
-            Android v.2.3.3</change>
-    </changes>
-		<history>
+    <release android:versionName="1.1.7" android:versionCode="43"
+             versionDate="2011-09-23">
+        <changes>
+            <change>
+                Working offline or in bad connection conditions is
+                implemented.
+                Now User doesn't have to wait for the "Command execution
+                on a Server" after updating his status (i.e. sending a tweet)
+                and may continue reading and
+                writing tweets, making them Favorite etc.
+                while AndStatus stores all the
+                commands in the queue and retries delivery
+                upon every automatic update and also
+                during any manual command (Reload or Status update).
+                User is being notified about number of messages
+                currently in the Output queue
+                (If
+                Notifications are being enabled).
+                Queues of unsent commands persist in the phone's memory.
+                Even after shutdown for Android v.1.6 and up.</change>
+            <change>Changes in the application permissions.
+                Two (location)
+                permissions were removed, one permission was added
+                to help
+                asynchronous message delivery (ACCESS_NETWORK_STATE).</change>
+            <change>Improved user experience during initial configuration till first tweets loading</change>
+            <change>"Verify" preference moved to the top of the "User
+                Credentials"
+                preference's
+                section, because User can really start from tapping it
+                (typing Username is not required for OAuth)!</change>
+            <change>Widget shows last time when data was successfully
+                downloaded from the server, not when there was last attempt to do
+                this (maybe it failed…)</change>
+            <change>New Preference "Minimum logging level" added to allow changing
+                Logging level from within the application Preferences.</change>
+            <change>Another pass of timeline code cleaning. Now AndStatus's
+                timelines open
+                faster thanks to less requests and redrawing.</change>
+            <change>Fixed issue 12 "Themes do not apply until app is restarted"</change>
+            <change>Fixed bug preventing timeline position restore.</change>
+            <change>Fixed errors loading data from the Internet due to
+                parallel
+                OAuth requests. (e.g. during initial loading of the User's timeline).</change>
+            <change>Fixed blank screen in Preferences activity during
+                authentication
+                after redirect from Twitter web site.</change>
+            <change>Fixed "black on black" tweet text on "Single tweet"
+                window on
+                Android v.2.3.3</change>
+        </changes>
+        <history>
             <package android:versionName="1.1.7" android:versionCode="43"
-                versionDate="2011-09-23">
+                     versionDate="2011-09-23">
                 <change>New Preference "Minimum logging level" added to allow
-                  changing Logging level from within the application Preferences.</change>
+                    changing Logging level from within the application Preferences.</change>
                 <change>Queues of unsent commands persist in the phone's memory.
-                  Even after shutdown for Android v.1.6 and up.</change>
+                    Even after shutdown for Android v.1.6 and up.</change>
             </package>
             <package android:versionName="1.1.5" android:versionCode="41"
-                versionDate="2011-08-05">
+                     versionDate="2011-08-05">
                 <change>Fixed issue 12 "Themes do not apply until app is restarted"</change>
                 <change>Improved user experience during initial configuration till first tweets loading</change>
             </package>
-			<package android:versionName="1.1.4" android:versionCode="40"
-				versionDate="2011-07-25">
+            <package android:versionName="1.1.4" android:versionCode="40"
+                     versionDate="2011-07-25">
                 <change>"Destroy status" and Rate limit request made asynchronous also.</change>
-				<change>Widget shows last time when data was successfully
-                downloaded from the server,
-                not when there was last attempt to do this (maybe it failed…)</change>
-	      	</package>
-			<package android:versionName="1.1.3" android:versionCode="39"
-				versionDate="2011-07-16">
-				1. Queued tweet sending implemented. Now User doesn't
-				have to wait for the "Command execution on a Server"
-				and may continue reading and writing tweets.
-				Moreover, the same "(close to the) Guaranteed message delivery"
-				approach works
-				for the other commands also: Timeline reload,
-				Favorites creation and deletion.
-				AndStatus retries to send commands to the server on every
-				automatic update and during any manual command or message
-				(Reload or Status update). User is being notified
-				about number of messages currently in the queue
-				(If Notifications are being enabled).
-				2. Changes in the application permissions.
-				Two (location) permissions were removed,
-				one permission was added to help asynchronous message delivery
-				(ACCESS_NETWORK_STATE).
-			</package>
-			<package android:versionName="1.1.2" android:versionCode="38"
-				versionDate="2011-04-29">
-				1. Fixed bug preventing timeline position restore.
-				2. Fixed errors loading data from the Internet due to parallel
-				OAuth requests. (e.g. during initial loading of the User's
-				timeline).
-				3. Another pass of timeline code cleaning. Now AndStatus's
-				timelines open faster thanks to less requests and redrawing.
-				4. Made first step in switching from parallel
-				and, in fact, synchronous requests (Twitter commands) processing to
-				the sequential and queued processing, see {@link
-				org.andstatus.app.TimelineActivity#queueIntent}
-			</package>
-			<package android:versionName="1.1.1" android:versionCode="37"
-				versionDate="2011-04-01">
-				1. Blank screen in Preferences activity during
-				authentication after redirect from Twitter web site
-				2. "Verify"
-				preference moved to the top of the "User Credentials" preference's
-				section, because User can really start from tapping it (typing
-				Username is not required for OAuth)!
-			</package>
-			<package android:versionName="1.1.0" android:versionCode="36"
-				versionDate="2011-03-12">
-				1. Fixed "black on black" tweet text on "Single tweet"
-				window on Android v.2.3.3
-				2. Style definitions in
-				"res/values/themes.xml" reworked.
-			</package>
-		</history>
-	</release>
-	<release android:versionName="1.0.5" android:versionCode="35" versionDate="2011-02-19">
+                <change>Widget shows last time when data was successfully
+                    downloaded from the server,
+                    not when there was last attempt to do this (maybe it failed…)</change>
+            </package>
+            <package android:versionName="1.1.3" android:versionCode="39"
+                     versionDate="2011-07-16">
+                1. Queued tweet sending implemented. Now User doesn't
+                have to wait for the "Command execution on a Server"
+                and may continue reading and writing tweets.
+                Moreover, the same "(close to the) Guaranteed message delivery"
+                approach works
+                for the other commands also: Timeline reload,
+                Favorites creation and deletion.
+                AndStatus retries to send commands to the server on every
+                automatic update and during any manual command or message
+                (Reload or Status update). User is being notified
+                about number of messages currently in the queue
+                (If Notifications are being enabled).
+                2. Changes in the application permissions.
+                Two (location) permissions were removed,
+                one permission was added to help asynchronous message delivery
+                (ACCESS_NETWORK_STATE).
+            </package>
+            <package android:versionName="1.1.2" android:versionCode="38"
+                     versionDate="2011-04-29">
+                1. Fixed bug preventing timeline position restore.
+                2. Fixed errors loading data from the Internet due to parallel
+                OAuth requests. (e.g. during initial loading of the User's
+                timeline).
+                3. Another pass of timeline code cleaning. Now AndStatus's
+                timelines open faster thanks to less requests and redrawing.
+                4. Made first step in switching from parallel
+                and, in fact, synchronous requests (Twitter commands) processing to
+                the sequential and queued processing, see {@link
+                org.andstatus.app.TimelineActivity#queueIntent}
+            </package>
+            <package android:versionName="1.1.1" android:versionCode="37"
+                     versionDate="2011-04-01">
+                1. Blank screen in Preferences activity during
+                authentication after redirect from Twitter web site
+                2. "Verify"
+                preference moved to the top of the "User Credentials" preference's
+                section, because User can really start from tapping it (typing
+                Username is not required for OAuth)!
+            </package>
+            <package android:versionName="1.1.0" android:versionCode="36"
+                     versionDate="2011-03-12">
+                1. Fixed "black on black" tweet text on "Single tweet"
+                window on Android v.2.3.3
+                2. Style definitions in
+                "res/values/themes.xml" reworked.
+            </package>
+        </history>
+    </release>
+    <release android:versionName="1.0.5" android:versionCode="35" versionDate="2011-02-19">
         <changes>
             <change>"Favorites" list added.</change>
             <change>Favorites are protected from automatic deletion (unlike other old tweets)</change>
@@ -1766,11 +1768,11 @@ replying and reblogging.
             <change>Maximum History time (to store tweets) is 1 year now</change>
             <change>OAuth is On By Default.</change>
             <change>Mentions are not "quick Search" any
-        more, they are just another type of "Timeline". So we may search in
-        Mentions also.</change>
+                more, they are just another type of "Timeline". So we may search in
+                Mentions also.</change>
             <change>"Automatic updates" setting is not being turned off
-        by the System. (in beta1:)</change>
+                by the System. (in beta1:)</change>
             <change>Fixed issue: Old records are not being deleted.</change>
         </changes>
-	</release>
+    </release>
 </document>
