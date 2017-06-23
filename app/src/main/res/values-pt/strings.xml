@@ -49,7 +49,7 @@
   <string name="automatic">Automático</string>
   <string name="background_color_preference_title">Cor de fundo para o tema escuro</string>
   <string name="button_add">Adicionar</string>
-  <string name="button_add_origin">Adicionar novo sistema</string>
+  <string name="button_add_origin">Adicionar nova rede social</string>
   <string name="button_backup">Backup</string>
   <string name="button_cancel">Cancelar</string>
   <string name="button_change_folder">Mudar pasta</string>
@@ -101,7 +101,7 @@
   <string name="crash_dialog_comment_prompt">Por favor, forneça alguns comentários sobre o problema. O que nos ajuda a resolver o problema: o que estava a fazer quando ocorreu e se pode ser reproduzido.</string>
   <string name="created_label">Criado</string>
   <string name="custom_locale_title">Idioma da aplicação</string>
-  <string name="set_as_default_timeline">Cronologia padrão</string>
+  <string name="set_as_default_timeline">Definir como cronologia padrão</string>
   <string name="default_timeline_summary">A cronologia será aberta com o \'launcher\': \"%s\"</string>
   <string name="device_default">Predefinições</string>
   <string name="dialog_summary_acquiring_an_access_token">Por favor aguarde enquanto o AndStatus está a trocar o \"token\" de pedido OAuth pelo \"token\" de acesso.</string>
@@ -224,9 +224,13 @@
   <string name="label_backup_folder">Pasta de backup</string>
   <string name="label_conversation">Conversa</string>
   <string name="label_host">Servidor</string>
+  <string name="label_host_mastodon">Instância Mastodon</string>
+  <string name="host_hint">Exemplo: gnusocial.net, social.10one.net</string>
+  <string name="host_hint_mastodon">O endereço ou domínio de qualquer instância como, por exemplo, mastodon.social, icosahedron.website, social.tchncs.de</string>
   <string name="label_manage_origin_systems">Gerir redes sociais</string>
   <string name="label_origin_list">Redes sociais</string>
-  <string name="label_origin_name">Nome da rede social (único e imutável)</string>
+  <string name="label_origin_name">Nome da rede social</string>
+  <string name="origin_name_hint">Exemplo: Poster, Rainbow, Quitter.se, MyInstance</string>
   <string name="label_origin_system">Rede social</string>
   <string name="label_origin_type">Tipo de rede social</string>
   <string name="label_restore">Restaurar dados de um backup</string>
@@ -240,6 +244,7 @@
   <string name="long_press_to_open_context_menu_off">Toque num item para abrir o menu de contexto</string>
   <string name="malformed_link">Ligação incorreta</string>
   <string name="manage_accounts">Gerir contas</string>
+  <string name="manage_accounts_android">Gerir as contas do AndStatus nas definições do Android</string>
   <string name="manage_timelines">Gerir cronologias</string>
   <string name="mention_as_webfingerid_title">Menção como @webFingerId</string>
   <string name="menu_item_act_as">Atuar como&#8230;</string>
@@ -285,7 +290,9 @@
   <string name="never">Nunca</string>
   <string name="new_items_count_abbreviated">Novas</string>
   <string name="no">Não</string>
+  <string name="no_more_messages">Não existem mais mensagens</string>
   <string name="not_set">não definido</string>
+  <string name="not_syncable">Sincronização impossível</string>
   <string name="nothing_in_the_loadable_list">Aqui nada existe. Tente \"Sincronizar com a Internet\" para atualizar esta lista.</string>
   <string name="notification_message_formats_1">{0} mensagem</string>
   <string name="notification_message_formats_2">{0} mensagens</string>
@@ -368,6 +375,7 @@
   <string name="remove_account_dialog_title">Remover conta?</string>
   <string name="remove_account_dialog_text">Se remover a conta, elimina todos os dados do seu dispositivo. Continuar?</string>
   <string name="reset_counters">Reiniciar contadores</string>
+  <string name="reset_timelines_order">Repor ordem das cronologias</string>
   <string name="resolve_view">Ver mensagem</string>
   <string name="rounded_avatars">Avatars redondos</string>
   <string name="search_timeline_label">Procurar mensagens, utilizadores, hashtags</string>

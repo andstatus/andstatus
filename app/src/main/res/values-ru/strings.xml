@@ -49,7 +49,7 @@
   <string name="automatic">Автонастройка</string>
   <string name="background_color_preference_title">Цвет фона для Тёмной темы</string>
   <string name="button_add">Добавить</string>
-  <string name="button_add_origin">Добавить новую систему</string>
+  <string name="button_add_origin">Добавить новую Социальную сеть</string>
   <string name="button_backup">Бэкап</string>
   <string name="button_cancel">Отмена</string>
   <string name="button_change_folder">Изменить папку</string>
@@ -100,7 +100,7 @@
   <string name="crash_dialog_comment_prompt">Пожалуйста, прокомментируйте данную проблему. Было бы очень полезно для её исправления знать: в какой момент это произошло и, если Вы знаете, как эту проблему можно воспроизвести.</string>
   <string name="created_label">Создан</string>
   <string name="custom_locale_title">Язык приложения</string>
-  <string name="set_as_default_timeline">Лента времени по умолчанию</string>
+  <string name="set_as_default_timeline">Назначить Лентой времени по умолчанию</string>
   <string name="default_timeline_summary">Лента времени, которая будет открыта при запуске приложения: \"%s\"</string>
   <string name="device_default">По умолчанию в устройстве</string>
   <string name="dialog_summary_acquiring_an_access_token">Пожалуйста подождите пока AndStatus обменяет токен OAuth запроса на токен доступа</string>
@@ -221,9 +221,13 @@
   <string name="label_backup_folder">Папка бэкапа</string>
   <string name="label_conversation">Обсуждение</string>
   <string name="label_host">Хост</string>
+  <string name="label_host_mastodon">Узел сети Mastodon</string>
+  <string name="host_hint">Например, gnusocial.net, social.10one.net</string>
+  <string name="host_hint_mastodon">Адрес или домен любого узла, например mastodon.social, icosahedron.website, social.tchncs.de</string>
   <string name="label_manage_origin_systems">Управление социальными сетями</string>
   <string name="label_origin_list">Социальные сети</string>
-  <string name="label_origin_name">Имя Социальной сети (уникальное и неизменное)</string>
+  <string name="label_origin_name">Название Социальной сети</string>
+  <string name="origin_name_hint">Например, Poster, Rainbow, Quitter.se, MyInstance</string>
   <string name="label_origin_system">Социальная сеть</string>
   <string name="label_origin_type">Тип Социальной сети</string>
   <string name="label_restore">Восстановить данные приложения из Бэкапа</string>
@@ -237,6 +241,7 @@
   <string name="long_press_to_open_context_menu_off">Кратко нажмите на элемент, чтобы открыть его контекстное меню</string>
   <string name="malformed_link">Неисправные ссылки</string>
   <string name="manage_accounts">Управление учётными записями</string>
+  <string name="manage_accounts_android">Управление учётными записями AndStatus-а в настройках Android</string>
   <string name="manage_timelines">Управление Лентами времени</string>
   <string name="mention_as_webfingerid_title">Упоминания как @webFingerId</string>
   <string name="menu_item_act_as">От имени&#8230;</string>
@@ -282,7 +287,9 @@
   <string name="never">Никогда</string>
   <string name="new_items_count_abbreviated">Новый</string>
   <string name="no">Нет</string>
+  <string name="no_more_messages">Сообщений больше нет</string>
   <string name="not_set">не задан</string>
+  <string name="not_syncable">Синхронизация недоступна</string>
   <string name="nothing_in_the_loadable_list">Здесь пока ничего нет. Попробуйте использовать действие «Синхронизация с Интернетом», чтобы обновить этот список.</string>
   <string name="notification_message_formats_1">{0} сообщение</string>
   <string name="notification_message_formats_2">{0} сообщения</string>
@@ -365,6 +372,7 @@
   <string name="remove_account_dialog_title">Удалить аккаунт?</string>
   <string name="remove_account_dialog_text">При удалении аккаунта (учётной записи пользователя) из устройства будут удалены все данные, относящиеся к данному аккаунту. Продолжить?</string>
   <string name="reset_counters">Сбросить счётчики</string>
+  <string name="reset_timelines_order">Сброс порядка Линий времени</string>
   <string name="resolve_view">Посмотреть сообщение</string>
   <string name="rounded_avatars">Округлые аватары</string>
   <string name="search_timeline_label">Поиск сообщений, людей и тем</string>
@@ -438,6 +446,8 @@
   <string name="summary_preference_vibration_off">Виброзвонок отключён</string>
   <string name="summary_preference_vibration_on">Виброзвонок при входящем сообщении включён</string>
   <string name="switch_to_default_timeline">Переключиться на Ленту времени по умолчанию</string>
+  <string name="sync_younger_messages">Синхронизировано %1$s. Синхронизировать сообщения с %2$s</string>
+  <string name="sync_older_messages">Синхронизировать сообщения до %1$s</string>
   <string name="sync_over_wifi_only">Авто-синхронизация только через Wi-Fi</string>
   <string name="sync_failed">Ошибка синхронизации</string>
   <string name="sync_frequency_minutes">Частота синхронизации в минутах. Оставьте это поле пустым, чтобы оно имело значение по умолчанию: </string>
