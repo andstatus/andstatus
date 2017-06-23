@@ -31,7 +31,7 @@ import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyContextImpl;
 import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.data.DataInserter;
+import org.andstatus.app.data.DataUpdater;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.DatabaseConverterController;
@@ -42,6 +42,7 @@ import org.andstatus.app.net.http.ConnectionException.StatusCode;
 import org.andstatus.app.net.http.OAuthService;
 import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
+import org.andstatus.app.net.social.MbActivityType;
 import org.andstatus.app.net.social.MbConfig;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.origin.Origin;
@@ -421,8 +422,8 @@ public final class MyAccount implements Comparable<MyAccount> {
                     MyLog.v(TAG, "Upgrade in progress");
                     myAccount.userId = myAccount.accountData.getDataLong(KEY_USER_ID, myAccount.userId);
                 } else {
-                    DataInserter di = new DataInserter(myAccount);
-                    myAccount.userId = di.insertOrUpdateUser(user, true);
+                    DataUpdater di = new DataUpdater(myAccount);
+                    myAccount.userId = di.onActivity(user.actor, MbActivityType.UPDATE, user);
                 }
             }
             if (ok && !isPersistent()) {
@@ -489,13 +490,13 @@ public final class MyAccount implements Comparable<MyAccount> {
         private void assignUserId() {
             myAccount.userId = MyQuery.userNameToId(myAccount.getOriginId(), myAccount.getUsername());
             if (myAccount.userId == 0) {
-                DataInserter di = new DataInserter(myAccount);
+                DataUpdater di = new DataUpdater(myAccount);
                 try {
                     // Construct "User" from available account info
                     // We need this User in order to be able to link Messages to him
                     MbUser mbUser = MbUser.fromOriginAndUserOid(myAccount.getOriginId(), myAccount.userOid);
                     mbUser.setUserName(myAccount.getUsername());
-                    myAccount.userId = di.insertOrUpdateUser(mbUser);
+                    myAccount.userId = di.onActivity(mbUser.actor, MbActivityType.UPDATE, mbUser);
                 } catch (Exception e) {
                     MyLog.e(TAG, "Construct user", e);
                 }

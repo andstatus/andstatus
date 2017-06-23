@@ -1,5 +1,5 @@
 /* 
- * Copyright (c) 2012-2013 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (c) 2012-2017 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.andstatus.app.data;
 
 import android.content.ContentValues;
 import android.net.Uri;
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import org.andstatus.app.account.MyAccount;
@@ -29,10 +30,10 @@ import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.database.UserTable;
 import org.andstatus.app.msg.KeywordsFilter;
 import org.andstatus.app.net.http.ConnectionException;
+import org.andstatus.app.net.social.MbActivity;
+import org.andstatus.app.net.social.MbActivityType;
 import org.andstatus.app.net.social.MbAttachment;
 import org.andstatus.app.net.social.MbMessage;
-import org.andstatus.app.net.social.MbActivity;
-import org.andstatus.app.net.social.MbObjectType;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.net.social.TimelinePosition;
 import org.andstatus.app.service.AttachmentDownloader;
@@ -50,38 +51,68 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * Stores ("inserts" - adds or updates) messages and users
+ * Stores (updates) messages and users
  *  from a Social network into a database.
  * 
  * @author yvolk@yurivolkov.com
  */
-public class DataInserter {
-    private static final String TAG = DataInserter.class.getSimpleName();
+public class DataUpdater {
+    private static final String TAG = DataUpdater.class.getSimpleName();
     static final String MSG_ASSERTION_KEY = "insertOrUpdateMsg";
     private final CommandExecutionContext execContext;
+    private LatestUserMessages lum = new LatestUserMessages();
     private KeywordsFilter keywordsFilter = new KeywordsFilter(
             SharedPreferencesUtil.getString(MyPreferences.KEY_FILTER_HIDE_MESSAGES_BASED_ON_KEYWORDS, ""));
 
-    public DataInserter(MyAccount ma) {
+    public DataUpdater(MyAccount ma) {
         this(new CommandExecutionContext(CommandData.newAccountCommand(CommandEnum.EMPTY, ma)));
     }
     
-    public DataInserter(CommandExecutionContext execContext) {
+    public DataUpdater(CommandExecutionContext execContext) {
         this.execContext = execContext;
     }
 
-    public long insertOrUpdateMsg(MbMessage message) {
-        LatestUserMessages lum = new LatestUserMessages();
-        long rowId = insertOrUpdateMsg(message, lum);
-        lum.save();
-        return rowId;
+    public long onActivity(MbUser actor, MbActivityType type, MbMessage message) {
+        return onActivity(MbActivity.fromMessage(actor, type, message), true);
     }
 
-    public long insertOrUpdateMsg(MbMessage message, LatestUserMessages lum) {
-        return insertOrUpdateMsgInner(message, lum, true);
+    public long onActivity(MbUser actor, MbActivityType type, MbUser user) {
+        return onActivity(MbActivity.fromUser(actor, type, user), true);
     }
-    
-    private long insertOrUpdateMsgInner(MbMessage message, LatestUserMessages lum, boolean updateUsers) {
+
+    public long onActivity(MbActivity mbActivity) {
+        return onActivity(mbActivity, true);
+    }
+
+    public void saveLum() {
+        lum.save();
+    }
+
+    /**
+     * TODO: parse Actor, ActivityType etc...
+     * @return id of the "MbObject"
+     */
+    public long onActivity(MbActivity mbActivity, boolean saveLum) {
+        long id = 0;
+        switch (mbActivity.getObjectType()) {
+            case ACTIVITY:
+                return onActivity(mbActivity.getActivity(), saveLum);
+            case MESSAGE:
+                id = updateMessage(mbActivity.getMessage(), true);
+                break;
+            case USER:
+                id = updateUser(mbActivity.getUser());
+                break;
+            default:
+                break;
+        }
+        if (saveLum) {
+            saveLum();
+        }
+        return id;
+    }
+
+    private long updateMessage(@NonNull MbMessage message, boolean updateUsers) {
         final String funcName = "Inserting/updating msg";
         if (message.isEmpty()) {
             MyLog.w(TAG, funcName +"; the message is empty, skipping: " + message.toString());
@@ -97,11 +128,11 @@ public class DataInserter {
             }
 
             if (updateUsers) {
-                insertOrUpdateUser(message.getAuthor(), lum, false);
+                updateUser(message.getAuthor());
                 if (message.isAuthorActor()) {
                     message.setActor(message.getAuthor());
                 } else {
-                    insertOrUpdateUser(message.getActor(), lum, false);
+                    updateUser(message.getActor());
                 }
             }
 
@@ -125,7 +156,7 @@ public class DataInserter {
                 message.msgId = MyQuery.oidToId(OidEnum.MSG_OID, message.originId, message.oid);
             }
 
-            /**
+            /*
              * Is the row first time retrieved from a Social Network?
              * Message can already exist in this these cases:
              * 1. There was only "a stub" stored (without a sent date and a body)
@@ -176,7 +207,7 @@ public class DataInserter {
 
             boolean isDirectMessage = false;
             if (message.recipient != null) {
-                long recipientId = insertOrUpdateUser(message.recipient, lum, false);
+                long recipientId = updateUser(message.recipient);
                 values.put(MsgTable.RECIPIENT_ID, recipientId);
                 if (recipientId == me.getUserId() || message.isAuthorMe()) {
                     isDirectMessage = true;
@@ -210,7 +241,7 @@ public class DataInserter {
                         + " by " + me.getAccountName());
             }
 
-            boolean mentioned = isMentionedAndPutInReplyToMessage(message, me, lum, values);
+            boolean mentioned = isMentionedAndPutInReplyToMessage(message, me, values);
 
             if (message.lookupConversationId() != 0) {
                 values.put(MsgTable.CONVERSATION_ID, message.getConversationId());
@@ -270,8 +301,8 @@ public class DataInserter {
             }
 
             for (MbMessage reply : message.replies) {
-                DataInserter di = new DataInserter(execContext);
-                di.insertOrUpdateMsg(reply, lum);
+                DataUpdater di = new DataUpdater(execContext);
+                di.updateMessage(reply, true);
             }
         } catch (Exception e) {
             MyLog.e(this, funcName, e);
@@ -279,8 +310,7 @@ public class DataInserter {
         return message.msgId;
     }
 
-    private boolean isMentionedAndPutInReplyToMessage(MbMessage message, MyAccount me, LatestUserMessages lum,
-                                                      ContentValues values) {
+    private boolean isMentionedAndPutInReplyToMessage(MbMessage message, MyAccount me, ContentValues values) {
         boolean mentioned = execContext.getTimeline().getTimelineType() == TimelineType.MENTIONS;
         Long inReplyToUserId = 0L;
         final MbMessage inReplyToMessage = message.getInReplyTo();
@@ -290,9 +320,9 @@ public class DataInserter {
             }
             inReplyToMessage.setSubscribedByMe(TriState.FALSE);
             // Type of the timeline is ALL meaning that message does not belong to this timeline
-            DataInserter di = new DataInserter(execContext);
+            DataUpdater di = new DataUpdater(execContext);
             // If the Msg is a Reply to another message
-            Long inReplyToMessageId = di.insertOrUpdateMsg(inReplyToMessage, lum);
+            Long inReplyToMessageId = di.updateMessage(inReplyToMessage, true);
             if (inReplyToMessage.getAuthor().nonEmpty()) {
                 inReplyToUserId = MyQuery.oidToId(OidEnum.USER_OID, message.originId, inReplyToMessage.getAuthor().oid);
             } else if (inReplyToMessageId != 0) {
@@ -332,7 +362,7 @@ public class DataInserter {
         if (users.size() > 0) {
             userId = users.get(0).userId;
             if (userId == 0) {
-                userId = insertOrUpdateUser(users.get(0));
+                userId = updateUser(users.get(0));
             }
         }
         return userId;
@@ -362,22 +392,11 @@ public class DataInserter {
         DownloadData.deleteOtherOfThisMsg(message.msgId, downloadIds);
     }
 
-    public long insertOrUpdateUser(MbUser user) {
-        return insertOrUpdateUser(user, false);
-    }
-
-    public long insertOrUpdateUser(MbUser user, boolean updateUsers) {
-        LatestUserMessages lum = new LatestUserMessages();
-        long userId = insertOrUpdateUser(user, lum, updateUsers);
-        lum.save();
-        return userId;
-    }
-    
     /**
      * @return userId
      */
-    public long insertOrUpdateUser(MbUser mbUser, LatestUserMessages lum, boolean updateUsers) {
-        final String method = "insertOrUpdateUser";
+    private long updateUser(MbUser mbUser) {
+        final String method = "updateUser";
         if (mbUser == null || mbUser.isEmpty()) {
             MyLog.v(this, method + "; mbUser is empty");
             return 0;
@@ -457,8 +476,7 @@ public class DataInserter {
             }
 
             MyAccount myActor = mbUser.actor == null ? execContext.getMyAccount()
-                    : execContext.getMyContext().persistentAccounts().fromUserId(
-                            insertOrUpdateUser(mbUser.actor, lum, false));
+                    : execContext.getMyContext().persistentAccounts().fromUserId(updateUser(mbUser.actor));
             if (!myActor.isValid()) {
                 myActor = execContext.getMyAccount();
             }
@@ -485,7 +503,7 @@ public class DataInserter {
             }
             mbUser.userId = userId;
             if (mbUser.hasLatestMessage()) {
-                insertOrUpdateMsgInner(mbUser.getLatestMessage(), lum, updateUsers);
+                updateMessage(mbUser.getLatestMessage(), false);
             }
             
         } catch (Exception e) {
@@ -495,16 +513,14 @@ public class DataInserter {
         return userId;
     }
 
-    public void downloadOneMessageBy(String userOid, LatestUserMessages lum) throws ConnectionException {
-        List<MbActivity> messages = execContext.getMyAccount().getConnection().getTimeline(
+    public void downloadOneMessageBy(String userOid) throws ConnectionException {
+        List<MbActivity> activities = execContext.getConnection().getTimeline(
                 TimelineType.USER.getConnectionApiRoutine(), TimelinePosition.EMPTY,
                 TimelinePosition.EMPTY, 1, userOid);
-        for (MbActivity item : messages) {
-            if (item.getObjectType() == MbObjectType.MESSAGE) {
-                insertOrUpdateMsg(item.getMessage(), lum);
-                break;
-            }
+        for (MbActivity item : activities) {
+            onActivity(item, false);
         }
+        saveLum();
     }
 
 }

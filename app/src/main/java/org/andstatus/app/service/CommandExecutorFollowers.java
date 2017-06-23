@@ -20,7 +20,7 @@ import android.text.TextUtils;
 
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.data.DataInserter;
+import org.andstatus.app.data.DataUpdater;
 import org.andstatus.app.data.FriendshipValues;
 import org.andstatus.app.data.LatestUserMessages;
 import org.andstatus.app.data.MyQuery;
@@ -30,6 +30,8 @@ import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.database.UserTable;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.social.Connection;
+import org.andstatus.app.net.social.MbActivity;
+import org.andstatus.app.net.social.MbActivityType;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.timeline.TimelineSyncTracker;
 import org.andstatus.app.timeline.TimelineType;
@@ -206,8 +208,7 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
      * @return true if we need to interrupt process
      */
     private boolean updateNewUsersAndTheirLatestMessages(List<MbUser> usersNew) {
-        DataInserter di = new DataInserter(execContext);
-        LatestUserMessages lum = new LatestUserMessages();
+        DataUpdater di = new DataUpdater(execContext);
         boolean messagesLoaded = false;
         long count = 0;
         for (MbUser mbUser : usersNew) {
@@ -215,11 +216,13 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
             broadcastProgress(String.valueOf(count) + ". "
                     + execContext.getContext().getText(R.string.button_save)
                     + ": " + mbUser.getNamePreferablyWebFingerId(), true);
-            di.insertOrUpdateUser(mbUser, lum, true);
+            MbActivity activity = MbActivity.fromUser(mbUser.actor, MbActivityType.UPDATE, mbUser);
+            di.onActivity(activity, false);
             if (mbUser.hasLatestMessage()) {
                 messagesLoaded = true;
             }
         }
+        di.saveLum();
         if (!messagesLoaded) {
             count = 0;
             for (MbUser mbUser : usersNew) {
@@ -228,7 +231,7 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
                     broadcastProgress(String.valueOf(count) + ". "
                             + execContext.getContext().getText(R.string.title_command_get_status)
                             + ": " + mbUser.getNamePreferablyWebFingerId(), true);
-                    di.downloadOneMessageBy(mbUser.oid, lum);
+                    di.downloadOneMessageBy(mbUser.oid);
                     execContext.getResult().incrementDownloadedCount();
                 } catch (ConnectionException e) {
                     long lastMsgId = MyQuery.userIdToLongColumnValue(UserTable.USER_MSG_ID,
@@ -244,7 +247,9 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
                                 + mbUser.getNamePreferablyWebFingerId(), e);
                     } else {
                         long sentDate = MyQuery.msgIdToLongColumnValue(MsgTable.SENT_DATE, lastMsgId);
+                        LatestUserMessages lum = new LatestUserMessages();
                         lum.onNewUserMsg(new UserMsg(mbUser.userId, lastMsgId, sentDate));
+                        lum.save();
                         MyLog.v(this, "Server didn't return User's message for "
                                         + mbUser.getNamePreferablyWebFingerId()
                                         + " found msg " + RelativeTime.
@@ -257,7 +262,6 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
                 }
             }
         }
-        lum.save();
         return false;
     }
 }

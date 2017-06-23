@@ -19,8 +19,7 @@ package org.andstatus.app.service;
 import android.text.TextUtils;
 
 import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.data.DataInserter;
-import org.andstatus.app.data.LatestUserMessages;
+import org.andstatus.app.data.DataUpdater;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.net.http.ConnectionException;
@@ -74,11 +73,9 @@ class TimelineDownloaderOther extends TimelineDownloader {
         int toDownload = downloadingLatest ? LATEST_MESSAGES_TO_DOWNLOAD_MAX :
                 (isSyncYounger() ? YOUNGER_MESSAGES_TO_DOWNLOAD_MAX : OLDER_MESSAGES_TO_DOWNLOAD_MAX);
         TimelinePosition previousPosition = syncTracker.getPreviousPosition();
-        LatestUserMessages latestUserMessages = new LatestUserMessages();
-
         syncTracker.onTimelineDownloaded();
 
-        DataInserter di = new DataInserter(execContext);
+        DataUpdater di = new DataUpdater(execContext);
         for (int loopCounter=0; loopCounter < 100; loopCounter++ ) {
             try {
                 int limit = execContext.getMyAccount().getConnection().fixedDownloadLimit(
@@ -99,19 +96,10 @@ class TimelineDownloaderOther extends TimelineDownloader {
                                 limit, userOid);
                         break;
                 }
-                for (MbActivity item : activities) {
+                for (MbActivity activity : activities) {
                     toDownload--;
-                    syncTracker.onNewMsg(item.getTimelinePosition(), item.getTimelineDate());
-                    switch (item.getObjectType()) {
-                        case MESSAGE:
-                            di.insertOrUpdateMsg(item.getMessage(), latestUserMessages);
-                            break;
-                        case USER:
-                            di.insertOrUpdateUser(item.getUser());
-                            break;
-                        default:
-                            break;
-                    }
+                    syncTracker.onNewMsg(activity.getTimelinePosition(), activity.getTimelineDate());
+                    di.onActivity(activity, false);
                 }
                 if (toDownload <= 0 || activities.isEmpty() || previousPosition.equals(syncTracker.getPreviousPosition())) {
                     break;
@@ -128,6 +116,6 @@ class TimelineDownloaderOther extends TimelineDownloader {
                 previousPosition = TimelinePosition.EMPTY;
             }
         }
-        latestUserMessages.save();
+        di.saveLum();
     }
 }

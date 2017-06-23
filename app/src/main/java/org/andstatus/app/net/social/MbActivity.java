@@ -20,25 +20,85 @@ import android.support.annotation.NonNull;
 
 /** Activity in a sense of Activity Streams https://www.w3.org/TR/activitystreams-core/ */
 public class MbActivity {
+    public static final MbActivity EMPTY = new MbActivity();
     private TimelinePosition timelinePosition = TimelinePosition.EMPTY;
     private long timelineDate = 0;
+
+    private MbUser actor = MbUser.EMPTY;
+    private MbActivityType activityType = MbActivityType.EMPTY;
 
     // Objects of the Activity may be of several types...
     private MbMessage mbMessage = MbMessage.EMPTY;
     private MbUser mbUser = MbUser.EMPTY;
+    private MbActivity mbActivity = MbActivity.EMPTY;
+
+    @NonNull
+    public static MbActivity fromMessage(@NonNull MbUser actor, @NonNull MbActivityType activityType,
+                                  @NonNull MbMessage message) {
+        MbActivity mbActivity = new MbActivity();
+        mbActivity.actor = actor;
+        mbActivity.setActivityType(activityType);
+        mbActivity.mbMessage = message;
+        return mbActivity;
+    }
+
+    @NonNull
+    public static MbActivity fromUser(@NonNull MbUser actor, @NonNull MbActivityType activityType,
+                                  @NonNull MbUser user) {
+        MbActivity mbActivity = new MbActivity();
+        mbActivity.actor = actor;
+        mbActivity.setActivityType(activityType);
+        mbActivity.mbUser = user;
+        return mbActivity;
+    }
+
+    @NonNull
+    public static MbActivity undo(@NonNull MbActivity activity) {
+        MbActivity mbActivity = new MbActivity();
+        mbActivity.actor = activity.getActor();
+        mbActivity.mbActivity = activity;
+        mbActivity.setActivityType(MbActivityType.UNDO);
+        return mbActivity;
+    }
+
+    @NonNull
+    public MbUser getActor() {
+        if (!actor.isEmpty()) {
+            return actor;
+        }
+        switch (getObjectType()) {
+            case MESSAGE:
+                return mbMessage.getActor();
+            case USER:
+                return mbUser.actor;
+            default:
+                return MbUser.EMPTY;
+        }
+    }
+
+    @NonNull
+    public MbActivityType getActivityType() {
+        return activityType;
+    }
+
+    public void setActivityType(@NonNull MbActivityType activityType) {
+        this.activityType = activityType;
+    }
 
     public MbObjectType getObjectType() {
         if (!mbMessage.isEmpty()) {
             return MbObjectType.MESSAGE;
         } else if (!mbUser.isEmpty()) {
             return MbObjectType.USER;
+        } else if (!mbActivity.isEmpty()) {
+            return MbObjectType.ACTIVITY;
         } else {
             return MbObjectType.EMPTY;
         }
     }
 
     public boolean isEmpty() {
-        return getObjectType() == MbObjectType.EMPTY;
+        return activityType == MbActivityType.EMPTY || getObjectType() == MbObjectType.EMPTY;
     }
 
     public TimelinePosition getTimelinePosition() {
@@ -73,5 +133,10 @@ public class MbActivity {
 
     public void setUser(MbUser mbUser) {
         this.mbUser = mbUser == null ? MbUser.EMPTY : mbUser;
+    }
+
+    @NonNull
+    public MbActivity getActivity() {
+        return mbActivity;
     }
 }

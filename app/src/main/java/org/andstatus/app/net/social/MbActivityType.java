@@ -22,10 +22,12 @@ package org.andstatus.app.net.social;
  * and ActivityPub, see https://www.w3.org/TR/activitypub/#announce-activity-inbox
  */
 public enum MbActivityType {
-    ANNOUNCE,  // know also as Repost, Retweet, Boost...
+    ANNOUNCE,  // known also as Repost, Retweet, Boost...
     CREATE,
+    DELETE,
     FOLLOW,
     LIKE,
     UPDATE,
-    UNDO    // e.g. "undo" previous "like" action
+    UNDO,    // e.g. "undo" previous "like" action
+    EMPTY
 }

@@ -20,12 +20,12 @@ import android.support.test.InstrumentationRegistry;
 
 import org.andstatus.app.account.AccountDataReaderEmpty;
 import org.andstatus.app.account.AccountName;
+import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.data.DataInserter;
+import org.andstatus.app.data.DataUpdater;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyContentType;
-import org.andstatus.app.context.DemoData;
 import org.andstatus.app.net.http.HttpConnectionMock;
 import org.andstatus.app.net.http.OAuthClientKeys;
 import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
@@ -189,8 +189,8 @@ public class ConnectionTwitterTest {
         CommandExecutionContext executionContext = new CommandExecutionContext(
                 CommandData.newAccountCommand(CommandEnum.GET_STATUS,
                         DemoData.getMyAccount(connectionData.getAccountName().toString())));
-        DataInserter di = new DataInserter(executionContext);
-        long messageId = di.insertOrUpdateMsg(message);
+        DataUpdater di = new DataUpdater(executionContext);
+        long messageId = di.onActivity(message.getActor(), MbActivityType.UPDATE, message);
         assertTrue("Message added", messageId != 0);
     }
 

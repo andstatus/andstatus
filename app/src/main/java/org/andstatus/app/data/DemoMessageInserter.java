@@ -19,10 +19,11 @@ package org.andstatus.app.data;
 import android.text.TextUtils;
 
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.database.MsgOfUserTable;
 import org.andstatus.app.database.MsgTable;
-import org.andstatus.app.context.DemoData;
+import org.andstatus.app.net.social.MbActivityType;
 import org.andstatus.app.net.social.MbMessage;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.net.social.pumpio.ConnectionPumpio;
@@ -139,10 +140,10 @@ public class DemoMessageInserter {
     }
 
     public long addMessage(final MbMessage message) {
-        DataInserter di = new DataInserter(new CommandExecutionContext(
+        DataUpdater di = new DataUpdater(new CommandExecutionContext(
                         CommandData.newTimelineCommand(CommandEnum.EMPTY, ma,
                                 message.isPublic() ? TimelineType.PUBLIC : TimelineType.HOME)));
-        long messageId = di.insertOrUpdateMsg(message);
+        long messageId = di.onActivity(message.getActor(), MbActivityType.UPDATE, message);
         assertTrue( "Message added " + message.oid, messageId != 0);
 
         String permalink = origin.messagePermalink(messageId);

@@ -22,7 +22,7 @@ import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import org.andstatus.app.appwidget.AppWidgets;
-import org.andstatus.app.data.DataInserter;
+import org.andstatus.app.data.DataUpdater;
 import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MatchedUri;
@@ -33,9 +33,10 @@ import org.andstatus.app.database.MsgOfUserTable;
 import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.ConnectionException.StatusCode;
+import org.andstatus.app.net.social.MbActivity;
+import org.andstatus.app.net.social.MbActivityType;
 import org.andstatus.app.net.social.MbMessage;
 import org.andstatus.app.net.social.MbRateLimitStatus;
-import org.andstatus.app.net.social.MbActivity;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
@@ -103,18 +104,10 @@ class CommandExecutorOther extends CommandExecutorStrategy{
             logExecutionError(true, method + " empty conversationId " + MyQuery.msgInfoForLog(msgId));
         } else {
             try {
-                List<MbActivity> messages = execContext.getMyAccount().getConnection().getConversation(conversationOid);
-                if (!messages.isEmpty()) {
-                    DataInserter di = new DataInserter(execContext);
-                    for (MbActivity item : messages) {
-                        switch (item.getObjectType()) {
-                            case MESSAGE:
-                                di.insertOrUpdateMsg(item.getMessage());
-                                break;
-                            default:
-                                break;
-                        }
-                    }
+                List<MbActivity> activities = execContext.getMyAccount().getConnection().getConversation(conversationOid);
+                DataUpdater di = new DataUpdater(execContext);
+                for (MbActivity mbActivity : activities) {
+                    di.onActivity(mbActivity);
                 }
             } catch (ConnectionException e) {
                 if (e.getStatusCode() == StatusCode.NOT_FOUND) {
@@ -142,8 +135,8 @@ class CommandExecutorOther extends CommandExecutorStrategy{
             msgLog += ", invalid user IDs";
             logExecutionError(true, msgLog + userInfoLogged(userId));
         }
-        if (noErrors()) {
-            new DataInserter(execContext).insertOrUpdateUser(user);
+        if (noErrors() && user != null) {
+            new DataUpdater(execContext).onActivity(user.actor, MbActivityType.UPDATE, user);
         }
         MyLog.d(this, (msgLog + (noErrors() ? " succeeded" : " failed") ));
     }
@@ -196,7 +189,12 @@ class CommandExecutorOther extends CommandExecutorStrategy{
 
             if (noErrors()) {
                 // Please note that the Favorited message may be NOT in the User's Home timeline!
-                new DataInserter(execContext).insertOrUpdateMsg(message);
+                MbActivity mbActivity = MbActivity.fromMessage(message.getActor(), MbActivityType.LIKE, message);
+                if (create) {
+                    new DataUpdater(execContext).onActivity(mbActivity);
+                } else {
+                    new DataUpdater(execContext).onActivity(MbActivity.undo(mbActivity));
+                }
             }
         }
         MyLog.d(this, method + (noErrors() ? " succeeded" : " failed"));
@@ -240,7 +238,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 }
             }
             if (noErrors()) {
-                new DataInserter(execContext).insertOrUpdateUser(user);
+                new DataUpdater(execContext).onActivity(user.actor, MbActivityType.UPDATE, user);
             }
         }
         MyLog.d(this, method + (noErrors() ? " succeeded" : " failed"));
@@ -345,7 +343,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                     logExecutionError(false, "Received Message is empty, " + MyQuery.msgInfoForLog(msgId));
                 } else {
                     try {
-                        new DataInserter(execContext).insertOrUpdateMsg(message);
+                        new DataUpdater(execContext).onActivity(message.getActor(), MbActivityType.UPDATE, message);
                     } catch (Exception e) {
                         logExecutionError(false, "Error while saving to the local cache," + MyQuery.msgInfoForLog(msgId) +
                         ", " + e.getMessage());
@@ -403,7 +401,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
             // The message was sent successfully, so now update unsent message
             // New User's message should be put into the user's Home timeline.
             message.msgId = msgId;
-            new DataInserter(execContext).insertOrUpdateMsg(message);
+            new DataUpdater(execContext).onActivity(message.getActor(), MbActivityType.UPDATE, message);
             execContext.getResult().setItemId(msgId);
         }
         MyLog.d(this, method + (noErrors() ? " succeeded" : " failed"));
@@ -418,7 +416,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
     private void reblog(long rebloggedId) {
         final String method = "Reblog";
         String oid = getMsgOid(method, rebloggedId, true);
-        MbMessage message = null;
+        MbMessage message = MbMessage.EMPTY;
         if (noErrors()) {
             try {
                 message = execContext.getMyAccount().getConnection().postReblog(oid);
@@ -430,7 +428,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         if (noErrors()) {
             // The tweet was sent successfully
             // Reblog should be put into the user's Home timeline!
-            new DataInserter(execContext).insertOrUpdateMsg(message);
+            new DataUpdater(execContext).onActivity(message.getActor(), MbActivityType.ANNOUNCE, message);
         }
         MyLog.d(this, method + (noErrors() ? " succeeded" : " failed"));
     }

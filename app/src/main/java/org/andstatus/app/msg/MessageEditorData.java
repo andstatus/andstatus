@@ -26,13 +26,14 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.UserInTimeline;
 import org.andstatus.app.data.AttachedImageFile;
-import org.andstatus.app.data.DataInserter;
+import org.andstatus.app.data.DataUpdater;
 import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.database.MsgTable;
+import org.andstatus.app.net.social.MbActivityType;
 import org.andstatus.app.net.social.MbAttachment;
 import org.andstatus.app.net.social.MbMessage;
 import org.andstatus.app.net.social.MbUser;
@@ -203,8 +204,8 @@ public class MessageEditorData {
             message.attachments.add(
                     MbAttachment.fromUriAndContentType(mediaUri, MyContentType.IMAGE));
         }
-        DataInserter di = new DataInserter(getMyAccount());
-        setMsgId(di.insertOrUpdateMsg(message));
+        DataUpdater di = new DataUpdater(getMyAccount());
+        setMsgId(di.onActivity(message.getActor(), MbActivityType.UPDATE, message));
     }
 
     MyAccount getMyAccount() {

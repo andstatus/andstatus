@@ -18,7 +18,7 @@ package org.andstatus.app.service;
 
 import android.database.sqlite.SQLiteConstraintException;
 
-import org.andstatus.app.data.DataInserter;
+import org.andstatus.app.data.DataUpdater;
 import org.andstatus.app.data.DataPruner;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.social.Connection;
@@ -29,7 +29,7 @@ import org.andstatus.app.util.MyLog;
 /**
  * Downloads ("loads") different types of Timelines 
  *  (i.e. Tweets and Messages) from the Internet (e.g. from twitter.com server).
- * Then Store them into local database using {@link DataInserter}
+ * Then Store them into local database using {@link DataUpdater}
  * 
  * @author yvolk@yurivolkov.com
  */
