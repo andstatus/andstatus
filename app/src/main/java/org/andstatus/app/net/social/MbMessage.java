@@ -103,6 +103,19 @@ public class MbMessage {
         this.myUserOid = myUserOid;
     }
 
+    @NonNull
+    public MbActivity update(@NonNull MbUser actor) {
+        return act(actor, MbActivityType.UPDATE);
+    }
+
+    @NonNull
+    public MbActivity act(@NonNull MbUser actor, @NonNull MbActivityType activityType) {
+        MbActivity mbActivity = MbActivity.from(activityType);
+        mbActivity.setActor(actor);
+        mbActivity.setMessage(this);
+        return mbActivity;
+    }
+
     public boolean isPublic() {
         return isPublic;
     }

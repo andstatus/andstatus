@@ -136,7 +136,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
             logExecutionError(true, msgLog + userInfoLogged(userId));
         }
         if (noErrors() && user != null) {
-            new DataUpdater(execContext).onActivity(user.actor, MbActivityType.UPDATE, user);
+            new DataUpdater(execContext).onActivity(user.update(user.actor));
         }
         MyLog.d(this, (msgLog + (noErrors() ? " succeeded" : " failed") ));
     }
@@ -189,7 +189,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
 
             if (noErrors()) {
                 // Please note that the Favorited message may be NOT in the User's Home timeline!
-                MbActivity mbActivity = MbActivity.fromMessage(message.getActor(), MbActivityType.LIKE, message);
+                MbActivity mbActivity = message.act(message.getActor(), MbActivityType.LIKE);
                 if (create) {
                     new DataUpdater(execContext).onActivity(mbActivity);
                 } else {
@@ -238,7 +238,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 }
             }
             if (noErrors()) {
-                new DataUpdater(execContext).onActivity(user.actor, MbActivityType.UPDATE, user);
+                new DataUpdater(execContext).onActivity(user.update(user.actor));
             }
         }
         MyLog.d(this, method + (noErrors() ? " succeeded" : " failed"));
@@ -343,7 +343,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                     logExecutionError(false, "Received Message is empty, " + MyQuery.msgInfoForLog(msgId));
                 } else {
                     try {
-                        new DataUpdater(execContext).onActivity(message.getActor(), MbActivityType.UPDATE, message);
+                        new DataUpdater(execContext).onActivity(message.update(message.getActor()));
                     } catch (Exception e) {
                         logExecutionError(false, "Error while saving to the local cache," + MyQuery.msgInfoForLog(msgId) +
                         ", " + e.getMessage());
@@ -401,7 +401,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
             // The message was sent successfully, so now update unsent message
             // New User's message should be put into the user's Home timeline.
             message.msgId = msgId;
-            new DataUpdater(execContext).onActivity(message.getActor(), MbActivityType.UPDATE, message);
+            new DataUpdater(execContext).onActivity(message.update(message.getActor()));
             execContext.getResult().setItemId(msgId);
         }
         MyLog.d(this, method + (noErrors() ? " succeeded" : " failed"));
@@ -428,7 +428,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         if (noErrors()) {
             // The tweet was sent successfully
             // Reblog should be put into the user's Home timeline!
-            new DataUpdater(execContext).onActivity(message.getActor(), MbActivityType.ANNOUNCE, message);
+            new DataUpdater(execContext).onActivity(message.act(message.getActor(), MbActivityType.ANNOUNCE));
         }
         MyLog.d(this, method + (noErrors() ? " succeeded" : " failed"));
     }

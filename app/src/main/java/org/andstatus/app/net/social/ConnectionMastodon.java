@@ -130,34 +130,51 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
     @Override
     protected MbActivity timelineItemFromJson(JSONObject timelineItem) throws ConnectionException {
         if (isNotification(timelineItem)) {
-            MbActivity item = new MbActivity();
-            item.setTimelinePosition(timelineItem.optString("id"));
-            item.setTimelineDate(dateFromJson(timelineItem, "created_at"));
+            MbActivity activity = MbActivity.from(getType(timelineItem));
+            activity.setTimelinePosition(timelineItem.optString("id"));
+            activity.setTimelineDate(dateFromJson(timelineItem, "created_at"));
             MbUser actor = userFromJson(timelineItem.optJSONObject("account"));
-            item.setMessage(messageFromJson(timelineItem.optJSONObject("status")));
-            item.getMessage().setActor(actor);
-            item.getMessage().sentDate = item.getTimelineDate();
+            activity.setMessage(messageFromJson(timelineItem.optJSONObject("status")));
+            activity.getMessage().setActor(actor);
+            activity.getMessage().sentDate = activity.getTimelineDate();
 
-            switch (timelineItem.optString("type")) {
-                case "favourite":
-                    item.getMessage().setFavorited(TriState.TRUE);
+            switch (activity.type) {
+                case LIKE:
+                    activity.getMessage().setFavorited(TriState.TRUE);
                     break;
-                case "reblog":
-                    item.getMessage().setReblogOid(timelineItem.optString("id"));
+                case ANNOUNCE:
+                    activity.getMessage().setReblogOid(timelineItem.optString("id"));
                     break;
-                case "follow":
-                    item.setUser(MbUser.fromOriginAndUserOid(data.getOriginId(), data.getAccountUserOid()));
-                    item.getUser().actor = actor;
-                    item.getUser().followedByActor = TriState.TRUE;
+                case FOLLOW:
+                    activity.setUser(MbUser.fromOriginAndUserOid(data.getOriginId(), data.getAccountUserOid()));
+                    activity.getUser().actor = actor;
+                    activity.getUser().followedByActor = TriState.TRUE;
                     break;
                 default:
                     break;
             }
-            return item;
+            return activity;
         } else {
             return super.timelineItemFromJson(timelineItem);
         }
 
+    }
+
+    @NonNull
+    protected MbActivityType getType(JSONObject timelineItem) throws ConnectionException {
+        if (isNotification(timelineItem)) {
+            switch (timelineItem.optString("type")) {
+                case "favourite":
+                    return MbActivityType.LIKE;
+                case "reblog":
+                    return MbActivityType.ANNOUNCE;
+                case "follow":
+                    return MbActivityType.FOLLOW;
+                default:
+                    return MbActivityType.EMPTY;
+            }
+        }
+        return MbActivityType.UPDATE;
     }
 
     private boolean isNotification(JSONObject activity) {

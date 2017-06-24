@@ -42,7 +42,6 @@ import org.andstatus.app.net.http.ConnectionException.StatusCode;
 import org.andstatus.app.net.http.OAuthService;
 import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
-import org.andstatus.app.net.social.MbActivityType;
 import org.andstatus.app.net.social.MbConfig;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.origin.Origin;
@@ -423,7 +422,7 @@ public final class MyAccount implements Comparable<MyAccount> {
                     myAccount.userId = myAccount.accountData.getDataLong(KEY_USER_ID, myAccount.userId);
                 } else {
                     DataUpdater di = new DataUpdater(myAccount);
-                    myAccount.userId = di.onActivity(user.actor, MbActivityType.UPDATE, user);
+                    myAccount.userId = di.onActivity(user.update(user.actor));
                 }
             }
             if (ok && !isPersistent()) {
@@ -494,9 +493,9 @@ public final class MyAccount implements Comparable<MyAccount> {
                 try {
                     // Construct "User" from available account info
                     // We need this User in order to be able to link Messages to him
-                    MbUser mbUser = MbUser.fromOriginAndUserOid(myAccount.getOriginId(), myAccount.userOid);
-                    mbUser.setUserName(myAccount.getUsername());
-                    myAccount.userId = di.onActivity(mbUser.actor, MbActivityType.UPDATE, mbUser);
+                    MbUser user = MbUser.fromOriginAndUserOid(myAccount.getOriginId(), myAccount.userOid);
+                    user.setUserName(myAccount.getUsername());
+                    myAccount.userId = di.onActivity(user.update(user.actor));
                 } catch (Exception e) {
                     MyLog.e(TAG, "Construct user", e);
                 }

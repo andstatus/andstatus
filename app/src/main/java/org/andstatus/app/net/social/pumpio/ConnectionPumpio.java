@@ -29,6 +29,7 @@ import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.net.http.HttpConnectionData;
 import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.net.social.MbActivity;
+import org.andstatus.app.net.social.MbActivityType;
 import org.andstatus.app.net.social.MbAttachment;
 import org.andstatus.app.net.social.MbMessage;
 import org.andstatus.app.net.social.MbRateLimitStatus;
@@ -361,7 +362,7 @@ public class ConnectionPumpio extends Connection {
     }
 
     private MbActivity timelineItemFromJson(JSONObject activity) throws ConnectionException {
-        MbActivity item = new MbActivity();
+        MbActivity item = MbActivity.from(MbActivityType.UPDATE);
         if (ObjectType.ACTIVITY.isMyType(activity)) {
             try {
                 item.setTimelinePosition(activity.optString("id"));

@@ -33,7 +33,6 @@ import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.database.MsgTable;
-import org.andstatus.app.net.social.MbActivityType;
 import org.andstatus.app.net.social.MbAttachment;
 import org.andstatus.app.net.social.MbMessage;
 import org.andstatus.app.net.social.MbUser;
@@ -205,7 +204,7 @@ public class MessageEditorData {
                     MbAttachment.fromUriAndContentType(mediaUri, MyContentType.IMAGE));
         }
         DataUpdater di = new DataUpdater(getMyAccount());
-        setMsgId(di.onActivity(message.getActor(), MbActivityType.UPDATE, message));
+        setMsgId(di.onActivity(message.update(message.getActor())));
     }
 
     MyAccount getMyAccount() {

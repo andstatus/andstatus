@@ -31,7 +31,6 @@ import org.andstatus.app.database.UserTable;
 import org.andstatus.app.msg.KeywordsFilter;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.social.MbActivity;
-import org.andstatus.app.net.social.MbActivityType;
 import org.andstatus.app.net.social.MbAttachment;
 import org.andstatus.app.net.social.MbMessage;
 import org.andstatus.app.net.social.MbUser;
@@ -72,20 +71,8 @@ public class DataUpdater {
         this.execContext = execContext;
     }
 
-    public long onActivity(MbUser actor, MbActivityType type, MbMessage message) {
-        return onActivity(MbActivity.fromMessage(actor, type, message), true);
-    }
-
-    public long onActivity(MbUser actor, MbActivityType type, MbUser user) {
-        return onActivity(MbActivity.fromUser(actor, type, user), true);
-    }
-
     public long onActivity(MbActivity mbActivity) {
         return onActivity(mbActivity, true);
-    }
-
-    public void saveLum() {
-        lum.save();
     }
 
     /**
@@ -110,6 +97,10 @@ public class DataUpdater {
             saveLum();
         }
         return id;
+    }
+
+    public void saveLum() {
+        lum.save();
     }
 
     private long updateMessage(@NonNull MbMessage message, boolean updateUsers) {

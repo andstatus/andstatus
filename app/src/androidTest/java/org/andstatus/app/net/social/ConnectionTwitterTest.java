@@ -190,7 +190,7 @@ public class ConnectionTwitterTest {
                 CommandData.newAccountCommand(CommandEnum.GET_STATUS,
                         DemoData.getMyAccount(connectionData.getAccountName().toString())));
         DataUpdater di = new DataUpdater(executionContext);
-        long messageId = di.onActivity(message.getActor(), MbActivityType.UPDATE, message);
+        long messageId = di.onActivity(message.update(message.getActor()));
         assertTrue("Message added", messageId != 0);
     }
 

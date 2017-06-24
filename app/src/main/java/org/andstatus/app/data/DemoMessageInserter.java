@@ -23,7 +23,6 @@ import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.database.MsgOfUserTable;
 import org.andstatus.app.database.MsgTable;
-import org.andstatus.app.net.social.MbActivityType;
 import org.andstatus.app.net.social.MbMessage;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.net.social.pumpio.ConnectionPumpio;
@@ -143,7 +142,7 @@ public class DemoMessageInserter {
         DataUpdater di = new DataUpdater(new CommandExecutionContext(
                         CommandData.newTimelineCommand(CommandEnum.EMPTY, ma,
                                 message.isPublic() ? TimelineType.PUBLIC : TimelineType.HOME)));
-        long messageId = di.onActivity(message.getActor(), MbActivityType.UPDATE, message);
+        long messageId = di.onActivity(message.update(message.getActor()));
         assertTrue( "Message added " + message.oid, messageId != 0);
 
         String permalink = origin.messagePermalink(messageId);

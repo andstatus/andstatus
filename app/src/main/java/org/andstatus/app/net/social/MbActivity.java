@@ -20,45 +20,32 @@ import android.support.annotation.NonNull;
 
 /** Activity in a sense of Activity Streams https://www.w3.org/TR/activitystreams-core/ */
 public class MbActivity {
-    public static final MbActivity EMPTY = new MbActivity();
+    public static final MbActivity EMPTY = from(MbActivityType.EMPTY);
     private TimelinePosition timelinePosition = TimelinePosition.EMPTY;
     private long timelineDate = 0;
 
     private MbUser actor = MbUser.EMPTY;
-    private MbActivityType activityType = MbActivityType.EMPTY;
+    public final MbActivityType type;
 
     // Objects of the Activity may be of several types...
     private MbMessage mbMessage = MbMessage.EMPTY;
     private MbUser mbUser = MbUser.EMPTY;
     private MbActivity mbActivity = MbActivity.EMPTY;
 
-    @NonNull
-    public static MbActivity fromMessage(@NonNull MbUser actor, @NonNull MbActivityType activityType,
-                                  @NonNull MbMessage message) {
-        MbActivity mbActivity = new MbActivity();
-        mbActivity.actor = actor;
-        mbActivity.setActivityType(activityType);
-        mbActivity.mbMessage = message;
-        return mbActivity;
+    public static MbActivity from(MbActivityType type) {
+        return new MbActivity(type);
     }
 
-    @NonNull
-    public static MbActivity fromUser(@NonNull MbUser actor, @NonNull MbActivityType activityType,
-                                  @NonNull MbUser user) {
-        MbActivity mbActivity = new MbActivity();
-        mbActivity.actor = actor;
-        mbActivity.setActivityType(activityType);
-        mbActivity.mbUser = user;
-        return mbActivity;
+    private MbActivity(MbActivityType type) {
+        this.type = type;
     }
 
     @NonNull
     public static MbActivity undo(@NonNull MbActivity activity) {
-        MbActivity mbActivity = new MbActivity();
-        mbActivity.actor = activity.getActor();
-        mbActivity.mbActivity = activity;
-        mbActivity.setActivityType(MbActivityType.UNDO);
-        return mbActivity;
+        MbActivity undoActivity = from(MbActivityType.UNDO);
+        undoActivity.actor = activity.getActor();
+        undoActivity.mbActivity = activity;
+        return undoActivity;
     }
 
     @NonNull
@@ -76,15 +63,11 @@ public class MbActivity {
         }
     }
 
+    public void setActor(MbUser actor) {
+        this.actor = actor;
+    }
+
     @NonNull
-    public MbActivityType getActivityType() {
-        return activityType;
-    }
-
-    public void setActivityType(@NonNull MbActivityType activityType) {
-        this.activityType = activityType;
-    }
-
     public MbObjectType getObjectType() {
         if (!mbMessage.isEmpty()) {
             return MbObjectType.MESSAGE;
@@ -98,7 +81,7 @@ public class MbActivity {
     }
 
     public boolean isEmpty() {
-        return activityType == MbActivityType.EMPTY || getObjectType() == MbObjectType.EMPTY;
+        return type == MbActivityType.EMPTY || getObjectType() == MbObjectType.EMPTY;
     }
 
     public TimelinePosition getTimelinePosition() {

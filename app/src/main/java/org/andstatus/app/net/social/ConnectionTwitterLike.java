@@ -233,7 +233,7 @@ public abstract class ConnectionTwitterLike extends Connection {
     }
 
     protected MbActivity timelineItemFromJson(JSONObject jso) throws ConnectionException {
-        MbActivity item = new MbActivity();
+        MbActivity item = MbActivity.from(MbActivityType.UPDATE);
         item.setMessage(messageFromJson(jso));
         item.setTimelineDate(item.getMessage().sentDate);
         item.setTimelinePosition(item.getMessage().oid);

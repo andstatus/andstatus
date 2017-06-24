@@ -31,7 +31,6 @@ import org.andstatus.app.database.UserTable;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.net.social.MbActivity;
-import org.andstatus.app.net.social.MbActivityType;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.timeline.TimelineSyncTracker;
 import org.andstatus.app.timeline.TimelineType;
@@ -211,14 +210,12 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
         DataUpdater di = new DataUpdater(execContext);
         boolean messagesLoaded = false;
         long count = 0;
-        for (MbUser mbUser : usersNew) {
+        for (MbUser user : usersNew) {
             count++;
-            broadcastProgress(String.valueOf(count) + ". "
-                    + execContext.getContext().getText(R.string.button_save)
-                    + ": " + mbUser.getNamePreferablyWebFingerId(), true);
-            MbActivity activity = MbActivity.fromUser(mbUser.actor, MbActivityType.UPDATE, mbUser);
-            di.onActivity(activity, false);
-            if (mbUser.hasLatestMessage()) {
+            broadcastProgress(String.valueOf(count) + ". " + execContext.getContext().getText(R.string.button_save)
+                    + ": " + user.getNamePreferablyWebFingerId(), true);
+            di.onActivity(user.update(user.actor), false);
+            if (user.hasLatestMessage()) {
                 messagesLoaded = true;
             }
         }

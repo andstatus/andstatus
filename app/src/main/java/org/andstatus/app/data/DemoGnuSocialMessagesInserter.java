@@ -22,7 +22,6 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.database.MsgTable;
-import org.andstatus.app.net.social.MbActivityType;
 import org.andstatus.app.net.social.MbMessage;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.origin.Origin;
@@ -131,7 +130,7 @@ public class DemoGnuSocialMessagesInserter {
     private long addMessage(MbMessage message) {
         DataUpdater di = new DataUpdater(new CommandExecutionContext(
                 CommandData.newOriginCommand(CommandEnum.EMPTY, origin)));
-        long messageId = di.onActivity(message.getActor(), MbActivityType.UPDATE, message);
+        long messageId = di.onActivity(message.update(message.getActor()));
         assertTrue( "Message added " + message.oid, messageId != 0);
         assertEquals("Conversation Oid", conversationOid, MyQuery.msgIdToConversationOid(messageId));
         return messageId;

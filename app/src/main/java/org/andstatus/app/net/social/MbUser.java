@@ -17,6 +17,7 @@
 package org.andstatus.app.net.social;
 
 import android.net.Uri;
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import org.andstatus.app.context.MyContext;
@@ -86,6 +87,19 @@ public class MbUser implements Comparable<MbUser> {
 
     private MbUser(long originId) {
         this.originId = originId;
+    }
+
+    @NonNull
+    public MbActivity update(@NonNull MbUser actor) {
+        return act(actor, MbActivityType.UPDATE);
+    }
+
+    @NonNull
+    public MbActivity act(@NonNull MbUser actor, @NonNull MbActivityType activityType) {
+        MbActivity mbActivity = MbActivity.from(activityType);
+        mbActivity.setActor(actor);
+        mbActivity.setUser(this);
+        return mbActivity;
     }
 
     public boolean nonEmpty() {
