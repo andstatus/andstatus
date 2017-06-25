@@ -16,12 +16,13 @@
 
 package org.andstatus.app.service;
 
+import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.context.DemoData;
 import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
+import org.andstatus.app.util.TriState;
 import org.junit.Test;
 
 import java.util.Queue;
@@ -46,7 +47,7 @@ public class MyServiceTest2 extends MyServiceTest {
         long endCount = mService.executionEndCount;
 
         mService.sendListenedToCommand();
-        assertTrue("First command didn't start executing", mService.waitForCommandExecutionStarted(startCount));
+        mService.assertCommandExecutionStarted("First command didn't start", startCount, TriState.TRUE);
         assertTrue("First command didn't end executing", mService.waitForCommandExecutionEnded(endCount));
         assertEquals(cd1.toString() + " " + mService.httpConnectionMock.toString(),
                 1, mService.httpConnectionMock.getRequestsCounter());
@@ -61,7 +62,7 @@ public class MyServiceTest2 extends MyServiceTest {
 
         startCount = mService.executionStartCount;
         mService.sendListenedToCommand();
-        assertFalse("Second command started execution", mService.waitForCommandExecutionStarted(startCount));
+        mService.assertCommandExecutionStarted("Second command started execution", startCount, TriState.FALSE);
         MyLog.i(this, method + "; After waiting for the second command");
         assertTrue("Service stopped", mService.waitForServiceStopped(false));
         MyLog.i(this, method + "; Service stopped after the second command");
@@ -84,8 +85,7 @@ public class MyServiceTest2 extends MyServiceTest {
         endCount = mService.executionEndCount;
         mService.sendListenedToCommand();
 
-        assertTrue("Foreground command started executing",
-                mService.waitForCommandExecutionStarted(startCount));
+        mService.assertCommandExecutionStarted("Foreground command", startCount, TriState.TRUE);
         assertTrue("Foreground command ended executing", mService.waitForCommandExecutionEnded(endCount));
         assertTrue("Service stopped", mService.waitForServiceStopped(false));
 

@@ -44,7 +44,7 @@ public class HtmlContentInserter {
     private void mySetup() {
         origin = MyContextHolder.get().persistentOrigins().fromName(DemoData.CONVERSATION_ORIGIN_NAME);
         assertTrue(DemoData.CONVERSATION_ORIGIN_NAME + " exists", origin.getOriginType() != OriginType.UNKNOWN);
-        ma = MyContextHolder.get().persistentAccounts().fromAccountName(DemoData.CONVERSATION_ACCOUNT_NAME);
+        ma = DemoData.getMyAccount(DemoData.CONVERSATION_ACCOUNT_NAME);
         assertTrue(DemoData.CONVERSATION_ACCOUNT_NAME + " exists", ma.isValid());
     }
     
@@ -99,7 +99,7 @@ public class HtmlContentInserter {
 		setHtmlContentAllowed(htmlContentAllowed);
         DemoMessageInserter mi = new DemoMessageInserter(ma);
         long msgId1 = mi.onActivity(mi.buildMessage(author, bodyString, null, messageOid, DownloadStatus.LOADED)
-                .update());
+                .update(ma.toPartialUser()));
         String body = MyQuery.msgIdToStringColumnValue(MsgTable.BODY, msgId1);
         if (htmlContentAllowed) {
             assertEquals("HTML preserved", bodyString, body);

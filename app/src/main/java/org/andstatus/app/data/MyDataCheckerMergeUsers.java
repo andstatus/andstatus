@@ -113,7 +113,7 @@ public class MyDataCheckerMergeUsers {
 
     @NonNull
     private MbActivity whomToMerge(@NonNull MbUser prev, @NonNull MbUser user) {
-        MbActivity activity = MbActivity.from(MbActivityType.UPDATE);
+        MbActivity activity = MbActivity.from(MbUser.EMPTY, MbActivityType.UPDATE);
         activity.setUser(user);
         MbUser mergeWith = prev;
         if (myContext.persistentAccounts().fromUserId(user.userId).isValid()) {

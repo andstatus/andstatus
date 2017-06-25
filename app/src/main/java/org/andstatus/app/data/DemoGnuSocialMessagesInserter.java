@@ -18,7 +18,6 @@ package org.andstatus.app.data;
 
 import android.support.annotation.Nullable;
 
-import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.database.MsgTable;
@@ -40,8 +39,7 @@ public class DemoGnuSocialMessagesInserter {
     private int iteration = 0;
     private String conversationOid = "";
 
-    private MbUser accountMbUser;
-    private MyAccount ma;
+    private MbUser accountUser;
     private Origin origin;
 
     public void insertData() {
@@ -53,10 +51,8 @@ public class DemoGnuSocialMessagesInserter {
         iteration = iterationCounter.incrementAndGet();
         conversationOid = Long.toString(MyLog.uniqueCurrentTimeMS());
         origin = MyContextHolder.get().persistentOrigins().fromName(DemoData.GNUSOCIAL_TEST_ORIGIN_NAME);
-        assertTrue(DemoData.GNUSOCIAL_TEST_ORIGIN_NAME + " exists", origin != null);
-        ma = MyContextHolder.get().persistentAccounts().fromAccountName(DemoData.GNUSOCIAL_TEST_ACCOUNT_NAME);
-        assertTrue(DemoData.GNUSOCIAL_TEST_ACCOUNT_NAME + " exists", ma.isValid());
-        accountMbUser = userFromOidAndAvatar(DemoData.GNUSOCIAL_TEST_ACCOUNT_USER_OID,
+        assertTrue(DemoData.GNUSOCIAL_TEST_ORIGIN_NAME + " exists", origin.isValid());
+        accountUser = userFromOidAndAvatar(DemoData.GNUSOCIAL_TEST_ACCOUNT_USER_OID,
                 DemoData.GNUSOCIAL_TEST_ACCOUNT_AVATAR_URL);
     }
     
@@ -106,7 +102,7 @@ public class DemoGnuSocialMessagesInserter {
         assertTrue("Message is " + (isPublic ? "public" : "private" )+ ": " + message.getBody(), (isPublic == ( storedPublic != 0)));
     }
 
-    private MbUser userFromOidAndAvatar(String userOid,@Nullable String avatarUrl) {
+    private MbUser userFromOidAndAvatar(String userOid, @Nullable String avatarUrl) {
         String userName = "user" + userOid;
         MbUser mbUser = MbUser.fromOriginAndUserOid(origin.getId(), userOid);
         mbUser.setUserName(userName);
@@ -118,7 +114,7 @@ public class DemoGnuSocialMessagesInserter {
     }
     
     private MbMessage buildMessage(MbUser author, String body, MbMessage inReplyToMessage, String messageOidIn) {
-        return new DemoMessageInserter(ma).buildMessage(author, body
+        return new DemoMessageInserter(accountUser).buildMessage(author, body
                         + (inReplyToMessage != null ? " it" + iteration : ""),
                 inReplyToMessage, messageOidIn, DownloadStatus.LOADED)
                 .setConversationOid(conversationOid);
@@ -127,7 +123,7 @@ public class DemoGnuSocialMessagesInserter {
     private long addMessage(MbMessage message) {
         DataUpdater di = new DataUpdater(new CommandExecutionContext(
                 CommandData.newOriginCommand(CommandEnum.EMPTY, origin)));
-        long messageId = di.onActivity(message.update());
+        long messageId = di.onActivity(message.update(accountUser));
         assertTrue( "Message added " + message.oid, messageId != 0);
         assertEquals("Conversation Oid", conversationOid, MyQuery.msgIdToConversationOid(messageId));
         return messageId;

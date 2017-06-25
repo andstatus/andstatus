@@ -421,7 +421,7 @@ public final class MyAccount implements Comparable<MyAccount> {
                     myAccount.userId = myAccount.accountData.getDataLong(KEY_USER_ID, myAccount.userId);
                 } else {
                     DataUpdater di = new DataUpdater(myAccount);
-                    myAccount.userId = di.onActivity(user.update());
+                    myAccount.userId = di.onActivity(user.update(myAccount.toPartialUser()));
                 }
             }
             if (ok && !isPersistent()) {
@@ -493,7 +493,7 @@ public final class MyAccount implements Comparable<MyAccount> {
                     // Construct "User" from available account info
                     MbUser user = myAccount.toPartialUser();
                     user.setUserName(myAccount.getUsername());
-                    myAccount.userId = di.onActivity(user.update());
+                    myAccount.userId = di.onActivity(user.update(myAccount.toPartialUser()));
                 } catch (Exception e) {
                     MyLog.e(TAG, "Construct user", e);
                 }

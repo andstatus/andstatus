@@ -20,9 +20,10 @@ import android.text.TextUtils;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.DemoData;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.net.social.ConnectionTwitterLike;
+import org.andstatus.app.net.social.MbActivity;
+import org.andstatus.app.net.social.MbActivityType;
 import org.andstatus.app.net.social.MbAttachment;
 import org.andstatus.app.net.social.MbMessage;
 import org.andstatus.app.net.social.MbUser;
@@ -45,6 +46,7 @@ public class DemoConversationInserter {
 
     private int iteration = 0;
     private MyAccount ma;
+    private MbUser accountUser = MbUser.EMPTY;
     private String bodySuffix = "";
 
     public static Map<String, MbUser> getUsers() {
@@ -58,8 +60,9 @@ public class DemoConversationInserter {
             bodySuffix = " " + bodySuffixIn;
         }
         iteration = iterationCounter.incrementAndGet();
-        ma = MyContextHolder.get().persistentAccounts().fromAccountName(DemoData.CONVERSATION_ACCOUNT_NAME);
+        ma = DemoData.getMyAccount(DemoData.CONVERSATION_ACCOUNT_NAME);
         assertTrue(DemoData.CONVERSATION_ACCOUNT_NAME + " exists", ma.isValid());
+        accountUser = ma.toPartialUser();
         insertAndTestConversation();
     }
 
@@ -86,7 +89,7 @@ public class DemoConversationInserter {
         MbMessage reply1 = buildMessage(author3, "Reply 1 to selected", selected, null);
         author3.followedByActor = TriState.TRUE;
 
-        MbMessage reply1Copy = MbMessage.fromOriginAndOid(reply1.originId, reply1.myUserOid, reply1.oid,
+        MbMessage reply1Copy = MbMessage.fromOriginAndOid(reply1.originId, accountUser.oid, reply1.oid,
                 DownloadStatus.UNKNOWN);
         MbMessage reply12 = buildMessage(author2, "Reply 12 to 1 in Replies", reply1Copy, null);
         reply1.replies.add(reply12);
@@ -119,7 +122,7 @@ public class DemoConversationInserter {
         MbUser reblogger1 = buildUserFromOid("acct:reblogger@identi.ca");
         reblogger1.avatarUrl = "http://www.avatarsdb.com/avatars/cow_face.jpg";
         MbMessage reblog1 = buildMessage(reblogger1, BODY_OF_MENTIONS_MESSAGE, null, null);
-        DemoMessageInserter.onActivity(ma, ConnectionTwitterLike.makeReblog(reblog1, reply5));
+        DemoMessageInserter.onActivityS(ConnectionTwitterLike.makeReblog(accountUser, reblog1, reply5));
 
         addMessage(buildMessage(author3, "Reply 6 to Reply 4 - the second", reply4, null).
                 setFavoritedByMe(TriState.TRUE));
@@ -130,8 +133,8 @@ public class DemoConversationInserter {
         
         MbMessage reply8 = buildMessage(author4, "<b>Reply 8</b> to Reply 7", reply7, null);
 
-        MbMessage reblog2 = buildMessage(ma.toPartialUser(), reply8.getBody(), null, null);
-        DemoMessageInserter.onActivity(ma, ConnectionTwitterLike.makeReblog(reblog2, reply8));
+        MbMessage reblog2 = buildMessage(accountUser, reply8.getBody(), null, null);
+        DemoMessageInserter.onActivityS(ConnectionTwitterLike.makeReblog(accountUser, reblog2, reply8));
 
         MbMessage reply9 = buildMessage(author2, "Reply 9 to Reply 7", reply7, null);
         reply9.attachments
@@ -143,17 +146,18 @@ public class DemoConversationInserter {
         addMessage(buildMessage(author4, "A duplicate of " + reply9.getBody(), null, null));
 
         // Message downloaded by another account
-        MyAccount acc2 = MyContextHolder.get().persistentAccounts().fromAccountName(DemoData.CONVERSATION_ACCOUNT2_NAME);
+        MbUser acc2 = DemoData.getMyAccount(DemoData.CONVERSATION_ACCOUNT2_NAME).toPartialUser();
         author3.followedByActor = TriState.TRUE;
         MbMessage reply10 = buildMessage(acc2, author3, "Reply 10 to Reply 8", reply8, null);
-        assertEquals("Another account as a message actor", reply10.myUserOid, DemoData.CONVERSATION_ACCOUNT2_USER_OID);
-        DemoMessageInserter.addMessage(acc2, reply10);
+        MbActivity activity10 = reply10.act(acc2, acc2, MbActivityType.UPDATE);
+        assertEquals("Another account as a message actor", activity10.getActor().oid, DemoData.CONVERSATION_ACCOUNT2_USER_OID);
+        DemoMessageInserter.onActivityS(activity10);
         author3.followedByActor = TriState.UNKNOWN;
 
         MbMessage reply11 = buildMessage(author2, "Reply 11 to Reply 7, " + DemoData.GLOBAL_PUBLIC_MESSAGE_TEXT + " text", reply7, null);
         addPublicMessage(reply11, true);
 
-        MbMessage reply13 = buildMessage(ma.toPartialUser(), "My reply to Reply 2", reply2, null);
+        MbMessage reply13 = buildMessage(accountUser, "My reply to Reply 2", reply2, null);
         MbMessage reply14 = buildMessage(author3, "Reply to my message 13", reply13, null);
         addMessage(reply14);
     }
@@ -173,21 +177,21 @@ public class DemoConversationInserter {
     }
 
     private MbUser buildUserFromOid(String userOid) {
-        return new DemoMessageInserter(ma).buildUserFromOid(userOid);
+        return new DemoMessageInserter(accountUser).buildUserFromOid(userOid);
     }
     
     private MbMessage buildMessage(MbUser author, String body, MbMessage inReplyToMessage, String messageOidIn) {
-        return buildMessage(ma, author, body, inReplyToMessage, messageOidIn);
+        return buildMessage(accountUser, author, body, inReplyToMessage, messageOidIn);
     }
 
-    private MbMessage buildMessage(MyAccount ma, MbUser author, String body, MbMessage inReplyToMessage, String messageOidIn) {
-        return new DemoMessageInserter(ma).buildMessage(author, body
+    private MbMessage buildMessage(MbUser accountUser, MbUser author, String body, MbMessage inReplyToMessage, String messageOidIn) {
+        return new DemoMessageInserter(accountUser).buildMessage(author, body
                         + (inReplyToMessage != null ? " it" + iteration : "") + bodySuffix,
                 inReplyToMessage, messageOidIn, DownloadStatus.LOADED);
     }
 
     private long addMessage(MbMessage message) {
-        return DemoMessageInserter.addMessage(ma, message);
+        return DemoMessageInserter.addMessage(accountUser, message);
     }
 
     public static void assertIfUserIsMyFriend(MbUser user, boolean isFriend, MyAccount ma) {

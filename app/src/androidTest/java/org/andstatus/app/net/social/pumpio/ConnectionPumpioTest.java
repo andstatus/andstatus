@@ -201,7 +201,7 @@ public class ConnectionPumpioTest {
         assertEquals("Actor is an Author", actor, mbMessage.getAuthor());
         assertFalse("Reblogged", mbMessage.isReblogged());
         assertEquals("Favorited by actor", TriState.UNKNOWN, mbMessage.getFavorited());
-        assertEquals("Favorited by me (" + mbMessage.myUserOid + ")", TriState.UNKNOWN, mbMessage.getFavoritedByMe());
+        assertEquals("Favorited by me (" + activity.accountUser + ")", TriState.UNKNOWN, mbMessage.getFavoritedByMe());
 
         ind++;
         activity = timeline.get(ind);

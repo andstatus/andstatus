@@ -256,11 +256,6 @@ public final class DemoData {
         return ma;
     }
 
-    public static MbUser getConversationMyMbUser() {
-        return new DemoMessageInserter(getConversationMyAccount()).buildUserFromOidAndAvatar(
-                CONVERSATION_ACCOUNT_USER_OID, CONVERSATION_ACCOUNT_AVATAR_URL);
-    }
-
     public static long getConversationOriginId() {
         return getConversationMyAccount().getOriginId();
     }

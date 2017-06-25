@@ -73,8 +73,7 @@ public class MessageEditorTest extends TimelineActivityTest {
             SharedPreferencesUtil.putLong(MyPreferences.KEY_BEING_EDITED_MESSAGE_ID, 0);
         }
 
-        final MyAccount ma = MyContextHolder.get().persistentAccounts()
-                .fromAccountName(DemoData.CONVERSATION_ACCOUNT_NAME);
+        final MyAccount ma = DemoData.getMyAccount(DemoData.CONVERSATION_ACCOUNT_NAME);
         assertTrue(ma.isValid());
         MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
 

@@ -55,14 +55,14 @@ public class AvatarDownloaderTest {
 
     @Test
     public void testLoadPumpio() throws IOException {
-        ma = MyContextHolder.get().persistentAccounts().fromAccountName(DemoData.CONVERSATION_ACCOUNT_NAME);
+        ma = DemoData.getMyAccount(DemoData.CONVERSATION_ACCOUNT_NAME);
         assertTrue(DemoData.CONVERSATION_ACCOUNT_NAME + " exists", ma.isValid());
         loadForOneMyAccount(DemoData.CONVERSATION_ACCOUNT_AVATAR_URL);
     }
 
     @Test
     public void testLoadBasicAuth() throws IOException {
-        ma = MyContextHolder.get().persistentAccounts().fromAccountName(DemoData.GNUSOCIAL_TEST_ACCOUNT_NAME);
+        ma = DemoData.getMyAccount(DemoData.GNUSOCIAL_TEST_ACCOUNT_NAME);
         assertTrue(DemoData.GNUSOCIAL_TEST_ACCOUNT_NAME + " exists", ma.isValid());
         loadForOneMyAccount(DemoData.GNUSOCIAL_TEST_ACCOUNT_AVATAR_URL);
     }
@@ -114,7 +114,7 @@ public class AvatarDownloaderTest {
 
     @Test
     public void testDeletedFile() throws IOException {
-        ma = MyContextHolder.get().persistentAccounts().fromAccountName(DemoData.CONVERSATION_ACCOUNT_NAME);
+        ma = DemoData.getMyAccount(DemoData.CONVERSATION_ACCOUNT_NAME);
         
         changeMaAvatarUrl(DemoData.CONVERSATION_ACCOUNT_AVATAR_URL);
         String urlString = MyQuery.userIdToStringColumnValue(UserTable.AVATAR_URL, ma.getUserId());

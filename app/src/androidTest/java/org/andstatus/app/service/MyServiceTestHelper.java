@@ -4,6 +4,7 @@ import android.text.TextUtils;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.account.MyAccountTest;
+import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
@@ -12,7 +13,9 @@ import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.net.http.HttpConnectionMock;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
+import org.andstatus.app.util.TriState;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class MyServiceTestHelper implements MyServiceEventsListener {
@@ -44,7 +47,7 @@ public class MyServiceTestHelper implements MyServiceEventsListener {
             MyContextHolder.get().setExpired();
             myContext = MyContextHolder.initialize(myContext.context(), this);
             if (!isSingleMockedInstance) {
-                MyAccount ma = myContext.persistentAccounts().fromAccountName(accountName);
+                MyAccount ma = DemoData.getMyAccount(accountName);
                 httpConnectionMock = ma.getConnection().getHttpMock();
             }
             connectionInstanceId = httpConnectionMock.getInstanceId();
@@ -70,8 +73,9 @@ public class MyServiceTestHelper implements MyServiceEventsListener {
         MyServiceManager.sendCommandEvenForUnavailable(getListenedCommand());
     }
     
-    boolean waitForCommandExecutionStarted(long count0) {
-        final String method = "waitForCommandExecutionStarted";
+    boolean assertCommandExecutionStarted(String logMsg, long count0, TriState expectStarted) {
+        final String method = "waitForCommandExecutionStart " + logMsg + "; " + getListenedCommand().getCommand().save();
+        MyLog.v(this, method + " started, count=" + executionStartCount + ", waiting for > " + count0);
         boolean found = false;
         String locEvent = "none";
         for (int pass = 0; pass < 1000; pass++) {
@@ -85,8 +89,11 @@ public class MyServiceTestHelper implements MyServiceEventsListener {
                 break;
             }
         }
-        MyLog.v(this, "waitForCommandExecutionStarted " + getListenedCommand().getCommand().save()
-                + " " + found + ", event:" + locEvent + ", count0=" + count0);
+        String logMsgEnd = method + " ended, found=" + found + ", count=" + executionStartCount + ", waited for > " + count0;
+        MyLog.v(this, logMsgEnd);
+        if (!expectStarted.equals(TriState.UNKNOWN)) {
+            assertEquals(logMsgEnd, expectStarted.toBoolean(false), found);
+        }
         return found;
     }
 

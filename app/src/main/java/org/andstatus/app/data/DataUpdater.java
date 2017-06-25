@@ -84,7 +84,7 @@ public class DataUpdater {
             return 0;
         }
         long id = 0;
-        updateUser(activity.getActor().update());
+        updateUser(activity.getActor().update(activity.accountUser));
         switch (activity.getObjectType()) {
             case ACTIVITY:
                 return onActivity(activity.getActivity(), saveLum);
@@ -117,7 +117,7 @@ public class DataUpdater {
         try {
             ContentValues values = new ContentValues();
             MyAccount me = execContext.getMyContext().persistentAccounts().
-                    fromOriginAndOid(message.originId, message.myUserOid);
+                    fromOriginAndOid(message.originId, activity.accountUser.oid);
             if (!me.isValid()) {
                 MyLog.w(TAG, funcName +"; my account is invalid, skipping: " + message.toString());
                 return 0;
@@ -127,7 +127,7 @@ public class DataUpdater {
                 if (activity.isAuthorActor()) {
                     message.setAuthor(activity.getActor());
                 } else {
-                    updateUser(message.getAuthor().update(activity.getActor()));
+                    updateUser(message.getAuthor().update(activity.accountUser, activity.getActor()));
                 }
             }
 
@@ -202,9 +202,9 @@ public class DataUpdater {
 
             boolean isDirectMessage = false;
             if (message.recipient != null) {
-                long recipientId = updateUser(message.recipient.update(activity.getActor()));
+                long recipientId = updateUser(message.recipient.update(activity.accountUser, activity.getActor()));
                 values.put(MsgTable.RECIPIENT_ID, recipientId);
-                if (recipientId == me.getUserId() || message.isAuthorMe()) {
+                if (recipientId == me.getUserId() || activity.isAuthorMe()) {
                     isDirectMessage = true;
                     values.put(MsgOfUserTable.DIRECTED, 1);
                     MyLog.v(this, "Message '" + message.oid + "' is Direct for " + me.getAccountName() );
@@ -212,7 +212,7 @@ public class DataUpdater {
             }
             if (!message.isSubscribedByMe().equals(TriState.FALSE) && message.getUpdatedDate() > 0) {
                 if (execContext.getTimeline().getTimelineType() == TimelineType.HOME
-                        || (!isDirectMessage && message.isAuthorMe())) {
+                        || (!isDirectMessage && activity.isAuthorMe())) {
                     message.setSubscribedByMe(TriState.TRUE);
                 }
             }
@@ -295,7 +295,7 @@ public class DataUpdater {
 
             for (MbMessage reply : message.replies) {
                 DataUpdater di = new DataUpdater(execContext);
-                di.updateMessage(reply.update(), true);
+                di.updateMessage(reply.update(activity.accountUser), true);
             }
         } catch (Exception e) {
             MyLog.e(this, funcName, e);
@@ -316,7 +316,7 @@ public class DataUpdater {
             // Type of the timeline is ALL meaning that message does not belong to this timeline
             DataUpdater di = new DataUpdater(execContext);
             // If the Msg is a Reply to another message
-            Long inReplyToMessageId = di.updateMessage(inReplyToMessage.update(), true);
+            Long inReplyToMessageId = di.updateMessage(inReplyToMessage.update(activity.accountUser), true);
             if (inReplyToMessage.getAuthor().nonEmpty()) {
                 inReplyToUserId = MyQuery.oidToId(OidEnum.USER_OID, message.originId, inReplyToMessage.getAuthor().oid);
             } else if (inReplyToMessageId != 0) {
@@ -357,7 +357,7 @@ public class DataUpdater {
         if (users.size() > 0) {
             userId = users.get(0).userId;
             if (userId == 0) {
-                userId = updateUser(users.get(0).update(activity.getActor()));
+                userId = updateUser(users.get(0).update(activity.accountUser, activity.getActor()));
             }
         }
         return userId;
@@ -498,9 +498,8 @@ public class DataUpdater {
             }
             mbUser.userId = userId;
             if (mbUser.hasLatestMessage()) {
-                updateMessage(mbUser.getLatestMessage().update(), false);
+                updateMessage(mbUser.getLatestMessage().update(activity.accountUser), false);
             }
-            
         } catch (Exception e) {
             MyLog.e(this, "insertUser exception", e);
         }

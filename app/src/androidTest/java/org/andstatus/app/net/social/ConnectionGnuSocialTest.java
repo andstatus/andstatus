@@ -103,11 +103,13 @@ public class ConnectionGnuSocialTest {
         assertEquals("Banner URL", "https://quitter.se/file/3fd65c6088ea02dc3a5ded9798a865a8ff5425b13878da35ad894cd084d015fc.png", mbMessage.getAuthor().bannerUrl);
 
         ind++;
-        mbMessage = timeline.get(ind).getMessage();
+        MbActivity activity = timeline.get(ind);
+        mbMessage = activity.getMessage();
         assertEquals("conversationOid", "2218650", mbMessage.conversationOid);
         assertTrue("Message is public", mbMessage.isPublic());
         assertFalse("Not Favorited", mbMessage.getFavoritedByMe().toBoolean(false));
-        assertEquals("Actor", accountUserOid, mbMessage.myUserOid);
+        assertEquals("MyAccount", accountUserOid, activity.accountUser.oid);
+        assertEquals("Actor", mbMessage.getAuthor().oid, activity.getActor().oid);
         assertEquals("Oid", "114973", mbMessage.getAuthor().oid);
         assertEquals("Username", "mmn", mbMessage.getAuthor().getUserName());
         assertEquals("WebFinger ID", "mmn@social.umeahackerspace.se", mbMessage.getAuthor().getWebFingerId());

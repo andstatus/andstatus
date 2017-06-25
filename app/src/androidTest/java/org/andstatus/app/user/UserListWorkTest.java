@@ -50,7 +50,7 @@ public class UserListWorkTest extends ActivityTest<UserList> {
         MyLog.i(this, "setUp started");
         TestSuite.initializeWithData(this);
 
-        MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(DemoData.CONVERSATION_ACCOUNT_NAME);
+        MyAccount ma = DemoData.getMyAccount(DemoData.CONVERSATION_ACCOUNT_NAME);
         assertTrue(ma.isValid());
         MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
 

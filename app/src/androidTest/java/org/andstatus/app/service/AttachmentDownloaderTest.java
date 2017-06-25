@@ -50,7 +50,7 @@ public class AttachmentDownloaderTest {
     public void setUp() throws Exception {
         MyLog.i(this, "setUp started");
         TestSuite.initializeWithData(this);
-        ma = MyContextHolder.get().persistentAccounts().fromAccountName(DemoData.GNUSOCIAL_TEST_ACCOUNT_NAME);
+        ma = DemoData.getMyAccount(DemoData.GNUSOCIAL_TEST_ACCOUNT_NAME);
         assertTrue(DemoData.GNUSOCIAL_TEST_ACCOUNT_NAME + " exists", ma.isValid());
     }
 
@@ -62,7 +62,7 @@ public class AttachmentDownloaderTest {
         message.attachments.add(MbAttachment.fromUrlAndContentType(
                 new URL("http://www.publicdomainpictures.net/pictures/60000/nahled/landscape-1376582205Yno.jpg"),
                 MyContentType.IMAGE));
-        long msgId = mi.onActivity(message.update());
+        long msgId = mi.onActivity(message.update(ma.toPartialUser()));
         
         DownloadData dd = DownloadData.getSingleForMessage(msgId, message.attachments.get(0).contentType, null);
         assertEquals("Image URI stored", message.attachments.get(0).getUri(), dd.getUri());

@@ -130,7 +130,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
     @Override
     protected MbActivity activityFromTwitterLikeJson(JSONObject timelineItem) throws ConnectionException {
         if (isNotification(timelineItem)) {
-            MbActivity activity = MbActivity.from(getType(timelineItem));
+            MbActivity activity = MbActivity.from(data.getPartialAccountUser(), getType(timelineItem));
             activity.setTimelinePosition(timelineItem.optString("id"));
             activity.setTimelineDate(dateFromJson(timelineItem, "created_at"));
             activity.setActor(userFromJson(timelineItem.optJSONObject("account")));
@@ -344,7 +344,8 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
                 }
                 if (!SharedPreferencesUtil.isEmpty(inReplyToMessageOid)) {
                     // Construct Related message from available info
-                    MbMessage inReplyToMessage = MbMessage.fromOriginAndOid(data.getOriginId(), message.myUserOid,
+                    MbMessage inReplyToMessage = MbMessage.fromOriginAndOid(data.getOriginId(),
+                            data.getAccountUserOid(),
                             inReplyToMessageOid, DownloadStatus.UNKNOWN);
                     inReplyToMessage.setAuthor(MbUser.fromOriginAndUserOid(data.getOriginId(), inReplyToUserOid));
                     message.setInReplyTo(inReplyToMessage);
@@ -409,7 +410,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
             return MbActivity.EMPTY;
         }
         TriState following = TriState.fromBoolean(relationship.optBoolean("following"));
-        return user.act(data.getPartialAccountUser(), following.toBoolean(!follow) == follow
+        return user.act(MbUser.EMPTY, data.getPartialAccountUser(), following.toBoolean(!follow) == follow
                 ? (follow ? MbActivityType.FOLLOW : MbActivityType.UNDO_FOLLOW)
                 : MbActivityType.UPDATE );
     }

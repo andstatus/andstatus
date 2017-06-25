@@ -68,7 +68,7 @@ public class TimeLineActivityLayoutToggleTest extends TimelineActivityTest {
         setPreferences();
         logStartStop("setUp started");
 
-        MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(DemoData.CONVERSATION_ACCOUNT_NAME);
+        MyAccount ma = DemoData.getMyAccount(DemoData.CONVERSATION_ACCOUNT_NAME);
         assertTrue(ma.isValid());
         MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
 

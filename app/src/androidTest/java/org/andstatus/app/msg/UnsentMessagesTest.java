@@ -38,7 +38,7 @@ public class UnsentMessagesTest extends TimelineActivityTest {
         TestSuite.initializeWithData(this);
 
         mService.setUp(null);
-        MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(DemoData.GNUSOCIAL_TEST_ACCOUNT_NAME);
+        MyAccount ma = DemoData.getMyAccount(DemoData.GNUSOCIAL_TEST_ACCOUNT_NAME);
         assertTrue(ma.isValid());
         MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
 

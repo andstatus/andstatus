@@ -1,9 +1,9 @@
 package org.andstatus.app.data;
 
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.context.DemoData;
 import org.andstatus.app.net.social.MbMessage;
 import org.andstatus.app.net.social.MbUser;
 import org.junit.Before;
@@ -21,13 +21,12 @@ public class MessageForAccountTest {
 
     @Test
     public void testAReply() {
-        MyAccount ma = MyContextHolder.get().persistentAccounts()
-                .fromAccountName(DemoData.CONVERSATION_ACCOUNT_NAME);
+        MyAccount ma = DemoData.getMyAccount(DemoData.CONVERSATION_ACCOUNT_NAME);
         assertTrue(ma.isValid());
         DemoMessageInserter mi = new DemoMessageInserter(ma);
-        MbUser author1 = ma.toPartialUser();
-        MbMessage msg1 = mi.buildMessage(author1, "My testing message", null, null, DownloadStatus.LOADED);
-        long mgs1Id = mi.onActivity(msg1.update());
+        MbUser accountUser = ma.toPartialUser();
+        MbMessage msg1 = mi.buildMessage(accountUser, "My testing message", null, null, DownloadStatus.LOADED);
+        long mgs1Id = mi.onActivity(msg1.update(accountUser));
         
         MessageForAccount mfa = new MessageForAccount(mgs1Id, ma.getOriginId(), ma);
         assertTrue(mfa.isAuthor);
@@ -39,10 +38,10 @@ public class MessageForAccountTest {
         assertTrue(mfa.hasPrivateAccess());
         
         MbUser author2 = mi.buildUser();
-        MbMessage replyTo1 = mi.buildMessage(author2, "@" + author1.getUserName()
+        MbMessage replyTo1 = mi.buildMessage(author2, "@" + accountUser.getUserName()
                 + " Replying to you", msg1, null, DownloadStatus.LOADED);
         replyTo1.setPublic(true);
-        long replyTo1Id = mi.onActivity(replyTo1.update());
+        long replyTo1Id = mi.onActivity(replyTo1.update(accountUser));
         
         mfa = new MessageForAccount(replyTo1Id, ma.getOriginId(), ma);
         assertFalse(mfa.isAuthor);
@@ -58,7 +57,7 @@ public class MessageForAccountTest {
         MbMessage replyTo2 = mi.buildMessage(author3, "@" + author2.getUserName()
                 + " Replying to the second author", replyTo1, null, DownloadStatus.LOADED);
         replyTo2.setPublic(true);
-        long replyTo2Id = mi.onActivity(replyTo2.update());
+        long replyTo2Id = mi.onActivity(replyTo2.update(accountUser));
         
         mfa = new MessageForAccount(replyTo2Id, ma.getOriginId(), ma);
         assertFalse(mfa.isAuthor);

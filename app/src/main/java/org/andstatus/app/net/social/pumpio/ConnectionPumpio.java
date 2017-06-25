@@ -363,7 +363,8 @@ public class ConnectionPumpio extends Connection {
         if (jsoActivity == null) {
             return MbActivity.EMPTY;
         }
-        MbActivity activity = MbActivity.from(ActivityType.load(jsoActivity.optString("verb")).mbActivityType);
+        MbActivity activity = MbActivity.from(data.getPartialAccountUser(),
+                ActivityType.load(jsoActivity.optString("verb")).mbActivityType);
         try {
             if (ObjectType.ACTIVITY.isTypeOf(jsoActivity)) {
                 String oid = jsoActivity.optString("id");

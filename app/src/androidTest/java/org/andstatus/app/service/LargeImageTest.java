@@ -18,6 +18,7 @@ package org.andstatus.app.service;
 import android.graphics.drawable.Drawable;
 import android.support.test.InstrumentationRegistry;
 
+import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.backup.ProgressLogger;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
@@ -57,8 +58,8 @@ public class LargeImageTest {
 
     private DownloadData insertMessage() throws IOException {
         String body = "Large image attachment";
-        DemoMessageInserter mi = new DemoMessageInserter(MyContextHolder.get().persistentAccounts()
-                .fromAccountName(DemoData.GNUSOCIAL_TEST_ACCOUNT_NAME));
+        MyAccount ma = DemoData.getMyAccount(DemoData.GNUSOCIAL_TEST_ACCOUNT_NAME);
+        DemoMessageInserter mi = new DemoMessageInserter(ma);
         MbMessage message = mi.buildMessage(mi.buildUser(), body, null, null, DownloadStatus.LOADED);
         message.attachments
                 .add(MbAttachment
@@ -66,7 +67,7 @@ public class LargeImageTest {
                                 new URL(
                                         "http://www.example.com/pictures/large_image.png"),
                                 MyContentType.IMAGE));
-        long msgId = mi.onActivity(message.update());
+        long msgId = mi.onActivity(message.update(ma.toPartialUser()));
         
         DownloadData dd = DownloadData.getSingleForMessage(msgId, message.attachments.get(0).contentType, null);
         assertEquals("Image URI stored", message.attachments.get(0).getUri(), dd.getUri());

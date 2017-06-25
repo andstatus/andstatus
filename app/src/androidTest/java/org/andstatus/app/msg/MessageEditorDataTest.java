@@ -26,8 +26,7 @@ public class MessageEditorDataTest {
 
     @Test
     public void testMessageEditorDataConversation() {
-        MyAccount ma = MyContextHolder.get().persistentAccounts()
-                .fromAccountName(DemoData.CONVERSATION_ACCOUNT_NAME);
+        MyAccount ma = DemoData.getMyAccount(DemoData.CONVERSATION_ACCOUNT_NAME);
         long entryMsgId = MyQuery.oidToId(OidEnum.MSG_OID, MyContextHolder.get()
                 .persistentOrigins()
                 .fromName(DemoData.CONVERSATION_ORIGIN_NAME).getId(),

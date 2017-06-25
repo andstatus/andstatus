@@ -143,7 +143,7 @@ public abstract class ConnectionTwitterLike extends Connection {
             MyLog.e(this, e);
         }
         JSONObject user = postRequest(follow ? ApiRoutineEnum.FOLLOW_USER : ApiRoutineEnum.STOP_FOLLOWING_USER, out);
-        return userFromJson(user).act(data.getPartialAccountUser(),
+        return userFromJson(user).act(MbUser.EMPTY, data.getPartialAccountUser(),
                 follow ? MbActivityType.FOLLOW : MbActivityType.UNDO_FOLLOW);
     } 
 
@@ -245,15 +245,15 @@ public abstract class ConnectionTwitterLike extends Connection {
         if (jso == null) {
             return MbActivity.EMPTY;
         }
-        return makeReblog(messageFromJson2(jso), rebloggedMessageFromJson(jso));
+        return makeReblog(data.getPartialAccountUser(), messageFromJson2(jso), rebloggedMessageFromJson(jso));
     }
 
     @NonNull
-    public static MbActivity makeReblog(@NonNull MbMessage message, MbMessage rebloggedMessage) {
+    public static MbActivity makeReblog(MbUser accountUser, @NonNull MbMessage message, MbMessage rebloggedMessage) {
         if (rebloggedMessage == null || rebloggedMessage.isEmpty()) {
-            return message.update();
+            return message.update(accountUser);
         }
-        MbActivity activity = MbActivity.from(MbActivityType.ANNOUNCE);
+        MbActivity activity = MbActivity.from(accountUser, MbActivityType.ANNOUNCE);
         activity.setMessage(rebloggedMessage);
         activity.setTimelinePosition(message.oid);
         activity.setTimelineDate(message.sentDate);
@@ -334,7 +334,8 @@ public abstract class ConnectionTwitterLike extends Connection {
                 }
                 if (!SharedPreferencesUtil.isEmpty(inReplyToMessageOid)) {
                     // Construct Related message from available info
-                    MbMessage inReplyToMessage = MbMessage.fromOriginAndOid(data.getOriginId(), message.myUserOid,
+                    MbMessage inReplyToMessage = MbMessage.fromOriginAndOid(data.getOriginId(),
+                            data.getAccountUserOid(),
                             inReplyToMessageOid, DownloadStatus.UNKNOWN);
                     MbUser inReplyToUser = MbUser.fromOriginAndUserOid(data.getOriginId(), inReplyToUserOid);
                     if (jso.has("in_reply_to_screen_name")) {

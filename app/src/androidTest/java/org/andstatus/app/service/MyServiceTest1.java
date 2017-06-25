@@ -20,10 +20,10 @@ import android.content.SyncResult;
 import android.database.sqlite.SQLiteDiskIOException;
 
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.context.DemoData;
 import org.andstatus.app.os.ExceptionsCounter;
 import org.andstatus.app.timeline.Timeline;
 import org.andstatus.app.timeline.TimelineType;
@@ -34,7 +34,6 @@ import org.junit.Test;
 import java.net.MalformedURLException;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class MyServiceTest1 extends MyServiceTest {
@@ -57,17 +56,16 @@ public class MyServiceTest1 extends MyServiceTest {
         long endCount = mService.executionEndCount;
 
         mService.sendListenedToCommand();
-        assertTrue("First command started executing", mService.waitForCommandExecutionStarted(startCount));
+        mService.assertCommandExecutionStarted("First command", startCount, TriState.TRUE);
         mService.sendListenedToCommand();
         assertTrue("First command ended executing", mService.waitForCommandExecutionEnded(endCount));
         assertEquals(mService.httpConnectionMock.toString(), 1, mService.httpConnectionMock.getRequestsCounter());
         mService.sendListenedToCommand();
-        assertFalse("Duplicated command didn't start executing",
-                mService.waitForCommandExecutionStarted(startCount + 1));
+        mService.assertCommandExecutionStarted("Duplicated command didn't start", startCount + 1, TriState.FALSE);
         mService.getListenedCommand().setManuallyLaunched(true);
         mService.sendListenedToCommand();
-        assertTrue("Manually launched duplicated command started executing",
-                mService.waitForCommandExecutionStarted(startCount + 1));
+        mService.assertCommandExecutionStarted("Manually launched duplicated command", startCount + 1,
+                TriState.TRUE);
         assertTrue("The third command ended executing", mService.waitForCommandExecutionEnded(endCount+1));
         assertTrue("Service stopped", mService.waitForServiceStopped(true));
         MyLog.i(this, method + " ended");
@@ -137,7 +135,7 @@ public class MyServiceTest1 extends MyServiceTest {
 
         mService.sendListenedToCommand();
         
-        assertTrue("First command started executing", mService.waitForCommandExecutionStarted(startCount));
+        mService.assertCommandExecutionStarted("First command", startCount, TriState.TRUE);
         assertTrue("First command ended executing", mService.waitForCommandExecutionEnded(endCount));
         MyLog.i(this, method  + "; " + mService.httpConnectionMock.toString());
         assertEquals("connection instance Id", mService.connectionInstanceId, mService.httpConnectionMock.getInstanceId());
@@ -158,7 +156,7 @@ public class MyServiceTest1 extends MyServiceTest {
         long endCount = mService.executionEndCount;
 
         mService.sendListenedToCommand();
-        assertTrue("First command started executing", mService.waitForCommandExecutionStarted(startCount));
+        mService.assertCommandExecutionStarted("First command", startCount, TriState.TRUE);
         assertTrue("First command ended executing", mService.waitForCommandExecutionEnded(endCount));
         assertTrue(mService.httpConnectionMock.toString(),
                 mService.httpConnectionMock.getRequestsCounter() > 0);
@@ -179,7 +177,7 @@ public class MyServiceTest1 extends MyServiceTest {
         long startCount = mService.executionStartCount;
         mService.sendListenedToCommand();
 
-        assertTrue("First command started executing", mService.waitForCommandExecutionStarted(startCount));
+        mService.assertCommandExecutionStarted("First command", startCount, TriState.TRUE);
         assertTrue("Service stopped", mService.waitForServiceStopped(true));
         assertEquals("No DiskIoException", 1, ExceptionsCounter.getDiskIoExceptionsCount());
         DbUtils.waitMs(method, 3000);

@@ -135,7 +135,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
             logExecutionError(true, msgLog + userInfoLogged(userId));
         }
         if (noErrors() && user != null) {
-            new DataUpdater(execContext).onActivity(user.update());
+            new DataUpdater(execContext).onActivity(user.update(execContext.getMyAccount().toPartialUser()));
         }
         MyLog.d(this, (msgLog + (noErrors() ? " succeeded" : " failed") ));
     }
@@ -171,7 +171,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 if (create) {
                     // For the case we created favorite, let's
                     // change the flag manually.
-                    activity = activity.getMessage().act(activity.getActor(), MbActivityType.LIKE);
+                    activity = activity.getMessage().act(activity.accountUser, activity.getActor(), MbActivityType.LIKE);
 
                     MyLog.d(this, method + "; Favorited flag didn't change yet.");
                     // Let's try to assume that everything was OK
@@ -222,7 +222,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
             if (!activity.type.equals(follow ? MbActivityType.FOLLOW : MbActivityType.UNDO_FOLLOW)) {
                 if (follow) {
                     // Act just like for creating favorite...
-                    activity = activity.getUser().act(activity.getActor(), MbActivityType.FOLLOW);
+                    activity = activity.getUser().act(MbUser.EMPTY, activity.getActor(), MbActivityType.FOLLOW);
                     MyLog.d(this, "Follow a User. 'following' flag didn't change yet.");
                     // Let's try to assume that everything was OK:
                 } else {

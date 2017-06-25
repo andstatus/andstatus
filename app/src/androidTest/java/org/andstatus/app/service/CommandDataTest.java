@@ -137,8 +137,7 @@ public class CommandDataTest {
     }
 
     private void followUnfollowSummary(CommandEnum command) {
-        MyAccount ma = MyContextHolder.get().persistentAccounts()
-                .fromAccountName(DemoData.CONVERSATION_ACCOUNT_NAME);
+        MyAccount ma = DemoData.getMyAccount(DemoData.CONVERSATION_ACCOUNT_NAME);
         assertTrue(ma.isValid());
         long userId = MyQuery.oidToId(OidEnum.USER_OID, ma.getOrigin().getId(),
                 DemoData.CONVERSATION_MEMBER_USER_OID);

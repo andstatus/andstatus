@@ -90,18 +90,18 @@ public class MbUser implements Comparable<MbUser> {
     }
 
     @NonNull
-    public MbActivity update() {
-        return act(MbUser.EMPTY, MbActivityType.UPDATE);
+    public MbActivity update(MbUser accountUser) {
+        return update(accountUser, MbUser.EMPTY);
     }
 
     @NonNull
-    public MbActivity update(@NonNull MbUser actor) {
-        return act(actor, MbActivityType.UPDATE);
+    public MbActivity update(MbUser accountUser, @NonNull MbUser actor) {
+        return act(accountUser, actor, MbActivityType.UPDATE);
     }
 
     @NonNull
-    public MbActivity act(@NonNull MbUser actor, @NonNull MbActivityType activityType) {
-        MbActivity mbActivity = MbActivity.from(activityType);
+    public MbActivity act(MbUser accountUser, @NonNull MbUser actor, @NonNull MbActivityType activityType) {
+        MbActivity mbActivity = MbActivity.from(accountUser, activityType);
         mbActivity.setActor(actor);
         mbActivity.setUser(this);
         return mbActivity;

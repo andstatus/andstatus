@@ -204,7 +204,7 @@ public class MessageEditorData {
                     MbAttachment.fromUriAndContentType(mediaUri, MyContentType.IMAGE));
         }
         DataUpdater di = new DataUpdater(getMyAccount());
-        setMsgId(di.onActivity(message.update()));
+        setMsgId(di.onActivity(message.update(getMyAccount().toPartialUser())));
     }
 
     MyAccount getMyAccount() {

@@ -37,7 +37,7 @@ import java.util.List;
  * @author yvolk@yurivolkov.com
  */
 public class MbMessage {
-    public static final MbMessage EMPTY = new MbMessage(0, "");
+    public static final MbMessage EMPTY = new MbMessage(0);
 
     private boolean isEmpty = false;
     private DownloadStatus status = DownloadStatus.UNKNOWN;
@@ -63,8 +63,7 @@ public class MbMessage {
     private TriState favorited = TriState.UNKNOWN;
     private String reblogOid = "";
 
-    /** Some additional attributes may appear from "My account's" (authenticated user's) point of view */
-    public final String myUserOid;
+    /** Some additional attributes may appear from "My account's" (authenticated User's) point of view */
     private TriState subscribedByMe = TriState.UNKNOWN;
     private TriState favoritedByMe = TriState.UNKNOWN;
     
@@ -74,7 +73,7 @@ public class MbMessage {
     private long conversationId = 0L;
 
     public static MbMessage fromOriginAndOid(long originId, String myUserOid, String oid, DownloadStatus status) {
-        MbMessage message = new MbMessage(originId, myUserOid);
+        MbMessage message = new MbMessage(originId);
         message.oid = oid;
         message.status = status;
         if (TextUtils.isEmpty(oid) && status == DownloadStatus.LOADED) {
@@ -83,19 +82,18 @@ public class MbMessage {
         return message;
     }
 
-    private MbMessage(long originId, String myUserOid) {
+    private MbMessage(long originId) {
         this.originId = originId;
-        this.myUserOid = myUserOid;
     }
 
     @NonNull
-    public MbActivity update() {
-        return act(MbUser.EMPTY, MbActivityType.UPDATE);
+    public MbActivity update(MbUser accountUser) {
+        return act(accountUser, MbUser.EMPTY, MbActivityType.UPDATE);
     }
 
     @NonNull
-    public MbActivity act(@NonNull MbUser actor, @NonNull MbActivityType activityType) {
-        MbActivity mbActivity = MbActivity.from(activityType);
+    public MbActivity act(MbUser accountUser, @NonNull MbUser actor, @NonNull MbActivityType activityType) {
+        MbActivity mbActivity = MbActivity.from(accountUser, activityType);
         mbActivity.setActor(actor);
         mbActivity.setMessage(this);
         return mbActivity;
@@ -243,7 +241,6 @@ public class MbMessage {
         if(isReblogged()) {
             builder.append("reblogged,");
         }
-        builder.append("me:" + myUserOid + ",");
         if(subscribedByMe != TriState.UNKNOWN) {
             builder.append("subscribedByMe:" + subscribedByMe + ",");
         }
@@ -311,10 +308,6 @@ public class MbMessage {
         if (author != null && author.nonEmpty()) {
             this.author = author;
         }
-    }
-
-    public boolean isAuthorMe() {
-        return author.oid.equals(myUserOid);
     }
 
     public long getUpdatedDate() {

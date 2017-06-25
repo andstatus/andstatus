@@ -43,7 +43,7 @@ public class TimelineSyncTrackerTest {
 
     private void oneTimelineType(TimelineType timelineType, String accountName) {
         MyContext myContext = MyContextHolder.get();
-        MyAccount ma = myContext.persistentAccounts().fromAccountName(accountName);
+        MyAccount ma = DemoData.getMyAccount(accountName);
         assertTrue(ma.isValid());
         assertEquals("Account was found", ma.getAccountName(), accountName);
         Timeline timeline = getTimeline(myContext, timelineType, ma);

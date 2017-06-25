@@ -20,11 +20,14 @@ import android.support.annotation.NonNull;
 
 /** Activity in a sense of Activity Streams https://www.w3.org/TR/activitystreams-core/ */
 public class MbActivity {
-    public static final MbActivity EMPTY = from(MbActivityType.EMPTY);
+    public static final MbActivity EMPTY = from(MbUser.EMPTY, MbActivityType.EMPTY);
     private TimelinePosition timelinePosition = TimelinePosition.EMPTY;
     private long timelineDate = 0;
 
+    @NonNull
+    public final MbUser accountUser;
     private MbUser actor = MbUser.EMPTY;
+    @NonNull
     public final MbActivityType type;
 
     // Objects of the Activity may be of several types...
@@ -34,12 +37,13 @@ public class MbActivity {
     private MbUser mbUser = MbUser.EMPTY;
     private MbActivity mbActivity = null;
 
-    public static MbActivity from(MbActivityType type) {
-        return new MbActivity(type);
+    public static MbActivity from(MbUser accountUser, MbActivityType type) {
+        return new MbActivity(accountUser, type);
     }
 
-    private MbActivity(MbActivityType type) {
-        this.type = type;
+    private MbActivity(MbUser accountUser, MbActivityType type) {
+        this.accountUser = accountUser == null ? MbUser.EMPTY : accountUser;
+        this.type = type == null ? MbActivityType.EMPTY : type;
     }
 
     @NonNull
@@ -66,7 +70,11 @@ public class MbActivity {
     }
 
     public boolean isActorMe() {
-        return getActor().oid.equals(getMessage().myUserOid);
+        return getActor().oid.equals(accountUser.oid);
+    }
+
+    public boolean isAuthorMe() {
+        return getMessage().getAuthor().oid.equals(accountUser.oid);
     }
 
     @NonNull
@@ -131,6 +139,7 @@ public class MbActivity {
                 type +
                 ", timelinePosition=" + timelinePosition +
                 (timelineDate == 0 ? "" : ", timelineDate=" + timelineDate) +
+                (accountUser.isEmpty() ? "" : ", me=" + accountUser.getUserName()) +
                 (actor.isEmpty() ? "" : ", actor=" + actor) +
                 (mbMessage.isEmpty() ? "" : ", message=" + mbMessage) +
                 (getActivity().isEmpty() ? "" : ", activity=" + getActivity()) +

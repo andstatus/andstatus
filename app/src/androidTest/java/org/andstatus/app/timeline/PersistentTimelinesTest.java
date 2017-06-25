@@ -65,7 +65,7 @@ public class PersistentTimelinesTest {
         assertTrue(timelines.size() > filtered2.size());
         assertTrue(filtered2.size() > filtered.size());
 
-        MyAccount myAccount = MyContextHolder.get().persistentAccounts().fromAccountName(DemoData.CONVERSATION_ACCOUNT_NAME);
+        MyAccount myAccount = DemoData.getMyAccount(DemoData.CONVERSATION_ACCOUNT_NAME);
         filtered = MyContextHolder.get().persistentTimelines().getFiltered(true, TriState.FALSE, myAccount, null);
         assertTrue(!filtered.isEmpty());
 

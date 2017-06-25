@@ -207,13 +207,14 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
      */
     private boolean updateNewUsersAndTheirLatestMessages(List<MbUser> usersNew) {
         DataUpdater di = new DataUpdater(execContext);
+        MbUser accountUser = execContext.getMyAccount().toPartialUser();
         boolean messagesLoaded = false;
         long count = 0;
         for (MbUser user : usersNew) {
             count++;
             broadcastProgress(String.valueOf(count) + ". " + execContext.getContext().getText(R.string.button_save)
                     + ": " + user.getNamePreferablyWebFingerId(), true);
-            di.onActivity(user.update(), false);
+            di.onActivity(user.update(accountUser), false);
             if (user.hasLatestMessage()) {
                 messagesLoaded = true;
             }

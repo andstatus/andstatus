@@ -45,14 +45,18 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 public class DemoMessageInserter {
-    private MyAccount ma;
-    private Origin origin;
+    public final MbUser accountUser;
+    private final Origin origin;
 
-    public DemoMessageInserter(MyAccount maIn) {
-        ma = maIn;
-        assertTrue(ma != null);
-        origin = MyContextHolder.get().persistentOrigins().fromId(ma.getOriginId());
-        assertTrue("Origin for " + ma.getAccountName() + " exists", origin != null);
+    public DemoMessageInserter(MyAccount ma) {
+        this(ma.toPartialUser());
+    }
+
+    public DemoMessageInserter(MbUser accountUser) {
+        this.accountUser = accountUser;
+        assertTrue(accountUser != null);
+        origin = MyContextHolder.get().persistentOrigins().fromId(accountUser.originId);
+        assertTrue("Origin exists for " + accountUser, origin.isValid());
     }
 
     public MbUser buildUser() {
@@ -111,7 +115,7 @@ public class DemoMessageInserter {
                 messageOid = String.valueOf(System.nanoTime());
             }
         }
-        MbMessage message = MbMessage.fromOriginAndOid(origin.getId(), ma.getUserOid(), messageOid, messageStatus);
+        MbMessage message = MbMessage.fromOriginAndOid(origin.getId(), accountUser.oid, messageOid, messageStatus);
         message.setBody(body);
         message.setUpdatedDate(System.currentTimeMillis());
         message.via = "AndStatus";
@@ -124,21 +128,24 @@ public class DemoMessageInserter {
         return message;
     }
 
-    static long addMessage(MyAccount ma, MbMessage message) {
-        return onActivity(ma, message.act(ma.toPartialUser(), MbActivityType.CREATE));
+    static long addMessage(MbUser accountUser, MbMessage message) {
+        return onActivityS(message.act(accountUser, accountUser, MbActivityType.CREATE));
     }
 
-    static long onActivity(MyAccount ma, MbActivity activity) {
-        return new DemoMessageInserter(ma).onActivity(activity);
+    static long onActivityS(MbActivity activity) {
+        return new DemoMessageInserter(activity.accountUser).onActivity(activity);
     }
 
     public long onActivity(final MbActivity activity) {
         MbMessage message = activity.getMessage();
+        MyAccount ma = MyContextHolder.get().persistentAccounts().fromUserId(accountUser.userId);
+        assertTrue("Persistent account exists for " + accountUser, ma.isValid());
         DataUpdater di = new DataUpdater(new CommandExecutionContext(
                         CommandData.newTimelineCommand(CommandEnum.EMPTY, ma,
                                 message.isPublic() ? TimelineType.PUBLIC : TimelineType.HOME)));
         long messageId = di.onActivity(activity);
         assertTrue( "Message oid='" + message.oid + "' was not added", messageId != 0);
+        assertEquals("Message id set", messageId, activity.getMessage().msgId);
 
         String permalink = origin.messagePermalink(messageId);
         URL urlPermalink = UrlUtils.fromString(permalink); 
@@ -159,8 +166,8 @@ public class DemoMessageInserter {
             assertEquals("msgOfUser found for " + message, messageId, msgIdFromMsgOfUser);
             
             long userIdFromMsgOfUser = MyQuery.conditionToLongColumnValue(MsgOfUserTable.TABLE_NAME, MsgOfUserTable
-                            .USER_ID, "t." + MsgOfUserTable.USER_ID + "=" + ma.getUserId());
-            assertEquals("userId found for " + message, ma.getUserId(), userIdFromMsgOfUser);
+                            .USER_ID, "t." + MsgOfUserTable.USER_ID + "=" + accountUser.userId);
+            assertEquals("userId found for " + message, accountUser.userId, userIdFromMsgOfUser);
         }
 
         if (message.isReblogged()) {
@@ -194,8 +201,9 @@ public class DemoMessageInserter {
     
     public static long addMessageForAccount(MyAccount ma, String body, String messageOid, DownloadStatus messageStatus) {
         assertTrue("Is not valid: " + ma, ma.isValid());
-        DemoMessageInserter mi = new DemoMessageInserter(ma);
-        MbMessage message = mi.buildMessage(mi.buildUser(), body, null, messageOid, messageStatus);
-        return mi.onActivity(message.update());
+        MbUser accountUser = ma.toPartialUser();
+        DemoMessageInserter mi = new DemoMessageInserter(accountUser);
+        MbMessage message = mi.buildMessage(accountUser, body, null, messageOid, messageStatus);
+        return mi.onActivity(message.update(accountUser));
     }
 }

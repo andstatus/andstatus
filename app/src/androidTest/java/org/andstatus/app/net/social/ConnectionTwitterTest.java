@@ -20,6 +20,7 @@ import android.support.test.InstrumentationRegistry;
 
 import org.andstatus.app.account.AccountDataReaderEmpty;
 import org.andstatus.app.account.AccountName;
+import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
@@ -93,27 +94,31 @@ public class ConnectionTwitterTest {
         assertEquals("Number of items in the Timeline", size, timeline.size());
 
         int ind = 0;
+        MbActivity activity = timeline.get(ind);
         String hostName = DemoData.getTestOriginHost(DemoData.TWITTER_TEST_ORIGIN_NAME).replace("api.", "");
-        assertEquals("Posting message", MbObjectType.MESSAGE, timeline.get(ind).getObjectType());
+        assertEquals("Posting message", MbObjectType.MESSAGE, activity.getObjectType());
         MbMessage message = timeline.get(ind).getMessage();
-        assertTrue("Favorited", message.getFavoritedByMe().toBoolean(false));
-        assertEquals("Actor", connectionData.getAccountUserOid(), message.myUserOid);
-        assertEquals("Oid", "221452291", message.getAuthor().oid);
-        assertEquals("Username", "Know", message.getAuthor().getUserName());
-        assertEquals("WebFinger ID", "Know@" + hostName, message.getAuthor().getWebFingerId());
-        assertEquals("Display name", "Just so you Know", message.getAuthor().getRealName());
-        assertEquals("Description", "Unimportant facts you'll never need to know. Legally responsible publisher: @FUN", message.getAuthor().getDescription());
-        assertEquals("Location", "Library of Congress", message.getAuthor().location);
-        assertEquals("Profile URL", "https://" + hostName + "/Know", message.getAuthor().getProfileUrl());
-        assertEquals("Homepage", "http://t.co/4TzphfU9qt", message.getAuthor().getHomepage());
-        assertEquals("Avatar URL", "https://si0.twimg.com/profile_images/378800000411110038/a8b7eced4dc43374e7ae21112ff749b6_normal.jpeg", message.getAuthor().avatarUrl);
-        assertEquals("Banner URL", "https://pbs.twimg.com/profile_banners/221452291/1377270845", message.getAuthor().bannerUrl);
-        assertEquals("Messages count", 1592, message.getAuthor().msgCount);
-        assertEquals("Favorites count", 163, message.getAuthor().favoritesCount);
-        assertEquals("Following (friends) count", 151, message.getAuthor().followingCount);
-        assertEquals("Followers count", 1878136, message.getAuthor().followersCount);
-        assertEquals("Created at", connection.parseDate("Tue Nov 30 18:17:25 +0000 2010"), message.getAuthor().getCreatedDate());
-        assertEquals("Updated at", 0, message.getAuthor().getUpdatedDate());
+        assertEquals("MyAccount", connectionData.getAccountUserOid(), activity.accountUser.oid);
+        assertEquals("Favorited by me", TriState.TRUE, message.getFavoritedByMe());
+        MbUser author = message.getAuthor();
+        assertEquals("Oid", "221452291", author.oid);
+        assertEquals("Username", "Know", author.getUserName());
+        assertEquals("WebFinger ID", "Know@" + hostName, author.getWebFingerId());
+        assertEquals("Display name", "Just so you Know", author.getRealName());
+        assertEquals("Description", "Unimportant facts you'll never need to know. Legally responsible publisher: @FUN", author.getDescription());
+        assertEquals("Location", "Library of Congress", author.location);
+        assertEquals("Profile URL", "https://" + hostName + "/Know", author.getProfileUrl());
+        assertEquals("Homepage", "http://t.co/4TzphfU9qt", author.getHomepage());
+        assertEquals("Avatar URL", "https://si0.twimg.com/profile_images/378800000411110038/a8b7eced4dc43374e7ae21112ff749b6_normal.jpeg", author.avatarUrl);
+        assertEquals("Banner URL", "https://pbs.twimg.com/profile_banners/221452291/1377270845", author.bannerUrl);
+        assertEquals("Messages count", 1592, author.msgCount);
+        assertEquals("Favorites count", 163, author.favoritesCount);
+        assertEquals("Following (friends) count", 151, author.followingCount);
+        assertEquals("Followers count", 1878136, author.followersCount);
+        assertEquals("Created at", connection.parseDate("Tue Nov 30 18:17:25 +0000 2010"), author.getCreatedDate());
+        assertEquals("Updated at", 0, author.getUpdatedDate());
+        assertEquals("Actor is author", author.oid, activity.getActor().oid);
+        assertEquals("Favorited by actor", TriState.UNKNOWN, message.getFavorited());
 
         ind++;
         message = timeline.get(ind).getMessage();
@@ -186,11 +191,11 @@ public class ConnectionTwitterTest {
         assertEquals("Body of this message", ",update,streckensperrung,zw,berliner,tor,bergedorf,ersatzverkehr,mit,bussen," +
                 "und,taxis,störungsdauer,bis,ca,10,uhr,hvv,#hvv,sbahnhh,#sbahnhh,", message.getBodyToSearch());
 
+        MyAccount ma = DemoData.getMyAccount(connectionData.getAccountName().toString());
         CommandExecutionContext executionContext = new CommandExecutionContext(
-                CommandData.newAccountCommand(CommandEnum.GET_STATUS,
-                        DemoData.getMyAccount(connectionData.getAccountName().toString())));
+                CommandData.newAccountCommand(CommandEnum.GET_STATUS, ma));
         DataUpdater di = new DataUpdater(executionContext);
-        long messageId = di.onActivity(message.update());
+        long messageId = di.onActivity(message.update(ma.toPartialUser()));
         assertTrue("Message added", messageId != 0);
     }
 

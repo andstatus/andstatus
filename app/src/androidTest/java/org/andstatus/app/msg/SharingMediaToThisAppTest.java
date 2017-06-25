@@ -41,7 +41,7 @@ public class SharingMediaToThisAppTest extends TimelineActivityTest {
 
         mService = new MyServiceTestHelper();
         mService.setUp(DemoData.GNUSOCIAL_TEST_ACCOUNT_NAME);
-        ma = MyContextHolder.get().persistentAccounts().fromAccountName(DemoData.GNUSOCIAL_TEST_ACCOUNT_NAME);
+        ma = DemoData.getMyAccount(DemoData.GNUSOCIAL_TEST_ACCOUNT_NAME);
         assertTrue(ma.isValid());
         MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
 
