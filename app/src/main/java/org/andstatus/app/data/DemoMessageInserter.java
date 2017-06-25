@@ -23,6 +23,8 @@ import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.database.MsgOfUserTable;
 import org.andstatus.app.database.MsgTable;
+import org.andstatus.app.net.social.MbActivity;
+import org.andstatus.app.net.social.MbActivityType;
 import org.andstatus.app.net.social.MbMessage;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.net.social.pumpio.ConnectionPumpio;
@@ -39,25 +41,20 @@ import org.andstatus.app.util.UrlUtils;
 import java.net.URL;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 public class DemoMessageInserter {
     private MyAccount ma;
     private Origin origin;
-    private MbUser accountMbUser;
 
     public DemoMessageInserter(MyAccount maIn) {
         ma = maIn;
         assertTrue(ma != null);
         origin = MyContextHolder.get().persistentOrigins().fromId(ma.getOriginId());
         assertTrue("Origin for " + ma.getAccountName() + " exists", origin != null);
-        accountMbUser = buildUserFromOid(ma.getUserOid(), true);
     }
 
-    MbUser getAccountMbUser() {
-        return accountMbUser;
-    }
-    
     public MbUser buildUser() {
         if (origin.getOriginType() == OriginType.PUMPIO) {
             return buildUserFromOid("acct:userOf" + origin.getName() + DemoData.TESTRUN_UID);
@@ -72,10 +69,6 @@ public class DemoMessageInserter {
     }
     
     final MbUser buildUserFromOid(String userOid) {
-        return  buildUserFromOid(userOid, false);
-    }
-
-    private MbUser buildUserFromOid(String userOid, boolean partial) {
         MbUser mbUser = MbUser.fromOriginAndUserOid(origin.getId(), userOid);
         String username;
         String profileUrl;
@@ -89,9 +82,7 @@ public class DemoMessageInserter {
             profileUrl = "https://" + DemoData.GNUSOCIAL_TEST_ORIGIN_NAME
                     + ".example.com/profiles/" + username;
         }
-        if (!partial) {
-            mbUser.setUserName(username);
-        }
+        mbUser.setUserName(username);
         mbUser.setProfileUrl(profileUrl);
         mbUser.setRealName("Real " + username);
         mbUser.setDescription("This is about " + username);
@@ -104,10 +95,6 @@ public class DemoMessageInserter {
         mbUser.favoritesCount = rand + 11;
         mbUser.followingCount = rand + 17;
         mbUser.followersCount = rand;
-
-        if (accountMbUser != null) {
-            mbUser.actor = accountMbUser;
-        }
         return mbUser;
     }
 
@@ -116,12 +103,15 @@ public class DemoMessageInserter {
         String messageOid = messageOidIn;
         if (TextUtils.isEmpty(messageOid) && messageStatus != DownloadStatus.SENDING) {
             if (origin.getOriginType() == OriginType.PUMPIO) {
-                messageOid = author.getProfileUrl()  + "/" + (inReplyToMessage == null ? "note" : "comment") + "/thisisfakeuri" + System.nanoTime();
+                messageOid =  (author.isPartiallyDefined() ? "http://pumpiotest" + origin.getId()
+                        + ".example.com/user/" + author.oid : author.getProfileUrl())
+                        + "/" + (inReplyToMessage == null ? "note" : "comment")
+                        + "/thisisfakeuri" + System.nanoTime();
             } else {
                 messageOid = String.valueOf(System.nanoTime());
             }
         }
-        MbMessage message = MbMessage.fromOriginAndOid(origin.getId(), accountMbUser.oid, messageOid, messageStatus);
+        MbMessage message = MbMessage.fromOriginAndOid(origin.getId(), ma.getUserOid(), messageOid, messageStatus);
         message.setBody(body);
         message.setUpdatedDate(System.currentTimeMillis());
         message.via = "AndStatus";
@@ -135,20 +125,26 @@ public class DemoMessageInserter {
     }
 
     static long addMessage(MyAccount ma, MbMessage message) {
-        return new DemoMessageInserter(ma).addMessage(message);
+        return onActivity(ma, message.act(ma.toPartialUser(), MbActivityType.CREATE));
     }
 
-    public long addMessage(final MbMessage message) {
+    static long onActivity(MyAccount ma, MbActivity activity) {
+        return new DemoMessageInserter(ma).onActivity(activity);
+    }
+
+    public long onActivity(final MbActivity activity) {
+        MbMessage message = activity.getMessage();
         DataUpdater di = new DataUpdater(new CommandExecutionContext(
                         CommandData.newTimelineCommand(CommandEnum.EMPTY, ma,
                                 message.isPublic() ? TimelineType.PUBLIC : TimelineType.HOME)));
-        long messageId = di.onActivity(message.update(message.getActor()));
-        assertTrue( "Message added " + message.oid, messageId != 0);
+        long messageId = di.onActivity(activity);
+        assertTrue( "Message oid='" + message.oid + "' was not added", messageId != 0);
 
         String permalink = origin.messagePermalink(messageId);
         URL urlPermalink = UrlUtils.fromString(permalink); 
-        assertTrue("Message permalink is a valid URL '" + permalink + "',\n" + message.toString()
-                + "\n author: " + message.getAuthor().toString(), urlPermalink != null);
+        assertNotNull("Message permalink is a valid URL '" + permalink + "',\n" + message.toString()
+                + "\n origin: " + origin
+                + "\n author: " + message.getAuthor().toString(), urlPermalink);
         if (origin.getUrl() != null && origin.getOriginType() != OriginType.TWITTER) {
             assertEquals("Message permalink has the same host as origin, " + message.toString(),
                     origin.getUrl().getHost(), urlPermalink.getHost());
@@ -190,7 +186,8 @@ public class DemoMessageInserter {
     static void deleteOldMessage(long originId, String messageOid) {
         long messageIdOld = MyQuery.oidToId(OidEnum.MSG_OID, originId, messageOid);
         if (messageIdOld != 0) {
-            int deleted = MyContextHolder.get().context().getContentResolver().delete(MatchedUri.getMsgUri(0, messageIdOld),  null, null);
+            int deleted = MyContextHolder.get().context().getContentResolver().delete(
+                    MatchedUri.getMsgUri(0, messageIdOld),  null, null);
             assertEquals( "Old message id=" + messageIdOld + " deleted", 1, deleted);
         }
     }
@@ -198,6 +195,7 @@ public class DemoMessageInserter {
     public static long addMessageForAccount(MyAccount ma, String body, String messageOid, DownloadStatus messageStatus) {
         assertTrue("Is not valid: " + ma, ma.isValid());
         DemoMessageInserter mi = new DemoMessageInserter(ma);
-        return mi.addMessage(mi.buildMessage(mi.buildUser(), body, null, messageOid, messageStatus));
+        MbMessage message = mi.buildMessage(mi.buildUser(), body, null, messageOid, messageStatus);
+        return mi.onActivity(message.update());
     }
 }

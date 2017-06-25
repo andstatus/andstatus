@@ -30,7 +30,6 @@ import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.database.UserTable;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.social.Connection;
-import org.andstatus.app.net.social.MbActivity;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.timeline.TimelineSyncTracker;
 import org.andstatus.app.timeline.TimelineType;
@@ -214,7 +213,7 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
             count++;
             broadcastProgress(String.valueOf(count) + ". " + execContext.getContext().getText(R.string.button_save)
                     + ": " + user.getNamePreferablyWebFingerId(), true);
-            di.onActivity(user.update(user.actor), false);
+            di.onActivity(user.update(), false);
             if (user.hasLatestMessage()) {
                 messagesLoaded = true;
             }

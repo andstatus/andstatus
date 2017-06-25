@@ -62,7 +62,7 @@ public class AttachmentDownloaderTest {
         message.attachments.add(MbAttachment.fromUrlAndContentType(
                 new URL("http://www.publicdomainpictures.net/pictures/60000/nahled/landscape-1376582205Yno.jpg"),
                 MyContentType.IMAGE));
-        long msgId = mi.addMessage(message);
+        long msgId = mi.onActivity(message.update());
         
         DownloadData dd = DownloadData.getSingleForMessage(msgId, message.attachments.get(0).contentType, null);
         assertEquals("Image URI stored", message.attachments.get(0).getUri(), dd.getUri());

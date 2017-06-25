@@ -58,9 +58,10 @@ public class ConnectionMastodonTest {
 
         int ind = 0;
         assertEquals("Is not a message", MbObjectType.MESSAGE, timeline.get(ind).getObjectType());
-        MbMessage mbMessage = timeline.get(ind).getMessage();
+        MbActivity activity = timeline.get(ind);
+        MbMessage mbMessage = activity.getMessage();
         assertEquals("Favorited", TriState.UNKNOWN, mbMessage.getFavoritedByMe());
-        MbUser sender = mbMessage.getAuthor();
+        MbUser sender = activity.getActor();
 
         String stringDate = "2017-04-16T11:13:12.133Z";
         long parsedDate = connection.parseDate(stringDate);
@@ -107,28 +108,31 @@ public class ConnectionMastodonTest {
 
         int ind = 0;
         assertEquals("Is not a message", MbObjectType.MESSAGE, timeline.get(ind).getObjectType());
-        MbMessage mbMessage = timeline.get(ind).getMessage();
+        MbActivity activity = timeline.get(ind);
+        MbMessage mbMessage = activity.getMessage();
         assertEquals("Favorited " + mbMessage, TriState.UNKNOWN, mbMessage.getFavoritedByMe());
         assertEquals("Not reblogged " + mbMessage, true, mbMessage.isReblogged());
         assertEquals("Author's username", "AndStatus", mbMessage.getAuthor().getUserName());
-        MbUser actor = mbMessage.getActor();
+        MbUser actor = activity.getActor();
         assertEquals("Actor's Oid", "15451", actor.oid);
         assertEquals("Username", "Chaosphere", actor.getUserName());
         assertEquals("WebfingerId", "Chaosphere@mastodon.social", actor.getWebFingerId());
 
         ind = 19;
         assertEquals("Is not a message", MbObjectType.MESSAGE, timeline.get(ind).getObjectType());
-        mbMessage = timeline.get(ind).getMessage();
+        activity = timeline.get(ind);
+        mbMessage = activity.getMessage();
         assertEquals("Favorited " + mbMessage, TriState.UNKNOWN, mbMessage.getFavoritedByMe());
-        actor = mbMessage.getActor();
+        actor = activity.getActor();
         assertEquals("Actor's Oid", "119218", actor.oid);
         assertEquals("Username", "izwx6502", actor.getUserName());
         assertEquals("WebfingerId", "izwx6502@mstdn.jp", actor.getWebFingerId());
 
         ind = 17;
-        assertEquals("Is a message", MbObjectType.USER, timeline.get(ind).getObjectType());
-        MbUser user = timeline.get(ind).getUser();
-        actor = user.actor;
+        activity = timeline.get(ind);
+        assertEquals("Is a message", MbObjectType.USER, activity.getObjectType());
+        MbUser user = activity.getUser();
+        actor = activity.getActor();
         assertEquals("Actor's Oid", "24853", actor.oid);
         assertEquals("Username", "resir014", actor.getUserName());
         assertEquals("WebfingerId", "resir014@icosahedron.website", actor.getWebFingerId());

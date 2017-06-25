@@ -19,10 +19,10 @@ package org.andstatus.app.data;
 import android.text.TextUtils;
 
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.database.MsgTable;
-import org.andstatus.app.context.DemoData;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
@@ -98,7 +98,8 @@ public class HtmlContentInserter {
                                                                 String bodyString, String messageOid, boolean htmlContentAllowed) {
 		setHtmlContentAllowed(htmlContentAllowed);
         DemoMessageInserter mi = new DemoMessageInserter(ma);
-        long msgId1 = mi.addMessage(mi.buildMessage(author, bodyString, null, messageOid, DownloadStatus.LOADED));
+        long msgId1 = mi.onActivity(mi.buildMessage(author, bodyString, null, messageOid, DownloadStatus.LOADED)
+                .update());
         String body = MyQuery.msgIdToStringColumnValue(MsgTable.BODY, msgId1);
         if (htmlContentAllowed) {
             assertEquals("HTML preserved", bodyString, body);

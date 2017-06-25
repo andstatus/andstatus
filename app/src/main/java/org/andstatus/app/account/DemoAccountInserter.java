@@ -92,6 +92,10 @@ public class DemoAccountInserter {
 
         assertAccountIsAddedToAccountManager(ma);
 
+        MbUser mbUser2 = ma.toPartialUser();
+        assertEquals("Oid: " + mbUser2, mbUser.oid, mbUser2.oid);
+        assertEquals("Partially defined: " + mbUser2, true, mbUser2.isPartiallyDefined());
+
         return ma;
     }
 

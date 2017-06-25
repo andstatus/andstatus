@@ -23,11 +23,11 @@ import org.json.JSONObject;
 enum ObjectType {
     ACTIVITY("activity", null) {
         @Override
-        public boolean isMyType(JSONObject jso) {
+        public boolean isTypeOf(JSONObject jso) {
             boolean is = false;
             if (jso != null) {
                 if (jso.has("objecttype")) {
-                    is = super.isMyType(jso);
+                    is = super.isTypeOf(jso);
                 } else {
                     // It may not have the "objectType" field as in the specification:
                     //   http://activitystrea.ms/specs/json/1.0/
@@ -59,7 +59,7 @@ enum ObjectType {
         return id;
     }
     
-    public boolean isMyType(JSONObject jso) {
+    public boolean isTypeOf(JSONObject jso) {
         boolean is = false;
         if (jso != null) {
             is = id().equalsIgnoreCase(jso.optString("objectType"));
@@ -74,7 +74,7 @@ enum ObjectType {
 
     public static ObjectType fromJson(JSONObject jso) {
         for(ObjectType type : ObjectType.values()) {
-            if (type.isMyType(jso)) {
+            if (type.isTypeOf(jso)) {
                 return type;
             }
         }

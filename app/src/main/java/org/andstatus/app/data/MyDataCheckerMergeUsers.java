@@ -26,6 +26,8 @@ import org.andstatus.app.database.FriendshipTable;
 import org.andstatus.app.database.MsgOfUserTable;
 import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.database.UserTable;
+import org.andstatus.app.net.social.MbActivity;
+import org.andstatus.app.net.social.MbActivityType;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.util.MyLog;
 
@@ -49,8 +51,8 @@ public class MyDataCheckerMergeUsers {
         logger.logProgress(method + " started");
 
         int changedCount = 0;
-        for (MbUser user : getUsersToMerge()) {
-            mergeUser(user);
+        for (MbActivity activity : getUsersToMerge()) {
+            mergeUser(activity);
             changedCount++;
         }
         logger.logProgress(method + " ended, "
@@ -58,10 +60,10 @@ public class MyDataCheckerMergeUsers {
         DbUtils.waitMs(method, changedCount == 0 ? 1000 : 3000);
     }
 
-    private Set<MbUser> getUsersToMerge() {
+    private Set<MbActivity> getUsersToMerge() {
         final String method = "getUsersToMerge";
 
-        Set<MbUser> usersToMerge = new ConcurrentSkipListSet<>();
+        Set<MbActivity> mergeActivities = new ConcurrentSkipListSet<>();
         String sql = "SELECT " + UserTable._ID
                 + ", " + UserTable.ORIGIN_ID
                 + ", " + UserTable.USER_OID
@@ -81,9 +83,9 @@ public class MyDataCheckerMergeUsers {
                 user.userId = c.getLong(0);
                 user.setWebFingerId(c.getString(3));
                 if (isTheSameUser(prev, user)) {
-                    MbUser userToMerge = whomToMerge(prev, user);
-                    usersToMerge.add(userToMerge);
-                    prev = userToMerge.actor;
+                    MbActivity activity = whomToMerge(prev, user);
+                    mergeActivities.add(activity);
+                    prev = activity.getActor();
                 } else {
                     prev = user;
                 }
@@ -92,8 +94,8 @@ public class MyDataCheckerMergeUsers {
             DbUtils.closeSilently(c);
         }
 
-        logger.logProgress(method + " ended, " + rowsCount + " users, " + usersToMerge.size() + " to be merged");
-        return usersToMerge;
+        logger.logProgress(method + " ended, " + rowsCount + " users, " + mergeActivities.size() + " to be merged");
+        return mergeActivities;
     }
 
     private boolean isTheSameUser(MbUser prev, MbUser user) {
@@ -110,26 +112,28 @@ public class MyDataCheckerMergeUsers {
     }
 
     @NonNull
-    private MbUser whomToMerge(@NonNull MbUser prev, @NonNull MbUser user) {
+    private MbActivity whomToMerge(@NonNull MbUser prev, @NonNull MbUser user) {
+        MbActivity activity = MbActivity.from(MbActivityType.UPDATE);
+        activity.setUser(user);
         MbUser mergeWith = prev;
-        MbUser toMerge = user;
         if (myContext.persistentAccounts().fromUserId(user.userId).isValid()) {
             mergeWith = user;
-            toMerge = prev;
+            activity.setUser(prev);
         }
-        toMerge.actor = mergeWith;
-        return toMerge;
+        activity.setActor(mergeWith);
+        return activity;
     }
 
-    private void mergeUser(MbUser user) {
-        String logMsg = "Merging " + user + " with " + user.actor;
+    private void mergeUser(MbActivity activity) {
+        MbUser user = activity.getUser();
+        String logMsg = "Merging " + user + " with " + activity.getActor();
         logger.logProgress(logMsg);
-        updateColumn(logMsg, user, MsgTable.TABLE_NAME, MsgTable.ACTOR_ID, false);
-        updateColumn(logMsg, user, MsgTable.TABLE_NAME, MsgTable.AUTHOR_ID, false);
-        updateColumn(logMsg, user, MsgTable.TABLE_NAME, MsgTable.RECIPIENT_ID, false);
-        updateColumn(logMsg, user, MsgTable.TABLE_NAME, MsgTable.IN_REPLY_TO_USER_ID, false);
+        updateColumn(logMsg, activity, MsgTable.TABLE_NAME, MsgTable.ACTOR_ID, false);
+        updateColumn(logMsg, activity, MsgTable.TABLE_NAME, MsgTable.AUTHOR_ID, false);
+        updateColumn(logMsg, activity, MsgTable.TABLE_NAME, MsgTable.RECIPIENT_ID, false);
+        updateColumn(logMsg, activity, MsgTable.TABLE_NAME, MsgTable.IN_REPLY_TO_USER_ID, false);
 
-        updateColumn(logMsg, user, MsgOfUserTable.TABLE_NAME, MsgOfUserTable.USER_ID, true);
+        updateColumn(logMsg, activity, MsgOfUserTable.TABLE_NAME, MsgOfUserTable.USER_ID, true);
         deleteRows(logMsg, user, MsgOfUserTable.TABLE_NAME, MsgOfUserTable.USER_ID);
 
         deleteRows(logMsg, user, FriendshipTable.TABLE_NAME, FriendshipTable.USER_ID);
@@ -140,15 +144,15 @@ public class MyDataCheckerMergeUsers {
         deleteRows(logMsg, user, UserTable.TABLE_NAME, UserTable._ID);
     }
 
-    private void updateColumn(String logMsg, MbUser user, String table, String column, boolean ignoreError) {
+    private void updateColumn(String logMsg, MbActivity activity, String table, String column, boolean ignoreError) {
         String sql = "";
         try {
             sql = "UPDATE "
                     + table
                     + " SET "
-                    + column + "=" + user.actor.userId
+                    + column + "=" + activity.getActor().userId
                     + " WHERE "
-                    + column + "=" + user.userId;
+                    + column + "=" + activity.getUser().userId;
             myContext.getDatabase().execSQL(sql);
         } catch (Exception e) {
             if (!ignoreError) {

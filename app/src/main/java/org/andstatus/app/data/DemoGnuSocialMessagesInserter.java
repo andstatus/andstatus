@@ -114,9 +114,6 @@ public class DemoGnuSocialMessagesInserter {
             mbUser.avatarUrl = avatarUrl;
         }
         mbUser.setProfileUrl(origin.getUrl());
-        if (accountMbUser != null) {
-            mbUser.actor = accountMbUser;
-        }
         return mbUser;
     }
     
@@ -130,7 +127,7 @@ public class DemoGnuSocialMessagesInserter {
     private long addMessage(MbMessage message) {
         DataUpdater di = new DataUpdater(new CommandExecutionContext(
                 CommandData.newOriginCommand(CommandEnum.EMPTY, origin)));
-        long messageId = di.onActivity(message.update(message.getActor()));
+        long messageId = di.onActivity(message.update());
         assertTrue( "Message added " + message.oid, messageId != 0);
         assertEquals("Conversation Oid", conversationOid, MyQuery.msgIdToConversationOid(messageId));
         return messageId;

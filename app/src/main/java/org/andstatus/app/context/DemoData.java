@@ -133,6 +133,7 @@ public final class DemoData {
         }
         assertFalse("Demo data inserters failed to complete, count=" + count +
                 ", status=" + asyncTask.getStatus() + ", " + asyncTask.toString(), asyncTask.needsBackgroundWork());
+        assertTrue("Error during Demo data creation: " + asyncTask.getFirstError(), asyncTask.getFirstError().isEmpty());
         MyLog.v(TAG, method + ": ended");
     }
 

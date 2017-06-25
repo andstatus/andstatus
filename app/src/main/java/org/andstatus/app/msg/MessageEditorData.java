@@ -186,7 +186,7 @@ public class MessageEditorData {
         MbMessage message = MbMessage.fromOriginAndOid(getMyAccount().getOriginId(), getMyAccount().getUserOid(), "",
                 status);
         message.msgId = getMsgId();
-        message.setAuthor(getMyAccount().toMbUser());
+        message.setAuthor(getMyAccount().toPartialUser());
         message.setUpdatedDate(System.currentTimeMillis());
         message.setBody(body);
         if (recipientId != 0) {
@@ -204,7 +204,7 @@ public class MessageEditorData {
                     MbAttachment.fromUriAndContentType(mediaUri, MyContentType.IMAGE));
         }
         DataUpdater di = new DataUpdater(getMyAccount());
-        setMsgId(di.onActivity(message.update(message.getActor())));
+        setMsgId(di.onActivity(message.update()));
     }
 
     MyAccount getMyAccount() {

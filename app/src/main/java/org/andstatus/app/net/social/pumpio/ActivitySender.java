@@ -23,6 +23,7 @@ import android.text.TextUtils;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
+import org.andstatus.app.net.social.MbActivity;
 import org.andstatus.app.net.social.MbMessage;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.net.social.pumpio.ConnectionPumpio.ConnectionAndUrl;
@@ -76,12 +77,12 @@ class ActivitySender {
         return this;
     }
     
-    MbMessage sendMessage(ActivityType activityType) throws ConnectionException {
-        return connection.messageFromJson(sendMe(activityType));
+    MbActivity sendMessage(ActivityType activityType) throws ConnectionException {
+        return connection.activityFromJson(sendMe(activityType));
     }
 
-    MbUser sendUser(ActivityType activityType) throws ConnectionException {
-        return connection.userFromJsonActivity(sendMe(activityType));
+    MbActivity sendUser(ActivityType activityType) throws ConnectionException {
+        return connection.activityFromJson(sendMe(activityType));
     }
 
     JSONObject sendMe(ActivityType activityTypeIn) throws ConnectionException {

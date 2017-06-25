@@ -79,18 +79,26 @@ public class DataUpdater {
      * TODO: parse Actor, ActivityType etc...
      * @return id of the "MbObject"
      */
-    public long onActivity(MbActivity mbActivity, boolean saveLum) {
+    public long onActivity(MbActivity activity, boolean saveLum) {
+        if (activity == null || activity.isEmpty()) {
+            return 0;
+        }
         long id = 0;
-        switch (mbActivity.getObjectType()) {
+        updateUser(activity.getActor().update());
+        switch (activity.getObjectType()) {
             case ACTIVITY:
-                return onActivity(mbActivity.getActivity(), saveLum);
+                return onActivity(activity.getActivity(), saveLum);
             case MESSAGE:
-                id = updateMessage(mbActivity.getMessage(), true);
+                id = updateMessage(activity, true);
                 break;
             case USER:
-                id = updateUser(mbActivity.getUser());
+                id = updateUser(activity);
                 break;
             default:
+                if (activity.isEmpty()) {
+                    MyLog.w(TAG, "activity is empty, skipping: " + activity);
+                    return 0;
+                }
                 break;
         }
         if (saveLum) {
@@ -103,12 +111,9 @@ public class DataUpdater {
         lum.save();
     }
 
-    private long updateMessage(@NonNull MbMessage message, boolean updateUsers) {
-        final String funcName = "Inserting/updating msg";
-        if (message.isEmpty()) {
-            MyLog.w(TAG, funcName +"; the message is empty, skipping: " + message.toString());
-            return 0;
-        }
+    private long updateMessage(@NonNull MbActivity activity, boolean updateUsers) {
+        final String funcName = "updateMessage";
+        final MbMessage message = activity.getMessage();
         try {
             ContentValues values = new ContentValues();
             MyAccount me = execContext.getMyContext().persistentAccounts().
@@ -119,24 +124,23 @@ public class DataUpdater {
             }
 
             if (updateUsers) {
-                updateUser(message.getAuthor());
-                if (message.isAuthorActor()) {
-                    message.setActor(message.getAuthor());
+                if (activity.isAuthorActor()) {
+                    message.setAuthor(activity.getActor());
                 } else {
-                    updateUser(message.getActor());
+                    updateUser(message.getAuthor().update(activity.getActor()));
                 }
             }
 
-            if (message.isReblogged() && message.getActor().userId != 0) {
-                if (!message.isActorMe()) {
-                    values.put(MsgOfUserTable.USER_ID + MsgOfUserTable.SUFFIX_FOR_OTHER_USER, message.getActor().userId);
+            if (message.isReblogged() && activity.getActor().userId != 0) {
+                if (!activity.isActorMe()) {
+                    values.put(MsgOfUserTable.USER_ID + MsgOfUserTable.SUFFIX_FOR_OTHER_USER, activity.getActor().userId);
                 }
                 values.put(MsgOfUserTable.REBLOGGED +
-                        (message.isActorMe() ? "" : MsgOfUserTable.SUFFIX_FOR_OTHER_USER), 1);
+                        (activity.isActorMe() ? "" : MsgOfUserTable.SUFFIX_FOR_OTHER_USER), 1);
                 // Remember original id of the reblog message
                 // We will need it to "undo reblog" for our reblog
                 values.put(MsgOfUserTable.REBLOG_OID +
-                        (message.isActorMe() ? "" : MsgOfUserTable.SUFFIX_FOR_OTHER_USER), message.getReblogOid());
+                        (activity.isActorMe() ? "" : MsgOfUserTable.SUFFIX_FOR_OTHER_USER), message.getReblogOid());
             }
 
             if (message.getAuthor().userId != 0) {
@@ -174,10 +178,10 @@ public class DataUpdater {
                 values.put(MsgTable.MSG_STATUS, message.getStatus().save());
                 values.put(MsgTable.UPDATED_DATE, message.getUpdatedDate());
 
-                if (message.getActor().userId != 0) {
+                if (activity.getActor().userId != 0) {
                     // Store the Sender only for the first retrieved message.
                     // Don't overwrite the original sender (especially the first reblogger) 
-                    values.put(MsgTable.ACTOR_ID, message.getActor().userId);
+                    values.put(MsgTable.ACTOR_ID, activity.getActor().userId);
                 }
                 if (!TextUtils.isEmpty(message.oid)) {
                     values.put(MsgTable.MSG_OID, message.oid);
@@ -198,7 +202,7 @@ public class DataUpdater {
 
             boolean isDirectMessage = false;
             if (message.recipient != null) {
-                long recipientId = updateUser(message.recipient);
+                long recipientId = updateUser(message.recipient.update(activity.getActor()));
                 values.put(MsgTable.RECIPIENT_ID, recipientId);
                 if (recipientId == me.getUserId() || message.isAuthorMe()) {
                     isDirectMessage = true;
@@ -232,7 +236,7 @@ public class DataUpdater {
                         + " by " + me.getAccountName());
             }
 
-            boolean mentioned = isMentionedAndPutInReplyToMessage(message, me, values);
+            boolean mentioned = isMentionedAndPutInReplyToMessage(activity, me, values);
 
             if (message.lookupConversationId() != 0) {
                 values.put(MsgTable.CONVERSATION_ID, message.getConversationId());
@@ -283,17 +287,15 @@ public class DataUpdater {
                     }
                 }
             }
-            if (message.getActor().userId != 0) {
-                // Remember all messages that we added or updated
-                lum.onNewUserMsg(new UserMsg(message.getActor().userId, message.msgId, message.sentDate));
-            }
-            if ( !message.isAuthorActor() && message.getAuthor().userId != 0) {
+            // Remember all messages that we added or updated
+            lum.onNewUserMsg(new UserMsg(activity.getActor().userId, message.msgId, message.sentDate));
+            if ( !activity.isAuthorActor()) {
                 lum.onNewUserMsg(new UserMsg(message.getAuthor().userId, message.msgId, message.getUpdatedDate()));
             }
 
             for (MbMessage reply : message.replies) {
                 DataUpdater di = new DataUpdater(execContext);
-                di.updateMessage(reply, true);
+                di.updateMessage(reply.update(), true);
             }
         } catch (Exception e) {
             MyLog.e(this, funcName, e);
@@ -301,7 +303,8 @@ public class DataUpdater {
         return message.msgId;
     }
 
-    private boolean isMentionedAndPutInReplyToMessage(MbMessage message, MyAccount me, ContentValues values) {
+    private boolean isMentionedAndPutInReplyToMessage(MbActivity activity, MyAccount me, ContentValues values) {
+        MbMessage message = activity.getMessage();
         boolean mentioned = execContext.getTimeline().getTimelineType() == TimelineType.MENTIONS;
         Long inReplyToUserId = 0L;
         final MbMessage inReplyToMessage = message.getInReplyTo();
@@ -313,7 +316,7 @@ public class DataUpdater {
             // Type of the timeline is ALL meaning that message does not belong to this timeline
             DataUpdater di = new DataUpdater(execContext);
             // If the Msg is a Reply to another message
-            Long inReplyToMessageId = di.updateMessage(inReplyToMessage, true);
+            Long inReplyToMessageId = di.updateMessage(inReplyToMessage.update(), true);
             if (inReplyToMessage.getAuthor().nonEmpty()) {
                 inReplyToUserId = MyQuery.oidToId(OidEnum.USER_OID, message.originId, inReplyToMessage.getAuthor().oid);
             } else if (inReplyToMessageId != 0) {
@@ -323,7 +326,7 @@ public class DataUpdater {
                 values.put(MsgTable.IN_REPLY_TO_MSG_ID, inReplyToMessageId);
             }
         } else {
-            inReplyToUserId = getReplyToUserIdInBody(message);
+            inReplyToUserId = getReplyToUserIdInBody(activity);
         }
         if (inReplyToUserId != 0) {
             values.put(MsgTable.IN_REPLY_TO_USER_ID, inReplyToUserId);
@@ -347,13 +350,14 @@ public class DataUpdater {
         return mentioned;
     }
 
-    private long getReplyToUserIdInBody(MbMessage message) {
+    private long getReplyToUserIdInBody(MbActivity activity) {
         long userId = 0;
-        List<MbUser> users = message.getAuthor().extractUsersFromBodyText(message.getBody(), true);
+        List<MbUser> users = activity.getMessage().getAuthor().extractUsersFromBodyText(
+                activity.getMessage().getBody(), true);
         if (users.size() > 0) {
             userId = users.get(0).userId;
             if (userId == 0) {
-                userId = updateUser(users.get(0));
+                userId = updateUser(users.get(0).update(activity.getActor()));
             }
         }
         return userId;
@@ -386,9 +390,10 @@ public class DataUpdater {
     /**
      * @return userId
      */
-    private long updateUser(MbUser mbUser) {
+    private long updateUser(MbActivity activity) {
+        MbUser mbUser = activity.getUser();
         final String method = "updateUser";
-        if (mbUser == null || mbUser.isEmpty()) {
+        if (mbUser.isEmpty()) {
             MyLog.v(this, method + "; mbUser is empty");
             return 0;
         }
@@ -466,13 +471,12 @@ public class DataUpdater {
                 values.put(UserTable.UPDATED_DATE, mbUser.getUpdatedDate());
             }
 
-            MyAccount myActor = mbUser.actor == null ? execContext.getMyAccount()
-                    : execContext.getMyContext().persistentAccounts().fromUserId(updateUser(mbUser.actor));
+            MyAccount myActor = execContext.getMyContext().persistentAccounts().fromUserId(activity.getActor().userId);
             if (!myActor.isValid()) {
                 myActor = execContext.getMyAccount();
             }
             if (mbUser.followedByActor != TriState.UNKNOWN
-                    && mbUser.actor.userId == myActor.getUserId()) {
+                    && activity.getActor().userId == myActor.getUserId()) {
                 values.put(FriendshipTable.FOLLOWED,
                         mbUser.followedByActor.toBoolean(false));
                 MyLog.v(this,
@@ -494,7 +498,7 @@ public class DataUpdater {
             }
             mbUser.userId = userId;
             if (mbUser.hasLatestMessage()) {
-                updateMessage(mbUser.getLatestMessage(), false);
+                updateMessage(mbUser.getLatestMessage().update(), false);
             }
             
         } catch (Exception e) {

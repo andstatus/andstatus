@@ -66,13 +66,13 @@ public class MbUser implements Comparable<MbUser> {
 
     private MbMessage latestMessage = null;
 
-    public MbUser actor = null;
     public TriState followedByActor = TriState.UNKNOWN;
 
     // In our system
     public final long originId;
     public long userId = 0L;
 
+    @NonNull
     public static MbUser fromOriginAndUserOid(long originId, String userOid) {
         MbUser user = new MbUser(originId);
         user.oid = TextUtils.isEmpty(userOid) ? "" : userOid;
@@ -87,6 +87,11 @@ public class MbUser implements Comparable<MbUser> {
 
     private MbUser(long originId) {
         this.originId = originId;
+    }
+
+    @NonNull
+    public MbActivity update() {
+        return act(MbUser.EMPTY, MbActivityType.UPDATE);
     }
 
     @NonNull

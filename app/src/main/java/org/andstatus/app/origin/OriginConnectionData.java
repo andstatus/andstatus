@@ -16,6 +16,8 @@
 
 package org.andstatus.app.origin;
 
+import android.support.annotation.NonNull;
+
 import org.andstatus.app.account.AccountDataReader;
 import org.andstatus.app.account.AccountDataReaderEmpty;
 import org.andstatus.app.account.AccountName;
@@ -24,6 +26,7 @@ import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.net.http.HttpConnectionEmpty;
 import org.andstatus.app.net.social.Connection;
+import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.util.TriState;
 
 import java.net.URL;
@@ -48,6 +51,11 @@ public class OriginConnectionData {
         isOAuth = accountName.getOrigin().getOriginType().fixIsOAuth(triStateOAuth);
         httpConnectionClass = accountName.getOrigin().getOriginType().getHttpConnectionClass(isOAuth());
         dataReader = new AccountDataReaderEmpty();
+    }
+
+    @NonNull
+    public MbUser getPartialAccountUser() {
+        return MbUser.fromOriginAndUserOid(getOriginId(), getAccountUserOid());
     }
 
     public AccountName getAccountName() {

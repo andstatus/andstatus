@@ -28,9 +28,11 @@ public class MbActivity {
     public final MbActivityType type;
 
     // Objects of the Activity may be of several types...
+    @NonNull
     private MbMessage mbMessage = MbMessage.EMPTY;
+    @NonNull
     private MbUser mbUser = MbUser.EMPTY;
-    private MbActivity mbActivity = MbActivity.EMPTY;
+    private MbActivity mbActivity = null;
 
     public static MbActivity from(MbActivityType type) {
         return new MbActivity(type);
@@ -41,30 +43,30 @@ public class MbActivity {
     }
 
     @NonNull
-    public static MbActivity undo(@NonNull MbActivity activity) {
-        MbActivity undoActivity = from(MbActivityType.UNDO);
-        undoActivity.actor = activity.getActor();
-        undoActivity.mbActivity = activity;
-        return undoActivity;
-    }
-
-    @NonNull
     public MbUser getActor() {
         if (!actor.isEmpty()) {
             return actor;
         }
         switch (getObjectType()) {
-            case MESSAGE:
-                return mbMessage.getActor();
             case USER:
-                return mbUser.actor;
+                return mbUser;
+            case MESSAGE:
+                return getMessage().getAuthor();
             default:
                 return MbUser.EMPTY;
         }
     }
 
     public void setActor(MbUser actor) {
-        this.actor = actor;
+        this.actor = actor == null ? MbUser.EMPTY : actor;
+    }
+
+    public boolean isAuthorActor() {
+        return getActor().oid.equals(getMessage().getAuthor().oid);
+    }
+
+    public boolean isActorMe() {
+        return getActor().oid.equals(getMessage().myUserOid);
     }
 
     @NonNull
@@ -73,7 +75,7 @@ public class MbActivity {
             return MbObjectType.MESSAGE;
         } else if (!mbUser.isEmpty()) {
             return MbObjectType.USER;
-        } else if (!mbActivity.isEmpty()) {
+        } else if (mbActivity!= null && !mbActivity.isEmpty()) {
             return MbObjectType.ACTIVITY;
         } else {
             return MbObjectType.EMPTY;
@@ -120,6 +122,19 @@ public class MbActivity {
 
     @NonNull
     public MbActivity getActivity() {
-        return mbActivity;
+        return mbActivity == null ? EMPTY : mbActivity;
+    }
+
+    @Override
+    public String toString() {
+        return "MbActivity{" +
+                type +
+                ", timelinePosition=" + timelinePosition +
+                (timelineDate == 0 ? "" : ", timelineDate=" + timelineDate) +
+                (actor.isEmpty() ? "" : ", actor=" + actor) +
+                (mbMessage.isEmpty() ? "" : ", message=" + mbMessage) +
+                (getActivity().isEmpty() ? "" : ", activity=" + getActivity()) +
+                (mbUser.isEmpty() ? "" : ", user=" + mbUser) +
+                '}';
     }
 }

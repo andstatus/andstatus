@@ -59,8 +59,6 @@ public class MbMessage {
 
     public final List<MbAttachment> attachments = new ArrayList<>();
 
-    @NonNull
-    private MbUser actor = MbUser.EMPTY;
     public long sentDate = 0;
     private TriState favorited = TriState.UNKNOWN;
     private String reblogOid = "";
@@ -74,19 +72,6 @@ public class MbMessage {
     public final long originId;
     public long msgId = 0L;
     private long conversationId = 0L;
-
-    public static MbMessage makeReblog(@NonNull MbMessage reblog, MbMessage rebloggedMessage) {
-        if (rebloggedMessage.isEmpty()) {
-            return reblog;
-        } else {
-            // TODO: clone source instead of changing it
-            rebloggedMessage.sentDate = reblog.sentDate;
-            rebloggedMessage.actor = reblog.author;
-            rebloggedMessage.setReblogOid(reblog.oid);
-            rebloggedMessage.setFavoritedByMe(reblog.getFavoritedByMe());
-            return rebloggedMessage;
-        }
-    }
 
     public static MbMessage fromOriginAndOid(long originId, String myUserOid, String oid, DownloadStatus status) {
         MbMessage message = new MbMessage(originId, myUserOid);
@@ -104,8 +89,8 @@ public class MbMessage {
     }
 
     @NonNull
-    public MbActivity update(@NonNull MbUser actor) {
-        return act(actor, MbActivityType.UPDATE);
+    public MbActivity update() {
+        return act(MbUser.EMPTY, MbActivityType.UPDATE);
     }
 
     @NonNull
@@ -249,9 +234,6 @@ public class MbMessage {
         }
         builder.append("author:" + author + ",");
         builder.append("updated" + new Date(updatedDate) + ",");
-        if (!actor.equals(author)) {
-            builder.append("actor:" + actor + ",");
-        }
         if (sentDate != updatedDate) {
             builder.append("sent" + new Date(sentDate) + ",");
         }
@@ -328,37 +310,11 @@ public class MbMessage {
     public void setAuthor(MbUser author) {
         if (author != null && author.nonEmpty()) {
             this.author = author;
-            if (actor.isEmpty()) {
-                actor = author;
-            }
         }
-    }
-
-    /** These properties reflect an action of the actor **/
-    @NonNull
-    public MbUser getActor() {
-        return actor;
-    }
-
-    public void setActor(MbUser actor) {
-        if (actor != null && actor.nonEmpty()) {
-            this.actor = actor;
-            if (author.isEmpty()) {
-                author = actor;
-            }
-        }
-    }
-
-    public boolean isActorMe() {
-        return actor.oid.equals(myUserOid);
     }
 
     public boolean isAuthorMe() {
         return author.oid.equals(myUserOid);
-    }
-
-    public boolean isAuthorActor() {
-        return actor.oid.equals(author.oid);
     }
 
     public long getUpdatedDate() {

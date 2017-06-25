@@ -25,9 +25,9 @@ public class MessageForAccountTest {
                 .fromAccountName(DemoData.CONVERSATION_ACCOUNT_NAME);
         assertTrue(ma.isValid());
         DemoMessageInserter mi = new DemoMessageInserter(ma);
-        MbUser author1 = mi.getAccountMbUser();
+        MbUser author1 = ma.toPartialUser();
         MbMessage msg1 = mi.buildMessage(author1, "My testing message", null, null, DownloadStatus.LOADED);
-        long mgs1Id = mi.addMessage(msg1);
+        long mgs1Id = mi.onActivity(msg1.update());
         
         MessageForAccount mfa = new MessageForAccount(mgs1Id, ma.getOriginId(), ma);
         assertTrue(mfa.isAuthor);
@@ -42,7 +42,7 @@ public class MessageForAccountTest {
         MbMessage replyTo1 = mi.buildMessage(author2, "@" + author1.getUserName()
                 + " Replying to you", msg1, null, DownloadStatus.LOADED);
         replyTo1.setPublic(true);
-        long replyTo1Id = mi.addMessage(replyTo1);
+        long replyTo1Id = mi.onActivity(replyTo1.update());
         
         mfa = new MessageForAccount(replyTo1Id, ma.getOriginId(), ma);
         assertFalse(mfa.isAuthor);
@@ -58,7 +58,7 @@ public class MessageForAccountTest {
         MbMessage replyTo2 = mi.buildMessage(author3, "@" + author2.getUserName()
                 + " Replying to the second author", replyTo1, null, DownloadStatus.LOADED);
         replyTo2.setPublic(true);
-        long replyTo2Id = mi.addMessage(replyTo2);
+        long replyTo2Id = mi.onActivity(replyTo2.update());
         
         mfa = new MessageForAccount(replyTo2Id, ma.getOriginId(), ma);
         assertFalse(mfa.isAuthor);

@@ -70,11 +70,10 @@ public final class UserMsg {
      * All information is supplied in this constructor, so it doesn't lookup anything in the database
      */
     public UserMsg(long userIdIn, long msgId, long msgDate) {
-        userId = userIdIn;
-        if (userId == 0) {
-            throw new IllegalArgumentException(TAG + ": userId==0");
+        if (userIdIn != 0 && msgId != 0) {
+            userId = userIdIn;
+            onNewMsg(msgId, msgDate);
         }
-        onNewMsg(msgId, msgDate);
     }
     
     public long getUserId() {
@@ -99,7 +98,7 @@ public final class UserMsg {
      * @param msgDateIn may be 0 (will be retrieved here)
      */
     public void onNewMsg(long msgId, long msgDateIn) {
-        if (msgId == 0) {
+        if (userId == 0 || msgId == 0) {
             return; 
         }
         long msgDate = msgDateIn;

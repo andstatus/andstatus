@@ -39,6 +39,7 @@ import java.io.File;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -232,7 +233,7 @@ public abstract class Connection {
      */
     public abstract MbUser verifyCredentials() throws ConnectionException;
 
-    public abstract MbMessage destroyFavorite(String statusId) throws ConnectionException;
+    public abstract MbActivity destroyFavorite(String statusId) throws ConnectionException;
 
     /**
      * Favorites the status specified in the ID parameter as the authenticating user.
@@ -241,7 +242,7 @@ public abstract class Connection {
      *      href="http://apiwiki.twitter.com/Twitter-REST-API-Method%3A-favorites%C2%A0create">Twitter
      *      REST API Method: favorites create</a>
      */
-    public abstract MbMessage createFavorite(String statusId) throws ConnectionException;
+    public abstract MbActivity createFavorite(String statusId) throws ConnectionException;
 
     public boolean destroyReblog(String statusId) throws ConnectionException {
         return destroyStatus(statusId);
@@ -283,16 +284,15 @@ public abstract class Connection {
      * Returns a single status, specified by the id parameter below.
      * The status's author will be returned inline.
      */
-    public final MbMessage getMessage(String statusId) throws ConnectionException {
-        MbMessage msg = getMessage1(statusId);
-        if (msg != null) {
-            msg.setPublic(true);
-        }
-        return msg;
+    @NonNull
+    public final MbActivity getMessage(String statusId) throws ConnectionException {
+        MbActivity activity = getMessage1(statusId);
+        activity.getMessage().setPublic(true);
+        return activity;
     }
 
     /** See {@link #getMessage(String)} */
-    protected abstract MbMessage getMessage1(String statusId) throws ConnectionException;
+    protected abstract MbActivity getMessage1(String statusId) throws ConnectionException;
 
     public List<MbActivity> getConversation(String conversationOid) throws ConnectionException {
         throw ConnectionException.fromStatusCode(StatusCode.UNSUPPORTED_API, "getConversation oid=" + conversationOid);
@@ -313,7 +313,7 @@ public abstract class Connection {
      *      href="https://dev.twitter.com/docs/api/1/post/statuses/update">Twitter
      *      POST statuses/update</a>
      */
-    public abstract MbMessage updateStatus(String message, String statusId, String inReplyToId, Uri mediaUri)
+    public abstract MbActivity updateStatus(String message, String statusId, String inReplyToId, Uri mediaUri)
             throws ConnectionException;
 
     /**
@@ -328,7 +328,7 @@ public abstract class Connection {
      * @return The sent message if successful (empty message if not)
      * @throws ConnectionException
      */
-    public abstract MbMessage postDirectMessage(String message, String statusId, String userId, Uri mediaUri)
+    public abstract MbActivity postDirectMessage(String message, String statusId, String userId, Uri mediaUri)
             throws ConnectionException;
 
     /**
@@ -339,7 +339,7 @@ public abstract class Connection {
      * @param rebloggedId id of the Reblogged message
      * @throws ConnectionException
      */
-    public abstract MbMessage postReblog(String rebloggedId)
+    public abstract MbActivity postReblog(String rebloggedId)
             throws ConnectionException;
 
     /**
@@ -352,10 +352,11 @@ public abstract class Connection {
             throws ConnectionException;
 
     @NonNull
-    public abstract List<MbActivity> search(TimelinePosition youngestPosition,
-                                            TimelinePosition oldestPosition, int limit, String searchQuery)
-            throws ConnectionException;
-    
+    public List<MbActivity> search(TimelinePosition youngestPosition,
+               TimelinePosition oldestPosition, int limit, String searchQuery) throws ConnectionException {
+        return new ArrayList<>();
+    }
+
     /**
      * Allows this User to follow the user specified in the userId parameter
      * Allows this User to stop following the user specified in the userId parameter
@@ -364,7 +365,7 @@ public abstract class Connection {
      * @return User object with 'following' flag set/reset
      * @throws ConnectionException
      */
-    public abstract MbUser followUser(String userId, Boolean follow) throws ConnectionException;
+    public abstract MbActivity followUser(String userId, Boolean follow) throws ConnectionException;
 
     /**
      * Get information about the specified User

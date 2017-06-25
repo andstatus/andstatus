@@ -162,7 +162,7 @@ public class ConnectionTwitterTest {
                 org.andstatus.app.tests.R.raw.twitter_message_with_media);
         httpConnection.setResponse(jso);
 
-        MbMessage message = connection.getMessage("503799441900314624");
+        MbMessage message = connection.getMessage("503799441900314624").getMessage();
         assertNotNull("message returned", message);
         assertEquals("has attachment", message.attachments.size(), 1);
         MbAttachment attachment = MbAttachment.fromUrlAndContentType(new URL(
@@ -180,7 +180,7 @@ public class ConnectionTwitterTest {
 
         String body = "Update: Streckensperrung zw. Berliner Tor &lt;&gt; Bergedorf. Ersatzverkehr mit Bussen und Taxis " +
                 "Störungsdauer bis ca. 10 Uhr. #hvv #sbahnhh";
-        MbMessage message = connection.getMessage("834306097003581440");
+        MbMessage message = connection.getMessage("834306097003581440").getMessage();
         assertNotNull("message returned", message);
         assertEquals("Body of this message", MyHtml.unescapeHtml(body), message.getBody());
         assertEquals("Body of this message", ",update,streckensperrung,zw,berliner,tor,bergedorf,ersatzverkehr,mit,bussen," +
@@ -190,7 +190,7 @@ public class ConnectionTwitterTest {
                 CommandData.newAccountCommand(CommandEnum.GET_STATUS,
                         DemoData.getMyAccount(connectionData.getAccountName().toString())));
         DataUpdater di = new DataUpdater(executionContext);
-        long messageId = di.onActivity(message.update(message.getActor()));
+        long messageId = di.onActivity(message.update());
         assertTrue("Message added", messageId != 0);
     }
 

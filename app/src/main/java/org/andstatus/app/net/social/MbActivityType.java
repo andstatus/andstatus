@@ -28,6 +28,21 @@ public enum MbActivityType {
     FOLLOW,
     LIKE,
     UPDATE,
-    UNDO,    // e.g. "undo" previous "like" action
-    EMPTY
+    UNDO_ANNOUNCE,
+    UNDO_FOLLOW,
+    UNDO_LIKE,
+    EMPTY;
+
+    public static MbActivityType undo(MbActivityType type) {
+        switch (type) {
+            case ANNOUNCE:
+                return UNDO_ANNOUNCE;
+            case FOLLOW:
+                return UNDO_FOLLOW;
+            case LIKE:
+                return UNDO_LIKE;
+            default:
+                return EMPTY;
+        }
+    }
 }

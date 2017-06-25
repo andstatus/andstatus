@@ -115,10 +115,9 @@ public final class MyAccount implements Comparable<MyAccount> {
         return oAccountName;
     }
 
-    public MbUser toMbUser() {
+    public MbUser toPartialUser() {
         MbUser mbUser = MbUser.fromOriginAndUserOid(getOriginId(), getUserOid());
         mbUser.userId = getUserId();
-        mbUser.setUserName(getUsername());
         return mbUser;
     }
 
@@ -422,7 +421,7 @@ public final class MyAccount implements Comparable<MyAccount> {
                     myAccount.userId = myAccount.accountData.getDataLong(KEY_USER_ID, myAccount.userId);
                 } else {
                     DataUpdater di = new DataUpdater(myAccount);
-                    myAccount.userId = di.onActivity(user.update(user.actor));
+                    myAccount.userId = di.onActivity(user.update());
                 }
             }
             if (ok && !isPersistent()) {
@@ -492,10 +491,9 @@ public final class MyAccount implements Comparable<MyAccount> {
                 DataUpdater di = new DataUpdater(myAccount);
                 try {
                     // Construct "User" from available account info
-                    // We need this User in order to be able to link Messages to him
-                    MbUser user = MbUser.fromOriginAndUserOid(myAccount.getOriginId(), myAccount.userOid);
+                    MbUser user = myAccount.toPartialUser();
                     user.setUserName(myAccount.getUsername());
-                    myAccount.userId = di.onActivity(user.update(user.actor));
+                    myAccount.userId = di.onActivity(user.update());
                 } catch (Exception e) {
                     MyLog.e(TAG, "Construct user", e);
                 }

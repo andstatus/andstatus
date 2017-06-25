@@ -66,7 +66,7 @@ public class LargeImageTest {
                                 new URL(
                                         "http://www.example.com/pictures/large_image.png"),
                                 MyContentType.IMAGE));
-        long msgId = mi.addMessage(message);
+        long msgId = mi.onActivity(message.update());
         
         DownloadData dd = DownloadData.getSingleForMessage(msgId, message.attachments.get(0).contentType, null);
         assertEquals("Image URI stored", message.attachments.get(0).getUri(), dd.getUri());

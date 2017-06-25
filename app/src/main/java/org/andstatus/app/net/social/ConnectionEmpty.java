@@ -17,6 +17,7 @@
 package org.andstatus.app.net.social;
 
 import android.net.Uri;
+import android.support.annotation.NonNull;
 
 import org.andstatus.app.net.http.ConnectionException;
 
@@ -41,13 +42,13 @@ public class ConnectionEmpty extends Connection {
     }
 
     @Override
-    public MbMessage destroyFavorite(String statusId) throws ConnectionException {
-        return MbMessage.EMPTY;
+    public MbActivity destroyFavorite(String statusId) throws ConnectionException {
+        return MbActivity.EMPTY;
     }
 
     @Override
-    public MbMessage createFavorite(String statusId) throws ConnectionException {
-        return MbMessage.EMPTY;
+    public MbActivity createFavorite(String statusId) throws ConnectionException {
+        return MbActivity.EMPTY;
     }
 
     @Override
@@ -56,25 +57,26 @@ public class ConnectionEmpty extends Connection {
     }
 
     @Override
-    public MbMessage getMessage1(String statusId) throws ConnectionException {
-        return MbMessage.EMPTY;
+    public MbActivity getMessage1(String statusId) throws ConnectionException {
+        return MbActivity.EMPTY;
     }
 
     @Override
-    public MbMessage updateStatus(String message, String statusId, String inReplyToId, Uri mediaUri) throws ConnectionException {
-        return MbMessage.EMPTY;
+    public MbActivity updateStatus(String message, String statusId, String inReplyToId, Uri mediaUri) throws ConnectionException {
+        return MbActivity.EMPTY;
     }
 
     @Override
-    public MbMessage postDirectMessage(String message, String statusId, String userId, Uri mediaUri) throws ConnectionException {
-        return MbMessage.EMPTY;
+    public MbActivity postDirectMessage(String message, String statusId, String userId, Uri mediaUri) throws ConnectionException {
+        return MbActivity.EMPTY;
     }
 
     @Override
-    public MbMessage postReblog(String rebloggedId) throws ConnectionException {
-        return MbMessage.EMPTY;
+    public MbActivity postReblog(String rebloggedId) throws ConnectionException {
+        return MbActivity.EMPTY;
     }
 
+    @NonNull
     @Override
     public List<MbActivity> getTimeline(ApiRoutineEnum apiRoutine, TimelinePosition youngestPosition,
                                         TimelinePosition oldestPosition, int limit, String userId)
@@ -83,15 +85,8 @@ public class ConnectionEmpty extends Connection {
     }
 
     @Override
-    public List<MbActivity> search(TimelinePosition youngestPosition,
-                                   TimelinePosition oldestPosition, int limit, String searchQuery)
-            throws ConnectionException {
-        return new ArrayList<>();
-    }
-
-    @Override
-    public MbUser followUser(String userId, Boolean follow) throws ConnectionException {
-        return MbUser.EMPTY;
+    public MbActivity followUser(String userId, Boolean follow) throws ConnectionException {
+        return MbActivity.EMPTY;
     }
 
     @Override

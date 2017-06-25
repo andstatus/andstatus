@@ -110,7 +110,7 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
     }
 
     @Override
-    public MbMessage updateStatus(String message, String statusId, String inReplyToId, Uri mediaUri) throws ConnectionException {
+    public MbActivity updateStatus(String message, String statusId, String inReplyToId, Uri mediaUri) throws ConnectionException {
         JSONObject formParams = new JSONObject();
         try {
             formParams.put("status", message);
@@ -129,7 +129,7 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
             MyLog.e(this, e);
         }
         JSONObject jso = postRequest(ApiRoutineEnum.POST_MESSAGE, formParams);
-        return messageFromJson(jso);
+        return activityFromJson(jso);
     }
     
     @Override
@@ -177,7 +177,11 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
     }
 
     @Override
-    MbMessage messageFromJson2(@NonNull JSONObject jso) throws ConnectionException {
+    @NonNull
+    MbMessage messageFromJson2(JSONObject jso) throws ConnectionException {
+        if (jso == null) {
+            return MbMessage.EMPTY;
+        }
         final String method = "messageFromJson";
         MbMessage message = super.messageFromJson2(jso);
         message.url = jso.optString("external_url");

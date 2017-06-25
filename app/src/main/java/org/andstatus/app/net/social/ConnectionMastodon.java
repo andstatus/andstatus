@@ -128,14 +128,13 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
     }
 
     @Override
-    protected MbActivity timelineItemFromJson(JSONObject timelineItem) throws ConnectionException {
+    protected MbActivity activityFromTwitterLikeJson(JSONObject timelineItem) throws ConnectionException {
         if (isNotification(timelineItem)) {
             MbActivity activity = MbActivity.from(getType(timelineItem));
             activity.setTimelinePosition(timelineItem.optString("id"));
             activity.setTimelineDate(dateFromJson(timelineItem, "created_at"));
-            MbUser actor = userFromJson(timelineItem.optJSONObject("account"));
-            activity.setMessage(messageFromJson(timelineItem.optJSONObject("status")));
-            activity.getMessage().setActor(actor);
+            activity.setActor(userFromJson(timelineItem.optJSONObject("account")));
+            activity.setMessage(messageFromJson2(timelineItem.optJSONObject("status")));
             activity.getMessage().sentDate = activity.getTimelineDate();
 
             switch (activity.type) {
@@ -146,8 +145,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
                     activity.getMessage().setReblogOid(timelineItem.optString("id"));
                     break;
                 case FOLLOW:
-                    activity.setUser(MbUser.fromOriginAndUserOid(data.getOriginId(), data.getAccountUserOid()));
-                    activity.getUser().actor = actor;
+                    activity.setUser(data.getPartialAccountUser());
                     activity.getUser().followedByActor = TriState.TRUE;
                     break;
                 default:
@@ -155,7 +153,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
             }
             return activity;
         } else {
-            return super.timelineItemFromJson(timelineItem);
+            return super.activityFromTwitterLikeJson(timelineItem);
         }
 
     }
@@ -181,6 +179,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
         return activity != null && !activity.isNull("type");
     }
 
+    @NonNull
     @Override
     public List<MbActivity> search(TimelinePosition youngestPosition,
                                    TimelinePosition oldestPosition, int limit, String searchQuery)
@@ -229,7 +228,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
 
 
     @Override
-    public MbMessage updateStatus(String message, String statusId, String inReplyToId, Uri mediaUri) throws ConnectionException {
+    public MbActivity updateStatus(String message, String statusId, String inReplyToId, Uri mediaUri) throws ConnectionException {
         JSONObject formParams = new JSONObject();
         JSONObject mediaObject = null;
         try {
@@ -247,7 +246,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
             throw ConnectionException.loggedJsonException(this, "Error posting message '" + mediaUri + "'", e, mediaObject);
         }
         JSONObject jso = postRequest(ApiRoutineEnum.POST_MESSAGE, formParams);
-        return messageFromJson(jso);
+        return activityFromJson(jso);
     }
 
     private JSONObject uploadMedia(Uri mediaUri) throws ConnectionException {
@@ -279,7 +278,6 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
             throw ConnectionException.loggedJsonException(this, "Id or username is empty", null, jso);
         }
         MbUser user = MbUser.fromOriginAndUserOid(data.getOriginId(), oid);
-        user.actor = MbUser.fromOriginAndUserOid(data.getOriginId(), data.getAccountUserOid());
         user.setUserName(userName);
         user.setRealName(jso.optString("display_name"));
         user.setWebFingerId(jso.optString("acct"));
@@ -298,7 +296,11 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
     }
 
     @Override
-    MbMessage messageFromJson2(@NonNull JSONObject jso) throws ConnectionException {
+    @NonNull
+    MbMessage messageFromJson2(JSONObject jso) throws ConnectionException {
+        if (jso == null) {
+            return MbMessage.EMPTY;
+        }
         final String method = "messageFromJson";
         String oid = jso.optString("id");
         MbMessage message =  MbMessage.fromOriginAndOid(data.getOriginId(), data.getAccountUserOid(), oid,
@@ -382,7 +384,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
 
     @Override
     MbMessage rebloggedMessageFromJson(JSONObject jso) throws ConnectionException {
-        return  messageFromJson(jso.optJSONObject("reblog"));
+        return  messageFromJson2(jso.optJSONObject("reblog"));
     }
 
     @Override
@@ -399,14 +401,17 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
     }
 
     @Override
-    public MbUser followUser(String userId, Boolean follow) throws ConnectionException {
+    public MbActivity followUser(String userId, Boolean follow) throws ConnectionException {
         JSONObject relationship = postRequest(getApiPathWithUserId(follow ? ApiRoutineEnum.FOLLOW_USER :
                 ApiRoutineEnum.STOP_FOLLOWING_USER, userId), new JSONObject());
         MbUser user = MbUser.fromOriginAndUserOid(data.getOriginId(), userId);
-        if (relationship != null && !relationship.isNull("following")) {
-            user.followedByActor = TriState.fromBoolean(relationship.optBoolean("following"));
+        if (relationship == null || relationship.isNull("following")) {
+            return MbActivity.EMPTY;
         }
-        return user;
+        TriState following = TriState.fromBoolean(relationship.optBoolean("following"));
+        return user.act(data.getPartialAccountUser(), following.toBoolean(!follow) == follow
+                ? (follow ? MbActivityType.FOLLOW : MbActivityType.UNDO_FOLLOW)
+                : MbActivityType.UPDATE );
     }
 
     @Override

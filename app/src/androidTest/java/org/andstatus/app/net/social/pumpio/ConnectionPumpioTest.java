@@ -22,15 +22,16 @@ import android.text.TextUtils;
 
 import org.andstatus.app.account.AccountDataReaderEmpty;
 import org.andstatus.app.account.AccountName;
+import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MyContentType;
-import org.andstatus.app.context.DemoData;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnectionMock;
 import org.andstatus.app.net.http.OAuthClientKeys;
 import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
 import org.andstatus.app.net.social.MbActivity;
+import org.andstatus.app.net.social.MbActivityType;
 import org.andstatus.app.net.social.MbAttachment;
 import org.andstatus.app.net.social.MbMessage;
 import org.andstatus.app.net.social.MbObjectType;
@@ -64,7 +65,6 @@ public class ConnectionPumpioTest {
     private ConnectionPumpio connection;
     private URL originUrl = UrlUtils.fromString("https://identi.ca");
     private HttpConnectionMock httpConnectionMock;
-    private OriginConnectionData connectionData;
 
     private String keyStored;
     private String secretStored;
@@ -74,7 +74,7 @@ public class ConnectionPumpioTest {
         TestSuite.initializeWithData(this);
 
         TestSuite.setHttpConnectionMockClass(HttpConnectionMock.class);
-        connectionData = OriginConnectionData.fromAccountName( AccountName.fromOriginAndUserName(
+        OriginConnectionData connectionData = OriginConnectionData.fromAccountName(AccountName.fromOriginAndUserName(
                 MyContextHolder.get().persistentOrigins().fromName(DemoData.PUMPIO_ORIGIN_NAME), ""),
                 TriState.UNKNOWN);
         connectionData.setAccountUserOid(DemoData.PUMPIO_TEST_ACCOUNT_USER_OID);
@@ -175,12 +175,13 @@ public class ConnectionPumpioTest {
 
         int ind = 0;
         assertEquals("Posting image", MbObjectType.MESSAGE, timeline.get(ind).getObjectType());
-        MbMessage mbMessage = timeline.get(ind).getMessage();
+        MbActivity activity = timeline.get(ind);
+        MbMessage mbMessage = activity.getMessage();
         assertTrue("Message body: '" + mbMessage.getBody() + "'", mbMessage.getBody().contains("Fantastic wheel stand"));
         assertEquals("Message sent date: " + TestSuite.utcTime(mbMessage.sentDate),
                 TestSuite.utcTime(2013, Calendar.SEPTEMBER, 13, 1, 8, 38),
                 TestSuite.utcTime(mbMessage.sentDate));
-        MbUser actor = mbMessage.getActor();
+        MbUser actor = activity.getActor();
         assertEquals("Sender's oid", "acct:jpope@io.jpope.org", actor.oid);
         assertEquals("Sender's username", "jpope@io.jpope.org", actor.getUserName());
         assertEquals("Sender's Display name", "jpope", actor.getRealName());
@@ -203,17 +204,20 @@ public class ConnectionPumpioTest {
         assertEquals("Favorited by me (" + mbMessage.myUserOid + ")", TriState.UNKNOWN, mbMessage.getFavoritedByMe());
 
         ind++;
-        assertEquals("Other User", MbObjectType.USER, timeline.get(ind).getObjectType());
-        MbUser mbUser = timeline.get(ind).getUser();
-        assertEquals("Other actor", "acct:jpope@io.jpope.org", mbUser.actor.oid);
-        assertEquals("WebFinger ID", "jpope@io.jpope.org", mbUser.actor.getWebFingerId());
-        assertEquals("Following", TriState.TRUE, mbUser.followedByActor);
+        activity = timeline.get(ind);
+        assertEquals(MbActivityType.FOLLOW, activity.type);
+        assertEquals("Activity Object", MbObjectType.USER, activity.getObjectType());
+        MbUser mbUser = activity.getUser();
+        assertEquals("User followed", "acct:atalsta@microca.st", mbUser.oid);
+        assertEquals("WebFinger ID", "atalsta@microca.st", mbUser.getWebFingerId());
+        assertEquals("Followed", TriState.TRUE, mbUser.followedByActor);
 
         ind++;
-        assertEquals("User", MbObjectType.USER, timeline.get(ind).getObjectType());
-        mbUser = timeline.get(ind).getUser();
-        assertEquals("Url of the actor", "https://identi.ca/t131t", mbUser.actor.getProfileUrl());
-        assertEquals("WebFinger ID", "t131t@identi.ca", mbUser.actor.getWebFingerId());
+        activity = timeline.get(ind);
+        assertEquals("User", MbObjectType.USER, activity.getObjectType());
+        mbUser = activity.getUser();
+        assertEquals("Url of the actor", "https://identi.ca/t131t", activity.getActor().getProfileUrl());
+        assertEquals("WebFinger ID", "t131t@identi.ca", activity.getActor().getWebFingerId());
         assertEquals("Following", TriState.TRUE, mbUser.followedByActor);
         assertEquals("Url of the user", "https://fmrl.me/grdryn", mbUser.getProfileUrl());
 
@@ -311,9 +315,10 @@ public class ConnectionPumpioTest {
         httpConnectionMock.setResponse(jso);
         connection.getData().setAccountUserOid("acct:t131t@" + originUrl.getHost());
         String userOid = "acct:evan@e14n.com";
-        MbUser user = connection.followUser(userOid, false);
+        MbActivity activity = connection.followUser(userOid, false);
+        MbUser user = activity.getUser();
         assertTrue("User is present", !user.isEmpty());
-        assertEquals("Our account acted", connection.getData().getAccountUserOid(), user.actor.oid);
+        assertEquals("Our account acted", connection.getData().getAccountUserOid(), activity.getActor().oid);
         assertEquals("Object of action", userOid, user.oid);
         assertEquals("Unfollowed", TriState.FALSE, user.followedByActor);
     }
@@ -327,7 +332,7 @@ public class ConnectionPumpioTest {
     @Test
     public void testDestroyStatus() throws IOException {
         String jso = RawResourceUtils.getString(InstrumentationRegistry.getInstrumentation().getContext(),
-                org.andstatus.app.tests.R.raw.destroy_status_response_pumpio);
+                org.andstatus.app.tests.R.raw.pumpio_delete_comment_response);
         httpConnectionMock.setResponse(jso);
         connection.getData().setAccountUserOid(DemoData.CONVERSATION_ACCOUNT_USER_OID);
         assertTrue("Success", connection.destroyStatus("https://identi.ca.example.com/api/comment/xf0WjLeEQSlyi8jwHJ0ttre"));
@@ -349,10 +354,10 @@ public class ConnectionPumpioTest {
         httpConnectionMock.setResponse(jso);
         
         connection.getData().setAccountUserOid("acct:mymediatester@" + originUrl.getHost());
-        MbMessage message2 = connection.updateStatus("Test post message with media", "", "", DemoData.LOCAL_IMAGE_TEST_URI);
-        message2.setPublic(true); 
+        MbActivity activity = connection.updateStatus("Test post message with media", "", "", DemoData.LOCAL_IMAGE_TEST_URI);
+        activity.getMessage().setPublic(true);
         assertEquals("Message returned", privateGetMessageWithAttachment(
-                InstrumentationRegistry.getInstrumentation().getContext(), false), message2);
+                InstrumentationRegistry.getInstrumentation().getContext(), false), activity.getMessage());
     }
     
     private MbMessage privateGetMessageWithAttachment(Context context, boolean uniqueUid) throws IOException {
@@ -360,7 +365,7 @@ public class ConnectionPumpioTest {
                 org.andstatus.app.tests.R.raw.pumpio_activity_with_image);
         httpConnectionMock.setResponse(jso);
 
-        MbMessage msg = connection.getMessage("w9wME-JVQw2GQe6POK7FSQ");
+        MbMessage msg = connection.getMessage("w9wME-JVQw2GQe6POK7FSQ").getMessage();
         if (uniqueUid) {
             msg.oid += "_" + DemoData.TESTRUN_UID;
         }
@@ -385,7 +390,7 @@ public class ConnectionPumpioTest {
         httpConnectionMock.setResponse(jso);
 
         final String msgOid = "https://identi.ca/api/note/Z-x96Q8rTHSxTthYYULRHA";
-        MbMessage msg = connection.getMessage(msgOid);
+        MbMessage msg = connection.getMessage(msgOid).getMessage();
         assertNotNull("message returned", msg);
         assertEquals("Message oid", msgOid, msg.oid);
         assertEquals("Number of replies", 2, msg.replies.size());

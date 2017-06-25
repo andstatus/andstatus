@@ -135,7 +135,7 @@ public abstract class ConnectionTwitterLike extends Connection {
      *      href="https://dev.twitter.com/docs/api/1.1/post/friendships/destroy">POST friendships/destroy</a>
      */
     @Override
-    public MbUser followUser(String userId, Boolean follow) throws ConnectionException {
+    public MbActivity followUser(String userId, Boolean follow) throws ConnectionException {
         JSONObject out = new JSONObject();
         try {
             out.put("user_id", userId);
@@ -143,7 +143,8 @@ public abstract class ConnectionTwitterLike extends Connection {
             MyLog.e(this, e);
         }
         JSONObject user = postRequest(follow ? ApiRoutineEnum.FOLLOW_USER : ApiRoutineEnum.STOP_FOLLOWING_USER, out);
-        return userFromJson(user);
+        return userFromJson(user).act(data.getPartialAccountUser(),
+                follow ? MbActivityType.FOLLOW : MbActivityType.UNDO_FOLLOW);
     } 
 
     /**
@@ -204,9 +205,9 @@ public abstract class ConnectionTwitterLike extends Connection {
      * @throws ConnectionException
      */
     @Override
-    public MbMessage getMessage1(String messageId) throws ConnectionException {
+    public MbActivity getMessage1(String messageId) throws ConnectionException {
         JSONObject message = http.getRequest(getApiPathWithMessageId(ApiRoutineEnum.GET_MESSAGE, messageId));
-        return messageFromJson(message);
+        return activityFromJson(message);
     }
 
     @NonNull
@@ -232,25 +233,46 @@ public abstract class ConnectionTwitterLike extends Connection {
         return builder;
     }
 
-    protected MbActivity timelineItemFromJson(JSONObject jso) throws ConnectionException {
-        MbActivity item = MbActivity.from(MbActivityType.UPDATE);
-        item.setMessage(messageFromJson(jso));
-        item.setTimelineDate(item.getMessage().sentDate);
-        item.setTimelinePosition(item.getMessage().oid);
-        return item;
+    protected MbActivity activityFromTwitterLikeJson(JSONObject jso) throws ConnectionException {
+        MbActivity activity = activityFromJson(jso);
+        activity.setTimelineDate(activity.getMessage().sentDate);
+        activity.setTimelinePosition(activity.getMessage().oid);
+        return activity;
     }
 
     @NonNull
-    final MbMessage messageFromJson(JSONObject jso) throws ConnectionException {
-        return jso == null ? MbMessage.EMPTY :
-                MbMessage.makeReblog(messageFromJson2(jso), rebloggedMessageFromJson(jso));
+    final MbActivity activityFromJson(JSONObject jso) throws ConnectionException {
+        if (jso == null) {
+            return MbActivity.EMPTY;
+        }
+        return makeReblog(messageFromJson2(jso), rebloggedMessageFromJson(jso));
+    }
+
+    @NonNull
+    public static MbActivity makeReblog(@NonNull MbMessage message, MbMessage rebloggedMessage) {
+        if (rebloggedMessage == null || rebloggedMessage.isEmpty()) {
+            return message.update();
+        }
+        MbActivity activity = MbActivity.from(MbActivityType.ANNOUNCE);
+        activity.setMessage(rebloggedMessage);
+        activity.setTimelinePosition(message.oid);
+        activity.setTimelineDate(message.sentDate);
+        activity.setActor(message.getAuthor());
+        rebloggedMessage.sentDate = activity.getTimelineDate();
+        rebloggedMessage.setReblogOid(activity.getTimelinePosition().getPosition());
+        rebloggedMessage.setFavoritedByMe(message.getFavoritedByMe());
+        return activity;
     }
 
     MbMessage rebloggedMessageFromJson(JSONObject jso) throws ConnectionException {
-        return messageFromJson(jso.optJSONObject("retweeted_status"));
+        return jso == null ? MbMessage.EMPTY : messageFromJson2(jso.optJSONObject("retweeted_status"));
     }
 
-    MbMessage messageFromJson2(@NonNull JSONObject jso) throws ConnectionException {
+    @NonNull
+    MbMessage messageFromJson2(JSONObject jso) throws ConnectionException {
+        if (jso == null) {
+            return MbMessage.EMPTY;
+        }
         MbMessage message;
         try {
             String oid = jso.optString("id_str");
@@ -362,7 +384,6 @@ public abstract class ConnectionTwitterLike extends Connection {
             }
         }
         MbUser user = MbUser.fromOriginAndUserOid(data.getOriginId(), oid);
-        user.actor = MbUser.fromOriginAndUserOid(data.getOriginId(), data.getAccountUserOid());
         user.setUserName(userName);
         user.setRealName(jso.optString("name"));
         if (!SharedPreferencesUtil.isEmpty(user.getRealName())) {
@@ -386,7 +407,7 @@ public abstract class ConnectionTwitterLike extends Connection {
         }
         if (!jso.isNull("status")) {
             try {
-                user.setLatestMessage(messageFromJson(jso.getJSONObject("status")));
+                user.setLatestMessage(activityFromJson(jso.getJSONObject("status")).getMessage());
             } catch (JSONException e) {
                 throw ConnectionException.loggedJsonException(this, "getting status from user", e, jso);
             }
@@ -394,6 +415,7 @@ public abstract class ConnectionTwitterLike extends Connection {
         return user;
     }
 
+    @NonNull
     @Override
     public List<MbActivity> search(TimelinePosition youngestPosition,
                                    TimelinePosition oldestPosition, int limit, String searchQuery)
@@ -433,8 +455,7 @@ public abstract class ConnectionTwitterLike extends Connection {
             // Read the activities in chronological order
             for (int index = jArr.length() - 1; index >= 0; index--) {
                 try {
-                    JSONObject jso = jArr.getJSONObject(index);
-                    MbActivity item = timelineItemFromJson(jso);
+                    MbActivity item = activityFromTwitterLikeJson(jArr.getJSONObject(index));
                     timeline.add(item);
                 } catch (JSONException e) {
                     throw ConnectionException.loggedJsonException(this, "Parsing " + apiRoutine, e, null);
@@ -487,7 +508,7 @@ public abstract class ConnectionTwitterLike extends Connection {
     }
     
     @Override
-    public MbMessage postDirectMessage(String message, String statusId, String userId, Uri mediaUri) throws ConnectionException {
+    public MbActivity postDirectMessage(String message, String statusId, String userId, Uri mediaUri) throws ConnectionException {
         JSONObject formParams = new JSONObject();
         try {
             formParams.put("text", message);
@@ -498,13 +519,13 @@ public abstract class ConnectionTwitterLike extends Connection {
             MyLog.e(this, e);
         }
         JSONObject jso = postRequest(ApiRoutineEnum.POST_DIRECT_MESSAGE, formParams);
-        return messageFromJson(jso);
+        return activityFromJson(jso);
     }
     
     @Override
-    public MbMessage postReblog(String rebloggedId) throws ConnectionException {
+    public MbActivity postReblog(String rebloggedId) throws ConnectionException {
         JSONObject jso = http.postRequest(getApiPathWithMessageId(ApiRoutineEnum.POST_REBLOG, rebloggedId));
-        return messageFromJson(jso);
+        return activityFromJson(jso);
     }
 
     /**
@@ -549,7 +570,7 @@ public abstract class ConnectionTwitterLike extends Connection {
     }
     
     @Override
-    public MbMessage updateStatus(String message, String statusId, String inReplyToId, Uri mediaUri) throws ConnectionException {
+    public MbActivity updateStatus(String message, String statusId, String inReplyToId, Uri mediaUri) throws ConnectionException {
         JSONObject formParams = new JSONObject();
         try {
             formParams.put("status", message);
@@ -560,7 +581,7 @@ public abstract class ConnectionTwitterLike extends Connection {
             MyLog.e(this, e);
         }
         JSONObject jso = postRequest(ApiRoutineEnum.POST_MESSAGE, formParams);
-        return messageFromJson(jso);
+        return activityFromJson(jso);
     }
 
     /**
@@ -601,15 +622,15 @@ public abstract class ConnectionTwitterLike extends Connection {
     }
 
     @Override
-    public MbMessage createFavorite(String statusId) throws ConnectionException {
+    public MbActivity createFavorite(String statusId) throws ConnectionException {
         JSONObject jso = http.postRequest(getApiPathWithMessageId(ApiRoutineEnum.CREATE_FAVORITE, statusId));
-        return messageFromJson(jso);
+        return activityFromJson(jso);
     }
 
     @Override
-    public MbMessage destroyFavorite(String statusId) throws ConnectionException {
+    public MbActivity destroyFavorite(String statusId) throws ConnectionException {
         JSONObject jso = http.postRequest(getApiPathWithMessageId(ApiRoutineEnum.DESTROY_FAVORITE, statusId));
-        return messageFromJson(jso);
+        return activityFromJson(jso);
     }
 
 }

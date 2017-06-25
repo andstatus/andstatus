@@ -20,6 +20,7 @@ import android.database.sqlite.SQLiteDiskIOException;
 import android.os.AsyncTask;
 import android.os.Looper;
 import android.support.annotation.NonNull;
+import android.text.TextUtils;
 
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.util.InstanceId;
@@ -48,6 +49,7 @@ public abstract class MyAsyncTask<Params, Progress, Result> extends AsyncTask<Pa
     protected volatile long currentlyExecutingSince = 0;
 
     protected volatile long cancelledAt = 0;
+    private volatile String firstError = "";
 
     public enum PoolEnum {
         SYNC(2),
@@ -100,12 +102,15 @@ public abstract class MyAsyncTask<Params, Progress, Result> extends AsyncTask<Pa
             }
         } catch (SQLiteDiskIOException e) {
             String msgLog = MyContextHolder.getSystemInfo(MyContextHolder.get().context(), true);
-            MyLog.e(this, msgLog, e);
+            logError(msgLog, e);
             onDiskIoException();
+            return null;
+        } catch (AssertionError e) {
+            logError("", e);
             return null;
         } catch (Exception e) {
             String msgLog = MyContextHolder.getSystemInfo(MyContextHolder.get().context(), true);
-            MyLog.e(this, msgLog, e);
+            logError(msgLog, e);
             throw new IllegalStateException(msgLog, e);
         } finally {
             backgroundEndedAt = System.currentTimeMillis();
@@ -211,6 +216,18 @@ public abstract class MyAsyncTask<Params, Progress, Result> extends AsyncTask<Pa
             cancelledAt = System.currentTimeMillis();
         }
         return super.cancel(mayInterruptIfRunning);
+    }
+
+    public String getFirstError() {
+        return firstError;
+    }
+
+    private void logError(String msgLog, Throwable tr) {
+        MyLog.e(this, msgLog, tr);
+        if (!TextUtils.isEmpty(firstError) || tr == null) {
+            return;
+        }
+        firstError = tr.toString();
     }
 
     // See http://stackoverflow.com/questions/11411022/how-to-check-if-current-thread-is-not-main-thread

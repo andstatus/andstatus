@@ -17,27 +17,31 @@ package org.andstatus.app.net.social.pumpio;
 
 import android.support.annotation.NonNull;
 
+import org.andstatus.app.net.social.MbActivityType;
+
 /**
  * This was called "verb" in ActivityStreams 1
  * These are only partially the same as:
  * @see <a href="https://www.w3.org/TR/activitystreams-vocabulary/#activity-types">Activity Types</a>
  */
 enum ActivityType {
-    DELETE("delete", false, false),
-    FAVORITE("favorite", false, false),
-    FOLLOW("follow", false, false),
-    POST("post", true, false),
-    SHARE("share", false, false),
-    STOP_FOLLOWING("stop-following", false, false),
-    UNFAVORITE("unfavorite", false, false),
-    UNKNOWN("unknown", false, false),
-    UPDATE("update", false, false);
+    DELETE(MbActivityType.DELETE, "delete", false, false),
+    FAVORITE(MbActivityType.LIKE, "favorite", false, false),
+    FOLLOW(MbActivityType.FOLLOW, "follow", false, false),
+    POST(MbActivityType.CREATE, "post", true, false),
+    SHARE(MbActivityType.ANNOUNCE, "share", false, false),
+    STOP_FOLLOWING(MbActivityType.UNDO_FOLLOW, "stop-following", false, false),
+    UNFAVORITE(MbActivityType.UNDO_LIKE, "unfavorite", false, false),
+    UNKNOWN(MbActivityType.EMPTY, "unknown", false, false),
+    UPDATE(MbActivityType.UPDATE, "update", false, false);
 
+    final MbActivityType mbActivityType;
     final String code;
     final boolean addPublic;
     final boolean addFollowers;
 
-    ActivityType(String code, boolean addPublic, boolean addFollowers) {
+    ActivityType(MbActivityType mbActivityType, String code, boolean addPublic, boolean addFollowers) {
+        this.mbActivityType = mbActivityType;
         this.code = code;
         this.addPublic = addPublic;
         this.addFollowers = addFollowers;

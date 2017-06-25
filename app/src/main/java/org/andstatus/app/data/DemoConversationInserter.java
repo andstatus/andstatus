@@ -19,9 +19,10 @@ package org.andstatus.app.data;
 import android.text.TextUtils;
 
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.database.MsgTable;
-import org.andstatus.app.context.DemoData;
+import org.andstatus.app.net.social.ConnectionTwitterLike;
 import org.andstatus.app.net.social.MbAttachment;
 import org.andstatus.app.net.social.MbMessage;
 import org.andstatus.app.net.social.MbUser;
@@ -31,6 +32,7 @@ import org.andstatus.app.util.UrlUtils;
 
 import java.util.GregorianCalendar;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -64,8 +66,6 @@ public class DemoConversationInserter {
     private void insertAndTestConversation() {
         assertEquals("Only PumpIo supported in this test", OriginType.PUMPIO, DemoData.CONVERSATION_ORIGIN_TYPE  );
 
-        MbUser myAuthor = buildUserFromOid(ma.getUserOid());
-
         MbUser author2 = buildUserFromOid("acct:second@identi.ca");
         author2.avatarUrl = "http://png.findicons.com/files/icons/1780/black_and_orange/300/android_orange.png";
 
@@ -84,7 +84,7 @@ public class DemoConversationInserter {
                 iteration == 1 ? DemoData.CONVERSATION_ENTRY_MESSAGE_OID : null);
         selected.setSubscribedByMe(TriState.TRUE);
         MbMessage reply1 = buildMessage(author3, "Reply 1 to selected", selected, null);
-        reply1.getAuthor().followedByActor = TriState.TRUE;
+        author3.followedByActor = TriState.TRUE;
 
         MbMessage reply1Copy = MbMessage.fromOriginAndOid(reply1.originId, reply1.myUserOid, reply1.oid,
                 DownloadStatus.UNKNOWN);
@@ -107,6 +107,8 @@ public class DemoConversationInserter {
         addMessage(reply4);
         addPublicMessage(reply4, false);
 
+        DemoConversationInserter.assertIfUserIsMyFriend(author3, true, ma);
+
         final String BODY_OF_MENTIONS_MESSAGE = "@fourthWithoutAvatar@pump.example.com Reply 5 to Reply 4\n"
                 + "@" + DemoData.CONVERSATION_MEMBER_USERNAME
                 + " @unknownUser@example.com";
@@ -117,7 +119,7 @@ public class DemoConversationInserter {
         MbUser reblogger1 = buildUserFromOid("acct:reblogger@identi.ca");
         reblogger1.avatarUrl = "http://www.avatarsdb.com/avatars/cow_face.jpg";
         MbMessage reblog1 = buildMessage(reblogger1, BODY_OF_MENTIONS_MESSAGE, null, null);
-        addMessage(MbMessage.makeReblog(reblog1, reply5));
+        DemoMessageInserter.onActivity(ma, ConnectionTwitterLike.makeReblog(reblog1, reply5));
 
         addMessage(buildMessage(author3, "Reply 6 to Reply 4 - the second", reply4, null).
                 setFavoritedByMe(TriState.TRUE));
@@ -128,8 +130,8 @@ public class DemoConversationInserter {
         
         MbMessage reply8 = buildMessage(author4, "<b>Reply 8</b> to Reply 7", reply7, null);
 
-        MbMessage reblog2 = buildMessage(myAuthor, reply8.getBody(), null, null);
-        addMessage(MbMessage.makeReblog(reblog2, reply8));
+        MbMessage reblog2 = buildMessage(ma.toPartialUser(), reply8.getBody(), null, null);
+        DemoMessageInserter.onActivity(ma, ConnectionTwitterLike.makeReblog(reblog2, reply8));
 
         MbMessage reply9 = buildMessage(author2, "Reply 9 to Reply 7", reply7, null);
         reply9.attachments
@@ -142,20 +144,16 @@ public class DemoConversationInserter {
 
         // Message downloaded by another account
         MyAccount acc2 = MyContextHolder.get().persistentAccounts().fromAccountName(DemoData.CONVERSATION_ACCOUNT2_NAME);
-        MbUser actorOld = author3.actor;
-        author3.actor = users.get(DemoData.CONVERSATION_ACCOUNT2_USER_OID);
         author3.followedByActor = TriState.TRUE;
         MbMessage reply10 = buildMessage(acc2, author3, "Reply 10 to Reply 8", reply8, null);
         assertEquals("Another account as a message actor", reply10.myUserOid, DemoData.CONVERSATION_ACCOUNT2_USER_OID);
-        assertEquals("Another account as a author actor", reply10.getAuthor().actor.oid, DemoData.CONVERSATION_ACCOUNT2_USER_OID);
         DemoMessageInserter.addMessage(acc2, reply10);
         author3.followedByActor = TriState.UNKNOWN;
-        author3.actor = actorOld;
 
         MbMessage reply11 = buildMessage(author2, "Reply 11 to Reply 7, " + DemoData.GLOBAL_PUBLIC_MESSAGE_TEXT + " text", reply7, null);
         addPublicMessage(reply11, true);
 
-        MbMessage reply13 = buildMessage(myAuthor, "My reply to Reply 2", reply2, null);
+        MbMessage reply13 = buildMessage(ma.toPartialUser(), "My reply to Reply 2", reply2, null);
         MbMessage reply14 = buildMessage(author3, "Reply to my message 13", reply13, null);
         addMessage(reply14);
     }
@@ -190,5 +188,10 @@ public class DemoConversationInserter {
 
     private long addMessage(MbMessage message) {
         return DemoMessageInserter.addMessage(ma, message);
+    }
+
+    public static void assertIfUserIsMyFriend(MbUser user, boolean isFriend, MyAccount ma) {
+        Set<Long> friendsIds = MyQuery.getFriendsIds(ma.getUserId());
+        assertEquals("User " + user + " is a friend of " + ma, isFriend, friendsIds.contains(user.userId));
     }
 }

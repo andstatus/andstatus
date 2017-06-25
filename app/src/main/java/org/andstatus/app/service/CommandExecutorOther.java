@@ -39,7 +39,6 @@ import org.andstatus.app.net.social.MbMessage;
 import org.andstatus.app.net.social.MbRateLimitStatus;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.TriState;
 
 import java.util.List;
 
@@ -136,7 +135,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
             logExecutionError(true, msgLog + userInfoLogged(userId));
         }
         if (noErrors() && user != null) {
-            new DataUpdater(execContext).onActivity(user.update(user.actor));
+            new DataUpdater(execContext).onActivity(user.update());
         }
         MyLog.d(this, (msgLog + (noErrors() ? " succeeded" : " failed") ));
     }
@@ -147,21 +146,21 @@ class CommandExecutorOther extends CommandExecutorStrategy{
     private void createOrDestroyFavorite(long msgId, boolean create) {
         final String method = (create ? "create" : "destroy") + "Favorite";
         String oid = getMsgOid(method, msgId, true);
-        MbMessage message = null;
+        MbActivity activity = null;
         if (noErrors()) {
             try {
                 if (create) {
-                    message = execContext.getMyAccount().getConnection().createFavorite(oid);
+                    activity = execContext.getMyAccount().getConnection().createFavorite(oid);
                 } else {
-                    message = execContext.getMyAccount().getConnection().destroyFavorite(oid);
+                    activity = execContext.getMyAccount().getConnection().destroyFavorite(oid);
                 }
-                logIfEmptyMessage(method, msgId, message);
+                logIfEmptyMessage(method, msgId, activity.getMessage());
             } catch (ConnectionException e) {
                 logConnectionException(e, method + "; " + MyQuery.msgInfoForLog(msgId));
             }
         }
         if (noErrors()) {
-            if (message.getFavoritedByMe().toBoolean(!create) != create) {
+            if (!activity.type.equals(create ? MbActivityType.LIKE : MbActivityType.UNDO_LIKE)) {
                 /**
                  * yvolk: 2011-09-27 Twitter docs state that
                  * this may happen due to asynchronous nature of
@@ -171,9 +170,8 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                  */
                 if (create) {
                     // For the case we created favorite, let's
-                    // change
-                    // the flag manually.
-                    message.setFavoritedByMe(TriState.fromBoolean(create));
+                    // change the flag manually.
+                    activity = activity.getMessage().act(activity.getActor(), MbActivityType.LIKE);
 
                     MyLog.d(this, method + "; Favorited flag didn't change yet.");
                     // Let's try to assume that everything was OK
@@ -189,12 +187,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
 
             if (noErrors()) {
                 // Please note that the Favorited message may be NOT in the User's Home timeline!
-                MbActivity mbActivity = message.act(message.getActor(), MbActivityType.LIKE);
-                if (create) {
-                    new DataUpdater(execContext).onActivity(mbActivity);
-                } else {
-                    new DataUpdater(execContext).onActivity(MbActivity.undo(mbActivity));
-                }
+                new DataUpdater(execContext).onActivity(activity);
             }
         }
         MyLog.d(this, method + (noErrors() ? " succeeded" : " failed"));
@@ -216,21 +209,20 @@ class CommandExecutorOther extends CommandExecutorStrategy{
     private void followOrStopFollowingUser(long userId, boolean follow) {
         final String method = (follow ? "follow" : "stopFollowing") + "User";
         String oid = getUserOid(method, userId, true);
-        MbUser user = null;
+        MbActivity activity = null;
         if (noErrors()) {
             try {
-                user = execContext.getMyAccount().getConnection().followUser(oid, follow);
-                logIfUserIsEmpty(method, userId, user);
+                activity = execContext.getMyAccount().getConnection().followUser(oid, follow);
+                logIfUserIsEmpty(method, userId, activity.getUser());
             } catch (ConnectionException e) {
                 logConnectionException(e, method + userInfoLogged(userId));
             }
         }
-        if (user != null && noErrors()) {
-            if (user.followedByActor != TriState.UNKNOWN &&  user.followedByActor.toBoolean(follow) != follow) {
+        if (activity != null && noErrors()) {
+            if (!activity.type.equals(follow ? MbActivityType.FOLLOW : MbActivityType.UNDO_FOLLOW)) {
                 if (follow) {
                     // Act just like for creating favorite...
-                    user.followedByActor = TriState.fromBoolean(follow);
-
+                    activity = activity.getUser().act(activity.getActor(), MbActivityType.FOLLOW);
                     MyLog.d(this, "Follow a User. 'following' flag didn't change yet.");
                     // Let's try to assume that everything was OK:
                 } else {
@@ -238,7 +230,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 }
             }
             if (noErrors()) {
-                new DataUpdater(execContext).onActivity(user.update(user.actor));
+                new DataUpdater(execContext).onActivity(activity);
             }
         }
         MyLog.d(this, method + (noErrors() ? " succeeded" : " failed"));
@@ -338,15 +330,15 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         String oid = getMsgOid(method, msgId, true);
         if (noErrors()) {
             try {
-                MbMessage message = execContext.getMyAccount().getConnection().getMessage(oid);
-                if (message.isEmpty()) {
+                MbActivity activity = execContext.getMyAccount().getConnection().getMessage(oid);
+                if (activity.isEmpty()) {
                     logExecutionError(false, "Received Message is empty, " + MyQuery.msgInfoForLog(msgId));
                 } else {
                     try {
-                        new DataUpdater(execContext).onActivity(message.update(message.getActor()));
+                        new DataUpdater(execContext).onActivity(activity);
                     } catch (Exception e) {
-                        logExecutionError(false, "Error while saving to the local cache," + MyQuery.msgInfoForLog(msgId) +
-                        ", " + e.getMessage());
+                        logExecutionError(false, "Error while saving to the local cache,"
+                                + MyQuery.msgInfoForLog(msgId) + ", " + e.getMessage());
                     }
                 }
             } catch (ConnectionException e) {
@@ -363,7 +355,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
 
     private void updateStatus(long msgId) {
         final String method = "updateStatus";
-        MbMessage message = null;
+        MbActivity activity = null;
         String status = MyQuery.msgIdToStringColumnValue(MsgTable.BODY, msgId);
         String oid = getMsgOid(method, msgId, false);
         long recipientUserId = MyQuery.msgIdToLongColumnValue(MsgTable.RECIPIENT_ID, msgId);
@@ -385,23 +377,23 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 long replyToMsgId = MyQuery.msgIdToLongColumnValue(
                         MsgTable.IN_REPLY_TO_MSG_ID, msgId);
                 String replyToMsgOid = getMsgOid(method, replyToMsgId, false);
-                message = execContext.getMyAccount().getConnection()
+                activity = execContext.getMyAccount().getConnection()
                         .updateStatus(status.trim(), oid, replyToMsgOid, mediaUri);
             } else {
                 String recipientOid = MyQuery.idToOid(OidEnum.USER_OID, recipientUserId, 0);
                 // Currently we don't use Screen Name, I guess id is enough.
-                message = execContext.getMyAccount().getConnection()
+                activity = execContext.getMyAccount().getConnection()
                         .postDirectMessage(status.trim(), oid, recipientOid, mediaUri);
             }
-            logIfEmptyMessage(method, msgId, message);
+            logIfEmptyMessage(method, msgId, activity.getMessage());
         } catch (ConnectionException e) {
             logConnectionException(e, method + "; " + msgLog);
         }
-        if (noErrors()) {
+        if (noErrors() && activity != null) {
             // The message was sent successfully, so now update unsent message
             // New User's message should be put into the user's Home timeline.
-            message.msgId = msgId;
-            new DataUpdater(execContext).onActivity(message.update(message.getActor()));
+            activity.getMessage().msgId = msgId;
+            new DataUpdater(execContext).onActivity(activity);
             execContext.getResult().setItemId(msgId);
         }
         MyLog.d(this, method + (noErrors() ? " succeeded" : " failed"));
@@ -416,11 +408,11 @@ class CommandExecutorOther extends CommandExecutorStrategy{
     private void reblog(long rebloggedId) {
         final String method = "Reblog";
         String oid = getMsgOid(method, rebloggedId, true);
-        MbMessage message = MbMessage.EMPTY;
+        MbActivity activity = MbActivity.EMPTY;
         if (noErrors()) {
             try {
-                message = execContext.getMyAccount().getConnection().postReblog(oid);
-                logIfEmptyMessage(method, rebloggedId, message);
+                activity = execContext.getMyAccount().getConnection().postReblog(oid);
+                logIfEmptyMessage(method, rebloggedId, activity.getMessage());
             } catch (ConnectionException e) {
                 logConnectionException(e, "Reblog " + oid);
             }
@@ -428,7 +420,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         if (noErrors()) {
             // The tweet was sent successfully
             // Reblog should be put into the user's Home timeline!
-            new DataUpdater(execContext).onActivity(message.act(message.getActor(), MbActivityType.ANNOUNCE));
+            new DataUpdater(execContext).onActivity(activity);
         }
         MyLog.d(this, method + (noErrors() ? " succeeded" : " failed"));
     }

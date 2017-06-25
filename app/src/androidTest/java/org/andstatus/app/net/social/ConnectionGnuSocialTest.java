@@ -19,9 +19,9 @@ package org.andstatus.app.net.social;
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
 
+import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MyContentType;
-import org.andstatus.app.context.DemoData;
 import org.andstatus.app.net.http.HttpReadResult;
 import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
 import org.andstatus.app.util.RawResourceUtils;
@@ -38,7 +38,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 public class ConnectionGnuSocialTest {
-    private static final String MESSAGE_OID = "2215662";
     private ConnectionTwitterGnuSocialMock connection;
 
     public static MbMessage getMessageWithAttachment(Context context) throws Exception {
@@ -146,10 +145,10 @@ public class ConnectionGnuSocialTest {
                 org.andstatus.app.tests.R.raw.quitter_message_with_attachment);
         connection.getHttpMock().setResponse(jso);
         
-        MbMessage message2 = connection.updateStatus("Test post message with media", "", "", DemoData.LOCAL_IMAGE_TEST_URI);
-        message2.setPublic(true); 
+        MbActivity activity = connection.updateStatus("Test post message with media", "", "", DemoData.LOCAL_IMAGE_TEST_URI);
+        activity.getMessage().setPublic(true);
         assertEquals("Message returned", privateGetMessageWithAttachment(
-                InstrumentationRegistry.getInstrumentation().getContext(), false), message2);
+                InstrumentationRegistry.getInstrumentation().getContext(), false), activity.getMessage());
     }
 
     @Test
@@ -158,10 +157,11 @@ public class ConnectionGnuSocialTest {
     }
 
     private MbMessage privateGetMessageWithAttachment(Context context, boolean uniqueUid) throws IOException {
+        final String MESSAGE_OID = "2215662";
         // Originally downloaded from https://quitter.se/api/statuses/show.json?id=2215662
         String jso = RawResourceUtils.getString(context, org.andstatus.app.tests.R.raw.quitter_message_with_attachment);
         connection.getHttpMock().setResponse(jso);
-        MbMessage msg = connection.getMessage(MESSAGE_OID);
+        MbMessage msg = connection.getMessage(MESSAGE_OID).getMessage();
         if (uniqueUid) {
             msg.oid += "_" + DemoData.TESTRUN_UID;
         }
@@ -180,14 +180,20 @@ public class ConnectionGnuSocialTest {
 
     @Test
     public void testReblog() throws IOException {
+        final String MESSAGE_OID = "10341561";
         String jString = RawResourceUtils.getString(InstrumentationRegistry.getInstrumentation().getContext(),
-                org.andstatus.app.tests.R.raw.quitter_message_with_attachment);
+                org.andstatus.app.tests.R.raw.loadaverage_repost_response);
         connection.getHttpMock().setResponse(jString);
-        MbMessage message = connection.postReblog(MESSAGE_OID);
+        MbActivity activity = connection.postReblog(MESSAGE_OID);
+        assertEquals(MbActivityType.ANNOUNCE, activity.type);
+        MbMessage message = activity.getMessage();
         assertEquals(message.toString(), MESSAGE_OID, message.oid);
-        assertEquals("conversationOid", "1956322", message.conversationOid);
+        assertEquals("conversationOid", "9118253", message.conversationOid);
         assertEquals(1, connection.getHttpMock().getRequestsCounter());
         HttpReadResult result = connection.getHttpMock().getResults().get(0);
         assertTrue("URL doesn't contain message oid: " + result.getUrl(), result.getUrl().contains(MESSAGE_OID));
+        assertEquals("Activity oid; " + activity, "10341833", activity.getTimelinePosition().getPosition());
+        assertEquals("Actor; " + activity, "andstatus@loadaverage.org", activity.getActor().getWebFingerId());
+        assertEquals("Author; " + activity, "igor@herds.eu", activity.getMessage().getAuthor().getWebFingerId());
     }
 }

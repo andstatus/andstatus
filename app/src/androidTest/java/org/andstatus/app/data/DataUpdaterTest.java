@@ -30,6 +30,8 @@ import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.database.UserTable;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.social.ConnectionGnuSocialTest;
+import org.andstatus.app.net.social.MbActivity;
+import org.andstatus.app.net.social.MbActivityType;
 import org.andstatus.app.net.social.MbAttachment;
 import org.andstatus.app.net.social.MbMessage;
 import org.andstatus.app.net.social.MbUser;
@@ -72,19 +74,13 @@ public class DataUpdaterTest {
         String userOid = "acct:" + username;
         MbUser somebody = MbUser.fromOriginAndUserOid(DemoData.getConversationOriginId(), userOid);
         somebody.setUserName(username);
-        somebody.actor = DemoData.getConversationMyMbUser();
         somebody.followedByActor = TriState.FALSE;
         somebody.setProfileUrl("http://identi.ca/somebody");
-        di.onActivity(somebody.update(somebody.actor));
+        di.onActivity(somebody.update(DemoData.getConversationMyMbUser()));
 
-        long somebodyId = MyQuery.oidToId(OidEnum.USER_OID, DemoData.getConversationOriginId(),
-                userOid);
-        assertTrue("User " + username + " added", somebodyId != 0);
-
-        Set<Long> friendsIds = MyQuery.getFriendsIds(DemoData
-                .getConversationMyAccount().getUserId());
-        assertFalse("User " + username + " is followed by " + DemoData.getConversationMyAccount(),
-                friendsIds.contains(somebodyId));
+        somebody.userId = MyQuery.oidToId(OidEnum.USER_OID, DemoData.getConversationOriginId(), userOid);
+        assertTrue("User " + username + " added", somebody.userId != 0);
+        DemoConversationInserter.assertIfUserIsMyFriend(somebody, false, DemoData.getConversationMyAccount());
 
         MbMessage message = MbMessage.fromOriginAndOid(DemoData.getConversationOriginId(),
                 DemoData.getConversationMyMbUser().oid, messageOid, DownloadStatus.LOADED);
@@ -95,7 +91,7 @@ public class DataUpdaterTest {
         message.setAuthor(somebody);
 
         TestSuite.clearAssertionData();
-        long messageId = di.onActivity(message.update(message.getActor()));
+        long messageId = di.onActivity(message.update());
         assertTrue("Message added", messageId != 0);
         AssertionData data = TestSuite.getMyContextForTest().takeDataByKey(DataUpdater.MSG_ASSERTION_KEY);
         assertFalse("Data put", data.isEmpty());
@@ -114,11 +110,11 @@ public class DataUpdaterTest {
         assertEquals("Message stored as loaded", DownloadStatus.LOADED, DownloadStatus.load(
                 MyQuery.msgIdToLongColumnValue(MsgTable.MSG_STATUS, messageId)));
         long authorId = MyQuery.msgIdToLongColumnValue(MsgTable.AUTHOR_ID, messageId);
-        assertEquals("Author of the message", somebodyId, authorId);
+        assertEquals("Author of the message", somebody.userId, authorId);
         String url = MyQuery.msgIdToStringColumnValue(MsgTable.URL, messageId);
         assertEquals("Url of the message", message.url, url);
         long senderId = MyQuery.msgIdToLongColumnValue(MsgTable.ACTOR_ID, messageId);
-        assertEquals("Sender of the message", somebodyId, senderId);
+        assertEquals("Sender of the message", somebody.userId, senderId);
         url = MyQuery.userIdToStringColumnValue(UserTable.PROFILE_URL, senderId);
         assertEquals("Url of the author " + somebody.getUserName(), somebody.getProfileUrl(), url);
 
@@ -126,7 +122,7 @@ public class DataUpdaterTest {
                 Timeline.getTimeline(TimelineType.MY_FRIENDS, DemoData.getConversationMyAccount(), 0, null));
         SelectionAndArgs sa = new SelectionAndArgs();
         String sortOrder = MsgTable.DESC_SORT_ORDER;
-        sa.addSelection("fUserId = ?", Long.toString(somebodyId));
+        sa.addSelection("fUserId = ?", Long.toString(somebody.userId));
         String[] PROJECTION = new String[] {
                 MsgTable._ID
         };
@@ -136,18 +132,16 @@ public class DataUpdaterTest {
         cursor.close();
 
         somebody.followedByActor = TriState.TRUE;
-        di.onActivity(somebody.update(somebody.actor));
-
-        friendsIds = MyQuery.getFriendsIds(DemoData.getConversationMyAccount().getUserId());
-        assertTrue("User " + username + ", id=" + somebodyId + " is not followed by "
-                + DemoData.getConversationMyAccount(), friendsIds.contains(somebodyId));
+        di.onActivity(somebody.update(DemoData.getConversationMyMbUser()));
+        DemoConversationInserter.assertIfUserIsMyFriend(somebody, true, DemoData.getConversationMyAccount());
 
         cursor = context.getContentResolver().query(contentUri, PROJECTION, sa.selection,
                 sa.selectionArgs, sortOrder);
-        assertTrue("Message by user=" + somebodyId + " is not in the Friends timeline",
+        assertTrue("Message by user=" + somebody.userId + " is not in the Friends timeline",
                 cursor != null && cursor.getCount() > 0);
         cursor.close();
 
+        Set<Long> friendsIds = MyQuery.getFriendsIds(DemoData.getConversationMyAccount().getUserId());
         MyContextHolder.get().persistentAccounts().initialize();
         for (long id : friendsIds) {
             assertTrue("isFriend: " + id, MyContextHolder.get().persistentAccounts().isMeOrMyFriend(id));
@@ -163,7 +157,6 @@ public class DataUpdaterTest {
         MbUser author = MbUser.fromOriginAndUserOid(DemoData.getConversationOriginId(), "acct:"
                 + username);
         author.setUserName(username);
-        author.actor = DemoData.getConversationMyMbUser();
 
         MbMessage message = new DemoMessageInserter(DemoData.getConversationMyAccount()).buildMessage(
                 author,
@@ -173,7 +166,7 @@ public class DataUpdaterTest {
         message.via = "AnyOtherClient";
         message.recipient = DemoData.getConversationMyMbUser();
         long messageId = new DemoMessageInserter(DemoData.getConversationMyAccount())
-                .addMessage(message);
+                .onActivity(message.update());
 
         Uri contentUri = MatchedUri.getTimelineUri(
                 Timeline.getTimeline(TimelineType.HOME, DemoData.getConversationMyAccount(), 0, null));
@@ -204,12 +197,10 @@ public class DataUpdaterTest {
         MbUser author = MbUser.fromOriginAndUserOid(DemoData.getConversationOriginId(), "acct:"
                 + authorUserName);
         author.setUserName(authorUserName);
-        author.actor = DemoData.getConversationMyMbUser();
 
         String actorUserName = "firstreader@identi.ca";
         MbUser otherUser = MbUser.fromOriginAndUserOid(DemoData.getConversationOriginId(), "acct:" + actorUserName);
         otherUser.setUserName(actorUserName);
-        otherUser.actor = DemoData.getConversationMyMbUser();
 
         MbMessage message = MbMessage.fromOriginAndOid(DemoData.getConversationOriginId(),
                 DemoData.getConversationMyMbUser().oid,
@@ -219,11 +210,14 @@ public class DataUpdaterTest {
         message.setUpdatedDate(13312697000L);
         message.via = "SomeOtherClient";
         message.setAuthor(author);
-        message.setActor(otherUser);
+
+        MbActivity activity = MbActivity.from(MbActivityType.LIKE);
+        activity.setActor(otherUser);
+        activity.setMessage(message);
         message.setFavorited(TriState.TRUE);
 
         DataUpdater di = new DataUpdater(DemoData.getConversationMyAccount());
-        long messageId = di.onActivity(message.update(message.getActor()));
+        long messageId = di.onActivity(activity);
         assertTrue("Message added", messageId != 0);
 
         Uri contentUri = MatchedUri.getTimelineUri(
@@ -269,7 +263,6 @@ public class DataUpdaterTest {
         MbUser author = MbUser.fromOriginAndUserOid(DemoData.getConversationOriginId(), "acct:"
                 + authorUserName);
         author.setUserName(authorUserName);
-        author.actor = DemoData.getConversationMyMbUser();
 
         MbMessage message = MbMessage.fromOriginAndOid(DemoData.getConversationOriginId(),
                 DemoData.getConversationMyMbUser().oid,
@@ -288,7 +281,7 @@ public class DataUpdaterTest {
         message.setInReplyTo(inReplyTo);
 
         DataUpdater di = new DataUpdater(DemoData.getConversationMyAccount());
-        long messageId = di.onActivity(message.update(message.getActor()));
+        long messageId = di.onActivity(message.update());
         assertTrue("Message added", messageId != 0);
 
         Uri contentUri = MatchedUri.getTimelineUri(
@@ -327,7 +320,7 @@ public class DataUpdaterTest {
         MyAccount ma = MyContextHolder.get().persistentAccounts()
                 .getFirstSucceededForOriginId(message.originId);
         DataUpdater di = new DataUpdater(ma);
-        long messageId = di.onActivity(message.update(message.getActor()));
+        long messageId = di.onActivity(message.update());
         assertTrue("Message added", messageId != 0);
 
         DownloadData dd = DownloadData.getSingleForMessage(messageId,
@@ -348,7 +341,7 @@ public class DataUpdaterTest {
         message.attachments.add(MbAttachment.fromUriAndContentType(DemoData.LOCAL_IMAGE_TEST_URI,
                 MyContentType.IMAGE));
         DataUpdater di = new DataUpdater(ma);
-        message.msgId = di.onActivity(message.update(message.getActor()));
+        message.msgId = di.onActivity(message.update());
         assertTrue("Message added", message.msgId != 0);
         assertEquals("Status of unsent message", DownloadStatus.SENDING, DownloadStatus.load(
                 MyQuery.msgIdToLongColumnValue(MsgTable.MSG_STATUS, message.msgId)));
@@ -371,7 +364,7 @@ public class DataUpdaterTest {
                 MyContentType.IMAGE));
         message2.msgId = message.msgId;
 
-        long rowId2 = di.onActivity(message2.update(message2.getActor()));
+        long rowId2 = di.onActivity(message2.update());
         assertEquals("Row id didn't change", message.msgId, message2.msgId);
         assertEquals("Message updated", message.msgId, rowId2);
         assertEquals("Status of loaded message", DownloadStatus.LOADED, DownloadStatus.load(
@@ -394,14 +387,14 @@ public class DataUpdaterTest {
         user1.setProfileUrl("https://" + DemoData.GNUSOCIAL_TEST_ORIGIN_NAME + ".example.com/");
         
         DataUpdater di = new DataUpdater(ma);
-        long userId1 = di.onActivity(user1.update(user1.actor));
+        long userId1 = di.onActivity(user1.update());
         assertTrue("User added", userId1 != 0);
         assertEquals("Username stored", user1.getUserName(),
                 MyQuery.userIdToStringColumnValue(UserTable.USERNAME, userId1));
 
         MbUser user1partial = MbUser.fromOriginAndUserOid(user1.originId, user1.oid);
         assertTrue("Partially defined", user1partial.isPartiallyDefined());
-        long userId1partial = di.onActivity(user1partial.update(user1partial.actor));
+        long userId1partial = di.onActivity(user1partial.update());
         assertEquals("Same user", userId1, userId1partial);
         assertEquals("Partially defined user shouldn't change Username", user1.getUserName(),
                 MyQuery.userIdToStringColumnValue(UserTable.USERNAME, userId1));
@@ -411,7 +404,7 @@ public class DataUpdaterTest {
                 MyQuery.userIdToStringColumnValue(UserTable.REAL_NAME, userId1));
 
         user1.setUserName(user1.getUserName() + "renamed");
-        long userId1Renamed = di.onActivity(user1.update(user1.actor));
+        long userId1Renamed = di.onActivity(user1.update());
         assertEquals("Same user renamed", userId1, userId1Renamed);
         assertEquals("Same user renamed", user1.getUserName(),
                 MyQuery.userIdToStringColumnValue(UserTable.USERNAME, userId1));
@@ -419,7 +412,7 @@ public class DataUpdaterTest {
         MbUser user2SameOldUserName = new DemoMessageInserter(ma).buildUserFromOid("34805"
                 + DemoData.TESTRUN_UID);
         user2SameOldUserName.setUserName(username);
-        long userId2 = di.onActivity(user2SameOldUserName.update(user2SameOldUserName.actor));
+        long userId2 = di.onActivity(user2SameOldUserName.update());
         assertTrue("Other user with the same user name as old name of user", userId1 != userId2);
         assertEquals("Username stored", user2SameOldUserName.getUserName(),
                 MyQuery.userIdToStringColumnValue(UserTable.USERNAME, userId2));
@@ -428,7 +421,7 @@ public class DataUpdaterTest {
                 + DemoData.TESTRUN_UID);
         user3SameNewUserName.setUserName(user1.getUserName());
         user3SameNewUserName.setProfileUrl("https://" + DemoData.GNUSOCIAL_TEST_ORIGIN_NAME + ".other.example.com/");
-        long userId3 = di.onActivity(user3SameNewUserName.update(user3SameNewUserName.actor));
+        long userId3 = di.onActivity(user3SameNewUserName.update());
         assertTrue("User added " + user3SameNewUserName, userId3 != 0);
         assertTrue("Other user with the same user name as the new name of user1, but different WebFingerId", userId1 != userId3);
         assertEquals("Username stored for userId=" + userId3, user3SameNewUserName.getUserName(),
@@ -442,7 +435,7 @@ public class DataUpdaterTest {
         MbUser user = new DemoMessageInserter(ma).buildUserFromOid("34807" + DemoData.TESTRUN_UID);
 
         DataUpdater di = new DataUpdater(ma);
-        long id = di.onActivity(user.update(user.actor));
+        long id = di.onActivity(user.update());
         assertTrue("User added", id != 0);
         assertEquals("Username", user.getUserName(),
                 MyQuery.userIdToStringColumnValue(UserTable.USERNAME, id));
@@ -494,7 +487,7 @@ public class DataUpdaterTest {
         MbUser user = MbUser.fromOriginAndUserOid(DemoData.getConversationMyAccount().getOriginId(), realBuddyOid);
         user.setUserName(buddyUserName);
         DataUpdater di = new DataUpdater(DemoData.getConversationMyAccount());
-        long userId2 = di.onActivity(user.update(user.actor));
+        long userId2 = di.onActivity(user.update());
         assertEquals(userId1, userId2);
         assertEquals("TempOid replaced with real", realBuddyOid, MyQuery.idToOid(OidEnum.USER_OID, userId1, 0));
 
@@ -512,7 +505,6 @@ public class DataUpdaterTest {
         String userOid = "acct:" + username;
         MbUser somebody = MbUser.fromOriginAndUserOid(DemoData.getConversationOriginId(), userOid);
         somebody.setUserName(username);
-        somebody.actor = DemoData.getConversationMyMbUser();
         somebody.setProfileUrl("https://somewhere.net/" + username);
 
         MbMessage message = MbMessage.fromOriginAndOid(DemoData.getConversationOriginId(),
@@ -522,7 +514,7 @@ public class DataUpdaterTest {
         message.via = "MyCoolClient";
         message.setAuthor(somebody);
 
-        long messageId = di.onActivity(message.update(message.getActor()));
+        long messageId = di.onActivity(message.update());
         assertTrue("Message added", messageId != 0);
         long buddyId = MyQuery.msgIdToLongColumnValue(MsgTable.IN_REPLY_TO_USER_ID, messageId);
         if (isReply) {

@@ -105,7 +105,7 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
     }
 
     @Override
-    public MbMessage updateStatus(String message, String statusId, String inReplyToId, Uri mediaUri)
+    public MbActivity updateStatus(String message, String statusId, String inReplyToId, Uri mediaUri)
             throws ConnectionException {
         if (UriUtils.isEmpty(mediaUri)) {
             return super.updateStatus(message, statusId, inReplyToId, mediaUri);
@@ -113,7 +113,7 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
         return updateWithMedia(message, inReplyToId, mediaUri);
     }
 
-    private MbMessage updateWithMedia(String message, String inReplyToId, Uri mediaUri) throws ConnectionException {
+    private MbActivity updateWithMedia(String message, String inReplyToId, Uri mediaUri) throws ConnectionException {
         JSONObject formParams = new JSONObject();
         try {
             formParams.put("status", message);
@@ -128,11 +128,11 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
             MyLog.e(this, e);
         }
         JSONObject jso = postRequest(ApiRoutineEnum.POST_WITH_MEDIA, formParams);
-        return messageFromJson(jso);
+        return activityFromJson(jso);
     }
 
     @Override
-    public MbMessage createFavorite(String statusId) throws ConnectionException {
+    public MbActivity createFavorite(String statusId) throws ConnectionException {
         JSONObject out = new JSONObject();
         try {
             out.put("id", statusId);
@@ -140,11 +140,11 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
             MyLog.e(this, e);
         }
         JSONObject jso = postRequest(ApiRoutineEnum.CREATE_FAVORITE, out);
-        return messageFromJson(jso);
+        return activityFromJson(jso);
     }
 
     @Override
-    public MbMessage destroyFavorite(String statusId) throws ConnectionException {
+    public MbActivity destroyFavorite(String statusId) throws ConnectionException {
         JSONObject out = new JSONObject();
         try {
             out.put("id", statusId);
@@ -152,9 +152,10 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
             MyLog.e(this, e);
         }
         JSONObject jso = postRequest(ApiRoutineEnum.DESTROY_FAVORITE, out);
-        return messageFromJson(jso);
+        return activityFromJson(jso);
     }
 
+    @NonNull
     @Override
     public List<MbActivity> search(TimelinePosition youngestPosition,
                                    TimelinePosition oldestPosition, int limit, String searchQuery)
@@ -174,7 +175,11 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
     
     private static final String ATTACHMENTS_FIELD_NAME = "media";
     @Override
-    MbMessage messageFromJson2(@NonNull JSONObject jso) throws ConnectionException {
+    @NonNull
+    MbMessage messageFromJson2(JSONObject jso) throws ConnectionException {
+        if (jso == null) {
+            return MbMessage.EMPTY;
+        }
         final String method = "messageFromJson";
         MbMessage message = super.messageFromJson2(jso);
         // See https://dev.twitter.com/docs/entities
