@@ -17,6 +17,7 @@
 package org.andstatus.app.msg;
 
 import android.content.Intent;
+import android.support.test.espresso.action.TypeTextAction;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,19 +26,22 @@ import android.widget.TextView;
 import org.andstatus.app.ActivityTestHelper;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.MsgTable;
-import org.andstatus.app.context.DemoData;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.timeline.Timeline;
 import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.MyLog;
 import org.junit.Test;
 
+import static android.support.test.espresso.Espresso.onView;
+import static android.support.test.espresso.action.ViewActions.pressKey;
+import static android.support.test.espresso.matcher.ViewMatchers.withResourceName;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -85,8 +89,8 @@ public class PublicTimelineActivityTest extends TimelineActivityTest {
         ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<>(getActivity(),
                 TimelineActivity.class);
         helper.clickMenuItem(method, menu_id);
-        getInstrumentation().sendStringSync(messageText);
-        getInstrumentation().sendKeyDownUpSync(KeyEvent.KEYCODE_ENTER);
+        onView(withResourceName("search_src_text")).perform(new TypeTextAction(messageText),
+                pressKey(KeyEvent.KEYCODE_ENTER));
         TimelineActivity nextActivity = (TimelineActivity) helper.waitForNextActivity(method, 40000);
         waitForButtonClickedEvidence(nextActivity, method, messageText);
         assertMessagesArePublic(nextActivity, messageText);

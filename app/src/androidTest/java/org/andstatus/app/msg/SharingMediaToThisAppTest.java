@@ -3,8 +3,8 @@ package org.andstatus.app.msg;
 import android.content.Intent;
 import android.net.Uri;
 import android.provider.BaseColumns;
+import android.support.test.espresso.action.TypeTextAction;
 import android.view.View;
-import android.widget.EditText;
 import android.widget.TextView;
 
 import org.andstatus.app.ActivityTestHelper;
@@ -27,6 +27,8 @@ import org.junit.Test;
 
 import java.util.Arrays;
 
+import static android.support.test.espresso.Espresso.onView;
+import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -73,10 +75,8 @@ public class SharingMediaToThisAppTest extends TimelineActivityTest {
         ActivityTestHelper.waitTextInAView(method, details, textToFind);
 
         String body = "Test message with a shared image " + DemoData.TESTRUN_UID;
-        EditText editText = (EditText) editorView.findViewById(R.id.messageBodyEditText);
-        editText.requestFocus();
         TestSuite.waitForIdleSync();
-        getInstrumentation().sendStringSync(body);
+        onView(withId(R.id.messageBodyEditText)).perform(new TypeTextAction(body));
         TestSuite.waitForIdleSync();
 
         mService.serviceStopped = false;

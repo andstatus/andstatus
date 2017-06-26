@@ -22,10 +22,10 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
+import android.support.test.espresso.action.TypeTextAction;
 import android.text.TextUtils;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.EditText;
 import android.widget.TextView;
 
 import org.andstatus.app.ActivityRequestCode;
@@ -34,6 +34,7 @@ import org.andstatus.app.HelpActivity;
 import org.andstatus.app.ListActivityTestHelper;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.TestSuite;
@@ -42,7 +43,6 @@ import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.database.MsgTable;
-import org.andstatus.app.context.DemoData;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.timeline.Timeline;
 import org.andstatus.app.timeline.TimelineType;
@@ -52,6 +52,10 @@ import org.junit.Test;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static android.support.test.espresso.Espresso.onView;
+import static android.support.test.espresso.assertion.ViewAssertions.matches;
+import static android.support.test.espresso.matcher.ViewMatchers.withId;
+import static android.support.test.espresso.matcher.ViewMatchers.withText;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -189,10 +193,8 @@ public class MessageEditorTest extends TimelineActivityTest {
         assertTextCleared();
 
         String body = "Message with attachment " + DemoData.TESTRUN_UID;
-        EditText editText = (EditText) editorView.findViewById(R.id.messageBodyEditText);
-        editText.requestFocus();
         TestSuite.waitForIdleSync();
-        getInstrumentation().sendStringSync(body);
+        onView(withId(R.id.messageBodyEditText)).perform(new TypeTextAction(body));
         TestSuite.waitForIdleSync();
 
         getActivity().selectorActivityMock = helper;
@@ -231,7 +233,7 @@ public class MessageEditorTest extends TimelineActivityTest {
             }
         }
         assertEquals("Image attached", DemoData.LOCAL_IMAGE_TEST_URI2, editor.getData().getMediaUri());
-        assertEquals("Text is the same", body, editText.getText().toString().trim());
+        onView(withId(R.id.messageBodyEditText)).check(matches(withText(body + " ")));
         helper.clickMenuItem(method + " clicker save draft", R.id.saveDraftButton);
 
         MyLog.v(this, method + " ended");

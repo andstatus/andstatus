@@ -2,13 +2,14 @@ package org.andstatus.app.msg;
 
 import android.content.Intent;
 import android.provider.BaseColumns;
+import android.support.test.espresso.action.TypeTextAction;
 import android.view.View;
-import android.widget.EditText;
 
 import org.andstatus.app.ActivityTestHelper;
 import org.andstatus.app.ListActivityTestHelper;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DownloadStatus;
@@ -16,7 +17,6 @@ import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.database.MsgTable;
-import org.andstatus.app.context.DemoData;
 import org.andstatus.app.net.http.HttpReadResult;
 import org.andstatus.app.service.MyServiceTestHelper;
 import org.andstatus.app.timeline.Timeline;
@@ -27,6 +27,8 @@ import org.junit.Test;
 
 import java.util.List;
 
+import static android.support.test.espresso.Espresso.onView;
+import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -62,10 +64,8 @@ public class UnsentMessagesTest extends TimelineActivityTest {
         ActivityTestHelper.waitViewVisible(method + "; " + step, editorView);
 
         String body = "Test unsent message, which we will try to edit " + DemoData.TESTRUN_UID;
-        EditText editText = (EditText) editorView.findViewById(R.id.messageBodyEditText);
-        editText.requestFocus();
         TestSuite.waitForIdleSync();
-        getInstrumentation().sendStringSync(body);
+        onView(withId(R.id.messageBodyEditText)).perform(new TypeTextAction(body));
         TestSuite.waitForIdleSync();
 
         mService.serviceStopped = false;
