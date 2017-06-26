@@ -169,7 +169,7 @@ public class DataUpdaterTest {
                 null, messageOid, DownloadStatus.LOADED);
         message.setUpdatedDate(13312699000L);
         message.via = "AnyOtherClient";
-        message.recipient = accountUser;
+        message.setRecipient(accountUser);
         long messageId = DemoMessageInserter.onActivityS(message.update(accountUser));
 
         Uri contentUri = MatchedUri.getTimelineUri(

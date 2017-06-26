@@ -190,8 +190,8 @@ public class MessageEditorData {
         message.setUpdatedDate(System.currentTimeMillis());
         message.setBody(body);
         if (recipientId != 0) {
-            message.recipient = MbUser.fromOriginAndUserOid(getMyAccount().getOriginId(),
-                    MyQuery.idToOid(OidEnum.USER_OID, recipientId, 0));
+            message.setRecipient(MbUser.fromOriginAndUserOid(getMyAccount().getOriginId(),
+                    MyQuery.idToOid(OidEnum.USER_OID, recipientId, 0)));
         }
         if (inReplyToId != 0) {
             message.setInReplyTo(MbMessage.fromOriginAndOid(getMyAccount().getOriginId(), getMyAccount().getUserOid(),

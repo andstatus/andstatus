@@ -307,7 +307,7 @@ public abstract class ConnectionTwitterLike extends Connection {
             setMessageBodyFromJson(message, jso);
             if (jso.has("recipient")) {
                 JSONObject recipient = jso.getJSONObject("recipient");
-                message.recipient = userFromJson(recipient);
+                message.setRecipient(userFromJson(recipient));
             }
             if (jso.has("source")) {
                 message.via = jso.getString("source");

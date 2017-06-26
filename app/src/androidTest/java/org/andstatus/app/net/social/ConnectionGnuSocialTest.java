@@ -90,7 +90,7 @@ public class ConnectionGnuSocialTest {
         ind++;
         mbMessage = timeline.get(ind).getMessage();
         assertEquals("conversationOid", "2218650", mbMessage.conversationOid);
-        assertTrue("Does not have a recipient", mbMessage.recipient == null);
+        assertTrue("Does not have a recipient", mbMessage.getRecipient().isEmpty());
         assertTrue("Is a reblog", !mbMessage.isReblogged());
         assertTrue("Is a reply", mbMessage.getInReplyTo().nonEmpty());
         assertEquals("Reply to the message id", "2663833", mbMessage.getInReplyTo().oid);

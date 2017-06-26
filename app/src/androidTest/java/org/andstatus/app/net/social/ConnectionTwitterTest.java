@@ -123,7 +123,7 @@ public class ConnectionTwitterTest {
         ind++;
         message = timeline.get(ind).getMessage();
         assertTrue("Message is loaded", message.getStatus() == DownloadStatus.LOADED);
-        assertTrue("Does not have a recipient", message.recipient == null);
+        assertTrue("Does not have a recipient", message.getRecipient().isEmpty());
         assertTrue("Is a reblog", !message.isReblogged());
         assertTrue("Is a reply", message.getInReplyTo().nonEmpty());
         assertEquals("Reply to the message id", "17176774678", message.getInReplyTo().oid);
@@ -135,7 +135,7 @@ public class ConnectionTwitterTest {
 
         ind++;
         message = timeline.get(ind).getMessage();
-        assertTrue("Does not have a recipient", message.recipient == null);
+        assertTrue("Does not have a recipient", message.getRecipient().isEmpty());
         assertTrue("Is not a reblog", message.isReblogged());
         assertTrue("Is not a reply", message.getInReplyTo().isEmpty());
         assertEquals("Reblog of the message id", "315088751183409153", message.oid);
@@ -152,7 +152,7 @@ public class ConnectionTwitterTest {
 
         ind++;
         message = timeline.get(ind).getMessage();
-        assertTrue("Does not have a recipient", message.recipient == null);
+        assertTrue("Does not have a recipient", message.getRecipient().isEmpty());
         assertTrue("Is a reblog", !message.isReblogged());
         assertTrue("Is not a reply", message.getInReplyTo().isEmpty());
         assertTrue("Is not Favorited", !message.getFavoritedByMe().toBoolean(true));

@@ -391,7 +391,7 @@ public class ConnectionPumpio extends Connection {
                     if (jsoActivity.has("to")) {
                         JSONObject to = jsoActivity.optJSONObject("to");
                         if ( to != null) {
-                            activity.getMessage().recipient = userFromJson(to);
+                            activity.getMessage().setRecipient(userFromJson(to));
                         } else {
                             JSONArray arrayOfTo = jsoActivity.optJSONArray("to");
                             if (arrayOfTo != null && arrayOfTo.length() > 0) {
@@ -399,7 +399,7 @@ public class ConnectionPumpio extends Connection {
                                 to = arrayOfTo.optJSONObject(0);
                                 MbUser recipient = userFromJson(to);
                                 if (!recipient.isEmpty()) {
-                                    activity.getMessage().recipient = recipient;
+                                    activity.getMessage().setRecipient(recipient);
                                 }
                             }
                         }

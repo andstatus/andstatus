@@ -115,11 +115,10 @@ public class DataUpdater {
         final String funcName = "updateMessage";
         final MbMessage message = activity.getMessage();
         try {
-            ContentValues values = new ContentValues();
             MyAccount me = execContext.getMyContext().persistentAccounts().
-                    fromOriginAndOid(message.originId, activity.accountUser.oid);
+                    fromOriginAndOid(activity.accountUser.originId, activity.accountUser.oid);
             if (!me.isValid()) {
-                MyLog.w(TAG, funcName +"; my account is invalid, skipping: " + message.toString());
+                MyLog.w(TAG, funcName +"; my account is invalid, skipping: " + activity.toString());
                 return 0;
             }
 
@@ -131,6 +130,7 @@ public class DataUpdater {
                 }
             }
 
+            ContentValues values = new ContentValues();
             if (message.isReblogged() && activity.getActor().userId != 0) {
                 if (!activity.isActorMe()) {
                     values.put(MsgOfUserTable.USER_ID + MsgOfUserTable.SUFFIX_FOR_OTHER_USER, activity.getActor().userId);
@@ -201,8 +201,8 @@ public class DataUpdater {
             }
 
             boolean isDirectMessage = false;
-            if (message.recipient != null) {
-                long recipientId = updateUser(message.recipient.update(activity.accountUser, activity.getActor()));
+            if (message.getRecipient().nonEmpty()) {
+                long recipientId = updateUser(message.getRecipient().update(activity.accountUser, activity.getActor()));
                 values.put(MsgTable.RECIPIENT_ID, recipientId);
                 if (recipientId == me.getUserId() || activity.isAuthorMe()) {
                     isDirectMessage = true;
@@ -305,7 +305,6 @@ public class DataUpdater {
 
     private boolean isMentionedAndPutInReplyToMessage(MbActivity activity, MyAccount me, ContentValues values) {
         MbMessage message = activity.getMessage();
-        boolean mentioned = execContext.getTimeline().getTimelineType() == TimelineType.MENTIONS;
         Long inReplyToUserId = 0L;
         final MbMessage inReplyToMessage = message.getInReplyTo();
         if (inReplyToMessage.nonEmpty()) {
@@ -328,6 +327,7 @@ public class DataUpdater {
         } else {
             inReplyToUserId = getReplyToUserIdInBody(activity);
         }
+        boolean mentioned = false;
         if (inReplyToUserId != 0) {
             values.put(MsgTable.IN_REPLY_TO_USER_ID, inReplyToUserId);
 

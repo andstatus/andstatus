@@ -47,7 +47,7 @@ public class MbMessage {
     @NonNull
     private MbUser author = MbUser.EMPTY;
     // TODO: Multiple recipients needed?!
-    public MbUser recipient = null; 
+    private MbUser recipient = MbUser.EMPTY;
     private String body = "";
 
     private MbMessage inReplyTo = null;
@@ -318,6 +318,17 @@ public class MbMessage {
         this.updatedDate = updatedDate;
         if (sentDate < updatedDate) {
             sentDate = updatedDate;
+        }
+    }
+
+    @NonNull
+    public MbUser getRecipient() {
+        return recipient;
+    }
+
+    public void setRecipient(MbUser recipient) {
+        if (recipient != null) {
+            this.recipient = recipient;
         }
     }
 }
