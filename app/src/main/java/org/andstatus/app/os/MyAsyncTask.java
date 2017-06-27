@@ -52,16 +52,18 @@ public abstract class MyAsyncTask<Params, Progress, Result> extends AsyncTask<Pa
     private volatile String firstError = "";
 
     public enum PoolEnum {
-        SYNC(2),
-        FILE_DOWNLOAD(1),
-        QUICK_UI(1),
-        LONG_UI(1),
-        DEFAULT(0);
+        SYNC(2, MAX_COMMAND_EXECUTION_SECONDS),
+        FILE_DOWNLOAD(1, MAX_COMMAND_EXECUTION_SECONDS),
+        QUICK_UI(1, 20),
+        LONG_UI(1, MAX_COMMAND_EXECUTION_SECONDS),
+        DEFAULT(0, MAX_COMMAND_EXECUTION_SECONDS);
 
-        protected int corePoolSize;
+        protected final int corePoolSize;
+        final long maxCommandExecutionSeconds;
 
-        PoolEnum(int corePoolSize) {
+        PoolEnum(int corePoolSize, long maxCommandExecutionSeconds) {
             this.corePoolSize = corePoolSize;
+            this.maxCommandExecutionSeconds = maxCommandExecutionSeconds;
         }
     }
 
@@ -194,10 +196,10 @@ public abstract class MyAsyncTask<Params, Progress, Result> extends AsyncTask<Pa
 
     private boolean isStalled() {
         return RelativeTime.wasButMoreSecondsAgoThan(backgroundEndedAt, DELAY_AFTER_EXECUTOR_ENDED_SECONDS)
-                || RelativeTime.wasButMoreSecondsAgoThan(currentlyExecutingSince, MAX_COMMAND_EXECUTION_SECONDS)
+                || RelativeTime.wasButMoreSecondsAgoThan(currentlyExecutingSince, pool.maxCommandExecutionSeconds)
                 || RelativeTime.wasButMoreSecondsAgoThan(cancelledAt, MAX_EXECUTION_AFTER_CANCEL_SECONDS)
                 || (getStatus() == Status.PENDING
-                && RelativeTime.wasButMoreSecondsAgoThan(createdAt, MAX_WAITING_BEFORE_EXECUTION_SECONDS));
+                    && RelativeTime.wasButMoreSecondsAgoThan(createdAt, MAX_WAITING_BEFORE_EXECUTION_SECONDS));
     }
 
     public boolean needsBackgroundWork() {

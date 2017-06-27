@@ -182,7 +182,7 @@ public final class MyContextHolder {
                 return myContextCreator.newInitialized(contextForCallable, callerName);
             }
         };
-        MyFutureTaskExpirable<MyContext> futureTask = new MyFutureTaskExpirable<MyContext>(callable);
+        MyFutureTaskExpirable<MyContext> futureTask = new MyFutureTaskExpirable<>(callable);
         synchronized (CONTEXT_LOCK) {
             if (myInitializedContext != null) {
                 myContextOut = myInitializedContext;
