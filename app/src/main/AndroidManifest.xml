@@ -45,7 +45,7 @@
 	<application android:name=".context.MyApplication" android:label="@string/app_name" 
 	    android:icon="@drawable/icon" android:allowBackup="false"
 	    android:backupAgent="org.andstatus.app.backup.MyBackupAgent"
-        android:theme="@style/Theme.AndStatus.Light">
+        android:theme="@style/Theme.Transparent">
 		<meta-data android:name="android.app.default_searchable" android:value="org.andstatus.app.TimelineActivity"/>
 		<meta-data android:name="com.google.android.backup.api_key" 
 		    android:value="AEdPqrEAAAAIwaY-1-9DmEnU74ycFHDSJiTl_1CW6CzuHsWMLA" />

@@ -322,15 +322,15 @@ public class MyLog {
                 SharedPreferences sp = SharedPreferencesUtil.getDefaultSharedPreferences();
                 if (sp != null) {
                     val = getMinLogLevel(sp);
+                    setLogToFile(MyPreferences.isLogEverythingToFile());
+                    initialized = true;
                 }
-                setLogToFile(MyPreferences.isLogEverythingToFile());
             } catch (Exception e) {
                 Log.e(TAG, "Error in isLoggable", e);
             }
             if (Log.INFO >= minLogLevel) {
                 Log.i(TAG, MyPreferences.KEY_MIN_LOG_LEVEL + "='" + val +"'");
             }
-            initialized = true;
         }
     }
 

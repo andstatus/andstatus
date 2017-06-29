@@ -25,6 +25,7 @@ import android.text.TextUtils;
 import android.util.TypedValue;
 import android.view.View;
 
+import org.andstatus.app.MyActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
@@ -51,8 +52,8 @@ public class MyTheme {
     /**
      * Load a theme according to the preferences.
      */
-    public static void loadTheme(Context context) {
-        String themeName = getThemeName();
+    public static void loadTheme(@NonNull Context context) {
+        String themeName = getThemeName(context);
         isLightTheme = themeName.contains(".Light");
         isDeviceDefaultTheme = themeName.contains(".DeviceDefault");
         context.setTheme(getThemeId(context, themeName));
@@ -60,7 +61,10 @@ public class MyTheme {
     }
 
     @NonNull
-    public static String getThemeName() {
+    public static String getThemeName(Context context) {
+        if (MyActivity.class.isAssignableFrom(context.getClass()) && ((MyActivity) context).isFinishing()) {
+            return "Theme.Transparent";
+        }
         return "Theme.AndStatus." + SharedPreferencesUtil.getString(MyPreferences.KEY_THEME_COLOR, "Light");
     }
 

@@ -140,7 +140,6 @@ public final class DemoData {
     @NonNull
     public static MyAsyncTask<Void, Void, Void> addAsync(final String method, final MyContext myContext,
                                                           final ProgressLogger.ProgressCallback progressCallback) {
-        MyContextHolder.initialize(myContext.context(), method);
         final MyAsyncTask<Void, Void, Void> asyncTask
                 = new MyAsyncTask<Void, Void, Void>(method, MyAsyncTask.PoolEnum.QUICK_UI) {
             @Override
@@ -151,6 +150,9 @@ public final class DemoData {
                     progressCallback.onProgressMessage("Generating demo data...");
                     DbUtils.waitMs(TAG, 1000);
                 }
+                MyLog.v(TAG + "Async", "Before initialize 1");
+                MyContextHolder.initialize(myContext.context(), method);
+                MyLog.v(TAG + "Async", "After initialize 1");
                 MyServiceManager.setServiceUnavailable();
                 new DemoOriginInserter(myContext).insert();
                 new DemoAccountInserter(myContext).insert();
@@ -158,7 +160,9 @@ public final class DemoData {
 
                 MyPreferences.onPreferencesChanged();
                 MyContextHolder.setExpiredIfConfigChanged();
+                MyLog.v(TAG + "Async", "Before initialize 2");
                 MyContextHolder.initialize(myContext.context(), method);
+                MyLog.v(TAG + "Async", "After initialize 2");
                 MyServiceManager.setServiceUnavailable();
                 if (progressCallback != null) {
                     progressCallback.onProgressMessage("Demo accounts added...");
@@ -186,7 +190,9 @@ public final class DemoData {
                 MyContextHolder.get().persistentTimelines().setDefault(
                         MyContextHolder.get().persistentTimelines().getFiltered(false, TriState.TRUE,
                                 MyContextHolder.get().persistentAccounts().getCurrentAccount(), null).get(0));
+                MyLog.v(TAG + "Async", "Before initialize 3");
                 MyContextHolder.initialize(myContext.context(), method);
+                MyLog.v(TAG + "Async", "After initialize 3");
                 if (progressCallback != null) {
                     progressCallback.onProgressMessage("Demo data is ready");
                     DbUtils.waitMs(TAG, 1000);

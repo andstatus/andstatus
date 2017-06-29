@@ -120,7 +120,8 @@ public class AuthenticatorService extends Service {
         public Bundle getAccountRemovalAllowed(AccountAuthenticatorResponse response,
                 Account account) throws NetworkErrorException {
             
-            MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(account.name);
+            MyAccount ma = MyContextHolder.getMyFutureContext(null).getBlocking()
+                    .persistentAccounts().fromAccountName(account.name);
             boolean deleted = true;
             if (ma.isValid()) {
                 MyContextHolder.get().persistentTimelines().onAccountDelete(ma);

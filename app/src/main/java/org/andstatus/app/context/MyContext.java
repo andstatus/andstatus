@@ -33,7 +33,7 @@ import org.andstatus.app.service.ConnectionState;
 import java.util.Locale;
 
 public interface MyContext {
-    MyContext newInitialized(Context context, Object initializerName);
+    MyContext newInitialized(Object initializerName);
     MyContext newCreator(Context context, Object initializerName);
     boolean initialized();
     boolean isReady();

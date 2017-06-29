@@ -209,10 +209,6 @@ public class SharedPreferencesUtil {
     public static SharedPreferences getDefaultSharedPreferences() {
         Context context = MyContextHolder.get().context();
         if (context == null) {
-            MyLog.e(TAG, "getDefaultSharedPreferences - Was not initialized yet");
-            for(StackTraceElement element : Thread.currentThread().getStackTrace()) {
-                MyLog.v(TAG, element.toString());
-            }
             return null;
         } else {
             return PreferenceManager.getDefaultSharedPreferences(context);

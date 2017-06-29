@@ -63,7 +63,8 @@ public class SelectorDialog extends DialogFragment {
     @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        Dialog dialog = new Dialog(getActivity(), MyTheme.getThemeId(getActivity(), MyTheme.getThemeName()));
+        Dialog dialog = new Dialog(getActivity(),
+                MyTheme.getThemeId(getActivity(), MyTheme.getThemeName(getActivity())));
         MyTheme.applyStyles(dialog.getContext(), true);
         return dialog;
     }

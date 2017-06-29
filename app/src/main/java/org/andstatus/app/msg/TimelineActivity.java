@@ -16,8 +16,8 @@
 
 package org.andstatus.app.msg;
 
-import android.app.Activity;
 import android.app.SearchManager;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -103,8 +103,14 @@ public class TimelineActivity extends MessageEditorListActivity implements
     View syncYoungerView = null;
     View syncOlderView = null;
 
-    public static void startForTimeline(MyContext myContext, Activity activity, Timeline timeline,
+    public static void startForTimeline(MyContext myContext, Context context, Timeline timeline,
                                         MyAccount newCurrentMyAccount, boolean clearTask) {
+        Intent intent = getIntentForTimeline(myContext, timeline, newCurrentMyAccount, clearTask);
+        context.startActivity(intent);
+    }
+
+    @NonNull
+    private static Intent getIntentForTimeline(MyContext myContext, Timeline timeline, MyAccount newCurrentMyAccount, boolean clearTask) {
         if (newCurrentMyAccount != null && newCurrentMyAccount.isValid()) {
             myContext.persistentAccounts().setCurrentAccount(newCurrentMyAccount);
         }
@@ -114,13 +120,13 @@ public class TimelineActivity extends MessageEditorListActivity implements
             // On modifying activity back stack see http://stackoverflow.com/questions/11366700/modification-of-the-back-stack-in-android
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
         }
-        activity.startActivity(intent);
+        return intent;
     }
 
-    public static void goHome(Activity activity) {
-        Intent intent = new Intent(activity, TimelineActivity.class);
+    public static void goHome(Context context) {
+        Intent intent = new Intent(context, TimelineActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
-        activity.startActivity(intent);
+        context.startActivity(intent);
     }
 
     @Override
@@ -1246,7 +1252,12 @@ public class TimelineActivity extends MessageEditorListActivity implements
             if (MyLog.isVerboseEnabled()) {
                 MyLog.v(this, "switchTimelineActivity; " + timeline);
             }
-            TimelineActivity.startForTimeline(myContext, this, timeline, currentMyAccountToSet, false);
+            if (isFinishing()) {
+                final Intent intent = getIntentForTimeline(myContext, timeline, newCurrentMyAccount, false);
+                MyContextHolder.getMyFutureContext(this).thenStartActivity(intent);
+            } else {
+                TimelineActivity.startForTimeline(myContext, this, timeline, currentMyAccountToSet, false);
+            }
         } else {
             showList(WhichPage.CURRENT);
         }

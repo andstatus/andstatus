@@ -165,13 +165,16 @@ public class MyServiceTestHelper implements MyServiceEventsListener {
         MyLog.v(this, "tearDown started");
         dropQueues();
         SharedPreferencesUtil.putBoolean(MyPreferences.KEY_SYNC_WHILE_USING_APPLICATION, true);
-        
-        serviceConnector.unregisterReceiver(myContext.context());
+        if (serviceConnector != null) {
+            serviceConnector.unregisterReceiver(myContext.context());
+        }
         TestSuite.setHttpConnectionMockClass(null);
         TestSuite.setHttpConnectionMockInstance(null);
         TestSuite.getMyContextForTest().setConnectionState(ConnectionState.UNKNOWN);
-        myContext.persistentAccounts().initialize();
-        myContext.persistentTimelines().initialize();
+        if (myContext != null) {
+            myContext.persistentAccounts().initialize();
+            myContext.persistentTimelines().initialize();
+        }
         MyLog.v(this, "tearDown ended");
     }
 

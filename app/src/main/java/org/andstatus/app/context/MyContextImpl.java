@@ -89,9 +89,9 @@ public final class MyContextImpl implements MyContext {
     }
 
     @Override
-    public MyContext newInitialized(Context context, Object initializer) {
+    public MyContext newInitialized(Object initializer) {
         final String method = "newInitialized";
-        MyContextImpl myContext = newNotInitialized(context, initializer);
+        MyContextImpl myContext = newNotInitialized(context(), initializer);
         if ( myContext.mContext == null) {
             // Nothing to do
         } else if (!Permissions.checkPermission(myContext.mContext,
@@ -175,10 +175,7 @@ public final class MyContextImpl implements MyContext {
 
     @Override
     public MyContext newCreator(Context context, Object initializer) {
-        MyContextImpl myContext = newNotInitialized(context, initializer);
-        MyLog.v(getTag(), "newCreator by " + myContext.mInitializedBy
-                + (myContext.mContext == null ? "" : " context: " + myContext.mContext.getClass().getName()));
-        return myContext;
+        return newNotInitialized(context, initializer);
     }
 
     private MyContextImpl newNotInitialized(Context context, Object initializer) {

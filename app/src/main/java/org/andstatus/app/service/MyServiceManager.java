@@ -61,8 +61,7 @@ public class MyServiceManager extends BroadcastReceiver {
         public static MyServiceStateInTime fromIntent(Intent intent) {
             MyServiceStateInTime state = new MyServiceStateInTime();
             state.stateQueuedTime = System.nanoTime();
-            state.stateEnum = MyServiceState.load(intent
-                    .getStringExtra(IntentExtra.SERVICE_STATE.key));
+            state.stateEnum = MyServiceState.load(intent.getStringExtra(IntentExtra.SERVICE_STATE.key));
             return state;
         }
 
@@ -78,7 +77,7 @@ public class MyServiceManager extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();
         if (action.equals(MyAction.SERVICE_STATE.getAction())) {
-            MyContextHolder.initialize(context, this);
+            MyContextHolder.getMyFutureContext(context);
             stateInTime = MyServiceStateInTime.fromIntent(intent);
             MyLog.d(this, "Notification received: Service state=" + stateInTime.stateEnum);
         } else if ("android.intent.action.BOOT_COMPLETED".equals(action)) {

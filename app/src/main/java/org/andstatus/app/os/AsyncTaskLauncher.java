@@ -21,6 +21,7 @@ import android.support.annotation.NonNull;
 import org.andstatus.app.util.MyLog;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -193,7 +194,6 @@ public class AsyncTaskLauncher<Params> {
         long runningCount = 0;
         long finishingCount = 0;
         long finishedCount = 0;
-        long otherCount = 0;
         for (MyAsyncTask<?, ?, ?> launched : launchedTasks) {
             switch (launched.getStatus()) {
                 case PENDING:
@@ -215,10 +215,6 @@ public class AsyncTaskLauncher<Params> {
                 case FINISHED:
                     finishedCount++;
                     break;
-                default:
-                    otherCount++;
-                    builder.append("O " + otherCount + ". " + launched.toString() + "\n");
-                    break;
             }
         }
         StringBuilder builder2 = new StringBuilder("Tasks:\n");
@@ -236,34 +232,39 @@ public class AsyncTaskLauncher<Params> {
         if (finishedCount > 0) {
             builder2.append("; just finished: " + finishedCount);
         }
-        if (otherCount > 0) {
-            builder2.append("; other: " + otherCount);
-        }
         builder2.append(". Skipped: " + skippedCount.get());
         builder2.append(builder);        
         return builder2;
     }
 
     public static void shutdownExecutors(@NonNull Collection<MyAsyncTask.PoolEnum> pools) {
-        for (MyAsyncTask.PoolEnum pool : pools) {
+        for (MyAsyncTask.PoolEnum pool : getPoolsThatMayBeShutdown(pools)) {
             ThreadPoolExecutor executor = getExecutor(pool);
-            if (pool == MyAsyncTask.PoolEnum.DEFAULT || executor == null)  {
+            if (executor == null)  {
+                continue;
+            }
+            MyLog.v(TAG, "Shutting down executor:" + executor);
+            executor.shutdown();
+        }
+        long waitTill = TimeUnit.SECONDS.toMillis(5) + System.currentTimeMillis();
+        for (MyAsyncTask.PoolEnum pool : getPoolsThatMayBeShutdown(pools)) {
+            ThreadPoolExecutor executor = getExecutor(pool);
+            if (executor == null)  {
                 continue;
             }
             try {
-                MyLog.v(TAG, "Shutting down executor:" + executor);
-                executor.shutdown();
-                executor.awaitTermination(5, TimeUnit.SECONDS);
-            }
-            catch (InterruptedException e) {
+                long timeout = waitTill - System.currentTimeMillis();
+                if (timeout > 0 && !executor.isTerminated() && executor.getActiveCount() > 0) {
+                    executor.awaitTermination(timeout, TimeUnit.MILLISECONDS);
+                }
+            } catch (InterruptedException e) {
                 MyLog.d(TAG, "Interrupted: Shutting down executor:" + executor, e);
                 Thread.currentThread().interrupt();
-            }
-            finally {
-                if (!executor.isTerminated()) {
+            } finally {
+                if (!executor.isTerminated() && executor.getActiveCount() > 0) {
                     MyLog.d(TAG, "Cancelling unfinished tasks in executor:" + executor);
+                    executor.shutdownNow();
                 }
-                executor.shutdownNow();
                 MyLog.v(TAG, "Shut down finished. Executor:" + executor);
                 removePoolTasks(pool);
             }
@@ -271,13 +272,19 @@ public class AsyncTaskLauncher<Params> {
     }
 
     public static void forget() {
+        shutdownExecutors(getPoolsThatMayBeShutdown(null));
+    }
+
+    @NonNull
+    private static List<MyAsyncTask.PoolEnum> getPoolsThatMayBeShutdown(Collection<MyAsyncTask.PoolEnum> poolsIn) {
         List<MyAsyncTask.PoolEnum> pools = new ArrayList<>();
-        for (MyAsyncTask.PoolEnum pool : MyAsyncTask.PoolEnum.values()) {
+        for (MyAsyncTask.PoolEnum pool : (poolsIn == null ? Arrays.asList(MyAsyncTask.PoolEnum.values()) : poolsIn)) {
             // Don't shut down these pools
-            if (!pool.equals(MyAsyncTask.PoolEnum.QUICK_UI)) {
+            if (!pool.equals(MyAsyncTask.PoolEnum.QUICK_UI)
+                    && !pool.equals(MyAsyncTask.PoolEnum.DEFAULT)) {
                 pools.add(pool);
             }
         }
-        shutdownExecutors(pools);
+        return pools;
     }
 }

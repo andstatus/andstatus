@@ -36,7 +36,6 @@ import org.andstatus.app.util.MyLog;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -71,7 +70,7 @@ public class AccountSettingsActivityTest extends ActivityTest<AccountSettingsAct
         assertUsernameTextField(R.id.username);
         assertUsernameTextField(R.id.username_readonly);
         DbUtils.waitMs(method, 500);
-        assertFalse("MyService is not available", MyServiceManager.isServiceAvailable());
+        assertEquals("MyService is available", false, MyServiceManager.isServiceAvailable());
         openingOriginList();
         DbUtils.waitMs(method, 500);
         getActivity().finish();

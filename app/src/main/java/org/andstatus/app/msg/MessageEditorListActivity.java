@@ -35,7 +35,9 @@ abstract public class MessageEditorListActivity extends LoadableListActivity imp
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        messageEditor = new MessageEditor(this);
+        if (!isFinishing()) {
+            messageEditor = new MessageEditor(this);
+        }
     }
 
     @Override

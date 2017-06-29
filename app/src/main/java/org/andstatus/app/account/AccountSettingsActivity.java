@@ -47,6 +47,7 @@ import org.andstatus.app.IntentExtra;
 import org.andstatus.app.MyActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
+import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.MySettingsActivity;
@@ -101,10 +102,6 @@ public class AccountSettingsActivity extends MyActivity {
     private static final int MSG_CONNECTION_EXCEPTION = 5;
     private static final int MSG_CREDENTIALS_OF_OTHER_USER = 7;
 
-    /**
-     * We are going to finish/restart this Activity
-     */
-    private boolean mIsFinishing = false;
     private enum ActivityOnFinish {
         NONE,
         HOME,
@@ -115,14 +112,15 @@ public class AccountSettingsActivity extends MyActivity {
     private StateOfAccountChangeProcess state = null;
 
     private StringBuilder mLatestErrorMessage = new StringBuilder();
+    private boolean resumedOnce = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        resumedOnce = false;
         mLayoutId = R.layout.account_settings_main;
         super.onCreate(savedInstanceState);
 
-        MyContextHolder.initialize(this, this);
-        if (HelpActivity.startFromActivity(this)) {
+        if (MyContextHolder.initializeThenRestartMe(this) || HelpActivity.startFromActivity(this)) {
             return;
         }
 
@@ -208,12 +206,12 @@ public class AccountSettingsActivity extends MyActivity {
             state.builder = MyAccount.Builder.newOrExistingFromAccountName(MyContextHolder.get(),
                     data.getStringExtra(IntentExtra.ACCOUNT_NAME.key), TriState.UNKNOWN);
             if (!state.builder.isPersistent()) {
-                mIsFinishing = true;
+                mFinishing = true;
             }
         } else {
-            mIsFinishing = true;
+            mFinishing = true;
         }
-        if (!mIsFinishing) {
+        if (!mFinishing) {
             MyLog.v(this, "Switching to the selected account");
             MyContextHolder.get().persistentAccounts().setCurrentAccount(state.builder.getAccount());
             state.setAccountAction(Intent.ACTION_EDIT);
@@ -519,7 +517,6 @@ public class AccountSettingsActivity extends MyActivity {
                 public void onClick(View v) {
                     updateChangedFields();
                     activityOnFinish = ActivityOnFinish.HOME;
-                    mIsFinishing = true;
                     finish();
                 }
             });
@@ -628,12 +625,14 @@ public class AccountSettingsActivity extends MyActivity {
         super.onResume();
         MyContextHolder.get().setInForeground(true);
 
-        MyContextHolder.initialize(this, this);
+        if (MyContextHolder.initializeThenRestartMe(this)) {
+            return;
+        }
         MyServiceManager.setServiceUnavailable();
         MyServiceManager.stopService();
-        
+
         updateScreen();
-        
+
         Uri uri = getIntent().getData();
         if (uri != null) {
             if (MyLog.isLoggable(TAG, MyLog.DEBUG)) {
@@ -648,6 +647,7 @@ public class AccountSettingsActivity extends MyActivity {
                 activityOnFinish = ActivityOnFinish.OUR_DEFAULT_SCREEN;
             }
         }
+        resumedOnce = true;
     }
 
     /**
@@ -725,7 +725,7 @@ public class AccountSettingsActivity extends MyActivity {
     protected void onPause() {
         super.onPause();
         state.save();
-        if (mIsFinishing) {
+        if (mFinishing && resumedOnce) {
             MyContextHolder.setExpiredIfConfigChanged();
             if (activityOnFinish != ActivityOnFinish.NONE) {
                 returnToOurActivity();
@@ -735,29 +735,31 @@ public class AccountSettingsActivity extends MyActivity {
     }
 
     private void returnToOurActivity() {
-        MyContextHolder.initialize(this, this);
-        MyLog.v(this, "Returning to " + activityOnFinish);
-        MyAccount myAccount = MyContextHolder.get().persistentAccounts().
-                fromAccountName(getState().getAccount().getAccountName());
-        if (myAccount.isValid()) {
-            MyContextHolder.get().persistentAccounts().setCurrentAccount(myAccount);
-        }
-        switch (activityOnFinish) {
-            case HOME:
-                Timeline home = Timeline.getTimeline(TimelineType.HOME, myAccount, 0, null);
-                TimelineActivity.startForTimeline(MyContextHolder.get(), this, home, myAccount, true);
-                break;
-            default:
-                if (MyContextHolder.get().persistentAccounts().size() > 1) {
-                    Intent intent = new Intent(this, MySettingsActivity.class);
-                    // On modifying activity back stack see http://stackoverflow.com/questions/11366700/modification-of-the-back-stack-in-android
-                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                    startActivity(intent);
-                } else {
-                    TimelineActivity.goHome(this);
+        MyContextHolder.getMyFutureContext(this, this, false).thenRun( new Runnable() {
+            @Override
+            public void run() {
+                MyLog.v(this, "Returning to " + activityOnFinish);
+                MyContext myContext = MyContextHolder.get();
+                MyAccount myAccount = myContext.persistentAccounts().
+                        fromAccountName(getState().getAccount().getAccountName());
+                if (myAccount.isValid()) {
+                    myContext.persistentAccounts().setCurrentAccount(myAccount);
                 }
-                break;
-        }
+                if (activityOnFinish == ActivityOnFinish.HOME) {
+                    Timeline home = Timeline.getTimeline(TimelineType.HOME, myAccount, 0, null);
+                    TimelineActivity.startForTimeline(myContext, myContext.context(), home, myAccount, true);
+                } else {
+                    if (myContext.persistentAccounts().size() > 1) {
+                        Intent intent = new Intent(myContext.context(), MySettingsActivity.class);
+                        // On modifying activity back stack see http://stackoverflow.com/questions/11366700/modification-of-the-back-stack-in-android
+                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                        startActivity(intent);
+                    } else {
+                        TimelineActivity.goHome(myContext.context());
+                    }
+                }
+            }
+        });
     }
 
     /**
@@ -807,9 +809,8 @@ public class AccountSettingsActivity extends MyActivity {
         }
         // Forget old state
         state.forget();
-        if (!mIsFinishing) {
+        if (!mFinishing) {
             MyLog.v(this, "finish: action=" + state.getAccountAction() + "; " + message);
-            mIsFinishing = true;
             finish();
         }
     }
@@ -832,7 +833,7 @@ public class AccountSettingsActivity extends MyActivity {
     private class OAuthRegisterClientTask extends MyAsyncTask<Void, Void, JSONObject> {
         private ProgressDialog dlg;
 
-        public OAuthRegisterClientTask() {
+        OAuthRegisterClientTask() {
             super(PoolEnum.LONG_UI);
         }
 
@@ -942,7 +943,7 @@ public class AccountSettingsActivity extends MyActivity {
     private class OAuthAcquireRequestTokenTask extends MyAsyncTask<Void, Void, JSONObject> {
         private ProgressDialog dlg;
 
-        public OAuthAcquireRequestTokenTask() {
+        OAuthAcquireRequestTokenTask() {
             super(PoolEnum.LONG_UI);
         }
 
@@ -1069,7 +1070,7 @@ public class AccountSettingsActivity extends MyActivity {
     private class OAuthAcquireAccessTokenTask extends MyAsyncTask<Uri, Void, JSONObject> {
         private ProgressDialog dlg;
 
-        public OAuthAcquireAccessTokenTask() {
+        OAuthAcquireAccessTokenTask() {
             super(PoolEnum.LONG_UI);
         }
 
@@ -1198,7 +1199,7 @@ public class AccountSettingsActivity extends MyActivity {
         private ProgressDialog dlg;
         private boolean skip = false;
 
-        public VerifyCredentialsTask() {
+        VerifyCredentialsTask() {
             super(PoolEnum.LONG_UI);
         }
 

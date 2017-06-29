@@ -29,6 +29,7 @@ import android.view.Menu;
 import android.view.View;
 
 import org.andstatus.app.context.MyTheme;
+import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
 
@@ -37,15 +38,24 @@ import org.andstatus.app.util.TriState;
  */
 public class MyActivity extends AppCompatActivity {
 
+    protected final long mInstanceId = InstanceId.next();
     protected int mLayoutId = 0;
     protected boolean mResumed = false;
+    /**
+     * We are going to finish/restart this Activity (e.g. onResume or even onCreate)
+     */
+    protected volatile boolean mFinishing = false;
     private Menu mOptionsMenu = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        MyLog.v(this, "onCreate");
+        MyLog.v(this, "onCreate" + (isFinishing() ? " finishing" : ""));
         MyTheme.loadTheme(this);
         super.onCreate(savedInstanceState);
+        if (isFinishing()) {
+            return;
+        }
+
         if (mLayoutId != 0) {
             MyTheme.setContentView(this, mLayoutId);
         }
@@ -140,22 +150,14 @@ public class MyActivity extends AppCompatActivity {
             }
         }
         if (fullscreenNew) {
-            if (Build.VERSION.SDK_INT >= 14) {
-                uiOptionsNew |= View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
-            }
-            if (Build.VERSION.SDK_INT >= 16) {
-                uiOptionsNew |= View.SYSTEM_UI_FLAG_FULLSCREEN;
-            }
+            uiOptionsNew |= View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
+            uiOptionsNew |= View.SYSTEM_UI_FLAG_FULLSCREEN;
             if (Build.VERSION.SDK_INT >= 19) {
                 uiOptionsNew |= View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
             }
         } else {
-            if (Build.VERSION.SDK_INT >= 14) {
-                uiOptionsNew &= ~View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
-            }
-            if (Build.VERSION.SDK_INT >= 16) {
-                uiOptionsNew &= ~View.SYSTEM_UI_FLAG_FULLSCREEN;
-            }
+            uiOptionsNew &= ~View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
+            uiOptionsNew &= ~View.SYSTEM_UI_FLAG_FULLSCREEN;
             if (Build.VERSION.SDK_INT >= 19) {
                 uiOptionsNew &= ~View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
             }
@@ -167,5 +169,15 @@ public class MyActivity extends AppCompatActivity {
         Fragment fragment = Fragment.instantiate(this, fragmentClass.getName());
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.fragmentOne, fragment, "fragment").commit();
+    }
+
+    @Override
+    public void finish() {
+        MyLog.v(this, "Finish requested" + (mFinishing ? ", already finishing" : "")
+                + ", instanceId=" + mInstanceId);
+        if (!mFinishing) {
+            mFinishing = true;
+        }
+        super.finish();
     }
 }

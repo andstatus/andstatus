@@ -50,6 +50,7 @@ public class MySettingsActivity extends AppCompatPreferenceActivity {
     private boolean startTimelineActivity = false;
     private long mPreferencesChangedAt = MyPreferences.getPreferencesChangeTime();
     private long mInstanceId = 0;
+    private boolean resumedOnce = false;
 
     /**
      * Based on http://stackoverflow.com/questions/14001963/finish-all-activities-at-a-time
@@ -62,6 +63,7 @@ public class MySettingsActivity extends AppCompatPreferenceActivity {
     }
 
     protected void onCreate(Bundle savedInstanceState) {
+        resumedOnce = false;
         MyTheme.loadTheme(this);
         super.onCreate(savedInstanceState);
         ViewGroup root = (ViewGroup) findViewById (android.R.id.content).getParent();
@@ -71,8 +73,8 @@ public class MySettingsActivity extends AppCompatPreferenceActivity {
             setSupportActionBar(bar);
         }
 
-        if (isRootScreen()) {
-            MyContextHolder.initialize(this, this);
+        if (isRootScreen() && MyContextHolder.initializeThenRestartMe(this)) {
+            return;
         }
         ActionBar actionBar = this.getSupportActionBar();
         if (actionBar != null) {
@@ -141,7 +143,7 @@ public class MySettingsActivity extends AppCompatPreferenceActivity {
         super.onResume();
         if (mPreferencesChangedAt < MyPreferences.getPreferencesChangeTime() || !MyContextHolder.get().initialized()) {
             logEvent("onResume", "Recreating");
-            restartMe(this);
+            MyContextHolder.initializeThenRestartMe(this);
             return;
         }
         if (isRootScreen()) {
@@ -149,6 +151,7 @@ public class MySettingsActivity extends AppCompatPreferenceActivity {
             MyServiceManager.setServiceUnavailable();
             MyServiceManager.stopService();
         }
+        resumedOnce = true;
     }
 
     @Override
@@ -206,9 +209,11 @@ public class MySettingsActivity extends AppCompatPreferenceActivity {
     public void finish() {
         logEvent("finish", startTimelineActivity ? " and return" : "");
         super.finish();
-        MyContextHolder.setExpiredIfConfigChanged();
-        if (startTimelineActivity) {
-            TimelineActivity.goHome(this);
+        if (resumedOnce) {
+            MyContextHolder.setExpiredIfConfigChanged();
+            if (startTimelineActivity) {
+                TimelineActivity.goHome(this);
+            }
         }
     }
 

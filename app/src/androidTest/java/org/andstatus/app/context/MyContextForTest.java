@@ -73,13 +73,13 @@ public class MyContextForTest implements MyContext {
     }
 
     @Override
-    public MyContext newInitialized(Context context, Object initializerName) {
-        return new MyContextForTest().setContext(myContext.newInitialized(context, initializerName));
+    public MyContext newInitialized(Object initializer) {
+        return new MyContextForTest().setContext(myContext.newInitialized(initializer));
     }
 
     @Override
-    public MyContext newCreator(Context context, Object initializerName) {
-        return new MyContextForTest().setContext(myContext.newCreator(context, initializerName));
+    public MyContext newCreator(Context context, Object initializer) {
+        return new MyContextForTest().setContext(myContext.newCreator(context, initializer));
     }
 
     @Override

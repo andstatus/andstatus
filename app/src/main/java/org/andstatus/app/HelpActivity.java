@@ -136,6 +136,9 @@ public class HelpActivity extends MyActivity implements SwipeInterface, Progress
     }
 
     private boolean isCloseRequest(Intent intent) {
+        if (isFinishing()) {
+            return true;
+        }
         if (intent.hasExtra(EXTRA_CLOSE_ME)) {
             finish();
             return true;
@@ -321,12 +324,17 @@ public class HelpActivity extends MyActivity implements SwipeInterface, Progress
     /**
      * @return true if calling Activity is being finished
      */
-    public static boolean startFromActivity(Activity activity) {
+    public static boolean startFromActivity(MyActivity activity) {
+        if (activity.isFinishing()) {
+            return true;
+        }
         boolean helpAsFirstActivity = false;
         boolean showChangeLog = false;
         if (!MyContextHolder.get().isReady()) {
             MyLog.i(activity, "Context is not ready: " + MyContextHolder.get().toString());
-            helpAsFirstActivity = true;
+            if (MyContextHolder.get().state() == MyContextState.UPGRADING) {
+                helpAsFirstActivity = true;
+            }
         } else if (MyContextHolder.get().persistentAccounts().isEmpty()) {
             MyLog.i(activity, "No AndStatus Accounts yet");
             if (!(activity instanceof AccountSettingsActivity)) {
@@ -334,31 +342,36 @@ public class HelpActivity extends MyActivity implements SwipeInterface, Progress
             }
         } 
         
-        // Show Change Log after update
         if (MyContextHolder.get().isReady() && checkAndUpdateLastOpenedAppVersion(activity, true)) {
-            showChangeLog = true;                    
+            // Show Change Log after update
+            showChangeLog = true;
         }
 
-        boolean doFinish = helpAsFirstActivity || showChangeLog;
-        if (doFinish) {
-            Intent intent = new Intent(activity, HelpActivity.class);
-            if (helpAsFirstActivity) {
-                intent.putExtra(HelpActivity.EXTRA_IS_FIRST_ACTIVITY, true);
-            } 
-            
-            int pageIndex = PAGE_INDEX_LOGO;
-            if (!helpAsFirstActivity && showChangeLog) {
-                pageIndex = PAGE_INDEX_CHANGELOG;
-            }
-            intent.putExtra(HelpActivity.EXTRA_HELP_PAGE_INDEX, pageIndex);
-            
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            Context context = activity.getApplicationContext();
-            MyLog.v(TAG, "Finishing " + activity.getClass().getSimpleName() + " and starting " + TAG);
-            activity.finish();
-            context.startActivity(intent);
+        boolean activityIsFinishing = helpAsFirstActivity || showChangeLog;
+        if (activityIsFinishing) {
+            startMe(activity, helpAsFirstActivity, showChangeLog);
         }
-        return doFinish;
+        return activityIsFinishing;
+    }
+
+    public static void startMe(Context context, boolean helpAsFirstActivity, boolean showChangeLog) {
+        Intent intent = new Intent(context, HelpActivity.class);
+        if (helpAsFirstActivity) {
+            intent.putExtra(HelpActivity.EXTRA_IS_FIRST_ACTIVITY, true);
+        }
+
+        int pageIndex = PAGE_INDEX_LOGO;
+        if (!helpAsFirstActivity && showChangeLog) {
+            pageIndex = PAGE_INDEX_CHANGELOG;
+        }
+        intent.putExtra(HelpActivity.EXTRA_HELP_PAGE_INDEX, pageIndex);
+
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        if (Activity.class.isAssignableFrom(context.getClass())) {
+            MyLog.v(TAG, "Finishing " + context.getClass().getSimpleName() + " and starting " + TAG);
+            ((Activity) context).finish();
+        }
+        context.getApplicationContext().startActivity(intent);
     }
 
     /**

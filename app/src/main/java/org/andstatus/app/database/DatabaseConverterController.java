@@ -133,7 +133,7 @@ public class DatabaseConverterController {
                 MyServiceManager.setServiceUnavailable();
                 MyContextHolder.release();
                 // Upgrade will occur inside this call synchronously
-                MyContextHolder.initializeDuringUpgrade(upgradeRequestor, upgradeRequestor);
+                MyContextHolder.getMyFutureContext(upgradeRequestor, upgradeRequestor, true).getBlocking();
                 synchronized(UPGRADE_LOCK) {
                     shouldTriggerDatabaseUpgrade = false;
                 }

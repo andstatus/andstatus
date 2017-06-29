@@ -44,7 +44,6 @@ import org.andstatus.app.service.MyServiceEventsReceiver;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.BundleUtils;
 import org.andstatus.app.util.I18n;
-import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.TriState;
@@ -59,10 +58,6 @@ import java.util.concurrent.atomic.AtomicLong;
  * @author yvolk@yurivolkov.com
  */
 public abstract class LoadableListActivity extends MyBaseListActivity implements MyServiceEventsListener {
-    /**
-     * We are going to finish/restart this Activity (e.g. onResume or even onCreate)
-     */
-    protected volatile boolean mFinishing = false;
 
     protected boolean showSyncIndicatorSetting = true;
     protected View textualSyncIndicator = null;
@@ -72,11 +67,9 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
 
     ParsedUri mParsedUri = ParsedUri.fromUri(Uri.EMPTY);
 
-    protected final long mInstanceId = InstanceId.next();
     protected MyContext myContext = MyContextHolder.get();
     private MyAccount ma = MyAccount.EMPTY;
     private long configChangeTime = 0;
-    private volatile boolean configChanged = false;
     MyServiceEventsReceiver myServiceReceiver;
 
     private final Object loaderLock = new Object();
@@ -100,10 +93,17 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        myContext = MyContextHolder.get();
+        if (!myContext.isReady()) {
+            MyContextHolder.initializeThenRestartMe(this);
+        }
         super.onCreate(savedInstanceState);
+        if (isFinishing()) {
+            return;
+        }
+
         textualSyncIndicator = findViewById(R.id.sync_indicator);
 
-        myContext = MyContextHolder.initialize(this, this);
         configChangeTime = myContext.preferencesChangeTime();
         if (MyLog.isDebugEnabled()) {
             MyLog.d(this, "onCreate instanceId=" + mInstanceId
@@ -113,7 +113,9 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
             );
         }
 
-        MyServiceManager.setServiceAvailable();
+        if (myContext.isReady()) {
+            MyServiceManager.setServiceAvailable();
+        }
         myServiceReceiver = new MyServiceEventsReceiver(myContext, this);
 
         mParsedUri = ParsedUri.fromUri(getIntent().getData());
@@ -186,7 +188,8 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
     }
 
     protected boolean isConfigChanged() {
-        return configChanged;
+        MyContext myContextNew = MyContextHolder.get();
+        return this.myContext != myContextNew || configChangeTime != myContextNew.preferencesChangeTime();
     }
 
     /** @return selectedItem */
@@ -436,13 +439,9 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
         super.onResume();
         MyLog.v(this, method + ", instanceId=" + mInstanceId
                 + (mFinishing ? ", finishing" : "") );
-        if (!mFinishing) {
-            MyContext myContextNew = MyContextHolder.initialize(this, this);
-            if (this.myContext != myContextNew || configChangeTime != myContextNew.preferencesChangeTime()) {
-                configChanged = true;
-            }
+        if (!mFinishing && !MyContextHolder.initializeThenRestartMe(this)) {
             myServiceReceiver.registerReceiver(this);
-            myContextNew.setInForeground(true);
+            myContext.setInForeground(true);
             if (getListData().size() == 0 && !isLoading()) {
                 showList(WhichPage.ANY);
             }
@@ -579,16 +578,6 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
             return false;
         }
         return true;
-    }
-
-    @Override
-    public void finish() {
-        MyLog.v(this, "Finish requested" + (mFinishing ? ", already finishing" : "")
-                + ", instanceId=" + mInstanceId);
-        if (!mFinishing) {
-            mFinishing = true;
-        }
-        super.finish();
     }
 
     @Override
