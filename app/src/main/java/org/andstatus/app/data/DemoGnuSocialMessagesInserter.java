@@ -21,6 +21,8 @@ import android.support.annotation.Nullable;
 import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.database.MsgTable;
+import org.andstatus.app.net.social.MbActivity;
+import org.andstatus.app.net.social.MbActivityType;
 import org.andstatus.app.net.social.MbMessage;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.origin.Origin;
@@ -52,8 +54,8 @@ public class DemoGnuSocialMessagesInserter {
         conversationOid = Long.toString(MyLog.uniqueCurrentTimeMS());
         origin = MyContextHolder.get().persistentOrigins().fromName(DemoData.GNUSOCIAL_TEST_ORIGIN_NAME);
         assertTrue(DemoData.GNUSOCIAL_TEST_ORIGIN_NAME + " exists", origin.isValid());
-        accountUser = userFromOidAndAvatar(DemoData.GNUSOCIAL_TEST_ACCOUNT_USER_OID,
-                DemoData.GNUSOCIAL_TEST_ACCOUNT_AVATAR_URL);
+        accountUser = MyContextHolder.get().persistentAccounts().fromAccountName(DemoData.GNUSOCIAL_TEST_ACCOUNT_NAME)
+                .toPartialUser();
     }
     
     private void addConversation() {
@@ -93,6 +95,12 @@ public class DemoGnuSocialMessagesInserter {
         addMessage(reply10);
         MbMessage reply11 = buildMessage(author2, "Reply 11 to Reply 7 with " + DemoData.GLOBAL_PUBLIC_MESSAGE_TEXT + " text", reply7, null);
         addPublicMessage(reply11, true);
+
+        MbMessage reply12 = buildMessage(author2, "Reply 12 to Reply 7 reblogged by author1", reply7, null);
+        MbActivity activity = MbActivity.from(accountUser, MbActivityType.ANNOUNCE);
+        activity.setActor(author1);
+        activity.setMessage(reply12);
+        DemoMessageInserter.onActivityS(activity);
     }
     
     private void addPublicMessage(MbMessage message, boolean isPublic) {

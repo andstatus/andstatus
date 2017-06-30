@@ -27,6 +27,7 @@ import org.andstatus.app.database.DownloadTable;
 import org.andstatus.app.database.FriendshipTable;
 import org.andstatus.app.database.MsgOfUserTable;
 import org.andstatus.app.database.MsgTable;
+import org.andstatus.app.database.UserTable;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.Timeline;
 import org.andstatus.app.timeline.TimelineType;
@@ -97,6 +98,7 @@ public class MessageForAccount {
                     MsgTable.AUTHOR_ID,
                     MsgTable.IN_REPLY_TO_USER_ID,
                     MsgTable.RECIPIENT_ID,
+                    UserTable.LINKED_USER_ID,
                     MsgOfUserTable.SUBSCRIBED,
                     MsgOfUserTable.FAVORITED,
                     MsgOfUserTable.REBLOGGED,
@@ -104,25 +106,28 @@ public class MessageForAccount {
                     FriendshipTable.AUTHOR_FOLLOWED,
                     DownloadTable.IMAGE_FILE_NAME
             }, null, null, null);
-            if (cursor != null && cursor.moveToFirst()) {
+            while (cursor != null && cursor.moveToNext()) {
                 status = DownloadStatus.load(DbUtils.getLong(cursor, MsgTable.MSG_STATUS));
                 authorId = DbUtils.getLong(cursor, MsgTable.AUTHOR_ID);
+                isAuthor = (userId == authorId);
                 senderId = DbUtils.getLong(cursor, MsgTable.ACTOR_ID);
+                isSender = (userId == senderId);
                 isSenderMySucceededAccount = MyContextHolder.get().persistentAccounts().fromUserId(senderId).isValidAndSucceeded();
                 recipientId = DbUtils.getLong(cursor, MsgTable.RECIPIENT_ID);
                 imageFilename = DbUtils.getString(cursor, DownloadTable.IMAGE_FILE_NAME);
                 body = DbUtils.getString(cursor, MsgTable.BODY);
                 inReplyToUserId = DbUtils.getLong(cursor, MsgTable.IN_REPLY_TO_USER_ID);
                 mayBePrivate = (recipientId != 0) || (inReplyToUserId != 0);
-                
+
                 isRecipient = (userId == recipientId) || (userId == inReplyToUserId);
-                isSubscribed = DbUtils.getBoolean(cursor, MsgOfUserTable.SUBSCRIBED);
-                favorited = DbUtils.getBoolean(cursor, MsgOfUserTable.FAVORITED);
-                reblogged = DbUtils.getBoolean(cursor, MsgOfUserTable.REBLOGGED);
-                senderFollowed = DbUtils.getBoolean(cursor, FriendshipTable.SENDER_FOLLOWED);
-                authorFollowed = DbUtils.getBoolean(cursor, FriendshipTable.AUTHOR_FOLLOWED);
-                isSender = (userId == senderId);
-                isAuthor = (userId == authorId);
+                long linkedUserId = DbUtils.getLong(cursor, UserTable.LINKED_USER_ID);
+                if (userId == linkedUserId) {
+                    isSubscribed = DbUtils.getBoolean(cursor, MsgOfUserTable.SUBSCRIBED);
+                    favorited = DbUtils.getBoolean(cursor, MsgOfUserTable.FAVORITED);
+                    reblogged = DbUtils.getBoolean(cursor, MsgOfUserTable.REBLOGGED);
+                    senderFollowed = DbUtils.getBoolean(cursor, FriendshipTable.SENDER_FOLLOWED);
+                    authorFollowed = DbUtils.getBoolean(cursor, FriendshipTable.AUTHOR_FOLLOWED);
+                }
             }
         } finally {
             DbUtils.closeSilently(cursor);
