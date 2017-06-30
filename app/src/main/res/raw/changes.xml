@@ -27,8 +27,8 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
         </subtitle>
     </header>
-    <release android:versionName="34.01" android:versionCode="221"
-             versionDate="2017-06-23"
+    <release android:versionName="34.02" android:versionCode="222"
+             versionDate="2017-07-01"
              versionTitle="Showing Twitter tweets longer than 140 characters">
         <changes>
             <change>Fixed Twitter tweets longer than 140 characters were shown truncated.
