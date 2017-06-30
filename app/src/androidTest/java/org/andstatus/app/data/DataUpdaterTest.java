@@ -541,4 +541,29 @@ public class DataUpdaterTest {
                     + message.getBody() + "'", buddyId == 0);
         }
     }
+
+    @Test
+    public void testMention() {
+        MyAccount ma = DemoData.getMyAccount(DemoData.GNUSOCIAL_TEST_ACCOUNT_NAME);
+        MbUser accountUser = ma.toPartialUser();
+        MyAccount myMentionedAccount = DemoData.getMyAccount(DemoData.GNUSOCIAL_TEST_ACCOUNT2_NAME);
+        MbUser myMentionedUser = myMentionedAccount.toPartialUser().setUserName(myMentionedAccount.getUsername());
+        MbUser author1 = MbUser.fromOriginAndUserOid(accountUser.originId, "sam" + DemoData.TESTRUN_UID);
+        author1.setUserName("samBrook");
+
+        MbMessage message = MbMessage.fromOriginAndOid(accountUser.originId,
+                accountUser.oid, String.valueOf(System.nanoTime()), DownloadStatus.LOADED);
+        message.setBody("@" + myMentionedUser.getUserName() + " I mention your another account");
+        message.setUpdatedDate(System.currentTimeMillis());
+        message.via = "AndStatus";
+        message.setAuthor(author1);
+
+        MbActivity activity = MbActivity.from(accountUser, MbActivityType.UPDATE);
+        activity.setActor(author1);
+        activity.setMessage(message);
+
+        DataUpdater di = new DataUpdater(ma);
+        long messageId = di.onActivity(message.update(accountUser));
+        assertTrue("Message added", messageId != 0);
+    }
 }

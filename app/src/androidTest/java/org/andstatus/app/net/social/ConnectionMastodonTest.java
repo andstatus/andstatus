@@ -18,9 +18,9 @@ package org.andstatus.app.net.social;
 
 import android.support.test.InstrumentationRegistry;
 
+import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MyContentType;
-import org.andstatus.app.context.DemoData;
 import org.andstatus.app.util.RawResourceUtils;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
@@ -31,8 +31,11 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 
 public class ConnectionMastodonTest {
     private ConnectionMastodonMock connection;
@@ -109,6 +112,7 @@ public class ConnectionMastodonTest {
         int ind = 0;
         assertEquals("Is not a message", MbObjectType.MESSAGE, timeline.get(ind).getObjectType());
         MbActivity activity = timeline.get(ind);
+        assertEquals(MbActivityType.ANNOUNCE, activity.type);
         MbMessage mbMessage = activity.getMessage();
         assertEquals("Favorited " + mbMessage, TriState.UNKNOWN, mbMessage.getFavoritedByMe());
         assertEquals("Not reblogged " + mbMessage, true, mbMessage.isReblogged());
@@ -118,25 +122,42 @@ public class ConnectionMastodonTest {
         assertEquals("Username", "Chaosphere", actor.getUserName());
         assertEquals("WebfingerId", "Chaosphere@mastodon.social", actor.getWebFingerId());
 
-        ind = 19;
+        ind = 2;
         assertEquals("Is not a message", MbObjectType.MESSAGE, timeline.get(ind).getObjectType());
         activity = timeline.get(ind);
+        assertEquals(MbActivityType.LIKE, activity.type);
         mbMessage = activity.getMessage();
-        assertEquals("Favorited " + mbMessage, TriState.UNKNOWN, mbMessage.getFavoritedByMe());
+        assertThat(mbMessage.getBody(), is("<p>IT infrastructure of modern church</p>"));
+        assertEquals("Favorited " + mbMessage, TriState.TRUE, mbMessage.getFavorited());
+        assertEquals("Favorited by me " + mbMessage, TriState.UNKNOWN, mbMessage.getFavoritedByMe());
+        assertEquals("Reblogged " + mbMessage, false, mbMessage.isReblogged());
+        assertEquals("Author's username", "AndStatus", mbMessage.getAuthor().getUserName());
         actor = activity.getActor();
-        assertEquals("Actor's Oid", "119218", actor.oid);
-        assertEquals("Username", "izwx6502", actor.getUserName());
-        assertEquals("WebfingerId", "izwx6502@mstdn.jp", actor.getWebFingerId());
+        assertEquals("Actor's Oid", "48790", actor.oid);
+        assertEquals("Username", "vfrmedia", actor.getUserName());
+        assertEquals("WebfingerId", "vfrmedia@social.tchncs.de", actor.getWebFingerId());
 
         ind = 17;
         activity = timeline.get(ind);
+        assertEquals(MbActivityType.FOLLOW, activity.type);
         assertEquals("Is a message", MbObjectType.USER, activity.getObjectType());
         MbUser user = activity.getUser();
         actor = activity.getActor();
         assertEquals("Actor's Oid", "24853", actor.oid);
         assertEquals("Username", "resir014", actor.getUserName());
         assertEquals("WebfingerId", "resir014@icosahedron.website", actor.getWebFingerId());
-
         assertEquals("Not followed", TriState.TRUE, user.followedByActor);
+
+        ind = 19;
+        assertEquals("Is not a message", MbObjectType.MESSAGE, timeline.get(ind).getObjectType());
+        activity = timeline.get(ind);
+        assertEquals(MbActivityType.UPDATE, activity.type);
+        mbMessage = activity.getMessage();
+        assertThat(mbMessage.getBody(), containsString("universe of Mastodon"));
+        assertEquals("Favorited " + mbMessage, TriState.UNKNOWN, mbMessage.getFavoritedByMe());
+        actor = activity.getActor();
+        assertEquals("Actor's Oid", "119218", actor.oid);
+        assertEquals("Username", "izwx6502", actor.getUserName());
+        assertEquals("WebfingerId", "izwx6502@mstdn.jp", actor.getWebFingerId());
     }
 }

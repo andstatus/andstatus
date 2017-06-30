@@ -168,6 +168,8 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
                     return MbActivityType.ANNOUNCE;
                 case "follow":
                     return MbActivityType.FOLLOW;
+                case "mention":
+                    return MbActivityType.UPDATE;
                 default:
                     return MbActivityType.EMPTY;
             }
