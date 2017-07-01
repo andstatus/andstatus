@@ -79,6 +79,10 @@ public class MyHtmlTest {
                 "noopener\" target=\"_blank\">#<span>Andstatus</span></a>? How do I get to recognize my instance?</p>";
         final String result2 = ",hello,does,anyone,use,andstatus,#andstatus,how,do,i,get,to,recognize,my,instance,";
         assertEquals(result2, MyHtml.getBodyToSearch(text3));
+
+        String text4 = "Uh someone on XYZ just said \"I found a Something in the XYZ fridge.\" @ABVinskeep we''re gonna need an investigation of this.";
+        String result4 = ",uh,someone,on,xyz,just,said,i,found,a,something,in,the,xyz,fridge,abvinskeep,@abvinskeep,we,re,gonna,need,an,investigation,of,this,";
+        assertEquals(result4, MyHtml.getBodyToSearch(text4));
     }
 
     @Test

@@ -29,10 +29,10 @@ import org.apache.commons.lang3.text.translate.LookupTranslator;
 import org.apache.commons.lang3.text.translate.NumericEntityUnescaper;
 
 public class MyHtml {
-
-    private static final String GNU_SOCIAL_FAVORITED_SOMETHING_BY_REGEX = "(?s)([^ ]+) favorited something by [^ ]+ (.*)";
+    // See http://docs.oracle.com/javase/6/docs/api/java/util/regex/Pattern.html
+    private static final String GNU_SOCIAL_FAVORITED_SOMETHING_BY_REGEX = "(?s)([^ ]+) favorited something by [^ ]+ (.+)";
     private static final String SPACES_REGEX = "[\\[\\]\\(\\)\\{\\}\n\'\"<>,:;\\s]+";
-    private static final String PUNCTUATION_BEFORE_COMMA_REGEX = "[,.!?]*,";
+    private static final String PUNCTUATION_BEFORE_COMMA_REGEX = "[,.!?]+,";
 
     private MyHtml() {
         // Empty
