@@ -343,7 +343,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
         long itemIdOfListPosition = centralItemId;
         int y = 0;
         if (list.getChildCount() > 0 && adapter != null) {
-            int firstVisiblePosition = list.getFirstVisiblePosition() - list.getHeaderViewsCount();
+            int firstVisiblePosition = list.getFirstVisiblePosition() + list.getHeaderViewsCount();
             itemIdOfListPosition = adapter.getItemId(firstVisiblePosition);
             y = getYOfPosition(list, adapter, firstVisiblePosition);
         }

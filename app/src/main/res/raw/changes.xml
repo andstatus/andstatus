@@ -33,6 +33,7 @@
         <changes>
             <change>Fixed: [Mastodon] Mentions were not loaded from "Notifications" timeline
                 (to "Mentions" of AndStatus).</change>
+            <change>Fixed keeping list position when doing "Pull to refresh".</change>
             <change>Fixed Reblogged by other user was counted as our reblog in a context menu
                 (same for favorited...)</change>
             <change>Added "Forget sync events and dates" context menu item to the "Manage Timelines" list in order
