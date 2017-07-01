@@ -472,8 +472,8 @@ public class HelpActivity extends MyActivity implements SwipeInterface, Progress
                     if (success) {
                         if (generatingDemoData) {
                             generatingDemoData = false;
-                            startActivity(new Intent(HelpActivity.this, TimelineActivity.class));
                             finish();
+                            TimelineActivity.goHome(MyContextHolder.get().context());
                         } else {
                             HelpActivity.startFromActivity(HelpActivity.this);
                         }

@@ -1,6 +1,6 @@
 AndStatus is an Open Source low traffic social networking client with tree-like threaded conversations.
 It supports different Social networks, including
-GNU social (e.g. Quitter.se, LoadAverage, etc.), Twitter and Pump.io.
+GNU social (e.g. Quitter.se, LoadAverage, etc.), Mastodon, Twitter and Pump.io.
 AndStatus can combine your feeds from all networks into one Timeline,
 and it allows you to read and post even when you are offline.
 
