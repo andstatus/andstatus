@@ -26,22 +26,24 @@ import org.andstatus.app.backup.ProgressLogger;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.DemoConversationInserter;
 import org.andstatus.app.data.DemoGnuSocialMessagesInserter;
-import org.andstatus.app.data.DemoMessageInserter;
 import org.andstatus.app.data.MyDataCheckerConversations;
-import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.origin.DemoOriginInserter;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.service.MyServiceManager;
+import org.andstatus.app.timeline.Timeline;
+import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
 
 import java.util.Locale;
 
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -187,9 +189,11 @@ public final class DemoData {
                     fail("No persistent accounts");
                 }
                 setSuccessfulAccountAsCurrent();
-                MyContextHolder.get().persistentTimelines().setDefault(
-                        MyContextHolder.get().persistentTimelines().getFiltered(false, TriState.TRUE,
-                                MyContextHolder.get().persistentAccounts().getCurrentAccount(), null).get(0));
+                Timeline defaultTimeline = MyContextHolder.get().persistentTimelines().getFiltered(
+                        false, TriState.TRUE, TimelineType.EVERYTHING, null,
+                        MyContextHolder.get().persistentAccounts().getCurrentAccount().getOrigin()).get(0);
+                assertThat(defaultTimeline.getTimelineType(), is(TimelineType.EVERYTHING));
+                MyContextHolder.get().persistentTimelines().setDefault(defaultTimeline);
                 MyLog.v(TAG + "Async", "Before initialize 3");
                 MyContextHolder.initialize(myContext.context(), method);
                 MyLog.v(TAG + "Async", "After initialize 3");

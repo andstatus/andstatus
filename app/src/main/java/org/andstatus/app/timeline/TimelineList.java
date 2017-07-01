@@ -159,7 +159,7 @@ public class TimelineList extends LoadableListActivity {
                 // TODO: Implement filter parameters in this activity
                 countersSince = 0;
                 for (Timeline timeline : myContext.persistentTimelines().
-                        getFiltered(false, TriState.UNKNOWN, null, null)) {
+                        getFiltered(false, TriState.UNKNOWN, TimelineType.UNKNOWN, null, null)) {
                     TimelineListViewItem viewItem = new TimelineListViewItem(myContext, timeline);
                     if (viewItem.timeline.getCountSince() > 0 &&
                             (viewItem.timeline.getCountSince() < countersSince || countersSince == 0)) {

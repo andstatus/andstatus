@@ -148,6 +148,7 @@ public class PersistentTimelines {
     @NonNull
     public List<Timeline> getFiltered(boolean isForSelector,
                                       TriState isTimelineCombined,
+                                      @NonNull TimelineType timelineType,
                                       MyAccount myAccount,
                                       Origin origin) {
         List<Timeline> timelines = new ArrayList<>();
@@ -158,15 +159,17 @@ public class PersistentTimelines {
             } else if (isForSelector && timeline.isDisplayedInSelector() == DisplayedInSelector.NEVER) {
                 include = false;
             } else {
-                include = isTimelineCombined.isBoolean(timeline.isCombined()) &&
-                        (myAccount == null || !myAccount.isValid() ||
-                                timeline.isCombined() ||
-                                timeline.getMyAccount().equals(myAccount) ||
-                                (isForSelector && timeline.getTimelineType().isAtOrigin() &&
-                                        myAccount.getOrigin().equals(timeline.getOrigin()))
-                        ) &&
-                        (origin == null || !origin.isValid() ||
-                                timeline.isCombined() || timeline.getOrigin().equals(origin));
+                include = isTimelineCombined.isBoolean(timeline.isCombined())
+                    && (timelineType.isAtOrigin() || myAccount == null || !myAccount.isValid() ||
+                            timeline.isCombined() ||
+                            timeline.getMyAccount().equals(myAccount) ||
+                            (isForSelector && timeline.getTimelineType().isAtOrigin() &&
+                                    myAccount.getOrigin().equals(timeline.getOrigin()))
+                    )
+                    && (!timelineType.isAtOrigin() || origin == null || !origin.isValid() ||
+                            timeline.isCombined() || timeline.getOrigin().equals(origin)
+                    )
+                    && (timelineType == TimelineType.UNKNOWN || timelineType == timeline.getTimelineType()) ;
             }
             if (include) {
                 timelines.add(timeline);

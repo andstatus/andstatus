@@ -67,7 +67,7 @@ public class TimelineSelector extends SelectorDialog {
         List<Timeline> timelines = myContext.persistentTimelines().getFiltered(
                 true,
                 TriState.fromBoolean(timeline.isCombined()),
-                currentMyAccount,
+                TimelineType.UNKNOWN, currentMyAccount,
                 timeline.getOrigin());
         if (timelines.isEmpty()) {
             returnSelectedTimeline(Timeline.getEmpty(null));

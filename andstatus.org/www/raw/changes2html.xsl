@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='utf-8' ?>
 <!-- 
-    Copyright (C) 2012-2014 yvolk (Yuri Volkov), http://yurivolkov.com
+    Copyright (C) 2012-2017 yvolk (Yuri Volkov), http://yurivolkov.com
     
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@
   	<h1><xsl:copy-of select="/document/header/title/node()"/></h1>
 	<xsl:apply-templates select="/document/header/subtitle" />
   	<xsl:for-each select="/document/release">
-      <h2><xsl:value-of select="@versionDate"/>
+      <h2 id="{@android:versionCode}"><xsl:value-of select="@versionDate"/>
           v.<xsl:value-of select="@android:versionName"/> (<xsl:value-of select="@android:versionCode"/>)
           <xsl:value-of select="@versionTitle"/></h2>
       <ol>

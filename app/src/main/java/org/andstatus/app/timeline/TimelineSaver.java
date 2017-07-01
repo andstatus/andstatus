@@ -115,7 +115,7 @@ public class TimelineSaver extends MyAsyncTask<Void, Void, Void> {
     }
 
     private void addDefaultMyAccountTimelinesIfNoneFound(MyAccount ma) {
-        if (ma.isValid() && timelines().getFiltered(false, TriState.FALSE, ma, null).isEmpty()) {
+        if (ma.isValid() && timelines().getFiltered(false, TriState.FALSE, TimelineType.UNKNOWN, ma, null).isEmpty()) {
             addDefaultCombinedTimelinesIfNoneFound();
             addDefaultOriginTimelinesIfNoneFound(ma.getOrigin());
 
@@ -128,7 +128,7 @@ public class TimelineSaver extends MyAsyncTask<Void, Void, Void> {
     }
 
     private void addDefaultCombinedTimelinesIfNoneFound() {
-        if (timelines().getFiltered(false, TriState.TRUE, null, null).isEmpty()) {
+        if (timelines().getFiltered(false, TriState.TRUE, TimelineType.UNKNOWN, null, null).isEmpty()) {
             long timelineId = MyQuery.conditionToLongColumnValue(TimelineTable.TABLE_NAME,
                     TimelineTable._ID,
                     TimelineTable.ACCOUNT_ID + "=0 AND " + TimelineTable.ORIGIN_ID + "=0");

@@ -48,6 +48,7 @@ import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.timeline.Timeline;
 import org.andstatus.app.timeline.TimelineSaver;
+import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
@@ -998,7 +999,8 @@ public final class MyAccount implements Comparable<MyAccount> {
     public long getLastSyncSucceededDate(MyContext myContext) {
         long lastSyncedDate = 0;
         if (isValid() && isPersistent()) {
-            for (Timeline timeline : myContext.persistentTimelines().getFiltered(false, TriState.UNKNOWN, this, null)) {
+            for (Timeline timeline : myContext.persistentTimelines().getFiltered(
+                    false, TriState.UNKNOWN, TimelineType.UNKNOWN, this, null)) {
                 if (timeline.getSyncSucceededDate() > lastSyncedDate) {
                     lastSyncedDate = timeline.getSyncSucceededDate();
                 }

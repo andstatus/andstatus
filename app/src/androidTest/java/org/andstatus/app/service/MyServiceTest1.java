@@ -81,7 +81,7 @@ public class MyServiceTest1 extends MyServiceTest {
 
         MyContext myContext = MyContextHolder.get();
         for (Timeline timeline : myContext.persistentTimelines().getFiltered(false, TriState.FALSE,
-                myAccount, null)) {
+                TimelineType.UNKNOWN, myAccount, null)) {
             if (timeline.isSyncedAutomatically()) {
                 if (timeline.isTimeToAutoSync()) {
                     timeline.setSyncSucceededDate(System.currentTimeMillis());
@@ -101,7 +101,7 @@ public class MyServiceTest1 extends MyServiceTest {
         myContext = MyContextHolder.get();
         Timeline timelineToSync = null;
         for (Timeline timeline : myContext.persistentTimelines().getFiltered(false, TriState.FALSE,
-                myAccount, null)) {
+                TimelineType.UNKNOWN, myAccount, null)) {
             if (timeline.isSyncedAutomatically()) {
                 timelineToSync = timeline;
                 break;
