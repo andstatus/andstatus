@@ -27,6 +27,21 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
         </subtitle>
     </header>
+    <release android:versionName="34.02" android:versionCode="222"
+             versionDate="2017-07-01"
+             versionTitle="Showing Mentions from Mastodon and other Bug fixes">
+        <changes>
+            <change>Fixed: [Mastodon] Mentions were not loaded from "Notifications" timeline
+                (to "Mentions" of AndStatus).</change>
+            <change>Fixed Reblogged by other user was counted as our reblog in a context menu
+                (same for favorited...)</change>
+            <change>Added "Forget sync events and dates" context menu item to the "Manage Timelines" list in order
+                to be able to re-sync any Timeline with Internet. E.g. when you feel that some messages from a server
+                timeline are missed in AndStatus.</change>
+            <change>In order to improve application responsiveness, the application's initialization moved to
+                background</change>
+        </changes>
+    </release>
     <release android:versionName="34.01" android:versionCode="221"
              versionDate="2017-06-23"
              versionTitle="Showing Twitter tweets longer than 140 characters">
