@@ -66,6 +66,7 @@ public class MessageViewItem implements DuplicatesCollapsible<MessageViewItem>, 
     String messageSource = "";
 
     private String body = "";
+    private String cleanedBody = "";
 
     boolean favorited = false;
     boolean isFavoritingAction = false;
@@ -157,12 +158,10 @@ public class MessageViewItem implements DuplicatesCollapsible<MessageViewItem>, 
         }
         if (link == DuplicationLink.NONE) {
             if (Math.abs(updatedDate - other.updatedDate) < TimeUnit.HOURS.toMillis(24)) {
-                String thisBody = MyHtml.getCleanedBody(body);
-                String otherBody = MyHtml.getCleanedBody(other.body);
-                if (thisBody.length() < MIN_LENGTH_TO_COMPARE ||
-                        otherBody.length() < MIN_LENGTH_TO_COMPARE) {
+                if (cleanedBody.length() < MIN_LENGTH_TO_COMPARE ||
+                        other.cleanedBody.length() < MIN_LENGTH_TO_COMPARE) {
                     // Too short to compare
-                } else if (thisBody.equals(otherBody)) {
+                } else if (cleanedBody.equals(other.cleanedBody)) {
                     if (updatedDate == other.updatedDate) {
                         link = duplicatesByFavoritedAndReblogged(other);
                     } else if (updatedDate < other.updatedDate) {
@@ -170,9 +169,9 @@ public class MessageViewItem implements DuplicatesCollapsible<MessageViewItem>, 
                     } else {
                         link = DuplicationLink.DUPLICATES;
                     }
-                } else if (thisBody.contains(otherBody)) {
+                } else if (cleanedBody.contains(other.cleanedBody)) {
                     link = DuplicationLink.DUPLICATES;
-                } else if (otherBody.contains(thisBody)) {
+                } else if (other.cleanedBody.contains(cleanedBody)) {
                     link = DuplicationLink.IS_DUPLICATED;
                 }
             }
@@ -259,6 +258,7 @@ public class MessageViewItem implements DuplicatesCollapsible<MessageViewItem>, 
     public MessageViewItem setBody(String body) {
         this.body = body;
         this.isFavoritingAction = MyHtml.isFavoritingAction(body);
+        cleanedBody = MyHtml.getCleanedBody(body);
         return this;
     }
 

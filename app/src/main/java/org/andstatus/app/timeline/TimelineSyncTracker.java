@@ -76,6 +76,6 @@ public class TimelineSyncTracker {
     }
 
     public void clearPosition() {
-        timeline.clearPosition();
+        timeline.forgetPositionsAndDates();
     }
 }

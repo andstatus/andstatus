@@ -776,7 +776,7 @@ public class Timeline implements Comparable<Timeline> {
         return blnOut;
     }
 
-    public void clearPosition() {
+    public void forgetPositionsAndDates() {
         if (!TextUtils.isEmpty(youngestPosition)) {
             youngestPosition = "";
             changed = true;
@@ -785,12 +785,27 @@ public class Timeline implements Comparable<Timeline> {
             youngestItemDate = 0;
             changed = true;
         }
+        if (youngestSyncedDate > 0) {
+            youngestSyncedDate = 0;
+            changed = true;
+        }
+
         if (!TextUtils.isEmpty(oldestPosition)) {
             oldestPosition = "";
             changed = true;
         }
         if (oldestItemDate > 0) {
             oldestItemDate = 0;
+            changed = true;
+        }
+        if (oldestSyncedDate > 0) {
+            oldestSyncedDate = 0;
+            changed = true;
+        }
+
+        setSyncSucceededDate(0);
+        if (syncFailedDate > 0) {
+            syncFailedDate = 0;
             changed = true;
         }
     }
@@ -937,7 +952,10 @@ public class Timeline implements Comparable<Timeline> {
     }
 
     public void setSyncSucceededDate(long syncSucceededDate) {
-        this.syncSucceededDate = syncSucceededDate;
+        if(this.syncSucceededDate != syncSucceededDate) {
+            this.syncSucceededDate = syncSucceededDate;
+            changed = true;
+        }
     }
 
     public boolean isSynableSomehow() {

@@ -177,6 +177,7 @@
   <string name="followed_by">Followed by</string>
   <string name="followers">Followers</string>
   <string name="followers_of">Followers of \"%1s\"</string>
+  <string name="forget_sync_events">Forget sync events and dates</string>
   <string name="friends">Friends</string>
   <string name="friends_of">Friends of \"%1s\"</string>
   <string name="gestures">Gestures</string>

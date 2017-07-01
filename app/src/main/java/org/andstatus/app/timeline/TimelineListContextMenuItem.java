@@ -19,7 +19,6 @@ import android.view.Menu;
 
 import org.andstatus.app.ContextMenuItem;
 import org.andstatus.app.WhichPage;
-import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.msg.TimelineActivity;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
@@ -54,6 +53,15 @@ public enum TimelineListContextMenuItem implements ContextMenuItem {
         @Override
         public boolean execute(TimelineListContextMenu menu, TimelineListViewItem viewItem) {
             menu.getActivity().getMyContext().persistentTimelines().setDefault(viewItem.timeline);
+            menu.getActivity().showList(WhichPage.CURRENT);
+            return true;
+        }
+    },
+    FORGET_SYNC_EVENTS() {
+        @Override
+        public boolean execute(TimelineListContextMenu menu, TimelineListViewItem viewItem) {
+            viewItem.timeline.forgetPositionsAndDates();
+            viewItem.timeline.resetCounters(true);
             menu.getActivity().showList(WhichPage.CURRENT);
             return true;
         }
