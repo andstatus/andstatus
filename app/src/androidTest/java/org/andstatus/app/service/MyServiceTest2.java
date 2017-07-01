@@ -49,8 +49,8 @@ public class MyServiceTest2 extends MyServiceTest {
         mService.sendListenedToCommand();
         mService.assertCommandExecutionStarted("First command didn't start", startCount, TriState.TRUE);
         assertTrue("First command didn't end executing", mService.waitForCommandExecutionEnded(endCount));
-        assertEquals(cd1.toString() + " " + mService.httpConnectionMock.toString(),
-                1, mService.httpConnectionMock.getRequestsCounter());
+        assertEquals(cd1.toString() + " " + mService.getHttp().toString(),
+                1, mService.getHttp().getRequestsCounter());
 
         assertTrue(TestSuite.setAndWaitForIsInForeground(true));
         MyLog.i(this, method + "; we are in a foreground");
@@ -67,7 +67,7 @@ public class MyServiceTest2 extends MyServiceTest {
         assertTrue("Service stopped", mService.waitForServiceStopped(false));
         MyLog.i(this, method + "; Service stopped after the second command");
         assertEquals("No new data was posted while in foreground",
-                mService.httpConnectionMock.getRequestsCounter(), 1);
+                mService.getHttp().getRequestsCounter(), 1);
 
         Queue<CommandData> queue = new CommandQueue().load().get(QueueType.CURRENT);
         MyLog.i(this, method + "; Queue loaded, size:" + queue.size());

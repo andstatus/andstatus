@@ -59,7 +59,7 @@ public class MyServiceTest1 extends MyServiceTest {
         mService.assertCommandExecutionStarted("First command", startCount, TriState.TRUE);
         mService.sendListenedToCommand();
         assertTrue("First command ended executing", mService.waitForCommandExecutionEnded(endCount));
-        assertEquals(mService.httpConnectionMock.toString(), 1, mService.httpConnectionMock.getRequestsCounter());
+        assertEquals(mService.getHttp().toString(), 1, mService.getHttp().getRequestsCounter());
         mService.sendListenedToCommand();
         mService.assertCommandExecutionStarted("Duplicated command didn't start", startCount + 1, TriState.FALSE);
         mService.getListenedCommand().setManuallyLaunched(true);
@@ -95,8 +95,8 @@ public class MyServiceTest1 extends MyServiceTest {
         runner.autoSyncAccount(myAccount.getAccountName(), syncResult);
         assertTrue(runner.toString(), runner.isSyncCompleted());
         assertEquals("Requests were sent while all timelines just synced " +
-                runner.toString() + "; " + mService.httpConnectionMock.toString(),
-                0, mService.httpConnectionMock.getRequestsCounter());
+                runner.toString() + "; " + mService.getHttp().toString(),
+                0, mService.getHttp().getRequestsCounter());
 
         myContext = MyContextHolder.get();
         Timeline timelineToSync = null;
@@ -116,8 +116,8 @@ public class MyServiceTest1 extends MyServiceTest {
         runner.autoSyncAccount(myAccount.getAccountName(), syncResult);
         assertTrue(runner.toString(), runner.isSyncCompleted());
         assertEquals("Timeline was not synced: " + timelineToSync + "; " +
-                runner.toString() + "; " + mService.httpConnectionMock.toString(),
-                1, mService.httpConnectionMock.getRequestsCounter());
+                runner.toString() + "; " + mService.getHttp().toString(),
+                1, mService.getHttp().getRequestsCounter());
 
         assertTrue("Service stopped", mService.waitForServiceStopped(true));
         MyLog.i(this, method + " ended");
@@ -137,9 +137,9 @@ public class MyServiceTest1 extends MyServiceTest {
         
         mService.assertCommandExecutionStarted("First command", startCount, TriState.TRUE);
         assertTrue("First command ended executing", mService.waitForCommandExecutionEnded(endCount));
-        MyLog.i(this, method  + "; " + mService.httpConnectionMock.toString());
-        assertEquals("connection instance Id", mService.connectionInstanceId, mService.httpConnectionMock.getInstanceId());
-        assertEquals(mService.httpConnectionMock.toString(), 1, mService.httpConnectionMock.getRequestsCounter());
+        MyLog.i(this, method  + "; " + mService.getHttp().toString());
+        assertEquals("connection instance Id", mService.connectionInstanceId, mService.getHttp().getInstanceId());
+        assertEquals(mService.getHttp().toString(), 1, mService.getHttp().getRequestsCounter());
         assertTrue("Service stopped", mService.waitForServiceStopped(true));
         MyLog.i(this, method + " ended");
     }
@@ -158,8 +158,8 @@ public class MyServiceTest1 extends MyServiceTest {
         mService.sendListenedToCommand();
         mService.assertCommandExecutionStarted("First command", startCount, TriState.TRUE);
         assertTrue("First command ended executing", mService.waitForCommandExecutionEnded(endCount));
-        assertTrue(mService.httpConnectionMock.toString(),
-                mService.httpConnectionMock.getRequestsCounter() > 0);
+        assertTrue(mService.getHttp().toString(),
+                mService.getHttp().getRequestsCounter() > 0);
         assertTrue("Service stopped", mService.waitForServiceStopped(true));
         assertEquals("DiskIoException", 0, ExceptionsCounter.getDiskIoExceptionsCount());
         MyLog.i(this, method + " ended");
@@ -173,7 +173,7 @@ public class MyServiceTest1 extends MyServiceTest {
         mService.setListenedCommand(CommandData.newAccountCommand(
                 CommandEnum.RATE_LIMIT_STATUS,
                 DemoData.getMyAccount(DemoData.GNUSOCIAL_TEST_ACCOUNT_NAME)));
-        mService.httpConnectionMock.setRuntimeException(new SQLiteDiskIOException(method));
+        mService.getHttp().setRuntimeException(new SQLiteDiskIOException(method));
         long startCount = mService.executionStartCount;
         mService.sendListenedToCommand();
 

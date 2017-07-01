@@ -17,10 +17,11 @@ import org.andstatus.app.util.TriState;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class MyServiceTestHelper implements MyServiceEventsListener {
     private volatile MyServiceEventsReceiver serviceConnector;
-    public volatile HttpConnectionMock httpConnectionMock;
+    private volatile HttpConnectionMock httpConnectionMock;
     volatile long connectionInstanceId;
 
     private volatile CommandData listenedCommand = CommandData.getEmpty();
@@ -60,6 +61,7 @@ public class MyServiceTestHelper implements MyServiceEventsListener {
             assertTrue(TestSuite.setAndWaitForIsInForeground(false));
         } catch (Exception e) {
             MyLog.e(this, "setUp", e);
+            fail(MyLog.getStackTrace(e));
         } finally {
             MyLog.i(this, "setUp ended instanceId=" + connectionInstanceId);
         }
@@ -185,5 +187,9 @@ public class MyServiceTestHelper implements MyServiceEventsListener {
     void setListenedCommand(CommandData listenedCommand) {
         this.listenedCommand = listenedCommand;
         MyLog.v(this, "setListenedCommand; " + this.listenedCommand);
+    }
+
+    public HttpConnectionMock getHttp() {
+        return httpConnectionMock;
     }
 }

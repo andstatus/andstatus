@@ -257,6 +257,6 @@ public class MyContextForTest implements MyContext {
 
     @Override
     public String toString() {
-        return "MyContextForTest " + myContext;
+        return "MyContextForTest http=" + getHttpConnectionMock() + ", " + myContext;
     }
 }

@@ -22,6 +22,7 @@ import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import org.andstatus.app.account.AccountDataWriter;
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.database.UserTable;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.ConnectionException.StatusCode;
@@ -563,8 +564,11 @@ public abstract class Connection {
         if (http != null && HttpConnectionMock.class.isAssignableFrom(http.getClass())) {
             return (HttpConnectionMock) http;
         }
-        throw new IllegalStateException(http == null ? "http is null" : "http is " +
-                http.getClass().getName());
+        if (http == null) {
+            throw new IllegalStateException("http is null");
+        }
+        MyContextHolder.get().getHttpConnectionMock();
+        throw new IllegalStateException("http is " + http.getClass().getName() + ", " + MyContextHolder.get().toString());
     }
 
     protected String prependWithBasicPath(String url) {

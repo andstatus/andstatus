@@ -86,11 +86,11 @@ public class SharingMediaToThisAppTest extends TimelineActivityTest {
 
         mService.waitForServiceStopped(false);
 
-        String message = "Data was posted " + mService.httpConnectionMock.getPostedCounter() + " times; "
-                + Arrays.toString(mService.httpConnectionMock.getResults().toArray());
+        String message = "Data was posted " + mService.getHttp().getPostedCounter() + " times; "
+                + Arrays.toString(mService.getHttp().getResults().toArray());
         MyLog.v(this, method + "; " + message);
-        assertTrue(message, mService.httpConnectionMock.getPostedCounter() > 0);
-        assertTrue(message, mService.httpConnectionMock.substring2PostedPath("statuses/update").length() > 0);
+        assertTrue(message, mService.getHttp().getPostedCounter() > 0);
+        assertTrue(message, mService.getHttp().substring2PostedPath("statuses/update").length() > 0);
 
         String condition = "BODY='" + body + "'";
         long unsentMsgId = MyQuery.conditionToLongColumnValue(MsgTable.TABLE_NAME, BaseColumns._ID, condition);
