@@ -104,6 +104,9 @@ public class MyFutureContext extends MyAsyncTask<Void, Void, MyContext> {
     }
 
     public void thenStartActivity(Intent intent) {
+        if (activityIntentPostRun != null) {
+            return;
+        }
         activityIntentPostRun = intent;
         if (getStatus() == Status.FINISHED) {
             startActivity(getNow());
@@ -114,9 +117,22 @@ public class MyFutureContext extends MyAsyncTask<Void, Void, MyContext> {
         Intent intent = activityIntentPostRun;
         if (intent != null) {
             runnablePostRun = null;
-            if (myContext.isReady()) {
-                myContext.context().startActivity(intent);
-            } else {
+            boolean launched = false;
+            if (myContext.isReady() && !myContext.isExpired()) {
+                try {
+                    myContext.context().startActivity(intent);
+                    launched = true;
+                } catch (android.util.AndroidRuntimeException e) {
+                    try {
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        myContext.context().startActivity(intent);
+                        launched = true;
+                    } catch (Exception e2) {
+                        MyLog.e(this, "Launching activity with Intent.FLAG_ACTIVITY_NEW_TASK flag", e);
+                    }
+                }
+            }
+            if (!launched) {
                 HelpActivity.startMe(myContext.context(), true, false);
             }
             activityIntentPostRun = null;

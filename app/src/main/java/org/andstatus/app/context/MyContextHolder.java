@@ -115,11 +115,11 @@ public final class MyContextHolder {
             MyLog.v(TAG, "Skipping initialization: upgrade in progress (called by: " + calledBy + ")");
             return new MyEmptyFutureContext(contextCreator);
         }
-        if (myFutureContext.isEmpty() || get().isExpired()) {
+        if (needToInitialize()) {
             MyLog.v(TAG, "myFutureContext " + (myFutureContext.isEmpty() ? "isEmpty " : "") + get());
             boolean launchExecution = false;
             synchronized(CONTEXT_LOCK) {
-                if (myFutureContext.isEmpty() || get().isExpired()) {
+                if (needToInitialize()) {
                     myFutureContext = new MyFutureContext(contextCreator, myFutureContext.getNow(), calledBy);
                     launchExecution = true;
                 }
@@ -130,6 +130,11 @@ public final class MyContextHolder {
             }
         }
         return myFutureContext;
+    }
+
+    private static boolean needToInitialize() {
+        return myFutureContext.isEmpty()
+                || (myFutureContext.getStatus() == AsyncTask.Status.FINISHED && get().isExpired());
     }
 
     public static void setExpiredIfConfigChanged() {
@@ -177,7 +182,6 @@ public final class MyContextHolder {
     
     public static void release() {
         if (!get().isExpired()) {
-            MyLog.d(TAG, "Marking MyContext as expired");
             synchronized(CONTEXT_LOCK) {
                 get().setExpired();
             }
