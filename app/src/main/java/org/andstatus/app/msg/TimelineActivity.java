@@ -16,6 +16,7 @@
 
 package org.andstatus.app.msg;
 
+import android.app.Activity;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
@@ -38,6 +39,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import org.andstatus.app.ActivityRequestCode;
+import org.andstatus.app.FirstActivity;
 import org.andstatus.app.HelpActivity;
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.MyAction;
@@ -123,10 +125,16 @@ public class TimelineActivity extends MessageEditorListActivity implements
         return intent;
     }
 
-    public static void goHome(Context context) {
-        Intent intent = new Intent(context, TimelineActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
-        context.startActivity(intent);
+    public static void goHome(Activity activity) {
+        try {
+            Intent intent = new Intent(activity, FirstActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+            activity.startActivity(intent);
+        } catch (Exception e) {
+            MyLog.v(TimelineActivity.class, "goHome", e);
+            MyContextHolder.get().context().startActivity(
+                    new Intent(MyContextHolder.get().context(), FirstActivity.class));
+        }
     }
 
     @Override
@@ -147,7 +155,7 @@ public class TimelineActivity extends MessageEditorListActivity implements
         showSyncIndicatorSetting = SharedPreferencesUtil.getBoolean(
                 MyPreferences.KEY_SYNC_INDICATOR_ON_TIMELINE, true);
 
-        if (HelpActivity.startFromActivity(this)) {
+        if (isFinishing()) {
             return;
         }
 

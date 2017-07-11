@@ -52,13 +52,11 @@ public class MyDataChecker {
                     @Override
                     protected void onCancelled() {
                         logger.logFailure();
-                        super.onCancelled();
                     }
 
                     @Override
-                    protected void onPostExecute(Void aVoid) {
+                    protected void onPostExecute2(Void aVoid) {
                         logger.logSuccess();
-                        super.onPostExecute(aVoid);
                     }
                 });
     }

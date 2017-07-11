@@ -588,7 +588,7 @@ public class MessageEditor {
                     }
 
                     @Override
-                    protected void onPostExecute(MessageEditorData data) {
+                    protected void onPostExecute2(MessageEditorData data) {
                         if (lock.acquired() && data.isValid()) {
                             if (editorData.isValid()) {
                                 MyLog.v(MessageEditorData.TAG, "Loaded draft is not used: Editor data is valid");

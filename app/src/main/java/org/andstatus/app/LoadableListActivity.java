@@ -284,7 +284,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
         }
 
         @Override
-        protected void onCancelled(SyncLoader syncLoader) {
+        protected void onCancelled2(SyncLoader syncLoader) {
             resetIsWorkingFlag();
         }
 
@@ -297,7 +297,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
         }
 
         @Override
-        protected void onPostExecute(SyncLoader loader) {
+        protected void onPostExecute2(SyncLoader loader) {
             mSyncLoader = loader;
             updateCompletedLoader();
             try {
@@ -504,7 +504,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
                     }
 
                     @Override
-                    protected void onPostExecute(String result) {
+                    protected void onPostExecute2(String result) {
                         showSyncing("Show " + commandData.getCommand(),
                                 getText(R.string.title_preference_syncing) + ": " + result);
                     }

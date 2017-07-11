@@ -192,7 +192,7 @@ public enum UserListContextMenuItem implements ContextMenuItem {
                     }
 
                     @Override
-                    protected void onPostExecute(Void v) {
+                    protected void onPostExecute2(Void v) {
                         MyLog.v(this, "execute async ended");
                         executeOnUiThread(params.menu, params.ma);
                     }

@@ -105,7 +105,7 @@ public class MessageEditorSaver extends MyAsyncTask<MessageEditorCommand, Void, 
     }
 
     @Override
-    protected void onPostExecute(MessageEditorData data) {
+    protected void onPostExecute2(MessageEditorData data) {
         if (data.isValid()) {
             if (command.hasLock()) {
                 MyLog.v(MessageEditorData.TAG, "Saved; Future data: " + data);

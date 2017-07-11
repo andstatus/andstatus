@@ -432,7 +432,7 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
                     }
 
                     @Override
-                    protected void onPostExecute(MessageEditorData editorData) {
+                    protected void onPostExecute2(MessageEditorData editorData) {
                         MyLog.v(MessageListContextMenuItem.this, "execute async ended");
                         executeOnUiThread(menu, editorData);
                     }

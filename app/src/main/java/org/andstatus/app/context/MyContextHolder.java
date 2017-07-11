@@ -28,6 +28,7 @@ import android.support.annotation.NonNull;
 import net.jcip.annotations.GuardedBy;
 import net.jcip.annotations.ThreadSafe;
 
+import org.andstatus.app.FirstActivity;
 import org.andstatus.app.database.DatabaseConverterController;
 import org.andstatus.app.graphics.MyImageCache;
 import org.andstatus.app.os.AsyncTaskLauncher;
@@ -85,12 +86,17 @@ public final class MyContextHolder {
      */
     public static boolean initializeThenRestartMe(@NonNull Activity activity) {
         MyFutureContext myFutureContext = getMyFutureContext(activity, activity, false);
-        if (myFutureContext.getStatus() != AsyncTask.Status.FINISHED || !get().isReady()) {
+        if (myFutureContext.needsBackgroundWork() || !get().isReady()) {
             activity.finish();
             myFutureContext.thenStartActivity(activity);
             return true;
         }
         return false;
+    }
+
+    public static void initializeByFirstActivity(@NonNull FirstActivity firstActivity) {
+        MyFutureContext myFutureContext = getMyFutureContext(firstActivity, firstActivity, false);
+        myFutureContext.thenStartNextActivity(firstActivity);
     }
 
     /**
@@ -134,7 +140,7 @@ public final class MyContextHolder {
 
     private static boolean needToInitialize() {
         return myFutureContext.isEmpty()
-                || (myFutureContext.getStatus() == AsyncTask.Status.FINISHED && get().isExpired());
+                || (!myFutureContext.needsBackgroundWork() && get().isExpired());
     }
 
     public static void setExpiredIfConfigChanged() {

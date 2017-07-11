@@ -206,18 +206,9 @@ public final class DemoData {
             }
 
             @Override
-            protected void onCancelled() {
-                super.onCancelled();
+            protected void onFinished(Void aVoid, boolean success) {
                 if (progressCallback != null) {
-                    progressCallback.onComplete(false);
-                }
-            }
-
-            @Override
-            protected void onPostExecute(Void aVoid) {
-                super.onPostExecute(aVoid);
-                if (progressCallback != null) {
-                    progressCallback.onComplete(true);
+                    progressCallback.onComplete(success);
                 }
             }
         };

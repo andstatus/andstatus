@@ -25,6 +25,7 @@ import android.support.test.InstrumentationRegistry;
 import android.view.ViewGroup;
 import android.widget.ListView;
 
+import org.andstatus.app.FirstActivity;
 import org.andstatus.app.HelpActivity;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.net.http.HttpConnection;
@@ -121,7 +122,7 @@ public class TestSuite {
         MyLog.v("TestSuite", "Test Suite initialized, MyContext state=" + MyContextHolder.get().state() 
                 + "; databasePath=" + dataPath);
         
-        if (HelpActivity.checkAndUpdateLastOpenedAppVersion(MyContextHolder.get().context(), true)) {
+        if (FirstActivity.checkAndUpdateLastOpenedAppVersion(MyContextHolder.get().context(), true)) {
             MyLog.i(TAG, "New version of application is running");
         }
         return context;

@@ -42,7 +42,6 @@ import com.github.scribejava.core.oauth.OAuth20Service;
 
 import org.andstatus.app.ActivityRequestCode;
 import org.andstatus.app.EnumSelector;
-import org.andstatus.app.HelpActivity;
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.MyActivity;
 import org.andstatus.app.R;
@@ -120,7 +119,7 @@ public class AccountSettingsActivity extends MyActivity {
         mLayoutId = R.layout.account_settings_main;
         super.onCreate(savedInstanceState);
 
-        if (MyContextHolder.initializeThenRestartMe(this) || HelpActivity.startFromActivity(this)) {
+        if (MyContextHolder.initializeThenRestartMe(this)) {
             return;
         }
 
@@ -755,7 +754,7 @@ public class AccountSettingsActivity extends MyActivity {
                         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP);
                         startActivity(intent);
                     } else {
-                        TimelineActivity.goHome(myContext.context());
+                        TimelineActivity.goHome(AccountSettingsActivity.this);
                     }
                 }
             }
@@ -888,7 +887,7 @@ public class AccountSettingsActivity extends MyActivity {
 
         // This is in the UI thread, so we can mess with the UI
         @Override
-        protected void onPostExecute(JSONObject jso) {
+        protected void onPostExecute2(JSONObject jso) {
             DialogFactory.dismissSafely(dlg);
             boolean succeeded = false;
             if (jso != null) {
@@ -1027,7 +1026,7 @@ public class AccountSettingsActivity extends MyActivity {
 
         // This is in the UI thread, so we can mess with the UI
         @Override
-        protected void onPostExecute(JSONObject jso) {
+        protected void onPostExecute2(JSONObject jso) {
             DialogFactory.dismissSafely(dlg);
             boolean succeeded = false;
             if (jso != null) {
@@ -1161,7 +1160,7 @@ public class AccountSettingsActivity extends MyActivity {
 
         // This is in the UI thread, so we can mess with the UI
         @Override
-        protected void onPostExecute(JSONObject jso) {
+        protected void onPostExecute2(JSONObject jso) {
             DialogFactory.dismissSafely(dlg);
             boolean succeeded = false;
             if (jso != null) {
@@ -1269,7 +1268,7 @@ public class AccountSettingsActivity extends MyActivity {
          * This is in the UI thread, so we can mess with the UI
          */
         @Override
-        protected void onPostExecute(JSONObject jso) {
+        protected void onPostExecute2(JSONObject jso) {
             DialogFactory.dismissSafely(dlg);
             boolean succeeded = false;
             CharSequence errorMessage = "";

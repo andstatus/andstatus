@@ -20,6 +20,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.support.annotation.NonNull;
 
+import org.andstatus.app.FirstActivity;
 import org.andstatus.app.HelpActivity;
 import org.andstatus.app.net.http.TlsSniSocketFactory;
 import org.andstatus.app.os.AsyncTaskLauncher;
@@ -39,6 +40,7 @@ public class MyFutureContext extends MyAsyncTask<Void, Void, MyContext> {
     private volatile MyContext myPreviousContext = null;
     private final String callerName;
 
+    private volatile FirstActivity firstActivity = null;
     private volatile Intent activityIntentPostRun = null;
     private volatile Runnable runnablePostRun = null;
 
@@ -83,18 +85,21 @@ public class MyFutureContext extends MyAsyncTask<Void, Void, MyContext> {
     }
 
     @Override
-    protected void onPostExecute(MyContext myContext) {
-        onPostExecute2(myContext);
-        super.onPostExecute(myContext);
-    }
-
-    private void onPostExecute2(MyContext myContext) {
+    protected void onPostExecute2(MyContext myContext) {
         runRunnable(myContext);
         startActivity(myContext);
     }
 
     public boolean isEmpty() {
         return false;
+    }
+
+
+    public void thenStartNextActivity(FirstActivity firstActivity) {
+        this.firstActivity = firstActivity;
+        if (!needsBackgroundWork()) {
+            startActivity(getNow());
+        }
     }
 
     public void thenStartActivity(Activity activity) {
@@ -108,19 +113,23 @@ public class MyFutureContext extends MyAsyncTask<Void, Void, MyContext> {
             return;
         }
         activityIntentPostRun = intent;
-        if (getStatus() == Status.FINISHED) {
+        if (!needsBackgroundWork()) {
             startActivity(getNow());
         }
     }
 
     private void startActivity(MyContext myContext) {
         Intent intent = activityIntentPostRun;
-        if (intent != null) {
+        if (intent != null || firstActivity != null) {
             runnablePostRun = null;
             boolean launched = false;
             if (myContext.isReady() && !myContext.isExpired()) {
                 try {
-                    myContext.context().startActivity(intent);
+                    if (firstActivity != null) {
+                        firstActivity.startNextActivitySync(myContext);
+                    } else {
+                        myContext.context().startActivity(intent);
+                    }
                     launched = true;
                 } catch (android.util.AndroidRuntimeException e) {
                     try {
@@ -130,18 +139,24 @@ public class MyFutureContext extends MyAsyncTask<Void, Void, MyContext> {
                     } catch (Exception e2) {
                         MyLog.e(this, "Launching activity with Intent.FLAG_ACTIVITY_NEW_TASK flag", e);
                     }
+                } catch (java.lang.SecurityException e) {
+                    MyLog.d(this, "Launching activity", e);
                 }
             }
             if (!launched) {
                 HelpActivity.startMe(myContext.context(), true, false);
             }
             activityIntentPostRun = null;
+            if (firstActivity != null) {
+                firstActivity.finish();
+                firstActivity = null;
+            }
         }
     }
 
     public void thenRun(Runnable runnable) {
         this.runnablePostRun = runnable;
-        if (getStatus() == Status.FINISHED) {
+        if (!needsBackgroundWork()) {
             runRunnable(getNow());
         }
     }
@@ -162,7 +177,7 @@ public class MyFutureContext extends MyAsyncTask<Void, Void, MyContext> {
      */
     @NonNull
     public MyContext getNow() {
-        if (getStatus() == Status.FINISHED) {
+        if (!needsBackgroundWork()) {
             return getBlocking();
         }
         return getMyContext();

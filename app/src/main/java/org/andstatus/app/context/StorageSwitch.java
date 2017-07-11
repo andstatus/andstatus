@@ -399,7 +399,7 @@ public class StorageSwitch {
         
         // This is in the UI thread, so we can mess with the UI
         @Override
-        protected void onPostExecute(TaskResult result) {
+        protected void onPostExecute2(TaskResult result) {
             DialogFactory.dismissSafely(dlg);
             if (result == null) {
                 MyLog.e(this, "Result is Null");
@@ -416,7 +416,7 @@ public class StorageSwitch {
         }
 
         @Override
-        protected void onCancelled(TaskResult result) {
+        protected void onCancelled2(TaskResult result) {
             DialogFactory.dismissSafely(dlg);
         }
     }

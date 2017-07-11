@@ -8,13 +8,12 @@ import android.text.format.DateFormat;
 import android.text.format.DateUtils;
 import android.text.format.Time;
 
+import org.andstatus.app.FirstActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.timeline.Timeline;
 import org.andstatus.app.timeline.TimelineType;
-import org.andstatus.app.msg.TimelineActivity;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
@@ -163,7 +162,7 @@ class MyRemoteViewData {
                 break;
         }
 
-        Intent intent = new Intent(context, TimelineActivity.class);
+        Intent intent = new Intent(context, FirstActivity.class);
         // "rnd" is necessary to actually bring Extra to the target intent
         // see http://stackoverflow.com/questions/1198558/how-to-send-parameters-from-a-notification-click-to-an-activity
         intent.setData(Uri.withAppendedPath(MatchedUri.getTimelineUri(timeline),

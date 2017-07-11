@@ -717,12 +717,12 @@ public class MyService extends Service {
         }
         
        @Override
-        protected void onPostExecute(Boolean notUsed) {
+        protected void onPostExecute2(Boolean notUsed) {
             onEndedExecution("onPostExecute");
         }
 
         @Override
-        protected void onCancelled(Boolean result) {
+        protected void onCancelled2(Boolean result) {
             onEndedExecution("onCancelled");
         }
 

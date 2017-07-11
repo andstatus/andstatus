@@ -21,8 +21,6 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -53,7 +51,6 @@ import org.andstatus.app.util.DialogFactory;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyUrlSpan;
 import org.andstatus.app.util.Permissions;
-import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.SwipeInterface;
 import org.andstatus.app.util.ViewUtils;
 import org.andstatus.app.util.Xslt;
@@ -196,7 +193,7 @@ public class HelpActivity extends MyActivity implements SwipeInterface, Progress
             public void onClick(View v) {
                 switch (MyContextHolder.get().state()) {
                     case READY:
-                        checkAndUpdateLastOpenedAppVersion(HelpActivity.this, true);
+                        FirstActivity.checkAndUpdateLastOpenedAppVersion(HelpActivity.this, true);
                         if (MyContextHolder.get().persistentAccounts().getCurrentAccount().isValid()) {
                             startActivity(new Intent(HelpActivity.this, TimelineActivity.class));
                             finish();
@@ -321,39 +318,6 @@ public class HelpActivity extends MyActivity implements SwipeInterface, Progress
         }
     }
 
-    /**
-     * @return true if calling Activity is being finished
-     */
-    public static boolean startFromActivity(MyActivity activity) {
-        if (activity.isFinishing()) {
-            return true;
-        }
-        boolean helpAsFirstActivity = false;
-        boolean showChangeLog = false;
-        if (!MyContextHolder.get().isReady()) {
-            MyLog.i(activity, "Context is not ready: " + MyContextHolder.get().toString());
-            if (MyContextHolder.get().state() == MyContextState.UPGRADING) {
-                helpAsFirstActivity = true;
-            }
-        } else if (MyContextHolder.get().persistentAccounts().isEmpty()) {
-            MyLog.i(activity, "No AndStatus Accounts yet");
-            if (!(activity instanceof AccountSettingsActivity)) {
-                helpAsFirstActivity = true;
-            }
-        } 
-        
-        if (MyContextHolder.get().isReady() && checkAndUpdateLastOpenedAppVersion(activity, true)) {
-            // Show Change Log after update
-            showChangeLog = true;
-        }
-
-        boolean activityIsFinishing = helpAsFirstActivity || showChangeLog;
-        if (activityIsFinishing) {
-            startMe(activity, helpAsFirstActivity, showChangeLog);
-        }
-        return activityIsFinishing;
-    }
-
     public static void startMe(Context context, boolean helpAsFirstActivity, boolean showChangeLog) {
         Intent intent = new Intent(context, HelpActivity.class);
         if (helpAsFirstActivity) {
@@ -374,34 +338,6 @@ public class HelpActivity extends MyActivity implements SwipeInterface, Progress
         context.getApplicationContext().startActivity(intent);
     }
 
-    /**
-     * @return true if we opened previous version
-     */
-    public static boolean checkAndUpdateLastOpenedAppVersion(Context context, boolean update) {
-        boolean changed = false;
-        long versionCodeLast =  SharedPreferencesUtil.getLong(MyPreferences.KEY_VERSION_CODE_LAST);
-        PackageManager pm = context.getPackageManager();
-        PackageInfo pi;
-        try {
-            pi = pm.getPackageInfo(context.getPackageName(), 0);
-            int versionCode =  pi.versionCode;
-            if (versionCodeLast < versionCode) {
-                // Even if the User will see only the first page of the Help activity,
-                // count this as showing the Change Log
-                MyLog.v(TAG, "Last opened version=" + versionCodeLast + ", current is " + versionCode
-                        + (update ? ", updating" : "")
-                );
-                changed = true;
-                if ( update && MyContextHolder.get().isReady()) {
-                    SharedPreferencesUtil.putLong(MyPreferences.KEY_VERSION_CODE_LAST, versionCode);
-                }
-            }
-        } catch (PackageManager.NameNotFoundException e) {
-            MyLog.e(TAG, "Unable to obtain package information", e);
-        }
-        return changed;
-    }
-
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         MyContextHolder.get().setExpired();
@@ -410,7 +346,7 @@ public class HelpActivity extends MyActivity implements SwipeInterface, Progress
 
     @Override
     public void finish() {
-        onComplete(false);
+        cleanOnFinish();
         super.finish();
     }
 
@@ -465,23 +401,29 @@ public class HelpActivity extends MyActivity implements SwipeInterface, Progress
             this.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    if (progress != null) {
-                        DialogFactory.dismissSafely(progress);
-                        progress = null;
-                    }
-                    if (success) {
-                        if (generatingDemoData) {
-                            generatingDemoData = false;
-                            finish();
-                            TimelineActivity.goHome(MyContextHolder.get().context());
-                        } else {
-                            HelpActivity.startFromActivity(HelpActivity.this);
-                        }
-                    }
+                    finish();
+                    TimelineActivity.goHome(HelpActivity.this);
                 }
             });
         } catch (Exception e) {
             MyLog.d(this, "onComplete " + success, e);
+        }
+    }
+
+    private void cleanOnFinish() {
+        try {
+            this.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (progress != null) {
+                        DialogFactory.dismissSafely(progress);
+                        progress = null;
+                    }
+                    generatingDemoData = false;
+                }
+            });
+        } catch (Exception e) {
+            MyLog.d(this, "cleanOnFinish", e);
         }
     }
 

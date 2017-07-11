@@ -114,12 +114,37 @@ public abstract class MyAsyncTask<Params, Progress, Result> extends AsyncTask<Pa
             String msgLog = MyContextHolder.getSystemInfo(MyContextHolder.get().context(), true);
             logError(msgLog, e);
             throw new IllegalStateException(msgLog, e);
-        } finally {
-            backgroundEndedAt = System.currentTimeMillis();
         }
     }
 
     protected abstract Result doInBackground2(Params... params);
+
+    @Override
+    final protected void onPostExecute(Result result) {
+        backgroundEndedAt = System.currentTimeMillis();
+        ExceptionsCounter.showErrorDialogIfErrorsPresent();
+        onPostExecute2(result);
+        super.onPostExecute(result);
+        onFinished(result, true);
+    }
+
+    protected void onPostExecute2(Result result) {
+    }
+
+    @Override
+    final protected void onCancelled(Result result) {
+        backgroundEndedAt = System.currentTimeMillis();
+        onCancelled2(result);
+        super.onCancelled(result);
+        onFinished(result, false);
+    }
+
+    protected void onCancelled2(Result result) {
+    }
+
+    /** Is called in both cases: Cancelled or not  */
+    protected void onFinished(Result result, boolean success) {
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -186,12 +211,6 @@ public abstract class MyAsyncTask<Params, Progress, Result> extends AsyncTask<Pa
 
     public boolean isReallyWorking() {
         return needsBackgroundWork() && !isStalled();
-    }
-
-    @Override
-    protected void onPostExecute(Result result) {
-        ExceptionsCounter.showErrorDialogIfErrorsPresent();
-        super.onPostExecute(result);
     }
 
     private boolean isStalled() {

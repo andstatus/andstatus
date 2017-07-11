@@ -29,7 +29,7 @@
     android:paddingTop="5dip"
     android:visibility="gone"
     tools:visibility="visible"
-    tools:showIn="@layout/userlist">
+    tools:showIn="@layout/my_list">
 
     <View style="@style/Divider"/>
 

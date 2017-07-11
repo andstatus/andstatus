@@ -23,12 +23,12 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.text.TextUtils;
 
+import org.andstatus.app.FirstActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.appwidget.AppWidgets;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.MatchedUri;
-import org.andstatus.app.msg.TimelineActivity;
 import org.andstatus.app.service.CommandResult;
 import org.andstatus.app.timeline.Timeline;
 import org.andstatus.app.timeline.TimelineType;
@@ -144,7 +144,7 @@ public class AddedMessagesNotifier {
 
         // Prepare "intent" to launch timeline activities exactly like in
         // org.andstatus.app.TimelineActivity.onOptionsItemSelected
-        Intent intent = new Intent(myContext.context(), TimelineActivity.class);
+        Intent intent = new Intent(myContext.context(), FirstActivity.class);
         intent.setData(Uri.withAppendedPath(
                 MatchedUri.getTimelineUri(Timeline.getTimeline(timelineType, null, 0, null)),
                 "rnd/" + android.os.SystemClock.elapsedRealtime()

@@ -152,17 +152,7 @@ public class AttachedImageFile {
                     }
 
                     @Override
-                    protected void onCancelled(Drawable drawable) {
-                        onEnded(drawable);
-                    }
-
-                    @Override
-                    protected void onPostExecute(Drawable drawable) {
-                        onEnded(drawable);
-                        super.onPostExecute(drawable);
-                    }
-
-                    private void onEnded(Drawable drawable) {
+                    protected void onFinished(Drawable drawable, boolean success) {
                         if (imageView == null || !myActivity.isResumedMy()) {
                             return;
                         }
@@ -180,7 +170,6 @@ public class AttachedImageFile {
                             }
 
                         }
-                        super.onPostExecute(drawable);
                     }
                 });
     }
