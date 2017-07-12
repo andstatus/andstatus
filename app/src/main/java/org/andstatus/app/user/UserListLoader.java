@@ -3,6 +3,7 @@ package org.andstatus.app.user;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.BaseColumns;
+import android.support.annotation.NonNull;
 
 import org.andstatus.app.LoadableListActivity;
 import org.andstatus.app.LoadableListActivity.ProgressPublisher;
@@ -93,15 +94,18 @@ public class UserListLoader extends SyncLoader<UserListViewItem> {
         Cursor c = null;
         try {
             c = MyContextHolder.get().context().getContentResolver()
-                    .query(mContentUri, UserListSql.getListProjection(),
-                            UserTable.TABLE_NAME + "." + BaseColumns._ID + getSqlUserIds(),
-                            null, null);
+                    .query(mContentUri, UserListSql.getListProjection(), getSelection(), null, null);
             while ( c != null && c.moveToNext()) {
                 populateItem(c);
             }
         } finally {
             DbUtils.closeSilently(c);
         }
+    }
+
+    @NonNull
+    protected String getSelection() {
+        return UserTable.TABLE_NAME + "." + BaseColumns._ID + getSqlUserIds();
     }
 
     private void populateItem(Cursor cursor) {

@@ -17,6 +17,7 @@
 package org.andstatus.app.user;
 
 import android.graphics.drawable.Drawable;
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import org.andstatus.app.ViewItem;
@@ -29,8 +30,9 @@ import org.andstatus.app.origin.Origin;
 import java.util.HashSet;
 import java.util.Set;
 
-public class UserListViewItem implements ViewItem {
+public class UserListViewItem implements ViewItem, Comparable<UserListViewItem> {
     boolean populated = false;
+    @NonNull
     final MbUser mbUser;
     Drawable avatarDrawable = null;
     Set<Long> myFollowers = new HashSet<>();
@@ -69,7 +71,7 @@ public class UserListViewItem implements ViewItem {
         return fromMbUser(mbUser);
     }
 
-    public static UserListViewItem fromMbUser(MbUser mbUser) {
+    public static UserListViewItem fromMbUser(@NonNull MbUser mbUser) {
         return new UserListViewItem(mbUser);
     }
 
@@ -99,5 +101,14 @@ public class UserListViewItem implements ViewItem {
     @Override
     public long getId() {
         return getUserId();
+    }
+
+    public String getWebFingerIdOrUserName() {
+        return TextUtils.isEmpty(mbUser.getWebFingerId()) ? mbUser.getUserName() : mbUser.getWebFingerId();
+    }
+
+    @Override
+    public int compareTo(@NonNull UserListViewItem o) {
+        return getWebFingerIdOrUserName().compareTo(o.getWebFingerIdOrUserName());
     }
 }

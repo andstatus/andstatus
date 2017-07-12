@@ -1,5 +1,5 @@
-/**
- * Copyright (C) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
+/*
+ * Copyright (C) 2014-2017 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,17 +32,15 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import org.andstatus.app.ActivityRequestCode;
-import org.andstatus.app.MyActivity;
+import org.andstatus.app.LoadableListActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyQuery;
@@ -53,6 +51,7 @@ import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
+import org.andstatus.app.user.UserAutoCompleteAdapter;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TriState;
@@ -64,20 +63,20 @@ import org.andstatus.app.util.UriUtils;
 public class MessageEditor {
 
     private final MessageEditorContainer editorContainer;
-    private final android.view.ViewGroup mEditorView;
+    private final android.view.ViewGroup editorView;
 
     /**
      * Text to be sent
      */
-    private EditText bodyEditText;
+    private MessageEditorBodyView bodyView;
     private final TextView mCharsLeftText;
 
     private MessageEditorData editorData = MessageEditorData.INVALID;
 
     public MessageEditor(MessageEditorContainer editorContainer) {
         this.editorContainer = editorContainer;
-        mEditorView = getEditorView();
-        mCharsLeftText = (TextView) mEditorView.findViewById(R.id.messageEditCharsLeftTextView);
+        editorView = getEditorView();
+        mCharsLeftText = (TextView) editorView.findViewById(R.id.messageEditCharsLeftTextView);
         setupEditText();
         setupFullscreenToggle();
         hide();
@@ -100,8 +99,8 @@ public class MessageEditor {
     }
 
     private void setupEditText() {
-        bodyEditText = (EditText) mEditorView.findViewById(R.id.messageBodyEditText);
-        bodyEditText.addTextChangedListener(new TextWatcher() {
+        bodyView = (MessageEditorBodyView) editorView.findViewById(R.id.messageBodyEditText);
+        bodyView.addTextChangedListener(new TextWatcher() {
             @Override
             public void afterTextChanged(Editable s) {
                 editorData.setBody(s.toString());
@@ -120,7 +119,7 @@ public class MessageEditor {
             }
         });
 
-        bodyEditText.setOnKeyListener(new View.OnKeyListener() {
+        bodyView.setOnKeyListener(new View.OnKeyListener() {
             @Override
             public boolean onKey(View v, int keyCode, KeyEvent event) {
                 if (event.getAction() == KeyEvent.ACTION_DOWN) {
@@ -136,7 +135,7 @@ public class MessageEditor {
             }
         });
 
-        bodyEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+        bodyView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (event != null && (event.isAltPressed() ||
@@ -150,10 +149,10 @@ public class MessageEditor {
 
         // Allow vertical scrolling
         // See http://stackoverflow.com/questions/16605486/edit-text-not-scrollable-inside-scroll-view
-        bodyEditText.setOnTouchListener(new View.OnTouchListener() {
+        bodyView.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                if (v.getId() == bodyEditText.getId()) {
+                if (v.getId() == bodyView.getId()) {
                     v.getParent().requestDisallowInterceptTouchEvent(true);
                     switch (event.getAction() & MotionEvent.ACTION_MASK) {
                         case MotionEvent.ACTION_UP:
@@ -165,6 +164,7 @@ public class MessageEditor {
             }
         });
 
+        bodyView.setTokenizer(new MessageBodyTokenizer());
     }
 
     private void setupFullscreenToggle() {
@@ -187,7 +187,7 @@ public class MessageEditor {
     }
 
     public void onCreateOptionsMenu(Menu menu) {
-        editorContainer.getActivity().getMenuInflater().inflate(R.menu.message_editor, menu);
+        getActivity().getMenuInflater().inflate(R.menu.message_editor, menu);
         createCreateMessageButton(menu);
         createAttachButton(menu);
         createSendButton(menu);
@@ -327,8 +327,8 @@ public class MessageEditor {
 
     public void show() {
         if (!isVisible()) {
-            mEditorView.setVisibility(View.VISIBLE);
-            bodyEditText.requestFocus();
+            editorView.setVisibility(View.VISIBLE);
+            bodyView.requestFocus();
             if (!isHardwareKeyboardAttached()) {
                 openSoftKeyboard();
             }
@@ -349,14 +349,14 @@ public class MessageEditor {
 
     private void openSoftKeyboard() {
         InputMethodManager inputMethodManager = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-        inputMethodManager.toggleSoftInputFromWindow(bodyEditText.getWindowToken(), InputMethodManager.SHOW_FORCED, 0);
+        inputMethodManager.toggleSoftInputFromWindow(bodyView.getWindowToken(), InputMethodManager.SHOW_FORCED, 0);
     }
     
     public void hide() {
         editorData = MessageEditorData.INVALID;
         updateScreen();
         if (isVisible()) {
-            mEditorView.setVisibility(View.GONE);
+            editorView.setVisibility(View.GONE);
             closeSoftKeyboard();
             editorContainer.onMessageEditorVisibilityChange();
         }
@@ -364,11 +364,11 @@ public class MessageEditor {
 
     private void closeSoftKeyboard() {
         InputMethodManager inputMethodManager = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-        inputMethodManager.hideSoftInputFromWindow(bodyEditText.getWindowToken(), 0);
+        inputMethodManager.hideSoftInputFromWindow(bodyView.getWindowToken(), 0);
     }
     
     public boolean isVisible() {
-        return mEditorView.getVisibility() == View.VISIBLE;
+        return editorView.getVisibility() == View.VISIBLE;
     }
 
     public void startEditingSharedData(final MyAccount ma, final String textToShare, final Uri mediaToShare) {
@@ -413,17 +413,18 @@ public class MessageEditor {
     }
 
     public void updateScreen() {
+        setAdapter();
         String body = editorData.body.trim();
-        if (!body.equals(bodyEditText.getText().toString().trim())) {
+        if (!body.equals(bodyView.getText().toString().trim())) {
             if (!TextUtils.isEmpty(body)) {
                 body += " ";
             }
-            if (!TextUtils.isEmpty(bodyEditText.getText()) && !TextUtils.isEmpty(body)) {
-                MyLog.v(MessageEditorData.TAG, "Body updated '" + bodyEditText.getText()
+            if (!TextUtils.isEmpty(bodyView.getText()) && !TextUtils.isEmpty(body)) {
+                MyLog.v(MessageEditorData.TAG, "Body updated '" + bodyView.getText()
                 + "' to '" + body + "'", new IllegalStateException());
             }
-            bodyEditText.setText(body);
-            bodyEditText.setSelection(bodyEditText.getText().toString().length());
+            bodyView.setText(body);
+            bodyView.setSelection(bodyView.getText().toString().length());
         }
         showIfNotEmpty(R.id.message_author,
                 shouldShowAccountName() ? editorData.getMyAccount().getAccountName() : "");
@@ -434,8 +435,17 @@ public class MessageEditor {
         showAttachedImage();
     }
 
+    private void setAdapter() {
+        UserAutoCompleteAdapter adapterOld = (UserAutoCompleteAdapter) bodyView.getAdapter();
+        if (adapterOld == null || !adapterOld.getOrigin().equals(editorData.getMyAccount().getOrigin())) {
+            UserAutoCompleteAdapter adapter = new UserAutoCompleteAdapter(getActivity(),
+                    editorData.getMyAccount().getOrigin());
+            bodyView.setAdapter(adapter);
+        }
+    }
+
     private void showIfNotEmpty(int viewId, String value) {
-        TextView textView = (TextView) mEditorView.findViewById(viewId);
+        TextView textView = (TextView) editorView.findViewById(viewId);
         if (TextUtils.isEmpty(value)) {
             textView.setText("");
             textView.setVisibility(View.GONE);
@@ -470,11 +480,11 @@ public class MessageEditor {
     }
 
     private boolean shouldShowAccountName() {
-        return MyContextHolder.get().persistentAccounts().size() > 1;
+        return getActivity().getMyContext().persistentAccounts().size() > 1;
     }
 
     private void showAttachedImage() {
-        ImageView imageView = (ImageView) mEditorView.findViewById(R.id.attached_image);
+        ImageView imageView = (ImageView) editorView.findViewById(R.id.attached_image);
         if (editorData.imageDrawable == null) {
             imageView.setVisibility(View.GONE);
         } else {
@@ -502,7 +512,7 @@ public class MessageEditor {
     }
 
     private void updateDataFromScreen() {
-        editorData.setBody(bodyEditText.getText().toString());
+        editorData.setBody(bodyView.getText().toString());
     }
 
     private void discardAndHide() {
@@ -619,8 +629,7 @@ public class MessageEditor {
         intent.setAction(Intent.ACTION_GET_CONTENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         intent.addFlags(UriUtils.flagsToTakePersistableUriPermission());
-        return Intent.createChooser(intent,
-                getActivity().getText(R.string.options_menu_attach));
+        return Intent.createChooser(intent, getActivity().getText(R.string.options_menu_attach));
 	}
 	
     /**
@@ -640,7 +649,7 @@ public class MessageEditor {
         }
     }
 
-    private MyActivity getActivity() {
+    private LoadableListActivity getActivity() {
         return editorContainer.getActivity();
     }
 
