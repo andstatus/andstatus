@@ -746,7 +746,7 @@ public class AccountSettingsActivity extends MyActivity {
                 }
                 if (activityOnFinish == ActivityOnFinish.HOME) {
                     Timeline home = Timeline.getTimeline(TimelineType.HOME, myAccount, 0, null);
-                    TimelineActivity.startForTimeline(myContext, myContext.context(), home, myAccount, true);
+                    TimelineActivity.startForTimeline(myContext, AccountSettingsActivity.this, home, myAccount, true);
                 } else {
                     if (myContext.persistentAccounts().size() > 1) {
                         Intent intent = new Intent(myContext.context(), MySettingsActivity.class);

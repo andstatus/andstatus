@@ -27,8 +27,8 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
         </subtitle>
     </header>
-    <release android:versionName="34.03" android:versionCode="223"
-             versionDate="2017-07-01"
+    <release android:versionName="34.05" android:versionCode="225"
+             versionDate="2017-07-12"
              versionTitle="Showing Mentions from Mastodon and other Bug fixes">
         <changes>
             <change>Fixed: [Mastodon] Mentions were not loaded from "Notifications" timeline

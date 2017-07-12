@@ -24,6 +24,8 @@ import org.andstatus.app.context.MyContextState;
 import org.andstatus.app.context.MyStorage;
 import org.andstatus.app.util.MyLog;
 
+import java.io.File;
+
 public final class DatabaseHolder extends SQLiteOpenHelper  {
     private final boolean creationEnabled;
     private boolean wasNotCreated = false;
@@ -33,7 +35,8 @@ public final class DatabaseHolder extends SQLiteOpenHelper  {
     public DatabaseHolder(Context context, boolean creationEnabled) {
         super(context, DATABASE_NAME, null, DatabaseCreator.DATABASE_VERSION);
         this.creationEnabled = creationEnabled;
-        if (!creationEnabled && !context.getDatabasePath(DATABASE_NAME).exists()) {
+        File databasePath = context.getDatabasePath(DATABASE_NAME);
+        if (databasePath == null || (!creationEnabled && !databasePath.exists())) {
             wasNotCreated = true;
         }
     }

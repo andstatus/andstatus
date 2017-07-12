@@ -116,7 +116,7 @@ public class TimelineActivity extends MessageEditorListActivity implements
         if (newCurrentMyAccount != null && newCurrentMyAccount.isValid()) {
             myContext.persistentAccounts().setCurrentAccount(newCurrentMyAccount);
         }
-        Intent intent = new Intent(myContext.context(), TimelineActivity.class);
+        Intent intent = new Intent(myContext.context(), clearTask ? FirstActivity.class : TimelineActivity.class);
         intent.setData(MatchedUri.getTimelineUri(timeline));
         if (clearTask) {
             // On modifying activity back stack see http://stackoverflow.com/questions/11366700/modification-of-the-back-stack-in-android

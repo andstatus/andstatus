@@ -27,11 +27,11 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
         </subtitle>
     </header>
-    <release android:versionName="34.04" android:versionCode="224"
-             versionDate="2017-07-05"
-             versionTitle="Quick fix">
+    <release android:versionName="34.05" android:versionCode="225"
+             versionDate="2017-07-12"
+             versionTitle="Bug fix">
         <changes>
-            <change>Fixed: continuous application restarting.</change>
+            <change>Fixed: sometimes crashed on sharing from another application.</change>
         </changes>
     </release>
     <release android:versionName="34.03" android:versionCode="223"
