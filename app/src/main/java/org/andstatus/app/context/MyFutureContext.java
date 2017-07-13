@@ -97,7 +97,7 @@ public class MyFutureContext extends MyAsyncTask<Void, Void, MyContext> {
 
     public void thenStartNextActivity(FirstActivity firstActivity) {
         this.firstActivity = firstActivity;
-        if (!needsBackgroundWork()) {
+        if (completedBackgroundWork()) {
             startActivity(getNow());
         }
     }
@@ -113,7 +113,7 @@ public class MyFutureContext extends MyAsyncTask<Void, Void, MyContext> {
             return;
         }
         activityIntentPostRun = intent;
-        if (!needsBackgroundWork()) {
+        if (completedBackgroundWork()) {
             startActivity(getNow());
         }
     }
@@ -156,7 +156,7 @@ public class MyFutureContext extends MyAsyncTask<Void, Void, MyContext> {
 
     public void thenRun(Runnable runnable) {
         this.runnablePostRun = runnable;
-        if (!needsBackgroundWork()) {
+        if (completedBackgroundWork()) {
             runRunnable(getNow());
         }
     }
@@ -177,7 +177,7 @@ public class MyFutureContext extends MyAsyncTask<Void, Void, MyContext> {
      */
     @NonNull
     public MyContext getNow() {
-        if (!needsBackgroundWork()) {
+        if (completedBackgroundWork()) {
             return getBlocking();
         }
         return getMyContext();

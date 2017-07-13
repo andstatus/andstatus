@@ -48,7 +48,7 @@ public class RestoreActivity extends MyActivity {
         findViewById(R.id.button_restore).setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (asyncTask == null || !asyncTask.needsBackgroundWork()) {
+                if (asyncTask == null || asyncTask.completedBackgroundWork()) {
                     resetProgress();
                     asyncTask = new RestoreTask();
                     new AsyncTaskLauncher<File>().execute(this, true, asyncTask, getSelectedFolder());

@@ -122,10 +122,10 @@ public final class DemoData {
         final MyAsyncTask<Void, Void, Void> asyncTask = addAsync(method, myContext, null);
         long count = 50;
         while (count > 0) {
-            boolean needsWork = asyncTask.needsBackgroundWork();
-            MyLog.v(method, (needsWork ? "Waiting for task completion " : "Task completed ") + count + " "
+            boolean completedWork = asyncTask.completedBackgroundWork();
+            MyLog.v(method, (completedWork ? "Task completed " : "Waiting for task completion ") + count + " "
                     + asyncTask.getStatus());
-            if (!needsWork) {
+            if (completedWork) {
                 break;
             }
             count--;
@@ -133,8 +133,8 @@ public final class DemoData {
                 break;
             }
         }
-        assertFalse("Demo data inserters failed to complete, count=" + count +
-                ", status=" + asyncTask.getStatus() + ", " + asyncTask.toString(), asyncTask.needsBackgroundWork());
+        assertEquals("Demo data inserters failed to complete, count=" + count + ", status=" + asyncTask.getStatus()
+                + ", " + asyncTask.toString(), true, asyncTask.completedBackgroundWork());
         assertTrue("Error during Demo data creation: " + asyncTask.getFirstError(), asyncTask.getFirstError().isEmpty());
         MyLog.v(TAG, method + ": ended");
     }
@@ -206,7 +206,7 @@ public final class DemoData {
             }
 
             @Override
-            protected void onFinished(Void aVoid, boolean success) {
+            protected void onFinish(Void aVoid, boolean success) {
                 if (progressCallback != null) {
                     progressCallback.onComplete(success);
                 }

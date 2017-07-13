@@ -363,8 +363,8 @@ public class MyService extends Service {
         final String method = "ensureExecutorStarted";
         StringBuilder logMessageBuilder = new StringBuilder();
         synchronized(executorLock) {
-            if ( mExecutor != null && !mExecutor.needsBackgroundWork()) {
-                logMessageBuilder.append(" Removing used Executor " + mExecutor);
+            if ( mExecutor != null && mExecutor.completedBackgroundWork()) {
+                logMessageBuilder.append(" Removing completed Executor " + mExecutor);
                 removeExecutor(logMessageBuilder);
             }
             if ( mExecutor != null && !isExecutorReallyWorkingNow()) {
@@ -504,8 +504,7 @@ public class MyService extends Service {
         StringBuilder logMessageBuilder = new StringBuilder();
         boolean could = true;
         synchronized(executorLock) {
-            if (mExecutor != null && mExecutor.needsBackgroundWork() &&
-                    mExecutor.isReallyWorking() ) {
+            if (mExecutor != null && mExecutor.needsBackgroundWork() && mExecutor.isReallyWorking() ) {
                 if (forceNow) {
                     logMessageBuilder.append(" Cancelling working Executor;");
                 } else {

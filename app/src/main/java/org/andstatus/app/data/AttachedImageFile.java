@@ -152,7 +152,7 @@ public class AttachedImageFile {
                     }
 
                     @Override
-                    protected void onFinished(Drawable drawable, boolean success) {
+                    protected void onFinish(Drawable drawable, boolean success) {
                         if (imageView == null || !myActivity.isResumedMy()) {
                             return;
                         }

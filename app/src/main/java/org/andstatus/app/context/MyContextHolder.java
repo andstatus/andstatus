@@ -139,8 +139,7 @@ public final class MyContextHolder {
     }
 
     private static boolean needToInitialize() {
-        return myFutureContext.isEmpty()
-                || (!myFutureContext.needsBackgroundWork() && get().isExpired());
+        return myFutureContext.isEmpty() || (myFutureContext.completedBackgroundWork() && get().isExpired());
     }
 
     public static void setExpiredIfConfigChanged() {

@@ -49,7 +49,7 @@ public class BackupActivity extends MyActivity {
         findViewById(R.id.button_backup).setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (asyncTask == null || !asyncTask.needsBackgroundWork()) {
+                if (asyncTask == null || asyncTask.completedBackgroundWork()) {
                     resetProgress();
                     asyncTask = new BackupTask();
                     new AsyncTaskLauncher<File>().execute(this, true, asyncTask, backupFolder);

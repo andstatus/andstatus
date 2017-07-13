@@ -125,7 +125,7 @@ public abstract class MyAsyncTask<Params, Progress, Result> extends AsyncTask<Pa
         ExceptionsCounter.showErrorDialogIfErrorsPresent();
         onPostExecute2(result);
         super.onPostExecute(result);
-        onFinished(result, true);
+        onFinish(result, true);
     }
 
     protected void onPostExecute2(Result result) {
@@ -136,14 +136,14 @@ public abstract class MyAsyncTask<Params, Progress, Result> extends AsyncTask<Pa
         backgroundEndedAt = System.currentTimeMillis();
         onCancelled2(result);
         super.onCancelled(result);
-        onFinished(result, false);
+        onFinish(result, false);
     }
 
     protected void onCancelled2(Result result) {
     }
 
-    /** Is called in both cases: Cancelled or not  */
-    protected void onFinished(Result result, boolean success) {
+    /** Is called in both cases: Cancelled or not, before changing status to FINISH  */
+    protected void onFinish(Result result, boolean success) {
     }
 
     @Override
@@ -181,22 +181,22 @@ public abstract class MyAsyncTask<Params, Progress, Result> extends AsyncTask<Pa
         String summary = "";
         switch (getStatus()) {
             case PENDING:
-                summary = "PENDING " + RelativeTime.secondsAgo(createdAt) + "sec ago";
+                summary = "PENDING " + RelativeTime.secondsAgo(createdAt) + " sec ago";
                 break;
             case FINISHED:
                 if (backgroundEndedAt == 0) {
                     summary = "FINISHED, but didn't complete";
                 } else {
-                    summary = "FINISHED " + RelativeTime.secondsAgo(backgroundEndedAt) + "sec ago";
+                    summary = "FINISHED " + RelativeTime.secondsAgo(backgroundEndedAt) + " sec ago";
                 }
                 break;
             default:
                 if (backgroundStartedAt == 0) {
-                    summary = "QUEUED " + RelativeTime.secondsAgo(createdAt) + "sec ago";
+                    summary = "QUEUED " + RelativeTime.secondsAgo(createdAt) + " sec ago";
                 } else if (backgroundEndedAt == 0) {
-                    summary = "RUNNING " + RelativeTime.secondsAgo(backgroundStartedAt) + "sec";
+                    summary = "RUNNING for " + RelativeTime.secondsAgo(backgroundStartedAt) + " sec";
                 } else {
-                    summary = "FINISHING " +  RelativeTime.secondsAgo(backgroundEndedAt) + "sec ago";
+                    summary = "FINISHING " +  RelativeTime.secondsAgo(backgroundEndedAt) + " sec ago";
                 }
                 break;
         }
@@ -219,6 +219,11 @@ public abstract class MyAsyncTask<Params, Progress, Result> extends AsyncTask<Pa
                 || RelativeTime.wasButMoreSecondsAgoThan(cancelledAt, MAX_EXECUTION_AFTER_CANCEL_SECONDS)
                 || (getStatus() == Status.PENDING
                     && RelativeTime.wasButMoreSecondsAgoThan(createdAt, MAX_WAITING_BEFORE_EXECUTION_SECONDS));
+    }
+
+    /** If yes, the task may be not in FINISHED state yet: during execution of onPostExecute */
+    public boolean completedBackgroundWork() {
+        return !needsBackgroundWork();
     }
 
     public boolean needsBackgroundWork() {
