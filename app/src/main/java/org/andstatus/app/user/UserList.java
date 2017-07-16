@@ -29,6 +29,7 @@ import org.andstatus.app.service.CommandData;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.widget.MyBaseAdapter;
 
 /**
@@ -56,9 +57,11 @@ public class UserList extends MessageEditorListActivity {
     protected UserListLoader newSyncLoader(Bundle args) {
         switch (mUserListType) {
             case USERS_OF_MESSAGE:
-                return new UsersOfMessageListLoader(mUserListType, getCurrentMyAccount(), centralItemId);
+                return new UsersOfMessageListLoader(mUserListType, getCurrentMyAccount(), centralItemId,
+                        getParsedUri().getSearchQuery());
             default:
-                return new UserListLoader(mUserListType, getCurrentMyAccount(), centralItemId);
+                return new UserListLoader(mUserListType, getCurrentMyAccount(), getParsedUri().getOrigin(myContext),
+                        centralItemId, getParsedUri().getSearchQuery());
         }
     }
 
@@ -72,7 +75,8 @@ public class UserList extends MessageEditorListActivity {
 
     @Override
     protected MyBaseAdapter newListAdapter() {
-        return new UserListViewAdapter(contextMenu, R.layout.user, getListLoader().getList());
+        return new UserListViewAdapter(contextMenu, R.layout.user, getListLoader().getList(),
+                getParsedUri().getOriginId() == 0);
     }
 
     @SuppressWarnings("unchecked")
@@ -83,7 +87,15 @@ public class UserList extends MessageEditorListActivity {
     @Override
     protected CharSequence getCustomTitle() {
         mSubtitle = I18n.trimTextAt(MyHtml.fromHtml(getListLoader().getTitle()), 80);
-        return mUserListType.getTitle(this);
+        final StringBuilder title = new StringBuilder(mUserListType.getTitle(this));
+        if (StringUtils.nonEmpty(getParsedUri().getSearchQuery())) {
+            I18n.appendWithSpace(title, "'" + getParsedUri().getSearchQuery() + "'");
+        }
+        if (getParsedUri().getOrigin(myContext).isValid()) {
+            I18n.appendWithSpace(title, myContext.context().getText(R.string.combined_timeline_off_origin));
+            I18n.appendWithSpace(title, getParsedUri().getOrigin(myContext).getName());
+        }
+        return title.toString();
     }
 
     @Override

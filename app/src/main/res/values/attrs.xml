@@ -58,6 +58,7 @@
         <attr name="reloadIcon" format="reference" />
         <attr name="sendIcon" format="reference" />
 		<attr name="settingsIcon" format="reference" />
+		<attr name="backIcon" format="reference" />
 
 		<attr name="msgCountIcon" format="reference" />
 		<attr name="followingCountIcon" format="reference" />

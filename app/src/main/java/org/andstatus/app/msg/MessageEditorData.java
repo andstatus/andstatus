@@ -289,8 +289,8 @@ public class MessageEditorData {
     }
 
     private void addMentionedUsersBeforeText() {
-        UsersOfMessageListLoader loader = new UsersOfMessageListLoader(UserListType.USERS_OF_MESSAGE, ma, inReplyToId)
-                .setMentionedOnly(true);
+        UsersOfMessageListLoader loader = new UsersOfMessageListLoader(UserListType.USERS_OF_MESSAGE, ma, inReplyToId
+                , "").setMentionedOnly(true);
         loader.load(null);
         List<Long> toMention = new ArrayList<>();
         for(UserListViewItem item : loader.getList()) {

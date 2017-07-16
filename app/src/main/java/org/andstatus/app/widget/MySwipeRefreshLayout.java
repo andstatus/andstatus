@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -36,7 +36,7 @@ public class MySwipeRefreshLayout extends SwipeRefreshLayout {
         super(context, attrs);
         if (CanSwipeRefreshScrollUpCallback.class.isAssignableFrom(context.getClass())) {
             mCanSwipeRefreshScrollUpCallback = (CanSwipeRefreshScrollUpCallback) context;
-            MyLog.v(this, "Created for " + MyLog.objTagToString(mCanSwipeRefreshScrollUpCallback));
+            MyLog.v(this, "Created for " + MyLog.objToTag(mCanSwipeRefreshScrollUpCallback));
         }
     }
 

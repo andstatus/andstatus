@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<org.andstatus.app.widget.MySearchView xmlns:android="http://schemas.android.com/apk/res/android"
+                                       xmlns:app="http://schemas.android.com/apk/res-auto"
+                                       android:id="@+id/my_search_view"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:layout_alignParentTop="true"
+              android:orientation="vertical"
+              android:theme="?attr/andStatusActionBarTheme"
+              android:popupTheme="?attr/andStatusActionBarPopupTheme"
+              android:background="?attr/colorPrimary"
+    >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="?attr/actionBarSize"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:id="@+id/upButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_margin="6dp"
+            android:layout_gravity="center"
+            android:scaleType="center"
+            app:srcCompat="?attr/backIcon"
+            android:contentDescription="@android:string/cancel"/>
+
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:orientation="vertical">
+            <CheckBox
+                android:id="@+id/global_search"
+                android:text="@string/options_menu_global_search"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+            <CheckBox
+                android:id="@+id/combined"
+                android:text="@string/combined_timeline_on"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+        </LinearLayout>
+
+        <Spinner
+            android:id="@+id/search_objects"
+            android:layout_margin="9dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:entries="@array/search_objects_entries" />
+
+    </LinearLayout>
+
+    <SearchView
+        android:id="@+id/search_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+</org.andstatus.app.widget.MySearchView>

@@ -22,6 +22,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
+import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ListView;
@@ -48,6 +49,7 @@ import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.widget.MyBaseAdapter;
+import org.andstatus.app.widget.MySearchView;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
@@ -90,6 +92,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
      * Id of current list item, which is sort of a "center" of the list view
      */
     protected long centralItemId = 0;
+    protected MySearchView searchView = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -106,10 +109,8 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
 
         configChangeTime = myContext.preferencesChangeTime();
         if (MyLog.isDebugEnabled()) {
-            MyLog.d(this, "onCreate instanceId=" + mInstanceId
-                            + " , config changed " + RelativeTime.secondsAgo(configChangeTime)
-                            + " seconds ago"
-                            + (MyContextHolder.get().isReady() ? "" : ", MyContext is not ready")
+            MyLog.d(this, "onCreate, config changed " + RelativeTime.secondsAgo(configChangeTime) + " seconds ago"
+                    + (MyContextHolder.get().isReady() ? "" : ", MyContext is not ready")
             );
         }
 
@@ -118,7 +119,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
         }
         myServiceReceiver = new MyServiceEventsReceiver(myContext, this);
 
-        mParsedUri = ParsedUri.fromUri(getIntent().getData());
+        mParsedUri = ParsedUri.fromIntent(getIntent());
         setCurrentMyAccount(getParsedUri().getAccountUserId(), getParsedUri().getOriginId());
         centralItemId = getParsedUri().getItemId();
     }
@@ -144,8 +145,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
     protected void showList(Bundle args) {
         WhichPage whichPage = WhichPage.load(args);
         TriState chainedRequest = TriState.fromBundle(args, IntentExtra.CHAINED_REQUEST);
-        String msgLog = "showList, instanceId=" + mInstanceId
-                + (chainedRequest == TriState.TRUE ? ", chained" : "")
+        String msgLog = "showList" + (chainedRequest == TriState.TRUE ? ", chained" : "")
                 + ", " + whichPage + " page"
                 + (centralItemId == 0 ? "" : ", center:" + centralItemId);
         if (whichPage == WhichPage.EMPTY) {
@@ -156,7 +156,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
                 if (isLoading() && chainedRequest != TriState.TRUE) {
                     msgLog = "Ignored " + msgLog + ", " + mWorkingLoader;
                 } else {
-                    AsyncLoader newLoader = new AsyncLoader(MyLog.objTagToString(this) + mInstanceId);
+                    AsyncLoader newLoader = new AsyncLoader(MyLog.getInstanceTag(this));
                     if (new AsyncTaskLauncher<Bundle>().execute(this, true, newLoader, args)) {
                         mWorkingLoader = newLoader;
                         loaderIsWorking = true;
@@ -309,8 +309,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
             }
             long endedAt = System.currentTimeMillis();
             long timeTotal = endedAt - createdAt;
-            MyLog.v(this, String.valueOf(instanceId) + " Load completed, "
-                    + (mSyncLoader == null ? "?" : mSyncLoader.size()) + " items, "
+            MyLog.v(this, "Load completed, " + (mSyncLoader == null ? "?" : mSyncLoader.size()) + " items, "
                     + timeTotal + "ms total, "
                     + (endedAt - backgroundEndedAt) + "ms on UI thread");
             resetIsWorkingFlag();
@@ -437,8 +436,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
     protected void onResume() {
         String method = "onResume";
         super.onResume();
-        MyLog.v(this, method + ", instanceId=" + mInstanceId
-                + (mFinishing ? ", finishing" : "") );
+        MyLog.v(this, method + (mFinishing ? ", finishing" : "") );
         if (!mFinishing && !MyContextHolder.initializeThenRestartMe(this)) {
             myServiceReceiver.registerReceiver(this);
             myContext.setInForeground(true);
@@ -496,7 +494,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
 
     private void showSyncing(final CommandData commandData) {
         new AsyncTaskLauncher<CommandData>().execute(this, true,
-                new MyAsyncTask<CommandData, Void, String>("ShowSyncing" + mInstanceId, MyAsyncTask.PoolEnum.QUICK_UI) {
+                new MyAsyncTask<CommandData, Void, String>("ShowSyncing" + getInstanceId(), MyAsyncTask.PoolEnum.QUICK_UI) {
 
                     @Override
                     protected String doInBackground2(CommandData... commandData) {
@@ -582,7 +580,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
 
     @Override
     public void onDestroy() {
-        MyLog.v(this, "onDestroy, instanceId=" + mInstanceId);
+        MyLog.v(this, "onDestroy");
         if (myServiceReceiver != null) {
             myServiceReceiver.unregisterReceiver(this);
         }
@@ -663,4 +661,17 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
         onRefreshHandled = true;
         showList(WhichPage.CURRENT);
     }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
+            if (searchView != null && searchView.getVisibility() == View.VISIBLE) {
+                searchView.onActionViewCollapsed();
+                return true;
+            }
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
+
 }

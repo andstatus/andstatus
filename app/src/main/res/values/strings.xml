@@ -286,6 +286,7 @@
   <string name="message_source_in_reply_to">in reply to %1$s</string>
   <string name="message_source_to">to %1$s</string>
   <string name="message_twitter">Tweet</string>
+  <string name="messages">Messages</string>
   <string name="messages_activity">Direct Messages</string>
   <string name="n_message_link">Message link</string>
   <string name="n_message_links">%d message links</string>
@@ -381,9 +382,10 @@
   <string name="resolve_view">View Message</string>
   <string name="rounded_avatars">Rounded avatars</string>
   <string name="search_timeline_label">Search messages, users, and hashtags</string>
-  <string name="search_timeline_hint">Enter a username/phrase</string>
+  <string name="search_timeline_hint">Enter keywords/#hashtags</string>
   <string name="search_direct_messages_label">Search direct messages</string>
   <string name="search_direct_messages_hint">Enter a username or phrase</string>
+  <string name="search_userlist_hint">Enter a username/Webfinger ID</string>
   <string name="select_backup_folder">Select backup folder</string>
   <string name="select_displayed_in_selector">Select if and when this timeline is displayed</string>
   <string name="sent">Sent</string>
@@ -553,6 +555,7 @@
   <string name="user_in_timeline_entries_real_name">Real name</string>
   <string name="user_in_timeline_entries_real_name_at_username">Real name @username</string>
   <string name="user_list">User list</string>
+  <string name="users">Users</string>
   <string name="users_of_message">Users of message</string>
   <string name="yes">Yes</string>
 </resources>

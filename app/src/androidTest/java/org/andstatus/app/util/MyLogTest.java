@@ -36,15 +36,15 @@ public class MyLogTest {
     }
 
     @Test
-    public void testObjToString() {
+    public void testObjTag() {
        Object tag = this;
-       assertEquals("MyLogTest", MyLog.objTagToString(tag));
+       assertEquals("MyLogTest", MyLog.objToTag(tag));
        tag = this.getClass();
-       assertEquals("MyLogTest", MyLog.objTagToString(tag));
+       assertEquals("MyLogTest", MyLog.objToTag(tag));
        tag = "Other tag";
-       assertEquals(tag.toString(), MyLog.objTagToString(tag));
+       assertEquals(tag.toString(), MyLog.objToTag(tag));
        tag = null;
-       assertEquals("(null)", MyLog.objTagToString(tag));
+       assertEquals("(null)", MyLog.objToTag(tag));
     }
 
     @Test

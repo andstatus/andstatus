@@ -26,6 +26,7 @@
 	android:orientation="vertical">
 
 	<include layout="@layout/action_bar" />
+	<include layout="@layout/my_search_view" />
 
 	<android.support.v4.widget.DrawerLayout
 		android:id="@+id/drawer_layout"

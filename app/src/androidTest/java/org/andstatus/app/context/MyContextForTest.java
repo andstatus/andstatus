@@ -29,6 +29,7 @@ import org.andstatus.app.origin.PersistentOrigins;
 import org.andstatus.app.service.ConnectionState;
 import org.andstatus.app.timeline.PersistentTimelines;
 import org.andstatus.app.timeline.TimelineType;
+import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
 
 import java.util.Locale;
@@ -42,6 +43,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
  * @author yvolk@yurivolkov.com
  */
 public class MyContextForTest implements MyContext {
+    final long instanceId = InstanceId.next();
     private volatile MyContext myContext = null;
     private final Set<AssertionData> dataSet = new CopyOnWriteArraySet<>();
     private volatile Class<? extends HttpConnection> httpConnectionMockClass = null;
@@ -247,8 +249,8 @@ public class MyContextForTest implements MyContext {
 	}
 
     @Override
-    public long instanceId() {
-        return myContext.instanceId();
+    public long getInstanceId() {
+        return instanceId;
     }
 
     public Map<TimelineType, Notification> getNotifications() {
@@ -257,6 +259,6 @@ public class MyContextForTest implements MyContext {
 
     @Override
     public String toString() {
-        return "MyContextForTest http=" + getHttpConnectionMock() + ", " + myContext;
+        return MyLog.getInstanceTag(this) + " http=" + getHttpConnectionMock() + ", " + myContext;
     }
 }

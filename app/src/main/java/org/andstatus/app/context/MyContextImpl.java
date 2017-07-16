@@ -85,7 +85,7 @@ public final class MyContextImpl implements MyContext {
     private static final long CONSIDER_IN_BACKGROUND_AFTER_SECONDS = 20;
 
     private MyContextImpl(Object initializerName) {
-        mInitializedBy = MyLog.objTagToString(initializerName);
+        mInitializedBy = MyLog.objToTag(initializerName);
     }
 
     @Override
@@ -98,22 +98,18 @@ public final class MyContextImpl implements MyContext {
                 Permissions.PermissionType.GET_ACCOUNTS)) {
             myContext.mState = MyContextState.NO_PERMISSIONS;
         } else {
-            MyLog.v(getTag(), method + " Starting initialization of " + myContext.instanceId + " by " + myContext.mInitializedBy);
+            MyLog.v(this, method + " Starting initialization of " + myContext.instanceId + " by " + myContext.mInitializedBy);
             myContext.initialize2();
         }
-        MyLog.v(getTag(), method + " " + myContext.toString());
+        MyLog.v(this, method + " " + myContext.toString());
         return myContext;
-    }
-
-    private String getTag() {
-        return MyLog.objTagToString(this) + "-" + instanceId;
     }
 
     private void initialize2() {
         final String method = "initialize2";
         boolean createApplicationData = MyStorage.isApplicationDataCreated().not().toBoolean(false);
         if (createApplicationData) {
-            MyLog.i(getTag(), method + " Creating application data");
+            MyLog.i(this, method + " Creating application data");
             MyPreferencesGroupsEnum.setDefaultValues();
             tryToSetExternalStorageOnDataCreation();
         }
@@ -148,7 +144,7 @@ public final class MyContextImpl implements MyContext {
                 mState = MyContextState.ERROR;
             }
         } catch (SQLiteException e) {
-            MyLog.e(getTag(), method + " Error", e);
+            MyLog.e(this, method + " Error", e);
             mState = MyContextState.ERROR;
             newDb.close();
             mDb = null;
@@ -161,13 +157,13 @@ public final class MyContextImpl implements MyContext {
     private void tryToSetExternalStorageOnDataCreation() {
         boolean useExternalStorage = !Environment.isExternalStorageEmulated()
                 && MyStorage.isWritableExternalStorageAvailable(null);
-        MyLog.i(getTag(), "External storage is " + (useExternalStorage ? "" : "not") + " used");
+        MyLog.i(this, "External storage is " + (useExternalStorage ? "" : "not") + " used");
         SharedPreferencesUtil.putBoolean(MyPreferences.KEY_USE_EXTERNAL_STORAGE, useExternalStorage);
     }
 
     @Override
     public String toString() {
-        return  getTag() + " by " + mInitializedBy + "; state=" + mState +
+        return  MyLog.getInstanceTag(this) + " by " + mInitializedBy + "; state=" + mState +
                 "; " + (isExpired() && (mState != MyContextState.EXPIRED) ? "expired" : "") +
                 persistentAccounts().size() + " accounts, " +
                 (mContext == null ? "no context" : "context=" + mContext.getClass().getName());
@@ -184,13 +180,13 @@ public final class MyContextImpl implements MyContext {
             Context contextToUse = context.getApplicationContext();
         
             if ( contextToUse == null) {
-                MyLog.w(getTag(), "getApplicationContext is null, trying the context itself: " + context.getClass().getName());
+                MyLog.w(this, "getApplicationContext is null, trying the context itself: " + context.getClass().getName());
                 contextToUse = context;
             }
             // TODO: Maybe we need to determine if the context is compatible, using some Interface...
             // ...but we don't have any yet.
             if (!context.getClass().getName().contains(ClassInApplicationPackage.PACKAGE_NAME)) {
-                MyLog.w(getTag(), "Incompatible context: " + contextToUse.getClass().getName());
+                MyLog.w(this, "Incompatible context: " + contextToUse.getClass().getName());
                 contextToUse = null;
             }
             newMyContext.mContext = contextToUse;
@@ -246,7 +242,7 @@ public final class MyContextImpl implements MyContext {
         try {
             db = mDb.getWritableDatabase();
         } catch (Exception e) {
-            MyLog.e(getTag(), "getDatabase", e);
+            MyLog.e(this, "getDatabase", e);
         }
         return db;
     }
@@ -282,7 +278,7 @@ public final class MyContextImpl implements MyContext {
 
     @Override
     public void setExpired() {
-        MyLog.i(getTag(), "setExpired");
+        MyLog.i(this, "setExpired");
         mExpired = true;
         mState = MyContextState.EXPIRED;
     }
@@ -376,7 +372,7 @@ public final class MyContextImpl implements MyContext {
 	}
 
     @Override
-    public long instanceId() {
+    public long getInstanceId() {
         return instanceId;
     }
 }

@@ -181,7 +181,7 @@ public class TimelineListParameters {
     }
 
     public void saveState(Bundle outState) {
-        outState.putString(IntentExtra.TIMELINE_URI.key, MatchedUri.getTimelineUri(timeline).toString());
+        outState.putString(IntentExtra.MATCHED_URI.key, MatchedUri.getTimelineUri(timeline).toString());
     }
 
     @Override
@@ -214,7 +214,7 @@ public class TimelineListParameters {
         whichPage = WhichPage.CURRENT;
         minSentDate = 0;
         maxSentDate = 0;
-        return parseUri(Uri.parse(savedInstanceState.getString(IntentExtra.TIMELINE_URI.key,"")), "");
+        return parseUri(Uri.parse(savedInstanceState.getString(IntentExtra.MATCHED_URI.key,"")), "");
     }
     
     /** @return true if parsed successfully */

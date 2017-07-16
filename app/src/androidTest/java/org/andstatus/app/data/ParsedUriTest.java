@@ -43,7 +43,7 @@ public class ParsedUriTest {
     private void assertOneUserList(long originId) {
         long userId = 5;
         long msgId = 2;
-        Uri uri = MatchedUri.getUserListUri(userId, UserListType.USERS_OF_MESSAGE, originId, msgId);
+        Uri uri = MatchedUri.getUserListUri(userId, UserListType.USERS_OF_MESSAGE, originId, msgId, "");
         ParsedUri parsedUri = ParsedUri.fromUri(uri);
         String msgLog = parsedUri.toString();
         assertEquals(TimelineType.UNKNOWN, parsedUri.getTimelineType());

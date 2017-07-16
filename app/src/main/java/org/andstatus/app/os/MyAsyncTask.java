@@ -82,7 +82,7 @@ public abstract class MyAsyncTask<Params, Progress, Result> extends AsyncTask<Pa
     }
 
     public MyAsyncTask(@NonNull Object taskId, PoolEnum pool) {
-        this.taskId = MyLog.objTagToString(taskId);
+        this.taskId = MyLog.objToTag(taskId);
         this.pool = pool;
     }
 

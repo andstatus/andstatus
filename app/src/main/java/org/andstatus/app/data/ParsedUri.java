@@ -16,24 +16,53 @@
 
 package org.andstatus.app.data;
 
+import android.app.SearchManager;
+import android.content.Intent;
 import android.net.Uri;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 
+import org.andstatus.app.IntentExtra;
+import org.andstatus.app.context.MyContext;
+import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.user.UserListType;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.StringUtils;
 
 public class ParsedUri {
     private final Uri uri;
     private final MatchedUri matchedUri;
-    
-    private ParsedUri(Uri uri) {
+    private final String searchQuery;
+    public final boolean globalSearch;
+
+    private ParsedUri(Intent intent) {
+        Uri uri = intent == null ? null : intent.getData();
+        String searchQuery = "";
+        boolean globalSearch = false;
+        if (intent != null) {
+            searchQuery = intent.getStringExtra(SearchManager.QUERY);
+            Bundle appSearchData = intent.getBundleExtra(SearchManager.APP_DATA);
+            if (appSearchData != null) {
+                String uriString = appSearchData.getString(IntentExtra.MATCHED_URI.key, "");
+                if (StringUtils.nonEmpty(uriString)) {
+                    uri = Uri.parse(uriString);
+                }
+                globalSearch = appSearchData.getBoolean(IntentExtra.GLOBAL_SEARCH.key, false);
+            }
+        }
+        this.searchQuery = searchQuery;
+        this.globalSearch = globalSearch;
         this.uri = uri == null ? Uri.EMPTY : uri;
         matchedUri = MatchedUri.fromUri(this.uri);
     }
-    
+
     public static ParsedUri fromUri(Uri uri) {
-        return new ParsedUri(uri);
+        return fromIntent(new Intent(Intent.ACTION_DEFAULT, uri));
+    }
+
+    public static ParsedUri fromIntent(Intent intent) {
+        return new ParsedUri(intent);
     }
 
     public MatchedUri matched() {
@@ -63,6 +92,7 @@ public class ParsedUri {
                 case MSG_ITEM:
                 case ORIGIN_ITEM:
                 case USERLIST:
+                case USERLIST_SEARCH:
                 case USER_ITEM:
                     accountUserId = Long.parseLong(uri.getPathSegments().get(1));
                     break;
@@ -88,6 +118,7 @@ public class ParsedUri {
                     userId = Long.parseLong(uri.getPathSegments().get(3));
                     break;
                 case USERLIST:
+                case USERLIST_SEARCH:
                     if (getUserListType() == UserListType.FOLLOWERS) {
                         userId = getItemId();
                     }
@@ -120,19 +151,18 @@ public class ParsedUri {
     }
 
     public UserListType getUserListType() {
-        UserListType tt = UserListType.UNKNOWN;
         try {
             switch (matchedUri) {
                 case USERLIST:
-                    tt = UserListType.load(uri.getPathSegments().get(3));
-                    break;
+                case USERLIST_SEARCH:
+                    return UserListType.load(uri.getPathSegments().get(3));
                 default:
                     break;
             }
         } catch (Exception e) {
             MyLog.d(this, toString(), e);
         }
-        return tt;        
+        return UserListType.UNKNOWN;
     }
 
     public long getOriginId() {
@@ -147,6 +177,10 @@ public class ParsedUri {
         return originId;
     }
 
+    public Origin getOrigin(MyContext myContext) {
+        return myContext.persistentOrigins().fromId(getOriginId());
+    }
+
     public long getMessageId() {
         long messageId = 0;
         try {
@@ -158,6 +192,7 @@ public class ParsedUri {
                     messageId = Long.parseLong(uri.getPathSegments().get(3));
                     break;
                 case USERLIST:
+                case USERLIST_SEARCH:
                     if (getUserListType() == UserListType.USERS_OF_MESSAGE) {
                         messageId = getItemId();
                     }
@@ -171,24 +206,27 @@ public class ParsedUri {
         return messageId;        
     }
 
+    public boolean isSearch() {
+        return StringUtils.nonEmpty(getSearchQuery());
+    }
+
     @NonNull
     public String getSearchQuery() {
-        String searchString = "";
+        if (StringUtils.nonEmpty(searchQuery)) {
+            return searchQuery;
+        }
         try {
             switch (matchedUri) {
                 case TIMELINE_SEARCH:
-                    searchString = uri.getPathSegments().get(9);
-                    break;
+                case USERLIST_SEARCH:
+                    return StringUtils.notNull(uri.getPathSegments().get(9));
                 default:
                     break;
             }
         } catch (Exception e) {
             MyLog.d(this, toString(), e);
         }
-        if (searchString == null) {
-            searchString = "";
-        }
-        return searchString;        
+        return "";
     }
 
     public long getItemId() {

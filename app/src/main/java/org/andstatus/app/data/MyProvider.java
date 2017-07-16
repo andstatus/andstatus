@@ -266,9 +266,11 @@ public class MyProvider extends ContentProvider {
     @Override
     public Cursor query(@NonNull Uri uri, String[] projection, String selectionIn, String[] selectionArgsIn,
             String sortOrder) {
+        final int PAGE_SIZE = 400;
         SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
         boolean built = false;
         String selection = selectionIn;
+        String limit = null;
         String[] selectionArgs = selectionArgsIn; 
         String sql = "";
 
@@ -290,8 +292,8 @@ public class MyProvider extends ContentProvider {
                 qb.setTables(TimelineSql.tablesForTimeline(uri, projection));
                 qb.setProjectionMap(ProjectionMap.MSG);
                 String rawQuery = uriParser.getSearchQuery();
-                if (!TextUtils.isEmpty(rawQuery)) {
-                    if (!TextUtils.isEmpty(selection)) {
+                if (StringUtils.nonEmpty(rawQuery)) {
+                    if (StringUtils.nonEmpty(selection)) {
                         selection = " AND (" + selection + ")";
                     } else {
                         selection = "";
@@ -309,7 +311,7 @@ public class MyProvider extends ContentProvider {
 
             case MSG_COUNT:
                 sql = "SELECT count(*) FROM " + MsgTable.TABLE_NAME + " AS " + ProjectionMap.MSG_TABLE_ALIAS;
-                if (!TextUtils.isEmpty(selection)) {
+                if (StringUtils.nonEmpty(selection)) {
                     sql += " WHERE " + selection;
                 }
                 break;
@@ -321,8 +323,23 @@ public class MyProvider extends ContentProvider {
 
             case USER:
             case USERLIST:
+            case USERLIST_SEARCH:
                 qb.setTables(UserListSql.tablesForList(uri, projection));
                 qb.setProjectionMap(ProjectionMap.USER);
+                rawQuery = uriParser.getSearchQuery();
+                if (StringUtils.nonEmpty(rawQuery)) {
+                    if (StringUtils.nonEmpty(selection)) {
+                        selection = " AND (" + selection + ")";
+                    } else {
+                        selection = "";
+                    }
+                    selection = "(" + UserTable.WEBFINGER_ID + " LIKE ?" +
+                            " OR " + UserTable.REAL_NAME + " LIKE ? )" + selection;
+
+                    selectionArgs = StringUtils.addBeforeArray(selectionArgs, "%" + rawQuery + "%");
+                    selectionArgs = StringUtils.addBeforeArray(selectionArgs, "%" + rawQuery + "%");
+                }
+                limit =  String.valueOf(PAGE_SIZE);
                 break;
 
             case USER_ITEM:
@@ -351,6 +368,7 @@ public class MyProvider extends ContentProvider {
 
                 case USER:
                 case USERLIST:
+                case USERLIST_SEARCH:
                 case USER_ITEM:
                     orderBy = UserTable.DEFAULT_SORT_ORDER;
                     break;
@@ -369,7 +387,7 @@ public class MyProvider extends ContentProvider {
             boolean logQuery = MyLog.isVerboseEnabled();
             try {
                 if (sql.length() == 0) {
-                    sql = qb.buildQuery(projection, selection, null, null, orderBy, null);
+                    sql = qb.buildQuery(projection, selection, null, null, orderBy, limit);
                     built = true;
                 }
                 // Here we substitute ?-s in selection with values from selectionArgs
@@ -431,7 +449,7 @@ public class MyProvider extends ContentProvider {
                 otherUserValues.setMsgId(rowId);
                 if (values.size() > 0) {
                     count = db.update(MsgTable.TABLE_NAME, values, BaseColumns._ID + "=" + rowId
-                            + (!TextUtils.isEmpty(selection) ? " AND (" + selection + ')' : ""),
+                            + (StringUtils.nonEmpty(selection) ? " AND (" + selection + ')' : ""),
                             selectionArgs);
                 }
                 count += msgOfUserValues.update(db);
@@ -448,7 +466,7 @@ public class MyProvider extends ContentProvider {
                 FriendshipValues friendshipValues = FriendshipValues.valueOf(accountUserId, selectedUserId, values);
                 if (values.size() > 0) {
                     count = db.update(UserTable.TABLE_NAME, values, BaseColumns._ID + "=" + selectedUserId
-                                    + (!TextUtils.isEmpty(selection) ? " AND (" + selection + ')' : ""),
+                                    + (StringUtils.nonEmpty(selection) ? " AND (" + selection + ')' : ""),
                             selectionArgs);
                 }
                 friendshipValues.update(db);

@@ -449,7 +449,7 @@ public abstract class Connection {
     }
 
     public List<MbOrigin> getOpenInstances() throws ConnectionException {
-        throw ConnectionException.fromStatusCode(StatusCode.UNSUPPORTED_API, MyLog.objTagToString(this));
+        throw ConnectionException.fromStatusCode(StatusCode.UNSUPPORTED_API, MyLog.objToTag(this));
     }
     
     /**

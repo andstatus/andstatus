@@ -28,6 +28,10 @@ public class StringUtils {
         return notEmpty(first, "").equals(notEmpty(second, ""));
     }
 
+    public static boolean nonEmpty(String value) {
+        return !TextUtils.isEmpty(value);
+    }
+
     public static String notEmpty(String value, String valueIfEmpty) {
         return TextUtils.isEmpty(value) ? valueIfEmpty : value;
     }

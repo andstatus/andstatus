@@ -124,7 +124,7 @@ public class UserAutoCompleteAdapter extends BaseAdapter implements Filterable {
                 return Collections.emptyList();
             }
             UserListLoader loader = new UserListLoader(UserListType.USERS,
-                    MyContextHolder.get().persistentAccounts().getFirstSucceededForOrigin(origin), 0) {
+                    MyContextHolder.get().persistentAccounts().getFirstSucceededForOrigin(origin), origin, 0, "") {
                 @NonNull
                 @Override
                 protected String getSelection() {

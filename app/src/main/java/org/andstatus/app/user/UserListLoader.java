@@ -15,6 +15,7 @@ import org.andstatus.app.data.AvatarFile;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyQuery;
+import org.andstatus.app.data.SqlWhere;
 import org.andstatus.app.data.UserListSql;
 import org.andstatus.app.database.UserTable;
 import org.andstatus.app.net.social.MbUser;
@@ -23,18 +24,23 @@ import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.StringUtils;
 
 public class UserListLoader extends SyncLoader<UserListViewItem> {
     protected final UserListType mUserListType;
+    private String searchQuery = "";
     protected final MyAccount ma;
+    protected final Origin origin;
     protected boolean mAllowLoadingFromInternet = false;
     protected final long mCentralItemId;
 
     private LoadableListActivity.ProgressPublisher mProgress;
 
-    public UserListLoader(UserListType userListType, MyAccount ma, long centralItemId) {
+    public UserListLoader(UserListType userListType, MyAccount ma, Origin origin, long centralItemId, String searchQuery) {
         mUserListType = userListType;
+        this.searchQuery = searchQuery;
         this.ma = ma;
+        this.origin = origin;
         mCentralItemId = centralItemId;
     }
 
@@ -90,7 +96,8 @@ public class UserListLoader extends SyncLoader<UserListViewItem> {
 
     protected void loadInternal() {
         // TODO: Why only MyAccount's ID ??
-        Uri mContentUri = MatchedUri.getUserListUri(ma.getUserId(), mUserListType, ma.getOriginId(), mCentralItemId);
+        Uri mContentUri = MatchedUri.getUserListUri(ma.getUserId(), mUserListType, ma.getOriginId(), mCentralItemId,
+                searchQuery);
         Cursor c = null;
         try {
             c = MyContextHolder.get().context().getContentResolver()
@@ -105,7 +112,15 @@ public class UserListLoader extends SyncLoader<UserListViewItem> {
 
     @NonNull
     protected String getSelection() {
-        return UserTable.TABLE_NAME + "." + BaseColumns._ID + getSqlUserIds();
+        SqlWhere where = new SqlWhere();
+        String sqlUserIds = getSqlUserIds();
+        if (StringUtils.nonEmpty(sqlUserIds)) {
+            where.append(UserTable.TABLE_NAME + "." + BaseColumns._ID + sqlUserIds);
+        } else if (origin.isValid()) {
+            where.append(UserTable.TABLE_NAME + "." + UserTable.ORIGIN_ID + "=" + ma.getOriginId());
+        }
+        return where.getCondition();
+
     }
 
     private void populateItem(Cursor cursor) {
@@ -171,7 +186,7 @@ public class UserListLoader extends SyncLoader<UserListViewItem> {
     }
 
     protected String getTitle() {
-        return mUserListType.toString();
+        return MyLog.isVerboseEnabled() ? mUserListType.toString() : "";
     }
 
     @Override

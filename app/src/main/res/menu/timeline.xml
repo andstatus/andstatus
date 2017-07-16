@@ -19,18 +19,11 @@
       xmlns:app="http://schemas.android.com/apk/res-auto"
       tools:context=".msg.TimelineActivity">
     <item
-        android:id="@+id/global_search_menu_id"
-        android:alphabeticShortcut="g"
-        android:icon="?attr/globalSearchIcon"
-        app:showAsAction="ifRoom"
-        android:title="@string/options_menu_global_search">
-    </item>
-    <item
         android:id="@+id/search_menu_id"
         android:alphabeticShortcut="s"
         android:icon="?attr/mySearchIcon"
-        app:showAsAction="ifRoom"
-        android:title="@string/options_menu_search">
+        android:title="@string/options_menu_search"
+        app:showAsAction="ifRoom">
     </item>
     <item
         android:id="@+id/sync_menu_item"

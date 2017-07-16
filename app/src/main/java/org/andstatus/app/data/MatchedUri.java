@@ -56,6 +56,7 @@ public enum MatchedUri {
      * List of Users
      */
     USERLIST(5),
+    USERLIST_SEARCH(12),
     /**
      * Operations on {@link UserTable} itself
      */
@@ -120,7 +121,8 @@ public enum MatchedUri {
 
         URI_MATCHER.addURI(AUTHORITY, OriginTable.TABLE_NAME + "/#/" + CONTENT_ITEM_SEGMENT + "/#", ORIGIN_ITEM.code);
         URI_MATCHER.addURI(AUTHORITY, OriginTable.TABLE_NAME + "/" + CONTENT_SEGMENT, ORIGIN.code);
-        
+
+        URI_MATCHER.addURI(AUTHORITY, UserTable.TABLE_NAME + "/#/" + LISTTYPE_SEGMENT + "/*/" + ORIGIN_SEGMENT + "/#/" + CENTRAL_ITEM_SEGMENT + "/#/" + SEARCH_SEGMENT + "/*", USERLIST_SEARCH.code);
         URI_MATCHER.addURI(AUTHORITY, UserTable.TABLE_NAME + "/#/" + LISTTYPE_SEGMENT + "/*/" + ORIGIN_SEGMENT + "/#/" + CENTRAL_ITEM_SEGMENT + "/#", USERLIST.code);
         URI_MATCHER.addURI(AUTHORITY, UserTable.TABLE_NAME + "/#/" + CONTENT_ITEM_SEGMENT + "/#", USER_ITEM.code);
         URI_MATCHER.addURI(AUTHORITY, UserTable.TABLE_NAME + "/#/" + CONTENT_SEGMENT, USER.code);
@@ -193,13 +195,19 @@ public enum MatchedUri {
     /**
      * Build a UseList Uri for this User / {@link MyAccount}
      * @param accountUserId {@link UserTable#USER_ID}. This user <i>may</i> be an account: {@link MyAccount#getUserId()}
+     * @param searchQuery
      */
-    public static Uri getUserListUri(long accountUserId, UserListType userListType, long originId, long centralItemId) {
+    public static Uri getUserListUri(long accountUserId, UserListType userListType, long originId, long centralItemId,
+                                     String searchQuery) {
         Uri uri = getBaseAccountUri(accountUserId, UserTable.TABLE_NAME);
         uri = Uri.withAppendedPath(uri, LISTTYPE_SEGMENT + "/" + userListType.save());
         uri = Uri.withAppendedPath(uri, ORIGIN_SEGMENT + "/" + originId);
         uri = Uri.withAppendedPath(uri, CENTRAL_ITEM_SEGMENT);
         uri = ContentUris.withAppendedId(uri, centralItemId);
+        if (!TextUtils.isEmpty(searchQuery)) {
+            uri = Uri.withAppendedPath(uri, SEARCH_SEGMENT);
+            uri = Uri.withAppendedPath(uri, Uri.encode(searchQuery));
+        }
         return uri;
     }
 

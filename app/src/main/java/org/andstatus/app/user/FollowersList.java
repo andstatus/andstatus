@@ -72,6 +72,7 @@ public class FollowersList extends UserList {
 
     @Override
     protected UserListLoader newSyncLoader(Bundle args) {
-        return new FollowersListLoader(mUserListType, getCurrentMyAccount(), getFollowedUserId());
+        return new FollowersListLoader(mUserListType, getCurrentMyAccount(), getFollowedUserId(),
+                getParsedUri().getSearchQuery());
     }
 }

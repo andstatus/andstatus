@@ -319,7 +319,7 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
         void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
             Uri uri = MatchedUri.getUserListUri(editorData.ma.getUserId(),
                     UserListType.USERS_OF_MESSAGE, menu.getOrigin().getId(),
-                    menu.getMsgId());
+                    menu.getMsgId(), "");
             if (MyLog.isLoggable(this, MyLog.DEBUG)) {
                 MyLog.d(this, "onItemClick, startActivity=" + uri);
             }

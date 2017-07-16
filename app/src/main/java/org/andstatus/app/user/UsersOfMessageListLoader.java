@@ -34,8 +34,8 @@ public class UsersOfMessageListLoader extends UserListLoader {
     final String messageBody;
     private boolean mentionedOnly = false;
 
-    public UsersOfMessageListLoader(UserListType userListType, MyAccount ma, long centralItemId) {
-        super(userListType, ma, centralItemId);
+    public UsersOfMessageListLoader(UserListType userListType, MyAccount ma, long centralItemId, String searchQuery) {
+        super(userListType, ma, ma.getOrigin(), centralItemId, searchQuery);
 
         selectedMessageId = centralItemId;
         messageBody = MyQuery.msgIdToStringColumnValue(MsgTable.BODY, selectedMessageId);

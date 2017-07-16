@@ -55,7 +55,7 @@ public class DatabaseConverterController {
     static final int UPGRADE_LENGTH_SECONDS_MAX = 90;
 
     public static void attemptToTriggerDatabaseUpgrade(Activity upgradeRequestorIn) {
-        String requestorName = MyLog.objTagToString(upgradeRequestorIn);
+        String requestorName = MyLog.objToTag(upgradeRequestorIn);
         boolean skip = false;
         if (isUpgrading()) {
             MyLog.v(TAG, "Attempt to trigger database upgrade by " + requestorName 
@@ -129,7 +129,7 @@ public class DatabaseConverterController {
                 synchronized(UPGRADE_LOCK) {
                     mProgressLogger = progressLogger;
                 }
-                MyLog.v(TAG, "Upgrade triggered by " + MyLog.objTagToString(upgradeRequestor));
+                MyLog.v(TAG, "Upgrade triggered by " + MyLog.objToTag(upgradeRequestor));
                 MyServiceManager.setServiceUnavailable();
                 MyContextHolder.release();
                 // Upgrade will occur inside this call synchronously

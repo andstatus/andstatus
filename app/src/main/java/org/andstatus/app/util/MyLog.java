@@ -24,6 +24,7 @@ import android.util.Log;
 
 import net.jcip.annotations.GuardedBy;
 
+import org.andstatus.app.IdentifiableInstance;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
@@ -126,49 +127,49 @@ public class MyLog {
     }
     
     public static int e(Object objTag, String msg, Throwable tr) {
-        String tag = objTagToString(objTag);
+        String tag = objToTag(objTag);
         logToFile(ERROR, tag, msg, tr);
         return Log.e(tag, msg, tr);
     }
 
     public static int e(Object objTag, Throwable tr) {
-        String tag = objTagToString(objTag);
+        String tag = objToTag(objTag);
         logToFile(ERROR, tag, null, tr);
         return Log.e(tag, "", tr);
     }
     
     public static int e(Object objTag, String msg) {
-        String tag = objTagToString(objTag);
+        String tag = objToTag(objTag);
         logToFile(ERROR, tag, msg, null);
         return Log.e(tag, msg);
     }
 
     public static int i(Object objTag, String msg, Throwable tr) {
-        String tag = objTagToString(objTag);
+        String tag = objToTag(objTag);
         logToFile(INFO, tag, msg, tr);
         return Log.i(tag, msg, tr);
     }
     
     public static int i(Object objTag, Throwable tr) {
-        String tag = objTagToString(objTag);
+        String tag = objToTag(objTag);
         logToFile(INFO, tag, null, tr);
         return Log.i(tag, "", tr);
     }
     
     public static int i(Object objTag, String msg) {
-        String tag = objTagToString(objTag);
+        String tag = objToTag(objTag);
         logToFile(INFO, tag, msg, null);
         return Log.i(tag, msg);
     }
 
     public static int w(Object objTag, String msg) {
-        String tag = objTagToString(objTag);
+        String tag = objToTag(objTag);
         logToFile(WARN, tag, msg, null);
         return Log.w(tag, msg);
     }
 
     public static int w(Object objTag, String msg, Throwable tr) {
-        String tag = objTagToString(objTag);
+        String tag = objToTag(objTag);
         logToFile(WARN, tag, msg, tr);
         return Log.w(tag, msg, tr);
     }
@@ -177,7 +178,7 @@ public class MyLog {
      * Shortcut for debugging messages of the application
      */
     public static int d(Object objTag, String msg) {
-        String tag = objTagToString(objTag);
+        String tag = objToTag(objTag);
         int i = 0;
         if (isLoggable(tag, DEBUG)) {
             logToFile(DEBUG, tag, msg, null);
@@ -190,7 +191,7 @@ public class MyLog {
      * Shortcut for debugging messages of the application
      */
     public static int d(Object objTag, String msg, Throwable tr) {
-        String tag = objTagToString(objTag);
+        String tag = objToTag(objTag);
         int i = 0;
         if (isLoggable(tag, DEBUG)) {
             logToFile(DEBUG, tag, msg, tr);
@@ -203,7 +204,7 @@ public class MyLog {
      * Shortcut for verbose messages of the application
      */
     public static int v(Object objTag, Throwable tr) {
-        String tag = objTagToString(objTag);
+        String tag = objToTag(objTag);
         int i = 0;
         if (isLoggable(tag, Log.VERBOSE)) {
             logToFile(VERBOSE, tag, null, tr);
@@ -216,7 +217,7 @@ public class MyLog {
      * Shortcut for verbose messages of the application
      */
     public static int v(Object objTag, String msg) {
-        String tag = objTagToString(objTag);
+        String tag = objToTag(objTag);
         int i = 0;
         if (isLoggable(tag, Log.VERBOSE)) {
             logToFile(VERBOSE, tag, msg, null);
@@ -226,7 +227,7 @@ public class MyLog {
     }
 
     public static int v(Object objTag, String msg, Throwable tr) {
-        String tag = objTagToString(objTag);
+        String tag = objToTag(objTag);
         int i = 0;
         if (isLoggable(tag, Log.VERBOSE)) {
             logToFile(VERBOSE, tag, msg, tr);
@@ -239,7 +240,7 @@ public class MyLog {
      * This will be ignored
      */
     public static int ignored(Object objTag, Throwable tr) {
-        String tag = objTagToString(objTag);
+        String tag = objToTag(objTag);
         int i = 0;
         if (isLoggable(tag, IGNORED)) {
             i = Log.i(tag, "", tr);
@@ -249,10 +250,12 @@ public class MyLog {
 
     /** Truncated to {@link #MAX_TAG_LENGTH} */
     @NonNull
-    public static String objTagToString(Object objTag) {
+    public static String objToTag(Object objTag) {
         final String tag;
         if (objTag == null) {
             tag = "(null)";
+        } else if (IdentifiableInstance.class.isAssignableFrom(objTag.getClass())) {
+            tag = getInstanceTag((IdentifiableInstance) objTag);
         } else if (objTag instanceof String) {
             tag = (String) objTag;
         } else if (objTag instanceof Enum<?>) {
@@ -266,6 +269,15 @@ public class MyLog {
             return "(empty)";
         }
         return (tag.length() > MAX_TAG_LENGTH) ? tag.substring(0, MAX_TAG_LENGTH) : tag;
+    }
+
+    // TODO: Java8 Move to Interface
+    public static String getInstanceTag(IdentifiableInstance identifiableInstance) {
+        String className = identifiableInstance.getClass().getSimpleName();
+        String idString = String.valueOf(identifiableInstance.getInstanceId());
+        int maxClassNameLength = MAX_TAG_LENGTH - idString.length();
+        return (className. length() > maxClassNameLength ? className.substring(0, maxClassNameLength) : className)
+                + idString;
     }
 
     public static boolean isDebugEnabled() {
@@ -293,7 +305,7 @@ public class MyLog {
         } else if (level >= minLogLevel) {
             return true;
         } else {
-            String tag = objTagToString(objTag);
+            String tag = objToTag(objTag);
             if (TextUtils.isEmpty(tag)) {
                 tag = APPTAG;
             }
@@ -421,7 +433,7 @@ public class MyLog {
     }
     
     public static String formatKeyValue(Object keyIn, Object valueIn) {
-        String key = objTagToString(keyIn);
+        String key = objToTag(keyIn);
         if (keyIn == null) {
             return key;
         }
@@ -612,7 +624,7 @@ public class MyLog {
             }
             if (toFile && !isEmpty) {
                 writeStringToFile(strJso, uniqueDateTimeFormatted()  + "_" + namePrefix
-                        + "_" + objTagToString(objTag) + "_log.json");
+                        + "_" + objToTag(objTag) + "_log.json");
             } else {
                 v(objTag, namePrefix + "; jso: " + strJso);
             }
@@ -621,7 +633,7 @@ public class MyLog {
             try {
                 if (toFile) {
                     writeStringToFile(jso.toString(), uniqueDateTimeFormatted() + "_" + namePrefix 
-                            + "_" + objTagToString(objTag) + "_invalid_log.json");
+                            + "_" + objToTag(objTag) + "_invalid_log.json");
                 }
                 v(objTag, namePrefix + "; invalid obj: " + jso.toString());
             } catch (Exception ignored2) {

@@ -36,12 +36,15 @@ class UserListViewAdapter extends MyBaseAdapter {
     private final boolean showAvatars = MyPreferences.getShowAvatars();
     private final boolean showWebFingerId =
             MyPreferences.getUserInTimeline().equals(UserInTimeline.WEBFINGER_ID);
+    private final boolean isCombined;
 
-    public UserListViewAdapter(UserListContextMenu contextMenu, int listItemLayoutId, List<UserListViewItem> items) {
+    public UserListViewAdapter(UserListContextMenu contextMenu, int listItemLayoutId, List<UserListViewItem> items,
+                               boolean isCombined) {
         super(contextMenu.getActivity().getMyContext());
         this.contextMenu = contextMenu;
         this.listItemLayoutId = listItemLayoutId;
         this.items = items;
+        this.isCombined = isCombined;
     }
 
     @Override
@@ -69,7 +72,11 @@ class UserListViewAdapter extends MyBaseAdapter {
         view.setOnClickListener(this);
         setPosition(view, position);
         UserListViewItem item = items.get(position);
-        MyUrlSpan.showText(view, R.id.username, item.mbUser.toUserTitle(showWebFingerId), false, false);
+        MyUrlSpan.showText(view, R.id.username,
+                item.mbUser.toUserTitle(showWebFingerId) + (isCombined ?
+                        " / " + contextMenu.getActivity().getMyContext().persistentOrigins()
+                                .fromId(item.mbUser.originId).getName() : ""),
+                false, false);
         if (showAvatars) {
             showAvatar(item, view);
         }

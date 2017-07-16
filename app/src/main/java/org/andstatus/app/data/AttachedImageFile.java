@@ -92,7 +92,7 @@ public class AttachedImageFile {
 
     @Override
     public String toString() {
-        return MyLog.objTagToString(this) + " [rowId=" + downloadRowId + ", " + downloadFile + "]";
+        return MyLog.objToTag(this) + " [rowId=" + downloadRowId + ", " + downloadFile + "]";
     }
 
     public void preloadAttachedImage(@NonNull MyActivity myActivity) {

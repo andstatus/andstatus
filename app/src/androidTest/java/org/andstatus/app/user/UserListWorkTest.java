@@ -60,7 +60,7 @@ public class UserListWorkTest extends ActivityTest<UserList> {
         MyLog.i(this, "setUp ended");
 
         return new Intent(MyAction.VIEW_USERS.getAction(),
-                MatchedUri.getUserListUri(ma.getUserId(), UserListType.USERS_OF_MESSAGE, ma.getOriginId(), msgId));
+                MatchedUri.getUserListUri(ma.getUserId(), UserListType.USERS_OF_MESSAGE, ma.getOriginId(), msgId, ""));
     }
 
     @Test

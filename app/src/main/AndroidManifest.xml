@@ -45,7 +45,7 @@
 	    android:icon="@drawable/icon" android:allowBackup="false"
 	    android:backupAgent="org.andstatus.app.backup.MyBackupAgent"
         android:theme="@style/Theme.Transparent">
-		<meta-data android:name="android.app.default_searchable" android:value="org.andstatus.app.TimelineActivity"/>
+		<meta-data android:name="android.app.default_searchable" android:value=".msg.TimelineActivity"/>
 		<meta-data android:name="com.google.android.backup.api_key" 
 		    android:value="AEdPqrEAAAAIwaY-1-9DmEnU74ycFHDSJiTl_1CW6CzuHsWMLA" />
 
@@ -158,6 +158,11 @@
                 <category android:name="android.intent.category.DEFAULT"/>
                 <data android:mimeType="vnd.android.cursor.dir/org.andstatus.app.provider.user"/>
             </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEARCH"/>
+            </intent-filter>
+            <meta-data android:name="android.app.default_searchable" android:value=".user.UserList"/>
+            <meta-data android:name="android.app.searchable" android:resource="@xml/searchable_userlist"/>
         </activity>
         <activity android:name=".user.FollowersList"
                   android:label="@string/followers"

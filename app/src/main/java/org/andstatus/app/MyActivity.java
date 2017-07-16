@@ -36,7 +36,7 @@ import org.andstatus.app.util.TriState;
 /**
  * @author yvolk@yurivolkov.com
  */
-public class MyActivity extends AppCompatActivity {
+public class MyActivity extends AppCompatActivity implements IdentifiableInstance {
 
     protected final long mInstanceId = InstanceId.next();
     protected int mLayoutId = 0;
@@ -141,14 +141,7 @@ public class MyActivity extends AppCompatActivity {
             fullscreenNew = actionBar.isShowing();
         }
         fullscreenNew = fullScreenIn.toBoolean(fullscreenNew);
-
-        if (actionBar != null) {
-            if (fullscreenNew) {
-                actionBar.hide();
-            } else {
-                actionBar.show();
-            }
-        }
+        hideActionBar(fullscreenNew);
         if (fullscreenNew) {
             uiOptionsNew |= View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
             uiOptionsNew |= View.SYSTEM_UI_FLAG_FULLSCREEN;
@@ -165,6 +158,17 @@ public class MyActivity extends AppCompatActivity {
         getWindow().getDecorView().setSystemUiVisibility(uiOptionsNew);
     }
 
+    public void hideActionBar(boolean hide) {
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            if (hide) {
+                actionBar.hide();
+            } else {
+                actionBar.show();
+            }
+        }
+    }
+
     protected void showFragment(Class<? extends Fragment> fragmentClass) {
         Fragment fragment = Fragment.instantiate(this, fragmentClass.getName());
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
@@ -173,11 +177,15 @@ public class MyActivity extends AppCompatActivity {
 
     @Override
     public void finish() {
-        MyLog.v(this, "Finish requested" + (mFinishing ? ", already finishing" : "")
-                + ", instanceId=" + mInstanceId);
+        MyLog.v(this, "Finish requested" + (mFinishing ? ", already finishing" : ""));
         if (!mFinishing) {
             mFinishing = true;
         }
         super.finish();
+    }
+
+    @Override
+    public long getInstanceId() {
+        return mInstanceId;
     }
 }

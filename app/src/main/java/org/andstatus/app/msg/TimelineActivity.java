@@ -76,6 +76,7 @@ import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
 import org.andstatus.app.util.ViewUtils;
 import org.andstatus.app.widget.MyBaseAdapter;
+import org.andstatus.app.widget.MySearchView;
 
 import java.util.Collections;
 
@@ -151,10 +152,7 @@ public class TimelineActivity extends MessageEditorListActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         mLayoutId = R.layout.timeline;
         super.onCreate(savedInstanceState);
-
-        showSyncIndicatorSetting = SharedPreferencesUtil.getBoolean(
-                MyPreferences.KEY_SYNC_INDICATOR_ON_TIMELINE, true);
-
+        showSyncIndicatorSetting = SharedPreferencesUtil.getBoolean(MyPreferences.KEY_SYNC_INDICATOR_ON_TIMELINE, true);
         if (isFinishing()) {
             return;
         }
@@ -191,6 +189,9 @@ public class TimelineActivity extends MessageEditorListActivity implements
             }
         });
         addSyncButtons();
+
+        searchView = (MySearchView) findViewById(R.id.my_search_view);
+        searchView.initialize(this);
 
         if (savedInstanceState != null) {
             restoreActivityState(savedInstanceState);
@@ -336,19 +337,11 @@ public class TimelineActivity extends MessageEditorListActivity implements
      */
     @Override
     public boolean onSearchRequested() {
-        onSearchRequested(false);
-        return true;
-    }
-
-    private void onSearchRequested(boolean appGlobalSearch) {
-        final String method = "onSearchRequested";
-        Bundle appSearchData = new Bundle();
-        appSearchData.putString(IntentExtra.TIMELINE_URI.key,
-                MatchedUri.getTimelineUri(
-                        getParamsLoaded().getTimeline().fromSearch(myContext, appGlobalSearch)).toString());
-        appSearchData.putBoolean(IntentExtra.GLOBAL_SEARCH.key, appGlobalSearch);
-        MyLog.v(this, method + ": " + appSearchData);
-        startSearch(null, false, appSearchData, false);
+        if (searchView != null) {
+            searchView.startSearch(getParamsLoaded().getTimeline());
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -374,7 +367,7 @@ public class TimelineActivity extends MessageEditorListActivity implements
     protected void onPause() {
         final String method = "onPause";
         if (MyLog.isVerboseEnabled()) {
-            MyLog.v(this, method + "; instanceId=" + mInstanceId);
+            MyLog.v(this, method);
         }
         hideLoading(method);
         hideSyncing(method);
@@ -441,14 +434,6 @@ public class TimelineActivity extends MessageEditorListActivity implements
         if (contextMenu != null) {
             contextMenu.setMyActor(MyAccount.EMPTY);
         }
-
-        boolean enableGlobalSearch = myContext.persistentOrigins()
-                .isGlobalSearchSupported(ma.getOrigin(), getParamsLoaded().getTimeline().isCombined());
-        item = menu.findItem(R.id.global_search_menu_id);
-        if (item != null) {
-            item.setEnabled(enableGlobalSearch);
-            item.setVisible(enableGlobalSearch);
-        }
         return super.onPrepareOptionsMenu(menu);
     }
 
@@ -489,9 +474,6 @@ public class TimelineActivity extends MessageEditorListActivity implements
                 } else {
                     mDrawerLayout.openDrawer(Gravity.LEFT);
                 }
-                break;
-            case R.id.global_search_menu_id:
-                onSearchRequested(true);
                 break;
             case R.id.search_menu_id:
                 onSearchRequested();
@@ -597,22 +579,21 @@ public class TimelineActivity extends MessageEditorListActivity implements
     protected void onNewIntent(Intent intent) {
         if (mFinishing) {
             if (MyLog.isVerboseEnabled()) {
-                MyLog.v(this, "onNewIntent, instanceId=" + mInstanceId + ", Is finishing");
+                MyLog.v(this, "onNewIntent, Is finishing");
             }
             finish();
             return;
         }
         if (!myContext.isReady()) {
             if (MyLog.isVerboseEnabled()) {
-                MyLog.v(this, "onNewIntent, instanceId=" + mInstanceId + ", context is " +
-                        myContext.state());
+                MyLog.v(this, "onNewIntent, context is " + myContext.state());
             }
             finish();
             this.startActivity(intent);
             return;
         }
         if (MyLog.isVerboseEnabled()) {
-            MyLog.v(this, "onNewIntent, instanceId=" + mInstanceId);
+            MyLog.v(this, "onNewIntent");
         }
         super.onNewIntent(intent);
         parseNewIntent(intent);
@@ -623,7 +604,7 @@ public class TimelineActivity extends MessageEditorListActivity implements
 
     private void parseNewIntent(Intent intentNew) {
         if (MyLog.isVerboseEnabled()) {
-            MyLog.v(this, "parseNewIntent:" + intentNew);
+            MyLog.v(this, "parseNewIntent");
         }
         mRateLimitText = "";
         getParamsNew().whichPage = WhichPage.load(
@@ -647,7 +628,7 @@ public class TimelineActivity extends MessageEditorListActivity implements
         Bundle appSearchData = intentNew.getBundleExtra(SearchManager.APP_DATA);
         if (appSearchData != null
                 && getParamsNew().parseUri(Uri.parse(appSearchData.getString(
-                        IntentExtra.TIMELINE_URI.key, "")), searchQuery)) {
+                        IntentExtra.MATCHED_URI.key, "")), searchQuery)) {
             if (getParamsNew().getTimeline().hasSearchQuery()
                     && appSearchData.getBoolean(IntentExtra.GLOBAL_SEARCH.key, false)) {
                 showSyncing(method, "Global search: " + getParamsNew().getTimeline().getSearchQuery());

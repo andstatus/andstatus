@@ -40,8 +40,12 @@ import org.andstatus.app.util.MyLog;
 import org.junit.Test;
 
 import static android.support.test.espresso.Espresso.onView;
+import static android.support.test.espresso.action.ViewActions.closeSoftKeyboard;
 import static android.support.test.espresso.action.ViewActions.pressKey;
+import static android.support.test.espresso.action.ViewActions.scrollTo;
+import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withResourceName;
+import static org.andstatus.app.util.EspressoUtils.setChecked;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -71,15 +75,16 @@ public class PublicTimelineActivityTest extends TimelineActivityTest {
 
     @Test
     public void testGlobalSearchInOptionsMenu() throws InterruptedException {
-        oneSearchTest("testGlobalSearchInOptionsMenu", R.id.global_search_menu_id, DemoData.GLOBAL_PUBLIC_MESSAGE_TEXT);
+        oneSearchTest("testGlobalSearchInOptionsMenu", DemoData.GLOBAL_PUBLIC_MESSAGE_TEXT, true);
     }
 
     @Test
     public void testSearch() throws InterruptedException {
-        oneSearchTest("testSearch", R.id.search_menu_id, DemoData.PUBLIC_MESSAGE_TEXT);
+        oneSearchTest("testSearch", DemoData.PUBLIC_MESSAGE_TEXT, false);
     }
 
-    private void oneSearchTest(String method, int menu_id, String messageText) throws InterruptedException {
+    private void oneSearchTest(String method, String messageText, boolean globalSearch) throws InterruptedException {
+        int menu_id = R.id.search_menu_id;
         assertTrue("MyService is available", MyServiceManager.isServiceAvailable());
         TestSuite.waitForListLoaded(getActivity(), 2);
         assertEquals(ma, getActivity().getCurrentMyAccount());
@@ -89,6 +94,8 @@ public class PublicTimelineActivityTest extends TimelineActivityTest {
         ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<>(getActivity(),
                 TimelineActivity.class);
         helper.clickMenuItem(method, menu_id);
+
+        onView(withId(R.id.global_search)).perform(setChecked(globalSearch));
         onView(withResourceName("search_src_text")).perform(new TypeTextAction(messageText),
                 pressKey(KeyEvent.KEYCODE_ENTER));
         TimelineActivity nextActivity = (TimelineActivity) helper.waitForNextActivity(method, 40000);

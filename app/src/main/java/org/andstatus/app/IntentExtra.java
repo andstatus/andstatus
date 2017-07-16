@@ -82,7 +82,7 @@ public enum IntentExtra{
     NUM_TWEETS("NUM_TWEETS"),
 
     /** See {@link ParsedUri} */
-    TIMELINE_URI("TIMELINE_URI"),
+    MATCHED_URI("MATCHED_URI"),
     
     /**
      * This extra is used to determine which timeline to show in

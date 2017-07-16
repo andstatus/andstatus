@@ -219,9 +219,7 @@ public class MySettingsActivity extends AppCompatPreferenceActivity {
 
     private void logEvent(String method, String msgLog_in) {
         if (MyLog.isVerboseEnabled()) {
-            String msgLog = msgLog_in
-                    + " instanceId:" + mInstanceId
-                    + ( isRootScreen() ? "; rootScreen" : "");
+            String msgLog = msgLog_in + (isRootScreen() ? "; rootScreen" : "");
             Bundle bundle = getIntent().getBundleExtra(ANDROID_FRAGMENT_ARGUMENTS_KEY);
             if (bundle != null) {
                 msgLog += "; preferenceGroup:" + bundle.getString(PREFERENCES_GROUPS_KEY);

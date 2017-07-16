@@ -233,7 +233,7 @@ public enum UserListContextMenuItem implements ContextMenuItem {
         Uri uri = MatchedUri.getUserListUri(ma.getUserId(),
                 userListType,
                 menu.getOrigin().getId(),
-                menu.getViewItem().getUserId());
+                menu.getViewItem().getUserId(), "");
         if (MyLog.isVerboseEnabled()) {
             MyLog.d(this, "startFollowersList, uri:" + uri);
         }
