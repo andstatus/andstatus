@@ -5,6 +5,8 @@
 language: android
 jdk: oraclejdk8
 sudo: required # false for Container-Based Infrastructure, required for Sudo-enabled Infrastructure
+dist: trusty
+group: edge  # Add this
 
 env:
   global:
