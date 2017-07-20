@@ -57,23 +57,7 @@ before_install:
 install:
   # List and delete unnecessary components to free space
   - sdkmanager --list || true
-  - sdkmanager --uninstall "system-images;android-15;default;armeabi-v7a"
-  - sdkmanager --uninstall "system-images;android-16;default;armeabi-v7a"
-  - sdkmanager --uninstall "system-images;android-17;default;armeabi-v7a"
-  - sdkmanager --uninstall "system-images;android-18;default;armeabi-v7a"
-  - sdkmanager --uninstall "system-images;android-19;default;armeabi-v7a"
-  - sdkmanager --uninstall "system-images;android-21;default;armeabi-v7a"
   - sdkmanager --uninstall "extras;google;google_play_services"
-  - sdkmanager --uninstall "extras;android;support"
-  - sdkmanager --uninstall "platforms;android-10"
-  - sdkmanager --uninstall "platforms;android-15"
-  - sdkmanager --uninstall "platforms;android-16"
-  - sdkmanager --uninstall "platforms;android-17"
-  - sdkmanager --uninstall "platforms;android-18"
-  - sdkmanager --uninstall "platforms;android-19"
-  - sdkmanager --uninstall "platforms;android-20"
-  - sdkmanager --uninstall "platforms;android-21"
-  - sdkmanager --uninstall "build-tools;21.1.2"
   # Update sdk tools to latest version and install/update components
   - echo yes | sdkmanager "tools"
   - echo yes | sdkmanager "platforms;android-25" # Latest platform required by SDK tools
@@ -85,7 +69,7 @@ install:
   - echo yes | sdkmanager "${EMULATOR}" # Install emulator system image
   # Create and start emulator
   - echo no | avdmanager create avd -n acib -k "${EMULATOR}" -f --abi "${EMULATOR_ABI}" --tag "${EMULATOR_TAG}"
-  - emulator -avd acib -engine classic -no-window -camera-back none -camera-front none -verbose -qemu -m 512 &
+  - emulator -avd acib -engine classic -no-window -camera-back none -camera-front none -memory 2048 &
   # Start adbd, wait for device connected and show android serial
   - adb wait-for-device get-serialno
   # Show version and download Gradle Wrapper if it's not already cached
