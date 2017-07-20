@@ -28,6 +28,13 @@
             android:contentDescription="@android:string/cancel"/>
 
 
+        <Spinner
+            android:id="@+id/search_objects"
+            android:layout_margin="9dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:entries="@array/search_objects_entries" />
+
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -45,13 +52,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
         </LinearLayout>
-
-        <Spinner
-            android:id="@+id/search_objects"
-            android:layout_margin="9dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:entries="@array/search_objects_entries" />
 
     </LinearLayout>
 

@@ -325,7 +325,7 @@
   <string name="options_menu_favorites_timeline_cond">Favorites</string>
   <string name="options_menu_home_timeline">Home Timeline</string>
   <string name="options_menu_home_timeline_cond">Home</string>
-  <string name="options_menu_global_search">Global search</string>
+  <string name="options_menu_global_search">Search in Internet</string>
   <string name="options_menu_help">Help</string>
   <string name="options_menu_sync">Sync with Internet</string>
   <string name="options_menu_mentions">Mentions</string>
@@ -385,7 +385,7 @@
   <string name="search_timeline_hint">Enter keywords/#hashtags</string>
   <string name="search_direct_messages_label">Search direct messages</string>
   <string name="search_direct_messages_hint">Enter a username or phrase</string>
-  <string name="search_userlist_hint">Enter a username/Webfinger ID</string>
+  <string name="search_userlist_hint">Enter name/Webfinger ID</string>
   <string name="select_backup_folder">Select backup folder</string>
   <string name="select_displayed_in_selector">Select if and when this timeline is displayed</string>
   <string name="sent">Sent</string>
