@@ -17,13 +17,13 @@ env:
     - EMULATOR_ABI=armeabi-v7a # ARM ABI v7a by default
     - QEMU_AUDIO_DRV=none # Disable emulator audio to avoid warning
     - GRADLE_USER_HOME="${TRAVIS_BUILD_DIR}/gradle" # Change location for Gradle Wrapper and cache
-    - ANDROID_HOME=/usr/local/android-sdk-24.0.2 # Depends on the cookbooks version used in the VM
+    - ANDROID_HOME=/usr/local/android-sdk-25.2.3 # Depends on the cookbooks version used in the VM
     - TOOLS=${ANDROID_HOME}/tools # PATH order matters, exists more than one emulator script
     - PATH=${ANDROID_HOME}:${ANDROID_HOME}/emulator:${TOOLS}:${TOOLS}/bin:${ANDROID_HOME}/platform-tools:${PATH}
     - ADB_INSTALL_TIMEOUT=20 # minutes (2 minutes by default)
 
 android:
-  components: # Cookbooks version: https://github.com/travis-ci/travis-cookbooks/tree/9c6cd11
+  components: # Cookbooks version: https://github.com/travis-ci/travis-cookbooks/tree/94f697cf01ee1e5a274fca1d0719101969953098/community-cookbooks/android-sdk
     - tools # Update preinstalled tools from revision 24.0.2 to 24.4.1
     - build-tools-${ANDROID_BUILD_TOOLS_VERSION}
     - platform-tools # Update platform-tools to revision 25.0.3+
