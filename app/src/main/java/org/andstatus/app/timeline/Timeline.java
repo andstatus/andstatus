@@ -49,6 +49,7 @@ import java.util.Date;
  * @author yvolk@yurivolkov.com
  */
 public class Timeline implements Comparable<Timeline> {
+    public static final Timeline EMPTY = new Timeline(MyAccount.EMPTY);
     private volatile long id;
 
     private final TimelineType timelineType;
@@ -141,6 +142,19 @@ public class Timeline implements Comparable<Timeline> {
     private volatile long visibleOldestDate = 0;
 
     private volatile boolean changed = false;
+
+    private Timeline(MyAccount myAccount) {
+        timelineType = TimelineType.UNKNOWN;
+        this.myAccount = myAccount;
+        userId = 0;
+        origin = myAccount.getOrigin();
+        searchQuery = "";
+        isCombined = calcIsCombined(timelineType, origin, myAccount);
+        isSyncable = false;
+        isSyncableAutomatically = false;
+        isSyncableForAccounts = false;
+        isSyncableForOrigins = false;
+    }
 
     public static Timeline getTimeline(TimelineType timelineType, MyAccount myAccount, long userId, Origin origin) {
         return getTimeline(MyContextHolder.get(), 0, timelineType, myAccount, userId, origin, "");
@@ -268,7 +282,7 @@ public class Timeline implements Comparable<Timeline> {
     }
 
     public static Timeline getEmpty(MyAccount myAccount) {
-        return getTimeline(TimelineType.UNKNOWN, myAccount, 0, null);
+        return new Timeline(myAccount);
     }
 
     public static Timeline fromBundle(MyContext myContext, Bundle bundle) {

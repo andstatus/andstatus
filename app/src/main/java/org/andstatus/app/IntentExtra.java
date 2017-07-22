@@ -73,10 +73,6 @@ public enum IntentExtra{
     RECIPIENT_ID("RECIPIENT_ID"),
     SEARCH_QUERY("SEARCH_QUERY"),
     /**
-     * boolean. "true" means search in Internet, i.e. sending requests to Microblogging systems  
-     */
-    GLOBAL_SEARCH("GLOBAL_SEARCH"),
-    /**
      * Number of new tweets. Value is integer
      */
     NUM_TWEETS("NUM_TWEETS"),

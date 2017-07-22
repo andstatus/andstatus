@@ -53,7 +53,7 @@ public class TimelineListParameters {
      * are being loaded in a case User scrolls down to the end of list.
      */
     static final int PAGE_SIZE = 200;
-    Timeline timeline = Timeline.getEmpty(MyAccount.EMPTY);
+    Timeline timeline = Timeline.EMPTY;
 
     WhichPage whichPage = WhichPage.EMPTY;
     String[] mProjection;
@@ -69,7 +69,7 @@ public class TimelineListParameters {
     volatile long startTime = 0;
     volatile long endTime = 0;
     volatile boolean cancelled = false;
-    volatile Timeline timelineToSync = Timeline.getEmpty(MyAccount.EMPTY);
+    volatile Timeline timelineToSync = Timeline.EMPTY;
     volatile int rowsLoaded = 0;
     volatile long minSentDateLoaded = 0;
     volatile long maxSentDateLoaded = 0;

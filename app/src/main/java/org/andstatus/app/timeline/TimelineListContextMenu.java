@@ -71,7 +71,7 @@ public class TimelineListContextMenu extends MyContextMenu {
 
     public TimelineListViewItem getViewItem() {
         if (mViewItem == null) {
-            return new TimelineListViewItem(listActivity.getMyContext(), Timeline.getEmpty(null));
+            return new TimelineListViewItem(listActivity.getMyContext(), Timeline.EMPTY);
         }
         return (TimelineListViewItem) mViewItem;
     }

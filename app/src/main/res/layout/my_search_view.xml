@@ -1,14 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <org.andstatus.app.widget.MySearchView xmlns:android="http://schemas.android.com/apk/res/android"
-                                       xmlns:app="http://schemas.android.com/apk/res-auto"
+                                       xmlns:tools="http://schemas.android.com/tools"
                                        android:id="@+id/my_search_view"
-              android:layout_width="match_parent"
-              android:layout_height="wrap_content"
-              android:layout_alignParentTop="true"
-              android:orientation="vertical"
-              android:theme="?attr/andStatusActionBarTheme"
-              android:popupTheme="?attr/andStatusActionBarPopupTheme"
-              android:background="?attr/colorPrimary"
+                                       android:layout_width="match_parent"
+                                       android:layout_height="wrap_content"
+                                       android:layout_alignParentTop="true"
+                                       android:orientation="vertical"
+                                       android:theme="?attr/andStatusActionBarTheme"
+                                       android:background="?attr/colorPrimary"
     >
 
     <LinearLayout
@@ -18,15 +17,14 @@
         android:orientation="horizontal">
 
         <ImageView
-            android:id="@+id/upButton"
+            android:id="@+id/up_button"
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:layout_margin="6dp"
             android:layout_gravity="center"
             android:scaleType="center"
-            app:srcCompat="?attr/backIcon"
+            android:src="?attr/backIcon"
             android:contentDescription="@android:string/cancel"/>
-
 
         <Spinner
             android:id="@+id/search_objects"
@@ -41,7 +39,7 @@
             android:layout_marginTop="6dp"
             android:orientation="vertical">
             <CheckBox
-                android:id="@+id/global_search"
+                android:id="@+id/internet_search"
                 android:text="@string/options_menu_global_search"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
@@ -55,9 +53,30 @@
 
     </LinearLayout>
 
-    <SearchView
-        android:id="@+id/search_view"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:weightSum="10">
+
+        <AutoCompleteTextView
+            android:id="@+id/search_text"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="10"
+            android:gravity="center_vertical"
+            tools:text="Sample phrase to search"/>
+
+        <ImageView
+            android:id="@+id/submit_button"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_margin="2dp"
+            android:layout_gravity="center"
+            android:scaleType="center"
+            android:src="?attr/mySearchIcon"
+            android:contentDescription="@android:string/search_go"/>
+    </LinearLayout>
 
 </org.andstatus.app.widget.MySearchView>

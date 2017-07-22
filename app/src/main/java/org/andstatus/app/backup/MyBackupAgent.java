@@ -30,9 +30,8 @@ import org.andstatus.app.context.MyPreferencesGroupsEnum;
 import org.andstatus.app.context.MyStorage;
 import org.andstatus.app.data.DataPruner;
 import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.database.DatabaseHolder;
 import org.andstatus.app.data.MyDataChecker;
-import org.andstatus.app.data.TimelineSearchSuggestionsProvider;
+import org.andstatus.app.database.DatabaseHolder;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.service.MyServiceState;
 import org.andstatus.app.util.FileUtils;
@@ -144,9 +143,6 @@ public class MyBackupAgent extends BackupAgent {
         databasesBackedUp = backupFile(data,
                 DATABASE_KEY + "_" + DatabaseHolder.DATABASE_NAME,
                 MyStorage.getDatabasePath(DatabaseHolder.DATABASE_NAME));
-        suggestionsBackedUp = backupFile(data,
-                DATABASE_KEY + "_" + TimelineSearchSuggestionsProvider.DATABASE_NAME,
-                MyStorage.getDatabasePath(TimelineSearchSuggestionsProvider.DATABASE_NAME));
         accountsBackedUp = MyContextHolder.get().persistentAccounts().onBackup(data, backupDescriptor);
     }
     
@@ -264,10 +260,6 @@ public class MyBackupAgent extends BackupAgent {
         assertNextHeader(data, DATABASE_KEY + "_" + DatabaseHolder.DATABASE_NAME);
         databasesRestored += restoreFile(data,
                     MyStorage.getDatabasePath(DatabaseHolder.DATABASE_NAME));
-        if (optionalNextHeader(data, DATABASE_KEY + "_" + TimelineSearchSuggestionsProvider.DATABASE_NAME)) {
-            suggestionsRestored += restoreFile(data,
-                    MyStorage.getDatabasePath(TimelineSearchSuggestionsProvider.DATABASE_NAME));
-        }
         MyContextHolder.release();
         MyContextHolder.setOnRestore(true);
         MyContextHolder.initialize(this, this);

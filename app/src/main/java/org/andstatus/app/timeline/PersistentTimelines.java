@@ -84,15 +84,12 @@ public class PersistentTimelines {
     @NonNull
     public Timeline fromId(long id) {
         Timeline timeline = timelines.get(id);
-        if (timeline == null) {
-            timeline = Timeline.getEmpty(MyAccount.EMPTY);
-        }
-        return timeline;
+        return timeline == null ? Timeline.EMPTY : timeline;
     }
 
     @NonNull
     public Timeline getDefault() {
-        Timeline defaultTimeline = Timeline.getEmpty(null);
+        Timeline defaultTimeline = Timeline.EMPTY;
         for (Timeline timeline : values()) {
             if (defaultTimeline.compareTo(timeline) > 0 || !defaultTimeline.isValid()) {
                 defaultTimeline = timeline;

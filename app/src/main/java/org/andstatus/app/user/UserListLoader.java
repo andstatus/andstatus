@@ -11,6 +11,7 @@ import org.andstatus.app.R;
 import org.andstatus.app.SyncLoader;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.AvatarFile;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MatchedUri;
@@ -186,7 +187,7 @@ public class UserListLoader extends SyncLoader<UserListViewItem> {
     }
 
     protected String getTitle() {
-        return MyLog.isVerboseEnabled() ? mUserListType.toString() : "";
+        return MyPreferences.isShowDebuggingInfoInUi() ? mUserListType.toString() : "";
     }
 
     @Override

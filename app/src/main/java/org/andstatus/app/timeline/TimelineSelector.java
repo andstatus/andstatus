@@ -70,7 +70,7 @@ public class TimelineSelector extends SelectorDialog {
                 TimelineType.UNKNOWN, currentMyAccount,
                 timeline.getOrigin());
         if (timelines.isEmpty()) {
-            returnSelectedTimeline(Timeline.getEmpty(null));
+            returnSelectedTimeline(Timeline.EMPTY);
             return;
         } else if (timelines.size() == 1) {
             returnSelectedTimeline(timelines.get(0));

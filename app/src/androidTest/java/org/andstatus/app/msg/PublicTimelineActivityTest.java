@@ -83,7 +83,7 @@ public class PublicTimelineActivityTest extends TimelineActivityTest {
         oneSearchTest("testSearch", DemoData.PUBLIC_MESSAGE_TEXT, false);
     }
 
-    private void oneSearchTest(String method, String messageText, boolean globalSearch) throws InterruptedException {
+    private void oneSearchTest(String method, String messageText, boolean internetSearch) throws InterruptedException {
         int menu_id = R.id.search_menu_id;
         assertTrue("MyService is available", MyServiceManager.isServiceAvailable());
         TestSuite.waitForListLoaded(getActivity(), 2);
@@ -95,8 +95,8 @@ public class PublicTimelineActivityTest extends TimelineActivityTest {
                 TimelineActivity.class);
         helper.clickMenuItem(method, menu_id);
 
-        onView(withId(R.id.global_search)).perform(setChecked(globalSearch));
-        onView(withResourceName("search_src_text")).perform(new TypeTextAction(messageText),
+        onView(withId(R.id.internet_search)).perform(setChecked(internetSearch));
+        onView(withResourceName("search_text")).perform(new TypeTextAction(messageText),
                 pressKey(KeyEvent.KEYCODE_ENTER));
         TimelineActivity nextActivity = (TimelineActivity) helper.waitForNextActivity(method, 40000);
         waitForButtonClickedEvidence(nextActivity, method, messageText);

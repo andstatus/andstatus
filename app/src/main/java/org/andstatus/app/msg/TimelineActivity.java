@@ -17,12 +17,10 @@
 package org.andstatus.app.msg;
 
 import android.app.Activity;
-import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.SearchRecentSuggestions;
 import android.support.annotation.NonNull;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -53,7 +51,6 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.MySettingsActivity;
 import org.andstatus.app.data.MatchedUri;
-import org.andstatus.app.data.TimelineSearchSuggestionsProvider;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
@@ -338,7 +335,7 @@ public class TimelineActivity extends MessageEditorListActivity implements
     @Override
     public boolean onSearchRequested() {
         if (searchView != null) {
-            searchView.startSearch(getParamsLoaded().getTimeline());
+            searchView.showSearchView(getParamsLoaded().getTimeline());
             return true;
         }
         return false;
@@ -609,9 +606,8 @@ public class TimelineActivity extends MessageEditorListActivity implements
         mRateLimitText = "";
         getParamsNew().whichPage = WhichPage.load(
                 intentNew.getStringExtra(IntentExtra.WHICH_PAGE.key), WhichPage.CURRENT);
-        String searchQuery = intentNew.getStringExtra(SearchManager.QUERY);
-        if (!parseAppSearchData(intentNew, searchQuery)
-                && !getParamsNew().parseUri(intentNew.getData(), searchQuery)) {
+        String searchQuery = intentNew.getStringExtra(IntentExtra.SEARCH_QUERY.key);
+        if (!getParamsNew().parseUri(intentNew.getData(), searchQuery)) {
             getParamsNew().setTimeline(myContext.persistentTimelines().getDefault());
         }
         setCurrentMyAccount(getParamsNew().getTimeline().getMyAccount(), getParamsNew().getTimeline().getOrigin());
@@ -621,12 +617,6 @@ public class TimelineActivity extends MessageEditorListActivity implements
                     intentNew.getStringExtra(Intent.EXTRA_TEXT),
                     (Uri) intentNew.getParcelableExtra(Intent.EXTRA_STREAM));
         }
-    }
-
-    private boolean parseAppSearchData(Intent intentNew, String searchQuery) {
-        Bundle appSearchData = intentNew.getBundleExtra(SearchManager.APP_DATA);
-        return appSearchData != null && getParamsNew()
-                .parseUri(Uri.parse(appSearchData.getString(IntentExtra.MATCHED_URI.key, "")), searchQuery);
     }
 
     private void shareViaThisApplication(String subject, String text, Uri mediaUri) {
@@ -830,21 +820,8 @@ public class TimelineActivity extends MessageEditorListActivity implements
             if (!params.getContentUri().equals(intent.getData())) {
                 intent.setData(params.getContentUri());
             }
-            saveSearchQuery();
         }
         return new TimelineLoader(params, BundleUtils.fromBundle(args, IntentExtra.INSTANCE_ID));
-    }
-
-    private void saveSearchQuery() {
-        if (getParamsNew().getTimeline().hasSearchQuery()) {
-            // Record the query string in the recent queries
-            // of the Suggestion Provider
-            SearchRecentSuggestions suggestions = new SearchRecentSuggestions(this,
-                    TimelineSearchSuggestionsProvider.AUTHORITY,
-                    TimelineSearchSuggestionsProvider.MODE);
-            suggestions.saveRecentQuery(getParamsNew().getTimeline().getSearchQuery(), null);
-
-        }
     }
 
     @Override

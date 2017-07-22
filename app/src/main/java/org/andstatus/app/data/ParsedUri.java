@@ -16,10 +16,8 @@
 
 package org.andstatus.app.data;
 
-import android.app.SearchManager;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Bundle;
 import android.support.annotation.NonNull;
 
 import org.andstatus.app.IntentExtra;
@@ -34,26 +32,10 @@ public class ParsedUri {
     private final Uri uri;
     private final MatchedUri matchedUri;
     private final String searchQuery;
-    public final boolean globalSearch;
 
     private ParsedUri(Intent intent) {
-        Uri uri = intent == null ? null : intent.getData();
-        String searchQuery = "";
-        boolean globalSearch = false;
-        if (intent != null) {
-            searchQuery = intent.getStringExtra(SearchManager.QUERY);
-            Bundle appSearchData = intent.getBundleExtra(SearchManager.APP_DATA);
-            if (appSearchData != null) {
-                String uriString = appSearchData.getString(IntentExtra.MATCHED_URI.key, "");
-                if (StringUtils.nonEmpty(uriString)) {
-                    uri = Uri.parse(uriString);
-                }
-                globalSearch = appSearchData.getBoolean(IntentExtra.GLOBAL_SEARCH.key, false);
-            }
-        }
-        this.searchQuery = searchQuery;
-        this.globalSearch = globalSearch;
-        this.uri = uri == null ? Uri.EMPTY : uri;
+        uri = (intent == null || intent.getData() == null) ? Uri.EMPTY : intent.getData();
+        searchQuery = intent == null ? "" : intent.getStringExtra(IntentExtra.SEARCH_QUERY.key);
         matchedUri = MatchedUri.fromUri(this.uri);
     }
 

@@ -45,16 +45,12 @@
 	    android:icon="@drawable/icon" android:allowBackup="false"
 	    android:backupAgent="org.andstatus.app.backup.MyBackupAgent"
         android:theme="@style/Theme.Transparent">
-		<meta-data android:name="android.app.default_searchable" android:value=".msg.TimelineActivity"/>
-		<meta-data android:name="com.google.android.backup.api_key" 
+		<meta-data android:name="com.google.android.backup.api_key"
 		    android:value="AEdPqrEAAAAIwaY-1-9DmEnU74ycFHDSJiTl_1CW6CzuHsWMLA" />
 
 		<provider android:name="org.andstatus.app.data.MyProvider"
 			android:authorities="org.andstatus.app.data.MyProvider" 
 			android:exported="false" />
-		<provider android:name="org.andstatus.app.data.TimelineSearchSuggestionsProvider"
-			android:authorities="org.andstatus.app.data.TimelineSuggestionProvider"
-			android:permission="android.permission.INTERNET"/>
 		<provider android:name="org.andstatus.app.data.FileProvider"
 			android:authorities="org.andstatus.app.data.FileProvider" 
 			android:exported="true" />
@@ -134,7 +130,6 @@
             <intent-filter>
                 <action android:name="android.intent.action.SEARCH"/>
             </intent-filter>
-            <meta-data android:name="android.app.searchable" android:resource="@xml/searchable_timeline"/>
         </activity>
         <activity android:name=".msg.ConversationActivity"
                   android:label="@string/label_conversation">
@@ -161,8 +156,6 @@
             <intent-filter>
                 <action android:name="android.intent.action.SEARCH"/>
             </intent-filter>
-            <meta-data android:name="android.app.default_searchable" android:value=".user.UserList"/>
-            <meta-data android:name="android.app.searchable" android:resource="@xml/searchable_userlist"/>
         </activity>
         <activity android:name=".user.FollowersList"
                   android:label="@string/followers"

@@ -516,7 +516,7 @@ public class MyQuery {
      */
     @NonNull
     public static Set<Long> getMyFollowersOf(long userId) {
-        SelectedUserIds selectedAccounts = new SelectedUserIds(Timeline.getEmpty(null));
+        SelectedUserIds selectedAccounts = new SelectedUserIds(Timeline.EMPTY);
 
         String where = FriendshipTable.USER_ID + selectedAccounts.getSql()
                 + " AND " + FriendshipTable.FRIEND_ID + "=" + userId

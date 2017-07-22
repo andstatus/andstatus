@@ -93,6 +93,9 @@ public enum MatchedUri {
     }
     
     public static MatchedUri fromUri(Uri uri) {
+        if (uri == null || uri.equals(Uri.EMPTY)) {
+            return UNKNOWN;
+        }
         int codeIn = URI_MATCHER.match(uri);
         for (MatchedUri matched : values()) {
             if (matched.code == codeIn) {

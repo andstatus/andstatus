@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:layout_marginTop="4dp"
+              android:background="?android:attr/colorBackground">
+    <LinearLayout android:orientation="horizontal"
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:paddingStart="4dp"
+                  android:paddingEnd="4dp">
+
+        <TextView
+            android:id="@+id/suggestion"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="@style/messageBodyAppearance"
+            android:minHeight="50dip"
+            android:gravity="center_vertical"
+            tools:text="tester2ofandstatus@identi.ca" />
+    </LinearLayout>
+    <View style="@style/Divider"/>
+</LinearLayout>
