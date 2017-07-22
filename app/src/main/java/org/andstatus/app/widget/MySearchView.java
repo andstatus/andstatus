@@ -206,6 +206,12 @@ public class MySearchView extends LinearLayout implements CollapsibleActionView{
         }
         Intent intent = new Intent(Intent.ACTION_SEARCH, getUri(), getContext(), getSearchObjects().getActivityClass());
         intent.putExtra(IntentExtra.SEARCH_QUERY.key, query);
+        if (timeline.hasSearchQuery()
+                && getSearchObjects() == SearchObjects.MESSAGES
+                && !parentActivity.getMyContext().persistentTimelines().getDefault().equals(timeline)) {
+            // Send intent to existing activity
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        }
         getContext().startActivity(intent);
     }
 
