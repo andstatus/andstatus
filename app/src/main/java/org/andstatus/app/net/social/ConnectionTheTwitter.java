@@ -91,6 +91,9 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
                 // https://dev.twitter.com/docs/api/1.1/get/search/tweets
                 url = "search/tweets.json?tweet_mode=extended";
                 break;
+            case SEARCH_USERS:
+                url = "users/search.json?tweet_mode=extended";
+                break;
             case USER_TIMELINE:
                 url = "statuses/user_timeline.json?tweet_mode=extended";
                 break;
@@ -172,7 +175,21 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
         JSONArray jArr = getRequestArrayInObject(builder.build().toString(), "statuses");
         return jArrToTimeline(jArr, apiRoutine, url);
     }
-    
+
+    @NonNull
+    @Override
+    public List<MbUser> searchUsers(int limit, String searchQuery) throws ConnectionException {
+        ApiRoutineEnum apiRoutine = ApiRoutineEnum.SEARCH_USERS;
+        String url = this.getApiPath(apiRoutine);
+        Uri sUri = Uri.parse(url);
+        Uri.Builder builder = sUri.buildUpon();
+        if (!TextUtils.isEmpty(searchQuery)) {
+            builder.appendQueryParameter("q", searchQuery);
+        }
+        builder.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine));
+        return jArrToUsers(http.getRequestAsArray(builder.build().toString()), apiRoutine, url);
+    }
+
     private static final String ATTACHMENTS_FIELD_NAME = "media";
     @Override
     @NonNull

@@ -137,7 +137,7 @@ public class HttpReadResult {
                 
             }
         } catch (JSONException e) {
-            throw ConnectionException.loggedJsonException(this, method + toString(), e, strJson);
+            throw ConnectionException.loggedJsonException(this, method + I18n.trimTextAt(toString(), 500), e, strJson);
         }
         return jso;
     }

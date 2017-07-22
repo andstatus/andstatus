@@ -148,6 +148,9 @@ public class CommandQueue {
     }
 
     public synchronized void save() {
+        if (loaded) {
+            clearQueuesInDatabase();
+        }
         int count = save(QueueType.CURRENT) + save(QueueType.RETRY);
         int countError = save(QueueType.ERROR);
         MyLog.d(this, (loaded ? "Queues saved" : "Saved new queued commands only") + ", "
@@ -214,13 +217,33 @@ public class CommandQueue {
         return count;
     }
 
+    public synchronized void clearQueuesInDatabase() {
+        final String method = "clearQueuesInDatabase";
+        try {
+            SQLiteDatabase db = MyContextHolder.get().getDatabase();
+            if (db == null) {
+                MyLog.d(context, method + "; Database is unavailable");
+            }
+            String sql = "DELETE FROM " + CommandTable.TABLE_NAME;
+            DbUtils.execSQL(db, sql);
+        } catch (Exception e) {
+            String msgLog = method + MyContextHolder.getSystemInfo(context, true);
+            MyLog.e(context, msgLog, e);
+            if (SQLiteDiskIOException.class.isAssignableFrom(e.getClass())) {
+                throw e;
+            } else {
+                throw new IllegalStateException(msgLog, e);
+            }
+        }
+    }
+
     public void clear() {
         loaded = true;
         // MyLog.v(this, MyLog.getStackTrace(new IllegalStateException("CommandQueue#clear called")));
         for ( Map.Entry<QueueType, OneQueue> entry : queues.entrySet()) {
             entry.getValue().clear();
-            save(entry.getKey());
         }
+        clearQueuesInDatabase();
         MyLog.v(this, "Queues cleared");
     }
 
