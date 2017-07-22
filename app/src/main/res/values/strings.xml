@@ -296,7 +296,7 @@
   <string name="no_more_messages">No more messages</string>
   <string name="not_set">not set</string>
   <string name="not_syncable">Not syncable</string>
-  <string name="nothing_in_the_loadable_list">Nothing here so far. Try to tap \"Sync with Internet\" to update this list.</string>
+  <string name="nothing_in_the_loadable_list">Nothing here yet...</string>
   <string name="notification_message_formats_1">{0} message</string>
   <string name="notification_message_formats_2">{0} messages</string>
   <string name="notification_mention_formats_1">{0} mention</string>

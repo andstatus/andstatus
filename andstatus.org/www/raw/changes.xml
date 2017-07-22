@@ -27,25 +27,24 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
         </subtitle>
     </header>
-    <release android:versionName="34.05" android:versionCode="225"
-             versionDate="2017-07-12"
-             versionTitle="Showing Mentions from Mastodon and other Bug fixes">
+    <release android:versionName="35.00" android:versionCode="226"
+             versionDate="2017-07-22"
+             versionTitle="Autocompletion of usernames/webfingerIds during message composition. Users search">
         <changes>
-            <change>Fixed: [Mastodon] Mentions were not loaded from "Notifications" timeline
-                (to "Mentions" of AndStatus).</change>
-            <change>Fixed keeping list position when doing "Pull to refresh" in a Timeline.</change>
-            <change>Fixed Reblogged by other user was counted as our reblog in a context menu
-                (same for favorited...)</change>
-            <change>Added "Forget sync events and dates" context menu item to the "Manage Timelines" list in order
-                to be able to re-sync any Timeline with Internet. E.g. when you feel that some messages from a server
-                timeline are missed in AndStatus.</change>
-            <change>In order to improve application responsiveness, the application's initialization moved to
-                background. Described the solution in
-                <a href="https://stackoverflow.com/a/44772990/297710">StackOverflow</a>.</change>
+            <change>During a message composition, after "@" and the first two or more letters of a Username or a Real Name,
+                AndStatus shows a popup dialog with a list of suitable users for selection. No Internet search is used here
+                - locally cached users only.
+                <a href="https://github.com/andstatus/andstatus/issues/151">#151</a></change>
+            <change>New Search layout with several options replaced two old "Search" and "Global search" menu items.
+                You can search for Messages (as before) or for Users (new feature!),<br/>
+                in the currently selected Social network or in all Social networks ("combined" search);<br/>
+                in the local cache or in Internet also ("Search in Internet" option; only Mastodon and Twitter provide
+                a search for Users in Internet).
+            </change>
         </changes>
     </release>
-    <release android:versionName="34.01" android:versionCode="221"
-             versionDate="2017-06-23"
+    <release android:versionName="34.05" android:versionCode="225"
+             versionDate="2017-07-12"
              versionTitle="Showing Twitter tweets longer than 140 characters">
         <changes>
             <change>Fixed Twitter tweets longer than 140 characters were shown truncated.
@@ -70,6 +69,17 @@
             <change>Timeline header button added: "Synced .... Sync messages since..." to make more transparent,
                 which timeline and when was sychronized and which timeline cannot be synchronized at all (e.g. "Drafts").
             </change>
+            <change>Fixed: [Mastodon] Mentions were not loaded from "Notifications" timeline
+                (to "Mentions" of AndStatus).</change>
+            <change>Fixed keeping list position when doing "Pull to refresh" in a Timeline.</change>
+            <change>Fixed Reblogged by other user was counted as our reblog in a context menu
+                (same for favorited...)</change>
+            <change>Added "Forget sync events and dates" context menu item to the "Manage Timelines" list in order
+                to be able to re-sync any Timeline with Internet. E.g. when you feel that some messages from a server
+                timeline are missed in AndStatus.</change>
+            <change>In order to improve application responsiveness, the application's initialization moved to
+                background. Described the solution in
+                <a href="https://stackoverflow.com/a/44772990/297710">StackOverflow</a>.</change>
         </changes>
     </release>
     <release android:versionName="33.11" android:versionCode="219"

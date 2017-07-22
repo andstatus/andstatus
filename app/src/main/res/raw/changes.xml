@@ -28,17 +28,18 @@
         </subtitle>
     </header>
     <release android:versionName="35.00" android:versionCode="226"
-             versionDate="2017-07-20"
-             versionTitle="Autocompletion of usernames/webfingerIds during message composition and Advanced search">
+             versionDate="2017-07-22"
+             versionTitle="Autocompletion of usernames/webfingerIds during message composition. Users search">
         <changes>
-            <change>After "@" and the first two or more letters of a username, AndStatus shows a popup dialog
-                with a list of suitable usernames (Webfinger IDs) for selection.
+            <change>During a message composition, after "@" and the first two or more letters of a Username or a Real Name,
+                AndStatus shows a popup dialog with a list of suitable users for selection. No Internet search is used here
+                - locally cached users only.
                 <a href="https://github.com/andstatus/andstatus/issues/151">#151</a></change>
-            <change>New Search layout with several options replaced old "Search" and "Global search" menu items.
+            <change>New Search layout with several options replaced two old "Search" and "Global search" menu items.
                 You can search for Messages (as before) or for Users (new feature!),<br/>
                 in the currently selected Social network or in all Social networks ("combined" search);<br/>
-                in the local cache or in the Internet ("Search in Internet" option; only Mastodon and Twitter provide such
-                an option).
+                in the local cache or in Internet also ("Search in Internet" option; only Mastodon and Twitter provide
+                a search for Users in Internet).
             </change>
         </changes>
     </release>
