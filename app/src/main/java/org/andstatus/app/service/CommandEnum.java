@@ -49,6 +49,7 @@ public enum CommandEnum {
     DESTROY_FAVORITE("destroy-favorite", R.string.menu_item_destroy_favorite, 0, ConnectionRequired.SYNC),
 
     GET_USER("get-user", R.string.get_user, -5, ConnectionRequired.SYNC),
+    SEARCH_USERS("search-users", R.string.search_users, -5, ConnectionRequired.SYNC),
     FOLLOW_USER("follow-user", R.string.command_follow_user, 0, ConnectionRequired.SYNC),
     STOP_FOLLOWING_USER("stop-following-user", R.string.command_stop_following_user, 0, ConnectionRequired.SYNC),
     GET_FOLLOWERS("get-followers", R.string.get_followers, -5, ConnectionRequired.SYNC),

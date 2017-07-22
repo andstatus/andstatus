@@ -82,6 +82,9 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
             case SEARCH_MESSAGES:
                 url = "search";
                 break;
+            case SEARCH_USERS:
+                url = "accounts/search";
+                break;
             case GET_CONVERSATION:
                 url = "statuses/%messageId%/context";
                 break;
@@ -183,8 +186,8 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
 
     @NonNull
     @Override
-    public List<MbActivity> search(TimelinePosition youngestPosition,
-                                   TimelinePosition oldestPosition, int limit, String searchQuery)
+    public List<MbActivity> searchMessages(TimelinePosition youngestPosition,
+                                           TimelinePosition oldestPosition, int limit, String searchQuery)
             throws ConnectionException {
         String tag = new KeywordsFilter(searchQuery).getFirstTagOrFirstKeyword();
         if (TextUtils.isEmpty(tag)) {
@@ -198,6 +201,24 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
         builder.appendQueryParameter("limit", strFixedDownloadLimit(limit, apiRoutine));
         JSONArray jArr = http.getRequestAsArray(builder.build().toString());
         return jArrToTimeline(jArr, apiRoutine, url);
+    }
+
+    @NonNull
+    @Override
+    public List<MbUser> searchUsers(int limit, String searchQuery) throws ConnectionException {
+        String tag = new KeywordsFilter(searchQuery).getFirstTagOrFirstKeyword();
+        if (TextUtils.isEmpty(tag)) {
+            return new ArrayList<>();
+        }
+        ApiRoutineEnum apiRoutine = ApiRoutineEnum.SEARCH_MESSAGES;
+        String url = getApiPath(apiRoutine);
+        Uri sUri = Uri.parse(url);
+        Uri.Builder builder = sUri.buildUpon();
+        builder.appendQueryParameter("q", searchQuery);
+        builder.appendQueryParameter("resolve", "true");
+        builder.appendQueryParameter("limit", strFixedDownloadLimit(limit, apiRoutine));
+        JSONArray jArr = http.getRequestAsArray(builder.build().toString());
+        return jArrToUsers(jArr, apiRoutine, url);
     }
 
     protected String getApiPathWithTag(ApiRoutineEnum routineEnum, String tag) throws ConnectionException {

@@ -39,11 +39,14 @@ import org.andstatus.app.net.social.MbMessage;
 import org.andstatus.app.net.social.MbRateLimitStatus;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.StringUtils;
 
 import java.util.List;
 
 class CommandExecutorOther extends CommandExecutorStrategy{
-    
+
+    public static final int USERS_LIMIT = 400;
+
     @Override
     public void execute() {
         switch (execContext.getCommandData().getCommand()) {
@@ -75,6 +78,9 @@ class CommandExecutorOther extends CommandExecutorStrategy{
             case GET_USER:
                 getUser(execContext.getCommandData().getUserId(), execContext.getCommandData().getUserName());
                 break;
+            case SEARCH_USERS:
+                searchUsers(execContext.getCommandData().getUserName());
+                break;
             case REBLOG:
                 reblog(execContext.getCommandData().itemId);
                 break;
@@ -94,6 +100,26 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 MyLog.e(this, "Unexpected command here " + execContext.getCommandData());
                 break;
         }
+    }
+
+    private void searchUsers(String searchQuery) {
+        final String method = "searchUsers";
+        String msgLog = method + "; query='" + searchQuery + "'";
+        List<MbUser> users = null;
+        if (StringUtils.nonEmpty(searchQuery)) {
+            try {
+                users = execContext.getMyAccount().getConnection().searchUsers(USERS_LIMIT, searchQuery);
+                for (MbUser user : users) {
+                    new DataUpdater(execContext).onActivity(user.update(execContext.getMyAccount().toPartialUser()));
+                }
+            } catch (ConnectionException e) {
+                logConnectionException(e, msgLog);
+            }
+        } else {
+            msgLog += ", empty query";
+            logExecutionError(true, msgLog);
+        }
+        MyLog.d(this, (msgLog + (noErrors() ? " succeeded" : " failed") ));
     }
 
     private void getConversation(long msgId) {

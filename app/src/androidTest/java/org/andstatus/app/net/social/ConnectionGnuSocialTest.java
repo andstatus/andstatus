@@ -134,7 +134,7 @@ public class ConnectionGnuSocialTest {
                 org.andstatus.app.tests.R.raw.twitter_home_timeline);
         connection.getHttpMock().setResponse(jso);
         
-        List<MbActivity> timeline = connection.search(new TimelinePosition(""), TimelinePosition.EMPTY, 20,
+        List<MbActivity> timeline = connection.searchMessages(new TimelinePosition(""), TimelinePosition.EMPTY, 20,
                 DemoData.GLOBAL_PUBLIC_MESSAGE_TEXT);
         assertNotNull("timeline returned", timeline);
         int size = 4;

@@ -16,6 +16,7 @@
 
 package org.andstatus.app.service;
 
+import org.andstatus.app.SearchObjects;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
@@ -98,8 +99,8 @@ public class CommandDataTest {
 
     @Test
     public void testEquals() {
-        CommandData data1 = CommandData.newSearch(MyContextHolder.get(), null, "andstatus");
-        CommandData data2 = CommandData.newSearch(MyContextHolder.get(), null, "mustard");
+        CommandData data1 = CommandData.newSearch(SearchObjects.MESSAGES, MyContextHolder.get(), null, "andstatus");
+        CommandData data2 = CommandData.newSearch(SearchObjects.MESSAGES, MyContextHolder.get(), null, "mustard");
         assertTrue("Hashcodes: " + data1.hashCode() + " and " + data2.hashCode(), data1.hashCode() != data2.hashCode());
         assertFalse(data1.equals(data2));
         
@@ -107,7 +108,7 @@ public class CommandDataTest {
         data1.getResult().incrementNumIoExceptions();
         data1.getResult().afterExecutionEnded();
         assertFalse(data1.getResult().shouldWeRetry());
-        CommandData data3 = CommandData.newSearch(MyContextHolder.get(), null, "andstatus");
+        CommandData data3 = CommandData.newSearch(SearchObjects.MESSAGES, MyContextHolder.get(), null, "andstatus");
         assertTrue(data1.equals(data3));
         assertTrue(data1.hashCode() == data3.hashCode());
         assertEquals(data1, data3);
@@ -116,7 +117,7 @@ public class CommandDataTest {
     @Test
     public void testPriority() {
         Queue<CommandData> queue = new PriorityBlockingQueue<>(100);
-        queue.add(CommandData.newSearch(
+        queue.add(CommandData.newSearch(SearchObjects.MESSAGES,
                 MyContextHolder.get(), DemoData.getMyAccount(DemoData.GNUSOCIAL_TEST_ACCOUNT_NAME).getOrigin(), "q1"));
         queue.add(CommandData.newUpdateStatus(null, 2));
         queue.add(CommandData.newCommand(CommandEnum.GET_TIMELINE));

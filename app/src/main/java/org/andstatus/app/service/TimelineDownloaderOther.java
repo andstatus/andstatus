@@ -83,7 +83,7 @@ class TimelineDownloaderOther extends TimelineDownloader {
                 List<MbActivity> activities;
                 switch (getTimeline().getTimelineType()) {
                     case SEARCH:
-                        activities = execContext.getMyAccount().getConnection().search(
+                        activities = execContext.getMyAccount().getConnection().searchMessages(
                                 isSyncYounger() ? previousPosition : TimelinePosition.EMPTY,
                                 isSyncYounger() ? TimelinePosition.EMPTY : previousPosition,
                                 limit, getTimeline().getSearchQuery());

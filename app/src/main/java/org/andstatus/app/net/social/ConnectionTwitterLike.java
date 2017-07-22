@@ -418,8 +418,8 @@ public abstract class ConnectionTwitterLike extends Connection {
 
     @NonNull
     @Override
-    public List<MbActivity> search(TimelinePosition youngestPosition,
-                                   TimelinePosition oldestPosition, int limit, String searchQuery)
+    public List<MbActivity> searchMessages(TimelinePosition youngestPosition,
+                                           TimelinePosition oldestPosition, int limit, String searchQuery)
             throws ConnectionException {
         ApiRoutineEnum apiRoutine = ApiRoutineEnum.SEARCH_MESSAGES;
         String url = this.getApiPath(apiRoutine);

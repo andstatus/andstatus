@@ -48,6 +48,9 @@ public class UserList extends MessageEditorListActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (isFinishing()) {
+            return;
+        }
 
         mUserListType = getParsedUri().getUserListType();
         contextMenu = new UserListContextMenu(this);

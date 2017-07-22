@@ -386,6 +386,7 @@
   <string name="search_direct_messages_label">Search direct messages</string>
   <string name="search_direct_messages_hint">Enter a username or phrase</string>
   <string name="search_userlist_hint">Enter name/Webfinger ID</string>
+  <string name="search_users">Search users</string>
   <string name="select_backup_folder">Select backup folder</string>
   <string name="select_displayed_in_selector">Select if and when this timeline is displayed</string>
   <string name="sent">Sent</string>

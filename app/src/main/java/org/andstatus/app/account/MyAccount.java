@@ -27,6 +27,7 @@ import android.text.TextUtils;
 
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
+import org.andstatus.app.SearchObjects;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyContextImpl;
@@ -836,8 +837,9 @@ public final class MyAccount implements Comparable<MyAccount> {
         return oAccountName.getOrigin().isUsernameValid(getUsername());
     }
 
-    public boolean isGlobalSearchSupported() {
-        return getConnection().isApiSupported(ApiRoutineEnum.SEARCH_MESSAGES);
+    public boolean isSearchSupported(SearchObjects searchObjects) {
+        return getConnection().isApiSupported(searchObjects == SearchObjects.MESSAGES
+                ? ApiRoutineEnum.SEARCH_MESSAGES : ApiRoutineEnum.SEARCH_USERS);
     }
 
     public void requestSync() {

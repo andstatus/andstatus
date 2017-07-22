@@ -26,6 +26,7 @@ import android.text.TextUtils;
 
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
+import org.andstatus.app.SearchObjects;
 import org.andstatus.app.WhichPage;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
@@ -71,16 +72,22 @@ public class CommandData implements Comparable<CommandData> {
     /** This is: 1. Generally: Message ID ({@link MsgTable#MSG_ID} of the {@link MsgTable})...
      */
     protected long itemId = 0;
-    /** Sometimes we don't know {@link #timeline#getUserId} yet... */
+    /** Sometimes we don't know {@link #timeline#getUserId} yet...
+     * Used for User search also
+     */
     private String userName = "";
 
     private volatile int result = 0;
     private CommandResult commandResult = new CommandResult();
 
-    public static CommandData newSearch(MyContext myContext, Origin origin, String queryString) {
-        Timeline timeline =  Timeline.getTimeline(myContext, 0, TimelineType.SEARCH, null, 0, origin, queryString);
-        CommandData commandData = new CommandData(0, CommandEnum.GET_TIMELINE, timeline, 0);
-        return commandData;
+    public static CommandData newSearch(SearchObjects searchObjects,
+                                        MyContext myContext, Origin origin, String queryString) {
+        if (searchObjects == SearchObjects.MESSAGES) {
+            Timeline timeline =  Timeline.getTimeline(myContext, 0, TimelineType.SEARCH, null, 0, origin, queryString);
+            return new CommandData(0, CommandEnum.GET_TIMELINE, timeline, 0);
+        } else {
+            return newUserCommand(CommandEnum.SEARCH_USERS, null, origin, 0, queryString);
+        }
     }
 
     public static CommandData newUpdateStatus(MyAccount myAccount, long unsentMessageId) {
@@ -279,30 +286,30 @@ public class CommandData implements Comparable<CommandData> {
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        builder.append("command:" + command.save() + ",");
+        builder.append("command:" + command.save());
         if (mInForeground) {
-            builder.append("foreground,");
+            builder.append(",foreground");
         }
         if (mManuallyLaunched) {
-            builder.append("manual,");
+            builder.append(",manual");
         }
-        builder.append("created:"
-                + RelativeTime.getDifference(MyContextHolder.get().context(), getCreatedDate())
-                + ",");
-        if (!TextUtils.isEmpty(description)) {
-            builder.append("\"");
+        builder.append(",created:" + RelativeTime.getDifference(MyContextHolder.get().context(), getCreatedDate()));
+        if (StringUtils.nonEmpty(userName)) {
+            builder.append(",user:'" + userName + "'");
+        }
+        if (StringUtils.nonEmpty(description) && !description.equals(userName)) {
+            builder.append(",\"");
             builder.append(description);
-            builder.append("\",");
+            builder.append("\"");
         }
-        builder.append(getTimeline().toString() + ",");
+        if (getTimeline().isValid()) {
+            builder.append("," + getTimeline().toString());
+        }
         if (itemId != 0) {
-            builder.append("itemId:" + itemId + ",");
+            builder.append(",itemId:" + itemId);
         }
-        if (!TextUtils.isEmpty(userName)) {
-            builder.append(", userName:'" + userName + "'");
-        }
-        builder.append("hashCode:" + hashCode() + ",");
-        builder.append(CommandResult.toString(commandResult));
+        builder.append(",hashCode:" + hashCode());
+        builder.append("," + CommandResult.toString(commandResult));
         return MyLog.formatKeyValue("CommandData", builder);
     }
 
@@ -417,7 +424,8 @@ public class CommandData implements Comparable<CommandData> {
                 I18n.appendWithSpace(builder, MyQuery.userIdToWebfingerId(timeline.getUserId()));
                 break;
             case GET_USER:
-                if (!TextUtils.isEmpty(getUserName())) {
+            case SEARCH_USERS:
+                if (StringUtils.nonEmpty(getUserName())) {
                     builder.append(" \"");
                     builder.append(getUserName());
                     builder.append("\"");

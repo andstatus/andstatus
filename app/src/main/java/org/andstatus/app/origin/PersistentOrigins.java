@@ -21,6 +21,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
+import org.andstatus.app.SearchObjects;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextImpl;
@@ -147,24 +148,24 @@ public class PersistentOrigins {
         origins.add(origin);
     }
 
-    public boolean isGlobalSearchSupported(Origin origin, boolean forAllOrigins) {
-        return originsForGlobalSearch(origin, forAllOrigins).size() > 0;
+    public boolean isSearchSupported(SearchObjects searchObjects, Origin origin, boolean forAllOrigins) {
+        return originsForInternetSearch(searchObjects, origin, forAllOrigins).size() > 0;
     }
 
     @NonNull
-    public List<Origin> originsForGlobalSearch(Origin originIn, boolean forAllOrigins) {
+    public List<Origin> originsForInternetSearch(SearchObjects searchObjects, Origin originIn, boolean forAllOrigins) {
         List<Origin> origins = new ArrayList<>();
         if (forAllOrigins) {
             for (MyAccount account : myContext.persistentAccounts().list()) {
                 if (account.getOrigin().isInCombinedGlobalSearch() &&
-                        account.isValidAndSucceeded() && account.isGlobalSearchSupported()
+                        account.isValidAndSucceeded() && account.isSearchSupported(searchObjects)
                         && !origins.contains(account.getOrigin())) {
                     origins.add(account.getOrigin());
                 }
             }
         } else if (originIn != null && originIn.isValid()) {
             MyAccount account = myContext.persistentAccounts().getFirstSucceededForOrigin(originIn);
-            if (account.isValidAndSucceeded() && account.isGlobalSearchSupported()) {
+            if (account.isValidAndSucceeded() && account.isSearchSupported(searchObjects)) {
                 origins.add(originIn);
             }
         }

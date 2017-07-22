@@ -443,11 +443,15 @@ public class MyLog {
         }
         return formatKeyValue(key, value);
     }
-    
+
+    /** Strips value from leading and trailing commas */
     public static String formatKeyValue(String key, String value) {
         String out = "";
         if (!TextUtils.isEmpty(value)) {
             out = value.trim();
+            if (out.substring(0, 1).equals(COMMA)) {
+                out = out.substring(1);
+            }
             int ind = out.lastIndexOf(COMMA);
             if (ind > 0 && ind == out.length()-1) {
                 out = out.substring(0, ind);

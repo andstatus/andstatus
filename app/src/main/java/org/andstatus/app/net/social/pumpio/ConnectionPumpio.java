@@ -573,8 +573,8 @@ public class ConnectionPumpio extends Connection {
     
     @NonNull
     @Override
-    public List<MbActivity> search(TimelinePosition youngestPosition,
-                                   TimelinePosition oldestPosition, int limit, String searchQuery)
+    public List<MbActivity> searchMessages(TimelinePosition youngestPosition,
+                                           TimelinePosition oldestPosition, int limit, String searchQuery)
             throws ConnectionException {
         return new ArrayList<>();
     }

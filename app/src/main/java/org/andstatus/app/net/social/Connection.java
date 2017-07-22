@@ -104,6 +104,7 @@ public abstract class Connection {
         TAGS_TIMELINE(true),
         FAVORITES_TIMELINE,
         SEARCH_MESSAGES(true),
+        SEARCH_USERS(true),
 
         GET_MESSAGE,
         STOP_FOLLOWING_USER,
@@ -353,8 +354,13 @@ public abstract class Connection {
             throws ConnectionException;
 
     @NonNull
-    public List<MbActivity> search(TimelinePosition youngestPosition,
-               TimelinePosition oldestPosition, int limit, String searchQuery) throws ConnectionException {
+    public List<MbActivity> searchMessages(TimelinePosition youngestPosition,
+                    TimelinePosition oldestPosition, int limit, String searchQuery) throws ConnectionException {
+        return new ArrayList<>();
+    }
+
+    @NonNull
+    public List<MbUser> searchUsers(int limit, String searchQuery) throws ConnectionException {
         return new ArrayList<>();
     }
 

@@ -18,6 +18,7 @@ package org.andstatus.app.service;
 
 import android.support.test.InstrumentationRegistry;
 
+import org.andstatus.app.SearchObjects;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
@@ -74,11 +75,13 @@ public class CommandExecutorStrategyTest {
 
     @Test
     public void testSearch() {
-        CommandData commandData = CommandData.newSearch(MyContextHolder.get(), null, DemoData.GLOBAL_PUBLIC_MESSAGE_TEXT);
+        CommandData commandData = CommandData.newSearch(SearchObjects.MESSAGES,
+                MyContextHolder.get(), null, DemoData.GLOBAL_PUBLIC_MESSAGE_TEXT);
         CommandExecutorStrategy strategy = CommandExecutorStrategy.getStrategy(commandData, null);
         assertEquals(CommandExecutorStrategy.class, strategy.getClass());
 
-        commandData = CommandData.newSearch(MyContextHolder.get(), ma.getOrigin(), DemoData.GLOBAL_PUBLIC_MESSAGE_TEXT);
+        commandData = CommandData.newSearch(SearchObjects.MESSAGES,
+                MyContextHolder.get(), ma.getOrigin(), DemoData.GLOBAL_PUBLIC_MESSAGE_TEXT);
         strategy = CommandExecutorStrategy.getStrategy(commandData, null);
         assertEquals(TimelineDownloaderOther.class, strategy.getClass());
         strategy.execute();
@@ -89,8 +92,9 @@ public class CommandExecutorStrategyTest {
     @Test
     public void testUpdateDestroyStatus() throws IOException {
         CommandData commandData = getCommandDataForUnsentMessage("1");
-        httpConnectionMock.setResponse(RawResourceUtils.getString(InstrumentationRegistry.getInstrumentation().getContext(),
-                org.andstatus.app.tests.R.raw.quitter_update_status_response));
+        httpConnectionMock.setResponse(
+                RawResourceUtils.getString(InstrumentationRegistry.getInstrumentation().getContext(),
+                        org.andstatus.app.tests.R.raw.quitter_update_status_response));
         assertEquals(0, commandData.getResult().getExecutionCount());
         CommandExecutorStrategy.executeCommand(commandData, null);
         assertEquals(1, commandData.getResult().getExecutionCount());

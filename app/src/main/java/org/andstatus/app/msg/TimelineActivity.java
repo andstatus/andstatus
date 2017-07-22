@@ -624,24 +624,9 @@ public class TimelineActivity extends MessageEditorListActivity implements
     }
 
     private boolean parseAppSearchData(Intent intentNew, String searchQuery) {
-        final String method = "parseAppSearchData";
         Bundle appSearchData = intentNew.getBundleExtra(SearchManager.APP_DATA);
-        if (appSearchData != null
-                && getParamsNew().parseUri(Uri.parse(appSearchData.getString(
-                        IntentExtra.MATCHED_URI.key, "")), searchQuery)) {
-            if (getParamsNew().getTimeline().hasSearchQuery()
-                    && appSearchData.getBoolean(IntentExtra.GLOBAL_SEARCH.key, false)) {
-                showSyncing(method, "Global search: " + getParamsNew().getTimeline().getSearchQuery());
-                for (Origin origin : myContext.persistentOrigins().originsForGlobalSearch(
-                        getParamsNew().getTimeline().getOrigin(), getParamsNew().getTimeline().isCombined())) {
-                    MyServiceManager.sendManualForegroundCommand(
-                            CommandData.newSearch(myContext, origin,
-                                    getParamsNew().getTimeline().getSearchQuery()));
-                }
-            }
-            return true;
-        }
-        return false;
+        return appSearchData != null && getParamsNew()
+                .parseUri(Uri.parse(appSearchData.getString(IntentExtra.MATCHED_URI.key, "")), searchQuery);
     }
 
     private void shareViaThisApplication(String subject, String text, Uri mediaUri) {

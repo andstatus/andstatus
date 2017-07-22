@@ -35,10 +35,13 @@ import org.andstatus.app.ClassInApplicationPackage;
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.LoadableListActivity;
 import org.andstatus.app.R;
+import org.andstatus.app.SearchObjects;
+import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.data.MatchedUri;
-import org.andstatus.app.msg.TimelineActivity;
+import org.andstatus.app.origin.Origin;
+import org.andstatus.app.service.CommandData;
+import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.timeline.Timeline;
-import org.andstatus.app.user.UserList;
 import org.andstatus.app.user.UserListType;
 import org.andstatus.app.util.MyLog;
 
@@ -47,40 +50,11 @@ import org.andstatus.app.util.MyLog;
  */
 public class MySearchView extends LinearLayout implements CollapsibleActionView, SearchView.OnQueryTextListener {
     LoadableListActivity parentActivity = null;
-    Timeline timeline = null;
-    boolean enableGlobalSearch = false;
+    Timeline timeline = Timeline.getEmpty(MyAccount.EMPTY);
     SearchView searchView = null;
     Spinner searchObjects = null;
     CheckBox globalSearch = null;
     CheckBox combined = null;
-
-    public enum SearchObjects {
-        MESSAGES(TimelineActivity.class),
-        USERS(UserList.class);
-
-        private final Class<?> aClass;
-
-        SearchObjects(Class<?> aClass) {
-            this.aClass = aClass;
-        }
-
-        public Class<?> getActivityClass() {
-            return aClass;
-        }
-
-        public static SearchObjects fromSpinner(Spinner spinner) {
-            SearchObjects obj = MESSAGES;
-            if (spinner != null) {
-                for(SearchObjects val : values()) {
-                    if (val.ordinal() == spinner.getSelectedItemPosition()) {
-                        obj = val;
-                        break;
-                    }
-                }
-            }
-            return obj;
-        }
-    }
 
     public MySearchView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -154,15 +128,18 @@ public class MySearchView extends LinearLayout implements CollapsibleActionView,
         setAppSearchData();
     }
 
-    private void setSearchableInfo() {
-        SearchManager searchManager = (SearchManager) parentActivity.getSystemService(Context.SEARCH_SERVICE);
-        searchView.setSearchableInfo(searchManager.getSearchableInfo(
-                new ComponentName(ClassInApplicationPackage.PACKAGE_NAME,
-                        getSearchObjects().getActivityClass().getName())));
+    @Override
+    public boolean onQueryTextSubmit(String query) {
+        if (isInternetSearch()) {
+            launchInternetSearch(query);
+        }
+        onActionViewCollapsed();
+        return false;
     }
 
-    SearchObjects getSearchObjects() {
-        return SearchObjects.fromSpinner(searchObjects);
+    @Override
+    public boolean onQueryTextChange(String newText) {
+        return false;
     }
 
     @Override
@@ -179,28 +156,29 @@ public class MySearchView extends LinearLayout implements CollapsibleActionView,
         parentActivity.hideActionBar(false);
     }
 
-    @Override
-    public boolean onQueryTextSubmit(String query) {
-        onActionViewCollapsed();
-        return false;
-    }
-
-    @Override
-    public boolean onQueryTextChange(String newText) {
-        return false;
+    private void launchInternetSearch(String query) {
+        for (Origin origin : parentActivity.getMyContext().persistentOrigins().originsForInternetSearch(
+                getSearchObjects(), getOrigin(), isCombined())) {
+            MyServiceManager.sendManualForegroundCommand(
+                    CommandData.newSearch(getSearchObjects(), parentActivity.getMyContext(), origin, query));
+        }
     }
 
     public void startSearch(@NonNull Timeline timeline) {
         this.timeline = timeline;
-        enableGlobalSearch = parentActivity.getMyContext().persistentOrigins()
-                .isGlobalSearchSupported(parentActivity.getCurrentMyAccount().getOrigin(), timeline.isCombined());
-        globalSearch.setEnabled(enableGlobalSearch);
         if (isCombined() != timeline.isCombined()) {
             combined.setChecked(timeline.isCombined());
         }
 
         setAppSearchData();
         onActionViewExpanded();
+    }
+
+    private void setSearchableInfo() {
+        SearchManager searchManager = (SearchManager) parentActivity.getSystemService(Context.SEARCH_SERVICE);
+        searchView.setSearchableInfo(searchManager.getSearchableInfo(
+                new ComponentName(ClassInApplicationPackage.PACKAGE_NAME,
+                        getSearchObjects().getActivityClass().getName())));
     }
 
     private void setAppSearchData() {
@@ -210,32 +188,48 @@ public class MySearchView extends LinearLayout implements CollapsibleActionView,
         }
         Bundle appSearchData = new Bundle();
         if (getSearchObjects() == SearchObjects.MESSAGES) {
-            if (timeline != null) {
-                appSearchData.putString(IntentExtra.MATCHED_URI.key,
-                        MatchedUri.getTimelineUri(
-                                timeline.fromSearch(parentActivity.getMyContext(), isGlobalSearch())
-                                .fromIsCombined(parentActivity.getMyContext(), isCombined())
-                        ).toString());
-            }
+            appSearchData.putString(IntentExtra.MATCHED_URI.key,
+                    MatchedUri.getTimelineUri(
+                            timeline.fromSearch(parentActivity.getMyContext(), isInternetSearch())
+                            .fromIsCombined(parentActivity.getMyContext(), isCombined())
+                    ).toString());
         } else {
             appSearchData.putString(IntentExtra.MATCHED_URI.key,
                     MatchedUri.getUserListUri(parentActivity.getCurrentMyAccount().getUserId(), UserListType.USERS,
-                            isCombined() ? 0 : parentActivity.getCurrentMyAccount().getOrigin().getId(),
+                            isCombined() ? 0 : getOrigin().getId(),
                             0, "").toString());
         }
-        appSearchData.putBoolean(IntentExtra.GLOBAL_SEARCH.key, isGlobalSearch());
+        appSearchData.putBoolean(IntentExtra.GLOBAL_SEARCH.key, isInternetSearch());
         MyLog.v(this, method + ": " + appSearchData);
 
         // Calling hidden method using reflection, see https://stackoverflow.com/a/161005/297710
         try {
-            searchView.getClass().getMethod("setAppSearchData", Bundle.class).invoke(searchView, appSearchData);
+            searchView.getClass().getMethod(method, Bundle.class).invoke(searchView, appSearchData);
         } catch (Exception e) {
             MyLog.e(this, e);
         }
     }
 
-    private boolean isGlobalSearch() {
-        return globalSearch != null && enableGlobalSearch && globalSearch.isChecked();
+    SearchObjects getSearchObjects() {
+        return SearchObjects.fromSpinner(searchObjects);
+    }
+
+    private Origin getOrigin() {
+        return timeline.getOrigin().isValid() ? timeline.getOrigin() : parentActivity.getCurrentMyAccount().getOrigin();
+    }
+
+    private boolean isInternetSearch() {
+        if (globalSearch == null) {
+            return false;
+        }
+        boolean isInternetSearchEnabled = parentActivity.getMyContext()
+                .persistentOrigins().isSearchSupported(
+                        getSearchObjects(), getOrigin(), isCombined());
+        globalSearch.setEnabled(isInternetSearchEnabled);
+        if (!isInternetSearchEnabled && globalSearch.isChecked()) {
+            globalSearch.setChecked(false);
+        }
+        return isInternetSearchEnabled && globalSearch.isChecked();
     }
 
     private boolean isCombined() {
