@@ -25,6 +25,7 @@ import android.util.AttributeSet;
 import android.view.CollapsibleActionView;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
 import android.widget.AdapterView;
 import android.widget.AutoCompleteTextView;
 import android.widget.CheckBox;
@@ -71,17 +72,14 @@ public class MySearchView extends LinearLayout implements CollapsibleActionView{
         }
         searchText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
-            // See https://stackoverflow.com/questions/1489852/android-handle-enter-in-an-edittext
+            // See https://stackoverflow.com/questions/3205339/android-how-to-make-keyboard-enter-button-say-search-and-handle-its-click
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if (event.getKeyCode() == KeyEvent.KEYCODE_ENTER && event.getAction() == KeyEvent.ACTION_DOWN) {
-                    return true;
-                }
-                if (event.getKeyCode() == KeyEvent.KEYCODE_ENTER && event.getAction() == KeyEvent.ACTION_UP) {
+                if (actionId == EditorInfo.IME_ACTION_SEARCH) {
                     String query = v.getText().toString();
                     if (StringUtils.nonEmpty(query)) {
                         onQueryTextSubmit(query);
+                        return true;
                     }
-                    return true;
                 }
                 return false;
             }
