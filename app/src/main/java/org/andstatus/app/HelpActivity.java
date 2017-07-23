@@ -70,9 +70,9 @@ public class HelpActivity extends MyActivity implements SwipeInterface, Progress
     public static final String EXTRA_CLOSE_ME = ClassInApplicationPackage.PACKAGE_NAME + ".CLOSE_ME";
     public static final String EXTRA_CHECK_DATA = ClassInApplicationPackage.PACKAGE_NAME + ".CHECK_DATA";
 
-    public static final int PAGE_INDEX_LOGO = 0;
-    public static final int PAGE_INDEX_USER_GUIDE = 1;
-    public static final int PAGE_INDEX_CHANGELOG = 2;
+    public static final int PAGE_LOGO = 0;
+    public static final int PAGE_USER_GUIDE = 1;
+    public static final int PAGE_CHANGELOG = 2;
     
     // Local objects
     private ViewFlipper mFlipper;
@@ -317,18 +317,12 @@ public class HelpActivity extends MyActivity implements SwipeInterface, Progress
         }
     }
 
-    public static void startMe(Context context, boolean helpAsFirstActivity, boolean showChangeLog) {
+    public static void startMe(Context context, boolean helpAsFirstActivity, int pageIndex) {
         Intent intent = new Intent(context, HelpActivity.class);
         if (helpAsFirstActivity) {
             intent.putExtra(HelpActivity.EXTRA_IS_FIRST_ACTIVITY, true);
         }
-
-        int pageIndex = PAGE_INDEX_LOGO;
-        if (!helpAsFirstActivity && showChangeLog) {
-            pageIndex = PAGE_INDEX_CHANGELOG;
-        }
         intent.putExtra(HelpActivity.EXTRA_HELP_PAGE_INDEX, pageIndex);
-
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         if (Activity.class.isAssignableFrom(context.getClass())) {
             MyLog.v(TAG, "Finishing " + context.getClass().getSimpleName() + " and starting " + TAG);

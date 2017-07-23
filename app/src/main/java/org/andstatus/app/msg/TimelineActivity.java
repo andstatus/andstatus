@@ -497,9 +497,7 @@ public class TimelineActivity extends MessageEditorListActivity implements
     }
 
     private void onHelp() {
-        Intent intent = new Intent(this, HelpActivity.class);
-        intent.putExtra(HelpActivity.EXTRA_HELP_PAGE_INDEX, HelpActivity.PAGE_INDEX_USER_GUIDE);
-        startActivity(intent);
+        HelpActivity.startMe(this, false, HelpActivity.PAGE_CHANGELOG);
     }
 
     public void onItemClick(TimelineViewItem item) {

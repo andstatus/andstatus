@@ -51,7 +51,7 @@ public class HelpActivityTest extends ActivityTest<HelpActivity> {
         TestSuite.initializeWithData(this);
         Intent intent = new Intent();
         intent.putExtra(HelpActivity.EXTRA_IS_FIRST_ACTIVITY, true);
-        intent.putExtra(HelpActivity.EXTRA_HELP_PAGE_INDEX, HelpActivity.PAGE_INDEX_CHANGELOG);
+        intent.putExtra(HelpActivity.EXTRA_HELP_PAGE_INDEX, HelpActivity.PAGE_CHANGELOG);
         return intent;
     }
 
@@ -64,13 +64,13 @@ public class HelpActivityTest extends ActivityTest<HelpActivity> {
     public void test() throws Throwable {
         ViewFlipper mFlipper = ((ViewFlipper) mActivityRule.getActivity().findViewById(R.id.help_flipper));
         assertTrue(mFlipper != null);
-        assertEquals("At Changelog page", HelpActivity.PAGE_INDEX_CHANGELOG, mFlipper.getDisplayedChild());
+        assertEquals("At Changelog page", HelpActivity.PAGE_CHANGELOG, mFlipper.getDisplayedChild());
         View changeLogView = mActivityRule.getActivity().findViewById(R.id.changelog);
         assertTrue(changeLogView != null);
         DbUtils.waitMs("test", 500);
 
         onView(withId(R.id.button_help_learn_more)).perform(click());
-        assertEquals("At Logo page", HelpActivity.PAGE_INDEX_LOGO, mFlipper.getDisplayedChild());
+        assertEquals("At Logo page", HelpActivity.PAGE_LOGO, mFlipper.getDisplayedChild());
         onView(withId(R.id.splash_application_version)).check(matches(withText(containsString(MyContextHolder
                 .getExecutionMode().code))));
 

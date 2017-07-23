@@ -57,7 +57,7 @@ public class MyUrlSpanTest extends ActivityTest<HelpActivity> {
         getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                mFlipper.setDisplayedChild(HelpActivity.PAGE_INDEX_LOGO);
+                mFlipper.setDisplayedChild(HelpActivity.PAGE_LOGO);
                 MyUrlSpan.showText(textView, text, true, false);
                 if (SpannableString.class.isAssignableFrom(textView.getClass())) {
                     SpannableString spannable = (SpannableString) textView.getText();

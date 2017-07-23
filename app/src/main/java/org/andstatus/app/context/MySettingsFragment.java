@@ -341,12 +341,10 @@ public class MySettingsFragment extends PreferenceFragment implements
                 startActivity(new Intent(getActivity(), TimelineList.class));
                 break;
             case KEY_ABOUT_APPLICATION:
-                startActivity(new Intent(getActivity(), HelpActivity.class));
+                HelpActivity.startMe(getActivity(), false, HelpActivity.PAGE_LOGO);
                 break;
             case KEY_CHANGE_LOG:
-                intent = new Intent(getActivity(), HelpActivity.class);
-                intent.putExtra(HelpActivity.EXTRA_HELP_PAGE_INDEX, HelpActivity.PAGE_INDEX_CHANGELOG);
-                startActivity(intent);
+                HelpActivity.startMe(getActivity(), false, HelpActivity.PAGE_CHANGELOG);
                 break;
             case MyPreferences.KEY_COMMANDS_QUEUE:
                 startActivity(new Intent(getActivity(), QueueViewer.class));

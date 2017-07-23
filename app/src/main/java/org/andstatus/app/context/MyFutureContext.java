@@ -144,7 +144,7 @@ public class MyFutureContext extends MyAsyncTask<Void, Void, MyContext> {
                 }
             }
             if (!launched) {
-                HelpActivity.startMe(myContext.context(), true, false);
+                HelpActivity.startMe(myContext.context(), true, HelpActivity.PAGE_LOGO);
             }
             activityIntentPostRun = null;
             if (firstActivity != null) {
@@ -166,7 +166,7 @@ public class MyFutureContext extends MyAsyncTask<Void, Void, MyContext> {
             if (myContext.isReady()) {
                 runnablePostRun.run();
             } else {
-                HelpActivity.startMe(myContext.context(), true, false);
+                HelpActivity.startMe(myContext.context(), true, HelpActivity.PAGE_LOGO);
             }
             runnablePostRun = null;
         }

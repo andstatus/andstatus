@@ -75,10 +75,10 @@ public class FirstActivity extends AppCompatActivity {
     private void startNextActivitySync(MyContext myContext, Intent myIntent) {
         switch (needToStartNext(this, myContext)) {
             case HELP:
-                HelpActivity.startMe(this, true, false);
+                HelpActivity.startMe(this, true, HelpActivity.PAGE_LOGO);
                 break;
             case CHANGELOG:
-                HelpActivity.startMe(this, true, true);
+                HelpActivity.startMe(this, true, HelpActivity.PAGE_CHANGELOG);
                 break;
             default:
                 Intent intent = new Intent(this, TimelineActivity.class);
@@ -102,18 +102,18 @@ public class FirstActivity extends AppCompatActivity {
     }
 
     public static NeedToStart needToStartNext(Context context, MyContext myContext) {
-        NeedToStart startHelp = NeedToStart.OTHER;
+        NeedToStart needToStart = NeedToStart.OTHER;
         if (!myContext.isReady()) {
             MyLog.i(context, "Context is not ready: " + myContext.toString());
-            startHelp = NeedToStart.HELP;
+            needToStart = NeedToStart.HELP;
         } else if (myContext.persistentAccounts().isEmpty()) {
             MyLog.i(context, "No AndStatus Accounts yet");
-            startHelp = NeedToStart.HELP;
+            needToStart = NeedToStart.HELP;
         }
         if (myContext.isReady() && checkAndUpdateLastOpenedAppVersion(context, false)) {
-            startHelp = NeedToStart.CHANGELOG;
+            needToStart = NeedToStart.CHANGELOG;
         }
-        return startHelp;
+        return needToStart;
     }
 
 
@@ -131,7 +131,7 @@ public class FirstActivity extends AppCompatActivity {
             if (versionCodeLast < versionCode) {
                 // Even if the User will see only the first page of the Help activity,
                 // count this as showing the Change Log
-                MyLog.v(HelpActivity.TAG, "Last opened version=" + versionCodeLast + ", current is " + versionCode
+                MyLog.v(FirstActivity.class, "Last opened version=" + versionCodeLast + ", current is " + versionCode
                         + (update ? ", updating" : "")
                 );
                 changed = true;
@@ -140,7 +140,7 @@ public class FirstActivity extends AppCompatActivity {
                 }
             }
         } catch (PackageManager.NameNotFoundException e) {
-            MyLog.e(HelpActivity.TAG, "Unable to obtain package information", e);
+            MyLog.e(FirstActivity.class, "Unable to obtain package information", e);
         }
         return changed;
     }
