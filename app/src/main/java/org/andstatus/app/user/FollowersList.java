@@ -17,8 +17,6 @@
 package org.andstatus.app.user;
 
 import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
 
 import org.andstatus.app.R;
 import org.andstatus.app.service.CommandData;
@@ -35,34 +33,13 @@ public class FollowersList extends UserList {
         super.onCreate(savedInstanceState);
     }
 
-    @Override
-    public void onRefresh() {
-        manualSyncWithInternet(true);
-    }
-
     private long getFollowedUserId() {
         return centralItemId;
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.userlist, menu);
-        return super.onCreateOptionsMenu(menu);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.sync_menu_item:
-                manualSyncWithInternet(true);
-                break;
-            default:
-                break;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
-    protected void manualSyncWithInternet(boolean manuallyLaunched) {
+    protected void syncWithInternet(boolean manuallyLaunched) {
+        final String method = "syncWithInternet";
+        showSyncing(method, getText(R.string.options_menu_sync));
         CommandEnum command = mUserListType == UserListType.FOLLOWERS ?
                 CommandEnum.GET_FOLLOWERS : CommandEnum.GET_FRIENDS;
         MyServiceManager.sendForegroundCommand(

@@ -18,14 +18,18 @@ package org.andstatus.app.user;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.Menu;
 import android.view.MenuItem;
 
 import org.andstatus.app.ActivityRequestCode;
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
+import org.andstatus.app.SearchObjects;
+import org.andstatus.app.WhichPage;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.msg.MessageEditorListActivity;
 import org.andstatus.app.service.CommandData;
+import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
@@ -54,6 +58,43 @@ public class UserList extends MessageEditorListActivity {
 
         mUserListType = getParsedUri().getUserListType();
         contextMenu = new UserListContextMenu(this);
+    }
+
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.userlist, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.sync_menu_item:
+                syncWithInternet(true);
+                break;
+            default:
+                break;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onRefresh() {
+        syncWithInternet(true);
+    }
+
+    void syncWithInternet(boolean manuallyLaunched) {
+        final String method = "syncWithInternet";
+        if (getParsedUri().isSearch()) {
+            showSyncing(method, getText(R.string.options_menu_sync));
+            MyServiceManager.sendManualForegroundCommand(
+                    CommandData.newSearch(SearchObjects.USERS, getMyContext(),
+                            getParsedUri().getOrigin(getMyContext()), getParsedUri().getSearchQuery()));
+        } else {
+            showList(WhichPage.CURRENT);
+            hideSyncing(method);
+        }
     }
 
     @Override
@@ -109,6 +150,8 @@ public class UserList extends MessageEditorListActivity {
             case GET_FRIENDS:
             case FOLLOW_USER:
             case STOP_FOLLOWING_USER:
+            case SEARCH_USERS:
+            case FETCH_AVATAR:
                 return true;
             default:
                 return false;
@@ -120,6 +163,7 @@ public class UserList extends MessageEditorListActivity {
         switch(commandData.getCommand()) {
             case FOLLOW_USER:
             case STOP_FOLLOWING_USER:
+            case SEARCH_USERS:
                 return true;
             default:
                 return super.isRefreshNeededAfterExecuting(commandData);

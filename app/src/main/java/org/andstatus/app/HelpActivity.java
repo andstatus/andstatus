@@ -88,8 +88,7 @@ public class HelpActivity extends MyActivity implements SwipeInterface, Progress
     protected void onCreate(Bundle savedInstanceState) {
         mLayoutId = R.layout.help;
         super.onCreate(savedInstanceState);
-
-        if (isCloseRequest(getIntent())) {
+        if (isFinishing() || isCloseRequest(getIntent())) {
             return;
         }
 
