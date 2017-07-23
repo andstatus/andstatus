@@ -28,15 +28,19 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.View;
 
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyTheme;
+import org.andstatus.app.msg.TimelineActivity;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.TriState;
 
 /**
  * @author yvolk@yurivolkov.com
  */
 public class MyActivity extends AppCompatActivity implements IdentifiableInstance {
+    private static volatile long previousErrorInflatingTime = 0;
 
     protected final long mInstanceId = InstanceId.next();
     protected int mLayoutId = 0;
@@ -57,7 +61,24 @@ public class MyActivity extends AppCompatActivity implements IdentifiableInstanc
         }
 
         if (mLayoutId != 0) {
-            MyTheme.setContentView(this, mLayoutId);
+            try {
+                MyTheme.setContentView(this, mLayoutId);
+            } catch (android.view.InflateException e) {
+                String logMsg = "Error inflating layoutId:" + mLayoutId
+                        + (previousErrorInflatingTime == 0 ? ", going Home..."
+                        : ", again. Similar error occurred "
+                        + RelativeTime.getDifference(this, previousErrorInflatingTime));
+                MyLog.e(this, logMsg, e);
+                if (previousErrorInflatingTime == 0) {
+                    previousErrorInflatingTime = System.currentTimeMillis();
+                    finish();
+                    MyContextHolder.get().setExpired();
+                    TimelineActivity.goHome(this);
+                } else {
+                    throw new IllegalStateException(logMsg, e);
+                }
+                return;
+            }
         }
         Toolbar toolbar = (Toolbar) findViewById(R.id.my_action_bar);
         if (toolbar != null) {
