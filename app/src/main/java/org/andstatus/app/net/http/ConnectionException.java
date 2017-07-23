@@ -104,7 +104,7 @@ public class ConnectionException extends IOException {
             }
             MyLog.logJson(objTag, "json_exception", jso, true);
         }
-        return new ConnectionException(StatusCode.OK, MyLog.objToTag(objTag) + ": " + detailMessage, e, null, isHard);
+        return new ConnectionException(StatusCode.OK, MyLog.objToLongTag(objTag) + ": " + detailMessage, e, null, isHard);
     }
 
     public static ConnectionException fromStatusCode(StatusCode statusCode, final String detailMessage) {

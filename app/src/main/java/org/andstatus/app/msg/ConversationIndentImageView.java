@@ -44,7 +44,7 @@ public class ConversationIndentImageView extends android.support.v7.widget.AppCo
         setScaleType(ScaleType.MATRIX);
         layoutParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT, RelativeLayout.TRUE);
         setLayoutParams(layoutParams);
-        setImageDrawable(MyImageCache.getStyledDrawable(imageResourceIdLight, imageResourceId));
+        setImageDrawable(MyImageCache.getStyledDrawable(imageResourceIdLight, imageResourceId).getDrawable());
     }
 
     @Override

@@ -85,7 +85,7 @@ public final class MyContextImpl implements MyContext {
     private static final long CONSIDER_IN_BACKGROUND_AFTER_SECONDS = 20;
 
     private MyContextImpl(Object initializerName) {
-        mInitializedBy = MyLog.objToTag(initializerName);
+        mInitializedBy = MyLog.objToLongTag(initializerName);
     }
 
     @Override

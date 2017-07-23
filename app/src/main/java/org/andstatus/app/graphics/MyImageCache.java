@@ -20,11 +20,8 @@ import android.annotation.TargetApi;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.graphics.Point;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.view.Display;
 import android.view.WindowManager;
 
@@ -49,7 +46,12 @@ public class MyImageCache {
     private static final float AVATARS_CACHE_PART_OF_TOTAL_APP_MEMORY = 0.05f;
     public static final int AVATARS_CACHE_SIZE_MIN = 200;
     public static final int AVATARS_CACHE_SIZE_MAX = 700;
-    static volatile MyDrawableCache attachedImagesCache;
+
+    public enum CacheName {
+        ATTACHED_IMAGE,
+        AVATAR
+    }
+    private static volatile MyDrawableCache attachedImagesCache;
     private static volatile MyDrawableCache avatarsCache;
 
     private  MyImageCache() {
@@ -114,7 +116,6 @@ public class MyImageCache {
                 / imageSize / imageSize / MyDrawableCache.BYTES_PER_PIXEL);
     }
 
-
     @NonNull
     private static long getTotalAppMemory(Context context) {
         int memoryClass = 16;
@@ -136,25 +137,25 @@ public class MyImageCache {
     }
 
     @NonNull
-    public static Point getAttachedImageSize(String path) {
-        return attachedImagesCache.getImageSize(path);
+    public static Point getImageSize(CacheName cacheName, String path) {
+        return getCache(cacheName).getImageSize(path);
     }
 
-    @Nullable
-    public static Drawable getAvatarDrawable(Object objTag, String path) {
-        return avatarsCache.getDrawable(objTag, path);
+    public static CachedDrawable loadAndGetDrawable(CacheName cacheName, Object objTag, String path) {
+        return getCache(cacheName).loadAndGetDrawable(objTag, path);
     }
 
-    public static int getAvatarWidthPixels() {
-        return avatarsCache.getMaxBitmapWidth();
+    public static CachedDrawable getCachedDrawable(CacheName cacheName, Object objTag, String path) {
+        return getCache(cacheName).getCachedDrawable(objTag, path);
     }
 
-    public static Drawable getCachedAttachedImageDrawable(Object objTag, String path) {
-        return attachedImagesCache.getCachedDrawable(objTag, path);
-    }
-
-    public static Drawable getAttachedImageDrawable(Object objTag, String path) {
-        return attachedImagesCache.getDrawable(objTag, path);
+    public static MyDrawableCache getCache(CacheName cacheName) {
+        switch (cacheName) {
+            case ATTACHED_IMAGE:
+                return attachedImagesCache;
+            default:
+                return avatarsCache;
+        }
     }
 
     public static String getCacheInfo() {
@@ -198,26 +199,26 @@ public class MyImageCache {
     }
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    public static Drawable getDrawableCompat(Context context, int drawableId) {
+    public static CachedDrawable getDrawableCompat(Context context, int drawableId) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)  {
-            return context.getTheme().getDrawable(drawableId);
+            return new StaticCachedDrawable(context.getTheme().getDrawable(drawableId));
         } else {
-            return context.getResources().getDrawable(drawableId);
+            return new StaticCachedDrawable(context.getResources().getDrawable(drawableId));
         }
     }
 
-    private static final Map<Integer, Drawable[]> styledDrawables = new ConcurrentHashMap<>();
-    public static Drawable getStyledDrawable(int resourceIdLight, int resourceId) {
-        Drawable[] styledDrawable = styledDrawables.get(resourceId);
+    private static final Map<Integer, CachedDrawable[]> styledDrawables = new ConcurrentHashMap<>();
+    public static CachedDrawable getStyledDrawable(int resourceIdLight, int resourceId) {
+        CachedDrawable[] styledDrawable = styledDrawables.get(resourceId);
         if (styledDrawable == null) {
             Context context = MyContextHolder.get().context();
             if (context != null) {
-                Drawable drawable = getDrawableCompat(context, resourceId);
-                Drawable drawableLight = getDrawableCompat(context, resourceIdLight);
-                styledDrawable = new Drawable[]{drawable, drawableLight};
+                CachedDrawable drawable = getDrawableCompat(context, resourceId);
+                CachedDrawable drawableLight = getDrawableCompat(context, resourceIdLight);
+                styledDrawable = new CachedDrawable[]{drawable, drawableLight};
                 styledDrawables.put(resourceId, styledDrawable);
             } else {
-                return new BitmapDrawable();
+                return CachedDrawable.EMPTY;
             }
         }
         return styledDrawable[MyTheme.isThemeLight() ? 1 : 0];

@@ -17,7 +17,6 @@
 package org.andstatus.app.msg;
 
 import android.content.Context;
-import android.graphics.drawable.Drawable;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
@@ -74,7 +73,7 @@ public class MessageViewItem implements DuplicatesCollapsible<MessageViewItem>, 
     boolean reblogged = false;
 
     AttachedImageFile attachedImageFile = AttachedImageFile.EMPTY;
-    Drawable avatarDrawable = null;
+    AvatarFile avatarFile = AvatarFile.EMPTY;
 
     /** A message can be linked to any user, MyAccount or not */
     private long linkedUserId = 0;
@@ -244,11 +243,6 @@ public class MessageViewItem implements DuplicatesCollapsible<MessageViewItem>, 
         if (msgStatus != DownloadStatus.LOADED) {
             messageDetails.append(" (").append(msgStatus.getTitle(context)).append(")");
         }
-    }
-
-    @NonNull
-    public Drawable getAvatar() {
-        return avatarDrawable == null ? AvatarFile.getDefaultDrawable() : avatarDrawable;
     }
 
     public AttachedImageFile getAttachedImageFile() {

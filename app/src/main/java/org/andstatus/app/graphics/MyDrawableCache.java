@@ -28,8 +28,6 @@ import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Shader;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
@@ -50,9 +48,8 @@ import java.util.concurrent.atomic.AtomicLong;
  * @author yvolk@yurivolkov.com
  * On LruCache usage read http://developer.android.com/reference/android/util/LruCache.html
  */
-public class MyDrawableCache extends LruCache<String, BitmapSubsetDrawable> {
-    public final static Drawable BROKEN = new BitmapDrawable();
-    public final static Bitmap.Config BITMAP_CONFIG = Bitmap.Config.ARGB_8888;
+public class MyDrawableCache extends LruCache<String, CachedDrawable> {
+
     public final static int BYTES_PER_PIXEL = 4;
     final String name;
     private volatile int requestedCacheSize;
@@ -108,62 +105,64 @@ public class MyDrawableCache extends LruCache<String, BitmapSubsetDrawable> {
         Bitmap bitmap;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
             bitmap = Bitmap.createBitmap(displayMetrics, maxBitmapWidth,
-                    maxBitmapHeight, BITMAP_CONFIG);
+                    maxBitmapHeight, CachedDrawable.BITMAP_CONFIG);
         } else {
             bitmap = Bitmap.createBitmap(maxBitmapWidth,
-                    maxBitmapHeight, BITMAP_CONFIG);
+                    maxBitmapHeight, CachedDrawable.BITMAP_CONFIG);
             bitmap.setDensity(displayMetrics.densityDpi);
         }
         return bitmap;
     }
 
     @Nullable
-    Drawable getCachedDrawable(Object objTag, String path) {
+    CachedDrawable getCachedDrawable(Object objTag, String path) {
         return getDrawable(objTag, path, true);
     }
 
     @Nullable
-    Drawable getDrawable(Object objTag, String path) {
+    CachedDrawable loadAndGetDrawable(Object objTag, String path) {
         return getDrawable(objTag, path, false);
     }
 
     @Override
-    protected void entryRemoved(boolean evicted, String key, BitmapSubsetDrawable oldValue,
-                                BitmapSubsetDrawable newValue) {
-        recycledBitmaps.add(oldValue.getBitmap());
+    protected void entryRemoved(boolean evicted, String key, CachedDrawable oldValue, CachedDrawable newValue) {
+        if (oldValue.isBitmapRecyclable()) {
+            oldValue.makeExpired();
+            recycledBitmaps.add(oldValue.getBitmap());
+        }
     }
 
     @Nullable
-    private Drawable getDrawable(Object objTag, String path, boolean fromCacheOnly) {
+    private CachedDrawable getDrawable(Object objTag, String path, boolean fromCacheOnly) {
         if (TextUtils.isEmpty(path)) {
             return null;
         }
-        BitmapSubsetDrawable bitmap = get(path);
-        if (bitmap != null) {
+        CachedDrawable drawable = get(path);
+        if (drawable != null) {
             hits.incrementAndGet();
         } else if (brokenBitmaps.contains(path)) {
             hits.incrementAndGet();
-            return BROKEN;
+            return CachedDrawable.BROKEN;
         } else if (!(new File(path)).exists()) {
             misses.incrementAndGet();
         } else {
             misses.incrementAndGet();
             if (!fromCacheOnly) {
-                bitmap = loadDrawable(objTag, path);
-                if (bitmap != null) {
+                drawable = loadDrawable(objTag, path);
+                if (drawable != null) {
                     if (currentCacheSize > 0) {
-                        put(path, bitmap);
+                        put(path, drawable);
                     }
                 } else {
                     brokenBitmaps.add(path);
                 }
             }
         }
-        return bitmap;
+        return drawable;
     }
 
     @Nullable
-    private BitmapSubsetDrawable loadDrawable(Object objTag, String path) {
+    private CachedDrawable loadDrawable(Object objTag, String path) {
         Bitmap bitmap = loadBitmap(objTag, path);
         if (bitmap == null) {
             return null;
@@ -183,7 +182,7 @@ public class MyDrawableCache extends LruCache<String, BitmapSubsetDrawable> {
             canvas.drawBitmap(bitmap, 0 , 0, null);
         }
         bitmap.recycle();
-        return new BitmapSubsetDrawable(background, srcRect);
+        return new CachedDrawable(background, srcRect);
     }
 
     /**
@@ -226,9 +225,9 @@ public class MyDrawableCache extends LruCache<String, BitmapSubsetDrawable> {
         return bitmap;
     }
 
-    public Point getImageSize(String path) {
+    Point getImageSize(String path) {
         if (!TextUtils.isEmpty(path)) {
-            Drawable drawable = get(path);
+            CachedDrawable drawable = get(path);
             if (drawable != null) {
                 return new Point(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight());
             }

@@ -104,8 +104,8 @@ class UserListViewAdapter extends MyBaseAdapter {
     }
 
     private void showAvatar(UserListViewItem item, View view) {
-        ImageView avatar = (ImageView) view.findViewById(R.id.avatar_image);
-        avatar.setImageDrawable(item.getAvatar());
+        ImageView avatarView = (ImageView) view.findViewById(R.id.avatar_image);
+        item.showAvatar(contextMenu.getActivity(), avatarView);
     }
 
     private void showMyFollowers(View view, UserListViewItem item) {

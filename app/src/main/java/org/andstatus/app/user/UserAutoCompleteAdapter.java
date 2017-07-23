@@ -16,7 +16,6 @@
 
 package org.andstatus.app.user;
 
-import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
@@ -28,9 +27,9 @@ import android.widget.Filter;
 import android.widget.Filterable;
 import android.widget.ImageView;
 
+import org.andstatus.app.MyActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.data.AvatarFile;
 import org.andstatus.app.database.UserTable;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.CollectionsUtil;
@@ -44,14 +43,16 @@ import java.util.List;
 
 public class UserAutoCompleteAdapter extends BaseAdapter implements Filterable {
     private final Origin origin;
+    private final MyActivity myActivity;
     private final LayoutInflater mInflater;
 
     private ArrayFilter mFilter;
     private List<UserListViewItem> items = new ArrayList<>();
 
-    public UserAutoCompleteAdapter(@NonNull Context context, @NonNull Origin origin) {
+    public UserAutoCompleteAdapter(@NonNull MyActivity myActivity, @NonNull Origin origin) {
         this.origin = origin;
-        mInflater = LayoutInflater.from(context);
+        this.myActivity =myActivity;
+        mInflater = LayoutInflater.from(myActivity);
     }
 
     public Origin getOrigin() {
@@ -86,9 +87,17 @@ public class UserAutoCompleteAdapter extends BaseAdapter implements Filterable {
         MyUrlSpan.showText(view, R.id.username, userName, false, true);
         MyUrlSpan.showText(view, R.id.description, item == null ? "" :
                 I18n.trimTextAt(item.mbUser.getDescription(), 80).toString(), false, false);
-        ((ImageView) view.findViewById(R.id.avatar_image)).setImageDrawable(
-                item == null ? AvatarFile.getDefaultDrawable() : item.avatarDrawable);
+        showAvatar(view, item);
         return view;
+    }
+
+    private void showAvatar(View view, UserListViewItem item) {
+        ImageView avatarView = (ImageView) view.findViewById(R.id.avatar_image);
+        if (item == null) {
+            avatarView.setVisibility(View.INVISIBLE);
+        } else {
+            item.showAvatar(myActivity, avatarView);
+        }
     }
 
     @Override

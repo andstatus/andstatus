@@ -15,20 +15,20 @@ package org.andstatus.app.service;
  * limitations under the License.
  */
 
-import android.graphics.drawable.Drawable;
 import android.support.test.InstrumentationRegistry;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.backup.ProgressLogger;
+import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.AttachedImageFile;
+import org.andstatus.app.data.DemoMessageInserter;
 import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.data.DownloadStatus;
-import org.andstatus.app.data.DemoMessageInserter;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.data.MyDataCheckerConversations;
-import org.andstatus.app.context.DemoData;
+import org.andstatus.app.graphics.CachedDrawable;
 import org.andstatus.app.net.social.ConnectionTwitterGnuSocialMock;
 import org.andstatus.app.net.social.MbAttachment;
 import org.andstatus.app.net.social.MbMessage;
@@ -93,8 +93,7 @@ public class LargeImageTest {
     }
 
     private void loadingTest(DownloadData dd) {
-        Drawable drawable = new AttachedImageFile(dd.getDownloadId(), dd.getFilename())
-                .getDrawableSync();
+        CachedDrawable drawable = new AttachedImageFile(dd.getDownloadId(), dd.getFilename()).loadAndGetDrawable();
         int width = drawable.getIntrinsicWidth();
         assertTrue("Not wide already " + width, width < 4000 && width > 10);
         int height = drawable.getIntrinsicHeight();

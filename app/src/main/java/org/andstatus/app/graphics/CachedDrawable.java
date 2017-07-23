@@ -27,28 +27,38 @@ import android.support.annotation.NonNull;
 /**
  * @author yvolk@yurivolkov.com
  */
-public class BitmapSubsetDrawable extends Drawable {
-    private Bitmap bitmap;
-    private Rect scrRect;
+public class CachedDrawable extends Drawable {
+    public static final Bitmap.Config BITMAP_CONFIG = Bitmap.Config.ARGB_8888;
+    public static final Rect EMPTY_RECT = new Rect(0, 0, 0, 0);
+    public static final Bitmap EMPTY_BITMAP = newBitmap(1);
+    public static final CachedDrawable EMPTY = new CachedDrawable(EMPTY_BITMAP, EMPTY_RECT).makeExpired();
+    public static final CachedDrawable BROKEN = new CachedDrawable(EMPTY_BITMAP, EMPTY_RECT).makeExpired();
+    private final Bitmap bitmap;
+    private final Rect scrRect;
+    private volatile boolean expired = false;
 
-    public BitmapSubsetDrawable(@NonNull Bitmap bitmap, @NonNull Rect srcRect) {
+    public CachedDrawable(@NonNull Bitmap bitmap, @NonNull Rect srcRect) {
         this.bitmap = bitmap;
         this.scrRect = srcRect;
     }
 
+    private static Bitmap newBitmap(int size) {
+        return Bitmap.createBitmap(size, size, BITMAP_CONFIG);
+    }
+
     @Override
     public int getIntrinsicWidth() {
-        return scrRect.width();
+        return getScrRect().width();
     }
 
     @Override
     public int getIntrinsicHeight() {
-        return scrRect.height();
+        return getScrRect().height();
     }
 
     @Override
     public void draw(Canvas canvas) {
-        canvas.drawBitmap(bitmap, scrRect, getBounds(), null);
+        canvas.drawBitmap(getBitmap(), getScrRect(), getBounds(), null);
     }
 
     @Override
@@ -66,7 +76,28 @@ public class BitmapSubsetDrawable extends Drawable {
         return PixelFormat.OPAQUE;
     }
 
-    public Bitmap getBitmap() {
-        return bitmap;
+    boolean isBitmapRecyclable() {
+        return !expired && bitmap.getHeight() > 0;
+    }
+
+    Bitmap getBitmap() {
+        return expired ? EMPTY_BITMAP : bitmap;
+    }
+
+    private Rect getScrRect() {
+        return expired ? EMPTY_RECT : scrRect;
+    }
+
+    public boolean isExpired() {
+        return expired;
+    }
+
+    CachedDrawable makeExpired() {
+        this.expired = true;
+        return this;
+    }
+
+    public Drawable getDrawable() {
+        return this;
     }
 }

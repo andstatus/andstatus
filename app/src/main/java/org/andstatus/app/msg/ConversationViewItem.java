@@ -84,7 +84,8 @@ public class ConversationViewItem extends ConversationItem {
                 if (!TextUtils.isEmpty(via)) {
                     messageSource = Html.fromHtml(via).toString().trim();
                 }
-                avatarDrawable = AvatarFile.getDrawable(authorId, cursor);
+                avatarFile = AvatarFile.fromCursor(authorId, cursor);
+                avatarFile.loadAndGetDrawable();
                 if (MyPreferences.getDownloadAndDisplayAttachedImages()) {
                     attachedImageFile = AttachedImageFile.fromCursor(cursor);
                 }

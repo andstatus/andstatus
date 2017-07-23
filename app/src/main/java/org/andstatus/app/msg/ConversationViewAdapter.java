@@ -16,13 +16,13 @@
 
 package org.andstatus.app.msg;
 
-import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import org.andstatus.app.MyActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.graphics.MyImageCache;
 import org.andstatus.app.util.ViewUtils;
@@ -31,7 +31,7 @@ import java.util.Collections;
 import java.util.List;
 
 public class ConversationViewAdapter extends MessageListAdapter<ConversationViewItem> {
-    private final Context context;
+    private final MyActivity context;
     private final long selectedMessageId;
     private final List<ConversationViewItem> oMsgs;
     private final boolean showThreads;
@@ -96,7 +96,7 @@ public class ConversationViewAdapter extends MessageListAdapter<ConversationView
             view.findViewById(R.id.message_indented).setBackground(
                     MyImageCache.getStyledDrawable(
                             R.drawable.current_message_background_light,
-                            R.drawable.current_message_background));
+                            R.drawable.current_message_background).getDrawable());
         }
     }
 
@@ -127,7 +127,7 @@ public class ConversationViewAdapter extends MessageListAdapter<ConversationView
         RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) avatarView.getLayoutParams();
         layoutParams.leftMargin = dpToPixes(indentPixels == 0 ? 2 : 1) + indentPixels;
         avatarView.setLayoutParams(layoutParams);
-        avatarView.setImageDrawable(item.getAvatar());
+        item.avatarFile.showImage(context, avatarView);
         return ViewUtils.getWidthWithMargins(avatarView);
     }
 

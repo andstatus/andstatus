@@ -128,13 +128,13 @@ public abstract class MessageListAdapter<T extends MessageViewItem> extends MyBa
     }
 
     protected void showAvatar(View view, MessageViewItem item) {
-        ImageView avatar = (ImageView) view.findViewById(R.id.avatar_image);
-        avatar.setImageDrawable(item.getAvatar());
+        ImageView avatarView = (ImageView) view.findViewById(R.id.avatar_image);
+        item.avatarFile.showImage(contextMenu.getActivity(), avatarView);
     }
 
     protected void showAttachedImage(View view, MessageViewItem item) {
         preloadedImages.add(item.getMsgId());
-        item.getAttachedImageFile().showAttachedImage(contextMenu.getActivity(),
+        item.getAttachedImageFile().showImage(contextMenu.getActivity(),
                 (ImageView) view.findViewById(R.id.attached_image));
     }
 

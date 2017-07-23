@@ -16,12 +16,14 @@
 
 package org.andstatus.app.user;
 
-import android.graphics.drawable.Drawable;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
+import android.widget.ImageView;
 
+import org.andstatus.app.MyActivity;
 import org.andstatus.app.ViewItem;
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.data.AvatarFile;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.net.social.MbUser;
@@ -34,7 +36,7 @@ public class UserListViewItem implements ViewItem, Comparable<UserListViewItem> 
     boolean populated = false;
     @NonNull
     final MbUser mbUser;
-    Drawable avatarDrawable = null;
+    private AvatarFile avatarFile = null;
     Set<Long> myFollowers = new HashSet<>();
 
     @Override
@@ -79,10 +81,6 @@ public class UserListViewItem implements ViewItem, Comparable<UserListViewItem> 
         return mbUser.userId;
     }
 
-    public Drawable getAvatar() {
-        return avatarDrawable;
-    }
-
     @Override
     public String toString() {
         return "UserListViewItem{" +
@@ -110,5 +108,15 @@ public class UserListViewItem implements ViewItem, Comparable<UserListViewItem> 
     @Override
     public int compareTo(@NonNull UserListViewItem o) {
         return getWebFingerIdOrUserName().compareTo(o.getWebFingerIdOrUserName());
+    }
+
+    public void setAvatarFile(AvatarFile avatarFile) {
+        this.avatarFile = avatarFile;
+    }
+
+    public void showAvatar(MyActivity myActivity, ImageView imageView) {
+        if (avatarFile != null) {
+            avatarFile.showImage(myActivity, imageView);
+        }
     }
 }

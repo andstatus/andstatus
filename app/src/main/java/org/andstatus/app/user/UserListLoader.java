@@ -152,7 +152,9 @@ public class UserListLoader extends SyncLoader<UserListViewItem> {
         user.setUpdatedDate(DbUtils.getLong(cursor, UserTable.UPDATED_DATE));
 
         item.myFollowers = MyQuery.getMyFollowersOf(userId);
-        item.avatarDrawable = AvatarFile.getDrawable(item.getUserId(), cursor);
+        AvatarFile avatarFile = AvatarFile.fromCursor(item.getUserId(), cursor);
+        avatarFile.loadAndGetDrawable();
+        item.setAvatarFile(avatarFile);
 
         item.populated = true;
     }

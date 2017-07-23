@@ -41,6 +41,7 @@ import org.junit.Test;
 
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.closeSoftKeyboard;
+import static android.support.test.espresso.action.ViewActions.pressImeActionButton;
 import static android.support.test.espresso.action.ViewActions.pressKey;
 import static android.support.test.espresso.action.ViewActions.scrollTo;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
@@ -97,7 +98,7 @@ public class PublicTimelineActivityTest extends TimelineActivityTest {
 
         onView(withId(R.id.internet_search)).perform(setChecked(internetSearch));
         onView(withResourceName("search_text")).perform(new TypeTextAction(messageText),
-                pressKey(KeyEvent.KEYCODE_ENTER));
+                pressImeActionButton());
         TimelineActivity nextActivity = (TimelineActivity) helper.waitForNextActivity(method, 40000);
         waitForButtonClickedEvidence(nextActivity, method, messageText);
         assertMessagesArePublic(nextActivity, messageText);

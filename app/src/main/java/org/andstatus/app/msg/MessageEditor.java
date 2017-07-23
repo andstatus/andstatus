@@ -488,7 +488,7 @@ public class MessageEditor {
         if (editorData.imageDrawable == null) {
             imageView.setVisibility(View.GONE);
         } else {
-            imageView.setImageDrawable(editorData.imageDrawable);
+            imageView.setImageDrawable(editorData.imageDrawable.getDrawable());
             imageView.setVisibility(View.VISIBLE);
         }
     }

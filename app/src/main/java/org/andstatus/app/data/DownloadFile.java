@@ -86,7 +86,7 @@ public class DownloadFile {
 
     @Override
     public String toString() {
-        return MyLog.objToTag(this) + " [filename=" + filename + "]";
+        return MyLog.objToLongTag(this) + " [filename=" + filename + "]";
     }
 
     @Override

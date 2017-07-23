@@ -251,6 +251,12 @@ public class MyLog {
     /** Truncated to {@link #MAX_TAG_LENGTH} */
     @NonNull
     public static String objToTag(Object objTag) {
+        final String tag = objToLongTag(objTag);
+        return (tag.length() > MAX_TAG_LENGTH) ? tag.substring(0, MAX_TAG_LENGTH) : tag;
+    }
+
+    @NonNull
+    public static String objToLongTag(Object objTag) {
         final String tag;
         if (objTag == null) {
             tag = "(null)";
@@ -268,7 +274,7 @@ public class MyLog {
         if (tag.trim().isEmpty()) {
             return "(empty)";
         }
-        return (tag.length() > MAX_TAG_LENGTH) ? tag.substring(0, MAX_TAG_LENGTH) : tag;
+        return tag;
     }
 
     // TODO: Java8 Move to Interface
@@ -628,7 +634,7 @@ public class MyLog {
             }
             if (toFile && !isEmpty) {
                 writeStringToFile(strJso, uniqueDateTimeFormatted()  + "_" + namePrefix
-                        + "_" + objToTag(objTag) + "_log.json");
+                        + "_" + objToLongTag(objTag) + "_log.json");
             } else {
                 v(objTag, namePrefix + "; jso: " + strJso);
             }
@@ -637,7 +643,7 @@ public class MyLog {
             try {
                 if (toFile) {
                     writeStringToFile(jso.toString(), uniqueDateTimeFormatted() + "_" + namePrefix 
-                            + "_" + objToTag(objTag) + "_invalid_log.json");
+                            + "_" + objToLongTag(objTag) + "_invalid_log.json");
                 }
                 v(objTag, namePrefix + "; invalid obj: " + jso.toString());
             } catch (Exception ignored2) {

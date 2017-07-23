@@ -17,7 +17,6 @@
 package org.andstatus.app.msg;
 
 import android.graphics.Point;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
@@ -33,6 +32,7 @@ import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.database.MsgTable;
+import org.andstatus.app.graphics.CachedDrawable;
 import org.andstatus.app.net.social.MbAttachment;
 import org.andstatus.app.net.social.MbMessage;
 import org.andstatus.app.net.social.MbUser;
@@ -56,7 +56,7 @@ public class MessageEditorData {
 
     private DownloadData image = DownloadData.EMPTY;
     private Point imageSize = new Point();
-    Drawable imageDrawable = null;
+    CachedDrawable imageDrawable = null;
 
     /**
      * Id of the Message to which we are replying.
@@ -150,7 +150,7 @@ public class MessageEditorData {
                 AttachedImageFile imageFile = new AttachedImageFile(data.image.getDownloadId(),
                         data.image.getFilename());
                 data.imageSize = imageFile.getSize();
-                data.imageDrawable = imageFile.getDrawableSync();
+                data.imageDrawable = imageFile.loadAndGetDrawable();
             }
             data.inReplyToId = MyQuery.msgIdToLongColumnValue(MsgTable.IN_REPLY_TO_MSG_ID, msgId);
             data.inReplyToBody = MyQuery.msgIdToStringColumnValue(MsgTable.BODY, data.inReplyToId);
