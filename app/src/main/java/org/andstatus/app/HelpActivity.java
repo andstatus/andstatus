@@ -394,8 +394,8 @@ public class HelpActivity extends MyActivity implements SwipeInterface, Progress
             this.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    finish();
                     TimelineActivity.goHome(HelpActivity.this);
+                    finish();
                 }
             });
         } catch (Exception e) {

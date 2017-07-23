@@ -125,6 +125,7 @@ public class TimelineActivity extends MessageEditorListActivity implements
 
     public static void goHome(Activity activity) {
         try {
+            MyLog.v(TimelineActivity.class, "goHome from " + MyLog.objToTag(activity));
             Intent intent = new Intent(activity, FirstActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
             activity.startActivity(intent);
