@@ -117,7 +117,7 @@ public abstract class ImageFile {
     private void showImageAsync(final MyActivity myActivity, @Nullable final ImageView imageView,
                                 final boolean preload) {
         final String path = downloadFile.getFilePath();
-        String taskId = MyLog.objToLongTag(this) + getId() + (preload ? "-preload" : "-load");
+        String taskId = MyLog.objToTag(this) + getId() + (preload ? "-preload" : "-load");
         AsyncTaskLauncher.execute(this, false,
                 new MyAsyncTask<Void, Void, CachedDrawable>(taskId, MyAsyncTask.PoolEnum.QUICK_UI) {
                     @Override
@@ -175,7 +175,7 @@ public abstract class ImageFile {
 
     @Override
     public String toString() {
-        return MyLog.objToLongTag(this) + ":{id=" + getId() + ", " + downloadFile + "}";
+        return MyLog.objToTag(this) + ":{id=" + getId() + ", " + downloadFile + "}";
     }
 
     private static CachedDrawable loadBlankDrawable() {

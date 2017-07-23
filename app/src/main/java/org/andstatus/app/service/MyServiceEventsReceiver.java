@@ -40,7 +40,7 @@ public final class MyServiceEventsReceiver extends BroadcastReceiver {
         this.myContext = myContext;
         this.listener = listener;
         MyLog.v(this, "Created, instanceId=" + mInstanceId
-                + (listener == null ? "" : "; listener=" + MyLog.objToLongTag(listener)));
+                + (listener == null ? "" : "; listener=" + MyLog.objToTag(listener)));
     }
     
     public void registerReceiver(Context context) {
@@ -62,7 +62,7 @@ public final class MyServiceEventsReceiver extends BroadcastReceiver {
         if (event == MyServiceEvent.UNKNOWN) {
             return;
         }
-        MyLog.v(this, "onReceive " + event + " for " + MyLog.objToLongTag(listener) + ", instanceId:" + mInstanceId);
+        MyLog.v(this, "onReceive " + event + " for " + MyLog.objToTag(listener) + ", instanceId:" + mInstanceId);
         listener.onReceive(CommandData.fromIntent(myContext, intent), event);
     }
 }

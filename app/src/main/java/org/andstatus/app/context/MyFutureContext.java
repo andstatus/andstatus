@@ -57,7 +57,7 @@ public class MyFutureContext extends MyAsyncTask<Void, Void, MyContext> {
         super(MyFutureContext.class.getSimpleName(), PoolEnum.QUICK_UI);
         this.contextCreator = contextCreator;
         this.myPreviousContext = myPreviousContext;
-        callerName = MyLog.objToLongTag(calledBy);
+        callerName = MyLog.objToTag(calledBy);
     }
 
     void executeOnNonUiThread() {

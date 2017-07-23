@@ -127,49 +127,49 @@ public class MyLog {
     }
     
     public static int e(Object objTag, String msg, Throwable tr) {
-        String tag = objToTag(objTag);
+        String tag = objToTruncatedTag(objTag);
         logToFile(ERROR, tag, msg, tr);
         return Log.e(tag, msg, tr);
     }
 
     public static int e(Object objTag, Throwable tr) {
-        String tag = objToTag(objTag);
+        String tag = objToTruncatedTag(objTag);
         logToFile(ERROR, tag, null, tr);
         return Log.e(tag, "", tr);
     }
     
     public static int e(Object objTag, String msg) {
-        String tag = objToTag(objTag);
+        String tag = objToTruncatedTag(objTag);
         logToFile(ERROR, tag, msg, null);
         return Log.e(tag, msg);
     }
 
     public static int i(Object objTag, String msg, Throwable tr) {
-        String tag = objToTag(objTag);
+        String tag = objToTruncatedTag(objTag);
         logToFile(INFO, tag, msg, tr);
         return Log.i(tag, msg, tr);
     }
     
     public static int i(Object objTag, Throwable tr) {
-        String tag = objToTag(objTag);
+        String tag = objToTruncatedTag(objTag);
         logToFile(INFO, tag, null, tr);
         return Log.i(tag, "", tr);
     }
     
     public static int i(Object objTag, String msg) {
-        String tag = objToTag(objTag);
+        String tag = objToTruncatedTag(objTag);
         logToFile(INFO, tag, msg, null);
         return Log.i(tag, msg);
     }
 
     public static int w(Object objTag, String msg) {
-        String tag = objToTag(objTag);
+        String tag = objToTruncatedTag(objTag);
         logToFile(WARN, tag, msg, null);
         return Log.w(tag, msg);
     }
 
     public static int w(Object objTag, String msg, Throwable tr) {
-        String tag = objToTag(objTag);
+        String tag = objToTruncatedTag(objTag);
         logToFile(WARN, tag, msg, tr);
         return Log.w(tag, msg, tr);
     }
@@ -178,7 +178,7 @@ public class MyLog {
      * Shortcut for debugging messages of the application
      */
     public static int d(Object objTag, String msg) {
-        String tag = objToTag(objTag);
+        String tag = objToTruncatedTag(objTag);
         int i = 0;
         if (isLoggable(tag, DEBUG)) {
             logToFile(DEBUG, tag, msg, null);
@@ -191,7 +191,7 @@ public class MyLog {
      * Shortcut for debugging messages of the application
      */
     public static int d(Object objTag, String msg, Throwable tr) {
-        String tag = objToTag(objTag);
+        String tag = objToTruncatedTag(objTag);
         int i = 0;
         if (isLoggable(tag, DEBUG)) {
             logToFile(DEBUG, tag, msg, tr);
@@ -204,7 +204,7 @@ public class MyLog {
      * Shortcut for verbose messages of the application
      */
     public static int v(Object objTag, Throwable tr) {
-        String tag = objToTag(objTag);
+        String tag = objToTruncatedTag(objTag);
         int i = 0;
         if (isLoggable(tag, Log.VERBOSE)) {
             logToFile(VERBOSE, tag, null, tr);
@@ -217,7 +217,7 @@ public class MyLog {
      * Shortcut for verbose messages of the application
      */
     public static int v(Object objTag, String msg) {
-        String tag = objToTag(objTag);
+        String tag = objToTruncatedTag(objTag);
         int i = 0;
         if (isLoggable(tag, Log.VERBOSE)) {
             logToFile(VERBOSE, tag, msg, null);
@@ -227,7 +227,7 @@ public class MyLog {
     }
 
     public static int v(Object objTag, String msg, Throwable tr) {
-        String tag = objToTag(objTag);
+        String tag = objToTruncatedTag(objTag);
         int i = 0;
         if (isLoggable(tag, Log.VERBOSE)) {
             logToFile(VERBOSE, tag, msg, tr);
@@ -240,7 +240,7 @@ public class MyLog {
      * This will be ignored
      */
     public static int ignored(Object objTag, Throwable tr) {
-        String tag = objToTag(objTag);
+        String tag = objToTruncatedTag(objTag);
         int i = 0;
         if (isLoggable(tag, IGNORED)) {
             i = Log.i(tag, "", tr);
@@ -250,13 +250,13 @@ public class MyLog {
 
     /** Truncated to {@link #MAX_TAG_LENGTH} */
     @NonNull
-    public static String objToTag(Object objTag) {
-        final String tag = objToLongTag(objTag);
+    private static String objToTruncatedTag(Object objTag) {
+        final String tag = objToTag(objTag);
         return (tag.length() > MAX_TAG_LENGTH) ? tag.substring(0, MAX_TAG_LENGTH) : tag;
     }
 
     @NonNull
-    public static String objToLongTag(Object objTag) {
+    public static String objToTag(Object objTag) {
         final String tag;
         if (objTag == null) {
             tag = "(null)";
@@ -311,7 +311,7 @@ public class MyLog {
         } else if (level >= minLogLevel) {
             return true;
         } else {
-            String tag = objToTag(objTag);
+            String tag = objToTruncatedTag(objTag);
             if (TextUtils.isEmpty(tag)) {
                 tag = APPTAG;
             }
@@ -439,7 +439,7 @@ public class MyLog {
     }
     
     public static String formatKeyValue(Object keyIn, Object valueIn) {
-        String key = objToTag(keyIn);
+        String key = objToTruncatedTag(keyIn);
         if (keyIn == null) {
             return key;
         }
@@ -634,7 +634,7 @@ public class MyLog {
             }
             if (toFile && !isEmpty) {
                 writeStringToFile(strJso, uniqueDateTimeFormatted()  + "_" + namePrefix
-                        + "_" + objToLongTag(objTag) + "_log.json");
+                        + "_" + objToTag(objTag) + "_log.json");
             } else {
                 v(objTag, namePrefix + "; jso: " + strJso);
             }
@@ -643,7 +643,7 @@ public class MyLog {
             try {
                 if (toFile) {
                     writeStringToFile(jso.toString(), uniqueDateTimeFormatted() + "_" + namePrefix 
-                            + "_" + objToLongTag(objTag) + "_invalid_log.json");
+                            + "_" + objToTag(objTag) + "_invalid_log.json");
                 }
                 v(objTag, namePrefix + "; invalid obj: " + jso.toString());
             } catch (Exception ignored2) {

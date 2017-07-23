@@ -36,7 +36,7 @@ public class MySwipeRefreshLayout extends SwipeRefreshLayout {
         super(context, attrs);
         if (CanSwipeRefreshScrollUpCallback.class.isAssignableFrom(context.getClass())) {
             mCanSwipeRefreshScrollUpCallback = (CanSwipeRefreshScrollUpCallback) context;
-            MyLog.v(this, "Created for " + MyLog.objToLongTag(mCanSwipeRefreshScrollUpCallback));
+            MyLog.v(this, "Created for " + MyLog.objToTag(mCanSwipeRefreshScrollUpCallback));
         }
     }
 

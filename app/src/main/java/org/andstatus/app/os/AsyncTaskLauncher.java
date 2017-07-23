@@ -125,7 +125,7 @@ public class AsyncTaskLauncher<Params> {
                     + "\n" + threadPoolInfo();
             MyLog.w(objTag, msgLog, e);
             if (throwOnFail) {
-                throw new RejectedExecutionException(MyLog.objToLongTag(objTag) + "; "
+                throw new RejectedExecutionException(MyLog.objToTag(objTag) + "; "
                         + msgLog, e);
             }
         }

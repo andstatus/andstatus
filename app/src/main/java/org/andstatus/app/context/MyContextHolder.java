@@ -168,7 +168,7 @@ public final class MyContextHolder {
         if (contextCreator.context() == null) {
             synchronized(CONTEXT_LOCK) {
                 if (contextCreator.context() == null) {
-                    String callerName = MyLog.objToLongTag(calledBy) ;
+                    String callerName = MyLog.objToTag(calledBy) ;
                     if (context == null) {
                         throw new IllegalStateException(TAG + ": context is unknown yet, called by " + callerName);
                     }
