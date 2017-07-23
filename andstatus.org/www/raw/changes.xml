@@ -27,6 +27,16 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
         </subtitle>
     </header>
+    <release android:versionName="35.01" android:versionCode="227"
+             versionDate="2017-07-23"
+             versionTitle="Bug Fixes">
+        <changes>
+            <change>Fixed avatars occasionally started to change (cache overload)
+                <a href="https://github.com/andstatus/andstatus/issues/458">#458</a></change>
+            <change>Search interface improved...
+            </change>
+        </changes>
+    </release>
     <release android:versionName="35.00" android:versionCode="226"
              versionDate="2017-07-22"
              versionTitle="Autocompletion of usernames/webfingerIds during message composition. Users search">
