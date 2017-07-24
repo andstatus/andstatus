@@ -153,7 +153,7 @@ public class UserListLoader extends SyncLoader<UserListViewItem> {
 
         item.myFollowers = MyQuery.getMyFollowersOf(userId);
         AvatarFile avatarFile = AvatarFile.fromCursor(item.getUserId(), cursor);
-        avatarFile.loadAndGetDrawable();
+        avatarFile.loadAndGetImage();
         item.setAvatarFile(avatarFile);
 
         item.populated = true;

@@ -20,8 +20,8 @@ public class AttachedImageScalingTest {
 
     @Test
     public void testScaling() {
-        MyImageCache.initialize(MyContextHolder.get().context());
-        MyDrawableCache cache = MyImageCache.getCache(MyImageCache.CacheName.ATTACHED_IMAGE);
+        ImageCaches.initialize(MyContextHolder.get().context());
+        ImageCache cache = ImageCaches.getCache(CacheName.ATTACHED_IMAGE);
         Point exactlyMaxSize = new Point(cache.getMaxBitmapWidth(), cache.getMaxBitmapWidth());
         BitmapFactory.Options options = cache.calculateScaling(this, exactlyMaxSize);
         assertEquals(0, options.inSampleSize);

@@ -25,22 +25,22 @@ import android.support.annotation.NonNull;
 /**
  * @author yvolk@yurivolkov.com
  */
-public class CachedDrawable {
+public class CachedImage {
     public static final Bitmap.Config BITMAP_CONFIG = Bitmap.Config.ARGB_8888;
     public static final Rect EMPTY_RECT = new Rect(0, 0, 0, 0);
     public static final Bitmap EMPTY_BITMAP = newBitmap(1);
-    public static final CachedDrawable EMPTY = new CachedDrawable(EMPTY_BITMAP, EMPTY_RECT).makeExpired();
-    public static final CachedDrawable BROKEN = new CachedDrawable(EMPTY_BITMAP, EMPTY_RECT).makeExpired();
+    public static final CachedImage EMPTY = new CachedImage(EMPTY_BITMAP, EMPTY_RECT).makeExpired();
+    public static final CachedImage BROKEN = new CachedImage(EMPTY_BITMAP, EMPTY_RECT).makeExpired();
     private final Bitmap bitmap;
     protected final Drawable source;
     private volatile boolean expired = false;
 
-    public CachedDrawable(@NonNull Bitmap bitmap, @NonNull Rect srcRect) {
+    public CachedImage(@NonNull Bitmap bitmap, @NonNull Rect srcRect) {
         this.bitmap = bitmap;
         source = new BitmapSubsetDrawable(bitmap, srcRect);
     }
 
-    public CachedDrawable(@NonNull Drawable drawable) {
+    public CachedImage(@NonNull Drawable drawable) {
         bitmap = EMPTY_BITMAP;
         source = drawable;
     }
@@ -62,7 +62,7 @@ public class CachedDrawable {
         return expired;
     }
 
-    CachedDrawable makeExpired() {
+    CachedImage makeExpired() {
         this.expired = true;
         return this;
     }

@@ -24,7 +24,7 @@ import android.widget.TextView;
 
 import org.andstatus.app.MyActivity;
 import org.andstatus.app.R;
-import org.andstatus.app.graphics.MyImageCache;
+import org.andstatus.app.graphics.ImageCaches;
 import org.andstatus.app.util.ViewUtils;
 
 import java.util.Collections;
@@ -94,7 +94,7 @@ public class ConversationViewAdapter extends MessageListAdapter<ConversationView
     private void showCentralItem(View view, ConversationViewItem item) {
         if (item.getMsgId() == selectedMessageId  && oMsgs.size() > 1) {
             view.findViewById(R.id.message_indented).setBackground(
-                    MyImageCache.getStyledDrawable(
+                    ImageCaches.getStyledImage(
                             R.drawable.current_message_background_light,
                             R.drawable.current_message_background).getDrawable());
         }

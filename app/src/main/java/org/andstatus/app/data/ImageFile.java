@@ -27,14 +27,15 @@ import org.andstatus.app.MyActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.graphics.AttachedImageView;
-import org.andstatus.app.graphics.CachedDrawable;
-import org.andstatus.app.graphics.MyImageCache;
+import org.andstatus.app.graphics.CacheName;
+import org.andstatus.app.graphics.CachedImage;
+import org.andstatus.app.graphics.ImageCaches;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.util.MyLog;
 
 public abstract class ImageFile {
-    protected static final CachedDrawable BLANK_DRAWABLE = loadBlankDrawable();
+    protected static final CachedImage BLANK_IMAGE = loadBlankImage();
     private final DownloadFile downloadFile;
     private volatile Point size = null;
 
@@ -53,12 +54,12 @@ public abstract class ImageFile {
         if (AttachedImageView.class.isAssignableFrom(imageView.getClass())) {
             ((AttachedImageView) imageView).setMeasuresLocked(false);
         }
-        CachedDrawable drawable = getDrawableFromCache();
-        if (drawable == CachedDrawable.BROKEN) {
+        CachedImage image = getImageFromCache();
+        if (image == CachedImage.BROKEN) {
             onNoImage(imageView);
             return;
-        } else if (drawable != null && !drawable.isExpired()) {
-            imageView.setImageDrawable(drawable.getDrawable());
+        } else if (image != null && !image.isExpired()) {
+            imageView.setImageDrawable(image.getDrawable());
             imageView.setVisibility(View.VISIBLE);
             return;
         }
@@ -75,12 +76,12 @@ public abstract class ImageFile {
     }
 
     private void showBlankImage(ImageView imageView) {
-        imageView.setImageDrawable(BLANK_DRAWABLE.getDrawable());
+        imageView.setImageDrawable(BLANK_IMAGE.getDrawable());
         imageView.setVisibility(View.VISIBLE);
     }
 
     private void showDefaultImage(ImageView imageView) {
-        imageView.setImageDrawable(getDefaultDrawable().getDrawable());
+        imageView.setImageDrawable(getDefaultImage().getDrawable());
         imageView.setVisibility(View.VISIBLE);
     }
 
@@ -92,13 +93,13 @@ public abstract class ImageFile {
         }
     }
 
-    private CachedDrawable getDrawableFromCache() {
-        return MyImageCache.getCachedDrawable(getCacheName(), this, downloadFile.getFilePath());
+    private CachedImage getImageFromCache() {
+        return ImageCaches.getCachedImage(getCacheName(), this, downloadFile.getFilePath());
     }
 
     public void preloadImageAsync(@NonNull MyActivity myActivity) {
-        CachedDrawable drawable = getDrawableFromCache();
-        if (drawable != null) {
+        CachedImage image = getImageFromCache();
+        if (image != null) {
             return;
         }
         if (downloadFile.exists()) {
@@ -106,9 +107,9 @@ public abstract class ImageFile {
         }
     }
 
-    public CachedDrawable loadAndGetDrawable() {
+    public CachedImage loadAndGetImage() {
         if (downloadFile.exists()) {
-            return MyImageCache.loadAndGetDrawable(getCacheName(), this, downloadFile.getFilePath());
+            return ImageCaches.loadAndGetImage(getCacheName(), this, downloadFile.getFilePath());
         }
         requestAsyncDownload();
         return null;
@@ -119,17 +120,17 @@ public abstract class ImageFile {
         final String path = downloadFile.getFilePath();
         String taskId = MyLog.objToTag(this) + getId() + (preload ? "-preload" : "-load");
         AsyncTaskLauncher.execute(this, false,
-                new MyAsyncTask<Void, Void, CachedDrawable>(taskId, MyAsyncTask.PoolEnum.QUICK_UI) {
+                new MyAsyncTask<Void, Void, CachedImage>(taskId, MyAsyncTask.PoolEnum.QUICK_UI) {
                     @Override
-                    protected CachedDrawable doInBackground2(Void... params) {
-                        return MyImageCache.loadAndGetDrawable(getCacheName(), this, path);
+                    protected CachedImage doInBackground2(Void... params) {
+                        return ImageCaches.loadAndGetImage(getCacheName(), this, path);
                     }
 
                     @Override
-                    protected void onFinish(CachedDrawable drawable, boolean success) {
+                    protected void onFinish(CachedImage image, boolean success) {
                         final String method = "showImageAsync";
                         if (preload) {
-                            if (drawable == null) {
+                            if (image == null) {
                                 MyLog.v(this, method + "; Failed to preload " + getCacheName() + ": " + path);
                             } else {
                                 MyLog.v(this, method + "; Preloaded " + getCacheName() + ": " + path);
@@ -144,14 +145,14 @@ public abstract class ImageFile {
                             MyLog.v(this, method + "; Skipped not resumed " + getCacheName() + ": " + path);
                             return;
                         }
-                        if (drawable == null) {
+                        if (image == null) {
                             MyLog.v(this, method + "; Failed to load " + getCacheName() + ": " + path);
                         } else {
                             try {
                                 if (AttachedImageView.class.isAssignableFrom(imageView.getClass())) {
                                     ((AttachedImageView) imageView).setMeasuresLocked(true);
                                 }
-                                imageView.setImageDrawable(drawable.getDrawable());
+                                imageView.setImageDrawable(image.getDrawable());
                                 MyLog.v(this, method + "; Loaded" + getCacheName() + ": " + path);
                             } catch (Exception e) {
                                 MyLog.d(this, method + "; Error on setting image " + getCacheName() + ": " + path, e);
@@ -164,7 +165,7 @@ public abstract class ImageFile {
 
     public Point getSize() {
         if (size == null && downloadFile.exists()) {
-            size = MyImageCache.getImageSize(getCacheName(), downloadFile.getFilePath());
+            size = ImageCaches.getImageSize(getCacheName(), downloadFile.getFilePath());
         }
         return size == null ? new Point() : size;
     }
@@ -178,21 +179,21 @@ public abstract class ImageFile {
         return MyLog.objToTag(this) + ":{id=" + getId() + ", " + downloadFile + "}";
     }
 
-    private static CachedDrawable loadBlankDrawable() {
-        CachedDrawable drawable = null;
+    private static CachedImage loadBlankImage() {
+        CachedImage image = null;
         MyLog.v(AvatarFile.class, "Loading blank image");
         Context context = MyContextHolder.get().context();
         if (context != null) {
-            drawable = MyImageCache.getDrawableCompat(context, R.drawable.blank_image);
+            image = ImageCaches.getImageCompat(context, R.drawable.blank_image);
         }
-        return drawable;
+        return image;
     }
 
-    public abstract MyImageCache.CacheName getCacheName();
+    public abstract CacheName getCacheName();
 
     protected abstract long getId();
 
-    protected abstract CachedDrawable getDefaultDrawable();
+    protected abstract CachedImage getDefaultImage();
 
     protected abstract void requestAsyncDownload();
 

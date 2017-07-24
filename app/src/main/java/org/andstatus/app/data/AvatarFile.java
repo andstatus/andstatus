@@ -21,8 +21,9 @@ import android.support.annotation.NonNull;
 
 import org.andstatus.app.R;
 import org.andstatus.app.database.DownloadTable;
-import org.andstatus.app.graphics.CachedDrawable;
-import org.andstatus.app.graphics.MyImageCache;
+import org.andstatus.app.graphics.CacheName;
+import org.andstatus.app.graphics.CachedImage;
+import org.andstatus.app.graphics.ImageCaches;
 
 public class AvatarFile extends ImageFile {
     public static final AvatarFile EMPTY = new AvatarFile(0, null);
@@ -41,8 +42,8 @@ public class AvatarFile extends ImageFile {
     }
 
     @Override
-    public MyImageCache.CacheName getCacheName() {
-        return MyImageCache.CacheName.AVATAR;
+    public CacheName getCacheName() {
+        return CacheName.AVATAR;
     }
 
     @Override
@@ -51,8 +52,8 @@ public class AvatarFile extends ImageFile {
     }
 
     @Override
-    public CachedDrawable getDefaultDrawable() {
-        return MyImageCache.getStyledDrawable(R.drawable.ic_person_black_36dp, R.drawable.ic_person_white_36dp);
+    public CachedImage getDefaultImage() {
+        return ImageCaches.getStyledImage(R.drawable.ic_person_black_36dp, R.drawable.ic_person_white_36dp);
     }
 
     @Override

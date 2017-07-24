@@ -39,7 +39,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * @author yvolk@yurivolkov.com
  */
-public class MyImageCache {
+public class ImageCaches {
     private static final float ATTACHED_IMAGES_CACHE_PART_OF_TOTAL_APP_MEMORY = 0.20f;
     public static final int ATTACHED_IMAGES_CACHE_SIZE_MIN = 10;
     public static final int ATTACHED_IMAGES_CACHE_SIZE_MAX = 20;
@@ -47,25 +47,21 @@ public class MyImageCache {
     public static final int AVATARS_CACHE_SIZE_MIN = 200;
     public static final int AVATARS_CACHE_SIZE_MAX = 700;
 
-    public enum CacheName {
-        ATTACHED_IMAGE,
-        AVATAR
-    }
-    private static volatile MyDrawableCache attachedImagesCache;
-    private static volatile MyDrawableCache avatarsCache;
+    private static volatile ImageCache attachedImagesCache;
+    private static volatile ImageCache avatarsCache;
 
-    private  MyImageCache() {
+    private ImageCaches() {
         // Empty
     }
 
     public static synchronized void initialize(Context context) {
-        styledDrawables.clear();
+        styledImages.clear();
         if (attachedImagesCache != null) {
             return;
         }
         initializeAttachedImagesCache(context);
         initializeAvatarsCache(context);
-        MyLog.i(MyImageCache.class.getSimpleName(), "Cache initialized. " + getCacheInfo());
+        MyLog.i(ImageCaches.class.getSimpleName(), "Cache initialized. " + getCacheInfo());
     }
 
     private static void initializeAttachedImagesCache(Context context) {
@@ -84,7 +80,7 @@ public class MyImageCache {
         if (cacheSize > ATTACHED_IMAGES_CACHE_SIZE_MAX) {
             cacheSize = ATTACHED_IMAGES_CACHE_SIZE_MAX;
         }
-        attachedImagesCache = new MyDrawableCache(context, "Attached images", imageSize,
+        attachedImagesCache = new ImageCache(context, CacheName.ATTACHED_IMAGE, imageSize,
                 cacheSize);
     }
 
@@ -102,7 +98,7 @@ public class MyImageCache {
         if (cacheSize > AVATARS_CACHE_SIZE_MAX) {
             cacheSize = AVATARS_CACHE_SIZE_MAX;
         }
-        avatarsCache = new MyDrawableCache(context, "Avatars", imageSize, cacheSize);
+        avatarsCache = new ImageCache(context, CacheName.AVATAR, imageSize, cacheSize);
         setAvatarsRounded();
     }
 
@@ -113,7 +109,7 @@ public class MyImageCache {
 
     private static int calcCacheSize(Context context, int imageSize, float partOfAvailableMemory) {
         return Math.round(partOfAvailableMemory * getTotalAppMemory(context)
-                / imageSize / imageSize / MyDrawableCache.BYTES_PER_PIXEL);
+                / imageSize / imageSize / ImageCache.BYTES_PER_PIXEL);
     }
 
     @NonNull
@@ -141,15 +137,15 @@ public class MyImageCache {
         return getCache(cacheName).getImageSize(path);
     }
 
-    public static CachedDrawable loadAndGetDrawable(CacheName cacheName, Object objTag, String path) {
-        return getCache(cacheName).loadAndGetDrawable(objTag, path);
+    public static CachedImage loadAndGetImage(CacheName cacheName, Object objTag, String path) {
+        return getCache(cacheName).loadAndGetImage(objTag, path);
     }
 
-    public static CachedDrawable getCachedDrawable(CacheName cacheName, Object objTag, String path) {
-        return getCache(cacheName).getCachedDrawable(objTag, path);
+    public static CachedImage getCachedImage(CacheName cacheName, Object objTag, String path) {
+        return getCache(cacheName).getCachedImage(objTag, path);
     }
 
-    public static MyDrawableCache getCache(CacheName cacheName) {
+    public static ImageCache getCache(CacheName cacheName) {
         switch (cacheName) {
             case ATTACHED_IMAGE:
                 return attachedImagesCache;
@@ -165,7 +161,7 @@ public class MyImageCache {
         } else {
             builder.append(avatarsCache.getInfo() + "\n");
             builder.append(attachedImagesCache.getInfo() + "\n");
-            builder.append("Styled drawables: " + styledDrawables.size() + "\n");
+            builder.append("Styled images: " + styledImages.size() + "\n");
         }
         Context context = MyContextHolder.get().context();
         if (context != null) {
@@ -199,29 +195,29 @@ public class MyImageCache {
     }
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    public static CachedDrawable getDrawableCompat(Context context, int drawableId) {
+    public static CachedImage getImageCompat(Context context, int resourceId) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)  {
-            return new CachedDrawable(context.getTheme().getDrawable(drawableId));
+            return new CachedImage(context.getTheme().getDrawable(resourceId));
         } else {
-            return new CachedDrawable(context.getResources().getDrawable(drawableId));
+            return new CachedImage(context.getResources().getDrawable(resourceId));
         }
     }
 
-    private static final Map<Integer, CachedDrawable[]> styledDrawables = new ConcurrentHashMap<>();
-    public static CachedDrawable getStyledDrawable(int resourceIdLight, int resourceId) {
-        CachedDrawable[] styledDrawable = styledDrawables.get(resourceId);
-        if (styledDrawable == null) {
+    private static final Map<Integer, CachedImage[]> styledImages = new ConcurrentHashMap<>();
+    public static CachedImage getStyledImage(int resourceIdLight, int resourceId) {
+        CachedImage[] styledImage = styledImages.get(resourceId);
+        if (styledImage == null) {
             Context context = MyContextHolder.get().context();
             if (context != null) {
-                CachedDrawable drawable = getDrawableCompat(context, resourceId);
-                CachedDrawable drawableLight = getDrawableCompat(context, resourceIdLight);
-                styledDrawable = new CachedDrawable[]{drawable, drawableLight};
-                styledDrawables.put(resourceId, styledDrawable);
+                CachedImage image = getImageCompat(context, resourceId);
+                CachedImage imageLight = getImageCompat(context, resourceIdLight);
+                styledImage = new CachedImage[]{image, imageLight};
+                styledImages.put(resourceId, styledImage);
             } else {
-                return CachedDrawable.EMPTY;
+                return CachedImage.EMPTY;
             }
         }
-        return styledDrawable[MyTheme.isThemeLight() ? 1 : 0];
+        return styledImage[MyTheme.isThemeLight() ? 1 : 0];
     }
 
 }

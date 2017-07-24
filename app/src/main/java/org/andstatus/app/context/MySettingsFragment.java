@@ -43,7 +43,7 @@ import org.andstatus.app.account.ManageAccountsActivity;
 import org.andstatus.app.backup.BackupActivity;
 import org.andstatus.app.backup.RestoreActivity;
 import org.andstatus.app.data.MatchedUri;
-import org.andstatus.app.graphics.MyImageCache;
+import org.andstatus.app.graphics.ImageCaches;
 import org.andstatus.app.msg.KeywordsFilter;
 import org.andstatus.app.origin.PersistentOriginList;
 import org.andstatus.app.service.QueueViewer;
@@ -424,7 +424,7 @@ public class MySettingsFragment extends PreferenceFragment implements
                     showManageTimelines();
                     break;
                 case MyPreferences.KEY_ROUNDED_AVATARS:
-                    MyImageCache.setAvatarsRounded();
+                    ImageCaches.setAvatarsRounded();
                     break;
                 default:
                     break;

@@ -29,7 +29,7 @@ import net.jcip.annotations.ThreadSafe;
 
 import org.andstatus.app.FirstActivity;
 import org.andstatus.app.database.DatabaseConverterController;
-import org.andstatus.app.graphics.MyImageCache;
+import org.andstatus.app.graphics.ImageCaches;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
@@ -204,7 +204,7 @@ public final class MyContextHolder {
         I18n.appendWithSpace(builder, "started "
                 + RelativeTime.getDifference(context, appStartedAt, SystemClock.elapsedRealtime()));
         builder.append("\n");
-        builder.append(MyImageCache.getCacheInfo());
+        builder.append(ImageCaches.getCacheInfo());
         builder.append("\n");
         builder.append(AsyncTaskLauncher.threadPoolInfo());
         return builder.toString();

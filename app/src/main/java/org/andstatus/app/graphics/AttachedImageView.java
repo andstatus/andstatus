@@ -119,7 +119,7 @@ public class AttachedImageView extends android.support.v7.widget.AppCompatImageV
     }
 
     public int getDisplayHeight() {
-        return MyImageCache.getDisplaySize(getContext()).y;
+        return ImageCaches.getDisplaySize(getContext()).y;
     }
 
     private float getDrawableHeightToWidthRatio() {

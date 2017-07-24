@@ -33,7 +33,7 @@ import org.andstatus.app.account.PersistentAccounts;
 import org.andstatus.app.data.AssertionData;
 import org.andstatus.app.database.DatabaseConverterController;
 import org.andstatus.app.database.DatabaseHolder;
-import org.andstatus.app.graphics.MyImageCache;
+import org.andstatus.app.graphics.ImageCaches;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.origin.PersistentOrigins;
 import org.andstatus.app.service.ConnectionState;
@@ -125,7 +125,7 @@ public final class MyContextImpl implements MyContext {
                     // Accounts are not restored yet
                     mPersistentAccounts.initialize();
                     persistentTimelines.initialize();
-                    MyImageCache.initialize(context());
+                    ImageCaches.initialize(context());
                     mState = MyContextState.READY;
                 }
                 break;

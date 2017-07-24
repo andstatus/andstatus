@@ -32,7 +32,7 @@ import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.database.MsgTable;
-import org.andstatus.app.graphics.CachedDrawable;
+import org.andstatus.app.graphics.CachedImage;
 import org.andstatus.app.net.social.MbAttachment;
 import org.andstatus.app.net.social.MbMessage;
 import org.andstatus.app.net.social.MbUser;
@@ -54,9 +54,8 @@ public class MessageEditorData {
     @NonNull
     public volatile String body = "";
 
-    private DownloadData image = DownloadData.EMPTY;
-    private Point imageSize = new Point();
-    CachedDrawable imageDrawable = null;
+    private DownloadData downloadData = DownloadData.EMPTY;
+    CachedImage image = null;
 
     /**
      * Id of the Message to which we are replying.
@@ -121,8 +120,8 @@ public class MessageEditorData {
         if(!TextUtils.isEmpty(body)) {
             builder.append("text:'" + body + "',");
         }
-        if(!UriUtils.isEmpty(image.getUri())) {
-            builder.append("image:" + image + ",");
+        if(!UriUtils.isEmpty(downloadData.getUri())) {
+            builder.append("downloadData:" + downloadData + ",");
         }
         if(inReplyToId != 0) {
             builder.append("inReplyToId:" + inReplyToId + ",");
@@ -145,12 +144,11 @@ public class MessageEditorData {
             data = new MessageEditorData(ma);
             data.msgId = msgId;
             data.setBody(MyQuery.msgIdToStringColumnValue(MsgTable.BODY, msgId));
-            data.image = DownloadData.getSingleForMessage(msgId, MyContentType.IMAGE, Uri.EMPTY);
-            if (data.image.getStatus() == DownloadStatus.LOADED) {
-                AttachedImageFile imageFile = new AttachedImageFile(data.image.getDownloadId(),
-                        data.image.getFilename());
-                data.imageSize = imageFile.getSize();
-                data.imageDrawable = imageFile.loadAndGetDrawable();
+            data.downloadData = DownloadData.getSingleForMessage(msgId, MyContentType.IMAGE, Uri.EMPTY);
+            if (data.downloadData.getStatus() == DownloadStatus.LOADED) {
+                AttachedImageFile imageFile = new AttachedImageFile(data.downloadData.getDownloadId(),
+                        data.downloadData.getFilename());
+                data.image = imageFile.loadAndGetImage();
             }
             data.inReplyToId = MyQuery.msgIdToLongColumnValue(MsgTable.IN_REPLY_TO_MSG_ID, msgId);
             data.inReplyToBody = MyQuery.msgIdToStringColumnValue(MsgTable.BODY, data.inReplyToId);
@@ -169,9 +167,8 @@ public class MessageEditorData {
             data.msgId = msgId;
             data.status = status;
             data.setBody(body);
+            data.downloadData = downloadData;
             data.image = image;
-            data.imageSize = imageSize;
-            data.imageDrawable = imageDrawable;
             data.inReplyToId = inReplyToId;
             data.inReplyToBody = inReplyToBody;
             data.replyToConversationParticipants = replyToConversationParticipants;
@@ -198,7 +195,7 @@ public class MessageEditorData {
                     MyQuery.idToOid(OidEnum.MSG_OID, inReplyToId, 0),
                     DownloadStatus.UNKNOWN));
         }
-        Uri mediaUri = imageUriToSave.equals(Uri.EMPTY) ? image.getUri() : imageUriToSave;
+        Uri mediaUri = imageUriToSave.equals(Uri.EMPTY) ? downloadData.getUri() : imageUriToSave;
         if (!mediaUri.equals(Uri.EMPTY)) {
             message.attachments.add(
                     MbAttachment.fromUriAndContentType(mediaUri, MyContentType.IMAGE));
@@ -225,15 +222,15 @@ public class MessageEditorData {
     }
 
     public Uri getMediaUri() {
-        return image.getUri();
+        return downloadData.getUri();
     }
 
     public long getImageFileSize() {
-        return image.getFile().getSize();
+        return downloadData.getFile().getSize();
     }
 
     public Point getImageSize() {
-        return imageSize;
+        return image.getImageSize();
     }
 
     public MessageEditorData setMsgId(long msgIdIn) {

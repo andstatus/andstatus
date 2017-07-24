@@ -485,10 +485,10 @@ public class MessageEditor {
 
     private void showAttachedImage() {
         ImageView imageView = (ImageView) editorView.findViewById(R.id.attached_image);
-        if (editorData.imageDrawable == null) {
+        if (editorData.image == null) {
             imageView.setVisibility(View.GONE);
         } else {
-            imageView.setImageDrawable(editorData.imageDrawable.getDrawable());
+            imageView.setImageDrawable(editorData.image.getDrawable());
             imageView.setVisibility(View.VISIBLE);
         }
     }

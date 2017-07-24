@@ -20,7 +20,7 @@ import android.content.Context;
 import android.view.View;
 import android.widget.RelativeLayout;
 
-import org.andstatus.app.graphics.MyImageCache;
+import org.andstatus.app.graphics.ImageCaches;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.ViewUtils;
 
@@ -44,7 +44,7 @@ public class ConversationIndentImageView extends android.support.v7.widget.AppCo
         setScaleType(ScaleType.MATRIX);
         layoutParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT, RelativeLayout.TRUE);
         setLayoutParams(layoutParams);
-        setImageDrawable(MyImageCache.getStyledDrawable(imageResourceIdLight, imageResourceId).getDrawable());
+        setImageDrawable(ImageCaches.getStyledImage(imageResourceIdLight, imageResourceId).getDrawable());
     }
 
     @Override

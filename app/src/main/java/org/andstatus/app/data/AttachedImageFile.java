@@ -19,8 +19,8 @@ package org.andstatus.app.data;
 import android.database.Cursor;
 
 import org.andstatus.app.database.DownloadTable;
-import org.andstatus.app.graphics.CachedDrawable;
-import org.andstatus.app.graphics.MyImageCache;
+import org.andstatus.app.graphics.CacheName;
+import org.andstatus.app.graphics.CachedImage;
 
 public class AttachedImageFile extends ImageFile {
     public static final AttachedImageFile EMPTY = new AttachedImageFile(0, null);
@@ -38,8 +38,8 @@ public class AttachedImageFile extends ImageFile {
         downloadRowId = downloadRowIdIn;
     }
 
-    public MyImageCache.CacheName getCacheName() {
-        return MyImageCache.CacheName.ATTACHED_IMAGE;
+    public CacheName getCacheName() {
+        return CacheName.ATTACHED_IMAGE;
     }
 
     @Override
@@ -48,8 +48,8 @@ public class AttachedImageFile extends ImageFile {
     }
 
     @Override
-    protected CachedDrawable getDefaultDrawable() {
-        return BLANK_DRAWABLE;
+    protected CachedImage getDefaultImage() {
+        return BLANK_IMAGE;
     }
 
     @Override

@@ -28,7 +28,7 @@ import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.data.MyDataCheckerConversations;
-import org.andstatus.app.graphics.CachedDrawable;
+import org.andstatus.app.graphics.CachedImage;
 import org.andstatus.app.net.social.ConnectionTwitterGnuSocialMock;
 import org.andstatus.app.net.social.MbAttachment;
 import org.andstatus.app.net.social.MbMessage;
@@ -93,10 +93,10 @@ public class LargeImageTest {
     }
 
     private void loadingTest(DownloadData dd) {
-        CachedDrawable drawable = new AttachedImageFile(dd.getDownloadId(), dd.getFilename()).loadAndGetDrawable();
-        int width = drawable.getImageSize().x;
+        CachedImage image = new AttachedImageFile(dd.getDownloadId(), dd.getFilename()).loadAndGetImage();
+        int width = image.getImageSize().x;
         assertTrue("Not wide already " + width, width < 4000 && width > 10);
-        int height = drawable.getImageSize().y;
+        int height = image.getImageSize().y;
         assertTrue("Not high already " + height, height < 4000 && height > 10);
     }
 }
