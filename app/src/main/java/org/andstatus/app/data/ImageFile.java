@@ -29,13 +29,14 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.graphics.AttachedImageView;
 import org.andstatus.app.graphics.CacheName;
 import org.andstatus.app.graphics.CachedImage;
+import org.andstatus.app.graphics.IdentifiableImageView;
 import org.andstatus.app.graphics.ImageCaches;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.util.MyLog;
 
 public abstract class ImageFile {
-    protected static final CachedImage BLANK_IMAGE = loadBlankImage();
+    static final CachedImage BLANK_IMAGE = loadBlankImage();
     private final DownloadFile downloadFile;
     private volatile Point size = null;
 
@@ -43,7 +44,7 @@ public abstract class ImageFile {
         downloadFile = new DownloadFile(filename);
     }
 
-    public void showImage(@NonNull MyActivity myActivity, ImageView imageView) {
+    public void showImage(@NonNull MyActivity myActivity, IdentifiableImageView imageView) {
         if (imageView == null || !myActivity.isResumedMy()) {
             return;
         }
@@ -94,7 +95,7 @@ public abstract class ImageFile {
     }
 
     private CachedImage getImageFromCache() {
-        return ImageCaches.getCachedImage(getCacheName(), this, downloadFile.getFilePath());
+        return ImageCaches.getCachedImage(getCacheName(), this, getId(), downloadFile.getFilePath());
     }
 
     public void preloadImageAsync(@NonNull MyActivity myActivity) {
@@ -109,7 +110,7 @@ public abstract class ImageFile {
 
     public CachedImage loadAndGetImage() {
         if (downloadFile.exists()) {
-            return ImageCaches.loadAndGetImage(getCacheName(), this, downloadFile.getFilePath());
+            return ImageCaches.loadAndGetImage(getCacheName(), this, getId(), downloadFile.getFilePath());
         }
         requestAsyncDownload();
         return null;
@@ -123,7 +124,7 @@ public abstract class ImageFile {
                 new MyAsyncTask<Void, Void, CachedImage>(taskId, MyAsyncTask.PoolEnum.QUICK_UI) {
                     @Override
                     protected CachedImage doInBackground2(Void... params) {
-                        return ImageCaches.loadAndGetImage(getCacheName(), this, path);
+                        return ImageCaches.loadAndGetImage(getCacheName(), this, getId(), path);
                     }
 
                     @Override
@@ -165,7 +166,7 @@ public abstract class ImageFile {
 
     public Point getSize() {
         if (size == null && downloadFile.exists()) {
-            size = ImageCaches.getImageSize(getCacheName(), downloadFile.getFilePath());
+            size = ImageCaches.getImageSize(getCacheName(), getId(), downloadFile.getFilePath());
         }
         return size == null ? new Point() : size;
     }

@@ -26,6 +26,7 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.data.AvatarFile;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
+import org.andstatus.app.graphics.AvatarView;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.origin.Origin;
 
@@ -114,7 +115,7 @@ public class UserListViewItem implements ViewItem, Comparable<UserListViewItem> 
         this.avatarFile = avatarFile;
     }
 
-    public void showAvatar(MyActivity myActivity, ImageView imageView) {
+    public void showAvatar(MyActivity myActivity, AvatarView imageView) {
         if (avatarFile != null) {
             avatarFile.showImage(myActivity, imageView);
         }

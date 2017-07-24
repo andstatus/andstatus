@@ -24,6 +24,7 @@ import android.widget.ImageView;
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.UserInTimeline;
+import org.andstatus.app.graphics.AvatarView;
 import org.andstatus.app.util.MyUrlSpan;
 import org.andstatus.app.widget.MyBaseAdapter;
 
@@ -104,7 +105,7 @@ class UserListViewAdapter extends MyBaseAdapter {
     }
 
     private void showAvatar(UserListViewItem item, View view) {
-        ImageView avatarView = (ImageView) view.findViewById(R.id.avatar_image);
+        AvatarView avatarView = (AvatarView) view.findViewById(R.id.avatar_image);
         item.showAvatar(contextMenu.getActivity(), avatarView);
     }
 

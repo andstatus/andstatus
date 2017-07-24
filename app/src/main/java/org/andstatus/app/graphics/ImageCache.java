@@ -115,13 +115,13 @@ public class ImageCache extends LruCache<String, CachedImage> {
     }
 
     @Nullable
-    CachedImage getCachedImage(Object objTag, String path) {
-        return getImage(objTag, path, true);
+    CachedImage getCachedImage(Object objTag, long imageId, String path) {
+        return getImage(objTag, imageId, path, true);
     }
 
     @Nullable
-    CachedImage loadAndGetImage(Object objTag, String path) {
-        return getImage(objTag, path, false);
+    CachedImage loadAndGetImage(Object objTag, long imageId, String path) {
+        return getImage(objTag, imageId, path, false);
     }
 
     @Override
@@ -133,7 +133,7 @@ public class ImageCache extends LruCache<String, CachedImage> {
     }
 
     @Nullable
-    private CachedImage getImage(Object objTag, String path, boolean fromCacheOnly) {
+    private CachedImage getImage(Object objTag, long imageId, String path, boolean fromCacheOnly) {
         if (TextUtils.isEmpty(path)) {
             return null;
         }
@@ -148,7 +148,7 @@ public class ImageCache extends LruCache<String, CachedImage> {
         } else {
             misses.incrementAndGet();
             if (!fromCacheOnly) {
-                image = loadImage(objTag, path);
+                image = loadImage(objTag, imageId, path);
                 if (image != null) {
                     if (currentCacheSize > 0) {
                         put(path, image);
@@ -162,8 +162,8 @@ public class ImageCache extends LruCache<String, CachedImage> {
     }
 
     @Nullable
-    private CachedImage loadImage(Object objTag, String path) {
-        Bitmap bitmap = loadBitmap(objTag, path);
+    private CachedImage loadImage(Object objTag, long imageId, String path) {
+        Bitmap bitmap = loadBitmap(objTag, imageId, path);
         if (bitmap == null) {
             return null;
         }
@@ -182,7 +182,7 @@ public class ImageCache extends LruCache<String, CachedImage> {
             canvas.drawBitmap(bitmap, 0 , 0, null);
         }
         bitmap.recycle();
-        return new CachedImage(background, srcRect);
+        return new CachedImage(imageId, background, srcRect);
     }
 
     /**
@@ -203,15 +203,15 @@ public class ImageCache extends LruCache<String, CachedImage> {
     }
 
     @Nullable
-    private Bitmap loadBitmap(Object objTag, String path) {
+    private Bitmap loadBitmap(Object objTag, long imageId, String path) {
         Bitmap bitmap = null;
         if (MyPreferences.isShowDebuggingInfoInUi()) {
             bitmap = BitmapFactory
-                    .decodeFile(path, calculateScaling(objTag, getImageSize(path)));
+                    .decodeFile(path, calculateScaling(objTag, getImageSize(imageId, path)));
         } else {
             try {
                 bitmap = BitmapFactory
-                        .decodeFile(path, calculateScaling(objTag, getImageSize(path)));
+                        .decodeFile(path, calculateScaling(objTag, getImageSize(imageId, path)));
             } catch (OutOfMemoryError e) {
                 MyLog.w(objTag, getInfo(), e);
                 evictAll();
@@ -225,7 +225,7 @@ public class ImageCache extends LruCache<String, CachedImage> {
         return bitmap;
     }
 
-    Point getImageSize(String path) {
+    Point getImageSize(long imageId, String path) {
         if (!TextUtils.isEmpty(path)) {
             CachedImage image = get(path);
             if (image != null) {

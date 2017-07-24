@@ -27,6 +27,8 @@ import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DownloadStatus;
+import org.andstatus.app.graphics.AttachedImageView;
+import org.andstatus.app.graphics.AvatarView;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyUrlSpan;
 import org.andstatus.app.util.SharedPreferencesUtil;
@@ -128,14 +130,14 @@ public abstract class MessageListAdapter<T extends MessageViewItem> extends MyBa
     }
 
     protected void showAvatar(View view, MessageViewItem item) {
-        ImageView avatarView = (ImageView) view.findViewById(R.id.avatar_image);
+        AvatarView avatarView = (AvatarView) view.findViewById(R.id.avatar_image);
         item.avatarFile.showImage(contextMenu.getActivity(), avatarView);
     }
 
     protected void showAttachedImage(View view, MessageViewItem item) {
         preloadedImages.add(item.getMsgId());
         item.getAttachedImageFile().showImage(contextMenu.getActivity(),
-                (ImageView) view.findViewById(R.id.attached_image));
+                (AttachedImageView) view.findViewById(R.id.attached_image));
     }
 
     protected void showMarkReplies(ViewGroup view, MessageViewItem item) {

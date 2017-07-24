@@ -31,6 +31,7 @@ import org.andstatus.app.MyActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.database.UserTable;
+import org.andstatus.app.graphics.AvatarView;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.CollectionsUtil;
 import org.andstatus.app.util.I18n;
@@ -92,7 +93,7 @@ public class UserAutoCompleteAdapter extends BaseAdapter implements Filterable {
     }
 
     private void showAvatar(View view, UserListViewItem item) {
-        ImageView avatarView = (ImageView) view.findViewById(R.id.avatar_image);
+        AvatarView avatarView = (AvatarView) view.findViewById(R.id.avatar_image);
         if (item == null) {
             avatarView.setVisibility(View.INVISIBLE);
         } else {

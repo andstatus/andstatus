@@ -87,7 +87,6 @@ public class TimelineViewItem extends MessageViewItem {
         }
 
         item.avatarFile = AvatarFile.fromCursor(item.authorId, cursor);
-        item.avatarFile.loadAndGetImage();
         if (MyPreferences.getDownloadAndDisplayAttachedImages()) {
             item.attachedImageFile = new AttachedImageFile(
                     DbUtils.getLong(cursor, DownloadTable.IMAGE_ID),

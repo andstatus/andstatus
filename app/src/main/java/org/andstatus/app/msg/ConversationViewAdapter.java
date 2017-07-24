@@ -24,6 +24,7 @@ import android.widget.TextView;
 
 import org.andstatus.app.MyActivity;
 import org.andstatus.app.R;
+import org.andstatus.app.graphics.AvatarView;
 import org.andstatus.app.graphics.ImageCaches;
 import org.andstatus.app.util.ViewUtils;
 
@@ -123,7 +124,7 @@ public class ConversationViewAdapter extends MessageListAdapter<ConversationView
     }
 
     private int showAvatar(View view, MessageViewItem item, int indentPixels) {
-        ImageView avatarView = (ImageView) view.findViewById(R.id.avatar_image);
+        AvatarView avatarView = (AvatarView) view.findViewById(R.id.avatar_image);
         RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) avatarView.getLayoutParams();
         layoutParams.leftMargin = dpToPixes(indentPixels == 0 ? 2 : 1) + indentPixels;
         avatarView.setLayoutParams(layoutParams);

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,7 +28,7 @@ import org.andstatus.app.util.MyLog;
  * The ImageView auto resizes to the width of the referenced view  
  * @author yvolk@yurivolkov.com
  */
-public class AttachedImageView extends android.support.v7.widget.AppCompatImageView {
+public class AttachedImageView extends IdentifiableImageView {
     public static final double MAX_ATTACHED_IMAGE_PART = 0.75;
 
     private View referencedView = null;
@@ -93,6 +93,9 @@ public class AttachedImageView extends android.support.v7.widget.AppCompatImageV
      * We need to catch an error here in order to work in Android Editor preview
      */
     private void logIt(String method, Integer refWidthPixels, int widthMeasureSpec, float height) {
+        if (isInEditMode()) {
+            return;
+        }
         try {
             if (MyLog.isVerboseEnabled()) {
                 MyLog.v(this, method + ";"

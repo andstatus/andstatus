@@ -29,18 +29,21 @@ public class CachedImage {
     public static final Bitmap.Config BITMAP_CONFIG = Bitmap.Config.ARGB_8888;
     public static final Rect EMPTY_RECT = new Rect(0, 0, 0, 0);
     public static final Bitmap EMPTY_BITMAP = newBitmap(1);
-    public static final CachedImage EMPTY = new CachedImage(EMPTY_BITMAP, EMPTY_RECT).makeExpired();
-    public static final CachedImage BROKEN = new CachedImage(EMPTY_BITMAP, EMPTY_RECT).makeExpired();
+    public static final CachedImage EMPTY = new CachedImage(-1, EMPTY_BITMAP, EMPTY_RECT).makeExpired();
+    public static final CachedImage BROKEN = new CachedImage(-2, EMPTY_BITMAP, EMPTY_RECT).makeExpired();
+    public final long id;
     private final Bitmap bitmap;
     protected final Drawable source;
     private volatile boolean expired = false;
 
-    public CachedImage(@NonNull Bitmap bitmap, @NonNull Rect srcRect) {
+    public CachedImage(long imageId, @NonNull Bitmap bitmap, @NonNull Rect srcRect) {
+        id = imageId;
         this.bitmap = bitmap;
         source = new BitmapSubsetDrawable(bitmap, srcRect);
     }
 
-    public CachedImage(@NonNull Drawable drawable) {
+    public CachedImage(long imageId, @NonNull Drawable drawable) {
+        id = imageId;
         bitmap = EMPTY_BITMAP;
         source = drawable;
     }

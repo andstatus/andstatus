@@ -127,7 +127,7 @@
             tools:text="Followed by andstatus, yvolk"/>
     </LinearLayout>
 
-    <ImageView
+    <org.andstatus.app.graphics.AvatarView
         android:id="@+id/avatar_image"
         android:layout_width="49dip"
         android:layout_height="50dip"

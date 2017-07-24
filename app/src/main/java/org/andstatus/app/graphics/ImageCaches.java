@@ -133,16 +133,16 @@ public class ImageCaches {
     }
 
     @NonNull
-    public static Point getImageSize(CacheName cacheName, String path) {
-        return getCache(cacheName).getImageSize(path);
+    public static Point getImageSize(CacheName cacheName, long imageId, String path) {
+        return getCache(cacheName).getImageSize(imageId, path);
     }
 
-    public static CachedImage loadAndGetImage(CacheName cacheName, Object objTag, String path) {
-        return getCache(cacheName).loadAndGetImage(objTag, path);
+    public static CachedImage loadAndGetImage(CacheName cacheName, Object objTag, long imageId, String path) {
+        return getCache(cacheName).loadAndGetImage(objTag, imageId, path);
     }
 
-    public static CachedImage getCachedImage(CacheName cacheName, Object objTag, String path) {
-        return getCache(cacheName).getCachedImage(objTag, path);
+    public static CachedImage getCachedImage(CacheName cacheName, Object objTag, long imageId, String path) {
+        return getCache(cacheName).getCachedImage(objTag, imageId, path);
     }
 
     public static ImageCache getCache(CacheName cacheName) {
@@ -197,9 +197,9 @@ public class ImageCaches {
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public static CachedImage getImageCompat(Context context, int resourceId) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)  {
-            return new CachedImage(context.getTheme().getDrawable(resourceId));
+            return new CachedImage(resourceId, context.getTheme().getDrawable(resourceId));
         } else {
-            return new CachedImage(context.getResources().getDrawable(resourceId));
+            return new CachedImage(resourceId, context.getResources().getDrawable(resourceId));
         }
     }
 
