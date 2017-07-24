@@ -94,9 +94,9 @@ public class LargeImageTest {
 
     private void loadingTest(DownloadData dd) {
         CachedDrawable drawable = new AttachedImageFile(dd.getDownloadId(), dd.getFilename()).loadAndGetDrawable();
-        int width = drawable.getIntrinsicWidth();
+        int width = drawable.getImageSize().x;
         assertTrue("Not wide already " + width, width < 4000 && width > 10);
-        int height = drawable.getIntrinsicHeight();
+        int height = drawable.getImageSize().y;
         assertTrue("Not high already " + height, height < 4000 && height > 10);
     }
 }

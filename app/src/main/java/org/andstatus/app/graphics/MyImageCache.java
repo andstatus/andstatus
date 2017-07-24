@@ -201,9 +201,9 @@ public class MyImageCache {
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public static CachedDrawable getDrawableCompat(Context context, int drawableId) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)  {
-            return new StaticCachedDrawable(context.getTheme().getDrawable(drawableId));
+            return new CachedDrawable(context.getTheme().getDrawable(drawableId));
         } else {
-            return new StaticCachedDrawable(context.getResources().getDrawable(drawableId));
+            return new CachedDrawable(context.getResources().getDrawable(drawableId));
         }
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (c) 2016-2017 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,7 @@
 package org.andstatus.app.graphics;
 
 import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.ColorFilter;
-import android.graphics.PixelFormat;
+import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.NonNull;
@@ -27,65 +25,37 @@ import android.support.annotation.NonNull;
 /**
  * @author yvolk@yurivolkov.com
  */
-public class CachedDrawable extends Drawable {
+public class CachedDrawable {
     public static final Bitmap.Config BITMAP_CONFIG = Bitmap.Config.ARGB_8888;
     public static final Rect EMPTY_RECT = new Rect(0, 0, 0, 0);
     public static final Bitmap EMPTY_BITMAP = newBitmap(1);
     public static final CachedDrawable EMPTY = new CachedDrawable(EMPTY_BITMAP, EMPTY_RECT).makeExpired();
     public static final CachedDrawable BROKEN = new CachedDrawable(EMPTY_BITMAP, EMPTY_RECT).makeExpired();
     private final Bitmap bitmap;
-    private final Rect scrRect;
+    protected final Drawable source;
     private volatile boolean expired = false;
 
     public CachedDrawable(@NonNull Bitmap bitmap, @NonNull Rect srcRect) {
         this.bitmap = bitmap;
-        this.scrRect = srcRect;
+        source = new BitmapSubsetDrawable(bitmap, srcRect);
+    }
+
+    public CachedDrawable(@NonNull Drawable drawable) {
+        bitmap = EMPTY_BITMAP;
+        source = drawable;
     }
 
     private static Bitmap newBitmap(int size) {
         return Bitmap.createBitmap(size, size, BITMAP_CONFIG);
     }
 
-    @Override
-    public int getIntrinsicWidth() {
-        return getScrRect().width();
-    }
-
-    @Override
-    public int getIntrinsicHeight() {
-        return getScrRect().height();
-    }
-
-    @Override
-    public void draw(Canvas canvas) {
-        canvas.drawBitmap(getBitmap(), getScrRect(), getBounds(), null);
-    }
-
-    @Override
-    public void setAlpha(int alpha) {
-        // Empty
-    }
-
-    @Override
-    public void setColorFilter(ColorFilter cf) {
-        // Empty
-    }
-
-    @Override
-    public int getOpacity() {
-        return PixelFormat.OPAQUE;
-    }
-
     boolean isBitmapRecyclable() {
-        return !expired && bitmap.getHeight() > 0;
+        return !expired && !EMPTY_BITMAP.equals(bitmap);
     }
 
+    @NonNull
     Bitmap getBitmap() {
-        return expired ? EMPTY_BITMAP : bitmap;
-    }
-
-    private Rect getScrRect() {
-        return expired ? EMPTY_RECT : scrRect;
+        return bitmap;
     }
 
     public boolean isExpired() {
@@ -98,6 +68,10 @@ public class CachedDrawable extends Drawable {
     }
 
     public Drawable getDrawable() {
-        return this;
+        return source;
+    }
+
+    public Point getImageSize() {
+        return new Point(source.getIntrinsicWidth(), source.getIntrinsicHeight());
     }
 }

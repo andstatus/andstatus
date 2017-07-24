@@ -229,7 +229,7 @@ public class MyDrawableCache extends LruCache<String, CachedDrawable> {
         if (!TextUtils.isEmpty(path)) {
             CachedDrawable drawable = get(path);
             if (drawable != null) {
-                return new Point(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight());
+                return drawable.getImageSize();
             }
             try {
                 BitmapFactory.Options options = new BitmapFactory.Options();
