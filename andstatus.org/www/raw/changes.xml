@@ -27,18 +27,15 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
         </subtitle>
     </header>
-    <release android:versionName="35.01" android:versionCode="227"
-             versionDate="2017-07-23"
+    <release android:versionName="35.02" android:versionCode="228"
+             versionDate="2017-07-25"
              versionTitle="Bug Fixes">
         <changes>
-            <change>Fixed avatars occasionally started to change (cache overload)
-                <a href="https://github.com/andstatus/andstatus/issues/458">#458</a></change>
-            <change>Search interface improved...
-            </change>
+            <change>Another fix for avatars showing after cache overload.</change>
         </changes>
     </release>
-    <release android:versionName="35.00" android:versionCode="226"
-             versionDate="2017-07-22"
+    <release android:versionName="35.01" android:versionCode="226"
+             versionDate="2017-07-23"
              versionTitle="Autocompletion of usernames/webfingerIds during message composition. Users search">
         <changes>
             <change>During a message composition, after "@" and the first two or more letters of a Username or a Real Name,
@@ -51,6 +48,8 @@
                 in the local cache or in Internet also ("Search in Internet" option; only Mastodon and Twitter provide
                 a search for Users in Internet).
             </change>
+            <change>Fixed avatars occasionally started to change (cache overload)
+                <a href="https://github.com/andstatus/andstatus/issues/458">#458</a></change>
         </changes>
     </release>
     <release android:versionName="34.05" android:versionCode="225"
