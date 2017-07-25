@@ -42,7 +42,7 @@ public class CachedImage {
         source = new BitmapSubsetDrawable(bitmap, srcRect);
     }
 
-    public CachedImage(long imageId, @NonNull Drawable drawable) {
+    public CachedImage(long imageId, Drawable drawable) {
         id = imageId;
         bitmap = EMPTY_BITMAP;
         source = drawable;

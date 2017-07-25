@@ -106,7 +106,7 @@ public class AsyncTaskLauncher<Params> {
     public boolean execute(Object objTag, boolean throwOnFail, MyAsyncTask<Params, ?, ?> asyncTask,
                            Params... params) {
         if (MyLog.isVerboseEnabled()) {
-            MyLog.v(objTag, "Launching the task: " + asyncTask.toString());
+            MyLog.v(objTag, asyncTask.toString() + " Launching task");
         }
         boolean launched = false;
         try {
@@ -121,7 +121,7 @@ public class AsyncTaskLauncher<Params> {
             }
             removeFinishedTasks();
         } catch (RejectedExecutionException e) {
-            String msgLog = "Launching the task: " + asyncTask.toString()
+            String msgLog = asyncTask.toString() + " Launching task"
                     + "\n" + threadPoolInfo();
             MyLog.w(objTag, msgLog, e);
             if (throwOnFail) {

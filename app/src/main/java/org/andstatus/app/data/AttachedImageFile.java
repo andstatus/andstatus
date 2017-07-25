@@ -49,7 +49,7 @@ public class AttachedImageFile extends ImageFile {
 
     @Override
     protected CachedImage getDefaultImage() {
-        return BLANK_IMAGE;
+        return CachedImage.EMPTY;
     }
 
     @Override

@@ -74,7 +74,7 @@ public class TimelineAdapter extends MessageListAdapter<TimelineViewItem> {
             TimelineViewItem item = getItem(positionToPreload);
             if (!preloadedImages.contains(item.getMsgId())) {
                 preloadedImages.add(item.getMsgId());
-                item.getAttachedImageFile().preloadImageAsync(contextMenu.getActivity());
+                item.getAttachedImageFile().preloadImageAsync();
                 break;
             }
         }

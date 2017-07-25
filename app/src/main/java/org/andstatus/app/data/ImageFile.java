@@ -16,16 +16,12 @@
 
 package org.andstatus.app.data;
 
-import android.content.Context;
 import android.graphics.Point;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.view.View;
 import android.widget.ImageView;
 
 import org.andstatus.app.MyActivity;
-import org.andstatus.app.R;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.graphics.AttachedImageView;
 import org.andstatus.app.graphics.CacheName;
 import org.andstatus.app.graphics.CachedImage;
@@ -36,7 +32,6 @@ import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.util.MyLog;
 
 public abstract class ImageFile {
-    static final CachedImage BLANK_IMAGE = loadBlankImage();
     private final DownloadFile downloadFile;
     private volatile Point size = null;
 
@@ -45,7 +40,11 @@ public abstract class ImageFile {
     }
 
     public void showImage(@NonNull MyActivity myActivity, IdentifiableImageView imageView) {
-        if (imageView == null || !myActivity.isResumedMy()) {
+        if (imageView == null) {
+            return;
+        }
+        imageView.setImageId(getId());
+        if (!myActivity.isResumedMy()) {
             return;
         }
         if (isEmpty()) {
@@ -55,38 +54,45 @@ public abstract class ImageFile {
         if (AttachedImageView.class.isAssignableFrom(imageView.getClass())) {
             ((AttachedImageView) imageView).setMeasuresLocked(false);
         }
+        final String taskSuffix = "-sync-" + imageView.myViewId;
         CachedImage image = getImageFromCache();
         if (image == CachedImage.BROKEN) {
+            logResult("Broken", taskSuffix);
             onNoImage(imageView);
             return;
         } else if (image != null && !image.isExpired()) {
+            logResult("Set", taskSuffix);
+            imageView.setLoaded();
             imageView.setImageDrawable(image.getDrawable());
             imageView.setVisibility(View.VISIBLE);
             return;
         }
         if (downloadFile.exists()) {
+            logResult("Show blank", taskSuffix);
             showBlankImage(imageView);
         } else {
+            logResult("No image", taskSuffix);
             onNoImage(imageView);
         }
         if (downloadFile.exists()) {
-            showImageAsync(myActivity, imageView, false);
+            showImageAsync(myActivity, imageView);
         } else {
             requestAsyncDownload();
         }
     }
 
     private void showBlankImage(ImageView imageView) {
-        imageView.setImageDrawable(BLANK_IMAGE.getDrawable());
+        imageView.setImageDrawable(null);
         imageView.setVisibility(View.VISIBLE);
     }
 
-    private void showDefaultImage(ImageView imageView) {
+    private void showDefaultImage(IdentifiableImageView imageView) {
+        imageView.setLoaded();
         imageView.setImageDrawable(getDefaultImage().getDrawable());
         imageView.setVisibility(View.VISIBLE);
     }
 
-    private void onNoImage(ImageView imageView) {
+    private void onNoImage(IdentifiableImageView imageView) {
         if (isDefaultImageRequired()) {
             showDefaultImage(imageView);
         } else {
@@ -98,13 +104,13 @@ public abstract class ImageFile {
         return ImageCaches.getCachedImage(getCacheName(), this, getId(), downloadFile.getFilePath());
     }
 
-    public void preloadImageAsync(@NonNull MyActivity myActivity) {
+    public void preloadImageAsync() {
         CachedImage image = getImageFromCache();
         if (image != null) {
             return;
         }
         if (downloadFile.exists()) {
-            showImageAsync(myActivity, null, true);
+            preloadAsync();
         }
     }
 
@@ -116,52 +122,113 @@ public abstract class ImageFile {
         return null;
     }
 
-    private void showImageAsync(final MyActivity myActivity, @Nullable final ImageView imageView,
-                                final boolean preload) {
-        final String path = downloadFile.getFilePath();
-        String taskId = MyLog.objToTag(this) + getId() + (preload ? "-preload" : "-load");
+    private void showImageAsync(final MyActivity myActivity, @NonNull final IdentifiableImageView imageView) {
+        final String taskSuffix = "-asyn-" + imageView.myViewId;
         AsyncTaskLauncher.execute(this, false,
-                new MyAsyncTask<Void, Void, CachedImage>(taskId, MyAsyncTask.PoolEnum.QUICK_UI) {
+                new MyAsyncTask<Void, Void, CachedImage>(getTaskId(taskSuffix), MyAsyncTask.PoolEnum.QUICK_UI) {
+                    private boolean logged = false;
+
                     @Override
                     protected CachedImage doInBackground2(Void... params) {
-                        return ImageCaches.loadAndGetImage(getCacheName(), this, getId(), path);
+                        if (skip()) {
+                            return null;
+                        }
+                        return ImageCaches.loadAndGetImage(getCacheName(), this, getId(), downloadFile.getFilePath());
                     }
 
                     @Override
                     protected void onFinish(CachedImage image, boolean success) {
-                        final String method = "showImageAsync";
-                        if (preload) {
-                            if (image == null) {
-                                MyLog.v(this, method + "; Failed to preload " + getCacheName() + ": " + path);
-                            } else {
-                                MyLog.v(this, method + "; Preloaded " + getCacheName() + ": " + path);
-                            }
-                            return;
-                        }
-                        if (imageView == null) {
-                            MyLog.d(this, method + "; Skipped no view " + getCacheName() + ": " + path);
-                            return;
-                        }
-                        if (!myActivity.isResumedMy()) {
-                            MyLog.v(this, method + "; Skipped not resumed " + getCacheName() + ": " + path);
+                        if (!success) {
+                            logResult("No success onFinish");
                             return;
                         }
                         if (image == null) {
-                            MyLog.v(this, method + "; Failed to load " + getCacheName() + ": " + path);
-                        } else {
-                            try {
-                                if (AttachedImageView.class.isAssignableFrom(imageView.getClass())) {
-                                    ((AttachedImageView) imageView).setMeasuresLocked(true);
-                                }
-                                imageView.setImageDrawable(image.getDrawable());
-                                MyLog.v(this, method + "; Loaded" + getCacheName() + ": " + path);
-                            } catch (Exception e) {
-                                MyLog.d(this, method + "; Error on setting image " + getCacheName() + ": " + path, e);
+                            logResult("Failed to load");
+                            return;
+                        }
+                        if (skip()) {
+                            return;
+                        }
+                        if (image.id != getId()) {
+                            logResult("Loaded wrong image.id:" + image.id);
+                            return;
+                        }
+                        try {
+                            if (AttachedImageView.class.isAssignableFrom(imageView.getClass())) {
+                                ((AttachedImageView) imageView).setMeasuresLocked(true);
                             }
-
+                            imageView.setImageDrawable(image.getDrawable());
+                            imageView.setLoaded();
+                            logResult("Loaded");
+                        } catch (Exception e) {
+                            MyLog.d(ImageFile.this, getMsgLog("Error on setting image", taskSuffix), e);
                         }
                     }
+
+                    private boolean skip() {
+                        if (!myActivity.isResumedMy()) {
+                            logResult("Skipped not resumed activity");
+                            return true;
+                        }
+                        if (imageView.isLoaded()) {
+                            logResult("Skipped already loaded");
+                            return true;
+                        }
+                        if (imageView.getImageId() != getId()) {
+                            logResult("Skipped view.imageId:" + imageView.getImageId());
+                            return true;
+                        }
+                        return false;
+                    }
+
+                    private void logResult(String msgLog) {
+                        if (!logged) {
+                            logged = true;
+                            if (MyLog.isVerboseEnabled()) {
+                                MyLog.v(ImageFile.this, getMsgLog(msgLog, taskSuffix));
+                            }
+                        }
+                    }
+
                 });
+    }
+
+    @NonNull
+    private String getMsgLog(String msgLog, String taskSuffix) {
+        return getTaskId(taskSuffix) + "; " + msgLog + " " + downloadFile.getFilePath();
+    }
+
+
+    private void preloadAsync() {
+        final String taskSuffix = "-prel";
+        AsyncTaskLauncher.execute(this, false,
+                new MyAsyncTask<Void, Void, Void>(getTaskId(taskSuffix), MyAsyncTask.PoolEnum.QUICK_UI) {
+
+                    @Override
+                    protected Void doInBackground2(Void... params) {
+                        CachedImage image = ImageCaches.loadAndGetImage(getCacheName(), this, getId(),
+                                downloadFile.getFilePath());
+                        if (image == null) {
+                            logResult("Failed to preload", taskSuffix);
+                        } else if (image.id != getId()) {
+                            logResult("Loaded wrong image.id:" + image.id, taskSuffix);
+                        } else {
+                            logResult("Preloaded", taskSuffix);
+                        }
+                        return null;
+                    }
+                });
+    }
+
+    private void logResult(String msgLog, String taskSuffix) {
+        if (MyLog.isVerboseEnabled()) {
+            MyLog.v(ImageFile.this, getMsgLog(msgLog, taskSuffix));
+        }
+    }
+
+    @NonNull
+    private String getTaskId(String taskSuffix) {
+        return MyLog.objToTag(this) + "-" + getId() + "-load" + taskSuffix;
     }
 
     public Point getSize() {
@@ -178,16 +245,6 @@ public abstract class ImageFile {
     @Override
     public String toString() {
         return MyLog.objToTag(this) + ":{id=" + getId() + ", " + downloadFile + "}";
-    }
-
-    private static CachedImage loadBlankImage() {
-        CachedImage image = null;
-        MyLog.v(AvatarFile.class, "Loading blank image");
-        Context context = MyContextHolder.get().context();
-        if (context != null) {
-            image = ImageCaches.getImageCompat(context, R.drawable.blank_image);
-        }
-        return image;
     }
 
     public abstract CacheName getCacheName();

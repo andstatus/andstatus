@@ -20,11 +20,15 @@ import android.content.Context;
 import android.support.v7.widget.AppCompatImageView;
 import android.util.AttributeSet;
 
+import org.andstatus.app.util.InstanceId;
+
 /**
  * @author yvolk@yurivolkov.com
  */
 public class IdentifiableImageView extends AppCompatImageView {
-    private long imageId = 0;
+    public final long myViewId = InstanceId.next();
+    private volatile long imageId = 0;
+    private volatile boolean loaded = false;
 
     public IdentifiableImageView(Context context) {
         super(context);
@@ -44,5 +48,14 @@ public class IdentifiableImageView extends AppCompatImageView {
 
     public void setImageId(long imageId) {
         this.imageId = imageId;
+        loaded = false;
+    }
+
+    public boolean isLoaded() {
+        return loaded;
+    }
+
+    public void setLoaded() {
+        this.loaded = true;
     }
 }
