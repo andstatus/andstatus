@@ -285,18 +285,6 @@ public class TimelineActivity extends MessageEditorListActivity implements
     /**
      * View.OnClickListener
      */
-    public void onRefreshButtonClick(View item) {
-        closeDrawer();
-        if (getListData().mayHaveYoungerPage() || getListView().getLastVisiblePosition() > TimelineListParameters.PAGE_SIZE / 2) {
-            showList(WhichPage.CURRENT);
-        } else {
-            showList(WhichPage.YOUNGEST);
-        }
-    }
-
-    /**
-     * View.OnClickListener
-     */
     public void onCombinedTimelineToggleClick(View item) {
         closeDrawer();
         switchView( getParamsLoaded().getTimeline().fromIsCombined(myContext, !getParamsLoaded().isTimelineCombined()),
@@ -479,6 +467,13 @@ public class TimelineActivity extends MessageEditorListActivity implements
             case R.id.sync_menu_item:
                 syncWithInternet(getParamsLoaded().getTimeline(), true, true);
                 break;
+            case R.id.refresh_menu_item:
+                if (getListData().mayHaveYoungerPage() || getListView().getLastVisiblePosition() > TimelineListParameters.PAGE_SIZE / 2) {
+                    showList(WhichPage.CURRENT);
+                } else {
+                    showList(WhichPage.YOUNGEST);
+                }
+                break;
             case R.id.commands_queue_id:
                 startActivity(new Intent(getActivity(), QueueViewer.class));
                 break;
@@ -492,9 +487,9 @@ public class TimelineActivity extends MessageEditorListActivity implements
                 onHelp();
                 break;
             default:
-                break;
+                return super.onOptionsItemSelected(item);
         }
-        return super.onOptionsItemSelected(item);
+        return false;
     }
 
     private void onHelp() {

@@ -74,9 +74,9 @@ public class UserList extends MessageEditorListActivity {
                 syncWithInternet(true);
                 break;
             default:
-                break;
+                return super.onOptionsItemSelected(item);
         }
-        return super.onOptionsItemSelected(item);
+        return false;
     }
 
     @Override

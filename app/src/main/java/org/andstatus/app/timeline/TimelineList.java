@@ -297,25 +297,23 @@ public class TimelineList extends LoadableListActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.refresh_menu_item:
-                showList(WhichPage.CURRENT);
-                return true;
             case R.id.reset_counters_menu_item:
                 myContext.persistentTimelines().resetCounters(isTotal);
                 showList(WhichPage.CURRENT);
-                return true;
+                break;
             case R.id.reset_timelines_order:
                 myContext.persistentTimelines().resetDefaultSelectorOrder();
                 sortBy(R.id.displayedInSelector);
-                return true;
+                break;
             case R.id.total_counters:
                 isTotal = !isTotal;
                 item.setChecked(isTotal);
                 showList(WhichPage.CURRENT);
-                return true;
+                break;
             default:
                 return super.onOptionsItemSelected(item);
         }
+        return false;
     }
 
     @Override

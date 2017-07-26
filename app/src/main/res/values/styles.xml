@@ -100,6 +100,7 @@
         <item name="mySearchIcon">@drawable/ic_search_black_24dp</item>
         <item name="newIcon">@drawable/ic_add_circle_outline_black_24dp</item>
         <item name="postMessageIcon">@drawable/ic_mode_edit_black_24dp</item>
+        <item name="syncIcon">@drawable/ic_sync_black_24dp</item>
         <item name="reloadIcon">@drawable/ic_refresh_black_24dp</item>
         <item name="sendIcon">@drawable/ic_send_black_24dp</item>
         <item name="settingsIcon">@drawable/ic_settings_black_24dp</item>
@@ -115,6 +116,7 @@
         <item name="mySearchIcon">@drawable/ic_search_white_24dp</item>
         <item name="newIcon">@drawable/ic_add_circle_outline_white_24dp</item>
         <item name="postMessageIcon">@drawable/ic_mode_edit_white_24dp</item>
+        <item name="syncIcon">@drawable/ic_sync_white_24dp</item>
         <item name="reloadIcon">@drawable/ic_refresh_white_24dp</item>
         <item name="sendIcon">@drawable/ic_send_white_24dp</item>
         <item name="settingsIcon">@drawable/ic_settings_white_24dp</item>

@@ -593,10 +593,13 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
             case R.id.sync_menu_item:
                 showList(BundleUtils.toBundle(WhichPage.CURRENT.toBundle(), IntentExtra.SYNC.key, 1L));
                 break;
-            default:
+            case R.id.refresh_menu_item:
+                showList(WhichPage.CURRENT);
                 break;
+            default:
+                return super.onOptionsItemSelected(item);
         }
-        return super.onOptionsItemSelected(item);
+        return false;
     }
 
     public MyAccount getCurrentMyAccount() {

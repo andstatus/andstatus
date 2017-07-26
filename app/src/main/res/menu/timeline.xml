@@ -28,9 +28,16 @@
     <item
         android:id="@+id/sync_menu_item"
         android:alphabeticShortcut="r"
-        android:icon="?attr/reloadIcon"
+        android:icon="?attr/syncIcon"
         app:showAsAction="ifRoom"
         android:title="@string/options_menu_sync">
+    </item>
+    <item
+        android:id="@+id/refresh_menu_item"
+        android:alphabeticShortcut="r"
+        android:icon="?attr/reloadIcon"
+        app:showAsAction="ifRoom"
+        android:title="@string/refresh_title">
     </item>
     <item
         android:id="@+id/manage_timelines"

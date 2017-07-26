@@ -27,15 +27,17 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
         </subtitle>
     </header>
-    <release android:versionName="35.02" android:versionCode="228"
-             versionDate="2017-07-25"
-             versionTitle="Bug Fixes">
+    <release android:versionName="35.03" android:versionCode="229"
+             versionDate="2017-07-26"
+             versionTitle="Consistent separation between 'Sync with Internet' and 'Reload from cache'">
         <changes>
-            <change>Another fix for avatars showing after cache overload.</change>
+            <change>Consistent separation between 'Sync with Internet' and 'Reload from cache'. Both menu items are
+                places on an Action Bar and present in almost all lists. Android material icons
+                "Sync" and "Refresh" are used, which are familiar to users.</change>
         </changes>
     </release>
-    <release android:versionName="35.01" android:versionCode="226"
-             versionDate="2017-07-23"
+    <release android:versionName="35.02" android:versionCode="228"
+             versionDate="2017-07-25"
              versionTitle="Autocompletion of usernames/webfingerIds during message composition. Users search">
         <changes>
             <change>During a message composition, after "@" and the first two or more letters of a Username or a Real Name,

@@ -22,14 +22,6 @@ android:orientation="vertical">
 
     <View style="@style/Divider"/>
 
-    <TextView
-        android:id="@+id/refreshButton"
-        style="@style/drawerListItem"
-        android:onClick="onRefreshButtonClick"
-        android:text="@string/refresh_title"/>
-
-    <View style="@style/Divider"/>
-
     <CheckBox
         android:id="@+id/combinedTimelineToggle"
         android:layout_width="match_parent"

@@ -157,9 +157,9 @@ public class ConversationActivity extends MessageEditorListActivity implements M
                 startActivity(new Intent(getActivity(), QueueViewer.class));
                 break;
             default:
-                break;
+                return super.onOptionsItemSelected(item);
         }
-        return super.onOptionsItemSelected(item);
+        return false;
     }
 
     public void onShowThreadsOfConversationChanged(View v, boolean isChecked) {
