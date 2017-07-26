@@ -36,7 +36,7 @@ public class HttpReadResultTest {
                 + "}";
         HttpReadResult result = new HttpReadResult(url);
         result.strResponse = in;
-        JSONArray jsa =  result.getJsonArray();
+        JSONArray jsa =  result.getJsonArray("items");
         assertEquals(2, jsa.length());
         
         assertEquals(false, result.hasFormParams());

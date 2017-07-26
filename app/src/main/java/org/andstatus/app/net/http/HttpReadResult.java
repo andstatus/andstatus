@@ -142,7 +142,7 @@ public class HttpReadResult {
         return jso;
     }
 
-    JSONArray getJsonArray() throws ConnectionException {
+    JSONArray getJsonArray(String parentKey) throws ConnectionException {
         String method = "getJsonArray; ";
         if (TextUtils.isEmpty(strResponse)) {
             MyLog.v(this, method + "; response is empty");
@@ -154,11 +154,11 @@ public class HttpReadResult {
             Object obj = jst.nextValue();
             if (JSONObject.class.isInstance(obj)) {
                 JSONObject jso = (JSONObject) obj;
-                if (jso.has("items")) {
+                if (jso.has(parentKey)) {
                     try {
-                        obj = jso.getJSONArray("items");
+                        obj = jso.getJSONArray(parentKey);
                     } catch (JSONException e) {
-                        throw ConnectionException.loggedJsonException(this, "'items' is not an array?!" 
+                        throw ConnectionException.loggedJsonException(this, "'" + parentKey + "' is not an array?!"
                                 + method + toString(), e, jso);
                     }
                 } else {

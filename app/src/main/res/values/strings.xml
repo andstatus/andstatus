@@ -215,7 +215,7 @@
   <string name="history_time_entries_1year">1 year</string>
   <string name="history_time_entries_10years">10 years</string>
   <string name="id_of_this_message_was_not_specified">Id of this message was not specified</string>
-  <string name="in_combined_global_search_label">Include in \"Global Search\" while in Combined Timeline</string>
+  <string name="in_combined_global_search_label">Include in \"Search in Internet\" while in Combined Timeline</string>
   <string name="in_combined_public_reload_label">Include in \"Syncing\" while in Combined Public Timeline</string>
   <string name="in_context">In context</string>
   <string name="label_accountselector">Select an Account</string>

@@ -114,9 +114,13 @@ public abstract class HttpConnection {
         result.parseAndThrow();
         return result;
     }
-    
+
     public final JSONArray getRequestAsArray(String path) throws ConnectionException {
-        return getRequestCommon(path, true).getJsonArray();
+        return getRequestAsArray(path, "items");
+    }
+
+    public final JSONArray getRequestAsArray(String path, String parentKey) throws ConnectionException {
+        return getRequestCommon(path, true).getJsonArray(parentKey);
     }
 
     public final void downloadFile(String url, File file) throws ConnectionException {

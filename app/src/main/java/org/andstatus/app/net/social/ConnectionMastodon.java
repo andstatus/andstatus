@@ -199,7 +199,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
         Uri.Builder builder = sUri.buildUpon();
         appendPositionParameters(builder, youngestPosition, oldestPosition);
         builder.appendQueryParameter("limit", strFixedDownloadLimit(limit, apiRoutine));
-        JSONArray jArr = http.getRequestAsArray(builder.build().toString());
+        JSONArray jArr = http.getRequestAsArray(builder.build().toString(), "hashtags");
         return jArrToTimeline(jArr, apiRoutine, url);
     }
 
@@ -210,14 +210,14 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
         if (TextUtils.isEmpty(tag)) {
             return new ArrayList<>();
         }
-        ApiRoutineEnum apiRoutine = ApiRoutineEnum.SEARCH_MESSAGES;
+        ApiRoutineEnum apiRoutine = ApiRoutineEnum.SEARCH_USERS;
         String url = getApiPath(apiRoutine);
         Uri sUri = Uri.parse(url);
         Uri.Builder builder = sUri.buildUpon();
         builder.appendQueryParameter("q", searchQuery);
         builder.appendQueryParameter("resolve", "true");
         builder.appendQueryParameter("limit", strFixedDownloadLimit(limit, apiRoutine));
-        JSONArray jArr = http.getRequestAsArray(builder.build().toString());
+        JSONArray jArr = http.getRequestAsArray(builder.build().toString(), "accounts");
         return jArrToUsers(jArr, apiRoutine, url);
     }
 
