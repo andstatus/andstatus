@@ -322,7 +322,6 @@
   <string name="options_menu_favorites_timeline_cond">Favoritas</string>
   <string name="options_menu_home_timeline">Cronologia Home</string>
   <string name="options_menu_home_timeline_cond">Home</string>
-  <string name="options_menu_global_search">Procura global</string>
   <string name="options_menu_help">Ajuda</string>
   <string name="options_menu_sync">Sincronizar com a Internet</string>
   <string name="options_menu_mentions">Menções</string>
@@ -451,6 +450,8 @@ toque no botão abaixo para verificar novamente as suas credenciais.</string>
   <string name="summary_preference_vibration_off">A vibração está desligada</string>
   <string name="summary_preference_vibration_on">Vibrar ao receber mensagens</string>
   <string name="switch_to_default_timeline">Trocar para a cronologia padrão</string>
+  <string name="sync_younger_messages">Sincronização %1$s. Sincronizar mensagens desde %2$s</string>
+  <string name="sync_older_messages">Sincronizar mensagens anteriores a %1$s</string>
   <string name="sync_over_wifi_only">Sincronizar apenas por Wi-Fi</string>
   <string name="sync_failed">Falha de sincronização</string>
   <string name="sync_frequency_minutes">Intervalo de tempo entre sincronizações. Deixe em branco para usar o valor padrão: </string>

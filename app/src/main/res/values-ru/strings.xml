@@ -174,6 +174,7 @@
   <string name="followed_by">Следуют</string>
   <string name="followers">Фолловеры</string>
   <string name="followers_of">Фолловеры \"%1s\"</string>
+  <string name="forget_sync_events">Забыть события и даты синхронизации</string>
   <string name="friends">Друзья</string>
   <string name="friends_of">Друзья «%1s»</string>
   <string name="gestures">Жесты</string>
@@ -281,6 +282,7 @@
   <string name="message_source_in_reply_to">в ответ на %1$s</string>
   <string name="message_source_to">для %1$s</string>
   <string name="message_twitter">Сообщение</string>
+  <string name="messages">Сообщения</string>
   <string name="messages_activity">Личные сообщения</string>
   <string name="n_message_link">Ссылка из сообщения</string>
   <string name="n_message_links">%d ссылок из сообщения</string>
@@ -290,7 +292,7 @@
   <string name="no_more_messages">Сообщений больше нет</string>
   <string name="not_set">не задан</string>
   <string name="not_syncable">Синхронизация недоступна</string>
-  <string name="nothing_in_the_loadable_list">Здесь пока ничего нет. Попробуйте использовать действие «Синхронизация с Интернетом», чтобы обновить этот список.</string>
+  <string name="nothing_in_the_loadable_list">Здесь пока ничего нет...</string>
   <string name="notification_message_formats_1">{0} сообщение</string>
   <string name="notification_message_formats_2">{0} сообщения</string>
   <string name="notification_mention_formats_1">{0} упоминание</string>
@@ -319,7 +321,7 @@
   <string name="options_menu_favorites_timeline_cond">Избранное</string>
   <string name="options_menu_home_timeline">Домашняя линия времени</string>
   <string name="options_menu_home_timeline_cond">Дом</string>
-  <string name="options_menu_global_search">Глобальный поиск</string>
+  <string name="options_menu_global_search">Поиск в Интернете</string>
   <string name="options_menu_help">Помощь</string>
   <string name="options_menu_sync">Синхронизировать с Интернетом</string>
   <string name="options_menu_mentions">Упоминания</string>
@@ -376,9 +378,11 @@
   <string name="resolve_view">Посмотреть сообщение</string>
   <string name="rounded_avatars">Округлые аватары</string>
   <string name="search_timeline_label">Поиск сообщений, людей и тем</string>
-  <string name="search_timeline_hint">Введите имя или фразу</string>
+  <string name="search_timeline_hint">Введите ключевые слова / #хэштеги</string>
   <string name="search_direct_messages_label">Поиск личных сообщений</string>
   <string name="search_direct_messages_hint">Введите имя или фразу</string>
+  <string name="search_userlist_hint">Введите имя / Webfinger ID</string>
+  <string name="search_users">Поиск пользователей</string>
   <string name="select_backup_folder">Выберите папку для создания резервной копии</string>
   <string name="select_displayed_in_selector">Выберите, отображается ли эта Лента времени. И если да, то когда</string>
   <string name="sent">Отправленные</string>
@@ -546,6 +550,7 @@
   <string name="user_in_timeline_entries_real_name">Настоящее имя</string>
   <string name="user_in_timeline_entries_real_name_at_username">Настоящее имя @имяпользователя</string>
   <string name="user_list">Список пользователей</string>
+  <string name="users">Пользователи</string>
   <string name="users_of_message">Пользователи сообщения</string>
   <string name="yes">Да</string>
 </resources>

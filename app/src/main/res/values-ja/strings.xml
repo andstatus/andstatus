@@ -178,6 +178,7 @@ AndStatus は、最後のメッセージのダウンロード以降のすべて�
   <string name="followed_by">フォローしました</string>
   <string name="followers">フォロワー</string>
   <string name="followers_of">\"%1s\" のフォロワー</string>
+  <string name="forget_sync_events">同期イベントと日付を記憶しない</string>
   <string name="friends">友達</string>
   <string name="friends_of">\"%1s\" の友達</string>
   <string name="gestures">ジェスチャー</string>
@@ -286,6 +287,7 @@ AndStatus は、最後のメッセージのダウンロード以降のすべて�
   <string name="message_source_in_reply_to">%1$s に返信</string>
   <string name="message_source_to">%1$s に</string>
   <string name="message_twitter">ツイート</string>
+  <string name="messages">メッセージ</string>
   <string name="messages_activity">ダイレクトメッセージ</string>
   <string name="n_message_link">メッセージ リンク</string>
   <string name="n_message_links">%d メッセージ リンク</string>
@@ -295,7 +297,7 @@ AndStatus は、最後のメッセージのダウンロード以降のすべて�
   <string name="no_more_messages">これ以上メッセージはありません</string>
   <string name="not_set">設定しない</string>
   <string name="not_syncable">同期不可</string>
-  <string name="nothing_in_the_loadable_list">ここにはまだ何もありません。\"インターネットと同期\" をタップして、このリストを更新みてください。</string>
+  <string name="nothing_in_the_loadable_list">ここにはまだ何もありません...</string>
   <string name="notification_message_formats_1">{0} メッセージ</string>
   <string name="notification_message_formats_2">{0} メッセージ</string>
   <string name="notification_mention_formats_1">{0} メンション</string>
@@ -324,7 +326,7 @@ AndStatus は、最後のメッセージのダウンロード以降のすべて�
   <string name="options_menu_favorites_timeline_cond">お気に入り</string>
   <string name="options_menu_home_timeline">ホーム タイムライン</string>
   <string name="options_menu_home_timeline_cond">ホーム</string>
-  <string name="options_menu_global_search">グローバル検索</string>
+  <string name="options_menu_global_search">インターネットで検索</string>
   <string name="options_menu_help">ヘルプ</string>
   <string name="options_menu_sync">インターネットと同期</string>
   <string name="options_menu_mentions">メンション</string>
@@ -381,9 +383,11 @@ AndStatus は、最後のメッセージのダウンロード以降のすべて�
   <string name="resolve_view">メッセージを表示</string>
   <string name="rounded_avatars">丸みを帯びたアバター</string>
   <string name="search_timeline_label">メッセージ、ユーザー、およびハッシュを検索</string>
-  <string name="search_timeline_hint">ユーザー名/フレーズを入力してください</string>
+  <string name="search_timeline_hint">キーワード/#ハッシュタグ を入力</string>
   <string name="search_direct_messages_label">ダイレクトメッセージを検索</string>
   <string name="search_direct_messages_hint">ユーザー名またはフレーズを入力てください</string>
+  <string name="search_userlist_hint">名前/Webfinger ID を入力</string>
+  <string name="search_users">ユーザーを検索</string>
   <string name="select_backup_folder">バックアップ フォルダーを選択</string>
   <string name="select_displayed_in_selector">このタイムラインを表示するかどうかと、時期を選択</string>
   <string name="sent">送信済</string>
@@ -551,6 +555,7 @@ AndStatus は、最後のメッセージのダウンロード以降のすべて�
   <string name="user_in_timeline_entries_real_name">実名</string>
   <string name="user_in_timeline_entries_real_name_at_username">実名 @ユーザー名</string>
   <string name="user_list">ユーザーリスト</string>
+  <string name="users">ユーザー</string>
   <string name="users_of_message">メッセージのユーザー</string>
   <string name="yes">はい</string>
 </resources>
