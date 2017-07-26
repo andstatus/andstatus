@@ -101,7 +101,7 @@ public abstract class Connection {
          */
         USER_TIMELINE(true),
         PUBLIC_TIMELINE(true),
-        TAGS_TIMELINE(true),
+        TAG_TIMELINE(true),
         FAVORITES_TIMELINE,
         SEARCH_MESSAGES(true),
         SEARCH_USERS(true),

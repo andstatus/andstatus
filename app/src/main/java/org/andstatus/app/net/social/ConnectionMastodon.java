@@ -61,7 +61,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
             case PUBLIC_TIMELINE:
                 url = "timelines/public";
                 break;
-            case TAGS_TIMELINE:
+            case TAG_TIMELINE:
                 url = "timelines/tag/%tag%";
                 break;
             case USER_TIMELINE:
@@ -80,7 +80,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
                 url = "statuses/%messageId%";
                 break;
             case SEARCH_MESSAGES:
-                url = "search";
+                url = "search"; /* actually, this is a complex search "for content" */
                 break;
             case SEARCH_USERS:
                 url = "accounts/search";
@@ -193,13 +193,13 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
         if (TextUtils.isEmpty(tag)) {
             return new ArrayList<>();
         }
-        ApiRoutineEnum apiRoutine = ApiRoutineEnum.TAGS_TIMELINE;
+        ApiRoutineEnum apiRoutine = ApiRoutineEnum.TAG_TIMELINE;
         String url = getApiPathWithTag(apiRoutine, tag);
         Uri sUri = Uri.parse(url);
         Uri.Builder builder = sUri.buildUpon();
         appendPositionParameters(builder, youngestPosition, oldestPosition);
         builder.appendQueryParameter("limit", strFixedDownloadLimit(limit, apiRoutine));
-        JSONArray jArr = http.getRequestAsArray(builder.build().toString(), "hashtags");
+        JSONArray jArr = http.getRequestAsArray(builder.build().toString());
         return jArrToTimeline(jArr, apiRoutine, url);
     }
 
@@ -217,7 +217,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
         builder.appendQueryParameter("q", searchQuery);
         builder.appendQueryParameter("resolve", "true");
         builder.appendQueryParameter("limit", strFixedDownloadLimit(limit, apiRoutine));
-        JSONArray jArr = http.getRequestAsArray(builder.build().toString(), "accounts");
+        JSONArray jArr = http.getRequestAsArray(builder.build().toString());
         return jArrToUsers(jArr, apiRoutine, url);
     }
 
