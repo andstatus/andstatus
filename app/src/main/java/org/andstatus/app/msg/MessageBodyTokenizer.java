@@ -39,7 +39,7 @@ class MessageBodyTokenizer implements MultiAutoCompleteTextView.Tokenizer {
             }
             i--;
         }
-        if (i >= cursor - MIN_LENGHT_TO_SEARCH || text.charAt(i) != '@') {
+        if (i >= cursor - MIN_LENGHT_TO_SEARCH || text == null || text.charAt(i) != '@') {
             return cursor;
         }
         MyLog.v(this, "'" + text + "', cursor=" + cursor + ", start=" + (i + 1));

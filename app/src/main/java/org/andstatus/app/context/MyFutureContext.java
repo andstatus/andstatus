@@ -132,12 +132,16 @@ public class MyFutureContext extends MyAsyncTask<Void, Void, MyContext> {
                     }
                     launched = true;
                 } catch (android.util.AndroidRuntimeException e) {
-                    try {
-                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        myContext.context().startActivity(intent);
-                        launched = true;
-                    } catch (Exception e2) {
-                        MyLog.e(this, "Launching activity with Intent.FLAG_ACTIVITY_NEW_TASK flag", e);
+                    if (intent == null) {
+                        MyLog.e(this, "Launching next activity from firstActivity", e);
+                    } else {
+                        try {
+                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                            myContext.context().startActivity(intent);
+                            launched = true;
+                        } catch (Exception e2) {
+                            MyLog.e(this, "Launching activity with Intent.FLAG_ACTIVITY_NEW_TASK flag", e);
+                        }
                     }
                 } catch (java.lang.SecurityException e) {
                     MyLog.d(this, "Launching activity", e);
