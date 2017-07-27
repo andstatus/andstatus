@@ -24,7 +24,9 @@
 <resources>
   <string name="account_settings_action">AndStatus 账户设置</string>
   <string name="account_settings_activity_title">账户</string>
+  <string name="account_settings_summary">同步频率、 通知等。</string>
   <string name="action_bar_background_color_preference_title">操作栏背景颜色</string>
   <string name="action_bar_text_preference_title">操作栏文本和图标颜色</string>
   <string name="action_menu_overflow_description">更多操作&#8230;</string>
+  <string name="always">始终</string>
 </resources>

@@ -179,6 +179,7 @@
   <string name="followed_by">Wird gefolgt von</string>
   <string name="followers">Abonnenten</string>
   <string name="followers_of">Abonnenten von \"%1s\"</string>
+  <string name="forget_sync_events">Sync-Ereignisse und -Daten vergessen</string>
   <string name="friends">Freunde</string>
   <string name="friends_of">Freunde von \"%1s\"</string>
   <string name="gestures">Gesten</string>
@@ -287,6 +288,7 @@
   <string name="message_source_in_reply_to">als Antwort auf %1$s</string>
   <string name="message_source_to">an %1$s</string>
   <string name="message_twitter">Tweet</string>
+  <string name="messages">Nachrichten</string>
   <string name="messages_activity">Direktnachrichten</string>
   <string name="n_message_link">Nachrichtenlink</string>
   <string name="n_message_links">%d Nachrichtenlinks</string>
@@ -296,7 +298,7 @@
   <string name="no_more_messages">Keine weiteren Nachrichten</string>
   <string name="not_set">nicht festgelegt</string>
   <string name="not_syncable">Nicht synchronisierbar</string>
-  <string name="nothing_in_the_loadable_list">Noch nichts zu sehen. Versuche \"Mit dem Internet synchronisieren\" anzutippen um diese Liste zu aktualisieren.</string>
+  <string name="nothing_in_the_loadable_list">Hier ist noch nichts...</string>
   <string name="notification_message_formats_1">{0} neuen Message</string>
   <string name="notification_message_formats_2">{0} neue Messages</string>
   <string name="notification_mention_formats_1">{0} neue Erwähnung</string>
@@ -325,7 +327,7 @@
   <string name="options_menu_favorites_timeline_cond">Favoriten</string>
   <string name="options_menu_home_timeline">Startseite-Timeline</string>
   <string name="options_menu_home_timeline_cond">Start</string>
-  <string name="options_menu_global_search">Globale Suche</string>
+  <string name="options_menu_global_search">Suche im Internet</string>
   <string name="options_menu_help">Hilfe</string>
   <string name="options_menu_sync">Online synchronisieren</string>
   <string name="options_menu_mentions">Erwähnungen</string>
@@ -382,9 +384,11 @@
   <string name="resolve_view">Nachricht anzeigen</string>
   <string name="rounded_avatars">Runde Avatare</string>
   <string name="search_timeline_label">Nachrichten, User und Hashtags durchsuchen</string>
-  <string name="search_timeline_hint">Username/Stichwort eingeben</string>
+  <string name="search_timeline_hint">Stichwörter/#Hashtags eingeben</string>
   <string name="search_direct_messages_label">Direktnachrichten durchsuchen</string>
   <string name="search_direct_messages_hint">Usernamen oder Stichwort eingeben</string>
+  <string name="search_userlist_hint">Name/Webfinger-ID eingeben</string>
+  <string name="search_users">Benutzer suchen</string>
   <string name="select_backup_folder">Backup-Ordner auswählen</string>
   <string name="select_displayed_in_selector">Wähle, ob und wann diese Timeline angezeigt wird</string>
   <string name="sent">Gesendet</string>
@@ -552,6 +556,7 @@
   <string name="user_in_timeline_entries_real_name">Echter Name</string>
   <string name="user_in_timeline_entries_real_name_at_username">Echter Name @benutzername</string>
   <string name="user_list">Benutzerliste</string>
+  <string name="users">Benutzer</string>
   <string name="users_of_message">Benutzer der Nachricht</string>
   <string name="yes">Ja</string>
 </resources>

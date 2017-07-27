@@ -177,6 +177,7 @@
   <string name="followed_by">Seguido por</string>
   <string name="followers">Seguidores</string>
   <string name="followers_of">Seguidores de \"%1s\"</string>
+  <string name="forget_sync_events">Esquecer eventos e datas sincronizadas</string>
   <string name="friends">Amigos</string>
   <string name="friends_of">Amigos de \"%1s\"</string>
   <string name="gestures">Gestos</string>
@@ -284,6 +285,7 @@
   <string name="message_source_in_reply_to">em resposta a %1$s</string>
   <string name="message_source_to">para %1$s</string>
   <string name="message_twitter">Tweet</string>
+  <string name="messages">Mensagens</string>
   <string name="messages_activity">Mensagens diretas</string>
   <string name="n_message_link">Ligação da mensagem</string>
   <string name="n_message_links">%d ligações da mensagem</string>
@@ -293,7 +295,7 @@
   <string name="no_more_messages">Não existem mais mensagens</string>
   <string name="not_set">não definido</string>
   <string name="not_syncable">Sincronização impossível</string>
-  <string name="nothing_in_the_loadable_list">Aqui nada existe. Tente \"Sincronizar com a Internet\" para atualizar esta lista.</string>
+  <string name="nothing_in_the_loadable_list">Nada por aqui, ainda...</string>
   <string name="notification_message_formats_1">{0} mensagem</string>
   <string name="notification_message_formats_2">{0} mensagens</string>
   <string name="notification_mention_formats_1">{0} menção</string>
@@ -322,6 +324,7 @@
   <string name="options_menu_favorites_timeline_cond">Favoritas</string>
   <string name="options_menu_home_timeline">Cronologia Home</string>
   <string name="options_menu_home_timeline_cond">Home</string>
+  <string name="options_menu_global_search">Pesquisar na Internet</string>
   <string name="options_menu_help">Ajuda</string>
   <string name="options_menu_sync">Sincronizar com a Internet</string>
   <string name="options_menu_mentions">Menções</string>
@@ -378,9 +381,11 @@
   <string name="resolve_view">Ver mensagem</string>
   <string name="rounded_avatars">Avatars redondos</string>
   <string name="search_timeline_label">Procurar mensagens, utilizadores, hashtags</string>
-  <string name="search_timeline_hint">Digite o nome de utilizador/frase</string>
+  <string name="search_timeline_hint">Digite as palavras-chave/#hashtags</string>
   <string name="search_direct_messages_label">Procurar mensagens diretas</string>
   <string name="search_direct_messages_hint">Digite o nome de utilizador ou frase</string>
+  <string name="search_userlist_hint">Digite o nome/ID Webfinger</string>
+  <string name="search_users">Pesquisar utilizadores</string>
   <string name="select_backup_folder">Selecione a pasta de backup</string>
   <string name="select_displayed_in_selector">Selecione se e quando a cronologia será mostrada</string>
   <string name="sent">Enviadas</string>
@@ -550,6 +555,7 @@ toque no botão abaixo para verificar novamente as suas credenciais.</string>
   <string name="user_in_timeline_entries_real_name">Nome real</string>
   <string name="user_in_timeline_entries_real_name_at_username">Nome real @username</string>
   <string name="user_list">Lista de utilizador</string>
+  <string name="users">Utilizadores</string>
   <string name="users_of_message">Utilizadores da mensagem</string>
   <string name="yes">Sim</string>
 </resources>

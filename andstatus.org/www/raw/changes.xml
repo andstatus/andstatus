@@ -29,15 +29,6 @@
     </header>
     <release android:versionName="35.03" android:versionCode="229"
              versionDate="2017-07-26"
-             versionTitle="Consistent separation between 'Sync with Internet' and 'Reload from cache'">
-        <changes>
-            <change>Consistent separation between 'Sync with Internet' and 'Reload from cache'. Both menu items are
-                places on an Action Bar and present in almost all lists. Android material icons
-                "Sync" and "Refresh" are used, which are familiar to users.</change>
-        </changes>
-    </release>
-    <release android:versionName="35.02" android:versionCode="228"
-             versionDate="2017-07-25"
              versionTitle="Autocompletion of usernames/webfingerIds during message composition. Users search">
         <changes>
             <change>During a message composition, after "@" and the first two or more letters of a Username or a Real Name,
@@ -52,6 +43,9 @@
             </change>
             <change>Fixed avatars occasionally started to change (cache overload)
                 <a href="https://github.com/andstatus/andstatus/issues/458">#458</a></change>
+            <change>Consistent separation between 'Sync with Internet' and 'Reload from cache'. Both menu items are
+                places on an Action Bar and present in almost all lists. Android material icons
+                "Sync" and "Refresh" are used, which are familiar to users.</change>
         </changes>
     </release>
     <release android:versionName="34.05" android:versionCode="225"
