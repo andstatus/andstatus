@@ -159,7 +159,6 @@ public class MyProvider extends ContentProvider {
         long rowId;
         Uri newUri = null;
         try {
-            Long now = System.currentTimeMillis();
             SQLiteDatabase db = MyContextHolder.get().getDatabase();
             if (db == null) {
                 MyLog.v(this, "insert; Database is null");
@@ -192,7 +191,7 @@ public class MyProvider extends ContentProvider {
                     if (!values.containsKey(MsgTable.VIA)) {
                         values.put(MsgTable.VIA, "");
                     }
-                    values.put(MsgTable.INS_DATE, now);
+                    values.put(MsgTable.INS_DATE, MyLog.uniqueCurrentTimeMS());
                     
                     msgOfUserValues = MsgOfUserValues.valueOf(accountUserId, values);
                     otherUserValues = MsgOfUserValues.valuesOfOtherUser(values);
@@ -204,7 +203,7 @@ public class MyProvider extends ContentProvider {
 
                 case USER_ITEM:
                     table = UserTable.TABLE_NAME;
-                    values.put(UserTable.INS_DATE, now);
+                    values.put(UserTable.INS_DATE, MyLog.uniqueCurrentTimeMS());
                     accountUserId = uriParser.getAccountUserId();
                     friendshipValues = FriendshipValues.valueOf(accountUserId, 0, values);
                     break;

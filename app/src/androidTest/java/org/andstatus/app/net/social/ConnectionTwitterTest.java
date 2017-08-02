@@ -48,6 +48,7 @@ import java.util.Date;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
@@ -185,8 +186,9 @@ public class ConnectionTwitterTest {
 
         String body = "Update: Streckensperrung zw. Berliner Tor &lt;&gt; Bergedorf. Ersatzverkehr mit Bussen und Taxis " +
                 "Störungsdauer bis ca. 10 Uhr. #hvv #sbahnhh";
-        MbMessage message = connection.getMessage("834306097003581440").getMessage();
-        assertNotNull("message returned", message);
+        MbActivity activity = connection.getMessage("834306097003581440");
+        assertEquals("No message returned " + activity, activity.getObjectType(), MbObjectType.MESSAGE);
+        MbMessage message = activity.getMessage();
         assertEquals("Body of this message", MyHtml.unescapeHtml(body), message.getBody());
         assertEquals("Body of this message", ",update,streckensperrung,zw,berliner,tor,bergedorf,ersatzverkehr,mit,bussen," +
                 "und,taxis,störungsdauer,bis,ca,10,uhr,hvv,#hvv,sbahnhh,#sbahnhh,", message.getBodyToSearch());
@@ -195,8 +197,9 @@ public class ConnectionTwitterTest {
         CommandExecutionContext executionContext = new CommandExecutionContext(
                 CommandData.newAccountCommand(CommandEnum.GET_STATUS, ma));
         DataUpdater di = new DataUpdater(executionContext);
-        long messageId = di.onActivity(message.update(ma.toPartialUser()));
-        assertTrue("Message added", messageId != 0);
+        di.onActivity(activity);
+        assertNotEquals("Message was not added " + activity, 0, message.msgId);
+        assertNotEquals("Activity was not added " + activity, 0, activity.getId());
     }
 
 }

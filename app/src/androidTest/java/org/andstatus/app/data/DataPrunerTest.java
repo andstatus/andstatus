@@ -72,12 +72,8 @@ public class DataPrunerTest {
             String msg = method + "; Couldn't set modification date of '" + logFile1.getAbsolutePath()
                     + "' to " + millisToDateString(lastModifiedNew)
                     + " actual: " + millisToDateString(logFile1.lastModified());
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
-                fail(msg);
-            } else {
-                // TODO: Is this really a bug in Android?!
-                MyLog.e(this, msg);
-            }
+            // TODO: Is this really a bug in Android?!
+            MyLog.e(this, msg);
         }
 
         clearPrunedDate();

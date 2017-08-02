@@ -16,22 +16,30 @@
 
 package org.andstatus.app.net.social;
 
+import android.support.annotation.NonNull;
+
 /**
  * Activity type in a sense of
  * Activity Vocabulary https://www.w3.org/TR/activitystreams-vocabulary/#activity-types
  * and ActivityPub, see https://www.w3.org/TR/activitypub/#announce-activity-inbox
  */
 public enum MbActivityType {
-    ANNOUNCE,  // known also as Repost, Retweet, Boost...
-    CREATE,
-    DELETE,
-    FOLLOW,
-    LIKE,
-    UPDATE,
-    UNDO_ANNOUNCE,
-    UNDO_FOLLOW,
-    UNDO_LIKE,
-    EMPTY;
+    ANNOUNCE(1),  // known also as Repost, Retweet, Boost...
+    CREATE(2),
+    DELETE(3),
+    FOLLOW(4),
+    LIKE(5),
+    UPDATE(6),
+    UNDO_ANNOUNCE(7),
+    UNDO_FOLLOW(8),
+    UNDO_LIKE(9),
+    EMPTY(10);
+
+    final long id;
+
+    MbActivityType(long id) {
+        this.id = id;
+    }
 
     public static MbActivityType undo(MbActivityType type) {
         switch (type) {
@@ -44,5 +52,16 @@ public enum MbActivityType {
             default:
                 return EMPTY;
         }
+    }
+
+    /** @return the enum or {@link #EMPTY} */
+    @NonNull
+    public static MbActivityType fromId(long id) {
+        for (MbActivityType type : values()) {
+            if (type.id == id) {
+                return type;
+            }
+        }
+        return EMPTY;
     }
 }

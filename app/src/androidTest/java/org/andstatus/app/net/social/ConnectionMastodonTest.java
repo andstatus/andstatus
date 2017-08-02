@@ -62,6 +62,7 @@ public class ConnectionMastodonTest {
         int ind = 0;
         assertEquals("Is not a message", MbObjectType.MESSAGE, timeline.get(ind).getObjectType());
         MbActivity activity = timeline.get(ind);
+        assertEquals("Activity Oid", "22", activity.getTimelinePosition().getPosition());
         MbMessage mbMessage = activity.getMessage();
         assertEquals("Favorited", TriState.UNKNOWN, mbMessage.getFavoritedByMe());
         MbUser sender = activity.getActor();

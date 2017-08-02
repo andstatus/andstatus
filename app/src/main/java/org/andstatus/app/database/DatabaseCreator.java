@@ -28,9 +28,9 @@ import org.andstatus.app.util.MyLog;
 public class DatabaseCreator {
     /**
      * Current database scheme version, defined by AndStatus developers.
-     * This is used to check (and upgrade if necessary)
-     * existing database after application update.
+     * This is used to check (and upgrade if necessary) existing database after application update.
      *
+     * v.27 2017-08-01 app.v.36 ActivityTable added
      * v.26 2016-11-27 app.v.31 Conversation ID added to MsgTable, see https://github.com/andstatus/andstatus/issues/361
      * v.25 2016-06-07 app.v.27 TimelineTable and CommandTable added
      * v.24 2016-02-27 app.v.23 several attributes added to User, https://github.com/andstatus/andstatus/issues/320
@@ -54,7 +54,7 @@ public class DatabaseCreator {
      *      All messages are in the same table.
      *      Allows to have multiple User Accounts in different Originating systems (twitter.com etc. )
      */
-    public static final int DATABASE_VERSION = 26;
+    public static final int DATABASE_VERSION = 27;
     public static final long ORIGIN_ID_TWITTER =  1L;
 
     private final SQLiteDatabase db;
@@ -77,6 +77,7 @@ public class DatabaseCreator {
         OriginTable.create(db);
         TimelineTable.create(db);
         CommandTable.create(db);
+        ActivityTable.create(db);
         return this;
     }
 

@@ -562,14 +562,14 @@ public class Origin {
             ContentValues values = new ContentValues();
             values.put(OriginTable.ORIGIN_URL, origin.url != null ? origin.url.toExternalForm() : "");
             values.put(OriginTable.SSL, origin.ssl);
-            values.put(OriginTable.SSL_MODE, origin.getSslMode().getId());
+            values.put(OriginTable.SSL_MODE, origin.getSslMode().id);
             values.put(OriginTable.ALLOW_HTML, origin.allowHtml);
             values.put(OriginTable.SHORT_URL_LENGTH, origin.shortUrlLength);
             values.put(OriginTable.TEXT_LIMIT, origin.getTextLimit());
             values.put(OriginTable.IN_COMBINED_GLOBAL_SEARCH, origin.inCombinedGlobalSearch);
             values.put(OriginTable.IN_COMBINED_PUBLIC_RELOAD, origin.inCombinedPublicReload);
-            values.put(OriginTable.MENTION_AS_WEBFINGER_ID, origin.mMentionAsWebFingerId.getId());
-            values.put(OriginTable.USE_LEGACY_HTTP, origin.useLegacyHttpProtocol().getId());
+            values.put(OriginTable.MENTION_AS_WEBFINGER_ID, origin.mMentionAsWebFingerId.id);
+            values.put(OriginTable.USE_LEGACY_HTTP, origin.useLegacyHttpProtocol().id);
 
             boolean changed = false;
             if (origin.id == 0) {

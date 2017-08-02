@@ -7,7 +7,7 @@ public enum SslModeEnum {
     INSECURE(2, R.string.preference_ssl_mode_insecure_summary),
     MISCONFIGURED(3, R.string.preference_ssl_mode_misconfigured_summary);
     
-    private final long id;
+    public final long id;
     private final int summaryResourceId;
 
     SslModeEnum(long id, int summaryResourceId) {
@@ -24,10 +24,6 @@ public enum SslModeEnum {
         return SECURE;
     }
 
-    public Long getId() {
-        return id;
-    }
-    
     @Override
     public String toString() {
         return "SSL mode:" + this.name();

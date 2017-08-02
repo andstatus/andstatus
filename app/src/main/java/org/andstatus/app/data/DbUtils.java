@@ -68,7 +68,7 @@ public final class DbUtils {
                 MyLog.i(method, "NullPointerException, table=" + tableName + "; pass=" + pass, e);
                 break;
             } catch (SQLiteException e) {
-                MyLog.i(method, "Database is locked, table=" + tableName + "; pass=" + pass, e);
+                MyLog.i(method, "Database exception, table=" + tableName + "; pass=" + pass, e);
                 rowId = -1;
             }
             waitBetweenRetries(method);

@@ -131,9 +131,9 @@ public class DemoGnuSocialMessagesInserter {
     private long addMessage(MbMessage message) {
         DataUpdater di = new DataUpdater(new CommandExecutionContext(
                 CommandData.newOriginCommand(CommandEnum.EMPTY, origin)));
-        long messageId = di.onActivity(message.update(accountUser));
-        assertTrue( "Message added " + message.oid, messageId != 0);
-        assertEquals("Conversation Oid", conversationOid, MyQuery.msgIdToConversationOid(messageId));
-        return messageId;
+        di.onActivity(message.update(accountUser));
+        assertTrue( "Message added " + message.oid, message.msgId != 0);
+        assertEquals("Conversation Oid", conversationOid, MyQuery.msgIdToConversationOid(message.msgId));
+        return message.msgId;
     }
 }

@@ -180,8 +180,7 @@ public class MessageEditorData {
     }
 
     public void save(Uri imageUriToSave) {
-        MbMessage message = MbMessage.fromOriginAndOid(getMyAccount().getOriginId(), getMyAccount().getUserOid(), "",
-                status);
+        MbMessage message = MbMessage.fromOriginAndOid(getMyAccount().getOriginId(), "", status);
         message.msgId = getMsgId();
         message.setAuthor(getMyAccount().toPartialUser());
         message.setUpdatedDate(System.currentTimeMillis());
@@ -191,7 +190,7 @@ public class MessageEditorData {
                     MyQuery.idToOid(OidEnum.USER_OID, recipientId, 0)));
         }
         if (inReplyToId != 0) {
-            message.setInReplyTo(MbMessage.fromOriginAndOid(getMyAccount().getOriginId(), getMyAccount().getUserOid(),
+            message.setInReplyTo(MbMessage.fromOriginAndOid(getMyAccount().getOriginId(),
                     MyQuery.idToOid(OidEnum.MSG_OID, inReplyToId, 0),
                     DownloadStatus.UNKNOWN));
         }
@@ -201,7 +200,7 @@ public class MessageEditorData {
                     MbAttachment.fromUriAndContentType(mediaUri, MyContentType.IMAGE));
         }
         DataUpdater di = new DataUpdater(getMyAccount());
-        setMsgId(di.onActivity(message.update(getMyAccount().toPartialUser())));
+        setMsgId(di.onActivity(message.update(getMyAccount().toPartialUser())).getMessage().msgId);
     }
 
     MyAccount getMyAccount() {

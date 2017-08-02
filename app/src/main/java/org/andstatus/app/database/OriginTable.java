@@ -26,6 +26,7 @@ import org.andstatus.app.util.TriState;
 
 /**
  * @author yvolk@yurivolkov.com
+ * {@link org.andstatus.app.origin.Origin}
  */
 public final class OriginTable implements BaseColumns {
     public static final String TABLE_NAME = "origin";
@@ -57,24 +58,24 @@ public final class OriginTable implements BaseColumns {
     public static final String IN_COMBINED_PUBLIC_RELOAD = "in_combined_public_reload";
 
     public static void create(SQLiteDatabase db) {
-        DbUtils.execSQL(db, "CREATE TABLE " + OriginTable.TABLE_NAME + " ("
+        DbUtils.execSQL(db, "CREATE TABLE " + TABLE_NAME + " ("
                 + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
-                + OriginTable.ORIGIN_TYPE_ID + " INTEGER NOT NULL,"
-                + OriginTable.ORIGIN_NAME + " TEXT NOT NULL,"
-                + OriginTable.ORIGIN_URL + " TEXT NOT NULL,"
-                + OriginTable.SSL + " BOOLEAN DEFAULT 1 NOT NULL,"
-                + OriginTable.SSL_MODE + " INTEGER DEFAULT " + SslModeEnum.SECURE.getId() + " NOT NULL,"
-                + OriginTable.ALLOW_HTML + " BOOLEAN DEFAULT 1 NOT NULL,"
-                + OriginTable.TEXT_LIMIT + " INTEGER NOT NULL,"
-                + OriginTable.SHORT_URL_LENGTH + " INTEGER NOT NULL DEFAULT 0,"
-                + OriginTable.MENTION_AS_WEBFINGER_ID + " INTEGER DEFAULT " + TriState.UNKNOWN.getId() + " NOT NULL,"
-                + OriginTable.USE_LEGACY_HTTP + " INTEGER DEFAULT " + TriState.UNKNOWN.getId() + " NOT NULL,"
-                + OriginTable.IN_COMBINED_GLOBAL_SEARCH + " BOOLEAN DEFAULT 1 NOT NULL,"
-                + OriginTable.IN_COMBINED_PUBLIC_RELOAD + " BOOLEAN DEFAULT 1 NOT NULL"
+                + ORIGIN_TYPE_ID + " INTEGER NOT NULL,"
+                + ORIGIN_NAME + " TEXT NOT NULL,"
+                + ORIGIN_URL + " TEXT NOT NULL,"
+                + SSL + " BOOLEAN DEFAULT 1 NOT NULL,"
+                + SSL_MODE + " INTEGER DEFAULT " + SslModeEnum.SECURE.id + " NOT NULL,"
+                + ALLOW_HTML + " BOOLEAN DEFAULT 1 NOT NULL,"
+                + TEXT_LIMIT + " INTEGER NOT NULL,"
+                + SHORT_URL_LENGTH + " INTEGER NOT NULL DEFAULT 0,"
+                + MENTION_AS_WEBFINGER_ID + " INTEGER DEFAULT " + TriState.UNKNOWN.id + " NOT NULL,"
+                + USE_LEGACY_HTTP + " INTEGER DEFAULT " + TriState.UNKNOWN.id + " NOT NULL,"
+                + IN_COMBINED_GLOBAL_SEARCH + " BOOLEAN DEFAULT 1 NOT NULL,"
+                + IN_COMBINED_PUBLIC_RELOAD + " BOOLEAN DEFAULT 1 NOT NULL"
                 + ")");
 
-        DbUtils.execSQL(db, "CREATE UNIQUE INDEX idx_origin_name ON " + OriginTable.TABLE_NAME + " ("
-                + OriginTable.ORIGIN_NAME
+        DbUtils.execSQL(db, "CREATE UNIQUE INDEX idx_origin_name ON " + TABLE_NAME + " ("
+                + ORIGIN_NAME
                 + ")");
 
     }

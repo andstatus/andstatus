@@ -72,7 +72,7 @@ public class MbMessage {
     public long msgId = 0L;
     private long conversationId = 0L;
 
-    public static MbMessage fromOriginAndOid(long originId, String myUserOid, String oid, DownloadStatus status) {
+    public static MbMessage fromOriginAndOid(long originId, String oid, DownloadStatus status) {
         MbMessage message = new MbMessage(originId);
         message.oid = oid;
         message.status = status;

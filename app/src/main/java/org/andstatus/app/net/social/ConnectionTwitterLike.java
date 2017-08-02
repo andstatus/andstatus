@@ -280,8 +280,7 @@ public abstract class ConnectionTwitterLike extends Connection {
                 // This is for the Status.net
                 oid = jso.optString("id");
             }
-            message =  MbMessage.fromOriginAndOid(data.getOriginId(), data.getAccountUserOid(),
-                    oid, DownloadStatus.LOADED);
+            message =  MbMessage.fromOriginAndOid(data.getOriginId(), oid, DownloadStatus.LOADED);
             message.setUpdatedDate(dateFromJson(jso, "created_at"));
 
             MbUser author = MbUser.EMPTY;
@@ -335,7 +334,6 @@ public abstract class ConnectionTwitterLike extends Connection {
                 if (!SharedPreferencesUtil.isEmpty(inReplyToMessageOid)) {
                     // Construct Related message from available info
                     MbMessage inReplyToMessage = MbMessage.fromOriginAndOid(data.getOriginId(),
-                            data.getAccountUserOid(),
                             inReplyToMessageOid, DownloadStatus.UNKNOWN);
                     MbUser inReplyToUser = MbUser.fromOriginAndUserOid(data.getOriginId(), inReplyToUserOid);
                     if (jso.has("in_reply_to_screen_name")) {

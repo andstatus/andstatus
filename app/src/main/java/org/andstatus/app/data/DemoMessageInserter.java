@@ -115,7 +115,7 @@ public class DemoMessageInserter {
                 messageOid = String.valueOf(System.nanoTime());
             }
         }
-        MbMessage message = MbMessage.fromOriginAndOid(origin.getId(), accountUser.oid, messageOid, messageStatus);
+        MbMessage message = MbMessage.fromOriginAndOid(origin.getId(), messageOid, messageStatus);
         message.setBody(body);
         message.setUpdatedDate(System.currentTimeMillis());
         message.via = "AndStatus";
@@ -143,9 +143,8 @@ public class DemoMessageInserter {
         DataUpdater di = new DataUpdater(new CommandExecutionContext(
                         CommandData.newTimelineCommand(CommandEnum.EMPTY, ma,
                                 message.isPublic() ? TimelineType.PUBLIC : TimelineType.HOME)));
-        long messageId = di.onActivity(activity);
+        long messageId = di.onActivity(activity).getMessage().msgId;
         assertTrue( "Message oid='" + message.oid + "' was not added", messageId != 0);
-        assertEquals("Message id set", messageId, activity.getMessage().msgId);
 
         String permalink = origin.messagePermalink(messageId);
         URL urlPermalink = UrlUtils.fromString(permalink); 

@@ -89,8 +89,7 @@ public class DemoConversationInserter {
         MbMessage reply1 = buildMessage(author3, "Reply 1 to selected", selected, null);
         author3.followedByActor = TriState.TRUE;
 
-        MbMessage reply1Copy = MbMessage.fromOriginAndOid(reply1.originId, accountUser.oid, reply1.oid,
-                DownloadStatus.UNKNOWN);
+        MbMessage reply1Copy = MbMessage.fromOriginAndOid(reply1.originId, reply1.oid, DownloadStatus.UNKNOWN);
         MbMessage reply12 = buildMessage(author2, "Reply 12 to 1 in Replies", reply1Copy, null);
         reply1.replies.add(reply12);
 

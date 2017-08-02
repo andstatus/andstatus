@@ -25,7 +25,7 @@ public enum TriState {
     FALSE(1),
     UNKNOWN(3);
 
-    private final long id;
+    public final long id;
     
     TriState(long id) {
         this.id = id;
@@ -44,10 +44,6 @@ public enum TriState {
         return fromId(BundleUtils.fromBundle(bundle, intentExtra, UNKNOWN.id));
     }
 
-    public Long getId() {
-        return id;
-    }
-    
     public int getEntriesPosition() {
         return ordinal();
     }

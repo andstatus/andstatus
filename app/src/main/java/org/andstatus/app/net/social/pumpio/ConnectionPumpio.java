@@ -476,8 +476,7 @@ public class ConnectionPumpio extends Connection {
                 MyLog.d(TAG, "Pumpio object has no id:" + jso.toString(2));
                 return MbMessage.EMPTY;
             } 
-            message =  MbMessage.fromOriginAndOid(data.getOriginId(), data.getAccountUserOid(), oid,
-                    DownloadStatus.LOADED);
+            message =  MbMessage.fromOriginAndOid(data.getOriginId(), oid, DownloadStatus.LOADED);
             if (jso.has("author")) {
                 message.setAuthor(userFromJson(jso.getJSONObject("author")));
             }

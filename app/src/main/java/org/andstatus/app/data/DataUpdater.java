@@ -56,8 +56,7 @@ import java.util.List;
  * @author yvolk@yurivolkov.com
  */
 public class DataUpdater {
-    private static final String TAG = DataUpdater.class.getSimpleName();
-    static final String MSG_ASSERTION_KEY = "insertOrUpdateMsg";
+    static final String MSG_ASSERTION_KEY = "updateMessage";
     private final CommandExecutionContext execContext;
     private LatestUserMessages lum = new LatestUserMessages();
     private KeywordsFilter keywordsFilter = new KeywordsFilter(
@@ -71,40 +70,35 @@ public class DataUpdater {
         this.execContext = execContext;
     }
 
-    public long onActivity(MbActivity mbActivity) {
+    public MbActivity onActivity(MbActivity mbActivity) {
         return onActivity(mbActivity, true);
     }
 
     /**
      * TODO: parse Actor, ActivityType etc...
-     * @return id of the "MbObject"
      */
-    public long onActivity(MbActivity activity, boolean saveLum) {
+    public MbActivity onActivity(MbActivity activity, boolean saveLum) {
         if (activity == null || activity.isEmpty()) {
-            return 0;
+            return activity;
         }
-        long id = 0;
         updateUser(activity.getActor().update(activity.accountUser));
         switch (activity.getObjectType()) {
             case ACTIVITY:
-                return onActivity(activity.getActivity(), saveLum);
+                onActivity(activity.getActivity(), false);
             case MESSAGE:
-                id = updateMessage(activity, true);
+                updateMessage(activity, true);
                 break;
             case USER:
-                id = updateUser(activity);
+                updateUser(activity);
                 break;
             default:
-                if (activity.isEmpty()) {
-                    MyLog.w(TAG, "activity is empty, skipping: " + activity);
-                    return 0;
-                }
-                break;
+                throw new IllegalArgumentException("Unexpected activity: " + activity);
         }
         if (saveLum) {
             saveLum();
         }
-        return id;
+        activity.save(execContext.getMyContext());
+        return activity;
     }
 
     public void saveLum() {
@@ -118,7 +112,7 @@ public class DataUpdater {
             MyAccount me = execContext.getMyContext().persistentAccounts().
                     fromOriginAndOid(activity.accountUser.originId, activity.accountUser.oid);
             if (!me.isValid()) {
-                MyLog.w(TAG, funcName +"; my account is invalid, skipping: " + activity.toString());
+                MyLog.w(this, funcName +"; my account is invalid, skipping: " + activity.toString());
                 return 0;
             }
 
@@ -406,7 +400,6 @@ public class DataUpdater {
             return userId;
         }
 
-        long originId = mbUser.originId;
         String userOid = (userId == 0 && !mbUser.isOidReal()) ? mbUser.getTempOid() : mbUser.oid;
         try {
             ContentValues values = new ContentValues();
@@ -489,7 +482,7 @@ public class DataUpdater {
             Uri userUri = MatchedUri.getUserUri(myActor.getUserId(), userId);
             if (userId == 0) {
                 // There was no such row so add new one
-                values.put(UserTable.ORIGIN_ID, originId);
+                values.put(UserTable.ORIGIN_ID, mbUser.originId);
                 userId = ParsedUri.fromUri(
                         execContext.getContext().getContentResolver().insert(userUri, values))
                         .getUserId();
@@ -501,9 +494,9 @@ public class DataUpdater {
                 updateMessage(mbUser.getLatestMessage().update(activity.accountUser), false);
             }
         } catch (Exception e) {
-            MyLog.e(this, "insertUser exception", e);
+            MyLog.e(this, method + "; userId=" + userId + "; oid=" + userOid, e);
         }
-        MyLog.v(this, "insertUser, userId=" + userId + "; oid=" + userOid);
+        MyLog.v(this, method + "; userId=" + userId + "; oid=" + userOid);
         return userId;
     }
 

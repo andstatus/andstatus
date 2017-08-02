@@ -326,8 +326,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
         }
         final String method = "messageFromJson";
         String oid = jso.optString("id");
-        MbMessage message =  MbMessage.fromOriginAndOid(data.getOriginId(), data.getAccountUserOid(), oid,
-                DownloadStatus.LOADED);
+        MbMessage message =  MbMessage.fromOriginAndOid(data.getOriginId(), oid, DownloadStatus.LOADED);
         try {
             message.setUpdatedDate(dateFromJson(jso, "created_at"));
 
@@ -368,7 +367,6 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
                 if (!SharedPreferencesUtil.isEmpty(inReplyToMessageOid)) {
                     // Construct Related message from available info
                     MbMessage inReplyToMessage = MbMessage.fromOriginAndOid(data.getOriginId(),
-                            data.getAccountUserOid(),
                             inReplyToMessageOid, DownloadStatus.UNKNOWN);
                     inReplyToMessage.setAuthor(MbUser.fromOriginAndUserOid(data.getOriginId(), inReplyToUserOid));
                     message.setInReplyTo(inReplyToMessage);
