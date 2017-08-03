@@ -16,6 +16,7 @@
 
 package org.andstatus.app.os;
 
+import android.database.sqlite.SQLiteDatabaseLockedException;
 import android.database.sqlite.SQLiteDiskIOException;
 import android.os.AsyncTask;
 import android.os.Looper;
@@ -97,24 +98,25 @@ public abstract class MyAsyncTask<Params, Progress, Result> extends AsyncTask<Pa
         backgroundStartedAt = System.currentTimeMillis();
         currentlyExecutingSince = backgroundStartedAt;
         try {
-            if (isCancelled()) {
-                return null;
-            } else {
+            if (!isCancelled()) {
                 return doInBackground2(params);
             }
         } catch (SQLiteDiskIOException e) {
             String msgLog = MyContextHolder.getSystemInfo(MyContextHolder.get().context(), true);
             logError(msgLog, e);
             onDiskIoException();
-            return null;
+        } catch (SQLiteDatabaseLockedException e) {
+            // see also https://github.com/greenrobot/greenDAO/issues/191
+            String msgLog = "Database lock error, probably related to the application re-initialization";
+            logError(msgLog, e);
         } catch (AssertionError e) {
             logError("", e);
-            return null;
         } catch (Exception e) {
             String msgLog = MyContextHolder.getSystemInfo(MyContextHolder.get().context(), true);
             logError(msgLog, e);
             throw new IllegalStateException(msgLog, e);
         }
+        return null;
     }
 
     protected abstract Result doInBackground2(Params... params);
