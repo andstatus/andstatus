@@ -44,6 +44,7 @@ import org.andstatus.app.util.TamperingDetector;
 public final class MyContextHolder {
     private static final String TAG = MyContextHolder.class.getSimpleName();
     private final static long appStartedAt = SystemClock.elapsedRealtime();
+    private static volatile boolean isShuttingDown = false;
 
     private static final Object CONTEXT_LOCK = new Object();
     @GuardedBy("CONTEXT_LOCK")
@@ -116,8 +117,12 @@ public final class MyContextHolder {
 
     public static MyFutureContext getMyFutureContext(Context context, Object calledBy, boolean duringUpgrade) {
         storeContextIfNotPresent(context, calledBy);
+        if (isShuttingDown) {
+            MyLog.d(TAG, "Skipping initialization: device is shutting down (called by: " + calledBy + ")");
+            return new MyEmptyFutureContext(contextCreator);
+        }
         if (!duringUpgrade && DatabaseConverterController.isUpgrading()) {
-            MyLog.v(TAG, "Skipping initialization: upgrade in progress (called by: " + calledBy + ")");
+            MyLog.d(TAG, "Skipping initialization: upgrade in progress (called by: " + calledBy + ")");
             return new MyEmptyFutureContext(contextCreator);
         }
         if (needToInitialize()) {
@@ -270,7 +275,16 @@ public final class MyContextHolder {
         return ExecutionMode.DEVICE;
     }
 
-    public static boolean isScreenSupported() {
+    static boolean isScreenSupported() {
         return getExecutionMode() != ExecutionMode.TRAVIS_TEST;
+    }
+
+    public static void onShutDown() {
+        isShuttingDown = true;
+        get().setExpired();
+    }
+
+    public static boolean isShuttingDown() {
+        return isShuttingDown;
     }
 }

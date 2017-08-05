@@ -85,7 +85,7 @@ public class MyServiceManager extends BroadcastReceiver {
             MyLog.d(this, "Trying to start service on boot");
             sendCommand(CommandData.getEmpty());            
         } else if ("android.intent.action.ACTION_SHUTDOWN".equals(action)) {
-            // We need this to persist unsaved data in the service
+            MyContextHolder.onShutDown();
             MyLog.d(this, "Stopping service on Shutdown");
             setServiceUnavailable();
             stopService();

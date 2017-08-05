@@ -72,7 +72,7 @@ public class MyServiceCommandsRunner implements MyServiceEventsListener {
 
         sendCommands(commandsOnly);
 
-        waitForCompletion(method);
+        waitForCompletion(method, myContext);
 
         unregisterReceiver();
 
@@ -90,7 +90,7 @@ public class MyServiceCommandsRunner implements MyServiceEventsListener {
         MyLog.v(this, method + " ended, " + (syncResult.hasError() ? "has error" : "ok"));
     }
 
-    public void sendCommands(List<CommandData> commandsOnly) {
+    private void sendCommands(List<CommandData> commandsOnly) {
         synchronized(syncLock) {
             syncStarted = true;
             commands.clear();
@@ -108,12 +108,16 @@ public class MyServiceCommandsRunner implements MyServiceEventsListener {
         }
     }
 
-    public void waitForCompletion(String method) {
+    private void waitForCompletion(String method, MyContext myContext) {
         try {
             final long numIterations = commands.size() * 3L;
             synchronized(syncLock) {
                 for (int iteration = 0; iteration < numIterations; iteration++) {
                     if (isSyncCompleted()) {
+                        break;
+                    }
+                    if (!myContext.isReady()) {
+                        MyLog.d(this, method + "; MyContext is not ready: " + myContext);
                         break;
                     }
                     syncLock.wait(java.util.concurrent.TimeUnit.SECONDS.toMillis(
@@ -133,9 +137,9 @@ public class MyServiceCommandsRunner implements MyServiceEventsListener {
         }
         Boolean executed = commands.get(commandData);
         if (executed == null) {
-            return;
+            return;  // Was not sent for execution
         }
-        MyLog.v(this, "Synced " + (executed == false ? "" : "again ") + commandData);
+        MyLog.v(this, "Synced " + (executed ? "again " : "") + commandData);
         synchronized (syncLock) {
             commands.put(commandData, true);
             if (isSyncCompleted()) {
@@ -144,15 +148,15 @@ public class MyServiceCommandsRunner implements MyServiceEventsListener {
         }
     }
 
-    public boolean isSyncCompleted() {
+    boolean isSyncCompleted() {
         return syncStarted && !commands.containsValue(false);
     }
 
-    public void unregisterReceiver() {
+    private void unregisterReceiver() {
         eventsReceiver.unregisterReceiver(myContext.context());
     }
 
-    int getCompletedCount() {
+    private int getCompletedCount() {
         int count = 0;
         for (Map.Entry<CommandData, Boolean> entry : commands.entrySet()) {
             if (entry.getValue()) {
@@ -170,7 +174,7 @@ public class MyServiceCommandsRunner implements MyServiceEventsListener {
                 '}';
     }
 
-    public void setIgnoreServiceAvailability(boolean ignoreServiceAvailability) {
+    void setIgnoreServiceAvailability(boolean ignoreServiceAvailability) {
         this.ignoreServiceAvailability = ignoreServiceAvailability;
     }
 }
