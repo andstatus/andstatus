@@ -156,7 +156,7 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
         @Override
         void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
             MessageShare messageShare = new MessageShare(menu.getOrigin(), menu.getMsgId(),
-                    menu.imageFilename);
+                    menu.getImageFilename());
             messageShare.share(menu.getActivity());
         }
     },
@@ -282,7 +282,7 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
         @Override
         void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
             MessageShare messageShare = new MessageShare(menu.getOrigin(), menu.getMsgId(),
-                    menu.imageFilename);
+                    menu.getImageFilename());
             messageShare.openPermalink(menu.getActivity());
         }
     },
@@ -290,7 +290,7 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
         @Override
         void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
             MessageShare messageShare = new MessageShare(menu.getOrigin(), menu.getMsgId(),
-                    menu.imageFilename);
+                    menu.getImageFilename());
             messageShare.viewImage(menu.getActivity());
         }
     },
@@ -350,7 +350,7 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
     MESSAGE_LINK {
         @Override
         void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
-            MessageShare.openLink(menu.getActivity(), extractUrlFromTitle(menu.getSelectedItemTitle()));
+            MessageShare.openLink(menu.getActivity(), extractUrlFromTitle(menu.getSelectedMenuItemTitle()));
         }
 
         private String extractUrlFromTitle(@NonNull String title) {

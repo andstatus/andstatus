@@ -118,6 +118,7 @@ public class MessageViewItem implements DuplicatesCollapsible<MessageViewItem>, 
         }
     }
 
+    @NonNull
     public MyAccount getLinkedMyAccount() {
         return linkedMyAccount;
     }

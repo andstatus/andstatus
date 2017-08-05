@@ -18,6 +18,7 @@ package org.andstatus.app;
 
 import android.support.annotation.NonNull;
 import android.view.ContextMenu;
+import android.view.MenuItem;
 import android.view.View;
 
 import org.andstatus.app.account.MyAccount;
@@ -28,6 +29,7 @@ import org.andstatus.app.util.MyLog;
  * @author yvolk@yurivolkov.com
  */
 public class MyContextMenu implements View.OnCreateContextMenuListener {
+    @NonNull
     protected final LoadableListActivity listActivity;
     private View viewOfTheContext = null;
     protected ViewItem mViewItem = null;
@@ -38,7 +40,7 @@ public class MyContextMenu implements View.OnCreateContextMenuListener {
     @NonNull
     private MyAccount myActor = MyAccount.EMPTY;
 
-    public MyContextMenu(LoadableListActivity listActivity) {
+    public MyContextMenu(@NonNull LoadableListActivity listActivity) {
         this.listActivity = listActivity;
     }
 
@@ -47,7 +49,7 @@ public class MyContextMenu implements View.OnCreateContextMenuListener {
         saveContextOfSelectedItem(v);
     }
 
-    protected void saveContextOfSelectedItem(View v) {
+    private void saveContextOfSelectedItem(View v) {
         viewOfTheContext = v;
         ViewItem viewItem = listActivity.saveContextOfSelectedItem(v);
         if (viewItem == null || mViewItem == null || mViewItem.getId() != viewItem.getId()) {
@@ -61,13 +63,13 @@ public class MyContextMenu implements View.OnCreateContextMenuListener {
     }
 
     public void showContextMenu() {
-        if (viewOfTheContext != null &&  viewOfTheContext.getParent() != null) {
+        if (viewOfTheContext != null && viewOfTheContext.getParent() != null && listActivity.isResumedMy()) {
             viewOfTheContext.post(new Runnable() {
 
                 @Override
                 public void run() {
                     try {
-                        viewOfTheContext.showContextMenu();
+                        listActivity.openContextMenu(viewOfTheContext);
                     } catch (NullPointerException e) {
                         MyLog.d(this, "on showContextMenu", e);
                     }
@@ -81,10 +83,11 @@ public class MyContextMenu implements View.OnCreateContextMenuListener {
         return myActor;
     }
 
-    public void setMyActor(MyAccount myAccount) {
-        if (myAccount != null) {
-            this.myActor = myAccount;
+    public void setMyActor(@NonNull MyAccount myAccount) {
+        if (myAccount == null) {
+            throw new IllegalArgumentException("MyAccount is null here");
         }
+        this.myActor = myAccount;
     }
 
     public MyContext getMyContext() {

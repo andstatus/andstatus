@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2014 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2013-2017 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@ import org.andstatus.app.data.MessageForAccount;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.origin.Origin;
+import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.timeline.Timeline;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyUrlSpan;
@@ -49,15 +50,95 @@ import static android.content.Context.ACCESSIBILITY_SERVICE;
  * @author yvolk@yurivolkov.com
  */
 class MessageContextMenu extends MyContextMenu {
-    final MessageListContextMenuContainer menuContainer;
-    
-    String imageFilename = null;
 
-    /**
-     * Message that was selected (clicked, or whose context menu item was selected)
-     */
-    private MessageForAccount msg = MessageForAccount.EMPTY;
-    private String selectedItemTitle = "";
+    private static class MessageContextMenuData {
+        static final int MAX_SECONDS_TO_LOAD = 10;
+        static MessageContextMenuData EMPTY = new MessageContextMenuData(MyAccount.EMPTY, null, null, null);
+
+        enum StateForSelectedViewItem {
+            READY,
+            LOADING,
+            NEW
+        }
+
+        final MessageViewItem viewItem;
+        MessageForAccount msg = MessageForAccount.EMPTY;
+        final MyAsyncTask<Void, Void, MessageForAccount> loader;
+
+        MessageContextMenuData(@NonNull final MyAccount myActor,
+                               final MessageContextMenu messageContextMenu,
+                               final View view,
+                               final MessageViewItem viewItem) {
+            final MessageListContextMenuContainer menuContainer = messageContextMenu == null ? null
+                    : messageContextMenu.menuContainer;
+            this.viewItem = viewItem;
+            if (menuContainer == null || view == null || viewItem == null || viewItem.getMsgId() == 0) {
+                loader = null;
+            } else {
+                final long msgId = viewItem.getMsgId();
+                loader = new MyAsyncTask<Void, Void, MessageForAccount>(
+                        MessageContextMenuData.class.getSimpleName() + msgId, MyAsyncTask.PoolEnum.QUICK_UI) {
+
+                    @Override
+                    protected MessageForAccount doInBackground2(Void... params) {
+                        MyAccount currentMyAccount = menuContainer.getCurrentMyAccount();
+                        long originId = MyQuery.msgIdToOriginId(msgId);
+                        MyAccount ma1 = menuContainer.getActivity().getMyContext().persistentAccounts()
+                                .getAccountForThisMessage(originId, myActor, viewItem.getLinkedMyAccount(), false);
+                        MessageForAccount msgNew = new MessageForAccount(msgId, originId, ma1);
+                        boolean changedToCurrent = !ma1.equals(currentMyAccount) && !myActor.isValid() && ma1.isValid()
+                                && !msgNew.isTiedToThisAccount()
+                                && !menuContainer.getTimeline().getTimelineType().isForUser()
+                                && currentMyAccount.isValid() && ma1.getOriginId() == currentMyAccount.getOriginId();
+                        if (changedToCurrent){
+                            msgNew = new MessageForAccount(msgId, originId, currentMyAccount);
+                        }
+                        if (MyLog.isVerboseEnabled()) {
+                            MyLog.v(messageContextMenu, "actor:" + msgNew.getMyAccount()
+                                    + (changedToCurrent ? " <- to current" : "")
+                                    + (msgNew.getMyAccount().equals(myActor) ? "" : " <- myActor:" + myActor)
+                                    + (myActor.equals(viewItem.getLinkedMyAccount()) ? "" : " <- linked:"
+                                    + viewItem.getLinkedMyAccount())
+                                    + "; msgId:" + msgId);
+                        }
+                        return msgNew.getMyAccount().isValid() ? msgNew : MessageForAccount.EMPTY;
+                    }
+
+                    @Override
+                    protected void onFinish(MessageForAccount messageForAccount, boolean success) {
+                        msg = messageForAccount == null ? MessageForAccount.EMPTY : messageForAccount;
+                        if (msg.msgId != 0 && viewItem.equals(messageContextMenu.mViewItem)) {
+                            messageContextMenu.showContextMenu();
+                        }
+                    }
+                };
+                loader.setMaxCommandExecutionSeconds(MAX_SECONDS_TO_LOAD);
+                loader.execute();
+            }
+        }
+
+        public long getMsgId() {
+            return viewItem == null ? 0 : viewItem.getMsgId();
+        }
+
+        StateForSelectedViewItem getStateFor(MessageViewItem currentItem) {
+            if (viewItem == null || currentItem == null || loader == null || !viewItem.equals(currentItem)) {
+                return StateForSelectedViewItem.NEW;
+            }
+            if (loader.isReallyWorking()) {
+                return StateForSelectedViewItem.LOADING;
+            }
+            return currentItem.getMsgId() == msg.msgId ? StateForSelectedViewItem.READY : StateForSelectedViewItem.NEW;
+        }
+
+        boolean isFor(long msgId) {
+            return msgId != 0 && loader != null && !loader.needsBackgroundWork() && msgId == msg.msgId;
+        }
+    }
+
+    final MessageListContextMenuContainer menuContainer;
+    private MessageContextMenuData menuData = MessageContextMenuData.EMPTY;
+    private String selectedMenuItemTitle = "";
 
     MessageContextMenu(MessageListContextMenuContainer menuContainer) {
         super(menuContainer.getActivity());
@@ -68,11 +149,20 @@ class MessageContextMenu extends MyContextMenu {
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
         final String method = "onCreateContextMenu";
         super.onCreateContextMenu(menu, v, menuInfo);
-        if (getMsgId() == 0) {
-            return;
+        MessageViewItem viewItem = (MessageViewItem) mViewItem;
+
+        switch (menuData.getStateFor(viewItem)) {
+            case READY:
+                break;
+            case LOADING:
+                return;
+            case NEW:
+                menuData = new MessageContextMenuData(getMyActor(), this, v, viewItem);
+                return;
         }
 
-        MessageViewItem viewItem = (MessageViewItem) mViewItem;
+        MessageForAccount msg = menuData.msg;
+        setMyActor(msg.getMyAccount());
         int order = 0;
         try {
             new ContextMenuHeader(getActivity(), menu).setTitle(msg.getBodyTrimmed())
@@ -156,8 +246,7 @@ class MessageContextMenu extends MyContextMenu {
                         R.string.menu_item_reply_to_mentioned_users);
             }
             MessageListContextMenuItem.SHARE.addTo(menu, order++, R.string.menu_item_share);
-            if (!TextUtils.isEmpty(msg.imageFilename)) {
-                imageFilename = msg.imageFilename;
+            if (!TextUtils.isEmpty(getImageFilename())) {
                 MessageListContextMenuItem.VIEW_IMAGE.addTo(menu, order++, R.string.menu_item_view_image);
             }
 
@@ -222,7 +311,7 @@ class MessageContextMenu extends MyContextMenu {
                         break;
                 }
             }
-            MessageListContextMenuItem.GET_MESSAGE.addTo(menu, order++, R.string.get_message);
+            MessageListContextMenuItem.GET_MESSAGE.addTo(menu, order, R.string.get_message);
         } catch (Exception e) {
             MyLog.e(this, method, e);
         }
@@ -252,58 +341,37 @@ class MessageContextMenu extends MyContextMenu {
         }
     }
 
-    protected void saveContextOfSelectedItem(View v) {
-        final String method = "saveContextOfSelectedItem";
-        super.saveContextOfSelectedItem(v);
-        setMessageForAccount(method,
-                mViewItem == null ? 0 : ((MessageViewItem) mViewItem).getMsgId(),
-                getMyActor().isValid() || mViewItem == null ? getMyActor() :
-                        ((MessageViewItem) mViewItem).getLinkedMyAccount());
+    @Override
+    public void setMyActor(@NonNull MyAccount myAccount) {
+        if (!myAccount.equals(menuData.msg.getMyAccount())) {
+            menuData = MessageContextMenuData.EMPTY;
+        }
+        super.setMyActor(myAccount);
     }
 
-    private void setMessageForAccount(String method, long msgId, MyAccount myActorIn) {
-        MyAccount myActor = myActorIn == null ? MyAccount.EMPTY : myActorIn;
-        MyAccount currentMyAccount = menuContainer.getCurrentMyAccount();
-        long originId = MyQuery.msgIdToOriginId(msgId);
-        MyAccount ma1 = getMyContext().persistentAccounts()
-                .getAccountForThisMessage(originId, myActor, currentMyAccount, false);
-        MessageForAccount msgNew = new MessageForAccount(msgId, originId, ma1);
-        if (!ma1.equals(currentMyAccount)
-                && ma1.isValid() && !myActor.isValid() && !msg.isTiedToThisAccount()
-                && !menuContainer.getTimeline().getTimelineType().isForUser()
-                && currentMyAccount.isValid() && ma1.getOriginId() == currentMyAccount.getOriginId()) {
-            msgNew = new MessageForAccount(msgId, originId, currentMyAccount);
-        }
-        MyLog.v(this, method + "; myActor=" + myActor +
-                (msgNew.getMyAccount().equals(myActor) ? "" : " -> " + msgNew.getMyAccount()) +
-                "; msgId=" + msgId);
-        setMyActor(msgNew.getMyAccount());
-        msg = msgNew.getMyAccount().isValid() ? msgNew : MessageForAccount.EMPTY;
+    @NonNull
+    String getImageFilename() {
+        return StringUtils.notNull(menuData.msg.imageFilename);
     }
 
     private boolean isEditorVisible() {
         return menuContainer.getMessageEditor().isVisible();
     }
 
-    protected long getCurrentMyAccountUserId() {
-        return menuContainer.getCurrentMyAccount().getUserId();
-    }
-
-    public void onContextItemSelected(MenuItem item) {
+    void onContextItemSelected(MenuItem item) {
         if (item != null) {
-            setSelectedItemTitle(String.valueOf(item.getTitle()));
-            onContextMenuItemSelected(MessageListContextMenuItem.fromId(item.getItemId()), getMsgId(), getMyActor());
+            this.selectedMenuItemTitle = StringUtils.notNull(String.valueOf(item.getTitle()));
+            onContextItemSelected(MessageListContextMenuItem.fromId(item.getItemId()), getMsgId());
         }
     }
 
-    public void onContextMenuItemSelected(MessageListContextMenuItem contextMenuItem, long msgId,
-                                          MyAccount actor) {
-        final String method = "onContextMenuItemSelected";
-        setMessageForAccount(method + "; " + contextMenuItem, msgId, actor);
-        contextMenuItem.execute(this);
+    void onContextItemSelected(MessageListContextMenuItem contextMenuItem, long msgId) {
+        if (menuData.isFor(msgId)) {
+            contextMenuItem.execute(this);
+        }
     }
 
-    public void switchTimelineActivityView(Timeline timeline) {
+    void switchTimelineActivityView(Timeline timeline) {
         if (TimelineActivity.class.isAssignableFrom(getActivity().getClass())) {
             ((TimelineActivity) getActivity()).switchView(timeline, null);
         } else {
@@ -311,36 +379,29 @@ class MessageContextMenu extends MyContextMenu {
         }
     }
 
-    public void loadState(Bundle savedInstanceState) {
-        if (savedInstanceState != null && savedInstanceState.containsKey(IntentExtra.ITEM_ID.key)) {
-            setMessageForAccount("loadState",
-                    savedInstanceState.getLong(IntentExtra.ITEM_ID.key, 0),
-                    menuContainer.getActivity().getMyContext().persistentAccounts().fromAccountName(
-                            savedInstanceState.getString(IntentExtra.ACCOUNT_NAME.key,
-                            menuContainer.getCurrentMyAccount().getAccountName()))
-            );
+    void loadState(Bundle savedInstanceState) {
+        if (savedInstanceState != null && savedInstanceState.containsKey(IntentExtra.ACCOUNT_NAME.key)) {
+            setMyActor(menuContainer.getActivity().getMyContext().persistentAccounts().fromAccountName(
+                    savedInstanceState.getString(IntentExtra.ACCOUNT_NAME.key,
+                            menuContainer.getCurrentMyAccount().getAccountName())));
         }
     }
 
-    public void saveState(Bundle outState) {
-        outState.putLong(IntentExtra.ITEM_ID.key, getMsgId());
-        outState.putString(IntentExtra.ACCOUNT_NAME.key, msg.getMyAccount().getAccountName());
+    void saveState(Bundle outState) {
+        outState.putString(IntentExtra.ACCOUNT_NAME.key, menuData.msg.getMyAccount().getAccountName());
     }
 
     public long getMsgId() {
-        return msg.msgId;
-    }
-
-    public Origin getOrigin() {
-        return msg == null ? Origin.getEmpty() : msg.origin;
+        return menuData.getMsgId();
     }
 
     @NonNull
-    public String getSelectedItemTitle() {
-        return selectedItemTitle;
+    public Origin getOrigin() {
+        return menuData.msg.origin;
     }
 
-    public void setSelectedItemTitle(String selectedItemTitle) {
-        this.selectedItemTitle = StringUtils.notNull(selectedItemTitle);
+    @NonNull
+    String getSelectedMenuItemTitle() {
+        return selectedMenuItemTitle;
     }
 }

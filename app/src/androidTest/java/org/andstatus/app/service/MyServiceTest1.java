@@ -58,16 +58,16 @@ public class MyServiceTest1 extends MyServiceTest {
         mService.sendListenedToCommand();
         mService.assertCommandExecutionStarted("First command", startCount, TriState.TRUE);
         mService.sendListenedToCommand();
-        assertTrue("First command ended executing", mService.waitForCommandExecutionEnded(endCount));
+        assertTrue("First command didn't end", mService.waitForCommandExecutionEnded(endCount));
         assertEquals(mService.getHttp().toString(), 1, mService.getHttp().getRequestsCounter());
         mService.sendListenedToCommand();
-        mService.assertCommandExecutionStarted("Duplicated command didn't start", startCount + 1, TriState.FALSE);
+        mService.assertCommandExecutionStarted("Duplicated command started", startCount + 1, TriState.FALSE);
         mService.getListenedCommand().setManuallyLaunched(true);
         mService.sendListenedToCommand();
-        mService.assertCommandExecutionStarted("Manually launched duplicated command", startCount + 1,
+        mService.assertCommandExecutionStarted("Manually launched duplicated command didn't start", startCount + 1,
                 TriState.TRUE);
-        assertTrue("The third command ended executing", mService.waitForCommandExecutionEnded(endCount+1));
-        assertTrue("Service stopped", mService.waitForServiceStopped(true));
+        assertTrue("The third command didn't end", mService.waitForCommandExecutionEnded(endCount+1));
+        assertTrue("Service didn't stop", mService.waitForServiceStopped(true));
         MyLog.i(this, method + " ended");
     }
 

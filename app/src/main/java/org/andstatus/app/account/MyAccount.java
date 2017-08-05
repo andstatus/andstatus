@@ -23,6 +23,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import org.andstatus.app.IntentExtra;
@@ -963,6 +964,7 @@ public final class MyAccount implements Comparable<MyAccount> {
     /**
      * @return this account if there are no others
      */
+    @NonNull
     public MyAccount firstOtherAccountOfThisOrigin() {
         for (MyAccount persistentAccount : MyContextHolder.get().persistentAccounts().list()) {
             if (persistentAccount.getOriginId() == this.getOriginId()

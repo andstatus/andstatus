@@ -21,10 +21,10 @@ import android.content.Intent;
 import org.andstatus.app.ActivityTestHelper;
 import org.andstatus.app.ListActivityTestHelper;
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MatchedUri;
-import org.andstatus.app.context.DemoData;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.timeline.Timeline;
@@ -32,7 +32,8 @@ import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.MyLog;
 import org.junit.Test;
 
-import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -63,6 +64,7 @@ public class ActAsUserTest extends TimelineActivityTest {
                 ConversationActivity.class);
         long msgId = helper.getListItemIdOfLoadedReply();
         String logMsg = "msgId=" + msgId + " text='" + MyQuery.msgIdToStringColumnValue(MsgTable.BODY, msgId) + "'";
+        assertEquals("Default actor", MyAccount.EMPTY, getActivity().getContextMenu().getMyActor());
 
         boolean invoked = helper.invokeContextMenuAction4ListItemId(method, msgId,
                 MessageListContextMenuItem.ACT_AS_FIRST_OTHER_USER);
@@ -75,13 +77,13 @@ public class ActAsUserTest extends TimelineActivityTest {
         logMsg += "MyContext: " + MyContextHolder.get();
         MyAccount firstOtherActor = actor1.firstOtherAccountOfThisOrigin();
         logMsg += "; firstOtherActor=" + firstOtherActor;
-        assertNotSame(logMsg, actor1, firstOtherActor);
+        assertNotEquals(logMsg, actor1, firstOtherActor);
 
         boolean invoked2 = helper.invokeContextMenuAction4ListItemId(method, msgId,
                 MessageListContextMenuItem.ACT_AS_FIRST_OTHER_USER);
         MyAccount actor2 = getActivity().getContextMenu().getMyActor();
         logMsg += ";" + (invoked2 ? "" : " failed to invoke context menu 2," ) + " actor2=" + actor2;
-        assertNotSame(logMsg, actor1, actor2);
+        assertNotEquals(logMsg, actor1, actor2);
     }
 
 }

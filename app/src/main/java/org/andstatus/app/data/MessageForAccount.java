@@ -41,6 +41,7 @@ import org.andstatus.app.util.MyHtml;
 public class MessageForAccount {
     public static final MessageForAccount EMPTY = new MessageForAccount(0, 0, MyAccount.EMPTY);
     public final long msgId;
+    @NonNull
     public final Origin origin;
     public DownloadStatus status = DownloadStatus.UNKNOWN;
     private String body = "";
@@ -51,7 +52,7 @@ public class MessageForAccount {
     public long recipientId = 0;
     public boolean mayBePrivate = false;
     public String imageFilename = null;
-
+    @NonNull
     private final MyAccount myAccount;
     private final long userId;
     public boolean isSubscribed = false;

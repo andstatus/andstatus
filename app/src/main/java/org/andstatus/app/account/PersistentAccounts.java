@@ -310,6 +310,9 @@ public class PersistentAccounts {
         if (!accountFits(ma, originId, succeededOnly)) {
             ma = betterFit(ma, getFirstSucceededForOriginId(originId), originId, succeededOnly);
         }
+        if (!accountFits(ma, originId, false)) {
+            ma = MyAccount.EMPTY;
+        }
         if (MyLog.isVerboseEnabled()) {
             MyLog.v(this, method + "; originId=" + originId
                     + "; user1=" + ma

@@ -199,14 +199,11 @@ public abstract class MessageListAdapter<T extends MessageViewItem> extends MyBa
     private void onButtonClick(View v, MessageListContextMenuItem contextMenuItemIn) {
         MessageViewItem item = (MessageViewItem) getItem(v);
         if (item != null && item.msgStatus == DownloadStatus.LOADED) {
-            MyAccount actor = item.getLinkedMyAccount();
             // Currently selected account is the best candidate as an actor
-            MyAccount ma = myContext.persistentAccounts().fromUserId(
-                    contextMenu.getCurrentMyAccountUserId());
-            if (ma.isValid() && ma.getOriginId() == item.getOriginId()) {
-                actor = ma;
-            }
-            contextMenu.onContextMenuItemSelected(contextMenuItemIn, item.getMsgId(), actor);
+            MyAccount ma = contextMenu.getActivity().getCurrentMyAccount();
+            MyAccount actor = (ma.isValid() && ma.getOriginId() == item.getOriginId()) ? ma : item.getLinkedMyAccount();
+            contextMenu.setMyActor(actor);
+            contextMenu.onContextItemSelected(contextMenuItemIn, item.getMsgId());
         }
     }
 

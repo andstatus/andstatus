@@ -23,6 +23,7 @@ import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
+import org.andstatus.app.IdentifiableInstance;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
@@ -33,11 +34,13 @@ import static org.andstatus.app.os.ExceptionsCounter.onDiskIoException;
 /**
  * @author yvolk@yurivolkov.com
  */
-public abstract class MyAsyncTask<Params, Progress, Result> extends AsyncTask<Params, Progress, Result> {
+public abstract class MyAsyncTask<Params, Progress, Result> extends AsyncTask<Params, Progress, Result>
+        implements IdentifiableInstance {
     public static final long MAX_WAITING_BEFORE_EXECUTION_SECONDS = 600;
     public static final long MAX_COMMAND_EXECUTION_SECONDS = 600;
     public static final long MAX_EXECUTION_AFTER_CANCEL_SECONDS = 300;
     protected static final long DELAY_AFTER_EXECUTOR_ENDED_SECONDS = 1;
+    private long maxCommandExecutionSeconds = MAX_COMMAND_EXECUTION_SECONDS;
 
     private final String taskId;
     protected final long createdAt = MyLog.uniqueCurrentTimeMS();
@@ -77,14 +80,18 @@ public abstract class MyAsyncTask<Params, Progress, Result> extends AsyncTask<Pa
         this.singleInstance = singleInstance;
     }
 
+    public void setMaxCommandExecutionSeconds(long maxCommandExecutionSeconds) {
+        this.maxCommandExecutionSeconds = maxCommandExecutionSeconds;
+    }
+
     public MyAsyncTask(PoolEnum pool) {
-        this.taskId = this.getClass().getName();
-        this.pool = pool;
+        this(MyAsyncTask.class, pool);
     }
 
     public MyAsyncTask(@NonNull Object taskId, PoolEnum pool) {
         this.taskId = MyLog.objToTag(taskId);
         this.pool = pool;
+        maxCommandExecutionSeconds = pool.maxCommandExecutionSeconds;
     }
 
     @Override
@@ -163,6 +170,11 @@ public abstract class MyAsyncTask<Params, Progress, Result> extends AsyncTask<Pa
         return taskId.hashCode();
     }
 
+    @Override
+    public long getInstanceId() {
+        return instanceId;
+    }
+
     public boolean isBackgroundStarted() {
         return backgroundStartedAt > 0;
     }
@@ -217,7 +229,7 @@ public abstract class MyAsyncTask<Params, Progress, Result> extends AsyncTask<Pa
 
     private boolean isStalled() {
         return RelativeTime.wasButMoreSecondsAgoThan(backgroundEndedAt, DELAY_AFTER_EXECUTOR_ENDED_SECONDS)
-                || RelativeTime.wasButMoreSecondsAgoThan(currentlyExecutingSince, pool.maxCommandExecutionSeconds)
+                || RelativeTime.wasButMoreSecondsAgoThan(currentlyExecutingSince, maxCommandExecutionSeconds)
                 || RelativeTime.wasButMoreSecondsAgoThan(cancelledAt, MAX_EXECUTION_AFTER_CANCEL_SECONDS)
                 || (getStatus() == Status.PENDING
                     && RelativeTime.wasButMoreSecondsAgoThan(createdAt, MAX_WAITING_BEFORE_EXECUTION_SECONDS));
