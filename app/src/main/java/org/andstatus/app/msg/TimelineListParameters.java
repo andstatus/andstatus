@@ -69,7 +69,6 @@ public class TimelineListParameters {
     volatile long startTime = 0;
     volatile long endTime = 0;
     volatile boolean cancelled = false;
-    volatile Timeline timelineToSync = Timeline.EMPTY;
     volatile int rowsLoaded = 0;
     volatile long minSentDateLoaded = 0;
     volatile long maxSentDateLoaded = 0;
@@ -155,7 +154,6 @@ public class TimelineListParameters {
                 + (TextUtils.isEmpty(sortOrderAndLimit) ? "" : ", sortOrder=" + sortOrderAndLimit)
                 + (startTime > 0 ? ", startTime=" + startTime : "")
                 + (cancelled ? ", cancelled" : "")
-                + (timelineToSync.isEmpty() ? "" : ", toSync=" + timelineToSync)
                 + (mLoaderCallbacks == null ? "" : ", loaderCallbacks=" + mLoaderCallbacks)
         );
     }

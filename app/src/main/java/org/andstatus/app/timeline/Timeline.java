@@ -44,12 +44,14 @@ import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
 
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author yvolk@yurivolkov.com
  */
 public class Timeline implements Comparable<Timeline> {
     public static final Timeline EMPTY = new Timeline(MyAccount.EMPTY);
+    private static final long MIN_RETRY_PERIOD_MS = TimeUnit.SECONDS.toMillis(30);
     private volatile long id;
 
     private final TimelineType timelineType;
@@ -774,6 +776,9 @@ public class Timeline implements Comparable<Timeline> {
      * @return true if it's time to auto update this timeline
      */
     public boolean isTimeToAutoSync() {
+        if (System.currentTimeMillis() - Math.max(getSyncSucceededDate(), getSyncFailedDate()) < MIN_RETRY_PERIOD_MS) {
+            return false;
+        }
         long syncFrequencyMs = myAccount.getEffectiveSyncFrequencySeconds() * 1000;
         // This correction is needed to take into account that we remembered time, when sync ended,
         // and not time, when Android initiated it.

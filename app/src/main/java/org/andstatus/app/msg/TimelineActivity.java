@@ -852,7 +852,7 @@ public class TimelineActivity extends MessageEditorListActivity implements
             } else if (!dataLoaded.params.whichPage.isYoungest()) {
                 otherPageToRequest = WhichPage.YOUNGEST;
             } else if (dataLoaded.params.rowsLoaded == 0) {
-                launchSyncIfNeeded(dataLoaded.params.timelineToSync);
+                onNoRowsLoaded(dataLoaded.params.timeline);
             }
         }
         hideLoading(method);
@@ -947,16 +947,21 @@ public class TimelineActivity extends MessageEditorListActivity implements
         syncOlderView.setEnabled(false);
     }
 
-    private void launchSyncIfNeeded(Timeline timelineToSync) {
-        if (!timelineToSync.isEmpty()) {
-            if (timelineToSync.getTimelineType() == TimelineType.EVERYTHING) {
-                syncWithInternet(getParamsLoaded().getTimeline(), true, false);
-                // Sync this one timeline and then - all syncable for this account
-                if (getParamsNew().getMyAccount().isValidAndSucceeded()) {
-                    getParamsNew().getMyAccount().requestSync();
-                }
-            } else {
-                syncWithInternet(timelineToSync, true, false);
+    private void onNoRowsLoaded(@NonNull Timeline timeline) {
+        MyAccount ma = timeline.getMyAccount();
+        if (!timeline.isSyncable() || !timeline.isTimeToAutoSync() || !ma.isValidAndSucceeded()) {
+            return;
+        }
+        boolean isFirstAccountSync = timeline.getTimelineType().equals(TimelineType.HOME)
+                && timeline.getOldestSyncedDate() == 0;
+        timeline.setSyncSucceededDate(System.currentTimeMillis()); // To avoid repetition
+        syncWithInternet(timeline, true, false);
+        if (isFirstAccountSync) {
+            MyLog.i(this, "First time sync for " + ma.getAccountName());
+            ma.requestSync();
+            for (CommandEnum command : new CommandEnum[]{CommandEnum.GET_FRIENDS, CommandEnum.GET_FOLLOWERS}) {
+                MyServiceManager.sendCommand(
+                        CommandData.newUserCommand(command, ma, ma.getOrigin(), ma.getUserId(), ma.getUsername()));
             }
         }
     }

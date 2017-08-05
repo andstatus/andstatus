@@ -25,7 +25,6 @@ import org.andstatus.app.WhichPage;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.timeline.Timeline;
 import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
@@ -55,7 +54,6 @@ public class TimelineLoader extends SyncLoader<TimelineViewItem> {
         markStart();
         if (params.whichPage != WhichPage.EMPTY) {
             Cursor cursor = queryDatabase();
-            checkIfReloadIsNeeded(cursor);
             loadFromCursor(cursor);
         }
         params.endTime = System.nanoTime();
@@ -65,7 +63,6 @@ public class TimelineLoader extends SyncLoader<TimelineViewItem> {
     void markStart() {
         params.startTime = System.nanoTime();
         params.cancelled = false;
-        params.timelineToSync = Timeline.getEmpty(params.getMyAccount());
         params.timeline.save(params.getMyContext());
         if (MyLog.isVerboseEnabled()) {
             logV("markStart", params.toSummary());
@@ -88,30 +85,6 @@ public class TimelineLoader extends SyncLoader<TimelineViewItem> {
             }
         }
         return cursor;
-    }
-
-    private void checkIfReloadIsNeeded(Cursor cursor) {
-        if (noMessagesInATimeline(cursor)) {
-            if (getParams().getTimeline().isSyncedAutomatically()) {
-                if (Timeline.getTimeline(TimelineType.HOME, getParams().getMyAccount(), 0, null).
-                        getYoungestSyncedDate() == 0) {
-                    // This is supposed to be a one time task.
-                    getParams().timelineToSync = Timeline.getTimeline(TimelineType.EVERYTHING,
-                            getParams().getMyAccount(), 0, null);
-                }
-            } else {
-                // This timeline doesn't update automatically so let's do it now if necessary
-                if (getParams().getTimeline().isTimeToAutoSync()) {
-                    getParams().timelineToSync = getParams().getTimeline();
-                }
-            }
-        }
-    }
-
-    private boolean noMessagesInATimeline(Cursor cursor) {
-        return getParams().whichPage.isYoungest()
-                && !getParams().getTimeline().hasSearchQuery()
-                && cursor != null && !cursor.isClosed() && cursor.getCount() == 0;
     }
 
     @NonNull

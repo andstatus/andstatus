@@ -63,9 +63,7 @@ public class MyServiceCommandsRunner implements MyServiceEventsListener {
         }
 
         List<CommandData> commandsOnly = new ArrayList<>();
-        for (Timeline timeline : myContext.persistentTimelines()
-                .toAutoSyncForAccount(myContext.persistentAccounts()
-                        .fromAccountName(accountName))) {
+        for (Timeline timeline : myContext.persistentTimelines().toAutoSyncForAccount(ma)) {
             commandsOnly.add(CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, timeline));
         }
         MyLog.v(this, method + " started, " + commandsOnly.size() + " timelines");
