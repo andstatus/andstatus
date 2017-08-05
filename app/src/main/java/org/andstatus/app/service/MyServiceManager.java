@@ -25,6 +25,7 @@ import net.jcip.annotations.GuardedBy;
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.MyAction;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
 
@@ -172,7 +173,7 @@ public class MyServiceManager extends BroadcastReceiver {
         return state.stateEnum;
     }
 
-    private static Object serviceAvailableLock = new Object();
+    private static final Object serviceAvailableLock = new Object();
     @GuardedBy("serviceAvailableLock")
     private static Boolean mServiceAvailable = true;
     @GuardedBy("serviceAvailableLock")
@@ -187,7 +188,8 @@ public class MyServiceManager extends BroadcastReceiver {
             }
             if (tryToInitialize && !MyContextHolder.get().initialized()) {
                 MyContextHolder.initialize(null, TAG);
-                isAvailable = MyContextHolder.get().isReady();
+                // Don't block on UI thread
+                isAvailable = !MyAsyncTask.isUiThread() && MyContextHolder.get().isReady();
             }
         }
         if (isAvailable) {
