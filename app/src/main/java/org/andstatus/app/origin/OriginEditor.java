@@ -52,7 +52,7 @@ import org.andstatus.app.util.UrlUtils;
  * @author yvolk@yurivolkov.com
  */
 public class OriginEditor extends MyActivity {
-    private Origin.Builder builder;
+    private Origin.Builder builder = new Origin.Builder(OriginType.GNUSOCIAL);
 
     private Button buttonSave;
     private Button buttonDelete;
@@ -104,7 +104,7 @@ public class OriginEditor extends MyActivity {
         processNewIntent(getIntent());
     }
 
-    private void processNewIntent(Intent intentNew) {
+    private void processNewIntent(final Intent intentNew) {
         String editorAction = intentNew.getAction();
         
         if (Intent.ACTION_INSERT.equals(editorAction)) {
@@ -132,6 +132,25 @@ public class OriginEditor extends MyActivity {
         Origin origin = builder.build();
         MyLog.v(this, "processNewIntent: " + origin.toString());
         spinnerOriginType.setSelection(originTypes.getIndex(origin.getOriginType()));
+        if (spinnerOriginType.isEnabled()) {
+            spinnerOriginType.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                    if (!builder.build().getOriginType().equals(
+                            originTypes.get(spinnerOriginType.getSelectedItemPosition()))) {
+                        intentNew.putExtra(IntentExtra.ORIGIN_TYPE.key,
+                                originTypes.get(spinnerOriginType.getSelectedItemPosition()).getCode());
+                        processNewIntent(intentNew);
+                    }
+                }
+
+                @Override
+                public void onNothingSelected(AdapterView<?> parent) {
+
+                }
+            });
+        }
+
         editTextOriginName.setText(origin.getName());
         
         String strHost = "";
