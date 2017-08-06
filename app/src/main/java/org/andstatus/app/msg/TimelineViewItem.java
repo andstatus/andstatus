@@ -38,7 +38,7 @@ import org.andstatus.app.util.MyLog;
  * @author yvolk@yurivolkov.com
  */
 public class TimelineViewItem extends MessageViewItem {
-    private final static TimelineViewItem EMPTY = new TimelineViewItem();
+    public final static TimelineViewItem EMPTY = new TimelineViewItem();
 
     public static TimelineViewItem getEmpty() {
         return EMPTY;

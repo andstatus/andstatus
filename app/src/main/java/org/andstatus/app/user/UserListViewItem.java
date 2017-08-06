@@ -18,7 +18,6 @@ package org.andstatus.app.user;
 
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
-import android.widget.ImageView;
 
 import org.andstatus.app.MyActivity;
 import org.andstatus.app.ViewItem;
@@ -34,6 +33,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class UserListViewItem implements ViewItem, Comparable<UserListViewItem> {
+    public static final UserListViewItem EMPTY = fromMbUser(MbUser.EMPTY);
     boolean populated = false;
     @NonNull
     final MbUser mbUser;
