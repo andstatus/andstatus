@@ -5,6 +5,11 @@ android {
     compileSdkVersion 25
     buildToolsVersion '25.0.3'
 
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
     defaultConfig {
         applicationId "org.andstatus.app"
         minSdkVersion 16
@@ -73,8 +78,8 @@ dependencies {
     compile files('libs/httpmime-4.3.5.jar')
     compile files('libs/signpost-httpclient-android-1.2.1.2.jar')
     compile files('libs/signpost-core-1.2.1.2.jar')
-    compile 'org.apache.commons:commons-lang3:3.4'
-    compile 'com.github.woxthebox:draglistview:1.3' // https://github.com/woxblom/DragListView
+    compile 'org.apache.commons:commons-lang3:3.5'
+    compile 'com.github.woxthebox:draglistview:1.4.7' // https://github.com/woxblom/DragListView
     compile 'com.github.scribejava:scribejava-core:4.1.0'
     compile 'junit:junit:4.12'
 
