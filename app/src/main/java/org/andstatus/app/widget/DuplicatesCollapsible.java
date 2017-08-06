@@ -16,7 +16,13 @@
 
 package org.andstatus.app.widget;
 
-public interface DuplicatesCollapsible<T> {
+import org.andstatus.app.ViewItem;
 
-    DuplicationLink duplicates(T other);
+import java.util.Collection;
+
+public interface DuplicatesCollapsible extends ViewItem {
+    DuplicationLink duplicates(DuplicatesCollapsible other);
+    boolean isCollapsed();
+    void collapse(DuplicatesCollapsible second);
+    Collection<? extends DuplicatesCollapsible> getChildren();
 }

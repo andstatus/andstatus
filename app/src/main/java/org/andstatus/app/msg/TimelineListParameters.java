@@ -73,7 +73,7 @@ public class TimelineListParameters {
     volatile long minSentDateLoaded = 0;
     volatile long maxSentDateLoaded = 0;
 
-    public static TimelineListParameters clone(TimelineListParameters prev, WhichPage whichPage) {
+    public static TimelineListParameters clone(@NonNull TimelineListParameters prev, WhichPage whichPage) {
         TimelineListParameters params = new TimelineListParameters(prev.myContext);
         params.whichPage = whichPage == WhichPage.ANY ? prev.whichPage : whichPage;
         if (whichPage != WhichPage.EMPTY) {

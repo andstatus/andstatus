@@ -102,6 +102,11 @@ public class UserListViewItem implements ViewItem, Comparable<UserListViewItem> 
         return getUserId();
     }
 
+    @Override
+    public long getDate() {
+        return mbUser.getUpdatedDate();
+    }
+
     public String getWebFingerIdOrUserName() {
         return TextUtils.isEmpty(mbUser.getWebFingerId()) ? mbUser.getUserName() : mbUser.getWebFingerId();
     }

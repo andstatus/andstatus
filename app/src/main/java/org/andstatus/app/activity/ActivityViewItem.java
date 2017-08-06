@@ -18,17 +18,22 @@ package org.andstatus.app.activity;
 
 import android.support.annotation.NonNull;
 
-import org.andstatus.app.ViewItem;
 import org.andstatus.app.msg.TimelineViewItem;
 import org.andstatus.app.net.social.MbActivityType;
 import org.andstatus.app.net.social.MbObjectType;
 import org.andstatus.app.user.UserListViewItem;
+import org.andstatus.app.widget.DuplicatesCollapsible;
+import org.andstatus.app.widget.DuplicationLink;
+
+import java.util.Collection;
+import java.util.Collections;
 
 /** View on ActivityStream
  * @author yvolk@yurivolkov.com
  */
-public class ActivityViewItem implements ViewItem, Comparable<ActivityViewItem> {
-    long insDate = 0;
+public class ActivityViewItem implements DuplicatesCollapsible, Comparable<ActivityViewItem> {
+    private long insDate = 0;
+    private long id = 0;
     MbActivityType activityType = MbActivityType.EMPTY;
     MbObjectType objectType = MbObjectType.EMPTY;
     UserListViewItem actor = UserListViewItem.EMPTY;
@@ -37,12 +42,37 @@ public class ActivityViewItem implements ViewItem, Comparable<ActivityViewItem> 
 
     @Override
     public long getId() {
-        return 0;
+        return id;
+    }
+
+    @Override
+    public long getDate() {
+        return insDate;
     }
 
     @Override
     public int compareTo(@NonNull ActivityViewItem o) {
         // TODO: replace with Long#compare
         return insDate < o.insDate ? -1 : (insDate == o.insDate ? 0 : 1);
+    }
+
+    @Override
+    public DuplicationLink duplicates(DuplicatesCollapsible other) {
+        return DuplicationLink.NONE;
+    }
+
+    @Override
+    public boolean isCollapsed() {
+        return false;
+    }
+
+    @Override
+    public void collapse(DuplicatesCollapsible second) {
+        // Empty
+    }
+
+    @Override
+    public Collection<ActivityViewItem> getChildren() {
+        return Collections.emptyList();
     }
 }

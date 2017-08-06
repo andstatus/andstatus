@@ -36,4 +36,9 @@ public class TimelineListViewItem implements ViewItem {
     public long getId() {
         return timeline == null ? 0 : timeline.getId();
     }
+
+    @Override
+    public long getDate() {
+        return timeline == null ? 0 : timeline.getLastSyncedDate();
+    }
 }

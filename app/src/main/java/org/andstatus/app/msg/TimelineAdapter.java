@@ -28,7 +28,7 @@ import org.andstatus.app.util.MyUrlSpan;
  * @author yvolk@yurivolkov.com
  */
 public class TimelineAdapter extends MessageListAdapter<TimelineViewItem> {
-    private final TimelineData listData;
+    private final TimelineData<TimelineViewItem> listData;
     private int positionPrev = -1;
     private int messageNumberShownCounter = 0;
     private final String TOP_TEXT;

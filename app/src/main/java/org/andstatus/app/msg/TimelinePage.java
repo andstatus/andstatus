@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (c) 201 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,17 +16,24 @@
 
 package org.andstatus.app.msg;
 
+import android.support.annotation.NonNull;
+
+import org.andstatus.app.widget.DuplicatesCollapsible;
+
+import java.util.Collections;
 import java.util.List;
 
 /**
  * @author yvolk@yurivolkov.com
  */
-public class TimelinePage {
+public class TimelinePage<T extends DuplicatesCollapsible> {
+    @NonNull
     final TimelineListParameters params;
-    final List<TimelineViewItem> items;
+    @NonNull
+    final List<T> items;
 
-    public TimelinePage(TimelineListParameters params, List<TimelineViewItem> items) {
+    public TimelinePage(@NonNull TimelineListParameters params, List<T> items) {
         this.params = params;
-        this.items = items;
+        this.items = items == null ? Collections.EMPTY_LIST : items;
     }
 }

@@ -37,6 +37,7 @@ import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.timeline.Timeline;
 import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.widget.DuplicatesCollapsible;
 import org.junit.Test;
 
 import java.util.List;
@@ -74,11 +75,11 @@ public class UserListTest extends TimelineActivityTest {
         assertEquals(logMsg, 3, users.size());
         assertEquals(logMsg, "unknownUser@example.com", users.get(2).getUserName());
 
-        TimelineViewItem item = getActivity().getListData().getById(msgId);
-        boolean messageWasFound = item.getMsgId() == msgId;
+        DuplicatesCollapsible item = getActivity().getListData().getById(msgId);
+        boolean messageWasFound = item.getId() == msgId;
         if (!messageWasFound) {
             item = getActivity().getListData().getItem(0);
-            msgId = item.getMsgId();
+            msgId = item.getId();
             String logMsg1 = "The message was not found in the timeline " + getActivity().getListData() +
                     " new msgId=" + msgId;
             logMsg += "\n" + logMsg1;

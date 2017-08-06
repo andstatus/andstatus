@@ -21,7 +21,6 @@ import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import org.andstatus.app.R;
-import org.andstatus.app.ViewItem;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
@@ -42,7 +41,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-public class MessageViewItem implements DuplicatesCollapsible<MessageViewItem>, ViewItem {
+public class MessageViewItem implements DuplicatesCollapsible {
     private static final int MIN_LENGTH_TO_COMPARE = 5;
     private MyContext myContext = MyContextHolder.get();
     long updatedDate = 0;
@@ -133,14 +132,16 @@ public class MessageViewItem implements DuplicatesCollapsible<MessageViewItem>, 
         }
     }
 
-    public void collapse(TimelineViewItem child) {
+    public boolean isCollapsed() {
+        return !children.isEmpty();
+    }
+
+    @Override
+    public void collapse(DuplicatesCollapsible childIn) {
+        TimelineViewItem child = (TimelineViewItem) childIn;
         this.children.addAll(child.getChildren());
         child.getChildren().clear();
         this.children.add(child);
-    }
-
-    public boolean isCollapsed() {
-        return !children.isEmpty();
     }
 
     public List<TimelineViewItem> getChildren() {
@@ -148,11 +149,13 @@ public class MessageViewItem implements DuplicatesCollapsible<MessageViewItem>, 
     }
 
     @Override
-    public DuplicationLink duplicates(MessageViewItem other) {
+    public DuplicationLink duplicates(DuplicatesCollapsible otherIn) {
+
         DuplicationLink link = DuplicationLink.NONE;
-        if (other == null) {
+        if (otherIn == null || !MessageViewItem.class.isAssignableFrom(otherIn.getClass())) {
             return link;
         }
+        MessageViewItem other = (MessageViewItem) otherIn;
         if (getMsgId() == other.getMsgId()) {
             link = duplicatesByFavoritedAndReblogged(other);
         }
@@ -264,5 +267,10 @@ public class MessageViewItem implements DuplicatesCollapsible<MessageViewItem>, 
     @Override
     public long getId() {
         return getMsgId();
+    }
+
+    @Override
+    public long getDate() {
+        return sentDate;
     }
 }

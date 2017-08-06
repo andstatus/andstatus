@@ -34,7 +34,9 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.ParsedUri;
-import org.andstatus.app.list.ListData;
+import org.andstatus.app.msg.TimelineData;
+import org.andstatus.app.msg.TimelineListParameters;
+import org.andstatus.app.msg.TimelinePage;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
@@ -48,6 +50,8 @@ import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.TriState;
+import org.andstatus.app.widget.DuplicatesCollapsible;
+import org.andstatus.app.widget.EmptyViewItem;
 import org.andstatus.app.widget.MyBaseAdapter;
 import org.andstatus.app.widget.MySearchView;
 
@@ -129,8 +133,9 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
     }
 
     @NonNull
-    public ListData getListData() {
-        return new ListData(null) {
+    public TimelineData<? extends DuplicatesCollapsible> getListData() {
+        return new TimelineData<EmptyViewItem>(new EmptyViewItem(), null, new TimelinePage<EmptyViewItem>(
+                new TimelineListParameters(myContext), null)) {
             @Override
             public int size() {
                 return getListAdapter() == null ? 0 : getListAdapter().getCount();

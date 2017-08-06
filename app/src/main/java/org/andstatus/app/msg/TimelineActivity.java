@@ -72,6 +72,7 @@ import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
 import org.andstatus.app.util.ViewUtils;
+import org.andstatus.app.widget.DuplicatesCollapsible;
 import org.andstatus.app.widget.MyBaseAdapter;
 import org.andstatus.app.widget.MySearchView;
 
@@ -88,7 +89,7 @@ public class TimelineActivity extends MessageEditorListActivity implements
     private volatile TimelineListParameters paramsNew = null;
     /** Last parameters, requested to load. Thread safe. They are taken by a Loader at some time */
     private volatile TimelineListParameters paramsToLoad;
-    private volatile TimelineData listData;
+    private volatile TimelineData<? extends DuplicatesCollapsible> listData;
 
     private MessageContextMenu contextMenu;
 
@@ -715,17 +716,19 @@ public class TimelineActivity extends MessageEditorListActivity implements
 
     @Override
     @NonNull
-    public TimelineData getListData() {
+    public TimelineData<? extends DuplicatesCollapsible> getListData() {
         if (listData == null) {
-            listData = new TimelineData(null, new TimelinePage(
-                    getParamsNew(), Collections.<TimelineViewItem>emptyList()
-            ));
+            listData = new TimelineData<>(new TimelineViewItem(), null,
+                    new TimelinePage<>(getParamsNew(), Collections.<DuplicatesCollapsible>emptyList()));
         }
         return listData;
     }
 
-    private TimelineData setAndGetListData(TimelinePage pageLoaded) {
-        TimelineData dataNew = new TimelineData(listData, pageLoaded);
+    private TimelineData<? extends DuplicatesCollapsible> setAndGetListData(
+            TimelinePage<? extends DuplicatesCollapsible> pageLoaded) {
+        TimelineData<TimelineViewItem> dataNew
+                = new TimelineData<>(new TimelineViewItem(), (TimelineData<TimelineViewItem>) listData,
+                (TimelinePage<TimelineViewItem>) pageLoaded);
         listData = dataNew;
         TimelineAdapter listAdapter = getListAdapter();
         if (listAdapter != null) {

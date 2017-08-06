@@ -17,4 +17,5 @@ package org.andstatus.app;
 
 public interface ViewItem {
     long getId();
+    long getDate();
 }

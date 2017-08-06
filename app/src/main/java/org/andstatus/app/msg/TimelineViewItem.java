@@ -40,10 +40,6 @@ import org.andstatus.app.util.MyLog;
 public class TimelineViewItem extends MessageViewItem {
     public final static TimelineViewItem EMPTY = new TimelineViewItem();
 
-    public static TimelineViewItem getEmpty() {
-        return EMPTY;
-    }
-
     public static TimelineViewItem fromCursorRow(MyContext myContext, Cursor cursor) {
         TimelineViewItem item = new TimelineViewItem();
         item.setMyContext(myContext);
