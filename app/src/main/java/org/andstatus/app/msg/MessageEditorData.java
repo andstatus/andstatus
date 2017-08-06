@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -230,7 +230,7 @@ public class MessageEditorData {
     }
 
     public Point getImageSize() {
-        return image.getImageSize();
+        return image == null ? new Point(0,0) : image.getImageSize();
     }
 
     public MessageEditorData setMsgId(long msgIdIn) {

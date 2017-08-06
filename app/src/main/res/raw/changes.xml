@@ -27,8 +27,8 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
         </subtitle>
     </header>
-    <release android:versionName="35.04" android:versionCode="230"
-             versionDate="2017-08-05"
+    <release android:versionName="35.05" android:versionCode="231"
+             versionDate="2017-08-06"
              versionTitle="Translations updated. Bug fixes">
         <changes>
             <change>Fixed several points, which could potentially cause "Application not responding" messages.</change>
