@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (c) 2015 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,264 +13,92 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.andstatus.app.msg;
 
-import android.content.Context;
-import android.support.annotation.NonNull;
+import android.database.Cursor;
+import android.text.Html;
 import android.text.TextUtils;
 
-import org.andstatus.app.R;
-import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.AttachedImageFile;
 import org.andstatus.app.data.AvatarFile;
+import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.DownloadStatus;
+import org.andstatus.app.data.TimelineSql;
+import org.andstatus.app.database.DownloadTable;
+import org.andstatus.app.database.MsgOfUserTable;
+import org.andstatus.app.database.MsgTable;
+import org.andstatus.app.database.UserTable;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
-import org.andstatus.app.util.RelativeTime;
-import org.andstatus.app.util.SharedPreferencesUtil;
-import org.andstatus.app.widget.DuplicatesCollapsible;
-import org.andstatus.app.widget.DuplicationLink;
+import org.andstatus.app.util.MyLog;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
+/**
+ * @author yvolk@yurivolkov.com
+ */
+public class MessageViewItem extends BaseMessageViewItem {
+    public final static MessageViewItem EMPTY = new MessageViewItem();
 
-public class MessageViewItem implements DuplicatesCollapsible {
-    private static final int MIN_LENGTH_TO_COMPARE = 5;
-    private MyContext myContext = MyContextHolder.get();
-    long updatedDate = 0;
-    long sentDate = 0;
+    public static MessageViewItem fromCursorRow(MyContext myContext, Cursor cursor) {
+        MessageViewItem item = new MessageViewItem();
+        item.setMyContext(myContext);
+        item.setMsgId(DbUtils.getLong(cursor, MsgTable._ID));
+        item.setOriginId(DbUtils.getLong(cursor, MsgTable.ORIGIN_ID));
+        item.setLinkedUserAndAccount(DbUtils.getLong(cursor, UserTable.LINKED_USER_ID));
 
-    DownloadStatus msgStatus = DownloadStatus.UNKNOWN;
+        item.authorName = TimelineSql.userColumnIndexToNameAtTimeline(cursor,
+                cursor.getColumnIndex(UserTable.AUTHOR_NAME), MyPreferences.getShowOrigin());
+        item.setBody(MyHtml.prepareForView(DbUtils.getString(cursor, MsgTable.BODY)));
+        item.inReplyToMsgId = DbUtils.getLong(cursor, MsgTable.IN_REPLY_TO_MSG_ID);
+        item.inReplyToUserId = DbUtils.getLong(cursor, MsgTable.IN_REPLY_TO_USER_ID);
+        item.inReplyToName = DbUtils.getString(cursor, UserTable.IN_REPLY_TO_NAME);
+        item.recipientName = DbUtils.getString(cursor, UserTable.RECIPIENT_NAME);
+        item.favorited = item.isLinkedToMyAccount() && DbUtils.getLong(cursor, MsgOfUserTable.FAVORITED) == 1;
+        item.sentDate = DbUtils.getLong(cursor, MsgTable.SENT_DATE);
+        item.updatedDate = DbUtils.getLong(cursor, MsgTable.UPDATED_DATE);
+        item.msgStatus = DownloadStatus.load(DbUtils.getLong(cursor, MsgTable.MSG_STATUS));
 
-    private long mMsgId;
-    private long originId;
+        item.authorId = DbUtils.getLong(cursor, MsgTable.AUTHOR_ID);
 
-    String authorName = "";
-    long authorId = 0;
-
-    String recipientName = "";
-
-    long inReplyToMsgId = 0;
-    long inReplyToUserId = 0;
-    String inReplyToName = "";
-
-    String messageSource = "";
-
-    private String body = "";
-    private String cleanedBody = "";
-
-    boolean favorited = false;
-    boolean isFavoritingAction = false;
-    Map<Long, String> rebloggers = new HashMap<>();
-    boolean reblogged = false;
-
-    AttachedImageFile attachedImageFile = AttachedImageFile.EMPTY;
-    AvatarFile avatarFile = AvatarFile.EMPTY;
-
-    /** A message can be linked to any user, MyAccount or not */
-    private long linkedUserId = 0;
-    private MyAccount linkedMyAccount = MyAccount.EMPTY;
-
-    private List<TimelineViewItem> children = new ArrayList<>();
-
-    @NonNull
-    public MyContext getMyContext() {
-        return myContext;
-    }
-
-    public void setMyContext(MyContext myContext) {
-        this.myContext = myContext;
-    }
-
-    public long getMsgId() {
-        return mMsgId;
-    }
-
-    void setMsgId(long mMsgId) {
-        this.mMsgId = mMsgId;
-    }
-
-    public long getOriginId() {
-        return originId;
-    }
-
-    void setOriginId(long originId) {
-        this.originId = originId;
-    }
-
-    public long getLinkedUserId() {
-        return linkedUserId;
-    }
-
-    public void setLinkedUserAndAccount(long linkedUserId) {
-        this.linkedUserId = linkedUserId;
-        linkedMyAccount = getMyContext().persistentAccounts().fromUserId(linkedUserId);
-        if (!linkedMyAccount.isValid()) {
-            linkedMyAccount = getMyContext().persistentAccounts().getFirstSucceededForOriginId(originId);
+        long senderId = DbUtils.getLong(cursor, MsgTable.ACTOR_ID);
+        if (senderId != item.authorId) {
+            String senderName = DbUtils.getString(cursor, UserTable.SENDER_NAME);
+            if (TextUtils.isEmpty(senderName)) {
+                senderName = "(id" + senderId + ")";
+            }
+            item.addReblogger(senderId, senderName);
         }
-    }
 
-    @NonNull
-    public MyAccount getLinkedMyAccount() {
-        return linkedMyAccount;
-    }
-
-    public boolean isLinkedToMyAccount() {
-        return linkedUserId != 0 && linkedMyAccount.getUserId() == linkedUserId;
-    }
-
-    protected void setCollapsedStatus(Context context, StringBuilder messageDetails) {
-        if (isCollapsed()) {
-            I18n.appendWithSpace(messageDetails, "(+" + children.size() + ")");
-        }
-    }
-
-    public boolean isCollapsed() {
-        return !children.isEmpty();
-    }
-
-    @Override
-    public void collapse(DuplicatesCollapsible childIn) {
-        TimelineViewItem child = (TimelineViewItem) childIn;
-        this.children.addAll(child.getChildren());
-        child.getChildren().clear();
-        this.children.add(child);
-    }
-
-    public List<TimelineViewItem> getChildren() {
-        return children;
-    }
-
-    @Override
-    public DuplicationLink duplicates(DuplicatesCollapsible otherIn) {
-
-        DuplicationLink link = DuplicationLink.NONE;
-        if (otherIn == null || !MessageViewItem.class.isAssignableFrom(otherIn.getClass())) {
-            return link;
-        }
-        MessageViewItem other = (MessageViewItem) otherIn;
-        if (getMsgId() == other.getMsgId()) {
-            link = duplicatesByFavoritedAndReblogged(other);
-        }
-        if (link == DuplicationLink.NONE) {
-            if (Math.abs(updatedDate - other.updatedDate) < TimeUnit.HOURS.toMillis(24)) {
-                if (cleanedBody.length() < MIN_LENGTH_TO_COMPARE ||
-                        other.cleanedBody.length() < MIN_LENGTH_TO_COMPARE) {
-                    // Too short to compare
-                } else if (cleanedBody.equals(other.cleanedBody)) {
-                    if (updatedDate == other.updatedDate) {
-                        link = duplicatesByFavoritedAndReblogged(other);
-                    } else if (updatedDate < other.updatedDate) {
-                        link = DuplicationLink.IS_DUPLICATED;
-                    } else {
-                        link = DuplicationLink.DUPLICATES;
-                    }
-                } else if (cleanedBody.contains(other.cleanedBody)) {
-                    link = DuplicationLink.DUPLICATES;
-                } else if (other.cleanedBody.contains(cleanedBody)) {
-                    link = DuplicationLink.IS_DUPLICATED;
-                }
+        if (item.isLinkedToMyAccount()) {
+            if (DbUtils.getInt(cursor, MsgOfUserTable.REBLOGGED) == 1) {
+                item.addReblogger(item.getLinkedMyAccount().getUserId(), item.getLinkedMyAccount().getAccountName());
+                item.reblogged = true;
             }
         }
-        return link;
-    }
 
-    private DuplicationLink duplicatesByFavoritedAndReblogged(MessageViewItem other) {
-        DuplicationLink link;
-        if (favorited != other.favorited) {
-            link = favorited ? DuplicationLink.IS_DUPLICATED : DuplicationLink.DUPLICATES;
-        } else if (isFavoritingAction != other.isFavoritingAction) {
-            link = other.isFavoritingAction ? DuplicationLink.IS_DUPLICATED : DuplicationLink.DUPLICATES;
-        } else if (reblogged != other.reblogged) {
-            link = reblogged ? DuplicationLink.IS_DUPLICATED : DuplicationLink.DUPLICATES;
-        } else if (!getLinkedMyAccount().equals(other.getLinkedMyAccount())) {
-            link = getLinkedMyAccount().compareTo(other.getLinkedMyAccount()) <= 0 ?
-                    DuplicationLink.IS_DUPLICATED : DuplicationLink.DUPLICATES;
-        } else {
-            link = rebloggers.size() > other.rebloggers.size() ? DuplicationLink.IS_DUPLICATED : DuplicationLink.DUPLICATES;
+        String via = DbUtils.getString(cursor, MsgTable.VIA);
+        if (!TextUtils.isEmpty(via)) {
+            item.messageSource = Html.fromHtml(via).toString().trim();
         }
-        return link;
-    }
 
-    public boolean isReblogged() {
-        return !rebloggers.isEmpty();
-    }
-
-    public StringBuilder getDetails(Context context) {
-        StringBuilder builder = new StringBuilder(RelativeTime.getDifference(context, updatedDate));
-        setInReplyTo(context, builder);
-        setRecipientName(context, builder);
-        setMessageSource(context, builder);
-        setMessageStatus(context, builder);
-        setCollapsedStatus(context, builder);
-        if (MyPreferences.isShowDebuggingInfoInUi()) {
-            I18n.appendWithSpace(builder, "(msgId=" + getMsgId() + ")");
+        item.avatarFile = AvatarFile.fromCursor(item.authorId, cursor);
+        if (MyPreferences.getDownloadAndDisplayAttachedImages()) {
+            item.attachedImageFile = new AttachedImageFile(
+                    DbUtils.getLong(cursor, DownloadTable.IMAGE_ID),
+                    DbUtils.getString(cursor, DownloadTable.IMAGE_FILE_NAME));
         }
-        return builder;
+        return item;
     }
 
-    protected void setInReplyTo(Context context, StringBuilder messageDetails) {
-        if (inReplyToMsgId != 0 && TextUtils.isEmpty(inReplyToName)) {
-            inReplyToName = "...";
-        }
-        if (!TextUtils.isEmpty(inReplyToName)) {
-            messageDetails.append(" ").append(String.format(
-                    context.getText(R.string.message_source_in_reply_to).toString(),
-                    inReplyToName));
-        }
-    }
-
-    private void setRecipientName(Context context, StringBuilder messageDetails) {
-        if (!TextUtils.isEmpty(recipientName)) {
-            messageDetails.append(" " + String.format(
-                    context.getText(R.string.message_source_to).toString(),
-                    recipientName));
-        }
-    }
-
-    private void setMessageSource(Context context, StringBuilder messageDetails) {
-        if (!SharedPreferencesUtil.isEmpty(messageSource) && !"ostatus".equals(messageSource)
-                && !"unknown".equals(messageSource)) {
-            messageDetails.append(" " + String.format(
-                    context.getText(R.string.message_source_from).toString(), messageSource));
-        }
-    }
-
-    private void setMessageStatus(Context context, StringBuilder messageDetails) {
-        if (msgStatus != DownloadStatus.LOADED) {
-            messageDetails.append(" (").append(msgStatus.getTitle(context)).append(")");
-        }
-    }
-
-    public AttachedImageFile getAttachedImageFile() {
-        return attachedImageFile;
-    }
-
-    public MessageViewItem setBody(String body) {
-        this.body = body;
-        this.isFavoritingAction = MyHtml.isFavoritingAction(body);
-        cleanedBody = MyHtml.getCleanedBody(body);
-        return this;
-    }
-
-    public String getBody() {
-        return body;
+    private void addReblogger(long userId, String userName) {
+        rebloggers.put(userId, userName);
     }
 
     @Override
-    public long getId() {
-        return getMsgId();
+    public String toString() {
+        return MyLog.formatKeyValue(this, I18n.trimTextAt(MyHtml.fromHtml(getBody()), 40) + ","
+                + getDetails(getMyContext().context()));
     }
 
-    @Override
-    public long getDate() {
-        return sentDate;
-    }
 }

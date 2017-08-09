@@ -16,7 +16,11 @@
 
 package org.andstatus.app;
 
+import android.database.Cursor;
 import android.support.annotation.NonNull;
+import android.support.v4.util.Pair;
+
+import org.andstatus.app.msg.KeywordsFilter;
 
 import java.util.ArrayList;
 import java.util.List;

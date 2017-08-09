@@ -28,5 +28,6 @@ public enum OidEnum {
      */
     REBLOG_OID,
     /** oid of this User */
-    USER_OID
+    USER_OID,
+    ACTIVITY_OID
 }

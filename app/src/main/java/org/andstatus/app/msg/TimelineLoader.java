@@ -1,5 +1,5 @@
-/**
- * Copyright (C) 2015 yvolk (Yuri Volkov), http://yurivolkov.com
+/*
+ * Copyright (C) 2015-2017 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,33 +18,33 @@ package org.andstatus.app.msg;
 
 import android.database.Cursor;
 import android.support.annotation.NonNull;
+import android.support.v4.util.Pair;
 
 import org.andstatus.app.LoadableListActivity;
 import org.andstatus.app.SyncLoader;
 import org.andstatus.app.WhichPage;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.I18n;
-import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
+import org.andstatus.app.widget.TimelineViewItem;
 
 import java.util.ArrayList;
 
 /**
 * @author yvolk@yurivolkov.com
 */
-public class TimelineLoader extends SyncLoader<TimelineViewItem> {
+public class TimelineLoader<T extends TimelineViewItem> extends SyncLoader<T> {
     private final TimelineListParameters params;
-    private final TimelinePage page;
+    private final TimelinePage<T> page;
 
     private final long instanceId;
 
-    public TimelineLoader(@NonNull TimelineListParameters params, long instanceId) {
+    TimelineLoader(@NonNull TimelineListParameters params, long instanceId) {
         this.params = params;
-        this.page = new TimelinePage(getParams(), new ArrayList<TimelineViewItem>());
+        this.page = new TimelinePage<>(getParams(), new ArrayList<>());
         this.items = page.items;
         this.instanceId = instanceId;
     }
@@ -60,7 +60,7 @@ public class TimelineLoader extends SyncLoader<TimelineViewItem> {
         logExecutionStats();
     }
 
-    void markStart() {
+    private void markStart() {
         params.startTime = System.nanoTime();
         params.cancelled = false;
         params.timeline.save(params.getMyContext());
@@ -87,7 +87,6 @@ public class TimelineLoader extends SyncLoader<TimelineViewItem> {
         return cursor;
     }
 
-    @NonNull
     private void loadFromCursor(Cursor cursor) {
         KeywordsFilter keywordsFilter = new KeywordsFilter(
                 SharedPreferencesUtil.getString(MyPreferences.KEY_FILTER_HIDE_MESSAGES_BASED_ON_KEYWORDS, ""));
@@ -104,25 +103,19 @@ public class TimelineLoader extends SyncLoader<TimelineViewItem> {
                     boolean reversedOrder = getParams().isSortOrderAscending();
                     do {
                         rowsCount++;
-                        TimelineViewItem item = TimelineViewItem.fromCursorRow(params.getMyContext(), cursor);
-                        getParams().rememberSentDateLoaded(item.sentDate);
-                        String body = MyHtml.getBodyToSearch(item.getBody());
-                        boolean skip = keywordsFilter.matchedAny(body);
-                        if (!skip && !searchQuery.isEmpty()) {
-                            skip = !searchQuery.matchedAll(body);
-                        }
-                        if (!skip && hideRepliesNotToMeOrFriends && item.inReplyToUserId != 0) {
-                            skip = !MyContextHolder.get().persistentAccounts().isMeOrMyFriend(item.inReplyToUserId);
-                        }
-                        if (skip) {
+                        Pair<T, Boolean> itemAndSkip = (Pair<T, Boolean>) page.getEmptyItem().
+                                fromCursor(cursor, keywordsFilter, searchQuery, hideRepliesNotToMeOrFriends);
+                        getParams().rememberSentDateLoaded(itemAndSkip.first.getDate());
+                        if (itemAndSkip.second) {
                             filteredOutCount++;
                             if (MyLog.isVerboseEnabled()) {
-                                MyLog.v(this, filteredOutCount + " Filtered out: " + I18n.trimTextAt(body, 100));
+                                MyLog.v(this, filteredOutCount + " Filtered out: "
+                                        + I18n.trimTextAt(itemAndSkip.first.toString(), 100));
                             }
                         } else if (reversedOrder) {
-                            page.items.add(0, item);
+                            page.items.add(0, itemAndSkip.first);
                         } else {
-                            page.items.add(item);
+                            page.items.add(itemAndSkip.first);
                         }
                     } while (cursor.moveToNext());
                 }
@@ -139,7 +132,7 @@ public class TimelineLoader extends SyncLoader<TimelineViewItem> {
         return params;
     }
 
-    void logExecutionStats() {
+    private void logExecutionStats() {
         if (MyLog.isVerboseEnabled()) {
             StringBuilder text = new StringBuilder(getParams().cancelled ? "cancelled" : "ended");
             if (!getParams().cancelled) {
@@ -170,7 +163,7 @@ public class TimelineLoader extends SyncLoader<TimelineViewItem> {
     }
 
     @NonNull
-    public TimelinePage getPage() {
+    public TimelinePage<T> getPage() {
         return page;
     }
 }

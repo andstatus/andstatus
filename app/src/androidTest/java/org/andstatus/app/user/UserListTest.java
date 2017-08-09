@@ -32,12 +32,11 @@ import org.andstatus.app.context.DemoData;
 import org.andstatus.app.msg.MessageListContextMenuItem;
 import org.andstatus.app.msg.TimelineActivity;
 import org.andstatus.app.msg.TimelineActivityTest;
-import org.andstatus.app.msg.TimelineViewItem;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.timeline.Timeline;
 import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.widget.DuplicatesCollapsible;
+import org.andstatus.app.widget.TimelineViewItem;
 import org.junit.Test;
 
 import java.util.List;
@@ -75,7 +74,7 @@ public class UserListTest extends TimelineActivityTest {
         assertEquals(logMsg, 3, users.size());
         assertEquals(logMsg, "unknownUser@example.com", users.get(2).getUserName());
 
-        DuplicatesCollapsible item = getActivity().getListData().getById(msgId);
+        TimelineViewItem item = getActivity().getListData().getById(msgId);
         boolean messageWasFound = item.getId() == msgId;
         if (!messageWasFound) {
             item = getActivity().getListData().getItem(0);

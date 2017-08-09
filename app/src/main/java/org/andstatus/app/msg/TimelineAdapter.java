@@ -23,17 +23,18 @@ import org.andstatus.app.R;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyUrlSpan;
+import org.andstatus.app.widget.TimelineViewItem;
 
 /**
  * @author yvolk@yurivolkov.com
  */
-public class TimelineAdapter extends MessageListAdapter<TimelineViewItem> {
-    private final TimelineData<TimelineViewItem> listData;
+public class TimelineAdapter extends MessageListAdapter<MessageViewItem> {
+    private final TimelineData<MessageViewItem> listData;
     private int positionPrev = -1;
     private int messageNumberShownCounter = 0;
     private final String TOP_TEXT;
 
-    public TimelineAdapter(MessageContextMenu contextMenu, TimelineData listData) {
+    public TimelineAdapter(MessageContextMenu contextMenu, TimelineData<MessageViewItem> listData) {
         super(contextMenu);
         this.listData = listData;
         TOP_TEXT = myContext.context().getText(R.string.top).toString();
@@ -45,12 +46,12 @@ public class TimelineAdapter extends MessageListAdapter<TimelineViewItem> {
     }
 
     @Override
-    public TimelineViewItem getItem(int position) {
+    public MessageViewItem getItem(int position) {
         return listData.getItem(position);
     }
 
     @Override
-    protected void showAvatarEtc(ViewGroup view, TimelineViewItem item) {
+    protected void showAvatarEtc(ViewGroup view, MessageViewItem item) {
         if (showAvatars) {
             showAvatar(view, item);
         } else {
@@ -71,7 +72,7 @@ public class TimelineAdapter extends MessageListAdapter<TimelineViewItem> {
             if (positionToPreload < 0 || positionToPreload >= listData.size()) {
                 break;
             }
-            TimelineViewItem item = getItem(positionToPreload);
+            MessageViewItem item = getItem(positionToPreload);
             if (!preloadedImages.contains(item.getMsgId())) {
                 preloadedImages.add(item.getMsgId());
                 item.getAttachedImageFile().preloadImageAsync();
@@ -81,7 +82,7 @@ public class TimelineAdapter extends MessageListAdapter<TimelineViewItem> {
     }
 
     @Override
-    protected void showMessageNumberEtc(ViewGroup view, TimelineViewItem item, int position) {
+    protected void showMessageNumberEtc(ViewGroup view, MessageViewItem item, int position) {
         preloadAttachments(position);
         String text;
         switch (position) {
@@ -110,7 +111,7 @@ public class TimelineAdapter extends MessageListAdapter<TimelineViewItem> {
     public void onClick(View v) {
         boolean handled = false;
         if (MyPreferences.isLongPressToOpenContextMenu()) {
-            TimelineViewItem item = getItem(v);
+            MessageViewItem item = getItem(v);
             if (TimelineActivity.class.isAssignableFrom(contextMenu.menuContainer.getClass())) {
                 ((TimelineActivity) contextMenu.menuContainer).onItemClick(item);
                 handled = true;
@@ -126,10 +127,10 @@ public class TimelineAdapter extends MessageListAdapter<TimelineViewItem> {
         int position = super.getPositionById(itemId);
         if (position < 0 && listData.isCollapseDuplicates()) {
             for (int position2 = 0; position2 < getCount(); position2++) {
-                TimelineViewItem item = getItem(position2);
+                MessageViewItem item = getItem(position2);
                 if (item.isCollapsed()) {
                     for (TimelineViewItem child : item.getChildren()) {
-                        if (child.getMsgId() == itemId) {
+                        if (child.getId() == itemId) {
                             return position2;
                         }
                     }

@@ -72,7 +72,7 @@ import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
 import org.andstatus.app.util.ViewUtils;
-import org.andstatus.app.widget.DuplicatesCollapsible;
+import org.andstatus.app.widget.TimelineViewItem;
 import org.andstatus.app.widget.MyBaseAdapter;
 import org.andstatus.app.widget.MySearchView;
 
@@ -81,7 +81,7 @@ import java.util.Collections;
 /**
  * @author yvolk@yurivolkov.com
  */
-public class TimelineActivity extends MessageEditorListActivity implements
+public class TimelineActivity<T extends TimelineViewItem> extends MessageEditorListActivity implements
         MessageListContextMenuContainer, AbsListView.OnScrollListener {
     public static final String HORIZONTAL_ELLIPSIS = "\u2026";
 
@@ -89,7 +89,7 @@ public class TimelineActivity extends MessageEditorListActivity implements
     private volatile TimelineListParameters paramsNew = null;
     /** Last parameters, requested to load. Thread safe. They are taken by a Loader at some time */
     private volatile TimelineListParameters paramsToLoad;
-    private volatile TimelineData<? extends DuplicatesCollapsible> listData;
+    private volatile TimelineData<T> listData;
 
     private MessageContextMenu contextMenu;
 
@@ -164,29 +164,16 @@ public class TimelineActivity extends MessageEditorListActivity implements
 
         View view = findViewById(R.id.my_action_bar);
         if (view != null) {
-            view.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    onTimelineTitleClick(v);
-                }
-            });
+            view.setOnClickListener(this::onTimelineTitleClick);
         }
 
         syncYoungerView = View.inflate(this, R.layout.sync_younger, null);
-        syncYoungerView.findViewById(R.id.sync_younger_button).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                syncWithInternet(getParamsLoaded().getTimeline(), true, true);
-            }
-        });
+        syncYoungerView.findViewById(R.id.sync_younger_button).setOnClickListener(
+                v -> syncWithInternet(getParamsLoaded().getTimeline(), true, true));
 
         syncOlderView = View.inflate(this, R.layout.sync_older, null);
-        syncOlderView.findViewById(R.id.sync_older_button).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                syncWithInternet(getParamsLoaded().getTimeline(), false, true);
-            }
-        });
+        syncOlderView.findViewById(R.id.sync_older_button).setOnClickListener(
+                v -> syncWithInternet(getParamsLoaded().getTimeline(), false, true));
         addSyncButtons();
 
         searchView = (MySearchView) findViewById(R.id.my_search_view);
@@ -206,7 +193,7 @@ public class TimelineActivity extends MessageEditorListActivity implements
 
     @Override
     protected MyBaseAdapter newListAdapter() {
-        return new TimelineAdapter(contextMenu, getListData());
+        return new TimelineAdapter(contextMenu, (TimelineData<MessageViewItem>) getListData());
     }
 
     @Override
@@ -381,14 +368,9 @@ public class TimelineActivity extends MessageEditorListActivity implements
      */
     protected void saveListPosition() {
         if (getParamsLoaded().isLoaded() && isPositionRestored()) {
-            Runnable runnable = new Runnable() {
-                @Override
-                public void run() {
-                        new TimelineListPositionStorage(getListAdapter(), getListView(),
-                                getParamsLoaded()).save();
-                    }
-            };
-            runOnUiThread(runnable);
+            runOnUiThread(
+                () -> new TimelineListPositionStorage(getListAdapter(), getListView(), getParamsLoaded()).save()
+            );
         }
     }
 
@@ -498,7 +480,7 @@ public class TimelineActivity extends MessageEditorListActivity implements
         HelpActivity.startMe(this, false, HelpActivity.PAGE_CHANGELOG);
     }
 
-    public void onItemClick(TimelineViewItem item) {
+    public void onItemClick(MessageViewItem item) {
         MyAccount ma = myContext.persistentAccounts().getAccountForThisMessage(item.getOriginId(),
                 item.getLinkedMyAccount(), getParamsNew().getMyAccount(), false);
         if (MyLog.isVerboseEnabled()) {
@@ -611,7 +593,7 @@ public class TimelineActivity extends MessageEditorListActivity implements
         if (Intent.ACTION_SEND.equals(intentNew.getAction())) {
             shareViaThisApplication(intentNew.getStringExtra(Intent.EXTRA_SUBJECT),
                     intentNew.getStringExtra(Intent.EXTRA_TEXT),
-                    (Uri) intentNew.getParcelableExtra(Intent.EXTRA_STREAM));
+                    intentNew.getParcelableExtra(Intent.EXTRA_STREAM));
         }
     }
 
@@ -716,26 +698,22 @@ public class TimelineActivity extends MessageEditorListActivity implements
 
     @Override
     @NonNull
-    public TimelineData<? extends DuplicatesCollapsible> getListData() {
+    public TimelineData<T> getListData() {
         if (listData == null) {
-            listData = new TimelineData<>(new TimelineViewItem(), null,
-                    new TimelinePage<>(getParamsNew(), Collections.<DuplicatesCollapsible>emptyList()));
+            listData = new TimelineData<>(null, new TimelinePage<>(getParamsNew(), Collections.emptyList()));
         }
         return listData;
     }
 
-    private TimelineData<? extends DuplicatesCollapsible> setAndGetListData(
-            TimelinePage<? extends DuplicatesCollapsible> pageLoaded) {
-        TimelineData<TimelineViewItem> dataNew
-                = new TimelineData<>(new TimelineViewItem(), (TimelineData<TimelineViewItem>) listData,
-                (TimelinePage<TimelineViewItem>) pageLoaded);
-        listData = dataNew;
+    private TimelineData<T> setAndGetListData(
+            TimelinePage<T> pageLoaded) {
+        listData = new TimelineData<T>(listData, pageLoaded);
         TimelineAdapter listAdapter = getListAdapter();
         if (listAdapter != null) {
             // Old value of listData is modified also
             listAdapter.notifyDataSetChanged();
         }
-        return dataNew;
+        return listData;
     }
 
     @Override
@@ -826,7 +804,7 @@ public class TimelineActivity extends MessageEditorListActivity implements
     public void onLoadFinished(boolean keepCurrentPosition_in) {
         final String method = "onLoadFinished";
         verboseListPositionLog(method, "started");
-        TimelineData dataLoaded = setAndGetListData(((TimelineLoader) getLoaded()).getPage());
+        TimelineData<T> dataLoaded = setAndGetListData(((TimelineLoader<T>) getLoaded()).getPage());
         MyLog.v(this, method + "; " + dataLoaded.params.toSummary());
 
         // TODO start: Move this inside superclass

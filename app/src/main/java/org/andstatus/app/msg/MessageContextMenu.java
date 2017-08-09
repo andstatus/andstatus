@@ -61,14 +61,14 @@ class MessageContextMenu extends MyContextMenu {
             NEW
         }
 
-        final MessageViewItem viewItem;
+        final BaseMessageViewItem viewItem;
         MessageForAccount msg = MessageForAccount.EMPTY;
         final MyAsyncTask<Void, Void, MessageForAccount> loader;
 
         MessageContextMenuData(@NonNull final MyAccount myActor,
                                final MessageContextMenu messageContextMenu,
                                final View view,
-                               final MessageViewItem viewItem) {
+                               final BaseMessageViewItem viewItem) {
             final MessageListContextMenuContainer menuContainer = messageContextMenu == null ? null
                     : messageContextMenu.menuContainer;
             this.viewItem = viewItem;
@@ -121,7 +121,7 @@ class MessageContextMenu extends MyContextMenu {
             return viewItem == null ? 0 : viewItem.getMsgId();
         }
 
-        StateForSelectedViewItem getStateFor(MessageViewItem currentItem) {
+        StateForSelectedViewItem getStateFor(BaseMessageViewItem currentItem) {
             if (viewItem == null || currentItem == null || loader == null || !viewItem.equals(currentItem)) {
                 return StateForSelectedViewItem.NEW;
             }
@@ -149,7 +149,7 @@ class MessageContextMenu extends MyContextMenu {
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
         final String method = "onCreateContextMenu";
         super.onCreateContextMenu(menu, v, menuInfo);
-        MessageViewItem viewItem = (MessageViewItem) mViewItem;
+        BaseMessageViewItem viewItem = (BaseMessageViewItem) mViewItem;
 
         switch (menuData.getStateFor(viewItem)) {
             case READY:

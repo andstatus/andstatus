@@ -1,2 +1,3 @@
+include ':draglistview'
 include ':app'
 include ':local'

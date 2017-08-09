@@ -23,6 +23,8 @@ import android.support.annotation.NonNull;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.DownloadStatus;
+import org.andstatus.app.data.MyQuery;
+import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.database.ActivityTable;
 import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.util.MyLog;
@@ -153,6 +155,7 @@ public class MbActivity {
     @Override
     public String toString() {
         return "MbActivity{" +
+                (isEmpty() ? "(empty), " : "") +
                 type +
                 (id == 0 ? "" : ", id=" + id) +
                 ", oid=" + timelinePosition +
@@ -194,6 +197,10 @@ public class MbActivity {
         }
         if (MyAsyncTask.isUiThread()) {
             throw new IllegalStateException("Saving activity on the Main thread " + toString());
+        }
+        if (getId() == 0) {
+            id = MyQuery.oidToId(myContext.getDatabase(), OidEnum.ACTIVITY_OID, accountUser.originId,
+                    timelinePosition.getPosition());
         }
         ContentValues contentValues = new ContentValues();
         toContentValues(contentValues);

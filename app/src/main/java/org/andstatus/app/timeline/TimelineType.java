@@ -58,7 +58,8 @@ public enum TimelineType implements SelectableEnum {
     /** For the selected my account (a user), the timeline includes all messages of the same origin irrespectively existence
      * of the link between the message and the User. So the User may "Act" on this message. */
     MESSAGES_TO_ACT("messages_to_act", R.string.timeline_title_home, Connection.ApiRoutineEnum.HOME_TIMELINE),
-    REPLIES("replies", R.string.timeline_title_replies, Connection.ApiRoutineEnum.DUMMY);
+    REPLIES("replies", R.string.timeline_title_replies, Connection.ApiRoutineEnum.DUMMY),
+    NOTIFICATIONS("notifications", R.string.category_title_preference_notifications, Connection.ApiRoutineEnum.MENTIONS_TIMELINE);
 
     /** Code - identifier of the type */
     private final String code;

@@ -6,9 +6,17 @@ buildscript {
             url "https://maven.google.com"
         }
     }
+
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.0.0-alpha9'
+        classpath 'com.android.tools.build:gradle:3.0.0-beta1'
         classpath "org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.4"
+
+        // This is temporary workaround for the bug:
+        // https://issuetracker.google.com/issues/62623509 "Coverage broken with Java 8 static interface methods"
+        classpath ('org.jacoco:jacoco:0.7.9') {
+            exclude group: 'org.jacoco', module: 'org.jacoco.examples'
+            exclude group: 'org.jacoco', module: 'org.jacoco.doc'
+        }
 
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
@@ -18,6 +26,9 @@ buildscript {
 allprojects {
     repositories {
         jcenter()
+        maven {
+            url "https://maven.google.com"
+        }
     }
 }
 

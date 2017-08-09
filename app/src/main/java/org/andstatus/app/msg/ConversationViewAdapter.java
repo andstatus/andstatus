@@ -123,7 +123,7 @@ public class ConversationViewAdapter extends MessageListAdapter<ConversationView
         divider.setLayoutParams(layoutParams);
     }
 
-    private int showAvatar(View view, MessageViewItem item, int indentPixels) {
+    private int showAvatar(View view, BaseMessageViewItem item, int indentPixels) {
         AvatarView avatarView = (AvatarView) view.findViewById(R.id.avatar_image);
         RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) avatarView.getLayoutParams();
         layoutParams.leftMargin = dpToPixes(indentPixels == 0 ? 2 : 1) + indentPixels;

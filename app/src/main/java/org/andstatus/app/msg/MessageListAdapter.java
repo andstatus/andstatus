@@ -40,7 +40,7 @@ import java.util.Set;
 /**
  * @author yvolk@yurivolkov.com
  */
-public abstract class MessageListAdapter<T extends MessageViewItem> extends MyBaseAdapter {
+public abstract class MessageListAdapter<T extends BaseMessageViewItem> extends MyBaseAdapter {
     protected final boolean showButtonsBelowMessages =
             SharedPreferencesUtil.getBoolean(MyPreferences.KEY_SHOW_BUTTONS_BELOW_MESSAGE, true);
     protected final MessageContextMenu contextMenu;
@@ -108,7 +108,7 @@ public abstract class MessageListAdapter<T extends MessageViewItem> extends MyBa
         return view;
     }
 
-    protected void showRebloggers(View view, MessageViewItem item) {
+    protected void showRebloggers(View view, BaseMessageViewItem item) {
         View viewGroup = view.findViewById(R.id.reblogged);
         if (viewGroup == null) {
             return;
@@ -124,23 +124,23 @@ public abstract class MessageListAdapter<T extends MessageViewItem> extends MyBa
         }
     }
 
-    protected void showMessageBody(View view, MessageViewItem item) {
+    protected void showMessageBody(View view, BaseMessageViewItem item) {
         TextView body = (TextView) view.findViewById(R.id.message_body);
         MyUrlSpan.showText(body, item.getBody(), true, true);
     }
 
-    protected void showAvatar(View view, MessageViewItem item) {
+    protected void showAvatar(View view, BaseMessageViewItem item) {
         AvatarView avatarView = (AvatarView) view.findViewById(R.id.avatar_image);
         item.avatarFile.showImage(contextMenu.getActivity(), avatarView);
     }
 
-    protected void showAttachedImage(View view, MessageViewItem item) {
+    protected void showAttachedImage(View view, BaseMessageViewItem item) {
         preloadedImages.add(item.getMsgId());
         item.getAttachedImageFile().showImage(contextMenu.getActivity(),
                 (AttachedImageView) view.findViewById(R.id.attached_image));
     }
 
-    protected void showMarkReplies(ViewGroup view, MessageViewItem item) {
+    protected void showMarkReplies(ViewGroup view, BaseMessageViewItem item) {
         boolean show = item.inReplyToUserId != 0 && myContext.persistentAccounts().
                 fromUserId(item.inReplyToUserId).isValid();
         View oldView = view.findViewById(R.id.reply_timeline_marker);
@@ -197,7 +197,7 @@ public abstract class MessageListAdapter<T extends MessageViewItem> extends MyBa
     public abstract T getItem(int position);
 
     private void onButtonClick(View v, MessageListContextMenuItem contextMenuItemIn) {
-        MessageViewItem item = (MessageViewItem) getItem(v);
+        BaseMessageViewItem item = (BaseMessageViewItem) getItem(v);
         if (item != null && item.msgStatus == DownloadStatus.LOADED) {
             // Currently selected account is the best candidate as an actor
             MyAccount ma = contextMenu.getActivity().getCurrentMyAccount();
@@ -207,7 +207,7 @@ public abstract class MessageListAdapter<T extends MessageViewItem> extends MyBa
         }
     }
 
-    protected void showButtonsBelowMessage(View view, MessageViewItem item) {
+    protected void showButtonsBelowMessage(View view, BaseMessageViewItem item) {
         View viewGroup = view.findViewById(R.id.message_buttons);
         if (viewGroup == null) {
             return;
@@ -227,7 +227,7 @@ public abstract class MessageListAdapter<T extends MessageViewItem> extends MyBa
         imageViewTinted.setVisibility(colored ? View.VISIBLE : View.GONE);
     }
 
-    protected void showFavorited(View view, MessageViewItem item) {
+    protected void showFavorited(View view, BaseMessageViewItem item) {
         View favorited = view.findViewById(R.id.message_favorited);
         favorited.setVisibility(item.favorited ? View.VISIBLE : View.GONE );
     }

@@ -26,6 +26,7 @@ import android.text.TextUtils;
 
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.UserInTimeline;
+import org.andstatus.app.database.ActivityTable;
 import org.andstatus.app.database.FriendshipTable;
 import org.andstatus.app.database.MsgOfUserTable;
 import org.andstatus.app.database.MsgTable;
@@ -80,7 +81,7 @@ public class MyQuery {
         if (TextUtils.isEmpty(oid)) {
             return 0;
         }
-        String msgLog = "oidToId; " + originId + "+" + oid + ", oidEnum=" + oidEnum;
+        String msgLog = "oidToId; " + oidEnum + ", origin=" + originId + ", oid=" + oid;
         String sql;
         switch (oidEnum) {
             case MSG_OID:
@@ -88,13 +89,16 @@ public class MyQuery {
                         + " WHERE " + MsgTable.ORIGIN_ID + "=" + originId + " AND " + MsgTable.MSG_OID
                         + "=" + quoteIfNotQuoted(oid);
                 break;
-
             case USER_OID:
                 sql = "SELECT " + BaseColumns._ID + " FROM " + UserTable.TABLE_NAME
                         + " WHERE " + UserTable.ORIGIN_ID + "=" + originId + " AND " + UserTable.USER_OID
                         + "=" + quoteIfNotQuoted(oid);
                 break;
-
+            case ACTIVITY_OID:
+                sql = "SELECT " + BaseColumns._ID + " FROM " + ActivityTable.TABLE_NAME
+                        + " WHERE " + UserTable.ORIGIN_ID + "=" + originId + " AND " + ActivityTable.ACTIVITY_OID
+                        + "=" + quoteIfNotQuoted(oid);
+                break;
             default:
                 throw new IllegalArgumentException(msgLog + "; Unknown oidEnum");
         }

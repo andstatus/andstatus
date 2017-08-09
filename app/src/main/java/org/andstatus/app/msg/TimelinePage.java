@@ -18,7 +18,7 @@ package org.andstatus.app.msg;
 
 import android.support.annotation.NonNull;
 
-import org.andstatus.app.widget.DuplicatesCollapsible;
+import org.andstatus.app.widget.TimelineViewItem;
 
 import java.util.Collections;
 import java.util.List;
@@ -26,11 +26,15 @@ import java.util.List;
 /**
  * @author yvolk@yurivolkov.com
  */
-public class TimelinePage<T extends DuplicatesCollapsible> {
+public class TimelinePage<T extends TimelineViewItem> {
     @NonNull
     final TimelineListParameters params;
     @NonNull
-    final List<T> items;
+    public final List<T> items;
+
+    public T getEmptyItem() {
+        return  (T) TimelineViewItem.getEmpty(params.getTimelineType());
+    }
 
     public TimelinePage(@NonNull TimelineListParameters params, List<T> items) {
         this.params = params;

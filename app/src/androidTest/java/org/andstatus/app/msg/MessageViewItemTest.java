@@ -27,7 +27,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author yvolk@yurivolkov.com
  */
-public class TimelineViewItemTest {
+public class MessageViewItemTest {
 
     private static final String HTML_BODY =
             "@<a href=\"https://bsdnode.xyz/user/2\" class=\"h-card mention\">username</a> " +
@@ -45,9 +45,9 @@ public class TimelineViewItemTest {
 
     @Test
     public void testDuplicationLink() {
-        TimelineViewItem item1 = new TimelineViewItem();
+        MessageViewItem item1 = new MessageViewItem();
         item1.setBody(HTML_BODY);
-        TimelineViewItem item2 = new TimelineViewItem();
+        MessageViewItem item2 = new MessageViewItem();
         item2.setBody("Some other text");
         assertDuplicates(item1, DuplicationLink.DUPLICATES, item2);
 
@@ -93,7 +93,7 @@ public class TimelineViewItemTest {
         assertDuplicates(item1, DuplicationLink.IS_DUPLICATED, item2);
     }
 
-    private void assertDuplicates(TimelineViewItem item1, DuplicationLink duplicates, TimelineViewItem item2) {
+    private void assertDuplicates(MessageViewItem item1, DuplicationLink duplicates, MessageViewItem item2) {
         assertEquals(item1.toString() + " vs " + item2, duplicates, item1.duplicates(item2));
     }
 }

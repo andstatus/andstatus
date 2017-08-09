@@ -243,7 +243,7 @@ public class AsyncTaskLauncher<Params> {
             if (executor == null)  {
                 continue;
             }
-            MyLog.v(TAG, "Shutting down executor:" + executor);
+            MyLog.v(TAG, "Shutting down executor " + pool + ":" + executor);
             executor.shutdown();
         }
         long waitTill = TimeUnit.SECONDS.toMillis(5) + System.currentTimeMillis();
@@ -258,14 +258,14 @@ public class AsyncTaskLauncher<Params> {
                     executor.awaitTermination(timeout, TimeUnit.MILLISECONDS);
                 }
             } catch (InterruptedException e) {
-                MyLog.d(TAG, "Interrupted: Shutting down executor:" + executor, e);
+                MyLog.d(TAG, "Interrupted: Shutting down executor " + pool + ":" + executor, e);
                 Thread.currentThread().interrupt();
             } finally {
                 if (!executor.isTerminated() && executor.getActiveCount() > 0) {
-                    MyLog.d(TAG, "Cancelling unfinished tasks in executor:" + executor);
+                    MyLog.d(TAG, "Cancelling unfinished tasks in executor " + pool + ":" + executor);
                     executor.shutdownNow();
                 }
-                MyLog.v(TAG, "Shut down finished. Executor:" + executor);
+                MyLog.v(TAG, "Shut down finished. Executor " + pool + ":" + executor);
                 removePoolTasks(pool);
             }
         }
