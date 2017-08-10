@@ -1,6 +1,8 @@
 package org.andstatus.app.widget;
 
-public class EmptyViewItem implements TimelineViewItem {
+import org.andstatus.app.ViewItem;
+
+public class EmptyViewItem implements ViewItem {
     public static final EmptyViewItem EMPTY = new EmptyViewItem();
 
     private EmptyViewItem() {

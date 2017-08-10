@@ -27,7 +27,7 @@ import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
 
-public class UserListLoader extends SyncLoader<UserListViewItem> {
+public class UserListLoader extends SyncLoader<UserViewItem> {
     protected final UserListType mUserListType;
     private String searchQuery = "";
     protected final MyAccount ma;
@@ -64,16 +64,16 @@ public class UserListLoader extends SyncLoader<UserListViewItem> {
     }
 
     protected void addEmptyItem(String description) {
-        items.add(UserListViewItem.getEmpty(description));
+        items.add(UserViewItem.getEmpty(description));
     }
 
-    protected UserListViewItem addUserIdToList(Origin origin, long userId) {
-        UserListViewItem viewItem = UserListViewItem.fromUserId(origin, userId);
+    protected UserViewItem addUserIdToList(Origin origin, long userId) {
+        UserViewItem viewItem = UserViewItem.fromUserId(origin, userId);
         addUserToList(viewItem);
         return viewItem;
     }
 
-    protected void addUserToList(UserListViewItem oUser) {
+    protected void addUserToList(UserViewItem oUser) {
         if (!oUser.isEmpty() && !items.contains(oUser)) {
             items.add(oUser);
             if (oUser.mbUser.userId == 0 && mAllowLoadingFromInternet) {
@@ -85,7 +85,7 @@ public class UserListLoader extends SyncLoader<UserListViewItem> {
         }
     }
 
-    private void loadFromInternet(UserListViewItem oUser) {
+    private void loadFromInternet(UserViewItem oUser) {
         MyLog.v(this, "User " + oUser + " will be loaded from the Internet");
         MyServiceManager.sendForegroundCommand(
                 CommandData.newUserCommand(
@@ -126,7 +126,7 @@ public class UserListLoader extends SyncLoader<UserListViewItem> {
 
     private void populateItem(Cursor cursor) {
         long userId = DbUtils.getLong(cursor, BaseColumns._ID);
-        UserListViewItem item = getById(userId);
+        UserViewItem item = getById(userId);
         if (item == null) {
             Origin origin = MyContextHolder.get().persistentOrigins().fromId(
                     DbUtils.getLong(cursor, UserTable.ORIGIN_ID));
@@ -158,8 +158,8 @@ public class UserListLoader extends SyncLoader<UserListViewItem> {
         item.populated = true;
     }
 
-    private UserListViewItem getById(long userId) {
-        for (UserListViewItem item : items) {
+    private UserViewItem getById(long userId) {
+        for (UserViewItem item : items) {
             if (item.getUserId() == userId) {
                 return item;
             }
@@ -170,7 +170,7 @@ public class UserListLoader extends SyncLoader<UserListViewItem> {
     protected String getSqlUserIds() {
         StringBuilder sb = new StringBuilder();
         int size = 0;
-        for (UserListViewItem item : items) {
+        for (UserViewItem item : items) {
             if (!item.populated) {
                 if (size > 0) {
                     sb.append(", ");

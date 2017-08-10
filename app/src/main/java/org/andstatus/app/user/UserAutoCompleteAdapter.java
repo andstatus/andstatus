@@ -25,7 +25,6 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.Filter;
 import android.widget.Filterable;
-import android.widget.ImageView;
 
 import org.andstatus.app.MyActivity;
 import org.andstatus.app.R;
@@ -48,7 +47,7 @@ public class UserAutoCompleteAdapter extends BaseAdapter implements Filterable {
     private final LayoutInflater mInflater;
 
     private ArrayFilter mFilter;
-    private List<UserListViewItem> items = new ArrayList<>();
+    private List<UserViewItem> items = new ArrayList<>();
 
     public UserAutoCompleteAdapter(@NonNull MyActivity myActivity, @NonNull Origin origin) {
         this.origin = origin;
@@ -66,7 +65,8 @@ public class UserAutoCompleteAdapter extends BaseAdapter implements Filterable {
     }
 
     @Override
-    public @Nullable UserListViewItem getItem(int position) {
+    public @Nullable
+    UserViewItem getItem(int position) {
         return items.get(position);
     }
 
@@ -83,7 +83,7 @@ public class UserAutoCompleteAdapter extends BaseAdapter implements Filterable {
         } else {
             view = convertView;
         }
-        final UserListViewItem item = getItem(position);
+        final UserViewItem item = getItem(position);
         String userName = item == null ? "???" : item.getWebFingerIdOrUserName();
         MyUrlSpan.showText(view, R.id.username, userName, false, true);
         MyUrlSpan.showText(view, R.id.description, item == null ? "" :
@@ -92,7 +92,7 @@ public class UserAutoCompleteAdapter extends BaseAdapter implements Filterable {
         return view;
     }
 
-    private void showAvatar(View view, UserListViewItem item) {
+    private void showAvatar(View view, UserViewItem item) {
         AvatarView avatarView = (AvatarView) view.findViewById(R.id.avatar_image);
         if (item == null) {
             avatarView.setVisibility(View.INVISIBLE);
@@ -117,7 +117,7 @@ public class UserAutoCompleteAdapter extends BaseAdapter implements Filterable {
     private class ArrayFilter extends Filter {
         @Override
         protected FilterResults performFiltering(CharSequence prefix) {
-            List<UserListViewItem> filteredValues = new ArrayList<>();
+            List<UserViewItem> filteredValues = new ArrayList<>();
             if (!TextUtils.isEmpty(prefix)) {
                 final String prefixString = prefix.toString().toLowerCase();
                 filteredValues = loadFiltered(prefixString);
@@ -129,7 +129,7 @@ public class UserAutoCompleteAdapter extends BaseAdapter implements Filterable {
             return results;
         }
 
-        private List<UserListViewItem> loadFiltered(final String prefixString) {
+        private List<UserViewItem> loadFiltered(final String prefixString) {
             if (!origin.isValid()) {
                 return Collections.emptyList();
             }
@@ -143,8 +143,8 @@ public class UserAutoCompleteAdapter extends BaseAdapter implements Filterable {
                 }
             };
             loader.load(null);
-            List<UserListViewItem> filteredValues = loader.getList();
-            for (UserListViewItem viewItem : filteredValues) {
+            List<UserViewItem> filteredValues = loader.getList();
+            for (UserViewItem viewItem : filteredValues) {
                 MyLog.v(this, "filtered: " + viewItem.mbUser);
             }
             return filteredValues;
@@ -153,7 +153,7 @@ public class UserAutoCompleteAdapter extends BaseAdapter implements Filterable {
         @Override
         protected void publishResults(CharSequence constraint, FilterResults results) {
             //noinspection unchecked
-            items = (List<UserListViewItem>) results.values;
+            items = (List<UserViewItem>) results.values;
             if (results.count > 0) {
                 notifyDataSetChanged();
             } else {
@@ -166,8 +166,8 @@ public class UserAutoCompleteAdapter extends BaseAdapter implements Filterable {
             if (resultValue == null) {
                 return "(null)";
             }
-            return origin.isMentionAsWebFingerId() ? ((UserListViewItem)resultValue).getWebFingerIdOrUserName()
-                    : ((UserListViewItem)resultValue).mbUser.getUserName();
+            return origin.isMentionAsWebFingerId() ? ((UserViewItem)resultValue).getWebFingerIdOrUserName()
+                    : ((UserViewItem)resultValue).mbUser.getUserName();
         }
     }
 }

@@ -69,7 +69,7 @@ public class UserListWorkTest extends ActivityTest<UserList> {
         TestSuite.waitForListLoaded(getActivity(), 2);
         ListActivityTestHelper<UserList> helper = new ListActivityTestHelper<>(getActivity(), FollowersList.class);
 
-        List<UserListViewItem> listItems = getActivity().getListLoader().getList();
+        List<UserViewItem> listItems = getActivity().getListLoader().getList();
         assertEquals(listItems.toString(), 6, listItems.size());
 
         MbUser userA = UserListTest.getByUserOid(listItems, DemoData.CONVERSATION_MEMBER_USER_OID);
@@ -80,7 +80,7 @@ public class UserListWorkTest extends ActivityTest<UserList> {
         FollowersList userList = (FollowersList) helper.waitForNextActivity(method, 15000);
         TestSuite.waitForListLoaded(userList, 1);
 
-        List<UserListViewItem> followersItems = userList.getListLoader().getList();
+        List<UserViewItem> followersItems = userList.getListLoader().getList();
         ListActivityTestHelper<FollowersList> followersHelper = new ListActivityTestHelper<>(userList);
         followersHelper.clickListAtPosition(method,
                 followersHelper.getPositionOfListItemId(followersItems.get(0).getUserId()));

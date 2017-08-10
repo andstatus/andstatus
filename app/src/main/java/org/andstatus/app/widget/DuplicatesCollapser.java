@@ -18,6 +18,7 @@ package org.andstatus.app.widget;
 
 import android.support.v4.util.Pair;
 
+import org.andstatus.app.ViewItem;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.msg.TimelineData;
 import org.andstatus.app.msg.TimelinePage;
@@ -31,7 +32,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * @author yvolk@yurivolkov.com
  */
-public class DuplicatesCollapser<T extends TimelineViewItem> {
+public class DuplicatesCollapser<T extends ViewItem> {
     // Parameters, which may be changed during presentation of the timeline
     protected volatile boolean collapseDuplicates = MyPreferences.isCollapseDuplicates();
     private final Set<Long> individualCollapsedStateIds = Collections.newSetFromMap(new ConcurrentHashMap<Long, Boolean>());
@@ -174,7 +175,7 @@ public class DuplicatesCollapser<T extends TimelineViewItem> {
         T item = page.items.get(ind);
         boolean groupOfSelectedItem = itemId == item.getId();
         if (itemId != 0 && !groupOfSelectedItem) {
-            for (TimelineViewItem child : item.getChildren()) {
+            for (ViewItem child : item.getChildren()) {
                 if (itemId == child.getId()) {
                     groupOfSelectedItem = true;
                     break;
@@ -183,14 +184,14 @@ public class DuplicatesCollapser<T extends TimelineViewItem> {
         }
         if (groupOfSelectedItem) {
             setIndividualCollapsedStatus(false, item.getId());
-            for (TimelineViewItem child : item.getChildren()) {
+            for (ViewItem child : item.getChildren()) {
                 setIndividualCollapsedStatus(false, child.getId());
             }
         }
 
         boolean hasIndividualCollapseState = false;
         if (!groupOfSelectedItem && !individualCollapsedStateIds.isEmpty()) {
-            for (TimelineViewItem child : item.getChildren()) {
+            for (ViewItem child : item.getChildren()) {
                 if (individualCollapsedStateIds.contains(child.getId())) {
                     hasIndividualCollapseState = true;
                     break;
@@ -199,7 +200,7 @@ public class DuplicatesCollapser<T extends TimelineViewItem> {
         }
         if (!hasIndividualCollapseState && (itemId == 0 || groupOfSelectedItem)) {
             int ind2 = ind + 1;
-            for (TimelineViewItem child : item.getChildren()) {
+            for (ViewItem child : item.getChildren()) {
                 page.items.add(ind2++, (T) child);
             }
             item.getChildren().clear();

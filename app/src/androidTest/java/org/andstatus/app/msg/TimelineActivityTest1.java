@@ -25,6 +25,7 @@ import org.andstatus.app.ActivityTestHelper;
 import org.andstatus.app.ListActivityTestHelper;
 import org.andstatus.app.R;
 import org.andstatus.app.SelectorDialog;
+import org.andstatus.app.ViewItem;
 import org.andstatus.app.WhichPage;
 import org.andstatus.app.account.AccountSelector;
 import org.andstatus.app.account.MyAccount;
@@ -46,7 +47,6 @@ import org.andstatus.app.service.MyServiceState;
 import org.andstatus.app.timeline.Timeline;
 import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.widget.TimelineViewItem;
 import org.junit.Test;
 
 import java.net.MalformedURLException;
@@ -182,7 +182,7 @@ public class TimelineActivityTest1 extends TimelineActivityTest {
         if (collapseDuplicates) {
             found = false;
             for (int ind = 0; ind < getActivity().getListData().size(); ind++) {
-                TimelineViewItem item = getActivity().getListData().getItem(ind);
+                ViewItem item = getActivity().getListData().getItem(ind);
                 if (item.isCollapsed()) {
                     found = true;
                     break;

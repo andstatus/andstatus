@@ -50,8 +50,6 @@ import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.TriState;
-import org.andstatus.app.widget.TimelineViewItem;
-import org.andstatus.app.widget.EmptyViewItem;
 import org.andstatus.app.widget.MyBaseAdapter;
 import org.andstatus.app.widget.MySearchView;
 
@@ -133,8 +131,8 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
     }
 
     @NonNull
-    public TimelineData<? extends TimelineViewItem> getListData() {
-        return new TimelineData<EmptyViewItem>(null,
+    public TimelineData<? extends ViewItem> getListData() {
+        return new TimelineData<ViewItem>(null,
                 new TimelinePage<>(new TimelineListParameters(myContext), null)) {
             @Override
             public int size() {

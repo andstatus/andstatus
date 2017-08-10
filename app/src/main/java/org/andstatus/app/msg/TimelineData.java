@@ -18,10 +18,10 @@ package org.andstatus.app.msg;
 
 import android.support.annotation.NonNull;
 
+import org.andstatus.app.ViewItem;
 import org.andstatus.app.WhichPage;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.widget.DuplicatesCollapser;
-import org.andstatus.app.widget.TimelineViewItem;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +29,7 @@ import java.util.List;
 /**
  * @author yvolk@yurivolkov.com
  */
-public class TimelineData<T extends TimelineViewItem> {
+public class TimelineData<T extends ViewItem> {
     private static final int MAX_PAGES_COUNT = 5;
     public final List<TimelinePage<T>> pages; // Contains at least onePage
     final long updatedAt = MyLog.uniqueCurrentTimeMS();
@@ -42,18 +42,10 @@ public class TimelineData<T extends TimelineViewItem> {
         this.params = thisPage.params;
         isSameTimeline = oldData != null &&
                 params.getContentUri().equals(oldData.params.getContentUri());
-        this.pages = isSameTimeline ? copyPages(oldData.pages) : new ArrayList<TimelinePage<T>>();
+        this.pages = isSameTimeline ? new ArrayList<>(oldData.pages) : new ArrayList<>();
         addThisPage(thisPage);
         duplicatesCollapser.collapseDuplicates(isCollapseDuplicates(), 0);
         dropExcessivePage(thisPage);
-    }
-
-    private List<TimelinePage<T>> copyPages(List<TimelinePage<T>> pages) {
-        ArrayList<TimelinePage<T>> copiedPages = new ArrayList<>();
-        for (TimelinePage<T> page : pages) {
-            copiedPages.add(page);
-        }
-        return copiedPages;
     }
 
     private void dropExcessivePage(TimelinePage<T> lastLoadedPage) {

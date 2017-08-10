@@ -15,7 +15,56 @@ package org.andstatus.app;
  * limitations under the License.
  */
 
+import android.database.Cursor;
+import android.support.annotation.NonNull;
+import android.support.v4.util.Pair;
+
+import org.andstatus.app.activity.ActivityViewItem;
+import org.andstatus.app.msg.KeywordsFilter;
+import org.andstatus.app.msg.MessageViewItem;
+import org.andstatus.app.timeline.TimelineType;
+import org.andstatus.app.widget.DuplicationLink;
+import org.andstatus.app.widget.EmptyViewItem;
+
+import java.util.Collection;
+import java.util.Collections;
+
 public interface ViewItem {
+    static ViewItem getEmpty(@NonNull TimelineType timelineType) {
+        switch (timelineType) {
+            case NOTIFICATIONS:
+                return ActivityViewItem.EMPTY;
+            case UNKNOWN:
+                return EmptyViewItem.EMPTY;
+            default:
+                return MessageViewItem.EMPTY;
+        }
+    }
+
     long getId();
     long getDate();
+
+    default Collection<ViewItem> getChildren() {
+        return Collections.emptyList();
+    }
+
+    default DuplicationLink duplicates(ViewItem other) {
+        return DuplicationLink.NONE;
+    }
+
+    default boolean isCollapsed() {
+        return !getChildren().isEmpty();
+    }
+
+    default void collapse(ViewItem child) {
+        this.getChildren().addAll(child.getChildren());
+        child.getChildren().clear();
+        this.getChildren().add(child);
+    }
+
+    @NonNull
+    default Pair<ViewItem,Boolean> fromCursor(Cursor cursor, KeywordsFilter keywordsFilter,
+                                                   KeywordsFilter searchQuery, boolean hideRepliesNotToMeOrFriends) {
+        return new Pair<>(getEmpty(TimelineType.UNKNOWN), true);
+    }
 }

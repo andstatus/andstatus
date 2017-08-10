@@ -37,7 +37,7 @@ import org.andstatus.app.net.social.MbAttachment;
 import org.andstatus.app.net.social.MbMessage;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.user.UserListType;
-import org.andstatus.app.user.UserListViewItem;
+import org.andstatus.app.user.UserViewItem;
 import org.andstatus.app.user.UsersOfMessageListLoader;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.UriUtils;
@@ -289,7 +289,7 @@ public class MessageEditorData {
                 , "").setMentionedOnly(true);
         loader.load(null);
         List<Long> toMention = new ArrayList<>();
-        for(UserListViewItem item : loader.getList()) {
+        for(UserViewItem item : loader.getList()) {
             toMention.add(item.getUserId());
         }
         addUsersBeforeText(toMention);

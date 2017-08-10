@@ -19,16 +19,17 @@ package org.andstatus.app.user;
 import android.content.Intent;
 
 import org.andstatus.app.ListActivityTestHelper;
+import org.andstatus.app.ViewItem;
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.data.DemoConversationInserter;
 import org.andstatus.app.data.DbUtils;
+import org.andstatus.app.data.DemoConversationInserter;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.database.MsgTable;
-import org.andstatus.app.context.DemoData;
 import org.andstatus.app.msg.MessageListContextMenuItem;
 import org.andstatus.app.msg.TimelineActivity;
 import org.andstatus.app.msg.TimelineActivityTest;
@@ -36,7 +37,6 @@ import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.timeline.Timeline;
 import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.widget.TimelineViewItem;
 import org.junit.Test;
 
 import java.util.List;
@@ -74,7 +74,7 @@ public class UserListTest extends TimelineActivityTest {
         assertEquals(logMsg, 3, users.size());
         assertEquals(logMsg, "unknownUser@example.com", users.get(2).getUserName());
 
-        TimelineViewItem item = getActivity().getListData().getById(msgId);
+        ViewItem item = getActivity().getListData().getById(msgId);
         boolean messageWasFound = item.getId() == msgId;
         if (!messageWasFound) {
             item = getActivity().getListData().getItem(0);
@@ -90,7 +90,7 @@ public class UserListTest extends TimelineActivityTest {
         UserList userList = (UserList) helper.waitForNextActivity(method, 15000);
         TestSuite.waitForListLoaded(userList, 1);
 
-        List<UserListViewItem> listItems = userList.getListLoader().getList();
+        List<UserViewItem> listItems = userList.getListLoader().getList();
 
         if (messageWasFound) {
             assertEquals(listItems.toString(), 5, listItems.size());
@@ -129,8 +129,8 @@ public class UserListTest extends TimelineActivityTest {
         assertEquals("Updated at", expected.getUpdatedDate(), actual.getUpdatedDate());
     }
 
-    static MbUser getByUserOid(List<UserListViewItem> listItems, String oid) {
-        for (UserListViewItem item : listItems) {
+    static MbUser getByUserOid(List<UserViewItem> listItems, String oid) {
+        for (UserViewItem item : listItems) {
             if (item.mbUser.oid.equals(oid)) {
                 return item.mbUser;
             }

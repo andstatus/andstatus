@@ -115,11 +115,11 @@ public class UserListContextMenu extends MyContextMenu {
     }
 
     @NonNull
-    public UserListViewItem getViewItem() {
+    public UserViewItem getViewItem() {
         if (mViewItem == null) {
-            return UserListViewItem.getEmpty("");
+            return UserViewItem.getEmpty("");
         }
-        return (UserListViewItem) mViewItem;
+        return (UserViewItem) mViewItem;
     }
 
     public Origin getOrigin() {

@@ -18,7 +18,7 @@ package org.andstatus.app.msg;
 
 import android.support.annotation.NonNull;
 
-import org.andstatus.app.widget.TimelineViewItem;
+import org.andstatus.app.ViewItem;
 
 import java.util.Collections;
 import java.util.List;
@@ -26,14 +26,14 @@ import java.util.List;
 /**
  * @author yvolk@yurivolkov.com
  */
-public class TimelinePage<T extends TimelineViewItem> {
+public class TimelinePage<T extends ViewItem> {
     @NonNull
     final TimelineListParameters params;
     @NonNull
     public final List<T> items;
 
     public T getEmptyItem() {
-        return  (T) TimelineViewItem.getEmpty(params.getTimelineType());
+        return  (T) ViewItem.getEmpty(params.getTimelineType());
     }
 
     public TimelinePage(@NonNull TimelineListParameters params, List<T> items) {

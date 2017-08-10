@@ -23,6 +23,7 @@ import android.support.v4.util.Pair;
 import android.text.TextUtils;
 
 import org.andstatus.app.R;
+import org.andstatus.app.ViewItem;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
@@ -34,7 +35,6 @@ import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.SharedPreferencesUtil;
-import org.andstatus.app.widget.TimelineViewItem;
 import org.andstatus.app.widget.DuplicationLink;
 
 import java.util.ArrayList;
@@ -44,7 +44,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-public class BaseMessageViewItem implements TimelineViewItem {
+public class BaseMessageViewItem implements ViewItem {
     private static final int MIN_LENGTH_TO_COMPARE = 5;
     private MyContext myContext = MyContextHolder.get();
     long updatedDate = 0;
@@ -81,7 +81,7 @@ public class BaseMessageViewItem implements TimelineViewItem {
     private long linkedUserId = 0;
     private MyAccount linkedMyAccount = MyAccount.EMPTY;
 
-    private final List<TimelineViewItem> children = new ArrayList<>();
+    private final List<ViewItem> children = new ArrayList<>();
 
     @NonNull
     public MyContext getMyContext() {
@@ -136,12 +136,12 @@ public class BaseMessageViewItem implements TimelineViewItem {
     }
 
     @Override
-    public Collection<TimelineViewItem> getChildren() {
+    public Collection<ViewItem> getChildren() {
         return children;
     }
 
     @Override
-    public DuplicationLink duplicates(TimelineViewItem otherIn) {
+    public DuplicationLink duplicates(ViewItem otherIn) {
 
         DuplicationLink link = DuplicationLink.NONE;
         if (otherIn == null || !BaseMessageViewItem.class.isAssignableFrom(otherIn.getClass())) {
@@ -268,8 +268,8 @@ public class BaseMessageViewItem implements TimelineViewItem {
 
 
     @NonNull
-    public Pair<TimelineViewItem, Boolean> fromCursor(Cursor cursor, KeywordsFilter keywordsFilter,
-                                                      KeywordsFilter searchQuery, boolean hideRepliesNotToMeOrFriends) {
+    public Pair<ViewItem, Boolean> fromCursor(Cursor cursor, KeywordsFilter keywordsFilter,
+                                                   KeywordsFilter searchQuery, boolean hideRepliesNotToMeOrFriends) {
         MessageViewItem item = MessageViewItem.fromCursorRow(getMyContext(), cursor);
         String body = MyHtml.getBodyToSearch(item.getBody());
         boolean skip = keywordsFilter.matchedAny(body);

@@ -20,10 +20,10 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import org.andstatus.app.R;
+import org.andstatus.app.ViewItem;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyUrlSpan;
-import org.andstatus.app.widget.TimelineViewItem;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -129,7 +129,7 @@ public class TimelineAdapter extends MessageListAdapter<MessageViewItem> {
             for (int position2 = 0; position2 < getCount(); position2++) {
                 MessageViewItem item = getItem(position2);
                 if (item.isCollapsed()) {
-                    for (TimelineViewItem child : item.getChildren()) {
+                    for (ViewItem child : item.getChildren()) {
                         if (child.getId() == itemId) {
                             return position2;
                         }

@@ -18,24 +18,24 @@ package org.andstatus.app.activity;
 
 import android.support.annotation.NonNull;
 
+import org.andstatus.app.ViewItem;
 import org.andstatus.app.msg.MessageViewItem;
 import org.andstatus.app.net.social.MbActivityType;
 import org.andstatus.app.net.social.MbObjectType;
-import org.andstatus.app.user.UserListViewItem;
-import org.andstatus.app.widget.TimelineViewItem;
+import org.andstatus.app.user.UserViewItem;
 
 /** View on ActivityStream
  * @author yvolk@yurivolkov.com
  */
-public class ActivityViewItem implements TimelineViewItem, Comparable<ActivityViewItem> {
+public class ActivityViewItem implements Comparable<ActivityViewItem>,ViewItem {
     public static final ActivityViewItem EMPTY = new ActivityViewItem();
     private long insDate = 0;
     private long id = 0;
     MbActivityType activityType = MbActivityType.EMPTY;
     MbObjectType objectType = MbObjectType.EMPTY;
-    UserListViewItem actor = UserListViewItem.EMPTY;
+    UserViewItem actor = UserViewItem.EMPTY;
     MessageViewItem message = MessageViewItem.EMPTY;
-    UserListViewItem user = UserListViewItem.EMPTY;
+    UserViewItem user = UserViewItem.EMPTY;
 
     @Override
     public long getId() {

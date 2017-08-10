@@ -74,7 +74,7 @@ public class UsersOfMessageListLoader extends UserListLoader {
     private void addUsersFromMessageBody(MbUser author) {
         List<MbUser> users = author.extractUsersFromBodyText(messageBody, false);
         for (MbUser mbUser: users) {
-            addUserToList(UserListViewItem.fromMbUser(mbUser));
+            addUserToList(UserViewItem.fromMbUser(mbUser));
         }
     }
 

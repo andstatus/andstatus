@@ -32,8 +32,8 @@ import org.andstatus.app.origin.Origin;
 import java.util.HashSet;
 import java.util.Set;
 
-public class UserListViewItem implements ViewItem, Comparable<UserListViewItem> {
-    public static final UserListViewItem EMPTY = fromMbUser(MbUser.EMPTY);
+public class UserViewItem implements Comparable<UserViewItem>,ViewItem {
+    public static final UserViewItem EMPTY = fromMbUser(MbUser.EMPTY);
     boolean populated = false;
     @NonNull
     final MbUser mbUser;
@@ -45,7 +45,7 @@ public class UserListViewItem implements ViewItem, Comparable<UserListViewItem> 
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        UserListViewItem that = (UserListViewItem) o;
+        UserViewItem that = (UserViewItem) o;
         return mbUser.equals(that.mbUser);
     }
 
@@ -54,17 +54,17 @@ public class UserListViewItem implements ViewItem, Comparable<UserListViewItem> 
         return mbUser.hashCode();
     }
 
-    private UserListViewItem(MbUser mbUser) {
+    private UserViewItem(MbUser mbUser) {
         this.mbUser = mbUser;
     }
 
-    public static UserListViewItem getEmpty(String description) {
+    public static UserViewItem getEmpty(String description) {
         MbUser mbUser = TextUtils.isEmpty(description) ? MbUser.EMPTY :
                 MbUser.fromOriginAndUserId(0L, 0L).setDescription(description);
         return fromMbUser(mbUser);
     }
 
-    public static UserListViewItem fromUserId(Origin origin, long userId) {
+    public static UserViewItem fromUserId(Origin origin, long userId) {
         MbUser mbUser = MbUser.EMPTY;
         if (userId != 0) {
             mbUser = MbUser.fromOriginAndUserOid(origin.getId(), MyQuery.idToOid(OidEnum.USER_OID, userId, 0));
@@ -74,8 +74,8 @@ public class UserListViewItem implements ViewItem, Comparable<UserListViewItem> 
         return fromMbUser(mbUser);
     }
 
-    public static UserListViewItem fromMbUser(@NonNull MbUser mbUser) {
-        return new UserListViewItem(mbUser);
+    public static UserViewItem fromMbUser(@NonNull MbUser mbUser) {
+        return new UserViewItem(mbUser);
     }
 
     public long getUserId() {
@@ -112,7 +112,7 @@ public class UserListViewItem implements ViewItem, Comparable<UserListViewItem> 
     }
 
     @Override
-    public int compareTo(@NonNull UserListViewItem o) {
+    public int compareTo(@NonNull UserViewItem o) {
         return getWebFingerIdOrUserName().compareTo(o.getWebFingerIdOrUserName());
     }
 

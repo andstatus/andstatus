@@ -43,6 +43,7 @@ import org.andstatus.app.IntentExtra;
 import org.andstatus.app.MyAction;
 import org.andstatus.app.R;
 import org.andstatus.app.SyncLoader;
+import org.andstatus.app.ViewItem;
 import org.andstatus.app.WhichPage;
 import org.andstatus.app.account.AccountSelector;
 import org.andstatus.app.account.MyAccount;
@@ -72,7 +73,6 @@ import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
 import org.andstatus.app.util.ViewUtils;
-import org.andstatus.app.widget.TimelineViewItem;
 import org.andstatus.app.widget.MyBaseAdapter;
 import org.andstatus.app.widget.MySearchView;
 
@@ -81,7 +81,7 @@ import java.util.Collections;
 /**
  * @author yvolk@yurivolkov.com
  */
-public class TimelineActivity<T extends TimelineViewItem> extends MessageEditorListActivity implements
+public class TimelineActivity<T extends ViewItem> extends MessageEditorListActivity implements
         MessageListContextMenuContainer, AbsListView.OnScrollListener {
     public static final String HORIZONTAL_ELLIPSIS = "\u2026";
 

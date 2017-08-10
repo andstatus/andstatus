@@ -22,6 +22,7 @@ import android.support.v4.util.Pair;
 
 import org.andstatus.app.LoadableListActivity;
 import org.andstatus.app.SyncLoader;
+import org.andstatus.app.ViewItem;
 import org.andstatus.app.WhichPage;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DbUtils;
@@ -29,14 +30,13 @@ import org.andstatus.app.timeline.TimelineType;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
-import org.andstatus.app.widget.TimelineViewItem;
 
 import java.util.ArrayList;
 
 /**
 * @author yvolk@yurivolkov.com
 */
-public class TimelineLoader<T extends TimelineViewItem> extends SyncLoader<T> {
+public class TimelineLoader<T extends ViewItem> extends SyncLoader<T> {
     private final TimelineListParameters params;
     private final TimelinePage<T> page;
 

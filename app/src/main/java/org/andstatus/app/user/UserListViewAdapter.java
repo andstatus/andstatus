@@ -19,7 +19,6 @@ package org.andstatus.app.user;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyPreferences;
@@ -33,13 +32,13 @@ import java.util.List;
 class UserListViewAdapter extends MyBaseAdapter {
     private final UserListContextMenu contextMenu;
     private final int listItemLayoutId;
-    private final List<UserListViewItem> items;
+    private final List<UserViewItem> items;
     private final boolean showAvatars = MyPreferences.getShowAvatars();
     private final boolean showWebFingerId =
             MyPreferences.getUserInTimeline().equals(UserInTimeline.WEBFINGER_ID);
     private final boolean isCombined;
 
-    public UserListViewAdapter(UserListContextMenu contextMenu, int listItemLayoutId, List<UserListViewItem> items,
+    public UserListViewAdapter(UserListContextMenu contextMenu, int listItemLayoutId, List<UserViewItem> items,
                                boolean isCombined) {
         super(contextMenu.getActivity().getMyContext());
         this.contextMenu = contextMenu;
@@ -58,7 +57,7 @@ class UserListViewAdapter extends MyBaseAdapter {
         if (position >= 0 && position < getCount()) {
             return items.get(position);
         }
-        return UserListViewItem.getEmpty("");
+        return UserViewItem.getEmpty("");
     }
 
     @Override
@@ -72,7 +71,7 @@ class UserListViewAdapter extends MyBaseAdapter {
         view.setOnCreateContextMenuListener(contextMenu);
         view.setOnClickListener(this);
         setPosition(view, position);
-        UserListViewItem item = items.get(position);
+        UserViewItem item = items.get(position);
         MyUrlSpan.showText(view, R.id.username,
                 item.mbUser.toUserTitle(showWebFingerId) + (isCombined ?
                         " / " + contextMenu.getActivity().getMyContext().persistentOrigins()
@@ -104,12 +103,12 @@ class UserListViewAdapter extends MyBaseAdapter {
         return LayoutInflater.from(contextMenu.getActivity()).inflate(listItemLayoutId, null);
     }
 
-    private void showAvatar(UserListViewItem item, View view) {
-        AvatarView avatarView = (AvatarView) view.findViewById(R.id.avatar_image);
+    private void showAvatar(UserViewItem item, View view) {
+        AvatarView avatarView = view.findViewById(R.id.avatar_image);
         item.showAvatar(contextMenu.getActivity(), avatarView);
     }
 
-    private void showMyFollowers(View view, UserListViewItem item) {
+    private void showMyFollowers(View view, UserViewItem item) {
         StringBuilder builder = new StringBuilder();
         if (!item.myFollowers.isEmpty()) {
             int count = 0;
